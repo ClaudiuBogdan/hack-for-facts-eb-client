@@ -1,0 +1,32 @@
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+}
+
+@utility scrollbar-thumb-gray-300 {
+  &::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 6px;
+  }
+}
+
+@utility scrollbar-thumb-gray-600 {
+  &::-webkit-scrollbar-thumb {
+    background-color: #4b5563;
+    border-radius: 6px;
+  }
+}
+@utility hide-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+
+  &::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari and Opera */
+  }
+}

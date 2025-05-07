@@ -1,0 +1,249 @@
+@import './styles/fonts.css' layer(base);
+@import 'tailwindcss';
+
+@config '../tailwind.config.js';
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+@utility split {
+  display: flex;
+  flex-direction: row;
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+@layer base {
+  html,
+    body {
+      position: fixed;
+      overflow: hidden;
+    }
+  :root {
+    overscroll-behavior: none;
+    /* Base colors */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    /* Card colors */
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    /* Popover colors */
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Primary - Using a vibrant blue for main actions */
+    --primary: 221 83% 53%;
+    --primary-foreground: 210 40% 98%;
+
+    /* Secondary - Softer blue for supporting elements */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    /* Muted - Subtle background variations */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    /* Accent - Highlight color */
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    /* Destructive - For warnings and errors */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Border and input styles */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221 83% 53%;
+
+    /* Chart colors - Using a cohesive palette */
+    --chart-1: 221 83% 53%;    /* Blue */
+    --chart-2: 262 83% 58%;    /* Purple */
+    --chart-3: 291 70% 50%;    /* Pink */
+    --chart-4: 326 100% 54%;   /* Magenta */
+    --chart-5: 174 84% 32%;    /* Teal */
+
+    /* Scrollbar colors */
+      --scrollbar-track: 0 0% 95% / 0.1;
+      --scrollbar-thumb: 0 0% 80% / 0.4;
+      --scrollbar-thumb-hover: 0 0% 70% / 0.6;
+    /* Other variables */
+    --radius: 0.5rem;
+    --font-family: 'Inter', sans-serif;
+    --font-size: 16px;
+    --line-height: 1.5;
+    --letter-spacing: 0.02em;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+/* Scrollbar colors for dark theme */
+  --scrollbar-track: 240 5.9% 10% / 0.1;
+  --scrollbar-thumb: 240 3.7% 25% / 0.4;
+  --scrollbar-thumb-hover: 240 3.7% 35% / 0.6;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer utilities {
+  /* Scrollbar Styles */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: hsla(var(--scrollbar-track));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: hsla(var(--scrollbar-thumb));
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: hsla(var(--scrollbar-thumb-hover));
+  }
+
+  /* Show scrollbar for Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsla(var(--scrollbar-thumb)) hsla(var(--scrollbar-track));
+  }
+
+  /* Remove focus outline for mouse users but keep it for keyboard navigation */
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    font-family: var(--font-family);
+    font-size: var(--font-size);
+    line-height: var(--line-height);
+    letter-spacing: var(--letter-spacing);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.cm-scroller {
+  position: absolute !important;
+  inset: 0 !important;
+
+
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.32s ease;
+
+  &:hover {
+    scrollbar-color: hsla(var(--scrollbar-thumb)) transparent;
+    transition: scrollbar-color 0.32s ease;
+  }
+
+}
+
+/* Optional: If you want to ensure the editor content fills the available space */
+.cm-content {
+  min-height: 100%;
+  padding: 1rem 1rem 0 0 !important;
+}
+
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+/* Add details content padding */
+details> :not(summary) {
+  margin-left: 1rem;
+}
