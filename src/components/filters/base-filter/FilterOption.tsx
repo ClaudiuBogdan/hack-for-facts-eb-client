@@ -1,23 +1,66 @@
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+
 interface FilterOptionProps {
     onClick: () => void;
-    label: string
+    label: string;
+    uniqueIdPart: string;
     selected: boolean;
     optionHeight: number;
     optionStart: number;
+    className?: string;
 }
 
-export function FilterOption({ onClick, label, selected, optionHeight, optionStart }: FilterOptionProps) {
+export function FilterOption({
+    onClick,
+    label,
+    uniqueIdPart,
+    selected,
+    optionHeight,
+    optionStart,
+    className
+}: FilterOptionProps) {
+    const checkboxId = `filter-option-${uniqueIdPart}`;
+
     return (
         <div
-            className="flex items-center p-2 cursor-pointer absolute top-0 left-0 w-full line-height-0 border-b border-gray-200 border-solid"
+            className={cn(
+                "flex items-center absolute top-0 left-0 w-full transition-colors duration-150 ease-in-out",
+                "border-b border-border",
+                "hover:bg-accent hover:text-accent-foreground",
+                selected && "bg-muted",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                className
+            )}
             style={{
                 height: `${optionHeight}px`,
                 transform: `translateY(${optionStart}px)`,
             }}
             onClick={onClick}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); }}
+            role="option"
+            aria-selected={selected}
+            tabIndex={0}
         >
-            <input type="checkbox" checked={selected} readOnly className="mr-2" />
-            <span title={label} className="text-xs leading-tight">{label}</span>
+            <div className="flex items-center w-full px-3 py-2 cursor-pointer">
+                <Checkbox
+                    id={checkboxId}
+                    checked={selected}
+                    onCheckedChange={onClick}
+                    className="mr-3 shrink-0"
+                    aria-labelledby={`${checkboxId}-label`}
+                    tabIndex={-1}
+                />
+                <Label
+                    htmlFor={checkboxId}
+                    id={`${checkboxId}-label`}
+                    title={label}
+                    className="text-xs leading-snug cursor-pointer select-none"
+                >
+                    {label}
+                </Label>
+            </div>
         </div>
-    )
+    );
 }
