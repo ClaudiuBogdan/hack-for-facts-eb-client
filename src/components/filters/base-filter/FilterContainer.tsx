@@ -18,10 +18,11 @@ interface FilterContainerProps {
     selected: OptionItem[];
     setSelected: (cb: (prev: OptionItem[]) => OptionItem[]) => void;
     title: string;
+    icon: React.ReactNode;
 }
 
 
-export function FilterContainer({ listComponent: ListComponent, title, selected, setSelected }: FilterContainerProps) {
+export function FilterContainer({ listComponent: ListComponent, title, icon, selected, setSelected }: FilterContainerProps) {
     // State to manage if all selected items are shown or just the compact view (passed to SelectedOptionsDisplay)
     const [showAllSelected, setShowAllSelected] = useState(false);
 
@@ -60,8 +61,11 @@ export function FilterContainer({ listComponent: ListComponent, title, selected,
     };
 
     return (
-        <Card className={cn("w-full max-w-md shadow-lg flex flex-col")}>
-            <CardHeader>
+        <Card className={cn("w-full max-w-md shadow-none flex flex-col rounded-none")}>
+            <CardHeader className="pb-0 flex flex-row gap-2">
+                <div className="w-4 h-4">
+                    {icon}
+                </div>
                 <CardTitle>{title}</CardTitle>
             </CardHeader>
 

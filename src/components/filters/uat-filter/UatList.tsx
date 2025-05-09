@@ -8,28 +8,26 @@ import { ListContainer } from '../base-filter/ListContainer';
 import { ListOption } from '../base-filter/ListOption';
 import { cn } from '@/lib/utils';
 
-export interface EntityOption {
+export interface UatOption {
+    id: string;
     name: string;
-    cui: string;
-    uat?: {
-        name: string;
-        county_code: string;
-    }
+    county_code: string;
+    county_name: string;
 }
 
-interface EntityListProps {
+interface UatListProps {
     selectedOptions: OptionItem[];
     toggleSelect: (option: OptionItem) => void;
     pageSize?: number;
     className?: string;
 }
 
-export function EntityList({
+export function UatList({
     selectedOptions,
     toggleSelect,
     pageSize = 100,
     className,
-}: EntityListProps) {
+}: UatListProps) {
     const [searchFilter, setSearchFilter] = useState("");
     const {
         items,
@@ -40,20 +38,18 @@ export function EntityList({
         error,
         refetch,
         isFetchingNextPage,
-    } = useMultiSelectInfinite<EntityOption>({
+    } = useMultiSelectInfinite<UatOption>({
         itemSize: 48,
-        queryKey: ['entities', searchFilter],
-        queryFn: async ({ pageParam = 0 }): Promise<PageData<EntityOption>> => {
+        queryKey: ['uats', searchFilter],
+        queryFn: async ({ pageParam = 0 }): Promise<PageData<UatOption>> => {
             const query = `
-              query Entities($search: String!, $limit: Int!, $offset: Int!) {
-                entities(filter: { search: $search }, limit: $limit, offset: $offset) {
+              query Uats($search: String!, $limit: Int!, $offset: Int!) {
+                uats(filter: { search: $search }, limit: $limit, offset: $offset) {
                     nodes { 
+                        id
                         name
-                        cui
-                        uat{
-                            name
-                            county_code
-                        }
+                        county_code
+                        county_name
                     }
                   pageInfo { totalCount hasNextPage }
                 }
@@ -62,12 +58,12 @@ export function EntityList({
             const limit = pageSize;
             const variables = { search: searchFilter, limit, offset: pageParam };
             const response = await graphqlRequest<{
-                entities: { nodes: EntityOption[]; pageInfo: { totalCount: number; hasNextPage: boolean; hasPreviousPage: boolean } };
+                uats: { nodes: UatOption[]; pageInfo: { totalCount: number; hasNextPage: boolean; hasPreviousPage: boolean } };
             }>(query, variables);
             return {
-                nodes: response.entities.nodes,
-                pageInfo: response.entities.pageInfo,
-                nextOffset: pageParam + response.entities.nodes.length,
+                nodes: response.uats.nodes,
+                pageInfo: response.uats.pageInfo,
+                nextOffset: pageParam + response.uats.nodes.length,
             };
         }
     });
@@ -78,7 +74,7 @@ export function EntityList({
         <div className={cn("w-full flex flex-col space-y-3", className)}>
             <SearchInput
                 onChange={setSearchFilter}
-                placeholder="Cauta entitati (ex: Primaria Arad)"
+                placeholder="Cauta UAT (ex: Municipiul Arad)"
                 initialValue={searchFilter}
             />
 
@@ -104,14 +100,14 @@ export function EntityList({
                             const option = items[virtualRow.index];
                             // It's good practice to ensure option exists, though virtualizer count should match items.length
                             if (!option) return null;
-                            const isSelected = selectedOptions.some(item => item.id === option.cui);
-                            const countyLabel = option.uat?.county_code ? `(${option.uat.county_code} - ${option.uat.name})` : "";
+                            const isSelected = selectedOptions.some(item => item.id === option.id);
+                            const countyLabel = `(Jud. ${option.county_name})`;
                             const label = `${option.name} ${countyLabel}`;
                             return (
                                 <ListOption
-                                    key={option.cui}
-                                    uniqueIdPart={option.cui}
-                                    onClick={() => toggleSelect({ id: option.cui, label })}
+                                    key={option.id}
+                                    uniqueIdPart={option.id}
+                                    onClick={() => toggleSelect({ id: option.id, label })}
                                     label={label}
                                     selected={isSelected}
                                     optionHeight={virtualRow.size}
