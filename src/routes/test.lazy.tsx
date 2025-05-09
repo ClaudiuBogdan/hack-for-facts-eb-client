@@ -1,4 +1,4 @@
-import { MultiSelectInfinite } from "@/components/entity-list";
+import { EntityOptions } from "@/components/filters/entity-filter/EntityOptions";
 import { createLazyFileRoute } from "@tanstack/react-router";
 
 export const Route = createLazyFileRoute("/test")({
@@ -9,12 +9,7 @@ function TestPage() {
     return (
         <div>
             <h1>Test</h1>
-            <MultiSelectInfinite
-                selected={[]}
-                onChange={() => {}}
-                placeholder="Select an option"
-                pageSize={100}
-            />
+            <EntityOptions />
         </div>
     )
 }
