@@ -3,15 +3,15 @@ import { EntityOption } from './interfaces';
 import { graphqlRequest } from '@/lib/api/graphql';
 import { useState } from 'react';
 import { SearchInput } from '../base-filter/SearchInput';
-import { PageData } from '../base-filter/interfaces';
+import { OptionItem, PageData } from '../base-filter/interfaces';
 import { ErrorDisplay } from '../base-filter/ErrorDisplay';
 import { FilterContainer } from '../base-filter/FilterContainer';
 import { FilterOption } from '../base-filter/FilterOption';
 import { cn } from '@/lib/utils';
 
 interface MultiSelectInfiniteProps {
-    selectedOptions: EntityOption[];
-    toggleSelect: (option: EntityOption) => void;
+    selectedOptions: OptionItem[];
+    toggleSelect: (option: OptionItem) => void;
     pageSize?: number;
     className?: string;
 }
@@ -96,14 +96,15 @@ export function MultiSelectInfinite({
                             const option = items[virtualRow.index];
                             // It's good practice to ensure option exists, though virtualizer count should match items.length
                             if (!option) return null;
-                            const isSelected = selectedOptions.some(item => item.cui === option.cui);
+                            const isSelected = selectedOptions.some(item => item.id === option.cui);
                             const countyLabel = option.uat?.county_code ? `(${option.uat.county_code} - ${option.uat.name})` : "";
+                            const label = `${option.name} ${countyLabel}`;
                             return (
                                 <FilterOption
                                     key={option.cui}
                                     uniqueIdPart={option.cui}
-                                    onClick={() => toggleSelect(option)}
-                                    label={`${option.name} ${countyLabel}`}
+                                    onClick={() => toggleSelect({ id: option.cui, label })}
+                                    label={label}
                                     selected={isSelected}
                                     optionHeight={virtualRow.size}
                                     optionStart={virtualRow.start}

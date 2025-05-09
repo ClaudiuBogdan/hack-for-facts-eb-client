@@ -7,3 +7,8 @@ export interface PageData<T> {
     };
     nextOffset: number;
 }
+
+export interface OptionItem {
+    id: string
+    label: string
+}
