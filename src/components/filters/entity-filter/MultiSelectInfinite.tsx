@@ -4,22 +4,20 @@ import { graphqlRequest } from '@/lib/api/graphql';
 import { useState } from 'react';
 import { SearchInput } from '../base-filter/SearchInput';
 import { PageData } from '../base-filter/interfaces';
-import { LoadingSpinner } from '../base-filter/LoadingSpinner';
 import { ErrorDisplay } from '../base-filter/ErrorDisplay';
 import { FilterContainer } from '../base-filter/FilterContainer';
 import { FilterOption } from '../base-filter/FilterOption';
-import { NoResults } from '../base-filter/NoResults';
 import { cn } from '@/lib/utils';
 
 interface MultiSelectInfiniteProps {
-    selected: EntityOption[];
+    selectedOptions: EntityOption[];
     toggleSelect: (option: EntityOption) => void;
     pageSize?: number;
     className?: string;
 }
 
 export function MultiSelectInfinite({
-    selected,
+    selectedOptions,
     toggleSelect,
     pageSize = 100,
     className,
@@ -41,12 +39,18 @@ export function MultiSelectInfinite({
             const query = `
               query Entities($search: String!, $limit: Int!, $offset: Int!) {
                 entities(filter: { search: $search }, limit: $limit, offset: $offset) {
-                  nodes { name cui }
+                    nodes { 
+                        name
+                        cui
+                        uat{
+                            name
+                            county_code
+                        }
+                    }
                   pageInfo { totalCount hasNextPage }
                 }
               }
             `;
-            // Ensure pageSize from props is used in limit, or a fixed one
             const limit = pageSize;
             const variables = { search: searchFilter, limit, offset: pageParam };
             const response = await graphqlRequest<{
@@ -61,18 +65,15 @@ export function MultiSelectInfinite({
     });
 
     const showNoResults = !isLoading && !isError && items.length === 0 && searchFilter.length > 0;
-    const showInitialPrompt = !isLoading && !isError && items.length === 0 && searchFilter.length === 0;
-
 
     return (
         <div className={cn("w-full flex flex-col space-y-3", className)}>
             <SearchInput
                 onChange={setSearchFilter}
                 placeholder="Search entities (e.g., Aspirin)"
-                initialValue={searchFilter} // To keep search term if component re-renders for other reasons
+                initialValue={searchFilter}
             />
 
-            {isLoading && <LoadingSpinner text="Loading entities..." className="py-10" />}
             {isError && error && (
                 <ErrorDisplay
                     error={error as Error}
@@ -81,13 +82,13 @@ export function MultiSelectInfinite({
                 />
             )}
 
-            {!isLoading && !isError && (
+            {!isError && (
                 <FilterContainer
-                    // Pass the parentRef from the hook to the actual scrollable element's ref
-                    // If FilterContainer's implementation uses React.forwardRef and applies it to the scrollable div:
                     ref={parentRef}
                     height={rowVirtualizer.getTotalSize()}
                     isFetchingNextPage={isFetchingNextPage}
+                    isLoading={isLoading}
+                    isEmpty={showNoResults}
                     className="min-h-[10rem]" // Ensure a minimum height
                 >
                     {rowVirtualizer.getVirtualItems().length > 0 ? (
@@ -95,30 +96,22 @@ export function MultiSelectInfinite({
                             const option = items[virtualRow.index];
                             // It's good practice to ensure option exists, though virtualizer count should match items.length
                             if (!option) return null;
-                            const isSelected = selected.some(item => item.cui === option.cui);
+                            const isSelected = selectedOptions.some(item => item.cui === option.cui);
+                            const countyLabel = option.uat?.county_code ? `(${option.uat.county_code} - ${option.uat.name})` : "";
                             return (
                                 <FilterOption
                                     key={option.cui}
                                     uniqueIdPart={option.cui}
                                     onClick={() => toggleSelect(option)}
-                                    // TODO: add county prefix to label
-                                    label={option.name}
+                                    label={`${option.name} ${countyLabel}`}
                                     selected={isSelected}
-                                    optionHeight={virtualRow.size} 
+                                    optionHeight={virtualRow.size}
                                     optionStart={virtualRow.start}
                                 />
                             );
                         })
                     ) : null}
                 </FilterContainer>
-            )}
-            {showNoResults && (
-                <NoResults message={`No entities found for "${searchFilter}".`} />
-            )}
-            {showInitialPrompt && (
-                <div className="p-6 text-center text-muted-foreground">
-                    <p>Start typing to search for entities.</p>
-                </div>
             )}
         </div>
     );
