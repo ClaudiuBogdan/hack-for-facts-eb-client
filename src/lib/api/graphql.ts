@@ -22,7 +22,7 @@ export async function graphqlRequest<T = unknown>(
   query: string,
   variables?: Record<string, unknown>
 ): Promise<T> {
-  const endpoint = "http://localhost:3000/graphql";
+  const endpoint = import.meta.env.VITE_API_URL + "/graphql";
 
   try {
     logger.info("Making GraphQL request", { query, variables });
