@@ -1,4 +1,4 @@
-import { EntityOptions } from "@/components/filters/entity-filter/EntityOptions";
+import { DemoFilter } from "@/components/filters/entity-filter/DemoFilter";
 import { createLazyFileRoute } from "@tanstack/react-router";
 
 export const Route = createLazyFileRoute("/test")({
@@ -8,7 +8,7 @@ export const Route = createLazyFileRoute("/test")({
 function TestPage() {
     return (
         <div>
-            <EntityOptions />
+            <DemoFilter />
         </div>
     )
 }

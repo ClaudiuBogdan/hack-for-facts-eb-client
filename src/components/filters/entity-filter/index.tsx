@@ -1,1 +1,1 @@
-export { MultiSelectInfinite } from './MultiSelectInfinite';
+export { EntityList } from './EntityList';

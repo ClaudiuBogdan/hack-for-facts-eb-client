@@ -2,7 +2,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
-interface FilterOptionProps {
+interface ListOptionProps {
     onClick: () => void;
     label: string;
     uniqueIdPart: string;
@@ -12,7 +12,7 @@ interface FilterOptionProps {
     className?: string;
 }
 
-export function FilterOption({
+export function ListOption({
     onClick,
     label,
     uniqueIdPart,
@@ -20,7 +20,7 @@ export function FilterOption({
     optionHeight,
     optionStart,
     className
-}: FilterOptionProps) {
+}: ListOptionProps) {
     const checkboxId = `filter-option-${uniqueIdPart}`;
 
     return (

@@ -81,7 +81,7 @@ export function SelectedOptionsDisplay({
                             variant="secondary"
                             className={cn("flex items-center gap-1.5 py-1 pl-2.5 pr-1 text-sm")}
                         >
-                            <span className="truncate max-w-[100px] block" title={option.label}>
+                            <span className="truncate text-xs max-w-[100px] block" title={option.label}>
                                 {option.label}
                             </span>
                             <button
@@ -121,7 +121,7 @@ export function SelectedOptionsDisplay({
                                     "flex items-center gap-1.5 py-1 pl-2.5 pr-1 text-sm relative group"
                                 )}
                             >
-                                <span className="truncate max-w-[150px] block" title={option.label}>
+                                <span className="truncate text-xs max-w-[150px] block" title={option.label}>
                                     {option.label}
                                 </span>
                                 <button

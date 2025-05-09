@@ -1,27 +1,35 @@
 import { useMultiSelectInfinite } from '../base-filter/hooks/useMultiSelectInfinite';
-import { EntityOption } from './interfaces';
 import { graphqlRequest } from '@/lib/api/graphql';
 import { useState } from 'react';
 import { SearchInput } from '../base-filter/SearchInput';
 import { OptionItem, PageData } from '../base-filter/interfaces';
 import { ErrorDisplay } from '../base-filter/ErrorDisplay';
-import { FilterContainer } from '../base-filter/FilterContainer';
-import { FilterOption } from '../base-filter/FilterOption';
+import { ListContainer } from '../base-filter/ListContainer';
+import { ListOption } from '../base-filter/ListOption';
 import { cn } from '@/lib/utils';
 
-interface MultiSelectInfiniteProps {
+export interface EntityOption {
+    name: string;
+    cui: string;
+    uat?: {
+        name: string;
+        county_code: string;
+    }
+}
+
+interface EntityListProps {
     selectedOptions: OptionItem[];
     toggleSelect: (option: OptionItem) => void;
     pageSize?: number;
     className?: string;
 }
 
-export function MultiSelectInfinite({
+export function EntityList({
     selectedOptions,
     toggleSelect,
     pageSize = 100,
     className,
-}: MultiSelectInfiniteProps) {
+}: EntityListProps) {
     const [searchFilter, setSearchFilter] = useState("");
     const {
         items,
@@ -83,7 +91,7 @@ export function MultiSelectInfinite({
             )}
 
             {!isError && (
-                <FilterContainer
+                <ListContainer
                     ref={parentRef}
                     height={rowVirtualizer.getTotalSize()}
                     isFetchingNextPage={isFetchingNextPage}
@@ -100,7 +108,7 @@ export function MultiSelectInfinite({
                             const countyLabel = option.uat?.county_code ? `(${option.uat.county_code} - ${option.uat.name})` : "";
                             const label = `${option.name} ${countyLabel}`;
                             return (
-                                <FilterOption
+                                <ListOption
                                     key={option.cui}
                                     uniqueIdPart={option.cui}
                                     onClick={() => toggleSelect({ id: option.cui, label })}
@@ -112,7 +120,7 @@ export function MultiSelectInfinite({
                             );
                         })
                     ) : null}
-                </FilterContainer>
+                </ListContainer>
             )}
         </div>
     );

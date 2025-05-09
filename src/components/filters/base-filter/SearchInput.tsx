@@ -36,6 +36,7 @@ export function SearchInput({
             <Input
                 ref={inputRef}
                 type="text"
+                maxLength={80}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder={placeholder}
