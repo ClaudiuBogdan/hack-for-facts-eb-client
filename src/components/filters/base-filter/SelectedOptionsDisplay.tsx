@@ -40,7 +40,7 @@ export function SelectedOptionsDisplay({
     }
 
     return (
-        <div className={cn("px-4 pt-3 w-full", className)}> {/* Added pt-3 for consistency */}
+        <div className={cn("px-0 py-4 w-full", className)}>
             <div className={cn("flex items-center justify-between mb-2 min-h-[28px]")}>
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Selected ({selected.length})

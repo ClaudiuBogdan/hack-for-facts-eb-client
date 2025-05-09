@@ -13,7 +13,7 @@ export function DemoFilter() {
     const [selectedUats, setSelectedUats] = useState<OptionItem[]>([]);
 
     return (
-        <Card className="flex flex-col w-full shadow-lg">
+        <Card className="flex flex-col w-full min-h-full shadow-lg">
             <FilterContainer
                 title="Entitati Publice"
                 icon={<Building2 className="w-4 h-4" />}

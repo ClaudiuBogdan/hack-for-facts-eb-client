@@ -40,7 +40,7 @@ export function SearchInput({
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder={placeholder}
-                className="w-full pl-10 pr-10 py-2" // Space for icons
+                className="w-full pl-10 pr-10 py-2 text-sm" // Space for icons
             />
             {search && (
                 <button

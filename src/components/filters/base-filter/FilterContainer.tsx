@@ -3,6 +3,7 @@ import { FunctionComponent, useState } from "react";
 import { cn } from "@/lib/utils"; // Your utility for classnames
 import { SelectedOptionsDisplay } from "./SelectedOptionsDisplay"; // The new component
 import { OptionItem } from "./interfaces";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 // These constants are primarily used within SelectedOptionsDisplay,
 // but knowing them helps understand the logic in toggleSelect.
@@ -62,29 +63,38 @@ export function FilterContainer({ listComponent: ListComponent, title, icon, sel
 
     return (
         <Card className={cn("w-full max-w-md shadow-none flex flex-col rounded-none")}>
-            <CardHeader className="pb-0 flex flex-row gap-2">
-                <div className="w-4 h-4">
-                    {icon}
-                </div>
-                <CardTitle>{title}</CardTitle>
-            </CardHeader>
+            <Accordion type="single" collapsible className="w-full px-4">
+                <AccordionItem value="item-1">
+                    <AccordionTrigger>
+                        <CardHeader className="flex flex-row items-center gap-2 p-0">
+                            <div className="w-4 h-4">
+                                {icon}
+                            </div>
+                            <CardTitle>{title}</CardTitle>
+                        </CardHeader>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                        <CardContent className={cn("p-0 flex-grow")}>
+                            <ListComponent
+                                selectedOptions={selected}
+                                toggleSelect={toggleSelect}
+                                pageSize={100}
+                            />
+                        </CardContent>
+                    </AccordionContent>
 
-            <CardContent className={cn("p-0 md:p-4 pt-0 flex-grow")}>
-                <ListComponent
-                    selectedOptions={selected}
-                    toggleSelect={toggleSelect}
-                    pageSize={100} // Default page size
-                />
-            </CardContent>
-            <CardFooter>
-                <SelectedOptionsDisplay
-                    selectedOptions={selected}
-                    toggleSelect={toggleSelect}
-                    clearSelection={clearSelection}
-                    showAllSelected={showAllSelected}
-                    setShowAllSelected={setShowAllSelected}
-                />
-            </CardFooter>
+                    <CardFooter className="p-0">
+                        <SelectedOptionsDisplay
+                            selectedOptions={selected}
+                            toggleSelect={toggleSelect}
+                            clearSelection={clearSelection}
+                            showAllSelected={showAllSelected}
+                            setShowAllSelected={setShowAllSelected}
+                        />
+                    </CardFooter>
+                </AccordionItem>
+            </Accordion>
+
         </Card>
     );
 }
