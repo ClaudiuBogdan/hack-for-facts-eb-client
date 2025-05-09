@@ -51,6 +51,7 @@ const defaultFilters: DataDiscoveryFilter = {
 export const useDataDiscoveryFilters = create<DataDiscoveryFiltersState>()(
   persist(
     (set) => ({
+      // TODO: load initial filter values. Initialize filters with default values
       filters: { ...defaultFilters },
       setFilter: (key, value) =>
         set((state) => ({

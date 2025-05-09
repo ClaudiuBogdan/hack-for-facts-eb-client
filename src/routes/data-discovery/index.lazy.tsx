@@ -5,7 +5,7 @@ import { useDataDiscoveryFilters } from "@/stores/dataDiscoveryFilters";
 import { DataDisplay } from "@/components/dataDiscovery/DataDisplay";
 import { useDebouncedValue } from "@/lib/hooks";
 import { DataDiscoveryLayout } from "@/components/dataDiscovery/DataDiscoveryLayout";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 export const Route = createLazyFileRoute("/data-discovery/")({
   component: DataDiscoveryPage,
@@ -20,10 +20,12 @@ function DataDiscoveryPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
+  const filterString = useMemo(() => JSON.stringify(debouncedFilters), [debouncedFilters]);
+
   // Reset to page 1 when filters change
   useEffect(() => {
     setPage(1);
-  }, [JSON.stringify(debouncedFilters)]);
+  }, [filterString]);
 
   // Query for budget line items with pagination
   const {
