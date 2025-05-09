@@ -152,7 +152,6 @@ interface EntityFilter extends Record<string, unknown> {
 interface ExecutionLineItemFilter extends Record<string, unknown> {
   entity_cui?: string;
   county_code?: string;
-  reporting_year?: number;
   uat_id?: number;
   functional_code?: string;
   economic_code?: string;
@@ -160,6 +159,10 @@ interface ExecutionLineItemFilter extends Record<string, unknown> {
   min_amount?: number;
   max_amount?: number;
   program_code?: string;
+  year?: number;
+  years?: number[];
+  start_year?: number;
+  end_year?: number;
 }
 
 // Additional filter to use for reports since we need to filter by year
@@ -194,18 +197,28 @@ function convertFiltersToGraphQLFormat(filters: DataDiscoveryFilter): {
     entityFilter.name = filters.searchQuery;
   }
 
-  // Apply year range filter - use report filter for this
-  if (filters.yearRange.from !== null || filters.yearRange.to !== null) {
-    if (filters.yearRange.from !== null) {
-      // Start date of the year
-      reportFilter.report_date_start = `${filters.yearRange.from}-01-01`;
+  // Apply year range filter
+  if (filters.yearRange.from !== null && filters.yearRange.to !== null) {
+    if (filters.yearRange.from === filters.yearRange.to) {
+      executionLineItemFilter.year = filters.yearRange.from;
+    } else {
+      executionLineItemFilter.start_year = filters.yearRange.from;
+      executionLineItemFilter.end_year = filters.yearRange.to;
     }
-
-    if (filters.yearRange.to !== null) {
-      // End date of the year (last day)
-      reportFilter.report_date_end = `${filters.yearRange.to}-12-31`;
-    }
+  } else if (filters.yearRange.from !== null) {
+    // If only 'from' is set, treat it as a single year filter or start of an open range
+    // Depending on exact backend logic, this might be .year or .start_year
+    executionLineItemFilter.year = filters.yearRange.from; // Or start_year, adjust as needed
+  } else if (filters.yearRange.to !== null) {
+    // If only 'to' is set, treat it as a single year filter or end of an open range
+    // Depending on exact backend logic, this might be .year or .end_year
+    executionLineItemFilter.year = filters.yearRange.to; // Or end_year, adjust as needed
   }
+  // Handle filters.years if your UI supports multi-select specific years
+  // For example:
+  // if (filters.years && filters.years.length > 0) {
+  //   executionLineItemFilter.years = filters.years;
+  // }
 
   // Apply functional category filter
   if (filters.functionalCategory.length > 0) {
