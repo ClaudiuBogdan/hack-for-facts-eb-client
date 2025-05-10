@@ -57,7 +57,7 @@ export function FilterRangeContainer({ rangeComponent: RangeComponent, title, ic
                 <AccordionItem value="item-1">
                     <AccordionTrigger>
                         <CardHeader className="flex flex-row items-center gap-2 p-0">
-                            <div className="w-4 h-4">
+                            <div className="w-4 h-4 mt-1">
                                 {icon}
                             </div>
                             <CardTitle>{title}</CardTitle>
