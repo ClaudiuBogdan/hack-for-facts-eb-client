@@ -122,7 +122,7 @@
     "uuid": "^11.1.0",
     "zod": "^3.24.4",
     "zone.js": "^0.15.0",
-    "zustand": "^5.0.3"
+    "zustand": "^5.0.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
