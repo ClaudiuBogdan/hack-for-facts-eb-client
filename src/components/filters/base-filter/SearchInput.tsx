@@ -31,7 +31,7 @@ export function SearchInput({
     };
 
     return (
-        <div className={cn("relative w-full", className)}>
+        <div className={cn("relative w-full p-0.5", className)}>
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
                 ref={inputRef}
