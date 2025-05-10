@@ -2,7 +2,7 @@ import { useMultiSelectInfinite } from '../base-filter/hooks/useMultiSelectInfin
 import { graphqlRequest } from '@/lib/api/graphql';
 import { useState } from 'react';
 import { SearchInput } from '../base-filter/SearchInput';
-import { OptionItem, PageData } from '../base-filter/interfaces';
+import { BaseListProps, PageData } from '../base-filter/interfaces';
 import { ErrorDisplay } from '../base-filter/ErrorDisplay';
 import { ListContainer } from '../base-filter/ListContainer';
 import { ListOption } from '../base-filter/ListOption';
@@ -15,19 +15,12 @@ export interface UatOption {
     county_name: string;
 }
 
-interface UatListProps {
-    selectedOptions: OptionItem[];
-    toggleSelect: (option: OptionItem) => void;
-    pageSize?: number;
-    className?: string;
-}
-
 export function UatList({
     selectedOptions,
     toggleSelect,
     pageSize = 100,
     className,
-}: UatListProps) {
+}: BaseListProps) {
     const [searchFilter, setSearchFilter] = useState("");
     const {
         items,

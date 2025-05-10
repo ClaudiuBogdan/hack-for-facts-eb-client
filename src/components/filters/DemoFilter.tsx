@@ -5,17 +5,19 @@ import { useState } from "react";
 import { OptionItem } from "./base-filter/interfaces";
 import { UatList } from "./uat-filter";
 import { Card } from "../ui/card";
-import { Building2, ChartBar, EuroIcon, MapPin } from "lucide-react";
+import { Building2, Calendar, ChartBar, EuroIcon, MapPin } from "lucide-react";
 import { EconomicClassificationList } from "./economic-classification-filter";
 import { FunctionalClassificationList } from "./functional-classification-filter";
+import { YearFilter } from "./year-filter";
 
 
 export function DemoFilter() {
+    const [selectedYear, setSelectedYear] = useState<OptionItem[]>([]);
     const [selectedEntities, setSelectedEntities] = useState<OptionItem[]>([]);
     const [selectedUats, setSelectedUats] = useState<OptionItem[]>([]);
     const [selectedEconomicClassifications, setSelectedEconomicClassifications] = useState<OptionItem[]>([]);
     const [selectedFunctionalClassifications, setSelectedFunctionalClassifications] = useState<OptionItem[]>([]);
-    
+
     return (
         <Card className="flex flex-col w-full min-h-full shadow-lg">
             <FilterContainer
@@ -45,6 +47,13 @@ export function DemoFilter() {
                 listComponent={FunctionalClassificationList}
                 selected={selectedFunctionalClassifications}
                 setSelected={setSelectedFunctionalClassifications}
+            />
+            <FilterContainer
+                title="Anul"
+                icon={<Calendar className="w-4 h-4" />}
+                listComponent={YearFilter}
+                selected={selectedYear}
+                setSelected={setSelectedYear}
             />
         </Card>
 

@@ -9,6 +9,13 @@ export interface PageData<T> {
 }
 
 export interface OptionItem {
-    id: string
+    id: string | number
     label: string
+}
+
+export interface BaseListProps {
+    selectedOptions: OptionItem[];
+    toggleSelect: (option: OptionItem) => void;
+    pageSize?: number;
+    className?: string;
 }

@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 interface ListOptionProps {
     onClick: () => void;
     label: string;
-    uniqueIdPart: string;
+    uniqueIdPart: string | number;
     selected: boolean;
     optionHeight: number;
     optionStart: number;

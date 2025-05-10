@@ -1,6 +1,6 @@
-import { LoadingSpinner } from "./LoadingSpinner"; // Make sure this is imported
-import { cn } from "@/lib/utils"; // Make sure this is imported
-import React from "react"; // Make sure this is imported
+import { LoadingSpinner } from "./LoadingSpinner";
+import { cn } from "@/lib/utils";
+import React from "react";
 import { NoResults } from "./NoResults";
 
 interface ListContainerProps {
