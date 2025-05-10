@@ -2,7 +2,7 @@ import { useMultiSelectInfinite } from '../base-filter/hooks/useMultiSelectInfin
 import { graphqlRequest } from '@/lib/api/graphql';
 import { useState } from 'react';
 import { SearchInput } from '../base-filter/SearchInput';
-import { BaseListProps, OptionItem, PageData } from '../base-filter/interfaces';
+import { BaseListProps, PageData } from '../base-filter/interfaces';
 import { ErrorDisplay } from '../base-filter/ErrorDisplay';
 import { ListContainer } from '../base-filter/ListContainer';
 import { ListOption } from '../base-filter/ListOption';

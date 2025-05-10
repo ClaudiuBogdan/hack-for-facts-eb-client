@@ -1,4 +1,4 @@
-import { DemoFilter } from "@/components/filters/DemoFilter";
+import { Filter } from "@/components/filters/Filter";
 import { createLazyFileRoute } from "@tanstack/react-router";
 
 export const Route = createLazyFileRoute("/test")({
@@ -9,7 +9,7 @@ function TestPage() {
     return (
         <div className="flex flex-row">
             <div className="w-[28rem]">
-                <DemoFilter />
+                <Filter />
             </div>
             <div className="h-100">
                 <div className="h-full w-full bg-red-500">

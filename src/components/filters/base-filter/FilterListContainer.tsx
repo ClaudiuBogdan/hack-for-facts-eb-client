@@ -17,7 +17,7 @@ interface FilterContainerProps {
         pageSize: number
     }>;
     selected: OptionItem[];
-    setSelected: (cb: (prev: OptionItem[]) => OptionItem[]) => void;
+    setSelected: React.Dispatch<React.SetStateAction<OptionItem<string | number>[]>>;
     title: string;
     icon: React.ReactNode;
 }

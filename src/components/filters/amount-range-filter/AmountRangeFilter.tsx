@@ -18,6 +18,7 @@ export function AmountRangeFilter({
                     <Input
                         type="number"
                         id="minAmount"
+                        min={0}
                         step={1000}
                         placeholder="Ex: 2000"
                         value={minValue}
@@ -32,6 +33,7 @@ export function AmountRangeFilter({
                 <div className="relative flex items-center px-[1px]">
                     <Input
                         type="number"
+                        min={0}
                         step={1000}
                         id="maxAmount"
                         placeholder="Ex: 4000"

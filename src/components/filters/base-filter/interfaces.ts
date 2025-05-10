@@ -8,8 +8,8 @@ export interface PageData<T> {
     nextOffset: number;
 }
 
-export interface OptionItem {
-    id: string | number
+export interface OptionItem<TID = string | number> {
+    id: TID
     label: string
 }
 
