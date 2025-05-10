@@ -23,7 +23,7 @@ interface FilterContainerProps {
 }
 
 
-export function FilterContainer({ listComponent: ListComponent, title, icon, selected, setSelected }: FilterContainerProps) {
+export function FilterListContainer({ listComponent: ListComponent, title, icon, selected, setSelected }: FilterContainerProps) {
     // State to manage if all selected items are shown or just the compact view (passed to SelectedOptionsDisplay)
     const [showAllSelected, setShowAllSelected] = useState(false);
 

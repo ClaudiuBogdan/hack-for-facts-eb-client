@@ -19,3 +19,11 @@ export interface BaseListProps {
     pageSize?: number;
     className?: string;
 }
+
+export interface BaseListFilterProps {
+    minValue: string | number;
+    maxValue: string | number;
+    onMinValueChange: (value: string) => void;
+    onMaxValueChange: (value: string) => void;
+    className?: string;
+}
