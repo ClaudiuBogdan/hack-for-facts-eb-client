@@ -1,41 +1,36 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { getBudgetLineItems } from "@/lib/api/dataDiscovery";
 import { useDataDiscoveryFilters } from "@/stores/dataDiscoveryFilters";
 import { DataDisplay } from "@/components/dataDiscovery/DataDisplay";
 import { useDebouncedValue } from "@/lib/hooks";
 import { DataDiscoveryLayout } from "@/components/dataDiscovery/DataDiscoveryLayout";
 import { useState, useEffect, useMemo } from "react";
+import { getBudgetLineItems } from "@/lib/api/dataDiscovery";
+import { useFilterSearch } from "@/lib/hooks/useFilterSearch";
 
 export const Route = createLazyFileRoute("/data-discovery/")({
   component: DataDiscoveryPage,
 });
 
 function DataDiscoveryPage() {
-  const { filters } = useDataDiscoveryFilters();
-  // Debounce filters with 500ms delay to prevent excessive API calls
-  const debouncedFilters = useDebouncedValue(filters, 500);
+  const { lineItemFilter } = useFilterSearch();
+  const debouncedFilters = useDebouncedValue(lineItemFilter, 500);
 
-  // Pagination state
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
-  const filterString = useMemo(() => JSON.stringify(debouncedFilters), [debouncedFilters]);
-
-  // Reset to page 1 when filters change
   useEffect(() => {
     setPage(1);
-  }, [filterString]);
+  }, [debouncedFilters]);
 
-  // Query for budget line items with pagination
   const {
-    data: budgetItems,
+    data: budgetItemsData,
     isLoading: isLoadingItems,
     error: itemsError,
   } = useQuery({
     queryKey: [
       "budgetLineItems",
-      JSON.stringify(debouncedFilters),
+      debouncedFilters,
       page,
       pageSize,
     ],
@@ -48,18 +43,31 @@ function DataDiscoveryPage() {
   });
 
   const isLoading = isLoadingItems;
-  const hasError = itemsError;
+  const hasError = !!itemsError;
 
-  // Provide default empty pagination result when loading or error
-  const paginatedBudgetItems = budgetItems || {
-    data: [],
-    totalCount: 0,
-    hasNextPage: false,
-    hasPreviousPage: false,
-    currentPage: page,
-    pageSize,
-    totalPages: 0,
-  };
+  const paginatedBudgetItems = useMemo(() => {
+    if (!budgetItemsData) {
+      return {
+        data: [],
+        totalCount: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+        currentPage: page,
+        pageSize: pageSize,
+        totalPages: 0,
+      };
+    }
+    const totalCount = budgetItemsData.totalCount || 0;
+    return {
+      data: budgetItemsData.data || [],
+      totalCount: totalCount,
+      hasNextPage: budgetItemsData.hasNextPage || false,
+      hasPreviousPage: budgetItemsData.hasPreviousPage || false,
+      currentPage: page,
+      pageSize: pageSize,
+      totalPages: Math.ceil(totalCount / pageSize),
+    };
+  }, [budgetItemsData, page, pageSize]);
 
   const errorMessage = (() => {
     if (itemsError instanceof Error) return itemsError.message;
@@ -67,17 +75,13 @@ function DataDiscoveryPage() {
     return "";
   })();
 
-  // Handle page change
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    // Scroll to top of the table when page changes
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Handle page size change
   const handlePageSizeChange = (newPageSize: number) => {
     setPageSize(newPageSize);
-    // Reset to page 1 when changing page size
     setPage(1);
   };
 

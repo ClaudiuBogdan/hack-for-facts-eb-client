@@ -1,5 +1,5 @@
 import { createLogger } from "../logger";
-import { DataDiscoveryFilter } from "@/stores/dataDiscoveryFilters";
+import { DataDiscoveryFilter, NewDataDiscoveryFilter } from "@/stores/dataDiscoveryFilters";
 import { graphqlRequest } from "./graphql";
 
 const logger = createLogger("data-discovery-api");
@@ -63,7 +63,7 @@ export type AggregatedBudgetData = {
 };
 
 export type GetDataParams = {
-  filters: DataDiscoveryFilter;
+  filters: NewDataDiscoveryFilter;
   page?: number;
   pageSize?: number;
 };
@@ -252,7 +252,6 @@ export async function getEntities({
   logger.info("Fetching entities with filters", { filters, page, pageSize });
 
   try {
-    const { entityFilter } = convertFiltersToGraphQLFormat(filters);
     const offset = (page - 1) * pageSize;
 
     const response = await graphqlRequest<{
@@ -265,7 +264,7 @@ export async function getEntities({
         };
       };
     }>(GET_ENTITIES_QUERY, {
-      filter: Object.keys(entityFilter).length > 0 ? entityFilter : undefined,
+      filter: filters,
       limit: pageSize,
       offset,
     });
@@ -300,8 +299,6 @@ export async function getBudgetLineItems({
   });
 
   try {
-    const { executionLineItemFilter } =
-      convertFiltersToGraphQLFormat(filters);
     const offset = (page - 1) * pageSize;
       const response = await graphqlRequest<{
         executionLineItems: {
@@ -313,7 +310,7 @@ export async function getBudgetLineItems({
           };
         };
       }>(GET_EXECUTION_LINE_ITEMS_QUERY, {
-        filter: executionLineItemFilter,
+        filter: filters,
         limit: pageSize,
         offset,
       });

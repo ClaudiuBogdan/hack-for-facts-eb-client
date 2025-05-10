@@ -1,6 +1,7 @@
-import { useNavigate, useSearch, useRouterState } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { z } from "zod";
+import { NewDataDiscoveryFilter } from "@/stores/dataDiscoveryFilters";
 
 export interface OptionItem<TID = string | number> {
     id: TID;
@@ -39,13 +40,11 @@ const UrlFiltersQuerySchema = z.object({
 
 export const useFilterSearch = () => {
     const navigate = useNavigate();
-    const routerLocation = useRouterState({ select: (s) => s.location });
-    const routePath = routerLocation.pathname;
+    const routePath = "/data-discovery/";
 
     const defaultInternalFiltersJSON = useMemo(() => JSON.stringify(defaultInternalFiltersState), []);
 
     const initialFiltersFromUrl = useSearch({
-        // @ts-expect-error - routePath is a string and we accept it here for TanStack Router.
         from: routePath,
         select: (searchFromUrl: Record<string, unknown>): InternalFiltersState => {
             try {
@@ -158,5 +157,15 @@ export const useFilterSearch = () => {
         selectedAccountTypeOptions: internalFilters.accountTypes as OptionItem[],
         setSelectedAccountTypeOptions: setSelectedAccountTypes as React.Dispatch<React.SetStateAction<OptionItem[]>>,
 
+        lineItemFilter: {
+            entity_cui: internalFilters.entities[0]?.id,
+            functional_code: internalFilters.functionalClassifications[0]?.id,
+            economic_code: internalFilters.economicClassifications[0]?.id,
+            account_category: internalFilters.accountTypes[0]?.id as "ch" | "vn",
+            uat_ids: internalFilters.uats.map(uat => parseInt(uat.id))[0],
+            years: internalFilters.years.map(year => year.id),
+            min_amount: Number(internalFilters.minAmount) || undefined,
+            max_amount: Number(internalFilters.maxAmount) || undefined,
+        } as NewDataDiscoveryFilter
     };
 };

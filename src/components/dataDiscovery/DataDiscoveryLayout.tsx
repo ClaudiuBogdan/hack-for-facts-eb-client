@@ -1,5 +1,4 @@
 import React from "react";
-import { DataDiscoveryFilters } from "./DataDiscoveryFilters";
 import {
   ActiveFiltersBar,
   FilterItem,
@@ -11,6 +10,7 @@ import {
   getUniqueEconomicCategories,
   getUniqueFunctionalCategories,
 } from "@/lib/api/dataDiscovery";
+import { Filter } from "../filters/Filter";
 
 interface DataDiscoveryLayoutProps {
   children: React.ReactNode;
@@ -151,7 +151,7 @@ export function DataDiscoveryLayout({ children }: DataDiscoveryLayoutProps) {
     <div className="flex flex-col gap-4">
       <div className="flex gap-4 flex-col md:flex-row">
         <div className="md:w-72 w-full shrink-0">
-          <DataDiscoveryFilters />
+          <Filter />
         </div>
         <div className="flex-1">
           {hasActiveFilters && (
