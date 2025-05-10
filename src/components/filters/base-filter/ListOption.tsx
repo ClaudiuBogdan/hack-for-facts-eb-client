@@ -56,7 +56,7 @@ export function ListOption({
                     htmlFor={checkboxId}
                     id={`${checkboxId}-label`}
                     title={label}
-                    className="text-xs leading-snug cursor-pointer select-none"
+                    className="text-xs leading-snug cursor-pointer select-none line-clamp-3"
                 >
                     {label}
                 </Label>
