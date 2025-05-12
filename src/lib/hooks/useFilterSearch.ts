@@ -1,4 +1,4 @@
-import { useMemo } from "react"; // useEffect and useMemo might still be useful for derived state or effects not directly tied to store updates.
+import { useMemo } from "react"; // useEffect and useMemo might still be useful for derived state or effects not tied to store updates.
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { z } from 'zod';
@@ -33,6 +33,8 @@ const InternalFiltersObjectSchema = z.object({
     minAmount: z.string().optional().default(""),
     maxAmount: z.string().optional().default(""),
     accountTypes: z.array(GenericOptionItemSchema).optional().default([]),
+    page: z.number().optional().default(1),
+    pageSize: z.number().optional().default(25),
     sort: z.object({
         by: z.enum(['line_item_id', 'report_id', 'entity_cui', 'funding_source_id', 'functional_code', 'economic_code', 'account_category', 'amount', 'program_code', 'year']).optional().nullable(),
         order: z.enum(["asc", "desc"]).optional().nullable(),
@@ -54,6 +56,8 @@ interface FilterStoreActions {
     setMinAmount: (updater: string | ((prev: string) => string)) => void;
     setMaxAmount: (updater: string | ((prev: string) => string)) => void;
     setSelectedAccountTypes: (updater: GenericOptionItem[] | ((prev: GenericOptionItem[]) => GenericOptionItem[])) => void;
+    setPage: (updater: number | ((prev: number) => number)) => void;
+    setPageSize: (updater: number | ((prev: number) => number)) => void;
     setSort: (updater: SortOrder | ((prev: SortOrder) => SortOrder)) => void;
     resetFilters: () => void;
 }
@@ -151,6 +155,12 @@ export const useFilterStore = create<FilterStore>()(
             setSelectedAccountTypes: (updater) => set(state => ({
                 accountTypes: typeof updater === 'function' ? updater(state.accountTypes) : updater,
             })),
+            setPage: (updater) => set(state => ({
+                page: typeof updater === 'function' ? updater(state.page) : updater,
+            })),
+            setPageSize: (updater) => set(state => ({
+                pageSize: typeof updater === 'function' ? updater(state.pageSize) : updater,
+            })),
             setSort: (updater) => set(state => ({
                 sort: typeof updater === 'function' ? updater(state.sort) : updater,
             })),
@@ -173,6 +183,8 @@ export const useFilterSearch = () => {
         minAmount,
         maxAmount,
         accountTypes,
+        page,
+        pageSize,
         sort,
         setSort,
         setSelectedYears,
@@ -183,6 +195,8 @@ export const useFilterSearch = () => {
         setMinAmount,
         setMaxAmount,
         setSelectedAccountTypes,
+        setPage,
+        setPageSize,
     } = useFilterStore();
 
     const filter = useMemo((): LineItemsFilter => ({
@@ -210,6 +224,8 @@ export const useFilterSearch = () => {
         minAmount: minAmount,
         maxAmount: maxAmount,
         selectedAccountTypeOptions: accountTypes as OptionItem[],
+        page,
+        pageSize,
         sort,
 
         // Setters (actions)
@@ -221,6 +237,8 @@ export const useFilterSearch = () => {
         setMinAmount,
         setMaxAmount,
         setSelectedAccountTypeOptions: setSelectedAccountTypes as OptionSetter,
+        setPage,
+        setPageSize,
         setSort,
 
         filter,

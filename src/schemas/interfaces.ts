@@ -17,6 +17,8 @@ export type LineItemsFilter = {
   start_year?: number;
   end_year?: number;
   search?: string;
+  page?: number;
+  pageSize?: number;
 };
 
 export interface SortOrder {

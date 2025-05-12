@@ -196,7 +196,7 @@ export function DataTable({ data, isLoading, sort, onSortColumn }: DataTableProp
 
   if (isLoading) {
     return (
-      <div className="rounded-md border space-y-2 p-4">
+      <div className="rounded-md border space-y-2 p-4 bg-card">
         <div className="h-8 bg-muted rounded animate-pulse" />
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="h-12 bg-muted/50 rounded animate-pulse" />
@@ -206,19 +206,29 @@ export function DataTable({ data, isLoading, sort, onSortColumn }: DataTableProp
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
+    <div className="rounded-md border bg-card overflow-x-auto scrollbar-thin scrollbar-thumb-muted/40 scrollbar-track-transparent">
+      <Table className="min-w-[700px] md:min-w-full text-sm md:text-base">
+        <TableHeader className="sticky top-0 z-10 bg-card/95 backdrop-blur border-b">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
+                <TableHead
+                  key={header.id}
+                  className="font-bold px-2 py-3 md:px-4 md:py-3 whitespace-nowrap text-xs md:text-sm bg-card/95"
+                  aria-sort={
+                    sort.by && header.column.id === sort.by
+                      ? sort.order === "asc"
+                        ? "ascending"
+                        : "descending"
+                      : undefined
+                  }
+                >
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                 </TableHead>
               ))}
             </TableRow>
@@ -226,14 +236,21 @@ export function DataTable({ data, isLoading, sort, onSortColumn }: DataTableProp
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
+            table.getRowModel().rows.map((row, rowIdx) => (
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
+                className={`transition-colors ${rowIdx % 2 === 0 ? "bg-background" : "bg-muted/30"} hover:bg-primary/5`}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  <TableCell
+                    key={cell.id}
+                    className="px-2 py-2 md:px-4 md:py-3 max-w-[140px] md:max-w-[220px] truncate align-middle text-xs md:text-sm"
+                    title={String(cell.getValue())}
+                  >
+                    <span className="block truncate" tabIndex={0} aria-label={String(cell.getValue())}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </span>
                   </TableCell>
                 ))}
               </TableRow>
@@ -247,7 +264,6 @@ export function DataTable({ data, isLoading, sort, onSortColumn }: DataTableProp
           )}
         </TableBody>
       </Table>
-      {/* Removed pagination controls */}
     </div>
   );
 }
