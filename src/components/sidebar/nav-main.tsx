@@ -1,6 +1,4 @@
-"use client";
-
-import { LayoutDashboard, AlertTriangle, BarChart2 } from "lucide-react";
+import { LayoutDashboard, BarChart2 } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";

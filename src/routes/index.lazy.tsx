@@ -8,8 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  BarChart3,
-  AlertTriangle,
   ArrowRight,
   PieChart,
   Database,
