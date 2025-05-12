@@ -5,20 +5,26 @@ import { DataDiscoveryLayout } from "@/components/dataDiscovery/DataDiscoveryLay
 import { useState, useEffect, useMemo } from "react";
 import { getBudgetLineItems } from "@/lib/api/dataDiscovery";
 import { useFilterSearch } from "@/lib/hooks/useFilterSearch";
+import { SortOrder } from "@/schemas/interfaces";
 
 export const Route = createLazyFileRoute("/data-discovery/")({
   component: DataDiscoveryPage,
 });
 
 function DataDiscoveryPage() {
-  const { filter, filterHash } = useFilterSearch();
+  const {
+    filter,
+    filterHash,
+    sort,
+    setSort,
+  } = useFilterSearch();
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     setPage(1);
-  }, [filter]);
+  }, [filterHash, sort]);
 
   const {
     data: budgetItemsData,
@@ -28,12 +34,14 @@ function DataDiscoveryPage() {
     queryKey: [
       "budgetLineItems",
       filterHash,
+      sort,
       page,
       pageSize,
     ],
     queryFn: () =>
       getBudgetLineItems({
         filters: filter,
+        sort,
         page,
         pageSize,
       }),
@@ -82,6 +90,17 @@ function DataDiscoveryPage() {
     setPage(1);
   };
 
+  const handleSortColumn = (columnId: string) => {
+    const sortBy = mapColumnIdToSortBy(columnId);
+    if (sort.by !== sortBy) {
+      setSort({ by: sortBy, order: 'asc' });
+    } else if (sort.order === 'asc') {
+      setSort({ by: sortBy, order: 'desc' });
+    } else {
+      setSort({by: null, order: null});
+    }
+  };
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       <div>
@@ -108,9 +127,30 @@ function DataDiscoveryPage() {
             isLoading={isLoading}
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
+            sort={sort}
+            onSortColumn={handleSortColumn}
           />
         )}
       </DataDiscoveryLayout>
     </div>
   );
 }
+
+const mapColumnIdToSortBy = (columnId: string): SortOrder['by'] => {
+  switch (columnId) {
+    case "entity_name":
+      return "entity_cui";
+    case "reporting_year":
+      return "year";
+    case "amount":
+      return "amount";
+    case "account_category":
+      return "account_category";
+    case "functional_name":
+      return "functional_code";
+    case "economic_name":
+      return "economic_code";
+    default:
+      return null;
+  }
+};

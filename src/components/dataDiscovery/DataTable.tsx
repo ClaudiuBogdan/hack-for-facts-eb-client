@@ -15,75 +15,17 @@ import {
 import { BudgetLineItem } from "@/lib/api/dataDiscovery";
 import { formatCurrency } from "@/lib/utils";
 import { useMemo } from "react";
+import { ChevronUp, ChevronDown, ArrowUpDown } from "lucide-react";
+import { SortOrder } from "@/schemas/interfaces";
 
 interface DataTableProps {
   data: BudgetLineItem[];
   isLoading: boolean;
+  sort: SortOrder;
+  onSortColumn: (columnId: string) => void;
 }
 
-const columns: ColumnDef<BudgetLineItem>[] = [
-  {
-    accessorKey: "entity_name",
-    header: "Entity",
-  },
-  {
-    accessorKey: "reporting_year",
-    header: "Year",
-  },
-  {
-    accessorKey: "account_category",
-    header: "Account Category",
-    cell: ({ row }) => {
-      const accountCategory = row.getValue("account_category");
-      const accountLabel = accountCategory === "ch" ? "Cheltuieli" : accountCategory === "vn" ? "Venituri" : "Altele";
-      return (
-        <div
-          className="max-w-[200px] truncate"
-          title={String(accountLabel)}
-        >
-          {accountLabel}
-        </div>
-      )
-    }
-  },
-  {
-    accessorKey: "functional_name",
-    header: "Functional Category",
-    cell: ({ row }) => (
-      <div
-        className="max-w-[200px] truncate"
-        title={String(row.getValue("functional_name"))}
-      >
-        <span className="font-mono text-xs text-muted-foreground mr-1">
-          {row.original.functional_code}
-        </span>
-        {row.getValue("functional_name")}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "economic_name",
-    header: "Economic Category",
-    cell: ({ row }) => (
-      <div
-        className="max-w-[200px] truncate"
-        title={String(row.getValue("economic_name"))}
-      >
-        <span className="font-mono text-xs text-muted-foreground mr-1">
-          {row.original.economic_code}
-        </span>
-        {row.getValue("economic_name")}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "amount",
-    header: "Amount",
-    cell: ({ row }) => formatCurrency(row.getValue("amount")),
-  },
-];
-
-export function DataTable({ data, isLoading }: DataTableProps) {
+export function DataTable({ data, isLoading, sort, onSortColumn }: DataTableProps) {
   // Process the data to ensure we have the fields we need
   const processedData = useMemo(
     () =>
@@ -100,6 +42,149 @@ export function DataTable({ data, isLoading }: DataTableProps) {
           "-",
       })),
     [data]
+  );
+
+  // Define columns with sortable headers
+  const columns = useMemo<ColumnDef<BudgetLineItem>[]>(
+    () => [
+      {
+        accessorKey: "entity_name",
+        header: () => (
+          <div
+            className="flex items-center gap-1 cursor-pointer"
+            onClick={() => onSortColumn("entity_name")}
+          >
+            Entity
+            {sort.by === "entity_cui" ? (
+              sort.order === "asc" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+            ) : (
+              <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+            )}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "reporting_year",
+        header: () => (
+          <div
+            className="flex items-center gap-1 cursor-pointer"
+            onClick={() => onSortColumn("reporting_year")}
+          >
+            Year
+            {sort.by === "year" ? (
+              sort.order === "asc" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+            ) : (
+              <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+            )}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "account_category",
+        header: () => (
+          <div
+            className="flex items-center gap-1 cursor-pointer"
+            onClick={() => onSortColumn("account_category")}
+          >
+            Account Category
+            {sort.by === "account_category" ? (
+              sort.order === "asc" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+            ) : (
+              <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+            )}
+          </div>
+        ),
+        cell: ({ row }) => {
+          const accountCategory = row.getValue("account_category");
+          const accountLabel =
+            accountCategory === "ch"
+              ? "Cheltuieli"
+              : accountCategory === "vn"
+                ? "Venituri"
+                : "Altele";
+          return (
+            <div
+              className="max-w-[200px] truncate"
+              title={String(accountLabel)}
+            >
+              {accountLabel}
+            </div>
+          );
+        },
+      },
+      {
+        accessorKey: "functional_name",
+        header: () => (
+          <div
+            className="flex items-center gap-1 cursor-pointer"
+            onClick={() => onSortColumn("functional_name")}
+          >
+            Functional Category
+            {sort.by === "functional_code" ? (
+              sort.order === "asc" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+            ) : (
+              <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+            )}
+          </div>
+        ),
+        cell: ({ row }) => (
+          <div
+            className="max-w-[200px] truncate"
+            title={String(row.getValue("functional_name"))}
+          >
+            <span className="font-mono text-xs text-muted-foreground mr-1">
+              {row.original.functional_code}
+            </span>
+            {row.getValue("functional_name")}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "economic_name",
+        header: () => (
+          <div
+            className="flex items-center gap-1 cursor-pointer"
+            onClick={() => onSortColumn("economic_name")}
+          >
+            Economic Category
+            {sort.by === "economic_code" ? (
+              sort.order === "asc" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+            ) : (
+              <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+            )}
+          </div>
+        ),
+        cell: ({ row }) => (
+          <div
+            className="max-w-[200px] truncate"
+            title={String(row.getValue("economic_name"))}
+          >
+            <span className="font-mono text-xs text-muted-foreground mr-1">
+              {row.original.economic_code}
+            </span>
+            {row.getValue("economic_name")}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "amount",
+        header: () => (
+          <div
+            className="flex items-center gap-1 cursor-pointer"
+            onClick={() => onSortColumn("amount")}
+          >
+            Amount
+            {sort.by === "amount" ? (
+              sort.order === "asc" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />
+            ) : (
+              <ArrowUpDown className="w-4 h-4 text-muted-foreground" />
+            )}
+          </div>
+        ),
+        cell: ({ row }) => formatCurrency(row.getValue("amount")),
+      },
+    ],
+    [sort.by, sort.order, onSortColumn]
   );
 
   const table = useReactTable({
@@ -131,9 +216,9 @@ export function DataTable({ data, isLoading }: DataTableProps) {
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
                 </TableHead>
               ))}
             </TableRow>

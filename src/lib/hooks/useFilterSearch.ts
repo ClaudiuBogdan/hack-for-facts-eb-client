@@ -2,7 +2,7 @@ import { useMemo } from "react"; // useEffect and useMemo might still be useful 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { z } from 'zod';
-import { LineItemsFilter } from "@/schemas/interfaces";
+import { LineItemsFilter, SortOrder } from "@/schemas/interfaces";
 import { generateHash } from "../utils";
 
 export interface OptionItem<TID = string | number> {
@@ -33,6 +33,10 @@ const InternalFiltersObjectSchema = z.object({
     minAmount: z.string().optional().default(""),
     maxAmount: z.string().optional().default(""),
     accountTypes: z.array(GenericOptionItemSchema).optional().default([]),
+    sort: z.object({
+        by: z.enum(['line_item_id', 'report_id', 'entity_cui', 'funding_source_id', 'functional_code', 'economic_code', 'account_category', 'amount', 'program_code', 'year']).optional().nullable(),
+        order: z.enum(["asc", "desc"]).optional().nullable(),
+    }).optional().default({ by: null, order: null }),
 });
 export type InternalFiltersState = z.infer<typeof InternalFiltersObjectSchema>;
 
@@ -50,7 +54,8 @@ interface FilterStoreActions {
     setMinAmount: (updater: string | ((prev: string) => string)) => void;
     setMaxAmount: (updater: string | ((prev: string) => string)) => void;
     setSelectedAccountTypes: (updater: GenericOptionItem[] | ((prev: GenericOptionItem[]) => GenericOptionItem[])) => void;
-    resetFilters: () => void; // Can be added if explicit reset to default is needed
+    setSort: (updater: SortOrder | ((prev: SortOrder) => SortOrder)) => void;
+    resetFilters: () => void;
 }
 
 type FilterStore = InternalFiltersState & FilterStoreActions;
@@ -120,8 +125,7 @@ const urlQueryStorage = {
 export const useFilterStore = create<FilterStore>()(
     persist(
         (set) => ({
-            ...defaultInternalFiltersState, // Initial state if nothing in storage
-
+            ...defaultInternalFiltersState,
             // Actions
             setSelectedYears: (updater) => set(state => ({
                 years: typeof updater === 'function' ? updater(state.years) : updater,
@@ -147,6 +151,9 @@ export const useFilterStore = create<FilterStore>()(
             setSelectedAccountTypes: (updater) => set(state => ({
                 accountTypes: typeof updater === 'function' ? updater(state.accountTypes) : updater,
             })),
+            setSort: (updater) => set(state => ({
+                sort: typeof updater === 'function' ? updater(state.sort) : updater,
+            })),
             resetFilters: () => set(defaultInternalFiltersState),
         }),
         {
@@ -166,6 +173,8 @@ export const useFilterSearch = () => {
         minAmount,
         maxAmount,
         accountTypes,
+        sort,
+        setSort,
         setSelectedYears,
         setSelectedEntities,
         setSelectedUats,
@@ -201,6 +210,7 @@ export const useFilterSearch = () => {
         minAmount: minAmount,
         maxAmount: maxAmount,
         selectedAccountTypeOptions: accountTypes as OptionItem[],
+        sort,
 
         // Setters (actions)
         setSelectedYearOptions: setSelectedYears as OptionSetter,
@@ -211,6 +221,7 @@ export const useFilterSearch = () => {
         setMinAmount,
         setMaxAmount,
         setSelectedAccountTypeOptions: setSelectedAccountTypes as OptionSetter,
+        setSort,
 
         filter,
         filterHash,

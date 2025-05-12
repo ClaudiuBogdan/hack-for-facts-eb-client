@@ -18,3 +18,19 @@ export type LineItemsFilter = {
   end_year?: number;
   search?: string;
 };
+
+export interface SortOrder {
+  by?:
+  'line_item_id' |
+  'report_id' |
+  'entity_cui' |
+  'funding_source_id' |
+  'functional_code' |
+  'economic_code' |
+  'account_category' |
+  'amount' |
+  'program_code' |
+  'year' |
+  null;
+  order?: 'asc' | 'desc' | null;
+}

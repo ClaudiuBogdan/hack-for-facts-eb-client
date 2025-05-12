@@ -1,5 +1,5 @@
 import { createLogger } from "../logger";
-import { LineItemsFilter } from "@/schemas/interfaces";
+import { LineItemsFilter, SortOrder } from "@/schemas/interfaces";
 import { graphqlRequest } from "./graphql";
 
 const logger = createLogger("data-discovery-api");
@@ -61,9 +61,9 @@ export type AggregatedBudgetData = {
   percentage: number;
   children?: AggregatedBudgetData[];
 };
-
 export type GetDataParams = {
   filters: LineItemsFilter;
+  sort?: SortOrder;
   page?: number;
   pageSize?: number;
 };
@@ -104,8 +104,8 @@ const GET_ENTITIES_QUERY = `
 
 // Query to get execution line items with filtering
 const GET_EXECUTION_LINE_ITEMS_QUERY = `
-  query GetExecutionLineItems($filter: ExecutionLineItemFilter, $limit: Int, $offset: Int) {
-    executionLineItems(filter: $filter, limit: $limit, offset: $offset) {
+  query GetExecutionLineItems($filter: ExecutionLineItemFilter, $sort: SortOrder, $limit: Int, $offset: Int) {
+    executionLineItems(filter: $filter, sort: $sort, limit: $limit, offset: $offset) {
       nodes {
         line_item_id
         report_id
@@ -181,6 +181,7 @@ export async function getEntities({
 
 export async function getBudgetLineItems({
   filters,
+  sort,
   page = 1,
   pageSize = 100,
 }: GetDataParams): Promise<PaginatedResult<BudgetLineItem>> {
@@ -188,47 +189,50 @@ export async function getBudgetLineItems({
     filters,
     page,
     pageSize,
+    sort,
   });
 
   try {
     const offset = (page - 1) * pageSize;
-      const response = await graphqlRequest<{
-        executionLineItems: {
-          nodes: BudgetLineItem[];
-          pageInfo: {
-            totalCount: number;
-            hasNextPage: boolean;
-            hasPreviousPage: boolean;
-          };
+    const response = await graphqlRequest<{
+      executionLineItems: {
+        nodes: BudgetLineItem[];
+        pageInfo: {
+          totalCount: number;
+          hasNextPage: boolean;
+          hasPreviousPage: boolean;
         };
-      }>(GET_EXECUTION_LINE_ITEMS_QUERY, {
-        filter: filters,
-        limit: pageSize,
-        offset,
-      });
-
-      const { nodes, pageInfo } = response.executionLineItems;
-      const totalPages = Math.ceil(pageInfo.totalCount / pageSize);
-
-      // Transform response to match our expected format
-      const transformedData = nodes.map((item) => ({
-        ...item,
-        entity_name: item.report?.entity?.name,
-        reporting_year: item.report?.reporting_year || 0,
-        reporting_period: item.report?.reporting_period || "",
-        functional_name: item.functionalClassification?.functional_name,
-        economic_name: item.economicClassification?.economic_name,
-      }));
-
-      return {
-        data: transformedData,
-        totalCount: pageInfo.totalCount,
-        hasNextPage: pageInfo.hasNextPage,
-        hasPreviousPage: pageInfo.hasPreviousPage,
-        currentPage: page,
-        pageSize,
-        totalPages,
       };
+    }>(GET_EXECUTION_LINE_ITEMS_QUERY, {
+      filter: filters,
+      sort: sort?.by ? sort : undefined,
+      limit: pageSize,
+      offset,
+    });
+
+    const { nodes, pageInfo } = response.executionLineItems;
+    const totalPages = Math.ceil(pageInfo.totalCount / pageSize);
+
+    // Transform response to match our expected format
+    const data = nodes.map((item) => ({
+      ...item,
+      entity_name: item.report?.entity?.name,
+      reporting_year: item.report?.reporting_year || 0,
+      reporting_period: item.report?.reporting_period || "",
+      functional_name: item.functionalClassification?.functional_name,
+      economic_name: item.economicClassification?.economic_name,
+    }));
+
+
+    return {
+      data,
+      totalCount: pageInfo.totalCount,
+      hasNextPage: pageInfo.hasNextPage,
+      hasPreviousPage: pageInfo.hasPreviousPage,
+      currentPage: page,
+      pageSize,
+      totalPages,
+    };
   } catch (error) {
     logger.error("Error fetching budget line items", { error });
     // Return empty paginated result in case of error
@@ -255,6 +259,10 @@ export async function getAggregatedData({
       filters,
       page: 1,
       pageSize: 500, // Limit to 500 items for aggregation
+      sort: {
+        by: "amount",
+        order: "desc",
+      },
     });
 
     const budgetItems = result.data;
@@ -390,7 +398,7 @@ export async function getUniqueCounties(): Promise<
       filters: {
       },
       page: 1,
-      pageSize: 250, // Fetch more entities to get a wider range of counties
+      pageSize: 250 // Fetch more entities to get a wider range of countie
     });
 
     const uniqueCodes = new Set<string>();
