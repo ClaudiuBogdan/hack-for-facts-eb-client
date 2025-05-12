@@ -66,7 +66,7 @@ export function EntityList({
     });
 
     const showNoResults = !isLoading && !isError && items.length === 0 && searchFilter.length > 0;
-
+    const isEmpty = !isLoading && !isError && items.length === 0 && !searchFilter;
     return (
         <div className={cn("w-full flex flex-col space-y-3", className)}>
             <SearchInput
@@ -89,7 +89,8 @@ export function EntityList({
                     height={rowVirtualizer.getTotalSize()}
                     isFetchingNextPage={isFetchingNextPage}
                     isLoading={isLoading}
-                    isEmpty={showNoResults}
+                    isSearchResultsEmpty={showNoResults}
+                    isEmpty={isEmpty}
                     className="min-h-[10rem]" // Ensure a minimum height
                 >
                     {rowVirtualizer.getVirtualItems().length > 0 ? (

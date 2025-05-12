@@ -1,8 +1,8 @@
 import { EntityList } from "./entity-filter/EntityList";
 import { FilterListContainer } from "./base-filter/FilterListContainer";
 import { UatList } from "./uat-filter";
-import { Card } from "../ui/card";
-import { ArrowUpDown, Building2, Calendar, ChartBar, EuroIcon, MapPin, SlidersHorizontal } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { ArrowUpDown, Building2, Calendar, ChartBar, EuroIcon, MapPin, SlidersHorizontal, XCircle } from "lucide-react";
 import { EconomicClassificationList } from "./economic-classification-filter";
 import { FunctionalClassificationList } from "./functional-classification-filter";
 import { YearFilter } from "./year-filter";
@@ -10,6 +10,7 @@ import { AmountRangeFilter } from "./amount-range-filter";
 import { FilterRangeContainer } from "./base-filter/FilterRangeContainer";
 import { AccountTypeFilter } from "./account-type-filter/AccountTypeFilter";
 import { useFilterSearch } from "../../lib/hooks/useFilterSearch";
+import { Button } from "../ui/button";
 
 export function Filter() {
     const {
@@ -31,59 +32,94 @@ export function Filter() {
         setSelectedAccountTypeOptions,
     } = useFilterSearch();
 
+    const clearAllFilters = () => {
+        setSelectedYearOptions([]);
+        setSelectedEntityOptions([]);
+        setSelectedUatOptions([]);
+        setSelectedEconomicClassificationOptions([]);
+        setSelectedFunctionalClassificationOptions([]);
+        setMinAmount('');
+        setMaxAmount('');
+        setSelectedAccountTypeOptions([]);
+    };
+
+    const totalSelectedFilters = [
+        selectedYearOptions,
+        selectedEntityOptions,
+        selectedUatOptions,
+        selectedEconomicClassificationOptions,
+        selectedFunctionalClassificationOptions,
+        selectedAccountTypeOptions,
+    ].reduce((count, options) => count + options.length, 0) +
+    (minAmount !== undefined && minAmount !== '' ? 1 : 0) +
+    (maxAmount !== undefined && maxAmount !== '' ? 1 : 0);
+
     return (
-        <Card className="flex flex-col w-full min-h-full shadow-lg py-8">
-            <FilterListContainer
-                title="Entitati Publice"
-                icon={<Building2 className="w-4 h-4" />}
-                listComponent={EntityList}
-                selected={selectedEntityOptions}
-                setSelected={setSelectedEntityOptions}
-            />
-            <FilterListContainer
-                title="Unitati Administrativ Teritoriale (UAT)"
-                icon={<MapPin className="w-4 h-4" />}
-                listComponent={UatList}
-                selected={selectedUatOptions}
-                setSelected={setSelectedUatOptions}
-            />
-            <FilterListContainer
-                title="Clasificare Economica"
-                icon={<EuroIcon className="w-4 h-4" />}
-                listComponent={EconomicClassificationList}
-                selected={selectedEconomicClassificationOptions}
-                setSelected={setSelectedEconomicClassificationOptions}
-            />
-            <FilterListContainer
-                title="Clasificare Functionala"
-                icon={<ChartBar className="w-4 h-4" />}
-                listComponent={FunctionalClassificationList}
-                selected={selectedFunctionalClassificationOptions}
-                setSelected={setSelectedFunctionalClassificationOptions}
-            />
-            <FilterListContainer
-                title="Anul"
-                icon={<Calendar className="w-4 h-4" />}
-                listComponent={YearFilter}
-                selected={selectedYearOptions}
-                setSelected={setSelectedYearOptions}
-            />
-            <FilterRangeContainer
-                title="Interval Valoare"
-                icon={<SlidersHorizontal className="w-4 h-4" />}
-                rangeComponent={AmountRangeFilter}
-                minValue={minAmount}
-                onMinValueChange={setMinAmount}
-                maxValue={maxAmount}
-                onMaxValueChange={setMaxAmount}
-            />
-            <FilterListContainer
-                title="Venituri/Cheltuieli"
-                icon={<ArrowUpDown className="w-4 h-4" />}
-                listComponent={AccountTypeFilter}
-                selected={selectedAccountTypeOptions}
-                setSelected={setSelectedAccountTypeOptions}
-            />
+        <Card className="flex flex-col w-full min-h-full shadow-lg">
+            <CardHeader className="py-4 px-6 border-b">
+                <div className="flex justify-between items-center">
+                    <CardTitle className="text-lg font-semibold">Filtre</CardTitle>
+                    {totalSelectedFilters > 0 && (
+                        <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-sm">
+                            <XCircle className="w-4 h-4 mr-1" />
+                            Clear all ({totalSelectedFilters})
+                        </Button>
+                    )}
+                </div>
+            </CardHeader>
+            <CardContent className="flex flex-col flex-grow p-0">
+                <FilterListContainer
+                    title="Entitati Publice"
+                    icon={<Building2 className="w-4 h-4" />}
+                    listComponent={EntityList}
+                    selected={selectedEntityOptions}
+                    setSelected={setSelectedEntityOptions}
+                />
+                <FilterListContainer
+                    title="Unitati Administrativ Teritoriale (UAT)"
+                    icon={<MapPin className="w-4 h-4" />}
+                    listComponent={UatList}
+                    selected={selectedUatOptions}
+                    setSelected={setSelectedUatOptions}
+                />
+                <FilterListContainer
+                    title="Clasificare Economica"
+                    icon={<EuroIcon className="w-4 h-4" />}
+                    listComponent={EconomicClassificationList}
+                    selected={selectedEconomicClassificationOptions}
+                    setSelected={setSelectedEconomicClassificationOptions}
+                />
+                <FilterListContainer
+                    title="Clasificare Functionala"
+                    icon={<ChartBar className="w-4 h-4" />}
+                    listComponent={FunctionalClassificationList}
+                    selected={selectedFunctionalClassificationOptions}
+                    setSelected={setSelectedFunctionalClassificationOptions}
+                />
+                <FilterListContainer
+                    title="Anul"
+                    icon={<Calendar className="w-4 h-4" />}
+                    listComponent={YearFilter}
+                    selected={selectedYearOptions}
+                    setSelected={setSelectedYearOptions}
+                />
+                <FilterRangeContainer
+                    title="Interval Valoare"
+                    icon={<SlidersHorizontal className="w-4 h-4" />}
+                    rangeComponent={AmountRangeFilter}
+                    minValue={minAmount}
+                    onMinValueChange={setMinAmount}
+                    maxValue={maxAmount}
+                    onMaxValueChange={setMaxAmount}
+                />
+                <FilterListContainer
+                    title="Venituri/Cheltuieli"
+                    icon={<ArrowUpDown className="w-4 h-4" />}
+                    listComponent={AccountTypeFilter}
+                    selected={selectedAccountTypeOptions}
+                    setSelected={setSelectedAccountTypeOptions}
+                />
+            </CardContent>
         </Card>
     );
 }

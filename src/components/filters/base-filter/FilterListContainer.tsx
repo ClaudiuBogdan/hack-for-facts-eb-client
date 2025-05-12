@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { FunctionComponent, useState } from "react";
-import { cn } from "@/lib/utils"; // Your utility for classnames
-import { SelectedOptionsDisplay } from "./SelectedOptionsDisplay"; // The new component
+import { cn } from "@/lib/utils";
+import { SelectedOptionsDisplay } from "./SelectedOptionsDisplay";
 import { OptionItem } from "./interfaces";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
@@ -64,7 +64,7 @@ export function FilterListContainer({ listComponent: ListComponent, title, icon,
     return (
         <Card className={cn("w-full max-w-md shadow-none flex flex-col rounded-none")}>
             <Accordion type="single" collapsible className="w-full px-4">
-                <AccordionItem value="item-1">
+                <AccordionItem value="item-1" className="border-none">
                     <AccordionTrigger>
                         <CardHeader className="flex flex-row items-center gap-2 p-0">
                             <div className="w-4 h-4 mt-1">
