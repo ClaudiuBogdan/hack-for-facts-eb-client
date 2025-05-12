@@ -32,7 +32,7 @@ export function Filter() {
     } = useFilterSearch();
 
     return (
-        <Card className="flex flex-col w-full min-h-full shadow-lg pb-8">
+        <Card className="flex flex-col w-full min-h-full shadow-lg py-8">
             <FilterListContainer
                 title="Entitati Publice"
                 icon={<Building2 className="w-4 h-4" />}
