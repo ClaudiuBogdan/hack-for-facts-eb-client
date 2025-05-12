@@ -26,7 +26,7 @@ interface UatMapProps {
 const defaultCenter: LatLngExpression = [45.9432, 24.9668]; // Center of Romania
 const defaultZoom = 7;
 
-const defaultStyle: L.PathOptions = {
+export const defaultStyle: L.PathOptions = {
   fillColor: '#3388ff', // Default blue fill
   weight: 1,
   opacity: 1,
@@ -39,6 +39,7 @@ const highlightStyle: L.PathOptions = {
   color: '#666',
   fillOpacity: 0.7,
 };
+
 
 export const UatMap: React.FC<UatMapProps> = ({
   onUatClick,
