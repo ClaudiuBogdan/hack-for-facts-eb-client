@@ -16,8 +16,6 @@ function DataDiscoveryPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
-  console.log("hash",filterHash);
-  
   useEffect(() => {
     setPage(1);
   }, [filter]);
@@ -29,7 +27,7 @@ function DataDiscoveryPage() {
   } = useQuery({
     queryKey: [
       "budgetLineItems",
-      filter,
+      filterHash,
       page,
       pageSize,
     ],

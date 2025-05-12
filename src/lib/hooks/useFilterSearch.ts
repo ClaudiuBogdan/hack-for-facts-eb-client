@@ -177,11 +177,11 @@ export const useFilterSearch = () => {
     } = useFilterStore();
 
     const filter = useMemo((): LineItemsFilter => ({
-        entity_cui: entities[0]?.id,
-        functional_code: functionalClassifications[0]?.id,
-        economic_code: economicClassifications[0]?.id,
-        account_category: accountTypes[0]?.id as "ch" | "vn", // Ensure id type matches
-        uat_id: uats.map(uat => parseInt(uat.id, 10))[0],
+        entity_cuis: entities.map(entity => entity.id),
+        functional_codes: functionalClassifications.map(classification => classification.id),
+        economic_codes: economicClassifications.map(classification => classification.id),
+        account_categories: accountTypes.map(type => type.id as "vn" | "ch"),
+        uat_ids: uats.map(uat => parseInt(uat.id, 10)),
         years: years.map(year => year.id),
         min_amount: minAmount ? Number(minAmount) : undefined,
         max_amount: maxAmount ? Number(maxAmount) : undefined,
