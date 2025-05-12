@@ -19,11 +19,11 @@ const mainItems = [
     url: "/",
     icon: LayoutDashboard,
   },
-  {
-    title: "Anomalies",
-    url: "/anomalies",
-    icon: AlertTriangle,
-  },
+  // {
+  //   title: "Anomalies",
+  //   url: "/anomalies",
+  //   icon: AlertTriangle,
+  // },
   {
     title: "Data Discovery",
     url: "/data-discovery",

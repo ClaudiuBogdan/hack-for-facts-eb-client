@@ -27,7 +27,7 @@ function Index() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Anomaly Detection Card */}
-        <Card className="overflow-hidden transition-all hover:shadow-md hover:border-primary/50 group">
+        {/* <Card className="overflow-hidden transition-all hover:shadow-md hover:border-primary/50 group">
           <Link to="/anomalies" className="block">
             <CardHeader className="pb-2 space-y-1">
               <div className="flex items-center gap-2">
@@ -69,7 +69,7 @@ function Index() {
               </div>
             </CardFooter>
           </Link>
-        </Card>
+        </Card> */}
 
         {/* Data Discovery Card */}
         <Card className="overflow-hidden transition-all hover:shadow-md hover:border-primary/50 group">
@@ -91,11 +91,11 @@ function Index() {
             <CardContent className="pb-0">
               <div className="grid grid-cols-2 gap-4 mt-2 mb-6">
                 <div className="flex flex-col gap-1">
-                  <div className="text-2xl font-bold">42</div>
+                  <div className="text-2xl font-bold">41</div>
                   <div className="text-sm text-muted-foreground">Județe</div>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <div className="text-2xl font-bold">5.3K</div>
+                  <div className="text-2xl font-bold">2M+</div>
                   <div className="text-sm text-muted-foreground">
                     Înregistrări
                   </div>
