@@ -1,7 +1,6 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { DataDisplay } from "@/components/dataDiscovery/DataDisplay";
-import { useDebouncedValue } from "@/lib/hooks";
 import { DataDiscoveryLayout } from "@/components/dataDiscovery/DataDiscoveryLayout";
 import { useState, useEffect, useMemo } from "react";
 import { getBudgetLineItems } from "@/lib/api/dataDiscovery";
@@ -12,15 +11,16 @@ export const Route = createLazyFileRoute("/data-discovery/")({
 });
 
 function DataDiscoveryPage() {
-  const { lineItemFilter } = useFilterSearch();
-  const debouncedFilters = useDebouncedValue(lineItemFilter, 500);
+  const { filter, filterHash } = useFilterSearch();
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
+  console.log("hash",filterHash);
+  
   useEffect(() => {
     setPage(1);
-  }, [debouncedFilters]);
+  }, [filter]);
 
   const {
     data: budgetItemsData,
@@ -29,13 +29,13 @@ function DataDiscoveryPage() {
   } = useQuery({
     queryKey: [
       "budgetLineItems",
-      debouncedFilters,
+      filter,
       page,
       pageSize,
     ],
     queryFn: () =>
       getBudgetLineItems({
-        filters: debouncedFilters,
+        filters: filter,
         page,
         pageSize,
       }),

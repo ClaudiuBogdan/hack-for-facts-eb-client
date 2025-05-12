@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { z } from 'zod';
 import { LineItemsFilter } from "@/schemas/interfaces";
+import { generateHash } from "../utils";
 
 export interface OptionItem<TID = string | number> {
     id: TID;
@@ -175,7 +176,7 @@ export const useFilterSearch = () => {
         setSelectedAccountTypes,
     } = useFilterStore();
 
-    const lineItemFilter = useMemo((): LineItemsFilter => ({
+    const filter = useMemo((): LineItemsFilter => ({
         entity_cui: entities[0]?.id,
         functional_code: functionalClassifications[0]?.id,
         economic_code: economicClassifications[0]?.id,
@@ -185,6 +186,10 @@ export const useFilterSearch = () => {
         min_amount: minAmount ? Number(minAmount) : undefined,
         max_amount: maxAmount ? Number(maxAmount) : undefined,
     }), [entities, functionalClassifications, economicClassifications, accountTypes, uats, years, minAmount, maxAmount]);
+
+    const filterHash = useMemo(() => {
+        return generateHash(JSON.stringify(filter));
+    }, [filter]);
 
     return {
         // State values (selected options)
@@ -207,7 +212,7 @@ export const useFilterSearch = () => {
         setMaxAmount,
         setSelectedAccountTypeOptions: setSelectedAccountTypes as OptionSetter,
 
-        // Derived filter object
-        lineItemFilter,
+        filter,
+        filterHash,
     };
 };

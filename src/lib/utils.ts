@@ -13,3 +13,17 @@ export function formatCurrency(amount: number): string {
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
+export function generateHash(message: string): string {
+  let hash = 0x811c9dc5; // FNV1a 32-bit offset basis
+
+  for (let i = 0; i < message.length; i++) {
+    hash ^= message.charCodeAt(i);
+    // Math.imul performs a 32-bit integer multiplication.
+    // This helps keep the hash within 32-bit integer behavior
+    // and is efficient.
+    hash = Math.imul(hash, 0x01000193); // FNV1a 32-bit prime
+  }
+
+  return Math.abs(hash).toString(16).padStart(8, '0');
+}
