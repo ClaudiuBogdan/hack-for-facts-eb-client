@@ -1,6 +1,5 @@
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useDataDiscoveryFilters } from "@/stores/dataDiscoveryFilters";
 import { DataDisplay } from "@/components/dataDiscovery/DataDisplay";
 import { useDebouncedValue } from "@/lib/hooks";
 import { DataDiscoveryLayout } from "@/components/dataDiscovery/DataDiscoveryLayout";

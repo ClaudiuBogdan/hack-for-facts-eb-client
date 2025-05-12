@@ -1,12 +1,7 @@
 import { DataTable } from "./DataTable";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useState } from "react";
-import { useDataDiscoveryFilters } from "@/stores/dataDiscoveryFilters";
 import {
-  ChartBar,
   Table2,
-  Network,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -36,15 +31,7 @@ export function DataDisplay({
   onPageChange,
   onPageSizeChange,
 }: DataDisplayProps) {
-  const { filters, setFilter } = useDataDiscoveryFilters();
-  const [activeView, setActiveView] = useState(filters.displayMode);
-
-  // Update the filter when the tab changes
-  const handleViewChange = (value: string) => {
-    setActiveView(value as "table" | "chart" | "graph");
-    setFilter("displayMode", value as "table" | "chart" | "graph");
-  };
-
+  const activeView = 'table'
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -52,21 +39,13 @@ export function DataDisplay({
         <div className="flex items-center gap-2">
           <Tabs
             value={activeView}
-            onValueChange={handleViewChange}
+            onValueChange={() => { }}
             className="w-[400px]"
           >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="table" className="flex items-center gap-2">
                 <Table2 className="h-4 w-4" />
                 Table View
-              </TabsTrigger>
-              <TabsTrigger value="chart" className="flex items-center gap-2">
-                <ChartBar className="h-4 w-4" />
-                Chart View
-              </TabsTrigger>
-              <TabsTrigger value="graph" className="flex items-center gap-2">
-                <Network className="h-4 w-4" />
-                Graph View
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -187,39 +166,6 @@ export function DataDisplay({
               </div>
             )}
           </>
-        )}
-        {activeView === "graph" && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Graph View</CardTitle>
-            </CardHeader>
-            <CardContent className="min-h-[400px] flex items-center justify-center text-muted-foreground">
-              {isLoading ? (
-                <div className="animate-pulse">
-                  Loading graph visualization...
-                </div>
-              ) : (
-                <div className="text-center">
-                  <div className="mb-4">
-                    <Network className="h-16 w-16 mx-auto text-muted-foreground" />
-                  </div>
-                  <h3 className="text-lg font-medium">
-                    Graph visualization coming soon
-                  </h3>
-                  <p className="mb-4">
-                    We're working on an advanced graph visualization for budget
-                    data.
-                  </p>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleViewChange("chart")}
-                  >
-                    View as Chart Instead
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         )}
       </div>
     </div>

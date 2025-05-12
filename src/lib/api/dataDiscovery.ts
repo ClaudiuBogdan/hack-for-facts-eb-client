@@ -1,5 +1,5 @@
 import { createLogger } from "../logger";
-import { DataDiscoveryFilter, NewDataDiscoveryFilter } from "@/stores/dataDiscoveryFilters";
+import { LineItemsFilter } from "@/schemas/interfaces";
 import { graphqlRequest } from "./graphql";
 
 const logger = createLogger("data-discovery-api");
@@ -63,7 +63,7 @@ export type AggregatedBudgetData = {
 };
 
 export type GetDataParams = {
-  filters: NewDataDiscoveryFilter;
+  filters: LineItemsFilter;
   page?: number;
   pageSize?: number;
 };
@@ -135,114 +135,6 @@ const GET_EXECUTION_LINE_ITEMS_QUERY = `
     }
   }
 `;
-
-// Type for our GraphQL filter
-interface EntityFilter extends Record<string, unknown> {
-  cui?: string;
-  name?: string;
-  sector_type?: string; // Renamed from uat_type
-  // county_code and region are not in the schema's EntityFilter,
-  // so they cannot be directly applied here.
-  // Filtering by these would require a different approach (e.g., querying UATs first).
-  uat_id?: number; // Added from schema EntityFilter
-  address?: string; // Added from schema EntityFilter
-}
-
-// Update interface based on the actual GraphQL schema
-interface ExecutionLineItemFilter extends Record<string, unknown> {
-  entity_cui?: string;
-  county_code?: string;
-  uat_id?: number;
-  functional_code?: string;
-  economic_code?: string;
-  account_category?: string;
-  min_amount?: number;
-  max_amount?: number;
-  program_code?: string;
-  year?: number;
-  years?: number[];
-  start_year?: number;
-  end_year?: number;
-}
-
-// Additional filter to use for reports since we need to filter by year
-interface ReportFilter extends Record<string, unknown> {
-  entity_cui?: string;
-  reporting_year?: number;
-  reporting_period?: string;
-  report_date_start?: string;
-  report_date_end?: string;
-}
-
-// Convert our data discovery filters to GraphQL filter format
-function convertFiltersToGraphQLFormat(filters: DataDiscoveryFilter): {
-  entityFilter: EntityFilter;
-  executionLineItemFilter: ExecutionLineItemFilter;
-  reportFilter: ReportFilter;
-} {
-  const entityFilter: EntityFilter = {};
-  const executionLineItemFilter: ExecutionLineItemFilter = {};
-  const reportFilter: ReportFilter = {};
-  // Apply county filter
-  if (filters.counties.length > 0) {
-    // Similar to uat_type, county_code is a single string in the schema
-    // entityFilter.county_code = filters.county[0];
-    // The schema's EntityFilter does not have county_code.
-    // This filter cannot be applied directly to the entities query.
-    // It might be used for other queries or client-side filtering if necessary.
-  }
-
-  // Apply search query
-  if (filters.searchQuery) {
-    entityFilter.name = filters.searchQuery;
-  }
-
-  // Apply year range filter
-  if (filters.yearRange.from !== null && filters.yearRange.to !== null) {
-    if (filters.yearRange.from === filters.yearRange.to) {
-      executionLineItemFilter.year = filters.yearRange.from;
-    } else {
-      executionLineItemFilter.start_year = filters.yearRange.from;
-      executionLineItemFilter.end_year = filters.yearRange.to;
-    }
-  } else if (filters.yearRange.from !== null) {
-    // If only 'from' is set, treat it as a single year filter or start of an open range
-    // Depending on exact backend logic, this might be .year or .start_year
-    executionLineItemFilter.year = filters.yearRange.from; // Or start_year, adjust as needed
-  } else if (filters.yearRange.to !== null) {
-    // If only 'to' is set, treat it as a single year filter or end of an open range
-    // Depending on exact backend logic, this might be .year or .end_year
-    executionLineItemFilter.year = filters.yearRange.to; // Or end_year, adjust as needed
-  }
-  // Handle filters.years if your UI supports multi-select specific years
-  // For example:
-  // if (filters.years && filters.years.length > 0) {
-  //   executionLineItemFilter.years = filters.years;
-  // }
-
-  // Apply functional category filter
-  if (filters.functionalCategory.length > 0) {
-    // Schema only supports a single functional_code
-    executionLineItemFilter.functional_code = filters.functionalCategory[0];
-  }
-
-  // Apply economic category filter
-  if (filters.economicCategory.length > 0) {
-    // Schema only supports a single economic_code
-    executionLineItemFilter.economic_code = filters.economicCategory[0];
-  }
-
-  // Apply amount range filter
-  if (filters.amountRange.min !== null) {
-    executionLineItemFilter.min_amount = Number(filters.amountRange.min);
-  }
-
-  if (filters.amountRange.max !== null) {
-    executionLineItemFilter.max_amount = Number(filters.amountRange.max);
-  }
-
-  return { entityFilter, executionLineItemFilter, reportFilter };
-}
 
 export async function getEntities({
   filters,
@@ -477,16 +369,6 @@ export async function getUniqueEntityTypes(): Promise<string[]> {
     // Get just the entity types, limited by pagination
     const result = await getEntities({
       filters: {
-        counties: [],
-        uats: [],
-        yearRange: { from: null, to: null },
-        searchQuery: "",
-        functionalCategory: [],
-        economicCategory: [],
-        amountRange: { min: null, max: null },
-        displayMode: "table",
-        sortBy: "amount",
-        sortOrder: "desc",
       },
       page: 1,
       pageSize: 100, // Fetch enough entities to get a good sample of types
@@ -506,16 +388,6 @@ export async function getUniqueCounties(): Promise<
     // Get counties, limited by pagination
     const result = await getEntities({
       filters: {
-        counties: [],
-        uats: [],
-        yearRange: { from: null, to: null },
-        searchQuery: "",
-        functionalCategory: [],
-        economicCategory: [],
-        amountRange: { min: null, max: null },
-        displayMode: "table",
-        sortBy: "amount",
-        sortOrder: "desc",
       },
       page: 1,
       pageSize: 250, // Fetch more entities to get a wider range of counties

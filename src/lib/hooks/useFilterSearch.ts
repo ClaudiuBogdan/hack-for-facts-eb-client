@@ -2,12 +2,14 @@ import { useMemo } from "react"; // useEffect and useMemo might still be useful 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { z } from 'zod';
-import { NewDataDiscoveryFilter } from "@/stores/dataDiscoveryFilters"; // Ensure this path is correct
+import { LineItemsFilter } from "@/schemas/interfaces";
 
 export interface OptionItem<TID = string | number> {
     id: TID;
     label: string;
 }
+
+export type OptionSetter = React.Dispatch<React.SetStateAction<OptionItem[]>>
 
 const YearOptionItemSchema = z.object({
     id: z.number(),
@@ -173,7 +175,7 @@ export const useFilterSearch = () => {
         setSelectedAccountTypes,
     } = useFilterStore();
 
-    const lineItemFilter = useMemo((): NewDataDiscoveryFilter => ({
+    const lineItemFilter = useMemo((): LineItemsFilter => ({
         entity_cui: entities[0]?.id,
         functional_code: functionalClassifications[0]?.id,
         economic_code: economicClassifications[0]?.id,
@@ -196,14 +198,14 @@ export const useFilterSearch = () => {
         selectedAccountTypeOptions: accountTypes as OptionItem[],
 
         // Setters (actions)
-        setSelectedYearOptions: setSelectedYears as React.Dispatch<React.SetStateAction<OptionItem<number>[]>>,
-        setSelectedEntityOptions: setSelectedEntities as React.Dispatch<React.SetStateAction<OptionItem<string>[]>>,
-        setSelectedUatOptions: setSelectedUats as React.Dispatch<React.SetStateAction<OptionItem<string>[]>>,
-        setSelectedEconomicClassificationOptions: setSelectedEconomicClassifications as React.Dispatch<React.SetStateAction<OptionItem[]>>,
-        setSelectedFunctionalClassificationOptions: setSelectedFunctionalClassifications as React.Dispatch<React.SetStateAction<OptionItem[]>>,
+        setSelectedYearOptions: setSelectedYears as OptionSetter,
+        setSelectedEntityOptions: setSelectedEntities as OptionSetter,
+        setSelectedUatOptions: setSelectedUats as OptionSetter,
+        setSelectedEconomicClassificationOptions: setSelectedEconomicClassifications as OptionSetter,
+        setSelectedFunctionalClassificationOptions: setSelectedFunctionalClassifications as OptionSetter,
         setMinAmount,
         setMaxAmount,
-        setSelectedAccountTypeOptions: setSelectedAccountTypes as React.Dispatch<React.SetStateAction<OptionItem[]>>,
+        setSelectedAccountTypeOptions: setSelectedAccountTypes as OptionSetter,
 
         // Derived filter object
         lineItemFilter,
