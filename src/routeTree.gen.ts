@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as EntitiesCuiImport } from './routes/entities.$cui'
 
 // Create Virtual Routes
 
@@ -60,6 +61,12 @@ const AnomaliesAnomalyIdLazyRoute = AnomaliesAnomalyIdLazyImport.update({
   import('./routes/anomalies/$anomalyId.lazy').then((d) => d.Route),
 )
 
+const EntitiesCuiRoute = EntitiesCuiImport.update({
+  id: '/entities/$cui',
+  path: '/entities/$cui',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -76,6 +83,13 @@ declare module '@tanstack/react-router' {
       path: '/map'
       fullPath: '/map'
       preLoaderRoute: typeof MapLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/entities/$cui': {
+      id: '/entities/$cui'
+      path: '/entities/$cui'
+      fullPath: '/entities/$cui'
+      preLoaderRoute: typeof EntitiesCuiImport
       parentRoute: typeof rootRoute
     }
     '/anomalies/$anomalyId': {
@@ -107,6 +121,7 @@ declare module '@tanstack/react-router' {
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '/map': typeof MapLazyRoute
+  '/entities/$cui': typeof EntitiesCuiRoute
   '/anomalies/$anomalyId': typeof AnomaliesAnomalyIdLazyRoute
   '/anomalies': typeof AnomaliesIndexLazyRoute
   '/data-discovery': typeof DataDiscoveryIndexLazyRoute
@@ -115,6 +130,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '/map': typeof MapLazyRoute
+  '/entities/$cui': typeof EntitiesCuiRoute
   '/anomalies/$anomalyId': typeof AnomaliesAnomalyIdLazyRoute
   '/anomalies': typeof AnomaliesIndexLazyRoute
   '/data-discovery': typeof DataDiscoveryIndexLazyRoute
@@ -124,6 +140,7 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
   '/map': typeof MapLazyRoute
+  '/entities/$cui': typeof EntitiesCuiRoute
   '/anomalies/$anomalyId': typeof AnomaliesAnomalyIdLazyRoute
   '/anomalies/': typeof AnomaliesIndexLazyRoute
   '/data-discovery/': typeof DataDiscoveryIndexLazyRoute
@@ -134,15 +151,23 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/map'
+    | '/entities/$cui'
     | '/anomalies/$anomalyId'
     | '/anomalies'
     | '/data-discovery'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/map' | '/anomalies/$anomalyId' | '/anomalies' | '/data-discovery'
+  to:
+    | '/'
+    | '/map'
+    | '/entities/$cui'
+    | '/anomalies/$anomalyId'
+    | '/anomalies'
+    | '/data-discovery'
   id:
     | '__root__'
     | '/'
     | '/map'
+    | '/entities/$cui'
     | '/anomalies/$anomalyId'
     | '/anomalies/'
     | '/data-discovery/'
@@ -152,6 +177,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   MapLazyRoute: typeof MapLazyRoute
+  EntitiesCuiRoute: typeof EntitiesCuiRoute
   AnomaliesAnomalyIdLazyRoute: typeof AnomaliesAnomalyIdLazyRoute
   AnomaliesIndexLazyRoute: typeof AnomaliesIndexLazyRoute
   DataDiscoveryIndexLazyRoute: typeof DataDiscoveryIndexLazyRoute
@@ -160,6 +186,7 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   MapLazyRoute: MapLazyRoute,
+  EntitiesCuiRoute: EntitiesCuiRoute,
   AnomaliesAnomalyIdLazyRoute: AnomaliesAnomalyIdLazyRoute,
   AnomaliesIndexLazyRoute: AnomaliesIndexLazyRoute,
   DataDiscoveryIndexLazyRoute: DataDiscoveryIndexLazyRoute,
@@ -177,6 +204,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/map",
+        "/entities/$cui",
         "/anomalies/$anomalyId",
         "/anomalies/",
         "/data-discovery/"
@@ -187,6 +215,9 @@ export const routeTree = rootRoute
     },
     "/map": {
       "filePath": "map.lazy.tsx"
+    },
+    "/entities/$cui": {
+      "filePath": "entities.$cui.tsx"
     },
     "/anomalies/$anomalyId": {
       "filePath": "anomalies/$anomalyId.lazy.tsx"
