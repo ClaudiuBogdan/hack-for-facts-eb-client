@@ -126,7 +126,7 @@ const urlQueryStorage = {
     },
 };
 
-export const useFilterStore = create<FilterStore>()(
+export const useLineItemsFilterStore = create<FilterStore>()(
     persist(
         (set) => ({
             ...defaultInternalFiltersState,
@@ -197,7 +197,7 @@ export const useFilterSearch = () => {
         setSelectedAccountTypes,
         setPage,
         setPageSize,
-    } = useFilterStore();
+    } = useLineItemsFilterStore();
 
     const filter = useMemo((): LineItemsFilter => ({
         entity_cuis: entities.map(entity => entity.id),

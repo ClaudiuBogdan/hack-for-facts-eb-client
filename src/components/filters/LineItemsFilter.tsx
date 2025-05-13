@@ -9,10 +9,10 @@ import { YearFilter } from "./year-filter";
 import { AmountRangeFilter } from "./amount-range-filter";
 import { FilterRangeContainer } from "./base-filter/FilterRangeContainer";
 import { AccountTypeFilter } from "./account-type-filter/AccountTypeFilter";
-import { useFilterSearch } from "../../lib/hooks/useFilterSearch";
+import { useFilterSearch } from "../../lib/hooks/useLineItemsFilter";
 import { Button } from "../ui/button";
 
-export function Filter() {
+export function LineItemsFilter() {
     const {
         selectedYearOptions,
         setSelectedYearOptions,

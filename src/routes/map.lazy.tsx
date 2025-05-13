@@ -1,4 +1,4 @@
-import { getHeatmapUATData, HeatmapFilterInput, HeatmapUATDataPoint } from "@/lib/api/dataDiscovery";
+import { getHeatmapUATData, HeatmapUATDataPoint } from "@/lib/api/dataDiscovery";
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import L, { LeafletMouseEvent } from "leaflet"; // Added L for L.PathOptions
@@ -9,17 +9,19 @@ import { UatFeature, UatProperties } from "@/components/maps/interfaces";
 import { DEFAULT_FEATURE_STYLE } from "@/components/maps/constants";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"; // Added import
 import { useGeoJson } from "@/hooks/useGeoJson"; // Added import for the new hook
+import { MapFilter } from "@/components/filters/MapFilter"; // getDefaultMapFilters removed
+import { useMapFilter } from "@/lib/hooks/useMapFilterStore"; // Import the store hook
 
 export const Route = createLazyFileRoute("/map")({
-  component: TestPage,
+  component: MapPage, // Renamed component to MapPage for clarity
 });
 
 // --- Hardcoded filter for fetching heatmap data ---
-const hardcodedHeatmapFilter: HeatmapFilterInput = {
-  account_categories: ["ch"], // Example: expenses
-  years: [2022, 2023],          // Example: for 2022 and 2023
-  // functional_codes: ["01"], // Example: Servicii publice generale
-};
+// const hardcodedHeatmapFilter: HeatmapFilterInput = {
+//   account_categories: ["ch"], // Example: expenses
+//   years: [2022, 2023],          // Example: for 2022 and 2023
+//   // functional_codes: ["01"], // Example: Servicii publice generale
+// };
 
 // Function to fetch GeoJSON data
 // const fetchGeoJsonData = async (): Promise<GeoJsonObject> => {
@@ -100,7 +102,12 @@ const createHeatmapStyleFunction = (
 };
 
 
-function TestPage() {
+function MapPage() { // Renamed component to MapPage
+  const { heatmapFilterInput } = useMapFilter(); // Get filter input from the store hook
+
+  // Local state for heatmapFilter removed
+  // const [heatmapFilter, setHeatmapFilter] = React.useState<HeatmapFilterInput>(getDefaultMapFilters());
+
   const handleUatClick = (properties: UatProperties, event: LeafletMouseEvent) => {
     console.log("UAT Clicked:", properties, "Event:", event);
   };
@@ -109,16 +116,16 @@ function TestPage() {
     data: heatmapData,
     isLoading: isLoadingHeatmap,
     error: heatmapError
-  } = useQuery<HeatmapUATDataPoint[], Error>({ // Explicitly type useQuery
-    queryKey: ["heatmapUATData", hardcodedHeatmapFilter],
-    queryFn: () => getHeatmapUATData(hardcodedHeatmapFilter),
+  } = useQuery<HeatmapUATDataPoint[], Error>({
+    queryKey: ["heatmapUATData", heatmapFilterInput], // Use dynamic filter input from store
+    queryFn: () => getHeatmapUATData(heatmapFilterInput), // Use dynamic filter input from store
   });
 
   // Use the new hook to fetch GeoJSON data
-  const { 
-    data: geoJsonData, 
-    isLoading: isLoadingGeoJson, 
-    error: geoJsonError 
+  const {
+    data: geoJsonData,
+    isLoading: isLoadingGeoJson,
+    error: geoJsonError
   } = useGeoJson();
 
   // The style function is memoized and re-created only when heatmapData changes.
@@ -138,31 +145,29 @@ function TestPage() {
     loadingText = "Loading map data...";
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen w-full" aria-live="polite" aria-busy="true">
-        <LoadingSpinner size="lg" text={loadingText} />
-      </div>
-    );
-  }
-
-  if (error) {
-    return <div className="p-4 text-center text-red-500">Error loading data: {error.message}</div>;
-  }
-
-  if (!heatmapData || !geoJsonData) { // Ensure both data sources are available
-    return <div className="p-4 text-center">Data not available.</div>;
-  }
-
   return (
-    <div className="flex flex-row h-screen">
-      <UatMap
-        onUatClick={handleUatClick}
-        // Pass the memoized style function
-        getFeatureStyle={aDynamicGetFeatureStyle}
-        heatmapData={heatmapData} // Pass the raw heatmap data as well
-        geoJsonData={geoJsonData} // Pass geoJsonData to UatMap
-      />
+    <div className="flex flex-row h-screen bg-background">
+      <div className="w-[360px] flex-shrink-0 border-r border-border bg-card text-card-foreground overflow-y-auto">
+        <MapFilter />
+      </div>
+      <div className="flex-grow relative"> {/* Added relative for potential absolute positioning of overlays if needed later */}
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full w-full" aria-live="polite" aria-busy="true">
+            <LoadingSpinner size="lg" text={loadingText} />
+          </div>
+        ) : error ? (
+          <div className="p-4 text-center text-red-500">Error loading data: {error.message}</div>
+        ) : !heatmapData || !geoJsonData ? (
+          <div className="p-4 text-center">Data not available.</div>
+        ) : (
+          <UatMap
+            onUatClick={handleUatClick}
+            getFeatureStyle={aDynamicGetFeatureStyle}
+            heatmapData={heatmapData}
+            geoJsonData={geoJsonData}
+          />
+        )}
+      </div>
     </div>
-  )
+  );
 }

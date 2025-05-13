@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart2 } from "lucide-react";
+import { LayoutDashboard, BarChart2, Map } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -26,6 +26,11 @@ const mainItems = [
     title: "Data Discovery",
     url: "/data-discovery",
     icon: BarChart2,
+  },
+  {
+    title: "Map",
+    url: "/map",
+    icon: Map,
   },
 ];
 

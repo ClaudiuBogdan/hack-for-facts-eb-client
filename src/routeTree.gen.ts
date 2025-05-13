@@ -16,7 +16,7 @@ import { Route as rootRoute } from './routes/__root'
 
 // Create Virtual Routes
 
-const TestLazyImport = createFileRoute('/test')()
+const MapLazyImport = createFileRoute('/map')()
 const IndexLazyImport = createFileRoute('/')()
 const DataDiscoveryIndexLazyImport = createFileRoute('/data-discovery/')()
 const AnomaliesIndexLazyImport = createFileRoute('/anomalies/')()
@@ -24,9 +24,9 @@ const AnomaliesAnomalyIdLazyImport = createFileRoute('/anomalies/$anomalyId')()
 
 // Create/Update Routes
 
-const TestLazyRoute = TestLazyImport.update({
-  id: '/test',
-  path: '/test',
+const MapLazyRoute = MapLazyImport.update({
+  id: '/map',
+  path: '/map',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/map.lazy').then((d) => d.Route))
 
@@ -71,11 +71,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexLazyImport
       parentRoute: typeof rootRoute
     }
-    '/test': {
-      id: '/test'
-      path: '/test'
-      fullPath: '/test'
-      preLoaderRoute: typeof TestLazyImport
+    '/map': {
+      id: '/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof MapLazyImport
       parentRoute: typeof rootRoute
     }
     '/anomalies/$anomalyId': {
@@ -106,7 +106,7 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
-  '/test': typeof TestLazyRoute
+  '/map': typeof MapLazyRoute
   '/anomalies/$anomalyId': typeof AnomaliesAnomalyIdLazyRoute
   '/anomalies': typeof AnomaliesIndexLazyRoute
   '/data-discovery': typeof DataDiscoveryIndexLazyRoute
@@ -114,7 +114,7 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
-  '/test': typeof TestLazyRoute
+  '/map': typeof MapLazyRoute
   '/anomalies/$anomalyId': typeof AnomaliesAnomalyIdLazyRoute
   '/anomalies': typeof AnomaliesIndexLazyRoute
   '/data-discovery': typeof DataDiscoveryIndexLazyRoute
@@ -123,7 +123,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
-  '/test': typeof TestLazyRoute
+  '/map': typeof MapLazyRoute
   '/anomalies/$anomalyId': typeof AnomaliesAnomalyIdLazyRoute
   '/anomalies/': typeof AnomaliesIndexLazyRoute
   '/data-discovery/': typeof DataDiscoveryIndexLazyRoute
@@ -133,16 +133,16 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/test'
+    | '/map'
     | '/anomalies/$anomalyId'
     | '/anomalies'
     | '/data-discovery'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/test' | '/anomalies/$anomalyId' | '/anomalies' | '/data-discovery'
+  to: '/' | '/map' | '/anomalies/$anomalyId' | '/anomalies' | '/data-discovery'
   id:
     | '__root__'
     | '/'
-    | '/test'
+    | '/map'
     | '/anomalies/$anomalyId'
     | '/anomalies/'
     | '/data-discovery/'
@@ -151,7 +151,7 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
-  TestLazyRoute: typeof TestLazyRoute
+  MapLazyRoute: typeof MapLazyRoute
   AnomaliesAnomalyIdLazyRoute: typeof AnomaliesAnomalyIdLazyRoute
   AnomaliesIndexLazyRoute: typeof AnomaliesIndexLazyRoute
   DataDiscoveryIndexLazyRoute: typeof DataDiscoveryIndexLazyRoute
@@ -159,7 +159,7 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
-  TestLazyRoute: TestLazyRoute,
+  MapLazyRoute: MapLazyRoute,
   AnomaliesAnomalyIdLazyRoute: AnomaliesAnomalyIdLazyRoute,
   AnomaliesIndexLazyRoute: AnomaliesIndexLazyRoute,
   DataDiscoveryIndexLazyRoute: DataDiscoveryIndexLazyRoute,
@@ -176,7 +176,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/test",
+        "/map",
         "/anomalies/$anomalyId",
         "/anomalies/",
         "/data-discovery/"
@@ -185,8 +185,8 @@ export const routeTree = rootRoute
     "/": {
       "filePath": "index.lazy.tsx"
     },
-    "/test": {
-      "filePath": "test.lazy.tsx"
+    "/map": {
+      "filePath": "map.lazy.tsx"
     },
     "/anomalies/$anomalyId": {
       "filePath": "anomalies/$anomalyId.lazy.tsx"

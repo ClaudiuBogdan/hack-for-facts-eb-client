@@ -4,7 +4,7 @@ import { DataDisplay } from "@/components/dataDiscovery/DataDisplay";
 import { DataDiscoveryLayout } from "@/components/dataDiscovery/DataDiscoveryLayout";
 import { useEffect, useMemo } from "react";
 import { getBudgetLineItems } from "@/lib/api/dataDiscovery";
-import { useFilterSearch } from "@/lib/hooks/useFilterSearch";
+import { useFilterSearch } from "@/lib/hooks/useLineItemsFilter";
 import { SortOrder } from "@/schemas/interfaces";
 
 export const Route = createLazyFileRoute("/data-discovery/")({
