@@ -1,4 +1,3 @@
-import React from 'react';
 import { useMapFilter } from '@/lib/hooks/useMapFilterStore';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';

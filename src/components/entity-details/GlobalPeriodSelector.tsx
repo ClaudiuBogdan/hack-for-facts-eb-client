@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -23,10 +23,10 @@ export function GlobalPeriodSelector(/* props: GlobalPeriodSelectorProps */) {
         <div className="flex items-center space-x-2 p-2 border rounded-md bg-muted/40">
             <div>
                 <label htmlFor="year-select" className="text-sm font-medium sr-only">An:</label>
-                <Input 
-                    type="number" 
+                <Input
+                    type="number"
                     id="year-select"
-                    value={year} 
+                    value={year}
                     onChange={(e) => setYear(parseInt(e.target.value, 10))}
                     className="w-24 h-9"
                 />
@@ -57,7 +57,7 @@ export function GlobalPeriodSelector(/* props: GlobalPeriodSelectorProps */) {
                     </SelectContent>
                 </Select>
             )}
-            */} 
+            */}
             <Button size="sm" variant="outline" className="h-9">
                 Aplică
             </Button>
