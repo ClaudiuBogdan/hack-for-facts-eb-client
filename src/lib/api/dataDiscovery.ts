@@ -78,6 +78,31 @@ export type PaginatedResult<T> = {
   totalPages: number;
 };
 
+// --- BEGIN HEATMAP TYPES ---
+export interface HeatmapUATDataPoint {
+  uat_id: string;
+  uat_code: string;
+  uat_name: string;
+  county_code?: string | null;
+  county_name?: string | null;
+  population?: number | null;
+  aggregated_value: number;
+}
+
+export interface HeatmapFilterInput {
+  functional_codes?: string[];
+  economic_codes?: string[];
+  account_categories: string[];
+  years: number[];
+  min_amount?: number;
+  max_amount?: number;
+}
+
+interface HeatmapUATDataApiResponse {
+  heatmapUATData: HeatmapUATDataPoint[];
+}
+// --- END HEATMAP TYPES ---
+
 // Query to get entities with filtering
 const GET_ENTITIES_QUERY = `
   query GetEntities($filter: EntityFilter, $limit: Int, $offset: Int) {
@@ -135,6 +160,22 @@ const GET_EXECUTION_LINE_ITEMS_QUERY = `
     }
   }
 `;
+
+// --- BEGIN HEATMAP QUERY ---
+const GET_HEATMAP_UAT_DATA_QUERY = `
+  query GetHeatmapUATData($filter: HeatmapFilterInput!) {
+    heatmapUATData(filter: $filter) {
+      uat_id
+      uat_code
+      uat_name
+      county_code
+      county_name
+      population
+      aggregated_value
+    }
+  }
+`;
+// --- END HEATMAP QUERY ---
 
 export async function getEntities({
   filters,
@@ -424,3 +465,33 @@ export async function getUniqueCounties(): Promise<
     return [];
   }
 }
+
+// --- BEGIN GET HEATMAP UAT DATA FUNCTION ---
+export async function getHeatmapUATData(
+  filter: HeatmapFilterInput
+): Promise<HeatmapUATDataPoint[]> {
+  logger.info("Fetching heatmap UAT data with filter", { filter });
+
+  try {
+    const response = await graphqlRequest<HeatmapUATDataApiResponse>(
+      GET_HEATMAP_UAT_DATA_QUERY,
+      { filter }
+    );
+
+    if (!response || !response.heatmapUATData) {
+      logger.warn("Received null or undefined response for heatmapUATData", {
+        response,
+      });
+      // Consider throwing an error or returning a default/empty state
+      // depending on how callers should handle this.
+      // For now, returning empty array if data is not in the expected shape.
+      return [];
+    }
+
+    return response.heatmapUATData;
+  } catch (error) {
+    logger.error("Error fetching heatmap UAT data", { error, filter });
+    throw error; // Re-throw the error to be handled by the caller
+  }
+}
+// --- END GET HEATMAP UAT DATA FUNCTION ---
