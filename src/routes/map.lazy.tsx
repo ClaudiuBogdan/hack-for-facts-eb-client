@@ -17,32 +17,6 @@ export const Route = createLazyFileRoute("/map")({
   component: MapPage, // Renamed component to MapPage for clarity
 });
 
-// --- Hardcoded filter for fetching heatmap data ---
-// const hardcodedHeatmapFilter: HeatmapFilterInput = {
-//   account_categories: ["ch"], // Example: expenses
-//   years: [2022, 2023],          // Example: for 2022 and 2023
-//   // functional_codes: ["01"], // Example: Servicii publice generale
-// };
-
-// Function to fetch GeoJSON data
-// const fetchGeoJsonData = async (): Promise<GeoJsonObject> => {
-//   const response = await fetch('/uats.json'); // Assuming uats.json is in the public folder
-//   if (!response.ok) {
-//     throw new Error('Network response was not ok for uats.json');
-//   }
-//   return response.json();
-// };
-
-// const getMinMaxValues = (data: HeatmapUATDataPoint[] | undefined): { min: number; max: number } => {
-//   if (!data || data.length === 0) {
-//     return { min: 0, max: 0 };
-//   }
-//   const values = data.map(d => d.aggregated_value);
-//   return {
-//     min: Math.min(...values),
-//     max: Math.max(...values),
-//   };
-// };
 
 // Modified to accept min and max as arguments
 const createHeatmapStyleFunction = (
