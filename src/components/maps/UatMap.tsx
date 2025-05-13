@@ -1,9 +1,8 @@
 import 'leaflet/dist/leaflet.css';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { MapContainer, GeoJSON } from 'react-leaflet';
 import L, { LeafletMouseEvent, PathOptions, Layer, LatLngExpression } from 'leaflet';
 import { Feature, Geometry, GeoJsonObject } from 'geojson';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner'; // Assuming this path is correct
 import { createTooltipContent } from './utils';
 import { UatProperties, UatFeature } from './interfaces';
 import {
@@ -20,6 +19,7 @@ interface UatMapProps {
   center?: LatLngExpression;
   zoom?: number;
   heatmapData: HeatmapUATDataPoint[];
+  geoJsonData: GeoJsonObject | null;
 }
 
 export const UatMap: React.FC<UatMapProps> = ({
@@ -28,34 +28,9 @@ export const UatMap: React.FC<UatMapProps> = ({
   center = DEFAULT_MAP_CENTER,
   zoom = DEFAULT_MAP_ZOOM,
   heatmapData,
+  geoJsonData,
 }) => {
-  const [internalGeoJsonData, setInternalGeoJsonData] = useState<GeoJsonObject | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<Error | null>(null);
-
   const geoJsonLayerRef = useRef<L.GeoJSON | null>(null);
-
-  // Effect to load GeoJSON data on component mount
-  useEffect(() => {
-    const loadGeoJson = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        // Dynamically import the GeoJSON file
-        // Ensure the path aligns with your project structure and bundler setup
-        const module = await import('@/assets/uats.json');
-        setInternalGeoJsonData(module.default as GeoJsonObject);
-      } catch (e) {
-        console.error("Failed to load GeoJSON data:", e);
-        const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred while loading GeoJSON data';
-        setError(new Error(errorMessage));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadGeoJson();
-  }, []); // Empty dependency array ensures this runs once on mount
 
   // Callback for handling clicks on a feature
   const handleFeatureClick = useCallback(
@@ -119,7 +94,7 @@ export const UatMap: React.FC<UatMapProps> = ({
 
   const mapKey = useMemo(() => {
     // Part 1: Reflects the loading state of the base GeoJSON data
-    const geoKeyPart = internalGeoJsonData ? "geojson-loaded" : "geojson-loading";
+    const geoKeyPart = geoJsonData ? "geojson-loaded" : "geojson-loading";
 
     // Part 2: Reflects the state of heatmapData
     let heatmapKeyPart: string;
@@ -138,33 +113,15 @@ export const UatMap: React.FC<UatMapProps> = ({
     }
 
     return `${geoKeyPart}-${heatmapKeyPart}`;
-  }, [internalGeoJsonData, heatmapData]);
+  }, [geoJsonData, heatmapData]);
 
 
   // --- Render Logic ---
 
-  if (isLoading) {
+  if (!geoJsonData) {
     return (
-      <div className="flex items-center justify-center h-[600px] w-full" aria-live="polite" aria-busy="true">
-        <LoadingSpinner size="lg" text="Loading map data..." />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-4 text-center text-red-500" role="alert">
-        Error loading map data: {error.message}
-      </div>
-    );
-  }
-
-  if (!internalGeoJsonData) {
-    // This state should ideally be covered by isLoading or error,
-    // but it's a good fallback.
-    return (
-      <div className="p-4 text-center" role="status">
-        No map data available to display.
+      <div className="p-4 text-center text-muted-foreground" role="status">
+        Map geometry not available.
       </div>
     );
   }
@@ -177,12 +134,12 @@ export const UatMap: React.FC<UatMapProps> = ({
       style={{ height: '100vh', width: '100%' }} // Consider making height configurable via props
       className="bg-background" // Ensure this class is defined or Tailwind is configured
     >
-      {/* Render GeoJSON only if data is a FeatureCollection */}
-      {internalGeoJsonData.type === 'FeatureCollection' && (
+      {/* Render GeoJSON only if data is a FeatureCollection and not null */}
+      {geoJsonData && geoJsonData.type === 'FeatureCollection' && (
         <GeoJSON
           key={mapKey} // Force re-render when key changes
           ref={geoJsonLayerRef}
-          data={internalGeoJsonData}
+          data={geoJsonData}
           style={styleFunction}
           onEachFeature={onEachFeature}
         />

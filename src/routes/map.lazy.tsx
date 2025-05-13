@@ -8,8 +8,9 @@ import { UatMap } from "@/components/maps/UatMap";
 import { UatFeature, UatProperties } from "@/components/maps/interfaces";
 import { DEFAULT_FEATURE_STYLE } from "@/components/maps/constants";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner"; // Added import
+import { useGeoJson } from "@/hooks/useGeoJson"; // Added import for the new hook
 
-export const Route = createLazyFileRoute("/test")({
+export const Route = createLazyFileRoute("/map")({
   component: TestPage,
 });
 
@@ -20,6 +21,14 @@ const hardcodedHeatmapFilter: HeatmapFilterInput = {
   // functional_codes: ["01"], // Example: Servicii publice generale
 };
 
+// Function to fetch GeoJSON data
+// const fetchGeoJsonData = async (): Promise<GeoJsonObject> => {
+//   const response = await fetch('/uats.json'); // Assuming uats.json is in the public folder
+//   if (!response.ok) {
+//     throw new Error('Network response was not ok for uats.json');
+//   }
+//   return response.json();
+// };
 
 const getMinMaxValues = (data: HeatmapUATDataPoint[] | undefined): { min: number; max: number } => {
   if (!data || data.length === 0) {
@@ -105,26 +114,44 @@ function TestPage() {
     queryFn: () => getHeatmapUATData(hardcodedHeatmapFilter),
   });
 
+  // Use the new hook to fetch GeoJSON data
+  const { 
+    data: geoJsonData, 
+    isLoading: isLoadingGeoJson, 
+    error: geoJsonError 
+  } = useGeoJson();
+
   // The style function is memoized and re-created only when heatmapData changes.
   const aDynamicGetFeatureStyle = React.useMemo(() => {
     return createHeatmapStyleFunction(heatmapData);
   }, [heatmapData]);
 
+  const isLoading = isLoadingHeatmap || isLoadingGeoJson;
+  const error = heatmapError || geoJsonError;
 
-  if (isLoadingHeatmap) {
+  let loadingText = "Loading data...";
+  if (isLoadingHeatmap && isLoadingGeoJson) {
+    loadingText = "Loading map and heatmap data...";
+  } else if (isLoadingHeatmap) {
+    loadingText = "Loading heatmap data...";
+  } else if (isLoadingGeoJson) {
+    loadingText = "Loading map data...";
+  }
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen w-full" aria-live="polite" aria-busy="true">
-        <LoadingSpinner size="lg" text="Loading heatmap data..." />
+        <LoadingSpinner size="lg" text={loadingText} />
       </div>
     );
   }
 
-  if (heatmapError) {
-    return <div className="p-4 text-center text-red-500">Error loading heatmap data: {heatmapError.message}</div>;
+  if (error) {
+    return <div className="p-4 text-center text-red-500">Error loading data: {error.message}</div>;
   }
 
-  if (!heatmapData) {
-    return <div className="p-4 text-center">No heatmap data available.</div>;
+  if (!heatmapData || !geoJsonData) { // Ensure both data sources are available
+    return <div className="p-4 text-center">Data not available.</div>;
   }
 
   return (
@@ -134,6 +161,7 @@ function TestPage() {
         // Pass the memoized style function
         getFeatureStyle={aDynamicGetFeatureStyle}
         heatmapData={heatmapData} // Pass the raw heatmap data as well
+        geoJsonData={geoJsonData} // Pass geoJsonData to UatMap
       />
     </div>
   )

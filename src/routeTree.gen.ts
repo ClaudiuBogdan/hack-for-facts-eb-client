@@ -28,7 +28,7 @@ const TestLazyRoute = TestLazyImport.update({
   id: '/test',
   path: '/test',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/test.lazy').then((d) => d.Route))
+} as any).lazy(() => import('./routes/map.lazy').then((d) => d.Route))
 
 const IndexLazyRoute = IndexLazyImport.update({
   id: '/',
