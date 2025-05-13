@@ -1,20 +1,20 @@
 import { getHeatmapUATData, HeatmapUATDataPoint } from "@/lib/api/dataDiscovery";
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import L, { LeafletMouseEvent } from "leaflet"; // Added L for L.PathOptions
-import React from "react"; // Added React for useMemo
+import L, { LeafletMouseEvent } from "leaflet";
+import React from "react";
 import { getHeatmapColor, normalizeValue, getPercentileValues } from "@/components/maps/utils";
 import { UatMap } from "@/components/maps/UatMap";
 import { UatFeature, UatProperties } from "@/components/maps/interfaces";
 import { DEFAULT_FEATURE_STYLE } from "@/components/maps/constants";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner"; // Added import
-import { useGeoJson } from "@/hooks/useGeoJson"; // Added import for the new hook
-import { MapFilter } from "@/components/filters/MapFilter"; // getDefaultMapFilters removed
-import { useMapFilter } from "@/lib/hooks/useMapFilterStore"; // Import the store hook
-import { MapLegend } from "@/components/maps/MapLegend"; // Import MapLegend
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useGeoJson } from "@/hooks/useGeoJson";
+import { MapFilter } from "@/components/filters/MapFilter";
+import { useMapFilter } from "@/lib/hooks/useMapFilterStore";
+import { MapLegend } from "@/components/maps/MapLegend";
 
 export const Route = createLazyFileRoute("/map")({
-  component: MapPage, // Renamed component to MapPage for clarity
+  component: MapPage,
 });
 
 
