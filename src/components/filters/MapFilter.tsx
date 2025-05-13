@@ -1,20 +1,22 @@
-import React from "react";
 import { FilterListContainer } from "./base-filter/FilterListContainer";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { ArrowUpDown, Calendar, ChartBar, XCircle } from "lucide-react";
+import { ArrowUpDown, Calendar, ChartBar, XCircle, Tags } from "lucide-react";
 import { FunctionalClassificationList } from "./functional-classification-filter";
 import { YearFilter } from "./year-filter";
 import { AccountCategoryRadioGroup } from "./account-type-filter/AccountCategoryRadioGroup";
 import { Button } from "../ui/button";
 import { OptionItem } from "./base-filter/interfaces";
-import { useMapFilter } from "@/lib/hooks/useMapFilterStore";
+import { useMapFilter, EconomicClassificationOptionItem } from "@/lib/hooks/useMapFilterStore";
+import { EconomicClassificationList } from "./economic-classification-filter";
 
 export function MapFilter() {
     const {
         selectedYears,
         selectedFunctionalClassifications,
+        selectedEconomicClassifications,
         setSelectedYears,
         setSelectedFunctionalClassifications,
+        setSelectedEconomicClassifications,
         resetMapFilters,
     } = useMapFilter();
 
@@ -22,7 +24,7 @@ export function MapFilter() {
         resetMapFilters();
     };
 
-    const totalOptionalFilters = selectedYears.length + selectedFunctionalClassifications.length;
+    const totalOptionalFilters = selectedYears.length + selectedFunctionalClassifications.length + selectedEconomicClassifications.length;
 
     return (
         <Card className="flex flex-col w-full min-h-full shadow-lg">
@@ -59,6 +61,13 @@ export function MapFilter() {
                     listComponent={FunctionalClassificationList}
                     selected={selectedFunctionalClassifications}
                     setSelected={(items) => setSelectedFunctionalClassifications(items as OptionItem<string>[])}
+                />
+                <FilterListContainer
+                    title="Clasificare Economică"
+                    icon={<Tags className="w-4 h-4" />}
+                    listComponent={EconomicClassificationList}
+                    selected={selectedEconomicClassifications}
+                    setSelected={(items) => setSelectedEconomicClassifications(items as EconomicClassificationOptionItem[])}
                 />
             </CardContent>
         </Card>

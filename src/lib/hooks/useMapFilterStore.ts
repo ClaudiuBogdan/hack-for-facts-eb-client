@@ -23,12 +23,20 @@ const GenericOptionItemSchema = z.object({ // For functional classifications
 });
 export type GenericOptionItem = z.infer<typeof GenericOptionItemSchema>;
 
+// Schema for Economic Classification option items
+const EconomicClassificationOptionItemSchema = z.object({
+    id: z.string(), // Assuming economic classification IDs are strings
+    label: z.string(),
+});
+export type EconomicClassificationOptionItem = z.infer<typeof EconomicClassificationOptionItemSchema>;
+
 
 // --- Schema for the internal state of the store ---
 const InternalMapFiltersObjectSchema = z.object({
     accountCategory: AccountCategoryOptionItemSchema,
     years: z.array(YearOptionItemSchema).min(1, "At least one year must be selected"),
     functionalClassifications: z.array(GenericOptionItemSchema),
+    economicClassifications: z.array(EconomicClassificationOptionItemSchema), // Added economic classifications
 });
 export type InternalMapFiltersState = z.infer<typeof InternalMapFiltersObjectSchema>;
 
@@ -40,6 +48,7 @@ const defaultInternalMapFiltersState: InternalMapFiltersState = {
     accountCategory: defaultAccountCategory,
     years: defaultYears,
     functionalClassifications: [],
+    economicClassifications: [], // Added default for economic classifications
 };
 
 const defaultInternalFiltersJSON = JSON.stringify(defaultInternalMapFiltersState); // For comparison in URL storage
@@ -50,6 +59,7 @@ interface MapFilterStoreActions {
     setAccountCategory: (updater: AccountCategoryOptionItem | ((prev: AccountCategoryOptionItem) => AccountCategoryOptionItem)) => void;
     setSelectedYears: (updater: YearOptionItem[] | ((prev: YearOptionItem[]) => YearOptionItem[])) => void;
     setSelectedFunctionalClassifications: (updater: GenericOptionItem[] | ((prev: GenericOptionItem[]) => GenericOptionItem[])) => void;
+    setSelectedEconomicClassifications: (updater: EconomicClassificationOptionItem[] | ((prev: EconomicClassificationOptionItem[]) => EconomicClassificationOptionItem[])) => void; // Added setter for economic classifications
     resetMapFilters: () => void;
 }
 
@@ -125,6 +135,9 @@ export const useMapFilterStore = create<MapFilterStore>()(
             setSelectedFunctionalClassifications: (updater) => set(state => ({
                 functionalClassifications: typeof updater === 'function' ? updater(state.functionalClassifications) : updater,
             })),
+            setSelectedEconomicClassifications: (updater) => set(state => ({ // Added implementation for economic classifications setter
+                economicClassifications: typeof updater === 'function' ? updater(state.economicClassifications) : updater,
+            })),
             resetMapFilters: () => set(defaultInternalMapFiltersState),
         }),
         {
@@ -140,9 +153,11 @@ export const useMapFilter = () => {
         accountCategory,
         years,
         functionalClassifications,
+        economicClassifications, // Destructure economicClassifications
         setAccountCategory,
         setSelectedYears,
         setSelectedFunctionalClassifications,
+        setSelectedEconomicClassifications, // Destructure setSelectedEconomicClassifications
         resetMapFilters,
     } = useMapFilterStore();
 
@@ -150,19 +165,21 @@ export const useMapFilter = () => {
         account_categories: [accountCategory.id], // API expects an array
         years: years.map(year => year.id),
         functional_codes: functionalClassifications.length > 0 ? functionalClassifications.map(fc => fc.id) : undefined,
-        // Add other fields like economic_codes, min_amount, max_amount if they become part of the store
-    }), [accountCategory, years, functionalClassifications]);
+        economic_codes: economicClassifications.length > 0 ? economicClassifications.map(ec => ec.id) : undefined, // Add economic_codes
+    }), [accountCategory, years, functionalClassifications, economicClassifications]); // Add economicClassifications to dependency array
 
     return {
         // State values (as OptionItem for UI components)
         selectedAccountCategory: accountCategory,
         selectedYears: years,
         selectedFunctionalClassifications: functionalClassifications,
+        selectedEconomicClassifications: economicClassifications, // Expose selectedEconomicClassifications
 
         // Setters
         setAccountCategory,
         setSelectedYears,
         setSelectedFunctionalClassifications,
+        setSelectedEconomicClassifications, // Expose setSelectedEconomicClassifications
         resetMapFilters,
 
         // Derived filter for API
