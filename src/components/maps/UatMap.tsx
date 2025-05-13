@@ -1,7 +1,7 @@
 import 'leaflet/dist/leaflet.css';
 import React, { useCallback, useMemo, useRef } from 'react';
 import { MapContainer, GeoJSON } from 'react-leaflet';
-import L, { LeafletMouseEvent, PathOptions, Layer, LatLngExpression } from 'leaflet';
+import L, { LeafletMouseEvent, PathOptions, Layer, LatLngExpression, LatLngBoundsExpression } from 'leaflet';
 import { Feature, Geometry, GeoJsonObject } from 'geojson';
 import { createTooltipContent } from './utils';
 import { UatProperties, UatFeature } from './interfaces';
@@ -10,6 +10,9 @@ import {
   DEFAULT_MAP_ZOOM,
   DEFAULT_FEATURE_STYLE,
   HIGHLIGHT_FEATURE_STYLE,
+  DEFAULT_MIN_ZOOM,
+  DEFAULT_MAX_ZOOM,
+  DEFAULT_MAX_BOUNDS,
 } from './constants';
 import { HeatmapUATDataPoint } from '@/lib/api/dataDiscovery';
 
@@ -18,6 +21,9 @@ interface UatMapProps {
   getFeatureStyle: (feature: UatFeature, heatmapData: HeatmapUATDataPoint[]) => PathOptions;
   center?: LatLngExpression;
   zoom?: number;
+  minZoom?: number;
+  maxZoom?: number;
+  maxBounds?: LatLngBoundsExpression;
   heatmapData: HeatmapUATDataPoint[];
   geoJsonData: GeoJsonObject | null;
 }
@@ -27,6 +33,9 @@ export const UatMap: React.FC<UatMapProps> = ({
   getFeatureStyle,
   center = DEFAULT_MAP_CENTER,
   zoom = DEFAULT_MAP_ZOOM,
+  minZoom = DEFAULT_MIN_ZOOM,
+  maxZoom = DEFAULT_MAX_ZOOM,
+  maxBounds = DEFAULT_MAX_BOUNDS,
   heatmapData,
   geoJsonData,
 }) => {
@@ -130,6 +139,9 @@ export const UatMap: React.FC<UatMapProps> = ({
     <MapContainer
       center={center}
       zoom={zoom}
+      minZoom={minZoom}
+      maxZoom={maxZoom}
+      maxBounds={maxBounds}
       scrollWheelZoom={true}
       style={{ height: '100vh', width: '100%' }} // Consider making height configurable via props
       className="bg-background" // Ensure this class is defined or Tailwind is configured
