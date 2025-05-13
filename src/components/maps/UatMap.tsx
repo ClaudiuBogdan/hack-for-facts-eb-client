@@ -108,7 +108,7 @@ export const UatMap: React.FC<UatMapProps> = ({
       // to detect meaningful changes without stringifying the entire array,
       // which could be costly for large datasets.
       // Ensure you pick a property that, if changed, would necessitate a map update.
-      const sampleIdentifier = heatmapData[0]?.uat_code || 'no-code'; // Or aggregated_value, or another key property
+      const sampleIdentifier = heatmapData[0]?.siruta_code || 'no-code'; // Or aggregated_value, or another key property
       heatmapKeyPart = `heatmap-present-len${heatmapData.length}-sample-${sampleIdentifier}`;
     }
 

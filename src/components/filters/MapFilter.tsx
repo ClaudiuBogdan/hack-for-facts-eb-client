@@ -1,7 +1,6 @@
 import { FilterListContainer } from "./base-filter/FilterListContainer";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { ArrowUpDown, Calendar, ChartBar, XCircle, Tags } from "lucide-react";
-import { FunctionalClassificationList } from "./functional-classification-filter";
+import { ArrowUpDown, Calendar, Tags, XCircle } from "lucide-react";
 import { YearFilter } from "./year-filter";
 import { AccountCategoryRadioGroup } from "./account-type-filter/AccountCategoryRadioGroup";
 import { Button } from "../ui/button";
@@ -15,7 +14,6 @@ export function MapFilter() {
         selectedFunctionalClassifications,
         selectedEconomicClassifications,
         setSelectedYears,
-        setSelectedFunctionalClassifications,
         setSelectedEconomicClassifications,
         resetMapFilters,
     } = useMapFilter();
@@ -55,13 +53,13 @@ export function MapFilter() {
                     selected={selectedYears}
                     setSelected={(items) => setSelectedYears(items as OptionItem<number>[])}
                 />
-                <FilterListContainer
+                {/* <FilterListContainer
                     title="Clasificare Functionala"
                     icon={<ChartBar className="w-4 h-4" />}
                     listComponent={FunctionalClassificationList}
                     selected={selectedFunctionalClassifications}
                     setSelected={(items) => setSelectedFunctionalClassifications(items as OptionItem<string>[])}
-                />
+                /> */}
                 <FilterListContainer
                     title="Clasificare Economică"
                     icon={<Tags className="w-4 h-4" />}

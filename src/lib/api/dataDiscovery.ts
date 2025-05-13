@@ -83,6 +83,7 @@ export interface HeatmapUATDataPoint {
   uat_id: string;
   uat_code: string;
   uat_name: string;
+  siruta_code: string;
   county_code?: string | null;
   county_name?: string | null;
   population?: number | null;
@@ -166,8 +167,9 @@ const GET_HEATMAP_UAT_DATA_QUERY = `
   query GetHeatmapUATData($filter: HeatmapFilterInput!) {
     heatmapUATData(filter: $filter) {
       uat_id
-      uat_code
       uat_name
+      uat_code
+      siruta_code
       county_code
       county_name
       population

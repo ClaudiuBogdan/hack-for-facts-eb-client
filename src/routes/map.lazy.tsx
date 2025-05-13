@@ -3,7 +3,7 @@ import { createLazyFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import L, { LeafletMouseEvent } from "leaflet"; // Added L for L.PathOptions
 import React from "react"; // Added React for useMemo
-import { getHeatmapColor, normalizeValue } from "@/components/maps/utils";
+import { getHeatmapColor, normalizeValue, getPercentileValues } from "@/components/maps/utils";
 import { UatMap } from "@/components/maps/UatMap";
 import { UatFeature, UatProperties } from "@/components/maps/interfaces";
 import { DEFAULT_FEATURE_STYLE } from "@/components/maps/constants";
@@ -11,6 +11,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner"; // Added import
 import { useGeoJson } from "@/hooks/useGeoJson"; // Added import for the new hook
 import { MapFilter } from "@/components/filters/MapFilter"; // getDefaultMapFilters removed
 import { useMapFilter } from "@/lib/hooks/useMapFilterStore"; // Import the store hook
+import { MapLegend } from "@/components/maps/MapLegend"; // Import MapLegend
 
 export const Route = createLazyFileRoute("/map")({
   component: MapPage, // Renamed component to MapPage for clarity
@@ -32,24 +33,25 @@ export const Route = createLazyFileRoute("/map")({
 //   return response.json();
 // };
 
-const getMinMaxValues = (data: HeatmapUATDataPoint[] | undefined): { min: number; max: number } => {
-  if (!data || data.length === 0) {
-    return { min: 0, max: 0 };
-  }
-  const values = data.map(d => d.aggregated_value);
-  return {
-    min: Math.min(...values),
-    max: Math.max(...values),
-  };
-};
+// const getMinMaxValues = (data: HeatmapUATDataPoint[] | undefined): { min: number; max: number } => {
+//   if (!data || data.length === 0) {
+//     return { min: 0, max: 0 };
+//   }
+//   const values = data.map(d => d.aggregated_value);
+//   return {
+//     min: Math.min(...values),
+//     max: Math.max(...values),
+//   };
+// };
 
-
-// This function is now defined in the context where UatMap is used.
+// Modified to accept min and max as arguments
 const createHeatmapStyleFunction = (
-  heatmapData?: HeatmapUATDataPoint[]
+  heatmapData: HeatmapUATDataPoint[] | undefined,
+  min: number, // Added min
+  max: number  // Added max
 ): ((feature: UatFeature) => L.PathOptions) => {
-  const { min, max } = getMinMaxValues(heatmapData);
-  console.log("[HeatmapDebug] Min/Max aggregated_value:", { min, max });
+  // const { min, max } = getPercentileValues(heatmapData, 5, 95); // Calculation moved to MapPage
+  // console.log("[HeatmapDebug] Percentile (5th, 95th) aggregated_value:", { min, max });
 
   return (feature: UatFeature) => {
     if (!feature || !feature.properties || !feature.properties.natcode) {
@@ -57,23 +59,23 @@ const createHeatmapStyleFunction = (
       return DEFAULT_FEATURE_STYLE;
     }
 
-    const uatCode = feature.properties.natcode;
-    // console.log(`[HeatmapDebug] Processing UAT: ${uatCode} (${feature.properties.name})`);
+    const sirutaCode = feature.properties.natcode;
+    // console.log(`[HeatmapDebug] Processing UAT: ${sirutaCode} (${feature.properties.name})`);
 
     if (!heatmapData) {
-      // console.log(`[HeatmapDebug] No heatmapData available for UAT: ${uatCode}, returning DEFAULT_FEATURE_STYLE`);
+      // console.log(`[HeatmapDebug] No heatmapData available for UAT: ${sirutaCode}, returning DEFAULT_FEATURE_STYLE`);
       return DEFAULT_FEATURE_STYLE;
     }
 
-    const dataPoint = heatmapData.find(d => d.uat_code === uatCode);
+    const dataPoint = heatmapData.find(d => d.siruta_code === sirutaCode);
 
     if (!dataPoint) {
-      // console.log(`[HeatmapDebug] No dataPoint found for UAT: ${uatCode}, returning greyed out style`);
+      // console.log(`[HeatmapDebug] No dataPoint found for UAT: ${sirutaCode}, returning greyed out style`);
       return { ...DEFAULT_FEATURE_STYLE, fillOpacity: 0.1, fillColor: "#cccccc" };
     }
 
     const value = dataPoint.aggregated_value;
-    // console.log(`[HeatmapDebug] UAT: ${uatCode}, DataPoint:`, dataPoint, "Value:", value);
+    // console.log(`[HeatmapDebug] UAT: ${sirutaCode}, DataPoint:`, dataPoint, "Value:", value);
 
     if (min === max) {
       const style = {
@@ -93,9 +95,9 @@ const createHeatmapStyleFunction = (
       fillOpacity: 0.7,
     };
     // Log only for a few features to avoid flooding the console
-    if (Math.random() < 0.01) { // Log for approx 1% of features
-      console.log(`[HeatmapDebug] UAT: ${uatCode}, Value: ${value}, Normalized: ${normalized}, Color: ${color}, Style:`, finalStyle);
-    }
+    // if (Math.random() < 0.01) { // Log for approx 1% of features
+    //   console.log(`[HeatmapDebug] UAT: ${sirutaCode}, Value: ${value}, Normalized: ${normalized}, Color: ${color}, Style:`, finalStyle);
+    // }
 
     return finalStyle;
   };
@@ -128,10 +130,15 @@ function MapPage() { // Renamed component to MapPage
     error: geoJsonError
   } = useGeoJson();
 
-  // The style function is memoized and re-created only when heatmapData changes.
-  const aDynamicGetFeatureStyle = React.useMemo(() => {
-    return createHeatmapStyleFunction(heatmapData);
+  // Calculate min and max for legend and style function
+  const { min: minAggregatedValue, max: maxAggregatedValue } = React.useMemo(() => {
+    return getPercentileValues(heatmapData, 5, 95);
   }, [heatmapData]);
+
+  const aDynamicGetFeatureStyle = React.useMemo(() => {
+    // Pass calculated min and max to the style function creator
+    return createHeatmapStyleFunction(heatmapData, minAggregatedValue, maxAggregatedValue);
+  }, [heatmapData, minAggregatedValue, maxAggregatedValue]);
 
   const isLoading = isLoadingHeatmap || isLoadingGeoJson;
   const error = heatmapError || geoJsonError;
@@ -160,12 +167,20 @@ function MapPage() { // Renamed component to MapPage
         ) : !heatmapData || !geoJsonData ? (
           <div className="p-4 text-center">Data not available.</div>
         ) : (
-          <UatMap
-            onUatClick={handleUatClick}
-            getFeatureStyle={aDynamicGetFeatureStyle}
-            heatmapData={heatmapData}
-            geoJsonData={geoJsonData}
-          />
+          <>
+            <UatMap
+              onUatClick={handleUatClick}
+              getFeatureStyle={aDynamicGetFeatureStyle}
+              heatmapData={heatmapData}
+              geoJsonData={geoJsonData}
+            />
+            <MapLegend
+              min={minAggregatedValue}
+              max={maxAggregatedValue}
+              className="absolute bottom-4 right-4 z-[1000]"
+              title="Aggregated Value Legend"
+            />
+          </>
         )}
       </div>
     </div>
