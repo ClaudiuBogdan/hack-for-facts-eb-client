@@ -1,5 +1,6 @@
 import React from 'react';
 import { getHeatmapColor } from './utils'; // Assuming getHeatmapColor is in utils
+import { formatCurrency } from '@/lib/utils';
 
 interface MapLegendProps {
   min: number;
@@ -13,20 +14,8 @@ interface MapLegendProps {
 const formatLegendValue = (value: number | undefined | null): string => {
   if (value === undefined || value === null) return 'N/A';
 
-  let formattedValue:
-    | string
-    | number = value.toFixed(0); // Default to toFixed(0) for values < 1000 or if no other condition met
-
-  if (Math.abs(value) >= 1_000_000_000) {
-    formattedValue = `${(value / 1_000_000_000).toFixed(1)}B`;
-  }
-  else if (Math.abs(value) >= 1_000_000) {
-    formattedValue = `${(value / 1_000_000).toFixed(1)}M`;
-  }
-  else if (Math.abs(value) >= 1_000) {
-    formattedValue = `${(value / 1_000).toFixed(1)}K`;
-  }
-  return `${formattedValue} RON`;
+  const compactValue = formatCurrency(value, 'compact');
+  return compactValue;
 };
 
 export const MapLegend: React.FC<MapLegendProps> = ({

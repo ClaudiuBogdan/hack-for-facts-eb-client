@@ -11,7 +11,7 @@ export function formatCurrency(amount: number, notation?: "standard" | "compact"
     currency: "RON",
     notation: notation || "standard",
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(amount);
 }
 

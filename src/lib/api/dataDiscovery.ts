@@ -87,7 +87,9 @@ export interface HeatmapUATDataPoint {
   county_code?: string | null;
   county_name?: string | null;
   population?: number | null;
-  aggregated_value: number;
+  amount: number;
+  total_amount: number;
+  per_capita_amount: number;
 }
 
 export interface HeatmapFilterInput {
@@ -96,10 +98,10 @@ export interface HeatmapFilterInput {
   account_categories: string[];
   normalization?: 'total' | 'per_capita';
   years: number[];
-  min_amount?: string;
-  max_amount?: string;
-  min_population?: string;
-  max_population?: string;
+  min_amount?: number;
+  max_amount?: number;
+  min_population?: number;
+  max_population?: number;
 }
 
 interface HeatmapUATDataApiResponse {
@@ -176,7 +178,9 @@ const GET_HEATMAP_UAT_DATA_QUERY = `
       county_code
       county_name
       population
-      aggregated_value
+      amount
+      total_amount
+      per_capita_amount
     }
   }
 `;

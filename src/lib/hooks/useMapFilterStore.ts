@@ -214,11 +214,10 @@ export const useMapFilter = () => {
         years: years.map(year => year.id),
         functional_codes: functionalClassifications.length > 0 ? functionalClassifications.map(fc => fc.id) : undefined,
         economic_codes: economicClassifications.length > 0 ? economicClassifications.map(ec => ec.id) : undefined, // Add economic_codes
-        min_amount: minAmount,
-        max_amount: maxAmount,
-        min_population: minPopulation,
-        max_population: maxPopulation,
-        // TODO: Add normalization to the API input if/when the API supports it
+        min_amount: !Number.isNaN(minAmount) ? Number(minAmount) : undefined,
+        max_amount: !Number.isNaN(maxAmount) ? Number(maxAmount) : undefined,
+        min_population: !Number.isNaN(minPopulation) ? Number(minPopulation) : undefined,
+        max_population: !Number.isNaN(maxPopulation) ? Number(maxPopulation) : undefined,
     }), [accountCategory, normalization, years, functionalClassifications, economicClassifications, minAmount, maxAmount, minPopulation, maxPopulation]); // Add economicClassifications to dependency array
 
     return {

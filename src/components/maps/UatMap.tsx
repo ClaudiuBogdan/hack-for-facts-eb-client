@@ -15,6 +15,7 @@ import {
   DEFAULT_MAX_BOUNDS,
 } from './constants';
 import { HeatmapUATDataPoint } from '@/lib/api/dataDiscovery';
+import { generateHash } from '@/lib/utils';
 
 interface UatMapProps {
   onUatClick: (properties: UatProperties, event: LeafletMouseEvent) => void;
@@ -102,25 +103,8 @@ export const UatMap: React.FC<UatMapProps> = ({
   );
 
   const mapKey = useMemo(() => {
-    // Part 1: Reflects the loading state of the base GeoJSON data
-    const geoKeyPart = geoJsonData ? "geojson-loaded" : "geojson-loading";
-
-    // Part 2: Reflects the state of heatmapData
-    let heatmapKeyPart: string;
-    if (!heatmapData) {
-      heatmapKeyPart = "heatmap-absent"; // heatmapData is null or undefined
-    } else if (heatmapData.length === 0) {
-      heatmapKeyPart = "heatmap-empty"; // heatmapData is an empty array
-    } else {
-      // For non-empty heatmapData, create a key part based on its length
-      // and a sample value from the first item. This acts as a heuristic
-      // to detect meaningful changes without stringifying the entire array,
-      // which could be costly for large datasets.
-      // Ensure you pick a property that, if changed, would necessitate a map update.
-      const sampleIdentifier = heatmapData[0]?.siruta_code || 'no-code'; // Or aggregated_value, or another key property
-      heatmapKeyPart = `heatmap-present-len${heatmapData.length}-sample-${sampleIdentifier}`;
-    }
-
+    const geoKeyPart = generateHash(JSON.stringify(geoJsonData));
+    const heatmapKeyPart = generateHash(JSON.stringify(heatmapData));
     return `${geoKeyPart}-${heatmapKeyPart}`;
   }, [geoJsonData, heatmapData]);
 

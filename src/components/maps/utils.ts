@@ -39,7 +39,8 @@ export const createTooltipContent = (
         <strong>${dataPoint.uat_name || properties.name}</strong> (${dataPoint.uat_code || uatIdentifier})<br/>
         County: ${dataPoint.county_name || properties.county || 'N/A'}<br/>
         Population: ${dataPoint.population !== undefined && dataPoint.population !== null ? dataPoint.population.toLocaleString() : 'N/A'}<br/>
-        Aggregated Value: <strong>${formatTooltipValue(dataPoint.aggregated_value)}</strong>
+        Per Capita: <strong>${formatTooltipValue(dataPoint.per_capita_amount)}</strong><br/>
+        Total: <strong>${formatTooltipValue(dataPoint.total_amount)}</strong>
       </div>
     `;
   }
@@ -64,7 +65,7 @@ export const getPercentileValues = (
   if (!data || data.length === 0) {
     return { min: 0, max: 0 };
   }
-  const sortedValues = data.map(d => d.aggregated_value).sort((a, b) => a - b);
+  const sortedValues = data.map(d => d.amount).sort((a, b) => a - b);
 
   const lowerIndex = Math.floor((lowerPercentile / 100) * (sortedValues.length -1));
   const upperIndex = Math.ceil((upperPercentile / 100) * (sortedValues.length -1));
@@ -108,7 +109,7 @@ export const normalizeValue = (value: number, min: number, max: number): number 
     // If min and max are the same (e.g., after percentile clamping or if all data points are identical),
     // decide how to handle this.
     // Option 1: return 0.5 to color it as a mid-point.
-    // Option 2: return 0 or 1 based on whether the value itself is 0 (relevant for aggregated_value=0)
+    // Option 2: return 0 or 1 based on whether the value itself is 0 (relevant for amount=0)
     return value === 0 ? 0 : 0.5;
   }
   // Clamp the value to the min/max range (derived from percentiles or actual min/max)

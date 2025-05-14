@@ -25,7 +25,7 @@ const createHeatmapStyleFunction = (
   max: number  // Added max
 ): ((feature: UatFeature) => L.PathOptions) => {
   // const { min, max } = getPercentileValues(heatmapData, 5, 95); // Calculation moved to MapPage
-  // console.log("[HeatmapDebug] Percentile (5th, 95th) aggregated_value:", { min, max });
+  // console.log("[HeatmapDebug] Percentile (5th, 95th) amount:", { min, max });
 
   return (feature: UatFeature) => {
     if (!feature || !feature.properties || !feature.properties.natcode) {
@@ -48,7 +48,7 @@ const createHeatmapStyleFunction = (
       return { ...DEFAULT_FEATURE_STYLE, fillOpacity: 0.1, fillColor: "#cccccc" };
     }
 
-    const value = dataPoint.aggregated_value;
+    const value = dataPoint.amount;
     // console.log(`[HeatmapDebug] UAT: ${sirutaCode}, DataPoint:`, dataPoint, "Value:", value);
 
     if (min === max) {
