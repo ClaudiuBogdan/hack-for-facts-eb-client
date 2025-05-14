@@ -6,33 +6,34 @@ import { BaseListFilterProps, OptionItem } from "./interfaces";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface FilterContainerProps {
+    title: string;
+    unit?: string;
     rangeComponent: FunctionComponent<BaseListFilterProps>;
-    minValue: string | number;
-    maxValue: string | number;
+    minValue?: string | number;
+    maxValue?: string | number;
     onMinValueChange: (value: string) => void;
     onMaxValueChange: (value: string) => void;
-    title: string;
     icon: React.ReactNode;
 }
 
 
-export function FilterRangeContainer({ rangeComponent: RangeComponent, title, icon, minValue, maxValue, onMinValueChange, onMaxValueChange }: FilterContainerProps) {
+export function FilterRangeContainer({ rangeComponent: RangeComponent, title, unit, icon, minValue, maxValue, onMinValueChange, onMaxValueChange }: FilterContainerProps) {
     // State to manage if all selected items are shown or just the compact view (passed to SelectedOptionsDisplay)
     const [showAllSelected, setShowAllSelected] = useState(false);
 
     const activeRangeOptions = useMemo(() => {
         const options: OptionItem[] = [];
 
-        if (minValue) {
-            options.push({ id: "min", label: `min: ${minValue}` });
+        if (minValue !== undefined) {
+            options.push({ id: "min", label: `min: ${minValue} ${unit}` });
         }
 
-        if (maxValue) {
-            options.push({ id: "max", label: `max: ${maxValue}` });
+        if (maxValue !== undefined) {
+            options.push({ id: "max", label: `max: ${maxValue} ${unit}` });
         }
 
         return options;
-    }, [minValue, maxValue]);
+    }, [minValue, maxValue, unit]);
 
     const handleClearRange = (option: OptionItem) => {
         if (option.id === "min") {
@@ -68,6 +69,7 @@ export function FilterRangeContainer({ rangeComponent: RangeComponent, title, ic
                             <RangeComponent
                                 minValue={minValue}
                                 maxValue={maxValue}
+                                unit={unit}
                                 onMinValueChange={onMinValueChange}
                                 onMaxValueChange={onMaxValueChange}
                             />

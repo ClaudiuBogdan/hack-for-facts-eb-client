@@ -11,6 +11,12 @@ const AccountCategoryOptionItemSchema = z.object({
 });
 export type AccountCategoryOptionItem = z.infer<typeof AccountCategoryOptionItemSchema>;
 
+const NormalizationOptionItemSchema = z.object({
+    id: z.enum(["total", "per-capita"]),
+    label: z.string(),
+});
+export type NormalizationOptionItem = z.infer<typeof NormalizationOptionItemSchema>;
+
 const YearOptionItemSchema = z.object({
     id: z.number(),
     label: z.string(),
@@ -34,21 +40,32 @@ export type EconomicClassificationOptionItem = z.infer<typeof EconomicClassifica
 // --- Schema for the internal state of the store ---
 const InternalMapFiltersObjectSchema = z.object({
     accountCategory: AccountCategoryOptionItemSchema,
+    normalization: NormalizationOptionItemSchema,
     years: z.array(YearOptionItemSchema).min(1, "At least one year must be selected"),
     functionalClassifications: z.array(GenericOptionItemSchema),
     economicClassifications: z.array(EconomicClassificationOptionItemSchema), // Added economic classifications
+    minAmount: z.number().optional(),
+    maxAmount: z.number().optional(),
+    minPopulation: z.number().optional(),
+    maxPopulation: z.number().optional(),
 });
 export type InternalMapFiltersState = z.infer<typeof InternalMapFiltersObjectSchema>;
 
 // --- Default state ---
+const defaultNormalization: NormalizationOptionItem = { id: "total", label: "Total" };
 const defaultAccountCategory: AccountCategoryOptionItem = { id: "ch", label: "Cheltuieli" };
 const defaultYears: YearOptionItem[] = [{ id: new Date().getFullYear() - 1, label: String(new Date().getFullYear() - 1) }];
 
 const defaultInternalMapFiltersState: InternalMapFiltersState = {
+    normalization: defaultNormalization,
     accountCategory: defaultAccountCategory,
     years: defaultYears,
     functionalClassifications: [],
     economicClassifications: [], // Added default for economic classifications
+    minAmount: undefined,
+    maxAmount: undefined,
+    minPopulation: undefined,
+    maxPopulation: undefined,
 };
 
 const defaultInternalFiltersJSON = JSON.stringify(defaultInternalMapFiltersState); // For comparison in URL storage
@@ -56,10 +73,15 @@ const defaultInternalFiltersJSON = JSON.stringify(defaultInternalMapFiltersState
 // --- Zustand Store Definition ---
 
 interface MapFilterStoreActions {
+    setNormalization: (updater: NormalizationOptionItem | ((prev: NormalizationOptionItem) => NormalizationOptionItem)) => void;
     setAccountCategory: (updater: AccountCategoryOptionItem | ((prev: AccountCategoryOptionItem) => AccountCategoryOptionItem)) => void;
     setSelectedYears: (updater: YearOptionItem[] | ((prev: YearOptionItem[]) => YearOptionItem[])) => void;
     setSelectedFunctionalClassifications: (updater: GenericOptionItem[] | ((prev: GenericOptionItem[]) => GenericOptionItem[])) => void;
     setSelectedEconomicClassifications: (updater: EconomicClassificationOptionItem[] | ((prev: EconomicClassificationOptionItem[]) => EconomicClassificationOptionItem[])) => void; // Added setter for economic classifications
+    setMinAmount: (updater: number | undefined | ((prev: number | undefined) => number | undefined)) => void;
+    setMaxAmount: (updater: number | undefined | ((prev: number | undefined) => number | undefined)) => void;
+    setMinPopulation: (updater: number | undefined | ((prev: number | undefined) => number | undefined)) => void;
+    setMaxPopulation: (updater: number | undefined | ((prev: number | undefined) => number | undefined)) => void;
     resetMapFilters: () => void;
 }
 
@@ -123,6 +145,9 @@ export const useMapFilterStore = create<MapFilterStore>()(
         (set) => ({
             ...defaultInternalMapFiltersState,
             // Actions
+            setNormalization: (updater) => set(state => ({
+                normalization: typeof updater === 'function' ? updater(state.normalization) : updater,
+            })),
             setAccountCategory: (updater) => set(state => ({
                 accountCategory: typeof updater === 'function' ? updater(state.accountCategory) : updater,
             })),
@@ -138,6 +163,18 @@ export const useMapFilterStore = create<MapFilterStore>()(
             setSelectedEconomicClassifications: (updater) => set(state => ({ // Added implementation for economic classifications setter
                 economicClassifications: typeof updater === 'function' ? updater(state.economicClassifications) : updater,
             })),
+            setMinAmount: (updater) => set(state => ({
+                minAmount: typeof updater === 'function' ? updater(state.minAmount) : updater,
+            })),
+            setMaxAmount: (updater) => set(state => ({
+                maxAmount: typeof updater === 'function' ? updater(state.maxAmount) : updater,
+            })),
+            setMinPopulation: (updater) => set(state => ({
+                minPopulation: typeof updater === 'function' ? updater(state.minPopulation) : updater,
+            })),
+            setMaxPopulation: (updater) => set(state => ({
+                maxPopulation: typeof updater === 'function' ? updater(state.maxPopulation) : updater,
+            })),
             resetMapFilters: () => set(defaultInternalMapFiltersState),
         }),
         {
@@ -150,14 +187,24 @@ export const useMapFilterStore = create<MapFilterStore>()(
 // --- Selector Hook (similar to useFilterSearch) ---
 export const useMapFilter = () => {
     const {
+        normalization,
         accountCategory,
         years,
         functionalClassifications,
         economicClassifications, // Destructure economicClassifications
+        minAmount,
+        maxAmount,
+        minPopulation,
+        maxPopulation,
+        setNormalization,
         setAccountCategory,
         setSelectedYears,
         setSelectedFunctionalClassifications,
         setSelectedEconomicClassifications, // Destructure setSelectedEconomicClassifications
+        setMinAmount,
+        setMaxAmount,
+        setMinPopulation,
+        setMaxPopulation,
         resetMapFilters,
     } = useMapFilterStore();
 
@@ -166,7 +213,12 @@ export const useMapFilter = () => {
         years: years.map(year => year.id),
         functional_codes: functionalClassifications.length > 0 ? functionalClassifications.map(fc => fc.id) : undefined,
         economic_codes: economicClassifications.length > 0 ? economicClassifications.map(ec => ec.id) : undefined, // Add economic_codes
-    }), [accountCategory, years, functionalClassifications, economicClassifications]); // Add economicClassifications to dependency array
+        min_amount: minAmount,
+        max_amount: maxAmount,
+        min_population: minPopulation,
+        max_population: maxPopulation,
+        // TODO: Add normalization to the API input if/when the API supports it
+    }), [accountCategory, years, functionalClassifications, economicClassifications, minAmount, maxAmount, minPopulation, maxPopulation]); // Add economicClassifications to dependency array
 
     return {
         // State values (as OptionItem for UI components)
@@ -174,12 +226,22 @@ export const useMapFilter = () => {
         selectedYears: years,
         selectedFunctionalClassifications: functionalClassifications,
         selectedEconomicClassifications: economicClassifications, // Expose selectedEconomicClassifications
+        selectedMinAmount: minAmount,
+        selectedMaxAmount: maxAmount,
+        selectedMinPopulation: minPopulation,
+        selectedMaxPopulation: maxPopulation,
 
         // Setters
+        selectedNormalization: normalization,
+        setNormalization,
         setAccountCategory,
         setSelectedYears,
         setSelectedFunctionalClassifications,
         setSelectedEconomicClassifications, // Expose setSelectedEconomicClassifications
+        setMinAmount,
+        setMaxAmount,
+        setMinPopulation,
+        setMaxPopulation,
         resetMapFilters,
 
         // Derived filter for API

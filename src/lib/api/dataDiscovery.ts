@@ -97,6 +97,8 @@ export interface HeatmapFilterInput {
   years: number[];
   min_amount?: number;
   max_amount?: number;
+  min_population?: number;
+  max_population?: number;
 }
 
 interface HeatmapUATDataApiResponse {

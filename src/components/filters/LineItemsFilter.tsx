@@ -105,6 +105,7 @@ export function LineItemsFilter() {
                 />
                 <FilterRangeContainer
                     title="Interval Valoare"
+                    unit="RON"
                     icon={<SlidersHorizontal className="w-4 h-4" />}
                     rangeComponent={AmountRangeFilter}
                     minValue={minAmount}

@@ -6,6 +6,7 @@ import { BaseListFilterProps } from "../base-filter/interfaces";
 export function AmountRangeFilter({
     minValue,
     maxValue,
+    unit,
     onMinValueChange,
     onMaxValueChange,
     className
@@ -21,11 +22,11 @@ export function AmountRangeFilter({
                         min={0}
                         step={1000}
                         placeholder="Ex: 2000"
-                        value={minValue}
+                        value={minValue || ""}
                         onChange={(e) => onMinValueChange(e.target.value)}
-                        className="w-full pr-12"
+                        className="w-full pr-16"
                     />
-                    <span className="absolute right-3 text-gray-500">RON</span>
+                    {unit && <span className="absolute right-3 text-gray-500">{unit}</span>}
                 </div>
             </div>
             <div className="flex flex-col space-y-1.5">
@@ -37,11 +38,11 @@ export function AmountRangeFilter({
                         step={1000}
                         id="maxAmount"
                         placeholder="Ex: 4000"
-                        value={maxValue}
+                        value={maxValue || ""}
                         onChange={(e) => onMaxValueChange(e.target.value)}
-                        className="w-full pr-12"
+                        className="w-full pr-16"
                     />
-                    <span className="absolute right-3 text-gray-500">RON</span>
+                    {unit && <span className="absolute right-3 text-gray-500">{unit}</span>}
                 </div>
             </div>
         </div>
