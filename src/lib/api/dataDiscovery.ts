@@ -94,11 +94,12 @@ export interface HeatmapFilterInput {
   functional_codes?: string[];
   economic_codes?: string[];
   account_categories: string[];
+  normalization?: 'total' | 'per_capita';
   years: number[];
-  min_amount?: number;
-  max_amount?: number;
-  min_population?: number;
-  max_population?: number;
+  min_amount?: string;
+  max_amount?: string;
+  min_population?: string;
+  max_population?: string;
 }
 
 interface HeatmapUATDataApiResponse {

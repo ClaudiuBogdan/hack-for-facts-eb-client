@@ -11,8 +11,8 @@ interface FilterContainerProps {
     rangeComponent: FunctionComponent<BaseListFilterProps>;
     minValue?: string | number;
     maxValue?: string | number;
-    onMinValueChange: (value: string) => void;
-    onMaxValueChange: (value: string) => void;
+    onMinValueChange: (value: string | undefined) => void;
+    onMaxValueChange: (value: string | undefined) => void;
     icon: React.ReactNode;
 }
 
@@ -37,9 +37,9 @@ export function FilterRangeContainer({ rangeComponent: RangeComponent, title, un
 
     const handleClearRange = (option: OptionItem) => {
         if (option.id === "min") {
-            onMinValueChange("");
+            onMinValueChange(undefined);
         } else if (option.id === "max") {
-            onMaxValueChange("");
+            onMaxValueChange(undefined);
         }
     };
 
@@ -47,8 +47,9 @@ export function FilterRangeContainer({ rangeComponent: RangeComponent, title, un
      * Clears all currently selected entity options and resets the compact view state.
      */
     const clearSelection = () => {
-        onMinValueChange("");
-        onMaxValueChange("");
+        console.log("Clearing range");
+        onMinValueChange(undefined);
+        onMaxValueChange(undefined);
         setShowAllSelected(false); // Reset view on clear
     };
 

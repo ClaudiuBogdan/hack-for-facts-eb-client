@@ -30,8 +30,8 @@ const InternalFiltersObjectSchema = z.object({
     uats: z.array(GenericOptionItemSchema).optional().default([]),
     economicClassifications: z.array(GenericOptionItemSchema).optional().default([]),
     functionalClassifications: z.array(GenericOptionItemSchema).optional().default([]),
-    minAmount: z.string().optional().default(""),
-    maxAmount: z.string().optional().default(""),
+    minAmount: z.string().optional(),
+    maxAmount: z.string().optional(),
     accountTypes: z.array(GenericOptionItemSchema).optional().default([]),
     page: z.number().optional().default(1),
     pageSize: z.number().optional().default(25),
@@ -53,8 +53,8 @@ interface FilterStoreActions {
     setSelectedUats: (updater: GenericOptionItem[] | ((prev: GenericOptionItem[]) => GenericOptionItem[])) => void;
     setSelectedEconomicClassifications: (updater: GenericOptionItem[] | ((prev: GenericOptionItem[]) => GenericOptionItem[])) => void;
     setSelectedFunctionalClassifications: (updater: GenericOptionItem[] | ((prev: GenericOptionItem[]) => GenericOptionItem[])) => void;
-    setMinAmount: (updater: string | ((prev: string) => string)) => void;
-    setMaxAmount: (updater: string | ((prev: string) => string)) => void;
+    setMinAmount: (updater: string | undefined | ((prev: string | undefined) => string | undefined)) => void;
+    setMaxAmount: (updater: string | undefined | ((prev: string | undefined) => string | undefined)) => void;
     setSelectedAccountTypes: (updater: GenericOptionItem[] | ((prev: GenericOptionItem[]) => GenericOptionItem[])) => void;
     setPage: (updater: number | ((prev: number) => number)) => void;
     setPageSize: (updater: number | ((prev: number) => number)) => void;

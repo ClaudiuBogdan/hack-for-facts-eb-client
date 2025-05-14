@@ -44,10 +44,10 @@ const InternalMapFiltersObjectSchema = z.object({
     years: z.array(YearOptionItemSchema).min(1, "At least one year must be selected"),
     functionalClassifications: z.array(GenericOptionItemSchema),
     economicClassifications: z.array(EconomicClassificationOptionItemSchema), // Added economic classifications
-    minAmount: z.number().optional(),
-    maxAmount: z.number().optional(),
-    minPopulation: z.number().optional(),
-    maxPopulation: z.number().optional(),
+    minAmount: z.string().optional(),
+    maxAmount: z.string().optional(),
+    minPopulation: z.string().optional(),
+    maxPopulation: z.string().optional(),
 });
 export type InternalMapFiltersState = z.infer<typeof InternalMapFiltersObjectSchema>;
 
@@ -78,10 +78,10 @@ interface MapFilterStoreActions {
     setSelectedYears: (updater: YearOptionItem[] | ((prev: YearOptionItem[]) => YearOptionItem[])) => void;
     setSelectedFunctionalClassifications: (updater: GenericOptionItem[] | ((prev: GenericOptionItem[]) => GenericOptionItem[])) => void;
     setSelectedEconomicClassifications: (updater: EconomicClassificationOptionItem[] | ((prev: EconomicClassificationOptionItem[]) => EconomicClassificationOptionItem[])) => void; // Added setter for economic classifications
-    setMinAmount: (updater: number | undefined | ((prev: number | undefined) => number | undefined)) => void;
-    setMaxAmount: (updater: number | undefined | ((prev: number | undefined) => number | undefined)) => void;
-    setMinPopulation: (updater: number | undefined | ((prev: number | undefined) => number | undefined)) => void;
-    setMaxPopulation: (updater: number | undefined | ((prev: number | undefined) => number | undefined)) => void;
+    setMinAmount: (updater: string | undefined | ((prev: string | undefined) => string | undefined)) => void;
+    setMaxAmount: (updater: string | undefined | ((prev: string | undefined) => string | undefined)) => void;
+    setMinPopulation: (updater: string | undefined | ((prev: string | undefined) => string | undefined)) => void;
+    setMaxPopulation: (updater: string | undefined | ((prev: string | undefined) => string | undefined)) => void;
     resetMapFilters: () => void;
 }
 
@@ -209,7 +209,8 @@ export const useMapFilter = () => {
     } = useMapFilterStore();
 
     const heatmapFilterInput = React.useMemo((): HeatmapFilterInput => ({
-        account_categories: [accountCategory.id], // API expects an array
+        account_categories: [accountCategory.id],
+        normalization: normalization.id as 'total' | 'per_capita',
         years: years.map(year => year.id),
         functional_codes: functionalClassifications.length > 0 ? functionalClassifications.map(fc => fc.id) : undefined,
         economic_codes: economicClassifications.length > 0 ? economicClassifications.map(ec => ec.id) : undefined, // Add economic_codes
@@ -218,7 +219,7 @@ export const useMapFilter = () => {
         min_population: minPopulation,
         max_population: maxPopulation,
         // TODO: Add normalization to the API input if/when the API supports it
-    }), [accountCategory, years, functionalClassifications, economicClassifications, minAmount, maxAmount, minPopulation, maxPopulation]); // Add economicClassifications to dependency array
+    }), [accountCategory, normalization, years, functionalClassifications, economicClassifications, minAmount, maxAmount, minPopulation, maxPopulation]); // Add economicClassifications to dependency array
 
     return {
         // State values (as OptionItem for UI components)

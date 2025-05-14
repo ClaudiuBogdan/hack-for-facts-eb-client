@@ -181,7 +181,20 @@ export function DataTable({ data, isLoading, sort, onSortColumn }: DataTableProp
             )}
           </div>
         ),
-        cell: ({ row }) => formatCurrency(row.getValue("amount")),
+        cell: ({ row }) => {
+          const amount = row.getValue("amount") as number;
+          const fullValue = formatCurrency(amount);
+          const compactValue = formatCurrency(amount, "compact");
+          if (amount === undefined) {
+            return <span className="text-muted-foreground">N/A</span>;
+          }
+          return (
+            <div className="flex flex-col">
+              <span className="text-xs text-foreground">{fullValue}</span>
+              <span className="text-xs text-muted-foreground">{compactValue}</span>
+            </div>
+          );
+        },
       },
     ],
     [sort.by, sort.order, onSortColumn]

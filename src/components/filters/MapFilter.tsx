@@ -1,6 +1,6 @@
 import { FilterListContainer } from "./base-filter/FilterListContainer";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { ArrowUpDown, Calendar, ChartBar, Divide, Globe, Group, SlidersHorizontal, Tags, XCircle } from "lucide-react";
+import { ArrowUpDown, Calendar, ChartBar, Divide, Globe, SlidersHorizontal, Tags, XCircle } from "lucide-react";
 import { YearFilter } from "./year-filter";
 import { AccountCategoryRadioGroup } from "./account-type-filter/AccountCategoryRadioGroup";
 import { Button } from "../ui/button";
@@ -100,9 +100,9 @@ export function MapFilter() {
                     unit="RON"
                     rangeComponent={AmountRangeFilter}
                     minValue={selectedMinAmount}
-                    onMinValueChange={(val) => setMinAmount(Number(val))}
+                    onMinValueChange={setMinAmount}
                     maxValue={selectedMaxAmount}
-                    onMaxValueChange={(val) => setMaxAmount(Number(val))}
+                    onMaxValueChange={setMaxAmount}
                 />
                 <FilterRangeContainer
                     title="Interval Populație"
@@ -110,9 +110,9 @@ export function MapFilter() {
                     icon={<Globe className="w-4 h-4" />}
                     rangeComponent={AmountRangeFilter}
                     minValue={selectedMinPopulation}
-                    onMinValueChange={(val) => setMinPopulation(Number(val))}
+                    onMinValueChange={setMinPopulation}
                     maxValue={selectedMaxPopulation}
-                    onMaxValueChange={(val) => setMaxPopulation(Number(val))}
+                    onMaxValueChange={setMaxPopulation}
                 />
             </CardContent>
         </Card>

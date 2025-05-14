@@ -81,8 +81,7 @@ const createHeatmapStyleFunction = (
 function MapPage() { // Renamed component to MapPage
   const { heatmapFilterInput } = useMapFilter(); // Get filter input from the store hook
 
-  // Local state for heatmapFilter removed
-  // const [heatmapFilter, setHeatmapFilter] = React.useState<HeatmapFilterInput>(getDefaultMapFilters());
+  console.log(heatmapFilterInput)
 
   const handleUatClick = (properties: UatProperties, event: LeafletMouseEvent) => {
     console.log("UAT Clicked:", properties, "Event:", event);
