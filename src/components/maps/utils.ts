@@ -1,25 +1,7 @@
 import { HeatmapUATDataPoint } from '@/lib/api/dataDiscovery';
 import { UatProperties } from './interfaces';
+import { formatCurrency } from '@/lib/utils';
 
-// Helper to format currency values for tooltip - can be shared or adapted from MapLegend's formatter
-const formatTooltipValue = (value: number | undefined | null): string => {
-  if (value === undefined || value === null) return 'N/A';
-
-  let numPart: string;
-  if (Math.abs(value) >= 1_000_000_000) {
-    numPart = `${(value / 1_000_000_000).toFixed(2)}B`;
-  }
-  else if (Math.abs(value) >= 1_000_000) {
-    numPart = `${(value / 1_000_000).toFixed(2)}M`;
-  }
-  else if (Math.abs(value) >= 1_000) {
-    numPart = `${(value / 1_000).toFixed(2)}K`;
-  }
-  else {
-    numPart = value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
-  return `${numPart} RON`;
-};
 
 /**
  * Generates HTML content for a feature's tooltip.
@@ -38,9 +20,9 @@ export const createTooltipContent = (
       <div>
         <strong>${dataPoint.uat_name || properties.name}</strong> (${dataPoint.uat_code || uatIdentifier})<br/>
         County: ${dataPoint.county_name || properties.county || 'N/A'}<br/>
-        Population: ${dataPoint.population !== undefined && dataPoint.population !== null ? dataPoint.population.toLocaleString() : 'N/A'}<br/>
-        Per Capita: <strong>${formatTooltipValue(dataPoint.per_capita_amount)}</strong><br/>
-        Total: <strong>${formatTooltipValue(dataPoint.total_amount)}</strong>
+        Population: ${dataPoint.population !== undefined && dataPoint.population !== null ? dataPoint.population.toLocaleString('ro-RO') : 'N/A'}<br/>
+        Per Capita: <strong>${formatCurrency(dataPoint.per_capita_amount, "compact")}</strong><br/>
+        Total: <strong>${formatCurrency(dataPoint.total_amount, "compact")}</strong>
       </div>
     `;
   }
