@@ -2,7 +2,7 @@ import { getHeatmapUATData, HeatmapUATDataPoint } from "@/lib/api/dataDiscovery"
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { LeafletMouseEvent } from "leaflet";
-import React from "react";
+import React, { useState } from "react";
 import { getPercentileValues, createHeatmapStyleFunction } from "@/components/maps/utils";
 import { UatMap } from "@/components/maps/UatMap";
 import { UatProperties } from "@/components/maps/interfaces";
@@ -14,6 +14,11 @@ import { MapLegend } from "@/components/maps/MapLegend";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapIcon, TableIcon, BarChart2Icon } from "lucide-react";
 import { UatDataCharts } from "@/components/charts/UatDataCharts";
+import {
+  SortingState,
+  PaginationState,
+} from "@tanstack/react-table";
+import { HeatmapDataTable } from "@/components/maps/HeatmapDataTable";
 
 export const Route = createLazyFileRoute("/map")({
   component: MapPage,
@@ -21,6 +26,11 @@ export const Route = createLazyFileRoute("/map")({
 
 function MapPage() {
   const { heatmapFilterInput, activeView, setActiveView } = useMapFilter();
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 15,
+  });
 
   console.log(heatmapFilterInput, activeView);
 
@@ -90,21 +100,21 @@ function MapPage() {
           </TabsList>
 
           <div className="h-full w-full pt-0">
-            {isLoading ? (
+            {isLoading && !heatmapData ? (
               <div className="flex items-center justify-center h-full w-full" aria-live="polite" aria-busy="true">
                 <LoadingSpinner size="lg" text={loadingText} />
               </div>
             ) : error ? (
               <div className="p-4 text-center text-red-500">Error loading data: {error.message}</div>
-            ) : !heatmapData || !geoJsonData ? (
-              <div className="p-4 text-center">Data not available.</div>
+            ) : !geoJsonData ? (
+              <div className="p-4 text-center">Map data not available.</div>
             ) : (
               <>
                 <TabsContent value="map" className="h-full w-full m-0 data-[state=inactive]:hidden outline-none ring-0 focus:ring-0 focus-visible:ring-0">
                   <UatMap
                     onUatClick={handleUatClick}
                     getFeatureStyle={aDynamicGetFeatureStyle}
-                    heatmapData={heatmapData}
+                    heatmapData={heatmapData ?? []}
                     geoJsonData={geoJsonData}
                   />
                   <MapLegend
@@ -114,10 +124,27 @@ function MapPage() {
                     title="Aggregated Value Legend"
                   />
                 </TabsContent>
-                <TabsContent value="table" className="h-full w-full m-0 p-4 data-[state=inactive]:hidden outline-none ring-0 focus:ring-0 focus-visible:ring-0">
-                  <div>
-                    <h2 className="text-xl font-semibold mb-4 mt-12">Data Table View</h2>
-                    <p>Table component will be here.</p>
+                <TabsContent value="table" className="h-full w-full m-0 data-[state=inactive]:hidden outline-none ring-0 focus:ring-0 focus-visible:ring-0">
+                  <div className="p-4 h-full flex flex-col">
+                    <h2 className="text-xl font-semibold mb-4 mt-12 shrink-0">Data Table View</h2>
+                    {heatmapData ? (
+                      <HeatmapDataTable 
+                        data={heatmapData ?? []}
+                        isLoading={isLoadingHeatmap} 
+                        sorting={sorting} 
+                        setSorting={setSorting} 
+                        pagination={pagination} 
+                        setPagination={setPagination} 
+                      />
+                    ) : isLoadingHeatmap ? (
+                      <div className="flex items-center justify-center h-full">
+                        <LoadingSpinner size="md" text="Loading table data..." />
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <p className="text-muted-foreground">No data available for the table.</p>
+                      </div>
+                    )}
                   </div>
                 </TabsContent>
                 <TabsContent value="chart" className="h-full w-full m-0 data-[state=inactive]:hidden outline-none ring-0 focus:ring-0 focus-visible:ring-0">
