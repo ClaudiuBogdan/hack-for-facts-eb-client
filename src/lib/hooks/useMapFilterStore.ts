@@ -36,6 +36,7 @@ const EconomicClassificationOptionItemSchema = z.object({
 });
 export type EconomicClassificationOptionItem = z.infer<typeof EconomicClassificationOptionItemSchema>;
 
+export type MapPageView = "map" | "table" | "chart";
 
 // --- Schema for the internal state of the store ---
 const InternalMapFiltersObjectSchema = z.object({
@@ -48,10 +49,15 @@ const InternalMapFiltersObjectSchema = z.object({
     maxAmount: z.string().optional(),
     minPopulation: z.string().optional(),
     maxPopulation: z.string().optional(),
+    activeView: z.enum(["map", "table", "chart"]),
 });
 export type InternalMapFiltersState = z.infer<typeof InternalMapFiltersObjectSchema>;
 
-// --- Default state ---
+// Store state that is NOT persisted in the URL
+interface NonPersistedState {
+    activeView: MapPageView;
+}
+
 const defaultNormalization: NormalizationOptionItem = { id: "total", label: "Total" };
 const defaultAccountCategory: AccountCategoryOptionItem = { id: "ch", label: "Cheltuieli" };
 const defaultYears: YearOptionItem[] = [{ id: new Date().getFullYear() - 1, label: String(new Date().getFullYear() - 1) }];
@@ -66,11 +72,10 @@ const defaultInternalMapFiltersState: InternalMapFiltersState = {
     maxAmount: undefined,
     minPopulation: undefined,
     maxPopulation: undefined,
+    activeView: "map",
 };
 
 const defaultInternalFiltersJSON = JSON.stringify(defaultInternalMapFiltersState); // For comparison in URL storage
-
-// --- Zustand Store Definition ---
 
 interface MapFilterStoreActions {
     setNormalization: (updater: NormalizationOptionItem | ((prev: NormalizationOptionItem) => NormalizationOptionItem)) => void;
@@ -83,11 +88,11 @@ interface MapFilterStoreActions {
     setMinPopulation: (updater: string | undefined | ((prev: string | undefined) => string | undefined)) => void;
     setMaxPopulation: (updater: string | undefined | ((prev: string | undefined) => string | undefined)) => void;
     resetMapFilters: () => void;
+    setActiveView: (view: MapPageView) => void; // Setter for active view
 }
 
-type MapFilterStore = InternalMapFiltersState & MapFilterStoreActions;
+type MapFilterStore = InternalMapFiltersState & NonPersistedState & MapFilterStoreActions;
 
-// --- URL Storage (similar to useLineItemsFilter) ---
 const urlQueryStorageMap = {
     getItem: (): string | null => {
         if (typeof window === 'undefined') return null;
@@ -175,7 +180,8 @@ export const useMapFilterStore = create<MapFilterStore>()(
             setMaxPopulation: (updater) => set(state => ({
                 maxPopulation: typeof updater === 'function' ? updater(state.maxPopulation) : updater,
             })),
-            resetMapFilters: () => set(defaultInternalMapFiltersState),
+            resetMapFilters: () => set({ ...defaultInternalMapFiltersState }),
+            setActiveView: (view) => set({ activeView: view }),
         }),
         {
             name: 'map-url-filter-storage', // Unique name for localStorage if URL storage fails or for migration
@@ -184,7 +190,6 @@ export const useMapFilterStore = create<MapFilterStore>()(
     )
 );
 
-// --- Selector Hook (similar to useFilterSearch) ---
 export const useMapFilter = () => {
     const {
         normalization,
@@ -206,6 +211,9 @@ export const useMapFilter = () => {
         setMinPopulation,
         setMaxPopulation,
         resetMapFilters,
+        // Active view state and setter
+        activeView,
+        setActiveView,
     } = useMapFilterStore();
 
     const heatmapFilterInput = React.useMemo((): HeatmapFilterInput => ({
@@ -246,5 +254,9 @@ export const useMapFilter = () => {
 
         // Derived filter for API
         heatmapFilterInput,
+
+        // Active view
+        activeView,
+        setActiveView,
     };
 }; 

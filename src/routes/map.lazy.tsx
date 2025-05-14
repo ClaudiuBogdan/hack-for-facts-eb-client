@@ -11,17 +11,18 @@ import { useGeoJson } from "@/hooks/useGeoJson";
 import { MapFilter } from "@/components/filters/MapFilter";
 import { useMapFilter } from "@/lib/hooks/useMapFilterStore";
 import { MapLegend } from "@/components/maps/MapLegend";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MapIcon, TableIcon, BarChart2Icon } from "lucide-react";
+import { UatDataCharts } from "@/components/charts/UatDataCharts";
 
 export const Route = createLazyFileRoute("/map")({
   component: MapPage,
 });
 
+function MapPage() {
+  const { heatmapFilterInput, activeView, setActiveView } = useMapFilter();
 
-
-function MapPage() { // Renamed component to MapPage
-  const { heatmapFilterInput } = useMapFilter(); // Get filter input from the store hook
-
-  console.log(heatmapFilterInput)
+  console.log(heatmapFilterInput, activeView);
 
   const handleUatClick = (properties: UatProperties, event: LeafletMouseEvent) => {
     console.log("UAT Clicked:", properties, "Event:", event);
@@ -32,24 +33,21 @@ function MapPage() { // Renamed component to MapPage
     isLoading: isLoadingHeatmap,
     error: heatmapError
   } = useQuery<HeatmapUATDataPoint[], Error>({
-    queryKey: ["heatmapUATData", heatmapFilterInput], // Use dynamic filter input from store
-    queryFn: () => getHeatmapUATData(heatmapFilterInput), // Use dynamic filter input from store
+    queryKey: ["heatmapUATData", heatmapFilterInput],
+    queryFn: () => getHeatmapUATData(heatmapFilterInput),
   });
 
-  // Use the new hook to fetch GeoJSON data
   const {
     data: geoJsonData,
     isLoading: isLoadingGeoJson,
     error: geoJsonError
   } = useGeoJson();
 
-  // Calculate min and max for legend and style function
   const { min: minAggregatedValue, max: maxAggregatedValue } = React.useMemo(() => {
     return getPercentileValues(heatmapData, 5, 95);
   }, [heatmapData]);
 
   const aDynamicGetFeatureStyle = React.useMemo(() => {
-    // Pass calculated min and max to the style function creator
     return createHeatmapStyleFunction(heatmapData, minAggregatedValue, maxAggregatedValue);
   }, [heatmapData, minAggregatedValue, maxAggregatedValue]);
 
@@ -70,31 +68,71 @@ function MapPage() { // Renamed component to MapPage
       <div className="w-[360px] flex-shrink-0 border-r border-border bg-card text-card-foreground overflow-y-auto">
         <MapFilter />
       </div>
-      <div className="flex-grow relative"> {/* Added relative for potential absolute positioning of overlays if needed later */}
-        {isLoading ? (
-          <div className="flex items-center justify-center h-full w-full" aria-live="polite" aria-busy="true">
-            <LoadingSpinner size="lg" text={loadingText} />
+      <div className="flex-grow flex flex-col relative">
+        <Tabs
+          value={activeView}
+          onValueChange={(value) => setActiveView(value as "map" | "table" | "chart")}
+          className="flex flex-col flex-grow"
+        >
+          <TabsList className="absolute top-4 right-16 z-1000 bg-card/90 backdrop-blur-sm p-1 rounded-lg shadow-md">
+            <TabsTrigger value="map">
+              <MapIcon className="h-4 w-4 mr-2" />
+              Map
+            </TabsTrigger>
+            <TabsTrigger value="table">
+              <TableIcon className="h-4 w-4 mr-2" />
+              Table
+            </TabsTrigger>
+            <TabsTrigger value="chart">
+              <BarChart2Icon className="h-4 w-4 mr-2" />
+              Chart
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="h-full w-full pt-0">
+            {isLoading ? (
+              <div className="flex items-center justify-center h-full w-full" aria-live="polite" aria-busy="true">
+                <LoadingSpinner size="lg" text={loadingText} />
+              </div>
+            ) : error ? (
+              <div className="p-4 text-center text-red-500">Error loading data: {error.message}</div>
+            ) : !heatmapData || !geoJsonData ? (
+              <div className="p-4 text-center">Data not available.</div>
+            ) : (
+              <>
+                <TabsContent value="map" className="h-full w-full m-0 data-[state=inactive]:hidden outline-none ring-0 focus:ring-0 focus-visible:ring-0">
+                  <UatMap
+                    onUatClick={handleUatClick}
+                    getFeatureStyle={aDynamicGetFeatureStyle}
+                    heatmapData={heatmapData}
+                    geoJsonData={geoJsonData}
+                  />
+                  <MapLegend
+                    min={minAggregatedValue}
+                    max={maxAggregatedValue}
+                    className="absolute bottom-4 right-4 z-[1000]"
+                    title="Aggregated Value Legend"
+                  />
+                </TabsContent>
+                <TabsContent value="table" className="h-full w-full m-0 p-4 data-[state=inactive]:hidden outline-none ring-0 focus:ring-0 focus-visible:ring-0">
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4 mt-12">Data Table View</h2>
+                    <p>Table component will be here.</p>
+                  </div>
+                </TabsContent>
+                <TabsContent value="chart" className="h-full w-full m-0 data-[state=inactive]:hidden outline-none ring-0 focus:ring-0 focus-visible:ring-0">
+                  <div className="h-full w-full p-4 overflow-y-auto mt-12">
+                    {heatmapData && geoJsonData ? (
+                      <UatDataCharts data={heatmapData} />
+                    ) : (
+                      <p className="text-center text-muted-foreground">Chart data is loading or not available.</p>
+                    )}
+                  </div>
+                </TabsContent>
+              </>
+            )}
           </div>
-        ) : error ? (
-          <div className="p-4 text-center text-red-500">Error loading data: {error.message}</div>
-        ) : !heatmapData || !geoJsonData ? (
-          <div className="p-4 text-center">Data not available.</div>
-        ) : (
-          <>
-            <UatMap
-              onUatClick={handleUatClick}
-              getFeatureStyle={aDynamicGetFeatureStyle}
-              heatmapData={heatmapData}
-              geoJsonData={geoJsonData}
-            />
-            <MapLegend
-              min={minAggregatedValue}
-              max={maxAggregatedValue}
-              className="absolute bottom-4 right-4 z-[1000]"
-              title="Aggregated Value Legend"
-            />
-          </>
-        )}
+        </Tabs>
       </div>
     </div>
   );

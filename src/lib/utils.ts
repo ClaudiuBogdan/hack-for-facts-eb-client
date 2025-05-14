@@ -15,6 +15,21 @@ export function formatCurrency(amount: number, notation?: "standard" | "compact"
   }).format(amount);
 }
 
+/**
+ * Formats a number according to Romanian locale settings.
+ * Handles thousands separators (.) and decimal comma (,).
+ */
+export const formatNumberRO = (value: number | null | undefined): string => {
+  if (value === null || value === undefined || isNaN(value)) return 'N/A';
+  
+  // Standard abbreviations for large numbers
+  if (Math.abs(value) >= 1_000_000_000) return `${(value / 1_000_000_000).toLocaleString('ro-RO', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} B`;
+  if (Math.abs(value) >= 1_000_000) return `${(value / 1_000_000).toLocaleString('ro-RO', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} M`;
+  if (Math.abs(value) >= 1_000) return `${(value / 1_000).toLocaleString('ro-RO', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} K`;
+  
+  return value.toLocaleString('ro-RO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+};
+
 export function generateHash(message: string): string {
   let hash = 0x811c9dc5; // FNV1a 32-bit offset basis
 
