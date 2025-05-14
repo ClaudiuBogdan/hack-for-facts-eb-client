@@ -1,6 +1,7 @@
 import { HeatmapUATDataPoint } from '@/lib/api/dataDiscovery';
-import { UatProperties } from './interfaces';
+import { UatFeature, UatProperties } from './interfaces';
 import { formatCurrency } from '@/lib/utils';
+import { DEFAULT_FEATURE_STYLE } from './constants';
 
 
 /**
@@ -107,4 +108,63 @@ export const getHeatmapColor = (value: number): string => {
   // Hue ranges from 240 (blue) down to 0 (red)
   const hue = (1 - clampedValue) * 240;
   return `hsl(${hue}, 100%, 50%)`;
+};
+
+
+export const createHeatmapStyleFunction = (
+  heatmapData: HeatmapUATDataPoint[] | undefined,
+  min: number, // Added min
+  max: number  // Added max
+): ((feature: UatFeature) => L.PathOptions) => {
+  // const { min, max } = getPercentileValues(heatmapData, 5, 95); // Calculation moved to MapPage
+  // console.log("[HeatmapDebug] Percentile (5th, 95th) amount:", { min, max });
+
+  return (feature: UatFeature) => {
+    if (!feature || !feature.properties || !feature.properties.natcode) {
+      // console.log("[HeatmapDebug] Feature or properties missing, returning DEFAULT_FEATURE_STYLE");
+      return DEFAULT_FEATURE_STYLE;
+    }
+
+    const sirutaCode = feature.properties.natcode;
+    // console.log(`[HeatmapDebug] Processing UAT: ${sirutaCode} (${feature.properties.name})`);
+
+    if (!heatmapData) {
+      // console.log(`[HeatmapDebug] No heatmapData available for UAT: ${sirutaCode}, returning DEFAULT_FEATURE_STYLE`);
+      return DEFAULT_FEATURE_STYLE;
+    }
+
+    const dataPoint = heatmapData.find(d => d.siruta_code === sirutaCode);
+
+    if (!dataPoint) {
+      // console.log(`[HeatmapDebug] No dataPoint found for UAT: ${sirutaCode}, returning greyed out style`);
+      return { ...DEFAULT_FEATURE_STYLE, fillOpacity: 0.1, fillColor: "#cccccc" };
+    }
+
+    const value = dataPoint.amount;
+    // console.log(`[HeatmapDebug] UAT: ${sirutaCode}, DataPoint:`, dataPoint, "Value:", value);
+
+    if (min === max) {
+      const style = {
+        ...DEFAULT_FEATURE_STYLE,
+        fillColor: value !== 0 ? getHeatmapColor(0.5) : DEFAULT_FEATURE_STYLE.fillColor,
+        fillOpacity: 0.7,
+      };
+      // console.log(`[HeatmapDebug] UAT: ${uatCode} (min === max), Value: ${value}, Style:`, style);
+      return style;
+    }
+
+    const normalized = normalizeValue(value, min, max);
+    const color = getHeatmapColor(normalized);
+    const finalStyle = {
+      ...DEFAULT_FEATURE_STYLE,
+      fillColor: color,
+      fillOpacity: 0.7,
+    };
+    // Log only for a few features to avoid flooding the console
+    // if (Math.random() < 0.01) { // Log for approx 1% of features
+    //   console.log(`[HeatmapDebug] UAT: ${sirutaCode}, Value: ${value}, Normalized: ${normalized}, Color: ${color}, Style:`, finalStyle);
+    // }
+
+    return finalStyle;
+  };
 };
