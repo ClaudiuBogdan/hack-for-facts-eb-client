@@ -1,6 +1,6 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { FunctionComponent, useMemo, useState } from "react";
-import { cn } from "@/lib/utils"; // Your utility for classnames
+import { cn, formatNumberRO } from "@/lib/utils"; // Your utility for classnames
 import { SelectedOptionsDisplay } from "./SelectedOptionsDisplay"; // The new component
 import { BaseListFilterProps, OptionItem } from "./interfaces";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -25,11 +25,11 @@ export function FilterRangeContainer({ rangeComponent: RangeComponent, title, un
         const options: OptionItem[] = [];
 
         if (minValue !== undefined) {
-            options.push({ id: "min", label: `min: ${minValue} ${unit}` });
+            options.push({ id: "min", label: `min: ${formatNumberRO(Number(minValue))} ${unit}` });
         }
 
         if (maxValue !== undefined) {
-            options.push({ id: "max", label: `max: ${maxValue} ${unit}` });
+            options.push({ id: "max", label: `max: ${formatNumberRO(Number(maxValue))} ${unit}` });
         }
 
         return options;
