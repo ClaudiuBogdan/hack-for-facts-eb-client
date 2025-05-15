@@ -55,17 +55,17 @@ export const UatCountyBarChart: React.FC<UatCountyBarChartProps> = ({
           margin={{
             top: 5,
             right: 30,
-            left: 70,
+            left: 80,
             bottom: 70, // Increased for angled XAxis labels
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="county_name" angle={-45} textAnchor="end" interval={0} tick={{ fontSize: 10 }} height={50} label={{ value: xAxisLabel, position: 'insideBottom', dy: 50, fontSize: 12 }} />
-          <YAxis tickFormatter={(value) => formatCurrency(value, 'compact')} label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', fontSize: 12 }} />
+          <YAxis tickFormatter={(value) => formatCurrency(value, 'compact')} label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', dx: -75, fontSize: 12 }} />
           <Tooltip formatter={(value: number) => [formatCurrency(value, 'compact'), 'Total Amount']} />
           <Legend verticalAlign="top" height={36} />
           <Bar dataKey="total_amount" name="Total Amount" fill={barColor}>
-            <LabelList dataKey="total_amount" position="top" formatter={(value: number) => value > 0 ? formatCurrency(value, 'compact') : ''} fontSize={10} />
+            <LabelList dataKey="total_amount" position="top" angle={-45} offset={50} formatter={(value: number) => value > 0 ? formatCurrency(value, 'compact') : ''} fontSize={10} />
           </Bar>
         </BarChart>
       </ResponsiveContainer>

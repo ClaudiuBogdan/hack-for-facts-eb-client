@@ -129,8 +129,8 @@ export const UatPopulationSpendingScatterPlot: React.FC<UatPopulationSpendingSca
           margin={{
             top: 20,
             right: 30,
-            bottom: 70,
-            left: 70,
+            bottom: 60,
+            left: 80,
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
@@ -147,7 +147,7 @@ export const UatPopulationSpendingScatterPlot: React.FC<UatPopulationSpendingSca
             dataKey="amount"
             name="Amount"
             tickFormatter={(value) => formatCurrency(value, 'compact')}
-            label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', dx: -30, fontSize: 12 }}
+            label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', dx: -75, fontSize: 12 }}
             domain={['auto', 'auto']}
           />
           <ZAxis dataKey="uat_name" name="UAT Name" />
