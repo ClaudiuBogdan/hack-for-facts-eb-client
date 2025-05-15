@@ -11,13 +11,14 @@ interface FilterContainerProps {
     rangeComponent: FunctionComponent<BaseListFilterProps>;
     minValue?: string | number;
     maxValue?: string | number;
+    maxValueAllowed?: number;
     onMinValueChange: (value: string | undefined) => void;
     onMaxValueChange: (value: string | undefined) => void;
     icon: React.ReactNode;
 }
 
 
-export function FilterRangeContainer({ rangeComponent: RangeComponent, title, unit, icon, minValue, maxValue, onMinValueChange, onMaxValueChange }: FilterContainerProps) {
+export function FilterRangeContainer({ rangeComponent: RangeComponent, title, unit, icon, minValue, maxValue, maxValueAllowed, onMinValueChange, onMaxValueChange }: FilterContainerProps) {
     // State to manage if all selected items are shown or just the compact view (passed to SelectedOptionsDisplay)
     const [showAllSelected, setShowAllSelected] = useState(false);
 
@@ -73,6 +74,7 @@ export function FilterRangeContainer({ rangeComponent: RangeComponent, title, un
                                 unit={unit}
                                 onMinValueChange={onMinValueChange}
                                 onMaxValueChange={onMaxValueChange}
+                                maxValueAllowed={maxValueAllowed}
                             />
                         </CardContent>
                     </AccordionContent>

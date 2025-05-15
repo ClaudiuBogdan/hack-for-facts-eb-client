@@ -112,6 +112,7 @@ export function MapFilter() {
                     minValue={selectedMinPopulation}
                     onMinValueChange={setMinPopulation}
                     maxValue={selectedMaxPopulation}
+                    maxValueAllowed={100_000_000}
                     onMaxValueChange={setMaxPopulation}
                 />
             </CardContent>

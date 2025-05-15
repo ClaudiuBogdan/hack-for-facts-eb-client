@@ -8,11 +8,14 @@ import { useEffect, useState } from "react";
 export function AmountRangeFilter({
     minValue: initialMinValue,
     maxValue: initialMaxValue,
+    maxValueAllowed,
     unit,
     onMinValueChange,
     onMaxValueChange,
-    className
+    className,
 }: BaseListFilterProps) {
+
+    console.log("maxValueAllowed", maxValueAllowed);
 
     const [localMinValue, setLocalMinValue] = useState<string | undefined>(initialMinValue?.toString());
     const [localMaxValue, setLocalMaxValue] = useState<string | undefined>(initialMaxValue?.toString());
@@ -39,14 +42,27 @@ export function AmountRangeFilter({
         }
     }, 1000);
 
+    const parseValue = (value: string) => {
+        let parsedValue = Number(value);
+        if (maxValueAllowed !== undefined && parsedValue > maxValueAllowed) {
+            parsedValue = maxValueAllowed;
+        }
+        if (parsedValue < 0) {
+            parsedValue = 0;
+        }
+        return parsedValue.toString();
+    }
+
     const handleMinValueChange = (value: string) => {
-        setLocalMinValue(value);
-        debouncedMinValueChange(value);
+        const parsedValue = parseValue(value);
+        setLocalMinValue(parsedValue);
+        debouncedMinValueChange(parsedValue);
     }
 
     const handleMaxValueChange = (value: string) => {
-        setLocalMaxValue(value);
-        debouncedMaxValueChange(value);
+        const parsedValue = parseValue(value);
+        setLocalMaxValue(parsedValue);
+        debouncedMaxValueChange(parsedValue);
     }
     return (
         <div className={cn("w-full flex flex-col space-y-3 py-4", className)}>
@@ -60,6 +76,7 @@ export function AmountRangeFilter({
                         step={1000}
                         placeholder="Ex: 2000"
                         value={localMinValue || ""}
+                        max={maxValueAllowed}
                         onChange={(e) => handleMinValueChange(e.target.value)}
                         className="w-full pr-16"
                     />
@@ -76,6 +93,7 @@ export function AmountRangeFilter({
                         id="maxAmount"
                         placeholder="Ex: 4000"
                         value={localMaxValue || ""}
+                        max={maxValueAllowed}
                         onChange={(e) => handleMaxValueChange(e.target.value)}
                         className="w-full pr-16"
                     />

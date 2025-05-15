@@ -26,5 +26,6 @@ export interface BaseListFilterProps {
     unit?: string;
     onMinValueChange: (value: string | undefined) => void;
     onMaxValueChange: (value: string | undefined) => void;
+    maxValueAllowed?: number;
     className?: string;
 }
