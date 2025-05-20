@@ -1,5 +1,6 @@
 import { graphqlRequest } from "./graphql";
 import { createLogger } from "../logger";
+import { EntitySearchResult, EntitySearchNode } from "@/schemas/entities";
 
 const logger = createLogger("entities-api");
 
@@ -126,5 +127,65 @@ export async function getEntityDetails(
       cui,
     });
     throw error; // Re-throw the error to be handled by React Query
+  }
+}
+
+const ENTITY_SEARCH_QUERY = `
+  query EntitySearch($search: String, $limit: Int) {
+    entities(filter: { search: $search }, limit: $limit) {
+      nodes {
+        name
+        cui
+        uat {
+          county_name
+        }
+      }
+      # If your API returns pagination info for search, you can include it here
+      # pageInfo {
+      #   totalCount
+      # }
+    }
+  }
+`;
+
+/**
+ * Searches for entities based on a search term.
+ * @param searchTerm The term to search for.
+ * @param limit The maximum number of results to return (default: 10).
+ * @returns A promise that resolves to the search results.
+ */
+export async function searchEntities(
+  searchTerm: string,
+  limit: number = 10
+): Promise<EntitySearchNode[]> { // Return nodes directly for simplicity in the component
+  if (!searchTerm || searchTerm.trim() === "") {
+    return Promise.resolve([]);
+  }
+
+  logger.info("Searching entities", { searchTerm, limit });
+
+  try {
+    const variables = {
+      search: searchTerm,
+      limit,
+    };
+
+    // The actual response structure from graphqlRequest will be { data: { entities: EntitySearchResult } }
+    // or just { entities: EntitySearchResult } if graphqlRequest unwraps the 'data' object.
+    // Adjust based on how graphqlRequest is implemented.
+    // The current type { entities: EntitySearchResult } assumes graphqlRequest returns the direct GQL response data.
+    const response = await graphqlRequest<{ entities: EntitySearchResult }>(ENTITY_SEARCH_QUERY, variables);
+    
+    // Check if response and response.entities and response.entities.nodes exist
+    if (response && response.entities && response.entities.nodes) {
+      return response.entities.nodes;
+    }
+    return []; // Return empty array if data is not in the expected shape
+
+  } catch (error) {
+    logger.error("Error searching entities", { error, searchTerm });
+    // Depending on error handling strategy, you might want to throw the error
+    // or return an empty array / specific error object.
+    throw error; // Or return [];
   }
 }

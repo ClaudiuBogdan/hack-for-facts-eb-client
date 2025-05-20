@@ -1,18 +1,5 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  ArrowRight,
-  PieChart,
-  Database,
-} from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { createLazyFileRoute, Link } from "@tanstack/react-router";
+import { EntitySearchInput } from "@/components/entities/EntitySearchInput";
 
 export const Route = createLazyFileRoute("/")({
   component: Index,
@@ -20,98 +7,50 @@ export const Route = createLazyFileRoute("/")({
 
 function Index() {
   return (
-    <div className="container mx-auto mt-12 p-4">
-      <h1 className="text-3xl font-bold mb-8">Graph Gurus Dashboard</h1>
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 dark:from-slate-900 dark:to-slate-800">
+      {/* Optional: Navbar placeholder */}
+      {/* <header className="p-4">
+        <nav className="container mx-auto flex justify-between items-center">
+          <span className="text-xl font-bold text-slate-700 dark:text-slate-200">Graph Gurus</span>
+          <div> Nav links </div> 
+        </nav>
+      </header> */}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Anomaly Detection Card */}
-        {/* <Card className="overflow-hidden transition-all hover:shadow-md hover:border-primary/50 group">
-          <Link to="/anomalies" className="block">
-            <CardHeader className="pb-2 space-y-1">
-              <div className="flex items-center gap-2">
-                <div className="bg-red-100 p-2 rounded-full">
-                  <AlertTriangle className="h-5 w-5 text-red-500" />
-                </div>
-                <CardTitle className="group-hover:text-primary">
-                  Detectare Anomalii
-                </CardTitle>
-              </div>
-              <CardDescription>
-                Identifică tranzacții suspecte și tipare neobișnuite în
-                cheltuielile publice din România
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pb-0">
-              <div className="grid grid-cols-2 gap-4 mt-2 mb-6">
-                <div className="flex flex-col gap-1">
-                  <div className="text-2xl font-bold">15</div>
-                  <div className="text-sm text-muted-foreground">
-                    Anomalii Noi
-                  </div>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <div className="text-2xl font-bold">4</div>
-                  <div className="text-sm text-muted-foreground">
-                    Cazuri Critice
-                  </div>
-                </div>
-              </div>
-              <div className="h-[120px] flex justify-center items-center bg-muted/20 rounded-lg">
-                <BarChart3 className="h-16 w-16 text-muted-foreground/50" />
-              </div>
-            </CardContent>
-            <CardFooter className="pt-4">
-              <div className="flex items-center gap-1 text-primary ml-auto">
-                <span>Vezi anomalii</span>
-                <ArrowRight className="h-4 w-4" />
-              </div>
-            </CardFooter>
-          </Link>
-        </Card> */}
+      <main className="flex-grow flex items-start justify-center">
+        <div className="container mx-auto flex flex-col items-center text-center space-y-10 py-16 md:py-24">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50">
+            Financial Data Explorer
+          </h1>
+          <p className="max-w-2xl text-lg sm:text-xl text-slate-600 dark:text-slate-300">
+            Search and analyze public spending data for entities across Romania.
+          </p>
 
-        {/* Data Discovery Card */}
-        <Card className="overflow-hidden transition-all hover:shadow-md hover:border-primary/50 group">
-          <Link to="/data-discovery" className="block">
-            <CardHeader className="pb-2 space-y-1">
-              <div className="flex items-center gap-2">
-                <div className="bg-blue-100 p-2 rounded-full">
-                  <Database className="h-5 w-5 text-blue-500" />
-                </div>
-                <CardTitle className="group-hover:text-primary">
-                  Explorare Date
-                </CardTitle>
-              </div>
-              <CardDescription>
-                Analizează cheltuielile publice din județele României folosind
-                filtre avansate și comenzi în limbaj natural
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pb-0">
-              <div className="grid grid-cols-2 gap-4 mt-2 mb-6">
-                <div className="flex flex-col gap-1">
-                  <div className="text-2xl font-bold">41</div>
-                  <div className="text-sm text-muted-foreground">Județe</div>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <div className="text-2xl font-bold">2M+</div>
-                  <div className="text-sm text-muted-foreground">
-                    Înregistrări
-                  </div>
-                </div>
-              </div>
-              <div className="h-[120px] flex justify-center items-center bg-muted/20 rounded-lg">
-                <PieChart className="h-16 w-16 text-muted-foreground/50" />
-              </div>
-            </CardContent>
-            <CardFooter className="pt-4">
-              <div className="flex items-center gap-1 text-primary ml-auto">
-                <span>Explorează date</span>
-                <ArrowRight className="h-4 w-4" />
-              </div>
-            </CardFooter>
-          </Link>
-        </Card>
-      </div>
+          <div className="w-full max-w-2xl lg:max-w-3xl mt-8">
+            <EntitySearchInput
+              placeholder="Enter entity name or CUI..."
+            />
+          </div>
+
+          {/* Placeholder for maybe some quick link cards or stats if needed later */}
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+            <Link to="/data-discovery" className="p-6 bg-white dark:bg-slate-800/50 rounded-xl shadow-md text-left">
+              <h3 className="font-semibold text-slate-800 dark:text-slate-100">Explore Data</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Advanced filtering & analysis.</p>
+            </Link>
+
+            <Link to="/map" className="p-6 bg-white dark:bg-slate-800/50 rounded-xl shadow-md text-left">
+              <h3 className="font-semibold text-slate-800 dark:text-slate-100">Map</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Explore spending by UAT.</p>
+            </Link>
+          </div>
+
+        </div>
+      </main>
+
+      {/* Optional: Footer placeholder */}
+      {/* <footer className="p-4 text-center text-sm text-slate-500 dark:text-slate-400">
+        © {new Date().getFullYear()} Graph Gurus. All rights reserved.
+      </footer> */}
     </div>
   );
 }
