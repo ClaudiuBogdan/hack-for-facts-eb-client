@@ -27,24 +27,19 @@ export type EntityData = {
 export type BudgetLineItem = {
   line_item_id: string;
   report_id: string; // Kept as string to match current usage, even if schema ID is Int for report_id
+  entity_name: string;
   entity_cui: string;
-  entity_name?: string;
-  reporting_year: number;
-  reporting_period: string;
+  entity: {
+    cui: string;
+    name: string;
+  };
   functional_code: string;
   functional_name?: string;
   economic_code?: string; // Made optional to match schema: economic_code: String
   economic_name?: string;
   amount: number;
+  year: number;
   account_category: string;
-  // For when we fetch relations
-  report?: {
-    entity?: {
-      name: string;
-    };
-    reporting_year: number;
-    reporting_period: string;
-  };
   functionalClassification?: {
     functional_name: string;
   };
@@ -143,13 +138,11 @@ const GET_EXECUTION_LINE_ITEMS_QUERY = `
         functional_code
         economic_code
         amount
+        year
         account_category
-        report {
-          reporting_year
-          reporting_period
-          entity {
-            name
-          }
+        entity {
+          cui
+          name
         }
         functionalClassification {
           functional_name
@@ -266,13 +259,11 @@ export async function getBudgetLineItems({
     // Transform response to match our expected format
     const data = nodes.map((item) => ({
       ...item,
-      entity_name: item.report?.entity?.name,
-      reporting_year: item.report?.reporting_year || 0,
-      reporting_period: item.report?.reporting_period || "",
+      entity_name: item.entity?.name,
+      entity_cui: item.entity?.cui,
       functional_name: item.functionalClassification?.functional_name,
       economic_name: item.economicClassification?.economic_name,
     }));
-
 
     return {
       data,

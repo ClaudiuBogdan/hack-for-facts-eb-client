@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { HeatmapUATDataPoint } from "@/lib/api/dataDiscovery";
 import { formatCurrency, formatNumberRO } from "@/lib/utils";
+import { Link } from "@tanstack/react-router";
 
 interface HeatmapDataTableProps {
   data: HeatmapUATDataPoint[];
@@ -73,7 +74,10 @@ export function HeatmapDataTable({
             )}
           </div>
         ),
-        cell: ({ row }) => <div className="truncate" title={row.getValue("uat_name")}>{row.getValue("uat_name")}</div>,
+        cell: ({ row }) => {
+          const uatCode = row.original.uat_code;
+          return (<Link to={`/entities/$cui`} params={{ cui: uatCode }} className="truncate" title={row.getValue("uat_name")}>{row.getValue("uat_name")}</Link>)
+        },
       },
       {
         accessorKey: "county_name",
@@ -204,7 +208,7 @@ export function HeatmapDataTable({
       </div>
     );
   }
-  
+
   // More code will be added here for table rendering and pagination UI
   return (
     <div className="flex flex-col h-full">

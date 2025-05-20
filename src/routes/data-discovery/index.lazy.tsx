@@ -144,7 +144,7 @@ const mapColumnIdToSortBy = (columnId: string): SortOrder['by'] => {
   switch (columnId) {
     case "entity_name":
       return "entity_cui";
-    case "reporting_year":
+    case "year":
       return "year";
     case "amount":
       return "amount";

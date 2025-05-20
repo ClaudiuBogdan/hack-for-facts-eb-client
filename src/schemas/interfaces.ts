@@ -9,7 +9,6 @@ export type LineItemsFilter = {
   min_amount?: number;
   max_amount?: number;
   program_code?: string;
-  reporting_year?: number;
   county_code?: string;
   uat_ids?: number[];
   year?: number;

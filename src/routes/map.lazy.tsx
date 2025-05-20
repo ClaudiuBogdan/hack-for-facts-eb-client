@@ -1,7 +1,6 @@
 import { getHeatmapUATData, HeatmapUATDataPoint } from "@/lib/api/dataDiscovery";
-import { createLazyFileRoute } from "@tanstack/react-router";
+import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { LeafletMouseEvent } from "leaflet";
 import React, { useState } from "react";
 import { getPercentileValues, createHeatmapStyleFunction } from "@/components/maps/utils";
 import { UatMap } from "@/components/maps/UatMap";
@@ -26,17 +25,12 @@ export const Route = createLazyFileRoute("/map")({
 
 function MapPage() {
   const { heatmapFilterInput, activeView, setActiveView } = useMapFilter();
+  const navigate = useNavigate();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 15,
   });
-
-  console.log(heatmapFilterInput, activeView);
-
-  const handleUatClick = (properties: UatProperties, event: LeafletMouseEvent) => {
-    console.log("UAT Clicked:", properties, "Event:", event);
-  };
 
   const {
     data: heatmapData,
@@ -46,6 +40,14 @@ function MapPage() {
     queryKey: ["heatmapUATData", heatmapFilterInput],
     queryFn: () => getHeatmapUATData(heatmapFilterInput),
   });
+
+  const handleUatClick = (properties: UatProperties) => {
+    const natCode = properties.natcode;
+    const uatCui = heatmapData?.find((data) => data.siruta_code === natCode)?.uat_code;
+    if (uatCui) {
+      navigate({ to: `/entities/${uatCui}` });
+    }
+  };
 
   const {
     data: geoJsonData,
@@ -128,13 +130,13 @@ function MapPage() {
                   <div className="p-4 h-full flex flex-col">
                     <h2 className="text-xl font-semibold mb-4 mt-12 shrink-0">Data Table View</h2>
                     {heatmapData ? (
-                      <HeatmapDataTable 
+                      <HeatmapDataTable
                         data={heatmapData ?? []}
-                        isLoading={isLoadingHeatmap} 
-                        sorting={sorting} 
-                        setSorting={setSorting} 
-                        pagination={pagination} 
-                        setPagination={setPagination} 
+                        isLoading={isLoadingHeatmap}
+                        sorting={sorting}
+                        setSorting={setSorting}
+                        pagination={pagination}
+                        setPagination={setPagination}
                       />
                     ) : isLoadingHeatmap ? (
                       <div className="flex items-center justify-center h-full">

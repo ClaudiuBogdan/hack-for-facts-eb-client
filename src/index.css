@@ -46,10 +46,6 @@
 
 @layer base {
   html,
-    body {
-      position: fixed;
-      overflow: hidden;
-    }
   :root {
     overscroll-behavior: none;
     /* Base colors */

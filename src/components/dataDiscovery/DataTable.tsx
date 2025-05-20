@@ -17,7 +17,7 @@ import { formatCurrency } from "@/lib/utils";
 import { useMemo } from "react";
 import { ChevronUp, ChevronDown, ArrowUpDown } from "lucide-react";
 import { SortOrder } from "@/schemas/interfaces";
-
+import { Link } from "@tanstack/react-router";
 interface DataTableProps {
   data: BudgetLineItem[];
   isLoading: boolean;
@@ -26,7 +26,6 @@ interface DataTableProps {
 }
 
 export function DataTable({ data, isLoading, sort, onSortColumn }: DataTableProps) {
-  // Process the data to ensure we have the fields we need
   const processedData = useMemo(
     () =>
       data.map((item) => ({
@@ -62,13 +61,20 @@ export function DataTable({ data, isLoading, sort, onSortColumn }: DataTableProp
             )}
           </div>
         ),
+        cell: ({ row }) => {
+          const entityName = row.original.entity_name;
+          const entityCui = row.original.entity_cui;
+          return (
+            <Link to={`/entities/$cui`} params={{ cui: entityCui }} className="hover:underline">{entityName}</Link>
+          );
+        },
       },
       {
-        accessorKey: "reporting_year",
+        accessorKey: "year",
         header: () => (
           <div
             className="flex items-center gap-1 cursor-pointer"
-            onClick={() => onSortColumn("reporting_year")}
+            onClick={() => onSortColumn("year")}
           >
             Year
             {sort.by === "year" ? (
@@ -239,9 +245,9 @@ export function DataTable({ data, isLoading, sort, onSortColumn }: DataTableProp
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
                 </TableHead>
               ))}
             </TableRow>
