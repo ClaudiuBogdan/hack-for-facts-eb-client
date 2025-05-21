@@ -12,7 +12,11 @@ import { AccountTypeFilter } from "./account-type-filter/AccountTypeFilter";
 import { useFilterSearch } from "../../lib/hooks/useLineItemsFilter";
 import { Button } from "../ui/button";
 
-export function LineItemsFilter() {
+interface LineItemsFilterProps {
+    isInModal?: boolean;
+}
+
+export function LineItemsFilter({ isInModal = false }: LineItemsFilterProps) {
     const {
         selectedYearOptions,
         setSelectedYearOptions,
@@ -43,31 +47,43 @@ export function LineItemsFilter() {
         setSelectedAccountTypeOptions([]);
     };
 
-    const totalSelectedFilters = [
-        selectedYearOptions,
-        selectedEntityOptions,
-        selectedUatOptions,
-        selectedEconomicClassificationOptions,
-        selectedFunctionalClassificationOptions,
-        selectedAccountTypeOptions,
-    ].reduce((count, options) => count + options.length, 0) +
-    (minAmount !== undefined && minAmount !== '' ? 1 : 0) +
-    (maxAmount !== undefined && maxAmount !== '' ? 1 : 0);
+    const totalSelectedFilters =
+        [
+            selectedYearOptions,
+            selectedEntityOptions,
+            selectedUatOptions,
+            selectedEconomicClassificationOptions,
+            selectedFunctionalClassificationOptions,
+            selectedAccountTypeOptions,
+        ].reduce((count, options) => count + options.length, 0) +
+        (minAmount !== undefined && minAmount !== '' ? 1 : 0) +
+        (maxAmount !== undefined && maxAmount !== '' ? 1 : 0);
 
     return (
-        <Card className="flex flex-col w-full min-h-full shadow-lg">
-            <CardHeader className="py-4 px-6 border-b">
-                <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg font-semibold">Filtre</CardTitle>
-                    {totalSelectedFilters > 0 && (
-                        <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-sm">
-                            <XCircle className="w-4 h-4 mr-1" />
-                            Clear all ({totalSelectedFilters})
-                        </Button>
-                    )}
+        <Card className={`flex flex-col w-full ${isInModal ? 'shadow-none border-none h-full' : 'min-h-full shadow-lg'}`}>
+            {!isInModal && (
+                <CardHeader className="py-4 px-6 border-b">
+                    <div className="flex justify-between items-center">
+                        <CardTitle className="text-lg font-semibold">Filtre</CardTitle>
+                        {totalSelectedFilters > 0 && (
+                            <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-sm">
+                                <XCircle className="w-4 h-4 mr-1" />
+                                Clear all ({totalSelectedFilters})
+                            </Button>
+                        )}
+                    </div>
+                </CardHeader>
+            )}
+            {/* Render clear all button inside modal if filters are active and it's in a modal */}
+            {isInModal && totalSelectedFilters > 0 && (
+                <div className="p-4 border-b flex justify-end items-center">
+                     <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-sm">
+                        <XCircle className="w-4 h-4 mr-1" />
+                        Clear all ({totalSelectedFilters})
+                    </Button>
                 </div>
-            </CardHeader>
-            <CardContent className="flex flex-col flex-grow p-0">
+            )}
+            <CardContent className={`flex flex-col flex-grow p-0 ${isInModal ? 'overflow-y-auto' : ''}`}>
                 <FilterListContainer
                     title="Entitati Publice"
                     icon={<Building2 className="w-4 h-4" />}

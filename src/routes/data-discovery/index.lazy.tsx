@@ -106,7 +106,7 @@ function DataDiscoveryPage() {
   };
 
   return (
-    <div className="container mx-auto py-4 px-2 md:px-0 space-y-6 max-w-full">
+    <div className="container mx-auto py-4 px-2 md:px-6 space-y-6 max-w-full">
       <div className="px-1 md:px-0">
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-1">Data Discovery</h1>
         <p className="text-muted-foreground text-sm md:text-base">
