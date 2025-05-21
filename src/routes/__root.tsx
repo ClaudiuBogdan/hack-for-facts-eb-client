@@ -6,6 +6,9 @@ import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { Toaster } from "sonner";
 import { ErrorProvider } from "@/contexts/ErrorContext";
 import { HotkeysProvider } from "react-hotkeys-hook";
+import { MenuIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MobileSidebarFab } from "@/components/sidebar/mobile-sidebar-fab";
 
 const queryClient = new QueryClient();
 
@@ -37,13 +40,13 @@ export const Route = createRootRoute({
               <div className="flex min-h-screen min-w-screen overflow-auto">
                 <AppSidebar />
                 <SidebarInset>
-                  <MobileHeader />
                   <main className="flex-1 overflow-y-auto">
                     <div>
                       <Outlet />
                       <Toaster />
                     </div>
                   </main>
+                  <MobileSidebarFab />
                 </SidebarInset>
               </div>
             </SidebarProvider>
@@ -52,5 +55,5 @@ export const Route = createRootRoute({
       </QueryClientProvider>
     </ErrorProvider>
   ),
-  beforeLoad: async () => {},
+  beforeLoad: async () => { },
 });

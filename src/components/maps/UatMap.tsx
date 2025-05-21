@@ -128,7 +128,7 @@ export const UatMap: React.FC<UatMapProps> = ({
       maxBounds={maxBounds}
       scrollWheelZoom={true}
       style={{ height: '100vh', width: '100%' }} // Consider making height configurable via props
-      className="bg-background" // Ensure this class is defined or Tailwind is configured
+      className="bg-background z-10" // Ensure this class is defined or Tailwind is configured
     >
       {/* Render GeoJSON only if data is a FeatureCollection and not null */}
       {geoJsonData && geoJsonData.type === 'FeatureCollection' && (

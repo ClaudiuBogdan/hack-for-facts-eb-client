@@ -1,8 +1,8 @@
 import { LatLngExpression, PathOptions, LatLngBoundsExpression } from 'leaflet';
 
 export const DEFAULT_MAP_CENTER: LatLngExpression = [45.9432, 24.9668]; // Romania's geographical center
-export const DEFAULT_MAP_ZOOM = 8;
-export const DEFAULT_MIN_ZOOM = 7;
+export const DEFAULT_MAP_ZOOM = 6;
+export const DEFAULT_MIN_ZOOM = 6;
 export const DEFAULT_MAX_ZOOM = 18;
 export const DEFAULT_MAX_BOUNDS: LatLngBoundsExpression = [
   [43.5, 20.0], // Southwest

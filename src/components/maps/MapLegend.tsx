@@ -8,6 +8,7 @@ interface MapLegendProps {
   className?: string;
   title?: string;
   numberOfStops?: number;
+  isInModal?: boolean;
 }
 
 // Updated to include RON and handle potential undefined/null better before formatting
@@ -24,6 +25,7 @@ export const MapLegend: React.FC<MapLegendProps> = ({
   className = '',
   title = 'Aggregated Value (RON)', // Updated default title
   numberOfStops = 5,
+  isInModal = false,
 }) => {
   if (min === undefined || max === undefined || min === max) {
     // Don't render legend if min/max is problematic or would result in no range
@@ -31,15 +33,15 @@ export const MapLegend: React.FC<MapLegendProps> = ({
     if (min === max && min !== undefined) {
         const color = getHeatmapColor(0.5); // Mid-point color if all values are same
         return (
-            <div className={`bg-card/80 backdrop-blur-sm p-3 rounded-md shadow-lg ${className}`}>
-                <h4 className="text-sm font-semibold mb-2 text-card-foreground">{title}</h4>
+            <div className={`${isInModal ? 'p-3' : 'bg-card/80 backdrop-blur-sm p-3 rounded-md shadow-lg'} ${className}`}>
+                <h4 className={`text-sm font-semibold mb-2 ${isInModal ? 'text-foreground' : 'text-card-foreground'}`}>{title}</h4>
                 <div className="flex items-center space-x-2">
                     <div
                         className="w-5 h-5 border border-border"
                         style={{ backgroundColor: color }}
                         aria-label={`Color for value ${formatLegendValue(min)}`}
                     />
-                    <span className="text-xs text-card-foreground">{formatLegendValue(min)}</span>
+                    <span className={`text-xs ${isInModal ? 'text-foreground' : 'text-card-foreground'}`}>{formatLegendValue(min)}</span>
                 </div>
             </div>
         )
@@ -58,8 +60,8 @@ export const MapLegend: React.FC<MapLegendProps> = ({
   }
 
   return (
-    <div className={`bg-card/80 backdrop-blur-sm p-3 rounded-md shadow-lg ${className}`}>
-      <h4 className="text-sm font-semibold mb-2 text-card-foreground">{title}</h4>
+    <div className={`${isInModal ? 'p-0' : 'bg-card/80 backdrop-blur-sm p-3 rounded-md shadow-lg'} ${className}`}>
+      <h4 className={`text-sm font-semibold mb-2 ${isInModal ? 'text-foreground' : 'text-card-foreground'}`}>{title}</h4>
       <div className="space-y-1">
         {stops.map((stop, index) => (
           <div key={index} className="flex items-center space-x-2">
@@ -68,13 +70,13 @@ export const MapLegend: React.FC<MapLegendProps> = ({
               style={{ backgroundColor: stop.color }}
               aria-label={`Color swatch for value range around ${formatLegendValue(stop.value)}`}
             />
-            <span className="text-xs text-card-foreground">
+            <span className={`text-xs ${isInModal ? 'text-foreground' : 'text-card-foreground'}`}>
               {formatLegendValue(stop.value)}
             </span>
           </div>
         ))}
       </div>
-      <div className="mt-2 text-xs text-muted-foreground">
+      <div className={`mt-2 text-xs ${isInModal ? 'text-muted-foreground' : 'text-muted-foreground'}`}>
         Colors represent aggregated values from {formatLegendValue(min)} to {formatLegendValue(max)}.
       </div>
     </div>

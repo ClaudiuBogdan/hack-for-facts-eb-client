@@ -35,9 +35,8 @@ export function DataDiscoveryLayout({ children }: DataDiscoveryLayoutProps) {
           </div>
         </div>
       </div>
+      <div className="md:hidden fixed right-6 bottom-[5.75rem] z-50 flex flex-col items-end gap-3">
 
-      {/* Mobile Filter Button & Modal - Visible only on mobile (md:hidden) */}
-      <div className="md:hidden fixed bottom-6 right-6 z-50">
         <Dialog open={isFilterModalOpen} onOpenChange={setIsFilterModalOpen}>
           <DialogTrigger asChild>
             <Button
