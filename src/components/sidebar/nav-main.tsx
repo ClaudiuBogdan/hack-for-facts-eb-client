@@ -38,7 +38,7 @@ export function NavMain() {
   const matches = useMatches();
   const currentPath =
     matches.length > 0 ? matches[matches.length - 1].pathname : "/";
-  const { state } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
 
   const isActive = (url: string) => {
@@ -46,6 +46,12 @@ export function NavMain() {
       return currentPath === "/";
     }
     return currentPath.startsWith(url);
+  };
+
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
   };
 
   return (
@@ -59,6 +65,7 @@ export function NavMain() {
                 <SidebarMenuButton asChild>
                   <Link
                     to={item.url}
+                    onClick={handleLinkClick}
                     className={cn(
                       buttonVariants({ variant: "ghost" }),
                       "w-full justify-start gap-2",
