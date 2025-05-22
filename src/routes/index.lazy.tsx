@@ -16,7 +16,7 @@ function Index() {
         </nav>
       </header> */}
 
-      <main className="flex-grow flex items-start justify-center">
+      <main className="flex-grow flex items-start justify-center p-4">
         <div className="container mx-auto flex flex-col items-center text-center space-y-10 py-16 md:py-24">
           <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50">
             Financial Data Explorer

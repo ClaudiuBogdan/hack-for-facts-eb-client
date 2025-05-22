@@ -46,6 +46,12 @@ export function EntitySearchInput({
     inputRef.current?.focus();
   };
 
+  const handleInputFocus = () => {
+    setIsFocused(true);
+    inputRef.current?.focus();
+    inputRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const showDropdown = isFocused && debouncedSearchTerm.trim().length > 0;
 
   useEffect(() => {
@@ -76,7 +82,7 @@ export function EntitySearchInput({
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          onFocus={() => setIsFocused(true)}
+          onFocus={() => handleInputFocus()}
           placeholder={placeholder}
           className={cn(
             "w-full pl-20 pr-20 py-7 text-xl md:text-xl bg-white dark:bg-slate-800 rounded-3xl placeholder:text-slate-400",
