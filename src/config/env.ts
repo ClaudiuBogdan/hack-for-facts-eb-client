@@ -30,10 +30,12 @@ const envSchema = z.object({
     .enum(["true", "false"]) // must be provided explicitly to enable
     .optional()
     .transform((val) => val === "true"),
-  VITE_SENTRY_DSN: z.string().min(1).optional(),
-  VITE_SENTRY_TRACES_SAMPLE_RATE: z
-    .string()
-    .optional(),
+  VITE_SENTRY_DSN:
+    import.meta.env.VITE_APP_ENVIRONMENT === "development" &&
+    import.meta.env.VITE_SENTRY_ENABLED === "true"
+      ? z.string().min(1)
+      : z.string().optional(),
+  VITE_SENTRY_TRACES_SAMPLE_RATE: z.string().optional(),
   VITE_SENTRY_FEEDBACK_ENABLED: z
     .enum(["true", "false"]) // enabled unless explicitly set to false
     .optional()
@@ -70,7 +72,8 @@ export const env = validateEnv();
  */
 export function getSiteUrl(): string {
   if (env.VITE_SITE_URL) return env.VITE_SITE_URL;
-  if (typeof window !== 'undefined' && window.location?.origin) return window.location.origin;
+  if (typeof window !== "undefined" && window.location?.origin)
+    return window.location.origin;
   // Sensible default for build-time usage where window is not available
-  return 'https://transparenta.eu';
+  return "https://transparenta.eu";
 }

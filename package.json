@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "postinstall": "yarn --cwd docs-site install --frozen-lockfile",
-    "dev": "NODE_OPTIONS=--max-http-header-size=64384 vite",
+    "dev": "cross-env NODE_OPTIONS=--max-http-header-size=64384 vite",
     "dev:lint": "concurrently \"vite\" \"tsc -w\" \"eslint ./src\"",
     "build": "tsc -b && vite build && yarn i18n:compile && yarn docs:build && node scripts/postbuild-docs.js",
     "lint": "eslint .",
@@ -127,6 +127,7 @@
     "@vitejs/plugin-react-swc": "^4.0.0",
     "@vitest/coverage-v8": "^3.2.4",
     "@vitest/ui": "^3.2.4",
+    "cross-env": "^10.1.0",
     "jsdom": "^26.1.0",
     "typescript": "^5.9.2",
     "vite": "^7.1.1",
