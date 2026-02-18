@@ -1,11 +1,12 @@
 import { ChartSchema, CommitmentsReportType, createDefaultCommitmentsYearReportPeriod, defaultYearRange, ReportType } from '@/schemas/charts';
-import type { Chart, Calculation, Series, Normalization } from '@/schemas/charts';
+import type { Chart, Calculation, Series, Normalization, AnalyticsFilterType } from '@/schemas/charts';
 import type { ChartUrlState } from '@/components/charts/page-schema';
 import { generateHash, getNormalizationUnit } from '@/lib/utils';
 import { t } from '@lingui/core/macro';
 import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES, DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES } from '@/lib/analytics-defaults';
 import { normalizeNormalizationOptions, type NormalizationOptions } from '@/lib/normalization';
 import type { ReportPeriodInput } from '@/schemas/reporting';
+import { getSeriesColor } from '@/components/charts/components/chart-renderer/utils';
 
 interface BuildEntityIncomeExpenseChartOptions {
     title?: string;
@@ -392,6 +393,67 @@ interface BuildTreemapChartStateOptions {
     title: string
     seriesConfigs: Series[]
     normalization?: Normalization
+}
+
+interface BuildMapTopEntitiesEvolutionChartStateOptions {
+    topEntities: Array<{ id: string; label: string }>;
+    effectiveFilter: AnalyticsFilterType;
+    mapViewType: 'UAT' | 'County';
+}
+
+export function buildMapTopEntitiesEvolutionChartState(
+    options: BuildMapTopEntitiesEvolutionChartStateOptions
+): ChartUrlState {
+    const { topEntities, effectiveFilter, mapViewType } = options;
+    const baseFilterHash = generateHash(JSON.stringify(effectiveFilter));
+    const topEntityIds = topEntities.map((entity) => entity.id);
+    const chartId = generateHash(
+        JSON.stringify({ type: 'map-top-entities-evolution', mapViewType, baseFilterHash, topEntityIds })
+    );
+
+    const series = topEntities.map((entity, index) => ({
+        id: generateHash(JSON.stringify({ chartId, entityId: entity.id })),
+        type: 'line-items-aggregated-yearly' as const,
+        label: entity.label,
+        filter: {
+            ...effectiveFilter,
+            entity_cuis: [entity.id],
+        },
+        config: {
+            color: getSeriesColor(index),
+            showDataLabels: false,
+        },
+        enabled: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    }));
+
+    const chart: Chart = ChartSchema.parse({
+        id: chartId,
+        title: mapViewType === 'UAT' ? t`Evolution of Top 15 UATs` : t`Evolution of Top 15 Counties`,
+        config: {
+            chartType: 'line',
+            showLegend: true,
+            showTooltip: true,
+            showGridLines: true,
+            editAnnotations: false,
+            showAnnotations: false,
+            showDiffControl: false,
+        },
+        series,
+        annotations: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    });
+
+    return { chart, view: 'overview' };
+}
+
+export function buildMapTopEntitiesEvolutionChartLink(
+    options: BuildMapTopEntitiesEvolutionChartStateOptions
+) {
+    const search = buildMapTopEntitiesEvolutionChartState(options);
+    return buildChartRouteLink(search);
 }
 
 /**

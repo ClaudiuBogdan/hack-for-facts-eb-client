@@ -95,7 +95,7 @@ msgstr "{minutes}m rămase"
 msgid "{resultsCount} results found"
 msgstr "{resultsCount} rezultate găsite"
 
-#: src/components/maps/utils.ts:46
+#: src/components/maps/utils.ts:51
 msgid "*Check filters panel for more details."
 msgstr "*Verificați panoul de filtre pentru mai multe detalii."
 
@@ -106,7 +106,7 @@ msgstr "/locuitor"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:414
 #: src/components/entities/EntityReportControls.tsx:273
 #: src/components/filters/normalization-filter/NormalizationFilter.tsx:15
-#: src/components/maps/utils.ts:127
+#: src/components/maps/utils.ts:132
 #: src/components/normalization/normalization-controls.tsx:33
 #: src/components/normalization/normalization-mode-select.tsx:40
 #: src/lib/utils.ts:14
@@ -500,7 +500,7 @@ msgstr "Categorie cont"
 msgid "Active"
 msgstr "Activ"
 
-#: src/components/maps/utils.ts:43
+#: src/components/maps/utils.ts:48
 msgid "Active filters"
 msgstr "Filtre active"
 
@@ -760,8 +760,8 @@ msgstr "Permite doar esențiale"
 msgid "Always enabled"
 msgstr "Activat permanent"
 
-#: src/components/maps/charts/UatDataCharts.tsx:47
-#: src/components/maps/charts/UatDataCharts.tsx:60
+#: src/components/maps/charts/UatDataCharts.tsx:101
+#: src/components/maps/charts/UatDataCharts.tsx:139
 msgid "Amount"
 msgstr "Sumă"
 
@@ -771,7 +771,7 @@ msgstr "Filtru sumă (acest nivel)"
 
 #: src/components/maps/HeatmapDataTable.tsx:348
 #: src/components/maps/HeatmapDataTable.tsx:455
-#: src/components/maps/utils.ts:138
+#: src/components/maps/utils.ts:143
 msgid "Amount Per Capita"
 msgstr "Sumă pe cap de locuitor"
 
@@ -830,11 +830,15 @@ msgstr "Adnotări"
 msgid "Annual"
 msgstr "Anual"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:112
+#: src/components/commitments/LinearBudgetFlow.tsx:126
+msgid "Annual budget credits"
+msgstr "Credite bugetare anuale"
+
+#: src/components/commitments/LinearBudgetFlow.tsx:109
 msgid "Annual budget execution"
 msgstr "Execuția bugetului anual"
 
-#: src/components/entities/views/Commitments.tsx:383
+#: src/components/entities/views/Commitments.tsx:382
 msgid "Annual budget unavailable"
 msgstr "Buget anual indisponibil"
 
@@ -1057,7 +1061,6 @@ msgstr "Capitol Bugetar"
 #: src/components/commitments/CategoryChart.tsx:56
 #: src/components/commitments/CategoryChart.tsx:120
 #: src/components/commitments/commitments-trends.tsx:395
-#: src/components/commitments/LinearBudgetFlow.tsx:129
 msgid "Budget credits"
 msgstr "Credite bugetare"
 
@@ -1066,7 +1069,7 @@ msgstr "Credite bugetare"
 msgid "Budget Credits"
 msgstr "Credite Bugetare"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:98
+#: src/components/commitments/LinearBudgetFlow.tsx:95
 msgid "Budget credits are annual (cash you can pay within the selected year). Legal commitments represent the total value of contracts signed (often multi-year), so they can exceed the annual budget without implying overspending. To assess contracting, compare commitments to commitment authority."
 msgstr "Creditele bugetare sunt anuale (sumele care pot fi plătite în anul selectat). Angajamentele legale reprezintă valoarea totală a contractelor semnate (adesea multianuale), deci pot depăși bugetul anual fără a implica cheltuieli excesive. Pentru a evalua contractarea, comparați angajamentele cu autorizarea de angajament."
 
@@ -1182,11 +1185,11 @@ msgstr "Calculele presupun un coș de bunuri esențiale de 40% (TVA 11%) și bun
 msgid "Cancel"
 msgstr "Anulează"
 
-#: src/components/entities/views/ins-stats-view.tsx:1477
+#: src/components/entities/views/ins-stats-view.tsx:1508
 msgid "Cannot load INS indicators without the county code."
 msgstr "Nu se pot încărca indicatorii INS fără codul județului."
 
-#: src/components/entities/views/ins-stats-view.tsx:1489
+#: src/components/entities/views/ins-stats-view.tsx:1520
 msgid "Cannot load INS indicators without the locality SIRUTA code."
 msgstr "Nu se pot încărca indicatorii INS fără codul SIRUTA al localității."
 
@@ -1260,7 +1263,7 @@ msgstr "Tip grafic"
 #: src/components/footer/AppFooter.tsx:103
 #: src/components/sidebar/nav-main.tsx:31
 #: src/components/ui/shortcuts.tsx:38
-#: src/hooks/useEntityViews.tsx:43
+#: src/hooks/useEntityViews.tsx:45
 #: src/routes/charts/index.lazy.tsx:170
 #: src/routes/index.tsx:89
 msgid "Charts"
@@ -1412,7 +1415,7 @@ msgstr "Coloane"
 msgid "Comfortable"
 msgstr "Confortabil"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:175
+#: src/components/commitments/LinearBudgetFlow.tsx:166
 msgid "Commitment authority"
 msgstr "Autorizare de angajament"
 
@@ -1420,11 +1423,11 @@ msgstr "Autorizare de angajament"
 msgid "Commitment authority limit"
 msgstr "Limită autorizare de angajament"
 
-#: src/components/entities/views/Commitments.tsx:379
+#: src/components/entities/views/Commitments.tsx:378
 msgid "Commitment authority unavailable"
 msgstr "Autorizare de angajament indisponibilă"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:158
+#: src/components/commitments/LinearBudgetFlow.tsx:149
 msgid "Commitment authority usage"
 msgstr "Utilizarea autorizării de angajament"
 
@@ -1432,7 +1435,7 @@ msgstr "Utilizarea autorizării de angajament"
 msgid "Commitment Detailed"
 msgstr "Angajamente detaliat"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:89
+#: src/components/commitments/LinearBudgetFlow.tsx:86
 msgid "Commitment Health"
 msgstr "Starea angajamentelor"
 
@@ -1449,7 +1452,7 @@ msgid "Commitment Trends"
 msgstr "Tendințe angajamente"
 
 #: src/components/commitments/CommitmentsTable.tsx:159
-#: src/hooks/useEntityViews.tsx:22
+#: src/hooks/useEntityViews.tsx:28
 msgid "Commitments"
 msgstr "Angajamente"
 
@@ -1457,13 +1460,13 @@ msgstr "Angajamente"
 msgid "Commitments Analytics"
 msgstr "Analiză angajamente"
 
-#: src/lib/chart-links.ts:247
+#: src/lib/chart-links.ts:248
 msgid "Commitments Evolution - {entityName}"
 msgstr "Evoluția angajamentelor - {entityName}"
 
 #: src/components/commitments/LinearBudgetFlow.tsx:147
-msgid "Commitments vs budget"
-msgstr "Angajamente vs buget"
+#~ msgid "Commitments vs budget"
+#~ msgstr "Angajamente vs buget"
 
 #: src/components/maps/HeatmapDataTable.tsx:443
 #: src/components/maps/HeatmapDataTable.tsx:447
@@ -1712,7 +1715,7 @@ msgstr "Sursele de finanțare nu au putut fi încărcate"
 msgid "Could not load historical data"
 msgstr "Nu s-au putut încărca datele istorice"
 
-#: src/components/entities/views/ins-stats-view.tsx:1504
+#: src/components/entities/views/ins-stats-view.tsx:1535
 msgid "Could not load INS data"
 msgstr "Nu s-au putut încărca datele INS"
 
@@ -1752,14 +1755,14 @@ msgstr "Județe"
 #: src/components/filters/EntityAnalyticsFilter.tsx:513
 #: src/components/filters/EntityAnalyticsFilter.tsx:691
 #: src/components/filters/MapFilter.tsx:218
-#: src/components/maps/charts/UatDataCharts.tsx:48
+#: src/components/maps/charts/UatDataCharts.tsx:102
 #: src/components/maps/HeatmapDataTable.tsx:452
 #: src/routes/entity-analytics.lazy.tsx:235
 msgid "County"
 msgstr "Județ"
 
-#: src/components/maps/utils.ts:98
-#: src/components/maps/utils.ts:151
+#: src/components/maps/utils.ts:103
+#: src/components/maps/utils.ts:156
 msgid "County:"
 msgstr "Județ:"
 
@@ -1831,7 +1834,7 @@ msgstr "Cultură și turism"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:738
 #: src/components/maps/HeatmapDataTable.tsx:445
 #: src/components/normalization/normalization-controls.tsx:84
-#: src/components/theme/currency-toggle.tsx:55
+#: src/components/theme/currency-toggle.tsx:53
 #: src/routes/entity-analytics.lazy.tsx:228
 msgid "Currency"
 msgstr "Monedă"
@@ -2228,7 +2231,7 @@ msgstr "ex: RON, %, Unități..."
 msgid "Easily manage your subscriptions"
 msgstr "Gestionați-vă cu ușurință abonamentele"
 
-#: src/components/maps/utils.ts:34
+#: src/components/maps/utils.ts:39
 msgid "Ec"
 msgstr "Ec"
 
@@ -2263,7 +2266,7 @@ msgstr "Clasificație economică"
 msgid "Economic Classification Prefix"
 msgstr "Prefix clasificație economică"
 
-#: src/components/maps/utils.ts:34
+#: src/components/maps/utils.ts:39
 msgid "economic codes"
 msgstr "coduri economice"
 
@@ -2332,7 +2335,7 @@ msgid "Emigrants (POP309E)"
 msgstr "Emigranți (POP309E)"
 
 #: src/components/entities/views/ins-stats-view.derived.ts:314
-#: src/hooks/useEntityViews.tsx:36
+#: src/hooks/useEntityViews.tsx:25
 msgid "Employees"
 msgstr "Angajați"
 
@@ -2422,7 +2425,7 @@ msgstr "Introduceți eticheta seriei..."
 #: src/components/filters/EntityAnalyticsFilter.tsx:661
 #: src/components/filters/MapFilter.tsx:266
 #: src/components/filters/MapFilter.tsx:443
-#: src/hooks/useEntityViews.tsx:46
+#: src/hooks/useEntityViews.tsx:48
 #: src/routes/index.tsx:82
 msgid "Entities"
 msgstr "Entități"
@@ -2521,7 +2524,7 @@ msgstr "Raportarea erorilor (Sentry)"
 msgid "Error signal sent"
 msgstr "Semnal de eroare trimis"
 
-#: src/components/maps/utils.ts:112
+#: src/components/maps/utils.ts:117
 msgid "Error: Invalid data point type."
 msgstr "Eroare: Tip de dată invalid."
 
@@ -2570,13 +2573,21 @@ msgid "EU Projects"
 msgstr "Proiecte UE"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:752
-#: src/components/theme/currency-toggle.tsx:70
+#: src/components/theme/currency-toggle.tsx:68
 msgid "EUR"
 msgstr "EUR"
 
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:228
 msgid "Ever wondered where your money actually goes?"
 msgstr "Te-ai întrebat vreodată unde se duc banii tăi?"
+
+#: src/lib/chart-links.ts:433
+msgid "Evolution of Top 15 Counties"
+msgstr "Evoluția primelor 15 județe"
+
+#: src/lib/chart-links.ts:433
+msgid "Evolution of Top 15 UATs"
+msgstr "Evoluția primelor 15 UAT-uri"
 
 #: src/features/learning/components/interactive/RedFlagCards.tsx:116
 msgid "Example:"
@@ -2673,7 +2684,7 @@ msgstr "Locuințe existente (LOC101B)"
 msgid "Expand explorer to full width"
 msgstr "Extinde exploratorul pe toată lățimea"
 
-#: src/hooks/useEntityViews.tsx:24
+#: src/hooks/useEntityViews.tsx:35
 msgid "Expense Trends"
 msgstr "Evoluția cheltuielilor"
 
@@ -2691,7 +2702,7 @@ msgstr "Tip cheltuială"
 #: src/components/filters/account-type-filter/AccountCategoryRadio.tsx:12
 #: src/components/filters/EntityAnalyticsFilter.tsx:452
 #: src/components/filters/MapFilter.tsx:233
-#: src/components/maps/utils.ts:26
+#: src/components/maps/utils.ts:31
 #: src/hooks/filters/useFilterLabels.tsx:195
 #: src/routes/entity-analytics.lazy.tsx:295
 msgid "Expenses"
@@ -2883,7 +2894,7 @@ msgstr "Filtrează punctele lipsă sau non-numerice înainte de maparea graficul
 msgid "Final budget credits"
 msgstr "Credite bugetare definitive"
 
-#: src/components/entities/views/Commitments.tsx:392
+#: src/components/entities/views/Commitments.tsx:391
 msgid "Final Budget Credits"
 msgstr "Credite Bugetare Definitive"
 
@@ -2899,7 +2910,7 @@ msgstr "Final:"
 msgid "Finance"
 msgstr "Finanțe"
 
-#: src/lib/chart-links.ts:100
+#: src/lib/chart-links.ts:101
 msgid "Financial Evolution - {entityName}"
 msgstr "Evoluție financiară - {entityName}"
 
@@ -2938,7 +2949,7 @@ msgstr "Doar prima valoare: păstrați un singur rând determinist (de rezervă/
 msgid "Flow"
 msgstr "Flux"
 
-#: src/components/maps/utils.ts:30
+#: src/components/maps/utils.ts:35
 msgid "Fn"
 msgstr "Fn"
 
@@ -2974,7 +2985,7 @@ msgstr "Urmărește banii"
 msgid "For questions about this Privacy Policy, to exercise your rights, or to contact our data protection officer, email us at contact@transparenta.eu"
 msgstr "Pentru întrebări despre această Politică de Confidențialitate, pentru a vă exercita drepturile sau pentru a contacta responsabilul nostru cu protecția datelor, trimiteți-ne un e-mail la contact@transparenta.eu"
 
-#: src/components/maps/utils.ts:162
+#: src/components/maps/utils.ts:167
 msgid "for the selected filters."
 msgstr "pentru filtrele selectate."
 
@@ -3021,7 +3032,7 @@ msgstr "Clasificație funcțională"
 msgid "Functional Classification Prefix"
 msgstr "Prefix clasificație funcțională"
 
-#: src/components/maps/utils.ts:30
+#: src/components/maps/utils.ts:35
 msgid "functional codes"
 msgstr "coduri funcționale"
 
@@ -3145,7 +3156,7 @@ msgstr "Vezi Tabel"
 msgid "Go to homepage"
 msgstr "Mergi la pagina principală"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:631
+#: src/components/budget-explorer/BudgetTreemap.tsx:634
 msgid "Go to Main Categories"
 msgstr "Mergi la categoria principală"
 
@@ -3385,7 +3396,7 @@ msgstr "Include banii UE (PNRR) și profiturile companiilor de stat. Esențial, 
 #: src/components/filters/account-type-filter/AccountCategoryRadio.tsx:13
 #: src/components/filters/EntityAnalyticsFilter.tsx:453
 #: src/components/filters/MapFilter.tsx:234
-#: src/components/maps/utils.ts:26
+#: src/components/maps/utils.ts:31
 #: src/hooks/filters/useFilterLabels.tsx:196
 #: src/routes/entity-analytics.lazy.tsx:295
 msgid "Income"
@@ -3399,7 +3410,7 @@ msgstr "Venituri - Cheltuieli"
 msgid "Income Tax"
 msgstr "Impozit pe venit"
 
-#: src/hooks/useEntityViews.tsx:25
+#: src/hooks/useEntityViews.tsx:36
 msgid "Income Trends"
 msgstr "Evoluția veniturilor"
 
@@ -3473,7 +3484,7 @@ msgstr "Configurare set de date INS"
 msgid "INS dataset options"
 msgstr "Opțiuni set de date INS"
 
-#: src/components/entities/views/ins-stats-view.tsx:1463
+#: src/components/entities/views/ins-stats-view.tsx:1494
 msgid "INS indicators are only available for UATs."
 msgstr "Indicatorii INS sunt disponibili doar pentru UAT-uri."
 
@@ -3481,12 +3492,12 @@ msgstr "Indicatorii INS sunt disponibili doar pentru UAT-uri."
 msgid "INS Series"
 msgstr "Serie INS"
 
-#: src/hooks/useEntityViews.tsx:40
+#: src/hooks/useEntityViews.tsx:31
 msgid "INS Stats"
 msgstr "Statistici INS"
 
 #: src/components/charts/components/series-config/InsSeriesEditor.tsx:440
-#: src/components/entities/views/ins-stats-view.tsx:791
+#: src/components/entities/views/ins-stats-view.tsx:816
 msgid "INS Tempo"
 msgstr "INS Tempo"
 
@@ -3494,7 +3505,7 @@ msgstr "INS Tempo"
 msgid "INS terms"
 msgstr "Termenii INS"
 
-#: src/lib/chart-links.ts:526
+#: src/lib/chart-links.ts:588
 msgid "INS Trends - {normalizedDatasetLabel} ({entityName})"
 msgstr "Tendințe INS - {normalizedDatasetLabel} ({entityName})"
 
@@ -3696,11 +3707,11 @@ msgstr "Temeiuri legale pentru prelucrare"
 #: src/components/commitments/CategoryChart.tsx:126
 #: src/components/commitments/commitments-trends.tsx:419
 #: src/components/commitments/DetailTable.tsx:602
-#: src/components/commitments/LinearBudgetFlow.tsx:181
+#: src/components/commitments/LinearBudgetFlow.tsx:172
 msgid "Legal commitments"
 msgstr "Angajamente legale"
 
-#: src/components/entities/views/Commitments.tsx:399
+#: src/components/entities/views/Commitments.tsx:398
 msgid "Legal Commitments"
 msgstr "Angajamente Legale"
 
@@ -3910,7 +3921,7 @@ msgstr "Oportunitate scăzută"
 msgid "Main aggregated"
 msgstr "Agregat principal"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:544
+#: src/components/budget-explorer/BudgetTreemap.tsx:547
 #: src/components/entities/LineItemsAnalytics.tsx:160
 msgid "Main Categories"
 msgstr "Categorii Principale"
@@ -3970,7 +3981,7 @@ msgstr "Gestionarea preferințelor"
 #: src/components/filters/MapFilter.tsx:200
 #: src/components/sidebar/nav-main.tsx:26
 #: src/components/ui/shortcuts.tsx:44
-#: src/hooks/useEntityViews.tsx:31
+#: src/hooks/useEntityViews.tsx:42
 #: src/routes/index.tsx:68
 msgid "Map"
 msgstr "Hartă"
@@ -4083,12 +4094,12 @@ msgstr "Titlu lipsă"
 msgid "Mission End"
 msgstr "Sfârșitul misiunii"
 
-#: src/components/entities/views/ins-stats-view.tsx:1213
+#: src/components/entities/views/ins-stats-view.tsx:1244
 msgid "Mixed"
 msgstr "Mixt"
 
-#: src/components/maps/utils.ts:105
-#: src/components/maps/utils.ts:151
+#: src/components/maps/utils.ts:110
+#: src/components/maps/utils.ts:156
 msgid "Mnemonic:"
 msgstr "Mnemonic:"
 
@@ -4181,16 +4192,15 @@ msgstr "Mută mai sus"
 msgid "Multiple selected values"
 msgstr "Valori multiple selectate"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:149
-#: src/components/commitments/LinearBudgetFlow.tsx:161
-#: src/components/commitments/LinearBudgetFlow.tsx:204
-#: src/components/commitments/LinearBudgetFlow.tsx:216
+#: src/components/commitments/LinearBudgetFlow.tsx:152
+#: src/components/commitments/LinearBudgetFlow.tsx:180
+#: src/components/commitments/LinearBudgetFlow.tsx:192
 #: src/components/entities/views/ins-stats-view.formatters.ts:77
 #: src/components/entities/views/ins-stats-view.formatters.ts:139
 #: src/components/entities/views/ins-stats-view.presentation.tsx:246
-#: src/components/maps/utils.ts:98
-#: src/components/maps/utils.ts:122
-#: src/components/maps/utils.ts:151
+#: src/components/maps/utils.ts:103
+#: src/components/maps/utils.ts:127
+#: src/components/maps/utils.ts:156
 msgid "N/A"
 msgstr "N/A"
 
@@ -4307,7 +4317,7 @@ msgstr "Nu s-au găsit {0} care să corespundă cu \"{searchTerm}\""
 msgid "No active notifications"
 msgstr "Nicio notificare activă"
 
-#: src/components/maps/utils.ts:159
+#: src/components/maps/utils.ts:164
 msgid "No aggregated data"
 msgstr "Nu există date agregate"
 
@@ -4362,7 +4372,7 @@ msgstr "Nicio condiție adăugată încă. Faceți clic pe butonul de mai jos pe
 msgid "No conditions set"
 msgstr "Nicio condiție setată"
 
-#: src/components/entities/views/ins-stats-view.tsx:1475
+#: src/components/entities/views/ins-stats-view.tsx:1506
 msgid "No county code associated."
 msgstr "Nu este asociat niciun cod de județ."
 
@@ -4406,7 +4416,7 @@ msgstr "Nicio alertă pentru serii de date"
 msgid "No data series yet."
 msgstr "Nicio serie de date încă."
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:621
+#: src/components/budget-explorer/BudgetTreemap.tsx:624
 msgid "No data within the selected range."
 msgstr "Nu există date în intervalul selectat."
 
@@ -4514,7 +4524,7 @@ msgstr "Fără vânzare de date personale."
 msgid "No series found."
 msgstr "Nu s-a găsit nicio serie."
 
-#: src/components/entities/views/ins-stats-view.tsx:1487
+#: src/components/entities/views/ins-stats-view.tsx:1518
 msgid "No SIRUTA code associated."
 msgstr "Nu este asociat niciun cod SIRUTA."
 
@@ -4544,6 +4554,10 @@ msgstr "Plăți din afara trezoreriei"
 #: src/lib/chart-filter-utils.ts:50
 msgid "Normalization"
 msgstr "Normalizare"
+
+#: src/components/maps/charts/UatDataCharts.tsx:129
+msgid "Not enough entities available to display evolution."
+msgstr "Nu există suficiente entități pentru a afișa evoluția."
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:374
 msgid "Not enough latest values to compute derived indicators."
@@ -4603,11 +4617,11 @@ msgstr "Acum"
 msgid "October"
 msgstr "Octombrie"
 
-#: src/components/entities/views/Commitments.tsx:382
+#: src/components/entities/views/Commitments.tsx:381
 msgid "of annual budget paid"
 msgstr "din bugetul anual plătit"
 
-#: src/components/entities/views/Commitments.tsx:378
+#: src/components/entities/views/Commitments.tsx:377
 msgid "of commitment authority"
 msgstr "din autorizarea de angajament"
 
@@ -4687,6 +4701,7 @@ msgid "Open in chart editor"
 msgstr "Deschide în editorul de grafice"
 
 #: src/components/entities/views/ChartCard.tsx:60
+#: src/components/maps/charts/UatDataCharts.tsx:121
 msgid "Open in Chart Editor"
 msgstr "Deschide în Editorul de Grafice"
 
@@ -4757,8 +4772,8 @@ msgstr "sau"
 msgid "Original:"
 msgstr "Inițial:"
 
-#: src/components/entities/views/ins-stats-view.tsx:457
-#: src/components/entities/views/ins-stats-view.tsx:493
+#: src/components/entities/views/ins-stats-view.tsx:475
+#: src/components/entities/views/ins-stats-view.tsx:511
 msgid "Other"
 msgstr "Altele"
 
@@ -4775,8 +4790,8 @@ msgid "Other Sources"
 msgstr "Alte surse"
 
 #: src/components/commitments/LinearBudgetFlow.tsx:188
-msgid "Over authority"
-msgstr "Peste autorizare"
+#~ msgid "Over authority"
+#~ msgstr "Peste autorizare"
 
 #: src/hooks/useEntityViews.tsx:14
 msgid "Overview"
@@ -4836,13 +4851,13 @@ msgstr "Pauză"
 #: src/components/commitments/CategoryChart.tsx:132
 #: src/components/commitments/commitments-trends.tsx:444
 #: src/components/commitments/CommitmentsTable.tsx:177
-#: src/components/commitments/LinearBudgetFlow.tsx:135
-#: src/components/commitments/LinearBudgetFlow.tsx:235
+#: src/components/commitments/LinearBudgetFlow.tsx:132
+#: src/components/commitments/LinearBudgetFlow.tsx:211
 msgid "Payments"
 msgstr "Plăți"
 
 #: src/components/commitments/DetailTable.tsx:616
-#: src/components/entities/views/Commitments.tsx:408
+#: src/components/entities/views/Commitments.tsx:407
 msgid "Payments Made"
 msgstr "Plăți Efectuate"
 
@@ -4889,8 +4904,8 @@ msgstr "Pe cap de locuitor"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1524
 #: src/components/filters/EntityAnalyticsFilter.tsx:473
 #: src/components/filters/MapFilter.tsx:257
-#: src/components/maps/utils.ts:19
-#: src/components/maps/utils.ts:21
+#: src/components/maps/utils.ts:24
+#: src/components/maps/utils.ts:26
 #: src/lib/chart-filter-utils.ts:51
 msgid "Period"
 msgstr "Perioadă"
@@ -4957,10 +4972,10 @@ msgstr "Slab"
 
 #: src/components/entities/UatDisplay.tsx:39
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:93
-#: src/components/maps/charts/UatDataCharts.tsx:59
+#: src/components/maps/charts/UatDataCharts.tsx:138
 #: src/components/maps/HeatmapDataTable.tsx:232
 #: src/components/maps/HeatmapDataTable.tsx:453
-#: src/components/maps/utils.ts:120
+#: src/components/maps/utils.ts:125
 #: src/lib/ins/ins-dashboard-config.ts:22
 #: src/lib/ins/ins-dashboard-config.ts:29
 #: src/lib/ins/ins-metric-registry.ts:23
@@ -4989,7 +5004,7 @@ msgstr "Populație (POP107D)"
 msgid "Population Range"
 msgstr "Interval populație"
 
-#: src/components/maps/charts/UatDataCharts.tsx:58
+#: src/components/maps/charts/UatDataCharts.tsx:137
 msgid "Population vs. Total Amount"
 msgstr "Populație vs. Sumă totală"
 
@@ -5147,15 +5162,15 @@ msgid "Reality Check"
 msgstr "Verificare cu Realitatea"
 
 #: src/components/commitments/CommitmentsTable.tsx:168
-#: src/components/commitments/LinearBudgetFlow.tsx:229
+#: src/components/commitments/LinearBudgetFlow.tsx:205
 msgid "Receipts"
 msgstr "Recepții"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:213
+#: src/components/commitments/LinearBudgetFlow.tsx:189
 msgid "Receipts & arrears"
 msgstr "Recepții și arierate"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:202
+#: src/components/commitments/LinearBudgetFlow.tsx:178
 msgid "Receipts vs commitments"
 msgstr "Recepții vs angajamente"
 
@@ -5197,8 +5212,8 @@ msgid "Relative Values"
 msgstr "Valori relative"
 
 #: src/components/commitments/LinearBudgetFlow.tsx:195
-msgid "Remaining authority"
-msgstr "Autorizare rămasă"
+#~ msgid "Remaining authority"
+#~ msgstr "Autorizare rămasă"
 
 #: src/components/alerts/components/ConditionsList.tsx:73
 msgid "Remove condition"
@@ -5249,7 +5264,7 @@ msgstr "Perioada de raportare"
 msgid "Reporting:"
 msgstr "Raportare:"
 
-#: src/hooks/useEntityViews.tsx:48
+#: src/hooks/useEntityViews.tsx:50
 msgid "Reports"
 msgstr "Rapoarte"
 
@@ -5257,7 +5272,7 @@ msgstr "Rapoarte"
 msgid "Required for core functionality like security and preferences. Always on."
 msgstr "Necesar pentru funcționalități de bază, precum securitatea și preferințele. Activat permanent."
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:636
+#: src/components/budget-explorer/BudgetTreemap.tsx:639
 #: src/components/budget-explorer/FilteredSpendingInfo.tsx:185
 msgid "Reset amount filter"
 msgstr "Resetează filtrul de sumă"
@@ -5334,7 +5349,7 @@ msgid "Romanian law and applicable EU law, including GDPR. Venue: Sibiu, Romania
 msgstr "Legislația română și legislația UE aplicabilă, inclusiv RGPD. Jurisdicție: Sibiu, România."
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:751
-#: src/components/theme/currency-toggle.tsx:62
+#: src/components/theme/currency-toggle.tsx:60
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:235
 msgid "RON"
 msgstr "RON"
@@ -5529,7 +5544,7 @@ msgstr "Consultați și <0>Politica de confidențialitate</0>."
 msgid "See-through, clear"
 msgstr "Ușor de înțeles, clar"
 
-#: src/components/entities/views/ins-stats-view.tsx:1465
+#: src/components/entities/views/ins-stats-view.tsx:1496
 msgid "Select a local entity to view INS Tempo data."
 msgstr "Selectați o entitate locală pentru a vedea datele INS Tempo."
 
@@ -6320,11 +6335,11 @@ msgstr "Top {TOP_CATEGORIES_COUNT} categorii de venituri pentru {entityName}"
 msgid "Top {TOP_CATEGORIES_COUNT} Spending Categories for {entityName}"
 msgstr "Top {TOP_CATEGORIES_COUNT} categorii de cheltuieli pentru {entityName}"
 
-#: src/components/maps/charts/UatDataCharts.tsx:46
+#: src/components/maps/charts/UatDataCharts.tsx:100
 msgid "Top 15 Counties by Total Amount"
 msgstr "Top 15 județe după suma totală"
 
-#: src/components/maps/charts/UatDataCharts.tsx:46
+#: src/components/maps/charts/UatDataCharts.tsx:100
 msgid "Top 15 UATs by Total Amount"
 msgstr "Top 15 UAT-uri după suma totală"
 
@@ -6346,7 +6361,7 @@ msgstr "Categorii funcționale principale"
 msgid "total"
 msgstr "total"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:684
+#: src/components/budget-explorer/BudgetTreemap.tsx:687
 #: src/components/charts/components/series-config/SeriesFilter.tsx:416
 #: src/components/commitments/DetailTable.tsx:710
 #: src/components/common/NormalizationSelector.tsx:21
@@ -6362,7 +6377,7 @@ msgstr "Total"
 msgid "Total (sum all values)"
 msgstr "Total (suma tuturor valorilor)"
 
-#: src/components/entities/views/Commitments.tsx:390
+#: src/components/entities/views/Commitments.tsx:389
 msgid "Total Allocated Budget"
 msgstr "Total Buget Alocat"
 
@@ -6374,7 +6389,7 @@ msgstr "Sumă totală"
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:143
 #: src/components/maps/HeatmapDataTable.tsx:286
 #: src/components/maps/HeatmapDataTable.tsx:454
-#: src/components/maps/utils.ts:133
+#: src/components/maps/utils.ts:138
 #: src/routes/entity-analytics.lazy.tsx:238
 msgid "Total Amount"
 msgstr "Sumă totală"
@@ -6478,7 +6493,7 @@ msgstr "Încearcă Alt An"
 msgid "Try guessing again"
 msgstr "Încearcă să ghicești din nou"
 
-#: src/components/maps/utils.ts:26
+#: src/components/maps/utils.ts:31
 msgid "Type"
 msgstr "Tip"
 
@@ -6491,7 +6506,7 @@ msgstr "Introduceți răspunsul..."
 #: src/components/filters/EntityAnalyticsFilter.tsx:505
 #: src/components/filters/EntityAnalyticsFilter.tsx:683
 #: src/components/filters/MapFilter.tsx:217
-#: src/components/maps/charts/UatDataCharts.tsx:48
+#: src/components/maps/charts/UatDataCharts.tsx:102
 #: src/lib/chart-filter-utils.ts:39
 msgid "UAT"
 msgstr "UAT"
@@ -6544,7 +6559,7 @@ msgstr "Unificat"
 #: src/components/charts/components/series-config/InsSeriesEditor.tsx:628
 #: src/components/charts/components/series-config/UnitInput.tsx:28
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1395
-#: src/components/entities/views/ins-stats-view.tsx:1155
+#: src/components/entities/views/ins-stats-view.tsx:1180
 msgid "Unit"
 msgstr "Unitate"
 
@@ -6556,9 +6571,9 @@ msgstr "Opțiuni unitate"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:247
 #: src/components/entities/views/ins-stats-view.presentation.tsx:250
 #: src/components/entities/views/ins-stats-view.presentation.tsx:318
-#: src/components/entities/views/ins-stats-view.tsx:563
-#: src/components/entities/views/ins-stats-view.tsx:601
-#: src/components/entities/views/ins-stats-view.tsx:1213
+#: src/components/entities/views/ins-stats-view.tsx:581
+#: src/components/entities/views/ins-stats-view.tsx:626
+#: src/components/entities/views/ins-stats-view.tsx:1244
 msgid "Unknown"
 msgstr "Necunoscut"
 
@@ -6581,7 +6596,7 @@ msgid "Unlock annotation"
 msgstr "Deblochează adnotarea"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:114
-#: src/components/commitments/LinearBudgetFlow.tsx:241
+#: src/components/commitments/LinearBudgetFlow.tsx:217
 msgid "Unpaid receipts"
 msgstr "Recepții neplătite"
 
@@ -6589,7 +6604,7 @@ msgstr "Recepții neplătite"
 msgid "Unpaid receipts change"
 msgstr "Variația recepțiilor neplătite"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:247
+#: src/components/commitments/LinearBudgetFlow.tsx:223
 msgid "Unreceived commitments"
 msgstr "Angajamente nerecepționate"
 
@@ -6598,7 +6613,7 @@ msgstr "Angajamente nerecepționate"
 msgid "Unsaved changes"
 msgstr "Modificări nesalvate"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:141
+#: src/components/commitments/LinearBudgetFlow.tsx:138
 msgid "Unspent budget"
 msgstr "Buget necheltuit"
 
@@ -6650,7 +6665,7 @@ msgid "Usage analytics"
 msgstr "Analiza utilizării"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:753
-#: src/components/theme/currency-toggle.tsx:78
+#: src/components/theme/currency-toggle.tsx:76
 msgid "USD"
 msgstr "USD"
 
@@ -6768,7 +6783,7 @@ msgstr "Vizualizați toate clasificările"
 msgid "View all reports"
 msgstr "Vezi toate rapoartele"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:702
+#: src/components/budget-explorer/BudgetTreemap.tsx:705
 msgid "View as Chart"
 msgstr "Vezi Graficul"
 
@@ -6779,7 +6794,7 @@ msgstr "Vezi Graficul"
 msgid "View Chart"
 msgstr "Vezi graficul"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:612
+#: src/components/budget-explorer/BudgetTreemap.tsx:615
 #: src/features/learning/components/cards/LearningPathCard.tsx:75
 msgid "View Details"
 msgstr "Vezi detalii"

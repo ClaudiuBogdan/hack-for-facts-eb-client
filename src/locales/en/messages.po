@@ -95,7 +95,7 @@ msgstr "{minutes}m remaining"
 msgid "{resultsCount} results found"
 msgstr "{resultsCount} results found"
 
-#: src/components/maps/utils.ts:46
+#: src/components/maps/utils.ts:51
 msgid "*Check filters panel for more details."
 msgstr "*Check filters panel for more details."
 
@@ -106,7 +106,7 @@ msgstr "/capita"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:414
 #: src/components/entities/EntityReportControls.tsx:273
 #: src/components/filters/normalization-filter/NormalizationFilter.tsx:15
-#: src/components/maps/utils.ts:127
+#: src/components/maps/utils.ts:132
 #: src/components/normalization/normalization-controls.tsx:33
 #: src/components/normalization/normalization-mode-select.tsx:40
 #: src/lib/utils.ts:14
@@ -500,7 +500,7 @@ msgstr "Account category"
 msgid "Active"
 msgstr "Active"
 
-#: src/components/maps/utils.ts:43
+#: src/components/maps/utils.ts:48
 msgid "Active filters"
 msgstr "Active filters"
 
@@ -760,8 +760,8 @@ msgstr "Allow essential only"
 msgid "Always enabled"
 msgstr "Always enabled"
 
-#: src/components/maps/charts/UatDataCharts.tsx:47
-#: src/components/maps/charts/UatDataCharts.tsx:60
+#: src/components/maps/charts/UatDataCharts.tsx:101
+#: src/components/maps/charts/UatDataCharts.tsx:139
 msgid "Amount"
 msgstr "Amount"
 
@@ -771,7 +771,7 @@ msgstr "Amount filter (this layer)"
 
 #: src/components/maps/HeatmapDataTable.tsx:348
 #: src/components/maps/HeatmapDataTable.tsx:455
-#: src/components/maps/utils.ts:138
+#: src/components/maps/utils.ts:143
 msgid "Amount Per Capita"
 msgstr "Amount Per Capita"
 
@@ -830,11 +830,15 @@ msgstr "Annotations"
 msgid "Annual"
 msgstr "Annual"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:112
+#: src/components/commitments/LinearBudgetFlow.tsx:126
+msgid "Annual budget credits"
+msgstr "Annual budget credits"
+
+#: src/components/commitments/LinearBudgetFlow.tsx:109
 msgid "Annual budget execution"
 msgstr "Annual budget execution"
 
-#: src/components/entities/views/Commitments.tsx:383
+#: src/components/entities/views/Commitments.tsx:382
 msgid "Annual budget unavailable"
 msgstr "Annual budget unavailable"
 
@@ -1057,7 +1061,6 @@ msgstr "Budget Chapter"
 #: src/components/commitments/CategoryChart.tsx:56
 #: src/components/commitments/CategoryChart.tsx:120
 #: src/components/commitments/commitments-trends.tsx:395
-#: src/components/commitments/LinearBudgetFlow.tsx:129
 msgid "Budget credits"
 msgstr "Budget credits"
 
@@ -1066,7 +1069,7 @@ msgstr "Budget credits"
 msgid "Budget Credits"
 msgstr "Budget Credits"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:98
+#: src/components/commitments/LinearBudgetFlow.tsx:95
 msgid "Budget credits are annual (cash you can pay within the selected year). Legal commitments represent the total value of contracts signed (often multi-year), so they can exceed the annual budget without implying overspending. To assess contracting, compare commitments to commitment authority."
 msgstr "Budget credits are annual (cash you can pay within the selected year). Legal commitments represent the total value of contracts signed (often multi-year), so they can exceed the annual budget without implying overspending. To assess contracting, compare commitments to commitment authority."
 
@@ -1182,11 +1185,11 @@ msgstr "Calculations assume a basket of 40% essential goods (11% VAT) and 60% ge
 msgid "Cancel"
 msgstr "Cancel"
 
-#: src/components/entities/views/ins-stats-view.tsx:1477
+#: src/components/entities/views/ins-stats-view.tsx:1508
 msgid "Cannot load INS indicators without the county code."
 msgstr "Cannot load INS indicators without the county code."
 
-#: src/components/entities/views/ins-stats-view.tsx:1489
+#: src/components/entities/views/ins-stats-view.tsx:1520
 msgid "Cannot load INS indicators without the locality SIRUTA code."
 msgstr "Cannot load INS indicators without the locality SIRUTA code."
 
@@ -1260,7 +1263,7 @@ msgstr "Chart Type"
 #: src/components/footer/AppFooter.tsx:103
 #: src/components/sidebar/nav-main.tsx:31
 #: src/components/ui/shortcuts.tsx:38
-#: src/hooks/useEntityViews.tsx:43
+#: src/hooks/useEntityViews.tsx:45
 #: src/routes/charts/index.lazy.tsx:170
 #: src/routes/index.tsx:89
 msgid "Charts"
@@ -1412,7 +1415,7 @@ msgstr "Columns"
 msgid "Comfortable"
 msgstr "Comfortable"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:175
+#: src/components/commitments/LinearBudgetFlow.tsx:166
 msgid "Commitment authority"
 msgstr "Commitment authority"
 
@@ -1420,11 +1423,11 @@ msgstr "Commitment authority"
 msgid "Commitment authority limit"
 msgstr "Commitment authority limit"
 
-#: src/components/entities/views/Commitments.tsx:379
+#: src/components/entities/views/Commitments.tsx:378
 msgid "Commitment authority unavailable"
 msgstr "Commitment authority unavailable"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:158
+#: src/components/commitments/LinearBudgetFlow.tsx:149
 msgid "Commitment authority usage"
 msgstr "Commitment authority usage"
 
@@ -1432,7 +1435,7 @@ msgstr "Commitment authority usage"
 msgid "Commitment Detailed"
 msgstr "Commitment Detailed"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:89
+#: src/components/commitments/LinearBudgetFlow.tsx:86
 msgid "Commitment Health"
 msgstr "Commitment Health"
 
@@ -1449,7 +1452,7 @@ msgid "Commitment Trends"
 msgstr "Commitment Trends"
 
 #: src/components/commitments/CommitmentsTable.tsx:159
-#: src/hooks/useEntityViews.tsx:22
+#: src/hooks/useEntityViews.tsx:28
 msgid "Commitments"
 msgstr "Commitments"
 
@@ -1457,13 +1460,13 @@ msgstr "Commitments"
 msgid "Commitments Analytics"
 msgstr "Commitments Analytics"
 
-#: src/lib/chart-links.ts:247
+#: src/lib/chart-links.ts:248
 msgid "Commitments Evolution - {entityName}"
 msgstr "Commitments Evolution - {entityName}"
 
 #: src/components/commitments/LinearBudgetFlow.tsx:147
-msgid "Commitments vs budget"
-msgstr "Commitments vs budget"
+#~ msgid "Commitments vs budget"
+#~ msgstr "Commitments vs budget"
 
 #: src/components/maps/HeatmapDataTable.tsx:443
 #: src/components/maps/HeatmapDataTable.tsx:447
@@ -1712,7 +1715,7 @@ msgstr "Could Not Load Funding Sources"
 msgid "Could not load historical data"
 msgstr "Could not load historical data"
 
-#: src/components/entities/views/ins-stats-view.tsx:1504
+#: src/components/entities/views/ins-stats-view.tsx:1535
 msgid "Could not load INS data"
 msgstr "Could not load INS data"
 
@@ -1752,14 +1755,14 @@ msgstr "Counties"
 #: src/components/filters/EntityAnalyticsFilter.tsx:513
 #: src/components/filters/EntityAnalyticsFilter.tsx:691
 #: src/components/filters/MapFilter.tsx:218
-#: src/components/maps/charts/UatDataCharts.tsx:48
+#: src/components/maps/charts/UatDataCharts.tsx:102
 #: src/components/maps/HeatmapDataTable.tsx:452
 #: src/routes/entity-analytics.lazy.tsx:235
 msgid "County"
 msgstr "County"
 
-#: src/components/maps/utils.ts:98
-#: src/components/maps/utils.ts:151
+#: src/components/maps/utils.ts:103
+#: src/components/maps/utils.ts:156
 msgid "County:"
 msgstr "County:"
 
@@ -1831,7 +1834,7 @@ msgstr "Culture & tourism"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:738
 #: src/components/maps/HeatmapDataTable.tsx:445
 #: src/components/normalization/normalization-controls.tsx:84
-#: src/components/theme/currency-toggle.tsx:55
+#: src/components/theme/currency-toggle.tsx:53
 #: src/routes/entity-analytics.lazy.tsx:228
 msgid "Currency"
 msgstr "Currency"
@@ -2228,7 +2231,7 @@ msgstr "e.g., RON, %, Units..."
 msgid "Easily manage your subscriptions"
 msgstr "Easily manage your subscriptions"
 
-#: src/components/maps/utils.ts:34
+#: src/components/maps/utils.ts:39
 msgid "Ec"
 msgstr "Ec"
 
@@ -2263,7 +2266,7 @@ msgstr "Economic Classification"
 msgid "Economic Classification Prefix"
 msgstr "Economic Classification Prefix"
 
-#: src/components/maps/utils.ts:34
+#: src/components/maps/utils.ts:39
 msgid "economic codes"
 msgstr "economic codes"
 
@@ -2332,7 +2335,7 @@ msgid "Emigrants (POP309E)"
 msgstr "Emigrants (POP309E)"
 
 #: src/components/entities/views/ins-stats-view.derived.ts:314
-#: src/hooks/useEntityViews.tsx:36
+#: src/hooks/useEntityViews.tsx:25
 msgid "Employees"
 msgstr "Employees"
 
@@ -2422,7 +2425,7 @@ msgstr "Enter series label..."
 #: src/components/filters/EntityAnalyticsFilter.tsx:661
 #: src/components/filters/MapFilter.tsx:266
 #: src/components/filters/MapFilter.tsx:443
-#: src/hooks/useEntityViews.tsx:46
+#: src/hooks/useEntityViews.tsx:48
 #: src/routes/index.tsx:82
 msgid "Entities"
 msgstr "Entities"
@@ -2521,7 +2524,7 @@ msgstr "Error reporting (Sentry)"
 msgid "Error signal sent"
 msgstr "Error signal sent"
 
-#: src/components/maps/utils.ts:112
+#: src/components/maps/utils.ts:117
 msgid "Error: Invalid data point type."
 msgstr "Error: Invalid data point type."
 
@@ -2570,13 +2573,21 @@ msgid "EU Projects"
 msgstr "EU Projects"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:752
-#: src/components/theme/currency-toggle.tsx:70
+#: src/components/theme/currency-toggle.tsx:68
 msgid "EUR"
 msgstr "EUR"
 
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:228
 msgid "Ever wondered where your money actually goes?"
 msgstr "Ever wondered where your money actually goes?"
+
+#: src/lib/chart-links.ts:433
+msgid "Evolution of Top 15 Counties"
+msgstr "Evolution of Top 15 Counties"
+
+#: src/lib/chart-links.ts:433
+msgid "Evolution of Top 15 UATs"
+msgstr "Evolution of Top 15 UATs"
 
 #: src/features/learning/components/interactive/RedFlagCards.tsx:116
 msgid "Example:"
@@ -2673,7 +2684,7 @@ msgstr "Existing dwellings (LOC101B)"
 msgid "Expand explorer to full width"
 msgstr "Expand explorer to full width"
 
-#: src/hooks/useEntityViews.tsx:24
+#: src/hooks/useEntityViews.tsx:35
 msgid "Expense Trends"
 msgstr "Expense Trends"
 
@@ -2691,7 +2702,7 @@ msgstr "Expense Type"
 #: src/components/filters/account-type-filter/AccountCategoryRadio.tsx:12
 #: src/components/filters/EntityAnalyticsFilter.tsx:452
 #: src/components/filters/MapFilter.tsx:233
-#: src/components/maps/utils.ts:26
+#: src/components/maps/utils.ts:31
 #: src/hooks/filters/useFilterLabels.tsx:195
 #: src/routes/entity-analytics.lazy.tsx:295
 msgid "Expenses"
@@ -2883,7 +2894,7 @@ msgstr "Filters out missing or non-numeric points before chart mapping."
 msgid "Final budget credits"
 msgstr "Final budget credits"
 
-#: src/components/entities/views/Commitments.tsx:392
+#: src/components/entities/views/Commitments.tsx:391
 msgid "Final Budget Credits"
 msgstr "Final Budget Credits"
 
@@ -2899,7 +2910,7 @@ msgstr "Final:"
 msgid "Finance"
 msgstr "Finance"
 
-#: src/lib/chart-links.ts:100
+#: src/lib/chart-links.ts:101
 msgid "Financial Evolution - {entityName}"
 msgstr "Financial Evolution - {entityName}"
 
@@ -2938,7 +2949,7 @@ msgstr "First value only: keep one deterministic row (fallback/debug)."
 msgid "Flow"
 msgstr "Flow"
 
-#: src/components/maps/utils.ts:30
+#: src/components/maps/utils.ts:35
 msgid "Fn"
 msgstr "Fn"
 
@@ -2974,7 +2985,7 @@ msgstr "Follow the money"
 msgid "For questions about this Privacy Policy, to exercise your rights, or to contact our data protection officer, email us at contact@transparenta.eu"
 msgstr "For questions about this Privacy Policy, to exercise your rights, or to contact our data protection officer, email us at contact@transparenta.eu"
 
-#: src/components/maps/utils.ts:162
+#: src/components/maps/utils.ts:167
 msgid "for the selected filters."
 msgstr "for the selected filters."
 
@@ -3021,7 +3032,7 @@ msgstr "Functional Classification"
 msgid "Functional Classification Prefix"
 msgstr "Functional Classification Prefix"
 
-#: src/components/maps/utils.ts:30
+#: src/components/maps/utils.ts:35
 msgid "functional codes"
 msgstr "functional codes"
 
@@ -3145,7 +3156,7 @@ msgstr "Go to Entity Table"
 msgid "Go to homepage"
 msgstr "Go to homepage"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:631
+#: src/components/budget-explorer/BudgetTreemap.tsx:634
 msgid "Go to Main Categories"
 msgstr "Go to Main Categories"
 
@@ -3390,7 +3401,7 @@ msgstr "Includes EU money (PNRR) and profits from state-owned companies. Essenti
 #: src/components/filters/account-type-filter/AccountCategoryRadio.tsx:13
 #: src/components/filters/EntityAnalyticsFilter.tsx:453
 #: src/components/filters/MapFilter.tsx:234
-#: src/components/maps/utils.ts:26
+#: src/components/maps/utils.ts:31
 #: src/hooks/filters/useFilterLabels.tsx:196
 #: src/routes/entity-analytics.lazy.tsx:295
 msgid "Income"
@@ -3404,7 +3415,7 @@ msgstr "Income - Expenses"
 msgid "Income Tax"
 msgstr "Income Tax"
 
-#: src/hooks/useEntityViews.tsx:25
+#: src/hooks/useEntityViews.tsx:36
 msgid "Income Trends"
 msgstr "Income Trends"
 
@@ -3478,7 +3489,7 @@ msgstr "INS Dataset Configuration"
 msgid "INS dataset options"
 msgstr "INS dataset options"
 
-#: src/components/entities/views/ins-stats-view.tsx:1463
+#: src/components/entities/views/ins-stats-view.tsx:1494
 msgid "INS indicators are only available for UATs."
 msgstr "INS indicators are only available for UATs."
 
@@ -3486,12 +3497,12 @@ msgstr "INS indicators are only available for UATs."
 msgid "INS Series"
 msgstr "INS Series"
 
-#: src/hooks/useEntityViews.tsx:40
+#: src/hooks/useEntityViews.tsx:31
 msgid "INS Stats"
 msgstr "INS Stats"
 
 #: src/components/charts/components/series-config/InsSeriesEditor.tsx:440
-#: src/components/entities/views/ins-stats-view.tsx:791
+#: src/components/entities/views/ins-stats-view.tsx:816
 msgid "INS Tempo"
 msgstr "INS Tempo"
 
@@ -3499,7 +3510,7 @@ msgstr "INS Tempo"
 msgid "INS terms"
 msgstr "INS terms"
 
-#: src/lib/chart-links.ts:526
+#: src/lib/chart-links.ts:588
 msgid "INS Trends - {normalizedDatasetLabel} ({entityName})"
 msgstr "INS Trends - {normalizedDatasetLabel} ({entityName})"
 
@@ -3701,11 +3712,11 @@ msgstr "Legal bases for processing"
 #: src/components/commitments/CategoryChart.tsx:126
 #: src/components/commitments/commitments-trends.tsx:419
 #: src/components/commitments/DetailTable.tsx:602
-#: src/components/commitments/LinearBudgetFlow.tsx:181
+#: src/components/commitments/LinearBudgetFlow.tsx:172
 msgid "Legal commitments"
 msgstr "Legal commitments"
 
-#: src/components/entities/views/Commitments.tsx:399
+#: src/components/entities/views/Commitments.tsx:398
 msgid "Legal Commitments"
 msgstr "Legal Commitments"
 
@@ -3915,7 +3926,7 @@ msgstr "Low opportunity"
 msgid "Main aggregated"
 msgstr "Main aggregated"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:544
+#: src/components/budget-explorer/BudgetTreemap.tsx:547
 #: src/components/entities/LineItemsAnalytics.tsx:160
 msgid "Main Categories"
 msgstr "Main Categories"
@@ -3975,7 +3986,7 @@ msgstr "Managing preferences"
 #: src/components/filters/MapFilter.tsx:200
 #: src/components/sidebar/nav-main.tsx:26
 #: src/components/ui/shortcuts.tsx:44
-#: src/hooks/useEntityViews.tsx:31
+#: src/hooks/useEntityViews.tsx:42
 #: src/routes/index.tsx:68
 msgid "Map"
 msgstr "Map"
@@ -4088,12 +4099,12 @@ msgstr "Missing title"
 msgid "Mission End"
 msgstr "Mission End"
 
-#: src/components/entities/views/ins-stats-view.tsx:1213
+#: src/components/entities/views/ins-stats-view.tsx:1244
 msgid "Mixed"
 msgstr "Mixed"
 
-#: src/components/maps/utils.ts:105
-#: src/components/maps/utils.ts:151
+#: src/components/maps/utils.ts:110
+#: src/components/maps/utils.ts:156
 msgid "Mnemonic:"
 msgstr "Mnemonic:"
 
@@ -4186,16 +4197,15 @@ msgstr "Move Up"
 msgid "Multiple selected values"
 msgstr "Multiple selected values"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:149
-#: src/components/commitments/LinearBudgetFlow.tsx:161
-#: src/components/commitments/LinearBudgetFlow.tsx:204
-#: src/components/commitments/LinearBudgetFlow.tsx:216
+#: src/components/commitments/LinearBudgetFlow.tsx:152
+#: src/components/commitments/LinearBudgetFlow.tsx:180
+#: src/components/commitments/LinearBudgetFlow.tsx:192
 #: src/components/entities/views/ins-stats-view.formatters.ts:77
 #: src/components/entities/views/ins-stats-view.formatters.ts:139
 #: src/components/entities/views/ins-stats-view.presentation.tsx:246
-#: src/components/maps/utils.ts:98
-#: src/components/maps/utils.ts:122
-#: src/components/maps/utils.ts:151
+#: src/components/maps/utils.ts:103
+#: src/components/maps/utils.ts:127
+#: src/components/maps/utils.ts:156
 msgid "N/A"
 msgstr "N/A"
 
@@ -4312,7 +4322,7 @@ msgstr "No {0} found matching \"{searchTerm}\""
 msgid "No active notifications"
 msgstr "No active notifications"
 
-#: src/components/maps/utils.ts:159
+#: src/components/maps/utils.ts:164
 msgid "No aggregated data"
 msgstr "No aggregated data"
 
@@ -4367,7 +4377,7 @@ msgstr "No conditions added yet. Click the button below to add your first condit
 msgid "No conditions set"
 msgstr "No conditions set"
 
-#: src/components/entities/views/ins-stats-view.tsx:1475
+#: src/components/entities/views/ins-stats-view.tsx:1506
 msgid "No county code associated."
 msgstr "No county code associated."
 
@@ -4411,7 +4421,7 @@ msgstr "No data series alerts"
 msgid "No data series yet."
 msgstr "No data series yet."
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:621
+#: src/components/budget-explorer/BudgetTreemap.tsx:624
 msgid "No data within the selected range."
 msgstr "No data within the selected range."
 
@@ -4519,7 +4529,7 @@ msgstr "No selling of personal data."
 msgid "No series found."
 msgstr "No series found."
 
-#: src/components/entities/views/ins-stats-view.tsx:1487
+#: src/components/entities/views/ins-stats-view.tsx:1518
 msgid "No SIRUTA code associated."
 msgstr "No SIRUTA code associated."
 
@@ -4549,6 +4559,10 @@ msgstr "Non-treasury payments"
 #: src/lib/chart-filter-utils.ts:50
 msgid "Normalization"
 msgstr "Normalization"
+
+#: src/components/maps/charts/UatDataCharts.tsx:129
+msgid "Not enough entities available to display evolution."
+msgstr "Not enough entities available to display evolution."
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:374
 msgid "Not enough latest values to compute derived indicators."
@@ -4608,11 +4622,11 @@ msgstr "Now"
 msgid "October"
 msgstr "October"
 
-#: src/components/entities/views/Commitments.tsx:382
+#: src/components/entities/views/Commitments.tsx:381
 msgid "of annual budget paid"
 msgstr "of annual budget paid"
 
-#: src/components/entities/views/Commitments.tsx:378
+#: src/components/entities/views/Commitments.tsx:377
 msgid "of commitment authority"
 msgstr "of commitment authority"
 
@@ -4692,6 +4706,7 @@ msgid "Open in chart editor"
 msgstr "Open in chart editor"
 
 #: src/components/entities/views/ChartCard.tsx:60
+#: src/components/maps/charts/UatDataCharts.tsx:121
 msgid "Open in Chart Editor"
 msgstr "Open in Chart Editor"
 
@@ -4762,8 +4777,8 @@ msgstr "or"
 msgid "Original:"
 msgstr "Original:"
 
-#: src/components/entities/views/ins-stats-view.tsx:457
-#: src/components/entities/views/ins-stats-view.tsx:493
+#: src/components/entities/views/ins-stats-view.tsx:475
+#: src/components/entities/views/ins-stats-view.tsx:511
 msgid "Other"
 msgstr "Other"
 
@@ -4780,8 +4795,8 @@ msgid "Other Sources"
 msgstr "Other Sources"
 
 #: src/components/commitments/LinearBudgetFlow.tsx:188
-msgid "Over authority"
-msgstr "Over authority"
+#~ msgid "Over authority"
+#~ msgstr "Over authority"
 
 #: src/hooks/useEntityViews.tsx:14
 msgid "Overview"
@@ -4841,13 +4856,13 @@ msgstr "Paused"
 #: src/components/commitments/CategoryChart.tsx:132
 #: src/components/commitments/commitments-trends.tsx:444
 #: src/components/commitments/CommitmentsTable.tsx:177
-#: src/components/commitments/LinearBudgetFlow.tsx:135
-#: src/components/commitments/LinearBudgetFlow.tsx:235
+#: src/components/commitments/LinearBudgetFlow.tsx:132
+#: src/components/commitments/LinearBudgetFlow.tsx:211
 msgid "Payments"
 msgstr "Payments"
 
 #: src/components/commitments/DetailTable.tsx:616
-#: src/components/entities/views/Commitments.tsx:408
+#: src/components/entities/views/Commitments.tsx:407
 msgid "Payments Made"
 msgstr "Payments Made"
 
@@ -4894,8 +4909,8 @@ msgstr "Per Capita"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1524
 #: src/components/filters/EntityAnalyticsFilter.tsx:473
 #: src/components/filters/MapFilter.tsx:257
-#: src/components/maps/utils.ts:19
-#: src/components/maps/utils.ts:21
+#: src/components/maps/utils.ts:24
+#: src/components/maps/utils.ts:26
 #: src/lib/chart-filter-utils.ts:51
 msgid "Period"
 msgstr "Period"
@@ -4962,10 +4977,10 @@ msgstr "Poor"
 
 #: src/components/entities/UatDisplay.tsx:39
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:93
-#: src/components/maps/charts/UatDataCharts.tsx:59
+#: src/components/maps/charts/UatDataCharts.tsx:138
 #: src/components/maps/HeatmapDataTable.tsx:232
 #: src/components/maps/HeatmapDataTable.tsx:453
-#: src/components/maps/utils.ts:120
+#: src/components/maps/utils.ts:125
 #: src/lib/ins/ins-dashboard-config.ts:22
 #: src/lib/ins/ins-dashboard-config.ts:29
 #: src/lib/ins/ins-metric-registry.ts:23
@@ -4994,7 +5009,7 @@ msgstr "Population (POP107D)"
 msgid "Population Range"
 msgstr "Population Range"
 
-#: src/components/maps/charts/UatDataCharts.tsx:58
+#: src/components/maps/charts/UatDataCharts.tsx:137
 msgid "Population vs. Total Amount"
 msgstr "Population vs. Total Amount"
 
@@ -5152,15 +5167,15 @@ msgid "Reality Check"
 msgstr "Reality Check"
 
 #: src/components/commitments/CommitmentsTable.tsx:168
-#: src/components/commitments/LinearBudgetFlow.tsx:229
+#: src/components/commitments/LinearBudgetFlow.tsx:205
 msgid "Receipts"
 msgstr "Receipts"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:213
+#: src/components/commitments/LinearBudgetFlow.tsx:189
 msgid "Receipts & arrears"
 msgstr "Receipts & arrears"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:202
+#: src/components/commitments/LinearBudgetFlow.tsx:178
 msgid "Receipts vs commitments"
 msgstr "Receipts vs commitments"
 
@@ -5202,8 +5217,8 @@ msgid "Relative Values"
 msgstr "Relative Values"
 
 #: src/components/commitments/LinearBudgetFlow.tsx:195
-msgid "Remaining authority"
-msgstr "Remaining authority"
+#~ msgid "Remaining authority"
+#~ msgstr "Remaining authority"
 
 #: src/components/alerts/components/ConditionsList.tsx:73
 msgid "Remove condition"
@@ -5254,7 +5269,7 @@ msgstr "Reporting period"
 msgid "Reporting:"
 msgstr "Reporting:"
 
-#: src/hooks/useEntityViews.tsx:48
+#: src/hooks/useEntityViews.tsx:50
 msgid "Reports"
 msgstr "Reports"
 
@@ -5262,7 +5277,7 @@ msgstr "Reports"
 msgid "Required for core functionality like security and preferences. Always on."
 msgstr "Required for core functionality like security and preferences. Always on."
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:636
+#: src/components/budget-explorer/BudgetTreemap.tsx:639
 #: src/components/budget-explorer/FilteredSpendingInfo.tsx:185
 msgid "Reset amount filter"
 msgstr "Reset amount filter"
@@ -5339,7 +5354,7 @@ msgid "Romanian law and applicable EU law, including GDPR. Venue: Sibiu, Romania
 msgstr "Romanian law and applicable EU law, including GDPR. Venue: Sibiu, Romania."
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:751
-#: src/components/theme/currency-toggle.tsx:62
+#: src/components/theme/currency-toggle.tsx:60
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:235
 msgid "RON"
 msgstr "RON"
@@ -5534,7 +5549,7 @@ msgstr "See also our <0>Privacy Policy</0>."
 msgid "See-through, clear"
 msgstr "See-through, clear"
 
-#: src/components/entities/views/ins-stats-view.tsx:1465
+#: src/components/entities/views/ins-stats-view.tsx:1496
 msgid "Select a local entity to view INS Tempo data."
 msgstr "Select a local entity to view INS Tempo data."
 
@@ -6325,11 +6340,11 @@ msgstr "Top {TOP_CATEGORIES_COUNT} Income Categories for {entityName}"
 msgid "Top {TOP_CATEGORIES_COUNT} Spending Categories for {entityName}"
 msgstr "Top {TOP_CATEGORIES_COUNT} Spending Categories for {entityName}"
 
-#: src/components/maps/charts/UatDataCharts.tsx:46
+#: src/components/maps/charts/UatDataCharts.tsx:100
 msgid "Top 15 Counties by Total Amount"
 msgstr "Top 15 Counties by Total Amount"
 
-#: src/components/maps/charts/UatDataCharts.tsx:46
+#: src/components/maps/charts/UatDataCharts.tsx:100
 msgid "Top 15 UATs by Total Amount"
 msgstr "Top 15 UATs by Total Amount"
 
@@ -6351,7 +6366,7 @@ msgstr "Top Functional Categories"
 msgid "total"
 msgstr "total"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:684
+#: src/components/budget-explorer/BudgetTreemap.tsx:687
 #: src/components/charts/components/series-config/SeriesFilter.tsx:416
 #: src/components/commitments/DetailTable.tsx:710
 #: src/components/common/NormalizationSelector.tsx:21
@@ -6367,7 +6382,7 @@ msgstr "Total"
 msgid "Total (sum all values)"
 msgstr "Total (sum all values)"
 
-#: src/components/entities/views/Commitments.tsx:390
+#: src/components/entities/views/Commitments.tsx:389
 msgid "Total Allocated Budget"
 msgstr "Total Allocated Budget"
 
@@ -6379,7 +6394,7 @@ msgstr "Total amount"
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:143
 #: src/components/maps/HeatmapDataTable.tsx:286
 #: src/components/maps/HeatmapDataTable.tsx:454
-#: src/components/maps/utils.ts:133
+#: src/components/maps/utils.ts:138
 #: src/routes/entity-analytics.lazy.tsx:238
 msgid "Total Amount"
 msgstr "Total Amount"
@@ -6483,7 +6498,7 @@ msgstr "Try Another Year"
 msgid "Try guessing again"
 msgstr "Try guessing again"
 
-#: src/components/maps/utils.ts:26
+#: src/components/maps/utils.ts:31
 msgid "Type"
 msgstr "Type"
 
@@ -6496,7 +6511,7 @@ msgstr "Type your answer..."
 #: src/components/filters/EntityAnalyticsFilter.tsx:505
 #: src/components/filters/EntityAnalyticsFilter.tsx:683
 #: src/components/filters/MapFilter.tsx:217
-#: src/components/maps/charts/UatDataCharts.tsx:48
+#: src/components/maps/charts/UatDataCharts.tsx:102
 #: src/lib/chart-filter-utils.ts:39
 msgid "UAT"
 msgstr "UAT"
@@ -6549,7 +6564,7 @@ msgstr "Unified"
 #: src/components/charts/components/series-config/InsSeriesEditor.tsx:628
 #: src/components/charts/components/series-config/UnitInput.tsx:28
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1395
-#: src/components/entities/views/ins-stats-view.tsx:1155
+#: src/components/entities/views/ins-stats-view.tsx:1180
 msgid "Unit"
 msgstr "Unit"
 
@@ -6561,9 +6576,9 @@ msgstr "Unit options"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:247
 #: src/components/entities/views/ins-stats-view.presentation.tsx:250
 #: src/components/entities/views/ins-stats-view.presentation.tsx:318
-#: src/components/entities/views/ins-stats-view.tsx:563
-#: src/components/entities/views/ins-stats-view.tsx:601
-#: src/components/entities/views/ins-stats-view.tsx:1213
+#: src/components/entities/views/ins-stats-view.tsx:581
+#: src/components/entities/views/ins-stats-view.tsx:626
+#: src/components/entities/views/ins-stats-view.tsx:1244
 msgid "Unknown"
 msgstr "Unknown"
 
@@ -6586,7 +6601,7 @@ msgid "Unlock annotation"
 msgstr "Unlock annotation"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:114
-#: src/components/commitments/LinearBudgetFlow.tsx:241
+#: src/components/commitments/LinearBudgetFlow.tsx:217
 msgid "Unpaid receipts"
 msgstr "Unpaid receipts"
 
@@ -6594,7 +6609,7 @@ msgstr "Unpaid receipts"
 msgid "Unpaid receipts change"
 msgstr "Unpaid receipts change"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:247
+#: src/components/commitments/LinearBudgetFlow.tsx:223
 msgid "Unreceived commitments"
 msgstr "Unreceived commitments"
 
@@ -6603,7 +6618,7 @@ msgstr "Unreceived commitments"
 msgid "Unsaved changes"
 msgstr "Unsaved changes"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:141
+#: src/components/commitments/LinearBudgetFlow.tsx:138
 msgid "Unspent budget"
 msgstr "Unspent budget"
 
@@ -6655,7 +6670,7 @@ msgid "Usage analytics"
 msgstr "Usage analytics"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:753
-#: src/components/theme/currency-toggle.tsx:78
+#: src/components/theme/currency-toggle.tsx:76
 msgid "USD"
 msgstr "USD"
 
@@ -6773,7 +6788,7 @@ msgstr "View all classifications"
 msgid "View all reports"
 msgstr "View all reports"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:702
+#: src/components/budget-explorer/BudgetTreemap.tsx:705
 msgid "View as Chart"
 msgstr "View as Chart"
 
@@ -6784,7 +6799,7 @@ msgstr "View as Chart"
 msgid "View Chart"
 msgstr "View Chart"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:612
+#: src/components/budget-explorer/BudgetTreemap.tsx:615
 #: src/features/learning/components/cards/LearningPathCard.tsx:75
 msgid "View Details"
 msgstr "View Details"

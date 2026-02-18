@@ -6,6 +6,8 @@ import {
   buildEntityIncomeExpenseChartLink,
   buildInsStatsChartLink,
   buildInsStatsChartState,
+  buildMapTopEntitiesEvolutionChartLink,
+  buildMapTopEntitiesEvolutionChartState,
   buildTreemapChartLink,
 } from './chart-links';
 
@@ -183,6 +185,126 @@ describe('chart-links', () => {
       },
       { reportType: 'PRINCIPAL_AGGREGATED' }
     );
+
+    expect(link.to).toBe('/charts/$chartId');
+    expect(link.params.chartId).toBe(link.search.chart.id);
+    expect(link.search.view).toBe('overview');
+  });
+
+  it('builds map top-entities evolution chart state for UAT scope', () => {
+    const state = buildMapTopEntitiesEvolutionChartState({
+      mapViewType: 'UAT',
+      effectiveFilter: {
+        account_category: 'ch',
+        report_period: {
+          type: 'YEAR',
+          selection: {
+            interval: {
+              start: '2016',
+              end: '2025',
+            },
+          },
+        },
+      } as any,
+      topEntities: [
+        { id: 'cui-bucharest', label: 'Bucharest' },
+        { id: 'cui-cluj', label: 'Cluj' },
+      ],
+    });
+
+    expect(state.view).toBe('overview');
+    expect(state.chart.title).toBe('Evolution of Top 15 UATs');
+    expect(state.chart.series).toHaveLength(2);
+    const firstSeries = state.chart.series[0];
+    expect(firstSeries.type).toBe('line-items-aggregated-yearly');
+    if (firstSeries.type !== 'line-items-aggregated-yearly') {
+      throw new Error('Expected line-items-aggregated-yearly');
+    }
+    expect(firstSeries.filter.entity_cuis).toEqual(['cui-bucharest']);
+  });
+
+  it('builds map top-entities evolution chart state for county scope', () => {
+    const state = buildMapTopEntitiesEvolutionChartState({
+      mapViewType: 'County',
+      effectiveFilter: {
+        account_category: 'ch',
+        report_period: {
+          type: 'YEAR',
+          selection: {
+            interval: {
+              start: '2016',
+              end: '2025',
+            },
+          },
+        },
+      } as any,
+      topEntities: [
+        { id: 'county-cui-cluj', label: 'Cluj' },
+        { id: 'county-cui-timis', label: 'Timis' },
+      ],
+    });
+
+    expect(state.view).toBe('overview');
+    expect(state.chart.title).toBe('Evolution of Top 15 Counties');
+    expect(state.chart.series).toHaveLength(2);
+    const secondSeries = state.chart.series[1];
+    expect(secondSeries.type).toBe('line-items-aggregated-yearly');
+    if (secondSeries.type !== 'line-items-aggregated-yearly') {
+      throw new Error('Expected line-items-aggregated-yearly');
+    }
+    expect(secondSeries.filter.entity_cuis).toEqual(['county-cui-timis']);
+  });
+
+  it('builds deterministic map top-entities evolution IDs for same inputs', () => {
+    const input = {
+      mapViewType: 'UAT' as const,
+      effectiveFilter: {
+        account_category: 'ch',
+        report_period: {
+          type: 'YEAR',
+          selection: {
+            interval: {
+              start: '2016',
+              end: '2025',
+            },
+          },
+        },
+      } as any,
+      topEntities: [
+        { id: 'cui-bucharest', label: 'Bucharest' },
+        { id: 'cui-cluj', label: 'Cluj' },
+      ],
+    };
+
+    const first = buildMapTopEntitiesEvolutionChartState(input);
+    const second = buildMapTopEntitiesEvolutionChartState(input);
+
+    expect(first.chart.id).toBe(second.chart.id);
+    expect(first.chart.series.map((series) => series.id)).toEqual(
+      second.chart.series.map((series) => series.id)
+    );
+  });
+
+  it('builds map top-entities chart link with route params tied to chart id', () => {
+    const link = buildMapTopEntitiesEvolutionChartLink({
+      mapViewType: 'UAT',
+      effectiveFilter: {
+        account_category: 'ch',
+        report_period: {
+          type: 'YEAR',
+          selection: {
+            interval: {
+              start: '2016',
+              end: '2025',
+            },
+          },
+        },
+      } as any,
+      topEntities: [
+        { id: 'cui-bucharest', label: 'Bucharest' },
+        { id: 'cui-cluj', label: 'Cluj' },
+      ],
+    });
 
     expect(link.to).toBe('/charts/$chartId');
     expect(link.params.chartId).toBe(link.search.chart.id);

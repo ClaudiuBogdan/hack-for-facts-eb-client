@@ -370,7 +370,7 @@ function MapPage() {
               <div className={mapState.activeView === "chart" ? "h-full w-full m-0" : "hidden"}>
                 <div className="h-full w-full p-4 overflow-y-auto">
                   {heatmapData && geoJsonData ? (
-                    <UatDataCharts data={heatmapData} mapViewType={mapState.mapViewType} />
+                    <UatDataCharts data={heatmapData} mapViewType={mapState.mapViewType} effectiveFilter={effectiveFilters} />
                   ) : (
                     <p className="text-center text-muted-foreground"><Trans>Chart data is loading or not available.</Trans></p>
                   )}
