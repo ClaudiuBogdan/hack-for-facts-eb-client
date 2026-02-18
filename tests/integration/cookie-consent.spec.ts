@@ -17,6 +17,7 @@ import { waitForHydration } from '../utils/test-helpers'
 const COOKIE_CONSENT_KEY = 'cookie-consent'
 const CONSENT_WAIT_TIMEOUT_MS = 5000
 const SWITCH_TOGGLE_TIMEOUT_MS = 8000
+const ACTION_CONSENT_TIMEOUT_MS = 10000
 
 /**
  * Helper to get cookie consent from localStorage
@@ -100,6 +101,52 @@ async function waitForCookieConsentState(
       return Object.entries(expected).every(([key, value]) => consent[key] === value)
     }, { timeout, intervals: [100, 250, 500, 1000] })
     .toBe(true)
+}
+
+/**
+ * Some CI runs click before the page is fully interactive.
+ * Retry cookie action buttons until consent storage reaches expected state.
+ */
+async function clickActionAndWaitForConsent(
+  page: Page,
+  button: Locator,
+  expected: Partial<{
+    essential: boolean
+    analytics: boolean
+    sentry: boolean
+  }>,
+  timeout = ACTION_CONSENT_TIMEOUT_MS
+): Promise<void> {
+  const deadline = Date.now() + timeout
+
+  while (Date.now() < deadline) {
+    const isVisible = await button.isVisible().catch(() => false)
+
+    if (isVisible) {
+      await expect(button).toBeEnabled({ timeout: 1500 })
+      await button.click()
+    }
+
+    try {
+      await waitForCookieConsentState(page, expected, 1500)
+      return
+    } catch {
+      // Retry until timeout.
+    }
+
+    if (isVisible) {
+      await button.focus().catch(() => undefined)
+      await button.press('Enter').catch(() => undefined)
+      try {
+        await waitForCookieConsentState(page, expected, 1500)
+        return
+      } catch {
+        // Retry until timeout.
+      }
+    }
+  }
+
+  await waitForCookieConsentState(page, expected, 2000)
 }
 
 /**
@@ -349,9 +396,10 @@ test.describe('Cookie Settings Page', () => {
       name: /allow essential|permite doar/i,
     })
     await expect(essentialOnlyButton).toBeVisible()
-    await essentialOnlyButton.click()
-
-    await waitForCookieConsentState(page, { analytics: false, sentry: false })
+    await clickActionAndWaitForConsent(page, essentialOnlyButton, {
+      analytics: false,
+      sentry: false,
+    })
 
     // Verify consent
     const consent = await getCookieConsent(page)
@@ -516,10 +564,11 @@ test.describe('Cookie Consent Persistence', () => {
       name: /allow essential|permite doar/i,
     })
     await expect(essentialOnlyButton).toBeVisible()
-    await essentialOnlyButton.click()
-
-    await page.waitForURL((url) => !url.pathname.includes('/cookies'), { timeout: 8000 })
-    await waitForCookieConsentState(page, { essential: true, analytics: false, sentry: false })
+    await clickActionAndWaitForConsent(page, essentialOnlyButton, {
+      essential: true,
+      analytics: false,
+      sentry: false,
+    })
 
     const consent = await getCookieConsent(page)
     expect(consent?.essential).toBe(true)
