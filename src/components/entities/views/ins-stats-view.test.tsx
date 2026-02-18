@@ -249,6 +249,95 @@ describe('InsStatsView', () => {
     })
   })
 
+
+  it('prefers latest annual unemployment value over monthly fallback', async () => {
+    mockUseInsObservationsSnapshotByDatasets.mockImplementation((params: {
+      datasetCodes: string[]
+      filter?: { period?: unknown }
+    }) => {
+      const observationsByDataset = new Map<string, unknown[]>()
+      for (const datasetCode of params.datasetCodes) {
+        observationsByDataset.set(datasetCode, [])
+      }
+
+      if (params.datasetCodes.includes('POP107D')) {
+        observationsByDataset.set('POP107D', [
+          {
+            dataset_code: 'POP107D',
+            value: '134308',
+            value_status: null,
+            time_period: {
+              iso_period: '2025',
+              year: 2025,
+              quarter: null,
+              month: null,
+              periodicity: 'ANNUAL',
+            },
+            territory: null,
+            unit: { code: 'PERS', symbol: 'pers.', name_ro: 'persoane' },
+            classifications: [],
+          },
+        ])
+      }
+
+      if (params.datasetCodes.includes('SOM101F')) {
+        if (params.filter?.period) {
+          observationsByDataset.set('SOM101F', [])
+        } else {
+          observationsByDataset.set('SOM101F', [
+            {
+              dataset_code: 'SOM101F',
+              value: '0.5',
+              value_status: null,
+              time_period: {
+                iso_period: '2025-11',
+                year: 2025,
+                quarter: null,
+                month: 11,
+                periodicity: 'MONTHLY',
+              },
+              territory: null,
+              unit: { code: 'PCT', symbol: '%', name_ro: 'procent' },
+              classifications: [],
+            },
+            {
+              dataset_code: 'SOM101F',
+              value: '0.8',
+              value_status: null,
+              time_period: {
+                iso_period: '2024',
+                year: 2024,
+                quarter: null,
+                month: null,
+                periodicity: 'ANNUAL',
+              },
+              territory: null,
+              unit: { code: 'PCT', symbol: '%', name_ro: 'procent' },
+              classifications: [],
+            },
+          ])
+        }
+      }
+
+      return {
+        data: {
+          observationsByDataset,
+        },
+        isLoading: false,
+        error: null,
+      }
+    })
+
+    renderInsStatsView()
+
+    const unemploymentCard = screen.getByRole('button', { name: /Registered unemployment share/i })
+
+    await waitFor(() => {
+      expect(within(unemploymentCard).getByText(/0\.8/)).toBeInTheDocument()
+      expect(within(unemploymentCard).queryByText(/2025-11/)).not.toBeInTheDocument()
+      expect(within(unemploymentCard).getByText(/(Period|Perioadă):\s*2024/i)).toBeInTheDocument()
+    })
+  })
   it('enables history query after clicking a summary metric card', async () => {
     renderInsStatsView()
 

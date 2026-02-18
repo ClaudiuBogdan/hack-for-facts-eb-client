@@ -126,6 +126,24 @@ function pickDefaultIndicatorObservation(observations: InsObservation[]): InsObs
   return buildStableSeries(observations)[0] ?? observations[0] ?? null;
 }
 
+const ANNUAL_ONLY_TOP_METRIC_CODES = new Set(['SOM101F', 'SOM103A']);
+
+function pickIndicatorObservationWithPeriodPolicy(params: {
+  observations: InsObservation[];
+  annualOnly?: boolean;
+  excludeMonthly?: boolean;
+}): InsObservation | null {
+  let scoped = params.observations;
+
+  if (params.annualOnly) {
+    scoped = scoped.filter((observation) => observation.time_period.periodicity === 'ANNUAL');
+  } else if (params.excludeMonthly) {
+    scoped = scoped.filter((observation) => observation.time_period.periodicity !== 'MONTHLY');
+  }
+
+  return pickDefaultIndicatorObservation(scoped);
+}
+
 const DETAIL_SCROLL_OFFSET_MOBILE_PX = 112;
 const DETAIL_SCROLL_OFFSET_DESKTOP_PX = 168;
 const INS_TEMPO_BASE_URL = 'http://statistici.insse.ro/tempoins/index.jsp';
@@ -590,8 +608,15 @@ export function InsStatsView({
     for (const code of topMetricCodes) {
       const selectedObservations = selectedObservationsByDataset?.get(code) ?? [];
       const fallbackObservations = fallbackObservationsByDataset?.get(code) ?? [];
-      const selectedObservation = pickDefaultIndicatorObservation(selectedObservations);
-      const fallbackObservation = pickDefaultIndicatorObservation(fallbackObservations);
+      const annualOnly = ANNUAL_ONLY_TOP_METRIC_CODES.has(code);
+      const selectedObservation = pickIndicatorObservationWithPeriodPolicy({
+        observations: selectedObservations,
+        annualOnly,
+      });
+      const fallbackObservation = pickIndicatorObservationWithPeriodPolicy({
+        observations: fallbackObservations,
+        annualOnly,
+      });
       const representative = selectedObservation ?? fallbackObservation;
       const source: 'selected' | 'fallback' | 'none' = selectedObservation
         ? 'selected'
@@ -1177,8 +1202,14 @@ export function InsStatsView({
     return derivedIndicatorCodes.map((datasetCode) => {
       const selectedObservations = selectedObservationsByDataset?.get(datasetCode) ?? [];
       const fallbackObservations = fallbackObservationsByDataset?.get(datasetCode) ?? [];
-      const selectedObservation = pickDefaultIndicatorObservation(selectedObservations);
-      const fallbackObservation = pickDefaultIndicatorObservation(fallbackObservations);
+      const selectedObservation = pickIndicatorObservationWithPeriodPolicy({
+        observations: selectedObservations,
+        excludeMonthly: true,
+      });
+      const fallbackObservation = pickIndicatorObservationWithPeriodPolicy({
+        observations: fallbackObservations,
+        excludeMonthly: true,
+      });
       const observation = selectedObservation ?? fallbackObservation;
       return {
         datasetCode,
