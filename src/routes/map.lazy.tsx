@@ -288,6 +288,18 @@ function MapPage() {
                   normalization={effectiveFilters.normalization}
                   currency={effectiveFilters.currency}
                 />
+                <div className="absolute bottom-[-6rem] left-4 z-10 hidden md:flex items-center gap-1 text-xs text-muted-foreground">
+                  <span><Trans>GeoJSON source:</Trans></span>
+                  <a
+                    href="https://geo-spatial.org?utm_source=transparenta.eu"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid="map-geojson-source-link"
+                    className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                  >
+                    geo-spatial.org
+                  </a>
+                </div>
                 <Dialog open={isLegendModalOpen} onOpenChange={setIsLegendModalOpen}>
                   <DialogTrigger asChild>
                     <Button

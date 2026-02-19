@@ -226,6 +226,12 @@ test.describe('Map Page', () => {
       page.getByTestId('map-attribution-link')
     ).toBeVisible({ timeout: 5000 })
 	  })
+
+  test('displays geojson source link', async ({ page }) => {
+    const sourceLink = page.getByTestId('map-geojson-source-link')
+    await expect(sourceLink).toBeVisible({ timeout: 5000 })
+    await expect(sourceLink).toHaveAttribute('href', 'https://geo-spatial.org')
+  })
 	})
 
 test.describe('Map Page - Loading Overlays', () => {
