@@ -8,8 +8,53 @@
  * - Legend display
  */
 
-import { test, expect } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 import { waitForHydration } from '../utils/test-helpers'
+
+function getGraphQLOperationName(postData: string | null): string | null {
+  if (!postData) return null
+
+  try {
+    const body = JSON.parse(postData) as {
+      operationName?: string
+      query?: string
+    }
+
+    if (body.operationName) return body.operationName
+    if (!body.query) return null
+
+    const queryOperationMatch = body.query.match(/(?:query|mutation|subscription)\s+(\w+)/)
+    return queryOperationMatch?.[1] ?? null
+  } catch {
+    return null
+  }
+}
+
+async function registerDelayedHeatmapRoute(page: Page, delayMs = 1500): Promise<void> {
+  await page.route('**/graphql', async (route) => {
+    const request = route.request()
+    if (request.method() !== 'POST') return route.fallback()
+
+    const operationName = getGraphQLOperationName(request.postData())
+    const isHeatmapOperation = operationName === 'GetHeatmapUATData' || operationName === 'GetHeatmapCountyData'
+
+    if (isHeatmapOperation) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs))
+    }
+
+    return route.fallback()
+  })
+}
+
+async function switchDataView(page: Page, viewLabel: RegExp): Promise<void> {
+  const dataViewGroup = page.getByRole('group', { name: /vizualizare.*date|data.*view/i })
+  await dataViewGroup.getByText(viewLabel).click()
+}
+
+async function triggerHeatmapRefetch(page: Page): Promise<void> {
+  const incomeExpensesGroup = page.getByRole('group', { name: /venituri.*cheltuieli|income.*expenses/i })
+  await incomeExpensesGroup.getByText(/venituri|income/i).click()
+}
 
 test.describe('Map Page', () => {
 	test.beforeEach(async ({ page }) => {
@@ -180,6 +225,56 @@ test.describe('Map Page', () => {
     await expect(
       page.getByTestId('map-attribution-link')
     ).toBeVisible({ timeout: 5000 })
+	  })
+	})
+
+test.describe('Map Page - Loading Overlays', () => {
+	test.beforeEach(async ({ page }) => {
+		await page.goto('/map')
+		await expect(
+			page.getByRole('region', { name: /filtre.*hartă|map.*filters/i })
+		).toBeVisible({ timeout: 15000 })
+		await expect(page.getByTestId('leaflet-map')).toBeVisible({ timeout: 15000 })
+		await waitForHydration(page)
+	})
+
+  test('shows and hides shared loading overlay in table view during heatmap refetch', async ({ page }) => {
+    await registerDelayedHeatmapRoute(page)
+
+    await switchDataView(page, /tabel|table/i)
+    await expect(page.getByRole('radio', { name: /tabel|table/i })).toBeChecked()
+
+    const overlay = page.getByTestId('map-active-view-loading-overlay')
+    await triggerHeatmapRefetch(page)
+
+    await expect(overlay).toBeVisible({ timeout: 5000 })
+    await expect(overlay).toBeHidden({ timeout: 15000 })
+  })
+
+  test('shows and hides shared loading overlay in chart view during heatmap refetch', async ({ page }) => {
+    await registerDelayedHeatmapRoute(page)
+
+    await switchDataView(page, /grafic|chart/i)
+    await expect(page.getByRole('radio', { name: /grafic|chart/i })).toBeChecked()
+
+    const overlay = page.getByTestId('map-active-view-loading-overlay')
+    await triggerHeatmapRefetch(page)
+
+    await expect(overlay).toBeVisible({ timeout: 5000 })
+    await expect(overlay).toBeHidden({ timeout: 15000 })
+  })
+
+  test('keeps map overlay behavior during map-view heatmap refetch', async ({ page }) => {
+    await registerDelayedHeatmapRoute(page)
+
+    await switchDataView(page, /hartă|map/i)
+    await expect(page.getByRole('radio', { name: /hartă|map/i })).toBeChecked()
+
+    const overlay = page.getByTestId('map-active-view-loading-overlay')
+    await triggerHeatmapRefetch(page)
+
+    await expect(overlay).toBeVisible({ timeout: 5000 })
+    await expect(overlay).toBeHidden({ timeout: 15000 })
   })
 })
 

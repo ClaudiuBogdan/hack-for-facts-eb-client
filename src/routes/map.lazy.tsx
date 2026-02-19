@@ -212,7 +212,13 @@ function MapPage() {
     return createHeatmapStyleFunction(heatmapData, minAggregatedValue, maxAggregatedValue, mapState.mapViewType, valueKey);
   }, [heatmapData, minAggregatedValue, maxAggregatedValue, mapState.mapViewType, valueKey]);
 
-  const isLoading = isLoadingHeatmap || isLoadingGeoJson || isFetchingHeatmap;
+  const isHeatmapPending = isLoadingHeatmap || isFetchingHeatmap;
+  const isMapPending = isHeatmapPending || isLoadingGeoJson;
+  const hasHeatmapData = Boolean(heatmapData);
+  const isInitialLoad = isMapPending && !hasHeatmapData;
+  const shouldShowActiveViewOverlay = hasHeatmapData && (
+    mapState.activeView === "map" ? isMapPending : isHeatmapPending
+  );
   const error = heatmapError || geoJsonError;
 
   let loadingText = t`Loading data...`;
@@ -238,8 +244,8 @@ function MapPage() {
           mapViewType={mapState.mapViewType}
         />
 
-        <div className="flex-grow overflow-hidden">
-          {isLoading && !heatmapData ? (
+        <div className="flex-grow overflow-hidden relative">
+          {isInitialLoad ? (
             <div className="flex items-center justify-center h-full w-full" aria-live="polite" aria-busy="true">
               <LoadingSpinner size="lg" text={loadingText} />
             </div>
@@ -268,26 +274,6 @@ function MapPage() {
                         />
                       </Suspense>
                     </ClientOnly>
-                    <AnimatePresence>
-                      {isLoading && (
-                        <motion.div
-                          className="absolute inset-0 bg-background/20 backdrop-blur-sm flex items-center justify-center z-30 h-screen"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.2, ease: "easeInOut" }}
-                        >
-                          <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            transition={{ duration: 0.2, ease: "easeOut" }}
-                          >
-                            <LoadingSpinner size="md" text={loadingText} />
-                          </motion.div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
                   </>
                 ) : (
                   <div className="flex items-center justify-center h-full w-full">
@@ -376,6 +362,31 @@ function MapPage() {
                   )}
                 </div>
               </div>
+
+              <AnimatePresence>
+                {shouldShowActiveViewOverlay && (
+                  <motion.div
+                    data-testid="map-active-view-loading-overlay"
+                    className="absolute inset-0 bg-background/20 backdrop-blur-sm flex items-center justify-center z-30"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                  >
+                    <motion.div
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.9, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                    >
+                      <LoadingSpinner
+                        size="md"
+                        text={mapState.activeView === "map" ? loadingText : t`Loading heatmap data...`}
+                      />
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </>
           )}
         </div>
