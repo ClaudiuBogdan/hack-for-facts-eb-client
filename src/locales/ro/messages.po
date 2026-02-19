@@ -616,8 +616,8 @@ msgstr "Valoare agregată ({currencyCode}/capita)"
 msgid "Aggregated Value (% of GDP)"
 msgstr "Valoare agregată (% din PIB)"
 
-#: src/routes/map.lazy.tsx:301
-#: src/routes/map.lazy.tsx:331
+#: src/routes/map.lazy.tsx:287
+#: src/routes/map.lazy.tsx:329
 msgid "Aggregated Value Legend"
 msgstr "Legendă valoare cumulată"
 
@@ -1239,7 +1239,7 @@ msgstr "Configurare grafic"
 msgid "Chart Data Error"
 msgstr "Eroare în datele graficului"
 
-#: src/routes/map.lazy.tsx:375
+#: src/routes/map.lazy.tsx:373
 msgid "Chart data is loading or not available."
 msgstr "Datele graficului se încarcă sau nu sunt disponibile."
 
@@ -1520,7 +1520,7 @@ msgstr "Configurează"
 msgid "Configure Chart"
 msgstr "Configurează graficul"
 
-#: src/routes/map.lazy.tsx:401
+#: src/routes/map.lazy.tsx:424
 msgid "Configure filters for the map view including period, account category, and normalization settings"
 msgstr "Configurați filtrele pentru hartă, inclusiv perioada, categoria contului și setările de normalizare"
 
@@ -1950,7 +1950,7 @@ msgstr "Surse de date și licențiere"
 msgid "Data storage and retention"
 msgstr "Stocarea și păstrarea datelor"
 
-#: src/routes/map.lazy.tsx:344
+#: src/routes/map.lazy.tsx:342
 msgid "Data Table View"
 msgstr "Vizualizare tabelară"
 
@@ -2504,7 +2504,7 @@ msgstr "Eroare la încărcarea datelor graficului"
 msgid "Error loading data"
 msgstr "Eroare la încărcarea datelor"
 
-#: src/routes/map.lazy.tsx:247
+#: src/routes/map.lazy.tsx:253
 msgid "Error loading data:"
 msgstr "Eroare la încărcarea datelor:"
 
@@ -2868,7 +2868,7 @@ msgstr "Filtrat"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:685
 #: src/components/entities/EntityReports.tsx:142
 #: src/components/filters/EntityAnalyticsFilter.tsx:422
-#: src/routes/map.lazy.tsx:399
+#: src/routes/map.lazy.tsx:422
 msgid "Filters"
 msgstr "Filtre"
 
@@ -3115,6 +3115,10 @@ msgstr "Generează o culoare aleatorie"
 #: src/components/entities/views/MapView.tsx:135
 msgid "Geographical View"
 msgstr "Vizualizare geografică"
+
+#: src/routes/map.lazy.tsx:292
+msgid "GeoJSON source:"
+msgstr "Sursa GeoJSON:"
 
 #: src/features/notifications/components/EntityNotificationAnnouncement.tsx:99
 msgid "Get monthly email updates about this institution. Receive alerts when new reports are published, budget changes occur, or important financial data is updated."
@@ -3716,7 +3720,7 @@ msgid "Legal Commitments"
 msgstr "Angajamente Legale"
 
 #: src/components/charts/components/chart-quick-config/ChartQuickConfig.tsx:160
-#: src/routes/map.lazy.tsx:317
+#: src/routes/map.lazy.tsx:315
 msgid "Legend"
 msgstr "Legendă"
 
@@ -3835,7 +3839,7 @@ msgstr "Se încarcă configurația graficului..."
 msgid "Loading chart data..."
 msgstr "Se încarcă datele graficului..."
 
-#: src/routes/map.lazy.tsx:218
+#: src/routes/map.lazy.tsx:224
 msgid "Loading data..."
 msgstr "Se încarcă datele..."
 
@@ -3847,7 +3851,8 @@ msgstr "Se încarcă dimensiunile setului de date..."
 msgid "Loading details..."
 msgstr "Se încarcă detaliile..."
 
-#: src/routes/map.lazy.tsx:222
+#: src/routes/map.lazy.tsx:228
+#: src/routes/map.lazy.tsx:396
 msgid "Loading heatmap data..."
 msgstr "Se încarcă datele pentru harta termică..."
 
@@ -3859,18 +3864,18 @@ msgstr "Se încarcă conținutul interactiv..."
 msgid "Loading lesson content..."
 msgstr "Se încarcă conținutul lecției..."
 
-#: src/routes/map.lazy.tsx:220
+#: src/routes/map.lazy.tsx:226
 msgid "Loading map and heatmap data..."
 msgstr "Se încarcă harta și datele pentru harta termică..."
 
-#: src/routes/map.lazy.tsx:224
+#: src/routes/map.lazy.tsx:230
 msgid "Loading map data..."
 msgstr "Se încarcă datele hărții..."
 
 #: src/components/entities/views/MapView.tsx:183
 #: src/components/entities/views/MapView.tsx:184
-#: src/routes/map.lazy.tsx:256
-#: src/routes/map.lazy.tsx:257
+#: src/routes/map.lazy.tsx:262
+#: src/routes/map.lazy.tsx:263
 msgid "Loading map..."
 msgstr "Se încarcă harta..."
 
@@ -3878,7 +3883,7 @@ msgstr "Se încarcă harta..."
 msgid "Loading reports…"
 msgstr "Se încarcă rapoartele..."
 
-#: src/routes/map.lazy.tsx:358
+#: src/routes/map.lazy.tsx:356
 msgid "Loading table data..."
 msgstr "Se încarcă datele tabelului..."
 
@@ -3986,7 +3991,7 @@ msgstr "Gestionarea preferințelor"
 msgid "Map"
 msgstr "Hartă"
 
-#: src/routes/map.lazy.tsx:249
+#: src/routes/map.lazy.tsx:255
 msgid "Map data not available."
 msgstr "Datele hărții nu sunt disponibile."
 
@@ -4384,11 +4389,11 @@ msgstr "Nu există date disponibile"
 msgid "No Data Available"
 msgstr "Nu există date disponibile"
 
-#: src/routes/map.lazy.tsx:294
+#: src/routes/map.lazy.tsx:280
 msgid "No data available for the map."
 msgstr "Nu sunt date disponibile pentru hartă."
 
-#: src/routes/map.lazy.tsx:362
+#: src/routes/map.lazy.tsx:360
 msgid "No data available for the table."
 msgstr "Nu sunt date disponibile pentru tabel."
 
@@ -6807,7 +6812,7 @@ msgstr "Vizualizați detaliile complete"
 msgid "View in Entity Analytics"
 msgstr "Vizualizați în Analiza Entităților"
 
-#: src/routes/map.lazy.tsx:319
+#: src/routes/map.lazy.tsx:317
 msgid "View the color scale and values for the heatmap visualization"
 msgstr "Vizualizați scala de culori și valorile pentru vizualizarea hărții de căldură"
 

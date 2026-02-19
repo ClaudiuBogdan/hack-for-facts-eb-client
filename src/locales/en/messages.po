@@ -616,8 +616,8 @@ msgstr "Aggregated Value ({currencyCode}/capita)"
 msgid "Aggregated Value (% of GDP)"
 msgstr "Aggregated Value (% of GDP)"
 
-#: src/routes/map.lazy.tsx:301
-#: src/routes/map.lazy.tsx:331
+#: src/routes/map.lazy.tsx:287
+#: src/routes/map.lazy.tsx:329
 msgid "Aggregated Value Legend"
 msgstr "Aggregated Value Legend"
 
@@ -1239,7 +1239,7 @@ msgstr "Chart Configuration"
 msgid "Chart Data Error"
 msgstr "Chart Data Error"
 
-#: src/routes/map.lazy.tsx:375
+#: src/routes/map.lazy.tsx:373
 msgid "Chart data is loading or not available."
 msgstr "Chart data is loading or not available."
 
@@ -1520,7 +1520,7 @@ msgstr "Configure"
 msgid "Configure Chart"
 msgstr "Configure Chart"
 
-#: src/routes/map.lazy.tsx:401
+#: src/routes/map.lazy.tsx:424
 msgid "Configure filters for the map view including period, account category, and normalization settings"
 msgstr "Configure filters for the map view including period, account category, and normalization settings"
 
@@ -1950,7 +1950,7 @@ msgstr "Data sources and licensing"
 msgid "Data storage and retention"
 msgstr "Data storage and retention"
 
-#: src/routes/map.lazy.tsx:344
+#: src/routes/map.lazy.tsx:342
 msgid "Data Table View"
 msgstr "Data Table View"
 
@@ -2504,7 +2504,7 @@ msgstr "Error Loading Chart Data"
 msgid "Error loading data"
 msgstr "Error loading data"
 
-#: src/routes/map.lazy.tsx:247
+#: src/routes/map.lazy.tsx:253
 msgid "Error loading data:"
 msgstr "Error loading data:"
 
@@ -2868,7 +2868,7 @@ msgstr "Filtered"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:685
 #: src/components/entities/EntityReports.tsx:142
 #: src/components/filters/EntityAnalyticsFilter.tsx:422
-#: src/routes/map.lazy.tsx:399
+#: src/routes/map.lazy.tsx:422
 msgid "Filters"
 msgstr "Filters"
 
@@ -3115,6 +3115,10 @@ msgstr "Generate random color"
 #: src/components/entities/views/MapView.tsx:135
 msgid "Geographical View"
 msgstr "Geographical View"
+
+#: src/routes/map.lazy.tsx:292
+msgid "GeoJSON source:"
+msgstr "GeoJSON source:"
 
 #: src/features/notifications/components/EntityNotificationAnnouncement.tsx:99
 msgid "Get monthly email updates about this institution. Receive alerts when new reports are published, budget changes occur, or important financial data is updated."
@@ -3721,7 +3725,7 @@ msgid "Legal Commitments"
 msgstr "Legal Commitments"
 
 #: src/components/charts/components/chart-quick-config/ChartQuickConfig.tsx:160
-#: src/routes/map.lazy.tsx:317
+#: src/routes/map.lazy.tsx:315
 msgid "Legend"
 msgstr "Legend"
 
@@ -3840,7 +3844,7 @@ msgstr "Loading chart configuration..."
 msgid "Loading chart data..."
 msgstr "Loading chart data..."
 
-#: src/routes/map.lazy.tsx:218
+#: src/routes/map.lazy.tsx:224
 msgid "Loading data..."
 msgstr "Loading data..."
 
@@ -3852,7 +3856,8 @@ msgstr "Loading dataset dimensions..."
 msgid "Loading details..."
 msgstr "Loading details..."
 
-#: src/routes/map.lazy.tsx:222
+#: src/routes/map.lazy.tsx:228
+#: src/routes/map.lazy.tsx:396
 msgid "Loading heatmap data..."
 msgstr "Loading heatmap data..."
 
@@ -3864,18 +3869,18 @@ msgstr "Loading interactive content..."
 msgid "Loading lesson content..."
 msgstr "Loading lesson content..."
 
-#: src/routes/map.lazy.tsx:220
+#: src/routes/map.lazy.tsx:226
 msgid "Loading map and heatmap data..."
 msgstr "Loading map and heatmap data..."
 
-#: src/routes/map.lazy.tsx:224
+#: src/routes/map.lazy.tsx:230
 msgid "Loading map data..."
 msgstr "Loading map data..."
 
 #: src/components/entities/views/MapView.tsx:183
 #: src/components/entities/views/MapView.tsx:184
-#: src/routes/map.lazy.tsx:256
-#: src/routes/map.lazy.tsx:257
+#: src/routes/map.lazy.tsx:262
+#: src/routes/map.lazy.tsx:263
 msgid "Loading map..."
 msgstr "Loading map..."
 
@@ -3883,7 +3888,7 @@ msgstr "Loading map..."
 msgid "Loading reports…"
 msgstr "Loading reports…"
 
-#: src/routes/map.lazy.tsx:358
+#: src/routes/map.lazy.tsx:356
 msgid "Loading table data..."
 msgstr "Loading table data..."
 
@@ -3991,7 +3996,7 @@ msgstr "Managing preferences"
 msgid "Map"
 msgstr "Map"
 
-#: src/routes/map.lazy.tsx:249
+#: src/routes/map.lazy.tsx:255
 msgid "Map data not available."
 msgstr "Map data not available."
 
@@ -4389,11 +4394,11 @@ msgstr "No data available"
 msgid "No Data Available"
 msgstr "No Data Available"
 
-#: src/routes/map.lazy.tsx:294
+#: src/routes/map.lazy.tsx:280
 msgid "No data available for the map."
 msgstr "No data available for the map."
 
-#: src/routes/map.lazy.tsx:362
+#: src/routes/map.lazy.tsx:360
 msgid "No data available for the table."
 msgstr "No data available for the table."
 
@@ -6812,7 +6817,7 @@ msgstr "View full details"
 msgid "View in Entity Analytics"
 msgstr "View in Entity Analytics"
 
-#: src/routes/map.lazy.tsx:319
+#: src/routes/map.lazy.tsx:317
 msgid "View the color scale and values for the heatmap visualization"
 msgstr "View the color scale and values for the heatmap visualization"
 
