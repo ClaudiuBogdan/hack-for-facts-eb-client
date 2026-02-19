@@ -13,7 +13,7 @@ export function ContractsView({ entity }: Readonly<Props>) {
         return null;
     }
 
-    const sicapUrl = `https://sicap.ai/autoritate/${entity.cui}`;
+    const sicapUrl = `https://sicap.ai/autoritate/${entity.cui}?utm_source=transparenta.eu`;
 
     return (
         <div className="space-y-6">
