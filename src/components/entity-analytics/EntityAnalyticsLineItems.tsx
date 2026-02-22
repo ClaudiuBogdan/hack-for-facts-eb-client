@@ -24,6 +24,7 @@ import { Info } from 'lucide-react';
 interface EntityAnalyticsLineItemsProps {
   filter: AnalyticsFilterType;
   title: string;
+  groupBy: 'fn' | 'ec';
   data?: AggregatedLineItemConnection;
   isLoading?: boolean;
   error?: Error | null;
@@ -33,7 +34,7 @@ interface EntityAnalyticsLineItemsProps {
 
 export const EntityAnalyticsLineItems: React.FC<
   EntityAnalyticsLineItemsProps
-  > = ({ filter, title, data, isLoading, error, transferFilter = 'no-transfers', onTransferFilterChange }) => {
+  > = ({ filter, title, groupBy, data, isLoading, error, transferFilter = 'no-transfers', onTransferFilterChange }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const executionLineItems: MinimalExecutionLineItem[] = useMemo(() => {
@@ -77,12 +78,14 @@ export const EntityAnalyticsLineItems: React.FC<
     onIncomeSearchToggle,
     filteredIncomeGroups,
     incomeBase,
+    filteredEconomicGroups,
   } = useFinancialData(
     executionLineItems,
     filter.account_category === 'vn' ? executionLineItems.reduce((sum, item) => sum + item.amount, 0) : null,
     filter.account_category === 'ch' ? executionLineItems.reduce((sum, item) => sum + item.amount, 0) : null,
     filter.account_category === 'ch' ? searchTerm : '',
     filter.account_category === 'vn' ? searchTerm : '',
+    { computeEconomic: groupBy === 'ec' }
   );
 
   const handleSearchChange = (term: string) => {
@@ -111,15 +114,16 @@ export const EntityAnalyticsLineItems: React.FC<
       baseTotalToDisplay,
       filter,
       title,
+      groupBy,
       filterHash
     );
     navigate({ to: `/charts/${newChart.id}`, search: { chart: newChart, view: 'overview' } });
   };
 
-  const groupsToDisplay = filter.account_category === 'vn' ? filteredIncomeGroups : filteredExpenseGroups;
-  const baseTotalToDisplay = filter.account_category === 'vn' ? incomeBase : expenseBase;
-  const currentSearchTerm = filter.account_category === 'vn' ? incomeSearchTerm : expenseSearchTerm;
-  const currentSearchActive = filter.account_category === 'vn' ? incomeSearchActive : expenseSearchActive;
+  const groupsToDisplay = groupBy === 'ec' ? filteredEconomicGroups : filter.account_category === 'vn' ? filteredIncomeGroups : filteredExpenseGroups;
+  const baseTotalToDisplay = groupBy === 'ec' ? expenseBase : filter.account_category === 'vn' ? incomeBase : expenseBase;
+  const currentSearchTerm = groupBy === 'ec' ? expenseSearchTerm : filter.account_category === 'vn' ? incomeSearchTerm : expenseSearchTerm;
+  const currentSearchActive = groupBy === 'ec' ? expenseSearchActive : filter.account_category === 'vn' ? incomeSearchActive : expenseSearchActive;
 
   return (
     <Card className="shadow-lg dark:bg-slate-800 h-full flex flex-col">
@@ -184,6 +188,7 @@ export const EntityAnalyticsLineItems: React.FC<
             showTotalValueHeader={!!currentSearchActive}
             normalization={filter.normalization}
             currency={filter.currency}
+            subchapterCodePrefix={groupBy}
           />
         )}
       </CardContent>

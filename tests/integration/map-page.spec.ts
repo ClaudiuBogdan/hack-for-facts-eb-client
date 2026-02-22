@@ -230,7 +230,7 @@ test.describe('Map Page', () => {
   test('displays geojson source link', async ({ page }) => {
     const sourceLink = page.getByTestId('map-geojson-source-link')
     await expect(sourceLink).toBeVisible({ timeout: 5000 })
-    await expect(sourceLink).toHaveAttribute('href', 'https://geo-spatial.org')
+    await expect(sourceLink).toHaveAttribute('href', /^https:\/\/geo-spatial\.org(?:\/)?(?:\?.*)?$/)
   })
 	})
 

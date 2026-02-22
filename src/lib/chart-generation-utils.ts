@@ -9,9 +9,10 @@ export const generateChartFromTopGroups = (
     baseTotal: number,
     filter: AnalyticsFilterType,
     title: string,
+    groupBy: 'fn' | 'ec',
     filterHash?: string
 ): Chart => {
-    const topGroups = groups
+    const topGroups = [...groups]
         .sort((a, b) => b.totalAmount - a.totalAmount)
         .reduce(
             (acc, group) => {
@@ -32,7 +33,8 @@ export const generateChartFromTopGroups = (
         label: group.description,
         filter: {
             ...filter,
-            functional_prefixes: [group.prefix],
+            functional_prefixes: groupBy === 'fn' ? [group.prefix] : undefined,
+            economic_prefixes: groupBy === 'ec' ? [group.prefix] : undefined,
             years: undefined, // Clear years from series filter
         },
         enabled: true,

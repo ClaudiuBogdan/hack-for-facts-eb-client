@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { usePeriodLabel } from '@/hooks/use-period-label'
 import type { AnalyticsFilterType } from '@/schemas/charts'
@@ -19,6 +19,7 @@ interface EntityAnalyticsTreemapProps {
   initialPrimary?: 'fn' | 'ec'
   initialDepth?: 'chapter' | 'subchapter' | 'paragraph'
   onPrimaryChange?: (primary: 'fn' | 'ec') => void
+  onActivePrimaryChange?: (primary: 'fn' | 'ec') => void
   onDepthChange?: (depth: 'chapter' | 'subchapter' | 'paragraph') => void
   treemapPath?: string
   onTreemapPathChange?: (path: string | undefined) => void
@@ -31,6 +32,7 @@ export function EntityAnalyticsTreemap({
   initialPrimary = 'fn',
   initialDepth = 'chapter',
   onPrimaryChange,
+  onActivePrimaryChange,
   onDepthChange,
   treemapPath,
   onTreemapPathChange,
@@ -84,6 +86,10 @@ export function EntityAnalyticsTreemap({
 
   const isRevenueView = filter.account_category === 'vn'
   const periodLabel = usePeriodLabel(filter.report_period)
+
+  useEffect(() => {
+    onActivePrimaryChange?.(activePrimary)
+  }, [activePrimary, onActivePrimaryChange])
 
   return (
     <Card>

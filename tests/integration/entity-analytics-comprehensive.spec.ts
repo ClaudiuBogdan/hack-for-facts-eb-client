@@ -538,6 +538,21 @@ test.describe('Entity Analytics - Comprehensive Tests', () => {
       expect(page.url()).toContain('view=line-items')
     })
 
+    test('normalizes income treemap grouping to functional and clears path', async ({ page }) => {
+      await page.goto('/entity-analytics?view=line-items')
+      await page.waitForLoadState('networkidle').catch(() => {})
+
+      const economicToggle = page.locator('button').filter({ hasText: /^economic$/i }).first()
+      await economicToggle.click({ force: true })
+      await expect.poll(() => page.url(), { timeout: 10000 }).toContain('treemapPrimary=ec')
+
+      const incomeRadio = page.getByRole('radio', { name: /venituri|income/i }).first()
+      await incomeRadio.click({ force: true })
+
+      await expect.poll(() => page.url(), { timeout: 10000 }).toContain('treemapPrimary=fn')
+      await expect.poll(() => page.url(), { timeout: 10000 }).not.toContain('treemapPath=')
+    })
+
     test('preserves account category in URL', async ({ page }) => {
       await page.goto('/entity-analytics?account_category=vn')
       await page.waitForLoadState('networkidle').catch(() => {})

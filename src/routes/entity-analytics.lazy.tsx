@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from 'react'
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { createLazyFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { EntityAnalyticsFilter as EntityAnalyticsFilterPanel } from '@/components/filters/EntityAnalyticsFilter'
@@ -36,6 +36,9 @@ export const Route = createLazyFileRoute('/entity-analytics')({
 function EntityAnalyticsPage() {
   const { filter, sortBy, sortOrder, setSorting, page, pageSize, setPagination, resetFilter, view, treemapPrimary, treemapDepth, setTreemapPrimary, setTreemapDepth, treemapPath, setTreemapPath, transferFilter, setTransferFilter } = useEntityAnalyticsFilter()
   const [exporting, setExporting] = useState(false)
+  const [lineItemsGroupBy, setLineItemsGroupBy] = useState<'fn' | 'ec'>(
+    filter.account_category === 'vn' ? 'fn' : (treemapPrimary ?? 'fn')
+  )
   const [userCurrency] = useUserCurrency()
   const [userInflationAdjusted] = useUserInflationAdjusted()
 
@@ -68,6 +71,19 @@ function EntityAnalyticsPage() {
   const filterHash = useMemo(() => generateHash(JSON.stringify(effectiveFilter)), [effectiveFilter])
   const periodLabel = usePeriodLabel(filter.report_period)
   const previousFilterHashRef = useRef<string>(filterHash)
+  const normalizedTreemapPrimary: 'fn' | 'ec' = filter.account_category === 'vn' ? 'fn' : (treemapPrimary ?? 'fn')
+
+  const handleActivePrimaryChange = useCallback((primary: 'fn' | 'ec') => {
+    setLineItemsGroupBy(filter.account_category === 'vn' ? 'fn' : primary)
+  }, [filter.account_category])
+
+  useEffect(() => {
+    if (filter.account_category === 'vn' && treemapPrimary === 'ec') {
+      setTreemapPrimary('fn')
+      return
+    }
+    setLineItemsGroupBy(normalizedTreemapPrimary)
+  }, [filter.account_category, normalizedTreemapPrimary, setTreemapPrimary, treemapPrimary])
 
   const mapViewType = useMemo<'UAT' | 'County'>(() => {
     if ((filter.county_codes?.length ?? 0) > 0) return 'County'
@@ -278,9 +294,10 @@ function EntityAnalyticsPage() {
               filter={effectiveFilter}
               data={aggregatedData}
               isLoading={isLoadingAggregated}
-              initialPrimary={treemapPrimary ?? 'fn'}
+              initialPrimary={normalizedTreemapPrimary}
               initialDepth={treemapDepth ?? 'chapter'}
               onPrimaryChange={setTreemapPrimary}
+              onActivePrimaryChange={handleActivePrimaryChange}
               onDepthChange={setTreemapDepth}
               treemapPath={treemapPath}
               onTreemapPathChange={setTreemapPath}
@@ -293,6 +310,7 @@ function EntityAnalyticsPage() {
             <EntityAnalyticsLineItems
               filter={effectiveFilter}
               title={filter.account_category === 'vn' ? t`Income` : t`Expenses`}
+              groupBy={lineItemsGroupBy}
               data={aggregatedData}
               isLoading={isLoadingAggregated}
               error={errorAggregated as Error | null}

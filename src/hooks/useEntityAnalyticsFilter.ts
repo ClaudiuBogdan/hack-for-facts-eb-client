@@ -89,7 +89,11 @@ export function useEntityAnalyticsFilter() {
   }
 
   const setTreemapPrimary = useCallback((primary: 'fn' | 'ec') => {
-    navigate({ search: (prev) => ({ ...prev, treemapPrimary: primary }), replace: true, resetScroll: false })
+    navigate({
+      search: (prev) => ({ ...prev, treemapPrimary: primary, treemapPath: undefined }),
+      replace: true,
+      resetScroll: false,
+    })
   }, [navigate])
 
   const setTreemapDepth = useCallback((depth: 'chapter' | 'subchapter' | 'paragraph') => {

@@ -360,9 +360,14 @@ const groupIncomeBySubchapter = (
   return out;
 };
 
-const filterGroups = (groups: GroupedChapter[], term: string): GroupedChapter[] => {
+const filterGroups = (
+  groups: GroupedChapter[],
+  term: string,
+  options?: { subchapterCodePrefix?: 'fn' | 'ec' }
+): GroupedChapter[] => {
   const query = term.trim();
   if (!query) return groups;
+  const subchapterCodePrefix = options?.subchapterCodePrefix ?? 'fn';
 
   const filtered = new Map<string, GroupedChapter>();
 
@@ -380,7 +385,7 @@ const filterGroups = (groups: GroupedChapter[], term: string): GroupedChapter[] 
 
     // When subchapters exist, filter inside them first
     chapter.subchapters?.forEach((sub) => {
-      const subText = `${sub.name} fn:${sub.code}`;
+      const subText = `${sub.name} ${subchapterCodePrefix}:${sub.code}`;
       const subMatches = match(subText, query).length > 0;
 
       if (subMatches) {
@@ -508,6 +513,10 @@ export const useFinancialData = (
     () => filterGroups(incomeGroups, debouncedIncomeSearchTerm),
     [incomeGroups, debouncedIncomeSearchTerm]
   );
+  const filteredEconomicGroups = useMemo(
+    () => filterGroups(economicGroups, debouncedExpenseSearchTerm, { subchapterCodePrefix: 'ec' }),
+    [economicGroups, debouncedExpenseSearchTerm]
+  );
 
   const expenseBase = useMemo(
     () => totalExpenses ?? expenseGroups.reduce((sum, ch) => sum + ch.totalAmount, 0),
@@ -533,6 +542,7 @@ export const useFinancialData = (
     debouncedIncomeSearchTerm,
     filteredIncomeGroups,
     incomeBase,
+    filteredEconomicGroups,
     economicGroups,
   };
 };
