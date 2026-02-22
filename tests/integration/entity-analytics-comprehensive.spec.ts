@@ -542,11 +542,22 @@ test.describe('Entity Analytics - Comprehensive Tests', () => {
       await page.goto('/entity-analytics?view=line-items')
       await page.waitForLoadState('networkidle').catch(() => {})
 
-      const economicToggle = page.locator('button').filter({ hasText: /^economic$/i }).first()
+      const groupingControl = page
+        .locator('div')
+        .filter({
+          has: page.locator('text=/grouping|grupare/i'),
+        })
+        .filter({
+          has: page.locator('button').filter({ hasText: /^economic$/i }),
+        })
+        .first()
+      const economicToggle = groupingControl.locator('button').filter({ hasText: /^economic$/i }).first()
+      await expect(economicToggle).toBeVisible({ timeout: 10000 })
       await economicToggle.click({ force: true })
       await expect.poll(() => page.url(), { timeout: 10000 }).toContain('treemapPrimary=ec')
 
       const incomeRadio = page.getByRole('radio', { name: /venituri|income/i }).first()
+      await expect(incomeRadio).toBeVisible({ timeout: 10000 })
       await incomeRadio.click({ force: true })
 
       await expect.poll(() => page.url(), { timeout: 10000 }).toContain('treemapPrimary=fn')
