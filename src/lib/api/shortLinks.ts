@@ -2,6 +2,7 @@ import { createLogger } from "../logger";
 import { getAuthToken } from "../auth";
 import { getApiBaseUrl } from "@/config/env";
 import type { QueryClient } from "@tanstack/react-query";
+import { API_FETCH_REFERRER_POLICY } from "./fetch-options";
 
 const logger = createLogger("short-links-client");
 
@@ -36,6 +37,7 @@ export async function createShortLink(originalUrl: string): Promise<string> {
 
     const response = await fetch(endpoint, {
       method: "POST",
+      referrerPolicy: API_FETCH_REFERRER_POLICY,
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -72,6 +74,7 @@ export async function resolveShortLinkCode(code: string): Promise<string> {
     logger.info("Resolving short link code", { code });
     const response = await fetch(endpoint, {
       method: "GET",
+      referrerPolicy: API_FETCH_REFERRER_POLICY,
     });
 
     if (!response.ok) {

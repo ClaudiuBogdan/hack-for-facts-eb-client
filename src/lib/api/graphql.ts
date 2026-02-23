@@ -1,6 +1,7 @@
 import { createLogger } from "../logger";
 import { getAuthToken } from "../auth";
 import { getApiBaseUrl } from "@/config/env";
+import { API_FETCH_REFERRER_POLICY } from "./fetch-options";
 
 const logger = createLogger("graphql-client");
 
@@ -96,6 +97,7 @@ export async function graphqlRequest<T = unknown>(
 
     const response = await fetch(endpoint, {
       method: "POST",
+      referrerPolicy: API_FETCH_REFERRER_POLICY,
       headers: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),

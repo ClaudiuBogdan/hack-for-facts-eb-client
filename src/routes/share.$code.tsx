@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from '@tanstack/react-router'
+import { createFileRoute, notFound, useNavigate, useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { resolveShortLinkCode } from '@/lib/api/shortLinks'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -6,6 +6,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Link2 } from 'lucide-react'
 import { t } from '@lingui/core/macro'
+import { navigateShareRedirect } from './share-redirect'
 
 export const Route = createFileRoute('/share/$code')({
   loader: async ({ params }) => {
@@ -30,12 +31,20 @@ export const Route = createFileRoute('/share/$code')({
 
 function ShareRedirector() {
   const { redirectUrl } = Route.useLoaderData();
+  const navigate = useNavigate({ from: '/share/$code' });
+  const router = useRouter();
 
   useEffect(() => {
     if (redirectUrl) {
-      window.location.replace(redirectUrl);
+      void navigateShareRedirect({
+        redirectUrl,
+        currentOrigin: window.location.origin,
+        router,
+        navigate,
+        replaceLocation: (nextUrl) => window.location.replace(nextUrl),
+      });
     }
-  }, [redirectUrl]);
+  }, [redirectUrl, navigate, router]);
 
   return null;
 }
