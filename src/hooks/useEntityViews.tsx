@@ -1,5 +1,5 @@
 import { EntityDetailsData } from '@/lib/api/entities';
-import { FileText, HomeIcon, MapIcon, TrendingDownIcon, TrendingUpIcon, BarChart3, Building2Icon, UsersIcon, ScrollText, FileCheck2, LineChart } from 'lucide-react';
+import { FileText, HomeIcon, MapIcon, TrendingDownIcon, TrendingUpIcon, BarChart3, Building2Icon, ScrollText, FileCheck2, LineChart } from 'lucide-react';
 import { t } from '@lingui/core/macro';
 
 export type EntityView = {

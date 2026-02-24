@@ -248,10 +248,11 @@ test.describe('Entity Page - Overview View', () => {
     // Verify all view tabs are present
     const tabs = [
       /overview|prezentare/i,
+      /contracts|contracte/i,
+      /commitments|angajamente/i,
       /expense.*trends|evoluția.*cheltuielilor/i,
       /income.*trends|evoluția.*veniturilor/i,
       /map|hartă/i,
-      /employees|angajați/i,
       /charts|grafice/i,
       /entities|entități/i,
       /reports|rapoarte/i,
@@ -356,29 +357,6 @@ test.describe('Entity Page - Map View', () => {
 
     // Map view might need additional fixtures for heatmap data - test passes if we get here
     expect(isMapView || true).toBe(true)
-  })
-})
-
-test.describe('Entity Page - Employees View', () => {
-  test.beforeEach(async ({ mockApi }) => {
-    await mockApi.mockGraphQL('GetEntityDetails', 'entity-details')
-    await mockApi.mockGraphQL('EntityNames', 'entity-names')
-  })
-
-  test('displays employees view for eligible entity', async ({ page, mockApi }) => {
-    if (mockApi.mode === 'live') {
-      test.skip()
-      return
-    }
-
-    await page.goto(`/entities/${TEST_ENTITY_CUI}?view=employees`)
-
-    // Verify the page loaded
-    await expect(page.locator('body').first()).toBeVisible({ timeout: 10000 })
-
-    // Should show employee-related content or info about data availability
-    const hasEmployeeContent = await page.locator('text=/angajați|employees|personal|date.*angajați/i').first().isVisible({ timeout: 5000 }).catch(() => false)
-    expect(hasEmployeeContent || true).toBe(true) // Test passes if we get here
   })
 })
 
