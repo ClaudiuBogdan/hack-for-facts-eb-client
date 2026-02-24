@@ -67,7 +67,11 @@ test.describe('Entity Details Page', () => {
     ).toBeVisible()
 
     await expect(
-      header.getByRole('link', { name: /angajați/i })
+      header.getByRole('link', { name: /contracte/i })
+    ).toBeVisible()
+
+    await expect(
+      header.getByRole('link', { name: /angajamente/i })
     ).toBeVisible()
 
     await expect(
