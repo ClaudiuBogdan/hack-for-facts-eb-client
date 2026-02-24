@@ -20,11 +20,6 @@ export const useEntityViews = (entity: EntityDetailsData | null | undefined): En
 
   views.push({ id: 'contracts', label: t`Contracts`, icon: <ScrollText className="w-4 h-4" /> });
 
-  // Experimental employees data view
-  if (entity.is_uat && entity.entity_type !== "admin_county_council" && entity.uat?.siruta_code != null) {
-    views.push({ id: 'employees', label: t`Employees`, icon: <UsersIcon className="w-4 h-4" /> });
-  }
-
   views.push({ id: 'commitments', label: t`Commitments`, icon: <FileCheck2 className="w-4 h-4" /> });
 
   if (entity.is_uat || entity.entity_type === 'admin_county_council') {
