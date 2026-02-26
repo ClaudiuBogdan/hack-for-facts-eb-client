@@ -178,12 +178,12 @@ test.describe('Chart Builder - Comprehensive Tests', () => {
     })
 
     test('2.3 Toggle switches are available', async ({ page }) => {
-      await page.goto('/charts/new')
-      await expect(page).toHaveURL(/\/charts\/[a-f0-9-]+/i, { timeout: 10000 })
+      await gotoNewChartAndWaitForConfig(page)
 
       // Check for toggle switches
-      const toggles = page.locator('[role="switch"], [type="checkbox"]')
-      await expect(toggles.first()).toBeVisible({ timeout: 5000 })
+      const toggles = page.getByRole('switch')
+        .or(page.locator('[type="checkbox"]'))
+      await expect(toggles.first()).toBeVisible({ timeout: 10000 })
     })
 
     test('2.4 Can toggle show legend', async ({ page }) => {

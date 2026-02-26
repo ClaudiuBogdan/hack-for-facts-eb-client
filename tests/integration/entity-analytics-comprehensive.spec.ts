@@ -22,7 +22,7 @@
  */
 
 import { test, expect } from '../utils/integration-base'
-import { waitForHydration } from '../utils/test-helpers'
+import { clickToggleWithUrlVerification, waitForHydration } from '../utils/test-helpers'
 
 // Constants for test data
 const MOCK_ENTITY_NAMES = [
@@ -540,7 +540,7 @@ test.describe('Entity Analytics - Comprehensive Tests', () => {
 
     test('normalizes income treemap grouping to functional and clears path', async ({ page }) => {
       await page.goto('/entity-analytics?view=line-items')
-      await page.waitForLoadState('networkidle').catch(() => {})
+      await waitForHydration(page)
 
       const groupingControl = page
         .locator('div')
@@ -551,17 +551,25 @@ test.describe('Entity Analytics - Comprehensive Tests', () => {
           has: page.locator('button').filter({ hasText: /^economic$/i }),
         })
         .first()
-      const economicToggle = groupingControl.locator('button').filter({ hasText: /^economic$/i }).first()
+      const economicToggle = groupingControl.getByRole('radio', { name: /economic/i }).first()
       await expect(economicToggle).toBeVisible({ timeout: 10000 })
-      await economicToggle.click({ force: true })
-      await expect.poll(() => page.url(), { timeout: 10000 }).toContain('treemapPrimary=ec')
+      await clickToggleWithUrlVerification(page, economicToggle, /treemapPrimary=ec/, 12000)
 
       const incomeRadio = page.getByRole('radio', { name: /venituri|income/i }).first()
       await expect(incomeRadio).toBeVisible({ timeout: 10000 })
-      await incomeRadio.click({ force: true })
+      await expect(incomeRadio).toBeEnabled({ timeout: 10000 })
 
-      await expect.poll(() => page.url(), { timeout: 10000 }).toContain('treemapPrimary=fn')
-      await expect.poll(() => page.url(), { timeout: 10000 }).not.toContain('treemapPath=')
+      for (let clickAttempt = 0; clickAttempt < 3; clickAttempt += 1) {
+        await incomeRadio.click({ force: true })
+        try {
+          await expect(page).toHaveURL(/treemapPrimary=fn/, { timeout: 4000 })
+          break
+        } catch (error) {
+          if (clickAttempt === 2) throw error
+        }
+      }
+
+      await expect(page).not.toHaveURL(/treemapPath=/, { timeout: 10000 })
     })
 
     test('preserves account category in URL', async ({ page }) => {

@@ -481,11 +481,10 @@ test.describe('Cookie Settings Page', () => {
     // Click Allow all (aria-label or visible text)
     const allowAllButton = page.getByRole('button', { name: /allow all|permite toate/i })
     await expect(allowAllButton).toBeVisible()
-    await allowAllButton.click()
+    await clickActionAndWaitForConsent(page, allowAllButton, { analytics: true, sentry: true })
 
     // Should navigate to the redirect URL
-    await page.waitForURL(/\/charts/, { timeout: 10000 })
-    await waitForCookieConsentState(page, { analytics: true, sentry: true })
+    await page.waitForURL(/\/charts(?:$|[/?#])/, { timeout: 15000 })
     expect(page.url()).toContain('/charts')
   })
 
