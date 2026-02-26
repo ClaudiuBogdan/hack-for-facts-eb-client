@@ -18,6 +18,7 @@ const PUBLIC_RUNTIME_CONFIG_KEYS = [
   "VITE_SENTRY_FEEDBACK_ENABLED",
   "VITE_CLERK_PUBLISHABLE_KEY",
   "VITE_BETTER_STACK_STATUS_WIDGET_ID",
+  "VITE_DISCOURSE_BASE_URL",
 ] as const;
 
 export type PublicRuntimeConfigKey = (typeof PUBLIC_RUNTIME_CONFIG_KEYS)[number];
@@ -72,6 +73,9 @@ const envSchema = z
 
   // Better Stack
   VITE_BETTER_STACK_STATUS_WIDGET_ID: z.string().min(1).optional(),
+
+  // Discourse (Learning lesson discussion embedding)
+  VITE_DISCOURSE_BASE_URL: z.string().url().optional(),
 })
   .superRefine((values, ctx) => {
     if (values.VITE_POSTHOG_ENABLED) {

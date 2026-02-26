@@ -18,6 +18,7 @@ interface ImportMetaEnv {
   readonly VITE_SENTRY_FEEDBACK_ENABLED?: string;
   readonly VITE_CLERK_PUBLISHABLE_KEY?: string;
   readonly VITE_BETTER_STACK_STATUS_WIDGET_ID?: string;
+  readonly VITE_DISCOURSE_BASE_URL?: string;
 }
 
 interface ImportMeta {
@@ -49,6 +50,7 @@ declare namespace NodeJS {
     readonly VITE_SENTRY_FEEDBACK_ENABLED?: string;
     readonly VITE_CLERK_PUBLISHABLE_KEY?: string;
     readonly VITE_BETTER_STACK_STATUS_WIDGET_ID?: string;
+    readonly VITE_DISCOURSE_BASE_URL?: string;
   }
 }
 

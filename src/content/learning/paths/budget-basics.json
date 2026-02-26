@@ -33,7 +33,9 @@
           "title": {
             "en": "Your Invisible Budget",
             "ro": "Bugetul Tău Invizibil"
-          }
+          },
+          "discourseTopicId": 11,
+          "discourseTopicSlug": "bugetul-tau-invizibil"
         },
         {
           "id": "pb101-your-three-roles",
@@ -47,7 +49,9 @@
           "completionMode": "mark_complete",
           "prerequisites": [
             "pb101-what-is-a-budget"
-          ]
+          ],
+          "discourseTopicId": 12,
+          "discourseTopicSlug": "contribuabil-beneficiar-gardian"
         },
         {
           "id": "pb101-your-money-at-work",
@@ -61,7 +65,9 @@
           "completionMode": "mark_complete",
           "prerequisites": [
             "pb101-your-three-roles"
-          ]
+          ],
+          "discourseTopicId": 13,
+          "discourseTopicSlug": "de-la-salariu-la-servicii"
         },
         {
           "id": "pb101-explore-the-platform",
@@ -75,7 +81,9 @@
           "completionMode": "mark_complete",
           "prerequisites": [
             "pb101-your-money-at-work"
-          ]
+          ],
+          "discourseTopicId": 14,
+          "discourseTopicSlug": "prima-ta-investigatie"
         }
       ]
     }

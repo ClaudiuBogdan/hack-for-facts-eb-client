@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ClientOnly } from '@/components/ssr/ClientOnly'
+import { env } from '@/config/env'
 import { cn } from '@/lib/utils'
 import { prefetchModuleContent, useModuleContent } from '../../hooks/use-module-content'
 import { useLearningProgress } from '../../hooks/use-learning-progress'
@@ -23,6 +24,7 @@ import type { ThreeLensesExplorerProps } from '../interactive/three-lenses-data'
 import type { FunctionalClassificationAccordionProps } from '../interactive/functional-classification-accordion-data'
 import type { EconomicCodeReferenceProps } from '../interactive/economic-code-reference-data'
 import type { ExecutionPatternComparisonProps } from '../interactive/ExecutionPatternComparison'
+import type { LessonDiscussionProps } from '../interactive/lesson-discussion'
 
 type LessonPlayerProps = {
   readonly locale: LearningLocale
@@ -265,6 +267,11 @@ const UATFinder = createLazyComponent(() =>
     default: module.UATFinder,
   }))
 )
+const LessonDiscussion = createLazyComponent<LessonDiscussionProps>(() =>
+  import('../interactive/lesson-discussion').then((module) => ({
+    default: module.LessonDiscussion,
+  }))
+)
 
 function LessonQuizWrapper({ lessonId, ...props }: LessonQuizWrapperProps) {
   const { progress } = useLearningProgress()
@@ -312,6 +319,7 @@ function LessonBudgetAllocatorWrapper({ lessonId, id, ...props }: LessonBudgetAl
 }
 
 export function LessonPlayer({ locale, pathId, moduleId, lessonId }: LessonPlayerProps) {
+  const discourseBaseUrl = env.VITE_DISCOURSE_BASE_URL
   const path = getLearningPathById(pathId)
   const module = path?.modules.find((m) => m.id === moduleId) ?? null
   const lesson = module?.lessons.find((l) => l.id === lessonId) ?? null
@@ -563,6 +571,15 @@ export function LessonPlayer({ locale, pathId, moduleId, lessonId }: LessonPlaye
           </LessonChallengesProvider>
         ) : null}
       </div>
+
+      {discourseBaseUrl && lesson.discourseTopicId ? (
+        <LessonDiscussion
+          discourseBaseUrl={discourseBaseUrl}
+          topicId={lesson.discourseTopicId}
+          topicSlug={lesson.discourseTopicSlug}
+          lessonTitle={getTranslatedText(lesson.title, locale)}
+        />
+      ) : null}
 
       {/* Navigation footer */}
       <nav className="flex items-center justify-between gap-3 pt-8 mt-8 border-t">

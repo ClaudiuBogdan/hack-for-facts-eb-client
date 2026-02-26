@@ -16,6 +16,7 @@
     "typecheck": "tsc -b --noEmit",
     "learning:generate": "tsx scripts/generate-learning-paths.ts",
     "learning:validate": "tsx scripts/validate-learning-content.ts",
+    "discourse:sync-topics": "node --import tsx scripts/sync-discourse-topics.ts",
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",

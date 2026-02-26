@@ -26,6 +26,8 @@ const LearningLessonDefinitionSchema = z.object({
   contentDir: z.string().min(1),
   completionMode: LearningModuleCompletionModeSchema,
   prerequisites: z.array(z.string()).default([]),
+  discourseTopicId: z.number().int().positive().optional(),
+  discourseTopicSlug: z.string().min(1).optional(),
 })
 
 const LearningModuleDefinitionSchema = z.object({
@@ -54,6 +56,8 @@ function buildLessonSignature(lesson: LearningLessonDefinition): string {
     contentDir: lesson.contentDir,
     completionMode: lesson.completionMode,
     durationMinutes: lesson.durationMinutes,
+    discourseTopicId: lesson.discourseTopicId,
+    discourseTopicSlug: lesson.discourseTopicSlug,
     slug: lesson.slug,
     prerequisites: [...lesson.prerequisites].sort(),
     title: lesson.title,

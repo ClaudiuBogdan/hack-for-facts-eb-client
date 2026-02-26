@@ -28,6 +28,47 @@ VITE_SENTRY_FEEDBACK_ENABLED=true
 
 Consent: events and feedback are only sent if analytics consent is granted. The feedback button appears in the footer and can be opened programmatically.
 
+## Discourse Lesson Discussions
+
+Lesson pages can embed a Discourse topic when a lesson has `discourseTopicId` metadata and `VITE_DISCOURSE_BASE_URL` is configured.
+
+Environment variables:
+
+```bash
+VITE_DISCOURSE_BASE_URL=https://forum.example.com
+
+# Used only by topic provisioning script
+DISCOURSE_BASE_URL=https://forum.example.com
+DISCOURSE_API_KEY=your_discourse_api_key
+# Must match the user authorized for the API key (usually an admin/mod account)
+DISCOURSE_API_USERNAME=your_discourse_username
+# Optional: language for topic content sync (en|ro). Default: en
+DISCOURSE_LANG=ro
+# Optional category id for new topics; if reserved, script retries without category
+DISCOURSE_CATEGORY_ID=1
+```
+
+Provision topics for a path:
+
+```bash
+# Dry-run (default)
+yarn discourse:sync-topics --path budget-basics --dry-run
+
+# Persist topic IDs/slugs into path JSON
+yarn discourse:sync-topics --path budget-basics --write
+
+# Rewrite already existing topic title/body in Romanian
+DISCOURSE_LANG=ro yarn discourse:sync-topics --path budget-basics --write --update-existing-content
+```
+
+Thread bodies are generated from lesson MDX content in the selected language (`index.<lang>.mdx`), with fallback to the other locale when missing.
+
+Verification checklist:
+
+1. Open any pilot lesson in `budget-basics` and confirm the discussion block renders.
+2. Confirm embedded comments load inline and the fallback forum link is visible.
+3. Click `Open discussion on forum` and verify login/reply flow works via Discourse OAuth (Clerk OIDC).
+
 # Transparenta.eu Client
 
 We are building a platform for analyzing public data spending.The target audience is the public sector and independent journalists that need a easy and accessible way of finding anomalies in public spending.

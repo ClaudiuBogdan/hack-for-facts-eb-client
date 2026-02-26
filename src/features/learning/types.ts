@@ -17,6 +17,8 @@ export type LearningLessonDefinition = {
   readonly contentDir: string
   readonly completionMode: LearningModuleCompletionMode
   readonly prerequisites: readonly string[]
+  readonly discourseTopicId?: number
+  readonly discourseTopicSlug?: string
 }
 
 export type LearningModuleDefinition = {

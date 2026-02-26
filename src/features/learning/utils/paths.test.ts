@@ -85,6 +85,21 @@ describe('paths utilities', () => {
       expect(getAllLessons(path)).toEqual(lessons)
     })
 
+    it('preserves optional discourse lesson metadata', () => {
+      const lessons = [
+        {
+          ...createLesson('lesson-1'),
+          discourseTopicId: 123,
+          discourseTopicSlug: 'lesson-1-discussion',
+        },
+      ]
+      const path = createPath(lessons)
+      const [firstLesson] = getAllLessons(path)
+
+      expect(firstLesson.discourseTopicId).toBe(123)
+      expect(firstLesson.discourseTopicSlug).toBe('lesson-1-discussion')
+    })
+
     it('returns all lessons from multiple modules', () => {
       const lesson1 = createLesson('lesson-1')
       const lesson2 = createLesson('lesson-2')

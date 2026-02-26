@@ -693,8 +693,8 @@ msgstr "Alerte când apar modificări importante"
 #: src/components/entities/LineItemsBadgeFilters.tsx:172
 #: src/components/entities/LineItemsGroupedSection.tsx:173
 #: src/components/entities/LineItemsGroupedSection.tsx:175
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:146
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:164
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:150
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:168
 #: src/features/learning/components/interactive/DocumentLibrary.tsx:147
 #: src/routes/charts/index.lazy.tsx:244
 msgid "All"
@@ -801,7 +801,7 @@ msgstr "Analiză și raportare avansată a erorilor doar cu consimțământul du
 msgid "Analytics Cookies (opt-in only)"
 msgstr "Cookie-uri de Analiză (doar opționale)"
 
-#: src/routes/entity-analytics.lazy.tsx:193
+#: src/routes/entity-analytics.lazy.tsx:209
 msgid "Analyze aggregated values per entity and explore top entities."
 msgstr "Analizați valorile cumulate pe entitate și explorați entitățile de top."
 
@@ -892,6 +892,10 @@ msgstr "Arierate"
 msgid "As a data subject under GDPR, you have the following rights:"
 msgstr "În calitate de persoană vizată conform RGPD, aveți următoarele drepturi:"
 
+#: src/features/learning/components/interactive/lesson-discussion.tsx:136
+msgid "Ask questions and discuss this lesson with the community."
+msgstr "Pune întrebări și discută despre această lecție cu comunitatea."
+
 #: src/routes/cookie-policy.lazy.tsx:21
 #: src/routes/privacy.lazy.tsx:21
 #: src/routes/terms.lazy.tsx:21
@@ -969,7 +973,7 @@ msgstr "Înapoi la Hub"
 msgid "Back to learning"
 msgstr "Înapoi la învățare"
 
-#: src/features/learning/components/player/LessonPlayer.tsx:448
+#: src/features/learning/components/player/LessonPlayer.tsx:456
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:44
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:102
 msgid "Back to Learning Hub"
@@ -979,7 +983,7 @@ msgstr "Înapoi la Hub-ul de învățare"
 msgid "Back to Overview"
 msgstr "Înapoi la sinteză"
 
-#: src/features/learning/components/player/LessonPlayer.tsx:592
+#: src/features/learning/components/player/LessonPlayer.tsx:609
 msgid "Back to path"
 msgstr "Înapoi la parcurs"
 
@@ -1037,7 +1041,7 @@ msgid "Birth, mortality, and migration balance."
 msgstr "Echilibrul natalității, mortalității și migrației."
 
 #: src/components/maps/HeatmapDataTable.tsx:448
-#: src/routes/entity-analytics.lazy.tsx:231
+#: src/routes/entity-analytics.lazy.tsx:247
 msgid "Both"
 msgstr "Ambele"
 
@@ -1079,7 +1083,7 @@ msgstr "Cronologia ciclului bugetar"
 
 #: src/components/entities/views/Overview.tsx:281
 #: src/components/entities/views/TrendsView.tsx:220
-#: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:94
+#: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:100
 #: src/routes/budget-explorer.lazy.tsx:507
 msgid "Budget Distribution"
 msgstr "Distribuția bugetului"
@@ -1263,7 +1267,7 @@ msgstr "Tip grafic"
 #: src/components/footer/AppFooter.tsx:103
 #: src/components/sidebar/nav-main.tsx:31
 #: src/components/ui/shortcuts.tsx:38
-#: src/hooks/useEntityViews.tsx:45
+#: src/hooks/useEntityViews.tsx:40
 #: src/routes/charts/index.lazy.tsx:170
 #: src/routes/index.tsx:89
 msgid "Charts"
@@ -1330,7 +1334,7 @@ msgid "Clear all"
 msgstr "Șterge tot"
 
 #: src/components/filters/EntityAnalyticsFilter.tsx:426
-#: src/routes/entity-analytics.lazy.tsx:215
+#: src/routes/entity-analytics.lazy.tsx:231
 msgid "Clear filters"
 msgstr "Șterge filtrele"
 
@@ -1406,12 +1410,12 @@ msgid "Column"
 msgstr "Coloană"
 
 #: src/components/maps/HeatmapDataTable.tsx:450
-#: src/routes/entity-analytics.lazy.tsx:233
+#: src/routes/entity-analytics.lazy.tsx:249
 msgid "Columns"
 msgstr "Coloane"
 
 #: src/components/maps/HeatmapDataTable.tsx:442
-#: src/routes/entity-analytics.lazy.tsx:225
+#: src/routes/entity-analytics.lazy.tsx:241
 msgid "Comfortable"
 msgstr "Confortabil"
 
@@ -1452,7 +1456,7 @@ msgid "Commitment Trends"
 msgstr "Tendințe angajamente"
 
 #: src/components/commitments/CommitmentsTable.tsx:159
-#: src/hooks/useEntityViews.tsx:28
+#: src/hooks/useEntityViews.tsx:23
 msgid "Commitments"
 msgstr "Angajamente"
 
@@ -1464,14 +1468,10 @@ msgstr "Analiză angajamente"
 msgid "Commitments Evolution - {entityName}"
 msgstr "Evoluția angajamentelor - {entityName}"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:147
-#~ msgid "Commitments vs budget"
-#~ msgstr "Angajamente vs buget"
-
 #: src/components/maps/HeatmapDataTable.tsx:443
 #: src/components/maps/HeatmapDataTable.tsx:447
-#: src/routes/entity-analytics.lazy.tsx:226
-#: src/routes/entity-analytics.lazy.tsx:230
+#: src/routes/entity-analytics.lazy.tsx:242
+#: src/routes/entity-analytics.lazy.tsx:246
 msgid "Compact"
 msgstr "Compact"
 
@@ -1479,7 +1479,7 @@ msgstr "Compact"
 msgid "Compare with death rate and migration to understand if growth is structural or temporary."
 msgstr "Comparați cu rata mortalității și migrația pentru a înțelege dacă creșterea este structurală sau temporară."
 
-#: src/features/learning/components/player/LessonPlayer.tsx:616
+#: src/features/learning/components/player/LessonPlayer.tsx:633
 msgid "Complete path"
 msgstr "Finalizează parcursul"
 
@@ -1757,7 +1757,7 @@ msgstr "Județe"
 #: src/components/filters/MapFilter.tsx:218
 #: src/components/maps/charts/UatDataCharts.tsx:102
 #: src/components/maps/HeatmapDataTable.tsx:452
-#: src/routes/entity-analytics.lazy.tsx:235
+#: src/routes/entity-analytics.lazy.tsx:251
 msgid "County"
 msgstr "Județ"
 
@@ -1835,7 +1835,7 @@ msgstr "Cultură și turism"
 #: src/components/maps/HeatmapDataTable.tsx:445
 #: src/components/normalization/normalization-controls.tsx:84
 #: src/components/theme/currency-toggle.tsx:53
-#: src/routes/entity-analytics.lazy.tsx:228
+#: src/routes/entity-analytics.lazy.tsx:244
 msgid "Currency"
 msgstr "Monedă"
 
@@ -2063,7 +2063,7 @@ msgid "Demography"
 msgstr "Demografie"
 
 #: src/components/maps/HeatmapDataTable.tsx:441
-#: src/routes/entity-analytics.lazy.tsx:224
+#: src/routes/entity-analytics.lazy.tsx:240
 msgid "Density"
 msgstr "Densitate"
 
@@ -2076,7 +2076,7 @@ msgstr "Indicatori derivați"
 msgid "Description"
 msgstr "Descriere"
 
-#: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:123
+#: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:129
 #: src/routes/budget-explorer.lazy.tsx:558
 msgid "Detail level"
 msgstr "Nivel de detaliu"
@@ -2099,7 +2099,7 @@ msgstr "Defalcare detaliată"
 msgid "Detailed Budget Execution"
 msgstr "Executie bugetara detaliata"
 
-#: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:138
+#: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:144
 #: src/routes/budget-explorer.lazy.tsx:571
 msgid "Detailed categories"
 msgstr "Categorii detaliate"
@@ -2152,6 +2152,10 @@ msgstr "Dezactivează adnotarea"
 #: src/components/charts/components/series-config/SeriesItemMenu.tsx:66
 msgid "Disable Series"
 msgstr "Dezactivează seria"
+
+#: src/features/learning/components/interactive/lesson-discussion.tsx:135
+msgid "Discussion"
+msgstr "Discuție"
 
 #: src/components/charts/components/views/SeriesConfigView.tsx:406
 msgid "Display data labels on the chart"
@@ -2242,7 +2246,7 @@ msgstr "Ec"
 #: src/components/common/classification-info-link.tsx:134
 #: src/components/entities/views/Overview.tsx:305
 #: src/components/entities/views/TrendsView.tsx:223
-#: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:118
+#: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:124
 #: src/lib/ins/ins-metric-registry.ts:108
 #: src/routes/budget-explorer.lazy.tsx:553
 msgid "Economic"
@@ -2335,7 +2339,6 @@ msgid "Emigrants (POP309E)"
 msgstr "Emigranți (POP309E)"
 
 #: src/components/entities/views/ins-stats-view.derived.ts:314
-#: src/hooks/useEntityViews.tsx:25
 msgid "Employees"
 msgstr "Angajați"
 
@@ -2425,14 +2428,14 @@ msgstr "Introduceți eticheta seriei..."
 #: src/components/filters/EntityAnalyticsFilter.tsx:661
 #: src/components/filters/MapFilter.tsx:266
 #: src/components/filters/MapFilter.tsx:443
-#: src/hooks/useEntityViews.tsx:48
+#: src/hooks/useEntityViews.tsx:43
 #: src/routes/index.tsx:82
 msgid "Entities"
 msgstr "Entități"
 
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:69
 #: src/lib/chart-filter-utils.ts:37
-#: src/routes/entity-analytics.lazy.tsx:234
+#: src/routes/entity-analytics.lazy.tsx:250
 msgid "Entity"
 msgstr "Entitate"
 
@@ -2492,7 +2495,7 @@ msgstr "Eroare"
 msgid "Error Fetching Entity Details"
 msgstr "Eroare la preluarea detaliilor entității"
 
-#: src/routes/entity-analytics.lazy.tsx:208
+#: src/routes/entity-analytics.lazy.tsx:224
 msgid "Error loading analytics"
 msgstr "Eroare la încărcarea analizei"
 
@@ -2500,7 +2503,7 @@ msgstr "Eroare la încărcarea analizei"
 msgid "Error Loading Chart Data"
 msgstr "Eroare la încărcarea datelor graficului"
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:176
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:180
 msgid "Error loading data"
 msgstr "Eroare la încărcarea datelor"
 
@@ -2684,7 +2687,7 @@ msgstr "Locuințe existente (LOC101B)"
 msgid "Expand explorer to full width"
 msgstr "Extinde exploratorul pe toată lățimea"
 
-#: src/hooks/useEntityViews.tsx:35
+#: src/hooks/useEntityViews.tsx:30
 msgid "Expense Trends"
 msgstr "Evoluția cheltuielilor"
 
@@ -2704,7 +2707,7 @@ msgstr "Tip cheltuială"
 #: src/components/filters/MapFilter.tsx:233
 #: src/components/maps/utils.ts:31
 #: src/hooks/filters/useFilterLabels.tsx:195
-#: src/routes/entity-analytics.lazy.tsx:295
+#: src/routes/entity-analytics.lazy.tsx:312
 msgid "Expenses"
 msgstr "Cheltuieli"
 
@@ -2752,11 +2755,11 @@ msgstr "Exportă ca Imagine"
 msgid "Export as image or share with a link"
 msgstr "Exportă ca imagine sau partajează printr-un link"
 
-#: src/routes/entity-analytics.lazy.tsx:241
+#: src/routes/entity-analytics.lazy.tsx:257
 msgid "Export CSV"
 msgstr "Export CSV"
 
-#: src/routes/entity-analytics.lazy.tsx:241
+#: src/routes/entity-analytics.lazy.tsx:257
 msgid "Exporting…"
 msgstr "Se exportă…"
 
@@ -2801,6 +2804,10 @@ msgstr "Eroare la încărcarea alertei"
 #: src/features/notifications/components/alerts/AlertsList.tsx:34
 msgid "Failed to load alerts. Please try again."
 msgstr "Eroare la încărcarea alertelor. Vă rugăm să încercați din nou."
+
+#: src/features/learning/components/interactive/lesson-discussion.tsx:139
+msgid "Failed to load comments"
+msgstr "Nu s-au putut încărca comentariile"
 
 #: src/routes/budget-explorer.lazy.tsx:581
 msgid "Failed to load data."
@@ -2856,7 +2863,7 @@ msgid "Filter Reports"
 msgstr "Filtrare rapoarte"
 
 #: src/components/entities/EntityLineItemsTabs.tsx:145
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:156
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:160
 msgid "Filter Transfers"
 msgstr "Filtrare transferuri"
 
@@ -3009,7 +3016,7 @@ msgstr "Observațiile istorice complete au depășit limita de paginare pentru a
 #: src/components/common/classification-info-link.tsx:134
 #: src/components/entities/views/Overview.tsx:304
 #: src/components/entities/views/TrendsView.tsx:222
-#: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:111
+#: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:117
 #: src/routes/budget-explorer.lazy.tsx:550
 msgid "Functional"
 msgstr "Funcțional"
@@ -3140,7 +3147,7 @@ msgstr "Setări globale pentru grafic"
 msgid "Go back"
 msgstr "Mergi înapoi"
 
-#: src/routes/share.$code.tsx:79
+#: src/routes/share.$code.tsx:88
 msgid "Go back home"
 msgstr "Înapoi la pagina principală"
 
@@ -3219,7 +3226,7 @@ msgid "Gross"
 msgstr "Brut"
 
 #: src/components/commitments/DetailTable.tsx:546
-#: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:99
+#: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:105
 #: src/routes/budget-explorer.lazy.tsx:540
 msgid "Grouping"
 msgstr "Grupare"
@@ -3228,7 +3235,7 @@ msgstr "Grupare"
 msgid "Hands-On Activity"
 msgstr "Activitate practică"
 
-#: src/routes/share.$code.tsx:56
+#: src/routes/share.$code.tsx:65
 msgid "Hang tight while we resolve and redirect you to the destination."
 msgstr "Te rugăm să aștepți cât timp te redirecționăm către destinație."
 
@@ -3402,7 +3409,7 @@ msgstr "Include banii UE (PNRR) și profiturile companiilor de stat. Esențial, 
 #: src/components/filters/MapFilter.tsx:234
 #: src/components/maps/utils.ts:31
 #: src/hooks/filters/useFilterLabels.tsx:196
-#: src/routes/entity-analytics.lazy.tsx:295
+#: src/routes/entity-analytics.lazy.tsx:312
 msgid "Income"
 msgstr "Venituri"
 
@@ -3414,7 +3421,7 @@ msgstr "Venituri - Cheltuieli"
 msgid "Income Tax"
 msgstr "Impozit pe venit"
 
-#: src/hooks/useEntityViews.tsx:36
+#: src/hooks/useEntityViews.tsx:31
 msgid "Income Trends"
 msgstr "Evoluția veniturilor"
 
@@ -3496,7 +3503,7 @@ msgstr "Indicatorii INS sunt disponibili doar pentru UAT-uri."
 msgid "INS Series"
 msgstr "Serie INS"
 
-#: src/hooks/useEntityViews.tsx:31
+#: src/hooks/useEntityViews.tsx:26
 msgid "INS Stats"
 msgstr "Statistici INS"
 
@@ -3571,7 +3578,7 @@ msgstr "Schemă grafic invalidă"
 msgid "Invalid data detected in chart series"
 msgstr "Date invalide detectate în seriile graficului"
 
-#: src/routes/share.$code.tsx:72
+#: src/routes/share.$code.tsx:81
 msgid "Invalid or expired link"
 msgstr "Link invalid sau expirat"
 
@@ -3744,7 +3751,7 @@ msgstr "Mai mic decât"
 msgid "Lesson Completed!"
 msgstr "Lecție finalizată!"
 
-#: src/features/learning/components/player/LessonPlayer.tsx:443
+#: src/features/learning/components/player/LessonPlayer.tsx:451
 msgid "Lesson not found"
 msgstr "Lecția nu a fost găsită"
 
@@ -3839,6 +3846,10 @@ msgstr "Se încarcă configurația graficului..."
 msgid "Loading chart data..."
 msgstr "Se încarcă datele graficului..."
 
+#: src/features/learning/components/interactive/lesson-discussion.tsx:138
+msgid "Loading comments..."
+msgstr "Se încarcă comentariile..."
+
 #: src/routes/map.lazy.tsx:224
 msgid "Loading data..."
 msgstr "Se încarcă datele..."
@@ -3856,7 +3867,7 @@ msgstr "Se încarcă detaliile..."
 msgid "Loading heatmap data..."
 msgstr "Se încarcă datele pentru harta termică..."
 
-#: src/features/learning/components/player/LessonPlayer.tsx:91
+#: src/features/learning/components/player/LessonPlayer.tsx:93
 msgid "Loading interactive content..."
 msgstr "Se încarcă conținutul interactiv..."
 
@@ -3931,7 +3942,7 @@ msgstr "Agregat principal"
 msgid "Main Categories"
 msgstr "Categorii Principale"
 
-#: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:135
+#: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:141
 #: src/routes/budget-explorer.lazy.tsx:568
 msgid "Main chapters"
 msgstr "Capitole principale"
@@ -3986,7 +3997,7 @@ msgstr "Gestionarea preferințelor"
 #: src/components/filters/MapFilter.tsx:200
 #: src/components/sidebar/nav-main.tsx:26
 #: src/components/ui/shortcuts.tsx:44
-#: src/hooks/useEntityViews.tsx:42
+#: src/hooks/useEntityViews.tsx:37
 #: src/routes/index.tsx:68
 msgid "Map"
 msgstr "Hartă"
@@ -4300,7 +4311,7 @@ msgstr "Consimțământul și gestionarea buletinului informativ"
 msgid "Newsletters and notifications"
 msgstr "Buletine informative și notificări"
 
-#: src/features/learning/components/player/LessonPlayer.tsx:603
+#: src/features/learning/components/player/LessonPlayer.tsx:620
 msgid "Next"
 msgstr "Următorul"
 
@@ -4719,6 +4730,10 @@ msgstr "Deschide în grafice"
 msgid "Open in entity analytics"
 msgstr "Deschide în analitice entitate"
 
+#: src/features/learning/components/interactive/lesson-discussion.tsx:137
+msgid "Open in forum"
+msgstr "Deschide în forum"
+
 #: src/components/entities/views/ContractsView.tsx:37
 msgid "Open in SICAP.ai"
 msgstr "Deschide în SICAP.ai"
@@ -4793,10 +4808,6 @@ msgstr "Alte categorii economice"
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:77
 msgid "Other Sources"
 msgstr "Alte surse"
-
-#: src/components/commitments/LinearBudgetFlow.tsx:188
-#~ msgid "Over authority"
-#~ msgstr "Peste autorizare"
 
 #: src/hooks/useEntityViews.tsx:14
 msgid "Overview"
@@ -4897,7 +4908,7 @@ msgstr "Per capita"
 #: src/components/entities/views/MapView.tsx:162
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:107
 #: src/components/filters/normalization-filter/NormalizationFilter.tsx:14
-#: src/routes/entity-analytics.lazy.tsx:237
+#: src/routes/entity-analytics.lazy.tsx:253
 msgid "Per Capita"
 msgstr "Pe cap de locuitor"
 
@@ -4985,7 +4996,7 @@ msgstr "Slab"
 #: src/lib/ins/ins-dashboard-config.ts:29
 #: src/lib/ins/ins-metric-registry.ts:23
 #: src/lib/ins/ins-metric-registry.ts:29
-#: src/routes/entity-analytics.lazy.tsx:236
+#: src/routes/entity-analytics.lazy.tsx:252
 msgid "Population"
 msgstr "Populație"
 
@@ -5025,7 +5036,7 @@ msgstr "Valorile pozitive indică spor natural; valorile negative indică declin
 msgid "Preparing new alert…"
 msgstr "Se pregătește o nouă alertă..."
 
-#: src/routes/share.$code.tsx:51
+#: src/routes/share.$code.tsx:60
 msgid "Preparing your share link..."
 msgstr "Se pregătește linkul de partajare..."
 
@@ -5038,7 +5049,7 @@ msgstr "Previzualizare"
 msgid "Preview of the alert chart and settings."
 msgstr "Previzualizare a graficului și setărilor alertei."
 
-#: src/features/learning/components/player/LessonPlayer.tsx:579
+#: src/features/learning/components/player/LessonPlayer.tsx:596
 msgid "Previous"
 msgstr "Anterior"
 
@@ -5071,7 +5082,7 @@ msgstr "Produs"
 msgid "Progress Saved"
 msgstr "Progres salvat"
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:158
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:162
 msgid "Public institutions often transfer funds between each other (e.g., from the state budget to local budgets). These transfers can double-count spending if not filtered."
 msgstr "Instituțiile publice transferă adesea fonduri între ele (de exemplu, de la bugetul de stat la bugetele locale). Aceste transferuri pot duce la dublarea cheltuielilor dacă nu sunt filtrate."
 
@@ -5216,10 +5227,6 @@ msgstr "Mod relativ"
 msgid "Relative Values"
 msgstr "Valori relative"
 
-#: src/components/commitments/LinearBudgetFlow.tsx:195
-#~ msgid "Remaining authority"
-#~ msgstr "Autorizare rămasă"
-
 #: src/components/alerts/components/ConditionsList.tsx:73
 msgid "Remove condition"
 msgstr "Elimină condiția"
@@ -5269,7 +5276,7 @@ msgstr "Perioada de raportare"
 msgid "Reporting:"
 msgstr "Raportare:"
 
-#: src/hooks/useEntityViews.tsx:50
+#: src/hooks/useEntityViews.tsx:45
 msgid "Reports"
 msgstr "Rapoarte"
 
@@ -5800,11 +5807,11 @@ msgstr "Afișează indiciu"
 msgid "Shows all items, including transfers between institutions."
 msgstr "Afișează toate elementele, inclusiv transferurile între instituții."
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:164
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:168
 msgid "Shows all spending, including both direct payments and transfers to other institutions."
 msgstr "Afișează toate cheltuielile, incluzând atât plățile directe, cât și transferurile către alte instituții."
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:163
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:167
 msgid "Shows only direct spending by this entity. Excludes funds moved to other institutions (codes 51 and 55)."
 msgstr "Afișează doar cheltuielile directe ale acestei entități. Exclude fondurile transferate către alte instituții (codurile 51 și 55)."
 
@@ -5816,7 +5823,7 @@ msgstr "Afișează doar cheltuielile/veniturile directe. Exclude transferurile i
 msgid "Shows only the funds transferred between public administration units."
 msgstr "Afișează doar fondurile transferate între unitățile administrației publice."
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:165
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:169
 msgid "Shows only the funds transferred to other public administration units."
 msgstr "Afișează doar fondurile transferate către alte unități ale administrației publice."
 
@@ -5924,7 +5931,7 @@ msgstr "Calculul cheltuielilor"
 
 #: src/components/maps/HeatmapDataTable.tsx:446
 #: src/features/learning/components/interactive/VATReformCard.tsx:29
-#: src/routes/entity-analytics.lazy.tsx:229
+#: src/routes/entity-analytics.lazy.tsx:245
 msgid "Standard"
 msgstr "Standard"
 
@@ -6146,7 +6153,7 @@ msgstr "Parcursul de învățare pe care îl cauți nu există sau a fost mutat.
 msgid "The learning path you're looking for doesn't exist."
 msgstr "Parcursul de învățare pe care îl cauți nu există."
 
-#: src/features/learning/components/player/LessonPlayer.tsx:445
+#: src/features/learning/components/player/LessonPlayer.tsx:453
 msgid "The lesson you're looking for doesn't exist or may have been moved."
 msgstr "Lecția pe care o cauți nu există sau este posibil să fi fost mutată."
 
@@ -6182,7 +6189,7 @@ msgstr "Serviciul oferă instrumente pentru explorarea, analizarea și vizualiza
 msgid "The Service's software, design, and original content are protected by copyright and other intellectual property laws."
 msgstr "Software-ul, designul și conținutul original al Serviciului sunt protejate de drepturi de autor și alte legi privind proprietatea intelectuală."
 
-#: src/routes/share.$code.tsx:76
+#: src/routes/share.$code.tsx:85
 msgid "The share link you are trying to access is invalid or no longer available."
 msgstr "Linkul de partajare pe care încerci să-l accesezi este invalid sau nu mai este disponibil."
 
@@ -6395,7 +6402,7 @@ msgstr "Sumă totală"
 #: src/components/maps/HeatmapDataTable.tsx:286
 #: src/components/maps/HeatmapDataTable.tsx:454
 #: src/components/maps/utils.ts:138
-#: src/routes/entity-analytics.lazy.tsx:238
+#: src/routes/entity-analytics.lazy.tsx:254
 msgid "Total Amount"
 msgstr "Sumă totală"
 
@@ -6442,8 +6449,8 @@ msgstr "Tur Complet!"
 
 #: src/components/entities/EntityLineItemsTabs.tsx:130
 #: src/components/entities/EntityLineItemsTabs.tsx:154
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:147
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:165
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:151
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:169
 msgid "Transfers Only"
 msgstr "Doar transferuri"
 
@@ -6582,7 +6589,7 @@ msgstr "Opțiuni unitate"
 msgid "Unknown"
 msgstr "Necunoscut"
 
-#: src/routes/entity-analytics.lazy.tsx:209
+#: src/routes/entity-analytics.lazy.tsx:225
 msgid "Unknown error"
 msgstr "Eroare necunoscută"
 
@@ -6768,7 +6775,7 @@ msgstr "Verifică un certificat de învățare (proof of concept)."
 
 #: src/components/filters/EntityAnalyticsFilter.tsx:436
 #: src/components/maps/HeatmapDataTable.tsx:438
-#: src/routes/entity-analytics.lazy.tsx:220
+#: src/routes/entity-analytics.lazy.tsx:236
 msgid "View"
 msgstr "Vizualizare"
 
@@ -6795,7 +6802,7 @@ msgstr "Vezi Graficul"
 #: src/components/charts/components/views/AnnotationConfigView.tsx:76
 #: src/components/charts/components/views/ChartConfigView.tsx:45
 #: src/components/charts/components/views/SeriesConfigView.tsx:279
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:131
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:135
 msgid "View Chart"
 msgstr "Vezi graficul"
 
@@ -6819,6 +6826,10 @@ msgstr "Vizualizați scala de culori și valorile pentru vizualizarea hărții d
 #: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:621
 msgid "Viewing:"
 msgstr "Vizualizare:"
+
+#: src/features/learning/components/interactive/lesson-discussion.tsx:140
+msgid "Want to add a comment?"
+msgstr "Vrei să adaugi un comentariu?"
 
 #: src/features/learning/components/interactive/RedFlagCards.tsx:147
 msgid "Warning Signs"
@@ -6970,8 +6981,8 @@ msgstr "Ștergi toate datele?"
 
 #: src/components/entities/EntityLineItemsTabs.tsx:124
 #: src/components/entities/EntityLineItemsTabs.tsx:152
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:145
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:163
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:149
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:167
 msgid "Without Transfers"
 msgstr "Fără transferuri"
 

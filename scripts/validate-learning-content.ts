@@ -29,6 +29,8 @@ type LessonDefinition = {
   readonly completionMode: string | null
   readonly durationMinutes: number | null
   readonly prerequisites: readonly string[]
+  readonly discourseTopicId: number | null
+  readonly discourseTopicSlug: string | null
 }
 
 type ModuleDefinition = {
@@ -154,6 +156,10 @@ function readStringProperty(entry: unknown, propertyName: string): string | null
   return isNonEmptyString(value) ? value : null
 }
 
+function hasProperty(entry: unknown, propertyName: string): boolean {
+  return Boolean(entry && typeof entry === 'object' && propertyName in (entry as Record<string, unknown>))
+}
+
 function readNumberProperty(entry: unknown, propertyName: string): number | null {
   if (!entry || typeof entry !== 'object') {
     return null
@@ -164,6 +170,23 @@ function readNumberProperty(entry: unknown, propertyName: string): number | null
   }
   const value = record[propertyName]
   return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+function readPositiveIntegerProperty(entry: unknown, propertyName: string): { readonly value: number | null; readonly invalid: boolean } {
+  if (!entry || typeof entry !== 'object') {
+    return { value: null, invalid: false }
+  }
+  const record = entry as Record<string, unknown>
+  if (!(propertyName in record)) {
+    return { value: null, invalid: false }
+  }
+
+  const value = record[propertyName]
+  if (typeof value === 'number' && Number.isInteger(value) && value > 0) {
+    return { value, invalid: false }
+  }
+
+  return { value: null, invalid: true }
 }
 
 function readStringArray(value: unknown): { readonly values: string[]; readonly invalid: boolean } {
@@ -479,6 +502,19 @@ async function collectPathContent(): Promise<{
 
         const completionMode = readStringProperty(lesson, 'completionMode')
         const durationMinutes = readNumberProperty(lesson, 'durationMinutes')
+        const discourseTopicIdResult = readPositiveIntegerProperty(lesson, 'discourseTopicId')
+        if (discourseTopicIdResult.invalid) {
+          parseIssues.push(
+            `${relativePath}: lesson "${lessonId}" in module "${moduleId}" has invalid discourseTopicId (must be a positive integer)`
+          )
+        }
+
+        const discourseTopicSlug = readStringProperty(lesson, 'discourseTopicSlug')
+        if (hasProperty(lesson, 'discourseTopicSlug') && !discourseTopicSlug) {
+          parseIssues.push(
+            `${relativePath}: lesson "${lessonId}" in module "${moduleId}" has invalid discourseTopicSlug (must be a non-empty string)`
+          )
+        }
 
         lessonIds.push(lessonId)
         lessonEntries.push({
@@ -492,6 +528,8 @@ async function collectPathContent(): Promise<{
           completionMode,
           durationMinutes,
           prerequisites: prerequisitesResult.values,
+          discourseTopicId: discourseTopicIdResult.value,
+          discourseTopicSlug,
         })
 
         if (contentDir) {
@@ -1082,6 +1120,46 @@ const VALIDATION_RULES: readonly ValidationRule[] = [
       }
 
       return { errors, warnings: [] }
+    },
+  },
+  {
+    name: 'lesson-discourse-metadata',
+    run: (context) => {
+      const errors: string[] = []
+      const warnings: string[] = []
+      const discourseTopicUsage = new Map<number, string[]>()
+
+      for (const pathEntry of context.pathEntries) {
+        for (const lesson of pathEntry.lessons) {
+          if (lesson.discourseTopicId !== null) {
+            if (!Number.isInteger(lesson.discourseTopicId) || lesson.discourseTopicId <= 0) {
+              errors.push(
+                `Lesson "${lesson.lessonId}" in ${pathEntry.pathFile} has invalid discourseTopicId "${lesson.discourseTopicId}"`
+              )
+            } else {
+              const existing = discourseTopicUsage.get(lesson.discourseTopicId) ?? []
+              existing.push(`${pathEntry.pathFile} -> ${lesson.moduleId}/${lesson.lessonId}`)
+              discourseTopicUsage.set(lesson.discourseTopicId, existing)
+            }
+          }
+
+          if (lesson.discourseTopicSlug && lesson.discourseTopicId === null) {
+            warnings.push(
+              `Lesson "${lesson.lessonId}" in ${pathEntry.pathFile} has discourseTopicSlug without discourseTopicId`
+            )
+          }
+        }
+      }
+
+      for (const [topicId, locations] of discourseTopicUsage.entries()) {
+        if (locations.length > 1) {
+          warnings.push(
+            `Discourse topic id "${topicId}" is reused across lessons: ${locations.join(', ')}`
+          )
+        }
+      }
+
+      return { errors, warnings }
     },
   },
   {
