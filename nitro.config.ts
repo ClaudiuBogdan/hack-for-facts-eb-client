@@ -15,13 +15,6 @@ const longPublicPageCache = {
 } as const;
 
 export default defineNitroConfig({
-  handlers: [
-    {
-      route: "/entities/:cui/share-image.png",
-      handler: "./src/server/handlers/entity-share-image.ts",
-      method: "get",
-    },
-  ],
   routeRules: {
     // IMPORTANT: Only cache routes that are truly public and deterministic.
     // If a route starts rendering auth/session/user-sensitive SSR content,

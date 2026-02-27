@@ -4,6 +4,7 @@ import {
   Link,
   Scripts,
 } from "@tanstack/react-router";
+import { createIsomorphicFn } from "@tanstack/react-start";
 import GlobalErrorPage from "@/components/errors/GlobalErrorPage";
 import { Button } from "@/components/ui/button";
 import { Home, FileQuestion } from "lucide-react";
@@ -247,11 +248,16 @@ function readStoredLocale(): string | null {
   }
 }
 
-async function readLocaleCookie(): Promise<string | null> {
-  if (import.meta.env.SSR) {
+const readRequestCookie = createIsomorphicFn()
+  .client(async (_name: string): Promise<string | null> => null)
+  .server(async (name: string): Promise<string | null> => {
     const { getCookie } = await import("@tanstack/react-start/server");
-    return getCookie(LOCALE_COOKIE_NAME) ?? null;
-  }
+    return getCookie(name) ?? null;
+  });
+
+async function readLocaleCookie(): Promise<string | null> {
+  const requestCookieValue = await readRequestCookie(LOCALE_COOKIE_NAME);
+  if (requestCookieValue !== null) return requestCookieValue;
   if (typeof document === "undefined") return null;
   const match = document.cookie.match(
     new RegExp(`(?:^|; )${LOCALE_COOKIE_NAME}=([^;]*)`),
@@ -260,10 +266,8 @@ async function readLocaleCookie(): Promise<string | null> {
 }
 
 async function readThemeCookie(): Promise<string | null> {
-  if (import.meta.env.SSR) {
-    const { getCookie } = await import("@tanstack/react-start/server");
-    return getCookie(THEME_COOKIE_NAME) ?? null;
-  }
+  const requestCookieValue = await readRequestCookie(THEME_COOKIE_NAME);
+  if (requestCookieValue !== null) return requestCookieValue;
   if (typeof document === "undefined") return null;
   const match = document.cookie.match(
     new RegExp(`(?:^|; )${THEME_COOKIE_NAME}=([^;]*)`),

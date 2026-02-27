@@ -6,7 +6,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Link2 } from 'lucide-react'
 import { t } from '@lingui/core/macro'
-import { navigateShareRedirect } from './share-redirect'
+import { navigateShareRedirect } from '@/lib/share-redirect'
 
 export const Route = createFileRoute('/share/$code')({
   loader: async ({ params }) => {

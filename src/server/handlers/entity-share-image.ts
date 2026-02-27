@@ -1,8 +1,7 @@
 import { readFile } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import { createElement } from 'react'
-import { Resvg } from '@resvg/resvg-js'
-import { defineEventHandler, getQuery, getRouterParam } from 'h3'
 import satori from 'satori'
 import entityCategoriesEn from '@/assets/entity-categories-en.json'
 import entityCategoriesRo from '@/assets/entity-categories-ro.json'
@@ -62,12 +61,32 @@ type ShareImageFetchResult = {
 }
 
 let shareFontsPromise: Promise<LoadedShareFonts> | null = null
+let cachedResvgConstructor: {
+  new (svg: string, options?: { fitTo?: { mode: 'width'; value: number } }): {
+    render(): { asPng(): Uint8Array }
+  }
+} | null = null
+const nodeRequire = createRequire(import.meta.url)
 
-type EntityShareQuery = Record<string, string | string[] | undefined>
+function getResvgConstructor() {
+  if (cachedResvgConstructor) return cachedResvgConstructor
+
+  const loadedModule = nodeRequire('@resvg/resvg-js') as {
+    Resvg?: typeof cachedResvgConstructor
+  }
+
+  if (!loadedModule.Resvg) {
+    throw new Error('Unable to load @resvg/resvg-js Resvg constructor')
+  }
+
+  cachedResvgConstructor = loadedModule.Resvg
+  return cachedResvgConstructor
+}
+
+type EntityShareQuery = URLSearchParams
 
 function readQueryString(query: EntityShareQuery, key: string): string | undefined {
-  const value = query[key]
-  if (Array.isArray(value)) return value[0]
+  const value = query.get(key)
   if (typeof value === 'string' && value.length > 0) return value
   return undefined
 }
@@ -156,10 +175,6 @@ function parseEntityShareFilterContext(query: EntityShareQuery): EntityShareFilt
     showPeriodGrowth,
     lang: normalizeLocale(readQueryString(query, 'lang')) ?? undefined,
   }
-}
-
-function toArrayBuffer(buffer: Buffer): ArrayBuffer {
-  return Uint8Array.from(buffer).buffer
 }
 
 async function loadFontFromCandidates(candidatePaths: readonly string[]): Promise<Buffer> {
@@ -687,26 +702,27 @@ async function renderShareCardPng(viewModel: EntityShareImageViewModel): Promise
     fonts: [
       {
         name: 'Inter',
-        data: toArrayBuffer(fonts.regular),
+        data: fonts.regular,
         weight: 400,
         style: 'normal',
       },
       {
         name: 'Inter',
-        data: toArrayBuffer(fonts.bold),
+        data: fonts.bold,
         weight: 700,
         style: 'normal',
       },
       {
         name: 'Inter',
-        data: toArrayBuffer(fonts.extraBold),
+        data: fonts.extraBold,
         weight: 800,
         style: 'normal',
       },
     ],
   })
 
-  const renderedPng = new Resvg(svg, {
+  const ResvgConstructor = getResvgConstructor()
+  const renderedPng = new ResvgConstructor(svg, {
     fitTo: {
       mode: 'width',
       value: IMAGE_WIDTH,
@@ -793,8 +809,13 @@ async function fetchEntityForShareSnapshot(
   }
 }
 
-export default defineEventHandler(async (event) => {
-  const cui = getRouterParam(event, 'cui')
+export async function handleEntityShareImageRequest(params: {
+  readonly request: Request
+  readonly cui?: string
+}): Promise<Response> {
+  const { request } = params
+  const cui = params.cui
+
   if (!cui) {
     return new Response('Missing CUI parameter', {
       status: 400,
@@ -805,7 +826,20 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const query = getQuery(event) as EntityShareQuery
+  let requestUrl: URL
+  try {
+    requestUrl = new URL(request.url)
+  } catch {
+    return new Response('Invalid request URL', {
+      status: 400,
+      headers: {
+        'content-type': 'text/plain; charset=utf-8',
+        'cache-control': 'no-store',
+      },
+    })
+  }
+
+  const query = requestUrl.searchParams
   const parsedContext = parseEntityShareFilterContext(query)
 
   // Keep endpoint cache deterministic by resolving locale from URL only.
@@ -877,4 +911,4 @@ export default defineEventHandler(async (event) => {
       })
     }
   }
-})
+}

@@ -33,6 +33,7 @@ import { Route as LangLearningRouteRouteImport } from './routes/$lang/learning/r
 import { Route as ClassificationsFunctionalIndexRouteImport } from './routes/classifications/functional/index'
 import { Route as ClassificationsEconomicIndexRouteImport } from './routes/classifications/economic/index'
 import { Route as LangLearningIndexRouteImport } from './routes/$lang/learning/index'
+import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entities.$cui.share-image[.]png'
 import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
 import { Route as LangLearningOnboardingRouteImport } from './routes/$lang/learning/onboarding'
@@ -206,6 +207,12 @@ const LangLearningIndexRoute = LangLearningIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/$lang/learning/index.lazy').then((d) => d.Route),
 )
+const EntitiesCuiShareImageDotpngRoute =
+  EntitiesCuiShareImageDotpngRouteImport.update({
+    id: '/share-image.png',
+    path: '/share-image.png',
+    getParentRoute: () => EntitiesCuiRoute,
+  } as any)
 const ClassificationsFunctionalCodeRoute =
   ClassificationsFunctionalCodeRouteImport.update({
     id: '/classifications/functional/$code',
@@ -275,7 +282,7 @@ export interface FileRoutesByFullPath {
   '/alerts/new': typeof AlertsNewRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
-  '/entities/$cui': typeof EntitiesCuiRoute
+  '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
@@ -285,6 +292,7 @@ export interface FileRoutesByFullPath {
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
+  '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
@@ -307,7 +315,7 @@ export interface FileRoutesByTo {
   '/alerts/new': typeof AlertsNewRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
-  '/entities/$cui': typeof EntitiesCuiRoute
+  '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
@@ -317,6 +325,7 @@ export interface FileRoutesByTo {
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
+  '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
   '/$lang/learning': typeof LangLearningIndexRoute
   '/classifications/economic': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional': typeof ClassificationsFunctionalIndexRoute
@@ -343,7 +352,7 @@ export interface FileRoutesById {
   '/alerts/new': typeof AlertsNewRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
-  '/entities/$cui': typeof EntitiesCuiRoute
+  '/entities/$cui': typeof EntitiesCuiRouteWithChildren
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
@@ -353,6 +362,7 @@ export interface FileRoutesById {
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
+  '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
@@ -390,6 +400,7 @@ export interface FileRouteTypes {
     | '/$lang/learning/onboarding'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
+    | '/entities/$cui/share-image.png'
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
@@ -422,6 +433,7 @@ export interface FileRouteTypes {
     | '/$lang/learning/onboarding'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
+    | '/entities/$cui/share-image.png'
     | '/$lang/learning'
     | '/classifications/economic'
     | '/classifications/functional'
@@ -457,6 +469,7 @@ export interface FileRouteTypes {
     | '/$lang/learning/onboarding'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
+    | '/entities/$cui/share-image.png'
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
@@ -483,7 +496,7 @@ export interface RootRouteChildren {
   AlertsNewRoute: typeof AlertsNewRoute
   CertificatesIdRoute: typeof CertificatesIdRoute
   ChartsNewRoute: typeof ChartsNewRoute
-  EntitiesCuiRoute: typeof EntitiesCuiRoute
+  EntitiesCuiRoute: typeof EntitiesCuiRouteWithChildren
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
   SettingsProfileRoute: typeof SettingsProfileRoute
   ShareCodeRoute: typeof ShareCodeRoute
@@ -687,6 +700,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangLearningIndexRouteImport
       parentRoute: typeof LangLearningRouteRoute
     }
+    '/entities/$cui/share-image.png': {
+      id: '/entities/$cui/share-image.png'
+      path: '/share-image.png'
+      fullPath: '/entities/$cui/share-image.png'
+      preLoaderRoute: typeof EntitiesCuiShareImageDotpngRouteImport
+      parentRoute: typeof EntitiesCuiRoute
+    }
     '/classifications/functional/$code': {
       id: '/classifications/functional/$code'
       path: '/classifications/functional/$code'
@@ -774,6 +794,18 @@ const ChartsChartIdRouteRouteChildren: ChartsChartIdRouteRouteChildren = {
 const ChartsChartIdRouteRouteWithChildren =
   ChartsChartIdRouteRoute._addFileChildren(ChartsChartIdRouteRouteChildren)
 
+interface EntitiesCuiRouteChildren {
+  EntitiesCuiShareImageDotpngRoute: typeof EntitiesCuiShareImageDotpngRoute
+}
+
+const EntitiesCuiRouteChildren: EntitiesCuiRouteChildren = {
+  EntitiesCuiShareImageDotpngRoute: EntitiesCuiShareImageDotpngRoute,
+}
+
+const EntitiesCuiRouteWithChildren = EntitiesCuiRoute._addFileChildren(
+  EntitiesCuiRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BudgetExplorerRoute: BudgetExplorerRoute,
@@ -790,7 +822,7 @@ const rootRouteChildren: RootRouteChildren = {
   AlertsNewRoute: AlertsNewRoute,
   CertificatesIdRoute: CertificatesIdRoute,
   ChartsNewRoute: ChartsNewRoute,
-  EntitiesCuiRoute: EntitiesCuiRoute,
+  EntitiesCuiRoute: EntitiesCuiRouteWithChildren,
   SettingsNotificationsRoute: SettingsNotificationsRoute,
   SettingsProfileRoute: SettingsProfileRoute,
   ShareCodeRoute: ShareCodeRoute,

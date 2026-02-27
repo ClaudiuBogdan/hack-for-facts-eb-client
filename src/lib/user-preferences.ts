@@ -1,4 +1,5 @@
 import type { Currency } from '@/schemas/charts';
+import { createIsomorphicFn } from '@tanstack/react-start';
 
 export const USER_CURRENCY_STORAGE_KEY = 'user-currency';
 export const USER_INFLATION_ADJUSTED_STORAGE_KEY = 'user-inflation-adjusted';
@@ -37,6 +38,13 @@ function normalizeBoolean(value: unknown): boolean | null {
   return null;
 }
 
+const readRequestCookie = createIsomorphicFn()
+  .client(async (_name: string): Promise<string | null> => null)
+  .server(async (name: string): Promise<string | null> => {
+    const { getCookie } = await import('@tanstack/react-start/server');
+    return getCookie(name) ?? null;
+  });
+
 export function readClientCurrencyPreference(): Currency | null {
   if (typeof window === 'undefined') return null;
   const localValue = normalizeCurrency(
@@ -56,17 +64,19 @@ export function readClientInflationAdjustedPreference(): boolean | null {
 }
 
 export async function readUserCurrencyPreference(): Promise<Currency> {
-  if (import.meta.env.SSR) {
-    const { getCookie } = await import('@tanstack/react-start/server');
-    return normalizeCurrency(getCookie(USER_CURRENCY_STORAGE_KEY)) ?? DEFAULT_CURRENCY;
+  const requestCookieValue = await readRequestCookie(USER_CURRENCY_STORAGE_KEY);
+  if (requestCookieValue !== null) {
+    return normalizeCurrency(requestCookieValue) ?? DEFAULT_CURRENCY;
   }
   return readClientCurrencyPreference() ?? DEFAULT_CURRENCY;
 }
 
 export async function readUserInflationAdjustedPreference(): Promise<boolean> {
-  if (import.meta.env.SSR) {
-    const { getCookie } = await import('@tanstack/react-start/server');
-    return normalizeBoolean(getCookie(USER_INFLATION_ADJUSTED_STORAGE_KEY)) ?? DEFAULT_INFLATION_ADJUSTED;
+  const requestCookieValue = await readRequestCookie(
+    USER_INFLATION_ADJUSTED_STORAGE_KEY
+  );
+  if (requestCookieValue !== null) {
+    return normalizeBoolean(requestCookieValue) ?? DEFAULT_INFLATION_ADJUSTED;
   }
   const clientValue = readClientInflationAdjustedPreference();
   return clientValue ?? DEFAULT_INFLATION_ADJUSTED;
@@ -86,4 +96,3 @@ export function setPreferenceCookie(name: string, value: string): void {
   }
   document.cookie = cookieParts.join('; ');
 }
-
