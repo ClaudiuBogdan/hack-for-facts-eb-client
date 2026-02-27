@@ -1200,12 +1200,37 @@ export async function handleEntityShareImageRequest(params: {
       error,
     })
 
-    return new Response('Unable to generate share image', {
-      status: 503,
-      headers: {
-        'content-type': 'text/plain; charset=utf-8',
-        'cache-control': 'no-store',
-      },
+    const fallbackSnapshot: EntitySeoSnapshot = {
+      cui,
+      filterContext: context,
+    }
+    const fallbackViewModel = buildEntityShareImageViewModel({
+      snapshot: fallbackSnapshot,
+      locale,
+      siteUrl,
     })
+
+    try {
+      const fallbackPng = await renderShareCardPng(fallbackViewModel)
+      return new Response(new Uint8Array(fallbackPng), {
+        status: 200,
+        headers: buildShareImageResponseHeaders({
+          cacheable: false,
+        }),
+      })
+    } catch (fallbackError) {
+      console.error('[entity-share-image] Failed to render fallback share image', {
+        cui,
+        fallbackError,
+      })
+
+      return new Response('Unable to generate share image', {
+        status: 503,
+        headers: {
+          'content-type': 'text/plain; charset=utf-8',
+          'cache-control': 'no-store',
+        },
+      })
+    }
   }
 }
