@@ -1,7 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 
+const shareImageHandlerModulePromise = import('@/server/handlers/entity-share-image')
+
 async function handleShareImageRequest(request: Request, cui?: string) {
-  const { handleEntityShareImageRequest } = await import('@/server/handlers/entity-share-image')
+  const { handleEntityShareImageRequest } = await shareImageHandlerModulePromise
   return handleEntityShareImageRequest({
     request,
     cui,

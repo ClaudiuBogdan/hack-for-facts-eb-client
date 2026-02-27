@@ -2,21 +2,28 @@ import { readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads'
 import { createElement } from 'react'
 import satori from 'satori'
 import entityCategoriesEn from '@/assets/entity-categories-en.json'
 import entityCategoriesRo from '@/assets/entity-categories-ro.json'
 import { getSiteUrl } from '@/config/env'
-import type { EntityDetailsData } from '@/lib/api/entities'
-import { getEntityDetails } from '@/lib/api/entities'
+import type { EntityShareSnapshotData } from '@/lib/api/entities'
+import { getEntityShareSnapshot } from '@/lib/api/entities'
 import { DEFAULT_CURRENCY, DEFAULT_INFLATION_ADJUSTED, parseBooleanParam, parseCurrencyParam, resolveNormalizationSettings, type NormalizationInput } from '@/lib/globalSettings/params'
 import { defaultYearRange, DEFAULT_SELECTED_YEAR, type Currency, type Normalization } from '@/schemas/charts'
-import { getInitialFilterState, GqlReportTypeEnum, makeTrendPeriod, toExecutionReportType, type GqlReportType } from '@/schemas/reporting'
+import { getInitialFilterState, GqlReportTypeEnum, toExecutionReportType, type GqlReportType } from '@/schemas/reporting'
 import { normalizeLocale } from '@/lib/i18n'
 import type { EntitySeoSnapshot, EntityShareFilterContext, ShareLocale } from '@/features/entities/seo/entity-share-seo'
 
 const IMAGE_WIDTH = 1200
 const IMAGE_HEIGHT = 630
+const SHARE_GENERATE_WORKER_KIND = 'entity-share-generate'
+const SHARE_RENDER_TIMEOUT_MS = 30000
+const SHARE_RENDER_QUEUE_CONCURRENCY = 1
+const SHARE_RENDER_QUEUE_MAX_ITEMS = 64
+const SHARE_IMAGE_MEMORY_CACHE_MAX_ENTRIES = 256
+const SHARE_IMAGE_RETRY_COOLDOWN_MS = 60000
 const SHARE_IMAGE_CACHE_SECONDS = 86400
 const SHARE_IMAGE_STALE_WHILE_REVALIDATE_SECONDS = 86400
 const SHARE_IMAGE_CACHE_CONTROL = `public, max-age=${SHARE_IMAGE_CACHE_SECONDS}, s-maxage=${SHARE_IMAGE_CACHE_SECONDS}, stale-while-revalidate=${SHARE_IMAGE_STALE_WHILE_REVALIDATE_SECONDS}`
@@ -64,14 +71,75 @@ type ResvgConstructor = new (
 }
 
 type ShareImageFetchResult = {
-  readonly entity: EntityDetailsData | null
+  readonly entity: EntityShareSnapshotData | null
   readonly dataFetchFailed: boolean
+}
+
+type ShareRenderWorkerData = {
+  readonly kind: typeof SHARE_GENERATE_WORKER_KIND
+  readonly cui: string
+  readonly context: EntityShareFilterContext
+  readonly locale: ShareLocale
+  readonly siteUrl: string
+}
+
+type ShareImageCacheEntry = {
+  readonly png: Uint8Array
+  readonly expiresAt: number
+}
+
+type ShareRenderQueueTask = {
+  readonly cacheKey: string
+  readonly cui: string
+  readonly context: EntityShareFilterContext
+  readonly locale: ShareLocale
+  readonly siteUrl: string
+  readonly resolve: (png: Uint8Array) => void
+  readonly reject: (error: Error) => void
 }
 
 let shareFontsPromise: Promise<LoadedShareFonts> | null = null
 let cachedResvgConstructor: ResvgConstructor | null = null
+let activeRenderQueueCount = 0
+const shareImageMemoryCache = new Map<string, ShareImageCacheEntry>()
+const shareRenderTaskPromises = new Map<string, Promise<Uint8Array>>()
+const shareRenderQueue: ShareRenderQueueTask[] = []
+const shareRenderCooldownUntil = new Map<string, number>()
 const moduleDirectoryPath = path.dirname(fileURLToPath(import.meta.url))
 const nodeRequire = createRequire(import.meta.url)
+
+async function bootstrapShareRenderWorkerThread(): Promise<void> {
+  if (isMainThread || !parentPort) return
+
+  const data = workerData as ShareRenderWorkerData | undefined
+  if (!data) return
+
+  try {
+    if (data.kind !== SHARE_GENERATE_WORKER_KIND) {
+      throw new Error('Unknown share image worker task kind')
+    }
+
+    const { entity, dataFetchFailed } = await fetchEntityForShareSnapshot(data.cui, data.context)
+    if (dataFetchFailed) {
+      throw new Error('Share image data fetch failed')
+    }
+
+    const snapshot = buildEntitySeoSnapshot(data.cui, data.context, entity)
+    const viewModel = buildEntityShareImageViewModel({
+      snapshot,
+      locale: data.locale,
+      siteUrl: data.siteUrl,
+    })
+    const pngBuffer = await renderShareCardPng(viewModel)
+    parentPort.postMessage(new Uint8Array(pngBuffer))
+  } catch (error) {
+    parentPort.postMessage({
+      error: error instanceof Error ? error.message : String(error),
+    })
+  }
+}
+
+void bootstrapShareRenderWorkerThread()
 
 function buildPublicAssetCandidates(relativePath: string): string[] {
   const candidatePaths = new Set<string>()
@@ -200,7 +268,7 @@ function parseEntityShareFilterContext(query: EntityShareQuery): EntityShareFilt
   }
 }
 
-async function loadFontFromCandidates(candidatePaths: readonly string[]): Promise<Buffer> {
+async function loadFileFromCandidates(candidatePaths: readonly string[]): Promise<Buffer> {
   for (const candidatePath of candidatePaths) {
     try {
       return await readFile(candidatePath)
@@ -213,18 +281,18 @@ async function loadFontFromCandidates(candidatePaths: readonly string[]): Promis
 }
 
 async function loadShareFonts(): Promise<LoadedShareFonts> {
-  const regular = await loadFontFromCandidates([
+  const regular = await loadFileFromCandidates([
     ...buildPublicAssetCandidates('fonts/Inter/static/Inter_18pt-Regular.ttf'),
     ...buildPublicAssetCandidates('fonts/NotoSans/NotoSans-VariableFont_wdth,wght.ttf'),
   ])
 
-  const bold = await loadFontFromCandidates([
+  const bold = await loadFileFromCandidates([
     ...buildPublicAssetCandidates('fonts/Inter/static/Inter_18pt-Bold.ttf'),
     ...buildPublicAssetCandidates('fonts/Inter/static/Inter_18pt-SemiBold.ttf'),
     ...buildPublicAssetCandidates('fonts/Inter/static/Inter_18pt-Regular.ttf'),
   ])
 
-  const extraBold = await loadFontFromCandidates([
+  const extraBold = await loadFileFromCandidates([
     ...buildPublicAssetCandidates('fonts/Inter/static/Inter_18pt-ExtraBold.ttf'),
     ...buildPublicAssetCandidates('fonts/Inter/static/Inter_18pt-Bold.ttf'),
     ...buildPublicAssetCandidates('fonts/Inter/static/Inter_18pt-Regular.ttf'),
@@ -236,6 +304,148 @@ async function loadShareFonts(): Promise<LoadedShareFonts> {
 async function getShareFonts(): Promise<LoadedShareFonts> {
   shareFontsPromise ??= loadShareFonts()
   return shareFontsPromise
+}
+
+function buildShareImageCacheKey(params: {
+  readonly cui: string
+  readonly context: EntityShareFilterContext
+  readonly locale: ShareLocale
+  readonly siteUrl: string
+}): string {
+  const { cui, context, locale, siteUrl } = params
+
+  return [
+    cui,
+    locale,
+    siteUrl,
+    String(context.year),
+    context.period,
+    context.month ?? '',
+    context.quarter ?? '',
+    context.reportType ?? '',
+    context.mainCreditorCui ?? '',
+    context.normalization,
+    context.currency,
+    String(context.inflationAdjusted),
+    String(context.showPeriodGrowth),
+  ].join('|')
+}
+
+function getCachedShareImage(cacheKey: string): Uint8Array | null {
+  const cachedImage = shareImageMemoryCache.get(cacheKey)
+  if (!cachedImage) return null
+
+  if (cachedImage.expiresAt <= Date.now()) {
+    shareImageMemoryCache.delete(cacheKey)
+    return null
+  }
+
+  return cachedImage.png
+}
+
+function storeCachedShareImage(cacheKey: string, pngBuffer: Buffer): void {
+  shareImageMemoryCache.delete(cacheKey)
+
+  shareImageMemoryCache.set(cacheKey, {
+    png: new Uint8Array(pngBuffer),
+    expiresAt: Date.now() + SHARE_IMAGE_CACHE_SECONDS * 1000,
+  })
+
+  while (shareImageMemoryCache.size > SHARE_IMAGE_MEMORY_CACHE_MAX_ENTRIES) {
+    const oldestKey = shareImageMemoryCache.keys().next().value as string | undefined
+    if (!oldestKey) break
+    shareImageMemoryCache.delete(oldestKey)
+  }
+}
+
+async function processShareRenderTask(task: ShareRenderQueueTask): Promise<void> {
+  try {
+    const pngBuffer = await generateShareCardPngOffThread({
+      cui: task.cui,
+      context: task.context,
+      locale: task.locale,
+      siteUrl: task.siteUrl,
+    })
+    storeCachedShareImage(task.cacheKey, pngBuffer)
+    shareRenderCooldownUntil.delete(task.cacheKey)
+    task.resolve(new Uint8Array(pngBuffer))
+  } catch (error) {
+    shareRenderCooldownUntil.set(task.cacheKey, Date.now() + SHARE_IMAGE_RETRY_COOLDOWN_MS)
+    const normalizedError = error instanceof Error
+      ? error
+      : new Error(String(error))
+    task.reject(normalizedError)
+    console.error('[entity-share-image] Background share image render failed', {
+      cui: task.cui,
+      error,
+    })
+  }
+}
+
+function pumpShareRenderQueue(): void {
+  while (activeRenderQueueCount < SHARE_RENDER_QUEUE_CONCURRENCY && shareRenderQueue.length > 0) {
+    const nextTask = shareRenderQueue.shift()
+    if (!nextTask) return
+
+    activeRenderQueueCount += 1
+
+    void processShareRenderTask(nextTask)
+      .finally(() => {
+        activeRenderQueueCount = Math.max(0, activeRenderQueueCount - 1)
+        pumpShareRenderQueue()
+      })
+  }
+}
+
+function enqueueShareRenderTask(task: Omit<ShareRenderQueueTask, 'resolve' | 'reject'>): Promise<Uint8Array> {
+  const cachedImage = getCachedShareImage(task.cacheKey)
+  if (cachedImage) {
+    return Promise.resolve(cachedImage)
+  }
+
+  const existingTaskPromise = shareRenderTaskPromises.get(task.cacheKey)
+  if (existingTaskPromise) {
+    return existingTaskPromise
+  }
+
+  const cooldownUntil = shareRenderCooldownUntil.get(task.cacheKey)
+  if (typeof cooldownUntil === 'number' && cooldownUntil > Date.now()) {
+    return Promise.reject(new Error('Share image generation is in cooldown'))
+  }
+
+  let resolveTask!: (png: Uint8Array) => void
+  let rejectTask!: (error: Error) => void
+
+  const taskPromise = new Promise<Uint8Array>((resolve, reject) => {
+    resolveTask = resolve
+    rejectTask = reject as (error: Error) => void
+  })
+
+  const trackedTaskPromise = taskPromise.finally(() => {
+    shareRenderTaskPromises.delete(task.cacheKey)
+  })
+
+  shareRenderTaskPromises.set(task.cacheKey, trackedTaskPromise)
+
+  if (shareRenderQueue.length >= SHARE_RENDER_QUEUE_MAX_ITEMS) {
+    const queueError = new Error('Share image queue is full')
+    shareRenderTaskPromises.delete(task.cacheKey)
+    rejectTask(queueError)
+    console.error('[entity-share-image] Share image queue is full, dropping task', {
+      queueSize: shareRenderQueue.length,
+      cui: task.cui,
+    })
+    return trackedTaskPromise
+  }
+
+  shareRenderQueue.push({
+    ...task,
+    resolve: resolveTask,
+    reject: rejectTask,
+  })
+  pumpShareRenderQueue()
+
+  return trackedTaskPromise
 }
 
 function getEntityTypeLabel(entityType: string | null | undefined, locale: ShareLocale): string | undefined {
@@ -747,10 +957,96 @@ async function renderShareCardPng(viewModel: EntityShareImageViewModel): Promise
   return Buffer.from(renderedPng.asPng())
 }
 
+async function runShareRenderWorker(workerDataInput: ShareRenderWorkerData): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    let settled = false
+
+    const worker = new Worker(new URL(import.meta.url), {
+      workerData: workerDataInput,
+    })
+
+    const timeoutHandle = setTimeout(() => {
+      if (settled) return
+      settled = true
+      void worker.terminate()
+      reject(new Error(`Share image render timed out after ${SHARE_RENDER_TIMEOUT_MS}ms`))
+    }, SHARE_RENDER_TIMEOUT_MS)
+
+    const finish = (handler: () => void) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timeoutHandle)
+      handler()
+    }
+
+    worker.once('message', (payload: unknown) => {
+      finish(() => {
+        if (
+          payload &&
+          typeof payload === 'object' &&
+          'error' in payload &&
+          typeof (payload as { error?: unknown }).error === 'string'
+        ) {
+          reject(new Error((payload as { error: string }).error))
+          return
+        }
+        if (payload instanceof Uint8Array) {
+          resolve(Buffer.from(payload))
+          return
+        }
+        reject(new Error('Share render worker returned an unexpected payload'))
+      })
+    })
+
+    worker.once('error', (error) => {
+      finish(() => {
+        reject(error)
+      })
+    })
+
+    worker.once('exit', (code) => {
+      if (code === 0) return
+      finish(() => {
+        reject(new Error(`Share render worker exited with code ${code}`))
+      })
+    })
+  })
+}
+
+async function generateShareCardPngOffThread(params: {
+  readonly cui: string
+  readonly context: EntityShareFilterContext
+  readonly locale: ShareLocale
+  readonly siteUrl: string
+}): Promise<Buffer> {
+  if (!isMainThread) {
+    const { entity, dataFetchFailed } = await fetchEntityForShareSnapshot(params.cui, params.context)
+    if (dataFetchFailed) {
+      throw new Error('Share image data fetch failed')
+    }
+
+    const snapshot = buildEntitySeoSnapshot(params.cui, params.context, entity)
+    const viewModel = buildEntityShareImageViewModel({
+      snapshot,
+      locale: params.locale,
+      siteUrl: params.siteUrl,
+    })
+    return renderShareCardPng(viewModel)
+  }
+
+  return runShareRenderWorker({
+    kind: SHARE_GENERATE_WORKER_KIND,
+    cui: params.cui,
+    context: params.context,
+    locale: params.locale,
+    siteUrl: params.siteUrl,
+  })
+}
+
 function buildEntitySeoSnapshot(
   cui: string,
   context: EntityShareFilterContext,
-  entity: EntityDetailsData | null,
+  entity: EntityShareSnapshotData | null,
 ): EntitySeoSnapshot {
   if (!entity) {
     return {
@@ -795,15 +1091,13 @@ async function fetchEntityForShareSnapshot(
   context: EntityShareFilterContext,
 ): Promise<ShareImageFetchResult> {
   const reportPeriod = getInitialFilterState(context.period, context.year, context.month ?? '01', context.quarter ?? 'Q1')
-  const trendPeriod = makeTrendPeriod(context.period, context.year, defaultYearRange.start, defaultYearRange.end)
 
   try {
     return {
-      entity: await getEntityDetails({
+      entity: await getEntityShareSnapshot({
         cui,
         reportPeriod,
         reportType: toExecutionReportType(context.reportType as GqlReportType | undefined),
-        trendPeriod,
         mainCreditorCui: context.mainCreditorCui,
         normalization: context.normalization,
         currency: context.currency,
@@ -868,62 +1162,50 @@ export async function handleEntityShareImageRequest(params: {
   }
 
   const siteUrl = requestUrl.origin || getSiteUrl()
+  const cacheKey = buildShareImageCacheKey({
+    cui,
+    context,
+    locale,
+    siteUrl,
+  })
+
+  const cachedImage = getCachedShareImage(cacheKey)
+  if (cachedImage) {
+    return new Response(Buffer.from(cachedImage), {
+      status: 200,
+      headers: buildShareImageResponseHeaders({
+        cacheable: true,
+      }),
+    })
+  }
 
   try {
-    const { entity, dataFetchFailed } = await fetchEntityForShareSnapshot(cui, context)
-    const snapshot = buildEntitySeoSnapshot(cui, context, entity)
-    const viewModel = buildEntityShareImageViewModel({
-      snapshot,
+    const generatedPng = await enqueueShareRenderTask({
+      cacheKey,
+      cui,
+      context,
       locale,
       siteUrl,
     })
 
-    const pngBuffer = await renderShareCardPng(viewModel)
-
-    return new Response(new Uint8Array(pngBuffer), {
+    return new Response(Buffer.from(generatedPng), {
       status: 200,
       headers: buildShareImageResponseHeaders({
-        cacheable: !dataFetchFailed,
+        cacheable: true,
       }),
     })
   } catch (error) {
-    console.error('[entity-share-image] Failed to render share image', {
+    console.error('[entity-share-image] Failed to generate share image', {
       cui,
       error,
     })
 
-    const fallbackSnapshot: EntitySeoSnapshot = {
-      cui,
-      filterContext: context,
-    }
-
-    const fallbackViewModel = buildEntityShareImageViewModel({
-      snapshot: fallbackSnapshot,
-      locale,
-      siteUrl,
+    return new Response('Unable to generate share image', {
+      status: 503,
+      headers: {
+        'content-type': 'text/plain; charset=utf-8',
+        'cache-control': 'no-store',
+      },
     })
-
-    try {
-      const fallbackPng = await renderShareCardPng(fallbackViewModel)
-      return new Response(new Uint8Array(fallbackPng), {
-        status: 200,
-        headers: buildShareImageResponseHeaders({
-          cacheable: false,
-        }),
-      })
-    } catch (fallbackError) {
-      console.error('[entity-share-image] Failed to render fallback share image', {
-        cui,
-        fallbackError,
-      })
-
-      return new Response('Unable to generate share image', {
-        status: 503,
-        headers: {
-          'content-type': 'text/plain; charset=utf-8',
-          'cache-control': 'no-store',
-        },
-      })
-    }
   }
 }

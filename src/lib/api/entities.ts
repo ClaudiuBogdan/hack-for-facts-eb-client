@@ -88,6 +88,18 @@ export interface EntityDetailsData {
   } | null;
 }
 
+export type EntityShareSnapshotData = Pick<
+  EntityDetailsData,
+  | "cui"
+  | "name"
+  | "default_report_type"
+  | "entity_type"
+  | "uat"
+  | "totalIncome"
+  | "totalExpenses"
+  | "budgetBalance"
+>;
+
 // --- Reports types (connection for pagination) ---
 export interface ReportNode {
   report_id: string;
@@ -169,6 +181,35 @@ const GET_ENTITY_DETAILS_QUERY = `
   }
 `;
 
+const GET_ENTITY_SHARE_SNAPSHOT_QUERY = `
+  query GetEntityShareSnapshot(
+    $cui: ID!
+    $normalization: Normalization
+    $currency: Currency
+    $inflation_adjusted: Boolean
+    $reportPeriod: ReportPeriodInput!
+    $reportType: ReportType
+    $mainCreditorCui: String
+  ) {
+    entity(cui: $cui) {
+      cui
+      name
+      default_report_type
+      entity_type
+      uat {
+        county_name
+        county_code
+        name
+        siruta_code
+        population
+      }
+      totalIncome(period: $reportPeriod, reportType: $reportType, normalization: $normalization, currency: $currency, inflation_adjusted: $inflation_adjusted, main_creditor_cui: $mainCreditorCui)
+      totalExpenses(period: $reportPeriod, reportType: $reportType, normalization: $normalization, currency: $currency, inflation_adjusted: $inflation_adjusted, main_creditor_cui: $mainCreditorCui)
+      budgetBalance(period: $reportPeriod, reportType: $reportType, normalization: $normalization, currency: $currency, inflation_adjusted: $inflation_adjusted, main_creditor_cui: $mainCreditorCui)
+    }
+  }
+`;
+
 export async function getEntityDetails(params: {
   cui: string
   reportPeriod: ReportPeriodInput
@@ -223,6 +264,50 @@ export async function getEntityDetails(params: {
       cui,
     });
     throw error;
+  }
+}
+
+export async function getEntityShareSnapshot(params: {
+  cui: string
+  reportPeriod: ReportPeriodInput
+  reportType?: GqlReportType
+  mainCreditorCui?: string
+} & NormalizationOptions): Promise<EntityShareSnapshotData | null> {
+  const {
+    cui,
+    reportPeriod,
+    reportType,
+    mainCreditorCui,
+    normalization = 'total',
+    currency = 'RON',
+    inflation_adjusted = false,
+  } = params
+
+  logger.info(`Fetching entity share snapshot for CUI: ${cui}`)
+
+  try {
+    const response = await graphqlRequest<{
+      entity: EntityShareSnapshotData | null
+    }>(
+      GET_ENTITY_SHARE_SNAPSHOT_QUERY,
+      { cui, normalization, currency, inflation_adjusted, reportPeriod, reportType, mainCreditorCui }
+    )
+
+    if (!response || !response.entity) {
+      logger.warn("Received null or undefined response for entity share snapshot", {
+        response,
+        cui,
+      })
+      return null
+    }
+
+    return response.entity
+  } catch (error) {
+    logger.error(`Error fetching entity share snapshot for CUI: ${cui}`, {
+      error,
+      cui,
+    })
+    throw error
   }
 }
 

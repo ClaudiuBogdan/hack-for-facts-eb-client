@@ -11,6 +11,17 @@ spec:
   http:
     - match:
         - uri:
+            regex: "^/entities/[^/]+/share-image\\.png$"
+      route:
+        - destination:
+            host: hack-for-facts-eb-client
+            port:
+              number: 80
+      retries:
+        attempts: 0
+      timeout: 30s
+    - match:
+        - uri:
             prefix: /
       route:
         - destination:
