@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { createElement } from 'react'
 import satori from 'satori'
 import entityCategoriesEn from '@/assets/entity-categories-en.json'
@@ -55,35 +56,57 @@ type LoadedShareFonts = {
   readonly extraBold: Buffer
 }
 
+type ResvgConstructor = new (
+  svg: string,
+  options?: { fitTo?: { mode: 'width'; value: number } }
+) => {
+  render(): { asPng(): Uint8Array }
+}
+
 type ShareImageFetchResult = {
   readonly entity: EntityDetailsData | null
   readonly dataFetchFailed: boolean
 }
 
 let shareFontsPromise: Promise<LoadedShareFonts> | null = null
-let cachedResvgConstructor: {
-  new (svg: string, options?: { fitTo?: { mode: 'width'; value: number } }): {
-    render(): { asPng(): Uint8Array }
-  }
-} | null = null
+let cachedResvgConstructor: ResvgConstructor | null = null
+const moduleDirectoryPath = path.dirname(fileURLToPath(import.meta.url))
 const nodeRequire = createRequire(import.meta.url)
 
-function getResvgConstructor() {
-  if (cachedResvgConstructor) return cachedResvgConstructor
+function buildPublicAssetCandidates(relativePath: string): string[] {
+  const candidatePaths = new Set<string>()
 
-  const loadedModule = nodeRequire('@resvg/resvg-js') as {
-    Resvg?: typeof cachedResvgConstructor
+  for (const basePath of [process.cwd(), moduleDirectoryPath]) {
+    candidatePaths.add(path.resolve(basePath, 'public', relativePath))
+    candidatePaths.add(path.resolve(basePath, '.output', 'public', relativePath))
+    candidatePaths.add(path.resolve(basePath, '..', 'public', relativePath))
+    candidatePaths.add(path.resolve(basePath, '..', '.output', 'public', relativePath))
+    candidatePaths.add(path.resolve(basePath, '..', '..', 'public', relativePath))
+    candidatePaths.add(path.resolve(basePath, '..', '..', '.output', 'public', relativePath))
+    candidatePaths.add(path.resolve(basePath, '..', '..', '..', 'public', relativePath))
+    candidatePaths.add(path.resolve(basePath, '..', '..', '..', '.output', 'public', relativePath))
   }
 
-  if (!loadedModule.Resvg) {
-    throw new Error('Unable to load @resvg/resvg-js Resvg constructor')
-  }
-
-  cachedResvgConstructor = loadedModule.Resvg
-  return cachedResvgConstructor
+  return [...candidatePaths]
 }
 
 type EntityShareQuery = URLSearchParams
+
+function getResvgConstructor(): ResvgConstructor {
+  if (cachedResvgConstructor) return cachedResvgConstructor
+
+  const loadedModule = nodeRequire('@resvg/resvg-js') as {
+    Resvg?: ResvgConstructor
+  }
+  const loadedResvgConstructor = loadedModule.Resvg
+
+  if (!loadedResvgConstructor) {
+    throw new Error('Unable to load @resvg/resvg-js Resvg constructor')
+  }
+
+  cachedResvgConstructor = loadedResvgConstructor
+  return cachedResvgConstructor
+}
 
 function readQueryString(query: EntityShareQuery, key: string): string | undefined {
   const value = query.get(key)
@@ -191,28 +214,20 @@ async function loadFontFromCandidates(candidatePaths: readonly string[]): Promis
 
 async function loadShareFonts(): Promise<LoadedShareFonts> {
   const regular = await loadFontFromCandidates([
-    path.resolve(process.cwd(), 'public/fonts/Inter/static/Inter_18pt-Regular.ttf'),
-    path.resolve(process.cwd(), '.output/public/fonts/Inter/static/Inter_18pt-Regular.ttf'),
-    path.resolve(process.cwd(), 'public/fonts/NotoSans/NotoSans-VariableFont_wdth,wght.ttf'),
-    path.resolve(process.cwd(), '.output/public/fonts/NotoSans/NotoSans-VariableFont_wdth,wght.ttf'),
+    ...buildPublicAssetCandidates('fonts/Inter/static/Inter_18pt-Regular.ttf'),
+    ...buildPublicAssetCandidates('fonts/NotoSans/NotoSans-VariableFont_wdth,wght.ttf'),
   ])
 
   const bold = await loadFontFromCandidates([
-    path.resolve(process.cwd(), 'public/fonts/Inter/static/Inter_18pt-Bold.ttf'),
-    path.resolve(process.cwd(), '.output/public/fonts/Inter/static/Inter_18pt-Bold.ttf'),
-    path.resolve(process.cwd(), 'public/fonts/Inter/static/Inter_18pt-SemiBold.ttf'),
-    path.resolve(process.cwd(), '.output/public/fonts/Inter/static/Inter_18pt-SemiBold.ttf'),
-    path.resolve(process.cwd(), 'public/fonts/Inter/static/Inter_18pt-Regular.ttf'),
-    path.resolve(process.cwd(), '.output/public/fonts/Inter/static/Inter_18pt-Regular.ttf'),
+    ...buildPublicAssetCandidates('fonts/Inter/static/Inter_18pt-Bold.ttf'),
+    ...buildPublicAssetCandidates('fonts/Inter/static/Inter_18pt-SemiBold.ttf'),
+    ...buildPublicAssetCandidates('fonts/Inter/static/Inter_18pt-Regular.ttf'),
   ])
 
   const extraBold = await loadFontFromCandidates([
-    path.resolve(process.cwd(), 'public/fonts/Inter/static/Inter_18pt-ExtraBold.ttf'),
-    path.resolve(process.cwd(), '.output/public/fonts/Inter/static/Inter_18pt-ExtraBold.ttf'),
-    path.resolve(process.cwd(), 'public/fonts/Inter/static/Inter_18pt-Bold.ttf'),
-    path.resolve(process.cwd(), '.output/public/fonts/Inter/static/Inter_18pt-Bold.ttf'),
-    path.resolve(process.cwd(), 'public/fonts/Inter/static/Inter_18pt-Regular.ttf'),
-    path.resolve(process.cwd(), '.output/public/fonts/Inter/static/Inter_18pt-Regular.ttf'),
+    ...buildPublicAssetCandidates('fonts/Inter/static/Inter_18pt-ExtraBold.ttf'),
+    ...buildPublicAssetCandidates('fonts/Inter/static/Inter_18pt-Bold.ttf'),
+    ...buildPublicAssetCandidates('fonts/Inter/static/Inter_18pt-Regular.ttf'),
   ])
 
   return { regular, bold, extraBold }
@@ -852,7 +867,7 @@ export async function handleEntityShareImageRequest(params: {
     lang: locale,
   }
 
-  const siteUrl = getSiteUrl()
+  const siteUrl = requestUrl.origin || getSiteUrl()
 
   try {
     const { entity, dataFetchFailed } = await fetchEntityForShareSnapshot(cui, context)

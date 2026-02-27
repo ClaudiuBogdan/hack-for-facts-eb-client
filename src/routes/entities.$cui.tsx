@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { createIsomorphicFn } from '@tanstack/react-start';
 import { ViewLoading } from '@/components/ui/ViewLoading';
 import { z } from 'zod';
 import { entityDetailsQueryOptions } from '@/lib/hooks/useEntityDetails';
@@ -26,6 +27,16 @@ import { buildEntityRouteHead, type EntitySeoSnapshot } from '@/features/entitie
 
 export type EntitySearchSchema = z.infer<typeof entitySearchSchema>;
 
+const readRequestOrigin = createIsomorphicFn()
+    .client(() => {
+        if (typeof window === 'undefined') return undefined;
+        return window.location.origin;
+    })
+    .server(async (): Promise<string | undefined> => {
+        const { getRequestUrl } = await import('@tanstack/react-start/server');
+        return getRequestUrl().origin;
+    });
+
 export const Route = createFileRoute('/entities/$cui')({
     headers: () => createPublicPageCacheHeaders({
         sharedMaxAgeSeconds: 300,
@@ -36,9 +47,11 @@ export const Route = createFileRoute('/entities/$cui')({
         cui: params.cui,
         snapshot: match.loaderData?.entitySeoSnapshot,
         searchLang: (match.search as EntitySearchSchema | undefined)?.lang,
+        siteUrl: match.loaderData?.requestSiteUrl,
     }),
     loader: (async ({ context, params, location }: any) => {
         const { queryClient } = context;
+        const requestSiteUrl = await readRequestOrigin();
 
         const search = entitySearchSchema.parse(location.search);
         const START_YEAR = defaultYearRange.start;
@@ -132,6 +145,7 @@ export const Route = createFileRoute('/entities/$cui')({
                 ssrSettings,
                 forcedOverrides,
                 entitySeoSnapshot: entitySeoSnapshotBase,
+                requestSiteUrl,
             };
         }
 
@@ -215,6 +229,7 @@ export const Route = createFileRoute('/entities/$cui')({
             ssrSettings,
             forcedOverrides,
             entitySeoSnapshot,
+            requestSiteUrl,
         };
     }) as any,
     pendingComponent: ViewLoading,

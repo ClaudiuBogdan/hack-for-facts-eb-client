@@ -19,11 +19,19 @@ RUN test -f .output/server/index.mjs
 FROM node:24-alpine AS run
 WORKDIR /app
 
+RUN corepack enable
+
 ENV NODE_ENV=production
 ENV NITRO_HOST=0.0.0.0
 ENV NITRO_PORT=3000
 
 RUN addgroup -S nodejs && adduser -S nodejs -G nodejs
+
+COPY package.json yarn.lock ./
+# Standard Node runtime packaging: install production dependencies in the
+# runtime image so native optional dependencies (like @resvg bindings) resolve.
+# Ignore lifecycle scripts to avoid running app-level postinstall in the runtime image.
+RUN yarn install --frozen-lockfile --production=true --ignore-scripts
 
 COPY --from=build --chown=nodejs:nodejs /app/.output ./.output
 

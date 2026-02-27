@@ -186,9 +186,10 @@ export function buildEntityRouteHead(params: {
   readonly cui: string;
   readonly snapshot?: EntitySeoSnapshot | null;
   readonly searchLang?: string;
+  readonly siteUrl?: string;
 }) {
   const locale = normalizeShareLocale(params.snapshot?.filterContext.lang ?? params.searchLang);
-  const site = getSiteUrl();
+  const site = params.siteUrl ?? getSiteUrl();
   const context = params.snapshot?.filterContext ?? getDefaultFilterContext(locale);
   const canonical = `${site}/entities/${encodeURIComponent(params.cui)}`;
   const title = buildEntityTitle(params.snapshot, locale, params.cui);
