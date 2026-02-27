@@ -1,0 +1,25 @@
+{
+  "slug": "cauta-bugetul-localitatii-tale",
+  "title": {
+    "ro": "Caută bugetul localității tale",
+    "en": "Caută bugetul localității tale"
+  },
+  "summary": {
+    "ro": "Identifică proiectul de buget local și sursa oficială unde este publicat.",
+    "en": "Identifică proiectul de buget local și sursa oficială unde este publicat."
+  },
+  "difficulty": "beginner",
+  "verificationMode": "automatic",
+  "contentDir": "cauta-bugetul-localitatii-tale",
+  "resourceRefs": [
+    "ghid-rapid-bugete-locale",
+    "tutorial-utilizare-platforma"
+  ],
+  "deadlineRule": {
+    "type": "none"
+  },
+  "lockReasonTemplate": {
+    "ro": "Provocarea este blocată deoarece termenul legal pentru această etapă a fost depășit.",
+    "en": "This challenge is locked because the legal deadline for this stage has passed."
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "slug": "invata-ce-este-buget-public-local",
+  "title": {
+    "ro": "Învață ce este un buget public local",
+    "en": "Învață ce este un buget public local"
+  },
+  "summary": {
+    "ro": "Înțelege noțiunile de bază despre venituri, cheltuieli și rolul bugetului local.",
+    "en": "Înțelege noțiunile de bază despre venituri, cheltuieli și rolul bugetului local."
+  },
+  "difficulty": "beginner",
+  "verificationMode": "automatic",
+  "contentDir": "invata-ce-este-buget-public-local",
+  "resourceRefs": [
+    "ghid-rapid-bugete-locale",
+    "tutorial-utilizare-platforma"
+  ],
+  "deadlineRule": {
+    "type": "none"
+  },
+  "lockReasonTemplate": {
+    "ro": "Provocarea este blocată deoarece termenul legal pentru această etapă a fost depășit.",
+    "en": "This challenge is locked because the legal deadline for this stage has passed."
+  }
+}

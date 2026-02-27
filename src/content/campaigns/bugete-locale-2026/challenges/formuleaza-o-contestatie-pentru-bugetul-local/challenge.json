@@ -1,0 +1,27 @@
+{
+  "slug": "formuleaza-o-contestatie-pentru-bugetul-local",
+  "title": {
+    "ro": "Formulează o contestație pentru bugetul local",
+    "en": "Formulează o contestație pentru bugetul local"
+  },
+  "summary": {
+    "ro": "Redactează argumentat o contestație bazată pe datele analizate.",
+    "en": "Redactează argumentat o contestație bazată pe datele analizate."
+  },
+  "difficulty": "advanced",
+  "verificationMode": "manual",
+  "contentDir": "formuleaza-o-contestatie-pentru-bugetul-local",
+  "resourceRefs": [
+    "ghid-rapid-bugete-locale",
+    "tutorial-utilizare-platforma"
+  ],
+  "deadlineRule": {
+    "type": "relative_to_timeline",
+    "timelineEntryId": "inchidere-consultare-publica",
+    "lockAfterDays": 0
+  },
+  "lockReasonTemplate": {
+    "ro": "Provocarea este blocată deoarece termenul legal pentru această etapă a fost depășit.",
+    "en": "This challenge is locked because the legal deadline for this stage has passed."
+  }
+}

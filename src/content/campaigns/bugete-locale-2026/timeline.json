@@ -1,0 +1,61 @@
+{
+  "anchorDate": "2026-02-06",
+  "anchorLabel": {
+    "ro": "Publicare lege buget de stat în Monitorul Oficial",
+    "en": "State budget law publication in Official Gazette"
+  },
+  "entries": [
+    {
+      "id": "publicare-buget-de-stat",
+      "title": {
+        "ro": "Legea bugetului de stat publicată",
+        "en": "State budget law published"
+      },
+      "description": {
+        "ro": "Momentul de referință pentru calculul termenelor locale.",
+        "en": "Reference point for local deadlines."
+      },
+      "dayOffset": 0,
+      "isActionable": false
+    },
+    {
+      "id": "publicare-proiect-buget-local",
+      "title": {
+        "ro": "Publicare proiect buget local",
+        "en": "Draft local budget publication"
+      },
+      "description": {
+        "ro": "Termen legal orientativ: în cel mult 15 zile de la bugetul de stat.",
+        "en": "Indicative legal deadline: within 15 days from state budget publication."
+      },
+      "dayOffset": 15,
+      "isActionable": true
+    },
+    {
+      "id": "inchidere-consultare-publica",
+      "title": {
+        "ro": "Închidere consultare publică",
+        "en": "Public consultation closes"
+      },
+      "description": {
+        "ro": "Perioada minimă de consultare publică pentru proiectul de buget.",
+        "en": "Minimum public consultation period for the draft budget."
+      },
+      "dayOffset": 30,
+      "isActionable": true
+    },
+    {
+      "id": "termen-aprobare-buget-local",
+      "title": {
+        "ro": "Termen-limită aprobare buget local",
+        "en": "Local budget approval deadline"
+      },
+      "description": {
+        "ro": "Bugetul local trebuie adoptat în maximum 45 de zile.",
+        "en": "Local budget must be adopted in up to 45 days."
+      },
+      "dayOffset": 45,
+      "isActionable": true
+    }
+  ]
+}

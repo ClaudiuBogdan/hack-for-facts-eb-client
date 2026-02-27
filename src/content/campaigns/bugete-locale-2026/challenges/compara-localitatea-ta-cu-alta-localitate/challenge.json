@@ -1,0 +1,25 @@
+{
+  "slug": "compara-localitatea-ta-cu-alta-localitate",
+  "title": {
+    "ro": "Compară localitatea ta cu altă localitate",
+    "en": "Compară localitatea ta cu altă localitate"
+  },
+  "summary": {
+    "ro": "Alege o localitate comparabilă și analizează diferențele bugetare relevante.",
+    "en": "Alege o localitate comparabilă și analizează diferențele bugetare relevante."
+  },
+  "difficulty": "advanced",
+  "verificationMode": "automatic",
+  "contentDir": "compara-localitatea-ta-cu-alta-localitate",
+  "resourceRefs": [
+    "ghid-rapid-bugete-locale",
+    "tutorial-utilizare-platforma"
+  ],
+  "deadlineRule": {
+    "type": "none"
+  },
+  "lockReasonTemplate": {
+    "ro": "Provocarea este blocată deoarece termenul legal pentru această etapă a fost depășit.",
+    "en": "This challenge is locked because the legal deadline for this stage has passed."
+  }
+}

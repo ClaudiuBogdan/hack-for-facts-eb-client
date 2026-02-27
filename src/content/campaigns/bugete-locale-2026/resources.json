@@ -1,0 +1,49 @@
+{
+  "resources": [
+    {
+      "id": "ghid-rapid-bugete-locale",
+      "title": {
+        "ro": "Ghid rapid al bugetelor locale",
+        "en": "Quick guide to local budgets"
+      },
+      "url": "https://transparenta.eu/resources/ghid-rapid-bugete-locale",
+      "kind": "guide"
+    },
+    {
+      "id": "tutorial-utilizare-platforma",
+      "title": {
+        "ro": "Tutorial utilizare transparenta.eu",
+        "en": "Transparenta.eu usage tutorial"
+      },
+      "url": "https://transparenta.eu/resources/tutorial-platforma",
+      "kind": "tutorial"
+    },
+    {
+      "id": "model-cerere-544",
+      "title": {
+        "ro": "Model cerere Legea 544/2001",
+        "en": "Template request under Law 544/2001"
+      },
+      "url": "https://transparenta.eu/resources/model-cerere-544",
+      "kind": "template"
+    },
+    {
+      "id": "model-cerere-dezbatere",
+      "title": {
+        "ro": "Model cerere dezbatere publică buget local",
+        "en": "Template request for local budget public debate"
+      },
+      "url": "https://transparenta.eu/resources/model-cerere-dezbatere",
+      "kind": "template"
+    },
+    {
+      "id": "ghid-investitii-locale",
+      "title": {
+        "ro": "Ghid despre investițiile publice locale",
+        "en": "Guide to local public investments"
+      },
+      "url": "https://transparenta.eu/resources/ghid-investitii-locale",
+      "kind": "reference"
+    }
+  ]
+}

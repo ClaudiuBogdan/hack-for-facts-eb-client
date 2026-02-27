@@ -1,0 +1,25 @@
+{
+  "slug": "evalueaza-transparenta-primariei",
+  "title": {
+    "ro": "Evaluează transparența primăriei",
+    "en": "Evaluează transparența primăriei"
+  },
+  "summary": {
+    "ro": "Aplică grila de evaluare pentru a estima scorul de transparență bugetară.",
+    "en": "Aplică grila de evaluare pentru a estima scorul de transparență bugetară."
+  },
+  "difficulty": "intermediate",
+  "verificationMode": "automatic",
+  "contentDir": "evalueaza-transparenta-primariei",
+  "resourceRefs": [
+    "ghid-rapid-bugete-locale",
+    "tutorial-utilizare-platforma"
+  ],
+  "deadlineRule": {
+    "type": "none"
+  },
+  "lockReasonTemplate": {
+    "ro": "Provocarea este blocată deoarece termenul legal pentru această etapă a fost depășit.",
+    "en": "This challenge is locked because the legal deadline for this stage has passed."
+  }
+}

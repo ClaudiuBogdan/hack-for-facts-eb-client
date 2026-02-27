@@ -1,0 +1,240 @@
+import { getSiteUrl } from '@/config/env'
+import { CAMPAIGN_BASE_PATH } from '../constants'
+import {
+  getCampaignChallengeBySlug,
+  getCampaignDefinition,
+  getCampaignText,
+} from '../hooks/use-campaign-content'
+import { buildCampaignShareImage } from './campaign-share-images'
+import { buildCampaignStructuredData } from './campaign-structured-data'
+import type {
+  CampaignLocale,
+  CampaignSeoMetadata,
+  CampaignSeoPageKind,
+} from '../types'
+
+type LocalizedText = {
+  readonly ro: string
+  readonly en: string
+}
+
+const CAMPAIGN_COPY: Record<
+  Exclude<CampaignSeoPageKind, 'challenge-detail'>,
+  { readonly title: LocalizedText; readonly description: LocalizedText }
+> = {
+  landing: {
+    title: {
+      ro: 'Bugetul Local 2026: Te ajutăm să înțelegi bugetul primăriei tale',
+      en: 'Local Budgets 2026: Explore the data shaping your city',
+    },
+    description: {
+      ro: 'Înțelege rapid unde merg banii publici locali și intră în provocarea civică Bugete Locale 2026.',
+      en: 'Quickly understand where local public money goes and join the Local Budgets 2026 civic challenge.',
+    },
+  },
+  hub: {
+    title: {
+      ro: 'Hub Bugete Locale 2026: Calendar, Resurse și Provocări',
+      en: 'Local Budgets 2026 Hub: Timeline, Resources, and Challenges',
+    },
+    description: {
+      ro: 'Accesează calendarul bugetar, resursele utile și traseul complet al provocărilor civice.',
+      en: 'Access the budget timeline, useful resources, and the full civic challenge journey.',
+    },
+  },
+  challenges: {
+    title: {
+      ro: 'Catalog Provocări: Bugete Locale 2026',
+      en: 'Challenge Catalog: Local Budgets 2026',
+    },
+    description: {
+      ro: 'Vezi toate provocările civice Bugete Locale 2026 și alege următorul pas de implicare.',
+      en: 'Browse all Local Budgets 2026 civic challenges and pick your next action.',
+    },
+  },
+  onboarding: {
+    title: {
+      ro: 'Onboarding Campanie: Bugete Locale 2026',
+      en: 'Campaign Onboarding: Local Budgets 2026',
+    },
+    description: {
+      ro: 'Finalizează onboarding-ul pentru a participa activ la provocările campaniei.',
+      en: 'Complete onboarding to actively participate in campaign challenges.',
+    },
+  },
+}
+
+function withSiteName(title: string): string {
+  return `${title} | Transparenta.eu`
+}
+
+function resolvePagePath(params: {
+  readonly pageKind: CampaignSeoPageKind
+  readonly challengeSlug?: string
+}): string {
+  if (params.pageKind === 'landing') return CAMPAIGN_BASE_PATH
+  if (params.pageKind === 'hub') return `${CAMPAIGN_BASE_PATH}/hub`
+  if (params.pageKind === 'challenges') return `${CAMPAIGN_BASE_PATH}/challenges`
+  if (params.pageKind === 'onboarding') return `${CAMPAIGN_BASE_PATH}/onboarding`
+
+  const challengeSlug = params.challengeSlug ?? ''
+  return `${CAMPAIGN_BASE_PATH}/challenges/${challengeSlug}`
+}
+
+function buildUrl(params: {
+  readonly siteUrl: string
+  readonly path: string
+  readonly locale: CampaignLocale
+}): string {
+  if (params.locale === 'en') {
+    return `${params.siteUrl}${params.path}?lang=en`
+  }
+
+  return `${params.siteUrl}${params.path}`
+}
+
+export function buildCampaignSeoMetadata(params: {
+  readonly pageKind: CampaignSeoPageKind
+  readonly locale: CampaignLocale
+  readonly challengeSlug?: string
+}): CampaignSeoMetadata {
+  const campaign = getCampaignDefinition()
+  const siteUrl = getSiteUrl()
+  const path = resolvePagePath({
+    pageKind: params.pageKind,
+    challengeSlug: params.challengeSlug,
+  })
+
+  const challenge =
+    params.pageKind === 'challenge-detail' && params.challengeSlug
+      ? getCampaignChallengeBySlug(params.challengeSlug)
+      : null
+
+  const isUnknownChallenge = params.pageKind === 'challenge-detail' && !challenge
+
+  const pageTitle = (() => {
+    if (params.pageKind === 'challenge-detail') {
+      if (!challenge) {
+        return params.locale === 'en' ? 'Challenge Not Found' : 'Provocare Inexistentă'
+      }
+
+      const rawTitle = challenge.seoTitle
+        ? getCampaignText(challenge.seoTitle, params.locale)
+        : getCampaignText(challenge.title, params.locale)
+      return rawTitle
+    }
+
+    const copy = CAMPAIGN_COPY[params.pageKind]
+    const fallback = copy.title[params.locale]
+    const campaignTitle = campaign.seo?.title
+      ? getCampaignText(campaign.seo.title, params.locale)
+      : fallback
+    return campaignTitle
+  })()
+
+  const pageDescription = (() => {
+    if (params.pageKind === 'challenge-detail') {
+      if (!challenge) {
+        return params.locale === 'en'
+          ? 'The requested challenge does not exist in this campaign.'
+          : 'Provocarea solicitată nu există în această campanie.'
+      }
+
+      return challenge.seoDescription
+        ? getCampaignText(challenge.seoDescription, params.locale)
+        : getCampaignText(challenge.summary, params.locale)
+    }
+
+    const copy = CAMPAIGN_COPY[params.pageKind]
+    const fallback = copy.description[params.locale]
+    return campaign.seo?.description
+      ? getCampaignText(campaign.seo.description, params.locale)
+      : fallback
+  })()
+
+  const canonicalUrl = buildUrl({
+    siteUrl,
+    path,
+    locale: params.locale,
+  })
+
+  const alternateUrls = {
+    ro: `${siteUrl}${path}`,
+    en: `${siteUrl}${path}?lang=en`,
+    xDefault: `${siteUrl}${path}`,
+  }
+
+  const image = buildCampaignShareImage({
+    siteUrl,
+    locale: params.locale,
+    pageKind: params.pageKind,
+    challengeTitle: challenge ? getCampaignText(challenge.title, params.locale) : undefined,
+    challengeShareImage: challenge?.shareImage,
+  })
+
+  const jsonLd = buildCampaignStructuredData({
+    siteUrl,
+    locale: params.locale,
+    canonicalUrl,
+    title: withSiteName(pageTitle),
+    description: pageDescription,
+    pageKind: params.pageKind,
+    campaign,
+    challenge,
+  })
+
+  return {
+    title: withSiteName(pageTitle),
+    description: pageDescription,
+    canonicalUrl,
+    robots:
+      params.pageKind === 'onboarding' || isUnknownChallenge
+        ? 'noindex,follow'
+        : 'index,follow',
+    alternateUrls,
+    image,
+    jsonLd,
+  }
+}
+
+export function buildCampaignRouteHead(params: {
+  readonly pageKind: CampaignSeoPageKind
+  readonly locale: CampaignLocale
+  readonly challengeSlug?: string
+}) {
+  const metadata = buildCampaignSeoMetadata(params)
+  const ogLocale = params.locale === 'en' ? 'en_US' : 'ro_RO'
+
+  return {
+    meta: [
+      { title: metadata.title },
+      { name: 'description', content: metadata.description },
+      { name: 'robots', content: metadata.robots },
+      { name: 'canonical', content: metadata.canonicalUrl },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:title', content: metadata.title },
+      { property: 'og:description', content: metadata.description },
+      { property: 'og:url', content: metadata.canonicalUrl },
+      { property: 'og:locale', content: ogLocale },
+      { property: 'og:image', content: metadata.image.url },
+      { property: 'og:image:width', content: String(metadata.image.width) },
+      { property: 'og:image:height', content: String(metadata.image.height) },
+      { property: 'og:image:alt', content: metadata.image.alt },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: metadata.title },
+      { name: 'twitter:description', content: metadata.description },
+      { name: 'twitter:image', content: metadata.image.url },
+      { name: 'twitter:image:alt', content: metadata.image.alt },
+    ],
+    links: [
+      { rel: 'canonical', href: metadata.canonicalUrl },
+      { rel: 'alternate', hrefLang: 'ro', href: metadata.alternateUrls.ro },
+      { rel: 'alternate', hrefLang: 'en', href: metadata.alternateUrls.en },
+      { rel: 'alternate', hrefLang: 'x-default', href: metadata.alternateUrls.xDefault },
+    ],
+    scripts: metadata.jsonLd.map((item) => ({
+      type: 'application/ld+json',
+      children: JSON.stringify(item),
+    })),
+  }
+}

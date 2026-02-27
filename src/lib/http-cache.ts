@@ -17,6 +17,11 @@ function buildSharedCacheControl(policy: PublicPageCachePolicy): string {
 export function createPublicPageCacheHeaders(
   policy: PublicPageCachePolicy,
 ): Record<string, string> {
+  if (import.meta.env.DEV) {
+    // Avoid stale SSR HTML during local development/HMR, which can trigger hydration mismatches.
+    return createNoStoreHeaders();
+  }
+
   // IMPORTANT: Use only for fully public SSR responses.
   // If SSR includes auth/session/personalized/sensitive data, do not use this.
   // Use `createNoStoreHeaders()` and disable Nitro route cache for that route.
