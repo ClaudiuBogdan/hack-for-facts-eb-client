@@ -22,6 +22,7 @@ import { readClientCurrencyPreference, readClientInflationAdjustedPreference } f
 import type { EntityDetailsData } from '@/lib/api/entities';
 import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES, DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES } from '@/lib/analytics-defaults';
 import { createPublicPageCacheHeaders } from '@/lib/http-cache';
+import { buildEntityRouteHead, type EntitySeoSnapshot } from '@/features/entities/seo/entity-share-seo';
 
 export type EntitySearchSchema = z.infer<typeof entitySearchSchema>;
 
@@ -31,13 +32,21 @@ export const Route = createFileRoute('/entities/$cui')({
         staleWhileRevalidateSeconds: 86400,
     }),
     validateSearch: entitySearchSchema,
-    loader: async ({ context, params, location }) => {
+    head: ({ params, match }: any) => buildEntityRouteHead({
+        cui: params.cui,
+        snapshot: match.loaderData?.entitySeoSnapshot,
+        searchLang: (match.search as EntitySearchSchema | undefined)?.lang,
+    }),
+    loader: (async ({ context, params, location }: any) => {
         const { queryClient } = context;
 
         const search = entitySearchSchema.parse(location.search);
         const START_YEAR = defaultYearRange.start;
         const END_YEAR = defaultYearRange.end;
         const year = (search?.year as number | undefined) ?? DEFAULT_SELECTED_YEAR;
+        const period = search.period ?? 'YEAR';
+        const month = period === 'MONTH' ? (search.month ?? '01') : undefined;
+        const quarter = period === 'QUARTER' ? (search.quarter ?? 'Q1') : undefined;
 
         // 1. Parse URL params for data fetching
         // NOTE: We use URL params only (no cookies) to ensure CDN cacheability.
@@ -61,11 +70,28 @@ export const Route = createFileRoute('/entities/$cui')({
         const currency: Currency = forcedCurrency ?? urlCurrency ?? clientCurrency ?? DEFAULT_CURRENCY;
         const inflationAdjusted: boolean = forcedInflation ?? urlInflation ?? clientInflation ?? DEFAULT_INFLATION_ADJUSTED;
 
-        const reportPeriod = getInitialFilterState(search.period ?? 'YEAR', year, search.month ?? '01', search.quarter ?? 'Q1');
-        const trendPeriod = makeTrendPeriod(search.period ?? 'YEAR', year, START_YEAR, END_YEAR);
+        const reportPeriod = getInitialFilterState(period, year, month ?? '01', quarter ?? 'Q1');
+        const trendPeriod = makeTrendPeriod(period, year, START_YEAR, END_YEAR);
         const reportTypeRaw = (search?.report_type as GqlReportType | undefined);
         const reportType = toExecutionReportType(reportTypeRaw);
         const mainCreditorCui = (search?.main_creditor_cui as string | undefined);
+
+        const entitySeoSnapshotBase: EntitySeoSnapshot = {
+            cui: params.cui,
+            filterContext: {
+                year,
+                period,
+                month,
+                quarter,
+                reportType: reportTypeRaw,
+                mainCreditorCui,
+                normalization,
+                currency,
+                inflationAdjusted,
+                showPeriodGrowth,
+                lang: search.lang,
+            },
+        };
 
         // Build SSR params to return to client for placeholder derivation
         const ssrParams = {
@@ -98,11 +124,28 @@ export const Route = createFileRoute('/entities/$cui')({
         await queryClient.ensureQueryData(detailsOptions);
 
         const desiredView = (search?.view as string | undefined) ?? 'overview';
-        const entity = queryClient.getQueryData<EntityDetailsData>(detailsOptions.queryKey);
+        const entity = queryClient.getQueryData(detailsOptions.queryKey) as EntityDetailsData | undefined;
 
         if (!entity) {
-            return { ssrParams, ssrSettings, forcedOverrides };
+            return {
+                ssrParams,
+                ssrSettings,
+                forcedOverrides,
+                entitySeoSnapshot: entitySeoSnapshotBase,
+            };
         }
+
+        const entitySeoSnapshot: EntitySeoSnapshot = {
+            ...entitySeoSnapshotBase,
+            name: entity.name,
+            entityType: entity.entity_type,
+            defaultReportType: entity.default_report_type,
+            countyName: entity.uat?.county_name,
+            population: entity.uat?.population,
+            totalIncome: entity.totalIncome,
+            totalExpenses: entity.totalExpenses,
+            budgetBalance: entity.budgetBalance,
+        };
 
         if (desiredView === 'map' && entity.is_uat) {
             const mapViewType = entity.entity_type === 'admin_county_council' || entity.cui === '4267117' ? 'County' : 'UAT';
@@ -167,8 +210,13 @@ export const Route = createFileRoute('/entities/$cui')({
             }
         }
 
-        return { ssrParams, ssrSettings, forcedOverrides };
-    },
+        return {
+            ssrParams,
+            ssrSettings,
+            forcedOverrides,
+            entitySeoSnapshot,
+        };
+    }) as any,
     pendingComponent: ViewLoading,
     component: () => null,
 });

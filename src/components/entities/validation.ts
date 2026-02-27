@@ -4,6 +4,10 @@ import { GqlReportTypeEnum } from "@/schemas/reporting";
 
 
 export const entitySearchSchema = z.object({
+    lang: z
+        .enum(['ro', 'en'])
+        .optional()
+        .describe('Optional locale for share links and metadata output.'),
     view: z
         .string()
         .optional()

@@ -229,3 +229,50 @@ test.describe('Entity Details - Navigation', () => {
     expect(page.url()).toContain('view=reports')
   })
 })
+
+test.describe('Entity Details - SSR Metadata and Share Image', () => {
+  test('returns entity-specific SSR meta tags with dynamic image URL', async ({ request }) => {
+    const response = await request.get(`/entities/${TEST_ENTITY_CUI}?year=2025&period=YEAR&normalization=total&currency=RON`)
+    expect(response.ok()).toBeTruthy()
+
+    const html = await response.text()
+
+    const titleMatch = html.match(/<title>([^<]+)<\/title>/i)
+    expect(titleMatch?.[1]).toContain('Transparenta.eu')
+    expect(titleMatch?.[1]).toContain('Buget')
+
+    const descriptionMatch = html.match(/<meta\s+name="description"\s+content="([^"]+)"/i)
+    expect(descriptionMatch?.[1]).toBeTruthy()
+    expect(descriptionMatch?.[1]).toContain('MUNICIPIUL CLUJ-NAPOCA')
+
+    const ogTitleMatch = html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i)
+    expect(ogTitleMatch?.[1]).toContain('Transparenta.eu')
+
+    const ogImageMatch = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i)
+    expect(ogImageMatch?.[1]).toContain(`/entities/${TEST_ENTITY_CUI}/share-image.png?`)
+
+    const twitterImageMatch = html.match(/<meta\s+name="twitter:image"\s+content="([^"]+)"/i)
+    expect(twitterImageMatch?.[1]).toContain(`/entities/${TEST_ENTITY_CUI}/share-image.png?`)
+  })
+
+  test('serves share image endpoint as PNG', async ({ request }) => {
+    const imageResponse = await request.get(
+      `/entities/${TEST_ENTITY_CUI}/share-image.png?year=2025&period=YEAR&normalization=total&currency=RON`,
+    )
+
+    expect(imageResponse.status()).toBe(200)
+
+    const contentType = imageResponse.headers()['content-type']
+    expect(contentType).toContain('image/png')
+
+    const cacheControl = imageResponse.headers()['cache-control']
+    expect(cacheControl).toContain('max-age=86400')
+    expect(cacheControl).toContain('s-maxage=86400')
+
+    const body = await imageResponse.body()
+    expect(body.length).toBeGreaterThan(100)
+
+    const pngSignature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])
+    expect(Buffer.from(body).subarray(0, 8).equals(pngSignature)).toBe(true)
+  })
+})
