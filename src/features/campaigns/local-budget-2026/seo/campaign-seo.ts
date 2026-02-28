@@ -34,12 +34,22 @@ const CAMPAIGN_COPY: Record<
   },
   hub: {
     title: {
-      ro: 'Hub Bugete Locale 2026: Calendar, Resurse și Provocări',
-      en: 'Local Budgets 2026 Hub: Timeline, Resources, and Challenges',
+      ro: 'Pagina principală Bugete Locale 2026: Calendar, Resurse și Provocări',
+      en: 'Local Budgets 2026 Main Page: Timeline, Resources, and Challenges',
     },
     description: {
       ro: 'Accesează calendarul bugetar, resursele utile și traseul complet al provocărilor civice.',
       en: 'Access the budget timeline, useful resources, and the full civic challenge journey.',
+    },
+  },
+  'principal-selector': {
+    title: {
+      ro: 'Caută Primăria Ta: Bugete Locale 2026',
+      en: 'Find Your City Hall: Local Budgets 2026',
+    },
+    description: {
+      ro: 'Selectează primăria ta pentru a continua provocarea Bugete Locale 2026.',
+      en: 'Select your city hall to continue the Local Budgets 2026 challenge.',
     },
   },
   challenges: {
@@ -62,6 +72,16 @@ const CAMPAIGN_COPY: Record<
       en: 'Complete onboarding to actively participate in campaign challenges.',
     },
   },
+  'principal-map': {
+    title: {
+      ro: 'Alege Primăria de pe Hartă: Bugete Locale 2026',
+      en: 'Select City Hall on Map: Local Budgets 2026',
+    },
+    description: {
+      ro: 'Selectează primăria direct de pe harta UAT pentru a continua în pagina principală a campaniei.',
+      en: 'Select your city hall directly from the UAT map to continue to the campaign main page.',
+    },
+  },
 }
 
 function withSiteName(title: string): string {
@@ -73,7 +93,9 @@ function resolvePagePath(params: {
   readonly challengeSlug?: string
 }): string {
   if (params.pageKind === 'landing') return CAMPAIGN_BASE_PATH
-  if (params.pageKind === 'hub') return `${CAMPAIGN_BASE_PATH}/hub`
+  if (params.pageKind === 'hub') return `${CAMPAIGN_BASE_PATH}/principal`
+  if (params.pageKind === 'principal-selector') return `${CAMPAIGN_BASE_PATH}/cauta`
+  if (params.pageKind === 'principal-map') return `${CAMPAIGN_BASE_PATH}/cauta/harta`
   if (params.pageKind === 'challenges') return `${CAMPAIGN_BASE_PATH}/challenges`
   if (params.pageKind === 'onboarding') return `${CAMPAIGN_BASE_PATH}/onboarding`
 
@@ -188,7 +210,10 @@ export function buildCampaignSeoMetadata(params: {
     description: pageDescription,
     canonicalUrl,
     robots:
-      params.pageKind === 'onboarding' || isUnknownChallenge
+      params.pageKind === 'onboarding' ||
+      params.pageKind === 'principal-selector' ||
+      params.pageKind === 'principal-map' ||
+      isUnknownChallenge
         ? 'noindex,follow'
         : 'index,follow',
     alternateUrls,

@@ -1,6 +1,7 @@
 export interface EntitySearchNode {
   cui: string;
   name: string;
+  entity_type?: string | null;
   uat?: {
     county_name?: string | null;
     name?: string | null;

@@ -252,9 +252,37 @@ describe('entities api', () => {
 
       expect(graphqlRequest).toHaveBeenCalledWith(
         expect.stringContaining('query EntitySearch'),
-        expect.objectContaining({ search: 'test' })
+        expect.objectContaining({
+          filter: expect.objectContaining({ search: 'test' }),
+        })
       )
       expect(result).toEqual(mockResponse.entities.nodes)
+    })
+
+    it('applies UAT search filters for campaign selector', async () => {
+      const mockResponse = {
+        entities: {
+          nodes: [
+            { cui: '111', name: 'Judet Sibiu', entity_type: 'admin_county_council' },
+            { cui: '123', name: 'Primaria Sibiu', entity_type: 'admin_municipality' },
+          ]
+        }
+      }
+      vi.mocked(graphqlRequest).mockResolvedValue(mockResponse)
+
+      const result = await searchEntities('test', 8, { isUat: true, excludeCounty: true })
+
+      expect(graphqlRequest).toHaveBeenCalledWith(
+        expect.stringContaining('query EntitySearch'),
+        expect.objectContaining({
+          limit: 8,
+          filter: expect.objectContaining({
+            search: 'test',
+            is_uat: true,
+          }),
+        }),
+      )
+      expect(result).toEqual([{ cui: '123', name: 'Primaria Sibiu', entity_type: 'admin_municipality' }])
     })
 
     it('should return empty array for empty search', async () => {

@@ -64,6 +64,14 @@ export function buildCampaignShareImage(params: {
       return `${CAMPAIGN_SHARE_IMAGE_BASE_PATH}/${CAMPAIGN_SHARE_IMAGES.hub}`
     }
 
+    if (params.pageKind === 'principal-selector') {
+      return `${CAMPAIGN_SHARE_IMAGE_BASE_PATH}/${CAMPAIGN_SHARE_IMAGES.hub}`
+    }
+
+    if (params.pageKind === 'principal-map') {
+      return `${CAMPAIGN_SHARE_IMAGE_BASE_PATH}/${CAMPAIGN_SHARE_IMAGES.hub}`
+    }
+
     if (params.pageKind === 'onboarding') {
       return `${CAMPAIGN_SHARE_IMAGE_BASE_PATH}/${CAMPAIGN_SHARE_IMAGES.hub}`
     }

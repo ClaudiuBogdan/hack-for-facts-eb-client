@@ -48,7 +48,7 @@ export function CampaignOnboarding() {
       completeOnboarding({ locality: locality.trim() })
 
       const intent = consumeAuthIntent()
-      const fallbackRoute = `${CAMPAIGN_BASE_PATH}/hub`
+      const fallbackRoute = `${CAMPAIGN_BASE_PATH}/principal`
       const nextRoute = intent?.redirectTo ?? fallbackRoute
       void navigate({ to: nextRoute as '/' })
     } finally {

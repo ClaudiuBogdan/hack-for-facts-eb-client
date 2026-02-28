@@ -52,6 +52,13 @@ const EVENTS = {
   MapActiveViewChanged: "map_active_view_changed",
   MapViewTypeChanged: "map_view_type_changed",
 
+  CampaignEntitySelectorOpened: "campaign_entity_selector_opened",
+  CampaignEntityMapSelectorOpened: "campaign_entity_map_selector_opened",
+  CampaignEntitySelected: "campaign_entity_selected",
+  CampaignEntitySelectedFromSearch: "campaign_entity_selected_from_search",
+  CampaignEntitySelectedFromMap: "campaign_entity_selected_from_map",
+  CampaignEntitySelectionChanged: "campaign_entity_selection_changed",
+
   EntityAnalyticsFilterChanged: "entity_analytics_filter_changed",
   EntityAnalyticsFilterReset: "entity_analytics_filter_reset",
   EntityAnalyticsViewChanged: "entity_analytics_view_changed",

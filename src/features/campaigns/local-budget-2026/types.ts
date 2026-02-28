@@ -6,6 +6,10 @@ export type CampaignRouteSearch = {
   readonly lang?: CampaignLocale
 }
 
+export type CampaignPrincipalRouteSearch = CampaignRouteSearch & {
+  readonly entityCui?: string
+}
+
 export type CampaignTranslatedString = {
   readonly ro: string
   readonly en?: string
@@ -94,7 +98,14 @@ export type CampaignChallengeDefinition = {
   readonly lockReasonTemplate: CampaignTranslatedString
 }
 
-export type CampaignSeoPageKind = 'landing' | 'hub' | 'challenges' | 'challenge-detail' | 'onboarding'
+export type CampaignSeoPageKind =
+  | 'landing'
+  | 'hub'
+  | 'principal-selector'
+  | 'challenges'
+  | 'challenge-detail'
+  | 'onboarding'
+  | 'principal-map'
 
 export type CampaignSeoImage = {
   readonly url: string
@@ -121,6 +132,11 @@ export type CampaignChallengeProgress = {
   readonly status: CampaignChallengeStatus
   readonly updatedAt: string
   readonly attempts: number
+}
+
+export type UatCuiMapRow = {
+  readonly cui: string
+  readonly natcode: string
 }
 
 export type CampaignProgressSnapshot = {

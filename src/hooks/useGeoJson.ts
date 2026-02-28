@@ -3,6 +3,7 @@ import { GeoJsonObject } from 'geojson';
 import { convertDaysToMs } from '@/lib/utils';
 
 type MapViewType = 'UAT' | 'County'
+const isBrowser = typeof window !== 'undefined'
 
 const fetchGeoJsonData = async (path: string): Promise<GeoJsonObject> => {
     const response = await fetch(path, {
@@ -41,6 +42,7 @@ export const useGeoJsonData = (mapViewType: MapViewType) => {
         refetchOnWindowFocus: false,
         refetchOnReconnect: false,
         refetchOnMount: false,
-        enabled: !!mapViewType,
+        // Relative asset URLs (e.g. /assets/geojson/*.json) are browser-only.
+        enabled: isBrowser && !!mapViewType,
     });
 };

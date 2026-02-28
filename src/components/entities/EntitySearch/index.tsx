@@ -13,6 +13,11 @@ interface EntitySearchInputProps {
     className?: string;
     placeholder?: string;
     onSelect?: (entity: EntitySearchNode) => void;
+    selectionBehavior?: 'navigate-to-entity' | 'callback-only';
+    entitySearchFilter?: {
+        isUat?: boolean;
+        excludeCounty?: boolean;
+    };
     autoFocus?: boolean;
     /** When true, scroll the input into view (top) on focus. Useful for mobile UX. */
     scrollToTopOnFocus?: boolean;
@@ -22,6 +27,8 @@ export function EntitySearchInput({
     className,
     placeholder = t`Search entities by name or CUI...`,
     onSelect,
+    selectionBehavior = 'navigate-to-entity',
+    entitySearchFilter,
     autoFocus,
     scrollToTopOnFocus,
 }: EntitySearchInputProps) {
@@ -40,7 +47,7 @@ export function EntitySearchInput({
         handleKeyDown,
         debouncedSearchTerm,
         id: searchId,
-    } = useEntitySearch({ onSelect });
+    } = useEntitySearch({ onSelect, selectionBehavior, entitySearchFilter });
 
     const { containerRef, onBlur } = useGuardedBlur<HTMLDivElement>(closeDropdown);
     const inputRef = useRef<HTMLInputElement>(null);

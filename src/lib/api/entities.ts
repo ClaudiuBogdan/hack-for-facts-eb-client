@@ -524,11 +524,12 @@ export async function getEntityExecutionLineItems(
 }
 
 const ENTITY_SEARCH_QUERY = `
-  query EntitySearch($search: String, $limit: Int) {
-    entities(filter: { search: $search }, limit: $limit) {
+  query EntitySearch($filter: EntityFilter, $limit: Int) {
+    entities(filter: $filter, limit: $limit) {
       nodes {
         name
         cui
+        entity_type
         uat {
           county_name
           name
@@ -542,6 +543,11 @@ const ENTITY_SEARCH_QUERY = `
   }
 `;
 
+export type SearchEntitiesOptions = {
+  readonly isUat?: boolean;
+  readonly excludeCounty?: boolean;
+};
+
 /**
  * Searches for entities based on a search term.
  * @param searchTerm The term to search for.
@@ -550,17 +556,23 @@ const ENTITY_SEARCH_QUERY = `
  */
 export async function searchEntities(
   searchTerm: string,
-  limit: number = 10
+  limit: number = 10,
+  options: SearchEntitiesOptions = {},
 ): Promise<EntitySearchNode[]> { // Return nodes directly for simplicity in the component
   if (!searchTerm || searchTerm.trim() === "") {
     return Promise.resolve([]);
   }
 
-  logger.info("Searching entities", { searchTerm, limit });
+  logger.info("Searching entities", { searchTerm, limit, options });
 
   try {
-    const variables = {
+    const filter = {
       search: searchTerm,
+      ...(options.isUat ? { is_uat: true } : {}),
+    };
+
+    const variables = {
+      filter,
       limit,
     };
 
@@ -572,7 +584,13 @@ export async function searchEntities(
 
     // Check if response and response.entities and response.entities.nodes exist
     if (response && response.entities && response.entities.nodes) {
-      return response.entities.nodes;
+      if (!options.excludeCounty) {
+        return response.entities.nodes;
+      }
+
+      return response.entities.nodes.filter(
+        (entity) => entity.entity_type !== 'admin_county_council',
+      );
     }
     return []; // Return empty array if data is not in the expected shape
 

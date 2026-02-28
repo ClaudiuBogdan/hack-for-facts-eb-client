@@ -10,9 +10,20 @@ interface UseEntitySearchProps {
     debounceMs?: number;
     onSelect?: (entity: EntitySearchNode) => void;
     openNotificationModal?: boolean;
+    selectionBehavior?: 'navigate-to-entity' | 'callback-only';
+    entitySearchFilter?: {
+        isUat?: boolean;
+        excludeCounty?: boolean;
+    };
 }
 
-export function useEntitySearch({ debounceMs = 500, onSelect, openNotificationModal = false }: UseEntitySearchProps = {}) {
+export function useEntitySearch({
+    debounceMs = 500,
+    onSelect,
+    openNotificationModal = false,
+    selectionBehavior = 'navigate-to-entity',
+    entitySearchFilter,
+}: UseEntitySearchProps = {}) {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState("");
     const [isDropdownOpen, setDropdownOpen] = useState(false);
@@ -28,8 +39,8 @@ export function useEntitySearch({ debounceMs = 500, onSelect, openNotificationMo
         isLoading,
         isError,
     } = useQuery<EntitySearchNode[], Error>({
-        queryKey: ["entitySearch", debouncedSearchTerm],
-        queryFn: () => searchEntities(debouncedSearchTerm, 8),
+        queryKey: ["entitySearch", debouncedSearchTerm, entitySearchFilter?.isUat, entitySearchFilter?.excludeCounty],
+        queryFn: () => searchEntities(debouncedSearchTerm, 8, entitySearchFilter),
         enabled: !!debouncedSearchTerm && debouncedSearchTerm.trim().length > 2,
     });
 
@@ -65,8 +76,11 @@ export function useEntitySearch({ debounceMs = 500, onSelect, openNotificationMo
             Analytics.capture(Analytics.EVENTS.EntitySearchSelected, {
                 cui: selectedEntity.cui,
             });
+            const shouldNavigateToEntity =
+                selectionBehavior === 'navigate-to-entity' && !options?.skipNavigate;
+
             // Navigate programmatically unless explicitly skipped (e.g., Cmd/Ctrl+Click opens new tab)
-            if (!options?.skipNavigate) {
+            if (shouldNavigateToEntity) {
                 navigate({
                     to: "/entities/$cui",
                     params: { cui: selectedEntity.cui },
@@ -79,7 +93,7 @@ export function useEntitySearch({ debounceMs = 500, onSelect, openNotificationMo
             handleClearSearch();
             onSelect?.(selectedEntity);
         }
-    }, [results, navigate, handleClearSearch, onSelect, openNotificationModal]);
+    }, [results, selectionBehavior, navigate, handleClearSearch, onSelect, openNotificationModal]);
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         if (!isDropdownOpen || results.length === 0) return;

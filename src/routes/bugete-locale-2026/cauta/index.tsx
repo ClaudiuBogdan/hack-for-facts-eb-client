@@ -7,7 +7,7 @@ import {
 import { buildCampaignRouteHead } from '@/features/campaigns/local-budget-2026/seo/campaign-seo'
 import type { CampaignRouteSearch } from '@/features/campaigns/local-budget-2026/types'
 
-export const Route = createFileRoute('/bugete-locale-2026/hub')({
+export const Route = createFileRoute('/bugete-locale-2026/cauta/')({
   ssr: true,
   validateSearch: CampaignRouteSearchSchema,
   headers: () =>
@@ -19,7 +19,7 @@ export const Route = createFileRoute('/bugete-locale-2026/hub')({
   head: ({ match }) => {
     const locale = resolveCampaignLocale(match.search as CampaignRouteSearch)
     return buildCampaignRouteHead({
-      pageKind: 'hub',
+      pageKind: 'principal-selector',
       locale,
     })
   },

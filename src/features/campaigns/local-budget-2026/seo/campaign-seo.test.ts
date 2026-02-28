@@ -53,7 +53,7 @@ describe('campaign-seo', () => {
       locale: 'en',
     })
 
-    expect(metadata.canonicalUrl).toContain('/bugete-locale-2026/hub?lang=en')
+    expect(metadata.canonicalUrl).toContain('/bugete-locale-2026/principal?lang=en')
     expect(metadata.robots).toBe('index,follow')
   })
 
@@ -64,6 +64,26 @@ describe('campaign-seo', () => {
     })
 
     expect(metadata.robots).toBe('noindex,follow')
+  })
+
+  it('marks principal map selector route as noindex', () => {
+    const metadata = buildCampaignSeoMetadata({
+      pageKind: 'principal-map',
+      locale: 'ro',
+    })
+
+    expect(metadata.robots).toBe('noindex,follow')
+    expect(metadata.canonicalUrl).toContain('/bugete-locale-2026/cauta/harta')
+  })
+
+  it('marks principal selector route as noindex', () => {
+    const metadata = buildCampaignSeoMetadata({
+      pageKind: 'principal-selector',
+      locale: 'ro',
+    })
+
+    expect(metadata.robots).toBe('noindex,follow')
+    expect(metadata.canonicalUrl).toContain('/bugete-locale-2026/cauta')
   })
 
   it('marks unknown challenge as noindex', () => {

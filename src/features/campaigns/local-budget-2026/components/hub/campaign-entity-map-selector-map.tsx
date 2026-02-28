@@ -1,0 +1,172 @@
+import 'leaflet/dist/leaflet.css'
+import { useCallback, useEffect, useRef } from 'react'
+import { GeoJSON, MapContainer, useMap } from 'react-leaflet'
+import type { Feature, GeoJsonObject, Geometry } from 'geojson'
+import type { Layer, LeafletMouseEvent, PathOptions } from 'leaflet'
+import {
+  DEFAULT_MAP_CENTER,
+  DEFAULT_MAP_ZOOM,
+  DEFAULT_MAX_BOUNDS,
+  DEFAULT_MAX_ZOOM,
+  DEFAULT_MIN_ZOOM,
+} from '@/components/maps/constants'
+import { CampaignUatNameCanvasLabelLayer } from './campaign-uat-name-canvas-label-layer'
+
+type CampaignEntityMapSelectorMapProps = {
+  readonly uatGeoJson: GeoJsonObject
+  readonly countyGeoJson: GeoJsonObject
+  readonly onUatSelect: (input: { natcode: string; name: string }) => void
+}
+
+type StylableLayer = {
+  setStyle: (style: PathOptions) => void
+}
+
+type TooltipLayer = {
+  bindTooltip: (content: string, options?: { sticky?: boolean; direction?: string }) => void
+}
+
+type UatFeatureProperties = {
+  readonly natcode?: string | number
+  readonly name?: string
+}
+
+const UAT_DEFAULT_STYLE: PathOptions = {
+  color: '#8a8f98',
+  weight: 1.6,
+  fillColor: '#fde7e7',
+  fillOpacity: 0.88,
+}
+
+const UAT_HOVER_STYLE: PathOptions = {
+  color: '#5b6069',
+  weight: 2.8,
+  fillColor: '#f9cfcf',
+  fillOpacity: 1,
+}
+
+const COUNTY_BORDER_STYLE: PathOptions = {
+  color: '#6b7280',
+  weight: 1.9,
+  fillOpacity: 0,
+  interactive: false,
+}
+
+const UAT_LABEL_MIN_ZOOM = 10
+const UAT_LABEL_MAX_VISIBLE = 520
+const UAT_LABEL_FONT_SIZE = 15
+
+function parseUatFeatureProperties(
+  feature: Feature<Geometry, unknown>,
+): { natcode: string; name: string } | null {
+  const rawProperties = feature.properties as UatFeatureProperties | null | undefined
+  if (!rawProperties) return null
+
+  const natcode = String(rawProperties.natcode ?? '').trim()
+  if (!natcode) return null
+
+  return {
+    natcode,
+    name: String(rawProperties.name ?? '').trim(),
+  }
+}
+
+function CampaignUatCanvasLabelsOverlay({
+  uatGeoJson,
+}: {
+  readonly uatGeoJson: GeoJsonObject
+}) {
+  const map = useMap()
+  const labelLayerRef = useRef<CampaignUatNameCanvasLabelLayer | null>(null)
+
+  useEffect(() => {
+    const layer = new CampaignUatNameCanvasLabelLayer({
+      geoJsonData: uatGeoJson,
+      minZoom: UAT_LABEL_MIN_ZOOM,
+      maxLabels: UAT_LABEL_MAX_VISIBLE,
+      fontSize: UAT_LABEL_FONT_SIZE,
+    })
+
+    layer.addTo(map)
+    labelLayerRef.current = layer
+
+    return () => {
+      if (labelLayerRef.current) {
+        map.removeLayer(labelLayerRef.current)
+        labelLayerRef.current = null
+      }
+    }
+  }, [map])
+
+  useEffect(() => {
+    labelLayerRef.current?.updateOptions({
+      geoJsonData: uatGeoJson,
+      minZoom: UAT_LABEL_MIN_ZOOM,
+      maxLabels: UAT_LABEL_MAX_VISIBLE,
+      fontSize: UAT_LABEL_FONT_SIZE,
+    })
+  }, [uatGeoJson])
+
+  return null
+}
+
+export function CampaignEntityMapSelectorMap({
+  uatGeoJson,
+  countyGeoJson,
+  onUatSelect,
+}: CampaignEntityMapSelectorMapProps) {
+  const handleEachUatFeature = useCallback(
+    (feature: Feature<Geometry, unknown>, layer: Layer) => {
+      const featureProperties = parseUatFeatureProperties(feature)
+      if (!featureProperties) return
+
+      const featureLabel = featureProperties.name || featureProperties.natcode
+      const tooltipLayer = layer as TooltipLayer
+      tooltipLayer.bindTooltip(featureLabel, { sticky: true, direction: 'top' })
+
+      layer.on({
+        mouseover: (event: LeafletMouseEvent) => {
+          const stylableLayer = event.target as StylableLayer
+          stylableLayer.setStyle(UAT_HOVER_STYLE)
+        },
+        mouseout: (event: LeafletMouseEvent) => {
+          const stylableLayer = event.target as StylableLayer
+          stylableLayer.setStyle(UAT_DEFAULT_STYLE)
+        },
+        click: () => {
+          onUatSelect(featureProperties)
+        },
+      })
+    },
+    [onUatSelect],
+  )
+
+  return (
+    <MapContainer
+      center={DEFAULT_MAP_CENTER}
+      zoom={DEFAULT_MAP_ZOOM}
+      minZoom={DEFAULT_MIN_ZOOM}
+      maxZoom={DEFAULT_MAX_ZOOM}
+      maxBounds={DEFAULT_MAX_BOUNDS}
+      scrollWheelZoom
+      preferCanvas
+      style={{ height: '70vh', width: '100%', backgroundColor: 'transparent' }}
+      className="z-0 overflow-hidden rounded-2xl border border-zinc-300 dark:border-zinc-700"
+      data-testid="campaign-entity-map-selector"
+    >
+      {uatGeoJson.type === 'FeatureCollection' ? (
+        <GeoJSON
+          data={uatGeoJson}
+          style={UAT_DEFAULT_STYLE}
+          onEachFeature={handleEachUatFeature}
+        />
+      ) : null}
+
+      {countyGeoJson.type === 'FeatureCollection' ? (
+        <GeoJSON data={countyGeoJson} style={COUNTY_BORDER_STYLE} />
+      ) : null}
+
+      <CampaignUatCanvasLabelsOverlay uatGeoJson={uatGeoJson} />
+    </MapContainer>
+  )
+}
