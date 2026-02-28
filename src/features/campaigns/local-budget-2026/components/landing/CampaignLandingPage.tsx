@@ -5,6 +5,7 @@ import mapPreview from '@/assets/images/map.png'
 import chartPreview from '@/assets/images/chart.png'
 import entityAnalyticsPreview from '@/assets/images/entity-analytics.png'
 import { Button } from '@/components/ui/button'
+import { Analytics } from '@/lib/analytics'
 import { CAMPAIGN_BASE_PATH } from '../../constants'
 import { getCampaignDefinition, getCampaignText } from '../../hooks/use-campaign-content'
 import type { CampaignLocale } from '../../types'
@@ -144,7 +145,15 @@ export function CampaignLandingPage({ locale }: CampaignLandingPageProps) {
             size="lg"
             className="group h-16 w-full max-w-md rounded-2xl border border-blue-200/20 bg-gradient-to-r from-blue-700 via-blue-800 to-blue-950 px-7 text-lg font-black tracking-tight text-white shadow-[0_18px_34px_-14px_rgba(30,58,138,0.9)] transition-[transform,box-shadow,filter] hover:-translate-y-0.5 hover:brightness-110 hover:shadow-[0_24px_42px_-12px_rgba(30,58,138,0.95)] focus-visible:ring-2 focus-visible:ring-blue-300/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transform-none sm:h-[4.25rem] sm:w-auto sm:min-w-[340px] sm:px-10 sm:text-xl"
           >
-            <Link to={`${CAMPAIGN_BASE_PATH}/principal` as '/'}>
+            <Link
+              to={`${CAMPAIGN_BASE_PATH}/cauta` as '/'}
+              search={locale === 'en' ? { lang: 'en' } : {}}
+              onClick={() => {
+                Analytics.capture(Analytics.EVENTS.CampaignLandingCtaToSearchClicked, {
+                  source: 'landing',
+                })
+              }}
+            >
               {ctaLabel}
               <span className="ml-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/20 transition-colors group-hover:bg-white/30 sm:h-9 sm:w-9">
                 <ArrowRight className="h-4.5 w-4.5 transition-transform group-hover:translate-x-0.5 sm:h-5 sm:w-5" aria-hidden="true" />

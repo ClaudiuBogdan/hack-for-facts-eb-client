@@ -58,6 +58,9 @@ const EVENTS = {
   CampaignEntitySelectedFromSearch: "campaign_entity_selected_from_search",
   CampaignEntitySelectedFromMap: "campaign_entity_selected_from_map",
   CampaignEntitySelectionChanged: "campaign_entity_selection_changed",
+  CampaignPrincipalEntityRecovered: "campaign_principal_entity_recovered",
+  CampaignPrincipalEntityRecoveryFailedRedirectLanding: "campaign_principal_entity_recovery_failed_redirect_landing",
+  CampaignLandingCtaToSearchClicked: "campaign_landing_cta_to_search_clicked",
 
   EntityAnalyticsFilterChanged: "entity_analytics_filter_changed",
   EntityAnalyticsFilterReset: "entity_analytics_filter_reset",

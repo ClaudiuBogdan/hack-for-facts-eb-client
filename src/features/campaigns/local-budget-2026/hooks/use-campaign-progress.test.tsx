@@ -2,7 +2,9 @@ import type { ReactNode } from 'react'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  CAMPAIGN_ID,
   CAMPAIGN_PROGRESS_STORAGE_KEY,
+  CAMPAIGN_PROGRESS_SCHEMA_VERSION,
 } from '../constants'
 import { CampaignProgressProvider, useCampaignProgress } from './use-campaign-progress'
 
@@ -41,5 +43,47 @@ describe('use-campaign-progress', () => {
 
     expect(campaignSnapshot).toBeTruthy()
     expect(learningSnapshot).toBe(JSON.stringify({ sentinel: true }))
+  })
+
+  it('parses legacy snapshots without selectedEntityCui', async () => {
+    window.localStorage.setItem(
+      CAMPAIGN_PROGRESS_STORAGE_KEY,
+      JSON.stringify({
+        version: CAMPAIGN_PROGRESS_SCHEMA_VERSION,
+        campaignId: CAMPAIGN_ID,
+        onboardingCompletedAt: null,
+        selectedLocality: null,
+        challenges: {},
+        lastUpdated: new Date().toISOString(),
+      }),
+    )
+
+    const { result } = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true)
+    })
+
+    expect(result.current.progress.selectedEntityCui).toBeNull()
+  })
+
+  it('persists selectedEntityCui when selecting an entity', async () => {
+    const { result } = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true)
+    })
+
+    act(() => {
+      result.current.setSelectedEntity({ entityCui: '12345678' })
+    })
+
+    expect(result.current.progress.selectedEntityCui).toBe('12345678')
+
+    const rawSnapshot = window.localStorage.getItem(CAMPAIGN_PROGRESS_STORAGE_KEY)
+    expect(rawSnapshot).toBeTruthy()
+
+    const parsedSnapshot = JSON.parse(rawSnapshot ?? '{}') as { selectedEntityCui?: string | null }
+    expect(parsedSnapshot.selectedEntityCui).toBe('12345678')
   })
 })

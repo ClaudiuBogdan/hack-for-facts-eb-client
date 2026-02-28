@@ -210,6 +210,7 @@ export function buildCampaignSeoMetadata(params: {
     description: pageDescription,
     canonicalUrl,
     robots:
+      params.pageKind === 'hub' ||
       params.pageKind === 'onboarding' ||
       params.pageKind === 'principal-selector' ||
       params.pageKind === 'principal-map' ||

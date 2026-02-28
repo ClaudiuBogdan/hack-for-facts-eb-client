@@ -15,6 +15,14 @@ describe('campaign-principal-search-schema', () => {
     expect(parsed.entityCui).toBe('12345678')
   })
 
+  it('accepts numeric entityCui and normalizes to string', () => {
+    const parsed = CampaignPrincipalRouteSearchSchema.parse({
+      entityCui: 12345678,
+    })
+
+    expect(parsed.entityCui).toBe('12345678')
+  })
+
   it('rejects empty entityCui values', () => {
     expect(() =>
       CampaignPrincipalRouteSearchSchema.parse({

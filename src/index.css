@@ -260,6 +260,45 @@
     animation: float 4s ease-in-out infinite;
   }
 
+.leaflet-tooltip.campaign-uat-map-tooltip {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.96));
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 14px;
+  color: #f8fafc;
+  font-family: var(--font-family);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  max-width: 320px;
+  padding: 0.9rem 1.1rem;
+  box-shadow: 0 20px 36px -18px rgba(2, 6, 23, 0.75);
+}
+
+.leaflet-tooltip-top.campaign-uat-map-tooltip::before {
+  border-top-color: rgba(15, 23, 42, 0.96);
+}
+
+.leaflet-tooltip-bottom.campaign-uat-map-tooltip::before {
+  border-bottom-color: rgba(15, 23, 42, 0.96);
+}
+
+.leaflet-tooltip-left.campaign-uat-map-tooltip::before {
+  border-left-color: rgba(15, 23, 42, 0.96);
+}
+
+.leaflet-tooltip-right.campaign-uat-map-tooltip::before {
+  border-right-color: rgba(15, 23, 42, 0.96);
+}
+
+@media (max-width: 768px) {
+  .leaflet-tooltip.campaign-uat-map-tooltip {
+    font-size: 16px;
+    max-width: 260px;
+    padding: 0.75rem 0.95rem;
+  }
+}
+
 /* Add details content padding */
 details> :not(summary) {
   margin-left: 1rem;

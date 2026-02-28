@@ -10,11 +10,13 @@ import {
   DEFAULT_MAX_ZOOM,
   DEFAULT_MIN_ZOOM,
 } from '@/components/maps/constants'
+import type { CampaignLocale } from '../../types'
 import { CampaignUatNameCanvasLabelLayer } from './campaign-uat-name-canvas-label-layer'
 
 type CampaignEntityMapSelectorMapProps = {
   readonly uatGeoJson: GeoJsonObject
   readonly countyGeoJson: GeoJsonObject
+  readonly locale: CampaignLocale
   readonly onUatSelect: (input: { natcode: string; name: string }) => void
 }
 
@@ -23,7 +25,16 @@ type StylableLayer = {
 }
 
 type TooltipLayer = {
-  bindTooltip: (content: string, options?: { sticky?: boolean; direction?: string }) => void
+  bindTooltip: (
+    content: string,
+    options?: {
+      sticky?: boolean
+      direction?: string
+      className?: string
+      opacity?: number
+      offset?: [number, number]
+    },
+  ) => void
 }
 
 type UatFeatureProperties = {
@@ -71,6 +82,37 @@ function parseUatFeatureProperties(
   }
 }
 
+function formatCityHallLabel(label: string, locale: CampaignLocale): string {
+  const trimmedLabel = label.trim()
+  if (!trimmedLabel) {
+    return locale === 'en' ? 'City Hall' : 'Primăria'
+  }
+
+  const lowerLabel = trimmedLabel.toLowerCase()
+  const hasRomanianPrefix = lowerLabel.startsWith('primăria ') || lowerLabel.startsWith('primaria ')
+  const hasEnglishPrefix = lowerLabel.startsWith('city hall ')
+
+  if (locale === 'en') {
+    if (hasEnglishPrefix) return trimmedLabel
+    if (hasRomanianPrefix) {
+      const strippedLabel = lowerLabel.startsWith('primăria ')
+        ? trimmedLabel.slice('primăria '.length)
+        : trimmedLabel.slice('primaria '.length)
+      return `City Hall ${strippedLabel}`
+    }
+    return `City Hall ${trimmedLabel}`
+  }
+
+  if (lowerLabel.startsWith('primăria ')) return trimmedLabel
+  if (lowerLabel.startsWith('primaria ')) {
+    return `Primăria ${trimmedLabel.slice('primaria '.length)}`
+  }
+  if (hasEnglishPrefix) {
+    return `Primăria ${trimmedLabel.slice('city hall '.length)}`
+  }
+  return `Primăria ${trimmedLabel}`
+}
+
 function CampaignUatCanvasLabelsOverlay({
   uatGeoJson,
 }: {
@@ -113,6 +155,7 @@ function CampaignUatCanvasLabelsOverlay({
 export function CampaignEntityMapSelectorMap({
   uatGeoJson,
   countyGeoJson,
+  locale,
   onUatSelect,
 }: CampaignEntityMapSelectorMapProps) {
   const handleEachUatFeature = useCallback(
@@ -120,9 +163,16 @@ export function CampaignEntityMapSelectorMap({
       const featureProperties = parseUatFeatureProperties(feature)
       if (!featureProperties) return
 
-      const featureLabel = featureProperties.name || featureProperties.natcode
+      const featureLabel = (featureProperties.name || featureProperties.natcode).trim()
+      const tooltipLabel = formatCityHallLabel(featureLabel, locale)
       const tooltipLayer = layer as TooltipLayer
-      tooltipLayer.bindTooltip(featureLabel, { sticky: true, direction: 'top' })
+      tooltipLayer.bindTooltip(tooltipLabel, {
+        sticky: true,
+        direction: 'top',
+        className: 'campaign-uat-map-tooltip',
+        opacity: 1,
+        offset: [0, -14],
+      })
 
       layer.on({
         mouseover: (event: LeafletMouseEvent) => {
@@ -138,7 +188,7 @@ export function CampaignEntityMapSelectorMap({
         },
       })
     },
-    [onUatSelect],
+    [locale, onUatSelect],
   )
 
   return (

@@ -47,14 +47,14 @@ describe('campaign-seo', () => {
     expect(metadata.image.url).toContain('/assets/images/campaigns/bugete-locale-2026/share/landing.png')
   })
 
-  it('builds english canonical with lang query', () => {
+  it('builds principal canonical with lang query and noindex', () => {
     const metadata = buildCampaignSeoMetadata({
       pageKind: 'hub',
       locale: 'en',
     })
 
     expect(metadata.canonicalUrl).toContain('/bugete-locale-2026/principal?lang=en')
-    expect(metadata.robots).toBe('index,follow')
+    expect(metadata.robots).toBe('noindex,follow')
   })
 
   it('marks onboarding route as noindex', () => {

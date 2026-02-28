@@ -16,6 +16,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
 import { Analytics } from '@/lib/analytics'
 import { CAMPAIGN_BASE_PATH } from '../../constants'
+import { useCampaignProgress } from '../../hooks/use-campaign-progress'
 import { useUatCuiMap } from '../../hooks/use-uat-cui-map'
 import type { CampaignLocale } from '../../types'
 
@@ -35,6 +36,37 @@ type PendingUatSelection = {
   readonly name: string
 }
 
+function formatCityHallLabel(label: string, locale: CampaignLocale): string {
+  const trimmedLabel = label.trim()
+  if (!trimmedLabel) {
+    return locale === 'en' ? 'City Hall' : 'Primăria'
+  }
+
+  const lowerLabel = trimmedLabel.toLowerCase()
+  const hasRomanianPrefix = lowerLabel.startsWith('primăria ') || lowerLabel.startsWith('primaria ')
+  const hasEnglishPrefix = lowerLabel.startsWith('city hall ')
+
+  if (locale === 'en') {
+    if (hasEnglishPrefix) return trimmedLabel
+    if (hasRomanianPrefix) {
+      const strippedLabel = lowerLabel.startsWith('primăria ')
+        ? trimmedLabel.slice('primăria '.length)
+        : trimmedLabel.slice('primaria '.length)
+      return `City Hall ${strippedLabel}`
+    }
+    return `City Hall ${trimmedLabel}`
+  }
+
+  if (lowerLabel.startsWith('primăria ')) return trimmedLabel
+  if (lowerLabel.startsWith('primaria ')) {
+    return `Primăria ${trimmedLabel.slice('primaria '.length)}`
+  }
+  if (hasEnglishPrefix) {
+    return `Primăria ${trimmedLabel.slice('city hall '.length)}`
+  }
+  return `Primăria ${trimmedLabel}`
+}
+
 function getPrincipalSearch(languageQuery: CampaignLocale | undefined, entityCui?: string) {
   return {
     ...(languageQuery === 'en' ? { lang: 'en' as const } : {}),
@@ -47,6 +79,7 @@ export function CampaignEntityMapSelectorPage({
   languageQuery,
 }: CampaignEntityMapSelectorPageProps) {
   const navigate = useNavigate({ from: '/bugete-locale-2026/cauta/harta/' })
+  const { setSelectedEntity } = useCampaignProgress()
   const [pendingUatSelection, setPendingUatSelection] = useState<PendingUatSelection | null>(null)
   const {
     data: uatGeoJson,
@@ -84,6 +117,7 @@ export function CampaignEntityMapSelectorPage({
         entityCui,
       })
 
+      setSelectedEntity({ entityCui })
       void navigate({
         to: `${CAMPAIGN_BASE_PATH}/principal` as '/',
         search: getPrincipalSearch(languageQuery, entityCui),
@@ -91,7 +125,7 @@ export function CampaignEntityMapSelectorPage({
       })
       setPendingUatSelection(null)
     },
-    [languageQuery, locale, navigate, uatCuiMap],
+    [languageQuery, locale, navigate, setSelectedEntity, uatCuiMap],
   )
 
   const requestUatSelectionConfirmation = useCallback(
@@ -126,9 +160,7 @@ export function CampaignEntityMapSelectorPage({
       : 'Selectează primăria'
   const cancelButtonLabel = locale === 'en' ? 'Cancel' : 'Anulează'
   const selectedUatName = pendingUatSelection?.name || pendingUatSelection?.natcode || ''
-  const selectedEntityDialogLabel = selectedUatName.toLowerCase().startsWith('primaria ')
-    ? selectedUatName
-    : `Primăria ${selectedUatName}`
+  const selectedEntityDialogLabel = formatCityHallLabel(selectedUatName, locale)
 
   const isLoading = isLoadingUatGeoJson || isLoadingCountyGeoJson || isLoadingUatCuiMap
   const error = uatGeoJsonError || countyGeoJsonError || uatCuiMapError
@@ -186,6 +218,7 @@ export function CampaignEntityMapSelectorPage({
               <CampaignEntityMapSelectorMap
                 uatGeoJson={uatGeoJson}
                 countyGeoJson={countyGeoJson}
+                locale={locale}
                 onUatSelect={requestUatSelectionConfirmation}
               />
             </Suspense>

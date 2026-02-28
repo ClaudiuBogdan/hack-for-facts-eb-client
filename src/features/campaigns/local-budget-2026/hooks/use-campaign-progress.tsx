@@ -17,10 +17,14 @@ import type {
 
 type CampaignProgressContextValue = {
   readonly isReady: boolean
+  readonly isInitialResolutionReady: boolean
   readonly isSyncing: boolean
   readonly progress: CampaignProgressSnapshot
+  readonly localSelectedEntityCui: string | null
+  readonly remoteSelectedEntityCui: string | null
   readonly getChallengeStatus: (challengeSlug: string) => CampaignChallengeStatus
   readonly setChallengeStatus: (challengeSlug: string, status: CampaignChallengeStatus) => void
+  readonly setSelectedEntity: (input: { entityCui: string }) => void
   readonly markChallengeInProgress: (challengeSlug: string) => void
   readonly completeOnboarding: (input: { locality: string }) => void
   readonly resetProgress: () => void
@@ -52,6 +56,7 @@ function mergeCampaignProgressSnapshots(
   localSnapshot: CampaignProgressSnapshot,
   remoteSnapshot: CampaignProgressSnapshot,
 ): CampaignProgressSnapshot {
+  const preferLocalValues = localSnapshot.lastUpdated > remoteSnapshot.lastUpdated
   const mergedChallenges = { ...localSnapshot.challenges }
 
   for (const [challengeSlug, remoteChallengeProgress] of Object.entries(remoteSnapshot.challenges)) {
@@ -70,7 +75,12 @@ function mergeCampaignProgressSnapshots(
       (!localSnapshot.onboardingCompletedAt || remoteSnapshot.onboardingCompletedAt > localSnapshot.onboardingCompletedAt)
         ? remoteSnapshot.onboardingCompletedAt
         : localSnapshot.onboardingCompletedAt,
-    selectedLocality: localSnapshot.selectedLocality ?? remoteSnapshot.selectedLocality,
+    selectedLocality: preferLocalValues
+      ? localSnapshot.selectedLocality ?? remoteSnapshot.selectedLocality
+      : remoteSnapshot.selectedLocality ?? localSnapshot.selectedLocality,
+    selectedEntityCui: preferLocalValues
+      ? localSnapshot.selectedEntityCui ?? remoteSnapshot.selectedEntityCui
+      : remoteSnapshot.selectedEntityCui ?? localSnapshot.selectedEntityCui,
     challenges: mergedChallenges,
     lastUpdated: localSnapshot.lastUpdated > remoteSnapshot.lastUpdated
       ? localSnapshot.lastUpdated
@@ -83,7 +93,10 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
 
   const [progress, setProgress] = useState<CampaignProgressSnapshot>(() => getEmptyCampaignProgressSnapshot())
   const [isReady, setIsReady] = useState(false)
+  const [isInitialResolutionReady, setIsInitialResolutionReady] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
+  const [localSelectedEntityCui, setLocalSelectedEntityCui] = useState<string | null>(null)
+  const [remoteSelectedEntityCui, setRemoteSelectedEntityCui] = useState<string | null>(null)
 
   const progressRef = useRef(progress)
 
@@ -96,10 +109,12 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
 
     if (storedSnapshot && storedSnapshot.campaignId === CAMPAIGN_ID) {
       setProgress(storedSnapshot)
+      setLocalSelectedEntityCui(storedSnapshot.selectedEntityCui)
     } else {
       const emptySnapshot = getEmptyCampaignProgressSnapshot()
       setProgress(emptySnapshot)
       writeSnapshotToStorage(emptySnapshot)
+      setLocalSelectedEntityCui(emptySnapshot.selectedEntityCui)
     }
 
     setIsReady(true)
@@ -160,13 +175,14 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     setProgress(emptySnapshot)
   }, [])
 
-  const sync = useCallback(async () => {
+  const syncSnapshot = useCallback(async () => {
     if (!isSignedIn || !user?.id) return
 
     setIsSyncing(true)
 
     try {
       const remote = await fetchCampaignProgress({ campaignId: CAMPAIGN_ID })
+      setRemoteSelectedEntityCui(remote.snapshot.selectedEntityCui)
       const mergedSnapshot = mergeCampaignProgressSnapshots(progressRef.current, remote.snapshot)
       setProgress(mergedSnapshot)
 
@@ -180,27 +196,84 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     }
   }, [isSignedIn, user?.id])
 
+  const sync = useCallback(async () => {
+    await syncSnapshot()
+  }, [syncSnapshot])
+
+  const setSelectedEntity = useCallback((input: { entityCui: string }) => {
+    const normalizedEntityCui = input.entityCui.trim()
+    if (!normalizedEntityCui) return
+
+    const nextSnapshot: CampaignProgressSnapshot = {
+      ...progressRef.current,
+      selectedEntityCui: normalizedEntityCui,
+      lastUpdated: new Date().toISOString(),
+    }
+
+    setLocalSelectedEntityCui(normalizedEntityCui)
+    progressRef.current = nextSnapshot
+    setProgress(nextSnapshot)
+
+    if (isLoaded && isSignedIn) {
+      void syncSnapshot()
+    }
+  }, [isLoaded, isSignedIn, syncSnapshot])
+
   useEffect(() => {
-    if (!isReady || !isLoaded || !isSignedIn) return
-    void sync()
+    if (!isReady || !isLoaded) return
+
+    let isActive = true
+    setIsInitialResolutionReady(false)
+
+    const resolveInitialState = async () => {
+      if (!isSignedIn) {
+        if (isActive) {
+          setRemoteSelectedEntityCui(null)
+          setIsInitialResolutionReady(true)
+        }
+        return
+      }
+
+      try {
+        await sync()
+      } finally {
+        if (isActive) {
+          setIsInitialResolutionReady(true)
+        }
+      }
+    }
+
+    void resolveInitialState()
+
+    return () => {
+      isActive = false
+    }
   }, [isReady, isLoaded, isSignedIn, sync])
 
   const value = useMemo<CampaignProgressContextValue>(() => ({
     isReady,
+    isInitialResolutionReady,
     isSyncing,
     progress,
+    localSelectedEntityCui,
+    remoteSelectedEntityCui,
     getChallengeStatus,
     setChallengeStatus,
+    setSelectedEntity,
     markChallengeInProgress,
     completeOnboarding,
     resetProgress,
     sync,
   }), [
     isReady,
+    isInitialResolutionReady,
     isSyncing,
     progress,
+    localSelectedEntityCui,
+    remoteSelectedEntityCui,
     getChallengeStatus,
     setChallengeStatus,
+    setSelectedEntity,
     markChallengeInProgress,
     completeOnboarding,
     resetProgress,
