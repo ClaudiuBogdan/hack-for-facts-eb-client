@@ -150,6 +150,29 @@ async function clickActionAndWaitForConsent(
 }
 
 /**
+ * Wait for SPA/client routing by polling pathname instead of relying on
+ * document-level load events.
+ */
+async function waitForPathname(
+  page: Page,
+  matcher: RegExp,
+  timeout = 15000
+): Promise<void> {
+  await expect
+    .poll(
+      () => {
+        try {
+          return new URL(page.url()).pathname
+        } catch {
+          return ''
+        }
+      },
+      { timeout, intervals: [100, 250, 500, 1000] }
+    )
+    .toMatch(matcher)
+}
+
+/**
  * Wait for the cookie consent banner to appear.
  * The banner has built-in delays (500ms + 100ms) and requires React hydration.
  */
@@ -484,7 +507,7 @@ test.describe('Cookie Settings Page', () => {
     await clickActionAndWaitForConsent(page, allowAllButton, { analytics: true, sentry: true })
 
     // Should navigate to the redirect URL
-    await page.waitForURL(/\/charts(?:$|[/?#])/, { timeout: 15000 })
+    await waitForPathname(page, /^\/charts(?:\/)?$/)
     expect(page.url()).toContain('/charts')
   })
 
@@ -500,7 +523,7 @@ test.describe('Cookie Settings Page', () => {
     await expect(confirmButton).toBeVisible()
     await confirmButton.click()
 
-    await page.waitForURL(/\/$/, { timeout: 8000 })
+    await waitForPathname(page, /^\/$/)
 
     // Verify we're at home
     expect(page.url()).toMatch(/\/$/)
