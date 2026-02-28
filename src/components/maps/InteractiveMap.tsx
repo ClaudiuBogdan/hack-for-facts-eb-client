@@ -32,6 +32,13 @@ interface FeatureInteractionContext {
   onFeatureClick: (properties: UatProperties, event: LeafletMouseEvent) => void;
 }
 
+type TooltipContentBuilder = (context: {
+  properties: UatProperties;
+  heatmapData: HeatmapUATDataPoint[] | HeatmapCountyDataPoint[];
+  mapViewType: 'UAT' | 'County';
+  filters: AnalyticsFilterType;
+}) => string;
+
 type TooltipLayer = Layer & {
   getTooltip: () => L.Tooltip | undefined;
   bindTooltip: (content: string) => Layer;
@@ -56,6 +63,7 @@ interface InteractiveMapProps {
   filters: AnalyticsFilterType;
   showLabels?: boolean;
   onViewChange?: (center: [number, number], zoom: number) => void;
+  getTooltipContent?: TooltipContentBuilder;
 }
 
 export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
@@ -75,6 +83,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   filters,
   showLabels = true,
   onViewChange,
+  getTooltipContent,
 }) => {
   const geoJsonLayerRef = useRef<L.GeoJSON | null>(null);
   const latestFeatureStyleRef = useRef<FeatureStyleResolver>(() => DEFAULT_FEATURE_STYLE);
@@ -123,7 +132,14 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   const applyTooltipForFeature = useCallback((layer: Layer, properties: UatProperties) => {
     const tooltipLayer = layer as TooltipLayer;
     const { heatmapData, mapViewType, filters } = latestInteractionContextRef.current;
-    const tooltipHtml = createTooltipContent(properties, heatmapData, mapViewType, filters);
+    const tooltipHtml = getTooltipContent
+      ? getTooltipContent({
+          properties,
+          heatmapData,
+          mapViewType,
+          filters,
+        })
+      : createTooltipContent(properties, heatmapData, mapViewType, filters);
 
     if (!tooltipLayer.getTooltip()) {
       tooltipLayer.bindTooltip(tooltipHtml);
@@ -132,7 +148,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
     }
 
     tooltipLayer.openTooltip();
-  }, []);
+  }, [getTooltipContent]);
 
   const onEachFeature = useCallback(
     (feature: Feature<Geometry, unknown>, layer: Layer) => {

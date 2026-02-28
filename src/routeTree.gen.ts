@@ -25,6 +25,7 @@ import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$toke
 import { Route as ShareCodeRouteImport } from './routes/share.$code'
 import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
 import { Route as SettingsNotificationsRouteImport } from './routes/settings/notifications'
+import { Route as ExperimentalMapRouteImport } from './routes/experimental/map'
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
 import { Route as ChartsNewRouteImport } from './routes/charts/new'
 import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
@@ -154,6 +155,13 @@ const SettingsNotificationsRoute = SettingsNotificationsRouteImport.update({
   path: '/settings/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExperimentalMapRoute = ExperimentalMapRouteImport.update({
+  id: '/experimental/map',
+  path: '/experimental/map',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/experimental/map.lazy').then((d) => d.Route),
+)
 const EntitiesCuiRoute = EntitiesCuiRouteImport.update({
   id: '/entities/$cui',
   path: '/entities/$cui',
@@ -371,6 +379,7 @@ export interface FileRoutesByFullPath {
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/experimental/map': typeof ExperimentalMapRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
@@ -412,6 +421,7 @@ export interface FileRoutesByTo {
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/experimental/map': typeof ExperimentalMapRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
@@ -458,6 +468,7 @@ export interface FileRoutesById {
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/experimental/map': typeof ExperimentalMapRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
@@ -505,6 +516,7 @@ export interface FileRouteTypes {
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
+    | '/experimental/map'
     | '/settings/notifications'
     | '/settings/profile'
     | '/share/$code'
@@ -546,6 +558,7 @@ export interface FileRouteTypes {
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
+    | '/experimental/map'
     | '/settings/notifications'
     | '/settings/profile'
     | '/share/$code'
@@ -591,6 +604,7 @@ export interface FileRouteTypes {
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
+    | '/experimental/map'
     | '/settings/notifications'
     | '/settings/profile'
     | '/share/$code'
@@ -634,6 +648,7 @@ export interface RootRouteChildren {
   CertificatesIdRoute: typeof CertificatesIdRoute
   ChartsNewRoute: typeof ChartsNewRoute
   EntitiesCuiRoute: typeof EntitiesCuiRouteWithChildren
+  ExperimentalMapRoute: typeof ExperimentalMapRoute
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
   SettingsProfileRoute: typeof SettingsProfileRoute
   ShareCodeRoute: typeof ShareCodeRoute
@@ -765,6 +780,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/notifications'
       fullPath: '/settings/notifications'
       preLoaderRoute: typeof SettingsNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experimental/map': {
+      id: '/experimental/map'
+      path: '/experimental/map'
+      fullPath: '/experimental/map'
+      preLoaderRoute: typeof ExperimentalMapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/entities/$cui': {
@@ -1052,6 +1074,7 @@ const rootRouteChildren: RootRouteChildren = {
   CertificatesIdRoute: CertificatesIdRoute,
   ChartsNewRoute: ChartsNewRoute,
   EntitiesCuiRoute: EntitiesCuiRouteWithChildren,
+  ExperimentalMapRoute: ExperimentalMapRoute,
   SettingsNotificationsRoute: SettingsNotificationsRoute,
   SettingsProfileRoute: SettingsProfileRoute,
   ShareCodeRoute: ShareCodeRoute,
