@@ -28,18 +28,18 @@ type ObservationWithValue = {
 
 const PERIODICITY_PRIORITY: InsPeriodicity[] = ['ANNUAL', 'QUARTERLY', 'MONTHLY'];
 
-function getPeriodKey(observation: InsObservation): number {
+export function getInsObservationPeriodKey(observation: InsObservation): number {
   const period = observation.time_period;
   return period.year * 10000 + (period.quarter ?? 0) * 100 + (period.month ?? 0);
 }
 
-function parseObservationValue(value: string | null | undefined): number | null {
+export function parseInsObservationValue(value: string | null | undefined): number | null {
   if (value == null) return null;
   const parsed = Number(String(value).replace(',', '.'));
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function getObservationUnitLabel(observation: InsObservation): string {
+export function getInsObservationUnitLabel(observation: InsObservation): string {
   const locale = getUserLocale() === 'en' ? 'en' : 'ro';
   const localizedUnitName = locale === 'en'
     ? observation.unit?.name_en || observation.unit?.name_ro || ''
@@ -122,7 +122,7 @@ function buildObservationFilter(series: InsSeriesConfiguration): InsObservationF
   return filter;
 }
 
-function selectDefaultPeriodicity(observations: InsObservation[]): InsPeriodicity | null {
+export function selectDefaultInsPeriodicity(observations: InsObservation[]): InsPeriodicity | null {
   const seen = new Set<InsPeriodicity>();
   observations.forEach((observation) => {
     seen.add(observation.time_period.periodicity);
@@ -137,7 +137,7 @@ function selectDefaultPeriodicity(observations: InsObservation[]): InsPeriodicit
   return observations[0]?.time_period.periodicity ?? null;
 }
 
-function mapPeriodTypeToInsPeriodicity(
+export function mapReportPeriodTypeToInsPeriodicity(
   periodType: ReportPeriodType | undefined
 ): InsPeriodicity | null {
   if (periodType === 'MONTH') return 'MONTHLY';
@@ -161,7 +161,7 @@ function normalizePeriodTypeForChart(
   return null;
 }
 
-function observationMatchesClassificationSelection(
+export function insObservationMatchesClassificationSelection(
   observation: InsObservation,
   selection: Record<string, string[]>
 ): boolean {
@@ -186,7 +186,10 @@ function observationMatchesClassificationSelection(
   return true;
 }
 
-function reduceValues(values: number[], aggregation: InsSeriesConfiguration['aggregation']): number | null {
+export function reduceInsObservationValues(
+  values: number[],
+  aggregation: InsSeriesConfiguration['aggregation']
+): number | null {
   if (values.length === 0) return null;
 
   if (aggregation === 'first') {
@@ -221,7 +224,7 @@ export async function mapInsSeriesToAnalyticsSeries(series: InsSeriesConfigurati
 
   const classSelection = series.classificationSelections ?? {};
   const classFiltered = observations.filter((observation) =>
-    observationMatchesClassificationSelection(observation, classSelection)
+    insObservationMatchesClassificationSelection(observation, classSelection)
   );
 
   if (classFiltered.length === 0) {
@@ -246,8 +249,8 @@ export async function mapInsSeriesToAnalyticsSeries(series: InsSeriesConfigurati
     new Set(classFiltered.map((observation) => observation.time_period.periodicity))
   );
 
-  const requestedPeriodicity = mapPeriodTypeToInsPeriodicity(series.period?.type);
-  let effectivePeriodicity = requestedPeriodicity ?? selectDefaultPeriodicity(classFiltered);
+  const requestedPeriodicity = mapReportPeriodTypeToInsPeriodicity(series.period?.type);
+  let effectivePeriodicity = requestedPeriodicity ?? selectDefaultInsPeriodicity(classFiltered);
   if (!effectivePeriodicity) {
     warnings.push({
       type: 'missing_data',
@@ -273,7 +276,7 @@ export async function mapInsSeriesToAnalyticsSeries(series: InsSeriesConfigurati
   const normalizedObservations: ObservationWithValue[] = [];
 
   for (const observation of periodicityFiltered) {
-    const parsed = parseObservationValue(observation.value);
+    const parsed = parseInsObservationValue(observation.value);
     if (parsed == null) {
       if (series.hasValue !== false) {
         warnings.push({
@@ -289,9 +292,9 @@ export async function mapInsSeriesToAnalyticsSeries(series: InsSeriesConfigurati
     normalizedObservations.push({
       observation,
       value: parsed,
-      periodKey: getPeriodKey(observation),
+      periodKey: getInsObservationPeriodKey(observation),
       periodLabel: observation.time_period.iso_period,
-      unitLabel: getObservationUnitLabel(observation),
+      unitLabel: getInsObservationUnitLabel(observation),
     });
   }
 
@@ -352,7 +355,7 @@ export async function mapInsSeriesToAnalyticsSeries(series: InsSeriesConfigurati
 
   const data = Array.from(grouped.entries())
     .map(([periodLabel, payload]) => {
-      const value = reduceValues(payload.values, series.aggregation ?? 'sum');
+      const value = reduceInsObservationValues(payload.values, series.aggregation ?? 'sum');
       if (value == null || !Number.isFinite(value)) return null;
       return {
         x: periodLabel,

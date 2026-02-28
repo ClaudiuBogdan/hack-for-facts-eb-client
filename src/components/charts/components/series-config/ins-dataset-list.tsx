@@ -12,6 +12,8 @@ import { searchInsDatasets } from '@/lib/api/ins';
 import type { InsDataset } from '@/schemas/ins';
 import { cn, getUserLocale } from '@/lib/utils';
 
+const MAX_CLIENT_FILTER_PAGE_SCAN_COUNT = 20;
+
 function getDatasetDisplayName(dataset: InsDataset, locale: 'ro' | 'en'): string {
   if (locale === 'en') {
     return dataset.name_en || dataset.name_ro || dataset.code;
@@ -23,12 +25,38 @@ function getDatasetListLabel(dataset: InsDataset, locale: 'ro' | 'en'): string {
   return `${dataset.code} - ${getDatasetDisplayName(dataset, locale)}`;
 }
 
+export interface InsDatasetListFilter {
+  hasUatData?: boolean;
+  hasSiruta?: boolean;
+}
+
+interface InsDatasetListProps extends BaseListProps {
+  datasetFilter?: InsDatasetListFilter;
+}
+
+function matchesDatasetFilter(dataset: InsDataset, datasetFilter?: InsDatasetListFilter): boolean {
+  if (!datasetFilter) {
+    return true;
+  }
+
+  if (datasetFilter.hasUatData === true && !dataset.has_uat_data) {
+    return false;
+  }
+
+  if (datasetFilter.hasSiruta === true && !dataset.has_siruta) {
+    return false;
+  }
+
+  return true;
+}
+
 export function InsDatasetList({
   selectedOptions,
   toggleSelect,
   pageSize = 100,
   className,
-}: BaseListProps) {
+  datasetFilter,
+}: InsDatasetListProps) {
   const [searchFilter, setSearchFilter] = useState('');
   const locale = getUserLocale() === 'en' ? 'en' : 'ro';
   const searchVisibilityThreshold = 15;
@@ -45,18 +73,61 @@ export function InsDatasetList({
     isFetchingNextPage,
   } = useMultiSelectInfinite<InsDataset>({
     itemSize: 48,
-    queryKey: ['ins-datasets', searchFilter],
+    queryKey: [
+      'ins-datasets',
+      searchFilter,
+      String(datasetFilter?.hasUatData ?? ''),
+      String(datasetFilter?.hasSiruta ?? ''),
+    ],
     queryFn: async ({ pageParam = 0 }): Promise<PageData<InsDataset>> => {
-      const response = await searchInsDatasets({
-        filter: { search: searchFilter.trim() || undefined },
-        limit: pageSize,
-        offset: pageParam,
-      });
+      const shouldScanForSirutaMatches = datasetFilter?.hasSiruta === true;
+      let lastPageInfo = {
+        totalCount: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      };
+      const filteredNodes: InsDataset[] = [];
+      let nextOffset = pageParam;
+      let scannedPageCount = 0;
+
+      do {
+        const response = await searchInsDatasets({
+          filter: {
+            search: searchFilter.trim() || undefined,
+            hasUatData: datasetFilter?.hasUatData,
+          },
+          limit: pageSize,
+          offset: nextOffset,
+        });
+
+        lastPageInfo = response.pageInfo;
+        const currentPageNodes = response.nodes ?? [];
+        nextOffset += currentPageNodes.length;
+        filteredNodes.push(
+          ...currentPageNodes.filter((dataset) =>
+            matchesDatasetFilter(dataset, datasetFilter)
+          )
+        );
+        scannedPageCount += 1;
+
+        const exhaustedBackendPages = !response.pageInfo.hasNextPage || currentPageNodes.length === 0;
+        const reachedScanLimit = scannedPageCount >= MAX_CLIENT_FILTER_PAGE_SCAN_COUNT;
+        const foundClientFilteredResults = filteredNodes.length > 0;
+        const shouldStopScanning =
+          !shouldScanForSirutaMatches ||
+          exhaustedBackendPages ||
+          reachedScanLimit ||
+          foundClientFilteredResults;
+
+        if (shouldStopScanning) {
+          break;
+        }
+      } while (true);
 
       return {
-        nodes: response.nodes,
-        pageInfo: response.pageInfo,
-        nextOffset: pageParam + response.nodes.length,
+        nodes: filteredNodes,
+        pageInfo: lastPageInfo,
+        nextOffset,
       };
     },
   });

@@ -37,26 +37,36 @@ vi.mock('@/components/ui/accordion', () => ({
 }));
 
 vi.mock('./ins-dataset-list', () => ({
-  InsDatasetList: ({ toggleSelect }: { toggleSelect: (option: { id: string; label: string }) => void }) => (
-    <div>
-      <button
-        type="button"
-        onClick={() =>
-          toggleSelect({ id: 'POP107D', label: 'POP107D - Populatia dupa domiciliu' })
-        }
-      >
-        Dataset POP107D
-      </button>
-      <button
-        type="button"
-        onClick={() =>
-          toggleSelect({ id: 'POP212B', label: 'POP212B - Divorturi pe judete' })
-        }
-      >
-        Dataset POP212B
-      </button>
-    </div>
-  ),
+  InsDatasetList: ({
+    toggleSelect,
+    datasetFilter,
+  }: {
+    toggleSelect: (option: { id: string; label: string }) => void;
+    datasetFilter?: { hasUatData?: boolean; hasSiruta?: boolean };
+  }) => {
+    lastDatasetFilter = datasetFilter;
+
+    return (
+      <div>
+        <button
+          type="button"
+          onClick={() =>
+            toggleSelect({ id: 'POP107D', label: 'POP107D - Populatia dupa domiciliu' })
+          }
+        >
+          Dataset POP107D
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            toggleSelect({ id: 'POP212B', label: 'POP212B - Divorturi pe judete' })
+          }
+        >
+          Dataset POP212B
+        </button>
+      </div>
+    );
+  },
 }));
 
 vi.mock('./ins-dimension-values-list', () => ({
@@ -127,6 +137,7 @@ vi.mock('./ins-dimension-values-list', () => ({
 
 const mockUpdateSeries = vi.fn();
 let applySeriesPatch: ((seriesId: string, patch: Record<string, unknown>) => void) | null = null;
+let lastDatasetFilter: { hasUatData?: boolean; hasSiruta?: boolean } | undefined;
 
 vi.mock('../../hooks/useChartStore', () => ({
   useChartStore: () => ({
@@ -242,6 +253,7 @@ describe('InsSeriesEditor', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     applySeriesPatch = null;
+    lastDatasetFilter = undefined;
     mockUpdateSeries.mockImplementation((seriesId, patch) => {
       applySeriesPatch?.(seriesId, patch as Record<string, unknown>);
     });
@@ -929,5 +941,39 @@ describe('InsSeriesEditor', () => {
 
     expect(screen.queryByText('SIRUTA Codes')).not.toBeInTheDocument();
     expect(screen.queryByText('Unit Codes')).not.toBeInTheDocument();
+  });
+
+  it('supports adapter mode and forwards dataset capability filter', async () => {
+    const applyPatch = vi.fn();
+    const series = createSeries();
+
+    const queryClient = createTestQueryClient();
+    render(
+      <InsSeriesEditor
+        adapter={{
+          series,
+          applyPatch,
+          datasetFilter: {
+            hasUatData: true,
+            hasSiruta: true,
+          },
+        }}
+      />,
+      { queryClient }
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Dataset POP212B/i }));
+
+    await waitFor(() => {
+      expect(applyPatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          datasetCode: 'POP212B',
+        })
+      );
+    });
+    expect(lastDatasetFilter).toEqual({
+      hasUatData: true,
+      hasSiruta: true,
+    });
   });
 });

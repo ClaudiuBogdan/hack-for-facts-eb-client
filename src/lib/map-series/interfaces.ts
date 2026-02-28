@@ -6,6 +6,11 @@ export type MapSeriesWarningType =
   | 'divide_by_zero'
   | 'mixed_unit'
   | 'sparse_coverage'
+  | 'ins_dataset_missing'
+  | 'ins_no_observations'
+  | 'ins_no_siruta_values'
+  | 'ins_mixed_units'
+  | 'ins_partial_mock_coverage'
   | 'invalid_row'
   | 'duplicate_row'
   | 'url_budget'
@@ -73,5 +78,11 @@ export type MapSeriesVectorCache = Map<string, MapSeriesVector>;
 export interface MapSeriesCalculationResult {
   valuesBySeriesId: MapSeriesVectorCache;
   unitsBySeriesId: Map<string, string | undefined>;
+  warnings: MapSeriesWarning[];
+}
+
+export interface InsSeriesScalarResult {
+  valuesBySiruta: MapSeriesVector;
+  unit?: string;
   warnings: MapSeriesWarning[];
 }

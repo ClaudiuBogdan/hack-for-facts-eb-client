@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { Currency } from '@/schemas/charts';
 import type { MapBaseSeries, MapSupportedSeries } from '@/schemas/experimental-map';
-import { fetchGroupedSeriesData } from '@/lib/api/map-series';
+import { fetchGroupedSeriesData, fetchMockInsSeriesVectors } from '@/lib/api/map-series';
 import { calculateMapSeriesValues } from '@/lib/map-series/calculation';
 import { parseGroupedSeriesWideCsv } from '@/lib/map-series/csv';
 import type {
@@ -51,7 +51,21 @@ export function useExperimentalMapSeriesData(
   const normalizedBaseSeries = useMemo(
     () =>
       normalizedEnabledSeries
-        .filter((series): series is MapBaseSeries => series.type !== 'aggregated-series-calculation')
+        .filter(
+          (series): series is MapBaseSeries =>
+            series.type !== 'aggregated-series-calculation' && series.type !== 'ins-series'
+        )
+        .sort((left, right) => left.id.localeCompare(right.id)),
+    [normalizedEnabledSeries]
+  );
+
+  const normalizedInsSeries = useMemo(
+    () =>
+      normalizedEnabledSeries
+        .filter(
+          (series): series is Extract<MapSupportedSeries, { type: 'ins-series' }> =>
+            series.type === 'ins-series'
+        )
         .sort((left, right) => left.id.localeCompare(right.id)),
     [normalizedEnabledSeries]
   );
@@ -103,21 +117,57 @@ export function useExperimentalMapSeriesData(
     enabled: isBrowser && (params.enabled ?? true),
   });
 
+  const insSeriesHash = useMemo(
+    () =>
+      generateHash(
+        stableSerialize(
+          normalizedInsSeries.map((series) => ({
+            id: series.id,
+            type: series.type,
+            payload: normalizeSeriesForFetch(series),
+          }))
+        )
+      ),
+    [normalizedInsSeries]
+  );
+
+  const insSeriesQuery = useQuery<Awaited<ReturnType<typeof fetchMockInsSeriesVectors>>, Error>({
+    queryKey: ['experimental-map-ins-series-data', insSeriesHash],
+    queryFn: async () => {
+      if (normalizedInsSeries.length === 0) {
+        return {
+          valuesBySeriesId: new Map(),
+          unitsBySeriesId: new Map(),
+          warnings: [],
+        };
+      }
+
+      return fetchMockInsSeriesVectors(normalizedInsSeries);
+    },
+    staleTime: convertDaysToMs(1),
+    gcTime: convertDaysToMs(3),
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    enabled: isBrowser && (params.enabled ?? true),
+  });
+
   const calculated = useMemo(() => {
-    const response = groupedDataQuery.data;
+    const groupedResponse = groupedDataQuery.data;
+    const insResponse = insSeriesQuery.data;
     const baseVectors: MapSeriesVectorCache = new Map();
     const baseUnits = new Map<string, string | undefined>();
     const warnings: MapSeriesWarning[] = [];
 
-    if (response) {
-      for (const manifestSeries of response.manifest.series) {
+    if (groupedResponse) {
+      for (const manifestSeries of groupedResponse.manifest.series) {
         if (!baseVectors.has(manifestSeries.series_id)) {
           baseVectors.set(manifestSeries.series_id, new Map());
         }
         baseUnits.set(manifestSeries.series_id, manifestSeries.unit);
       }
 
-      const parsedPayload = parseGroupedSeriesWideCsv(response.payload.data);
+      const parsedPayload = parseGroupedSeriesWideCsv(groupedResponse.payload.data);
       for (const [seriesId, vector] of parsedPayload.valuesBySeriesId.entries()) {
         if (!baseVectors.has(seriesId)) {
           baseVectors.set(seriesId, new Map());
@@ -137,8 +187,31 @@ export function useExperimentalMapSeriesData(
         warnings.push(...parsedPayload.warnings);
       }
 
-      if (response.warnings?.length) {
-        warnings.push(...response.warnings);
+      if (groupedResponse.warnings?.length) {
+        warnings.push(...groupedResponse.warnings);
+      }
+    }
+
+    if (insResponse) {
+      for (const [seriesId, vector] of insResponse.valuesBySeriesId.entries()) {
+        if (!baseVectors.has(seriesId)) {
+          baseVectors.set(seriesId, new Map());
+        }
+        const targetVector = baseVectors.get(seriesId);
+        if (targetVector === undefined) {
+          continue;
+        }
+        for (const [sirutaCode, value] of vector.entries()) {
+          targetVector.set(sirutaCode, value);
+        }
+      }
+
+      for (const [seriesId, unit] of insResponse.unitsBySeriesId.entries()) {
+        baseUnits.set(seriesId, unit);
+      }
+
+      if (insResponse.warnings.length > 0) {
+        warnings.push(...insResponse.warnings);
       }
     }
 
@@ -163,7 +236,12 @@ export function useExperimentalMapSeriesData(
       unitsBySeriesId: calculationResult.unitsBySeriesId,
       warnings,
     };
-  }, [groupedDataQuery.data, normalizedEnabledSeries, params.urlSearchLength]);
+  }, [
+    groupedDataQuery.data,
+    insSeriesQuery.data,
+    normalizedEnabledSeries,
+    params.urlSearchLength,
+  ]);
 
   const resolvedActiveSeriesId = useMemo(() => {
     if (!params.activeSeriesId) {
@@ -183,9 +261,9 @@ export function useExperimentalMapSeriesData(
     activeValues: resolvedActiveSeriesId
       ? calculated.valuesBySeriesId.get(resolvedActiveSeriesId)
       : undefined,
-    isLoading: groupedDataQuery.isLoading,
-    isFetching: groupedDataQuery.isFetching,
-    error: groupedDataQuery.error ?? null,
+    isLoading: groupedDataQuery.isLoading || insSeriesQuery.isLoading,
+    isFetching: groupedDataQuery.isFetching || insSeriesQuery.isFetching,
+    error: groupedDataQuery.error ?? insSeriesQuery.error ?? null,
   };
 }
 

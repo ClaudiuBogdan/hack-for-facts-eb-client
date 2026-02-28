@@ -7,9 +7,11 @@ import { createDefaultExperimentalMapSeries } from '@/schemas/experimental-map';
 import { serializeGroupedSeriesWideMatrixCsv } from '@/lib/map-series/csv';
 
 const fetchGroupedSeriesDataMock = vi.hoisted(() => vi.fn());
+const fetchMockInsSeriesVectorsMock = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/api/map-series', () => ({
   fetchGroupedSeriesData: fetchGroupedSeriesDataMock,
+  fetchMockInsSeriesVectors: fetchMockInsSeriesVectorsMock,
 }));
 
 function createWrapper() {
@@ -55,6 +57,12 @@ function makeGroupedResponse(input: {
 describe('useExperimentalMapSeriesData', () => {
   beforeEach(() => {
     fetchGroupedSeriesDataMock.mockReset();
+    fetchMockInsSeriesVectorsMock.mockReset();
+    fetchMockInsSeriesVectorsMock.mockResolvedValue({
+      valuesBySeriesId: new Map(),
+      unitsBySeriesId: new Map(),
+      warnings: [],
+    });
   });
 
   it('keeps query cache stable when only activeSeriesId changes', async () => {
@@ -257,5 +265,53 @@ describe('useExperimentalMapSeriesData', () => {
     });
 
     expect(fetchGroupedSeriesDataMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('merges INS vectors from scalar evaluator data', async () => {
+    const baseSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+    const insSeries = createDefaultExperimentalMapSeries('ins-series');
+
+    fetchGroupedSeriesDataMock.mockResolvedValue(
+      makeGroupedResponse({
+        series: [{ id: baseSeries.id, unit: 'RON' }],
+        rows: [{ series_id: baseSeries.id, siruta_code: '1001', value: 10 }],
+      })
+    );
+    fetchMockInsSeriesVectorsMock.mockResolvedValue({
+      valuesBySeriesId: new Map([[insSeries.id, new Map([['1001', 25], ['1002', 30]])]]),
+      unitsBySeriesId: new Map([[insSeries.id, 'pers.']]),
+      warnings: [
+        {
+          type: 'ins_partial_mock_coverage',
+          message: 'Partial coverage',
+          seriesId: insSeries.id,
+        },
+      ],
+    });
+
+    const wrapper = createWrapper();
+    const { result } = renderHook(
+      () =>
+        useExperimentalMapSeriesData({
+          series: [baseSeries, insSeries],
+          activeSeriesId: insSeries.id,
+          defaultCurrency: 'RON',
+          defaultInflationAdjusted: false,
+          urlSearchLength: 100,
+        }),
+      { wrapper }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(fetchGroupedSeriesDataMock).toHaveBeenCalledTimes(1);
+    expect(fetchMockInsSeriesVectorsMock).toHaveBeenCalledTimes(1);
+    expect(result.current.valuesBySeriesId.get(insSeries.id)?.get('1001')).toBe(25);
+    expect(result.current.unitsBySeriesId.get(insSeries.id)).toBe('pers.');
+    expect(
+      result.current.warnings.some((warning) => warning.type === 'ins_partial_mock_coverage')
+    ).toBe(true);
   });
 });

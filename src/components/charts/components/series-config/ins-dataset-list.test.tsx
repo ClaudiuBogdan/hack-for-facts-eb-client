@@ -139,4 +139,94 @@ describe('InsDatasetList', () => {
       screen.queryByLabelText('Search INS datasets (ex: POP107D)')
     ).not.toBeInTheDocument();
   });
+
+  it('filters datasets by UAT and SIRUTA capabilities', async () => {
+    mockSearchInsDatasets.mockResolvedValue({
+      nodes: [
+        createDataset({ id: '1', code: 'POP100A', name_ro: 'Set A', has_uat_data: true, has_siruta: true }),
+        createDataset({ id: '2', code: 'POP100B', name_ro: 'Set B', has_uat_data: true, has_siruta: false }),
+        createDataset({ id: '3', code: 'POP100C', name_ro: 'Set C', has_uat_data: false, has_siruta: true }),
+      ],
+      pageInfo: { totalCount: 3, hasNextPage: false, hasPreviousPage: false },
+    });
+
+    const queryClient = createTestQueryClient();
+    render(
+      <InsDatasetList
+        selectedOptions={[]}
+        toggleSelect={vi.fn()}
+        pageSize={100}
+        datasetFilter={{ hasUatData: true, hasSiruta: true }}
+      />,
+      { queryClient }
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('POP100A - Set A')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('POP100B - Set B')).not.toBeInTheDocument();
+    expect(screen.queryByText('POP100C - Set C')).not.toBeInTheDocument();
+    expect(mockSearchInsDatasets).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filter: expect.objectContaining({
+          hasUatData: true,
+        }),
+      })
+    );
+  });
+
+  it('keeps scanning pages when first page has no SIRUTA matches', async () => {
+    mockSearchInsDatasets.mockImplementation((params: { offset?: number }) => {
+      if ((params.offset ?? 0) === 0) {
+        return Promise.resolve({
+          nodes: [
+            createDataset({
+              id: '1',
+              code: 'POP100A',
+              name_ro: 'Set A',
+              has_uat_data: true,
+              has_siruta: false,
+            }),
+          ],
+          pageInfo: { totalCount: 2, hasNextPage: true, hasPreviousPage: false },
+        });
+      }
+
+      return Promise.resolve({
+        nodes: [
+          createDataset({
+            id: '2',
+            code: 'POP100B',
+            name_ro: 'Set B',
+            has_uat_data: true,
+            has_siruta: true,
+          }),
+        ],
+        pageInfo: { totalCount: 2, hasNextPage: false, hasPreviousPage: true },
+      });
+    });
+
+    const queryClient = createTestQueryClient();
+    render(
+      <InsDatasetList
+        selectedOptions={[]}
+        toggleSelect={vi.fn()}
+        pageSize={1}
+        datasetFilter={{ hasUatData: true, hasSiruta: true }}
+      />,
+      { queryClient }
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('POP100B - Set B')).toBeInTheDocument();
+    });
+
+    expect(mockSearchInsDatasets).toHaveBeenCalledWith(
+      expect.objectContaining({ limit: 1, offset: 0 })
+    );
+    expect(mockSearchInsDatasets).toHaveBeenCalledWith(
+      expect.objectContaining({ limit: 1, offset: 1 })
+    );
+  });
 });

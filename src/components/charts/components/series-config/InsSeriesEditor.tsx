@@ -32,8 +32,22 @@ import {
 import { InsDatasetList } from './ins-dataset-list';
 import { InsDimensionValuesList } from './ins-dimension-values-list';
 
+type InsSeriesConfiguration = z.infer<typeof InsSeriesConfigurationSchema>;
+
+export interface InsSeriesEditorDatasetFilter {
+  hasUatData?: boolean;
+  hasSiruta?: boolean;
+}
+
+export interface InsSeriesEditorAdapter {
+  series?: InsSeriesConfiguration;
+  applyPatch: (patch: Partial<InsSeriesConfiguration>) => void;
+  datasetFilter?: InsSeriesEditorDatasetFilter;
+}
+
 interface InsSeriesEditorProps {
-  series: z.infer<typeof InsSeriesConfigurationSchema>;
+  series?: InsSeriesConfiguration;
+  adapter?: InsSeriesEditorAdapter;
 }
 
 interface InsDimensionFilterListProps {
@@ -149,11 +163,11 @@ function InsDimensionFilterList({
 
 async function buildDatasetDefaultPatch(
   dataset: InsDatasetDetails
-): Promise<Partial<z.infer<typeof InsSeriesConfigurationSchema>>> {
+): Promise<Partial<InsSeriesConfiguration>> {
   const allowedPeriodTypes = mapDatasetPeriodicitiesToAllowedTypes(dataset.periodicity ?? []);
   const preferredType = allowedPeriodTypes[0] ?? 'YEAR';
 
-  const defaults: Partial<z.infer<typeof InsSeriesConfigurationSchema>> = {
+  const defaults: Partial<InsSeriesConfiguration> = {
     period: buildDefaultInsPeriod(dataset, preferredType),
     aggregation: 'sum',
     hasValue: true,
@@ -206,8 +220,42 @@ async function buildDatasetDefaultPatch(
   return defaults;
 }
 
-export function InsSeriesEditor({ series }: InsSeriesEditorProps) {
+export function InsSeriesEditor({ series, adapter }: InsSeriesEditorProps) {
+  if (adapter) {
+    return <InsSeriesEditorInternal adapter={adapter} />;
+  }
+
+  if (!series) {
+    return null;
+  }
+
+  return <InsSeriesEditorWithChartStore series={series} />;
+}
+
+function InsSeriesEditorWithChartStore({ series }: { series: InsSeriesConfiguration }) {
   const { updateSeries } = useChartStore();
+  const adapter = useMemo<InsSeriesEditorAdapter>(
+    () => ({
+      series,
+      applyPatch: (patch) => {
+        updateSeries(series.id, {
+          ...patch,
+          updatedAt: new Date().toISOString(),
+        });
+      },
+    }),
+    [series, updateSeries]
+  );
+
+  return <InsSeriesEditorInternal adapter={adapter} />;
+}
+
+function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter }) {
+  const series = adapter.series;
+  if (!series) {
+    return null;
+  }
+
   const locale: InsLocale = getUserLocale() === 'en' ? 'en' : 'ro';
   const latestDatasetRequestIdRef = useRef(0);
   const latestSeriesRef = useRef(series);
@@ -263,11 +311,8 @@ export function InsSeriesEditor({ series }: InsSeriesEditorProps) {
     [nonTemporalDimensions]
   );
 
-  const update = (patch: Partial<z.infer<typeof InsSeriesConfigurationSchema>>) => {
-    updateSeries(series.id, {
-      ...patch,
-      updatedAt: new Date().toISOString(),
-    });
+  const update = (patch: Partial<InsSeriesConfiguration>) => {
+    adapter.applyPatch(patch);
   };
 
   useEffect(() => {
@@ -454,6 +499,7 @@ export function InsSeriesEditor({ series }: InsSeriesEditorProps) {
         >
           <InsDatasetList
             selectedOptions={selectedDatasetOptions}
+            datasetFilter={adapter.datasetFilter}
             toggleSelect={(option) => {
               const datasetCode = String(option.id);
               if (datasetCode === series.datasetCode) {

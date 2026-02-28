@@ -38,11 +38,29 @@ This document captures the key implementation decisions for `/experimental/map` 
 ## Data Contract and Adapter
 
 - Map data is consumed via a provider-neutral contract:
-  - `fetchGroupedSeriesData(request) -> { manifest, rows, warnings? }`
-- Long-row contract:
-  - `rows: { series_id, siruta_code, value }[]`
+  - `fetchGroupedSeriesData(request) -> { manifest, payload, warnings? }`
+- Payload contract (phase 1):
+  - `manifest.format = wide_matrix_v1`
+  - `payload.mime = text/csv`
+  - `payload.data` is a wide CSV matrix (`siruta_code,<series_id_1>,<series_id_2>,...`)
 - Phase 1 uses a mock map-specific adapter behind this stable interface.
 - Map and table endpoints remain separate externally (backend reuse is internal).
+
+## INS Series Parity
+
+- `/experimental/map` reuses the full chart INS editor workflow (dataset, period, dimensions), not a reduced map-specific form.
+- INS editor is adapter-based and store-agnostic:
+  - chart keeps chart-store wiring
+  - map uses adapter mode
+- Map INS dataset picker is capability-scoped:
+  - `has_uat_data = true`
+  - `has_siruta = true`
+- INS map vectors are evaluated with a dedicated map scalar engine:
+  - same observation filtering/reduction semantics as chart INS runtime
+  - scalar output grouped by `siruta_code`
+  - aggregation reuses `sum | average | first` across selected periods
+  - mixed units are warning-only with deterministic unit resolution
+- INS transport remains mocked in phase 1, but mock generation now follows INS filter semantics instead of generic random values.
 
 ## Calculation Semantics (Map-Specific)
 

@@ -6,6 +6,10 @@ import { hasCalculationCycle } from '@/lib/chart-calculation-utils';
 import type { MapSupportedSeries } from '@/schemas/experimental-map';
 import { CalculationEditor } from '@/components/charts/components/series-config/CalculationEditor';
 import {
+  InsSeriesEditor,
+  type InsSeriesEditorAdapter,
+} from '@/components/charts/components/series-config/InsSeriesEditor';
+import {
   SeriesFilter,
   type SeriesFilterAdapter,
 } from '@/components/charts/components/series-config/SeriesFilter';
@@ -14,7 +18,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SERIES_TYPE_LABELS } from './experimental-map-series-utils';
-import { Switch } from '@/components/ui/switch';
 
 interface ExperimentalMapSeriesEditorModalProps {
   open: boolean;
@@ -188,65 +191,22 @@ function SeriesConfigEditor({ series, allSeries, onUpdateSeries }: Readonly<Seri
     );
   }
 
-  return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="experimental-ins-dataset-code">Dataset code</Label>
-        <Input
-          id="experimental-ins-dataset-code"
-          value={series.datasetCode ?? ''}
-          onChange={(event) => {
-            const nextValue = event.currentTarget.value;
-            onUpdateSeries(series.id, (draft) => {
-              if (draft.type !== 'ins-series') {
-                return;
-              }
-              draft.datasetCode = nextValue || undefined;
-            });
-          }}
-          placeholder="e.g. POP107D"
-        />
-      </div>
+  const adapter: InsSeriesEditorAdapter = {
+    series,
+    datasetFilter: {
+      hasUatData: true,
+      hasSiruta: true,
+    },
+    applyPatch: (patch) => {
+      onUpdateSeries(series.id, (draft) => {
+        if (draft.type !== 'ins-series') {
+          return;
+        }
 
-      <div className="space-y-2">
-        <Label>Aggregation</Label>
-        <Select
-          value={series.aggregation ?? 'sum'}
-          onValueChange={(value) => {
-            onUpdateSeries(series.id, (draft) => {
-              if (draft.type !== 'ins-series') {
-                return;
-              }
-              draft.aggregation = value as 'sum' | 'average' | 'first';
-            });
-          }}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Aggregation" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="sum">sum</SelectItem>
-            <SelectItem value="average">average</SelectItem>
-            <SelectItem value="first">first</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+        Object.assign(draft, patch);
+      });
+    },
+  };
 
-      <div className="flex items-center justify-between rounded-lg border p-3">
-        <Label htmlFor="experimental-ins-has-value">Has value only</Label>
-        <Switch
-          id="experimental-ins-has-value"
-          checked={series.hasValue ?? true}
-          onCheckedChange={(checked) => {
-            onUpdateSeries(series.id, (draft) => {
-              if (draft.type !== 'ins-series') {
-                return;
-              }
-              draft.hasValue = checked;
-            });
-          }}
-        />
-      </div>
-    </div>
-  );
+  return <InsSeriesEditor adapter={adapter} />;
 }
