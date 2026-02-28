@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ArrowRight, BarChart3, MapPin, Megaphone } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -16,7 +17,7 @@ type CampaignLandingPageProps = {
 
 type LandingStoryItem = {
   readonly stepNumber: number
-  readonly title: string
+  readonly title: ReactNode
   readonly description: string
   readonly icon: LucideIcon
   readonly image: string
@@ -30,21 +31,21 @@ export function CampaignLandingPage({ locale }: CampaignLandingPageProps) {
       ? [
           {
             stepNumber: 1,
-            title: 'Find Your City Budget Fast',
+            title: 'Find your local budget fast',
             description: 'See in minutes how much money is planned for schools, roads, and local services.',
             icon: MapPin,
             image: mapPreview,
           },
           {
             stepNumber: 2,
-            title: 'Spot What Changed',
+            title: 'Identify the differences',
             description: 'Compare this year with previous years and quickly identify the biggest shifts.',
             icon: BarChart3,
             image: chartPreview,
           },
           {
             stepNumber: 3,
-            title: 'Use Data in Real Conversations',
+            title: 'Turn data into arguments',
             description: 'Leave with clear arguments you can use in public debates and official requests.',
             icon: Megaphone,
             image: entityAnalyticsPreview,
@@ -53,21 +54,33 @@ export function CampaignLandingPage({ locale }: CampaignLandingPageProps) {
       : [
           {
             stepNumber: 1,
-            title: 'Găsești rapid bugetul localității tale',
+            title: (
+              <>
+                Găsești rapid <span className="font-black">bugetul</span> localității tale
+              </>
+            ),
             description: 'Vezi în câteva minute câți bani merg spre școli, străzi și servicii locale.',
             icon: MapPin,
             image: mapPreview,
           },
           {
             stepNumber: 2,
-            title: 'Observi imediat ce s-a schimbat',
+            title: (
+              <>
+                Identifici <span className="font-black">diferențele</span>
+              </>
+            ),
             description: 'Compari anii și identifici rapid diferențele care contează pentru comunitatea ta.',
             icon: BarChart3,
             image: chartPreview,
           },
           {
             stepNumber: 3,
-            title: 'Transformi datele în argumente',
+            title: (
+              <>
+                Transformi datele în <span className="font-black">argumente</span>
+              </>
+            ),
             description: 'Pleci cu întrebări clare pentru dezbateri publice, sesizări și dialog cu primăria.',
             icon: Megaphone,
             image: entityAnalyticsPreview,
@@ -99,7 +112,7 @@ export function CampaignLandingPage({ locale }: CampaignLandingPageProps) {
               const Icon = item.icon
               return (
                 <li
-                  key={item.title}
+                  key={item.stepNumber}
                   className="relative overflow-hidden rounded-3xl border border-border/60 bg-background/90 shadow-sm"
                 >
                   <div className="absolute inset-0 z-0">
@@ -119,12 +132,12 @@ export function CampaignLandingPage({ locale }: CampaignLandingPageProps) {
                     <div className="flex w-full items-start gap-4 sm:gap-5">
                       <span className="relative mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-950 text-white ring-1 ring-blue-100/40 shadow-sm dark:bg-blue-900 dark:text-white dark:ring-blue-100/35">
                         <Icon className="h-5 w-5" aria-hidden="true" />
-                        <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-black text-white dark:bg-rose-500">
+                        <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full border border-zinc-400 bg-white px-1 text-[10px] font-black text-zinc-950 shadow-sm dark:border-zinc-700">
                           {item.stepNumber}
                         </span>
                       </span>
                       <div className="min-w-0 flex-1 space-y-2 text-left sm:pr-4">
-                        <p className="text-balance text-xl font-black leading-tight text-foreground sm:text-2xl">
+                        <p className="text-xl font-semibold leading-tight text-foreground md:whitespace-nowrap sm:text-2xl">
                           {item.title}
                         </p>
                         <p className="max-w-[46ch] text-base leading-relaxed text-muted-foreground sm:text-lg lg:max-w-[36ch]">
