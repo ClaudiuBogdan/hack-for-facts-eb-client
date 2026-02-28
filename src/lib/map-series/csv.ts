@@ -1,18 +1,23 @@
 import Papa from 'papaparse';
-import type { GroupedSeriesRow, MapSeriesWarning } from '@/lib/map-series/interfaces';
+import type {
+  GroupedSeriesRow,
+  MapSeriesVectorCache,
+  MapSeriesWarning,
+} from '@/lib/map-series/interfaces';
 
-interface ParsedCsvResult {
-  rows: GroupedSeriesRow[];
+interface ParsedWideCsvResult {
+  seriesIds: string[];
+  valuesBySeriesId: MapSeriesVectorCache;
   warnings: MapSeriesWarning[];
 }
 
-export function parseGroupedSeriesCsv(csvRaw: string): ParsedCsvResult {
+export function parseGroupedSeriesWideCsv(csvRaw: string): ParsedWideCsvResult {
   const warnings: MapSeriesWarning[] = [];
+
   const parsed = Papa.parse<Record<string, string>>(csvRaw, {
     header: true,
     delimiter: ',',
     skipEmptyLines: 'greedy',
-    transformHeader: (header) => header.trim().toLowerCase(),
     dynamicTyping: false,
   });
 
@@ -29,65 +34,153 @@ export function parseGroupedSeriesCsv(csvRaw: string): ParsedCsvResult {
     }
   }
 
-  const dedupeMap = new Map<string, GroupedSeriesRow>();
+  const fields = parsed.meta.fields ?? [];
+  if (!fields.includes('siruta_code')) {
+    warnings.push({
+      type: 'invalid_row',
+      message: 'Missing required siruta_code CSV header',
+    });
+
+    return {
+      seriesIds: [],
+      valuesBySeriesId: new Map(),
+      warnings,
+    };
+  }
+
+  const seriesIds = fields.filter((field) => field !== 'siruta_code');
+  const valuesBySeriesId: MapSeriesVectorCache = new Map();
+
+  for (const seriesId of seriesIds) {
+    valuesBySeriesId.set(seriesId, new Map());
+  }
+
+  const seenSirutaCodes = new Set<string>();
 
   for (const [index, row] of (parsed.data ?? []).entries()) {
-    const seriesId = row.series_id?.trim();
-    const sirutaCode = row.siruta_code?.trim();
-    const valueRaw = row.value?.trim();
+    const rowIndex = index + 2;
+    const sirutaCodeRaw = row.siruta_code;
+    const sirutaCode = typeof sirutaCodeRaw === 'string' ? sirutaCodeRaw.trim() : '';
 
-    if (!seriesId || !sirutaCode || valueRaw === undefined || valueRaw === '') {
+    if (sirutaCode.length === 0) {
       warnings.push({
         type: 'invalid_row',
-        message: `Skipped CSV row ${index + 2}: missing series_id/siruta_code/value`,
-        details: {
-          rowIndex: index + 2,
-        },
+        message: `Skipped CSV row ${rowIndex}: missing siruta_code`,
+        details: { rowIndex },
       });
       continue;
     }
 
-    const value = Number(valueRaw);
-    if (!Number.isFinite(value)) {
-      warnings.push({
-        type: 'invalid_row',
-        message: `Skipped CSV row ${index + 2}: value is not a finite number`,
-        details: {
-          rowIndex: index + 2,
-          value: valueRaw,
-        },
-      });
-      continue;
-    }
-
-    const dedupeKey = `${seriesId}::${sirutaCode}`;
-    if (dedupeMap.has(dedupeKey)) {
+    if (seenSirutaCodes.has(sirutaCode)) {
       warnings.push({
         type: 'duplicate_row',
-        seriesId,
         sirutaCode,
-        message: `Duplicate row for ${seriesId}/${sirutaCode}; last value wins`,
+        message: `Duplicate row for ${sirutaCode}; last row wins`,
       });
     }
+    seenSirutaCodes.add(sirutaCode);
 
-    dedupeMap.set(dedupeKey, {
-      series_id: seriesId,
-      siruta_code: sirutaCode,
-      value,
-    });
+    for (const seriesId of seriesIds) {
+      const rawValue = row[seriesId];
+      const trimmedValue = typeof rawValue === 'string' ? rawValue.trim() : '';
+      const vector = valuesBySeriesId.get(seriesId);
+
+      if (vector === undefined) {
+        continue;
+      }
+
+      if (trimmedValue === '' || trimmedValue.toLowerCase() === 'null') {
+        vector.delete(sirutaCode);
+        continue;
+      }
+
+      const value = Number(trimmedValue);
+      if (!Number.isFinite(value)) {
+        warnings.push({
+          type: 'invalid_row',
+          message: `Skipped value for row ${rowIndex}, series ${seriesId}: value is not a finite number`,
+          seriesId,
+          sirutaCode,
+          details: {
+            rowIndex,
+            value: rawValue,
+          },
+        });
+        vector.delete(sirutaCode);
+        continue;
+      }
+
+      vector.set(sirutaCode, value);
+    }
   }
 
   return {
-    rows: Array.from(dedupeMap.values()),
+    seriesIds,
+    valuesBySeriesId,
     warnings,
   };
 }
 
-export function serializeGroupedSeriesRowsCsv(rows: GroupedSeriesRow[]): string {
-  const csvResult = Papa.unparse(rows, {
-    columns: ['series_id', 'siruta_code', 'value'],
-    header: true,
+function escapeCsvCell(value: string): string {
+  const requiresQuoting =
+    value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r');
+
+  if (!requiresQuoting) {
+    return value;
+  }
+
+  const escaped = value.replace(/"/g, '""');
+  return `"${escaped}"`;
+}
+
+function toCellValue(value: number | undefined): string {
+  if (value === undefined) {
+    return 'null';
+  }
+
+  return value.toString();
+}
+
+export function serializeGroupedSeriesWideMatrixCsv(
+  rows: GroupedSeriesRow[],
+  seriesOrder: string[]
+): string {
+  const rowValuesBySiruta = new Map<string, Map<string, number>>();
+
+  for (const row of rows) {
+    if (!rowValuesBySiruta.has(row.siruta_code)) {
+      rowValuesBySiruta.set(row.siruta_code, new Map());
+    }
+
+    const valuesBySeries = rowValuesBySiruta.get(row.siruta_code);
+    if (valuesBySeries === undefined) {
+      continue;
+    }
+
+    valuesBySeries.set(row.series_id, row.value);
+  }
+
+  const sortedSirutaCodes = Array.from(rowValuesBySiruta.keys()).sort((left, right) =>
+    left.localeCompare(right)
+  );
+
+  const header = ['siruta_code', ...seriesOrder].map((cell) => escapeCsvCell(cell)).join(',');
+
+  if (sortedSirutaCodes.length === 0) {
+    return header;
+  }
+
+  const csvRows = sortedSirutaCodes.map((sirutaCode) => {
+    const valuesBySeries = rowValuesBySiruta.get(sirutaCode) ?? new Map<string, number>();
+    const cells = [escapeCsvCell(sirutaCode)];
+
+    for (const seriesId of seriesOrder) {
+      const value = valuesBySeries.get(seriesId);
+      cells.push(toCellValue(value));
+    }
+
+    return cells.join(',');
   });
 
-  return csvResult;
+  return [header, ...csvRows].join('\n');
 }

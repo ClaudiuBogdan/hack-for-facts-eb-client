@@ -8,17 +8,27 @@ import { useGeoJsonData } from '@/hooks/useGeoJson';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useExperimentalMapSeriesData } from '@/hooks/useExperimentalMapSeriesData';
 import { useExperimentalMapBins } from '@/hooks/useExperimentalMapBins';
+import { useExperimentalMapTableBinsFilter } from '@/hooks/useExperimentalMapTableBinsFilter';
+import { buildDiscretePaletteFromConfig } from '@/lib/map-bins/bins';
 import { getHeatmapColor, getPercentileValues, normalizeValue } from '@/components/maps/utils';
 import type { UatFeature, UatProperties } from '@/components/maps/interfaces';
 import type { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap';
 import { defaultMapFilters } from '@/schemas/map-filters';
 import type { AnalyticsFilterType } from '@/schemas/charts';
-import type { ExperimentalMapUrlState, MapSupportedSeries } from '@/schemas/experimental-map';
+import type {
+  ExperimentalMapTableRow,
+  ExperimentalMapTableSeriesColumn,
+} from '@/components/maps/experimental/experimental-map-table-types';
+import { ExperimentalMapDataTable } from '@/components/maps/experimental/experimental-map-data-table';
+import { formatExperimentalMapSeriesValue } from '@/components/maps/experimental/experimental-map-formatting';
+import type {
+  ExperimentalMapUrlState,
+  MapSupportedSeries,
+} from '@/schemas/experimental-map';
 import {
   createDefaultExperimentalMapSeries,
   ExperimentalMapUrlStateSchema,
 } from '@/schemas/experimental-map';
-import { formatCurrency, formatNumber } from '@/lib/utils';
 import { getSiteUrl } from '@/config/env';
 import { useUserCurrency } from '@/lib/hooks/useUserCurrency';
 import { useUserInflationAdjusted } from '@/lib/hooks/useUserInflationAdjusted';
@@ -183,6 +193,15 @@ export function ExperimentalMapPage() {
     [updateState]
   );
 
+  const setActiveView = useCallback(
+    (activeView: 'map' | 'table') => {
+      updateState((draft) => {
+        draft.activeView = activeView;
+      });
+    },
+    [updateState]
+  );
+
   const changeSeriesType = useCallback(
     (seriesId: string, type: MapSupportedSeries['type']) => {
       updateState((draft) => {
@@ -241,8 +260,8 @@ export function ExperimentalMapPage() {
 
   const {
     binsEditorState,
+    activeBinsPreset,
     modalBinsPreset,
-    modalBinsValidationErrors,
     binsClassification,
     binsCanApply,
     combinedWarnings,
@@ -253,9 +272,7 @@ export function ExperimentalMapPage() {
     setActiveBinsPreset,
     reorderBinsPresets,
     applyBinsPreset,
-    regenerateBinsPreset,
     closeBinsEditor,
-    showBinLabelOnLegend,
     activeNoDataConfig,
   } = useExperimentalMapBins({
     mapState,
@@ -265,6 +282,14 @@ export function ExperimentalMapPage() {
     activeValues,
     seriesWarnings,
   });
+
+  const activeBinsLegendTitle = useMemo(() => {
+    const title = activeBinsPreset?.config.title?.trim();
+    if (title && title.length > 0) {
+      return title;
+    }
+    return activeSeries?.label || 'Active series';
+  }, [activeBinsPreset?.config.title, activeSeries?.label]);
 
   const activeHeatmapData = useMemo<HeatmapUATDataPoint[]>(() => {
     if (!activeSeries || !activeValues) {
@@ -384,6 +409,157 @@ export function ExperimentalMapPage() {
     [mapState.series]
   );
 
+  const seriesColumns = useMemo<ExperimentalMapTableSeriesColumn[]>(() => {
+    if (enabledSeries.length === 0) {
+      return [];
+    }
+
+    const activeSeries = activeSeriesId
+      ? enabledSeries.find((series) => series.id === activeSeriesId)
+      : undefined;
+    const orderedSeries = activeSeries
+      ? [activeSeries, ...enabledSeries.filter((series) => series.id !== activeSeries.id)]
+      : enabledSeries;
+
+    return orderedSeries.map((series) => ({
+      id: series.id,
+      label: series.label.trim().length > 0 ? series.label : series.id,
+      unit: unitsBySeriesId.get(series.id) ?? series.unit,
+    }));
+  }, [activeSeriesId, enabledSeries, unitsBySeriesId]);
+
+  const geoJsonFeatures = useMemo<UatFeature[]>(() => {
+    if (!geoJsonData || !('features' in geoJsonData) || !Array.isArray(geoJsonData.features)) {
+      return [];
+    }
+    return geoJsonData.features as UatFeature[];
+  }, [geoJsonData]);
+
+  const uatMetadataBySirutaCode = useMemo(() => {
+    const metadataBySirutaCode = new Map<string, Omit<ExperimentalMapTableRow, 'sirutaCode' | 'valuesBySeriesId'>>();
+
+    for (const feature of geoJsonFeatures) {
+      const properties = feature?.properties;
+      const sirutaCode = String(properties?.natcode ?? '').trim();
+      if (!sirutaCode) {
+        continue;
+      }
+
+      metadataBySirutaCode.set(sirutaCode, {
+        uatName: String(properties?.name ?? ''),
+        countyName: String(properties?.county ?? ''),
+        entityCui: getEntityCuiFromUatProperties(properties),
+      });
+    }
+
+    return metadataBySirutaCode;
+  }, [geoJsonFeatures]);
+
+  const tableRows = useMemo<ExperimentalMapTableRow[]>(() => {
+    const uniqueSirutaCodes = new Set<string>();
+
+    for (const seriesColumn of seriesColumns) {
+      const vector = valuesBySeriesId.get(seriesColumn.id);
+      if (!vector) {
+        continue;
+      }
+
+      for (const sirutaCode of vector.keys()) {
+        uniqueSirutaCodes.add(String(sirutaCode));
+      }
+    }
+
+    return [...uniqueSirutaCodes]
+      .map((sirutaCode) => {
+        const metadata = uatMetadataBySirutaCode.get(sirutaCode);
+        const rowValuesBySeriesId: Record<string, number | undefined> = {};
+
+        for (const seriesColumn of seriesColumns) {
+          rowValuesBySeriesId[seriesColumn.id] = valuesBySeriesId
+            .get(seriesColumn.id)
+            ?.get(sirutaCode);
+        }
+
+        return {
+          sirutaCode,
+          uatName: metadata?.uatName || `UAT ${sirutaCode}`,
+          countyName: metadata?.countyName || 'Unknown county',
+          entityCui: metadata?.entityCui,
+          valuesBySeriesId: rowValuesBySeriesId,
+        };
+      })
+      .sort((left, right) => {
+        const nameCompare = left.uatName.localeCompare(right.uatName, undefined, {
+          sensitivity: 'base',
+        });
+        if (nameCompare !== 0) {
+          return nameCompare;
+        }
+        return left.sirutaCode.localeCompare(right.sirutaCode);
+      });
+  }, [seriesColumns, uatMetadataBySirutaCode, valuesBySeriesId]);
+
+  const toggleBinFilterSelection = useCallback(
+    (presetId: string, groupId: string, checked: boolean) => {
+      updateState((draft) => {
+        const preset = draft.binsPresets.find((entry) => entry.id === presetId);
+        if (!preset) {
+          delete draft.tableBinFiltersByPresetId[presetId];
+          return;
+        }
+
+        const validGroupIds = new Set(
+          buildDiscretePaletteFromConfig(preset.config).map((entry) => entry.groupId)
+        );
+        if (!validGroupIds.has(groupId)) {
+          return;
+        }
+
+        const previousSelection = draft.tableBinFiltersByPresetId[presetId] ?? [];
+        const sanitizedSelection = [...new Set(previousSelection)].filter((id) =>
+          validGroupIds.has(id)
+        );
+
+        const nextSelection = checked
+          ? sanitizedSelection.includes(groupId)
+            ? sanitizedSelection
+            : [...sanitizedSelection, groupId]
+          : sanitizedSelection.filter((id) => id !== groupId);
+
+        if (nextSelection.length === 0) {
+          delete draft.tableBinFiltersByPresetId[presetId];
+          return;
+        }
+
+        draft.tableBinFiltersByPresetId[presetId] = nextSelection;
+      });
+    },
+    [updateState]
+  );
+
+  const clearPresetBinFilters = useCallback(
+    (presetId: string) => {
+      updateState((draft) => {
+        delete draft.tableBinFiltersByPresetId[presetId];
+      });
+    },
+    [updateState]
+  );
+
+  const clearAllBinFilters = useCallback(() => {
+    updateState((draft) => {
+      draft.tableBinFiltersByPresetId = {};
+    });
+  }, [updateState]);
+
+  const { filteredRows: filteredTableRows, binsFilterSections, hasActiveBinFilters } =
+    useExperimentalMapTableBinsFilter({
+      rows: tableRows,
+      binsPresets: mapState.binsPresets,
+      activeValues,
+      tableBinFiltersByPresetId: mapState.tableBinFiltersByPresetId,
+    });
+
   const getTooltipContent = useCallback(
     ({
       properties,
@@ -408,7 +584,7 @@ export function ExperimentalMapPage() {
       const seriesRows = enabledSeries.map((series) => {
         const seriesValue = valuesBySeriesId.get(series.id)?.get(sirutaCode);
         const unit = unitsBySeriesId.get(series.id) ?? series.unit;
-        const formattedValue = formatSeriesValue(seriesValue, unit);
+        const formattedValue = formatExperimentalMapSeriesValue(seriesValue, unit);
         return {
           label: series.label || series.id,
           value: formattedValue,
@@ -434,18 +610,48 @@ export function ExperimentalMapPage() {
       const activeSeriesValue = activeSeriesId
         ? valuesBySeriesId.get(activeSeriesId)?.get(sirutaCode)
         : undefined;
+      const activeClassification = binsCanApply
+        ? binsClassification.groupsBySiruta.get(sirutaCode) ??
+          (activeNoDataConfig
+            ? {
+                label: activeNoDataConfig.label,
+                isNoData: true,
+              }
+            : undefined)
+        : undefined;
+
+      const shouldShowNoDataTooltipMarker = binsCanApply
+        ? Boolean(activeNoDataConfig?.showInTooltip && activeClassification?.isNoData)
+        : Boolean(
+            activeNoDataConfig &&
+              activeNoDataConfig.showInTooltip &&
+              (activeSeriesValue === undefined || !Number.isFinite(activeSeriesValue))
+          );
+
       let noDataTooltipMarker = '';
-      if (
-        activeNoDataConfig &&
-        activeNoDataConfig.showInTooltip &&
-        (activeSeriesValue === undefined || !Number.isFinite(activeSeriesValue))
-      ) {
+      if (shouldShowNoDataTooltipMarker && activeNoDataConfig) {
         noDataTooltipMarker = `
           <div style="margin-top:8px;padding-top:8px;border-top:1px solid #e5e7eb;color:#6b7280;">
             ${escapeHtml(activeNoDataConfig.label)}
           </div>
         `;
       }
+
+      const binsAnalyticsRows =
+        binsCanApply && activeClassification
+          ? `
+            <div style="margin-top:8px;padding-top:8px;border-top:1px solid #e5e7eb;display:flex;flex-direction:column;gap:4px;">
+              <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;">
+                <span style="font-weight:500;color:#374151;">Bins</span>
+                <span style="font-weight:500;text-align:right;">${escapeHtml(activeBinsLegendTitle)}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;">
+                <span style="font-weight:500;color:#374151;">Group</span>
+                <span style="font-weight:500;text-align:right;">${escapeHtml(activeClassification.label)}</span>
+              </div>
+            </div>
+          `
+          : '';
 
       return `
         <div style="font-family:Inter,sans-serif;font-size:13px;min-width:260px;max-width:360px;padding:8px;">
@@ -458,11 +664,22 @@ export function ExperimentalMapPage() {
           <div style="display:flex;flex-direction:column;gap:6px;">
             ${rowsHtml || '<span>No enabled series</span>'}
           </div>
+          ${binsAnalyticsRows}
           ${noDataTooltipMarker}
         </div>
       `;
     },
-    [activeNoDataConfig, activeSeries, activeSeriesId, enabledSeries, unitsBySeriesId, valuesBySeriesId]
+    [
+      activeBinsLegendTitle,
+      activeNoDataConfig,
+      activeSeries,
+      activeSeriesId,
+      binsCanApply,
+      binsClassification.groupsBySiruta,
+      enabledSeries,
+      unitsBySeriesId,
+      valuesBySeriesId,
+    ]
   );
 
   const handleMapViewChange = useCallback(
@@ -485,12 +702,28 @@ export function ExperimentalMapPage() {
 
   const mapError = error || geoJsonError;
   const isMapLoading = isLoading || isGeoJsonLoading;
+  const isTableLoading = isLoading;
   const activeUnit = activeSeries ? unitsBySeriesId.get(activeSeries.id) || activeSeries.unit : undefined;
   const modalSeries = editorState
     ? mapState.series.find((series) => series.id === editorState.seriesId)
     : undefined;
   const activeSeriesDisplayLabel = activeSeries?.label || activeSeriesId || 'None';
   const mapName = mapState.mapName || DEFAULT_MAP_NAME;
+  const isMapViewActive = mapState.activeView !== 'table';
+
+  const handleTableRowClick = useCallback(
+    (row: ExperimentalMapTableRow) => {
+      if (!row.entityCui) {
+        return;
+      }
+
+      navigate({
+        to: '/entities/$cui',
+        params: { cui: row.entityCui },
+      });
+    },
+    [navigate]
+  );
 
   useEffect(() => {
     if (editorState?.mode === 'edit' && !modalSeries) {
@@ -504,9 +737,11 @@ export function ExperimentalMapPage() {
         <div className="space-y-4 p-4">
           <ExperimentalMapConfigPanel
             collapsed={Boolean(mapState.configPanelCollapsed)}
+            activeView={mapState.activeView}
             mapName={mapName}
             warningCount={combinedWarnings.length}
             onToggleCollapsed={toggleConfigPanelCollapsed}
+            onActiveViewChange={setActiveView}
             onMapNameChange={setMapName}
             onOpenConfig={() => setIsConfigModalOpen(true)}
             onOpenWarnings={() => setIsWarningsModalOpen(true)}
@@ -539,77 +774,110 @@ export function ExperimentalMapPage() {
 
       <main className="flex-1 flex flex-col min-h-[55vh] md:min-h-0">
         <div className="flex-1 relative overflow-hidden">
-          {isMapLoading ? (
-            <div className="h-full w-full flex items-center justify-center">
-              <LoadingSpinner size="lg" text="Loading experimental map..." />
-            </div>
-          ) : mapError ? (
-            <div className="h-full w-full flex items-center justify-center text-red-600">
-              {mapError.message}
-            </div>
-          ) : !geoJsonData ? (
-            <div className="h-full w-full flex items-center justify-center text-muted-foreground">
-              Map geometry is unavailable.
-            </div>
-          ) : (
-            <>
-              <ClientOnly
-                fallback={
-                  <div className="h-full w-full flex items-center justify-center">
-                    <LoadingSpinner size="lg" text="Loading map..." />
-                  </div>
-                }
-              >
-                <Suspense
+          {isMapViewActive ? (
+            isMapLoading ? (
+              <div className="h-full w-full flex items-center justify-center">
+                <LoadingSpinner size="lg" text="Loading experimental map..." />
+              </div>
+            ) : mapError ? (
+              <div className="h-full w-full flex items-center justify-center text-red-600">
+                {mapError.message}
+              </div>
+            ) : !geoJsonData ? (
+              <div className="h-full w-full flex items-center justify-center text-muted-foreground">
+                Map geometry is unavailable.
+              </div>
+            ) : (
+              <>
+                <ClientOnly
                   fallback={
                     <div className="h-full w-full flex items-center justify-center">
                       <LoadingSpinner size="lg" text="Loading map..." />
                     </div>
                   }
                 >
-                  <InteractiveMap
-                    onFeatureClick={() => {
-                      // Navigation is intentionally disabled in the experimental route.
-                    }}
-                    getFeatureStyle={getFeatureStyle}
-                    heatmapData={activeHeatmapData}
-                    geoJsonData={geoJsonData}
-                    zoom={mapZoom}
-                    center={mapState.mapCenter}
-                    mapViewType="UAT"
-                    filters={defaultMapFilters}
-                    showLabels={false}
-                    onViewChange={handleMapViewChange}
-                    getTooltipContent={getTooltipContent}
-                  />
-                </Suspense>
-              </ClientOnly>
-
-              {!activeSeries ? (
-                <div className="pointer-events-none absolute left-4 top-4 z-[500] rounded-md border bg-card/95 px-3 py-2 text-sm text-muted-foreground shadow-sm">
-                  No active series selected.
-                </div>
-              ) : null}
-
-              {activeSeries ? (
-                <div className="absolute bottom-4 right-4 z-[500]">
-                  {binsCanApply ? (
-                    <ExperimentalMapDiscreteLegend
-                      title={activeSeries.label || 'Active series'}
-                      entries={binsClassification.palette}
-                      showBinLabel={showBinLabelOnLegend}
+                  <Suspense
+                    fallback={
+                      <div className="h-full w-full flex items-center justify-center">
+                        <LoadingSpinner size="lg" text="Loading map..." />
+                      </div>
+                    }
+                  >
+                    <InteractiveMap
+                      onFeatureClick={() => {
+                        // Navigation is intentionally disabled in the experimental route.
+                      }}
+                      getFeatureStyle={getFeatureStyle}
+                      heatmapData={activeHeatmapData}
+                      geoJsonData={geoJsonData}
+                      zoom={mapZoom}
+                      center={mapState.mapCenter}
+                      mapViewType="UAT"
+                      filters={defaultMapFilters}
+                      showLabels={false}
+                      onViewChange={handleMapViewChange}
+                      getTooltipContent={getTooltipContent}
                     />
-                  ) : (
-                    <LegendCard
-                      min={minAggregatedValue}
-                      max={maxAggregatedValue}
-                      unit={activeUnit}
-                      title={activeSeries.label || 'Active series'}
-                    />
-                  )}
+                  </Suspense>
+                </ClientOnly>
+
+                {!activeSeries ? (
+                  <div className="pointer-events-none absolute left-4 top-4 z-[500] rounded-md border bg-card/95 px-3 py-2 text-sm text-muted-foreground shadow-sm">
+                    No active series selected.
+                  </div>
+                ) : null}
+
+                {activeSeries ? (
+                  <div className="absolute bottom-4 right-4 z-[500]">
+                    {binsCanApply ? (
+                      <ExperimentalMapDiscreteLegend
+                        title={activeBinsLegendTitle}
+                        entries={binsClassification.palette}
+                      />
+                    ) : (
+                      <LegendCard
+                        min={minAggregatedValue}
+                        max={maxAggregatedValue}
+                        unit={activeUnit}
+                        title={activeSeries.label || 'Active series'}
+                      />
+                    )}
+                  </div>
+                ) : null}
+              </>
+            )
+          ) : (
+            <div className="h-full w-full p-4">
+              {isTableLoading ? (
+                <div className="flex h-full items-center justify-center">
+                  <LoadingSpinner size="lg" text="Loading table data..." />
                 </div>
-              ) : null}
-            </>
+              ) : error ? (
+                <div className="flex h-full items-center justify-center text-red-600">
+                  {error.message}
+                </div>
+              ) : enabledSeries.length === 0 ? (
+                <div className="flex h-full items-center justify-center text-muted-foreground">
+                  No enabled series.
+                </div>
+              ) : tableRows.length === 0 ? (
+                <div className="flex h-full items-center justify-center text-muted-foreground">
+                  No data available for table.
+                </div>
+              ) : (
+                <ExperimentalMapDataTable
+                  rows={filteredTableRows}
+                  seriesColumns={seriesColumns}
+                  activeSeriesId={activeSeriesId}
+                  onRowClick={handleTableRowClick}
+                  binsFilterSections={binsFilterSections}
+                  onToggleBinFilter={toggleBinFilterSelection}
+                  onClearPresetBinFilters={clearPresetBinFilters}
+                  onClearAllBinFilters={clearAllBinFilters}
+                  hasActiveBinFilters={hasActiveBinFilters}
+                />
+              )}
+            </div>
           )}
         </div>
       </main>
@@ -631,8 +899,6 @@ export function ExperimentalMapPage() {
       <ExperimentalMapConfigModal
         open={isConfigModalOpen}
         mapName={mapName}
-        activeSeriesLabel={activeSeriesDisplayLabel}
-        activeUnit={activeUnit}
         warningCount={combinedWarnings.length}
         onMapNameChange={setMapName}
         onOpenChange={setIsConfigModalOpen}
@@ -643,15 +909,10 @@ export function ExperimentalMapPage() {
         open={binsEditorState != null && modalBinsPreset != null}
         preset={modalBinsPreset}
         activeSeriesLabel={activeSeriesDisplayLabel}
-        validationErrors={modalBinsValidationErrors}
+        activeSeriesValues={activeValues}
         onOpenChange={(open) => {
           if (!open) {
             closeBinsEditor();
-          }
-        }}
-        onRegenerate={() => {
-          if (modalBinsPreset) {
-            regenerateBinsPreset(modalBinsPreset.id);
           }
         }}
         onApplyPreset={applyBinsPreset}
@@ -684,31 +945,11 @@ function LegendCard({
       <h4 className="text-xs font-semibold mb-2">{title}</h4>
       <div className="h-4 w-full border border-border rounded-sm" style={{ background: gradient }} />
       <div className="mt-1 flex justify-between text-xs">
-        <span>{formatSeriesValue(min, unit)}</span>
-        <span>{formatSeriesValue(max, unit)}</span>
+        <span>{formatExperimentalMapSeriesValue(min, unit)}</span>
+        <span>{formatExperimentalMapSeriesValue(max, unit)}</span>
       </div>
     </div>
   );
-}
-
-function formatSeriesValue(value: number | undefined, unit: string | undefined): string {
-  if (value === undefined || value === null || !Number.isFinite(value)) {
-    return 'Missing';
-  }
-
-  if (!unit || unit.trim().length === 0) {
-    return formatNumber(value, 'compact');
-  }
-
-  if (unit === '%' || unit.includes('%')) {
-    return `${formatNumber(value, 'compact')}%`;
-  }
-
-  if (unit === 'RON' || unit === 'EUR' || unit === 'USD') {
-    return formatCurrency(value, 'compact', unit);
-  }
-
-  return `${formatNumber(value, 'compact')} ${unit}`;
 }
 
 function escapeHtml(value: string): string {
@@ -718,6 +959,32 @@ function escapeHtml(value: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function getEntityCuiFromUatProperties(properties: UatProperties | undefined): string | undefined {
+  if (!properties) {
+    return undefined;
+  }
+
+  const rawCandidates = [
+    properties.cui,
+    properties.uat_code,
+    properties.uatCode,
+    properties.entity_cui,
+    properties.entityCui,
+  ];
+
+  for (const candidate of rawCandidates) {
+    if (typeof candidate === 'string' && candidate.trim().length > 0) {
+      return candidate.trim();
+    }
+
+    if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+      return String(candidate);
+    }
+  }
+
+  return undefined;
 }
 
 function buildExperimentalMapHead() {

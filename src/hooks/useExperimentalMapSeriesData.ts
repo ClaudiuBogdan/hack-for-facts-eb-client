@@ -4,6 +4,7 @@ import type { Currency } from '@/schemas/charts';
 import type { MapBaseSeries, MapSupportedSeries } from '@/schemas/experimental-map';
 import { fetchGroupedSeriesData } from '@/lib/api/map-series';
 import { calculateMapSeriesValues } from '@/lib/map-series/calculation';
+import { parseGroupedSeriesWideCsv } from '@/lib/map-series/csv';
 import type {
   GroupedSeriesDataResponse,
   MapSeriesVectorCache,
@@ -76,11 +77,15 @@ export function useExperimentalMapSeriesData(
         return {
           manifest: {
             generated_at: new Date().toISOString(),
-            format: 'long_rows_v1',
+            format: 'wide_matrix_v1',
             granularity: 'UAT',
             series: [],
           },
-          rows: [],
+          payload: {
+            mime: 'text/csv',
+            compression: 'none',
+            data: 'siruta_code',
+          },
           warnings: [],
         };
       }
@@ -112,11 +117,24 @@ export function useExperimentalMapSeriesData(
         baseUnits.set(manifestSeries.series_id, manifestSeries.unit);
       }
 
-      for (const row of response.rows) {
-        if (!baseVectors.has(row.series_id)) {
-          baseVectors.set(row.series_id, new Map());
+      const parsedPayload = parseGroupedSeriesWideCsv(response.payload.data);
+      for (const [seriesId, vector] of parsedPayload.valuesBySeriesId.entries()) {
+        if (!baseVectors.has(seriesId)) {
+          baseVectors.set(seriesId, new Map());
         }
-        baseVectors.get(row.series_id)?.set(row.siruta_code, row.value);
+
+        const targetVector = baseVectors.get(seriesId);
+        if (targetVector === undefined) {
+          continue;
+        }
+
+        for (const [sirutaCode, value] of vector.entries()) {
+          targetVector.set(sirutaCode, value);
+        }
+      }
+
+      if (parsedPayload.warnings.length > 0) {
+        warnings.push(...parsedPayload.warnings);
       }
 
       if (response.warnings?.length) {

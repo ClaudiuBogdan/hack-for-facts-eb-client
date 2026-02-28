@@ -1,8 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
+
 import { useExperimentalMapSeriesData } from '@/hooks/useExperimentalMapSeriesData';
 import { createDefaultExperimentalMapSeries } from '@/schemas/experimental-map';
+import { serializeGroupedSeriesWideMatrixCsv } from '@/lib/map-series/csv';
 
 const fetchGroupedSeriesDataMock = vi.hoisted(() => vi.fn());
 
@@ -24,6 +26,32 @@ function createWrapper() {
   };
 }
 
+function makeGroupedResponse(input: {
+  series: Array<{ id: string; unit?: string }>;
+  rows: Array<{ series_id: string; siruta_code: string; value: number }>;
+}) {
+  const seriesOrder = input.series.map((series) => series.id);
+
+  return {
+    manifest: {
+      generated_at: new Date().toISOString(),
+      format: 'wide_matrix_v1' as const,
+      granularity: 'UAT' as const,
+      series: input.series.map((series) => ({
+        series_id: series.id,
+        unit: series.unit,
+        defined_value_count: input.rows.filter((row) => row.series_id === series.id).length,
+      })),
+    },
+    payload: {
+      mime: 'text/csv' as const,
+      compression: 'none' as const,
+      data: serializeGroupedSeriesWideMatrixCsv(input.rows, seriesOrder),
+    },
+    warnings: [],
+  };
+}
+
 describe('useExperimentalMapSeriesData', () => {
   beforeEach(() => {
     fetchGroupedSeriesDataMock.mockReset();
@@ -33,22 +61,18 @@ describe('useExperimentalMapSeriesData', () => {
     const baseSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
     const secondSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
 
-    fetchGroupedSeriesDataMock.mockResolvedValue({
-      manifest: {
-        generated_at: new Date().toISOString(),
-        format: 'long_rows_v1',
-        granularity: 'UAT',
+    fetchGroupedSeriesDataMock.mockResolvedValue(
+      makeGroupedResponse({
         series: [
-          { series_id: baseSeries.id, unit: 'RON', row_count: 1 },
-          { series_id: secondSeries.id, unit: 'RON', row_count: 1 },
+          { id: baseSeries.id, unit: 'RON' },
+          { id: secondSeries.id, unit: 'RON' },
         ],
-      },
-      rows: [
-        { series_id: baseSeries.id, siruta_code: '1001', value: 10 },
-        { series_id: secondSeries.id, siruta_code: '1001', value: 20 },
-      ],
-      warnings: [],
-    });
+        rows: [
+          { series_id: baseSeries.id, siruta_code: '1001', value: 10 },
+          { series_id: secondSeries.id, siruta_code: '1001', value: 20 },
+        ],
+      })
+    );
 
     const wrapper = createWrapper();
 
@@ -87,22 +111,18 @@ describe('useExperimentalMapSeriesData', () => {
     const baseSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
     const secondSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
 
-    fetchGroupedSeriesDataMock.mockResolvedValue({
-      manifest: {
-        generated_at: new Date().toISOString(),
-        format: 'long_rows_v1',
-        granularity: 'UAT',
+    fetchGroupedSeriesDataMock.mockResolvedValue(
+      makeGroupedResponse({
         series: [
-          { series_id: baseSeries.id, unit: 'RON', row_count: 1 },
-          { series_id: secondSeries.id, unit: 'RON', row_count: 1 },
+          { id: baseSeries.id, unit: 'RON' },
+          { id: secondSeries.id, unit: 'RON' },
         ],
-      },
-      rows: [
-        { series_id: baseSeries.id, siruta_code: '1001', value: 10 },
-        { series_id: secondSeries.id, siruta_code: '1001', value: 20 },
-      ],
-      warnings: [],
-    });
+        rows: [
+          { series_id: baseSeries.id, siruta_code: '1001', value: 10 },
+          { series_id: secondSeries.id, siruta_code: '1001', value: 20 },
+        ],
+      })
+    );
 
     const wrapper = createWrapper();
 
@@ -139,16 +159,12 @@ describe('useExperimentalMapSeriesData', () => {
   it('emits URL budget warning when search payload is too large', async () => {
     const baseSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
 
-    fetchGroupedSeriesDataMock.mockResolvedValue({
-      manifest: {
-        generated_at: new Date().toISOString(),
-        format: 'long_rows_v1',
-        granularity: 'UAT',
-        series: [{ series_id: baseSeries.id, unit: 'RON', row_count: 1 }],
-      },
-      rows: [{ series_id: baseSeries.id, siruta_code: '1001', value: 10 }],
-      warnings: [],
-    });
+    fetchGroupedSeriesDataMock.mockResolvedValue(
+      makeGroupedResponse({
+        series: [{ id: baseSeries.id, unit: 'RON' }],
+        rows: [{ series_id: baseSeries.id, siruta_code: '1001', value: 10 }],
+      })
+    );
 
     const wrapper = createWrapper();
     const { result } = renderHook(
@@ -173,16 +189,12 @@ describe('useExperimentalMapSeriesData', () => {
   it('does not fetch when hook is disabled', async () => {
     const baseSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
 
-    fetchGroupedSeriesDataMock.mockResolvedValue({
-      manifest: {
-        generated_at: new Date().toISOString(),
-        format: 'long_rows_v1',
-        granularity: 'UAT',
-        series: [{ series_id: baseSeries.id, unit: 'RON', row_count: 1 }],
-      },
-      rows: [{ series_id: baseSeries.id, siruta_code: '1001', value: 10 }],
-      warnings: [],
-    });
+    fetchGroupedSeriesDataMock.mockResolvedValue(
+      makeGroupedResponse({
+        series: [{ id: baseSeries.id, unit: 'RON' }],
+        rows: [{ series_id: baseSeries.id, siruta_code: '1001', value: 10 }],
+      })
+    );
 
     const wrapper = createWrapper();
     const { result } = renderHook(
@@ -208,16 +220,12 @@ describe('useExperimentalMapSeriesData', () => {
   it('fetches once after being re-enabled', async () => {
     const baseSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
 
-    fetchGroupedSeriesDataMock.mockResolvedValue({
-      manifest: {
-        generated_at: new Date().toISOString(),
-        format: 'long_rows_v1',
-        granularity: 'UAT',
-        series: [{ series_id: baseSeries.id, unit: 'RON', row_count: 1 }],
-      },
-      rows: [{ series_id: baseSeries.id, siruta_code: '1001', value: 10 }],
-      warnings: [],
-    });
+    fetchGroupedSeriesDataMock.mockResolvedValue(
+      makeGroupedResponse({
+        series: [{ id: baseSeries.id, unit: 'RON' }],
+        rows: [{ series_id: baseSeries.id, siruta_code: '1001', value: 10 }],
+      })
+    );
 
     const wrapper = createWrapper();
     const { rerender, result } = renderHook(

@@ -9,9 +9,11 @@ describe('ExperimentalMapConfigPanel', () => {
     render(
       <ExperimentalMapConfigPanel
         collapsed={false}
+        activeView="map"
         mapName="Experimental UAT Map"
         warningCount={0}
         onToggleCollapsed={vi.fn()}
+        onActiveViewChange={vi.fn()}
         onMapNameChange={vi.fn()}
         onOpenConfig={onOpenConfig}
         onOpenWarnings={vi.fn()}
@@ -28,9 +30,11 @@ describe('ExperimentalMapConfigPanel', () => {
     const { rerender } = render(
       <ExperimentalMapConfigPanel
         collapsed={false}
+        activeView="map"
         mapName="Experimental UAT Map"
         warningCount={0}
         onToggleCollapsed={onToggleCollapsed}
+        onActiveViewChange={vi.fn()}
         onMapNameChange={vi.fn()}
         onOpenConfig={vi.fn()}
         onOpenWarnings={vi.fn()}
@@ -44,9 +48,11 @@ describe('ExperimentalMapConfigPanel', () => {
     rerender(
       <ExperimentalMapConfigPanel
         collapsed={true}
+        activeView="map"
         mapName="Experimental UAT Map"
         warningCount={0}
         onToggleCollapsed={onToggleCollapsed}
+        onActiveViewChange={vi.fn()}
         onMapNameChange={vi.fn()}
         onOpenConfig={vi.fn()}
         onOpenWarnings={vi.fn()}
@@ -62,9 +68,11 @@ describe('ExperimentalMapConfigPanel', () => {
     render(
       <ExperimentalMapConfigPanel
         collapsed={false}
+        activeView="map"
         mapName="Experimental UAT Map"
         warningCount={3}
         onToggleCollapsed={vi.fn()}
+        onActiveViewChange={vi.fn()}
         onMapNameChange={vi.fn()}
         onOpenConfig={vi.fn()}
         onOpenWarnings={onOpenWarnings}
@@ -81,9 +89,11 @@ describe('ExperimentalMapConfigPanel', () => {
     render(
       <ExperimentalMapConfigPanel
         collapsed={false}
+        activeView="map"
         mapName="Experimental UAT Map"
         warningCount={0}
         onToggleCollapsed={vi.fn()}
+        onActiveViewChange={vi.fn()}
         onMapNameChange={onMapNameChange}
         onOpenConfig={vi.fn()}
         onOpenWarnings={vi.fn()}
@@ -95,5 +105,26 @@ describe('ExperimentalMapConfigPanel', () => {
     });
 
     expect(onMapNameChange).toHaveBeenCalledWith('Edited map title');
+  });
+
+  it('calls onActiveViewChange when the view selector changes', () => {
+    const onActiveViewChange = vi.fn();
+
+    render(
+      <ExperimentalMapConfigPanel
+        collapsed={false}
+        activeView="map"
+        mapName="Experimental UAT Map"
+        warningCount={0}
+        onToggleCollapsed={vi.fn()}
+        onActiveViewChange={onActiveViewChange}
+        onMapNameChange={vi.fn()}
+        onOpenConfig={vi.fn()}
+        onOpenWarnings={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByText('Table'));
+    expect(onActiveViewChange).toHaveBeenCalledWith('table');
   });
 });

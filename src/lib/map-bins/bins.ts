@@ -128,13 +128,16 @@ export function classifyValue(
     if (!bin) {
       continue;
     }
+    if (isBinDisabled(bin)) {
+      continue;
+    }
 
     const isWithinMin = value >= bin.min;
     const isWithinMax = bin.max === null ? true : value < bin.max;
     if (isWithinMin && isWithinMax) {
       return {
         groupId: getBinGroupId(index),
-        label: getBinLabel(bin),
+        label: getComposedBinLabel(bin, index),
         color: bin.color,
         isNoData: false,
       };
@@ -233,7 +236,7 @@ export function generateSequentialBins(
       return {
         min: round(binMin),
         max: binMax === null ? null : round(binMax),
-        label: formatBinLabel(round(binMin), binMax === null ? null : round(binMax)),
+        label: getDefaultBinTitle(index),
         color: colors[index] ?? colors[colors.length - 1] ?? '#d7301f',
       };
     });
@@ -250,7 +253,7 @@ export function generateSequentialBins(
     return {
       min: roundedMin,
       max: roundedMax,
-      label: formatBinLabel(roundedMin, roundedMax),
+      label: getDefaultBinTitle(index),
       color: colors[index] ?? colors[colors.length - 1] ?? '#d7301f',
     };
   });
@@ -272,12 +275,19 @@ export function applyGradientColorsToBins(
 }
 
 export function buildDiscretePaletteFromConfig(config: ExperimentalMapBinsPresetConfig): ClassifiedBin[] {
-  const rows = config.bins.map((bin, index) => ({
-    groupId: getBinGroupId(index),
-    label: getBinLabel(bin),
-    color: bin.color,
-    isNoData: false,
-  }));
+  const rows = config.bins.reduce<ClassifiedBin[]>((accumulator, bin, index) => {
+    if (isBinDisabled(bin)) {
+      return accumulator;
+    }
+
+    accumulator.push({
+      groupId: getBinGroupId(index),
+      label: getComposedBinLabel(bin, index),
+      color: bin.color,
+      isNoData: false,
+    });
+    return accumulator;
+  }, []);
 
   rows.push(getNoDataClassification(config));
   return rows;
@@ -296,11 +306,23 @@ export function getBinGroupId(index: number): string {
   return `G${index + 1}`;
 }
 
-function getBinLabel(bin: ExperimentalMapBin): string {
+export function getDefaultBinTitle(index: number): string {
+  return `Label ${index + 1}`;
+}
+
+function getBinTitle(bin: ExperimentalMapBin, index: number): string {
   if (bin.label.trim().length > 0) {
     return bin.label;
   }
-  return formatBinLabel(bin.min, bin.max);
+  return getDefaultBinTitle(index);
+}
+
+function getComposedBinLabel(bin: ExperimentalMapBin, index: number): string {
+  return `${getBinTitle(bin, index)} — ${formatBinLabel(bin.min, bin.max)}`;
+}
+
+function isBinDisabled(bin: ExperimentalMapBin): boolean {
+  return bin.disabled === true;
 }
 
 function formatBinLabel(min: number, max: number | null): string {

@@ -1,7 +1,7 @@
 import { generateHash, getNormalizationUnit } from '@/lib/utils';
 import {
-  parseGroupedSeriesCsv,
-  serializeGroupedSeriesRowsCsv,
+  parseGroupedSeriesWideCsv,
+  serializeGroupedSeriesWideMatrixCsv,
 } from '@/lib/map-series/csv';
 import type {
   GroupedSeriesDataRequest,
@@ -119,12 +119,12 @@ function buildMockValue(
 
 function buildManifestSeries(
   requestSeries: GroupedSeriesDataRequest['series'],
-  rows: GroupedSeriesRow[]
+  valuesBySeriesId: ReturnType<typeof parseGroupedSeriesWideCsv>['valuesBySeriesId']
 ): GroupedSeriesManifestEntry[] {
   return requestSeries.map((series) => ({
     series_id: series.id,
     unit: resolveSeriesUnit(series),
-    row_count: rows.filter((row) => row.series_id === series.id).length,
+    defined_value_count: valuesBySeriesId.get(series.id)?.size ?? 0,
   }));
 }
 
@@ -147,19 +147,26 @@ export const mockMapSeriesDataAdapter: MapSeriesDataAdapter = {
       }
     }
 
-    // Keep parser in the execution path so client contract remains stable
-    // when backend starts returning compressed CSV payloads.
-    const csvRaw = serializeGroupedSeriesRowsCsv(rows);
-    const parsed = parseGroupedSeriesCsv(csvRaw);
+    // Keep parser in the execution path so the client contract remains stable
+    // when backend starts returning map-series CSV payloads.
+    const csvRaw = serializeGroupedSeriesWideMatrixCsv(
+      rows,
+      request.series.map((series) => series.id)
+    );
+    const parsed = parseGroupedSeriesWideCsv(csvRaw);
 
     return {
       manifest: {
         generated_at: new Date().toISOString(),
-        format: 'long_rows_v1',
+        format: 'wide_matrix_v1',
         granularity: 'UAT',
-        series: buildManifestSeries(request.series, parsed.rows),
+        series: buildManifestSeries(request.series, parsed.valuesBySeriesId),
       },
-      rows: parsed.rows,
+      payload: {
+        mime: 'text/csv',
+        compression: 'none',
+        data: csvRaw,
+      },
       warnings: parsed.warnings,
     } satisfies GroupedSeriesDataResponse;
   },

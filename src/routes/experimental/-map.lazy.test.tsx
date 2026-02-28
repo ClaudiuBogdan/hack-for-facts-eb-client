@@ -83,6 +83,33 @@ describe('ExperimentalMapPage', () => {
     expect(screen.getByText('Division by zero in calc-series')).toBeInTheDocument();
   });
 
+  it('opens table view from deep link and renders table empty-state', async () => {
+    mockedSearchState = {
+      activeView: 'table',
+    };
+
+    const { ExperimentalMapPage } = await import('./map.lazy');
+    render(<ExperimentalMapPage />);
+
+    expect(screen.getByText('No enabled series.')).toBeInTheDocument();
+    expect(screen.queryByText('Map geometry is unavailable.')).not.toBeInTheDocument();
+  });
+
+  it('updates URL state when switching active view from config panel', async () => {
+    const { ExperimentalMapPage } = await import('./map.lazy');
+    render(<ExperimentalMapPage />);
+
+    fireEvent.click(screen.getByText('Table'));
+
+    expect(navigateMock).toHaveBeenCalled();
+    const latestNavigateArg =
+      navigateMock.mock.calls[navigateMock.mock.calls.length - 1]?.[0];
+    expect(typeof latestNavigateArg?.search).toBe('function');
+
+    const nextSearch = latestNavigateArg.search(mockedSearchState);
+    expect(nextSearch.activeView).toBe('table');
+  });
+
   it('shows warning when active bins preset is missing', async () => {
     mockedSearchState = {
       activeBinPresetId: 'missing-preset-id',
@@ -160,5 +187,41 @@ describe('ExperimentalMapPage', () => {
 
     const nextSearch = latestNavigateArg.search(mockedSearchState);
     expect(nextSearch.activeBinPresetId).toBeUndefined();
+  });
+
+  it('keeps bins modal edits local and commits only on close', async () => {
+    const preset = createDefaultExperimentalMapBinsPreset('Preset 1');
+    preset.config.bins = [
+      { min: 0, max: 10, label: 'Label 1', color: '#ff0000' },
+      { min: 10, max: null, label: 'Label 2', color: '#00ff00' },
+    ];
+    mockedSearchState = {
+      binsPresets: [preset],
+      activeBinPresetId: preset.id,
+    };
+
+    const { ExperimentalMapPage } = await import('./map.lazy');
+    render(<ExperimentalMapPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit bins preset' }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    navigateMock.mockReset();
+
+    fireEvent.change(screen.getByLabelText('Bins title'), {
+      target: { value: 'Local title' },
+    });
+
+    expect(navigateMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+
+    expect(navigateMock).toHaveBeenCalledTimes(1);
+    const latestNavigateArg =
+      navigateMock.mock.calls[navigateMock.mock.calls.length - 1]?.[0];
+    expect(typeof latestNavigateArg?.search).toBe('function');
+
+    const nextSearch = latestNavigateArg.search(mockedSearchState);
+    expect(nextSearch.binsPresets[0]?.config.title).toBe('Local title');
   });
 });

@@ -27,10 +27,9 @@ describe('ExperimentalMapBinsList', () => {
       />
     );
 
-    fireEvent.change(screen.getByLabelText('Min', { selector: 'input#bin-min-1' }), {
-      target: { value: '50' },
-    });
-    fireEvent.blur(screen.getByLabelText('Min', { selector: 'input#bin-min-1' }));
+    const minInputs = screen.getAllByPlaceholderText('Min');
+    fireEvent.change(minInputs[1], { target: { value: '50' } });
+    fireEvent.blur(minInputs[1]);
 
     expect(screen.getByText('Bins overlap.')).toBeInTheDocument();
   });
@@ -48,9 +47,9 @@ describe('ExperimentalMapBinsList', () => {
       />
     );
 
-    const minInput = screen.getByLabelText('Min', { selector: 'input#bin-min-1' });
-    fireEvent.change(minInput, { target: { value: '' } });
-    fireEvent.blur(minInput);
+    const minInputs = screen.getAllByPlaceholderText('Min');
+    fireEvent.change(minInputs[1], { target: { value: '' } });
+    fireEvent.blur(minInputs[1]);
 
     expect(screen.getByText('Bin 2 min must be a finite number.')).toBeInTheDocument();
     expect(onApplyBins).not.toHaveBeenCalled();
@@ -69,10 +68,31 @@ describe('ExperimentalMapBinsList', () => {
       />
     );
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Move bin down' })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Move down' })[0]);
 
     expect(screen.getByText('Invalid reorder.')).toBeInTheDocument();
     expect(originalBins[0]).toEqual({ min: 0, max: 10, label: '0-10', color: '#ff0000' });
     expect(originalBins[1]).toEqual({ min: 10, max: null, label: '', color: '#00ff00' });
+  });
+
+  it('applies disabled toggle for a bin group', () => {
+    const onApplyBins = vi.fn(() => ({ ok: true }));
+
+    render(
+      <ExperimentalMapBinsList
+        bins={[
+          { min: 0, max: 100, label: '0-100', color: '#ff0000' },
+          { min: 100, max: null, label: '>=100', color: '#00ff00' },
+        ]}
+        onApplyBins={onApplyBins}
+      />
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Disable bin' })[0]);
+
+    expect(onApplyBins).toHaveBeenCalledWith([
+      { min: 0, max: 100, label: '0-100', color: '#ff0000', disabled: true },
+      { min: 100, max: null, label: '>=100', color: '#00ff00' },
+    ]);
   });
 });

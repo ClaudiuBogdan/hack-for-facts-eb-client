@@ -34,19 +34,25 @@ export interface GroupedSeriesRow {
 export interface GroupedSeriesManifestEntry {
   series_id: string;
   unit?: string;
-  row_count?: number;
+  defined_value_count?: number;
 }
 
 export interface GroupedSeriesManifest {
   generated_at: string;
-  format: 'long_rows_v1';
+  format: 'wide_matrix_v1';
   granularity: 'UAT';
   series: GroupedSeriesManifestEntry[];
 }
 
+export interface GroupedSeriesPayload {
+  mime: 'text/csv';
+  compression: 'none';
+  data: string;
+}
+
 export interface GroupedSeriesDataResponse {
   manifest: GroupedSeriesManifest;
-  rows: GroupedSeriesRow[];
+  payload: GroupedSeriesPayload;
   warnings?: MapSeriesWarning[];
 }
 

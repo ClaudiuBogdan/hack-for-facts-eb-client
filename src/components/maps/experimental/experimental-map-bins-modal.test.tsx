@@ -19,9 +19,8 @@ describe('ExperimentalMapBinsModal', () => {
         open={true}
         preset={createPreset()}
         activeSeriesLabel="Execution analytics"
-        validationErrors={[]}
+        activeSeriesValues={new Map()}
         onOpenChange={vi.fn()}
-        onRegenerate={vi.fn()}
         onApplyPreset={() => ({ ok: true })}
       />
     );
@@ -30,10 +29,10 @@ describe('ExperimentalMapBinsModal', () => {
     expect(screen.getByRole('heading', { name: 'Edit Bins Preset', level: 2 })).toBeInTheDocument();
     expect(screen.getByText('Active data series')).toBeInTheDocument();
     expect(screen.getByText('Execution analytics')).toBeInTheDocument();
-    expect(screen.getByText('NO_DATA')).toBeInTheDocument();
+    expect(screen.getByText('No data')).toBeInTheDocument();
   });
 
-  it('calls onApplyPreset when applying gradient colors', () => {
+  it('keeps edits local and commits on close', () => {
     const onApplyPreset = vi.fn().mockReturnValue({ ok: true });
 
     render(
@@ -41,35 +40,42 @@ describe('ExperimentalMapBinsModal', () => {
         open={true}
         preset={createPreset()}
         activeSeriesLabel="Execution analytics"
-        validationErrors={[]}
+        activeSeriesValues={new Map()}
         onOpenChange={vi.fn()}
-        onRegenerate={vi.fn()}
         onApplyPreset={onApplyPreset}
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Apply Gradient' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+    expect(onApplyPreset).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(onApplyPreset).toHaveBeenCalledTimes(1);
   });
 
   it('renders validation errors block', () => {
+    const invalidPreset = createPreset();
+    invalidPreset.config.bins = [
+      { min: 0, max: 10, label: '0-10', color: '#ff0000' },
+      { min: 9, max: null, label: '>=9', color: '#00ff00' },
+    ];
+
     render(
       <ExperimentalMapBinsModal
         open={true}
-        preset={createPreset()}
+        preset={invalidPreset}
         activeSeriesLabel="Execution analytics"
-        validationErrors={['Bins overlap detected']}
+        activeSeriesValues={new Map()}
         onOpenChange={vi.fn()}
-        onRegenerate={vi.fn()}
         onApplyPreset={() => ({ ok: true })}
       />
     );
 
     expect(screen.getByText('Validation errors')).toBeInTheDocument();
-    expect(screen.getByText('Bins overlap detected')).toBeInTheDocument();
+    expect(screen.getByText(/overlaps with bin/i)).toBeInTheDocument();
   });
 
-  it('allows toggling legend bin labels visibility', () => {
+  it('commits bins title edits on close', () => {
     const onApplyPreset = vi.fn().mockReturnValue({ ok: true });
 
     render(
@@ -77,25 +83,29 @@ describe('ExperimentalMapBinsModal', () => {
         open={true}
         preset={createPreset()}
         activeSeriesLabel="Execution analytics"
-        validationErrors={[]}
+        activeSeriesValues={new Map()}
         onOpenChange={vi.fn()}
-        onRegenerate={vi.fn()}
         onApplyPreset={onApplyPreset}
       />
     );
 
-    fireEvent.click(screen.getByRole('switch', { name: 'Hide bin labels in legend' }));
+    fireEvent.change(screen.getByLabelText('Bins title'), {
+      target: { value: 'Revenue bands' },
+    });
+    expect(onApplyPreset).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
 
     expect(onApplyPreset).toHaveBeenCalledWith(
       expect.objectContaining({
         config: expect.objectContaining({
-          showBinLabelOnLegend: false,
+          title: 'Revenue bands',
         }),
       })
     );
   });
 
-  it('applies preset label edits immediately', () => {
+  it('commits preset label edits on close', () => {
     const onApplyPreset = vi.fn().mockReturnValue({ ok: true });
 
     render(
@@ -103,9 +113,8 @@ describe('ExperimentalMapBinsModal', () => {
         open={true}
         preset={createPreset()}
         activeSeriesLabel="Execution analytics"
-        validationErrors={[]}
+        activeSeriesValues={new Map()}
         onOpenChange={vi.fn()}
-        onRegenerate={vi.fn()}
         onApplyPreset={onApplyPreset}
       />
     );
@@ -113,11 +122,36 @@ describe('ExperimentalMapBinsModal', () => {
     fireEvent.change(screen.getByLabelText('Preset label'), {
       target: { value: 'Updated label' },
     });
+    expect(onApplyPreset).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
 
     expect(onApplyPreset).toHaveBeenCalledWith(
       expect.objectContaining({
         label: 'Updated label',
       })
     );
+  });
+
+  it('keeps modal open while editing bin range fields', () => {
+    const onApplyPreset = vi.fn().mockReturnValue({ ok: true });
+
+    render(
+      <ExperimentalMapBinsModal
+        open={true}
+        preset={createPreset()}
+        activeSeriesLabel="Execution analytics"
+        activeSeriesValues={new Map()}
+        onOpenChange={vi.fn()}
+        onApplyPreset={onApplyPreset}
+      />
+    );
+
+    const minInputs = screen.getAllByPlaceholderText('Min');
+    fireEvent.change(minInputs[0], { target: { value: '12' } });
+    fireEvent.blur(minInputs[0]);
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(onApplyPreset).not.toHaveBeenCalled();
   });
 });

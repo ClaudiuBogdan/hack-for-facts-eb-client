@@ -1,14 +1,18 @@
-import { AlertTriangle, ChevronDown, Settings2 } from 'lucide-react';
+import { AlertTriangle, ChevronDown, MapIcon, Settings2, TableIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import type { ExperimentalMapActiveView } from '@/schemas/experimental-map';
+import { ViewTypeRadioGroup } from '@/components/filters/ViewTypeRadioGroup';
 
 interface ExperimentalMapConfigPanelProps {
   collapsed: boolean;
+  activeView: ExperimentalMapActiveView;
   mapName: string;
   warningCount: number;
   onToggleCollapsed: (collapsed: boolean) => void;
+  onActiveViewChange: (view: ExperimentalMapActiveView) => void;
   onMapNameChange: (mapName: string) => void;
   onOpenConfig: () => void;
   onOpenWarnings: () => void;
@@ -16,9 +20,11 @@ interface ExperimentalMapConfigPanelProps {
 
 export function ExperimentalMapConfigPanel({
   collapsed,
+  activeView,
   mapName,
   warningCount,
   onToggleCollapsed,
+  onActiveViewChange,
   onMapNameChange,
   onOpenConfig,
   onOpenWarnings,
@@ -69,6 +75,18 @@ export function ExperimentalMapConfigPanel({
                 autoComplete="off"
                 aria-label="Map name"
                 placeholder="Map name…"
+              />
+            </div>
+            <div className="border-b px-3 py-2.5">
+              <div className="mb-2 text-sm font-medium">View</div>
+              <ViewTypeRadioGroup
+                value={activeView}
+                onChange={onActiveViewChange}
+                viewOptions={[
+                  { id: 'map', label: 'Map', icon: MapIcon },
+                  { id: 'table', label: 'Table', icon: TableIcon },
+                ]}
+                ariaLabel="Experimental map active view"
               />
             </div>
             <div className="flex items-center justify-between gap-3 px-3 py-2.5">

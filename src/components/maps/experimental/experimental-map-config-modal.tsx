@@ -6,8 +6,6 @@ import { Input } from '@/components/ui/input';
 interface ExperimentalMapConfigModalProps {
   open: boolean;
   mapName: string;
-  activeSeriesLabel: string;
-  activeUnit?: string;
   warningCount: number;
   onMapNameChange: (mapName: string) => void;
   onOpenChange: (open: boolean) => void;
@@ -17,8 +15,6 @@ interface ExperimentalMapConfigModalProps {
 export function ExperimentalMapConfigModal({
   open,
   mapName,
-  activeSeriesLabel,
-  activeUnit,
   warningCount,
   onMapNameChange,
   onOpenChange,
@@ -51,14 +47,6 @@ export function ExperimentalMapConfigModal({
               />
             </div>
             <div className="flex items-center justify-between border-b px-3 py-2.5 text-sm">
-              <span className="font-medium">Active series</span>
-              <span className="text-muted-foreground">{activeSeriesLabel}</span>
-            </div>
-            <div className="flex items-center justify-between border-b px-3 py-2.5 text-sm">
-              <span className="font-medium">Unit</span>
-              <span className="text-muted-foreground">{activeUnit || 'N/A'}</span>
-            </div>
-            <div className="flex items-center justify-between px-3 py-2.5 text-sm">
               <span className="font-medium">Warnings</span>
               <span className="text-muted-foreground">{warningCount}</span>
             </div>

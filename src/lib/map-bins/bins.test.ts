@@ -44,6 +44,27 @@ describe('map-bins', () => {
     expect(classifyValue(15, config).groupId).toBe('NO_DATA');
   });
 
+  it('skips disabled bins during classification and palette generation', () => {
+    const config = ExperimentalMapBinsPresetConfigSchema.parse({
+      bins: [
+        { min: 0, max: 10, label: '0-10', color: '#ff0000', disabled: true },
+        { min: 10, max: null, label: '>=10', color: '#00ff00' },
+      ],
+    });
+
+    const classificationResult = classifySeriesValues(
+      new Map([
+        ['1001', 5],
+        ['1002', 15],
+      ]),
+      config
+    );
+
+    expect(classificationResult.groupsBySiruta.get('1001')?.groupId).toBe('NO_DATA');
+    expect(classificationResult.groupsBySiruta.get('1002')?.groupId).toBe('G2');
+    expect(classificationResult.palette.map((entry) => entry.groupId)).toEqual(['G2', 'NO_DATA']);
+  });
+
   it('validates overlaps as invalid while allowing gaps', () => {
     const overlapping = ExperimentalMapBinsPresetConfigSchema.parse({
       bins: [

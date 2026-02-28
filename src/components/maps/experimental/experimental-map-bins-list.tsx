@@ -1,16 +1,27 @@
-import { useMemo, useState } from 'react';
-import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useState, type KeyboardEvent } from 'react';
+import { ArrowDown, ArrowUp, Eye, EyeOff, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { getDefaultBinTitle } from '@/lib/map-bins/bins';
 import type { ExperimentalMapBin } from '@/schemas/experimental-map';
 
 interface ExperimentalMapBinsListProps {
   bins: ExperimentalMapBin[];
   onApplyBins: (nextBins: ExperimentalMapBin[]) => { ok: boolean; error?: string };
+  onInvalidDraftStateChange?: (hasInvalidDrafts: boolean) => void;
 }
 
-export function ExperimentalMapBinsList({ bins, onApplyBins }: Readonly<ExperimentalMapBinsListProps>) {
+export function ExperimentalMapBinsList({
+  bins,
+  onApplyBins,
+  onInvalidDraftStateChange,
+}: Readonly<ExperimentalMapBinsListProps>) {
   const [minInputs, setMinInputs] = useState<Record<number, string>>({});
   const [maxInputs, setMaxInputs] = useState<Record<number, string>>({});
   const [inlineError, setInlineError] = useState<string | null>(null);
@@ -56,14 +67,12 @@ export function ExperimentalMapBinsList({ bins, onApplyBins }: Readonly<Experime
 
     if (rawValue.trim().length === 0) {
       setInlineError(`Bin ${index + 1} min must be a finite number.`);
-      setMinInputs((prev) => ({ ...prev, [index]: String(bins[index]?.min ?? 0) }));
       return;
     }
 
     const parsed = Number(rawValue);
     if (!Number.isFinite(parsed)) {
       setInlineError(`Bin ${index + 1} min must be a finite number.`);
-      setMinInputs((prev) => ({ ...prev, [index]: String(bins[index]?.min ?? 0) }));
       return;
     }
 
@@ -71,7 +80,6 @@ export function ExperimentalMapBinsList({ bins, onApplyBins }: Readonly<Experime
       currentIndex === index ? { ...bin, min: parsed } : bin
     );
     if (!commit(nextBins)) {
-      setMinInputs((prev) => ({ ...prev, [index]: String(bins[index]?.min ?? parsed) }));
       return;
     }
 
@@ -91,14 +99,12 @@ export function ExperimentalMapBinsList({ bins, onApplyBins }: Readonly<Experime
     const rawValue = maxValues[index];
     if (rawValue === undefined || rawValue.trim().length === 0) {
       setInlineError(`Bin ${index + 1} max must be a finite number.`);
-      setMaxInputs((prev) => ({ ...prev, [index]: String(bin.max ?? '') }));
       return;
     }
 
     const parsed = Number(rawValue);
     if (!Number.isFinite(parsed)) {
       setInlineError(`Bin ${index + 1} max must be a finite number.`);
-      setMaxInputs((prev) => ({ ...prev, [index]: String(bin.max ?? '') }));
       return;
     }
 
@@ -106,7 +112,6 @@ export function ExperimentalMapBinsList({ bins, onApplyBins }: Readonly<Experime
       currentIndex === index ? { ...entry, max: parsed } : entry
     );
     if (!commit(nextBins)) {
-      setMaxInputs((prev) => ({ ...prev, [index]: String(bin.max ?? parsed) }));
       return;
     }
 
@@ -123,7 +128,7 @@ export function ExperimentalMapBinsList({ bins, onApplyBins }: Readonly<Experime
         {
           min: 0,
           max: null,
-          label: '>= 0',
+          label: getDefaultBinTitle(0),
           color: '#d95f0e',
         },
       ]);
@@ -143,7 +148,6 @@ export function ExperimentalMapBinsList({ bins, onApplyBins }: Readonly<Experime
     const previousLast = {
       ...lastBin,
       max: nextMin,
-      label: `${formatNumberLabel(lastBin.min)} - ${formatNumberLabel(nextMin)}`,
     };
 
     const nextBins = [
@@ -152,7 +156,7 @@ export function ExperimentalMapBinsList({ bins, onApplyBins }: Readonly<Experime
       {
         min: nextMin,
         max: null,
-        label: `>= ${formatNumberLabel(nextMin)}`,
+        label: getDefaultBinTitle(bins.length),
         color: lastBin.color,
       },
     ];
@@ -175,7 +179,6 @@ export function ExperimentalMapBinsList({ bins, onApplyBins }: Readonly<Experime
             ? {
                 ...bin,
                 max: null,
-                label: bin.label.trim().length > 0 ? bin.label : `>= ${formatNumberLabel(bin.min)}`,
               }
             : bin
         );
@@ -199,7 +202,6 @@ export function ExperimentalMapBinsList({ bins, onApplyBins }: Readonly<Experime
         return {
           ...bin,
           max: null,
-          label: bin.label.trim().length === 0 ? `>= ${formatNumberLabel(bin.min)}` : bin.label,
         };
       }
 
@@ -216,137 +218,267 @@ export function ExperimentalMapBinsList({ bins, onApplyBins }: Readonly<Experime
     commit(normalizedBins);
   };
 
+  const toggleEnabled = (index: number, enabled: boolean) => {
+    const nextBins = bins.map((entry, currentIndex) =>
+      currentIndex === index
+        ? {
+            ...entry,
+            disabled: enabled ? undefined : true,
+          }
+        : entry
+    );
+    commit(nextBins);
+  };
+
+  const hasInvalidNumberDrafts = useMemo(() => {
+    for (const [indexKey, rawValue] of Object.entries(minInputs)) {
+      const index = Number(indexKey);
+      if (!Number.isFinite(index)) {
+        continue;
+      }
+      if (rawValue.trim().length === 0 || !Number.isFinite(Number(rawValue))) {
+        return true;
+      }
+    }
+
+    for (const [indexKey, rawValue] of Object.entries(maxInputs)) {
+      const index = Number(indexKey);
+      if (!Number.isFinite(index)) {
+        continue;
+      }
+      const bin = bins[index];
+      if (!bin || bin.max === null) {
+        continue;
+      }
+      if (rawValue.trim().length === 0 || !Number.isFinite(Number(rawValue))) {
+        return true;
+      }
+    }
+
+    return false;
+  }, [bins, maxInputs, minInputs]);
+
+  const hasInvalidDrafts = hasInvalidNumberDrafts || Boolean(inlineError);
+
+  useEffect(() => {
+    onInvalidDraftStateChange?.(hasInvalidDrafts);
+  }, [hasInvalidDrafts, onInvalidDraftStateChange]);
+
+  const commitMinOnEnter = (event: KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (event.key !== 'Enter') {
+      return;
+    }
+    event.preventDefault();
+    commitMinValue(index);
+  };
+
+  const commitMaxOnEnter = (event: KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (event.key !== 'Enter') {
+      return;
+    }
+    event.preventDefault();
+    commitMaxValue(index);
+  };
+
   return (
-    <div className="space-y-3">
-      {bins.map((bin, index) => {
-        const isLast = index === rowCount - 1;
-        return (
-          <div key={`${index}-${bin.min}-${bin.max ?? 'null'}`} className="rounded-lg border bg-muted/20 p-3">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold">Bin {index + 1}</p>
-              <div className="flex items-center gap-1">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => moveBin(index, 'up')}
-                  disabled={index === 0}
-                  aria-label="Move bin up"
-                >
-                  <ArrowUp className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => moveBin(index, 'down')}
-                  disabled={index === rowCount - 1}
-                  aria-label="Move bin down"
-                >
-                  <ArrowDown className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-destructive"
-                  onClick={() => removeBin(index)}
-                  aria-label="Delete bin"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+    <TooltipProvider>
+      <div className="space-y-2">
+        {bins.map((bin, index) => {
+          const isLast = index === rowCount - 1;
+          const isEnabled = bin.disabled !== true;
+          return (
+            <div
+              key={`bin-${index}`}
+              className={`group relative flex items-start gap-0 rounded-lg border transition-all ${
+                !isEnabled
+                  ? 'border-border/40 bg-muted/30 opacity-60'
+                  : 'border-border/60 bg-background hover:border-border'
+              }`}
+            >
+              {/* Color indicator strip */}
+              <div
+                className="h-full w-2 shrink-0 self-stretch rounded-l-lg"
+                style={{ backgroundColor: bin.color }}
+              />
 
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor={`bin-min-${index}`}>Min</Label>
-                <Input
-                  id={`bin-min-${index}`}
-                  value={minValues[index] ?? ''}
-                  onChange={(event) =>
-                    setMinInputs((prev) => ({ ...prev, [index]: event.currentTarget.value }))
-                  }
-                  onBlur={() => commitMinValue(index)}
-                  type="number"
-                  inputMode="decimal"
-                  autoComplete="off"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor={`bin-max-${index}`}>Max</Label>
-                {isLast ? (
-                  <div className="flex h-10 items-center rounded-md border border-input bg-background px-3 text-sm text-muted-foreground">
-                    Open-ended (required)
-                  </div>
-                ) : (
+              {/* Content area */}
+              <div className="flex flex-1 flex-col gap-2 px-3 py-2">
+                {/* Row 1: Color, Label, Actions */}
+                <div className="flex items-center gap-3">
+                  {/* Color picker */}
                   <Input
-                    id={`bin-max-${index}`}
-                    value={maxValues[index] ?? ''}
-                    onChange={(event) =>
-                      setMaxInputs((prev) => ({ ...prev, [index]: event.currentTarget.value }))
-                    }
-                    onBlur={() => commitMaxValue(index)}
-                    type="number"
-                    inputMode="decimal"
-                    autoComplete="off"
+                    id={`bin-color-${index}`}
+                    type="color"
+                    value={bin.color}
+                    className="h-8 w-8 shrink-0 cursor-pointer rounded border-0 p-0.5"
+                    onChange={(event) => {
+                      setInlineError(null);
+                      const nextBins = bins.map((entry, currentIndex) =>
+                        currentIndex === index ? { ...entry, color: event.currentTarget.value } : entry
+                      );
+                      commit(nextBins);
+                    }}
                   />
-                )}
-              </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor={`bin-label-${index}`}>Label</Label>
-                <Input
-                  id={`bin-label-${index}`}
-                  value={bin.label}
-                  onChange={(event) => {
-                    const nextBins = bins.map((entry, currentIndex) =>
-                      currentIndex === index ? { ...entry, label: event.currentTarget.value } : entry
-                    );
-                    commit(nextBins);
-                  }}
-                  placeholder={isLast ? `>= ${formatNumberLabel(bin.min)}` : 'Range label'}
-                  autoComplete="off"
-                />
-              </div>
+                  {/* Label input */}
+                  <Input
+                    id={`bin-label-${index}`}
+                    value={bin.label}
+                    onChange={(event) => {
+                      setInlineError(null);
+                      const nextBins = bins.map((entry, currentIndex) =>
+                        currentIndex === index ? { ...entry, label: event.currentTarget.value } : entry
+                      );
+                      commit(nextBins);
+                    }}
+                    placeholder="Label"
+                    autoComplete="off"
+                    className="h-8 flex-1 text-sm"
+                  />
 
-              <div className="space-y-1.5">
-                <Label htmlFor={`bin-color-${index}`}>Color</Label>
-                <Input
-                  id={`bin-color-${index}`}
-                  type="color"
-                  value={bin.color}
-                  onChange={(event) => {
-                    const nextBins = bins.map((entry, currentIndex) =>
-                      currentIndex === index ? { ...entry, color: event.currentTarget.value } : entry
-                    );
-                    commit(nextBins);
-                  }}
-                />
+                  {/* Actions */}
+                  <div className="flex items-center gap-0.5">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => toggleEnabled(index, !isEnabled)}
+                          aria-label={isEnabled ? 'Disable bin' : 'Enable bin'}
+                        >
+                          {isEnabled ? (
+                            <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                          ) : (
+                            <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        {isEnabled ? 'Disable bin' : 'Enable bin'}
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => moveBin(index, 'up')}
+                          disabled={index === 0}
+                          aria-label="Move up"
+                        >
+                          <ArrowUp className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">Move up</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
+                          onClick={() => moveBin(index, 'down')}
+                          disabled={index === rowCount - 1}
+                          aria-label="Move down"
+                        >
+                          <ArrowDown className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">Move down</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-destructive hover:text-destructive"
+                          onClick={() => removeBin(index)}
+                          aria-label="Delete bin"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">Delete</TooltipContent>
+                    </Tooltip>
+                  </div>
+                </div>
+
+                {/* Row 2: Min, Max */}
+                <div className="flex items-center gap-3 pl-11">
+                  {/* Min input */}
+                  <div className="w-32">
+                    <Input
+                      id={`bin-min-${index}`}
+                      value={minValues[index] ?? ''}
+                      onChange={(event) => {
+                        setInlineError(null);
+                        const nextValue = event.currentTarget.value;
+                        setMinInputs((prev) => ({ ...prev, [index]: nextValue }));
+                      }}
+                      onBlur={() => commitMinValue(index)}
+                      onKeyDown={(event) => commitMinOnEnter(event, index)}
+                      type="number"
+                      inputMode="decimal"
+                      autoComplete="off"
+                      placeholder="Min"
+                      className="h-7 text-xs"
+                    />
+                  </div>
+
+                  {/* Max input or indicator */}
+                  <div className="w-32">
+                    {isLast ? (
+                      <div className="flex h-7 items-center justify-center rounded-md border border-dashed border-border/50 bg-muted/30 px-2 text-xs text-muted-foreground">
+                        Open
+                      </div>
+                    ) : (
+                      <Input
+                        id={`bin-max-${index}`}
+                        value={maxValues[index] ?? ''}
+                        onChange={(event) => {
+                          setInlineError(null);
+                          const nextValue = event.currentTarget.value;
+                          setMaxInputs((prev) => ({ ...prev, [index]: nextValue }));
+                        }}
+                        onBlur={() => commitMaxValue(index)}
+                        onKeyDown={(event) => commitMaxOnEnter(event, index)}
+                        type="number"
+                        inputMode="decimal"
+                        autoComplete="off"
+                        placeholder="Max"
+                        className="h-7 text-xs"
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
 
-      <div className="flex items-center justify-between">
-        <Button type="button" variant="outline" onClick={addBin}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add bin
-        </Button>
-        <span className="text-xs text-muted-foreground">{bins.length} bins configured</span>
+        <div className="flex items-center justify-between pt-2">
+          <Button type="button" variant="outline" size="sm" onClick={addBin}>
+            <Plus className="mr-1.5 h-4 w-4" />
+            Add bin
+          </Button>
+          <span className="text-xs text-muted-foreground">{bins.length} bins</span>
+        </div>
+
+        {inlineError ? (
+          <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {inlineError}
+          </p>
+        ) : null}
       </div>
-
-      {inlineError ? <p className="text-sm text-destructive">{inlineError}</p> : null}
-    </div>
+    </TooltipProvider>
   );
-}
-
-function formatNumberLabel(value: number): string {
-  return new Intl.NumberFormat('ro-RO', {
-    maximumFractionDigits: 2,
-  }).format(value);
 }

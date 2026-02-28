@@ -36,7 +36,6 @@ interface UseExperimentalMapBinsResult {
   binsEditorState: BinsEditorState | null;
   activeBinsPreset: ExperimentalMapBinsPreset | undefined;
   modalBinsPreset: ExperimentalMapBinsPreset | undefined;
-  modalBinsValidationErrors: string[];
   binsClassification: ReturnType<typeof classifySeriesValues>;
   binsCanApply: boolean;
   combinedWarnings: MapSeriesWarning[];
@@ -54,7 +53,6 @@ interface UseExperimentalMapBinsResult {
   };
   regenerateBinsPreset: (presetId: string) => boolean;
   closeBinsEditor: () => void;
-  showBinLabelOnLegend: boolean;
   activeNoDataConfig: ExperimentalMapBinsPresetConfig['noData'] | undefined;
 }
 
@@ -171,6 +169,7 @@ export function useExperimentalMapBins({
         if (draft.activeBinPresetId === presetId) {
           draft.activeBinPresetId = undefined;
         }
+        delete draft.tableBinFiltersByPresetId[presetId];
       });
 
       setBinsEditorState((prevState) =>
@@ -282,18 +281,6 @@ export function useExperimentalMapBins({
     ? mapState.binsPresets.find((preset) => preset.id === binsEditorState.presetId)
     : undefined;
 
-  const modalBinsValidationErrors = useMemo(() => {
-    if (!modalBinsPreset) {
-      return [];
-    }
-
-    if (modalBinsPreset.config.bins.length === 0) {
-      return ['At least one bin is required.'];
-    }
-
-    return validateBinsConfig(modalBinsPreset.config).errors;
-  }, [modalBinsPreset]);
-
   useEffect(() => {
     if (binsEditorState?.mode === 'edit' && !modalBinsPreset) {
       setBinsEditorState(null);
@@ -308,7 +295,6 @@ export function useExperimentalMapBins({
     binsEditorState,
     activeBinsPreset,
     modalBinsPreset,
-    modalBinsValidationErrors,
     binsClassification,
     binsCanApply,
     combinedWarnings,
@@ -321,7 +307,6 @@ export function useExperimentalMapBins({
     applyBinsPreset,
     regenerateBinsPreset,
     closeBinsEditor,
-    showBinLabelOnLegend: activeBinsPreset?.config.showBinLabelOnLegend ?? true,
     activeNoDataConfig: activeBinsPreset?.config.noData,
   };
 }

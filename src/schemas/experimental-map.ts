@@ -34,9 +34,11 @@ export const ExperimentalMapBinSchema = z.object({
   max: z.number().nullable(),
   label: z.string().default(''),
   color: z.string().default('#d7301f'),
+  disabled: z.boolean().optional(),
 });
 
 export const ExperimentalMapBinsPresetConfigSchema = z.object({
+  title: z.string().default(''),
   scale: z.literal('sequential').default('sequential'),
   showBinLabelOnLegend: z.boolean().default(true),
   colorMode: z.enum(['manual', 'gradient']).default('manual'),
@@ -76,6 +78,9 @@ export const ExperimentalMapBinsPresetConfigSchema = z.object({
 export type ExperimentalMapBin = z.infer<typeof ExperimentalMapBinSchema>;
 export type ExperimentalMapBinsPresetConfig = z.infer<typeof ExperimentalMapBinsPresetConfigSchema>;
 
+export const ExperimentalMapActiveViewSchema = z.enum(['map', 'table']);
+export type ExperimentalMapActiveView = z.infer<typeof ExperimentalMapActiveViewSchema>;
+
 export function createDefaultExperimentalMapBinsPresetConfig(): ExperimentalMapBinsPresetConfig {
   return ExperimentalMapBinsPresetConfigSchema.parse({});
 }
@@ -101,12 +106,14 @@ export function createDefaultExperimentalMapBinsPreset(
 export const ExperimentalMapUrlStateSchema = z.object({
   series: z.array(MapSupportedSeriesSchema).default([]),
   activeSeriesId: z.string().optional(),
+  activeView: ExperimentalMapActiveViewSchema.default('map'),
   mapName: z.string().default('Experimental UAT Map'),
   seriesPanelCollapsed: z.boolean().default(false),
   configPanelCollapsed: z.boolean().default(false),
   binsPanelCollapsed: z.boolean().default(false),
   binsPresets: z.array(ExperimentalMapBinsPresetSchema).default([]),
   activeBinPresetId: z.string().optional(),
+  tableBinFiltersByPresetId: z.record(z.string(), z.array(z.string())).default({}),
   mapCenter: z.tuple([z.number(), z.number()]).optional(),
   mapZoom: z.number().optional(),
 });

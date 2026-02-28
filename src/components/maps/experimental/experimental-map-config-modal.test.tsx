@@ -8,8 +8,6 @@ describe('ExperimentalMapConfigModal', () => {
       <ExperimentalMapConfigModal
         open={true}
         mapName="Experimental UAT Map"
-        activeSeriesLabel="Execution analytics"
-        activeUnit="RON"
         warningCount={0}
         onMapNameChange={vi.fn()}
         onOpenChange={vi.fn()}
@@ -19,8 +17,6 @@ describe('ExperimentalMapConfigModal', () => {
 
     expect(screen.getByText('Map Config')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Experimental UAT Map')).toBeInTheDocument();
-    expect(screen.getByText('Execution analytics')).toBeInTheDocument();
-    expect(screen.getByText('RON')).toBeInTheDocument();
     expect(screen.getByText('0')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'View warnings' })).not.toBeInTheDocument();
   });
@@ -33,7 +29,6 @@ describe('ExperimentalMapConfigModal', () => {
       <ExperimentalMapConfigModal
         open={true}
         mapName="Experimental UAT Map"
-        activeSeriesLabel="None"
         warningCount={2}
         onMapNameChange={vi.fn()}
         onOpenChange={onOpenChange}
@@ -54,7 +49,6 @@ describe('ExperimentalMapConfigModal', () => {
       <ExperimentalMapConfigModal
         open={true}
         mapName="Experimental UAT Map"
-        activeSeriesLabel="Execution analytics"
         warningCount={0}
         onMapNameChange={onMapNameChange}
         onOpenChange={vi.fn()}
