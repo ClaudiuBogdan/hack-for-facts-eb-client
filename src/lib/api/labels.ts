@@ -40,6 +40,9 @@ interface EntityNamesResponse {
         nodes: {
             cui: string;
             name: string;
+            uat?: {
+                county_name?: string | null;
+            } | null;
         }[];
     }
 }
@@ -50,6 +53,9 @@ const ENTITY_NAMES_QUERY = `
         nodes {
           cui
           name
+          uat {
+            county_name
+          }
         }
       }
     }
@@ -187,12 +193,18 @@ export async function getFundingSourceLabels(ids: (string | number)[]): Promise<
 }
 
 
-export async function getEntityLabels(ids: (string | number)[]): Promise<{ id: string; label: string }[]> {
+export async function getEntityLabels(
+    ids: (string | number)[],
+): Promise<{ id: string; label: string; countyName?: string | null }[]> {
     const stringIds = ids.map(String);
     if (stringIds.length === 0) return [];
     try {
         const response = await graphqlRequest<EntityNamesResponse>(ENTITY_NAMES_QUERY, { entityCuis: stringIds });
-        return response.entities.nodes.map(({ cui, name }) => ({ id: cui, label: name }));
+        return response.entities.nodes.map(({ cui, name, uat }) => ({
+            id: cui,
+            label: name,
+            countyName: uat?.county_name ?? null,
+        }));
     }
     catch (error) {
         logger.error("Error fetching entity labels", { error, ids });
