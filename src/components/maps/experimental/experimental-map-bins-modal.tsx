@@ -238,13 +238,14 @@ export function ExperimentalMapBinsModal({
                   <Input
                     id="experimental-bins-preset-label"
                     value={draftPreset.label}
-                    onChange={(event) =>
+                    onChange={(event) => {
+                      const nextLabel = event.currentTarget.value;
                       applyDraftPreset((currentPreset) => ({
                         ...currentPreset,
-                        label: event.currentTarget.value,
+                        label: nextLabel,
                         updatedAt: new Date().toISOString(),
-                      }))
-                    }
+                      }));
+                    }}
                     autoComplete="off"
                   />
                 </div>
@@ -254,12 +255,13 @@ export function ExperimentalMapBinsModal({
                   <Input
                     id="experimental-bins-title"
                     value={presetConfig.title}
-                    onChange={(event) =>
+                    onChange={(event) => {
+                      const nextTitle = event.currentTarget.value;
                       applyDraftConfig((currentConfig) => ({
                         ...currentConfig,
-                        title: event.currentTarget.value,
-                      }))
-                    }
+                        title: nextTitle,
+                      }));
+                    }}
                     autoComplete="off"
                     placeholder="Optional legend title"
                   />
@@ -312,15 +314,16 @@ export function ExperimentalMapBinsModal({
                   type="color"
                   value={presetConfig.gradient.startColor}
                   className="h-7 w-7 cursor-pointer rounded border-0 p-0.5"
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    const nextStartColor = event.currentTarget.value;
                     applyDraftConfig((currentConfig) => ({
                       ...currentConfig,
                       gradient: {
                         ...currentConfig.gradient,
-                        startColor: event.currentTarget.value,
+                        startColor: nextStartColor,
                       },
-                    }))
-                  }
+                    }));
+                  }}
                 />
                 <span className="text-xs text-muted-foreground">→</span>
                 <Input
@@ -328,15 +331,16 @@ export function ExperimentalMapBinsModal({
                   type="color"
                   value={presetConfig.gradient.endColor}
                   className="h-7 w-7 cursor-pointer rounded border-0 p-0.5"
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    const nextEndColor = event.currentTarget.value;
                     applyDraftConfig((currentConfig) => ({
                       ...currentConfig,
                       gradient: {
                         ...currentConfig.gradient,
-                        endColor: event.currentTarget.value,
+                        endColor: nextEndColor,
                       },
-                    }))
-                  }
+                    }));
+                  }}
                 />
               </div>
               <Button
@@ -360,15 +364,16 @@ export function ExperimentalMapBinsModal({
               <Input
                 id="experimental-bins-no-data-label"
                 value={presetConfig.noData.label}
-                onChange={(event) =>
+                onChange={(event) => {
+                  const nextNoDataLabel = event.currentTarget.value;
                   applyDraftConfig((currentConfig) => ({
                     ...currentConfig,
                     noData: {
                       ...currentConfig.noData,
-                      label: event.currentTarget.value,
+                      label: nextNoDataLabel,
                     },
-                  }))
-                }
+                  }));
+                }}
                 autoComplete="off"
                 className="h-7 w-24 text-xs"
               />
@@ -377,15 +382,16 @@ export function ExperimentalMapBinsModal({
                 type="color"
                 value={presetConfig.noData.color}
                 className="h-7 w-7 cursor-pointer rounded border-0 p-0.5"
-                onChange={(event) =>
+                onChange={(event) => {
+                  const nextNoDataColor = event.currentTarget.value;
                   applyDraftConfig((currentConfig) => ({
                     ...currentConfig,
                     noData: {
                       ...currentConfig.noData,
-                      color: event.currentTarget.value,
+                      color: nextNoDataColor,
                     },
-                  }))
-                }
+                  }));
+                }}
               />
               <div className="ml-auto flex items-center gap-2">
                 <Label htmlFor="no-data-tooltip" className="cursor-pointer text-xs text-muted-foreground">

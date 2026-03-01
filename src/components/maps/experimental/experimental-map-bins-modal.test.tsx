@@ -154,4 +154,46 @@ describe('ExperimentalMapBinsModal', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(onApplyPreset).not.toHaveBeenCalled();
   });
+
+  it('updates gradient anchors without crashing and commits on close', () => {
+    const onApplyPreset = vi.fn().mockReturnValue({ ok: true });
+
+    render(
+      <ExperimentalMapBinsModal
+        open={true}
+        preset={createPreset()}
+        activeSeriesLabel="Execution analytics"
+        activeSeriesValues={new Map()}
+        onOpenChange={vi.fn()}
+        onApplyPreset={onApplyPreset}
+      />
+    );
+
+    const startColorInput = document.querySelector<HTMLInputElement>(
+      '#experimental-bins-gradient-start'
+    );
+    const endColorInput = document.querySelector<HTMLInputElement>(
+      '#experimental-bins-gradient-end'
+    );
+
+    if (!startColorInput || !endColorInput) {
+      throw new Error('Expected gradient color inputs to be rendered');
+    }
+
+    fireEvent.change(startColorInput, { target: { value: '#112233' } });
+    fireEvent.change(endColorInput, { target: { value: '#445566' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+
+    expect(onApplyPreset).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: expect.objectContaining({
+          gradient: expect.objectContaining({
+            startColor: '#112233',
+            endColor: '#445566',
+          }),
+        }),
+      })
+    );
+  });
 });
