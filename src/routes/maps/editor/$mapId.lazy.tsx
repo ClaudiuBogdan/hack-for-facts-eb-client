@@ -1,24 +1,7 @@
 import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
 import { AdvancedMapAnalyticsUrlStateSchema } from '@/schemas/advanced-map-analytics';
 import { MapAnalyticsEditorPage } from '@/features/advanced-map-analytics/components/map-analytics-editor-page';
-
-const MAP_SEARCH_KEYS_TO_REPLACE = new Set([
-  'version',
-  'series',
-  'activeSeriesId',
-  'valueFilters',
-  'activeView',
-  'mapName',
-  'seriesPanelCollapsed',
-  'configPanelCollapsed',
-  'valueFiltersPanelCollapsed',
-  'binsPanelCollapsed',
-  'binsPresets',
-  'activeBinPresetId',
-  'tableBinFiltersByPresetId',
-  'mapCenter',
-  'mapZoom',
-]);
+import { stripMapEditorSearchParams } from '@/features/advanced-map-analytics/map-editor-search';
 
 export const Route = createLazyFileRoute('/maps/editor/$mapId')({
   component: MapEditorRouteComponent,
@@ -46,7 +29,7 @@ export function MapEditorRouteComponent() {
                   )
                 : updater;
             const normalizedMapState = AdvancedMapAnalyticsUrlStateSchema.parse(nextMapState);
-            const preservedGlobalSearch = stripMapSearchParams(
+            const preservedGlobalSearch = stripMapEditorSearchParams(
               previousSearch as Record<string, unknown>
             );
             return {
@@ -60,17 +43,4 @@ export function MapEditorRouteComponent() {
       }}
     />
   );
-}
-
-function stripMapSearchParams(search: Record<string, unknown>): Record<string, unknown> {
-  const preservedSearch: Record<string, unknown> = {};
-
-  for (const [key, value] of Object.entries(search)) {
-    if (MAP_SEARCH_KEYS_TO_REPLACE.has(key)) {
-      continue;
-    }
-    preservedSearch[key] = value;
-  }
-
-  return preservedSearch;
 }

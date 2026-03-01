@@ -89,4 +89,79 @@ describe('MapAnalyticsEditorPage', () => {
 
     expect(screen.getByText('Sign in required')).toBeInTheDocument();
   });
+
+  it('does not hydrate from API when map state is already provided', async () => {
+    const setMapState = vi.fn();
+    const providedMapState = AdvancedMapAnalyticsUrlStateSchema.parse({
+      mapName: 'Provided map state',
+      activeView: 'table',
+    });
+    const lastSnapshotConfig = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Hydrated map' });
+
+    useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
+    useMapQueryMock.mockReturnValue({
+      isLoading: false,
+      error: null,
+      data: {
+        title: 'Hydrated map',
+        description: null,
+        state: 'private',
+        lastSnapshot: {
+          config: lastSnapshotConfig,
+        },
+      },
+    });
+
+    const { MapAnalyticsEditorPage } = await import('./map-analytics-editor-page');
+    render(<MapAnalyticsEditorPage mapId="map1" mapState={providedMapState} setMapState={setMapState} />);
+
+    expect(screen.getByTestId('map-workspace')).toBeInTheDocument();
+    expect(setMapState).not.toHaveBeenCalled();
+  });
+
+  it('rehydrates when map id changes', async () => {
+    const setMapState = vi.fn();
+    const firstSnapshotConfig = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Map one snapshot' });
+    const secondSnapshotConfig = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Map two snapshot' });
+
+    useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
+    useMapQueryMock.mockImplementation((mapId: string) => ({
+      isLoading: false,
+      error: null,
+      data: {
+        title: mapId === 'map1' ? 'Map one' : 'Map two',
+        description: null,
+        state: 'private',
+        lastSnapshot: {
+          config: mapId === 'map1' ? firstSnapshotConfig : secondSnapshotConfig,
+        },
+      },
+    }));
+
+    const { MapAnalyticsEditorPage } = await import('./map-analytics-editor-page');
+    const { rerender } = render(
+      <MapAnalyticsEditorPage
+        mapId="map1"
+        mapState={AdvancedMapAnalyticsUrlStateSchema.parse({})}
+        setMapState={setMapState}
+      />
+    );
+
+    await waitFor(() => {
+      expect(setMapState).toHaveBeenNthCalledWith(1, firstSnapshotConfig);
+    });
+
+    window.history.replaceState(null, '', '/maps/editor/map2');
+    rerender(
+      <MapAnalyticsEditorPage
+        mapId="map2"
+        mapState={AdvancedMapAnalyticsUrlStateSchema.parse({})}
+        setMapState={setMapState}
+      />
+    );
+
+    await waitFor(() => {
+      expect(setMapState).toHaveBeenNthCalledWith(2, secondSnapshotConfig);
+    });
+  });
 });

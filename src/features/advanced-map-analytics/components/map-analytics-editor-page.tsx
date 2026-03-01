@@ -4,7 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { AuthSignInButton, useAuth } from '@/lib/auth';
-import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
+import {
+  AdvancedMapAnalyticsUrlStateSchema,
+  type AdvancedMapAnalyticsUrlState,
+} from '@/schemas/advanced-map-analytics';
 import { MapAnalyticsWorkspace } from '@/features/advanced-map-analytics/components/map-analytics-workspace';
 import { MapAnalyticsOwnerConfigModal } from '@/features/advanced-map-analytics/components/map-analytics-owner-config-modal';
 import { useAdvancedMapAnalyticsMapQuery } from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
@@ -20,27 +23,10 @@ interface MapAnalyticsEditorPageProps {
   ) => void;
 }
 
-const MAP_SEARCH_KEYS = [
-  'version',
-  'series',
-  'activeSeriesId',
-  'valueFilters',
-  'activeView',
-  'mapName',
-  'seriesPanelCollapsed',
-  'configPanelCollapsed',
-  'valueFiltersPanelCollapsed',
-  'binsPanelCollapsed',
-  'binsPresets',
-  'activeBinPresetId',
-  'tableBinFiltersByPresetId',
-  'mapCenter',
-  'mapZoom',
-] as const;
+const DEFAULT_MAP_STATE = AdvancedMapAnalyticsUrlStateSchema.parse({});
 
-function hasMapSearchParams(search: string): boolean {
-  const params = new URLSearchParams(search);
-  return MAP_SEARCH_KEYS.some((key) => params.has(key));
+function isDefaultMapState(mapState: AdvancedMapAnalyticsUrlState): boolean {
+  return JSON.stringify(mapState) === JSON.stringify(DEFAULT_MAP_STATE);
 }
 
 export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonly<MapAnalyticsEditorPageProps>) {
@@ -52,16 +38,20 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
   const mapQuery = useAdvancedMapAnalyticsMapQuery(mapId, isLoaded && isSignedIn);
 
   useEffect(() => {
+    hasHydratedFromApiRef.current = false;
+  }, [mapId]);
+
+  useEffect(() => {
     if (!mapQuery.data || hasHydratedFromApiRef.current) {
       return;
     }
 
-    if (typeof window !== 'undefined' && !hasMapSearchParams(window.location.search)) {
+    if (isDefaultMapState(mapState)) {
       setMapState(mapQuery.data.lastSnapshot.config);
     }
 
     hasHydratedFromApiRef.current = true;
-  }, [mapQuery.data, setMapState]);
+  }, [mapQuery.data, mapState, setMapState]);
 
   const forbiddenError = useMemo(() => {
     if (!mapQuery.error) {
