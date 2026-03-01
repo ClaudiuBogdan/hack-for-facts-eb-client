@@ -3,19 +3,22 @@ import { useQuery } from '@tanstack/react-query';
 import type { Currency } from '@/schemas/charts';
 import type {
   AdvancedMapAnalyticsValueFilterRule,
-  MapBaseSeries,
   MapSupportedSeries,
 } from '@/schemas/advanced-map-analytics';
 import { fetchGroupedSeriesData } from '@/lib/api/map-series';
 import { calculateMapSeriesValues } from '@/lib/map-series/calculation';
 import { parseGroupedSeriesWideCsv } from '@/lib/map-series/csv';
+import {
+  buildRemoteGroupedSeriesState,
+  resolveSeriesUnitOverride,
+} from '@/lib/map-series/grouped-series-request';
 import { applyAdvancedMapAnalyticsValueFilters } from '@/lib/map-series/value-filters';
 import type {
   GroupedSeriesDataResponse,
   MapSeriesVectorCache,
   MapSeriesWarning,
 } from '@/lib/map-series/interfaces';
-import { convertDaysToMs, generateHash } from '@/lib/utils';
+import { convertDaysToMs } from '@/lib/utils';
 
 const URL_SEARCH_WARNING_THRESHOLD = 1800;
 const isBrowser = typeof window !== 'undefined';
@@ -30,6 +33,8 @@ interface UseAdvancedMapAnalyticsSeriesDataParams {
   valueFilterRules?: AdvancedMapAnalyticsValueFilterRule[];
   localValuesBySeriesId?: MapSeriesVectorCache;
   localUnitsBySeriesId?: Map<string, string | undefined>;
+  bundledGroupedSeriesData?: GroupedSeriesDataResponse;
+  bundledRemoteBaseSeriesHash?: string;
 }
 
 interface AdvancedMapAnalyticsSeriesDataResult {
@@ -48,11 +53,8 @@ export function useAdvancedMapAnalyticsSeriesData(
   params: UseAdvancedMapAnalyticsSeriesDataParams
 ): AdvancedMapAnalyticsSeriesDataResult {
   const normalizedSeries = useMemo(
-    () =>
-      params.series.map((series) =>
-        normalizeSeriesDefaults(series, params.defaultCurrency, params.defaultInflationAdjusted)
-      ),
-    [params.defaultCurrency, params.defaultInflationAdjusted, params.series]
+    () => params.series.map((series) => normalizeSeriesDefaults(series)),
+    [params.series]
   );
 
   const normalizedEnabledSeries = useMemo(
@@ -91,35 +93,21 @@ export function useAdvancedMapAnalyticsSeriesData(
     return scopedSeriesIds;
   }, [normalizedEnabledSeries, params.valueFilterRules, resolvedActiveSeriesId]);
 
-  const normalizedBaseSeries = useMemo(
-    () =>
-      normalizedSeries
-        .filter((series): series is MapBaseSeries => series.type !== 'aggregated-series-calculation')
-        .sort((left, right) => left.id.localeCompare(right.id)),
+  const remoteGroupedSeriesState = useMemo(
+    () => buildRemoteGroupedSeriesState(normalizedSeries),
     [normalizedSeries]
   );
-
-  const normalizedRemoteBaseSeries = useMemo(
-    () => normalizedBaseSeries.filter(isRemoteFetchSeries),
-    [normalizedBaseSeries]
-  );
-
-  const baseSeriesHash = useMemo(
-    () =>
-      generateHash(
-        stableSerialize(
-          normalizedRemoteBaseSeries.map((series) => ({
-            id: series.id,
-            type: series.type,
-            payload: normalizeSeriesForFetch(series),
-          }))
-        )
-      ),
-    [normalizedRemoteBaseSeries]
-  );
+  const normalizedBaseSeries = remoteGroupedSeriesState.baseSeries;
+  const normalizedRemoteBaseSeries = remoteGroupedSeriesState.remoteBaseSeries;
+  const baseSeriesHash = remoteGroupedSeriesState.remoteBaseSeriesHash;
+  const useBundledGroupedSeriesData =
+    params.bundledGroupedSeriesData !== undefined &&
+    params.bundledRemoteBaseSeriesHash === baseSeriesHash;
 
   const groupedDataQuery = useQuery<GroupedSeriesDataResponse, Error>({
     queryKey: ['advanced-map-analytics-series-data', baseSeriesHash],
+    initialData: useBundledGroupedSeriesData ? params.bundledGroupedSeriesData : undefined,
+    initialDataUpdatedAt: useBundledGroupedSeriesData ? Date.now() : undefined,
     queryFn: async () => {
       if (normalizedRemoteBaseSeries.length === 0) {
         return {
@@ -301,115 +289,36 @@ export function useAdvancedMapAnalyticsSeriesData(
 }
 
 function normalizeSeriesDefaults(
-  series: MapSupportedSeries,
-  defaultCurrency: Currency,
-  defaultInflationAdjusted: boolean
+  series: MapSupportedSeries
 ): MapSupportedSeries {
   if (series.type !== 'line-items-aggregated-yearly' && series.type !== 'commitments-analytics') {
     return series;
   }
 
-  const normalizationRaw = series.filter.normalization ?? 'total';
+  const normalizationRaw = series.filter.normalization;
   const normalization =
     normalizationRaw === 'total_euro'
       ? 'total'
       : normalizationRaw === 'per_capita_euro'
         ? 'per_capita'
         : normalizationRaw;
+  const useLegacyEuroCurrency =
+    normalizationRaw === 'total_euro' || normalizationRaw === 'per_capita_euro';
+  const forceInflationDisabled = normalization === 'percent_gdp';
 
-  const currency =
-    normalizationRaw === 'total_euro' || normalizationRaw === 'per_capita_euro'
-      ? 'EUR'
-      : (series.filter.currency ?? defaultCurrency);
-
-  const inflationAdjusted =
-    normalization === 'percent_gdp'
-      ? false
-      : (series.filter.inflation_adjusted ?? defaultInflationAdjusted);
+  if (!useLegacyEuroCurrency && !forceInflationDisabled) {
+    return series;
+  }
 
   return {
     ...series,
     filter: {
       ...series.filter,
-      normalization,
-      currency,
-      inflation_adjusted: inflationAdjusted,
+      ...(normalization !== undefined ? { normalization } : {}),
+      ...(useLegacyEuroCurrency ? { currency: 'EUR' as const } : {}),
+      ...(forceInflationDisabled ? { inflation_adjusted: false } : {}),
     },
   } as MapSupportedSeries;
-}
-
-function normalizeSeriesForFetch(
-  series: Exclude<MapBaseSeries, { type: 'geojson-dataset-series' }>
-): unknown {
-  const unit = resolveSeriesUnitOverride(series);
-
-  if (series.type === 'line-items-aggregated-yearly') {
-    return {
-      type: series.type,
-      unit,
-      filter: series.filter,
-    };
-  }
-
-  if (series.type === 'commitments-analytics') {
-    return {
-      type: series.type,
-      metric: series.metric,
-      unit,
-      filter: series.filter,
-    };
-  }
-
-  return {
-    type: series.type,
-    unit,
-    datasetCode: series.datasetCode,
-    period: series.period,
-    aggregation: series.aggregation,
-    territoryCodes: series.territoryCodes,
-    sirutaCodes: series.sirutaCodes,
-    unitCodes: series.unitCodes,
-    classificationSelections: series.classificationSelections,
-    hasValue: series.hasValue,
-  };
-}
-
-function isRemoteFetchSeries(
-  series: MapBaseSeries
-): series is Exclude<MapBaseSeries, { type: 'geojson-dataset-series' }> {
-  return (
-    series.type === 'line-items-aggregated-yearly' ||
-    series.type === 'commitments-analytics' ||
-    series.type === 'ins-series'
-  );
-}
-
-function stableSerialize(value: unknown): string {
-  if (value === null || value === undefined) {
-    return 'null';
-  }
-
-  if (typeof value === 'string') {
-    return JSON.stringify(value);
-  }
-
-  if (typeof value === 'number' || typeof value === 'boolean') {
-    return String(value);
-  }
-
-  if (Array.isArray(value)) {
-    const serializedItems = value.map((item) => stableSerialize(item));
-    const sortedItems = [...serializedItems].sort((left, right) => left.localeCompare(right));
-    return `[${sortedItems.join(',')}]`;
-  }
-
-  const objectEntries = Object.entries(value as Record<string, unknown>)
-    .filter(([, entryValue]) => entryValue !== undefined)
-    .sort(([leftKey], [rightKey]) => leftKey.localeCompare(rightKey));
-
-  return `{${objectEntries
-    .map(([key, entryValue]) => `${JSON.stringify(key)}:${stableSerialize(entryValue)}`)
-    .join(',')}}`;
 }
 
 function normalizeUnit(unit: string | undefined): string | undefined {
@@ -419,20 +328,6 @@ function normalizeUnit(unit: string | undefined): string | undefined {
 
   const trimmed = unit.trim();
   return trimmed.length > 0 ? trimmed : undefined;
-}
-
-function resolveSeriesUnitOverride(series: MapBaseSeries): string | undefined {
-  const normalizedUnit = normalizeUnit(series.unit);
-  if (normalizedUnit === undefined) {
-    return undefined;
-  }
-
-  if (series.type === 'ins-series' && normalizedUnit.toUpperCase() === 'RON') {
-    // INS series should never inherit currency defaults when no dataset unit is available.
-    return undefined;
-  }
-
-  return normalizedUnit;
 }
 
 function isWarningRelevantToSeriesScope(

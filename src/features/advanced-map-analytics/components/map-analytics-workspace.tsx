@@ -38,6 +38,7 @@ import {
 import { useUserCurrency } from '@/lib/hooks/useUserCurrency';
 import { useUserInflationAdjusted } from '@/lib/hooks/useUserInflationAdjusted';
 import { DEFAULT_FEATURE_STYLE } from '@/components/maps/constants';
+import type { GroupedSeriesDataResponse } from '@/lib/map-series/interfaces';
 import { AdvancedMapAnalyticsConfigPanel } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel';
 import { AdvancedMapAnalyticsBinsModal } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal';
 import { AdvancedMapAnalyticsBinsPanel } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-bins-panel';
@@ -83,6 +84,8 @@ interface MapAnalyticsWorkspaceProps {
   mode: 'owner' | 'public';
   capabilities: MapAnalyticsWorkspaceCapabilities;
   onOpenOwnerConfig?: () => void;
+  bundledGroupedSeriesData?: GroupedSeriesDataResponse;
+  bundledRemoteBaseSeriesHash?: string;
 }
 
 const DEFAULT_MAP_NAME = 'Untitled map';
@@ -93,6 +96,8 @@ export function MapAnalyticsWorkspace({
   mode,
   capabilities,
   onOpenOwnerConfig,
+  bundledGroupedSeriesData,
+  bundledRemoteBaseSeriesHash,
 }: Readonly<MapAnalyticsWorkspaceProps>) {
   const navigate = useNavigate();
   const [userCurrency] = useUserCurrency();
@@ -545,6 +550,8 @@ export function MapAnalyticsWorkspace({
     enabled: editorState == null,
     localValuesBySeriesId: localGeoJsonValuesBySeriesId,
     localUnitsBySeriesId: localGeoJsonUnitsBySeriesId,
+    bundledGroupedSeriesData,
+    bundledRemoteBaseSeriesHash,
   });
 
   const activeSeries = useMemo(

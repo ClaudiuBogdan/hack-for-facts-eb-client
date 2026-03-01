@@ -33,6 +33,7 @@ interface MapAnalyticsOwnerConfigModalProps {
   mapName: string;
   currentTitle: string;
   currentVisibility: AdvancedMapAnalyticsVisibility;
+  currentPublicId: string | null;
   onOpenChange: (open: boolean) => void;
   onMapNameChange: (nextMapName: string) => void;
   onLoadSnapshot: (mapState: AdvancedMapAnalyticsUrlState) => void;
@@ -46,6 +47,7 @@ export function MapAnalyticsOwnerConfigModal({
   mapName,
   currentTitle,
   currentVisibility,
+  currentPublicId,
   onOpenChange,
   onMapNameChange,
   onLoadSnapshot,
@@ -96,6 +98,22 @@ export function MapAnalyticsOwnerConfigModal({
   const visibilityLabel = visibility === 'public' ? 'Public' : 'Private';
   const isVisibilityConfirmOpen = pendingVisibilityTarget !== null;
   const isLoadConfirmOpen = pendingLoadSnapshotId !== null;
+  const normalizedPublicId =
+    typeof currentPublicId === 'string' && currentPublicId.trim().length > 0
+      ? currentPublicId.trim()
+      : null;
+  const publicMapUrl = useMemo(() => {
+    if (visibility !== 'public' || normalizedPublicId === null) {
+      return '';
+    }
+
+    const path = `/maps/public/${encodeURIComponent(normalizedPublicId)}`;
+    if (typeof window === 'undefined' || typeof window.location.origin !== 'string') {
+      return path;
+    }
+
+    return `${window.location.origin}${path}`;
+  }, [normalizedPublicId, visibility]);
 
   const handleRequestVisibilityToggle = (checked: boolean) => {
     const nextVisibility: AdvancedMapAnalyticsVisibility = checked ? 'public' : 'private';
@@ -176,6 +194,19 @@ export function MapAnalyticsOwnerConfigModal({
     }
   };
 
+  const handleCopyPublicLink = async () => {
+    if (publicMapUrl.length === 0) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(publicMapUrl);
+      toast.success('Public map link copied');
+    } catch {
+      toast.error('Failed to copy public map link');
+    }
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -219,6 +250,38 @@ export function MapAnalyticsOwnerConfigModal({
                   <p className="mt-1 text-xs text-muted-foreground">
                     Public maps are accessible from the public route.
                   </p>
+                  {visibility === 'public' ? (
+                    <div className="mt-3 space-y-2">
+                      <label
+                        className="block text-xs font-medium text-muted-foreground"
+                        htmlFor="public-map-url-input"
+                      >
+                        Public map URL
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id="public-map-url-input"
+                          value={publicMapUrl}
+                          readOnly
+                          aria-label="Public map URL"
+                          placeholder="/maps/public/<public-id>"
+                        />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => void handleCopyPublicLink()}
+                          disabled={publicMapUrl.length === 0 || isBusy}
+                        >
+                          Copy link
+                        </Button>
+                      </div>
+                      {publicMapUrl.length === 0 ? (
+                        <p className="text-xs text-muted-foreground">
+                          Public URL is not available yet. Refresh after publishing.
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </section>

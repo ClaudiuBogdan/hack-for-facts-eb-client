@@ -6,6 +6,7 @@ import { AdvancedMapAnalyticsUrlStateSchema } from '@/schemas/advanced-map-analy
 const useAuthMock = vi.fn();
 const useMapQueryMock = vi.fn();
 const workspaceMock = vi.fn();
+const ownerConfigModalMock = vi.fn();
 
 vi.mock('@/lib/auth', () => ({
   useAuth: () => useAuthMock(),
@@ -28,29 +29,59 @@ vi.mock('./map-analytics-workspace', () => ({
 }));
 
 vi.mock('./map-analytics-owner-config-modal', () => ({
-  MapAnalyticsOwnerConfigModal: () => <div data-testid="owner-config-modal" />,
+  MapAnalyticsOwnerConfigModal: (props: unknown) => {
+    ownerConfigModalMock(props);
+    return <div data-testid="owner-config-modal" />;
+  },
 }));
+
+function createGroupedSeriesData(seriesId = 'series_1') {
+  return {
+    manifest: {
+      generated_at: '2026-03-01T10:00:00.000Z',
+      format: 'wide_matrix_v1' as const,
+      granularity: 'UAT' as const,
+      series: [
+        {
+          series_id: seriesId,
+          unit: 'RON',
+          defined_value_count: 1,
+        },
+      ],
+    },
+    payload: {
+      mime: 'text/csv' as const,
+      compression: 'none' as const,
+      data: `siruta_code,${seriesId}\n1001,10`,
+    },
+    warnings: [],
+  };
+}
 
 describe('MapAnalyticsEditorPage', () => {
   beforeEach(() => {
     useAuthMock.mockReset();
     useMapQueryMock.mockReset();
     workspaceMock.mockReset();
+    ownerConfigModalMock.mockReset();
     window.history.replaceState(null, '', '/maps/editor/map1');
   });
 
   it('hydrates map state from API snapshot when map search is absent', async () => {
     const setMapState = vi.fn();
     const lastSnapshotConfig = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Hydrated map' });
+    const groupedSeriesData = createGroupedSeriesData();
 
     useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
     useMapQueryMock.mockReturnValue({
       isLoading: false,
       error: null,
       data: {
+        publicId: 'public_abc123',
         title: 'Hydrated map',
         description: null,
         state: 'private',
+        groupedSeriesData,
         lastSnapshot: {
           config: lastSnapshotConfig,
         },
@@ -72,6 +103,17 @@ describe('MapAnalyticsEditorPage', () => {
 
     expect(screen.getByTestId('map-workspace')).toBeInTheDocument();
     expect(screen.getByTestId('owner-config-modal')).toBeInTheDocument();
+    expect(workspaceMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bundledGroupedSeriesData: groupedSeriesData,
+        bundledRemoteBaseSeriesHash: expect.any(String),
+      })
+    );
+    expect(ownerConfigModalMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        currentPublicId: 'public_abc123',
+      })
+    );
   });
 
   it('shows sign-in gate when unauthenticated', async () => {
@@ -90,6 +132,28 @@ describe('MapAnalyticsEditorPage', () => {
     expect(screen.getByText('Sign in required')).toBeInTheDocument();
   });
 
+  it('shows API error message when bundled grouped-series data is missing', async () => {
+    useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
+    useMapQueryMock.mockReturnValue({
+      isLoading: false,
+      data: null,
+      error: new Error('Owner map detail response missing grouped-series bundled data.'),
+    });
+
+    const { MapAnalyticsEditorPage } = await import('./map-analytics-editor-page');
+    render(
+      <MapAnalyticsEditorPage
+        mapId="map1"
+        mapState={AdvancedMapAnalyticsUrlStateSchema.parse({})}
+        setMapState={vi.fn()}
+      />
+    );
+
+    expect(
+      screen.getByText('Owner map detail response missing grouped-series bundled data.')
+    ).toBeInTheDocument();
+  });
+
   it('does not hydrate from API when map state is already provided', async () => {
     const setMapState = vi.fn();
     const providedMapState = AdvancedMapAnalyticsUrlStateSchema.parse({
@@ -103,6 +167,7 @@ describe('MapAnalyticsEditorPage', () => {
       isLoading: false,
       error: null,
       data: {
+        publicId: null,
         title: 'Hydrated map',
         description: null,
         state: 'private',
@@ -129,6 +194,7 @@ describe('MapAnalyticsEditorPage', () => {
       isLoading: false,
       error: null,
       data: {
+        publicId: null,
         title: mapId === 'map1' ? 'Map one' : 'Map two',
         description: null,
         state: 'private',

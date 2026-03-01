@@ -13,6 +13,7 @@ import { AdvancedMapAnalyticsUrlStateSchema } from '@/schemas/advanced-map-analy
 import { API_FETCH_REFERRER_POLICY } from '@/lib/api/fetch-options';
 import {
   createAdvancedMapAnalyticsMap,
+  getAdvancedMapAnalyticsMap,
   getPublicAdvancedMapAnalyticsMap,
   listAdvancedMapAnalyticsSnapshots,
   listAdvancedMapAnalyticsMaps,
@@ -35,6 +36,29 @@ function createMockMapDetail(config = AdvancedMapAnalyticsUrlStateSchema.parse({
       state: config,
       savedAt: '2026-03-01T10:00:00.000Z',
     },
+  };
+}
+
+function createMockGroupedSeriesData(seriesId = 'series_1') {
+  return {
+    manifest: {
+      generated_at: '2026-03-01T10:00:00.000Z',
+      format: 'wide_matrix_v1' as const,
+      granularity: 'UAT' as const,
+      series: [
+        {
+          series_id: seriesId,
+          unit: 'RON',
+          defined_value_count: 1,
+        },
+      ],
+    },
+    payload: {
+      mime: 'text/csv' as const,
+      compression: 'none' as const,
+      data: `siruta_code,${seriesId}\n1001,10`,
+    },
+    warnings: [],
   };
 }
 
@@ -166,6 +190,93 @@ describe('advanced-map-analytics api client', () => {
 
   it('fetches public map without auth header', async () => {
     const mapState = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Public map' });
+    const groupedSeriesData = createMockGroupedSeriesData();
+
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      text: vi.fn().mockResolvedValue(
+        JSON.stringify({
+          ok: true,
+          data: {
+            mapId: 'map_123',
+            publicId: 'map_public',
+            title: 'Public map',
+            description: null,
+            snapshotId: 'snap_public',
+            snapshot: {
+              title: 'Public map',
+              description: null,
+              state: mapState,
+              savedAt: '2026-03-01T10:00:00.000Z',
+            },
+            groupedSeriesData,
+            updatedAt: '2026-03-01T10:00:00.000Z',
+          },
+        })
+      ),
+    } satisfies Partial<Response>);
+
+    const result = await getPublicAdvancedMapAnalyticsMap('map_public');
+
+    expect(result.lastSnapshot.config.mapName).toBe('Public map');
+    expect(result.groupedSeriesData).toEqual(groupedSeriesData);
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('https://api.example.com/api/v1/advanced-map-analytics/public/map_public');
+    expect(init.headers).toBeUndefined();
+  });
+
+  it('parses bundled grouped-series data from owner map detail endpoint', async () => {
+    vi.mocked(getAuthToken).mockResolvedValue('token-123');
+    const mapState = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Owner map' });
+    const groupedSeriesData = createMockGroupedSeriesData('owner_series');
+
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      text: vi.fn().mockResolvedValue(
+        JSON.stringify({
+          ok: true,
+          data: {
+            ...createMockMapDetail(mapState),
+            groupedSeriesData,
+          },
+        })
+      ),
+    } satisfies Partial<Response>);
+
+    const result = await getAdvancedMapAnalyticsMap('map_123');
+
+    expect(result.lastSnapshot.config.mapName).toBe('Owner map');
+    expect(result.groupedSeriesData).toEqual(groupedSeriesData);
+  });
+
+  it('throws when owner map detail response misses grouped-series bundled data', async () => {
+    vi.mocked(getAuthToken).mockResolvedValue('token-123');
+    const mapState = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Owner map' });
+
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      text: vi.fn().mockResolvedValue(
+        JSON.stringify({
+          ok: true,
+          data: createMockMapDetail(mapState),
+        })
+      ),
+    } satisfies Partial<Response>);
+
+    await expect(getAdvancedMapAnalyticsMap('map_123')).rejects.toThrow(
+      'Owner map detail response missing grouped-series bundled data.'
+    );
+  });
+
+  it('throws when public map detail response misses grouped-series bundled data', async () => {
+    const mapState = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Public map' });
 
     fetchMock.mockResolvedValue({
       ok: true,
@@ -192,12 +303,60 @@ describe('advanced-map-analytics api client', () => {
       ),
     } satisfies Partial<Response>);
 
-    const result = await getPublicAdvancedMapAnalyticsMap('map_public');
+    await expect(getPublicAdvancedMapAnalyticsMap('map_public')).rejects.toThrow(
+      'Public map detail response missing grouped-series bundled data.'
+    );
+  });
 
-    expect(result.lastSnapshot.config.mapName).toBe('Public map');
+  it('returns a helpful message when public endpoint is called with an internal map id', async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+      text: vi.fn().mockResolvedValue(JSON.stringify({ ok: false, error: 'NotFoundError' })),
+    } satisfies Partial<Response>);
 
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe('https://api.example.com/api/v1/advanced-map-analytics/public/map_public');
-    expect(init.headers).toBeUndefined();
+    await expect(
+      getPublicAdvancedMapAnalyticsMap('ama_96e8120e16724b90b25d42302c2c9603')
+    ).rejects.toThrow(
+      'Public map not found. The provided ID looks like an internal map ID (ama_...). Use the map public ID from a published map URL.'
+    );
+  });
+
+  it('throws when bundled grouped-series data shape is invalid', async () => {
+    vi.mocked(getAuthToken).mockResolvedValue('token-123');
+    const mapState = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Owner map' });
+
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      text: vi.fn().mockResolvedValue(
+        JSON.stringify({
+          ok: true,
+          data: {
+            ...createMockMapDetail(mapState),
+            groupedSeriesData: {
+              manifest: {
+                generated_at: '2026-03-01T10:00:00.000Z',
+                format: 'wide_matrix_v2',
+                granularity: 'UAT',
+                series: [],
+              },
+              payload: {
+                mime: 'text/csv',
+                compression: 'none',
+                data: 'siruta_code',
+              },
+              warnings: [],
+            },
+          },
+        })
+      ),
+    } satisfies Partial<Response>);
+
+    await expect(getAdvancedMapAnalyticsMap('map_123')).rejects.toThrow(
+      'Owner map detail response missing grouped-series bundled data.'
+    );
   });
 });

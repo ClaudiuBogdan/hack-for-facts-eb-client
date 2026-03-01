@@ -12,6 +12,7 @@ import { MapAnalyticsWorkspace } from '@/features/advanced-map-analytics/compone
 import { MapAnalyticsOwnerConfigModal } from '@/features/advanced-map-analytics/components/map-analytics-owner-config-modal';
 import { useAdvancedMapAnalyticsMapQuery } from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
 import type { AdvancedMapAnalyticsApiError } from '@/features/advanced-map-analytics/api/advanced-map-analytics-api';
+import { getRemoteGroupedSeriesHash } from '@/lib/map-series/grouped-series-request';
 
 interface MapAnalyticsEditorPageProps {
   mapId: string;
@@ -61,6 +62,14 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
     const error = mapQuery.error as AdvancedMapAnalyticsApiError;
     return error.status === 403 ? error : null;
   }, [mapQuery.error]);
+
+  const bundledRemoteBaseSeriesHash = useMemo(() => {
+    if (!mapQuery.data) {
+      return undefined;
+    }
+
+    return getRemoteGroupedSeriesHash(mapQuery.data.lastSnapshot.config.series);
+  }, [mapQuery.data]);
 
   if (!isLoaded || (mapQuery.isLoading && isSignedIn)) {
     return (
@@ -126,6 +135,8 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
         setMapState={setMapState}
         capabilities={{ readOnly: false }}
         onOpenOwnerConfig={() => setIsOwnerConfigModalOpen(true)}
+        bundledGroupedSeriesData={mapQuery.data.groupedSeriesData}
+        bundledRemoteBaseSeriesHash={bundledRemoteBaseSeriesHash}
       />
 
       <MapAnalyticsOwnerConfigModal
@@ -135,6 +146,7 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
         mapName={mapState.mapName}
         currentTitle={mapQuery.data.title}
         currentVisibility={mapQuery.data.state}
+        currentPublicId={mapQuery.data.publicId}
         onOpenChange={setIsOwnerConfigModalOpen}
         onMapNameChange={(nextMapName) => {
           setMapState((previousState) => ({

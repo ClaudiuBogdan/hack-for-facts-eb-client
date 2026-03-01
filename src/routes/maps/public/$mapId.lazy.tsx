@@ -6,7 +6,7 @@ export const Route = createLazyFileRoute('/maps/public/$mapId')({
 });
 
 function PublicMapRouteComponent() {
-  const { mapId } = Route.useParams();
+  const { mapId: publicId } = Route.useParams();
 
-  return <MapAnalyticsPublicPage mapId={mapId} />;
+  return <MapAnalyticsPublicPage publicId={publicId} />;
 }

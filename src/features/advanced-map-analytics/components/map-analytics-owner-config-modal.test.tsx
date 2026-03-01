@@ -1,12 +1,14 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AdvancedMapAnalyticsUrlStateSchema } from '@/schemas/advanced-map-analytics';
+import { toast } from 'sonner';
 
 const snapshotsQueryMock = vi.fn();
 const updateMutateAsyncMock = vi.fn();
 const saveSnapshotMutateAsyncMock = vi.fn();
 const deleteMapMutateAsyncMock = vi.fn();
 const fetchSnapshotForRestoreMock = vi.fn();
+const clipboardWriteTextMock = vi.fn();
 
 vi.mock('sonner', () => ({
   toast: {
@@ -42,6 +44,9 @@ describe('MapAnalyticsOwnerConfigModal', () => {
     saveSnapshotMutateAsyncMock.mockReset();
     deleteMapMutateAsyncMock.mockReset();
     fetchSnapshotForRestoreMock.mockReset();
+    clipboardWriteTextMock.mockReset();
+    vi.mocked(toast.success).mockReset();
+    vi.mocked(toast.error).mockReset();
 
     snapshotsQueryMock.mockReturnValue({
       data: {
@@ -77,6 +82,13 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       description: 'initial snapshot',
       config: snapshotState,
     });
+
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: clipboardWriteTextMock,
+      },
+    });
   });
 
   it('asks confirmation before visibility toggle and patches visibility only on confirm', async () => {
@@ -93,6 +105,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
         mapName="My map"
         currentTitle="My map"
         currentVisibility="private"
+        currentPublicId={null}
         onOpenChange={onOpenChange}
         onMapNameChange={vi.fn()}
         onLoadSnapshot={onLoadSnapshot}
@@ -125,6 +138,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
         mapName="My map"
         currentTitle="My map"
         currentVisibility="private"
+        currentPublicId={null}
         onOpenChange={vi.fn()}
         onMapNameChange={vi.fn()}
         onLoadSnapshot={vi.fn()}
@@ -164,6 +178,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
         mapName="My map"
         currentTitle="My map"
         currentVisibility="private"
+        currentPublicId={null}
         onOpenChange={vi.fn()}
         onMapNameChange={vi.fn()}
         onLoadSnapshot={onLoadSnapshot}
@@ -199,6 +214,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
         mapName="My map"
         currentTitle="My map"
         currentVisibility="private"
+        currentPublicId={null}
         onOpenChange={onOpenChange}
         onMapNameChange={vi.fn()}
         onLoadSnapshot={vi.fn()}
@@ -228,5 +244,129 @@ describe('MapAnalyticsOwnerConfigModal', () => {
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(onDeleted).toHaveBeenCalled();
+  });
+
+  it('shows public map URL and enables copy when map is public and publicId exists', async () => {
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentTitle="My map"
+        currentVisibility="public"
+        currentPublicId="abc123"
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onLoadSnapshot={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    const publicUrlInput = screen.getByLabelText('Public map URL');
+    expect(String((publicUrlInput as HTMLInputElement).value)).toContain('/maps/public/abc123');
+    expect(screen.getByRole('button', { name: 'Copy link' })).toBeEnabled();
+  });
+
+  it('hides public map URL section when map is private', async () => {
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentTitle="My map"
+        currentVisibility="private"
+        currentPublicId="abc123"
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onLoadSnapshot={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByLabelText('Public map URL')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Copy link' })).not.toBeInTheDocument();
+  });
+
+  it('shows unavailable public URL message and disabled copy when publicId is missing', async () => {
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentTitle="My map"
+        currentVisibility="public"
+        currentPublicId={null}
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onLoadSnapshot={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    expect(
+      screen.getByText('Public URL is not available yet. Refresh after publishing.')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Copy link' })).toBeDisabled();
+  });
+
+  it('copies public map URL and shows success toast', async () => {
+    clipboardWriteTextMock.mockResolvedValue(undefined);
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentTitle="My map"
+        currentVisibility="public"
+        currentPublicId="abc123"
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onLoadSnapshot={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Copy link' }));
+
+    await waitFor(() => {
+      expect(clipboardWriteTextMock).toHaveBeenCalledWith(
+        expect.stringContaining('/maps/public/abc123')
+      );
+    });
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Public map link copied');
+  });
+
+  it('shows error toast when copying public map URL fails', async () => {
+    clipboardWriteTextMock.mockRejectedValue(new Error('copy failed'));
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentTitle="My map"
+        currentVisibility="public"
+        currentPublicId="abc123"
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onLoadSnapshot={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Copy link' }));
+
+    await waitFor(() => {
+      expect(vi.mocked(toast.error)).toHaveBeenCalledWith('Failed to copy public map link');
+    });
   });
 });

@@ -8,6 +8,7 @@ import {
   createDefaultAdvancedMapAnalyticsStatsValueFilterRule,
   createDefaultAdvancedMapAnalyticsValueFilterRule,
 } from '@/schemas/advanced-map-analytics';
+import { getRemoteGroupedSeriesHash } from '@/lib/map-series/grouped-series-request';
 import { serializeGroupedSeriesWideMatrixCsv } from '@/lib/map-series/csv';
 
 const fetchGroupedSeriesDataMock = vi.hoisted(() => vi.fn());
@@ -109,6 +110,108 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
     });
 
     expect(fetchGroupedSeriesDataMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses bundled grouped-series data when bundled hash matches current series hash', async () => {
+    const baseSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    const bundledData = makeGroupedResponse({
+      series: [{ id: baseSeries.id, unit: 'RON' }],
+      rows: [{ series_id: baseSeries.id, siruta_code: '1001', value: 10 }],
+    });
+
+    const wrapper = createWrapper();
+    const { result } = renderHook(
+      () =>
+        useAdvancedMapAnalyticsSeriesData({
+          series: [baseSeries],
+          activeSeriesId: baseSeries.id,
+          defaultCurrency: 'RON',
+          defaultInflationAdjusted: false,
+          bundledGroupedSeriesData: bundledData,
+          bundledRemoteBaseSeriesHash: getRemoteGroupedSeriesHash([baseSeries]),
+        }),
+      { wrapper }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(fetchGroupedSeriesDataMock).not.toHaveBeenCalled();
+    expect(result.current.valuesBySeriesId.get(baseSeries.id)?.get('1001')).toBe(10);
+  });
+
+  it('falls back to grouped-series endpoint when bundled hash does not match current series hash', async () => {
+    const baseSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    const bundledData = makeGroupedResponse({
+      series: [{ id: baseSeries.id, unit: 'RON' }],
+      rows: [{ series_id: baseSeries.id, siruta_code: '1001', value: 10 }],
+    });
+
+    fetchGroupedSeriesDataMock.mockResolvedValueOnce(
+      makeGroupedResponse({
+        series: [{ id: baseSeries.id, unit: 'RON' }],
+        rows: [{ series_id: baseSeries.id, siruta_code: '1001', value: 30 }],
+      })
+    );
+
+    const wrapper = createWrapper();
+    const { result } = renderHook(
+      () =>
+        useAdvancedMapAnalyticsSeriesData({
+          series: [baseSeries],
+          activeSeriesId: baseSeries.id,
+          defaultCurrency: 'RON',
+          defaultInflationAdjusted: false,
+          bundledGroupedSeriesData: bundledData,
+          bundledRemoteBaseSeriesHash: 'different_hash',
+        }),
+      { wrapper }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(fetchGroupedSeriesDataMock).toHaveBeenCalledTimes(1);
+    expect(result.current.valuesBySeriesId.get(baseSeries.id)?.get('1001')).toBe(30);
+  });
+
+  it('does not inject viewer default currency or inflation flags into remote fetch payload', async () => {
+    const baseSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    if (baseSeries.type !== 'line-items-aggregated-yearly') {
+      throw new Error('Unexpected series type in test setup');
+    }
+    delete baseSeries.filter.currency;
+    delete baseSeries.filter.inflation_adjusted;
+
+    fetchGroupedSeriesDataMock.mockResolvedValueOnce(
+      makeGroupedResponse({
+        series: [{ id: baseSeries.id, unit: 'RON' }],
+        rows: [{ series_id: baseSeries.id, siruta_code: '1001', value: 10 }],
+      })
+    );
+
+    const wrapper = createWrapper();
+    const { result } = renderHook(
+      () =>
+        useAdvancedMapAnalyticsSeriesData({
+          series: [baseSeries],
+          activeSeriesId: baseSeries.id,
+          defaultCurrency: 'USD',
+          defaultInflationAdjusted: true,
+        }),
+      { wrapper }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(fetchGroupedSeriesDataMock).toHaveBeenCalledTimes(1);
+    const request = fetchGroupedSeriesDataMock.mock.calls[0]?.[0];
+    expect(request?.series[0]?.filter?.currency).toBeUndefined();
+    expect(request?.series[0]?.filter?.inflation_adjusted).toBeUndefined();
   });
 
   it('keeps query cache stable when base series order changes', async () => {

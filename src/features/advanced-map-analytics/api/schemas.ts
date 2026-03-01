@@ -3,6 +3,10 @@ import {
   AdvancedMapAnalyticsUrlStateSchema,
   type AdvancedMapAnalyticsUrlState,
 } from '@/schemas/advanced-map-analytics';
+import {
+  GroupedSeriesDataResponseSchema,
+  type GroupedSeriesDataResponse,
+} from '@/lib/map-series/interfaces';
 
 export const AdvancedMapAnalyticsVisibilitySchema = z.enum(['private', 'public']);
 export type AdvancedMapAnalyticsVisibility = z.infer<typeof AdvancedMapAnalyticsVisibilitySchema>;
@@ -42,6 +46,7 @@ export interface AdvancedMapAnalyticsMapSummary {
   title: string;
   description: string | null;
   state: AdvancedMapAnalyticsVisibility;
+  publicId: string | null;
   snapshotCount: number;
   createdAt: string;
   updatedAt: string;
@@ -49,6 +54,7 @@ export interface AdvancedMapAnalyticsMapSummary {
 
 export interface AdvancedMapAnalyticsMapDetail extends AdvancedMapAnalyticsMapSummary {
   lastSnapshot: AdvancedMapAnalyticsSnapshot;
+  groupedSeriesData?: GroupedSeriesDataResponse;
 }
 
 export interface AdvancedMapAnalyticsSnapshotsList {
@@ -209,6 +215,11 @@ function createFallbackSnapshot(mapRecord: Record<string, unknown>): AdvancedMap
   });
 }
 
+function parseGroupedSeriesData(value: unknown): GroupedSeriesDataResponse | undefined {
+  const parsed = GroupedSeriesDataResponseSchema.safeParse(value);
+  return parsed.success ? parsed.data : undefined;
+}
+
 export function normalizeMapSummary(raw: unknown): AdvancedMapAnalyticsMapSummary {
   const record = readRecord(raw);
 
@@ -217,6 +228,7 @@ export function normalizeMapSummary(raw: unknown): AdvancedMapAnalyticsMapSummar
     title: readStringAliases(record, ['title'], 'Untitled map'),
     description: readNullableStringAliases(record, ['description']),
     state: normalizeVisibility(record.visibility ?? record.state, 'private'),
+    publicId: readNullableStringAliases(record, ['publicId', 'public_id']),
     snapshotCount: readIntAliases(record, ['snapshotCount', 'snapshot_count']),
     createdAt: readStringAliases(record, ['createdAt', 'created_at']),
     updatedAt: readStringAliases(record, ['updatedAt', 'updated_at']),
@@ -247,9 +259,14 @@ export function normalizeMapDetail(raw: unknown): AdvancedMapAnalyticsMapDetail 
         })
       : createFallbackSnapshot(mapRecord);
 
+  const groupedSeriesData = parseGroupedSeriesData(
+    mapRecord.groupedSeriesData ?? mapRecord.grouped_series_data ?? rootRecord.groupedSeriesData ?? rootRecord.grouped_series_data
+  );
+
   return {
     ...summary,
     lastSnapshot,
+    ...(groupedSeriesData !== undefined ? { groupedSeriesData } : {}),
   };
 }
 

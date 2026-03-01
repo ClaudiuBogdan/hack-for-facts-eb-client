@@ -192,6 +192,27 @@ function unwrapData(payload: unknown): unknown {
   return record.data ?? record;
 }
 
+function isInternalMapId(value: string): boolean {
+  return /^ama_[a-f0-9]{32}$/i.test(value.trim());
+}
+
+function ensureBundledGroupedSeriesData(
+  mapDetail: AdvancedMapAnalyticsMapDetail,
+  endpointName: 'owner' | 'public'
+): AdvancedMapAnalyticsMapDetail {
+  if (mapDetail.groupedSeriesData !== undefined) {
+    return mapDetail;
+  }
+
+  throw new AdvancedMapAnalyticsApiError(
+    endpointName === 'owner'
+      ? 'Owner map detail response missing grouped-series bundled data.'
+      : 'Public map detail response missing grouped-series bundled data.',
+    500,
+    'BUNDLED_GROUPED_SERIES_MISSING'
+  );
+}
+
 export async function createAdvancedMapAnalyticsMap(
   input: CreateMapInput
 ): Promise<AdvancedMapAnalyticsMapDetail> {
@@ -225,7 +246,7 @@ export async function getAdvancedMapAnalyticsMap(mapId: string): Promise<Advance
     method: 'GET',
   });
 
-  return normalizeMapDetail(unwrapData(payload));
+  return ensureBundledGroupedSeriesData(normalizeMapDetail(unwrapData(payload)), 'owner');
 }
 
 export async function updateAdvancedMapAnalyticsMap(
@@ -347,7 +368,24 @@ export async function deleteAdvancedMapAnalyticsMap(mapId: string): Promise<void
   );
 }
 
-export async function getPublicAdvancedMapAnalyticsMap(mapId: string): Promise<AdvancedMapAnalyticsMapDetail> {
-  const payload = await publicRequest(`/${encodeURIComponent(mapId)}`);
-  return normalizeMapDetail(unwrapData(payload));
+export async function getPublicAdvancedMapAnalyticsMap(publicId: string): Promise<AdvancedMapAnalyticsMapDetail> {
+  try {
+    const payload = await publicRequest(`/${encodeURIComponent(publicId)}`);
+    return ensureBundledGroupedSeriesData(normalizeMapDetail(unwrapData(payload)), 'public');
+  } catch (error) {
+    if (
+      error instanceof AdvancedMapAnalyticsApiError &&
+      error.status === 404 &&
+      isInternalMapId(publicId)
+    ) {
+      throw new AdvancedMapAnalyticsApiError(
+        'Public map not found. The provided ID looks like an internal map ID (ama_...). Use the map public ID from a published map URL.',
+        404,
+        error.code,
+        error.details
+      );
+    }
+
+    throw error;
+  }
 }
