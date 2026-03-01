@@ -2,6 +2,8 @@
 
 This document captures the key implementation decisions for `/experimental/map` (phase 1).
 
+For full value-filters internals and rationale, see `docs/experimental-map-value-filters-implementation.md`.
+
 ## Scope and Route
 
 - New route: `/experimental/map` (kept experimental, isolated from `/map` behavior).
@@ -14,6 +16,8 @@ This document captures the key implementation decisions for `/experimental/map` 
 - Search schema includes:
   - `series[]`
   - `activeSeriesId`
+  - `valueFilters.rules[]` (per-rule `enabled`, `joinWithPrevious`, `seriesRef`)
+  - `valueFiltersPanelCollapsed`
   - `activeView` (`map` | `table`)
   - `seriesPanelCollapsed`
   - `configPanelCollapsed`
@@ -85,14 +89,70 @@ This document captures the key implementation decisions for `/experimental/map` 
   - mixed unit
   - sparse coverage
   - invalid/duplicate CSV rows
+  - value-filter invalid/missing-source/no-match
+  - value-filter stats invalid-params/insufficient-sample/zero-variance/no-defined-values
   - URL budget warning
+
+## Value Filters Engine (v2)
+
+- Value filters are evaluated after base vectors + INS vectors + calculation vectors are ready.
+- Rule model:
+  - `kind: 'threshold' | 'stats'`
+  - `enabled` per rule
+  - `joinWithPrevious: 'AND' | 'OR'` per rule
+  - source target per rule (`active` dynamic or explicit `seriesId`)
+- Backward compatibility:
+  - legacy rules without `kind` are migrated to `kind='threshold'`
+  - legacy group `combinator` is migrated into per-rule `joinWithPrevious`
+
+### Evaluation Semantics
+
+- Global universe is the union of displayed SIRUTA keys.
+- Left-to-right pipeline:
+  - first valid enabled rule initializes current band
+  - `AND`: evaluate on current band, then intersect
+  - `OR`: evaluate on global baseline, then union
+- Disabled rules are skipped.
+- Invalid rules are skipped with warnings.
+- If no valid enabled rule remains, masking is not applied.
+
+### Threshold Rules
+
+- Operators: `gt|gte|lt|lte|eq|neq|between|not_between|is_defined|is_undefined`
+- `between` / `not_between` are inclusive.
+- `eq` / `neq` use epsilon tolerance (`1e-9`).
+- Undefined values only match `is_undefined`; all other operators treat undefined as non-match.
+
+### Stats Rules
+
+- Supported stats types:
+  - `percentile_band`
+  - `rank`
+  - `median_compare`
+  - `zscore`
+  - `iqr_outlier`
+  - `mad_robust_zscore`
+- Stats operate on one source series per rule and exclude undefined/non-finite values from sample.
+- Deterministic tie-breaking for rank: sort by value, then by `siruta_code`.
+- Percentile bounds are inclusive and normalized if min/max are swapped.
+
+## Stats Filter Explanations
+
+- Each stats type shows a dedicated inline explanation inside the rule editor modal.
+- Explanations include:
+  - what the filter does
+  - when to use it
+  - practical example
+  - tips and tricks
+- Explanations are context-sensitive and update immediately when stats type changes.
 
 ## Sidebar and Editor UX
 
-- Left sidebar has three collapsible cards:
+- Left sidebar has four collapsible cards:
   - `Config` (top)
   - `Data Series` (second)
-  - `Bins` (third)
+  - `Value Filters` (third)
+  - `Bins` (fourth)
 - Both collapse states are URL-persisted.
 - `Config` quick settings include:
   - editable map name (`Experimental UAT Map` default)
