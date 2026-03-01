@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { Copy, EyeOff, FileText, Globe, Loader2, Share2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,9 +14,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { EmptyState } from '@/components/ui/empty-state';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+
+import { ModalHeader, ModalTitle } from '@/components/ui/modal-header';
+import { ModalSection } from '@/components/ui/modal-section';
+import { modalHeaderClassName, modalSizes } from '@/components/ui/modal-sizes';
 import { Switch } from '@/components/ui/switch';
 import { ensureShortRedirectUrl } from '@/lib/api/shortLinks';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
@@ -29,7 +35,7 @@ import {
 } from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
 import type { AdvancedMapAnalyticsVisibility } from '@/features/advanced-map-analytics/api/schemas';
 import { t } from '@lingui/core/macro';
-import { getUserLocale } from '@/lib/utils';
+import { cn, getUserLocale } from '@/lib/utils';
 
 interface MapAnalyticsOwnerConfigModalProps {
   open: boolean;
@@ -67,7 +73,6 @@ export function MapAnalyticsOwnerConfigModal({
   const [page, setPage] = useState(1);
   const [snapshotDescriptionDraft, setSnapshotDescriptionDraft] = useState('');
   const [visibility, setVisibility] = useState<AdvancedMapAnalyticsVisibility>(currentVisibility);
-  const [deleteConfirmationInput, setDeleteConfirmationInput] = useState('');
   const [pendingVisibilityTarget, setPendingVisibilityTarget] = useState<AdvancedMapAnalyticsVisibility | null>(null);
   const [pendingLoadSnapshotId, setPendingLoadSnapshotId] = useState<string | null>(null);
   const [isSaveCheckpointConfirmOpen, setIsSaveCheckpointConfirmOpen] = useState(false);
@@ -87,7 +92,6 @@ export function MapAnalyticsOwnerConfigModal({
     setPage(1);
     setSnapshotDescriptionDraft('');
     setVisibility(currentVisibility);
-    setDeleteConfirmationInput('');
     setPendingVisibilityTarget(null);
     setPendingLoadSnapshotId(null);
     setIsSaveCheckpointConfirmOpen(false);
@@ -107,11 +111,8 @@ export function MapAnalyticsOwnerConfigModal({
     () => snapshotDescriptionDraft.trim(),
     [snapshotDescriptionDraft]
   );
-  const trimmedMapName = useMemo(() => mapName.trim(), [mapName]);
   const trimmedMapDescription = useMemo(() => mapDescription.trim(), [mapDescription]);
-  const snapshotTitle = trimmedMapName.length > 0 ? trimmedMapName : currentTitle;
-  const deleteInputMatchesTitle = deleteConfirmationInput === mapName;
-  const visibilityLabel = visibility === 'public' ? t`Public` : t`Private`;
+  const snapshotTitle = mapName.trim().length > 0 ? mapName.trim() : currentTitle;
   const isVisibilityConfirmOpen = pendingVisibilityTarget !== null;
   const isLoadConfirmOpen = pendingLoadSnapshotId !== null;
   const normalizedPublicId =
@@ -130,6 +131,7 @@ export function MapAnalyticsOwnerConfigModal({
 
     return `${window.location.origin}${path}`;
   }, [normalizedPublicId, visibility]);
+  const modalDescription = t`Manage your map settings, visibility, and version history.`;
 
   const handleRequestVisibilityToggle = (checked: boolean) => {
     const nextVisibility: AdvancedMapAnalyticsVisibility = checked ? 'public' : 'private';
@@ -175,9 +177,9 @@ export function MapAnalyticsOwnerConfigModal({
         },
       });
       setSnapshotDescriptionDraft('');
-      toast.success(t`Checkpoint saved`);
+      toast.success(t`Snapshot saved`);
     } catch (error) {
-      const message = error instanceof Error ? error.message : t`Failed to save checkpoint`;
+      const message = error instanceof Error ? error.message : t`Failed to save snapshot`;
       toast.error(message);
     } finally {
       setIsSaveCheckpointConfirmOpen(false);
@@ -201,9 +203,9 @@ export function MapAnalyticsOwnerConfigModal({
     try {
       const snapshot = await fetchAdvancedMapAnalyticsSnapshotForRestore(mapId, pendingLoadSnapshotId);
       onLoadSnapshot(snapshot.config);
-      toast.success(t`Snapshot loaded`);
+      toast.success(t`Version restored`);
     } catch (error) {
-      const message = error instanceof Error ? error.message : t`Failed to load snapshot`;
+      const message = error instanceof Error ? error.message : t`Failed to restore version`;
       toast.error(message);
     } finally {
       setPendingLoadSnapshotId(null);
@@ -237,10 +239,6 @@ export function MapAnalyticsOwnerConfigModal({
     }
   };
 
-  const handleMapDescriptionChange = (nextDescription: string) => {
-    onMapDescriptionChange?.(nextDescription);
-  };
-
   const handleCopyMapLink = async () => {
     const params = new URLSearchParams();
     params.set('state', JSON.stringify(currentMapState));
@@ -263,8 +261,8 @@ export function MapAnalyticsOwnerConfigModal({
 
     try {
       await navigator.clipboard.writeText(linkToCopy);
-      toast.success(t`Map link copied to clipboard`, {
-        description: t`Now you can share or open it in a new tab.`,
+      toast.success(t`Configuration link copied`, {
+        description: t`Share this link so others can create a map based on your setup.`,
       });
     } catch {
       toast.error(t`Failed to copy map link`);
@@ -274,203 +272,238 @@ export function MapAnalyticsOwnerConfigModal({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-h-[90dvh] max-w-3xl overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t`Map configuration`}</DialogTitle>
-            <DialogDescription>
-              {t`Manage map visibility, checkpoints, and destructive actions in one place.`}
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent
+          className={cn(modalSizes.xl, "max-h-[90dvh] overflow-y-auto p-0 gap-0")}
+          aria-describedby={undefined}
+        >
+          {/* Header */}
+          <div className={modalHeaderClassName}>
+            <ModalHeader>
+              <DialogTitle asChild>
+                <ModalTitle subtitle={modalDescription}>{t`Map Settings`}</ModalTitle>
+              </DialogTitle>
+            </ModalHeader>
+          </div>
 
-          <div className="space-y-4">
-            <section className="space-y-3 rounded-lg border p-3">
-              <h3 className="text-sm font-semibold">{t`Map settings`}</h3>
-              <div className="grid gap-3 md:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-medium" htmlFor="map-title-input">
-                    {t`Map title`}
-                  </label>
-                  <Input
-                    id="map-title-input"
-                    value={mapName}
-                    onChange={(event) => onMapNameChange(event.currentTarget.value)}
-                    disabled={isBusy}
-                    aria-label={t`Map title`}
-                  />
-                </div>
-                <div>
-                  <p className="mb-1 text-sm font-medium">{t`Visibility`}</p>
-                  <div className="flex items-center justify-between rounded-md border px-3 py-2">
-                    <Badge variant={visibility === 'public' ? 'success' : 'secondary'}>
-                      {visibilityLabel}
-                    </Badge>
-                    <Switch
-                      checked={visibility === 'public'}
-                      onCheckedChange={handleRequestVisibilityToggle}
-                      disabled={isBusy}
-                      aria-label={t`Map visibility`}
-                    />
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {t`Public maps are accessible from the public route.`}
-                  </p>
-                  {visibility === 'public' ? (
-                    <div className="mt-3 space-y-2">
-                      <label
-                        className="block text-xs font-medium text-muted-foreground"
-                        htmlFor="public-map-url-input"
-                      >
-                        {t`Public map URL`}
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <Input
-                          id="public-map-url-input"
-                          value={publicMapUrl}
-                          readOnly
-                          aria-label={t`Public map URL`}
-                          placeholder={t`/maps/public/<public-id>`}
-                        />
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => void handleCopyPublicLink()}
-                          disabled={publicMapUrl.length === 0 || isBusy}
-                        >
-                          {t`Copy link`}
-                        </Button>
-                      </div>
-                      {publicMapUrl.length === 0 ? (
-                        <p className="text-xs text-muted-foreground">
-                          {t`Public URL is not available yet. Refresh after publishing.`}
-                        </p>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-              <Button
-                type="button"
-                className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
-                onClick={() => setIsDescriptionEditorModalOpen(true)}
-              >
-                {t`Read more`}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => void handleCopyMapLink()}
-                disabled={isBusy}
-              >
-                {t`Copy map`}
-              </Button>
-            </section>
+          {/* Content */}
+          <div className="px-6 py-5 space-y-6">
+            {/* General Section */}
+            <ModalSection title={t`General`} variant="muted">
+              <FormField label={t`Map title`} htmlFor="map-title-input">
+                <Input
+                  id="map-title-input"
+                  value={mapName}
+                  onChange={(event) => onMapNameChange(event.currentTarget.value)}
+                  disabled={isBusy}
+                  placeholder={t`My Budget Analysis Map…`}
 
-            <section className="space-y-3 rounded-lg border p-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold">{t`Snapshots`}</h3>
-                <Button onClick={handleRequestSaveCheckpoint} disabled={isBusy} size="sm">
-                  {t`Save checkpoint`}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t`This title is displayed at the top of your map.`}
+                </p>
+              </FormField>
+
+              <div className="flex gap-3 mt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsDescriptionEditorModalOpen(true)}
+                  disabled={isBusy}
+                  className="flex-1"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  {t`Edit description`}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void handleCopyMapLink()}
+                  disabled={isBusy}
+                  className="flex-1"
+                >
+                  <Share2 className="mr-2 h-4 w-4" />
+                  {t`Share configuration`}
                 </Button>
               </div>
+            </ModalSection>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium" htmlFor="snapshot-description">
-                  {t`Snapshot description (optional)`}
-                </label>
+            {/* Visibility Section */}
+            <ModalSection title={t`Visibility`}>
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div className="flex items-center gap-3">
+                  {visibility === 'public' ? (
+                    <Globe className="h-5 w-5 text-emerald-700 shrink-0" />
+                  ) : (
+                    <EyeOff className="h-5 w-5 text-muted-foreground shrink-0" />
+                  )}
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{visibility === 'public' ? t`Public` : t`Private`}</span>
+                      <Badge variant={visibility === 'public' ? 'success' : 'secondary'} className="text-xs">
+                        {visibility === 'public' ? t`Anyone with link` : t`Only you`}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {visibility === 'public'
+                        ? t`Anyone with the public link can view this map.`
+                        : t`Only you can access this map.`
+                      }
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={visibility === 'public'}
+                  onCheckedChange={handleRequestVisibilityToggle}
+                  disabled={isBusy}
+                  aria-label={t`Toggle map visibility`}
+                />
+              </div>
+
+              {visibility === 'public' && normalizedPublicId && (
+                <FormField label={t`Public link`} htmlFor="public-map-url-input" className="mt-4">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="public-map-url-input"
+                      value={publicMapUrl}
+                      readOnly
+                      className="h-9 text-sm bg-background"
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => void handleCopyPublicLink()}
+                      disabled={isBusy}
+                      variant="secondary"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </FormField>
+              )}
+            </ModalSection>
+
+            {/* Version History Section */}
+            <ModalSection
+              title={t`Version history`}
+              actions={
+                <Button
+                  onClick={handleRequestSaveCheckpoint}
+                  disabled={isBusy}
+                  size="sm"
+                  variant="default"
+                >
+                  {t`Save snapshot`}
+                </Button>
+              }
+            >
+              <FormField label={t`Snapshot note`} htmlFor="snapshot-description">
                 <Input
                   id="snapshot-description"
                   value={snapshotDescriptionDraft}
                   onChange={(event) => setSnapshotDescriptionDraft(event.currentTarget.value)}
                   disabled={isBusy}
+                  placeholder={t`Optional note about what changed…`}
                 />
-              </div>
-
-              <div className="flex items-center justify-end gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={!canGoPrevious || isBusy}
-                  onClick={() => setPage((previousPage) => previousPage - 1)}
-                >
-                  {t`Previous`}
-                </Button>
-                <span className="text-xs text-muted-foreground">{t`Page ${page}`}</span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={!canGoNext || isBusy}
-                  onClick={() => setPage((previousPage) => previousPage + 1)}
-                >
-                  {t`Next`}
-                </Button>
-              </div>
+                <p className="text-xs text-muted-foreground">
+                  {t`Add a brief note to help identify this version later.`}
+                </p>
+              </FormField>
 
               {snapshotsQuery.isLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <LoadingSpinner text={t`Loading snapshots...`} />
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-sm text-muted-foreground">{t`Loading…`}</span>
                 </div>
               ) : snapshotsQuery.error ? (
-                <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
                   {snapshotsQuery.error.message}
                 </div>
               ) : snapshots.length === 0 ? (
-                <div className="rounded border border-dashed p-4 text-sm text-muted-foreground">
-                  {t`No snapshots found.`}
-                </div>
+                <EmptyState
+                  title={t`No saved versions yet`}
+                  description={t`Save versions of your map to track changes over time.`}
+                  className="mt-4"
+                />
               ) : (
-                <div className="max-h-[320px] space-y-2 overflow-y-auto">
+                <div className="space-y-2 mt-4">
                   {snapshots.map((snapshot) => (
-                    <article key={snapshot.snapshotId} className="rounded border p-3">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                          <p className="text-sm font-semibold">{snapshot.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(snapshot.createdAt).toLocaleString(dateTimeLocale)}{' '}
-                            · {snapshot.stateAtSave}
-                          </p>
+                    <article
+                      key={snapshot.snapshotId}
+                      className="group flex items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/30"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{snapshot.title}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(snapshot.createdAt).toLocaleString(dateTimeLocale)}
+                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            {snapshot.stateAtSave === 'public' ? t`Public` : t`Private`}
+                          </Badge>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={isBusy}
-                          onClick={() => setPendingLoadSnapshotId(snapshot.snapshotId)}
-                        >
-                          {t`Load`}
-                        </Button>
+                        {snapshot.description && (
+                          <p className="mt-1 truncate text-xs text-muted-foreground">
+                            {snapshot.description}
+                          </p>
+                        )}
                       </div>
-                      {snapshot.description ? (
-                        <p className="mt-2 text-xs text-muted-foreground">{snapshot.description}</p>
-                      ) : null}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={isBusy}
+                        onClick={() => setPendingLoadSnapshotId(snapshot.snapshotId)}
+                        className="shrink-0"
+                      >
+                        {t`Restore`}
+                      </Button>
                     </article>
                   ))}
+
+                  <div className="flex items-center justify-end gap-1 pt-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={!canGoPrevious || isBusy}
+                      onClick={() => setPage((p) => p - 1)}
+                      className="h-7 px-2"
+                    >
+                      {t`Previous`}
+                    </Button>
+                    <span className="text-xs text-muted-foreground px-2">
+                      {t`Page ${page}`}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={!canGoNext || isBusy}
+                      onClick={() => setPage((p) => p + 1)}
+                      className="h-7 px-2"
+                    >
+                      {t`Next`}
+                    </Button>
+                  </div>
                 </div>
               )}
-            </section>
+            </ModalSection>
 
-            <section className="space-y-3 rounded-lg border border-red-200 bg-red-50/40 p-3">
-              <h3 className="text-sm font-semibold text-red-900">{t`Danger zone`}</h3>
-              <p className="text-xs text-red-800">
-                {t`Type the map title exactly to enable deletion.`}
-              </p>
-              <Input
-                value={deleteConfirmationInput}
-                onChange={(event) => setDeleteConfirmationInput(event.currentTarget.value)}
-                placeholder={mapName}
-                disabled={isBusy}
-                aria-label={t`Delete map confirmation input`}
-              />
-              <div className="flex justify-end">
+            {/* Danger Zone */}
+            <ModalSection title={t`Danger zone`} variant="danger">
+              <div className="space-y-3">
+                <p className="text-sm text-destructive">
+                  {t`Permanently delete this map and all saved versions. This cannot be undone.`}
+                </p>
                 <Button
                   size="sm"
                   variant="destructive"
-                  disabled={!deleteInputMatchesTitle || isBusy}
+                  disabled={isBusy}
                   onClick={() => setIsDeleteConfirmOpen(true)}
                 >
+                  <Trash2 className="mr-2 h-4 w-4" />
                   {t`Delete map`}
                 </Button>
               </div>
-            </section>
+            </ModalSection>
           </div>
         </DialogContent>
       </Dialog>
@@ -480,25 +513,25 @@ export function MapAnalyticsOwnerConfigModal({
         onOpenChange={setIsDescriptionEditorModalOpen}
         description={mapDescription}
         mode="edit"
-        onDescriptionChange={handleMapDescriptionChange}
+        onDescriptionChange={(desc) => onMapDescriptionChange?.(desc)}
       />
 
       <AlertDialog open={isVisibilityConfirmOpen} onOpenChange={(nextOpen) => !nextOpen && setPendingVisibilityTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {pendingVisibilityTarget === 'public' ? t`Publish map?` : t`Make map private?`}
+              {pendingVisibilityTarget === 'public' ? t`Make map public?` : t`Make map private?`}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {pendingVisibilityTarget === 'public'
-                ? t`This map will be available on the public route.`
-                : t`This map will no longer be available on the public route.`}
+                ? t`Your map will be accessible to anyone with the link. You can change this back at any time.`
+                : t`Your map will only be visible to you. Public links will no longer work.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isBusy}>{t`Cancel`}</AlertDialogCancel>
             <AlertDialogAction onClick={() => void handleConfirmVisibilityToggle()} disabled={isBusy}>
-              {t`Confirm`}
+              {pendingVisibilityTarget === 'public' ? t`Make public` : t`Make private`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -507,15 +540,15 @@ export function MapAnalyticsOwnerConfigModal({
       <AlertDialog open={isLoadConfirmOpen} onOpenChange={(nextOpen) => !nextOpen && setPendingLoadSnapshotId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t`Load snapshot?`}</AlertDialogTitle>
+            <AlertDialogTitle>{t`Restore this version?`}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t`Loading a snapshot replaces the current editor configuration. Unsaved changes will be lost.`}
+              {t`Your current configuration will be replaced with this saved version. Unsaved changes will be lost.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isBusy}>{t`Cancel`}</AlertDialogCancel>
             <AlertDialogAction onClick={() => void handleConfirmLoadSnapshot()} disabled={isBusy}>
-              {t`Confirm load`}
+              {t`Restore`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -524,15 +557,15 @@ export function MapAnalyticsOwnerConfigModal({
       <AlertDialog open={isSaveCheckpointConfirmOpen} onOpenChange={setIsSaveCheckpointConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t`Save public checkpoint?`}</AlertDialogTitle>
+            <AlertDialogTitle>{t`Save version to public map?`}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t`This map is public and the latest checkpoint can be visible on the public route.`}
+              {t`This map is public. The latest saved version will be visible to anyone with the link.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isBusy}>{t`Cancel`}</AlertDialogCancel>
             <AlertDialogAction onClick={() => void handleSaveCheckpoint()} disabled={isBusy}>
-              {t`Confirm save`}
+              {t`Save anyway`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -541,9 +574,9 @@ export function MapAnalyticsOwnerConfigModal({
       <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t`Delete map permanently?`}</AlertDialogTitle>
+            <AlertDialogTitle>{t`Delete this map?`}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t`This action cannot be undone. The map and its snapshots will be removed.`}
+              {t`This will permanently delete the map and all ${snapshots.length} saved versions. This cannot be undone.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -553,7 +586,7 @@ export function MapAnalyticsOwnerConfigModal({
               onClick={() => void handleConfirmDeleteMap()}
               disabled={isBusy}
             >
-              {t`Delete map`}
+              {t`Delete permanently`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -9,7 +9,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useAdvancedMapAnalyticsSeriesData } from '@/hooks/useAdvancedMapAnalyticsSeriesData';
 import { useAdvancedMapAnalyticsBins } from '@/hooks/useAdvancedMapAnalyticsBins';
 import { useAdvancedMapAnalyticsTableBinsFilter } from '@/hooks/useAdvancedMapAnalyticsTableBinsFilter';
-import { buildDiscretePaletteFromConfig } from '@/lib/map-bins/bins';
+import { buildDiscretePaletteFromConfig, getContinuousGradientColor } from '@/lib/map-bins/bins';
 import { getHeatmapColor, getPercentileValues, normalizeValue } from '@/components/maps/utils';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import type { UatFeature, UatProperties } from '@/components/maps/interfaces';
@@ -94,7 +94,8 @@ interface MapAnalyticsWorkspaceProps {
   mobileControlsDefaultCollapsed?: boolean;
 }
 
-const DEFAULT_MAP_NAME = t`Untitled map`;
+// NOTE: Do not use module-scope t`` — it freezes the translation at import time.
+// Use t`` at the call site instead (see mapName usage below).
 
 export function MapAnalyticsWorkspace({
   mapState,
@@ -605,6 +606,8 @@ export function MapAnalyticsWorkspace({
     }
     return activeSeries?.label || t`Active series`;
   }, [activeBinsPreset?.config.title, activeSeries?.label]);
+  const isContinuousIntervalMode = activeBinsPreset?.config.intervalMode === 'continuous';
+  const activeContinuousPercentiles = activeBinsPreset?.config.continuousPercentiles;
 
   const activeHeatmapData = useMemo<HeatmapUATDataPoint[]>(() => {
     if (!activeSeries || !activeValues) {
@@ -654,12 +657,48 @@ export function MapAnalyticsWorkspace({
     return rows;
   }, [activeSeries, activeValues, binsCanApply]);
 
-  const { min: minAggregatedValue, max: maxAggregatedValue } = useMemo(() => {
+  const { min: colorRangeMin, max: colorRangeMax } = useMemo(() => {
     if (activeHeatmapData.length === 0) {
       return { min: 0, max: 0 };
     }
 
-    return getPercentileValues(activeHeatmapData, 5, 95, 'amount');
+    const lowerPercentile = isContinuousIntervalMode ? (activeContinuousPercentiles?.min ?? 5) : 5;
+    const upperPercentile = isContinuousIntervalMode ? (activeContinuousPercentiles?.max ?? 95) : 95;
+    return getPercentileValues(activeHeatmapData, lowerPercentile, upperPercentile, 'amount');
+  }, [
+    activeContinuousPercentiles?.max,
+    activeContinuousPercentiles?.min,
+    activeHeatmapData,
+    isContinuousIntervalMode,
+  ]);
+
+  const { min: realDataMin, max: realDataMax } = useMemo(() => {
+    if (activeHeatmapData.length === 0) {
+      return { min: 0, max: 0 };
+    }
+
+    let min = Number.POSITIVE_INFINITY;
+    let max = Number.NEGATIVE_INFINITY;
+
+    for (const row of activeHeatmapData) {
+      const value = row.amount;
+      if (!Number.isFinite(value)) {
+        continue;
+      }
+
+      if (value < min) {
+        min = value;
+      }
+      if (value > max) {
+        max = value;
+      }
+    }
+
+    if (!Number.isFinite(min) || !Number.isFinite(max)) {
+      return { min: 0, max: 0 };
+    }
+
+    return { min, max };
   }, [activeHeatmapData]);
 
   const getFeatureStyle = useCallback(
@@ -681,21 +720,42 @@ export function MapAnalyticsWorkspace({
         };
       }
 
+      const noDataColor = activeNoDataConfig?.color ?? '#cccccc';
       const dataPoint = heatmapDataMap.get(featureKey);
       if (!dataPoint) {
         return {
           ...DEFAULT_FEATURE_STYLE,
           fillOpacity: 0.1,
-          fillColor: '#cccccc',
+          fillColor: isContinuousIntervalMode ? noDataColor : '#cccccc',
         };
       }
 
       const value = dataPoint.amount;
       if (!Number.isFinite(value)) {
-        return DEFAULT_FEATURE_STYLE;
+        if (!isContinuousIntervalMode) {
+          return DEFAULT_FEATURE_STYLE;
+        }
+        return {
+          ...DEFAULT_FEATURE_STYLE,
+          fillColor: noDataColor,
+          fillOpacity: 0.7,
+        };
       }
 
-      if (minAggregatedValue === maxAggregatedValue) {
+      if (isContinuousIntervalMode) {
+        return {
+          ...DEFAULT_FEATURE_STYLE,
+          fillColor: getContinuousGradientColor(
+            value,
+            { min: colorRangeMin, max: colorRangeMax },
+            activeBinsPreset?.config.gradient ?? { startColor: '#fff7bc', endColor: '#d7301f' },
+            noDataColor
+          ),
+          fillOpacity: 0.7,
+        };
+      }
+
+      if (colorRangeMin === colorRangeMax) {
         return {
           ...DEFAULT_FEATURE_STYLE,
           fillColor: value !== 0 ? getHeatmapColor(0.5) : DEFAULT_FEATURE_STYLE.fillColor,
@@ -703,7 +763,7 @@ export function MapAnalyticsWorkspace({
         };
       }
 
-      const normalized = normalizeValue(value, minAggregatedValue, maxAggregatedValue);
+      const normalized = normalizeValue(value, colorRangeMin, colorRangeMax);
       return {
         ...DEFAULT_FEATURE_STYLE,
         fillColor: getHeatmapColor(normalized),
@@ -711,11 +771,13 @@ export function MapAnalyticsWorkspace({
       };
     },
     [
+      activeBinsPreset?.config.gradient,
       activeNoDataConfig?.color,
       binsCanApply,
       binsClassification.groupsBySiruta,
-      maxAggregatedValue,
-      minAggregatedValue,
+      isContinuousIntervalMode,
+      colorRangeMax,
+      colorRangeMin,
     ]
   );
 
@@ -904,20 +966,21 @@ export function MapAnalyticsWorkspace({
         : '';
       const entityCui = getEntityCuiFromUatProperties(properties);
       const tooltipTitle = natLevelName.length > 0 ? `${natLevelName} ${uatName}` : uatName;
+      const countyLabel = escapeHtml(t`County`);
       const countyRowHtml = countyName.length > 0
-        ? `<div style="font-size:12px;color:#6b7280;margin-bottom:10px;">${t`County`}: ${escapeHtml(countyName)}</div>`
+        ? `<div style="font-size:12px;color:#6b7280;margin-bottom:10px;">${countyLabel}: ${escapeHtml(countyName)}</div>`
         : '';
 
       if (!activeSeries) {
         return `
           <div style="font-family:Inter,sans-serif;font-size:13px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:220px;max-width:320px;padding:8px;">
             <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${escapeHtml(tooltipTitle)}</div>
-            <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '6px'};">${t`CUI`}: ${escapeHtml(entityCui ?? t`N/A`)}</div>
+            <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '6px'};">${escapeHtml(t`CUI`)}: ${escapeHtml(entityCui ?? t`N/A`)}</div>
             ${countyName.length > 0
-              ? `<div style="font-size:12px;color:#6b7280;margin-bottom:6px;">${t`County`}: ${escapeHtml(countyName)}</div>`
+              ? `<div style="font-size:12px;color:#6b7280;margin-bottom:6px;">${countyLabel}: ${escapeHtml(countyName)}</div>`
               : ''
             }
-            <div style="color:#6b7280;">${t`No active series selected.`}</div>
+            <div style="color:#6b7280;">${escapeHtml(t`No active series selected.`)}</div>
           </div>
         `;
       }
@@ -982,10 +1045,10 @@ export function MapAnalyticsWorkspace({
       return `
         <div style="font-family:Inter,sans-serif;font-size:13px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:260px;max-width:360px;padding:8px;">
           <div style="font-weight:700;font-size:14px;margin-bottom:2px;">${escapeHtml(tooltipTitle)}</div>
-          <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '10px'};">${t`CUI`}: ${escapeHtml(entityCui ?? t`N/A`)}</div>
+          <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '10px'};">${escapeHtml(t`CUI`)}: ${escapeHtml(entityCui ?? t`N/A`)}</div>
           ${countyRowHtml}
           <div style="display:flex;flex-direction:column;gap:6px;">
-            ${rowsHtml || `<span>${t`No enabled series`}</span>`}
+            ${rowsHtml || `<span>${escapeHtml(t`No enabled series`)}</span>`}
           </div>
           ${noDataTooltipMarker}
         </div>
@@ -1040,7 +1103,7 @@ export function MapAnalyticsWorkspace({
   const activeSeriesDisplayLabel = activeSeries
     ? resolveSeriesDisplayLabel(activeSeries)
     : activeSeriesId || t`None`;
-  const mapName = mapState.mapName || DEFAULT_MAP_NAME;
+  const mapName = mapState.mapName || t`Untitled map`;
   const isMapViewActive = mapState.activeView !== 'table';
 
   const handleTableRowClick = useCallback(
@@ -1294,10 +1357,24 @@ export function MapAnalyticsWorkspace({
                       />
                     ) : (
                       <LegendCard
-                        min={minAggregatedValue}
-                        max={maxAggregatedValue}
+                        min={isContinuousIntervalMode ? realDataMin : colorRangeMin}
+                        max={isContinuousIntervalMode ? realDataMax : colorRangeMax}
                         unit={activeUnit}
-                        title={resolveSeriesDisplayLabel(activeSeries)}
+                        title={
+                          isContinuousIntervalMode
+                            ? activeBinsLegendTitle
+                            : resolveSeriesDisplayLabel(activeSeries)
+                        }
+                        startColor={
+                          isContinuousIntervalMode
+                            ? (activeBinsPreset?.config.gradient.startColor ?? '#fff7bc')
+                            : undefined
+                        }
+                        endColor={
+                          isContinuousIntervalMode
+                            ? (activeBinsPreset?.config.gradient.endColor ?? '#d7301f')
+                            : undefined
+                        }
                       />
                     )}
                   </div>
@@ -1404,13 +1481,24 @@ function LegendCard({
   max,
   unit,
   title,
-}: Readonly<{ min: number; max: number; unit?: string; title: string }>) {
+  startColor,
+  endColor,
+}: Readonly<{
+  min: number;
+  max: number;
+  unit?: string;
+  title: string;
+  startColor?: string;
+  endColor?: string;
+}>) {
   if (!Number.isFinite(min) || !Number.isFinite(max)) {
     return null;
   }
 
-  const gradientStops = Array.from({ length: 100 }, (_, index) => getHeatmapColor(index / 99));
-  const gradient = `linear-gradient(to right, ${gradientStops.join(', ')})`;
+  const gradient =
+    startColor && endColor
+      ? `linear-gradient(to right, ${startColor}, ${endColor})`
+      : `linear-gradient(to right, ${Array.from({ length: 100 }, (_, index) => getHeatmapColor(index / 99)).join(', ')})`;
 
   return (
     <div className="bg-card/90 backdrop-blur-sm p-3 rounded-md border border-border shadow-sm w-[280px]">

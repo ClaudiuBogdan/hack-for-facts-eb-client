@@ -110,6 +110,30 @@ describe('AdvancedMapAnalyticsValueFiltersPanel', () => {
     expect(screen.getByText('active: < 0')).toBeInTheDocument();
   });
 
+  it('renders custom rule name when provided', () => {
+    const rule = createDefaultAdvancedMapAnalyticsValueFilterRule();
+    rule.name = 'Custom Value Filter';
+    rule.operator = 'lt';
+    rule.value = 0;
+
+    render(
+      <AdvancedMapAnalyticsValueFiltersPanel
+        collapsed={false}
+        rules={[rule]}
+        series={[]}
+        onToggleCollapsed={vi.fn()}
+        onAddRule={vi.fn()}
+        onReorder={vi.fn()}
+        onEditRule={vi.fn()}
+        onDeleteRule={vi.fn()}
+        onMoveRule={vi.fn()}
+        onRuleEnabledChange={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Custom Value Filter')).toBeInTheDocument();
+  });
+
   it('calls edit and delete callbacks from row menu', async () => {
     const onEditRule = vi.fn();
     const onDeleteRule = vi.fn();

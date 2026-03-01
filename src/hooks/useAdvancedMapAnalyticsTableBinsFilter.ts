@@ -34,8 +34,14 @@ export function deriveAdvancedMapAnalyticsTableBinsFilter({
   const selectedGroupIdsByPresetId = new Map<string, Set<string>>();
   const groupIdBySirutaCodeByPresetId = new Map<string, Map<string, string>>();
   const binsFilterSections: AdvancedMapAnalyticsBinsFilterSection[] = [];
+  const discretePresetIds = new Set<string>();
 
   for (const preset of binsPresets) {
+    if (preset.config.intervalMode !== 'discrete') {
+      continue;
+    }
+
+    discretePresetIds.add(preset.id);
     const validationResult = validateBinsConfig(preset.config);
     const palette = buildDiscretePaletteFromConfig(preset.config);
     const availableGroupIds = new Set(palette.map((entry) => entry.groupId));
@@ -77,8 +83,8 @@ export function deriveAdvancedMapAnalyticsTableBinsFilter({
     return {
       filteredRows: rows,
       binsFilterSections,
-      hasActiveBinFilters: Object.values(tableBinFiltersByPresetId).some(
-        (groupIds) => groupIds.length > 0
+      hasActiveBinFilters: Object.entries(tableBinFiltersByPresetId).some(
+        ([presetId, groupIds]) => discretePresetIds.has(presetId) && groupIds.length > 0
       ),
     };
   }

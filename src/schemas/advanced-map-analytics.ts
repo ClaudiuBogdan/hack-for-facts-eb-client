@@ -120,6 +120,7 @@ export const AdvancedMapAnalyticsBinsPresetConfigSchema = z.object({
   title: z.string().default(''),
   scale: z.literal('sequential').default('sequential'),
   showBinLabelOnLegend: z.boolean().default(true),
+  intervalMode: z.enum(['discrete', 'continuous']).default('discrete'),
   colorMode: z.enum(['manual', 'gradient']).default('manual'),
   gradient: z
     .object({
@@ -149,6 +150,26 @@ export const AdvancedMapAnalyticsBinsPresetConfigSchema = z.object({
     .default({
       minInclusive: true,
       maxExclusive: true,
+    }),
+  continuousPercentiles: z
+    .object({
+      min: z.number().min(0).max(100).default(5),
+      max: z.number().min(0).max(100).default(95),
+    })
+    .superRefine((value, context) => {
+      if (value.min < value.max) {
+        return;
+      }
+
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['min'],
+        message: 'continuousPercentiles.min must be less than continuousPercentiles.max.',
+      });
+    })
+    .default({
+      min: 5,
+      max: 95,
     }),
   bins: z.array(AdvancedMapAnalyticsBinSchema).default([]),
   defaultBinCount: z.number().int().min(1).default(5),
@@ -193,6 +214,7 @@ export type AdvancedMapAnalyticsValueFilterOperator = z.infer<typeof AdvancedMap
 
 const AdvancedMapAnalyticsValueFilterRuleBaseSchema = z.object({
   id: z.string().default(() => createAdvancedMapAnalyticsId()),
+  name: z.string().default(''),
   enabled: z.boolean().default(true),
   joinWithPrevious: AdvancedMapAnalyticsValueRuleJoinSchema.default('AND'),
   seriesRef: AdvancedMapAnalyticsValueFilterSeriesRefSchema.default({

@@ -1,9 +1,11 @@
 import type { MapSeriesWarning } from '@/lib/map-series/interfaces';
+import { getUserLocale } from '@/lib/utils';
 import {
   createUniqueAdvancedMapAnalyticsId,
   type AdvancedMapAnalyticsBin,
   type AdvancedMapAnalyticsBinsPresetConfig,
 } from '@/schemas/advanced-map-analytics';
+import { t } from '@lingui/core/macro';
 
 export const NO_DATA_GROUP_ID = 'NO_DATA';
 export const LARGE_BIN_WARNING_THRESHOLD = 12;
@@ -17,6 +19,7 @@ const DEFAULT_MANUAL_COLORS = [
   '#993404',
 ];
 const NICE_BIN_STEP_FRACTIONS = [10, 5, 4, 2.5, 2, 1];
+const CONTINUOUS_PERCENTILE_MIN_DISTANCE = 0.01;
 
 export interface BinsValidationResult {
   isValid: boolean;
@@ -37,13 +40,59 @@ export interface ClassifySeriesValuesResult {
   warnings: MapSeriesWarning[];
 }
 
+export function normalizeContinuousPercentilesForCommit(
+  currentPercentiles: AdvancedMapAnalyticsBinsPresetConfig['continuousPercentiles'],
+  editedBound: 'min' | 'max',
+  nextValue: number
+): AdvancedMapAnalyticsBinsPresetConfig['continuousPercentiles'] {
+  const clampedNextValue = clampContinuousPercentile(nextValue);
+  let nextMin = clampContinuousPercentile(currentPercentiles.min);
+  let nextMax = clampContinuousPercentile(currentPercentiles.max);
+
+  if (editedBound === 'min') {
+    nextMin = clampedNextValue;
+    if (nextMin >= nextMax) {
+      nextMin = clampContinuousPercentile(nextMax - CONTINUOUS_PERCENTILE_MIN_DISTANCE);
+    }
+  } else {
+    nextMax = clampedNextValue;
+    if (nextMax <= nextMin) {
+      nextMax = clampContinuousPercentile(nextMin + CONTINUOUS_PERCENTILE_MIN_DISTANCE);
+    }
+  }
+
+  if (nextMin >= nextMax) {
+    const midpoint = clampContinuousPercentile((nextMin + nextMax) / 2);
+    nextMin = clampContinuousPercentile(midpoint - CONTINUOUS_PERCENTILE_MIN_DISTANCE / 2);
+    nextMax = clampContinuousPercentile(midpoint + CONTINUOUS_PERCENTILE_MIN_DISTANCE / 2);
+  }
+
+  if (nextMin >= nextMax) {
+    nextMin = 0;
+    nextMax = 100;
+  }
+
+  return {
+    min: round(nextMin),
+    max: round(nextMax),
+  };
+}
+
 export function validateBinsConfig(config: AdvancedMapAnalyticsBinsPresetConfig): BinsValidationResult {
   const errors: string[] = [];
   const warnings: MapSeriesWarning[] = [];
-  const seenBinIds = new Set<string>();
+  const isDiscreteMode = config.intervalMode === 'discrete';
 
   if (config.defaultBinCount < 1 || !Number.isInteger(config.defaultBinCount)) {
     errors.push('Default bin count must be an integer greater than or equal to 1.');
+  }
+
+  if (!isHexColor(config.gradient.startColor)) {
+    errors.push('Gradient start color must be a valid hex color.');
+  }
+
+  if (!isHexColor(config.gradient.endColor)) {
+    errors.push('Gradient end color must be a valid hex color.');
   }
 
   if (!isHexColor(config.noData.color)) {
@@ -53,6 +102,30 @@ export function validateBinsConfig(config: AdvancedMapAnalyticsBinsPresetConfig)
   if (config.boundaries.minInclusive !== true || config.boundaries.maxExclusive !== true) {
     errors.push('Only [min, max) boundary semantics are supported in phase 1.');
   }
+
+  if (!Number.isFinite(config.continuousPercentiles.min) || !Number.isFinite(config.continuousPercentiles.max)) {
+    errors.push('Continuous percentiles must be finite numbers.');
+  } else {
+    if (config.continuousPercentiles.min < 0 || config.continuousPercentiles.min > 100) {
+      errors.push('Continuous min percentile must be between 0 and 100.');
+    }
+    if (config.continuousPercentiles.max < 0 || config.continuousPercentiles.max > 100) {
+      errors.push('Continuous max percentile must be between 0 and 100.');
+    }
+    if (config.continuousPercentiles.min >= config.continuousPercentiles.max) {
+      errors.push('Continuous min percentile must be less than max percentile.');
+    }
+  }
+
+  if (!isDiscreteMode) {
+    return {
+      isValid: errors.length === 0,
+      errors,
+      warnings,
+    };
+  }
+
+  const seenBinIds = new Set<string>();
 
   if (config.bins.length > LARGE_BIN_WARNING_THRESHOLD) {
     warnings.push({
@@ -133,6 +206,10 @@ export function classifyValue(
   value: number | undefined,
   config: AdvancedMapAnalyticsBinsPresetConfig
 ): ClassifiedBin {
+  if (config.intervalMode !== 'discrete') {
+    return getNoDataClassification(config);
+  }
+
   if (value === undefined || value === null || !Number.isFinite(value)) {
     return getNoDataClassification(config);
   }
@@ -166,11 +243,28 @@ export function classifySeriesValues(
   config: AdvancedMapAnalyticsBinsPresetConfig
 ): ClassifySeriesValuesResult {
   const groupsBySiruta = new Map<string, ClassifiedBin>();
-  const palette = buildDiscretePaletteFromConfig(config);
+  const palette = config.intervalMode === 'discrete' ? buildDiscretePaletteFromConfig(config) : [];
   const warnings: MapSeriesWarning[] = [];
   const validation = validateBinsConfig(config);
 
   warnings.push(...validation.warnings);
+
+  if (config.intervalMode !== 'discrete') {
+    if (!validation.isValid) {
+      warnings.push({
+        type: 'bins_invalid_config',
+        message: 'Bins configuration is invalid.',
+        details: {
+          errors: validation.errors,
+        },
+      });
+    }
+    return {
+      groupsBySiruta,
+      palette,
+      warnings,
+    };
+  }
 
   if (!validation.isValid || config.bins.length < 1) {
     warnings.push({
@@ -243,8 +337,13 @@ export function generateSequentialBins(
   };
 
   const binCount = Math.max(1, Math.trunc(count));
-  const minValue = Math.min(...finiteValues);
-  const maxValue = Math.max(...finiteValues);
+  let minValue = finiteValues[0]!;
+  let maxValue = finiteValues[0]!;
+  for (let i = 1; i < finiteValues.length; i++) {
+    const v = finiteValues[i]!;
+    if (v < minValue) minValue = v;
+    if (v > maxValue) maxValue = v;
+  }
   const colors =
     colorMode === 'gradient'
       ? buildGradientPalette(binCount, gradient.startColor, gradient.endColor)
@@ -298,7 +397,34 @@ export function applyGradientColorsToBins(
   }));
 }
 
+export function getContinuousGradientColor(
+  value: number | undefined,
+  range: { min: number; max: number },
+  gradient: AdvancedMapAnalyticsBinsPresetConfig['gradient'],
+  noDataColor: string
+): string {
+  if (value === undefined || value === null || !Number.isFinite(value)) {
+    return noDataColor;
+  }
+
+  const startColor = hexToRgb(gradient.startColor);
+  const endColor = hexToRgb(gradient.endColor);
+  if (!startColor || !endColor) {
+    return noDataColor;
+  }
+
+  const normalized = normalizeIntoUnitInterval(value, range.min, range.max);
+  const red = Math.round(startColor.r + (endColor.r - startColor.r) * normalized);
+  const green = Math.round(startColor.g + (endColor.g - startColor.g) * normalized);
+  const blue = Math.round(startColor.b + (endColor.b - startColor.b) * normalized);
+  return rgbToHex(red, green, blue);
+}
+
 export function buildDiscretePaletteFromConfig(config: AdvancedMapAnalyticsBinsPresetConfig): ClassifiedBin[] {
+  if (config.intervalMode !== 'discrete') {
+    return [];
+  }
+
   const rows = config.bins.reduce<ClassifiedBin[]>((accumulator, bin, index) => {
     if (isBinDisabled(bin)) {
       return accumulator;
@@ -320,10 +446,24 @@ export function buildDiscretePaletteFromConfig(config: AdvancedMapAnalyticsBinsP
 export function getNoDataClassification(config: AdvancedMapAnalyticsBinsPresetConfig): ClassifiedBin {
   return {
     groupId: NO_DATA_GROUP_ID,
-    label: config.noData.label || 'Fara date',
+    label: config.noData.label || t`No data`,
     color: config.noData.color,
     isNoData: true,
   };
+}
+
+export function getFiniteValuesArray(values: Map<string, number | undefined> | undefined): number[] {
+  if (!values || values.size === 0) {
+    return [];
+  }
+
+  const result: number[] = [];
+  for (const value of values.values()) {
+    if (Number.isFinite(value)) {
+      result.push(value as number);
+    }
+  }
+  return result;
 }
 
 export function getDefaultBinTitle(index: number): string {
@@ -345,10 +485,23 @@ function isBinDisabled(bin: AdvancedMapAnalyticsBin): boolean {
   return bin.disabled === true;
 }
 
-function formatBinLabel(min: number, max: number | null): string {
-  const formatter = new Intl.NumberFormat('ro-RO', {
+let cachedBinLabelLocale: string | undefined;
+let cachedBinLabelFormatter: Intl.NumberFormat | undefined;
+
+function getBinLabelFormatter(): Intl.NumberFormat {
+  const locale = getUserLocale() === 'en' ? 'en' : 'ro-RO';
+  if (cachedBinLabelFormatter && cachedBinLabelLocale === locale) {
+    return cachedBinLabelFormatter;
+  }
+  cachedBinLabelLocale = locale;
+  cachedBinLabelFormatter = new Intl.NumberFormat(locale, {
     maximumFractionDigits: 2,
   });
+  return cachedBinLabelFormatter;
+}
+
+function formatBinLabel(min: number, max: number | null): string {
+  const formatter = getBinLabelFormatter();
   if (max === null) {
     return `>= ${formatter.format(min)}`;
   }
@@ -409,6 +562,19 @@ function rgbToHex(red: number, green: number, blue: number): string {
     .join('')}`;
 }
 
+function normalizeIntoUnitInterval(value: number, min: number, max: number): number {
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    return 0.5;
+  }
+
+  if (max === min) {
+    return value === 0 ? 0 : 0.5;
+  }
+
+  const clampedValue = Math.max(min, Math.min(value, max));
+  return (clampedValue - min) / (max - min);
+}
+
 function normalizeHex(color: string): string | null {
   if (/^#[0-9a-fA-F]{6}$/.test(color)) {
     return color.toLowerCase();
@@ -426,6 +592,10 @@ function normalizeHex(color: string): string | null {
 
 function isHexColor(color: string): boolean {
   return normalizeHex(color) !== null;
+}
+
+function clampContinuousPercentile(value: number): number {
+  return Math.max(0, Math.min(100, value));
 }
 
 function resolveRoundedBinStep(minValue: number, maxValue: number, binCount: number): number {

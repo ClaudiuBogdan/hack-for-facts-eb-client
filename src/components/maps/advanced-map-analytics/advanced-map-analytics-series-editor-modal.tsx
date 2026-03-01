@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Link } from '@tanstack/react-router';
 import type {
   CommitmentsSeriesConfiguration,
   SeriesConfiguration,
@@ -26,9 +27,12 @@ import {
   SeriesFilter,
   type SeriesFilterAdapter,
 } from '@/components/charts/components/series-config/SeriesFilter';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { largeModalClassName, modalHeaderClassName } from '@/components/ui/modal-sizes';
+import { ModalSection } from '@/components/ui/modal-section';
 import {
   Select,
   SelectContent,
@@ -36,10 +40,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Globe, MapPinned } from 'lucide-react';
+import { BarChart3, ExternalLink, Globe, MapPinned, Table2 } from 'lucide-react';
 import { SERIES_TYPE_LABELS } from './advanced-map-analytics-series-utils';
 import { i18n } from '@lingui/core';
 import { msg, t } from '@lingui/core/macro';
+import {
+  buildExecutionSeriesChartSearch,
+  buildExecutionSeriesTableSearch,
+} from './advanced-map-analytics-series-quick-links';
 
 const GEOJSON_DATASET_DEFAULT_LABEL = msg`GeoJSON dataset`;
 const COUNTY_FILTER_PREFIX_LABEL = msg`County`;
@@ -86,20 +94,64 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
         : series.type === 'geojson-dataset-series'
           ? t`GeoJSON dataset`
         : t`Filters`;
+  const isExecutionSeries = series.type === 'line-items-aggregated-yearly';
+  const executionSeries = isExecutionSeries ? series : undefined;
+  const tableSearch = useMemo(
+    () => (executionSeries ? buildExecutionSeriesTableSearch(executionSeries) : undefined),
+    [executionSeries]
+  );
+  const chartSearch = useMemo(
+    () => (executionSeries ? buildExecutionSeriesChartSearch(executionSeries) : undefined),
+    [executionSeries]
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[min(96vw,1200px)] max-w-5xl h-[min(92vh,940px)] overflow-hidden p-0 gap-0 grid-rows-[auto_minmax(0,1fr)]">
-        <DialogHeader className="border-b px-6 py-5">
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
+      <DialogContent className={`${largeModalClassName} max-w-5xl`}>
+        <div className={modalHeaderClassName}>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <DialogTitle>{title}</DialogTitle>
+              <DialogDescription className="mt-1.5">{description}</DialogDescription>
+            </div>
+            {tableSearch && chartSearch ? (
+              <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
+                <Button asChild size="sm" variant="outline">
+                  <Link
+                    data-testid="advanced-map-analytics-open-table-link"
+                    to="/entity-analytics"
+                    search={tableSearch}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Table2 className="h-4 w-4" />
+                    {t`Open Table`}
+                    <ExternalLink className="h-3 w-3 opacity-50" />
+                  </Link>
+                </Button>
+                <Button asChild size="sm" variant="outline">
+                  <Link
+                    data-testid="advanced-map-analytics-open-chart-link"
+                    to="/charts/$chartId"
+                    params={{ chartId: chartSearch.chart.id }}
+                    search={chartSearch}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    {t`Open Chart`}
+                    <ExternalLink className="h-3 w-3 opacity-50" />
+                  </Link>
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        </div>
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden px-6 py-4">
-          <section className="rounded-xl border bg-muted/20 p-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="advanced-map-analytics-series-label">{t`Label`}</Label>
+          <ModalSection variant="muted">
+            <div className="space-y-4">
+              <FormField label={t`Label`} htmlFor="advanced-map-analytics-series-label">
                 <Input
                   id="advanced-map-analytics-series-label"
                   name="advanced-map-analytics-series-label"
@@ -113,10 +165,9 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
                   placeholder={t`Series label…`}
                   autoComplete="off"
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="advanced-map-analytics-series-unit">{t`Unit override`}</Label>
+              <FormField label={t`Unit override`} htmlFor="advanced-map-analytics-series-unit">
                 <Input
                   id="advanced-map-analytics-series-unit"
                   name="advanced-map-analytics-series-unit"
@@ -130,10 +181,9 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
                   placeholder={t`Optional unit override…`}
                   autoComplete="off"
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2 md:max-w-sm">
-                <Label htmlFor="advanced-map-analytics-series-type">{t`Series type`}</Label>
+              <FormField label={t`Series type`} htmlFor="advanced-map-analytics-series-type" className="max-w-sm">
                 <Select
                   value={series.type}
                   onValueChange={(value) =>
@@ -153,9 +203,9 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
                     )}
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
             </div>
-          </section>
+          </ModalSection>
 
           <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border">
             <div className="flex items-center justify-between border-b px-4 py-3">
@@ -211,6 +261,8 @@ function SeriesConfigEditor({
   }
 
   if (series.type === 'aggregated-series-calculation') {
+    // Safety: CalculationEditor only reads `id`, `label`, and `calculation` from Series[],
+    // which are present on all MapSupportedSeries variants including geojson-dataset-series.
     const calculationCompatibleSeries = allSeries as unknown as Series[];
 
     return (
@@ -383,15 +435,12 @@ function GeoJsonDatasetSeriesEditor({
       <p className="text-sm text-muted-foreground">
         {t`Values are always population. County and region selections filter the included UATs.`}
       </p>
-      <section
-        className="space-y-3 rounded-lg border border-primary/40 bg-primary/5 p-4"
-      >
+      <ModalSection variant="primary">
         <div className="flex items-center justify-between gap-3">
           <h4 className="text-sm font-semibold">{t`Population`}</h4>
           <span className="text-xs text-muted-foreground">{t`Value source`}</span>
         </div>
-        <div className="space-y-2 md:max-w-md">
-          <Label htmlFor="advanced-map-analytics-geojson-population-key">{t`Population field`}</Label>
+        <FormField label={t`Population field`} htmlFor="advanced-map-analytics-geojson-population-key" className="md:max-w-md">
           <Select
             value={selectedPopulationKey}
             onValueChange={(nextDatasetKey) => {
@@ -420,8 +469,8 @@ function GeoJsonDatasetSeriesEditor({
               ))}
             </SelectContent>
           </Select>
-        </div>
-      </section>
+        </FormField>
+      </ModalSection>
 
       <div className="rounded-lg border">
         <FilterListContainer

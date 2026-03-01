@@ -1,8 +1,17 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createDefaultAdvancedMapAnalyticsSeries } from '@/schemas/advanced-map-analytics';
 import { AdvancedMapAnalyticsSeriesEditorModal } from './advanced-map-analytics-series-editor-modal';
+
+const linkPropsSpy = vi.fn();
+
+vi.mock('@tanstack/react-router', () => ({
+  Link: (props: Record<string, unknown>) => {
+    linkPropsSpy(props);
+    return <a>{props.children as React.ReactNode}</a>;
+  },
+}));
 
 vi.mock('@/components/charts/components/series-config/SeriesFilter', () => ({
   SeriesFilter: () => <div>SeriesFilter</div>,
@@ -113,6 +122,10 @@ vi.mock('@/components/filters/base-filter/FilterListContainer', () => ({
 }));
 
 describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
+  beforeEach(() => {
+    linkPropsSpy.mockReset();
+  });
+
   it('renders population/county/region sections for geojson editor', () => {
     const geojsonSeries = createDefaultAdvancedMapAnalyticsSeries('geojson-dataset-series');
     if (geojsonSeries.type !== 'geojson-dataset-series') {
@@ -145,6 +158,8 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
     expect(screen.getByText('INS Population 2021')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'set-County Filters' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'set-Region Filters' })).toBeInTheDocument();
+    expect(screen.queryByText('Open Table')).not.toBeInTheDocument();
+    expect(screen.queryByText('Open Chart')).not.toBeInTheDocument();
   });
 
   it('updates county filters with multiselect and supports clear all', () => {
@@ -195,5 +210,62 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
 
     expect(draftAfterClear.datasetKey).toBe('insPop2021');
     expect(draftAfterClear.countyFilterIds).toEqual([]);
+  });
+
+  it('renders execution quick links in header and preserves execution series config', () => {
+    const executionSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    if (executionSeries.type !== 'line-items-aggregated-yearly') {
+      throw new Error('Unexpected series type in test setup');
+    }
+
+    render(
+      <AdvancedMapAnalyticsSeriesEditorModal
+        open={true}
+        mode="edit"
+        series={executionSeries}
+        allSeries={[executionSeries]}
+        onOpenChange={vi.fn()}
+        onUpdateSeries={vi.fn()}
+        onChangeSeriesType={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Open Table')).toBeInTheDocument();
+    expect(screen.getByText('Open Chart')).toBeInTheDocument();
+
+    const allLinkProps = linkPropsSpy.mock.calls.map((call) => call[0] as Record<string, unknown>);
+    const tableLinkProps = allLinkProps.find(
+      (props) => props['data-testid'] === 'advanced-map-analytics-open-table-link'
+    );
+    const chartLinkProps = allLinkProps.find(
+      (props) => props['data-testid'] === 'advanced-map-analytics-open-chart-link'
+    );
+
+    expect(tableLinkProps).toBeDefined();
+    expect(chartLinkProps).toBeDefined();
+
+    expect(tableLinkProps?.target).toBe('_blank');
+    expect(tableLinkProps?.rel).toBe('noopener noreferrer');
+    expect(tableLinkProps?.to).toBe('/entity-analytics');
+
+    const tableSearch = tableLinkProps?.search as Record<string, unknown>;
+    expect(tableSearch.view).toBe('table');
+    expect(tableSearch.page).toBe(1);
+    expect(tableSearch.pageSize).toBe(25);
+    expect(tableSearch.filter).toEqual(executionSeries.filter);
+
+    expect(chartLinkProps?.target).toBe('_blank');
+    expect(chartLinkProps?.rel).toBe('noopener noreferrer');
+    expect(chartLinkProps?.to).toBe('/charts/$chartId');
+
+    const chartParams = chartLinkProps?.params as Record<string, unknown>;
+    const chartSearch = chartLinkProps?.search as Record<string, any>;
+    expect(chartParams.chartId).toBe(chartSearch.chart.id);
+    expect(chartSearch.view).toBe('overview');
+    expect(chartSearch.chart.series).toHaveLength(1);
+    expect(chartSearch.chart.series[0].type).toBe('line-items-aggregated-yearly');
+    expect(chartSearch.chart.series[0].filter).toEqual(executionSeries.filter);
+    expect(chartSearch.chart.series[0].label).toBe(executionSeries.label);
+    expect(chartSearch.chart.series[0].config.color).toBe(executionSeries.config.color);
   });
 });

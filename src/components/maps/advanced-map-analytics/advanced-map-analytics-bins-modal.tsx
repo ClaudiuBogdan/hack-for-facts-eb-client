@@ -10,14 +10,20 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { ColorInput } from '@/components/ui/color-input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { largeModalClassName, modalContentClassName, modalHeaderClassName } from '@/components/ui/modal-sizes';
+import { ModalSection } from '@/components/ui/modal-section';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import {
   applyGradientColorsToBins,
   generateSequentialBins,
+  getFiniteValuesArray,
+  normalizeContinuousPercentilesForCommit,
   validateBinsConfig,
 } from '@/lib/map-bins/bins';
 import type {
@@ -26,6 +32,7 @@ import type {
 } from '@/schemas/advanced-map-analytics';
 import { AdvancedMapAnalyticsBinsList } from './advanced-map-analytics-bins-list';
 import { t } from '@lingui/core/macro';
+import { ArrowLeftRight } from 'lucide-react';
 
 interface AdvancedMapAnalyticsBinsModalProps {
   open: boolean;
@@ -56,11 +63,19 @@ export function AdvancedMapAnalyticsBinsModal({
   const [hasInvalidBinDrafts, setHasInvalidBinDrafts] = useState(false);
   const [isDiscardDialogOpen, setIsDiscardDialogOpen] = useState(false);
   const [isGradientOverwriteDialogOpen, setIsGradientOverwriteDialogOpen] = useState(false);
+  const [minPercentileInput, setMinPercentileInput] = useState(
+    formatPercentileInput(preset?.config.continuousPercentiles.min ?? 5)
+  );
+  const [maxPercentileInput, setMaxPercentileInput] = useState(
+    formatPercentileInput(preset?.config.continuousPercentiles.max ?? 95)
+  );
 
   useEffect(() => {
     if (!preset) {
       setDraftPreset(null);
       setDefaultBinCountInput('5');
+      setMinPercentileInput('5');
+      setMaxPercentileInput('95');
       setInlineError(null);
       setHasInvalidBinDrafts(false);
       setIsDiscardDialogOpen(false);
@@ -70,6 +85,8 @@ export function AdvancedMapAnalyticsBinsModal({
 
     setDraftPreset(cloneBinsPreset(preset));
     setDefaultBinCountInput(String(preset.config.defaultBinCount));
+    setMinPercentileInput(formatPercentileInput(preset.config.continuousPercentiles.min));
+    setMaxPercentileInput(formatPercentileInput(preset.config.continuousPercentiles.max));
     setInlineError(null);
     setHasInvalidBinDrafts(false);
     setIsDiscardDialogOpen(false);
@@ -82,7 +99,7 @@ export function AdvancedMapAnalyticsBinsModal({
     if (!presetConfig) {
       return [];
     }
-    if (presetConfig.bins.length === 0) {
+    if (presetConfig.intervalMode === 'discrete' && presetConfig.bins.length === 0) {
       return [t`At least one bin is required.`];
     }
     return validateBinsConfig(presetConfig).errors;
@@ -172,6 +189,52 @@ export function AdvancedMapAnalyticsBinsModal({
     }));
   };
 
+  const handleIntervalModeChange = (
+    nextIntervalMode: AdvancedMapAnalyticsBinsPresetConfig['intervalMode']
+  ) => {
+    if (!presetConfig || nextIntervalMode === presetConfig.intervalMode) {
+      return;
+    }
+
+    if (nextIntervalMode === 'continuous') {
+      setHasInvalidBinDrafts(false);
+    }
+
+    applyDraftConfig((currentConfig) => ({
+      ...currentConfig,
+      intervalMode: nextIntervalMode,
+      colorMode: nextIntervalMode === 'continuous' ? 'gradient' : currentConfig.colorMode,
+    }));
+  };
+
+  const commitContinuousPercentile = (bound: 'min' | 'max') => {
+    if (!presetConfig) {
+      return;
+    }
+
+    const currentInput = bound === 'min' ? minPercentileInput : maxPercentileInput;
+    const parsedValue = Number(currentInput);
+    if (!Number.isFinite(parsedValue)) {
+      setMinPercentileInput(formatPercentileInput(presetConfig.continuousPercentiles.min));
+      setMaxPercentileInput(formatPercentileInput(presetConfig.continuousPercentiles.max));
+      return;
+    }
+
+    const normalizedPercentiles = normalizeContinuousPercentilesForCommit(
+      presetConfig.continuousPercentiles,
+      bound,
+      parsedValue
+    );
+
+    applyDraftConfig((currentConfig) => ({
+      ...currentConfig,
+      continuousPercentiles: normalizedPercentiles,
+    }));
+
+    setMinPercentileInput(formatPercentileInput(normalizedPercentiles.min));
+    setMaxPercentileInput(formatPercentileInput(normalizedPercentiles.max));
+  };
+
   const confirmGradientOverwrite = () => {
     if (!presetConfig) {
       return;
@@ -223,19 +286,18 @@ export function AdvancedMapAnalyticsBinsModal({
           requestModalClose();
         }}
       >
-        <DialogContent className="grid h-[min(92vh,940px)] w-[min(96vw,1200px)] max-w-5xl grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden p-0">
-          <DialogHeader className="border-b px-6 py-5">
+        <DialogContent className={`${largeModalClassName} max-w-5xl`}>
+          <DialogHeader className={modalHeaderClassName}>
             <DialogTitle>{t`Edit Bins Preset`}</DialogTitle>
             <DialogDescription>
               {t`Configure bins for this preset. Changes are local while this modal is open.`}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex min-h-0 flex-col gap-4 overflow-y-auto px-6 py-4">
-            <section className="rounded-xl border bg-muted/20 p-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="advanced-map-analytics-bins-preset-label">{t`Preset label`}</Label>
+          <div className={modalContentClassName}>
+            <ModalSection variant="muted">
+              <div className="space-y-4">
+                <FormField label={t`Preset label`} htmlFor="advanced-map-analytics-bins-preset-label">
                   <Input
                     id="advanced-map-analytics-bins-preset-label"
                     value={draftPreset.label}
@@ -249,10 +311,9 @@ export function AdvancedMapAnalyticsBinsModal({
                     }}
                     autoComplete="off"
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="advanced-map-analytics-bins-title">{t`Bins title`}</Label>
+                <FormField label={t`Bins title`} htmlFor="advanced-map-analytics-bins-title">
                   <Input
                     id="advanced-map-analytics-bins-title"
                     value={presetConfig.title}
@@ -266,99 +327,181 @@ export function AdvancedMapAnalyticsBinsModal({
                     autoComplete="off"
                     placeholder={t`Optional legend title`}
                   />
-                </div>
+                </FormField>
 
                 <div className="rounded-lg border bg-background p-3">
                   <p className="text-sm font-medium">{t`Active data series`}</p>
                   <p className="truncate text-sm text-muted-foreground">{activeSeriesLabel}</p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="advanced-map-analytics-bins-color-mode">{t`Color mode`}</Label>
+                <FormField label={t`Interval mode`} htmlFor="advanced-map-analytics-bins-interval-mode">
                   <Select
-                    value={presetConfig.colorMode}
+                    value={presetConfig.intervalMode}
                     onValueChange={(value) =>
-                      handleColorModeChange(value as AdvancedMapAnalyticsBinsPresetConfig['colorMode'])
+                      handleIntervalModeChange(value as AdvancedMapAnalyticsBinsPresetConfig['intervalMode'])
                     }
                   >
-                    <SelectTrigger id="advanced-map-analytics-bins-color-mode">
-                      <SelectValue placeholder={t`Select color mode`} />
+                    <SelectTrigger id="advanced-map-analytics-bins-interval-mode">
+                      <SelectValue placeholder={t`Select interval mode`} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="manual">{t`manual`}</SelectItem>
-                      <SelectItem value="gradient">{t`gradient`}</SelectItem>
+                      <SelectItem value="discrete">{t`discrete`}</SelectItem>
+                      <SelectItem value="continuous">{t`continuous`}</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="advanced-map-analytics-bins-default-count">{t`Default bin count`}</Label>
-                  <Input
-                    id="advanced-map-analytics-bins-default-count"
-                    type="number"
-                    inputMode="numeric"
-                    min={1}
-                    value={defaultBinCountInput}
-                    onChange={(event) => setDefaultBinCountInput(event.currentTarget.value)}
-                    onBlur={commitDefaultBinCount}
-                    autoComplete="off"
+                {presetConfig.intervalMode === 'discrete' ? (
+                  <FormField label={t`Color mode`} htmlFor="advanced-map-analytics-bins-color-mode">
+                    <Select
+                      value={presetConfig.colorMode}
+                      onValueChange={(value) =>
+                        handleColorModeChange(value as AdvancedMapAnalyticsBinsPresetConfig['colorMode'])
+                      }
+                    >
+                      <SelectTrigger id="advanced-map-analytics-bins-color-mode">
+                        <SelectValue placeholder={t`Select color mode`} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="manual">{t`manual`}</SelectItem>
+                        <SelectItem value="gradient">{t`gradient`}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormField>
+                ) : null}
+
+                {presetConfig.intervalMode === 'discrete' ? (
+                  <FormField label={t`Default bin count`} htmlFor="advanced-map-analytics-bins-default-count">
+                    <Input
+                      id="advanced-map-analytics-bins-default-count"
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      value={defaultBinCountInput}
+                      onChange={(event) => setDefaultBinCountInput(event.currentTarget.value)}
+                      onBlur={commitDefaultBinCount}
+                      autoComplete="off"
+                    />
+                  </FormField>
+                ) : null}
+              </div>
+            </ModalSection>
+
+            <section className="flex items-center gap-4 rounded-lg border px-3 py-2">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium">{t`Gradient`}</span>
+                <div className="flex items-center gap-2">
+                  <ColorInput
+                    id="advanced-map-analytics-bins-gradient-start"
+                    value={presetConfig.gradient.startColor}
+                    onChange={(event) => {
+                      const nextStartColor = event.currentTarget.value;
+                      applyDraftConfig((currentConfig) => ({
+                        ...currentConfig,
+                        gradient: {
+                          ...currentConfig.gradient,
+                          startColor: nextStartColor,
+                        },
+                      }));
+                    }}
+                  />
+                  <span className="text-xs text-muted-foreground">→</span>
+                  <ColorInput
+                    id="advanced-map-analytics-bins-gradient-end"
+                    value={presetConfig.gradient.endColor}
+                    onChange={(event) => {
+                      const nextEndColor = event.currentTarget.value;
+                      applyDraftConfig((currentConfig) => ({
+                        ...currentConfig,
+                        gradient: {
+                          ...currentConfig.gradient,
+                          endColor: nextEndColor,
+                        },
+                      }));
+                    }}
                   />
                 </div>
               </div>
+
+              <div className="ml-auto flex items-center gap-2">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  aria-label={t`Switch gradient colors`}
+                  title={t`Switch gradient colors`}
+                  onClick={() => {
+                    applyDraftConfig((currentConfig) => ({
+                      ...currentConfig,
+                      gradient: {
+                        startColor: currentConfig.gradient.endColor,
+                        endColor: currentConfig.gradient.startColor,
+                      },
+                    }));
+                  }}
+                >
+                  <ArrowLeftRight />
+                </Button>
+
+                {presetConfig.intervalMode === 'discrete' ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      applyDraftConfig((currentConfig) => ({
+                        ...currentConfig,
+                        bins: applyGradientColorsToBins(currentConfig.bins, currentConfig.gradient),
+                      }));
+                    }}
+                  >
+                    {t`Apply`}
+                  </Button>
+                ) : null}
+              </div>
             </section>
 
-            <section className="flex items-center gap-4 rounded-lg border px-3 py-2">
-              <span className="text-sm font-medium">{t`Gradient`}</span>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="advanced-map-analytics-bins-gradient-start"
-                  type="color"
-                  value={presetConfig.gradient.startColor}
-                  className="h-7 w-7 cursor-pointer rounded border-0 p-0.5"
-                  onChange={(event) => {
-                    const nextStartColor = event.currentTarget.value;
-                    applyDraftConfig((currentConfig) => ({
-                      ...currentConfig,
-                      gradient: {
-                        ...currentConfig.gradient,
-                        startColor: nextStartColor,
-                      },
-                    }));
-                  }}
-                />
-                <span className="text-xs text-muted-foreground">→</span>
-                <Input
-                  id="advanced-map-analytics-bins-gradient-end"
-                  type="color"
-                  value={presetConfig.gradient.endColor}
-                  className="h-7 w-7 cursor-pointer rounded border-0 p-0.5"
-                  onChange={(event) => {
-                    const nextEndColor = event.currentTarget.value;
-                    applyDraftConfig((currentConfig) => ({
-                      ...currentConfig,
-                      gradient: {
-                        ...currentConfig.gradient,
-                        endColor: nextEndColor,
-                      },
-                    }));
-                  }}
-                />
-              </div>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="ml-auto"
-                onClick={() => {
-                  applyDraftConfig((currentConfig) => ({
-                    ...currentConfig,
-                    bins: applyGradientColorsToBins(currentConfig.bins, currentConfig.gradient),
-                  }));
-                }}
-              >
-                {t`Apply`}
-              </Button>
-            </section>
+            {presetConfig.intervalMode === 'continuous' ? (
+              <ModalSection title={t`Continuous range`}>
+                <div className="space-y-3">
+                  <FormField
+                    label={t`Min percentile`}
+                    htmlFor="advanced-map-analytics-bins-continuous-min-percentile"
+                  >
+                    <Input
+                      id="advanced-map-analytics-bins-continuous-min-percentile"
+                      type="number"
+                      inputMode="decimal"
+                      min={0}
+                      max={100}
+                      step="any"
+                      value={minPercentileInput}
+                      onChange={(event) => setMinPercentileInput(event.currentTarget.value)}
+                      onBlur={() => commitContinuousPercentile('min')}
+                      autoComplete="off"
+                    />
+                  </FormField>
+
+                  <FormField
+                    label={t`Max percentile`}
+                    htmlFor="advanced-map-analytics-bins-continuous-max-percentile"
+                  >
+                    <Input
+                      id="advanced-map-analytics-bins-continuous-max-percentile"
+                      type="number"
+                      inputMode="decimal"
+                      min={0}
+                      max={100}
+                      step="any"
+                      value={maxPercentileInput}
+                      onChange={(event) => setMaxPercentileInput(event.currentTarget.value)}
+                      onBlur={() => commitContinuousPercentile('max')}
+                      autoComplete="off"
+                    />
+                  </FormField>
+                </div>
+              </ModalSection>
+            ) : null}
 
             <section className="flex flex-wrap items-center gap-3 rounded-lg border px-3 py-2">
               <span className="text-sm font-medium">{t`No data`}</span>
@@ -378,11 +521,9 @@ export function AdvancedMapAnalyticsBinsModal({
                 autoComplete="off"
                 className="h-7 w-24 text-xs"
               />
-              <Input
+              <ColorInput
                 id="advanced-map-analytics-bins-no-data-color"
-                type="color"
                 value={presetConfig.noData.color}
-                className="h-7 w-7 cursor-pointer rounded border-0 p-0.5"
                 onChange={(event) => {
                   const nextNoDataColor = event.currentTarget.value;
                   applyDraftConfig((currentConfig) => ({
@@ -414,28 +555,31 @@ export function AdvancedMapAnalyticsBinsModal({
               </div>
             </section>
 
-            <section className="rounded-xl border p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-semibold">{t`Bins`}</h3>
-                <Button type="button" variant="outline" size="sm" onClick={regenerateBins}>
-                  {t`Regenerate from active data`}
-                </Button>
-              </div>
-              <AdvancedMapAnalyticsBinsList
-                bins={presetConfig.bins}
-                onInvalidDraftStateChange={setHasInvalidBinDrafts}
-                onApplyBins={(nextBins) => {
-                  applyDraftConfig((currentConfig) => ({
-                    ...currentConfig,
-                    bins: nextBins,
-                  }));
-                  return { ok: true };
-                }}
-              />
-            </section>
+            {presetConfig.intervalMode === 'discrete' ? (
+              <ModalSection
+                title={t`Bins`}
+                actions={
+                  <Button type="button" variant="outline" size="sm" onClick={regenerateBins}>
+                    {t`Regenerate from active data`}
+                  </Button>
+                }
+              >
+                <AdvancedMapAnalyticsBinsList
+                  bins={presetConfig.bins}
+                  onInvalidDraftStateChange={setHasInvalidBinDrafts}
+                  onApplyBins={(nextBins) => {
+                    applyDraftConfig((currentConfig) => ({
+                      ...currentConfig,
+                      bins: nextBins,
+                    }));
+                    return { ok: true };
+                  }}
+                />
+              </ModalSection>
+            ) : null}
 
             {validationErrors.length > 0 ? (
-              <section className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+              <ModalSection variant="danger" className="p-3">
                 <h4 className="mb-1 text-sm font-semibold text-destructive">{t`Validation errors`}</h4>
                 <div className="space-y-1">
                   {validationErrors.map((errorMessage) => (
@@ -444,7 +588,7 @@ export function AdvancedMapAnalyticsBinsModal({
                     </p>
                   ))}
                 </div>
-              </section>
+              </ModalSection>
             ) : null}
 
             {inlineError ? <p className="text-sm text-destructive">{inlineError}</p> : null}
@@ -507,21 +651,14 @@ function cloneBinsPreset(preset: AdvancedMapAnalyticsBinsPreset): AdvancedMapAna
       gradient: { ...preset.config.gradient },
       noData: { ...preset.config.noData },
       boundaries: { ...preset.config.boundaries },
+      continuousPercentiles: { ...preset.config.continuousPercentiles },
       bins: preset.config.bins.map((bin) => ({ ...bin })),
     },
   };
 }
 
-function getFiniteValuesArray(values: Map<string, number | undefined> | undefined): number[] {
-  if (!values || values.size === 0) {
-    return [];
-  }
-
-  const result: number[] = [];
-  for (const value of values.values()) {
-    if (Number.isFinite(value)) {
-      result.push(value as number);
-    }
-  }
-  return result;
+function formatPercentileInput(value: number): string {
+  const rounded = Math.round(value * 1_000_000) / 1_000_000;
+  return String(rounded);
 }
+

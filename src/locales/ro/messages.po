@@ -1,6 +1,5 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2025-08-14 00:00+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -11,6 +10,7 @@ msgstr ""
 "Last-Translator: \n"
 "Language-Team: \n"
 "Plural-Forms: nplurals=3; plural=(n==1?0:(n==0||(n%100>=1&&n%100<=19))?1:2);\n"
+"POT-Creation-Date: \n"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:231
 msgid " (active)"
@@ -139,17 +139,9 @@ msgstr "{minutes}m rămase"
 msgid "{resultsCount} results found"
 msgstr "{resultsCount} rezultate găsite"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:115
-#~ msgid "{warningCount, plural, one {# warning} other {# warnings}}"
-#~ msgstr "{warningCount, plural, one {# avertisment} few {# avertismente} other {# avertismente}}"
-
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:116
 msgid "{warningCount} warning"
 msgstr "{warningCount} avertisment"
-
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:115
-#~ msgid "{warningCount} warning{0}"
-#~ msgstr "{warningCount} warning{0}"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:117
 msgid "{warningCount} warnings"
@@ -162,10 +154,6 @@ msgstr "*Verificați panoul de filtre pentru mai multe detalii."
 #: src/lib/utils.ts:15
 msgid "/capita"
 msgstr "/locuitor"
-
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:331
-msgid "/maps/public/<public-id>"
-msgstr "/maps/public/<public-id>"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:130
 msgid "#"
@@ -185,11 +173,11 @@ msgstr "% din PIB"
 msgid "© {defaultYear} Transparenta.eu. All rights reserved."
 msgstr "© {defaultYear} Transparenta.eu. Toate drepturile rezervate."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:507
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:509
 msgid "< median"
 msgstr "< median"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:508
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:510
 msgid "<= median"
 msgstr "<= median"
 
@@ -537,20 +525,20 @@ msgstr "<0>Analiza Utilizării (opțională):</0> Dacă sunteți de acord, colec
 msgid "<0>What We Send:</0> Budget execution updates (monthly, quarterly, or annual reports) for entities you follow, and alerts about significant budget changes if you've enabled them."
 msgstr "<0>Ce Trimitem:</0> Actualizări privind execuția bugetară (rapoarte lunare, trimestriale sau anuale) pentru entitățile pe care le urmăriți și alerte despre modificări bugetare semnificative, dacă le-ați activat."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:505
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:507
 msgid "> median"
 msgstr "> median"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:506
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:508
 msgid ">= median"
 msgstr ">= median"
 
 #. placeholder {0}: rule.threshold
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:395
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:404
 msgid "|rz| >= {0}"
 msgstr "|rz| >= {0}"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:533
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:534
 msgid "|z| >= threshold"
 msgstr "|z| >= threshold"
 
@@ -586,13 +574,13 @@ msgstr "Acceptarea"
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:119
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:110
 msgid "Access denied"
-msgstr "Access denied"
+msgstr "Acces interzis"
 
 #: src/lib/chart-filter-utils.ts:44
 msgid "Account category"
 msgstr "Categorie cont"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:340
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:349
 msgid "active"
 msgstr "active"
 
@@ -602,25 +590,25 @@ msgstr "active"
 msgid "Active"
 msgstr "Activ"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:272
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:333
 msgid "Active data series"
-msgstr "Active data series"
+msgstr "Serii de date active"
 
 #: src/components/maps/utils.ts:48
 msgid "Active filters"
 msgstr "Filtre active"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:606
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:607
 msgid "Active series"
-msgstr "Active series"
+msgstr "Serii active"
 
 #: src/components/charts/components/chart-quick-config/ChartQuickConfig.tsx:242
 msgid "Active Series"
 msgstr "Serie Activată"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:220
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:244
 msgid "Active series (dynamic)"
-msgstr "Active series (dynamic)"
+msgstr "Serii active (dinamic)"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1417
 msgid "Active series criteria:"
@@ -630,6 +618,10 @@ msgstr "Criterii active pentru serii:"
 #: src/components/budget-explorer/SpendingBreakdown.tsx:159
 msgid "Actual impact on budget"
 msgstr "Impact real asupra bugetului"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:409
+msgid "Add a brief note to help identify this version later."
+msgstr "Adaugă o notă scurtă pentru a identifica mai ușor această versiune ulterior."
 
 #: src/components/charts/components/chart-view/ChartDisplayArea.tsx:109
 msgid "Add a series to visualize your data."
@@ -649,11 +641,11 @@ msgstr "Adaugă o altă condiție"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:481
 msgid "Add bin"
-msgstr "Add bin"
+msgstr "Adaugă interval"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-panel.tsx:62
 msgid "Add bins preset"
-msgstr "Add bins preset"
+msgstr "Adaugă preset de intervale"
 
 #: src/components/charts/components/series-config/CalculationEditor.tsx:198
 msgid "Add Calculation"
@@ -664,7 +656,7 @@ msgid "Add Condition"
 msgstr "Adaugă condiție"
 
 #: src/components/charts/components/chart-view/ChartDisplayArea.tsx:110
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:76
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:84
 msgid "Add Data Series"
 msgstr "Adaugă serie de date"
 
@@ -683,7 +675,7 @@ msgstr "Adaugă număr"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel.tsx:59
 msgid "Add series"
-msgstr "Add series"
+msgstr "Adaugă serie"
 
 #: src/components/charts/components/chart-config/DataSeriesCard.tsx:22
 #: src/components/charts/components/chart-view/SeriesList.tsx:97
@@ -693,11 +685,11 @@ msgstr "Adaugă serie"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:107
 msgid "Add value filter rule"
-msgstr "Add value filter rule"
+msgstr "Adaugă regulă de filtrare a valorilor"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:167
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:178
 msgid "Add Value Filter Rule"
-msgstr "Add Value Filter Rule"
+msgstr "Adaugă regulă de filtrare a valorilor"
 
 #: src/routes/privacy.lazy.tsx:137
 msgid "Additional technical and organizational measures"
@@ -730,7 +722,7 @@ msgstr "Filtrare avansată"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:91
 msgid "Advanced map analytics active view"
-msgstr "Advanced map analytics active view"
+msgstr "Vizualizare activă analize hărți avansate"
 
 #: src/components/filters/MapFilter.tsx:180
 #: src/components/filters/report-type-filter/index.tsx:13
@@ -954,9 +946,9 @@ msgstr "Analizați valorile cumulate pe entitate și explorați entitățile de 
 msgid "and"
 msgstr "și"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:198
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:223
 msgid "AND"
-msgstr "AND"
+msgstr "ȘI"
 
 #. placeholder {0}: index + 1
 #: src/components/charts/components/chart-annotations/AnnotationItem.tsx:51
@@ -999,9 +991,17 @@ msgstr "Anual vs Multianual"
 msgid "Anonymous usage patterns, page views, interactions."
 msgstr "Modele de utilizare anonime, vizualizări de pagină, interacțiuni."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:359
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:345
+msgid "Anyone with link"
+msgstr "Oricine cu linkul"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:350
+msgid "Anyone with the public link can view this map."
+msgstr "Oricine cu linkul public poate vizualiza această hartă."
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:458
 msgid "Apply"
-msgstr "Apply"
+msgstr "Aplică"
 
 #: src/routes/map.lazy.tsx:440
 msgid "Apply filters"
@@ -1011,13 +1011,13 @@ msgstr "Apply filters"
 msgid "Apply Filters"
 msgstr "Aplică filtrele"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:493
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:637
 msgid "Apply gradient"
-msgstr "Apply gradient"
+msgstr "Aplică gradient"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:485
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:629
 msgid "Apply gradient colors?"
-msgstr "Apply gradient colors?"
+msgstr "Aplici culorile gradientului?"
 
 #: src/components/commitments/commitments-trends.tsx:190
 #: src/components/entities/EntityFinancialTrends.tsx:97
@@ -1068,9 +1068,9 @@ msgid "At a Glance"
 msgstr "Pe scurt"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:178
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:86
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:103
 msgid "At least one bin is required."
-msgstr "At least one bin is required."
+msgstr "Este necesar cel puțin un interval."
 
 #: src/features/learning/components/interactive/VATReformCard.tsx:26
 msgid "Aug 1, 2025"
@@ -1207,31 +1207,31 @@ msgstr "Date de bază despre populație, ocupare și locuințe."
 msgid "Basic security logs are kept for a short period to protect accounts."
 msgstr "Jurnalele de securitate de bază sunt păstrate pentru o perioadă scurtă pentru a proteja conturile."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:89
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:99
 msgid "Best for cross-county comparisons where scales are very different."
-msgstr "Best for cross-county comparisons where scales are very different."
+msgstr "Cel mai bun pentru comparații între județe unde scalele sunt foarte diferite."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:365
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:374
 msgid "between"
 msgstr "between"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:36
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:40
 msgid "Between (inclusive)"
-msgstr "Between (inclusive)"
+msgstr "Între (inclusiv)"
 
 #. placeholder {0}: index + 1
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:105
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:111
 msgid "Bin {0} max must be a finite number."
-msgstr "Bin {0} max must be a finite number."
+msgstr "Maximul intervalului {0} trebuie să fie un număr finit."
 
 #. placeholder {0}: index + 1
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:73
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:79
 msgid "Bin {0} min must be a finite number."
-msgstr "Bin {0} min must be a finite number."
+msgstr "Minimul intervalului {0} trebuie să fie un număr finit."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:419
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:560
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-panel.tsx:44
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:286
 msgid "Bins"
@@ -1242,9 +1242,9 @@ msgstr "Intervale"
 msgid "Bins preset"
 msgstr "Preset intervale"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:255
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:316
 msgid "Bins title"
-msgstr "Bins title"
+msgstr "Titlu intervale"
 
 #: src/components/entities/views/ins-stats-view.derived.ts:286
 msgid "Birth rate"
@@ -1263,13 +1263,13 @@ msgstr "Echilibrul natalității, mortalității și migrației."
 msgid "Both"
 msgstr "Ambele"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:580
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:579
 msgid "Both fences"
-msgstr "Both fences"
+msgstr "Ambele limite"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:459
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:463
 msgid "Bottom"
-msgstr "Bottom"
+msgstr "Jos"
 
 #: src/components/budget-explorer/BudgetDetailsDrawer.tsx:98
 msgid "Breakdown of the selected classification, including grouped chapters and totals."
@@ -1396,7 +1396,7 @@ msgid "Calculated series"
 msgstr "Calculated series"
 
 #: src/components/charts/components/series-config/CalculationConfig.tsx:24
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:83
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:91
 msgid "Calculation"
 msgstr "Calcul"
 
@@ -1411,11 +1411,11 @@ msgstr "Calculele presupun un coș de bunuri esențiale de 40% (TVA 11%) și bun
 #: src/components/charts/components/views/AnnotationConfigView.tsx:246
 #: src/components/charts/components/views/ChartConfigView.tsx:92
 #: src/components/charts/components/views/SeriesConfigView.tsx:579
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:491
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:499
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:516
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:533
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:550
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:635
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:532
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:549
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:566
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:583
 #: src/features/notifications/components/alerts/AlertCard.tsx:122
 #: src/features/notifications/components/NotificationCard.tsx:124
 #: src/routes/$lang/learning/index.lazy.tsx:308
@@ -1433,9 +1433,9 @@ msgstr "Nu se pot încărca indicatorii INS fără codul județului."
 msgid "Cannot load INS indicators without the locality SIRUTA code."
 msgstr "Nu se pot încărca indicatorii INS fără codul SIRUTA al localității."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:200
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:263
 msgid "Cannot regenerate bins because active data has no numeric values."
-msgstr "Cannot regenerate bins because active data has no numeric values."
+msgstr "Nu se pot regenera intervalele deoarece datele active nu au valori numerice."
 
 #: src/routes/cookie-policy.lazy.tsx:32
 msgid "Categories"
@@ -1517,10 +1517,6 @@ msgstr "Grafice"
 msgid "Check your series filters and try again."
 msgstr "Verificați filtrele seriei și încercați din nou."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:178
-msgid "Checkpoint saved"
-msgstr "Checkpoint saved"
-
 #: src/routes/privacy.lazy.tsx:143
 msgid "Children's privacy"
 msgstr "Confidențialitatea minorilor"
@@ -1580,7 +1576,7 @@ msgstr "Șterge tot"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:359
 msgid "Clear all filters"
-msgstr "Clear all filters"
+msgstr "Șterge toate filtrele"
 
 #: src/components/filters/EntityAnalyticsFilter.tsx:426
 #: src/routes/entity-analytics.lazy.tsx:231
@@ -1616,23 +1612,23 @@ msgstr "Clipboardul nu conține serii de grafic copiate."
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:254
 msgid "Clone"
-msgstr "Clone"
+msgstr "Clonează"
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:226
 msgid "Clone from snapshot"
-msgstr "Clone from snapshot"
+msgstr "Clonează din instantaneu"
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:175
 msgid "Clone latest"
-msgstr "Clone latest"
+msgstr "Clonează ultima versiune"
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:205
 msgid "Clone latest snapshot"
-msgstr "Clone latest snapshot"
+msgstr "Clonează ultimul instantaneu"
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:179
 msgid "Clone snapshot"
-msgstr "Clone snapshot"
+msgstr "Clonează instantaneul"
 
 #: src/components/ui/shortcuts.tsx:32
 msgid "Close entity search dialog"
@@ -1665,11 +1661,11 @@ msgstr "Codul a fost copiat"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-panel.tsx:50
 msgid "Collapse bins panel"
-msgstr "Collapse bins panel"
+msgstr "Pliază panoul intervale"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:52
 msgid "Collapse config panel"
-msgstr "Collapse config panel"
+msgstr "Pliază panoul de configurare"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:678
 #: src/components/entities/views/ins-stats-view.presentation.tsx:679
@@ -1678,11 +1674,11 @@ msgstr "Restrânge exploratorul în panoul lateral"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel.tsx:47
 msgid "Collapse panel"
-msgstr "Collapse panel"
+msgstr "Pliază panoul"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:95
 msgid "Collapse value filters panel"
-msgstr "Collapse value filters panel"
+msgstr "Pliază panoul filtrelor de valori"
 
 #: src/components/charts/components/views/AnnotationConfigView.tsx:112
 msgid "Color"
@@ -1697,9 +1693,9 @@ msgstr "Culoare pentru valoarea {0}"
 msgid "Color gradient for the map legend"
 msgstr "Color gradient for the map legend"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:277
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:355
 msgid "Color mode"
-msgstr "Color mode"
+msgstr "Mod culori"
 
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:281
 #: src/components/maps/HeatmapDataTable.tsx:142
@@ -1765,7 +1761,7 @@ msgstr "Angajamente"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils.ts:12
 msgid "Commitments analytics"
-msgstr "Commitments analytics"
+msgstr "Analize angajamente"
 
 #: src/components/charts/components/views/SeriesConfigView.tsx:313
 msgid "Commitments Analytics"
@@ -1822,18 +1818,22 @@ msgstr "Confidențial"
 msgid "Config"
 msgstr "Config"
 
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:264
+msgid "Configuration link copied"
+msgstr "Linkul de configurare a fost copiat"
+
 #: src/components/charts/components/chart-view/ChartViewHeader.tsx:44
 #: src/components/charts/components/series-config/SeriesItemMenu.tsx:38
 msgid "Configure"
 msgstr "Configurează"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:79
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:87
 msgid "Configure a new series. Changes apply immediately while this modal is open."
-msgstr "Configure a new series. Changes apply immediately while this modal is open."
+msgstr "Configurează o serie nouă. Modificările se aplică imediat în timp ce acest modal este deschis."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:230
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:293
 msgid "Configure bins for this preset. Changes are local while this modal is open."
-msgstr "Configure bins for this preset. Changes are local while this modal is open."
+msgstr "Configurează intervale pentru acest preset. Modificările sunt locale în timp ce acest modal este deschis."
 
 #: src/routes/charts/$chartId/index.lazy.tsx:66
 #: src/routes/charts/$chartId/index.lazy.tsx:68
@@ -1848,12 +1848,15 @@ msgstr "Configurați filtrele pentru hartă, inclusiv perioada, categoria contul
 msgid "Configure Series"
 msgstr "Configurare serie de date"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:175
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:179
 msgid "Configure source series and filtering logic for this UAT-level value filter."
-msgstr "Configure source series and filtering logic for this UAT-level value filter."
+msgstr "Configurează sursa seriei și logica de filtrare pentru acest filtru de valori la nivel UAT."
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:35
+msgid "Configure the map name and review its status."
+msgstr "Configurează numele hărții și verifică starea acesteia."
 
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:139
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:501
 msgid "Confirm"
 msgstr "Confirmă"
 
@@ -1868,17 +1871,9 @@ msgstr "Confirmă alegerile"
 msgid "Confirm Delete"
 msgstr "Confirmă ștergerea"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:518
-msgid "Confirm load"
-msgstr "Confirm load"
-
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:129
 msgid "Confirm replace"
 msgstr "Confirmă înlocuirea"
-
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:535
-msgid "Confirm save"
-msgstr "Confirm save"
 
 #: src/routes/unsubscribe.$token.tsx:128
 msgid "Confirm unsubscribe"
@@ -1889,7 +1884,7 @@ msgid "Congratulations!"
 msgstr "Felicitări!"
 
 #: src/components/charts/components/views/AnnotationConfigView.tsx:138
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:195
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:220
 msgid "Connector"
 msgstr "Conector"
 
@@ -1926,13 +1921,21 @@ msgstr "Context"
 msgid "Continue"
 msgstr "Continuă"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:464
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:608
 msgid "Continue editing"
-msgstr "Continue editing"
+msgstr "Continuă editarea"
 
 #: src/features/learning/components/player/MarkComplete.tsx:71
 msgid "Continue to the next chapter to complete the module."
 msgstr "Continuă la următorul capitol pentru a finaliza modulul."
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:349
+msgid "continuous"
+msgstr "continuu"
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:465
+msgid "Continuous range"
+msgstr "Interval continuu"
 
 #: src/hooks/useEntityViews.tsx:21
 msgid "Contracts"
@@ -1994,14 +1997,6 @@ msgstr "Copiază datele"
 msgid "Copy error report to clipboard"
 msgstr "Copiază raportul de erori în clipboard"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:339
-msgid "Copy link"
-msgstr "Copy link"
-
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:365
-msgid "Copy map"
-msgstr "Copy map"
-
 #: src/components/charts/components/views/SeriesConfigView.tsx:374
 msgid "Copy series"
 msgstr "Copiază seria de date"
@@ -2013,7 +2008,7 @@ msgstr "Copiază seria"
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:138
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:139
 msgid "Copy share link"
-msgstr "Copy share link"
+msgstr "Copiază linkul de partajare"
 
 #: src/components/ui/FloatingQuickNav.tsx:99
 #: src/components/ui/shortcuts.tsx:25
@@ -2094,10 +2089,10 @@ msgstr "Nu s-au putut încărca unitățile"
 msgid "Could not send error report."
 msgstr "Nu s-a putut trimite raportul de eroare."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:464
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:467
 #: src/components/maps/charts/UatDistributionChart.tsx:103
 msgid "Count"
-msgstr "Count"
+msgstr "Numără"
 
 #: src/components/filters/MapFilter.tsx:308
 #: src/components/filters/MapFilter.tsx:485
@@ -2113,23 +2108,22 @@ msgstr "Județe"
 #: src/components/filters/MapFilter.tsx:230
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:176
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:398
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:45
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:53
 #: src/components/maps/charts/UatDataCharts.tsx:102
 #: src/components/maps/HeatmapDataTable.tsx:185
 #: src/components/maps/HeatmapDataTable.tsx:483
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:908
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:917
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:969
 #: src/routes/entity-analytics.lazy.tsx:251
 msgid "County"
 msgstr "Județ"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:444
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:493
 msgid "County and region filters can both be selected and are combined using AND logic."
-msgstr "County and region filters can both be selected and are combined using AND logic."
+msgstr "Filtrele de județ și regiune pot fi ambele selectate și sunt combinate folosind logica ȘI."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:431
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:480
 msgid "County Filters"
-msgstr "County Filters"
+msgstr "Filtre județe"
 
 #: src/components/maps/utils.ts:104
 #: src/components/maps/utils.ts:157
@@ -2158,7 +2152,7 @@ msgstr "Creează un grafic pentru această entitate pentru a începe să-i urmă
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:206
 msgid "Create a new map using the latest saved snapshot."
-msgstr "Create a new map using the latest saved snapshot."
+msgstr "Creează o hartă nouă folosind ultimul instantaneu salvat."
 
 #: src/features/notifications/components/NotificationList.tsx:158
 #: src/features/notifications/components/NotificationList.tsx:159
@@ -2188,7 +2182,7 @@ msgstr "Creează grafic pentru această entitate"
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:126
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:127
 msgid "Create editable copy"
-msgstr "Create editable copy"
+msgstr "Creează copie editabilă"
 
 #: src/routes/maps/editor/new.lazy.tsx:225
 msgid "Create empty map"
@@ -2196,11 +2190,11 @@ msgstr "Create empty map"
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:217
 msgid "Create from latest"
-msgstr "Create from latest"
+msgstr "Creează din ultima versiune"
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:140
 msgid "Create map"
-msgstr "Create map"
+msgstr "Creează hartă"
 
 #: src/routes/alerts/$alertId/index.lazy.tsx:199
 msgid "Create new alert"
@@ -2222,8 +2216,8 @@ msgstr "Creating map..."
 msgid "Creating…"
 msgstr "Se creează..."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:915
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:985
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:978
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1048
 msgid "CUI"
 msgstr "CUI"
 
@@ -2267,9 +2261,9 @@ msgstr "Valoare serie personalizată"
 msgid "Daily Streak"
 msgstr "Serie zilnică"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:452
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:491
 msgid "Danger zone"
-msgstr "Danger zone"
+msgstr "Zonă periculoasă"
 
 #: src/routes/alerts/$alertId/index.lazy.tsx:289
 msgid "Danger Zone"
@@ -2328,9 +2322,9 @@ msgid "Data series (analytics)"
 msgstr "Serie de date (analiză)"
 
 #. placeholder {0}: draft.series.length + 1
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:183
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:184
 msgid "Data series {0}"
-msgstr "Data series {0}"
+msgstr "Serie de date {0}"
 
 #: src/features/notifications/components/NotificationList.tsx:148
 msgid "Data series alerts"
@@ -2421,13 +2415,13 @@ msgstr "Decembrie"
 msgid "decrease"
 msgstr "scădere"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:295
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:374
 msgid "Default bin count"
-msgstr "Default bin count"
+msgstr "Număr implicit de intervale"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:121
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:138
 msgid "Default bin count must be an integer greater than or equal to 1."
-msgstr "Default bin count must be an integer greater than or equal to 1."
+msgstr "Numărul implicit de intervale trebuie să fie un întreg mai mare sau egal cu 1."
 
 #: src/components/charts/components/chart-config/GlobalSettingsCard.tsx:47
 msgid "Default Color"
@@ -2465,29 +2459,24 @@ msgstr "Șterge alerta"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:415
 msgid "Delete bin"
-msgstr "Delete bin"
+msgstr "Șterge interval"
 
 #: src/components/charts/components/views/ChartConfigView.tsx:72
 #: src/components/charts/components/views/ChartConfigView.tsx:79
 msgid "Delete Chart"
 msgstr "Șterge graficul"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:470
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:556
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:503
 msgid "Delete map"
-msgstr "Delete map"
-
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:461
-msgid "Delete map confirmation input"
-msgstr "Delete map confirmation input"
-
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:544
-msgid "Delete map permanently?"
-msgstr "Delete map permanently?"
+msgstr "Șterge harta"
 
 #: src/features/notifications/components/NotificationCard.tsx:113
 msgid "Delete notification"
 msgstr "Șterge notificarea"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:589
+msgid "Delete permanently"
+msgstr "Șterge definitiv"
 
 #: src/components/charts/components/views/SeriesConfigView.tsx:566
 msgid "Delete Series"
@@ -2496,6 +2485,10 @@ msgstr "Șterge seria"
 #: src/components/charts/components/views/ChartConfigView.tsx:83
 msgid "Delete this chart?"
 msgstr "Ștergeți acest grafic?"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:577
+msgid "Delete this map?"
+msgstr "Ștergi această hartă?"
 
 #: src/components/entities/views/ins-stats-view.derived.ts:74
 msgid "Demography"
@@ -2507,9 +2500,9 @@ msgstr "Demografie"
 msgid "Density"
 msgstr "Densitate"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:46
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:47
 msgid "Dependency"
-msgstr "Dependency"
+msgstr "Dependență"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:350
 msgid "Derived indicators"
@@ -2517,7 +2510,7 @@ msgstr "Indicatori derivați"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:57
 msgid "Describe what this map shows..."
-msgstr "Describe what this map shows..."
+msgstr "Descrie ce arată această hartă..."
 
 #: src/components/alerts/components/AlertEditorView.tsx:148
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1132
@@ -2561,9 +2554,9 @@ msgstr "Categorii Detaliate"
 msgid "Detailed Line Items Breakdown"
 msgstr "Detalierea liniilor bugetare"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:23
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:26
 msgid "Detailed warnings generated for map-series fetch and calculations."
-msgstr "Detailed warnings generated for map-series fetch and calculations."
+msgstr "Avertismente detaliate generate pentru obținerea și calculele seriilor de hărți."
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1530
 msgid "Details"
@@ -2577,9 +2570,9 @@ msgstr "Detalii despre elementele excluse și filtrele de sumă utilizate în ac
 msgid "Details:"
 msgstr "Detalii:"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:131
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:141
 msgid "Detects outliers using quartile fences: Q1 - m*IQR and Q3 + m*IQR. Works well for heavy-tailed financial data."
-msgstr "Detects outliers using quartile fences: Q1 - m*IQR and Q3 + m*IQR. Works well for heavy-tailed financial data."
+msgstr "Detectează valori extreme folosind limite cuartile: Q1 - m*IQR și Q3 + m*IQR. Funcționează bine pentru datele financiare cu cozi lungi."
 
 #: src/components/entities/LineItemsBadgeFilters.tsx:87
 #: src/components/entities/LineItemsGroupedSection.tsx:116
@@ -2598,10 +2591,10 @@ msgstr "Diferențele pot reflecta structura fondului locativ, presiunea turistic
 msgid "Dimensions"
 msgstr "Dimensiuni"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:442
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:455
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:446
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:459
 msgid "Direction"
-msgstr "Direction"
+msgstr "Direcție"
 
 #: src/components/charts/components/chart-quick-config/components/ChartQuickConfigMenu.tsx:57
 msgid "Disable All Series"
@@ -2614,28 +2607,32 @@ msgstr "Dezactivează adnotarea"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:359
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:369
 msgid "Disable bin"
-msgstr "Disable bin"
+msgstr "Dezactivează interval"
 
 #. placeholder {0}: index + 1
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:258
 msgid "Disable rule {0}"
-msgstr "Disable rule {0}"
+msgstr "Dezactivează regula {0}"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:122
 msgid "Disable series"
-msgstr "Disable series"
+msgstr "Dezactivează seria"
 
 #: src/components/charts/components/series-config/SeriesItemMenu.tsx:66
 msgid "Disable Series"
 msgstr "Dezactivează seria"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:473
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:617
 msgid "Discard & close"
-msgstr "Discard & close"
+msgstr "Renunță și închide"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:458
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:602
 msgid "Discard local edits?"
-msgstr "Discard local edits?"
+msgstr "Renunți la modificările locale?"
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:348
+msgid "discrete"
+msgstr "discret"
 
 #: src/features/learning/components/interactive/lesson-discussion.tsx:135
 msgid "Discussion"
@@ -2706,11 +2703,11 @@ msgstr "Locuințe"
 msgid "Dwellings per 1,000 inhabitants signals housing capacity relative to resident population."
 msgstr "Locuințele la 1.000 de locuitori indică capacitatea de locuire raportată la populația rezidentă."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:336
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:345
 msgid "e.g. 0"
 msgstr "e.g. 0"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:355
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:363
 msgid "e.g. 1000"
 msgstr "e.g. 1000"
 
@@ -2785,7 +2782,7 @@ msgstr "Economie și locuire"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:142
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:278
 msgid "Edit"
-msgstr "Edit"
+msgstr "Editează"
 
 #: src/features/notifications/components/alerts/AlertCard.tsx:89
 msgid "Edit alert"
@@ -2806,28 +2803,32 @@ msgstr "Editează adnotări"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-preset-list-item.tsx:96
 msgid "Edit bins preset"
-msgstr "Edit bins preset"
+msgstr "Editează preset de intervale"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:228
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:291
 msgid "Edit Bins Preset"
-msgstr "Edit Bins Preset"
+msgstr "Editează preset de intervale"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:76
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:84
 msgid "Edit Data Series"
-msgstr "Edit Data Series"
+msgstr "Editează serie de date"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:316
+msgid "Edit description"
+msgstr "Editează descrierea"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:107
 msgid "Edit series"
-msgstr "Edit series"
+msgstr "Editează serie"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:167
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:178
 msgid "Edit Value Filter Rule"
-msgstr "Edit Value Filter Rule"
+msgstr "Editează regulă de filtrare a valorilor"
 
 #. placeholder {0}: index + 1
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:234
 msgid "Edit value filter rule {0}"
-msgstr "Edit value filter rule {0}"
+msgstr "Editează regula de filtrare a valorilor {0}"
 
 #: src/lib/ins/ins-dashboard-config.ts:141
 msgid "Education"
@@ -2895,12 +2896,12 @@ msgstr "Activează adnotarea"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:359
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:369
 msgid "Enable bin"
-msgstr "Enable bin"
+msgstr "Activează interval"
 
 #. placeholder {0}: index + 1
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:258
 msgid "Enable rule {0}"
-msgstr "Enable rule {0}"
+msgstr "Activează regula {0}"
 
 #: src/components/ui/shortcuts.tsx:46
 msgid "Enable Scroll Zoom"
@@ -2908,7 +2909,7 @@ msgstr "Activează Zoom-ul cu Scroll"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:122
 msgid "Enable series"
-msgstr "Enable series"
+msgstr "Activează seria"
 
 #: src/components/charts/components/series-config/SeriesItemMenu.tsx:66
 msgid "Enable Series"
@@ -3017,7 +3018,7 @@ msgid "Environment & interventions"
 msgstr "Mediu și intervenții"
 
 #: src/components/alerts/components/ConditionsList.tsx:94
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:34
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:38
 msgid "Equal to"
 msgstr "Egal cu"
 
@@ -3130,36 +3131,36 @@ msgstr "Evoluția primelor 15 județe"
 msgid "Evolution of Top 15 UATs"
 msgstr "Evoluția primelor 15 UAT-uri"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:639
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:636
 #: src/features/learning/components/interactive/RedFlagCards.tsx:116
 msgid "Example:"
 msgstr "Exemplu:"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:109
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:119
 msgid "Example: >= median population, then AND with negative spending threshold."
-msgstr "Example: >= median population, then AND with negative spending threshold."
+msgstr "Exemplu: >= populația mediană, apoi ȘI cu pragul de cheltuieli negative."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:121
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:131
 msgid "Example: |z| >= 2 highlights statistically unusual UATs in the selected source series."
-msgstr "Example: |z| >= 2 highlights statistically unusual UATs in the selected source series."
+msgstr "Exemplu: |z| >= 2 evidențiază UAT-uri statistic neobișnuite în seria sursă selectată."
 
 #: src/components/charts/components/views/SeriesConfigView.tsx:449
 msgid "Example: 2024-"
 msgstr "Exemplu: 2024-"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:85
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:95
 msgid "Example: 80-100 selects the top 20% by population. Combine with spending display to inspect high-population UATs."
-msgstr "Example: 80-100 selects the top 20% by population. Combine with spending display to inspect high-population UATs."
+msgstr "Exemplu: 80-100 selectează primele 20% după populație. Combină cu afișarea cheltuielilor pentru a inspecta UAT-uri cu populație mare."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:133
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:143
 msgid "Example: side=upper, multiplier=1.5 to focus on unusually high spending UATs."
-msgstr "Example: side=upper, multiplier=1.5 to focus on unusually high spending UATs."
+msgstr "Exemplu: side=upper, multiplier=1.5 pentru a te concentra pe UAT-uri cu cheltuieli neobișnuit de mari."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:145
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:155
 msgid "Example: threshold 3.5 to identify strong anomalies in volatile spending distributions."
 msgstr "Example: threshold 3.5 to identify strong anomalies in volatile spending distributions."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:97
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:107
 msgid "Example: Top 25 by population, while displaying budget deficit values on the map."
 msgstr "Example: Top 25 by population, while displaying budget deficit values on the map."
 
@@ -3236,7 +3237,7 @@ msgstr "Execuție %"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils.ts:11
 msgid "Execution analytics"
-msgstr "Execution analytics"
+msgstr "Analize de execuție"
 
 #: src/lib/ins/ins-dashboard-config.ts:25
 #: src/lib/ins/ins-dashboard-config.ts:32
@@ -3251,11 +3252,11 @@ msgstr "Locuințe existente (LOC101B)"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-panel.tsx:50
 msgid "Expand bins panel"
-msgstr "Expand bins panel"
+msgstr "Expandează panoul intervale"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:52
 msgid "Expand config panel"
-msgstr "Expand config panel"
+msgstr "Expandează panoul de configurare"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:678
 #: src/components/entities/views/ins-stats-view.presentation.tsx:679
@@ -3264,11 +3265,11 @@ msgstr "Extinde exploratorul pe toată lățimea"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel.tsx:47
 msgid "Expand panel"
-msgstr "Expand panel"
+msgstr "Expandează panoul"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:95
 msgid "Expand value filters panel"
-msgstr "Expand value filters panel"
+msgstr "Expandează panoul filtrelor de valori"
 
 #: src/hooks/useEntityViews.tsx:30
 msgid "Expense Trends"
@@ -3375,13 +3376,13 @@ msgstr "Copierea adresei de email a eșuat."
 msgid "Failed to copy link"
 msgstr "Eroare la copierea linkului"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:270
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:268
 msgid "Failed to copy map link"
-msgstr "Failed to copy map link"
+msgstr "Eroare la copierea linkului hărții"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:236
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:238
 msgid "Failed to copy public map link"
-msgstr "Failed to copy public map link"
+msgstr "Eroare la copierea linkului public al hărții"
 
 #: src/routes/alerts/$alertId/index.lazy.tsx:112
 #: src/routes/alerts/new.lazy.tsx:108
@@ -3397,9 +3398,9 @@ msgstr "Crearea a eșuat"
 msgid "Failed to create map"
 msgstr "Failed to create map"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:220
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:222
 msgid "Failed to delete map"
-msgstr "Failed to delete map"
+msgstr "Eroare la ștergerea hărții"
 
 #: src/routes/alerts/$alertId/index.lazy.tsx:180
 #: src/routes/alerts/new.lazy.tsx:166
@@ -3420,27 +3421,27 @@ msgstr "Eroare la încărcarea datelor."
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:132
 msgid "Failed to load map"
-msgstr "Failed to load map"
+msgstr "Eroare la încărcarea hărții"
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:123
 msgid "Failed to load maps"
-msgstr "Failed to load maps"
+msgstr "Eroare la încărcarea hărților"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:206
-msgid "Failed to load snapshot"
-msgstr "Failed to load snapshot"
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:208
+msgid "Failed to restore version"
+msgstr "Eroare la restaurarea versiunii"
 
 #: src/routes/alerts/$alertId/index.lazy.tsx:125
 msgid "Failed to save"
 msgstr "Salvare eșuată"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:180
-msgid "Failed to save checkpoint"
-msgstr "Failed to save checkpoint"
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:182
+msgid "Failed to save snapshot"
+msgstr "Eroare la salvarea instantaneului"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:158
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:160
 msgid "Failed to update map visibility"
-msgstr "Failed to update map visibility"
+msgstr "Eroare la actualizarea vizibilității hărții"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:548
 msgid "Fallback:"
@@ -3477,7 +3478,7 @@ msgstr "Feedback-ul este indisponibil momentan."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:282
 msgid "Filter"
-msgstr "Filter"
+msgstr "Filtru"
 
 #: src/components/entity-analytics/EntityAnalyticsLayout.tsx:48
 msgid "Filter entity analytics results on mobile."
@@ -3504,7 +3505,7 @@ msgstr "Filtrat"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:685
 #: src/components/entities/EntityReports.tsx:142
 #: src/components/filters/EntityAnalyticsFilter.tsx:422
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:88
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:96
 #: src/routes/map.lazy.tsx:424
 msgid "Filters"
 msgstr "Filtre"
@@ -3618,9 +3619,9 @@ msgstr "Focalizează selectorul de an în detaliile entității"
 msgid "Follow the money"
 msgstr "Urmărește banii"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:125
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:135
 msgid "For heavily skewed data, compare with IQR or MAD robust z-score."
-msgstr "For heavily skewed data, compare with IQR or MAD robust z-score."
+msgstr "Pentru date puternic asimetrice, compară cu IQR sau scor z robust MAD."
 
 #: src/routes/privacy.lazy.tsx:150
 msgid "For questions about this Privacy Policy, to exercise your rights, or to contact our data protection officer, email us at contact@transparenta.eu"
@@ -3749,11 +3750,15 @@ msgstr "Lungimea rețelei de gaze la 1.000 de locuitori arată acoperirea infras
 msgid "Gas volume per inhabitant indicates reliance on gas infrastructure and energy-use profile."
 msgstr "Volumul de gaze pe locuitor indică dependența de infrastructura de gaze și profilul de consum energetic."
 
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:291
+msgid "General"
+msgstr "General"
+
 #: src/components/charts/components/views/SeriesConfigView.tsx:355
 msgid "Generate random color"
 msgstr "Generează o culoare aleatorie"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1175
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1238
 #: src/routes/map.lazy.tsx:300
 msgid "geo-spatial.org"
 msgstr "geo-spatial.org"
@@ -3762,13 +3767,13 @@ msgstr "geo-spatial.org"
 msgid "Geographical View"
 msgstr "Vizualizare geografică"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:44
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:87
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:52
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:95
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils.ts:14
 msgid "GeoJSON dataset"
-msgstr "GeoJSON dataset"
+msgstr "Set de date GeoJSON"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1167
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1230
 #: src/routes/map.lazy.tsx:292
 msgid "GeoJSON source:"
 msgstr "Sursa GeoJSON:"
@@ -3830,9 +3835,9 @@ msgstr "Vezi harta"
 msgid "Good"
 msgstr "Bun"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:99
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:109
 msgid "Good for shortlists used in audits, reporting, or manual review."
-msgstr "Good for shortlists used in audits, reporting, or manual review."
+msgstr "Bun pentru liste scurte folosite în audituri, rapoarte sau revizii manuale."
 
 #: src/components/entities/EntityLineItemsTabs.tsx:97
 #: src/features/learning/components/interactive/PromiseTracker.tsx:119
@@ -3847,16 +3852,16 @@ msgstr "Bunuri și servicii"
 msgid "Governing law"
 msgstr "Legea aplicabilă"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:289
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:367
 msgid "gradient"
 msgstr "gradient"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:311
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:392
 msgid "Gradient"
 msgstr "Gradient"
 
 #: src/components/alerts/components/ConditionsList.tsx:91
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:31
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:35
 msgid "Greater or equal"
 msgstr "Mai mare sau egal"
 
@@ -3869,7 +3874,7 @@ msgid "greater than"
 msgstr "mai mare decât"
 
 #: src/components/alerts/components/ConditionsList.tsx:90
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:30
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:34
 msgid "Greater than"
 msgstr "Mai mare decât"
 
@@ -3948,9 +3953,9 @@ msgstr "Ascunde setările avansate"
 msgid "Hide details"
 msgstr "Ascunde detaliile"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1202
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1265
 msgid "Hide Map Controls"
-msgstr "Hide Map Controls"
+msgstr "Ascunde controalele hărții"
 
 #: src/features/learning/components/interactive/PhaseCards.tsx:306
 msgid "High"
@@ -4026,9 +4031,9 @@ msgstr "Dacă vă creați un cont, Clerk setează următoarele cookie-uri pentru
 msgid "If you earn <0>{0}</0> gross, drag the slider to your expected net home pay."
 msgstr "Dacă câștigi <0>{0}</0> brut, trage cursorul la salariul net așteptat."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:101
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:111
 msgid "If you need broader cohorts, use percentile instead of a very large N."
-msgstr "If you need broader cohorts, use percentile instead of a very large N."
+msgstr "Dacă ai nevoie de cohorte mai largi, folosește percentile în loc de un N foarte mare."
 
 #: src/routes/cookies.lazy.tsx:127
 msgid "If you sign in, authentication cookies (Clerk) are essential to manage your session. Deleting them will sign you out."
@@ -4169,15 +4174,15 @@ msgstr "Indicatorii INS sunt disponibili doar pentru UAT-uri."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils.ts:13
 msgid "INS series"
-msgstr "INS series"
+msgstr "Serii INS"
 
 #: src/components/charts/components/views/SeriesConfigView.tsx:318
 msgid "INS Series"
 msgstr "Serie INS"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:85
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:93
 msgid "INS Settings"
-msgstr "INS Settings"
+msgstr "Setări INS"
 
 #: src/hooks/useEntityViews.tsx:26
 msgid "INS Stats"
@@ -4246,10 +4251,14 @@ msgstr "Note de interpretare"
 msgid "Interval"
 msgstr "Interval"
 
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:337
+msgid "Interval mode"
+msgstr "Mod interval"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:59
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:143
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:160
 msgid "Invalid bins configuration."
-msgstr "Invalid bins configuration."
+msgstr "Configurație de intercale invalidă."
 
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:40
 msgid "Invalid chart schema"
@@ -4267,22 +4276,22 @@ msgstr "Invalid map link"
 msgid "Invalid or expired link"
 msgstr "Link invalid sau expirat"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:392
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:401
 msgid "iqr"
 msgstr "iqr"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:64
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:129
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:72
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:139
 msgid "IQR outlier"
-msgstr "IQR outlier"
+msgstr "Valori extreme IQR"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:367
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:376
 msgid "is defined"
 msgstr "is defined"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:28
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:32
 msgid "Is defined"
-msgstr "Is defined"
+msgstr "Este definit"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:927
 #: src/components/filters/EntityAnalyticsFilter.tsx:588
@@ -4291,13 +4300,13 @@ msgstr "Is defined"
 msgid "Is UAT"
 msgstr "Este UAT"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:368
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:377
 msgid "is undefined"
 msgstr "is undefined"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:29
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:33
 msgid "Is undefined"
-msgstr "Is undefined"
+msgstr "Este nedefinit"
 
 #: src/routes/$lang/learning/certificates.$id.lazy.tsx:60
 #: src/routes/certificates.$id.tsx:68
@@ -4317,9 +4326,9 @@ msgstr "Valoare element"
 msgid "January"
 msgstr "Ianuarie"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:182
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:207
 msgid "Join with previous"
-msgstr "Join with previous"
+msgstr "Unește cu anteriorul"
 
 #: src/components/commitments/commitments-trends.tsx:193
 #: src/components/entities/EntityFinancialTrends.tsx:98
@@ -4335,9 +4344,9 @@ msgstr "Iunie"
 msgid "Justice"
 msgstr "Justiție"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:83
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:93
 msgid "Keeps UATs whose values fall between two percentiles of the selected series. Use this when absolute thresholds are misleading because data is very skewed."
-msgstr "Keeps UATs whose values fall between two percentiles of the selected series. Use this when absolute thresholds are misleading because data is very skewed."
+msgstr "Păstrează UAT-urile ale căror valori cad între două percentile din seria selectată. Folosește asta când pragurile absolute sunt înșelătoare deoarece datele sunt foarte asimetrice."
 
 #: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:467
 #: src/features/learning/components/interactive/PhaseCards.tsx:397
@@ -4368,7 +4377,7 @@ msgstr "Comenzi Rapide de la Tastatură"
 
 #: src/components/charts/components/views/AnnotationConfigView.tsx:146
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:344
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:102
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:154
 msgid "Label"
 msgstr "Etichetă"
 
@@ -4448,7 +4457,7 @@ msgid "Legend"
 msgstr "Legendă"
 
 #: src/components/alerts/components/ConditionsList.tsx:93
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:33
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:37
 msgid "Less or equal"
 msgstr "Mai mic sau egal"
 
@@ -4461,7 +4470,7 @@ msgid "less than"
 msgstr "mai mic decât"
 
 #: src/components/alerts/components/ConditionsList.tsx:92
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:32
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:36
 msgid "Less than"
 msgstr "Mai mic decât"
 
@@ -4526,9 +4535,9 @@ msgstr "Liniile marcate cu \"se scad\" din cadrul altor capitole fiscale sunt de
 msgid "Link copied to clipboard"
 msgstr "Link copiat în clipboard"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:163
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:213
 msgid "Live apply"
-msgstr "Live apply"
+msgstr "Aplicare în direct"
 
 #: src/components/entities/views/ins-stats-view.derived.ts:97
 #: src/components/entities/views/ins-stats-view.derived.ts:109
@@ -4552,25 +4561,13 @@ msgstr "Suprafață locuibilă / Populație"
 msgid "Living area per inhabitant measures residential space availability and housing quality pressure."
 msgstr "Suprafața locuibilă pe locuitor măsoară disponibilitatea spațiului rezidențial și presiunea asupra calității locuirii."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:439
-msgid "Load"
-msgstr "Load"
-
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:510
-msgid "Load snapshot?"
-msgstr "Load snapshot?"
-
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:512
-msgid "Loading a snapshot replaces the current editor configuration. Unsaved changes will be lost."
-msgstr "Loading a snapshot replaces the current editor configuration. Unsaved changes will be lost."
-
 #: src/features/learning/components/loading/LearningHubLoading.tsx:15
 msgid "Loading Academy"
 msgstr "Se încarcă Academia"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1235
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1298
 msgid "Loading advanced map analytics..."
-msgstr "Loading advanced map analytics..."
+msgstr "Se încarcă analiza avansată a hărții..."
 
 #: src/routes/alerts/$alertId/index.lazy.tsx:133
 msgid "Loading alert…"
@@ -4612,7 +4609,7 @@ msgstr "Se încarcă conținutul interactiv..."
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:210
 msgid "Loading latest snapshot..."
-msgstr "Loading latest snapshot..."
+msgstr "Se încarcă ultimul instantaneu..."
 
 #: src/features/learning/components/loading/LessonSkeleton.tsx:61
 msgid "Loading lesson content..."
@@ -4628,12 +4625,12 @@ msgstr "Se încarcă datele hărții..."
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:91
 msgid "Loading map editor..."
-msgstr "Loading map editor..."
+msgstr "Se încarcă editorul de hărți..."
 
 #: src/components/entities/views/MapView.tsx:183
 #: src/components/entities/views/MapView.tsx:184
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1250
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1257
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1313
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1320
 #: src/routes/map.lazy.tsx:262
 #: src/routes/map.lazy.tsx:263
 msgid "Loading map..."
@@ -4641,7 +4638,7 @@ msgstr "Se încarcă harta..."
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:82
 msgid "Loading maps..."
-msgstr "Loading maps..."
+msgstr "Se încarcă hărțile..."
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-page.tsx:61
 msgid "Loading public map..."
@@ -4652,11 +4649,10 @@ msgid "Loading reports…"
 msgstr "Se încarcă rapoartele..."
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:231
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:411
 msgid "Loading snapshots..."
-msgstr "Loading snapshots..."
+msgstr "Se încarcă instantaneele..."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1312
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1389
 #: src/routes/map.lazy.tsx:357
 msgid "Loading table data..."
 msgstr "Se încarcă datele tabelului..."
@@ -4667,6 +4663,10 @@ msgstr "Se încarcă datele tabelului..."
 #: src/routes/settings/notifications.tsx:103
 msgid "Loading..."
 msgstr "Se încarcă..."
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:416
+msgid "Loading…"
+msgstr "Se încarcă…"
 
 #: src/components/budget-explorer/RevenueBreakdown.tsx:276
 msgid "Loan repayments and other operations"
@@ -4696,14 +4696,14 @@ msgstr "Blocat"
 msgid "Low opportunity"
 msgstr "Oportunitate scăzută"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:579
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:578
 msgid "Lower fence"
-msgstr "Lower fence"
+msgstr "Limita inferioară"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:68
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:141
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:76
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:151
 msgid "MAD robust z-score"
-msgstr "MAD robust z-score"
+msgstr "Scor z robust MAD"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:118
 msgid "Main aggregated"
@@ -4745,17 +4745,25 @@ msgstr "Creditor principal agregat"
 msgid "Major Reform"
 msgstr "Reformă majoră"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:490
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:523
 msgid "Make map private?"
-msgstr "Make map private?"
+msgstr "Faci harta privată?"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:523
+msgid "Make map public?"
+msgstr "Faci harta publică?"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:534
+msgid "Make private"
+msgstr "Faci privată"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:534
+msgid "Make public"
+msgstr "Faci publică"
 
 #: src/features/notifications/components/NotificationQuickMenu.tsx:91
 msgid "Manage all notifications"
 msgstr "Gestionează toate notificările"
-
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:281
-msgid "Manage map visibility, checkpoints, and destructive actions in one place."
-msgstr "Gestionează vizibilitatea hărții, punctele de control și acțiunile distructive într-un singur loc."
 
 #: src/features/notifications/components/EntityNotificationBell.tsx:103
 #: src/routes/unsubscribe.$token.tsx:43
@@ -4768,7 +4776,11 @@ msgstr "Gestionați preferințele oricând din <0>Setări cookie-uri</0>."
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:138
 msgid "Manage your advanced map analytics maps."
-msgstr "Manage your advanced map analytics maps."
+msgstr "Gestionează hărțile tale de analiză avansată."
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:134
+msgid "Manage your map settings, visibility, and version history."
+msgstr "Gestionează setările, vizibilitatea și istoricul versiunilor hărții tale."
 
 #: src/routes/settings/notifications.tsx:50
 msgid "Manage your newsletter and alert subscriptions"
@@ -4778,7 +4790,7 @@ msgstr "Gestionați-vă abonamentele la newsletter și alerte"
 msgid "Managing preferences"
 msgstr "Gestionarea preferințelor"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:288
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:366
 msgid "manual"
 msgstr "manual"
 
@@ -4791,23 +4803,15 @@ msgstr "manual"
 msgid "Map"
 msgstr "Hartă"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:32
-msgid "Map Config"
-msgstr "Configurare hartă"
-
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:279
-msgid "Map configuration"
-msgstr "Configurare hartă"
-
 #: src/routes/map.lazy.tsx:255
 msgid "Map data not available."
 msgstr "Datele hărții nu sunt disponibile."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:216
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:218
 msgid "Map deleted"
-msgstr "Map deleted"
+msgstr "Harta a fost ștearsă"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:42
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:45
 msgid "Map description"
 msgstr "Descriere hartă"
 
@@ -4817,57 +4821,48 @@ msgstr "Editor markdown pentru descrierea hărții"
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:137
 msgid "Map editor"
-msgstr "Map editor"
+msgstr "Editor de hărți"
 
 #: src/components/filters/MapFilter.tsx:192
 msgid "Map Filters"
 msgstr "Filtre hartă"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1243
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1306
 msgid "Map geometry is unavailable."
-msgstr "Map geometry is unavailable."
+msgstr "Geometria hărții nu este disponibilă."
 
 #: src/components/maps/InteractiveMap.tsx:233
 msgid "Map geometry not available."
 msgstr "Map geometry not available."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:156
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:158
 msgid "Map is now private"
-msgstr "Map is now private"
+msgstr "Harta este acum privată"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:156
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:158
 msgid "Map is now public"
-msgstr "Map is now public"
+msgstr "Harta este acum publică"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:266
-msgid "Map link copied to clipboard"
-msgstr "Map link copied to clipboard"
-
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:44
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:51
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:54
 msgid "Map name"
-msgstr "Map name"
+msgstr "Nume hartă"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:52
-msgid "Map name…"
-msgstr "Map name…"
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:46
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:283
+msgid "Map Settings"
+msgstr "Setări hartă"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:287
-msgid "Map settings"
-msgstr "Map settings"
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:74
+msgid "Map status"
+msgstr "Starea hărții"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:291
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:298
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:292
 msgid "Map title"
-msgstr "Map title"
+msgstr "Titlul hărții"
 
 #: src/components/filters/MapFilter.tsx:222
 msgid "Map View"
 msgstr "Vizualizare hartă"
-
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:311
-msgid "Map visibility"
-msgstr "Map visibility"
 
 #: src/components/footer/AppFooter.tsx:98
 msgid "Maps"
@@ -4882,7 +4877,7 @@ msgstr "Martie"
 msgid "Mark charts as favorites to quickly find them here."
 msgstr "Marcați graficele ca favorite pentru a le găsi rapid aici."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:49
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:50
 msgid "Markdown"
 msgstr "Markdown"
 
@@ -4896,11 +4891,12 @@ msgstr "Stăpânești bugetul pas cu pas. Progresul tău este înregistrat."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:467
 msgid "Max"
-msgstr "Max"
+msgstr "Maxim"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:419
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:486
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:424
 msgid "Max percentile"
-msgstr "Max percentile"
+msgstr "Percentilă maximă"
 
 #: src/components/ui/amount-range-picker.tsx:128
 msgid "Maximum"
@@ -4915,14 +4911,14 @@ msgstr "Mai"
 msgid "Maybe Later"
 msgstr "Poate mai târziu"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:384
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:393
 msgid "median"
 msgstr "median"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:56
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:105
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:64
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:115
 msgid "Median compare"
-msgstr "Median compare"
+msgstr "Comparare mediană"
 
 #: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:748
 msgid "Medium opportunity"
@@ -4946,11 +4942,12 @@ msgstr "min"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:442
 msgid "Min"
-msgstr "Min"
+msgstr "Minim"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:401
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:468
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:407
 msgid "Min percentile"
-msgstr "Min percentile"
+msgstr "Percentilă minimă"
 
 #: src/components/ui/amount-range-picker.tsx:110
 msgid "Minimum"
@@ -5004,12 +5001,12 @@ msgstr "Mixt"
 msgid "Mnemonic:"
 msgstr "Mnemonic:"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:489
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:502
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:517
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:530
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:491
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:504
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:518
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:531
 msgid "Mode"
-msgstr "Mode"
+msgstr "Mod"
 
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:146
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:148
@@ -5074,7 +5071,7 @@ msgstr "Majoritatea comenzilor rapide funcționează atât pe Windows/Linux (Ctr
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:404
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:292
 msgid "Move down"
-msgstr "Move down"
+msgstr "Mută în jos"
 
 #: src/components/charts/components/series-config/SeriesItemMenu.tsx:52
 msgid "Move Down"
@@ -5102,7 +5099,7 @@ msgstr "Mută la dreapta"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:387
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:285
 msgid "Move up"
-msgstr "Move up"
+msgstr "Mută în sus"
 
 #: src/components/charts/components/series-config/SeriesItemMenu.tsx:48
 msgid "Move Up"
@@ -5112,13 +5109,21 @@ msgstr "Mută mai sus"
 msgid "Multiple selected values"
 msgstr "Valori multiple selectate"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:585
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:583
 msgid "Multiplier"
-msgstr "Multiplier"
+msgstr "Multiplicator"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:135
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:145
 msgid "Multiplier 1.5 is standard; use 3.0 for stricter outlier detection."
-msgstr "Multiplier 1.5 is standard; use 3.0 for stricter outlier detection."
+msgstr "Multiplicatorul 1.5 este standard; folosește 3.0 pentru detectarea mai strictă a valorilor extreme."
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:298
+msgid "My Budget Analysis Map…"
+msgstr "Harta mea de analiză bugetară…"
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:62
+msgid "My interactive budget map…"
+msgstr "Harta mea interactivă de buget…"
 
 #: src/components/commitments/LinearBudgetFlow.tsx:152
 #: src/components/commitments/LinearBudgetFlow.tsx:180
@@ -5126,15 +5131,15 @@ msgstr "Multiplier 1.5 is standard; use 3.0 for stricter outlier detection."
 #: src/components/entities/views/ins-stats-view.formatters.ts:77
 #: src/components/entities/views/ins-stats-view.formatters.ts:139
 #: src/components/entities/views/ins-stats-view.presentation.tsx:246
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:45
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:46
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:47
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:48
 #: src/components/maps/MapLegend.tsx:23
 #: src/components/maps/utils.ts:104
 #: src/components/maps/utils.ts:128
 #: src/components/maps/utils.ts:157
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:915
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:985
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:978
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1048
 msgid "N/A"
 msgstr "N/A"
 
@@ -5176,9 +5181,9 @@ msgstr "Navigare"
 msgid "Need help?"
 msgstr "Ai nevoie de ajutor?"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:137
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:147
 msgid "Needs enough sample coverage; otherwise rule is skipped with warning."
-msgstr "Needs enough sample coverage; otherwise rule is skipped with warning."
+msgstr "Necesită o acoperire suficientă a eșantionului; altfel regula este omisă cu un avertisment."
 
 #: src/components/entities/views/ins-stats-view.derived.ts:307
 msgid "Net migration"
@@ -5233,7 +5238,7 @@ msgstr "Consimțământul și gestionarea buletinului informativ"
 msgid "Newsletters and notifications"
 msgstr "Buletine informative și notificări"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:405
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:483
 #: src/features/learning/components/player/LessonPlayer.tsx:620
 msgid "Next"
 msgstr "Următorul"
@@ -5250,16 +5255,16 @@ msgstr "Nu sunt disponibile date {0} pentru această perioadă."
 #. placeholder {0}: title.toLowerCase()
 #: src/components/entities/EntityRelationsList.tsx:192
 msgid "No {0} found matching \"{searchTerm}\""
-msgstr "Nu s-au găsit {0} care să corespundă cu \"{searchTerm}\""
+msgstr "Niciun {0} găsit pentru „{searchTerm}\""
 
 #: src/features/notifications/components/NotificationList.tsx:108
 msgid "No active notifications"
 msgstr "Nicio notificare activă"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:920
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1283
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:983
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1346
 msgid "No active series selected."
-msgstr "No active series selected."
+msgstr "Nicio serie activă selectată."
 
 #: src/components/maps/utils.ts:165
 msgid "No aggregated data"
@@ -5271,7 +5276,7 @@ msgstr "Încă nu există adnotări."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:322
 msgid "No bins configured."
-msgstr "No bins configured."
+msgstr "Nu există intervale configurate."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-preset-list.tsx:62
 msgid "No bins presets configured yet."
@@ -5279,7 +5284,7 @@ msgstr "Nu există preseturi de intervale configurate încă."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:289
 msgid "No bins presets configured."
-msgstr "No bins presets configured."
+msgstr "Nu există preseturi de intervale configurate."
 
 #: src/components/commitments/DetailTable.tsx:329
 msgid "No breakdown available"
@@ -5328,17 +5333,18 @@ msgstr "Nicio condiție adăugată încă. Faceți clic pe butonul de mai jos pe
 msgid "No conditions set"
 msgstr "Nicio condiție setată"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:321
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:373
 msgid "No counties available."
-msgstr "No counties available."
+msgstr "Nu există județe disponibile."
 
 #: src/components/entities/views/ins-stats-view.tsx:1506
 msgid "No county code associated."
 msgstr "Nu este asociat niciun cod de județ."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:364
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:507
+#: src/lib/map-bins/bins.ts:449
 msgid "No data"
-msgstr "No data"
+msgstr "Fără date"
 
 #: src/components/commitments/DetailTable.tsx:530
 msgid "No data available"
@@ -5348,9 +5354,9 @@ msgstr "Nu există date disponibile"
 msgid "No Data Available"
 msgstr "Nu există date disponibile"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1324
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1401
 msgid "No data available for table."
-msgstr "No data available for table."
+msgstr "Nu sunt date disponibile pentru tabel."
 
 #: src/routes/map.lazy.tsx:280
 msgid "No data available for the map."
@@ -5403,7 +5409,7 @@ msgstr "Niciun set de date nu corespunde filtrelor curente."
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:69
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:79
 msgid "No description provided."
-msgstr "No description provided."
+msgstr "Nu a fost furnizată nicio descriere."
 
 #: src/components/budget-explorer/BudgetDetailsDrawer.tsx:104
 msgid "No detailed data available for this selection."
@@ -5425,17 +5431,17 @@ msgstr "No distinct outliers found. Try adjusting filters."
 msgid "No economic breakdown is available for income."
 msgstr "Nu este disponibilă o detaliere economică pentru venituri."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:988
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1051
 msgid "No enabled series"
-msgstr "No enabled series"
+msgstr "Nicio serie activată"
 
 #: src/components/charts/components/chart-renderer/components/ChartRenderer.tsx:33
 msgid "No enabled series data available to display."
 msgstr "Nu există date disponibile în seriile activate pentru a fi afișate."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1320
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1397
 msgid "No enabled series."
-msgstr "No enabled series."
+msgstr "Nicio serie activată."
 
 #: src/routes/entities.$cui.lazy.tsx:467
 msgid "No entity details found for CUI: <0>{cui}</0>. It's possible this entity does not exist or has no associated data."
@@ -5457,9 +5463,13 @@ msgstr "Nicio grupare disponibilă pentru filtrul selectat."
 msgid "No INS filters configured."
 msgstr "Nu sunt configurate filtre INS."
 
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:127
+msgid "No issues found"
+msgstr "Nu au fost găsite probleme"
+
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:146
 msgid "No maps yet. Create your first map to get started."
-msgstr "No maps yet. Create your first map to get started."
+msgstr "Nu ai hărți încă. Creează prima hartă pentru a începe."
 
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:114
 msgid "No matches yet"
@@ -5497,9 +5507,9 @@ msgstr "Nicio opțiune nu corespunde căutării."
 msgid "No rectifications"
 msgstr "Fără rectificări"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:325
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:377
 msgid "No regions available."
-msgstr "No regions available."
+msgstr "Nu există regiuni disponibile."
 
 #: src/components/entities/views/RelatedChartsView.tsx:57
 msgid "No related charts yet"
@@ -5519,7 +5529,11 @@ msgstr "Nu s-au găsit rezultate."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:448
 msgid "No rows available."
-msgstr "No rows available."
+msgstr "Nu există rânduri disponibile."
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:424
+msgid "No saved versions yet"
+msgstr "Nu există versiuni salvate încă"
 
 #: src/routes/privacy.lazy.tsx:26
 msgid "No selling of personal data."
@@ -5533,21 +5547,17 @@ msgstr "Nu s-a găsit nicio serie."
 msgid "No SIRUTA code associated."
 msgstr "Nu este asociat niciun cod SIRUTA."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:419
-msgid "No snapshots found."
-msgstr "No snapshots found."
-
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:118
 msgid "No value filters configured yet."
-msgstr "No value filters configured yet."
+msgstr "Nu există filtre de valori configurate încă."
 
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:96
 msgid "No values to replace"
 msgstr "Nicio valoare de înlocuit"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:30
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:32
 msgid "No warnings."
-msgstr "No warnings."
+msgstr "Nu există avertismente."
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:432
 #: src/components/charts/components/series-config/SeriesFilter.tsx:777
@@ -5563,13 +5573,13 @@ msgstr "Cheltuieli indirecte"
 msgid "Non-treasury payments"
 msgstr "Plăți din afara trezoreriei"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:47
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:55
 msgid "none"
 msgstr "niciunul"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1042
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1105
 msgid "None"
-msgstr "None"
+msgstr "Niciunul"
 
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:76
 #: src/components/charts/components/series-config/SeriesFilter.tsx:730
@@ -5580,13 +5590,13 @@ msgstr "None"
 msgid "Normalization"
 msgstr "Normalizare"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:366
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:375
 msgid "not between"
 msgstr "not between"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:37
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:41
 msgid "Not between (inclusive)"
-msgstr "Not between (inclusive)"
+msgstr "Nu între (inclusiv)"
 
 #: src/components/maps/charts/UatAverageSpendingCountyChart.tsx:54
 msgid "Not enough county data for average spending chart."
@@ -5616,9 +5626,9 @@ msgstr "Nu există suficiente entități pentru a afișa evoluția."
 msgid "Not enough latest values to compute derived indicators."
 msgstr "Nu există suficiente valori recente pentru a calcula indicatorii derivați."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:35
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:39
 msgid "Not equal to"
-msgstr "Not equal to"
+msgstr "Nu este egal cu"
 
 #: src/features/learning/components/assessment/Quiz.tsx:158
 msgid "Not Quite"
@@ -5669,10 +5679,6 @@ msgstr "Noiembrie"
 msgid "Now"
 msgstr "Acum"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:267
-msgid "Now you can share or open it in a new tab."
-msgstr "Now you can share or open it in a new tab."
-
 #: src/components/maps/charts/UatDistributionChart.tsx:39
 #: src/components/maps/charts/UatDistributionChart.tsx:105
 msgid "Number of UATs"
@@ -5720,6 +5726,14 @@ msgstr "Setate doar dacă sunteți de acord cu analiza:"
 msgid "Only set if you consent to enhanced error reporting:"
 msgstr "Setate doar dacă sunteți de acord cu raportarea îmbunătățită a erorilor:"
 
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:345
+msgid "Only you"
+msgstr "Doar tu"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:351
+msgid "Only you can access this map."
+msgstr "Doar tu poți accesa această hartă."
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:451
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:193
 #: src/features/learning/components/interactive/HandsOnExplorer.tsx:106
@@ -5732,11 +5746,15 @@ msgstr "Open {columnId} column menu"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-preset-list-item.tsx:113
 msgid "Open bins preset menu"
-msgstr "Open bins preset menu"
+msgstr "Deschide meniul preset de intervale"
 
 #: src/features/learning/components/interactive/GuidedPlatformTour.tsx:199
 msgid "Open Budget Explorer"
 msgstr "Deschide Exploratorul de Bugete"
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:142
+msgid "Open Chart"
+msgstr "Deschide Graficul"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:69
 msgid "Open Config"
@@ -5822,16 +5840,16 @@ msgstr "Deschide pe Wikipedia"
 #. placeholder {0}: map.title
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:167
 msgid "Open options for {0}"
-msgstr "Open options for {0}"
+msgstr "Deschide opțiunile pentru {0}"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:133
 msgid "Open row menu"
-msgstr "Open row menu"
+msgstr "Deschide meniul rândului"
 
 #. placeholder {0}: index + 1
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:269
 msgid "Open rule {0} menu"
-msgstr "Open rule {0} menu"
+msgstr "Deschide meniul regulii {0}"
 
 #: src/components/ui/shortcuts.tsx:31
 msgid "Open Search"
@@ -5840,6 +5858,10 @@ msgstr "Deschide Căutarea"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1487
 msgid "Open source matrix in INS Tempo"
 msgstr "Deschide matricea sursă în INS Tempo"
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:128
+msgid "Open Table"
+msgstr "Deschide Tabelul"
 
 #: src/components/budget-explorer/RevenueBreakdown.tsx:61
 msgid "Operating section transfers"
@@ -5851,8 +5873,8 @@ msgid "Operations"
 msgstr "Operațiuni"
 
 #: src/components/alerts/components/ConditionsList.tsx:80
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:285
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:310
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:307
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:320
 msgid "Operator"
 msgstr "Operator"
 
@@ -5864,13 +5886,21 @@ msgstr "Context opțional pentru newsletter-ul lunar"
 msgid "Optional description for your chart..."
 msgstr "Descriere opțională pentru graficul dumneavoastră..."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:267
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:328
 msgid "Optional legend title"
-msgstr "Optional legend title"
+msgstr "Titlu opțional pentru legendă"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:130
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:201
+msgid "Optional name"
+msgstr "Nume opțional"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:406
+msgid "Optional note about what changed…"
+msgstr "Notă opțională despre ce s-a schimbat…"
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:181
 msgid "Optional unit override…"
-msgstr "Optional unit override…"
+msgstr "Suprascriere unitate opțională..."
 
 #: src/routes/terms.lazy.tsx:26
 msgid "Optional user accounts for enhanced features like newsletters and notifications."
@@ -5888,7 +5918,7 @@ msgstr "Opțiuni"
 msgid "or"
 msgstr "sau"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:199
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:224
 msgid "OR"
 msgstr "OR"
 
@@ -5917,9 +5947,9 @@ msgstr "Alte surse"
 msgid "Overview"
 msgstr "Prezentare generală"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:398
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:474
 msgid "Page {page}"
-msgstr "Page {page}"
+msgstr "Pagina {page}"
 
 #. js-lingui-explicit-id
 #: src/lib/errors-utils.ts:22
@@ -6022,18 +6052,18 @@ msgstr "Pe cap de locuitor"
 
 #. placeholder {0}: rule.minPercentile
 #. placeholder {1}: rule.maxPercentile
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:376
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:385
 msgid "percentile {0}-{1}"
 msgstr "percentile {0}-{1}"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:48
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:81
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:56
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:91
 msgid "Percentile band"
-msgstr "Percentile band"
+msgstr "Bandă percentile"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:87
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:97
 msgid "Percentiles are inclusive and min/max are normalized if swapped."
-msgstr "Percentiles are inclusive and min/max are normalized if swapped."
+msgstr "Procentilele sunt incluse și min/max sunt normalizate dacă sunt inversate."
 
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:82
 #: src/components/charts/components/series-config/InsSeriesEditor.tsx:598
@@ -6065,6 +6095,10 @@ msgstr "Perioadă:"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1096
 msgid "Periodicity"
 msgstr "Periodicitate"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:494
+msgid "Permanently delete this map and all saved versions. This cannot be undone."
+msgstr "Șterge definitiv această hartă și toate versiunile salvate. Această acțiune nu poate fi anulată."
 
 #: src/components/entities/AdvancedFilterDropdown.tsx:48
 #: src/components/entities/EntityLineItemsTabs.tsx:96
@@ -6111,7 +6145,7 @@ msgstr "Slab"
 
 #: src/components/entities/UatDisplay.tsx:39
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:93
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:390
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:440
 #: src/components/maps/charts/UatDataCharts.tsx:138
 #: src/components/maps/charts/UatPopulationSpendingScatterPlot.tsx:50
 #: src/components/maps/charts/UatPopulationSpendingScatterPlot.tsx:61
@@ -6141,9 +6175,9 @@ msgstr "Populație"
 msgid "Population (POP107D)"
 msgstr "Populație (POP107D)"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:394
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:443
 msgid "Population field"
-msgstr "Population field"
+msgstr "Câmp populație"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:958
 #: src/components/filters/EntityAnalyticsFilter.tsx:609
@@ -6163,9 +6197,9 @@ msgstr "Poziție"
 msgid "Positive values indicate natural growth; negative values indicate natural decline."
 msgstr "Valorile pozitive indică spor natural; valorile negative indică declin natural."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:113
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:123
 msgid "Prefer median over mean when one or two UATs dominate values."
-msgstr "Prefer median over mean when one or two UATs dominate values."
+msgstr "Preferă mediana în fața mediei când unul sau două UAT-uri domină valorile."
 
 #: src/routes/maps/editor/new.lazy.tsx:191
 msgid "Preparing map creation..."
@@ -6179,9 +6213,9 @@ msgstr "Se pregătește o nouă alertă..."
 msgid "Preparing your share link..."
 msgstr "Se pregătește linkul de partajare..."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:238
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:300
 msgid "Preset label"
-msgstr "Preset label"
+msgstr "Etichetă preset"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:62
 #: src/routes/alerts/$alertId/index.lazy.tsx:237
@@ -6193,7 +6227,7 @@ msgstr "Previzualizare"
 msgid "Preview of the alert chart and settings."
 msgstr "Previzualizare a graficului și setărilor alertei."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:396
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:471
 #: src/features/learning/components/player/LessonPlayer.tsx:596
 msgid "Previous"
 msgstr "Anterior"
@@ -6211,9 +6245,10 @@ msgstr "Agregat principal"
 msgid "Privacy Policy"
 msgstr "Politica de confidențialitate"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:114
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:343
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:442
 msgid "Private"
-msgstr "Private"
+msgstr "Privată"
 
 #: src/components/ui/shortcuts.tsx:126
 msgid "Pro Tip"
@@ -6231,9 +6266,10 @@ msgstr "Produs"
 msgid "Progress Saved"
 msgstr "Progres salvat"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:114
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:343
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:442
 msgid "Public"
-msgstr "Public"
+msgstr "Publică"
 
 #: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:162
 msgid "Public institutions often transfer funds between each other (e.g., from the state budget to local budgets). These transfers can double-count spending if not filtered."
@@ -6243,22 +6279,17 @@ msgstr "Instituțiile publice transferă adesea fonduri între ele (de exemplu, 
 msgid "Public institutions often transfer funds between each other. These transfers can double-count spending or revenue if not filtered."
 msgstr "Instituțiile publice transferă adesea fonduri între ele. Aceste transferuri pot duce la dubla contabilizare a cheltuielilor sau veniturilor dacă nu sunt filtrate."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:234
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:365
+msgid "Public link"
+msgstr "Link public"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:236
 msgid "Public map link copied"
-msgstr "Public map link copied"
+msgstr "Linkul public al hărții a fost copiat"
 
 #: src/features/advanced-map-analytics/components/map-analytics-public-page.tsx:71
 msgid "Public map unavailable"
-msgstr "Public map unavailable"
-
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:323
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:330
-msgid "Public map URL"
-msgstr "Public map URL"
-
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:315
-msgid "Public maps are accessible from the public route."
-msgstr "Public maps are accessible from the public route."
+msgstr "Harta publică nu este disponibilă"
 
 #: src/components/entities/views/ContractsView.tsx:24
 msgid "Public procurement data is provided by SICAP.ai, an independent platform that aggregates and analyzes public contracts from Romania's Electronic Public Procurement System (SEAP)."
@@ -6267,14 +6298,6 @@ msgstr "Datele privind achizițiile publice sunt furnizate de SICAP.ai, o platfo
 #: src/routes/privacy.lazy.tsx:86
 msgid "Public sector information from Ministerul Finanțelor. No government affiliation."
 msgstr "Informații din sectorul public de la Ministerul Finanțelor. Nicio afiliere guvernamentală."
-
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:344
-msgid "Public URL is not available yet. Refresh after publishing."
-msgstr "Public URL is not available yet. Refresh after publishing."
-
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:490
-msgid "Publish map?"
-msgstr "Publish map?"
 
 #: src/components/commitments/commitments-trends.tsx:201
 #: src/components/entities/EntityFinancialTrends.tsx:100
@@ -6317,17 +6340,16 @@ msgstr "Eroare de configurare a chestionarului"
 msgid "Range"
 msgstr "Interval"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:52
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:60
 msgid "Rank (top/bottom N)"
-msgstr "Rank (top/bottom N)"
+msgstr "Clasament (top/sus N)"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:93
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:103
 msgid "Rank (Top/Bottom N)"
-msgstr "Rank (Top/Bottom N)"
+msgstr "Clasament (Top/Sus N)"
 
 #: src/components/entities/views/EmployeesView.tsx:94
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:101
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:356
 msgid "Read more"
 msgstr "Citește mai mult"
 
@@ -6402,17 +6424,17 @@ msgstr "Refacere reușită"
 msgid "Refine your search using the options below"
 msgstr "Rafinați căutarea folosind opțiunile de mai jos"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:421
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:563
 msgid "Regenerate from active data"
-msgstr "Regenerate from active data"
+msgstr "Regenerează din datele active"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:46
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:54
 msgid "Region"
 msgstr "Regiune"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:438
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:487
 msgid "Region Filters"
-msgstr "Region Filters"
+msgstr "Filtre regiuni"
 
 #: src/lib/ins/ins-dashboard-config.ts:24
 #: src/lib/ins/ins-metric-registry.ts:25
@@ -6441,16 +6463,16 @@ msgstr "Elimină filtrul"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-preset-list-item.tsx:62
 msgid "Reorder bins preset"
-msgstr "Reorder bins preset"
+msgstr "Reordonează preset de intervale"
 
 #. placeholder {0}: index + 1
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:220
 msgid "Reorder rule {0}"
-msgstr "Reorder rule {0}"
+msgstr "Reordonează regula {0}"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:73
 msgid "Reorder series"
-msgstr "Reorder series"
+msgstr "Reordonează serii"
 
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:124
 msgid "Replace"
@@ -6501,9 +6523,9 @@ msgstr "Rapoarte"
 msgid "Required for core functionality like security and preferences. Always on."
 msgstr "Necesar pentru funcționalități de bază, precum securitatea și preferințele. Activat permanent."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:123
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:133
 msgid "Requires variation; rule is skipped if standard deviation is zero."
-msgstr "Requires variation; rule is skipped if standard deviation is zero."
+msgstr "Necesită variație; regula este omisă dacă deviația standard este zero."
 
 #: src/components/budget-explorer/BudgetTreemap.tsx:639
 #: src/components/budget-explorer/FilteredSpendingInfo.tsx:185
@@ -6535,8 +6557,14 @@ msgid "Restart Onboarding?"
 msgstr "Repornești procesul de inițiere?"
 
 #: src/components/charts/components/backup-restore/ChartsBackupRestore.tsx:185
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:458
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:551
 msgid "Restore"
 msgstr "Restaurează"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:543
+msgid "Restore this version?"
+msgstr "Restaurezi această versiune?"
 
 #: src/routes/maps/editor/new.lazy.tsx:241
 msgid "Retry"
@@ -6577,13 +6605,9 @@ msgstr "Examinați și gestionați alertele create din seriile de date personali
 msgid "Review Path"
 msgstr "Revizuiește parcursul"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:35
-msgid "Review the current map configuration."
-msgstr "Review the current map configuration."
-
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:143
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:153
 msgid "Robust anomaly detection based on median absolute deviation (MAD), less sensitive to extreme outliers than z-score."
-msgstr "Robust anomaly detection based on median absolute deviation (MAD), less sensitive to extreme outliers than z-score."
+msgstr "Detectare robustă a anomaliilor bazată pe deviația absolută mediană (MAD), mai puțin sensibilă la valori extreme decât scorul z."
 
 #: src/routes/map.lazy.tsx:455
 msgid "Romania spending heatmap - Transparenta.eu"
@@ -6613,23 +6637,27 @@ msgid "rows updated successfully."
 msgstr "rânduri actualizate cu succes."
 
 #. placeholder {0}: index + 1
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:245
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:343
 msgid "Rule {0}"
 msgstr "Rule {0}"
 
 #. placeholder {0}: resolveRuleJoin(rule, index)
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:239
 msgid "Rule connector {0}"
-msgstr "Rule connector {0}"
+msgstr "Conector regulă {0}"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:148
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:158
 msgid "Rule is skipped when MAD is zero (no robust dispersion)."
 msgstr "Rule is skipped when MAD is zero (no robust dispersion)."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:231
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:244
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:254
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:267
 msgid "Rule kind"
-msgstr "Rule kind"
+msgstr "Tip regulă"
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:191
+msgid "Rule name"
+msgstr "Nume regulă"
 
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:340
 msgid "Salary Calculation"
@@ -6643,17 +6671,25 @@ msgstr "Diagramă Sankey (agregată)"
 msgid "Save"
 msgstr "Salvează"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:373
-msgid "Save checkpoint"
-msgstr "Save checkpoint"
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:568
+msgid "Save anyway"
+msgstr "Salvează oricum"
 
 #: src/routes/cookies.lazy.tsx:195
 msgid "Save cookie preferences"
 msgstr "Salvează preferințele cookie"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:527
-msgid "Save public checkpoint?"
-msgstr "Save public checkpoint?"
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:396
+msgid "Save snapshot"
+msgstr "Salvează instantaneul"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:560
+msgid "Save version to public map?"
+msgstr "Salvezi versiunea pe harta publică?"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:425
+msgid "Save versions of your map to track changes over time."
+msgstr "Salvează versiuni ale hărții tale pentru a urmări schimbările în timp."
 
 #: src/features/learning/components/layout/LoginBanner.tsx:19
 msgid "Save your progress"
@@ -6732,7 +6768,7 @@ msgstr "Caută seturi de date (ex: PIB)"
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:114
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:115
 msgid "Search entities"
-msgstr "Search entities"
+msgstr "Caută entități"
 
 #: src/components/ui/FloatingQuickNav.tsx:95
 #: src/components/ui/shortcuts.tsx:21
@@ -6797,7 +6833,7 @@ msgstr "Caută unități"
 msgid "Search..."
 msgstr "Caută..."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:343
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:351
 msgid "Second value"
 msgstr "Second value"
 
@@ -6843,9 +6879,9 @@ msgstr "Selectați un set de date predefinit de urmărit"
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:227
 msgid "Select a snapshot to clone into a new map."
-msgstr "Select a snapshot to clone into a new map."
+msgstr "Selectează un instantaneu pentru a clona într-o hartă nouă."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:285
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:363
 msgid "Select color mode"
 msgstr "Select color mode"
 
@@ -6861,6 +6897,10 @@ msgstr "Selectează câmpul"
 msgid "Select field first"
 msgstr "Selectează mai întâi câmpul"
 
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:345
+msgid "Select interval mode"
+msgstr "Selectează modul interval"
+
 #: src/components/charts/components/series-config/CalculationEditor.tsx:141
 msgid "Select operation"
 msgstr "Selectează operația"
@@ -6873,7 +6913,7 @@ msgstr "Selectează opțiuni"
 msgid "Select Path"
 msgstr "Selectează parcursul"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:413
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:462
 msgid "Select population field"
 msgstr "Select population field"
 
@@ -6881,7 +6921,7 @@ msgstr "Select population field"
 msgid "Select series"
 msgstr "Selectează serii"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:144
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:194
 msgid "Select series type"
 msgstr "Select series type"
 
@@ -6898,7 +6938,7 @@ msgid "Select years..."
 msgstr "Selectează anii..."
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1251
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:541
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:590
 msgid "selected"
 msgstr "selectate"
 
@@ -6915,11 +6955,11 @@ msgstr "Perioada selectată:"
 msgid "Selection Mode"
 msgstr "Mod de selecție"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:95
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:105
 msgid "Selects exactly N UATs from the highest or lowest values in the selected source series."
 msgstr "Selects exactly N UATs from the highest or lowest values in the selected source series."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:119
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:129
 msgid "Selects UATs by standardized distance from mean in standard deviations. Great for anomaly detection when distribution is roughly normal."
 msgstr "Selects UATs by standardized distance from mean in standard deviations. Great for anomaly detection when distribution is roughly normal."
 
@@ -6938,7 +6978,7 @@ msgstr "Trimite feedback"
 msgid "September"
 msgstr "Septembrie"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:45
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:46
 msgid "Series"
 msgstr "Series"
 
@@ -6954,7 +6994,7 @@ msgstr "Series is active"
 msgid "Series Label"
 msgstr "Etichetă serie"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:113
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:165
 msgid "Series label…"
 msgstr "Series label…"
 
@@ -6966,7 +7006,7 @@ msgstr "Seria nu a fost găsită"
 msgid "Series selector"
 msgstr "Selector de serii"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:136
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:186
 msgid "Series type"
 msgstr "Series type"
 
@@ -7015,6 +7055,10 @@ msgstr "Partajează"
 msgid "Share Chart"
 msgstr "Partajează graficul"
 
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:327
+msgid "Share configuration"
+msgstr "Partajează configurația"
+
 #: src/components/charts/components/chart-quick-config/components/ShareChart.tsx:238
 msgid "Share Link"
 msgstr "Partajează link-ul"
@@ -7023,6 +7067,10 @@ msgstr "Partajează link-ul"
 #: src/routes/alerts/new.lazy.tsx:106
 msgid "Share link copied"
 msgstr "Link de partajare copiat"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:265
+msgid "Share this link so others can create a map based on your setup."
+msgstr "Partajează acest link pentru ca alții să poată crea o hartă bazată pe configurația ta."
 
 #: src/components/budget-explorer/RevenueBreakdown.tsx:58
 msgid "Shares and amounts split from income tax"
@@ -7088,7 +7136,7 @@ msgstr "Afișează liniile de grilă"
 msgid "Show growth (%)"
 msgstr "Afișează creșterea (%)"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:399
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:540
 msgid "Show in tooltip"
 msgstr "Show in tooltip"
 
@@ -7108,9 +7156,9 @@ msgstr "Afișează puțin"
 msgid "Show Less"
 msgstr "Afișează puțin"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1202
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1265
 msgid "Show Map Controls"
-msgstr "Show Map Controls"
+msgstr "Afișează controalele hărții"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:160
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1063
@@ -7157,8 +7205,8 @@ msgstr "Afișează doar fondurile transferate între unitățile administrației
 msgid "Shows only the funds transferred to other public administration units."
 msgstr "Afișează doar fondurile transferate către alte unități ale administrației publice."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:562
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:575
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:561
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:574
 msgid "Side"
 msgstr "Side"
 
@@ -7204,7 +7252,7 @@ msgstr "Autentificați-vă pentru a primi actualizări despre entitățile care 
 msgid "Sign in to track your learning journey."
 msgstr "Autentifică-te pentru a-ți urmări progresul de învățare."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:47
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:48
 msgid "SIRUTA"
 msgstr "SIRUTA"
 
@@ -7212,21 +7260,17 @@ msgstr "SIRUTA"
 msgid "Skip tour"
 msgstr "Sari peste tur"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:379
-msgid "Snapshot description (optional)"
-msgstr "Snapshot description (optional)"
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:400
+msgid "Snapshot note"
+msgstr "Notă instantaneu"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:204
-msgid "Snapshot loaded"
-msgstr "Snapshot loaded"
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:180
+msgid "Snapshot saved"
+msgstr "Instantaneu salvat"
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:157
 msgid "snapshots"
-msgstr "snapshots"
-
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:371
-msgid "Snapshots"
-msgstr "Snapshots"
+msgstr "instantanee"
 
 #: src/lib/ins/ins-metric-registry.ts:107
 msgid "Social"
@@ -7248,7 +7292,7 @@ msgstr "Unele probleme cu datele au fost rezolvate automat"
 msgid "Some indicators use the latest available period because the selected period had missing values."
 msgstr "Unii indicatori folosesc cea mai recentă perioadă disponibilă deoarece perioada selectată avea valori lipsă."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:460
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:604
 msgid "Some local values are invalid. Closing now will discard unsaved local changes."
 msgstr "Some local values are invalid. Closing now will discard unsaved local changes."
 
@@ -7280,8 +7324,8 @@ msgstr "Sursă"
 msgid "Source dataset:"
 msgstr "Set de date sursă:"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:206
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:217
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:230
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:241
 msgid "Source series"
 msgstr "Source series"
 
@@ -7299,7 +7343,7 @@ msgstr "Cheltuieli"
 msgid "Spending Calculation"
 msgstr "Calculul cheltuielilor"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:107
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:117
 msgid "Splits UATs relative to the median value. More robust than mean-based filters when outliers exist."
 msgstr "Splits UATs relative to the median value. More robust than mean-based filters when outliers exist."
 
@@ -7317,7 +7361,7 @@ msgstr "Clauze Contractuale Standard (CCS) aprobate de Comisia Europeană"
 msgid "Start Analysis"
 msgstr "Începe analiza"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:149
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:159
 msgid "Start at 3.5, then lower gradually if you need more candidates."
 msgstr "Start at 3.5, then lower gradually if you need more candidates."
 
@@ -7370,12 +7414,12 @@ msgstr "Set de date static"
 msgid "Static Series"
 msgstr "Serie statică"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:42
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:48
 msgid "Stats"
 msgstr "Stats"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:373
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:386
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:380
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:393
 msgid "Stats type"
 msgstr "Stats type"
 
@@ -7428,7 +7472,12 @@ msgstr "Sume în așteptarea repartizării"
 msgid "Supervisory authority"
 msgstr "Autoritatea de supraveghere"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:487
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:431
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:432
+msgid "Switch gradient colors"
+msgstr "Inversează culorile gradientului"
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:631
 msgid "Switching to gradient mode will overwrite current bin colors using the selected gradient anchors."
 msgstr "Switching to gradient mode will overwrite current bin colors using the selected gradient anchors."
 
@@ -7598,6 +7647,14 @@ msgstr "Totalul reținut de stat este <0>{0}</0>."
 msgid "The Step Between Budget and Payment"
 msgstr "Pasul dintre Buget și Plată"
 
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:100
+msgid "There are {warningCount} warnings that may affect how your map is displayed."
+msgstr "Există {warningCount} avertismente care pot afecta modul în care este afișată harta ta."
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:99
+msgid "There is 1 warning that may affect how your map is displayed."
+msgstr "Există 1 avertisment care poate afecta modul în care este afișată harta ta."
+
 #: src/routes/entities.$cui.lazy.tsx:452
 msgid "There was a problem fetching the details for CUI: <0>{cui}</0>."
 msgstr "A apărut o problemă la preluarea detaliilor pentru CUI: <0>{cui}</0>."
@@ -7626,10 +7683,6 @@ msgstr "Aceste probleme au fost rezolvate automat (punctele invalide au fost eli
 msgid "This action cannot be undone. It will permanently remove the chart and its configuration."
 msgstr "Această acțiune nu poate fi anulată. Va elimina permanent graficul și configurația acestuia."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:546
-msgid "This action cannot be undone. The map and its snapshots will be removed."
-msgstr "This action cannot be undone. The map and its snapshots will be removed."
-
 #: src/routes/alerts/$alertId/index.lazy.tsx:185
 msgid "This alert doesn't exist or you don't have permission to view it."
 msgstr "Această alertă nu există sau nu aveți permisiunea de a o vizualiza."
@@ -7638,7 +7691,7 @@ msgstr "Această alertă nu există sau nu aveți permisiunea de a o vizualiza."
 msgid "This alert is included in every monthly newsletter with its current status. When all threshold conditions are met, the alert will be emphasized with a customized message to draw your attention."
 msgstr "Această alertă este inclusă în fiecare newsletter lunar cu starea sa curentă. Când toate condițiile de prag sunt îndeplinite, alerta va fi evidențiată cu un mesaj personalizat pentru a vă atrage atenția."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:231
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:283
 msgid "This change would create a circular dependency."
 msgstr "This change would create a circular dependency."
 
@@ -7662,17 +7715,17 @@ msgstr "Aceasta este o pagină de verificare de tip proof-of-concept stocată î
 msgid "This is not an employment rate by age group; it is a general intensity indicator."
 msgstr "Acesta nu este o rată a ocupării pe grupe de vârstă; este un indicator general de intensitate."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:529
-msgid "This map is public and the latest checkpoint can be visible on the public route."
-msgstr "This map is public and the latest checkpoint can be visible on the public route."
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:562
+msgid "This map is public. The latest saved version will be visible to anyone with the link."
+msgstr "Această hartă este publică. Ultima versiune salvată va fi vizibilă pentru oricine cu linkul."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:494
-msgid "This map will be available on the public route."
-msgstr "This map will be available on the public route."
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:69
+msgid "This name appears as the map title for viewers."
+msgstr "Acest nume apare ca titlu al hărții pentru vizitatori."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:495
-msgid "This map will no longer be available on the public route."
-msgstr "This map will no longer be available on the public route."
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:302
+msgid "This title is displayed at the top of your map."
+msgstr "Acest titlu este afișat în partea de sus a hărții tale."
 
 #: src/components/charts/components/series-config/CustomSeriesValueEditor.tsx:47
 msgid "This value will be used for every year in the chart's range."
@@ -7686,14 +7739,19 @@ msgstr "Această verificare este un proof-of-concept care utilizează stocarea l
 msgid "This will permanently delete all your learning progress, including completed lessons, quiz scores, and onboarding preferences. This action cannot be undone."
 msgstr "Această acțiune va șterge permanent tot progresul tău de învățare, inclusiv lecțiile finalizate, scorurile la chestionare și preferințele de inițiere. Această acțiune este ireversibilă."
 
+#. placeholder {0}: snapshots.length
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:579
+msgid "This will permanently delete the map and all {0} saved versions. This cannot be undone."
+msgstr "Această acțiune va șterge definitiv harta și toate cele {0} versiuni salvate. Nu poate fi anulată."
+
 #: src/routes/$lang/learning/index.lazy.tsx:304
 msgid "This will reset your onboarding preferences and show the welcome flow again. Your lesson progress will be preserved."
 msgstr "Această acțiune îți va reseta preferințele de inițiere și va afișa din nou fluxul de bun venit. Progresul lecțiilor tale va fi păstrat."
 
 #: src/components/alerts/components/ConditionsList.tsx:101
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:41
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:47
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:540
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:606
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:603
 msgid "Threshold"
 msgstr "Prag"
 
@@ -7708,7 +7766,7 @@ msgstr "Pragul {0}"
 msgid "Threshold {0} ({1})"
 msgstr "Pragul {0} ({1})"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:100
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:110
 msgid "Tie-breaking is deterministic by value, then SIRUTA code."
 msgstr "Tie-breaking is deterministic by value, then SIRUTA code."
 
@@ -7721,7 +7779,7 @@ msgstr "Nivel"
 msgid "Tip: Copy/Cut/Paste with ⌘/Ctrl+C, X, V. Duplicate with ⌘/Ctrl+D."
 msgstr "Sfat: Copiere/Tăiere/Lipire cu ⌘/Ctrl+C, X, V. Duplicare cu ⌘/Ctrl+D."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:643
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:640
 msgid "Tips and tricks"
 msgstr "Tips and tricks"
 
@@ -7758,6 +7816,10 @@ msgstr "Comutare cookie-uri de analiză"
 msgid "Toggle enhanced error reporting"
 msgstr "Comutare raportare avansată a erorilor"
 
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:360
+msgid "Toggle map visibility"
+msgstr "Comută vizibilitatea hărții"
+
 #: src/components/theme/mode-toggle.tsx:22
 msgid "Toggle theme"
 msgstr "Comută tema"
@@ -7766,7 +7828,7 @@ msgstr "Comută tema"
 msgid "Tooltip"
 msgstr "Indiciu"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:458
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:462
 msgid "Top"
 msgstr "Top"
 
@@ -7939,14 +8001,10 @@ msgstr "Încearcă Alt An"
 msgid "Try guessing again"
 msgstr "Încearcă să ghicești din nou"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:48
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:49
 #: src/components/maps/utils.ts:31
 msgid "Type"
 msgstr "Tip"
-
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:454
-msgid "Type the map title exactly to enable deletion."
-msgstr "Type the map title exactly to enable deletion."
 
 #: src/features/learning/components/interactive/HandsOnExplorer.tsx:157
 msgid "Type your answer..."
@@ -7960,7 +8018,7 @@ msgstr "Introduceți răspunsul..."
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:151
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:396
 #: src/components/maps/charts/UatDataCharts.tsx:102
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:900
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:962
 #: src/lib/chart-filter-utils.ts:39
 msgid "UAT"
 msgstr "UAT"
@@ -8029,7 +8087,7 @@ msgstr "Unitate"
 msgid "Unit options"
 msgstr "Opțiuni unitate"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:119
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:170
 msgid "Unit override"
 msgstr "Unit override"
 
@@ -8043,9 +8101,9 @@ msgstr "Unit override"
 msgid "Unknown"
 msgstr "Necunoscut"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:802
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:864
 msgid "Unknown county"
-msgstr "Unknown county"
+msgstr "Județ necunoscut"
 
 #: src/routes/entity-analytics.lazy.tsx:225
 msgid "Unknown error"
@@ -8117,9 +8175,9 @@ msgstr "Alertă fără titlu"
 msgid "Untitled Chart"
 msgstr "Grafic fără titlu"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:97
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1106
 msgid "Untitled map"
-msgstr "Untitled map"
+msgstr "Hartă fără titlu"
 
 #: src/components/charts/components/series-config/CalculationEditor.tsx:287
 msgid "Untitled Series"
@@ -8134,23 +8192,19 @@ msgstr "Actualizare disponibilă"
 msgid "Update Data"
 msgstr "Actualizează datele"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:36
-msgid "Update the map title and review the current advanced map analytics configuration."
-msgstr "Update the map title and review the current advanced map analytics configuration."
-
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:80
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:88
 msgid "Update the selected series configuration. Changes apply immediately while this modal is open."
 msgstr "Update the selected series configuration. Changes apply immediately while this modal is open."
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:157
 msgid "updated"
-msgstr "updated"
+msgstr "actualizat"
 
 #: src/routes/cookies.lazy.tsx:207
 msgid "Updated:"
 msgstr "Actualizat:"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:578
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:577
 msgid "Upper fence"
 msgstr "Upper fence"
 
@@ -8167,7 +8221,7 @@ msgstr "USD"
 msgid "Use <0>Cookie Settings</0> to manage analytics and error reporting consent, or use your browser controls to clear site data."
 msgstr "Folosiți <0>Setările Cookie</0> pentru a gestiona consimțământul pentru analize și raportarea erorilor sau folosiți controalele browserului pentru a șterge datele site-ului."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:124
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:134
 msgid "Use abs_gte for two-sided anomalies, gte/lte for one-sided anomalies."
 msgstr "Use abs_gte for two-sided anomalies, gte/lte for one-sided anomalies."
 
@@ -8179,11 +8233,11 @@ msgstr "Folosiți agregarea când mai multe rânduri INS corespund aceleiași pe
 msgid "Use alongside natural increase to separate demographic change from movement-driven change."
 msgstr "Folosiți împreună cu sporul natural pentru a separa schimbarea demografică de schimbarea determinată de migrație."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:136
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:146
 msgid "Use both sides when you want high and low extremes."
 msgstr "Use both sides when you want high and low extremes."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:111
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:121
 msgid "Use gt/gte/lt/lte based on how strict your split should be around the center."
 msgstr "Use gt/gte/lt/lte based on how strict your split should be around the center."
 
@@ -8203,7 +8257,7 @@ msgstr "Folosiți meniul de etichete de pe cardul unui grafic pentru a-l adăuga
 msgid "Use the total of all matching observations in each period."
 msgstr "Folosiți totalul tuturor observațiilor care corespund în fiecare perioadă."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:147
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:157
 msgid "Use when z-score is unstable due to extreme values."
 msgstr "Use when z-score is unstable due to extreme values."
 
@@ -8211,11 +8265,11 @@ msgstr "Use when z-score is unstable due to extreme values."
 msgid "Use with living-area indicator for a fuller view of housing availability and crowding pressure."
 msgstr "Folosiți împreună cu indicatorul suprafeței locuibile pentru o imagine mai completă asupra disponibilității locuirii și a presiunii de aglomerare."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:88
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:98
 msgid "Use with OR to add extreme percentile groups without losing current matches."
 msgstr "Use with OR to add extreme percentile groups without losing current matches."
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:112
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:122
 msgid "Useful as a first segmentation before anomaly filters."
 msgstr "Useful as a first segmentation before anomaly filters."
 
@@ -8247,7 +8301,7 @@ msgstr "Utilități și administrarea teritoriului"
 msgid "Utilization"
 msgstr "Utilizare"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:439
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:583
 msgid "Validation errors"
 msgstr "Validation errors"
 
@@ -8255,7 +8309,7 @@ msgstr "Validation errors"
 #: src/components/charts/components/series-config/CustomSeriesValueEditor.tsx:38
 #: src/components/entities/views/ins-stats-view.presentation.tsx:971
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1527
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:324
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:333
 #: src/components/maps/charts/UatTopNBarChart.tsx:111
 #: src/components/maps/charts/UatTopNBarChart.tsx:113
 msgid "Value"
@@ -8274,11 +8328,11 @@ msgstr "Valoare modificată"
 msgid "Value Filters"
 msgstr "Filtre de valori"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:391
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:441
 msgid "Value source"
 msgstr "Value source"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:384
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:436
 msgid "Values are always population. County and region selections filter the included UATs."
 msgstr "Values are always population. County and region selections filter the included UATs."
 
@@ -8302,6 +8356,14 @@ msgstr "TVA, Venit, Profit"
 msgid "Verify a learning certificate (proof of concept)."
 msgstr "Verifică un certificat de învățare (proof of concept)."
 
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:388
+msgid "Version history"
+msgstr "Istoricul versiunilor"
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:206
+msgid "Version restored"
+msgstr "Versiune restaurată"
+
 #: src/components/filters/EntityAnalyticsFilter.tsx:436
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:83
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:368
@@ -8313,6 +8375,14 @@ msgstr "Vizualizare"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:516
 msgid "View {datasetCode}"
 msgstr "Vezi {datasetCode}"
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:116
+msgid "View {warningCount} warnings"
+msgstr "Vezi {warningCount} avertismente"
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:115
+msgid "View 1 warning"
+msgstr "Vezi 1 avertisment"
 
 #: src/routes/alerts/$alertId/index.lazy.tsx:196
 msgid "View all alerts"
@@ -8350,21 +8420,21 @@ msgstr "Vizualizați detaliile complete"
 msgid "View in Entity Analytics"
 msgstr "Vizualizați în Analiza Entităților"
 
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:34
+msgid "View map details and status."
+msgstr "Vizualizează detaliile și starea hărții."
+
 #: src/routes/map.lazy.tsx:318
 msgid "View the color scale and values for the heatmap visualization"
 msgstr "Vizualizați scala de culori și valorile pentru vizualizarea hărții de căldură"
-
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:73
-msgid "View warnings"
-msgstr "View warnings"
 
 #: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:621
 msgid "Viewing:"
 msgstr "Vizualizare:"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:302
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:333
 msgid "Visibility"
-msgstr "Visibility"
+msgstr "Vizibilitate"
 
 #: src/features/learning/components/interactive/lesson-discussion.tsx:140
 msgid "Want to add a comment?"
@@ -8375,11 +8445,14 @@ msgid "Warning Signs"
 msgstr "Semne de avertizare"
 
 #: src/components/charts/components/ChartDataError.tsx:311
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:57
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:106
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:21
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:24
 msgid "Warnings"
 msgstr "Avertismente"
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:91
+msgid "Warnings detected"
+msgstr "Avertismente detectate"
 
 #: src/components/entities/views/ins-stats-view.derived.ts:333
 msgid "Water"
@@ -8562,6 +8635,10 @@ msgstr "Tu"
 msgid "You are signed in. Authentication cookies (Clerk) are essential and required to keep you signed in. Deleting them will sign you out."
 msgstr "Sunteți autentificat. Cookie-urile de autentificare (Clerk) sunt esențiale și necesare pentru a vă menține autentificat. Ștergerea lor vă va deconecta."
 
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:68
+msgid "You are viewing a shared map. Only the owner can edit the name."
+msgstr "Vizualizezi o hartă partajată. Doar proprietarul poate edita numele."
+
 #: src/components/filters/economic-classification-filter/EconomicClassificationList.tsx:70
 msgid "You can search by: name (ex: Agriculture) • code (ex: 43.00, 43.00.10) • explicit prefix: ec:43.00"
 msgstr "Poți căuta după: nume (ex: Agricultură) • cod (ex: 43.00, 43.00.10) • prefix explicit: ec:43.00"
@@ -8593,7 +8670,7 @@ msgstr "Trebuie să accepți cookie-urile pentru a trimite feedback."
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:102
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:93
 msgid "You need to be signed in to access map editor."
-msgstr "You need to be signed in to access map editor."
+msgstr "Trebuie să fii autentificat pentru a accesa editorul de hărți."
 
 #: src/routes/maps/editor/new.lazy.tsx:202
 msgid "You need to be signed in to create a map."
@@ -8635,6 +8712,10 @@ msgstr "Ai explorat toate cele 6 faze ale ciclului bugetar!"
 msgid "You've mastered the basics of the Budget Explorer. You're ready to investigate public spending on your own."
 msgstr "Ai stăpânit elementele de bază ale Exploratorului de Bugete. Ești pregătit să investighezi cheltuielile publice pe cont propriu."
 
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:545
+msgid "Your current configuration will be replaced with this saved version. Unsaved changes will be lost."
+msgstr "Configurația curentă va fi înlocuită cu această versiune salvată. Modificările nesalvate vor fi pierdute."
+
 #: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:452
 msgid "Your daily budget footprint"
 msgstr "Amprenta ta bugetară zilnică"
@@ -8652,6 +8733,18 @@ msgstr "Prima Ta Explorare"
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:393
 msgid "Your guess"
 msgstr "Estimarea ta"
+
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:130
+msgid "Your map configuration is valid and ready to display."
+msgstr "Configurația hărții tale este validă și gata de afișare."
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:527
+msgid "Your map will be accessible to anyone with the link. You can change this back at any time."
+msgstr "Harta ta va fi accesibilă oricui cu linkul. Poți schimba acest lucru oricând."
+
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:528
+msgid "Your map will only be visible to you. Public links will no longer work."
+msgstr "Harta ta va fi vizibilă doar pentru tine. Linkurile publice nu vor mai funcționa."
 
 #: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:486
 #: src/features/learning/components/interactive/PhaseCards.tsx:416
@@ -8679,19 +8772,19 @@ msgstr "Utilizarea de către dumneavoastră a Serviciului este, de asemenea, guv
 msgid "YTD Anomaly"
 msgstr "Anomalie YTD"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:388
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:397
 msgid "z"
 msgstr "z"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:535
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:536
 msgid "z <= threshold"
 msgstr "z <= threshold"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:534
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:535
 msgid "z >= threshold"
 msgstr "z >= threshold"
 
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:60
-#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:117
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:68
+#: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:127
 msgid "Z-score"
 msgstr "Scor Z"

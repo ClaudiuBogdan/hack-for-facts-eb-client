@@ -6,10 +6,78 @@ import {
   classifyValue,
   generateSequentialBins,
   NO_DATA_GROUP_ID,
+  normalizeContinuousPercentilesForCommit,
   validateBinsConfig,
 } from '@/lib/map-bins/bins';
 
 describe('map-bins', () => {
+  it('applies continuous percentile defaults when missing from serialized config', () => {
+    const parsedConfig = AdvancedMapAnalyticsBinsPresetConfigSchema.parse({});
+
+    expect(parsedConfig.intervalMode).toBe('discrete');
+    expect(parsedConfig.continuousPercentiles).toEqual({ min: 5, max: 95 });
+  });
+
+  it('rejects invalid continuous percentile pairs in schema', () => {
+    const parsedConfig = AdvancedMapAnalyticsBinsPresetConfigSchema.safeParse({
+      continuousPercentiles: {
+        min: 50,
+        max: 50,
+      },
+    });
+
+    expect(parsedConfig.success).toBe(false);
+  });
+
+  it('accepts continuous mode without bins and ignores discrete bin structure checks', () => {
+    const config = AdvancedMapAnalyticsBinsPresetConfigSchema.parse({
+      intervalMode: 'continuous',
+      bins: [
+        {
+          min: 100,
+          max: 10,
+          label: 'invalid range',
+          color: '#ff0000',
+        },
+      ],
+    });
+
+    const validationResult = validateBinsConfig(config);
+    expect(validationResult.isValid).toBe(true);
+  });
+
+  it('rejects out-of-range continuous percentiles during validation', () => {
+    const config = AdvancedMapAnalyticsBinsPresetConfigSchema.parse({
+      intervalMode: 'continuous',
+      continuousPercentiles: {
+        min: 5,
+        max: 95,
+      },
+    });
+
+    const validationResult = validateBinsConfig({
+      ...config,
+      continuousPercentiles: {
+        min: -1,
+        max: 120,
+      },
+    });
+
+    expect(validationResult.isValid).toBe(false);
+    expect(validationResult.errors.join(' ')).toContain('between 0 and 100');
+  });
+
+  it('normalizes percentile edits by clamping and preserving opposite bound', () => {
+    const current = { min: 5, max: 95 };
+    const normalizedMin = normalizeContinuousPercentilesForCommit(current, 'min', 100);
+    const normalizedMax = normalizeContinuousPercentilesForCommit(current, 'max', 2);
+
+    expect(normalizedMin.max).toBe(95);
+    expect(normalizedMin.min).toBeLessThan(normalizedMin.max);
+    expect(normalizedMax.min).toBe(5);
+    expect(normalizedMax.max).toBeGreaterThan(normalizedMax.min);
+  });
+
   it('classifies null/NaN as NO_DATA', () => {
     const firstBin = AdvancedMapAnalyticsBinSchema.parse({
       min: 0,

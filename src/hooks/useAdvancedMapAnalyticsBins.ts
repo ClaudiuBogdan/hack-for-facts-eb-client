@@ -3,6 +3,7 @@ import type { MapSeriesWarning } from '@/lib/map-series/interfaces';
 import {
   classifySeriesValues,
   generateSequentialBins,
+  getFiniteValuesArray,
   type BinsValidationResult,
   validateBinsConfig,
 } from '@/lib/map-bins/bins';
@@ -131,13 +132,15 @@ export function useAdvancedMapAnalyticsBins({
     [binsWarnings, seriesWarnings]
   );
 
+  const isDiscreteActiveBinsPreset = activeBinsPreset?.config.intervalMode === 'discrete';
   const activeBinsConfigIsValidForApply = Boolean(activeBinsPreset) &&
+    Boolean(isDiscreteActiveBinsPreset) &&
     activeBinsValidation.isValid &&
     (activeBinsPreset?.config.bins.length ?? 0) > 0;
 
   const binsCanApply =
     Boolean(activeSeries) &&
-    Boolean(activeBinsPreset) &&
+    Boolean(isDiscreteActiveBinsPreset) &&
     activeBinsConfigIsValidForApply &&
     binsClassification.groupsBySiruta.size > 0;
 
@@ -244,6 +247,10 @@ export function useAdvancedMapAnalyticsBins({
         return false;
       }
 
+      if (preset.config.intervalMode !== 'discrete') {
+        return false;
+      }
+
       const generatedBins = generateSequentialBins(
         getFiniteValuesArray(activeValues),
         preset.config.defaultBinCount,
@@ -315,16 +322,3 @@ export function useAdvancedMapAnalyticsBins({
   };
 }
 
-function getFiniteValuesArray(values: Map<string, number | undefined> | undefined): number[] {
-  if (!values || values.size === 0) {
-    return [];
-  }
-
-  const result: number[] = [];
-  for (const value of values.values()) {
-    if (Number.isFinite(value)) {
-      result.push(value as number);
-    }
-  }
-  return result;
-}

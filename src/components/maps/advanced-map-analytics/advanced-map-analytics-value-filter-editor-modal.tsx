@@ -1,6 +1,9 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { ModalHeader, ModalTitle } from '@/components/ui/modal-header';
+import { ModalSection } from '@/components/ui/modal-section';
+import { modalSizes } from '@/components/ui/modal-sizes';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { t } from '@lingui/core/macro';
 import type {
@@ -24,50 +27,56 @@ interface AdvancedMapAnalyticsValueFilterEditorModalProps {
   onRuleChange: (nextRule: AdvancedMapAnalyticsValueFilterRule) => void;
 }
 
-const OPERATOR_OPTIONS: Array<{ value: AdvancedMapAnalyticsValueFilterOperator; label: string }> = [
-  { value: 'is_defined', label: t`Is defined` },
-  { value: 'is_undefined', label: t`Is undefined` },
-  { value: 'gt', label: t`Greater than` },
-  { value: 'gte', label: t`Greater or equal` },
-  { value: 'lt', label: t`Less than` },
-  { value: 'lte', label: t`Less or equal` },
-  { value: 'eq', label: t`Equal to` },
-  { value: 'neq', label: t`Not equal to` },
-  { value: 'between', label: t`Between (inclusive)` },
-  { value: 'not_between', label: t`Not between (inclusive)` },
-];
+function getOperatorOptions(): Array<{ value: AdvancedMapAnalyticsValueFilterOperator; label: string }> {
+  return [
+    { value: 'is_defined', label: t`Is defined` },
+    { value: 'is_undefined', label: t`Is undefined` },
+    { value: 'gt', label: t`Greater than` },
+    { value: 'gte', label: t`Greater or equal` },
+    { value: 'lt', label: t`Less than` },
+    { value: 'lte', label: t`Less or equal` },
+    { value: 'eq', label: t`Equal to` },
+    { value: 'neq', label: t`Not equal to` },
+    { value: 'between', label: t`Between (inclusive)` },
+    { value: 'not_between', label: t`Not between (inclusive)` },
+  ];
+}
 
-const RULE_KIND_OPTIONS: Array<{ value: AdvancedMapAnalyticsValueFilterRuleKind; label: string }> = [
-  { value: 'threshold', label: t`Threshold` },
-  { value: 'stats', label: t`Stats` },
-];
+function getRuleKindOptions(): Array<{ value: AdvancedMapAnalyticsValueFilterRuleKind; label: string }> {
+  return [
+    { value: 'threshold', label: t`Threshold` },
+    { value: 'stats', label: t`Stats` },
+  ];
+}
 
-const STATS_TYPE_OPTIONS: Array<{ value: AdvancedMapAnalyticsStatsFilterType; label: string }> = [
-  {
-    value: 'percentile_band',
-    label: t`Percentile band`,
-  },
-  {
-    value: 'rank',
-    label: t`Rank (top/bottom N)`,
-  },
-  {
-    value: 'median_compare',
-    label: t`Median compare`,
-  },
-  {
-    value: 'zscore',
-    label: t`Z-score`,
-  },
-  {
-    value: 'iqr_outlier',
-    label: t`IQR outlier`,
-  },
-  {
-    value: 'mad_robust_zscore',
-    label: t`MAD robust z-score`,
-  },
-];
+function getStatsTypeOptions(): Array<{ value: AdvancedMapAnalyticsStatsFilterType; label: string }> {
+  return [
+    {
+      value: 'percentile_band',
+      label: t`Percentile band`,
+    },
+    {
+      value: 'rank',
+      label: t`Rank (top/bottom N)`,
+    },
+    {
+      value: 'median_compare',
+      label: t`Median compare`,
+    },
+    {
+      value: 'zscore',
+      label: t`Z-score`,
+    },
+    {
+      value: 'iqr_outlier',
+      label: t`IQR outlier`,
+    },
+    {
+      value: 'mad_robust_zscore',
+      label: t`MAD robust z-score`,
+    },
+  ];
+}
 
 interface StatsFilterExplanation {
   title: string;
@@ -76,80 +85,82 @@ interface StatsFilterExplanation {
   tips: string[];
 }
 
-const STATS_FILTER_EXPLANATIONS: Record<AdvancedMapAnalyticsStatsFilterType, StatsFilterExplanation> = {
-  percentile_band: {
-    title: t`Percentile band`,
-    explanation:
-      t`Keeps UATs whose values fall between two percentiles of the selected series. Use this when absolute thresholds are misleading because data is very skewed.`,
-    example:
-      t`Example: 80-100 selects the top 20% by population. Combine with spending display to inspect high-population UATs.`,
-    tips: [
-      t`Percentiles are inclusive and min/max are normalized if swapped.`,
-      t`Use with OR to add extreme percentile groups without losing current matches.`,
-      t`Best for cross-county comparisons where scales are very different.`,
-    ],
-  },
-  rank: {
-    title: t`Rank (Top/Bottom N)`,
-    explanation:
-      t`Selects exactly N UATs from the highest or lowest values in the selected source series.`,
-    example:
-      t`Example: Top 25 by population, while displaying budget deficit values on the map.`,
-    tips: [
-      t`Good for shortlists used in audits, reporting, or manual review.`,
-      t`Tie-breaking is deterministic by value, then SIRUTA code.`,
-      t`If you need broader cohorts, use percentile instead of a very large N.`,
-    ],
-  },
-  median_compare: {
-    title: t`Median compare`,
-    explanation:
-      t`Splits UATs relative to the median value. More robust than mean-based filters when outliers exist.`,
-    example:
-      t`Example: >= median population, then AND with negative spending threshold.`,
-    tips: [
-      t`Use gt/gte/lt/lte based on how strict your split should be around the center.`,
-      t`Useful as a first segmentation before anomaly filters.`,
-      t`Prefer median over mean when one or two UATs dominate values.`,
-    ],
-  },
-  zscore: {
-    title: t`Z-score`,
-    explanation:
-      t`Selects UATs by standardized distance from mean in standard deviations. Great for anomaly detection when distribution is roughly normal.`,
-    example:
-      t`Example: |z| >= 2 highlights statistically unusual UATs in the selected source series.`,
-    tips: [
-      t`Requires variation; rule is skipped if standard deviation is zero.`,
-      t`Use abs_gte for two-sided anomalies, gte/lte for one-sided anomalies.`,
-      t`For heavily skewed data, compare with IQR or MAD robust z-score.`,
-    ],
-  },
-  iqr_outlier: {
-    title: t`IQR outlier`,
-    explanation:
-      t`Detects outliers using quartile fences: Q1 - m*IQR and Q3 + m*IQR. Works well for heavy-tailed financial data.`,
-    example:
-      t`Example: side=upper, multiplier=1.5 to focus on unusually high spending UATs.`,
-    tips: [
-      t`Multiplier 1.5 is standard; use 3.0 for stricter outlier detection.`,
-      t`Use both sides when you want high and low extremes.`,
-      t`Needs enough sample coverage; otherwise rule is skipped with warning.`,
-    ],
-  },
-  mad_robust_zscore: {
-    title: t`MAD robust z-score`,
-    explanation:
-      t`Robust anomaly detection based on median absolute deviation (MAD), less sensitive to extreme outliers than z-score.`,
-    example:
-      t`Example: threshold 3.5 to identify strong anomalies in volatile spending distributions.`,
-    tips: [
-      t`Use when z-score is unstable due to extreme values.`,
-      t`Rule is skipped when MAD is zero (no robust dispersion).`,
-      t`Start at 3.5, then lower gradually if you need more candidates.`,
-    ],
-  },
-};
+function getStatsFilterExplanations(): Record<AdvancedMapAnalyticsStatsFilterType, StatsFilterExplanation> {
+  return {
+    percentile_band: {
+      title: t`Percentile band`,
+      explanation:
+        t`Keeps UATs whose values fall between two percentiles of the selected series. Use this when absolute thresholds are misleading because data is very skewed.`,
+      example:
+        t`Example: 80-100 selects the top 20% by population. Combine with spending display to inspect high-population UATs.`,
+      tips: [
+        t`Percentiles are inclusive and min/max are normalized if swapped.`,
+        t`Use with OR to add extreme percentile groups without losing current matches.`,
+        t`Best for cross-county comparisons where scales are very different.`,
+      ],
+    },
+    rank: {
+      title: t`Rank (Top/Bottom N)`,
+      explanation:
+        t`Selects exactly N UATs from the highest or lowest values in the selected source series.`,
+      example:
+        t`Example: Top 25 by population, while displaying budget deficit values on the map.`,
+      tips: [
+        t`Good for shortlists used in audits, reporting, or manual review.`,
+        t`Tie-breaking is deterministic by value, then SIRUTA code.`,
+        t`If you need broader cohorts, use percentile instead of a very large N.`,
+      ],
+    },
+    median_compare: {
+      title: t`Median compare`,
+      explanation:
+        t`Splits UATs relative to the median value. More robust than mean-based filters when outliers exist.`,
+      example:
+        t`Example: >= median population, then AND with negative spending threshold.`,
+      tips: [
+        t`Use gt/gte/lt/lte based on how strict your split should be around the center.`,
+        t`Useful as a first segmentation before anomaly filters.`,
+        t`Prefer median over mean when one or two UATs dominate values.`,
+      ],
+    },
+    zscore: {
+      title: t`Z-score`,
+      explanation:
+        t`Selects UATs by standardized distance from mean in standard deviations. Great for anomaly detection when distribution is roughly normal.`,
+      example:
+        t`Example: |z| >= 2 highlights statistically unusual UATs in the selected source series.`,
+      tips: [
+        t`Requires variation; rule is skipped if standard deviation is zero.`,
+        t`Use abs_gte for two-sided anomalies, gte/lte for one-sided anomalies.`,
+        t`For heavily skewed data, compare with IQR or MAD robust z-score.`,
+      ],
+    },
+    iqr_outlier: {
+      title: t`IQR outlier`,
+      explanation:
+        t`Detects outliers using quartile fences: Q1 - m*IQR and Q3 + m*IQR. Works well for heavy-tailed financial data.`,
+      example:
+        t`Example: side=upper, multiplier=1.5 to focus on unusually high spending UATs.`,
+      tips: [
+        t`Multiplier 1.5 is standard; use 3.0 for stricter outlier detection.`,
+        t`Use both sides when you want high and low extremes.`,
+        t`Needs enough sample coverage; otherwise rule is skipped with warning.`,
+      ],
+    },
+    mad_robust_zscore: {
+      title: t`MAD robust z-score`,
+      explanation:
+        t`Robust anomaly detection based on median absolute deviation (MAD), less sensitive to extreme outliers than z-score.`,
+      example:
+        t`Example: threshold 3.5 to identify strong anomalies in volatile spending distributions.`,
+      tips: [
+        t`Use when z-score is unstable due to extreme values.`,
+        t`Rule is skipped when MAD is zero (no robust dispersion).`,
+        t`Start at 3.5, then lower gradually if you need more candidates.`,
+      ],
+    },
+  };
+}
 
 export function AdvancedMapAnalyticsValueFilterEditorModal({
   open,
@@ -165,21 +176,35 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
   }
 
   const modalTitle = mode === 'add' ? t`Add Value Filter Rule` : t`Edit Value Filter Rule`;
+  const modalDescription = t`Configure source series and filtering logic for this UAT-level value filter.`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
-        <DialogHeader>
-          <DialogTitle>{modalTitle}</DialogTitle>
-          <DialogDescription>
-            {t`Configure source series and filtering logic for this UAT-level value filter.`}
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className={modalSizes.lg} aria-describedby={undefined}>
+        <ModalHeader align="default" variant="bordered">
+          <DialogTitle asChild>
+            <ModalTitle subtitle={modalDescription}>{modalTitle}</ModalTitle>
+          </DialogTitle>
+        </ModalHeader>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-4">
+          <FormField label={t`Rule name`} htmlFor="value-filter-name">
+            <Input
+              id="value-filter-name"
+              value={rule.name}
+              onChange={(event) =>
+                onRuleChange({
+                  ...rule,
+                  name: event.currentTarget.value,
+                })
+              }
+              placeholder={t`Optional name`}
+              autoComplete="off"
+            />
+          </FormField>
+
           {(ruleIndex ?? 0) > 0 ? (
-            <div className="space-y-1">
-              <Label htmlFor="value-filter-join">{t`Join with previous`}</Label>
+            <FormField label={t`Join with previous`} htmlFor="value-filter-join">
               <Select
                 value={rule.joinWithPrevious}
                 onValueChange={(value) => {
@@ -199,11 +224,10 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
                   <SelectItem value="OR">{t`OR`}</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </FormField>
           ) : null}
 
-          <div className="space-y-1">
-            <Label htmlFor="value-filter-source">{t`Source series`}</Label>
+          <FormField label={t`Source series`} htmlFor="value-filter-source">
             <Select
               value={getSeriesRefSelectValue(rule.seriesRef)}
               onValueChange={(value) =>
@@ -212,7 +236,7 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
                   seriesRef: parseSeriesRefSelectValue(value),
                 })
               }
-              >
+            >
               <SelectTrigger id="value-filter-source">
                 <SelectValue placeholder={t`Source series`} />
               </SelectTrigger>
@@ -225,33 +249,32 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </FormField>
 
-          <div className="space-y-1">
-            <Label htmlFor="value-filter-kind">{t`Rule kind`}</Label>
+          <FormField label={t`Rule kind`} htmlFor="value-filter-kind">
             <Select
               value={rule.kind}
               onValueChange={(value) => {
-                const nextKind = RULE_KIND_OPTIONS.find((option) => option.value === value)?.value;
+                const nextKind = getRuleKindOptions().find((option) => option.value === value)?.value;
                 if (!nextKind) {
                   return;
                 }
 
                 onRuleChange(nextKind === 'threshold' ? toThresholdRule(rule) : toStatsRule(rule));
               }}
-              >
+            >
               <SelectTrigger id="value-filter-kind">
                 <SelectValue placeholder={t`Rule kind`} />
               </SelectTrigger>
               <SelectContent>
-                {RULE_KIND_OPTIONS.map((option) => (
+                {getRuleKindOptions().map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </FormField>
 
           {rule.kind === 'threshold' ? (
             <ThresholdEditor
@@ -281,47 +304,33 @@ function ThresholdEditor({
 
   return (
     <>
-      <div className="space-y-1">
-        <Label htmlFor="value-filter-operator">{t`Operator`}</Label>
+      <FormField label={t`Operator`} htmlFor="value-filter-operator">
         <Select
           value={rule.operator}
           onValueChange={(value) => {
-            const nextOperator = OPERATOR_OPTIONS.find((option) => option.value === value)?.value;
+            const nextOperator = getOperatorOptions().find((option) => option.value === value)?.value;
             if (!nextOperator) {
               return;
             }
 
-            const nextRule: AdvancedMapAnalyticsThresholdValueFilterRule = {
-              ...rule,
-              operator: nextOperator,
-            };
-
-            if (nextOperator === 'is_defined' || nextOperator === 'is_undefined') {
-              nextRule.value = undefined;
-              nextRule.secondValue = undefined;
-            } else if (nextOperator !== 'between' && nextOperator !== 'not_between') {
-              nextRule.secondValue = undefined;
-            }
-
-            onRuleChange(nextRule);
+            onRuleChange(buildThresholdRuleWithOperator(rule, nextOperator));
           }}
         >
           <SelectTrigger id="value-filter-operator">
             <SelectValue placeholder={t`Operator`} />
           </SelectTrigger>
           <SelectContent>
-            {OPERATOR_OPTIONS.map((option) => (
+            {getOperatorOptions().map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </FormField>
 
       {operatorArity >= 1 ? (
-        <div className="space-y-1">
-          <Label htmlFor="value-filter-value">{t`Value`}</Label>
+        <FormField label={t`Value`} htmlFor="value-filter-value">
           <Input
             id="value-filter-value"
             type="number"
@@ -335,12 +344,11 @@ function ThresholdEditor({
             }
             placeholder={t`e.g. 0`}
           />
-        </div>
+        </FormField>
       ) : null}
 
       {operatorArity >= 2 ? (
-        <div className="space-y-1">
-          <Label htmlFor="value-filter-second-value">{t`Second value`}</Label>
+        <FormField label={t`Second value`} htmlFor="value-filter-second-value">
           <Input
             id="value-filter-second-value"
             type="number"
@@ -354,7 +362,7 @@ function ThresholdEditor({
             }
             placeholder={t`e.g. 1000`}
           />
-        </div>
+        </FormField>
       ) : null}
     </>
   );
@@ -369,12 +377,11 @@ function StatsEditor({
 }>) {
   return (
     <>
-      <div className="space-y-1 sm:col-span-2">
-        <Label htmlFor="value-filter-stats-type">{t`Stats type`}</Label>
+      <FormField label={t`Stats type`} htmlFor="value-filter-stats-type">
         <Select
           value={rule.statsType}
           onValueChange={(value) => {
-            const nextStatsType = STATS_TYPE_OPTIONS.find((option) => option.value === value)?.value;
+            const nextStatsType = getStatsTypeOptions().find((option) => option.value === value)?.value;
             if (!nextStatsType) {
               return;
             }
@@ -386,19 +393,18 @@ function StatsEditor({
             <SelectValue placeholder={t`Stats type`} />
           </SelectTrigger>
           <SelectContent>
-            {STATS_TYPE_OPTIONS.map((option) => (
+            {getStatsTypeOptions().map((option) => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </FormField>
 
       {rule.statsType === 'percentile_band' ? (
         <>
-          <div className="space-y-1">
-            <Label htmlFor="value-filter-min-percentile">{t`Min percentile`}</Label>
+          <FormField label={t`Min percentile`} htmlFor="value-filter-min-percentile">
             <Input
               id="value-filter-min-percentile"
               type="number"
@@ -414,9 +420,8 @@ function StatsEditor({
               }
               placeholder="0"
             />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="value-filter-max-percentile">{t`Max percentile`}</Label>
+          </FormField>
+          <FormField label={t`Max percentile`} htmlFor="value-filter-max-percentile">
             <Input
               id="value-filter-max-percentile"
               type="number"
@@ -432,14 +437,13 @@ function StatsEditor({
               }
               placeholder="100"
             />
-          </div>
+          </FormField>
         </>
       ) : null}
 
       {rule.statsType === 'rank' ? (
         <>
-          <div className="space-y-1">
-            <Label htmlFor="value-filter-rank-direction">{t`Direction`}</Label>
+          <FormField label={t`Direction`} htmlFor="value-filter-rank-direction">
             <Select
               value={rule.direction}
               onValueChange={(value) => {
@@ -459,9 +463,8 @@ function StatsEditor({
                 <SelectItem value="bottom">{t`Bottom`}</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="value-filter-rank-count">{t`Count`}</Label>
+          </FormField>
+          <FormField label={t`Count`} htmlFor="value-filter-rank-count">
             <Input
               id="value-filter-rank-count"
               type="number"
@@ -480,13 +483,12 @@ function StatsEditor({
               }}
               placeholder="10"
             />
-          </div>
+          </FormField>
         </>
       ) : null}
 
       {rule.statsType === 'median_compare' ? (
-        <div className="space-y-1">
-          <Label htmlFor="value-filter-median-mode">{t`Mode`}</Label>
+        <FormField label={t`Mode`} htmlFor="value-filter-median-mode">
           <Select
             value={rule.mode}
             onValueChange={(value) => {
@@ -508,13 +510,12 @@ function StatsEditor({
               <SelectItem value="lte">{t`<= median`}</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </FormField>
       ) : null}
 
       {rule.statsType === 'zscore' ? (
         <>
-          <div className="space-y-1">
-            <Label htmlFor="value-filter-zscore-mode">{t`Mode`}</Label>
+          <FormField label={t`Mode`} htmlFor="value-filter-zscore-mode">
             <Select
               value={rule.mode}
               onValueChange={(value) => {
@@ -535,9 +536,8 @@ function StatsEditor({
                 <SelectItem value="lte">{t`z <= threshold`}</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="value-filter-zscore-threshold">{t`Threshold`}</Label>
+          </FormField>
+          <FormField label={t`Threshold`} htmlFor="value-filter-zscore-threshold">
             <Input
               id="value-filter-zscore-threshold"
               type="number"
@@ -552,14 +552,13 @@ function StatsEditor({
               }
               placeholder="2"
             />
-          </div>
+          </FormField>
         </>
       ) : null}
 
       {rule.statsType === 'iqr_outlier' ? (
         <>
-          <div className="space-y-1">
-            <Label htmlFor="value-filter-iqr-side">{t`Side`}</Label>
+          <FormField label={t`Side`} htmlFor="value-filter-iqr-side">
             <Select
               value={rule.side}
               onValueChange={(value) => {
@@ -580,9 +579,8 @@ function StatsEditor({
                 <SelectItem value="both">{t`Both fences`}</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="value-filter-iqr-multiplier">{t`Multiplier`}</Label>
+          </FormField>
+          <FormField label={t`Multiplier`} htmlFor="value-filter-iqr-multiplier">
             <Input
               id="value-filter-iqr-multiplier"
               type="number"
@@ -597,13 +595,12 @@ function StatsEditor({
               }
               placeholder="1.5"
             />
-          </div>
+          </FormField>
         </>
       ) : null}
 
       {rule.statsType === 'mad_robust_zscore' ? (
-        <div className="space-y-1">
-          <Label htmlFor="value-filter-mad-threshold">{t`Threshold`}</Label>
+        <FormField label={t`Threshold`} htmlFor="value-filter-mad-threshold">
           <Input
             id="value-filter-mad-threshold"
             type="number"
@@ -618,7 +615,7 @@ function StatsEditor({
             }
             placeholder="3.5"
           />
-        </div>
+        </FormField>
       ) : null}
 
       <StatsFilterExplanationCard statsType={rule.statsType} />
@@ -627,10 +624,10 @@ function StatsEditor({
 }
 
 function StatsFilterExplanationCard({ statsType }: Readonly<{ statsType: AdvancedMapAnalyticsStatsFilterType }>) {
-  const explanation = STATS_FILTER_EXPLANATIONS[statsType];
+  const explanation = getStatsFilterExplanations()[statsType];
 
   return (
-    <div className="sm:col-span-2 rounded-lg border border-border/80 bg-muted/20 p-3">
+    <ModalSection variant="muted">
       <h4 className="text-sm font-semibold">{explanation.title}</h4>
       <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
         {explanation.explanation}
@@ -647,7 +644,7 @@ function StatsFilterExplanationCard({ statsType }: Readonly<{ statsType: Advance
           ))}
         </ul>
       </div>
-    </div>
+    </ModalSection>
   );
 }
 
@@ -661,6 +658,34 @@ function getOperatorArity(operator: AdvancedMapAnalyticsValueFilterOperator): 0 
   }
 
   return 1;
+}
+
+export function buildThresholdRuleWithOperator(
+  rule: AdvancedMapAnalyticsThresholdValueFilterRule,
+  operator: AdvancedMapAnalyticsValueFilterOperator
+): AdvancedMapAnalyticsThresholdValueFilterRule {
+  const nextRule: AdvancedMapAnalyticsThresholdValueFilterRule = {
+    ...rule,
+    operator,
+  };
+  const nextOperatorArity = getOperatorArity(operator);
+
+  if (nextOperatorArity === 0) {
+    nextRule.value = undefined;
+    nextRule.secondValue = undefined;
+    return nextRule;
+  }
+
+  if (nextOperatorArity === 1) {
+    nextRule.value = rule.value ?? 0;
+    nextRule.secondValue = undefined;
+    return nextRule;
+  }
+
+  const baseValue = rule.value ?? 0;
+  nextRule.value = baseValue;
+  nextRule.secondValue = rule.secondValue ?? baseValue;
+  return nextRule;
 }
 
 function parseNumericInput(rawValue: string): number | undefined {
@@ -715,6 +740,7 @@ function toThresholdRule(rule: AdvancedMapAnalyticsValueFilterRule): AdvancedMap
 
   return {
     id: rule.id,
+    name: rule.name,
     enabled: rule.enabled,
     joinWithPrevious: rule.joinWithPrevious,
     seriesRef: rule.seriesRef,
@@ -732,6 +758,7 @@ function toStatsRule(rule: AdvancedMapAnalyticsValueFilterRule): AdvancedMapAnal
 
   return {
     id: rule.id,
+    name: rule.name,
     enabled: rule.enabled,
     joinWithPrevious: rule.joinWithPrevious,
     seriesRef: rule.seriesRef,
@@ -748,6 +775,7 @@ function convertStatsRuleType(
 ): AdvancedMapAnalyticsStatsValueFilterRule {
   const base = {
     id: rule.id,
+    name: rule.name,
     enabled: rule.enabled,
     joinWithPrevious: rule.joinWithPrevious,
     seriesRef: rule.seriesRef,

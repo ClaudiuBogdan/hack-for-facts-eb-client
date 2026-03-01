@@ -1,6 +1,9 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { FormField } from '@/components/ui/form-field';
+import { ModalSection } from '@/components/ui/modal-section';
+import { modalSizes } from '@/components/ui/modal-sizes';
 import { Textarea } from '@/components/ui/textarea';
 import { t } from '@lingui/core/macro';
 
@@ -35,7 +38,7 @@ export function AdvancedMapAnalyticsDescriptionModal(
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={mode === 'edit' ? 'max-w-5xl' : 'max-w-2xl'}
+        className={mode === 'edit' ? modalSizes['4xl'] : modalSizes.xl}
         aria-describedby={undefined}
       >
         <DialogHeader>
@@ -44,10 +47,7 @@ export function AdvancedMapAnalyticsDescriptionModal(
 
         {mode === 'edit' ? (
           <div className="grid gap-3 md:grid-cols-2">
-            <div className="space-y-2">
-              <label className="block text-sm font-medium" htmlFor="map-description-modal-editor">
-                {t`Markdown`}
-              </label>
+            <FormField label={t`Markdown`} htmlFor="map-description-modal-editor">
               <Textarea
                 id="map-description-modal-editor"
                 value={description}
@@ -57,8 +57,8 @@ export function AdvancedMapAnalyticsDescriptionModal(
                 placeholder={t`Describe what this map shows...`}
                 aria-label={t`Map description markdown editor`}
               />
-            </div>
-            <div className="space-y-2">
+            </FormField>
+            <ModalSection className="overflow-hidden">
               <p className="text-sm font-medium">{t`Preview`}</p>
               <div className="max-h-[60vh] overflow-y-auto rounded-md border bg-muted/20 p-3">
                 {hasDescription ? (
@@ -69,7 +69,7 @@ export function AdvancedMapAnalyticsDescriptionModal(
                   <p className="text-sm text-muted-foreground">{t`No description provided.`}</p>
                 )}
               </div>
-            </div>
+            </ModalSection>
           </div>
         ) : hasDescription ? (
           <div className="prose prose-sm max-h-[60vh] max-w-none overflow-y-auto break-words dark:prose-invert">

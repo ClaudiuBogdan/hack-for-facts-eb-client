@@ -12,6 +12,16 @@ function createPreset() {
   return preset;
 }
 
+function createContinuousPreset() {
+  const preset = createPreset();
+  preset.config.intervalMode = 'continuous';
+  preset.config.continuousPercentiles = {
+    min: 7.5,
+    max: 92.25,
+  };
+  return preset;
+}
+
 describe('AdvancedMapAnalyticsBinsModal', () => {
   it('renders editor sections and active series summary', () => {
     render(
@@ -194,6 +204,93 @@ describe('AdvancedMapAnalyticsBinsModal', () => {
           }),
         }),
       })
+    );
+  });
+
+  it('switches gradient anchor colors with the swap button', () => {
+    const onApplyPreset = vi.fn().mockReturnValue({ ok: true });
+
+    render(
+      <AdvancedMapAnalyticsBinsModal
+        open={true}
+        preset={createPreset()}
+        activeSeriesLabel="Execution analytics"
+        activeSeriesValues={new Map()}
+        onOpenChange={vi.fn()}
+        onApplyPreset={onApplyPreset}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Switch gradient colors' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+
+    expect(onApplyPreset).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: expect.objectContaining({
+          gradient: expect.objectContaining({
+            startColor: '#d7301f',
+            endColor: '#fff7bc',
+          }),
+        }),
+      })
+    );
+  });
+
+  it('shows percentile inputs and hides bins section in continuous mode', () => {
+    render(
+      <AdvancedMapAnalyticsBinsModal
+        open={true}
+        preset={createContinuousPreset()}
+        activeSeriesLabel="Execution analytics"
+        activeSeriesValues={new Map()}
+        onOpenChange={vi.fn()}
+        onApplyPreset={() => ({ ok: true })}
+      />
+    );
+
+    expect(screen.getByLabelText('Min percentile')).toHaveValue(7.5);
+    expect(screen.getByLabelText('Max percentile')).toHaveValue(92.25);
+    expect(screen.queryByRole('button', { name: 'Regenerate from active data' })).not.toBeInTheDocument();
+  });
+
+  it('commits normalized continuous percentile bounds on blur', () => {
+    const onApplyPreset = vi.fn().mockReturnValue({ ok: true });
+
+    render(
+      <AdvancedMapAnalyticsBinsModal
+        open={true}
+        preset={createContinuousPreset()}
+        activeSeriesLabel="Execution analytics"
+        activeSeriesValues={new Map()}
+        onOpenChange={vi.fn()}
+        onApplyPreset={onApplyPreset}
+      />
+    );
+
+    const minInput = screen.getByLabelText('Min percentile');
+    fireEvent.change(minInput, { target: { value: '100' } });
+    fireEvent.blur(minInput);
+
+    const maxInput = screen.getByLabelText('Max percentile');
+    fireEvent.change(maxInput, { target: { value: '95.5' } });
+    fireEvent.blur(maxInput);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+
+    expect(onApplyPreset).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: expect.objectContaining({
+          continuousPercentiles: expect.objectContaining({
+            min: expect.any(Number),
+            max: 95.5,
+          }),
+        }),
+      })
+    );
+
+    const committedConfig = onApplyPreset.mock.calls[0]?.[0]?.config;
+    expect(committedConfig.continuousPercentiles.min).toBeLessThan(
+      committedConfig.continuousPercentiles.max
     );
   });
 });

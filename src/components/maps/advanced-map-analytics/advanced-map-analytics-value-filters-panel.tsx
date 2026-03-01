@@ -242,7 +242,7 @@ const ValueFilterListItem = memo(function ValueFilterListItem({
         </span>
         <span className="min-w-0">
           <p className="truncate text-sm font-semibold">
-            {t`Rule ${index + 1}`}
+            {resolveRuleDisplayName(rule, index)}
           </p>
           <p className="truncate text-xs text-muted-foreground">
             {buildRuleSummary(rule, series, index)}
@@ -332,6 +332,15 @@ function buildRuleSummary(
   }
 
   return `${connectorPrefix}${sourceLabel}: ${operatorLabel} ${firstValueText}`.trim();
+}
+
+function resolveRuleDisplayName(rule: AdvancedMapAnalyticsValueFilterRule, index: number): string {
+  const trimmedName = rule.name.trim();
+  if (trimmedName.length > 0) {
+    return trimmedName;
+  }
+
+  return t`Rule ${index + 1}`;
 }
 
 function resolveRuleSourceLabel(rule: AdvancedMapAnalyticsValueFilterRule, series: MapSupportedSeries[]): string {

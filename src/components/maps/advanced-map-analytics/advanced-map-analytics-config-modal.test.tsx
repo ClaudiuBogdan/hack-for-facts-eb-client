@@ -15,10 +15,10 @@ describe('AdvancedMapAnalyticsConfigModal', () => {
       />
     );
 
-    expect(screen.getByText('Map Config')).toBeInTheDocument();
+    expect(screen.getByText('Map Settings')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Untitled map')).toBeInTheDocument();
-    expect(screen.getByText('0')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'View warnings' })).not.toBeInTheDocument();
+    expect(screen.getByText('No issues found')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /View.*warning/ })).not.toBeInTheDocument();
   });
 
   it('opens warnings and closes config modal when view warnings is clicked', () => {
@@ -36,7 +36,7 @@ describe('AdvancedMapAnalyticsConfigModal', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'View warnings' }));
+    fireEvent.click(screen.getByRole('button', { name: /View.*warning/ }));
 
     expect(onOpenWarnings).toHaveBeenCalledTimes(1);
     expect(onOpenChange).toHaveBeenCalledWith(false);

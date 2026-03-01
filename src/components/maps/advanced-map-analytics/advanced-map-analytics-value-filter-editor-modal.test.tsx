@@ -5,7 +5,10 @@ import {
   createDefaultAdvancedMapAnalyticsStatsValueFilterRule,
   createDefaultAdvancedMapAnalyticsValueFilterRule,
 } from '@/schemas/advanced-map-analytics';
-import { AdvancedMapAnalyticsValueFilterEditorModal } from './advanced-map-analytics-value-filter-editor-modal';
+import {
+  AdvancedMapAnalyticsValueFilterEditorModal,
+  buildThresholdRuleWithOperator,
+} from './advanced-map-analytics-value-filter-editor-modal';
 
 describe('AdvancedMapAnalyticsValueFilterEditorModal', () => {
   it('renders threshold modal fields for editing a rule', () => {
@@ -96,6 +99,35 @@ describe('AdvancedMapAnalyticsValueFilterEditorModal', () => {
     expect(onRuleChange).toHaveBeenCalledWith(expect.objectContaining({ secondValue: 30 }));
   });
 
+  it('updates rule name through onRuleChange', () => {
+    const onRuleChange = vi.fn();
+    const rule = createDefaultAdvancedMapAnalyticsValueFilterRule();
+
+    render(
+      <AdvancedMapAnalyticsValueFilterEditorModal
+        open
+        mode="edit"
+        rule={rule}
+        ruleIndex={0}
+        series={[]}
+        onOpenChange={vi.fn()}
+        onRuleChange={onRuleChange}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText('Rule name'), {
+      target: {
+        value: 'Population threshold',
+      },
+    });
+
+    expect(onRuleChange).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Population threshold',
+      })
+    );
+  });
+
   it('prevents non-positive values for z-score threshold', () => {
     const onRuleChange = vi.fn();
     const rule = createDefaultAdvancedMapAnalyticsStatsValueFilterRule('zscore');
@@ -169,5 +201,23 @@ describe('AdvancedMapAnalyticsValueFilterEditorModal', () => {
     });
 
     expect(onRuleChange).toHaveBeenCalledWith(expect.objectContaining({ threshold: 3.5 }));
+  });
+
+  it('keeps threshold operator change valid when moving from no-value to single-value operator', () => {
+    const rule = createDefaultAdvancedMapAnalyticsValueFilterRule();
+    const nextRule = buildThresholdRuleWithOperator(rule, 'lt');
+
+    expect(nextRule.operator).toBe('lt');
+    expect(nextRule.value).toBe(0);
+    expect(nextRule.secondValue).toBeUndefined();
+  });
+
+  it('keeps threshold operator change valid when moving to between operator', () => {
+    const rule = createDefaultAdvancedMapAnalyticsValueFilterRule();
+    const nextRule = buildThresholdRuleWithOperator(rule, 'between');
+
+    expect(nextRule.operator).toBe('between');
+    expect(nextRule.value).toBe(0);
+    expect(nextRule.secondValue).toBe(0);
   });
 });

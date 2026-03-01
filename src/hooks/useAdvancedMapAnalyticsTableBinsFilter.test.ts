@@ -213,4 +213,45 @@ describe('deriveAdvancedMapAnalyticsTableBinsFilter', () => {
     expect(result.filteredRows).toHaveLength(baseRows.length);
     expect(result.binsFilterSections[0]?.disabledReason).toBe('Invalid bins config');
   });
+
+  it('hides continuous presets from table filter sections', () => {
+    const discretePreset = createDefaultAdvancedMapAnalyticsBinsPreset('Discrete preset');
+    const firstBin = AdvancedMapAnalyticsBinSchema.parse({
+      min: 0,
+      max: 10,
+      label: '0-10',
+      color: '#ff0000',
+    });
+    const secondBin = AdvancedMapAnalyticsBinSchema.parse({
+      min: 10,
+      max: null,
+      label: '>=10',
+      color: '#00ff00',
+    });
+    discretePreset.config.bins = [firstBin, secondBin];
+
+    const continuousPreset = createDefaultAdvancedMapAnalyticsBinsPreset('Continuous preset');
+    continuousPreset.config.intervalMode = 'continuous';
+    continuousPreset.config.continuousPercentiles = {
+      min: 10,
+      max: 90,
+    };
+    continuousPreset.config.bins = [];
+
+    const result = deriveAdvancedMapAnalyticsTableBinsFilter({
+      rows: baseRows,
+      binsPresets: [discretePreset, continuousPreset],
+      activeValues: new Map([
+        ['1001', 5],
+        ['1002', 15],
+      ]),
+      tableBinFiltersByPresetId: {
+        [continuousPreset.id]: ['NO_DATA'],
+      },
+    });
+
+    expect(result.binsFilterSections).toHaveLength(1);
+    expect(result.binsFilterSections[0]?.presetId).toBe(discretePreset.id);
+    expect(result.hasActiveBinFilters).toBe(false);
+  });
 });
