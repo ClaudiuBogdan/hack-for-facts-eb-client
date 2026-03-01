@@ -6,7 +6,8 @@ import { AdvancedMapAnalyticsUrlStateSchema } from '@/schemas/advanced-map-analy
 const navigateMock = vi.fn();
 let mockedSearch: Record<string, unknown> = {};
 let authState = { isLoaded: true, isSignedIn: true };
-const mutateAsyncMock = vi.fn();
+const createMapMutateAsyncMock = vi.fn();
+const saveSnapshotMutateAsyncMock = vi.fn();
 
 vi.mock('@tanstack/react-router', () => ({
   createLazyFileRoute: () => () => ({
@@ -22,7 +23,10 @@ vi.mock('@/lib/auth', () => ({
 
 vi.mock('@/features/advanced-map-analytics/hooks/use-advanced-map-analytics', () => ({
   useCreateAdvancedMapAnalyticsMapMutation: () => ({
-    mutateAsync: mutateAsyncMock,
+    mutateAsync: createMapMutateAsyncMock,
+  }),
+  useSaveAdvancedMapAnalyticsSnapshotMutation: () => ({
+    mutateAsync: saveSnapshotMutateAsyncMock,
   }),
 }));
 
@@ -31,12 +35,16 @@ describe('NewMapRouteComponent', () => {
     mockedSearch = {};
     authState = { isLoaded: true, isSignedIn: true };
     navigateMock.mockReset();
-    mutateAsyncMock.mockReset();
-    mutateAsyncMock.mockResolvedValue({
+    createMapMutateAsyncMock.mockReset();
+    saveSnapshotMutateAsyncMock.mockReset();
+    createMapMutateAsyncMock.mockResolvedValue({
       id: 'map_created_1',
       lastSnapshot: {
         config: AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Created map' }),
       },
+    });
+    saveSnapshotMutateAsyncMock.mockResolvedValue({
+      snapshotId: 'snapshot_1',
     });
   });
 
@@ -46,14 +54,15 @@ describe('NewMapRouteComponent', () => {
     render(<NewMapRouteComponent />);
 
     await waitFor(() => {
-      expect(mutateAsyncMock).toHaveBeenCalledTimes(1);
+      expect(createMapMutateAsyncMock).toHaveBeenCalledTimes(1);
     });
 
-    expect(mutateAsyncMock).toHaveBeenCalledWith(
+    expect(createMapMutateAsyncMock).toHaveBeenCalledWith(
       expect.objectContaining({
         state: 'private',
       })
     );
+    expect(saveSnapshotMutateAsyncMock).not.toHaveBeenCalled();
 
     await waitFor(() => {
       expect(navigateMock).toHaveBeenCalledWith(
@@ -77,15 +86,37 @@ describe('NewMapRouteComponent', () => {
     render(<NewMapRouteComponent />);
 
     await waitFor(() => {
-      expect(mutateAsyncMock).toHaveBeenCalledTimes(1);
+      expect(createMapMutateAsyncMock).toHaveBeenCalledTimes(1);
     });
 
-    expect(mutateAsyncMock).toHaveBeenCalledWith(
+    expect(createMapMutateAsyncMock).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Cloned map',
         mapState: expect.objectContaining({ mapName: 'Cloned map' }),
       })
     );
+
+    await waitFor(() => {
+      expect(saveSnapshotMutateAsyncMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          mapId: 'map_created_1',
+          title: 'Cloned map',
+          stateAtSave: 'private',
+          mapState: expect.objectContaining({ mapName: 'Cloned map' }),
+        })
+      );
+    });
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: '/maps/editor/$mapId',
+          params: { mapId: 'map_created_1' },
+          search: expect.objectContaining({ mapName: 'Cloned map' }),
+          replace: true,
+        })
+      );
+    });
   });
 
   it('shows sign-in gate when user is not authenticated', async () => {
@@ -95,11 +126,11 @@ describe('NewMapRouteComponent', () => {
     render(<NewMapRouteComponent />);
 
     expect(screen.getByText('Sign in required')).toBeInTheDocument();
-    expect(mutateAsyncMock).not.toHaveBeenCalled();
+    expect(createMapMutateAsyncMock).not.toHaveBeenCalled();
   });
 
   it('does not loop create attempts when map creation fails', async () => {
-    mutateAsyncMock.mockRejectedValueOnce(new Error('Create failed'));
+    createMapMutateAsyncMock.mockRejectedValueOnce(new Error('Create failed'));
 
     const { NewMapRouteComponent } = await import('./new.lazy');
     render(<NewMapRouteComponent />);
@@ -108,11 +139,11 @@ describe('NewMapRouteComponent', () => {
       expect(screen.getByText('Failed to create map')).toBeInTheDocument();
     });
 
-    expect(mutateAsyncMock).toHaveBeenCalledTimes(1);
+    expect(createMapMutateAsyncMock).toHaveBeenCalledTimes(1);
   });
 
   it('retries creation only when Retry is clicked', async () => {
-    mutateAsyncMock
+    createMapMutateAsyncMock
       .mockRejectedValueOnce(new Error('Create failed'))
       .mockResolvedValueOnce({
         id: 'map_created_2',
@@ -128,12 +159,12 @@ describe('NewMapRouteComponent', () => {
       expect(screen.getByText('Failed to create map')).toBeInTheDocument();
     });
 
-    expect(mutateAsyncMock).toHaveBeenCalledTimes(1);
+    expect(createMapMutateAsyncMock).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
 
     await waitFor(() => {
-      expect(mutateAsyncMock).toHaveBeenCalledTimes(2);
+      expect(createMapMutateAsyncMock).toHaveBeenCalledTimes(2);
     });
 
     await waitFor(() => {
@@ -141,6 +172,89 @@ describe('NewMapRouteComponent', () => {
         expect.objectContaining({
           to: '/maps/editor/$mapId',
           params: { mapId: 'map_created_2' },
+          replace: true,
+        })
+      );
+    });
+  });
+
+  it('shows invalid map link state and does not auto-create when clone state is malformed', async () => {
+    mockedSearch = {
+      state: '{"mapName":',
+    };
+
+    const { NewMapRouteComponent } = await import('./new.lazy');
+    render(<NewMapRouteComponent />);
+
+    expect(screen.getByText('Invalid map link')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Create empty map' })).toBeInTheDocument();
+    expect(createMapMutateAsyncMock).not.toHaveBeenCalled();
+  });
+
+  it('creates an empty map when user confirms invalid map link recovery', async () => {
+    mockedSearch = {
+      state: '{"mapName":',
+    };
+
+    const { NewMapRouteComponent } = await import('./new.lazy');
+    render(<NewMapRouteComponent />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create empty map' }));
+
+    await waitFor(() => {
+      expect(createMapMutateAsyncMock).toHaveBeenCalledTimes(1);
+    });
+
+    expect(createMapMutateAsyncMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Untitled map',
+        state: 'private',
+        mapState: AdvancedMapAnalyticsUrlStateSchema.parse({}),
+      })
+    );
+    expect(saveSnapshotMutateAsyncMock).not.toHaveBeenCalled();
+  });
+
+  it('retries clone snapshot persistence without creating another map', async () => {
+    mockedSearch = {
+      state: AdvancedMapAnalyticsUrlStateSchema.parse({
+        mapName: 'Clone retry map',
+      }),
+    };
+    saveSnapshotMutateAsyncMock
+      .mockRejectedValueOnce(new Error('Snapshot failed'))
+      .mockResolvedValueOnce({ snapshotId: 'snapshot_2' });
+
+    const { NewMapRouteComponent } = await import('./new.lazy');
+    render(<NewMapRouteComponent />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Failed to create map')).toBeInTheDocument();
+    });
+
+    expect(createMapMutateAsyncMock).toHaveBeenCalledTimes(1);
+    expect(saveSnapshotMutateAsyncMock).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+
+    await waitFor(() => {
+      expect(saveSnapshotMutateAsyncMock).toHaveBeenCalledTimes(2);
+    });
+
+    expect(createMapMutateAsyncMock).toHaveBeenCalledTimes(1);
+    expect(saveSnapshotMutateAsyncMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        mapId: 'map_created_1',
+        mapState: expect.objectContaining({ mapName: 'Clone retry map' }),
+      })
+    );
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: '/maps/editor/$mapId',
+          params: { mapId: 'map_created_1' },
+          search: expect.objectContaining({ mapName: 'Clone retry map' }),
           replace: true,
         })
       );

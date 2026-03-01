@@ -3,18 +3,28 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AdvancedMapAnalyticsUrlStateSchema } from '@/schemas/advanced-map-analytics';
 import { toast } from 'sonner';
 
+const queryClientMock = {};
 const snapshotsQueryMock = vi.fn();
 const updateMutateAsyncMock = vi.fn();
 const saveSnapshotMutateAsyncMock = vi.fn();
 const deleteMapMutateAsyncMock = vi.fn();
 const fetchSnapshotForRestoreMock = vi.fn();
 const clipboardWriteTextMock = vi.fn();
+const ensureShortRedirectUrlMock = vi.fn();
+
+vi.mock('@tanstack/react-query', () => ({
+  useQueryClient: () => queryClientMock,
+}));
 
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
   },
+}));
+
+vi.mock('@/lib/api/shortLinks', () => ({
+  ensureShortRedirectUrl: (...args: unknown[]) => ensureShortRedirectUrlMock(...args),
 }));
 
 vi.mock('@/features/advanced-map-analytics/hooks/use-advanced-map-analytics', () => ({
@@ -45,8 +55,10 @@ describe('MapAnalyticsOwnerConfigModal', () => {
     deleteMapMutateAsyncMock.mockReset();
     fetchSnapshotForRestoreMock.mockReset();
     clipboardWriteTextMock.mockReset();
+    ensureShortRedirectUrlMock.mockReset();
     vi.mocked(toast.success).mockReset();
     vi.mocked(toast.error).mockReset();
+    ensureShortRedirectUrlMock.mockResolvedValue('https://transparenta.eu/share/map-copy');
 
     snapshotsQueryMock.mockReturnValue({
       data: {
@@ -400,6 +412,48 @@ describe('MapAnalyticsOwnerConfigModal', () => {
     expect(screen.queryByRole('button', { name: 'Copy link' })).not.toBeInTheDocument();
   });
 
+  it('shows Copy map button when map is private', async () => {
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentTitle="My map"
+        currentVisibility="private"
+        currentPublicId={null}
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onLoadSnapshot={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Copy map' })).toBeInTheDocument();
+  });
+
+  it('shows Copy map button when map is public', async () => {
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentTitle="My map"
+        currentVisibility="public"
+        currentPublicId="abc123"
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onLoadSnapshot={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Copy map' })).toBeInTheDocument();
+  });
+
   it('shows unavailable public URL message and disabled copy when publicId is missing', async () => {
     const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
     render(
@@ -422,6 +476,109 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       screen.getByText('Public URL is not available yet. Refresh after publishing.')
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Copy link' })).toBeDisabled();
+  });
+
+  it('copies map short link and shows share/open success notification', async () => {
+    clipboardWriteTextMock.mockResolvedValue(undefined);
+    ensureShortRedirectUrlMock.mockResolvedValue('https://transparenta.eu/share/short-map');
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentTitle="My map"
+        currentVisibility="private"
+        currentPublicId={null}
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onLoadSnapshot={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Copy map' }));
+
+    await waitFor(() => {
+      expect(ensureShortRedirectUrlMock).toHaveBeenCalledWith(
+        expect.stringContaining('/maps/editor/new?state='),
+        window.location.origin,
+        queryClientMock
+      );
+    });
+
+    const generatedCloneUrl = ensureShortRedirectUrlMock.mock.calls[0]?.[0] as string;
+    const generatedCloneUrlObject = new URL(generatedCloneUrl);
+    const serializedState = generatedCloneUrlObject.searchParams.get('state');
+    expect(serializedState).not.toBeNull();
+    expect(JSON.parse(String(serializedState))).toEqual(baseMapState);
+
+    await waitFor(() => {
+      expect(clipboardWriteTextMock).toHaveBeenCalledWith('https://transparenta.eu/share/short-map');
+    });
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Map link copied to clipboard', {
+      description: 'Now you can share or open it in a new tab.',
+    });
+  });
+
+  it('falls back to full new-map URL when short-link generation fails', async () => {
+    ensureShortRedirectUrlMock.mockRejectedValue(new Error('short-link failed'));
+    clipboardWriteTextMock.mockResolvedValue(undefined);
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentTitle="My map"
+        currentVisibility="private"
+        currentPublicId={null}
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onLoadSnapshot={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Copy map' }));
+
+    await waitFor(() => {
+      expect(clipboardWriteTextMock).toHaveBeenCalledWith(
+        expect.stringContaining('/maps/editor/new?state=')
+      );
+    });
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Map link copied to clipboard', {
+      description: 'Now you can share or open it in a new tab.',
+    });
+  });
+
+  it('shows error toast when copying map link fails', async () => {
+    ensureShortRedirectUrlMock.mockResolvedValue('https://transparenta.eu/share/short-map');
+    clipboardWriteTextMock.mockRejectedValue(new Error('copy failed'));
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentTitle="My map"
+        currentVisibility="private"
+        currentPublicId={null}
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onLoadSnapshot={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Copy map' }));
+
+    await waitFor(() => {
+      expect(vi.mocked(toast.error)).toHaveBeenCalledWith('Failed to copy map link');
+    });
   });
 
   it('copies public map URL and shows success toast', async () => {

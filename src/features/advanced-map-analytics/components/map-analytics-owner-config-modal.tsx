@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Switch } from '@/components/ui/switch';
+import { ensureShortRedirectUrl } from '@/lib/api/shortLinks';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 import { AdvancedMapAnalyticsDescriptionModal } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal';
 import {
@@ -58,6 +60,7 @@ export function MapAnalyticsOwnerConfigModal({
   onLoadSnapshot,
   onDeleted,
 }: Readonly<MapAnalyticsOwnerConfigModalProps>) {
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [snapshotDescriptionDraft, setSnapshotDescriptionDraft] = useState('');
   const [visibility, setVisibility] = useState<AdvancedMapAnalyticsVisibility>(currentVisibility);
@@ -235,6 +238,36 @@ export function MapAnalyticsOwnerConfigModal({
     onMapDescriptionChange?.(nextDescription);
   };
 
+  const handleCopyMapLink = async () => {
+    const params = new URLSearchParams();
+    params.set('state', JSON.stringify(currentMapState));
+    const mapClonePath = `/maps/editor/new?${params.toString()}`;
+    const currentOrigin =
+      typeof window !== 'undefined' && typeof window.location.origin === 'string'
+        ? window.location.origin
+        : '';
+    const fullMapCloneUrl =
+      currentOrigin.length > 0 ? `${currentOrigin}${mapClonePath}` : mapClonePath;
+
+    let linkToCopy = fullMapCloneUrl;
+    if (currentOrigin.length > 0) {
+      try {
+        linkToCopy = await ensureShortRedirectUrl(fullMapCloneUrl, currentOrigin, queryClient);
+      } catch {
+        // Short-link generation is optional for copy-map; fallback to full URL.
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(linkToCopy);
+      toast.success('Map link copied to clipboard', {
+        description: 'Now you can share or open it in a new tab.',
+      });
+    } catch {
+      toast.error('Failed to copy map link');
+    }
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -318,6 +351,15 @@ export function MapAnalyticsOwnerConfigModal({
                 onClick={() => setIsDescriptionEditorModalOpen(true)}
               >
                 Read more
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => void handleCopyMapLink()}
+                disabled={isBusy}
+              >
+                Copy map
               </Button>
             </section>
 

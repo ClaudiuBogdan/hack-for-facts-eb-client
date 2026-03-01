@@ -67,6 +67,39 @@ describe('share redirect helper', () => {
     expect(consoleErrorSpy).not.toHaveBeenCalled();
   });
 
+  it('preserves encoded clone state query params on share redirects', async () => {
+    parseLocationMock.mockImplementation((location: { href: string }) => ({ href: location.href }));
+    const router = createRouter();
+    const cloneState = {
+      mapName: 'Cloned map',
+      mapZoom: 7.2,
+      mapCenter: [45.12345, 24.98765],
+    };
+    const encodedState = encodeURIComponent(JSON.stringify(cloneState));
+    const redirectUrl = `http://localhost/maps/editor/new?state=${encodedState}`;
+
+    await navigateShareRedirect({
+      redirectUrl,
+      currentOrigin: 'http://localhost',
+      router,
+      navigate: navigateMock,
+      replaceLocation: replaceLocationMock,
+    });
+
+    expect(navigateMock).toHaveBeenCalledWith({
+      href: expect.stringContaining('/maps/editor/new?state='),
+      replace: true,
+    });
+
+    const navigateCall = navigateMock.mock.calls[0]?.[0];
+    const navigatedHref = typeof navigateCall?.href === 'string' ? navigateCall.href : '';
+    const hrefSearchParams = new URLSearchParams(navigatedHref.split('?')[1] ?? '');
+
+    expect(hrefSearchParams.get('state')).toBe(JSON.stringify(cloneState));
+    expect(replaceLocationMock).not.toHaveBeenCalled();
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+  });
+
   it('falls back to hard redirect for invalid URLs', async () => {
     const router = createRouter();
 
