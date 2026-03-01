@@ -27,6 +27,7 @@ export const advancedMapAnalyticsKeys = {
     ['advanced-map-analytics', 'snapshots', mapId, page, pageSize] as const,
   public: (publicId: string) => ['advanced-map-analytics', 'public', publicId] as const,
 };
+const advancedMapAnalyticsPublicPrefixKey = ['advanced-map-analytics', 'public'] as const;
 
 interface SaveSnapshotInput {
   mapId: string;
@@ -75,6 +76,30 @@ function uniquePublicIds(...values: Array<string | null | undefined>): string[] 
   }
 
   return Array.from(resolvedPublicIds);
+}
+
+async function invalidatePublicQueries(queryClient: QueryClient, publicIds: string[]): Promise<void> {
+  if (publicIds.length === 0) {
+    await queryClient.invalidateQueries({ queryKey: advancedMapAnalyticsPublicPrefixKey });
+    return;
+  }
+
+  await Promise.all(
+    publicIds.map((publicId) =>
+      queryClient.invalidateQueries({ queryKey: advancedMapAnalyticsKeys.public(publicId) })
+    )
+  );
+}
+
+function removePublicQueries(queryClient: QueryClient, publicIds: string[]): void {
+  if (publicIds.length === 0) {
+    queryClient.removeQueries({ queryKey: advancedMapAnalyticsPublicPrefixKey });
+    return;
+  }
+
+  for (const publicId of publicIds) {
+    queryClient.removeQueries({ queryKey: advancedMapAnalyticsKeys.public(publicId) });
+  }
 }
 
 export function useAdvancedMapAnalyticsMapsQuery() {
@@ -157,10 +182,8 @@ export function useUpdateAdvancedMapAnalyticsMapMutation() {
         queryClient.invalidateQueries({
           queryKey: ['advanced-map-analytics', 'snapshots', updatedMap.id],
         }),
-        ...publicIdsToInvalidate.map((publicId) =>
-          queryClient.invalidateQueries({ queryKey: advancedMapAnalyticsKeys.public(publicId) })
-        ),
       ]);
+      await invalidatePublicQueries(queryClient, publicIdsToInvalidate);
     },
   });
 }
@@ -186,10 +209,8 @@ export function useSaveAdvancedMapAnalyticsSnapshotMutation() {
           queryKey: ['advanced-map-analytics', 'snapshots', input.mapId],
         }),
         queryClient.invalidateQueries({ queryKey: advancedMapAnalyticsKeys.maps }),
-        ...publicIdsToInvalidate.map((publicId) =>
-          queryClient.invalidateQueries({ queryKey: advancedMapAnalyticsKeys.public(publicId) })
-        ),
       ]);
+      await invalidatePublicQueries(queryClient, publicIdsToInvalidate);
     },
   });
 }
@@ -202,9 +223,7 @@ export function useDeleteAdvancedMapAnalyticsMapMutation() {
     onSuccess: async (_result, input) => {
       const publicIdsToRemove = uniquePublicIds(resolveCachedMapPublicId(queryClient, input.mapId));
       queryClient.removeQueries({ queryKey: advancedMapAnalyticsKeys.map(input.mapId) });
-      for (const publicId of publicIdsToRemove) {
-        queryClient.removeQueries({ queryKey: advancedMapAnalyticsKeys.public(publicId) });
-      }
+      removePublicQueries(queryClient, publicIdsToRemove);
       await queryClient.invalidateQueries({ queryKey: advancedMapAnalyticsKeys.maps });
     },
   });
