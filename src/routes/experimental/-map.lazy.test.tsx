@@ -1,7 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MapSeriesWarning } from '@/lib/map-series/interfaces';
-import { createDefaultExperimentalMapBinsPreset } from '@/schemas/experimental-map';
+import {
+  createDefaultExperimentalMapBinsPreset,
+  createDefaultExperimentalMapSeries,
+} from '@/schemas/experimental-map';
 
 const navigateMock = vi.fn();
 let mockedSearchState: Record<string, unknown> = {};
@@ -42,23 +45,35 @@ const mockWarnings: MapSeriesWarning[] = [
   },
 ];
 
+let mockExperimentalSeriesData = {
+  valuesBySeriesId: new Map<string, Map<string, number | undefined>>(),
+  unitsBySeriesId: new Map<string, string | undefined>(),
+  warnings: mockWarnings,
+  activeSeriesId: undefined as string | undefined,
+  activeValues: undefined as Map<string, number | undefined> | undefined,
+  isLoading: false,
+  isFetching: false,
+  error: null as Error | null,
+};
+
 vi.mock('@/hooks/useExperimentalMapSeriesData', () => ({
-  useExperimentalMapSeriesData: () => ({
-    valuesBySeriesId: new Map(),
-    unitsBySeriesId: new Map(),
-    warnings: mockWarnings,
-    activeSeriesId: undefined,
-    activeValues: undefined,
-    isLoading: false,
-    isFetching: false,
-    error: null,
-  }),
+  useExperimentalMapSeriesData: () => mockExperimentalSeriesData,
 }));
 
 describe('ExperimentalMapPage', () => {
   beforeEach(() => {
     mockedSearchState = {};
     navigateMock.mockReset();
+    mockExperimentalSeriesData = {
+      valuesBySeriesId: new Map(),
+      unitsBySeriesId: new Map(),
+      warnings: mockWarnings,
+      activeSeriesId: undefined,
+      activeValues: undefined,
+      isLoading: false,
+      isFetching: false,
+      error: null,
+    };
   });
 
   it('renders config, series, and bins panels in order and warning details in modal only', async () => {
@@ -93,6 +108,103 @@ describe('ExperimentalMapPage', () => {
 
     expect(screen.getByText('No enabled series.')).toBeInTheDocument();
     expect(screen.queryByText('Map geometry is unavailable.')).not.toBeInTheDocument();
+  });
+
+  it('shows table rows only when active series has defined value', async () => {
+    const activeSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+    const secondarySeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+    if (activeSeries.type === 'aggregated-series-calculation') {
+      throw new Error('Unexpected calculation series in test setup');
+    }
+    if (secondarySeries.type === 'aggregated-series-calculation') {
+      throw new Error('Unexpected calculation series in test setup');
+    }
+
+    mockedSearchState = {
+      activeView: 'table',
+      activeSeriesId: activeSeries.id,
+      series: [activeSeries, secondarySeries],
+    };
+
+    mockExperimentalSeriesData = {
+      valuesBySeriesId: new Map([
+        [
+          activeSeries.id,
+          new Map<string, number | undefined>([
+            ['1001', 10],
+            ['1002', undefined],
+          ]),
+        ],
+        [
+          secondarySeries.id,
+          new Map<string, number | undefined>([
+            ['1001', 50],
+            ['1002', 60],
+          ]),
+        ],
+      ]),
+      unitsBySeriesId: new Map([
+        [activeSeries.id, 'RON'],
+        [secondarySeries.id, 'RON'],
+      ]),
+      warnings: mockWarnings,
+      activeSeriesId: activeSeries.id,
+      activeValues: new Map<string, number | undefined>([
+        ['1001', 10],
+        ['1002', undefined],
+      ]),
+      isLoading: false,
+      isFetching: false,
+      error: null,
+    };
+
+    const { ExperimentalMapPage } = await import('./map.lazy');
+    render(<ExperimentalMapPage />);
+
+    expect(screen.getByText('UAT 1001')).toBeInTheDocument();
+    expect(screen.queryByText('UAT 1002')).not.toBeInTheDocument();
+  });
+
+  it('does not fallback to default RON unit when INS unit is missing from API metadata', async () => {
+    const insSeries = createDefaultExperimentalMapSeries('ins-series');
+    if (insSeries.type !== 'ins-series') {
+      throw new Error('Unexpected series type in test setup');
+    }
+
+    insSeries.label = 'INS Population';
+
+    mockedSearchState = {
+      series: [insSeries],
+      activeSeriesId: insSeries.id,
+    };
+
+    mockExperimentalSeriesData = {
+      valuesBySeriesId: new Map([
+        [
+          insSeries.id,
+          new Map<string, number | undefined>([
+            ['1001', 5630],
+            ['1002', 1250],
+          ]),
+        ],
+      ]),
+      unitsBySeriesId: new Map([[insSeries.id, undefined]]),
+      warnings: [],
+      activeSeriesId: insSeries.id,
+      activeValues: new Map<string, number | undefined>([
+        ['1001', 5630],
+        ['1002', 1250],
+      ]),
+      isLoading: false,
+      isFetching: false,
+      error: null,
+    };
+
+    const { ExperimentalMapPage } = await import('./map.lazy');
+    render(<ExperimentalMapPage />);
+
+    expect(screen.getByText('INS Population')).toBeInTheDocument();
+    expect(screen.queryByText(/RON/)).not.toBeInTheDocument();
   });
 
   it('updates URL state when switching active view from config panel', async () => {

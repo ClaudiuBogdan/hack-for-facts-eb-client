@@ -6,6 +6,9 @@ export type MapSeriesWarningType =
   | 'divide_by_zero'
   | 'mixed_unit'
   | 'sparse_coverage'
+  | 'show_period_growth_ignored'
+  | 'missing_population'
+  | 'missing_dataset_code'
   | 'ins_dataset_missing'
   | 'ins_no_observations'
   | 'ins_no_siruta_values'
@@ -19,7 +22,9 @@ export type MapSeriesWarningType =
   | 'bins_no_active_series'
   | 'bins_active_preset_missing'
   | 'bins_large_count'
-  | 'bins_empty_defined_values';
+  | 'bins_empty_defined_values'
+  // Forward-compatibility for server warning types introduced later.
+  | (string & {});
 
 export interface MapSeriesWarning {
   type: MapSeriesWarningType;

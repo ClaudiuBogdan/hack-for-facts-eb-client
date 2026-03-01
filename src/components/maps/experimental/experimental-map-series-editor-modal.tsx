@@ -197,6 +197,9 @@ function SeriesConfigEditor({ series, allSeries, onUpdateSeries }: Readonly<Seri
       hasUatData: true,
       hasSiruta: true,
     },
+    allowedTerritoryLevels: ['LAU'],
+    autoSelectTerritoryDefaults: false,
+    autoReapplyTerritoryOnEmpty: false,
     applyPatch: (patch) => {
       onUpdateSeries(series.id, (draft) => {
         if (draft.type !== 'ins-series') {

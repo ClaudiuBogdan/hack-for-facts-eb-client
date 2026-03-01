@@ -353,6 +353,7 @@ export type InsSeriesAggregation = z.infer<typeof InsSeriesAggregationSchema>;
 
 export const InsSeriesConfigurationSchema = BaseSeriesConfigurationSchema.extend({
   type: z.literal('ins-series').describe('Series type: "ins-series" - INS Tempo dataset series. Queries INS observations from the GraphQL INS module and maps them to chart-compatible time-series points. Supports dimensions (territory, classifications, units), temporal filters, and reducer-based aggregation when multiple observations exist per period.'),
+  unit: z.string().optional().default('').describe('Unit of measurement for INS values. Usually inferred from dataset observations. Leave empty to auto-detect from API metadata.'),
   datasetCode: z.string().optional().describe('INS dataset code (matrix code), for example "POP107D". Required for querying observations. Selected from INS datasets catalog.'),
   period: ReportPeriodInputZ.optional().describe('INS period selection using the same report-period interface as execution series. Supports period type (YEAR/QUARTER/MONTH) and either dates or interval selection.'),
   aggregation: InsSeriesAggregationSchema.default('sum').describe('Reducer used when multiple INS observations match the same period. "sum" adds all values, "average" computes arithmetic mean, "first" keeps the first ordered observation.'),

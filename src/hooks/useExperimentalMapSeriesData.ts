@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { Currency } from '@/schemas/charts';
 import type { MapBaseSeries, MapSupportedSeries } from '@/schemas/experimental-map';
-import { fetchGroupedSeriesData, fetchMockInsSeriesVectors } from '@/lib/api/map-series';
+import { fetchGroupedSeriesData } from '@/lib/api/map-series';
 import { calculateMapSeriesValues } from '@/lib/map-series/calculation';
 import { parseGroupedSeriesWideCsv } from '@/lib/map-series/csv';
 import type {
@@ -51,21 +51,7 @@ export function useExperimentalMapSeriesData(
   const normalizedBaseSeries = useMemo(
     () =>
       normalizedEnabledSeries
-        .filter(
-          (series): series is MapBaseSeries =>
-            series.type !== 'aggregated-series-calculation' && series.type !== 'ins-series'
-        )
-        .sort((left, right) => left.id.localeCompare(right.id)),
-    [normalizedEnabledSeries]
-  );
-
-  const normalizedInsSeries = useMemo(
-    () =>
-      normalizedEnabledSeries
-        .filter(
-          (series): series is Extract<MapSupportedSeries, { type: 'ins-series' }> =>
-            series.type === 'ins-series'
-        )
+        .filter((series): series is MapBaseSeries => series.type !== 'aggregated-series-calculation')
         .sort((left, right) => left.id.localeCompare(right.id)),
     [normalizedEnabledSeries]
   );
@@ -117,54 +103,27 @@ export function useExperimentalMapSeriesData(
     enabled: isBrowser && (params.enabled ?? true),
   });
 
-  const insSeriesHash = useMemo(
-    () =>
-      generateHash(
-        stableSerialize(
-          normalizedInsSeries.map((series) => ({
-            id: series.id,
-            type: series.type,
-            payload: normalizeSeriesForFetch(series),
-          }))
-        )
-      ),
-    [normalizedInsSeries]
-  );
-
-  const insSeriesQuery = useQuery<Awaited<ReturnType<typeof fetchMockInsSeriesVectors>>, Error>({
-    queryKey: ['experimental-map-ins-series-data', insSeriesHash],
-    queryFn: async () => {
-      if (normalizedInsSeries.length === 0) {
-        return {
-          valuesBySeriesId: new Map(),
-          unitsBySeriesId: new Map(),
-          warnings: [],
-        };
-      }
-
-      return fetchMockInsSeriesVectors(normalizedInsSeries);
-    },
-    staleTime: convertDaysToMs(1),
-    gcTime: convertDaysToMs(3),
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    refetchOnMount: false,
-    enabled: isBrowser && (params.enabled ?? true),
-  });
-
   const calculated = useMemo(() => {
     const groupedResponse = groupedDataQuery.data;
-    const insResponse = insSeriesQuery.data;
     const baseVectors: MapSeriesVectorCache = new Map();
     const baseUnits = new Map<string, string | undefined>();
     const warnings: MapSeriesWarning[] = [];
+
+    for (const baseSeries of normalizedBaseSeries) {
+      baseVectors.set(baseSeries.id, new Map());
+      baseUnits.set(baseSeries.id, resolveSeriesUnitOverride(baseSeries));
+    }
 
     if (groupedResponse) {
       for (const manifestSeries of groupedResponse.manifest.series) {
         if (!baseVectors.has(manifestSeries.series_id)) {
           baseVectors.set(manifestSeries.series_id, new Map());
         }
-        baseUnits.set(manifestSeries.series_id, manifestSeries.unit);
+
+        const manifestUnit = normalizeUnit(manifestSeries.unit);
+        if (manifestUnit !== undefined || !baseUnits.has(manifestSeries.series_id)) {
+          baseUnits.set(manifestSeries.series_id, manifestUnit);
+        }
       }
 
       const parsedPayload = parseGroupedSeriesWideCsv(groupedResponse.payload.data);
@@ -192,29 +151,6 @@ export function useExperimentalMapSeriesData(
       }
     }
 
-    if (insResponse) {
-      for (const [seriesId, vector] of insResponse.valuesBySeriesId.entries()) {
-        if (!baseVectors.has(seriesId)) {
-          baseVectors.set(seriesId, new Map());
-        }
-        const targetVector = baseVectors.get(seriesId);
-        if (targetVector === undefined) {
-          continue;
-        }
-        for (const [sirutaCode, value] of vector.entries()) {
-          targetVector.set(sirutaCode, value);
-        }
-      }
-
-      for (const [seriesId, unit] of insResponse.unitsBySeriesId.entries()) {
-        baseUnits.set(seriesId, unit);
-      }
-
-      if (insResponse.warnings.length > 0) {
-        warnings.push(...insResponse.warnings);
-      }
-    }
-
     const calculationResult = calculateMapSeriesValues({
       series: normalizedEnabledSeries,
       baseValuesBySeriesId: baseVectors,
@@ -238,8 +174,8 @@ export function useExperimentalMapSeriesData(
     };
   }, [
     groupedDataQuery.data,
-    insSeriesQuery.data,
     normalizedEnabledSeries,
+    normalizedBaseSeries,
     params.urlSearchLength,
   ]);
 
@@ -261,9 +197,9 @@ export function useExperimentalMapSeriesData(
     activeValues: resolvedActiveSeriesId
       ? calculated.valuesBySeriesId.get(resolvedActiveSeriesId)
       : undefined,
-    isLoading: groupedDataQuery.isLoading || insSeriesQuery.isLoading,
-    isFetching: groupedDataQuery.isFetching || insSeriesQuery.isFetching,
-    error: groupedDataQuery.error ?? insSeriesQuery.error ?? null,
+    isLoading: groupedDataQuery.isLoading,
+    isFetching: groupedDataQuery.isFetching,
+    error: groupedDataQuery.error ?? null,
   };
 }
 
@@ -306,10 +242,12 @@ function normalizeSeriesDefaults(
 }
 
 function normalizeSeriesForFetch(series: MapBaseSeries): unknown {
+  const unit = resolveSeriesUnitOverride(series);
+
   if (series.type === 'line-items-aggregated-yearly') {
     return {
       type: series.type,
-      unit: series.unit,
+      unit,
       filter: series.filter,
     };
   }
@@ -318,14 +256,14 @@ function normalizeSeriesForFetch(series: MapBaseSeries): unknown {
     return {
       type: series.type,
       metric: series.metric,
-      unit: series.unit,
+      unit,
       filter: series.filter,
     };
   }
 
   return {
     type: series.type,
-    unit: series.unit,
+    unit,
     datasetCode: series.datasetCode,
     period: series.period,
     aggregation: series.aggregation,
@@ -363,4 +301,27 @@ function stableSerialize(value: unknown): string {
   return `{${objectEntries
     .map(([key, entryValue]) => `${JSON.stringify(key)}:${stableSerialize(entryValue)}`)
     .join(',')}}`;
+}
+
+function normalizeUnit(unit: string | undefined): string | undefined {
+  if (typeof unit !== 'string') {
+    return undefined;
+  }
+
+  const trimmed = unit.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function resolveSeriesUnitOverride(series: MapBaseSeries): string | undefined {
+  const normalizedUnit = normalizeUnit(series.unit);
+  if (normalizedUnit === undefined) {
+    return undefined;
+  }
+
+  if (series.type === 'ins-series' && normalizedUnit.toUpperCase() === 'RON') {
+    // INS series should never inherit currency defaults when no dataset unit is available.
+    return undefined;
+  }
+
+  return normalizedUnit;
 }

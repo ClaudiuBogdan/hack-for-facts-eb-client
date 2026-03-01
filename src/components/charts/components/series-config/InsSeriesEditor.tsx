@@ -12,7 +12,13 @@ import type { OptionItem } from '@/components/filters/base-filter/interfaces';
 import { PeriodFilter } from '@/components/filters/period-filter/PeriodFilter';
 
 import { InsSeriesConfigurationSchema } from '@/schemas/charts';
-import type { InsDataset, InsDatasetDetails, InsDimension } from '@/schemas/ins';
+import type {
+  InsDataset,
+  InsDatasetDetails,
+  InsDimension,
+  InsDimensionValue,
+  InsTerritoryLevel,
+} from '@/schemas/ins';
 import type { ReportPeriodInput, ReportPeriodType } from '@/schemas/reporting';
 import { useChartStore } from '../../hooks/useChartStore';
 import { getInsDatasetDetails, getInsDimensionValuesPage } from '@/lib/api/ins';
@@ -43,6 +49,9 @@ export interface InsSeriesEditorAdapter {
   series?: InsSeriesConfiguration;
   applyPatch: (patch: Partial<InsSeriesConfiguration>) => void;
   datasetFilter?: InsSeriesEditorDatasetFilter;
+  allowedTerritoryLevels?: InsTerritoryLevel[];
+  autoSelectTerritoryDefaults?: boolean;
+  autoReapplyTerritoryOnEmpty?: boolean;
 }
 
 interface InsSeriesEditorProps {
@@ -59,6 +68,13 @@ interface InsDimensionFilterListProps {
   dimensionIndex: number;
   optionKind: InsDimensionOptionKind;
   classificationTypeCode?: string;
+  allowedTerritoryLevels?: InsTerritoryLevel[];
+}
+
+interface InsSeriesEditorTerritoryPolicy {
+  allowedTerritoryLevels?: InsTerritoryLevel[];
+  autoSelectTerritoryDefaults: boolean;
+  autoReapplyTerritoryOnEmpty: boolean;
 }
 
 function getDatasetDisplayName(
@@ -118,6 +134,40 @@ function buildInsTempoDatasetUrl(datasetCode: string, locale: InsLocale): string
   return `${INS_TEMPO_BASE_URL}?${params.toString()}`;
 }
 
+function normalizeAllowedTerritoryLevels(
+  allowedTerritoryLevels: InsTerritoryLevel[] | undefined
+): InsTerritoryLevel[] | undefined {
+  if (allowedTerritoryLevels === undefined || allowedTerritoryLevels.length === 0) {
+    return undefined;
+  }
+
+  const normalized = Array.from(new Set(allowedTerritoryLevels))
+    .map((level) => String(level).trim())
+    .filter((level): level is InsTerritoryLevel => level.length > 0)
+    .sort((left, right) => left.localeCompare(right));
+
+  return normalized.length > 0 ? normalized : undefined;
+}
+
+function filterDimensionValuesByAllowedTerritoryLevels(
+  values: InsDimensionValue[],
+  optionKind: InsDimensionOptionKind,
+  allowedTerritoryLevels: InsTerritoryLevel[] | undefined
+): InsDimensionValue[] {
+  if (
+    allowedTerritoryLevels === undefined ||
+    (optionKind !== 'territory' && optionKind !== 'siruta')
+  ) {
+    return values;
+  }
+
+  const allowedLevelSet = new Set<InsTerritoryLevel>(allowedTerritoryLevels);
+  return values.filter((value) => {
+    const level = value.territory?.level;
+    return typeof level === 'string' && allowedLevelSet.has(level as InsTerritoryLevel);
+  });
+}
+
 function InsDimensionFilterList({
   title,
   icon,
@@ -127,6 +177,7 @@ function InsDimensionFilterList({
   dimensionIndex,
   optionKind,
   classificationTypeCode,
+  allowedTerritoryLevels,
 }: InsDimensionFilterListProps) {
   const ListComponent = useMemo(() => {
     function Component(props: {
@@ -143,12 +194,13 @@ function InsDimensionFilterList({
           dimensionIndex={dimensionIndex}
           optionKind={optionKind}
           classificationTypeCode={classificationTypeCode}
+          allowedTerritoryLevels={allowedTerritoryLevels}
         />
       );
     }
 
     return Component;
-  }, [classificationTypeCode, datasetCode, dimensionIndex, optionKind]);
+  }, [allowedTerritoryLevels, classificationTypeCode, datasetCode, dimensionIndex, optionKind]);
 
   return (
     <FilterListContainer
@@ -162,7 +214,8 @@ function InsDimensionFilterList({
 }
 
 async function buildDatasetDefaultPatch(
-  dataset: InsDatasetDetails
+  dataset: InsDatasetDetails,
+  territoryPolicy: InsSeriesEditorTerritoryPolicy
 ): Promise<Partial<InsSeriesConfiguration>> {
   const allowedPeriodTypes = mapDatasetPeriodicitiesToAllowedTypes(dataset.periodicity ?? []);
   const preferredType = allowedPeriodTypes[0] ?? 'YEAR';
@@ -179,6 +232,10 @@ async function buildDatasetDefaultPatch(
   for (const dimension of dimensions) {
     if (dimension.type === 'TEMPORAL') continue;
 
+    if (dimension.type === 'TERRITORIAL' && !territoryPolicy.autoSelectTerritoryDefaults) {
+      continue;
+    }
+
     const connection = await getInsDimensionValuesPage({
       datasetCode: dataset.code,
       dimensionIndex: dimension.index,
@@ -186,7 +243,19 @@ async function buildDatasetDefaultPatch(
       offset: 0,
     });
 
-    const selected = pickDefaultDimensionValue(connection.nodes ?? []);
+    const optionKind: InsDimensionOptionKind =
+      dimension.type === 'CLASSIFICATION'
+        ? 'classification'
+        : dimension.type === 'UNIT_OF_MEASURE'
+          ? 'unit'
+          : 'territory';
+    const filteredValues = filterDimensionValuesByAllowedTerritoryLevels(
+      connection.nodes ?? [],
+      optionKind,
+      territoryPolicy.allowedTerritoryLevels
+    );
+
+    const selected = pickDefaultDimensionValue(filteredValues);
     if (!selected) continue;
 
     if (dimension.type === 'TERRITORIAL') {
@@ -267,6 +336,12 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
   const [unitLabelsByCode, setUnitLabelsByCode] = useState<Record<string, string>>({});
   const [territoryLabelsByCode, setTerritoryLabelsByCode] = useState<Record<string, string>>({});
   const [sirutaLabelsByCode, setSirutaLabelsByCode] = useState<Record<string, string>>({});
+  const allowedTerritoryLevels = useMemo(
+    () => normalizeAllowedTerritoryLevels(adapter.allowedTerritoryLevels),
+    [adapter.allowedTerritoryLevels]
+  );
+  const autoSelectTerritoryDefaults = adapter.autoSelectTerritoryDefaults ?? true;
+  const autoReapplyTerritoryOnEmpty = adapter.autoReapplyTerritoryOnEmpty ?? true;
 
   useEffect(() => {
     setClassificationLabelsByTypeCode({});
@@ -377,7 +452,12 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
       offset: 0,
     });
 
-    const defaultValue = pickDefaultDimensionValue(response.nodes ?? []);
+    const filteredValues = filterDimensionValuesByAllowedTerritoryLevels(
+      response.nodes ?? [],
+      optionKind,
+      allowedTerritoryLevels
+    );
+    const defaultValue = pickDefaultDimensionValue(filteredValues);
     if (!defaultValue) return null;
     return mapInsDimensionValueToOption(defaultValue, optionKind, classificationTypeCode, locale);
   };
@@ -399,7 +479,11 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
     const details = await getInsDatasetDetails(datasetCode);
     if (latestDatasetRequestIdRef.current !== requestId || !details) return;
 
-    const defaults = await buildDatasetDefaultPatch(details);
+    const defaults = await buildDatasetDefaultPatch(details, {
+      allowedTerritoryLevels,
+      autoSelectTerritoryDefaults,
+      autoReapplyTerritoryOnEmpty,
+    });
     if (latestDatasetRequestIdRef.current !== requestId) return;
 
     update({
@@ -771,6 +855,7 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
                     datasetCode={dataset.code}
                     dimensionIndex={dimension.index}
                     optionKind={isPrimaryTerritoryDimension ? 'territory' : 'siruta'}
+                    allowedTerritoryLevels={allowedTerritoryLevels}
                   />
                 );
               }

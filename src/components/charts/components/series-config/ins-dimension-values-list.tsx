@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { t } from '@lingui/core/macro';
 import type { VirtualItem } from '@tanstack/react-virtual';
 
@@ -10,6 +10,7 @@ import { ListOption } from '@/components/filters/base-filter/ListOption';
 import { SearchInput } from '@/components/filters/base-filter/SearchInput';
 import { getInsDimensionValuesPage } from '@/lib/api/ins';
 import { cn, getUserLocale } from '@/lib/utils';
+import type { InsDimensionValue, InsTerritoryLevel } from '@/schemas/ins';
 import {
   mapInsDimensionValueToOption,
   type InsDimensionOptionKind,
@@ -20,6 +21,7 @@ interface InsDimensionValuesListProps extends BaseListProps {
   dimensionIndex: number;
   optionKind: InsDimensionOptionKind;
   classificationTypeCode?: string;
+  allowedTerritoryLevels?: InsTerritoryLevel[];
 }
 
 function dedupeOptions(options: OptionItem[]): OptionItem[] {
@@ -57,6 +59,40 @@ function getAriaLabel(optionKind: InsDimensionOptionKind): string {
   return t`Locality options`;
 }
 
+function normalizeAllowedTerritoryLevels(
+  allowedTerritoryLevels: InsTerritoryLevel[] | undefined
+): InsTerritoryLevel[] | undefined {
+  if (allowedTerritoryLevels === undefined || allowedTerritoryLevels.length === 0) {
+    return undefined;
+  }
+
+  const normalized = Array.from(new Set(allowedTerritoryLevels))
+    .map((level) => String(level).trim())
+    .filter((level): level is InsTerritoryLevel => level.length > 0)
+    .sort((left, right) => left.localeCompare(right));
+
+  return normalized.length > 0 ? normalized : undefined;
+}
+
+function filterDimensionValuesByAllowedTerritoryLevels(
+  values: InsDimensionValue[],
+  optionKind: InsDimensionOptionKind,
+  allowedTerritoryLevels: InsTerritoryLevel[] | undefined
+): InsDimensionValue[] {
+  if (
+    allowedTerritoryLevels === undefined ||
+    (optionKind !== 'territory' && optionKind !== 'siruta')
+  ) {
+    return values;
+  }
+
+  const allowedLevelSet = new Set<InsTerritoryLevel>(allowedTerritoryLevels);
+  return values.filter((value) => {
+    const level = value.territory?.level;
+    return typeof level === 'string' && allowedLevelSet.has(level as InsTerritoryLevel);
+  });
+}
+
 export function InsDimensionValuesList({
   selectedOptions,
   toggleSelect,
@@ -66,11 +102,17 @@ export function InsDimensionValuesList({
   dimensionIndex,
   optionKind,
   classificationTypeCode,
+  allowedTerritoryLevels,
 }: InsDimensionValuesListProps) {
   const [searchFilter, setSearchFilter] = useState('');
   const locale = getUserLocale() === 'en' ? 'en' : 'ro';
   const searchVisibilityThreshold = 15;
   const placeholder = getPlaceholder(optionKind);
+  const normalizedAllowedTerritoryLevels = useMemo(
+    () => normalizeAllowedTerritoryLevels(allowedTerritoryLevels),
+    [allowedTerritoryLevels]
+  );
+  const territoryLevelPolicyKey = normalizedAllowedTerritoryLevels?.join('|') ?? '';
 
   const {
     items,
@@ -92,6 +134,7 @@ export function InsDimensionValuesList({
       classificationTypeCode ?? '',
       locale,
       searchFilter,
+      territoryLevelPolicyKey,
     ],
     queryFn: async ({ pageParam = 0 }): Promise<PageData<OptionItem>> => {
       const response = await getInsDimensionValuesPage({
@@ -102,8 +145,13 @@ export function InsDimensionValuesList({
         offset: pageParam,
       });
 
+      const filteredValues = filterDimensionValuesByAllowedTerritoryLevels(
+        response.nodes,
+        optionKind,
+        normalizedAllowedTerritoryLevels
+      );
       const mappedOptions = dedupeOptions(
-        response.nodes
+        filteredValues
           .map((value) =>
             mapInsDimensionValueToOption(value, optionKind, classificationTypeCode, locale)
           )

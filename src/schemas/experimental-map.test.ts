@@ -73,4 +73,13 @@ describe('ExperimentalMapUrlStateSchema', () => {
     expect(parsed.activeBinPresetId).toBeUndefined();
     expect(parsed.activeView).toBe('map');
   });
+
+  it('defaults INS series unit to empty string', () => {
+    const insSeries = createDefaultExperimentalMapSeries('ins-series');
+    if (insSeries.type !== 'ins-series') {
+      throw new Error('Expected ins-series default');
+    }
+
+    expect(insSeries.unit).toBe('');
+  });
 });

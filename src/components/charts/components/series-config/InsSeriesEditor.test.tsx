@@ -73,10 +73,14 @@ vi.mock('./ins-dimension-values-list', () => ({
   InsDimensionValuesList: ({
     optionKind,
     toggleSelect,
+    allowedTerritoryLevels,
   }: {
     optionKind: 'classification' | 'unit' | 'territory' | 'siruta';
     toggleSelect: (option: { id: string; label: string }) => void;
+    allowedTerritoryLevels?: string[];
   }) => {
+    lastAllowedTerritoryLevelsByOptionKind[optionKind] = allowedTerritoryLevels;
+
     if (optionKind === 'classification') {
       return (
         <div>
@@ -138,6 +142,7 @@ vi.mock('./ins-dimension-values-list', () => ({
 const mockUpdateSeries = vi.fn();
 let applySeriesPatch: ((seriesId: string, patch: Record<string, unknown>) => void) | null = null;
 let lastDatasetFilter: { hasUatData?: boolean; hasSiruta?: boolean } | undefined;
+let lastAllowedTerritoryLevelsByOptionKind: Record<string, string[] | undefined> = {};
 
 vi.mock('../../hooks/useChartStore', () => ({
   useChartStore: () => ({
@@ -223,6 +228,29 @@ function renderEditor(seriesOverrides: Record<string, unknown> = {}) {
   return render(<StatefulEditor />, { queryClient });
 }
 
+function renderEditorWithAdapter(params: {
+  seriesOverrides?: Record<string, unknown>;
+  adapterOverrides?: Record<string, unknown>;
+  applyPatch?: (patch: Partial<Record<string, unknown>>) => void;
+}) {
+  const queryClient = createTestQueryClient();
+  const series = createSeries(params.seriesOverrides);
+  const applyPatch = params.applyPatch ?? vi.fn();
+
+  render(
+    <InsSeriesEditor
+      adapter={{
+        series,
+        applyPatch,
+        ...(params.adapterOverrides ?? {}),
+      }}
+    />,
+    { queryClient }
+  );
+
+  return { applyPatch };
+}
+
 function createDeferred<T>() {
   let resolve: (value: T) => void = () => undefined;
   const promise = new Promise<T>((innerResolve) => {
@@ -254,6 +282,7 @@ describe('InsSeriesEditor', () => {
     vi.clearAllMocks();
     applySeriesPatch = null;
     lastDatasetFilter = undefined;
+    lastAllowedTerritoryLevelsByOptionKind = {};
     mockUpdateSeries.mockImplementation((seriesId, patch) => {
       applySeriesPatch?.(seriesId, patch as Record<string, unknown>);
     });
@@ -941,6 +970,159 @@ describe('InsSeriesEditor', () => {
 
     expect(screen.queryByText('SIRUTA Codes')).not.toBeInTheDocument();
     expect(screen.queryByText('Unit Codes')).not.toBeInTheDocument();
+  });
+
+  it('does not auto-select territorial defaults in map policy mode', async () => {
+    const applyPatch = vi.fn();
+
+    mockGetInsDatasetDetails.mockResolvedValue(
+      createDatasetDetails({
+        code: 'POP212B',
+        name_ro: 'Divorturi pe judete',
+        dimensions: [
+          {
+            index: 3,
+            type: 'TERRITORIAL',
+            label_ro: 'Teritoriu',
+          },
+        ],
+      })
+    );
+    mockGetInsDimensionValuesPage.mockResolvedValue(
+      createDimensionConnection([
+        {
+          nom_item_id: 1,
+          dimension_type: 'TERRITORIAL',
+          territory: { code: 'RO', level: 'NATIONAL', name_ro: 'Romania' },
+        },
+        {
+          nom_item_id: 2,
+          dimension_type: 'TERRITORIAL',
+          territory: { code: '54975', siruta_code: '54975', level: 'LAU', name_ro: 'Sibiu' },
+        },
+      ])
+    );
+
+    renderEditorWithAdapter({
+      applyPatch,
+      adapterOverrides: {
+        allowedTerritoryLevels: ['LAU'],
+        autoSelectTerritoryDefaults: false,
+        autoReapplyTerritoryOnEmpty: false,
+      },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /Dataset POP212B/i }));
+
+    await waitFor(() => {
+      expect(applyPatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          datasetCode: 'POP212B',
+        })
+      );
+    });
+
+    const territorialSelectionCalls = applyPatch.mock.calls.filter(([patch]) => {
+      const recordPatch = patch as Record<string, unknown> | undefined;
+      return (
+        Array.isArray(recordPatch?.territoryCodes) || Array.isArray(recordPatch?.sirutaCodes)
+      );
+    });
+
+    expect(territorialSelectionCalls).toHaveLength(0);
+  });
+
+  it('keeps territorial selection empty when cleared in map policy mode', async () => {
+    const applyPatch = vi.fn();
+
+    mockGetInsDatasetDetails.mockResolvedValue(
+      createDatasetDetails({
+        code: 'POP107D',
+        dimensions: [
+          {
+            index: 3,
+            type: 'TERRITORIAL',
+            label_ro: 'Teritoriu',
+          },
+        ],
+      })
+    );
+    mockGetInsDimensionValuesPage.mockResolvedValue(
+      createDimensionConnection([
+        {
+          nom_item_id: 1,
+          dimension_type: 'TERRITORIAL',
+          territory: { code: 'RO', level: 'NATIONAL', name_ro: 'Romania' },
+        },
+      ])
+    );
+
+    renderEditorWithAdapter({
+      applyPatch,
+      seriesOverrides: {
+        datasetCode: 'POP107D',
+        territoryCodes: ['CJ'],
+      },
+      adapterOverrides: {
+        allowedTerritoryLevels: ['LAU'],
+        autoSelectTerritoryDefaults: false,
+        autoReapplyTerritoryOnEmpty: false,
+      },
+    });
+
+    const clearButtons = await screen.findAllByRole('button', { name: /^Clear$/i });
+    fireEvent.click(clearButtons[clearButtons.length - 1]!);
+
+    await waitFor(() => {
+      expect(applyPatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          territoryCodes: undefined,
+        })
+      );
+    });
+
+    const fallbackCalls = applyPatch.mock.calls.filter(([patch]) => {
+      const recordPatch = patch as Record<string, unknown> | undefined;
+      return (
+        Array.isArray(recordPatch?.territoryCodes) &&
+        recordPatch.territoryCodes.includes('RO')
+      );
+    });
+    expect(fallbackCalls).toHaveLength(0);
+  });
+
+  it('forwards LAU-only territory policy to dimension lists in adapter mode', async () => {
+    mockGetInsDatasetDetails.mockResolvedValue(
+      createDatasetDetails({
+        code: 'POP107D',
+        dimensions: [
+          {
+            index: 2,
+            type: 'TERRITORIAL',
+            label_ro: 'Judete',
+          },
+          {
+            index: 3,
+            type: 'TERRITORIAL',
+            label_ro: 'Localitati',
+          },
+        ],
+      })
+    );
+
+    renderEditorWithAdapter({
+      seriesOverrides: {
+        datasetCode: 'POP107D',
+      },
+      adapterOverrides: {
+        allowedTerritoryLevels: ['LAU'],
+      },
+    });
+
+    await waitFor(() => {
+      expect(lastAllowedTerritoryLevelsByOptionKind['territory']).toEqual(['LAU']);
+      expect(lastAllowedTerritoryLevelsByOptionKind['siruta']).toEqual(['LAU']);
+    });
   });
 
   it('supports adapter mode and forwards dataset capability filter', async () => {

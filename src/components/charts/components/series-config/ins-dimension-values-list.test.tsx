@@ -187,4 +187,121 @@ describe('InsDimensionValuesList', () => {
 
     expect(screen.queryByLabelText('Search classification values')).not.toBeInTheDocument();
   });
+
+  it('filters territorial options by allowed territory levels', async () => {
+    mockGetInsDimensionValuesPage.mockResolvedValue({
+      nodes: [
+        {
+          nom_item_id: 1,
+          dimension_type: 'TERRITORIAL',
+          territory: {
+            code: 'RO',
+            level: 'NATIONAL',
+            name_ro: 'Romania',
+          },
+        },
+        {
+          nom_item_id: 2,
+          dimension_type: 'TERRITORIAL',
+          territory: {
+            code: 'CJ',
+            level: 'NUTS3',
+            name_ro: 'Cluj',
+          },
+        },
+        {
+          nom_item_id: 3,
+          dimension_type: 'TERRITORIAL',
+          territory: {
+            code: '4001',
+            siruta_code: '4001',
+            level: 'LAU',
+            name_ro: 'Localitate Test',
+          },
+        },
+      ],
+      pageInfo,
+    } satisfies InsDimensionValueConnection);
+
+    const queryClient = createTestQueryClient();
+    render(
+      <InsDimensionValuesList
+        selectedOptions={[]}
+        toggleSelect={vi.fn()}
+        datasetCode="POP107D"
+        dimensionIndex={3}
+        optionKind="territory"
+        allowedTerritoryLevels={['LAU']}
+      />,
+      { queryClient }
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('4001 - Localitate Test')).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText('RO - Romania')).not.toBeInTheDocument();
+    expect(screen.queryByText('CJ - Cluj')).not.toBeInTheDocument();
+  });
+
+  it('refetches when territory level policy changes', async () => {
+    mockGetInsDimensionValuesPage.mockResolvedValue({
+      nodes: [
+        {
+          nom_item_id: 1,
+          dimension_type: 'TERRITORIAL',
+          territory: {
+            code: 'RO',
+            level: 'NATIONAL',
+            name_ro: 'Romania',
+          },
+        },
+        {
+          nom_item_id: 2,
+          dimension_type: 'TERRITORIAL',
+          territory: {
+            code: '4001',
+            siruta_code: '4001',
+            level: 'LAU',
+            name_ro: 'Localitate Test',
+          },
+        },
+      ],
+      pageInfo,
+    } satisfies InsDimensionValueConnection);
+
+    const queryClient = createTestQueryClient();
+    const rendered = render(
+      <InsDimensionValuesList
+        selectedOptions={[]}
+        toggleSelect={vi.fn()}
+        datasetCode="POP107D"
+        dimensionIndex={3}
+        optionKind="territory"
+        allowedTerritoryLevels={['LAU']}
+      />,
+      { queryClient }
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('4001 - Localitate Test')).toBeInTheDocument();
+      expect(screen.queryByText('RO - Romania')).not.toBeInTheDocument();
+    });
+
+    rendered.rerender(
+      <InsDimensionValuesList
+        selectedOptions={[]}
+        toggleSelect={vi.fn()}
+        datasetCode="POP107D"
+        dimensionIndex={3}
+        optionKind="territory"
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('RO - Romania')).toBeInTheDocument();
+    });
+
+    expect(mockGetInsDimensionValuesPage).toHaveBeenCalledTimes(2);
+  });
 });

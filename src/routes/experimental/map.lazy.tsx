@@ -423,8 +423,8 @@ export function ExperimentalMapPage() {
 
     return orderedSeries.map((series) => ({
       id: series.id,
-      label: series.label.trim().length > 0 ? series.label : series.id,
-      unit: unitsBySeriesId.get(series.id) ?? series.unit,
+      label: resolveSeriesDisplayLabel(series),
+      unit: resolveSeriesDisplayUnit(series, unitsBySeriesId),
     }));
   }, [activeSeriesId, enabledSeries, unitsBySeriesId]);
 
@@ -456,15 +456,23 @@ export function ExperimentalMapPage() {
   }, [geoJsonFeatures]);
 
   const tableRows = useMemo<ExperimentalMapTableRow[]>(() => {
+    const activeSeriesColumn = activeSeriesId
+      ? seriesColumns.find((seriesColumn) => seriesColumn.id === activeSeriesId)
+      : undefined;
+    const rowScopeSeriesColumns = activeSeriesColumn ? [activeSeriesColumn] : seriesColumns;
     const uniqueSirutaCodes = new Set<string>();
 
-    for (const seriesColumn of seriesColumns) {
+    for (const seriesColumn of rowScopeSeriesColumns) {
       const vector = valuesBySeriesId.get(seriesColumn.id);
       if (!vector) {
         continue;
       }
 
-      for (const sirutaCode of vector.keys()) {
+      for (const [sirutaCode, value] of vector.entries()) {
+        if (value === undefined) {
+          continue;
+        }
+
         uniqueSirutaCodes.add(String(sirutaCode));
       }
     }
@@ -497,7 +505,7 @@ export function ExperimentalMapPage() {
         }
         return left.sirutaCode.localeCompare(right.sirutaCode);
       });
-  }, [seriesColumns, uatMetadataBySirutaCode, valuesBySeriesId]);
+  }, [activeSeriesId, seriesColumns, uatMetadataBySirutaCode, valuesBySeriesId]);
 
   const toggleBinFilterSelection = useCallback(
     (presetId: string, groupId: string, checked: boolean) => {
@@ -571,7 +579,7 @@ export function ExperimentalMapPage() {
     }) => {
       if (!activeSeries) {
         return `
-          <div style="font-family:Inter,sans-serif;font-size:13px;min-width:220px;max-width:320px;padding:8px;">
+          <div style="font-family:Inter,sans-serif;font-size:13px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:220px;max-width:320px;padding:8px;">
             <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${escapeHtml(
               String(properties.name ?? 'UAT')
             )}</div>
@@ -583,10 +591,10 @@ export function ExperimentalMapPage() {
       const sirutaCode = String(properties.natcode ?? '');
       const seriesRows = enabledSeries.map((series) => {
         const seriesValue = valuesBySeriesId.get(series.id)?.get(sirutaCode);
-        const unit = unitsBySeriesId.get(series.id) ?? series.unit;
+        const unit = resolveSeriesDisplayUnit(series, unitsBySeriesId);
         const formattedValue = formatExperimentalMapSeriesValue(seriesValue, unit);
         return {
-          label: series.label || series.id,
+          label: resolveSeriesDisplayLabel(series),
           value: formattedValue,
           isActive: series.id === activeSeriesId,
         };
@@ -595,11 +603,11 @@ export function ExperimentalMapPage() {
       const rowsHtml = seriesRows
         .map(
           (seriesRow) => `
-            <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;">
-              <span style="font-weight:${seriesRow.isActive ? '700' : '500'};color:${
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;align-items:flex-start;">
+              <span style="min-width:0;font-weight:${seriesRow.isActive ? '700' : '500'};color:${
                 seriesRow.isActive ? '#111827' : '#374151'
-              }">${escapeHtml(seriesRow.label)}</span>
-              <span style="font-weight:${seriesRow.isActive ? '700' : '500'};text-align:right;">${escapeHtml(
+              };overflow-wrap:anywhere;word-break:break-word;">${escapeHtml(seriesRow.label)}</span>
+              <span style="font-weight:${seriesRow.isActive ? '700' : '500'};text-align:right;white-space:nowrap;">${escapeHtml(
                 seriesRow.value
               )}</span>
             </div>
@@ -654,7 +662,7 @@ export function ExperimentalMapPage() {
           : '';
 
       return `
-        <div style="font-family:Inter,sans-serif;font-size:13px;min-width:260px;max-width:360px;padding:8px;">
+        <div style="font-family:Inter,sans-serif;font-size:13px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:260px;max-width:360px;padding:8px;">
           <div style="font-weight:700;font-size:14px;margin-bottom:2px;">${escapeHtml(
             String(properties.name ?? 'UAT')
           )}</div>
@@ -703,11 +711,15 @@ export function ExperimentalMapPage() {
   const mapError = error || geoJsonError;
   const isMapLoading = isLoading || isGeoJsonLoading;
   const isTableLoading = isLoading;
-  const activeUnit = activeSeries ? unitsBySeriesId.get(activeSeries.id) || activeSeries.unit : undefined;
+  const activeUnit = activeSeries
+    ? resolveSeriesDisplayUnit(activeSeries, unitsBySeriesId)
+    : undefined;
   const modalSeries = editorState
     ? mapState.series.find((series) => series.id === editorState.seriesId)
     : undefined;
-  const activeSeriesDisplayLabel = activeSeries?.label || activeSeriesId || 'None';
+  const activeSeriesDisplayLabel = activeSeries
+    ? resolveSeriesDisplayLabel(activeSeries)
+    : activeSeriesId || 'None';
   const mapName = mapState.mapName || DEFAULT_MAP_NAME;
   const isMapViewActive = mapState.activeView !== 'table';
 
@@ -839,7 +851,7 @@ export function ExperimentalMapPage() {
                         min={minAggregatedValue}
                         max={maxAggregatedValue}
                         unit={activeUnit}
-                        title={activeSeries.label || 'Active series'}
+                        title={resolveSeriesDisplayLabel(activeSeries)}
                       />
                     )}
                   </div>
@@ -942,7 +954,7 @@ function LegendCard({
 
   return (
     <div className="bg-card/90 backdrop-blur-sm p-3 rounded-md border border-border shadow-sm w-[280px]">
-      <h4 className="text-xs font-semibold mb-2">{title}</h4>
+      <h4 className="mb-2 text-xs font-semibold leading-snug break-words">{title}</h4>
       <div className="h-4 w-full border border-border rounded-sm" style={{ background: gradient }} />
       <div className="mt-1 flex justify-between text-xs">
         <span>{formatExperimentalMapSeriesValue(min, unit)}</span>
@@ -985,6 +997,39 @@ function getEntityCuiFromUatProperties(properties: UatProperties | undefined): s
   }
 
   return undefined;
+}
+
+function resolveSeriesDisplayLabel(series: MapSupportedSeries): string {
+  const trimmedLabel = series.label.trim();
+  if (trimmedLabel.length > 0) {
+    return trimmedLabel;
+  }
+
+  return series.id;
+}
+
+function resolveSeriesDisplayUnit(
+  series: MapSupportedSeries,
+  unitsBySeriesId: Map<string, string | undefined>
+): string | undefined {
+  const derivedUnit = unitsBySeriesId.get(series.id);
+  if (typeof derivedUnit === 'string') {
+    const trimmedDerivedUnit = derivedUnit.trim();
+    if (trimmedDerivedUnit.length > 0) {
+      return trimmedDerivedUnit;
+    }
+  }
+
+  const fallbackUnit = typeof series.unit === 'string' ? series.unit.trim() : '';
+  if (fallbackUnit.length === 0) {
+    return undefined;
+  }
+
+  if (series.type === 'ins-series' && fallbackUnit.toUpperCase() === 'RON') {
+    return undefined;
+  }
+
+  return fallbackUnit;
 }
 
 function buildExperimentalMapHead() {
