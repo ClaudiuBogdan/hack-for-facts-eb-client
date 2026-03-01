@@ -99,4 +99,22 @@ describe('AdvancedMapAnalyticsConfigPanel', () => {
     expect(onActiveViewChange).toHaveBeenCalledWith('table');
   });
 
+  it('does not render warnings section when warning count is zero', () => {
+    render(
+      <AdvancedMapAnalyticsConfigPanel
+        collapsed={false}
+        activeView="map"
+        mapName="Untitled map"
+        warningCount={0}
+        onToggleCollapsed={vi.fn()}
+        onActiveViewChange={vi.fn()}
+        onOpenConfig={vi.fn()}
+        onOpenWarnings={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByText('Warnings')).not.toBeInTheDocument();
+    expect(screen.queryByText('No warnings')).not.toBeInTheDocument();
+  });
+
 });

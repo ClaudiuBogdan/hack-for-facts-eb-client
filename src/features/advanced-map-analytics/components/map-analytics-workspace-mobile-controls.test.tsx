@@ -1,10 +1,21 @@
 import type { ReactNode } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AdvancedMapAnalyticsUrlStateSchema } from '@/schemas/advanced-map-analytics';
+import {
+  AdvancedMapAnalyticsUrlStateSchema,
+  createDefaultAdvancedMapAnalyticsSeries,
+} from '@/schemas/advanced-map-analytics';
 
 const mockIsMobile = vi.fn(() => false);
 const navigateMock = vi.fn();
+let capturedGetTooltipContent:
+  | ((args: {
+      properties: Record<string, unknown>;
+      heatmapData: unknown[];
+      mapViewType: 'UAT' | 'County';
+      filters: Record<string, unknown>;
+    }) => string)
+  | undefined;
 let mockGeoJsonData: {
   data: unknown;
   isLoading: boolean;
@@ -13,6 +24,35 @@ let mockGeoJsonData: {
   data: null,
   isLoading: false,
   error: null,
+};
+let mockSeriesDataResult = {
+  valuesBySeriesId: new Map<string, Map<string, number | undefined>>(),
+  unitsBySeriesId: new Map<string, string | undefined>(),
+  warnings: [],
+  activeSeriesId: undefined as string | undefined,
+  activeValues: undefined as Map<string, number | undefined> | undefined,
+  isLoading: false,
+  error: null as Error | null,
+};
+let mockBinsResult = {
+  binsEditorState: null,
+  activeBinsPreset: undefined,
+  modalBinsPreset: undefined,
+  binsClassification: {
+    groupsBySiruta: new Map<string, unknown>(),
+    palette: [],
+  },
+  binsCanApply: false,
+  combinedWarnings: [],
+  toggleBinsPanelCollapsed: vi.fn(),
+  addBinsPreset: vi.fn(),
+  editBinsPreset: vi.fn(),
+  deleteBinsPreset: vi.fn(),
+  setActiveBinsPreset: vi.fn(),
+  reorderBinsPresets: vi.fn(),
+  applyBinsPreset: vi.fn(),
+  closeBinsEditor: vi.fn(),
+  activeNoDataConfig: undefined,
 };
 
 vi.mock('@tanstack/react-router', () => ({
@@ -36,38 +76,11 @@ vi.mock('@/hooks/useGeoJson', () => ({
 }));
 
 vi.mock('@/hooks/useAdvancedMapAnalyticsSeriesData', () => ({
-  useAdvancedMapAnalyticsSeriesData: () => ({
-    valuesBySeriesId: new Map<string, Map<string, number | undefined>>(),
-    unitsBySeriesId: new Map<string, string | undefined>(),
-    warnings: [],
-    activeSeriesId: undefined,
-    activeValues: undefined,
-    isLoading: false,
-    error: null,
-  }),
+  useAdvancedMapAnalyticsSeriesData: () => mockSeriesDataResult,
 }));
 
 vi.mock('@/hooks/useAdvancedMapAnalyticsBins', () => ({
-  useAdvancedMapAnalyticsBins: () => ({
-    binsEditorState: null,
-    activeBinsPreset: undefined,
-    modalBinsPreset: undefined,
-    binsClassification: {
-      groupsBySiruta: new Map<string, unknown>(),
-      palette: [],
-    },
-    binsCanApply: false,
-    combinedWarnings: [],
-    toggleBinsPanelCollapsed: vi.fn(),
-    addBinsPreset: vi.fn(),
-    editBinsPreset: vi.fn(),
-    deleteBinsPreset: vi.fn(),
-    setActiveBinsPreset: vi.fn(),
-    reorderBinsPresets: vi.fn(),
-    applyBinsPreset: vi.fn(),
-    closeBinsEditor: vi.fn(),
-    activeNoDataConfig: undefined,
-  }),
+  useAdvancedMapAnalyticsBins: () => mockBinsResult,
 }));
 
 vi.mock('@/hooks/useAdvancedMapAnalyticsTableBinsFilter', () => ({
@@ -85,10 +98,22 @@ vi.mock('@/components/ssr/ClientOnly', () => ({
 vi.mock('@/components/maps/InteractiveMap', () => ({
   InteractiveMap: ({
     onFeatureClick,
+    getTooltipContent,
   }: {
     onFeatureClick: (properties: Record<string, unknown>, event?: unknown) => void;
+    getTooltipContent?: (args: {
+      properties: Record<string, unknown>;
+      heatmapData: unknown[];
+      mapViewType: 'UAT' | 'County';
+      filters: Record<string, unknown>;
+    }) => string;
   }) => (
-    <div data-testid="interactive-map">
+    <div
+      data-testid="interactive-map"
+      ref={() => {
+        capturedGetTooltipContent = getTooltipContent;
+      }}
+    >
       <button
         type="button"
         onClick={() =>
@@ -166,11 +191,41 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     navigateMock.mockReset();
+    capturedGetTooltipContent = undefined;
     mockIsMobile.mockReturnValue(false);
     mockGeoJsonData = {
       data: null,
       isLoading: false,
       error: null,
+    };
+    mockSeriesDataResult = {
+      valuesBySeriesId: new Map<string, Map<string, number | undefined>>(),
+      unitsBySeriesId: new Map<string, string | undefined>(),
+      warnings: [],
+      activeSeriesId: undefined,
+      activeValues: undefined,
+      isLoading: false,
+      error: null,
+    };
+    mockBinsResult = {
+      binsEditorState: null,
+      activeBinsPreset: undefined,
+      modalBinsPreset: undefined,
+      binsClassification: {
+        groupsBySiruta: new Map<string, unknown>(),
+        palette: [],
+      },
+      binsCanApply: false,
+      combinedWarnings: [],
+      toggleBinsPanelCollapsed: vi.fn(),
+      addBinsPreset: vi.fn(),
+      editBinsPreset: vi.fn(),
+      deleteBinsPreset: vi.fn(),
+      setActiveBinsPreset: vi.fn(),
+      reorderBinsPresets: vi.fn(),
+      applyBinsPreset: vi.fn(),
+      closeBinsEditor: vi.fn(),
+      activeNoDataConfig: undefined,
     };
   });
 
@@ -367,6 +422,83 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
 
     expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('removes bins and group rows from tooltip HTML while keeping core content', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const activeSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    activeSeries.id = 'series_1';
+    activeSeries.label = 'Data series 1';
+    activeSeries.enabled = true;
+
+    const activeValues = new Map<string, number | undefined>([['1001', 12345]]);
+    const valuesBySeriesId = new Map<string, Map<string, number | undefined>>([
+      [activeSeries.id, activeValues],
+    ]);
+    mockSeriesDataResult = {
+      valuesBySeriesId,
+      unitsBySeriesId: new Map([[activeSeries.id, 'RON']]),
+      warnings: [],
+      activeSeriesId: activeSeries.id,
+      activeValues,
+      isLoading: false,
+      error: null,
+    };
+    mockBinsResult = {
+      ...mockBinsResult,
+      binsCanApply: true,
+      binsClassification: {
+        groupsBySiruta: new Map([['1001', { label: 'Label 2', isNoData: false }]]),
+        palette: [],
+      },
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({
+          activeView: 'map',
+          series: [activeSeries],
+          activeSeriesId: activeSeries.id,
+        })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    await screen.findByTestId('interactive-map');
+    expect(capturedGetTooltipContent).toBeTypeOf('function');
+
+    const tooltipHtml = capturedGetTooltipContent?.({
+      properties: {
+        natcode: '1001',
+        name: 'Comuna Test',
+        county: 'Harghita',
+        natLevName: 'Comuna',
+        cui: '12345678',
+      },
+      heatmapData: [],
+      mapViewType: 'UAT',
+      filters: {},
+    });
+
+    expect(tooltipHtml).toContain('CUI:');
+    expect(tooltipHtml).toContain('Data series 1');
+    expect(tooltipHtml).not.toContain('>Bins<');
+    expect(tooltipHtml).not.toContain('>Group<');
   });
 
 });

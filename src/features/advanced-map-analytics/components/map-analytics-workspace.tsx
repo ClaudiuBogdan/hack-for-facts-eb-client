@@ -974,22 +974,6 @@ export function MapAnalyticsWorkspace({
         `;
       }
 
-      const binsAnalyticsRows =
-        binsCanApply && activeClassification
-          ? `
-            <div style="margin-top:8px;padding-top:8px;border-top:1px solid #e5e7eb;display:flex;flex-direction:column;gap:4px;">
-              <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;">
-                <span style="font-weight:500;color:#374151;">Bins</span>
-                <span style="font-weight:500;text-align:right;">${escapeHtml(activeBinsLegendTitle)}</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;">
-                <span style="font-weight:500;color:#374151;">Group</span>
-                <span style="font-weight:500;text-align:right;">${escapeHtml(activeClassification.label)}</span>
-              </div>
-            </div>
-          `
-          : '';
-
       return `
         <div style="font-family:Inter,sans-serif;font-size:13px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:260px;max-width:360px;padding:8px;">
           <div style="font-weight:700;font-size:14px;margin-bottom:2px;">${escapeHtml(tooltipTitle)}</div>
@@ -998,13 +982,11 @@ export function MapAnalyticsWorkspace({
           <div style="display:flex;flex-direction:column;gap:6px;">
             ${rowsHtml || '<span>No enabled series</span>'}
           </div>
-          ${binsAnalyticsRows}
           ${noDataTooltipMarker}
         </div>
       `;
     },
     [
-      activeBinsLegendTitle,
       activeNoDataConfig,
       activeSeries,
       activeSeriesId,

@@ -83,9 +83,9 @@ export function AdvancedMapAnalyticsConfigPanel({
                 ariaLabel="Advanced map analytics active view"
               />
             </div>
-            <div className="flex items-center justify-between gap-3 px-3 py-2.5">
-              <span className="text-sm font-medium">Warnings</span>
-              {hasWarnings ? (
+            {hasWarnings ? (
+              <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+                <span className="text-sm font-medium">Warnings</span>
                 <Button
                   type="button"
                   size="sm"
@@ -96,10 +96,8 @@ export function AdvancedMapAnalyticsConfigPanel({
                   <AlertTriangle className="mr-1.5 h-3.5 w-3.5" />
                   {warningCount} warning{warningCount === 1 ? '' : 's'}
                 </Button>
-              ) : (
-                <span className="text-sm text-muted-foreground">No warnings</span>
-              )}
-            </div>
+              </div>
+            ) : null}
           </div>
         </CollapsibleContent>
       </Collapsible>

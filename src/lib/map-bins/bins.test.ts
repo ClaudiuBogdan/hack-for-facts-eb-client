@@ -193,4 +193,15 @@ describe('map-bins', () => {
     expect(gradientBins[0]?.color).toBe('#0000ff');
     expect(gradientBins[gradientBins.length - 1]?.color).toBe('#ff0000');
   });
+
+  it('prefers rounded boundaries for uneven ranges', () => {
+    const bins = generateSequentialBins([227, 47_699.4, 95_171.8, 142_644.2, 190_116.6], 5, 'manual', {
+      startColor: '#fff7bc',
+      endColor: '#d7301f',
+    });
+
+    expect(bins).toHaveLength(5);
+    expect(bins.map((bin) => bin.min)).toEqual([0, 40_000, 80_000, 120_000, 160_000]);
+    expect(bins.map((bin) => bin.max)).toEqual([40_000, 80_000, 120_000, 160_000, null]);
+  });
 });

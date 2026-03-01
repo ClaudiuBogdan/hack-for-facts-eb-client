@@ -16,6 +16,7 @@ const DEFAULT_MANUAL_COLORS = [
   '#d95f0e',
   '#993404',
 ];
+const NICE_BIN_STEP_FRACTIONS = [10, 5, 4, 2.5, 2, 1];
 
 export interface BinsValidationResult {
   isValid: boolean;
@@ -263,13 +264,14 @@ export function generateSequentialBins(
     });
   }
 
-  const step = (maxValue - minValue) / binCount;
+  const step = resolveRoundedBinStep(minValue, maxValue, binCount);
+  const start = resolveRoundedBinStart(minValue, step, finiteValues.every((value) => value >= 0));
 
   return Array.from({ length: binCount }, (_, index) => {
-    const binMin = minValue + step * index;
-    const binMax = index === binCount - 1 ? null : minValue + step * (index + 1);
-    const roundedMin = round(binMin);
-    const roundedMax = binMax === null ? null : round(binMax);
+    const binMin = start + step * index;
+    const binMax = index === binCount - 1 ? null : start + step * (index + 1);
+    const roundedMin = roundToStepPrecision(binMin, step);
+    const roundedMax = binMax === null ? null : roundToStepPrecision(binMax, step);
 
     return {
       id: createGeneratedBinId(),
@@ -424,6 +426,66 @@ function normalizeHex(color: string): string | null {
 
 function isHexColor(color: string): boolean {
   return normalizeHex(color) !== null;
+}
+
+function resolveRoundedBinStep(minValue: number, maxValue: number, binCount: number): number {
+  const rawStep = (maxValue - minValue) / binCount;
+  if (!Number.isFinite(rawStep) || rawStep <= 0) {
+    return 1;
+  }
+
+  const baseMagnitude = 10 ** Math.floor(Math.log10(rawStep));
+  const maxMagnitudeIterations = 10;
+
+  for (let iteration = 0; iteration < maxMagnitudeIterations; iteration += 1) {
+    const magnitude = baseMagnitude / 10 ** iteration;
+    for (const fraction of NICE_BIN_STEP_FRACTIONS) {
+      const candidateStep = magnitude * fraction;
+      if (!Number.isFinite(candidateStep) || candidateStep <= 0) {
+        continue;
+      }
+
+      const candidateStart = roundDownToIncrement(minValue, candidateStep);
+      const candidateLastStart = candidateStart + candidateStep * (binCount - 1);
+      if (candidateLastStart <= maxValue + 1e-9) {
+        return candidateStep;
+      }
+    }
+  }
+
+  return rawStep;
+}
+
+function resolveRoundedBinStart(minValue: number, step: number, allValuesNonNegative: boolean): number {
+  const roundedStart = roundDownToIncrement(minValue, step);
+  if (allValuesNonNegative && roundedStart < 0) {
+    return 0;
+  }
+  return roundedStart;
+}
+
+function roundDownToIncrement(value: number, increment: number): number {
+  return Math.floor(value / increment) * increment;
+}
+
+function roundToStepPrecision(value: number, step: number): number {
+  const decimals = Math.min(6, getDecimalPlaces(step));
+  if (decimals <= 0) {
+    return Math.round(value);
+  }
+
+  const factor = 10 ** decimals;
+  return Math.round(value * factor) / factor;
+}
+
+function getDecimalPlaces(value: number): number {
+  const valueAsText = value.toString();
+  if (!valueAsText.includes('.')) {
+    return 0;
+  }
+
+  const decimals = valueAsText.split('.')[1] ?? '';
+  return decimals.length;
 }
 
 function round(value: number): number {
