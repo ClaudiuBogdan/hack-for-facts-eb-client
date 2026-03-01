@@ -9,10 +9,12 @@ function renderConfigPanel(overrides: Partial<ComponentProps<typeof AdvancedMapA
       collapsed={false}
       activeView="map"
       mapName="Untitled map"
+      showCountyBoundaries={true}
       mapDescription=""
       warningCount={0}
       onToggleCollapsed={vi.fn()}
       onActiveViewChange={vi.fn()}
+      onShowCountyBoundariesChange={vi.fn()}
       onOpenConfig={vi.fn()}
       onOpenWarnings={vi.fn()}
       {...overrides}
@@ -44,10 +46,12 @@ describe('AdvancedMapAnalyticsConfigPanel', () => {
         collapsed={true}
         activeView="map"
         mapName="Untitled map"
+        showCountyBoundaries={true}
         mapDescription=""
         warningCount={0}
         onToggleCollapsed={onToggleCollapsed}
         onActiveViewChange={vi.fn()}
+        onShowCountyBoundariesChange={vi.fn()}
         onOpenConfig={vi.fn()}
         onOpenWarnings={vi.fn()}
       />
@@ -72,6 +76,18 @@ describe('AdvancedMapAnalyticsConfigPanel', () => {
 
     fireEvent.click(screen.getByText('Table'));
     expect(onActiveViewChange).toHaveBeenCalledWith('table');
+  });
+
+  it('calls onShowCountyBoundariesChange when county boundaries switch changes', () => {
+    const onShowCountyBoundariesChange = vi.fn();
+
+    renderConfigPanel({
+      showCountyBoundaries: true,
+      onShowCountyBoundariesChange,
+    });
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Toggle county boundaries' }));
+    expect(onShowCountyBoundariesChange).toHaveBeenCalledWith(false);
   });
 
   it('does not render warnings section when warning count is zero', () => {

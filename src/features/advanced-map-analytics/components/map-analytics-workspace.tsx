@@ -421,6 +421,15 @@ export function MapAnalyticsWorkspace({
     [updateState]
   );
 
+  const setShowCountyBoundaries = useCallback(
+    (enabled: boolean) => {
+      updateState((draft) => {
+        draft.showCountyBoundaries = enabled;
+      });
+    },
+    [updateState]
+  );
+
   const changeSeriesType = useCallback(
     (seriesId: string, type: MapSupportedSeries['type']) => {
       if (isReadOnly) {
@@ -458,6 +467,8 @@ export function MapAnalyticsWorkspace({
     isLoading: isGeoJsonLoading,
     error: geoJsonError,
   } = useGeoJsonData('UAT');
+
+  const { data: countyGeoJsonData } = useGeoJsonData('County');
 
   const geoJsonFeatures = useMemo<UatFeature[]>(() => {
     if (!geoJsonData || !('features' in geoJsonData) || !Array.isArray(geoJsonData.features)) {
@@ -1105,6 +1116,7 @@ export function MapAnalyticsWorkspace({
     : activeSeriesId || t`None`;
   const mapName = mapState.mapName || t`Untitled map`;
   const isMapViewActive = mapState.activeView !== 'table';
+  const countyBoundaryGeoJsonData = mapState.showCountyBoundaries ? countyGeoJsonData : null;
 
   const handleTableRowClick = useCallback(
     (row: AdvancedMapAnalyticsTableRow) => {
@@ -1171,11 +1183,13 @@ export function MapAnalyticsWorkspace({
         collapsed={Boolean(mapState.configPanelCollapsed)}
         activeView={mapState.activeView}
         mapName={mapName}
+        showCountyBoundaries={mapState.showCountyBoundaries}
         mapDescription={mapDescription}
         warningCount={combinedWarnings.length}
         readOnly={isReadOnly}
         onToggleCollapsed={toggleConfigPanelCollapsed}
         onActiveViewChange={setActiveView}
+        onShowCountyBoundariesChange={setShowCountyBoundaries}
         onOpenConfig={() => {
           if (!isReadOnly && onOpenOwnerConfig) {
             onOpenOwnerConfig();
@@ -1326,6 +1340,7 @@ export function MapAnalyticsWorkspace({
                       getFeatureStyle={getFeatureStyle}
                       heatmapData={activeHeatmapData}
                       geoJsonData={geoJsonData}
+                      countyBoundaryGeoJsonData={countyBoundaryGeoJsonData}
                       zoom={mapZoom}
                       center={mapState.mapCenter}
                       mapViewType="UAT"

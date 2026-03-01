@@ -405,6 +405,7 @@ export const AdvancedMapAnalyticsUrlStateSchema = z.object({
   valueFilters: AdvancedMapAnalyticsValueFilterGroupSchema.default({ rules: [] }),
   activeView: AdvancedMapAnalyticsActiveViewSchema.default('map'),
   mapName: z.string().default('Untitled map'),
+  showCountyBoundaries: z.boolean().default(true),
   seriesPanelCollapsed: z.boolean().default(false),
   configPanelCollapsed: z.boolean().default(false),
   valueFiltersPanelCollapsed: z.boolean().default(false),

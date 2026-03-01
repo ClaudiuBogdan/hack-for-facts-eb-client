@@ -16,7 +16,17 @@ let capturedGetTooltipContent:
       filters: Record<string, unknown>;
     }) => string)
   | undefined;
+let latestInteractiveMapProps: Record<string, unknown> | undefined;
 let mockGeoJsonData: {
+  data: unknown;
+  isLoading: boolean;
+  error: Error | null;
+} = {
+  data: null,
+  isLoading: false,
+  error: null,
+};
+let mockCountyGeoJsonData: {
   data: unknown;
   isLoading: boolean;
   error: Error | null;
@@ -72,7 +82,8 @@ vi.mock('@/lib/hooks/useUserInflationAdjusted', () => ({
 }));
 
 vi.mock('@/hooks/useGeoJson', () => ({
-  useGeoJsonData: () => mockGeoJsonData,
+  useGeoJsonData: (mapViewType: 'UAT' | 'County') =>
+    mapViewType === 'County' ? mockCountyGeoJsonData : mockGeoJsonData,
 }));
 
 vi.mock('@/hooks/useAdvancedMapAnalyticsSeriesData', () => ({
@@ -99,6 +110,7 @@ vi.mock('@/components/maps/InteractiveMap', () => ({
   InteractiveMap: ({
     onFeatureClick,
     getTooltipContent,
+    ...rest
   }: {
     onFeatureClick: (properties: Record<string, unknown>, event?: unknown) => void;
     getTooltipContent?: (args: {
@@ -107,11 +119,17 @@ vi.mock('@/components/maps/InteractiveMap', () => ({
       mapViewType: 'UAT' | 'County';
       filters: Record<string, unknown>;
     }) => string;
+    countyBoundaryGeoJsonData?: unknown | null;
   }) => (
     <div
       data-testid="interactive-map"
       ref={() => {
         capturedGetTooltipContent = getTooltipContent;
+        latestInteractiveMapProps = {
+          getTooltipContent,
+          onFeatureClick,
+          ...rest,
+        };
       }}
     >
       <button
@@ -196,8 +214,14 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     vi.clearAllMocks();
     navigateMock.mockReset();
     capturedGetTooltipContent = undefined;
+    latestInteractiveMapProps = undefined;
     mockIsMobile.mockReturnValue(false);
     mockGeoJsonData = {
+      data: null,
+      isLoading: false,
+      error: null,
+    };
+    mockCountyGeoJsonData = {
       data: null,
       isLoading: false,
       error: null,
@@ -430,6 +454,111 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     expect(screen.getByTestId('map-analytics-quick-actions')).toBeInTheDocument();
     expect(navigateMock).not.toHaveBeenCalled();
+  });
+
+  it('passes county boundary geojson data to map when boundaries are enabled', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+    mockCountyGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [{ type: 'Feature', properties: { id: 1 }, geometry: null }],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({ activeView: 'map', showCountyBoundaries: true })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    await screen.findByTestId('interactive-map');
+    expect(latestInteractiveMapProps?.countyBoundaryGeoJsonData).toEqual(mockCountyGeoJsonData.data);
+  });
+
+  it('passes null county boundary geojson data when boundaries are disabled', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+    mockCountyGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [{ type: 'Feature', properties: { id: 1 }, geometry: null }],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({ activeView: 'map', showCountyBoundaries: false })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    await screen.findByTestId('interactive-map');
+    expect(latestInteractiveMapProps?.countyBoundaryGeoJsonData).toBeNull();
+  });
+
+  it('keeps map view functional when county geojson request fails', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+    mockCountyGeoJsonData = {
+      data: null,
+      isLoading: false,
+      error: new Error('County boundary request failed'),
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({ activeView: 'map', showCountyBoundaries: true })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    expect(await screen.findByTestId('interactive-map')).toBeInTheDocument();
+    expect(screen.queryByText('County boundary request failed')).not.toBeInTheDocument();
   });
 
   it('removes bins and group rows from tooltip HTML while keeping core content', async () => {

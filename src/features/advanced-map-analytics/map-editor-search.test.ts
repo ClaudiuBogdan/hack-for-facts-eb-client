@@ -19,6 +19,7 @@ describe('map-editor-search', () => {
       currency: 'EUR',
       inflation_adjusted: true,
       mapName: 'Snapshot A',
+      showCountyBoundaries: false,
       activeView: 'table',
       mapCenter: [46.5, 24.5],
       mapZoom: 9,

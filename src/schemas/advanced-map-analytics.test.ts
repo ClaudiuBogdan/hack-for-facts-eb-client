@@ -21,6 +21,7 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
     expect(parsed.valueFilters.rules).toEqual([]);
     expect(parsed.activeView).toBe('map');
     expect(parsed.mapName).toBe('Untitled map');
+    expect(parsed.showCountyBoundaries).toBe(true);
     expect(parsed.seriesPanelCollapsed).toBe(false);
     expect(parsed.configPanelCollapsed).toBe(false);
     expect(parsed.valueFiltersPanelCollapsed).toBe(false);
@@ -97,6 +98,7 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
       },
       activeView: 'table',
       mapName: 'Custom map',
+      showCountyBoundaries: false,
       seriesPanelCollapsed: true,
       configPanelCollapsed: true,
       valueFiltersPanelCollapsed: true,
@@ -115,6 +117,7 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
     const roundTripped = AdvancedMapAnalyticsUrlStateSchema.parse(JSON.parse(serialized));
 
     expect(roundTripped).toEqual(state);
+    expect(roundTripped.showCountyBoundaries).toBe(false);
     expect(roundTripped.binsPresets[0]?.config.title).toBe('Revenue bands');
     expect(roundTripped.valueFilters.rules[1]?.joinWithPrevious).toBe('OR');
   });

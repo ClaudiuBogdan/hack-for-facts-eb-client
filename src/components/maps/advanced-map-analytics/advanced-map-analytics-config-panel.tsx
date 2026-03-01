@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AlertTriangle, ChevronDown, MapIcon, Settings2, TableIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
+import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import type { AdvancedMapAnalyticsActiveView } from '@/schemas/advanced-map-analytics';
 import { ViewTypeRadioGroup } from '@/components/filters/ViewTypeRadioGroup';
@@ -12,11 +13,13 @@ interface AdvancedMapAnalyticsConfigPanelProps {
   collapsed: boolean;
   activeView: AdvancedMapAnalyticsActiveView;
   mapName: string;
+  showCountyBoundaries: boolean;
   mapDescription?: string;
   warningCount: number;
   readOnly?: boolean;
   onToggleCollapsed: (collapsed: boolean) => void;
   onActiveViewChange: (view: AdvancedMapAnalyticsActiveView) => void;
+  onShowCountyBoundariesChange: (enabled: boolean) => void;
   onOpenConfig: () => void;
   onOpenWarnings: () => void;
 }
@@ -25,11 +28,13 @@ export function AdvancedMapAnalyticsConfigPanel({
   collapsed,
   activeView,
   mapName,
+  showCountyBoundaries,
   mapDescription = '',
   warningCount,
   readOnly = false,
   onToggleCollapsed,
   onActiveViewChange,
+  onShowCountyBoundariesChange,
   onOpenConfig,
   onOpenWarnings,
 }: Readonly<AdvancedMapAnalyticsConfigPanelProps>) {
@@ -90,6 +95,16 @@ export function AdvancedMapAnalyticsConfigPanel({
                 ]}
                 ariaLabel={t`Advanced map analytics active view`}
               />
+            </div>
+            <div className="border-b px-3 py-2.5">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm font-medium">{t`County boundaries`}</span>
+                <Switch
+                  checked={showCountyBoundaries}
+                  onCheckedChange={onShowCountyBoundariesChange}
+                  aria-label={t`Toggle county boundaries`}
+                />
+              </div>
             </div>
             <div className="border-b px-3 py-2.5">
               <Button

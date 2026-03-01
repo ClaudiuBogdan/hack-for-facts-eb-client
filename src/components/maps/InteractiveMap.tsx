@@ -53,6 +53,13 @@ type TooltipLayer = Layer & {
   openTooltip: () => Layer;
 };
 
+const COUNTY_BOUNDARY_STYLE: PathOptions = {
+  color: '#6b7280',
+  weight: 1.9,
+  fillOpacity: 0,
+  interactive: false,
+};
+
 interface InteractiveMapProps {
   onFeatureClick: (properties: UatProperties, event: LeafletMouseEvent) => void;
   getFeatureStyle: (feature: UatFeature, heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>) => PathOptions;
@@ -63,6 +70,7 @@ interface InteractiveMapProps {
   maxBounds?: LatLngBoundsExpression;
   heatmapData: HeatmapUATDataPoint[] | HeatmapCountyDataPoint[];
   geoJsonData: GeoJsonObject | null;
+  countyBoundaryGeoJsonData?: GeoJsonObject | null;
   highlightedFeatureId?: string | number;
   scrollWheelZoom?: boolean;
   mapHeight?: string;
@@ -88,6 +96,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   mapViewType,
   heatmapData,
   geoJsonData,
+  countyBoundaryGeoJsonData,
   highlightedFeatureId,
   scrollWheelZoom = true,
   filters,
@@ -262,6 +271,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
             style={resolveFeatureStyle}
             onEachFeature={onEachFeature}
           />
+          {countyBoundaryGeoJsonData?.type === 'FeatureCollection' ? (
+            <GeoJSON
+              key="county-boundary-layer"
+              data={countyBoundaryGeoJsonData}
+              style={COUNTY_BOUNDARY_STYLE}
+            />
+          ) : null}
           <MapLabels
             geoJsonData={geoJsonData}
             showLabels={showLabels}
