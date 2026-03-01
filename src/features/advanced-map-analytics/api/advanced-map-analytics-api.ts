@@ -372,11 +372,12 @@ export async function getAdvancedMapAnalyticsSnapshot(
 }
 
 export async function deleteAdvancedMapAnalyticsMap(mapId: string): Promise<void> {
-  throw new AdvancedMapAnalyticsApiError(
-    `Deleting map "${mapId}" is not available yet.`,
-    501,
-    'NOT_IMPLEMENTED'
-  );
+  const payload = await ownerRequest(`/maps/${encodeURIComponent(mapId)}`, {
+    method: 'DELETE',
+  });
+
+  // Validate envelope shape for successful 2xx responses.
+  void unwrapData(payload);
 }
 
 export async function getPublicAdvancedMapAnalyticsMap(publicId: string): Promise<AdvancedMapAnalyticsMapDetail> {

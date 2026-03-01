@@ -14,6 +14,7 @@ import { API_FETCH_REFERRER_POLICY } from '@/lib/api/fetch-options';
 import {
   createAdvancedMapAnalyticsMap,
   createAdvancedMapAnalyticsSnapshot,
+  deleteAdvancedMapAnalyticsMap,
   getAdvancedMapAnalyticsMap,
   getPublicAdvancedMapAnalyticsMap,
   listAdvancedMapAnalyticsSnapshots,
@@ -176,6 +177,29 @@ describe('advanced-map-analytics api client', () => {
     );
 
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('deletes map with auth and delete method', async () => {
+    vi.mocked(getAuthToken).mockResolvedValue('token-123');
+
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      text: vi.fn().mockResolvedValue(JSON.stringify({ ok: true })),
+    } satisfies Partial<Response>);
+
+    await deleteAdvancedMapAnalyticsMap('map_123');
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('https://api.example.com/api/v1/advanced-map-analytics/maps/map_123');
+    expect(init.method).toBe('DELETE');
+    expect(init.referrerPolicy).toBe(API_FETCH_REFERRER_POLICY);
+    expect(init.headers).toEqual(
+      expect.objectContaining({
+        Authorization: 'Bearer token-123',
+      })
+    );
   });
 
   it('maps 403 response to explicit allowlist error', async () => {

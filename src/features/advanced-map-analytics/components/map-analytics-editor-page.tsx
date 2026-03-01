@@ -32,7 +32,7 @@ function isDefaultMapState(mapState: AdvancedMapAnalyticsUrlState): boolean {
 
 export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonly<MapAnalyticsEditorPageProps>) {
   const { isLoaded, isSignedIn } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useNavigate({ from: '/maps/editor/$mapId' });
   const [isOwnerConfigModalOpen, setIsOwnerConfigModalOpen] = useState(false);
   const [mapDescriptionDraft, setMapDescriptionDraft] = useState('');
   const hasHydratedFromApiRef = useRef(false);
@@ -174,7 +174,7 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
           setMapState(nextMapState);
         }}
         onDeleted={() => {
-          navigate({ to: '/maps/editor' });
+          navigate({ to: '/maps/editor', replace: true });
         }}
       />
     </>

@@ -11,6 +11,7 @@ export function MapEditorRouteComponent() {
   const params = Route.useParams();
   const rawSearch = Route.useSearch();
   const mapState = AdvancedMapAnalyticsUrlStateSchema.parse(rawSearch);
+  const mapId = params.mapId;
   const navigate = useNavigate({ from: '/maps/editor/$mapId' });
 
   return (
@@ -18,7 +19,13 @@ export function MapEditorRouteComponent() {
       mapId={params.mapId}
       mapState={mapState}
       setMapState={(updater) => {
+        if (typeof mapId !== 'string' || mapId.trim().length === 0) {
+          return;
+        }
+
         navigate({
+          to: '/maps/editor/$mapId',
+          params: { mapId },
           search: (previousSearch) => {
             const parsedMapState = AdvancedMapAnalyticsUrlStateSchema.parse(previousSearch);
 

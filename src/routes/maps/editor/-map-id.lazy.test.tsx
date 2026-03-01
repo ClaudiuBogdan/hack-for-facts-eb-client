@@ -57,6 +57,8 @@ describe('MapEditorRouteComponent', () => {
 
     setMapState(nextSnapshotState);
     const nextSearch = runSearchUpdater(mockedSearch);
+    expect(getNavigateCall().to).toBe('/maps/editor/$mapId');
+    expect(getNavigateCall().params).toEqual({ mapId: 'map_1' });
 
     expect(nextSearch.currency).toBe('EUR');
     expect(nextSearch.inflation_adjusted).toBe(true);
@@ -78,6 +80,8 @@ describe('MapEditorRouteComponent', () => {
       })
     );
     const nextSearch = runSearchUpdater(mockedSearch);
+    expect(getNavigateCall().to).toBe('/maps/editor/$mapId');
+    expect(getNavigateCall().params).toEqual({ mapId: 'map_1' });
 
     expect(nextSearch.currency).toBe('EUR');
     expect(nextSearch.inflation_adjusted).toBe(true);
@@ -85,6 +89,22 @@ describe('MapEditorRouteComponent', () => {
     expect(nextSearch.activeView).toBe('table');
     expect('mapCenter' in nextSearch).toBe(false);
     expect('mapZoom' in nextSearch).toBe(false);
+  });
+
+  it('skips navigation when map id is missing', async () => {
+    mockedParams = { mapId: '' };
+    const { MapEditorRouteComponent } = await import('./$mapId.lazy');
+    render(<MapEditorRouteComponent />);
+
+    const setMapState = getSetMapStateFromProps();
+    setMapState(
+      AdvancedMapAnalyticsUrlStateSchema.parse({
+        mapName: 'Snapshot map',
+        activeView: 'table',
+      })
+    );
+
+    expect(navigateMock).not.toHaveBeenCalled();
   });
 });
 
@@ -118,4 +138,19 @@ function runSearchUpdater(previousSearch: Record<string, unknown>) {
   }
 
   return navigateCall.search(previousSearch);
+}
+
+function getNavigateCall() {
+  const navigateCall = navigateMock.mock.calls[0]?.[0] as
+    | {
+        to?: string;
+        params?: Record<string, unknown>;
+      }
+    | undefined;
+
+  if (!navigateCall) {
+    throw new Error('Missing navigate call.');
+  }
+
+  return navigateCall;
 }

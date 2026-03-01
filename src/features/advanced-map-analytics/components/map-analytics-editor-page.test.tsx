@@ -7,6 +7,7 @@ const useAuthMock = vi.fn();
 const useMapQueryMock = vi.fn();
 const workspaceMock = vi.fn();
 const ownerConfigModalMock = vi.fn();
+const navigateMock = vi.fn();
 
 vi.mock('@/lib/auth', () => ({
   useAuth: () => useAuthMock(),
@@ -18,7 +19,7 @@ vi.mock('@/features/advanced-map-analytics/hooks/use-advanced-map-analytics', ()
 }));
 
 vi.mock('@tanstack/react-router', () => ({
-  useNavigate: () => vi.fn(),
+  useNavigate: () => navigateMock,
 }));
 
 vi.mock('./map-analytics-workspace', () => ({
@@ -64,6 +65,7 @@ describe('MapAnalyticsEditorPage', () => {
     useMapQueryMock.mockReset();
     workspaceMock.mockReset();
     ownerConfigModalMock.mockReset();
+    navigateMock.mockReset();
     window.history.replaceState(null, '', '/maps/editor/map1');
   });
 
@@ -232,5 +234,37 @@ describe('MapAnalyticsEditorPage', () => {
     await waitFor(() => {
       expect(setMapState).toHaveBeenNthCalledWith(2, secondSnapshotConfig);
     });
+  });
+
+  it('navigates to maps editor list when delete succeeds', async () => {
+    useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
+    useMapQueryMock.mockReturnValue({
+      isLoading: false,
+      error: null,
+      data: {
+        publicId: null,
+        title: 'Map one',
+        description: null,
+        state: 'private',
+        lastSnapshot: {
+          config: AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Map one snapshot' }),
+        },
+      },
+    });
+
+    const { MapAnalyticsEditorPage } = await import('./map-analytics-editor-page');
+    render(
+      <MapAnalyticsEditorPage
+        mapId="map1"
+        mapState={AdvancedMapAnalyticsUrlStateSchema.parse({})}
+        setMapState={vi.fn()}
+      />
+    );
+
+    const modalProps = ownerConfigModalMock.mock.calls[0]?.[0] as { onDeleted: () => void } | undefined;
+    expect(modalProps).toBeDefined();
+    modalProps?.onDeleted();
+
+    expect(navigateMock).toHaveBeenCalledWith({ to: '/maps/editor', replace: true });
   });
 });
