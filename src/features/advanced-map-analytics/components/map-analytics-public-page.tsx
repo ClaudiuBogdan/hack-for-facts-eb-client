@@ -4,13 +4,25 @@ import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/ca
 import { AdvancedMapAnalyticsUrlStateSchema, type AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 import { MapAnalyticsWorkspace } from '@/features/advanced-map-analytics/components/map-analytics-workspace';
 import { useAdvancedMapAnalyticsPublicMapQuery } from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
+import {
+  usePublicMapViewportSync,
+  type PublicMapViewport,
+} from '@/features/advanced-map-analytics/hooks/use-public-map-viewport';
 import { getRemoteGroupedSeriesHash } from '@/lib/map-series/grouped-series-request';
 
 interface MapAnalyticsPublicPageProps {
   publicId: string;
+  mapZoomOverride?: number;
+  mapCenterOverride?: [number, number];
+  onMapViewportChange?: (next: PublicMapViewport) => void;
 }
 
-export function MapAnalyticsPublicPage({ publicId }: Readonly<MapAnalyticsPublicPageProps>) {
+export function MapAnalyticsPublicPage({
+  publicId,
+  mapZoomOverride,
+  mapCenterOverride,
+  onMapViewportChange,
+}: Readonly<MapAnalyticsPublicPageProps>) {
   const publicMapQuery = useAdvancedMapAnalyticsPublicMapQuery(publicId, true);
   const [mapState, setMapState] = useState<AdvancedMapAnalyticsUrlState>(() =>
     AdvancedMapAnalyticsUrlStateSchema.parse({})
@@ -23,6 +35,16 @@ export function MapAnalyticsPublicPage({ publicId }: Readonly<MapAnalyticsPublic
 
     setMapState(publicMapQuery.data.lastSnapshot.config);
   }, [publicMapQuery.data]);
+
+  usePublicMapViewportSync({
+    publicId,
+    enabled: Boolean(publicMapQuery.data),
+    mapState,
+    setMapState,
+    mapZoomOverride,
+    mapCenterOverride,
+    onMapViewportChange,
+  });
 
   const bundledRemoteBaseSeriesHash = useMemo(() => {
     if (!publicMapQuery.data) {
