@@ -49,6 +49,7 @@ import { AdvancedMapAnalyticsValueFilterEditorModal } from '@/components/maps/ad
 import { AdvancedMapAnalyticsValueFiltersPanel } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel';
 import { AdvancedMapAnalyticsSeriesEditorModal } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal';
 import { AdvancedMapAnalyticsWarningsModal } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal';
+import { MapAnalyticsQuickActions } from './map-analytics-quick-actions';
 import {
   applySetActiveSeries,
   applyToggleSeriesEnabled,
@@ -1177,6 +1178,7 @@ export function MapAnalyticsWorkspace({
 
   return (
     <div className="relative flex flex-col bg-background md:h-screen md:flex-row">
+      {!isMobile ? <MapAnalyticsQuickActions mode={mode} mapState={mapState} /> : null}
       <aside
         className={
           shouldOverlayMobileControls

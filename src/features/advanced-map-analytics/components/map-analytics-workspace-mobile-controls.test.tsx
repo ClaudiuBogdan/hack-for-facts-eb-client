@@ -179,6 +179,10 @@ vi.mock('@/components/maps/advanced-map-analytics/advanced-map-analytics-warning
   AdvancedMapAnalyticsWarningsModal: () => null,
 }));
 
+vi.mock('./map-analytics-quick-actions', () => ({
+  MapAnalyticsQuickActions: () => <div data-testid="map-analytics-quick-actions">Quick Actions</div>,
+}));
+
 function createMapState(overrides?: Record<string, unknown>) {
   return AdvancedMapAnalyticsUrlStateSchema.parse({
     activeView: 'table',
@@ -248,6 +252,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(toggleButton).toBeInTheDocument();
     expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByText('Config Panel')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('map-analytics-quick-actions')).not.toBeInTheDocument();
     const controlsContainer = screen.getByRole('complementary');
     expect(controlsContainer).toHaveClass('absolute');
   });
@@ -304,6 +309,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(screen.getByText('Series Panel')).toBeInTheDocument();
     expect(screen.getByText('Value Filters Panel')).toBeInTheDocument();
     expect(screen.getByText('Bins Panel')).toBeInTheDocument();
+    expect(screen.getByTestId('map-analytics-quick-actions')).toBeInTheDocument();
   });
 
   it('shows GeoJSON source link only after expanding controls on mobile', async () => {
@@ -359,6 +365,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
 
+    expect(screen.getByTestId('map-analytics-quick-actions')).toBeInTheDocument();
     expect(navigateMock).toHaveBeenCalledTimes(1);
     expect(navigateMock).toHaveBeenCalledWith({
       to: '/entities/$cui',
@@ -421,6 +428,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
 
+    expect(screen.getByTestId('map-analytics-quick-actions')).toBeInTheDocument();
     expect(navigateMock).not.toHaveBeenCalled();
   });
 
