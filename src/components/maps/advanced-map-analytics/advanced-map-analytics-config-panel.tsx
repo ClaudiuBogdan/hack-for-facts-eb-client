@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import type { AdvancedMapAnalyticsActiveView } from '@/schemas/advanced-map-analytics';
 import { ViewTypeRadioGroup } from '@/components/filters/ViewTypeRadioGroup';
 import { AdvancedMapAnalyticsDescriptionModal } from './advanced-map-analytics-description-modal';
+import { t } from '@lingui/core/macro';
 
 interface AdvancedMapAnalyticsConfigPanelProps {
   collapsed: boolean;
@@ -42,18 +43,18 @@ export function AdvancedMapAnalyticsConfigPanel({
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-2xl font-bold tracking-tight">Config</h2>
+            <h2 className="text-2xl font-bold tracking-tight">{t`Config`}</h2>
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8"
               onClick={() => onToggleCollapsed(!collapsed)}
-              aria-label={collapsed ? 'Expand config panel' : 'Collapse config panel'}
+              aria-label={collapsed ? t`Expand config panel` : t`Collapse config panel`}
             >
               <ChevronDown className={cn('h-4 w-4 transition-transform', !collapsed && 'rotate-180')} />
             </Button>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">Quick settings</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t`Quick settings`}</p>
         </div>
 
         {!readOnly ? (
@@ -62,10 +63,10 @@ export function AdvancedMapAnalyticsConfigPanel({
             variant="outline"
             className="shrink-0"
             onClick={onOpenConfig}
-            aria-label="Open config modal"
+            aria-label={t`Open config modal`}
           >
             <Settings2 className="mr-2 h-4 w-4" />
-            Open Config
+            {t`Open Config`}
           </Button>
         ) : null}
       </div>
@@ -79,15 +80,15 @@ export function AdvancedMapAnalyticsConfigPanel({
               </p>
             </div>
             <div className="border-b px-3 py-2.5">
-              <div className="mb-2 text-sm font-medium">View</div>
+              <div className="mb-2 text-sm font-medium">{t`View`}</div>
               <ViewTypeRadioGroup
                 value={activeView}
                 onChange={onActiveViewChange}
                 viewOptions={[
-                  { id: 'map', label: 'Map', icon: MapIcon },
-                  { id: 'table', label: 'Table', icon: TableIcon },
+                  { id: 'map', label: t`Map`, icon: MapIcon },
+                  { id: 'table', label: t`Table`, icon: TableIcon },
                 ]}
-                ariaLabel="Advanced map analytics active view"
+                ariaLabel={t`Advanced map analytics active view`}
               />
             </div>
             <div className="border-b px-3 py-2.5">
@@ -97,12 +98,12 @@ export function AdvancedMapAnalyticsConfigPanel({
                 onClick={() => setIsDescriptionModalOpen(true)}
                 disabled={!hasMapDescription}
               >
-                Read more
+                {t`Read more`}
               </Button>
             </div>
             {hasWarnings ? (
               <div className="flex items-center justify-between gap-3 px-3 py-2.5">
-                <span className="text-sm font-medium">Warnings</span>
+                <span className="text-sm font-medium">{t`Warnings`}</span>
                 <Button
                   type="button"
                   size="sm"
@@ -111,7 +112,9 @@ export function AdvancedMapAnalyticsConfigPanel({
                   onClick={onOpenWarnings}
                 >
                   <AlertTriangle className="mr-1.5 h-3.5 w-3.5" />
-                  {warningCount} warning{warningCount === 1 ? '' : 's'}
+                  {warningCount === 1
+                    ? t`${warningCount} warning`
+                    : t`${warningCount} warnings`}
                 </Button>
               </div>
             ) : null}

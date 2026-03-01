@@ -1,6 +1,6 @@
 import { HeatmapCountyDataPoint, HeatmapUATDataPoint } from "@/schemas/heatmap";
 import { UatFeature, UatProperties } from './interfaces';
-import { formatCurrency, formatNumber, getNormalizationUnit } from '@/lib/utils';
+import { formatCurrency, formatNumber, getNormalizationUnit, getUserLocale } from '@/lib/utils';
 import { DEFAULT_FEATURE_STYLE, PERMANENT_HIGHLIGHT_STYLE } from './constants';
 import type { PathOptions, GeoJSON as LeafletGeoJSON } from 'leaflet';
 import { Feature, Geometry } from 'geojson';
@@ -74,6 +74,7 @@ export const createTooltipContent = (
   const currencyCode: 'RON' | 'EUR' = unit.includes('EUR') ? 'EUR' : 'RON';
   const isPerCapitaNorm = (filters.normalization === 'per_capita' || filters.normalization === 'per_capita_euro');
   const isPercentGdpNorm = filters.normalization === 'percent_gdp';
+  const numberLocale = getUserLocale() === 'en' ? 'en-US' : 'ro-RO';
 
   // Common styles for the tooltip
   const styles = {
@@ -124,7 +125,7 @@ export const createTooltipContent = (
         <div style="${styles.dataGrid}">
           <div style="${styles.dataLabel}">${t`Population`}</div>
           <div style="${styles.dataValue}">
-            ${population?.toLocaleString('ro-RO') ?? t`N/A`}
+            ${population?.toLocaleString(numberLocale) ?? t`N/A`}
           </div>
 
           ${isPercentGdpNorm
@@ -142,7 +143,7 @@ export const createTooltipContent = (
 
               <div style="${styles.dataLabel}">${t`Amount Per Capita`}</div>
               <div style="${styles.dataValue} ${isPerCapitaNorm ? styles.highlight : ''}">
-                ${formatCurrency(perCapitaAmount, 'compact', currencyCode)} ${unit.includes('capita') ? '/ capita' : ''}
+                ${formatCurrency(perCapitaAmount, 'compact', currencyCode)} ${unit.includes('capita') ? t` / capita` : ''}
               </div>
             `}
         </div>

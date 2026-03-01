@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { HeatmapUATDataPoint } from '@/schemas/heatmap';
 import { SafeResponsiveContainer } from '@/components/charts/safe-responsive-container';
+import { t } from '@lingui/core/macro';
 
 interface UatDistributionChartProps {
   data: HeatmapUATDataPoint[];
@@ -34,8 +35,8 @@ export const UatDistributionChart: React.FC<UatDistributionChartProps> = ({
   valueKey,
   chartTitle,
   barColor = '#82ca9d',
-  xAxisLabel = 'Value Bins',
-  yAxisLabel = 'Number of UATs',
+  xAxisLabel = t`Value bins`,
+  yAxisLabel = t`Number of UATs`,
   numberOfBins = 10,
 }) => {
   const processedData = React.useMemo(() => {
@@ -80,7 +81,7 @@ export const UatDistributionChart: React.FC<UatDistributionChartProps> = ({
   }, [data, valueKey, numberOfBins]);
 
   if (processedData.length === 0) {
-    return <p className="text-center text-sm text-muted-foreground">Not enough data to display distribution chart.</p>;
+    return <p className="text-center text-sm text-muted-foreground">{t`Not enough data to display distribution chart.`}</p>;
   }
 
   return (
@@ -99,9 +100,9 @@ export const UatDistributionChart: React.FC<UatDistributionChartProps> = ({
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" angle={-30} textAnchor="end" interval={0} tick={{ fontSize: 10 }} label={{ value: xAxisLabel, position: 'insideBottom', dy:30, fontSize: 12 }} />
           <YAxis label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', fontSize: 12 }} tickFormatter={formatNumber} />
-          <Tooltip formatter={(value) => [value ?? 0, 'Count']} />
+          <Tooltip formatter={(value) => [value ?? 0, t`Count`]} />
           <Legend verticalAlign="top" height={36}/>
-          <Bar dataKey="count" name="Number of UATs" fill={barColor}>
+          <Bar dataKey="count" name={t`Number of UATs`} fill={barColor}>
             <LabelList dataKey="count" position="top" fontSize={10} formatter={(value: React.ReactNode) => typeof value === 'number' && value > 0 ? value.toString() : ''} />
           </Bar>
         </BarChart>

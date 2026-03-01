@@ -14,6 +14,7 @@ import {
 } from '@dnd-kit/sortable';
 import type { AdvancedMapAnalyticsBinsPreset } from '@/schemas/advanced-map-analytics';
 import { AdvancedMapAnalyticsBinsPresetListItem } from './advanced-map-analytics-bins-preset-list-item';
+import { t } from '@lingui/core/macro';
 
 interface AdvancedMapAnalyticsBinsPresetListProps {
   presets: AdvancedMapAnalyticsBinsPreset[];
@@ -58,7 +59,7 @@ export function AdvancedMapAnalyticsBinsPresetList({
   if (presets.length === 0) {
     return (
       <div className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
-        No bins presets configured yet.
+        {t`No bins presets configured yet.`}
       </div>
     );
   }

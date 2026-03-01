@@ -2,6 +2,7 @@ import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { t } from '@lingui/core/macro';
 
 interface AdvancedMapAnalyticsConfigModalProps {
   open: boolean;
@@ -28,11 +29,11 @@ export function AdvancedMapAnalyticsConfigModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Map Config</DialogTitle>
+          <DialogTitle>{t`Map Config`}</DialogTitle>
           <DialogDescription>
             {readOnly
-              ? 'Review the current map configuration.'
-              : 'Update the map title and review the current advanced map analytics configuration.'
+              ? t`Review the current map configuration.`
+              : t`Update the map title and review the current advanced map analytics configuration.`
             }
           </DialogDescription>
         </DialogHeader>
@@ -40,20 +41,20 @@ export function AdvancedMapAnalyticsConfigModal({
         <div className="space-y-3">
           <div className="rounded-lg border">
             <div className="flex items-center justify-between border-b px-3 py-2.5 text-sm">
-              <span className="font-medium">Map name</span>
+              <span className="font-medium">{t`Map name`}</span>
               <Input
                 value={mapName}
                 onChange={(event) => onMapNameChange(event.currentTarget.value)}
                 className="h-8 max-w-[300px]"
                 name="advanced-map-analytics-name-modal"
                 autoComplete="off"
-                aria-label="Map name"
-                placeholder="Map name…"
+                aria-label={t`Map name`}
+                placeholder={t`Map name…`}
                 disabled={readOnly}
               />
             </div>
             <div className="flex items-center justify-between border-b px-3 py-2.5 text-sm">
-              <span className="font-medium">Warnings</span>
+              <span className="font-medium">{t`Warnings`}</span>
               <span className="text-muted-foreground">{warningCount}</span>
             </div>
           </div>
@@ -69,7 +70,7 @@ export function AdvancedMapAnalyticsConfigModal({
               }}
             >
               <AlertTriangle className="mr-2 h-4 w-4" />
-              View warnings
+              {t`View warnings`}
             </Button>
           ) : null}
         </div>

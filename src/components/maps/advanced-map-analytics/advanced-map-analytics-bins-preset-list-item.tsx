@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import type { AdvancedMapAnalyticsBinsPreset } from '@/schemas/advanced-map-analytics';
+import { t } from '@lingui/core/macro';
 
 interface AdvancedMapAnalyticsBinsPresetListItemProps {
   preset: AdvancedMapAnalyticsBinsPreset;
@@ -39,7 +40,7 @@ export const AdvancedMapAnalyticsBinsPresetListItem = memo(function AdvancedMapA
     zIndex: isDragging ? 20 : 'auto',
   };
 
-  const displayLabel = preset.label.trim().length > 0 ? preset.label : 'Bins preset';
+  const displayLabel = preset.label.trim().length > 0 ? preset.label : t`Bins preset`;
 
   return (
     <div
@@ -58,7 +59,7 @@ export const AdvancedMapAnalyticsBinsPresetListItem = memo(function AdvancedMapA
         ) : (
           <button
             type="button"
-            aria-label="Reorder bins preset"
+            aria-label={t`Reorder bins preset`}
             className="cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing"
             onClick={(event) => event.stopPropagation()}
             {...attributes}
@@ -82,7 +83,7 @@ export const AdvancedMapAnalyticsBinsPresetListItem = memo(function AdvancedMapA
             event.stopPropagation();
             onSetActive(preset.id);
           }}
-          aria-label={isActive ? 'Unset active bins preset' : 'Set active bins preset'}
+          aria-label={isActive ? t`Unset active bins preset` : t`Set active bins preset`}
           disabled={readOnly}
         >
           <Palette className="h-3.5 w-3.5" />
@@ -92,7 +93,7 @@ export const AdvancedMapAnalyticsBinsPresetListItem = memo(function AdvancedMapA
           type="button"
           className="min-w-0 flex-1 text-left"
           onClick={() => onEdit(preset.id)}
-          aria-label="Edit bins preset"
+          aria-label={t`Edit bins preset`}
           disabled={readOnly}
         >
           <p className="truncate text-sm font-semibold" title={displayLabel}>
@@ -109,7 +110,7 @@ export const AdvancedMapAnalyticsBinsPresetListItem = memo(function AdvancedMapA
             size="icon"
             variant="ghost"
             className="h-7 w-7"
-            aria-label="Open bins preset menu"
+            aria-label={t`Open bins preset menu`}
             onClick={(event) => event.stopPropagation()}
           >
             <MoreVertical className="h-4 w-4" />
@@ -118,14 +119,14 @@ export const AdvancedMapAnalyticsBinsPresetListItem = memo(function AdvancedMapA
         <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
           <DropdownMenuItem onSelect={() => onEdit(preset.id)}>
             <Pencil className="mr-2 h-4 w-4" />
-            Edit
+            {t`Edit`}
           </DropdownMenuItem>
           <DropdownMenuItem
             className="text-destructive focus:text-destructive"
             onSelect={() => onDelete(preset.id)}
           >
             <Trash2 className="mr-2 h-4 w-4" />
-            Delete
+            {t`Delete`}
           </DropdownMenuItem>
         </DropdownMenuContent>
         </DropdownMenu>

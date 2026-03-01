@@ -248,7 +248,7 @@ describe('HeatmapDataTable', () => {
       renderHeatmapTable({ data, mapViewType: 'UAT' })
 
       // County column header should be visible
-      expect(screen.getByText('Județ')).toBeInTheDocument()
+      expect(screen.getByText('County')).toBeInTheDocument()
     })
   })
 

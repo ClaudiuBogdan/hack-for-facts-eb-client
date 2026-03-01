@@ -13,6 +13,7 @@ import { MapAnalyticsOwnerConfigModal } from '@/features/advanced-map-analytics/
 import { useAdvancedMapAnalyticsMapQuery } from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
 import type { AdvancedMapAnalyticsApiError } from '@/features/advanced-map-analytics/api/advanced-map-analytics-api';
 import { getRemoteGroupedSeriesHash } from '@/lib/map-series/grouped-series-request';
+import { t } from '@lingui/core/macro';
 
 interface MapAnalyticsEditorPageProps {
   mapId: string;
@@ -87,7 +88,7 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
   if (!isLoaded || (mapQuery.isLoading && isSignedIn)) {
     return (
       <div className="container mx-auto py-12">
-        <LoadingSpinner text="Loading map editor..." />
+        <LoadingSpinner text={t`Loading map editor...`} />
       </div>
     );
   }
@@ -97,12 +98,12 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Sign in required</CardTitle>
-            <CardDescription>You need to be signed in to access map editor.</CardDescription>
+            <CardTitle>{t`Sign in required`}</CardTitle>
+            <CardDescription>{t`You need to be signed in to access map editor.`}</CardDescription>
           </CardHeader>
           <CardContent>
             <AuthSignInButton>
-              <Button>Sign In</Button>
+              <Button>{t`Sign In`}</Button>
             </AuthSignInButton>
           </CardContent>
         </Card>
@@ -115,7 +116,7 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Access denied</CardTitle>
+            <CardTitle>{t`Access denied`}</CardTitle>
             <CardDescription>{forbiddenError.message}</CardDescription>
           </CardHeader>
         </Card>
@@ -128,7 +129,7 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Failed to load map</CardTitle>
+            <CardTitle>{t`Failed to load map`}</CardTitle>
             <CardDescription>{mapQuery.error.message}</CardDescription>
           </CardHeader>
         </Card>

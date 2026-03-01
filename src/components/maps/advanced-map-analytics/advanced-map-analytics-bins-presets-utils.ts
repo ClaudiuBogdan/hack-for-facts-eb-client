@@ -1,6 +1,8 @@
 import type { AdvancedMapAnalyticsBinsPreset } from '@/schemas/advanced-map-analytics';
+import { i18n } from '@lingui/core';
+import { msg } from '@lingui/core/macro';
 
-const DEFAULT_PRESET_LABEL_PREFIX = 'Bins preset';
+const DEFAULT_PRESET_LABEL_PREFIX = msg`Bins preset`;
 
 export function reorderBinsPresetsByIds(
   presetList: AdvancedMapAnalyticsBinsPreset[],
@@ -29,5 +31,5 @@ export function reorderBinsPresetsByIds(
 }
 
 export function getNextBinsPresetLabel(presets: AdvancedMapAnalyticsBinsPreset[]): string {
-  return `${DEFAULT_PRESET_LABEL_PREFIX} ${presets.length + 1}`;
+  return `${i18n._(DEFAULT_PRESET_LABEL_PREFIX)} ${presets.length + 1}`;
 }

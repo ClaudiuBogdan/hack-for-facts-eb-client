@@ -172,6 +172,18 @@ export function MapFilter() {
         () => getNormalizationUnit({ normalization: mapState.filters.normalization, currency: userCurrency }),
         [mapState.filters.normalization, userCurrency]
     );
+    const reportTypeLabel = useMemo(() => {
+        if (!mapState.filters.report_type) {
+            return null;
+        }
+        if (mapState.filters.report_type === 'Executie bugetara agregata la nivel de ordonator principal') {
+            return t`Aggregated Budget Execution at Main Ordering Level`;
+        }
+        if (mapState.filters.report_type === 'Executie bugetara detaliata') {
+            return t`Detailed Budget Execution`;
+        }
+        return mapState.filters.report_type;
+    }, [mapState.filters.report_type]);
 
     return (
         <Card className="flex flex-col w-full h-full shadow-lg" role="region" aria-labelledby="map-filters-title">
@@ -358,7 +370,7 @@ export function MapFilter() {
                 <FilterRadioContainer
                     title={t`Report Type`}
                     icon={<ArrowUpDown className="w-4 h-4" aria-hidden="true" />}
-                    selectedOption={(mapState.filters.report_type) ? { id: mapState.filters.report_type, label: mapState.filters.report_type } : null}
+                    selectedOption={(mapState.filters.report_type && reportTypeLabel) ? { id: mapState.filters.report_type, label: reportTypeLabel } : null}
                     onClear={() => setReportType('Executie bugetara agregata la nivel de ordonator principal')}
                 >
                     <ReportTypeFilter

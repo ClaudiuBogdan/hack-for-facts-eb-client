@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import type { AdvancedMapAnalyticsValueFilterRule, MapSupportedSeries } from '@/schemas/advanced-map-analytics';
+import { t } from '@lingui/core/macro';
 
 interface AdvancedMapAnalyticsValueFiltersPanelProps {
   collapsed: boolean;
@@ -55,6 +56,11 @@ export function AdvancedMapAnalyticsValueFiltersPanel({
   onMoveRule,
   onRuleEnabledChange,
 }: Readonly<AdvancedMapAnalyticsValueFiltersPanelProps>) {
+  const rulesConfiguredLabel =
+    rules.length === 1
+      ? t`${rules.length} rule configured`
+      : t`${rules.length} rules configured`;
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
@@ -80,25 +86,25 @@ export function AdvancedMapAnalyticsValueFiltersPanel({
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-2xl font-bold tracking-tight">Value Filters</h2>
+            <h2 className="text-2xl font-bold tracking-tight">{t`Value Filters`}</h2>
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8"
               onClick={() => onToggleCollapsed(!collapsed)}
-              aria-label={collapsed ? 'Expand value filters panel' : 'Collapse value filters panel'}
+              aria-label={collapsed ? t`Expand value filters panel` : t`Collapse value filters panel`}
             >
               <ChevronDown className={cn('h-4 w-4 transition-transform', !collapsed && 'rotate-180')} />
             </Button>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">{rules.length} rules configured</p>
+          <p className="mt-1 text-sm text-muted-foreground">{rulesConfiguredLabel}</p>
         </div>
 
         <Button
           size="icon"
           className="h-10 w-10 shrink-0 rounded-full"
           onClick={onAddRule}
-          aria-label="Add value filter rule"
+          aria-label={t`Add value filter rule`}
           disabled={readOnly}
         >
           <Plus className="h-5 w-5" />
@@ -109,7 +115,7 @@ export function AdvancedMapAnalyticsValueFiltersPanel({
         <CollapsibleContent className="space-y-2 data-[state=open]:animate-in data-[state=closed]:animate-out">
           {rules.length === 0 ? (
             <div className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
-              No value filters configured yet.
+              {t`No value filters configured yet.`}
             </div>
           ) : (
             readOnly ? (
@@ -211,7 +217,7 @@ const ValueFilterListItem = memo(function ValueFilterListItem({
       ) : (
         <button
           type="button"
-          aria-label={`Reorder rule ${index + 1}`}
+          aria-label={t`Reorder rule ${index + 1}`}
           className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing"
           onClick={(event) => event.stopPropagation()}
           {...attributes}
@@ -225,18 +231,18 @@ const ValueFilterListItem = memo(function ValueFilterListItem({
         type="button"
         className="flex min-w-0 flex-1 items-center gap-3 text-left"
         onClick={() => onEditRule(rule.id)}
-        aria-label={`Edit value filter rule ${index + 1}`}
+        aria-label={t`Edit value filter rule ${index + 1}`}
         disabled={readOnly}
       >
         <span
           className="flex h-7 w-7 items-center justify-center rounded-full border bg-muted/40 text-muted-foreground"
-          aria-label={`Rule connector ${resolveRuleJoin(rule, index)}`}
+          aria-label={t`Rule connector ${resolveRuleJoin(rule, index)}`}
         >
           <RuleJoinGlyph join={resolveRuleJoin(rule, index)} />
         </span>
         <span className="min-w-0">
           <p className="truncate text-sm font-semibold">
-            Rule {index + 1}
+            {t`Rule ${index + 1}`}
           </p>
           <p className="truncate text-xs text-muted-foreground">
             {buildRuleSummary(rule, series, index)}
@@ -249,7 +255,7 @@ const ValueFilterListItem = memo(function ValueFilterListItem({
           checked={rule.enabled}
           onClick={(event) => event.stopPropagation()}
           onCheckedChange={(checked) => onRuleEnabledChange(rule.id, checked)}
-          aria-label={rule.enabled ? `Disable rule ${index + 1}` : `Enable rule ${index + 1}`}
+          aria-label={rule.enabled ? t`Disable rule ${index + 1}` : t`Enable rule ${index + 1}`}
           disabled={readOnly}
         />
 
@@ -260,7 +266,7 @@ const ValueFilterListItem = memo(function ValueFilterListItem({
               size="icon"
               variant="ghost"
               className="h-7 w-7"
-              aria-label={`Open rule ${index + 1} menu`}
+              aria-label={t`Open rule ${index + 1} menu`}
               onClick={(event) => event.stopPropagation()}
             >
               <MoreVertical className="h-4 w-4" />
@@ -269,28 +275,28 @@ const ValueFilterListItem = memo(function ValueFilterListItem({
           <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
             <DropdownMenuItem onSelect={() => onEditRule(rule.id)}>
               <Pencil className="mr-2 h-4 w-4" />
-              Edit
+              {t`Edit`}
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={index === 0}
               onSelect={() => onMoveRule(rule.id, 'up')}
             >
               <ArrowUp className="mr-2 h-4 w-4" />
-              Move up
+              {t`Move up`}
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={index === totalRules - 1}
               onSelect={() => onMoveRule(rule.id, 'down')}
             >
               <ArrowDown className="mr-2 h-4 w-4" />
-              Move down
+              {t`Move down`}
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
               onSelect={() => onDeleteRule(rule.id)}
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              Delete
+              {t`Delete`}
             </DropdownMenuItem>
           </DropdownMenuContent>
           </DropdownMenu>
@@ -318,7 +324,7 @@ function buildRuleSummary(
   const secondValueText = rule.secondValue != null ? String(rule.secondValue) : '';
 
   if (rule.operator === 'between' || rule.operator === 'not_between') {
-    return `${connectorPrefix}${sourceLabel}: ${operatorLabel} ${firstValueText} and ${secondValueText}`.trim();
+    return `${connectorPrefix}${sourceLabel}: ${operatorLabel} ${firstValueText} ${t`and`} ${secondValueText}`.trim();
   }
 
   if (rule.operator === 'is_defined' || rule.operator === 'is_undefined') {
@@ -331,7 +337,7 @@ function buildRuleSummary(
 function resolveRuleSourceLabel(rule: AdvancedMapAnalyticsValueFilterRule, series: MapSupportedSeries[]): string {
   const { seriesRef } = rule;
   if (seriesRef.mode !== 'series') {
-    return 'active';
+    return t`active`;
   }
 
   const sourceSeries = series.find((entry) => entry.id === seriesRef.seriesId);
@@ -356,10 +362,10 @@ function resolveOperatorLabel(
     lte: '<=',
     eq: '=',
     neq: '!=',
-    between: 'between',
-    not_between: 'not between',
-    is_defined: 'is defined',
-    is_undefined: 'is undefined',
+    between: t`between`,
+    not_between: t`not between`,
+    is_defined: t`is defined`,
+    is_undefined: t`is undefined`,
   };
 
   return labelsByOperator[operator];
@@ -367,7 +373,7 @@ function resolveOperatorLabel(
 
 function resolveStatsSummary(rule: Extract<AdvancedMapAnalyticsValueFilterRule, { kind: 'stats' }>): string {
   if (rule.statsType === 'percentile_band') {
-    return `percentile ${rule.minPercentile}-${rule.maxPercentile}`;
+    return t`percentile ${rule.minPercentile}-${rule.maxPercentile}`;
   }
 
   if (rule.statsType === 'rank') {
@@ -375,18 +381,18 @@ function resolveStatsSummary(rule: Extract<AdvancedMapAnalyticsValueFilterRule, 
   }
 
   if (rule.statsType === 'median_compare') {
-    return `${rule.mode} median`;
+    return `${rule.mode} ${t`median`}`;
   }
 
   if (rule.statsType === 'zscore') {
-    return `${rule.mode} z ${rule.threshold}`;
+    return `${rule.mode} ${t`z`} ${rule.threshold}`;
   }
 
   if (rule.statsType === 'iqr_outlier') {
-    return `${rule.side} iqr x${rule.multiplier}`;
+    return `${rule.side} ${t`iqr`} x${rule.multiplier}`;
   }
 
-  return `|rz| >= ${rule.threshold}`;
+  return t`|rz| >= ${rule.threshold}`;
 }
 
 function resolveRuleJoin(rule: AdvancedMapAnalyticsValueFilterRule, index: number): 'AND' | 'OR' {

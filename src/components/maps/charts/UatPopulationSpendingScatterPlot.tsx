@@ -13,6 +13,7 @@ import { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap';
 import { formatCurrency, formatNumber, getNormalizationUnit } from '@/lib/utils';
 import type { Currency, Normalization } from '@/schemas/charts';
 import { SafeResponsiveContainer } from '@/components/charts/safe-responsive-container';
+import { t } from '@lingui/core/macro';
 
 interface UatPopulationSpendingScatterPlotProps {
   data: (HeatmapUATDataPoint | HeatmapCountyDataPoint)[];
@@ -46,8 +47,8 @@ const CustomTooltip = ({ active, payload, currencyCode, isPerCapita }: CustomToo
     return (
       <div className="bg-background p-2 border border-border rounded shadow-lg text-sm">
         <p className="font-semibold text-foreground">{name}</p>
-        <p>Population: {formatNumber(population ?? 0)}</p>
-        <p>Amount: {formatCurrency(dataPoint.amount, 'standard', currencyCode)}{isPerCapita ? ' / capita' : ''}</p>
+        <p>{t`Population`}: {formatNumber(population ?? 0)}</p>
+        <p>{t`Amount`}: {formatCurrency(dataPoint.amount, 'standard', currencyCode)}{isPerCapita ? t` / capita` : ''}</p>
       </div>
     );
   }
@@ -57,8 +58,8 @@ const CustomTooltip = ({ active, payload, currencyCode, isPerCapita }: CustomToo
 export const UatPopulationSpendingScatterPlot: React.FC<UatPopulationSpendingScatterPlotProps> = ({
   data,
   chartTitle,
-  xAxisLabel = 'Population',
-  yAxisLabel = 'Amount',
+  xAxisLabel = t`Population`,
+  yAxisLabel = t`Amount`,
   dotColor = '#8884d8',
   normalization,
   currency,
@@ -122,11 +123,11 @@ export const UatPopulationSpendingScatterPlot: React.FC<UatPopulationSpendingSca
   }, [saneData]);
 
   if (saneData.length === 0) {
-    return <p className="text-center text-sm text-muted-foreground">Not enough data for scatter plot.</p>;
+    return <p className="text-center text-sm text-muted-foreground">{t`Not enough data for scatter plot.`}</p>;
   }
 
   if (processedForScatter.length === 0 && saneData.length >= 25) { // MIN_POINTS_FOR_FILTERING was 25
-    return <p className="text-center text-sm text-muted-foreground">No distinct outliers found in the current dataset.</p>;
+    return <p className="text-center text-sm text-muted-foreground">{t`No distinct outliers found in the current dataset.`}</p>;
   }
 
   // If processedForScatter is empty because saneData was < MIN_POINTS_FOR_FILTERING, 
@@ -134,7 +135,7 @@ export const UatPopulationSpendingScatterPlot: React.FC<UatPopulationSpendingSca
   // If saneData was small (e.g. 1-24 points) and became processedForScatter, and that's empty (only if saneData was empty), it's caught.
   // This handles the case where saneData is not empty, but outlier filtering results in an empty set.
   if (processedForScatter.length === 0 && saneData.length > 0 && saneData.length >= 25) {
-    return <p className="text-center text-sm text-muted-foreground">No distinct outliers found. Try adjusting filters.</p>;
+    return <p className="text-center text-sm text-muted-foreground">{t`No distinct outliers found. Try adjusting filters.`}</p>;
   }
 
   return (
@@ -154,7 +155,7 @@ export const UatPopulationSpendingScatterPlot: React.FC<UatPopulationSpendingSca
           <XAxis
             type="number"
             dataKey="population"
-            name="Population"
+            name={t`Population`}
             tickFormatter={(value) => formatNumber(value, 'standard')}
             label={{ value: xAxisLabel, position: 'insideBottom', dy: 20, fontSize: 12 }}
             domain={['dataMin', 'dataMax']}
@@ -162,15 +163,15 @@ export const UatPopulationSpendingScatterPlot: React.FC<UatPopulationSpendingSca
           <YAxis
             type="number"
             dataKey="amount"
-            name="Amount"
-            tickFormatter={(value) => `${formatCurrency(value, 'compact', currencyCode)}${isPerCapita ? ' / capita' : ''}`}
+            name={t`Amount`}
+            tickFormatter={(value) => `${formatCurrency(value, 'compact', currencyCode)}${isPerCapita ? t` / capita` : ''}`}
             label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', dx: -75, fontSize: 12 }}
             domain={['auto', 'auto']}
           />
-          <ZAxis dataKey="uat_name" name="UAT Name" />
+          <ZAxis dataKey="uat_name" name={t`UAT Name`} />
           <Tooltip content={<CustomTooltip currencyCode={currencyCode} isPerCapita={isPerCapita} />} cursor={{ strokeDasharray: '3 3' }} />
           <Legend verticalAlign="top" height={36} />
-          <Scatter name="UAT Outliers" data={processedForScatter} fill={dotColor} />
+          <Scatter name={t`UAT Outliers`} data={processedForScatter} fill={dotColor} />
         </ScatterChart>
       </SafeResponsiveContainer>
     </div>

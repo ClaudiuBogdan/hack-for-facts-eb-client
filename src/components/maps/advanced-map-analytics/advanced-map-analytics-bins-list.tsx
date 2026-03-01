@@ -13,6 +13,7 @@ import {
   createUniqueAdvancedMapAnalyticsId,
   type AdvancedMapAnalyticsBin,
 } from '@/schemas/advanced-map-analytics';
+import { t } from '@lingui/core/macro';
 
 interface AdvancedMapAnalyticsBinsListProps {
   bins: AdvancedMapAnalyticsBin[];
@@ -55,7 +56,7 @@ export function AdvancedMapAnalyticsBinsList({
   const commit = (nextBins: AdvancedMapAnalyticsBin[]): boolean => {
     const result = onApplyBins(nextBins);
     if (!result.ok) {
-      setInlineError(result.error ?? 'Invalid bins configuration.');
+      setInlineError(result.error ?? t`Invalid bins configuration.`);
       return false;
     }
     setInlineError(null);
@@ -69,13 +70,13 @@ export function AdvancedMapAnalyticsBinsList({
     }
 
     if (rawValue.trim().length === 0) {
-      setInlineError(`Bin ${index + 1} min must be a finite number.`);
+      setInlineError(t`Bin ${index + 1} min must be a finite number.`);
       return;
     }
 
     const parsed = Number(rawValue);
     if (!Number.isFinite(parsed)) {
-      setInlineError(`Bin ${index + 1} min must be a finite number.`);
+      setInlineError(t`Bin ${index + 1} min must be a finite number.`);
       return;
     }
 
@@ -101,13 +102,13 @@ export function AdvancedMapAnalyticsBinsList({
 
     const rawValue = maxValues[index];
     if (rawValue === undefined || rawValue.trim().length === 0) {
-      setInlineError(`Bin ${index + 1} max must be a finite number.`);
+      setInlineError(t`Bin ${index + 1} max must be a finite number.`);
       return;
     }
 
     const parsed = Number(rawValue);
     if (!Number.isFinite(parsed)) {
-      setInlineError(`Bin ${index + 1} max must be a finite number.`);
+      setInlineError(t`Bin ${index + 1} max must be a finite number.`);
       return;
     }
 
@@ -174,7 +175,7 @@ export function AdvancedMapAnalyticsBinsList({
 
   const removeBin = (index: number) => {
     if (bins.length <= 1) {
-      setInlineError('At least one bin is required.');
+      setInlineError(t`At least one bin is required.`);
       return;
     }
 
@@ -340,7 +341,7 @@ export function AdvancedMapAnalyticsBinsList({
                       );
                       commit(nextBins);
                     }}
-                    placeholder="Label"
+                    placeholder={t`Label`}
                     autoComplete="off"
                     className="h-8 flex-1 text-sm"
                   />
@@ -355,7 +356,7 @@ export function AdvancedMapAnalyticsBinsList({
                           size="icon"
                           className="h-7 w-7"
                           onClick={() => toggleEnabled(index, !isEnabled)}
-                          aria-label={isEnabled ? 'Disable bin' : 'Enable bin'}
+                          aria-label={isEnabled ? t`Disable bin` : t`Enable bin`}
                         >
                           {isEnabled ? (
                             <Eye className="h-3.5 w-3.5 text-muted-foreground" />
@@ -365,7 +366,7 @@ export function AdvancedMapAnalyticsBinsList({
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="top">
-                        {isEnabled ? 'Disable bin' : 'Enable bin'}
+                        {isEnabled ? t`Disable bin` : t`Enable bin`}
                       </TooltipContent>
                     </Tooltip>
 
@@ -378,12 +379,12 @@ export function AdvancedMapAnalyticsBinsList({
                           className="h-7 w-7"
                           onClick={() => moveBin(index, 'up')}
                           disabled={index === 0}
-                          aria-label="Move up"
+                          aria-label={t`Move up`}
                         >
                           <ArrowUp className="h-3.5 w-3.5" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="top">Move up</TooltipContent>
+                      <TooltipContent side="top">{t`Move up`}</TooltipContent>
                     </Tooltip>
 
                     <Tooltip>
@@ -395,12 +396,12 @@ export function AdvancedMapAnalyticsBinsList({
                           className="h-7 w-7"
                           onClick={() => moveBin(index, 'down')}
                           disabled={index === rowCount - 1}
-                          aria-label="Move down"
+                          aria-label={t`Move down`}
                         >
                           <ArrowDown className="h-3.5 w-3.5" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="top">Move down</TooltipContent>
+                      <TooltipContent side="top">{t`Move down`}</TooltipContent>
                     </Tooltip>
 
                     <Tooltip>
@@ -411,12 +412,12 @@ export function AdvancedMapAnalyticsBinsList({
                           size="icon"
                           className="h-7 w-7 text-destructive hover:text-destructive"
                           onClick={() => removeBin(index)}
-                          aria-label="Delete bin"
+                          aria-label={t`Delete bin`}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent side="top">Delete</TooltipContent>
+                      <TooltipContent side="top">{t`Delete`}</TooltipContent>
                     </Tooltip>
                   </div>
                 </div>
@@ -438,7 +439,7 @@ export function AdvancedMapAnalyticsBinsList({
                       type="number"
                       inputMode="decimal"
                       autoComplete="off"
-                      placeholder="Min"
+                      placeholder={t`Min`}
                       className="h-7 text-xs"
                     />
                   </div>
@@ -447,7 +448,7 @@ export function AdvancedMapAnalyticsBinsList({
                   <div className="w-32">
                     {isLast ? (
                       <div className="flex h-7 items-center justify-center rounded-md border border-dashed border-border/50 bg-muted/30 px-2 text-xs text-muted-foreground">
-                        Open
+                        {t`Open`}
                       </div>
                     ) : (
                       <Input
@@ -463,7 +464,7 @@ export function AdvancedMapAnalyticsBinsList({
                         type="number"
                         inputMode="decimal"
                         autoComplete="off"
-                        placeholder="Max"
+                        placeholder={t`Max`}
                         className="h-7 text-xs"
                       />
                     )}
@@ -477,9 +478,9 @@ export function AdvancedMapAnalyticsBinsList({
         <div className="flex items-center justify-between pt-2">
           <Button type="button" variant="outline" size="sm" onClick={addBin}>
             <Plus className="mr-1.5 h-4 w-4" />
-            Add bin
+            {t`Add bin`}
           </Button>
-          <span className="text-xs text-muted-foreground">{bins.length} bins</span>
+          <span className="text-xs text-muted-foreground">{t`${bins.length} bins`}</span>
         </div>
 
         {inlineError ? (

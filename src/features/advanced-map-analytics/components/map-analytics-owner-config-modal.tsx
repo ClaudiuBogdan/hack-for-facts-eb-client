@@ -28,6 +28,8 @@ import {
   useUpdateAdvancedMapAnalyticsMapMutation,
 } from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
 import type { AdvancedMapAnalyticsVisibility } from '@/features/advanced-map-analytics/api/schemas';
+import { t } from '@lingui/core/macro';
+import { getUserLocale } from '@/lib/utils';
 
 interface MapAnalyticsOwnerConfigModalProps {
   open: boolean;
@@ -60,6 +62,7 @@ export function MapAnalyticsOwnerConfigModal({
   onLoadSnapshot,
   onDeleted,
 }: Readonly<MapAnalyticsOwnerConfigModalProps>) {
+  const dateTimeLocale = getUserLocale() === 'en' ? 'en-US' : 'ro-RO';
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [snapshotDescriptionDraft, setSnapshotDescriptionDraft] = useState('');
@@ -108,7 +111,7 @@ export function MapAnalyticsOwnerConfigModal({
   const trimmedMapDescription = useMemo(() => mapDescription.trim(), [mapDescription]);
   const snapshotTitle = trimmedMapName.length > 0 ? trimmedMapName : currentTitle;
   const deleteInputMatchesTitle = deleteConfirmationInput === mapName;
-  const visibilityLabel = visibility === 'public' ? 'Public' : 'Private';
+  const visibilityLabel = visibility === 'public' ? t`Public` : t`Private`;
   const isVisibilityConfirmOpen = pendingVisibilityTarget !== null;
   const isLoadConfirmOpen = pendingLoadSnapshotId !== null;
   const normalizedPublicId =
@@ -150,9 +153,9 @@ export function MapAnalyticsOwnerConfigModal({
         state: nextVisibility,
       });
       setVisibility(nextVisibility);
-      toast.success(nextVisibility === 'public' ? 'Map is now public' : 'Map is now private');
+      toast.success(nextVisibility === 'public' ? t`Map is now public` : t`Map is now private`);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to update map visibility';
+      const message = error instanceof Error ? error.message : t`Failed to update map visibility`;
       toast.error(message);
     } finally {
       setPendingVisibilityTarget(null);
@@ -172,9 +175,9 @@ export function MapAnalyticsOwnerConfigModal({
         },
       });
       setSnapshotDescriptionDraft('');
-      toast.success('Checkpoint saved');
+      toast.success(t`Checkpoint saved`);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to save checkpoint';
+      const message = error instanceof Error ? error.message : t`Failed to save checkpoint`;
       toast.error(message);
     } finally {
       setIsSaveCheckpointConfirmOpen(false);
@@ -198,9 +201,9 @@ export function MapAnalyticsOwnerConfigModal({
     try {
       const snapshot = await fetchAdvancedMapAnalyticsSnapshotForRestore(mapId, pendingLoadSnapshotId);
       onLoadSnapshot(snapshot.config);
-      toast.success('Snapshot loaded');
+      toast.success(t`Snapshot loaded`);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to load snapshot';
+      const message = error instanceof Error ? error.message : t`Failed to load snapshot`;
       toast.error(message);
     } finally {
       setPendingLoadSnapshotId(null);
@@ -210,11 +213,11 @@ export function MapAnalyticsOwnerConfigModal({
   const handleConfirmDeleteMap = async () => {
     try {
       await deleteMapMutation.mutateAsync({ mapId });
-      toast.success('Map deleted');
+      toast.success(t`Map deleted`);
       onOpenChange(false);
       onDeleted();
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to delete map';
+      const message = error instanceof Error ? error.message : t`Failed to delete map`;
       toast.error(message);
     } finally {
       setIsDeleteConfirmOpen(false);
@@ -228,9 +231,9 @@ export function MapAnalyticsOwnerConfigModal({
 
     try {
       await navigator.clipboard.writeText(publicMapUrl);
-      toast.success('Public map link copied');
+      toast.success(t`Public map link copied`);
     } catch {
-      toast.error('Failed to copy public map link');
+      toast.error(t`Failed to copy public map link`);
     }
   };
 
@@ -260,11 +263,11 @@ export function MapAnalyticsOwnerConfigModal({
 
     try {
       await navigator.clipboard.writeText(linkToCopy);
-      toast.success('Map link copied to clipboard', {
-        description: 'Now you can share or open it in a new tab.',
+      toast.success(t`Map link copied to clipboard`, {
+        description: t`Now you can share or open it in a new tab.`,
       });
     } catch {
-      toast.error('Failed to copy map link');
+      toast.error(t`Failed to copy map link`);
     }
   };
 
@@ -273,30 +276,30 @@ export function MapAnalyticsOwnerConfigModal({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-h-[90dvh] max-w-3xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Map configuration</DialogTitle>
+            <DialogTitle>{t`Map configuration`}</DialogTitle>
             <DialogDescription>
-              Manage map visibility, checkpoints, and destructive actions in one place.
+              {t`Manage map visibility, checkpoints, and destructive actions in one place.`}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <section className="space-y-3 rounded-lg border p-3">
-              <h3 className="text-sm font-semibold">Map settings</h3>
+              <h3 className="text-sm font-semibold">{t`Map settings`}</h3>
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-medium" htmlFor="map-title-input">
-                    Map title
+                    {t`Map title`}
                   </label>
                   <Input
                     id="map-title-input"
                     value={mapName}
                     onChange={(event) => onMapNameChange(event.currentTarget.value)}
                     disabled={isBusy}
-                    aria-label="Map title"
+                    aria-label={t`Map title`}
                   />
                 </div>
                 <div>
-                  <p className="mb-1 text-sm font-medium">Visibility</p>
+                  <p className="mb-1 text-sm font-medium">{t`Visibility`}</p>
                   <div className="flex items-center justify-between rounded-md border px-3 py-2">
                     <Badge variant={visibility === 'public' ? 'success' : 'secondary'}>
                       {visibilityLabel}
@@ -305,11 +308,11 @@ export function MapAnalyticsOwnerConfigModal({
                       checked={visibility === 'public'}
                       onCheckedChange={handleRequestVisibilityToggle}
                       disabled={isBusy}
-                      aria-label="Map visibility"
+                      aria-label={t`Map visibility`}
                     />
                   </div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Public maps are accessible from the public route.
+                    {t`Public maps are accessible from the public route.`}
                   </p>
                   {visibility === 'public' ? (
                     <div className="mt-3 space-y-2">
@@ -317,15 +320,15 @@ export function MapAnalyticsOwnerConfigModal({
                         className="block text-xs font-medium text-muted-foreground"
                         htmlFor="public-map-url-input"
                       >
-                        Public map URL
+                        {t`Public map URL`}
                       </label>
                       <div className="flex items-center gap-2">
                         <Input
                           id="public-map-url-input"
                           value={publicMapUrl}
                           readOnly
-                          aria-label="Public map URL"
-                          placeholder="/maps/public/<public-id>"
+                          aria-label={t`Public map URL`}
+                          placeholder={t`/maps/public/<public-id>`}
                         />
                         <Button
                           size="sm"
@@ -333,12 +336,12 @@ export function MapAnalyticsOwnerConfigModal({
                           onClick={() => void handleCopyPublicLink()}
                           disabled={publicMapUrl.length === 0 || isBusy}
                         >
-                          Copy link
+                          {t`Copy link`}
                         </Button>
                       </div>
                       {publicMapUrl.length === 0 ? (
                         <p className="text-xs text-muted-foreground">
-                          Public URL is not available yet. Refresh after publishing.
+                          {t`Public URL is not available yet. Refresh after publishing.`}
                         </p>
                       ) : null}
                     </div>
@@ -350,7 +353,7 @@ export function MapAnalyticsOwnerConfigModal({
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
                 onClick={() => setIsDescriptionEditorModalOpen(true)}
               >
-                Read more
+                {t`Read more`}
               </Button>
               <Button
                 type="button"
@@ -359,21 +362,21 @@ export function MapAnalyticsOwnerConfigModal({
                 onClick={() => void handleCopyMapLink()}
                 disabled={isBusy}
               >
-                Copy map
+                {t`Copy map`}
               </Button>
             </section>
 
             <section className="space-y-3 rounded-lg border p-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold">Snapshots</h3>
+                <h3 className="text-sm font-semibold">{t`Snapshots`}</h3>
                 <Button onClick={handleRequestSaveCheckpoint} disabled={isBusy} size="sm">
-                  Save checkpoint
+                  {t`Save checkpoint`}
                 </Button>
               </div>
 
               <div>
                 <label className="mb-1 block text-sm font-medium" htmlFor="snapshot-description">
-                  Snapshot description (optional)
+                  {t`Snapshot description (optional)`}
                 </label>
                 <Input
                   id="snapshot-description"
@@ -390,22 +393,22 @@ export function MapAnalyticsOwnerConfigModal({
                   disabled={!canGoPrevious || isBusy}
                   onClick={() => setPage((previousPage) => previousPage - 1)}
                 >
-                  Previous
+                  {t`Previous`}
                 </Button>
-                <span className="text-xs text-muted-foreground">Page {page}</span>
+                <span className="text-xs text-muted-foreground">{t`Page ${page}`}</span>
                 <Button
                   size="sm"
                   variant="outline"
                   disabled={!canGoNext || isBusy}
                   onClick={() => setPage((previousPage) => previousPage + 1)}
                 >
-                  Next
+                  {t`Next`}
                 </Button>
               </div>
 
               {snapshotsQuery.isLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <LoadingSpinner text="Loading snapshots..." />
+                  <LoadingSpinner text={t`Loading snapshots...`} />
                 </div>
               ) : snapshotsQuery.error ? (
                 <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
@@ -413,7 +416,7 @@ export function MapAnalyticsOwnerConfigModal({
                 </div>
               ) : snapshots.length === 0 ? (
                 <div className="rounded border border-dashed p-4 text-sm text-muted-foreground">
-                  No snapshots found.
+                  {t`No snapshots found.`}
                 </div>
               ) : (
                 <div className="max-h-[320px] space-y-2 overflow-y-auto">
@@ -423,7 +426,8 @@ export function MapAnalyticsOwnerConfigModal({
                         <div>
                           <p className="text-sm font-semibold">{snapshot.title}</p>
                           <p className="text-xs text-muted-foreground">
-                            {new Date(snapshot.createdAt).toLocaleString()} · {snapshot.stateAtSave}
+                            {new Date(snapshot.createdAt).toLocaleString(dateTimeLocale)}{' '}
+                            · {snapshot.stateAtSave}
                           </p>
                         </div>
                         <Button
@@ -432,7 +436,7 @@ export function MapAnalyticsOwnerConfigModal({
                           disabled={isBusy}
                           onClick={() => setPendingLoadSnapshotId(snapshot.snapshotId)}
                         >
-                          Load
+                          {t`Load`}
                         </Button>
                       </div>
                       {snapshot.description ? (
@@ -445,16 +449,16 @@ export function MapAnalyticsOwnerConfigModal({
             </section>
 
             <section className="space-y-3 rounded-lg border border-red-200 bg-red-50/40 p-3">
-              <h3 className="text-sm font-semibold text-red-900">Danger zone</h3>
+              <h3 className="text-sm font-semibold text-red-900">{t`Danger zone`}</h3>
               <p className="text-xs text-red-800">
-                Type the map title exactly to enable deletion.
+                {t`Type the map title exactly to enable deletion.`}
               </p>
               <Input
                 value={deleteConfirmationInput}
                 onChange={(event) => setDeleteConfirmationInput(event.currentTarget.value)}
                 placeholder={mapName}
                 disabled={isBusy}
-                aria-label="Delete map confirmation input"
+                aria-label={t`Delete map confirmation input`}
               />
               <div className="flex justify-end">
                 <Button
@@ -463,7 +467,7 @@ export function MapAnalyticsOwnerConfigModal({
                   disabled={!deleteInputMatchesTitle || isBusy}
                   onClick={() => setIsDeleteConfirmOpen(true)}
                 >
-                  Delete map
+                  {t`Delete map`}
                 </Button>
               </div>
             </section>
@@ -483,18 +487,18 @@ export function MapAnalyticsOwnerConfigModal({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {pendingVisibilityTarget === 'public' ? 'Publish map?' : 'Make map private?'}
+              {pendingVisibilityTarget === 'public' ? t`Publish map?` : t`Make map private?`}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {pendingVisibilityTarget === 'public'
-                ? 'This map will be available on the public route.'
-                : 'This map will no longer be available on the public route.'}
+                ? t`This map will be available on the public route.`
+                : t`This map will no longer be available on the public route.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isBusy}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isBusy}>{t`Cancel`}</AlertDialogCancel>
             <AlertDialogAction onClick={() => void handleConfirmVisibilityToggle()} disabled={isBusy}>
-              Confirm
+              {t`Confirm`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -503,15 +507,15 @@ export function MapAnalyticsOwnerConfigModal({
       <AlertDialog open={isLoadConfirmOpen} onOpenChange={(nextOpen) => !nextOpen && setPendingLoadSnapshotId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Load snapshot?</AlertDialogTitle>
+            <AlertDialogTitle>{t`Load snapshot?`}</AlertDialogTitle>
             <AlertDialogDescription>
-              Loading a snapshot replaces the current editor configuration. Unsaved changes will be lost.
+              {t`Loading a snapshot replaces the current editor configuration. Unsaved changes will be lost.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isBusy}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isBusy}>{t`Cancel`}</AlertDialogCancel>
             <AlertDialogAction onClick={() => void handleConfirmLoadSnapshot()} disabled={isBusy}>
-              Confirm load
+              {t`Confirm load`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -520,15 +524,15 @@ export function MapAnalyticsOwnerConfigModal({
       <AlertDialog open={isSaveCheckpointConfirmOpen} onOpenChange={setIsSaveCheckpointConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Save public checkpoint?</AlertDialogTitle>
+            <AlertDialogTitle>{t`Save public checkpoint?`}</AlertDialogTitle>
             <AlertDialogDescription>
-              This map is public and the latest checkpoint can be visible on the public route.
+              {t`This map is public and the latest checkpoint can be visible on the public route.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isBusy}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isBusy}>{t`Cancel`}</AlertDialogCancel>
             <AlertDialogAction onClick={() => void handleSaveCheckpoint()} disabled={isBusy}>
-              Confirm save
+              {t`Confirm save`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -537,19 +541,19 @@ export function MapAnalyticsOwnerConfigModal({
       <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete map permanently?</AlertDialogTitle>
+            <AlertDialogTitle>{t`Delete map permanently?`}</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. The map and its snapshots will be removed.
+              {t`This action cannot be undone. The map and its snapshots will be removed.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isBusy}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isBusy}>{t`Cancel`}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => void handleConfirmDeleteMap()}
               disabled={isBusy}
             >
-              Delete map
+              {t`Delete map`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

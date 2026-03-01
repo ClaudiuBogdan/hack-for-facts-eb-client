@@ -56,6 +56,8 @@ import {
   convertSeriesToType,
   reorderSeriesByIds,
 } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils';
+import { t } from '@lingui/core/macro';
+import { getUserLocale } from '@/lib/utils';
 
 // Lazy load InteractiveMap to avoid Leaflet evaluation on the server.
 const InteractiveMap = lazy(() =>
@@ -92,7 +94,7 @@ interface MapAnalyticsWorkspaceProps {
   mobileControlsDefaultCollapsed?: boolean;
 }
 
-const DEFAULT_MAP_NAME = 'Untitled map';
+const DEFAULT_MAP_NAME = t`Untitled map`;
 
 export function MapAnalyticsWorkspace({
   mapState,
@@ -178,7 +180,7 @@ export function MapAnalyticsWorkspace({
 
     updateState((draft) => {
       const isFirstSeries = draft.series.length === 0;
-      nextSeries.label = `Data series ${draft.series.length + 1}`;
+      nextSeries.label = t`Data series ${draft.series.length + 1}`;
       draft.series.push(nextSeries);
 
       if (isFirstSeries) {
@@ -601,7 +603,7 @@ export function MapAnalyticsWorkspace({
     if (title && title.length > 0) {
       return title;
     }
-    return activeSeries?.label || 'Active series';
+    return activeSeries?.label || t`Active series`;
   }, [activeBinsPreset?.config.title, activeSeries?.label]);
 
   const activeHeatmapData = useMemo<HeatmapUATDataPoint[]>(() => {
@@ -797,7 +799,7 @@ export function MapAnalyticsWorkspace({
         return {
           sirutaCode,
           uatName: metadata?.uatName || `UAT ${sirutaCode}`,
-          countyName: metadata?.countyName || 'Unknown county',
+          countyName: metadata?.countyName || t`Unknown county`,
           entityCui: metadata?.entityCui,
           valuesBySeriesId: rowValuesBySeriesId,
         };
@@ -895,7 +897,7 @@ export function MapAnalyticsWorkspace({
       mapViewType: 'UAT' | 'County';
       filters: AnalyticsFilterType;
     }) => {
-      const uatName = String(properties.name ?? 'UAT').trim();
+      const uatName = String(properties.name ?? t`UAT`).trim();
       const natLevelName = normalizeNatLevelPrefix(properties.natLevName);
       const countyName = typeof properties.county === 'string'
         ? properties.county.trim()
@@ -903,19 +905,19 @@ export function MapAnalyticsWorkspace({
       const entityCui = getEntityCuiFromUatProperties(properties);
       const tooltipTitle = natLevelName.length > 0 ? `${natLevelName} ${uatName}` : uatName;
       const countyRowHtml = countyName.length > 0
-        ? `<div style="font-size:12px;color:#6b7280;margin-bottom:10px;">Județ: ${escapeHtml(countyName)}</div>`
+        ? `<div style="font-size:12px;color:#6b7280;margin-bottom:10px;">${t`County`}: ${escapeHtml(countyName)}</div>`
         : '';
 
       if (!activeSeries) {
         return `
           <div style="font-family:Inter,sans-serif;font-size:13px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:220px;max-width:320px;padding:8px;">
             <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${escapeHtml(tooltipTitle)}</div>
-            <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '6px'};">CUI: ${escapeHtml(entityCui ?? 'N/A')}</div>
+            <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '6px'};">${t`CUI`}: ${escapeHtml(entityCui ?? t`N/A`)}</div>
             ${countyName.length > 0
-              ? `<div style="font-size:12px;color:#6b7280;margin-bottom:6px;">Județ: ${escapeHtml(countyName)}</div>`
+              ? `<div style="font-size:12px;color:#6b7280;margin-bottom:6px;">${t`County`}: ${escapeHtml(countyName)}</div>`
               : ''
             }
-            <div style="color:#6b7280;">No active series selected.</div>
+            <div style="color:#6b7280;">${t`No active series selected.`}</div>
           </div>
         `;
       }
@@ -980,10 +982,10 @@ export function MapAnalyticsWorkspace({
       return `
         <div style="font-family:Inter,sans-serif;font-size:13px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:260px;max-width:360px;padding:8px;">
           <div style="font-weight:700;font-size:14px;margin-bottom:2px;">${escapeHtml(tooltipTitle)}</div>
-          <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '10px'};">CUI: ${escapeHtml(entityCui ?? 'N/A')}</div>
+          <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '10px'};">${t`CUI`}: ${escapeHtml(entityCui ?? t`N/A`)}</div>
           ${countyRowHtml}
           <div style="display:flex;flex-direction:column;gap:6px;">
-            ${rowsHtml || '<span>No enabled series</span>'}
+            ${rowsHtml || `<span>${t`No enabled series`}</span>`}
           </div>
           ${noDataTooltipMarker}
         </div>
@@ -1037,7 +1039,7 @@ export function MapAnalyticsWorkspace({
     : -1;
   const activeSeriesDisplayLabel = activeSeries
     ? resolveSeriesDisplayLabel(activeSeries)
-    : activeSeriesId || 'None';
+    : activeSeriesId || t`None`;
   const mapName = mapState.mapName || DEFAULT_MAP_NAME;
   const isMapViewActive = mapState.activeView !== 'table';
 
@@ -1162,7 +1164,7 @@ export function MapAnalyticsWorkspace({
   const geoJsonSourceFooter = (
     <footer className="border-t pt-3 text-xs text-muted-foreground">
       <div className="flex items-center gap-1">
-        <span>GeoJSON source:</span>
+        <span>{t`GeoJSON source:`}</span>
         <a
           href="https://geo-spatial.org?utm_source=transparenta.eu"
           target="_blank"
@@ -1170,7 +1172,7 @@ export function MapAnalyticsWorkspace({
           data-testid="map-geojson-source-link"
           className="rounded-sm underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          geo-spatial.org
+          {t`geo-spatial.org`}
         </a>
       </div>
     </footer>
@@ -1197,7 +1199,7 @@ export function MapAnalyticsWorkspace({
                   aria-expanded={!isMobileControlsCollapsed}
                   aria-controls={mobileControlsContentId}
                 >
-                  {isMobileControlsCollapsed ? 'Show Map Controls' : 'Hide Map Controls'}
+                  {isMobileControlsCollapsed ? t`Show Map Controls` : t`Hide Map Controls`}
                 </button>
               </section>
 
@@ -1230,7 +1232,7 @@ export function MapAnalyticsWorkspace({
           {isMapViewActive ? (
             isMapLoading ? (
               <div className="h-full w-full flex items-center justify-center">
-                <LoadingSpinner size="lg" text="Loading advanced map analytics..." />
+                <LoadingSpinner size="lg" text={t`Loading advanced map analytics...`} />
               </div>
             ) : mapError ? (
               <div className="h-full w-full flex items-center justify-center text-red-600">
@@ -1238,21 +1240,21 @@ export function MapAnalyticsWorkspace({
               </div>
             ) : !geoJsonData ? (
               <div className="h-full w-full flex items-center justify-center text-muted-foreground">
-                Map geometry is unavailable.
+                {t`Map geometry is unavailable.`}
               </div>
             ) : (
               <>
                 <ClientOnly
                   fallback={
                     <div className="h-full w-full flex items-center justify-center">
-                      <LoadingSpinner size="lg" text="Loading map..." />
+                      <LoadingSpinner size="lg" text={t`Loading map...`} />
                     </div>
                   }
                 >
                   <Suspense
                     fallback={
                       <div className="h-full w-full flex items-center justify-center">
-                        <LoadingSpinner size="lg" text="Loading map..." />
+                        <LoadingSpinner size="lg" text={t`Loading map...`} />
                       </div>
                     }
                   >
@@ -1278,7 +1280,7 @@ export function MapAnalyticsWorkspace({
                 {!activeSeries ? (
                   <div className="pointer-events-none absolute inset-0 z-[500] flex items-center justify-center p-4">
                     <div className="rounded-md border bg-card/95 px-3 py-2 text-sm text-muted-foreground shadow-sm">
-                      No active series selected.
+                      {t`No active series selected.`}
                     </div>
                   </div>
                 ) : null}
@@ -1307,7 +1309,7 @@ export function MapAnalyticsWorkspace({
             <div className="h-full w-full p-4">
               {isTableLoading ? (
                 <div className="flex h-full items-center justify-center">
-                  <LoadingSpinner size="lg" text="Loading table data..." />
+                  <LoadingSpinner size="lg" text={t`Loading table data...`} />
                 </div>
               ) : tableError ? (
                 <div className="flex h-full items-center justify-center text-red-600">
@@ -1315,11 +1317,11 @@ export function MapAnalyticsWorkspace({
                 </div>
               ) : enabledSeries.length === 0 ? (
                 <div className="flex h-full items-center justify-center text-muted-foreground">
-                  No enabled series.
+                  {t`No enabled series.`}
                 </div>
               ) : tableRows.length === 0 ? (
                 <div className="flex h-full items-center justify-center text-muted-foreground">
-                  No data available for table.
+                  {t`No data available for table.`}
                 </div>
               ) : (
                 <AdvancedMapAnalyticsDataTable
@@ -1545,7 +1547,8 @@ function buildGeoJsonIdNameOptions(
   return [...namesById.entries()]
     .map(([id, name]) => ({ id, name }))
     .sort((left, right) => {
-      const nameCompare = left.name.localeCompare(right.name, 'ro', { sensitivity: 'base' });
+      const locale = getUserLocale() === 'en' ? 'en' : 'ro';
+      const nameCompare = left.name.localeCompare(right.name, locale, { sensitivity: 'base' });
       if (nameCompare !== 0) {
         return nameCompare;
       }

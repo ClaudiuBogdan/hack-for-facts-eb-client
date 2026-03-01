@@ -86,7 +86,7 @@ export const UatDataCharts: React.FC<UatDataChartsProps> = ({ data, mapViewType,
     const intervalEvolutionChart: Chart | null = intervalEvolutionChartLink?.search.chart ?? null;
 
     if (!hasChartData) {
-        return <p className="text-center text-muted-foreground">No data available to display charts.</p>;
+        return <p className="text-center text-muted-foreground">{t`No data available to display charts.`}</p>;
     }
 
     return (

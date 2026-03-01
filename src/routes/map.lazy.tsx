@@ -297,7 +297,7 @@ function MapPage() {
                     data-testid="map-geojson-source-link"
                     className="underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
                   >
-                    geo-spatial.org
+                    <Trans>geo-spatial.org</Trans>
                   </a>
                 </div>
                 <Dialog open={isLegendModalOpen} onOpenChange={setIsLegendModalOpen}>
@@ -306,6 +306,7 @@ function MapPage() {
                       variant="secondary"
                       size="icon"
                       className="absolute top-4 right-4 md:hidden rounded-full shadow-lg w-14 h-14 z-50"
+                      aria-label={t`Open legend`}
                     >
                       <HelpCircleIcon className="w-6 h-6" />
                     </Button>
@@ -317,7 +318,7 @@ function MapPage() {
                         <Trans>View the color scale and values for the heatmap visualization</Trans>
                       </DialogDescription>
                       <DialogClose asChild>
-                        <Button variant="ghost" size="icon" className="rounded-full">
+                        <Button variant="ghost" size="icon" className="rounded-full" aria-label={t`Close legend`}>
                           <X className="h-5 w-5" />
                         </Button>
                       </DialogClose>
@@ -413,6 +414,7 @@ function MapPage() {
               variant="default"
               size="icon"
               className="rounded-full shadow-lg w-14 h-14"
+              aria-label={t`Open filters`}
             >
               <FilterIcon className="w-6 h-6" />
             </Button>
@@ -424,7 +426,7 @@ function MapPage() {
                 <Trans>Configure filters for the map view including period, account category, and normalization settings</Trans>
               </DialogDescription>
               <DialogClose asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
+                <Button variant="ghost" size="icon" className="rounded-full" aria-label={t`Close filters`}>
                   <X className="h-5 w-5" />
                 </Button>
               </DialogClose>
@@ -435,7 +437,7 @@ function MapPage() {
             {/* Floating submit button for mobile */}
             <div className="md:hidden fixed bottom-6 right-6 z-50">
               <DialogClose asChild>
-                <Button size="lg" className="rounded-full shadow-lg w-14 h-14">
+                <Button size="lg" className="rounded-full shadow-lg w-14 h-14" aria-label={t`Apply filters`}>
                   <Check className="w-6 h-6" />
                 </Button>
               </DialogClose>
@@ -450,8 +452,8 @@ function MapPage() {
 function buildMapHead() {
   const site = getSiteUrl()
   const canonical = `${site}/map`
-  const title = 'Romania spending heatmap – Transparenta.eu'
-  const description = 'Explore choropleth maps of public spending by UAT/County with per-capita or total normalization.'
+  const title = t`Romania spending heatmap - Transparenta.eu`
+  const description = t`Explore choropleth maps of public spending by UAT/County with per-capita or total normalization.`
   return {
     meta: [
       { title },

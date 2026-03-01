@@ -13,6 +13,7 @@ import { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap';
 import { formatCurrency, formatNumber, getNormalizationUnit } from '@/lib/utils';
 import type { Currency, Normalization } from '@/schemas/charts';
 import { SafeResponsiveContainer } from '@/components/charts/safe-responsive-container';
+import { t } from '@lingui/core/macro';
 
 interface UatTopNBarChartProps {
   data: (HeatmapUATDataPoint | HeatmapCountyDataPoint)[];
@@ -70,13 +71,13 @@ export const UatTopNBarChart: React.FC<UatTopNBarChartProps> = ({
   }, [data, valueKey, nameKey, topN])
 
   if (processedData.length === 0) {
-    return <p className="text-center text-sm text-muted-foreground">Not enough data to display this chart.</p>;
+    return <p className="text-center text-sm text-muted-foreground">{t`Not enough data to display this chart.`}</p>;
   }
 
   const getFormatter = (compactView: boolean) => {
     if (isCurrency) {
       const view = compactView ? 'compact' : 'standard'
-      return (value: number) => `${formatCurrency(value, view, currencyCode)}${isPerCapita ? ' / capita' : ''}`;
+      return (value: number) => `${formatCurrency(value, view, currencyCode)}${isPerCapita ? t` / capita` : ''}`;
     }
     return formatNumber;
   };
@@ -107,9 +108,9 @@ export const UatTopNBarChart: React.FC<UatTopNBarChartProps> = ({
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis type="number" dataKey={valueKey as string} tickFormatter={(value) => getFormatter(true)(value)} label={{ value: xAxisLabel, position: 'insideBottom', dy: 30, fontSize: 12 }} />
           <YAxis type="category" dataKey={nameKey as string} width={150} interval={0} tick={{ fontSize: 10 }} label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', dx: -10, fontSize: 12 }}/>
-          <Tooltip formatter={(value) => [tooltipFormatter(Number(value ?? 0)), valueKey as string]} />
+          <Tooltip formatter={(value) => [tooltipFormatter(Number(value ?? 0)), yAxisLabel ?? t`Value`]} />
           {topN <= 15 && <Legend verticalAlign="top" height={36}/>}
-          <Bar dataKey={valueKey as string} name={String(valueKey)} fill={barColor}>
+          <Bar dataKey={valueKey as string} name={yAxisLabel ?? t`Value`} fill={barColor}>
             <LabelList dataKey={valueKey as string} position="right" formatter={compactFormatter} fontSize={10} />
           </Bar>
         </BarChart>

@@ -25,6 +25,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useTablePreferences } from '@/hooks/useTablePreferences';
 import { cn } from '@/lib/utils';
 import { formatAdvancedMapAnalyticsSeriesValue } from './advanced-map-analytics-formatting';
+import { t } from '@lingui/core/macro';
 import type {
   AdvancedMapAnalyticsBinsFilterSection,
   AdvancedMapAnalyticsTableRow,
@@ -126,7 +127,7 @@ export function AdvancedMapAnalyticsDataTable({
     () => [
       {
         id: 'row_number',
-        header: () => <span className="text-xs text-muted-foreground">#</span>,
+        header: () => <span className="text-xs text-muted-foreground">{t`#`}</span>,
         size: 40,
         enableHiding: false,
         cell: ({ row, table }) => {
@@ -147,7 +148,7 @@ export function AdvancedMapAnalyticsDataTable({
             className="inline-flex items-center gap-1"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
-            UAT
+            {t`UAT`}
             {column.getIsSorted() === 'asc' ? (
               <ChevronUp className="h-4 w-4" />
             ) : column.getIsSorted() === 'desc' ? (
@@ -172,7 +173,7 @@ export function AdvancedMapAnalyticsDataTable({
             className="inline-flex items-center gap-1"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
-            County
+            {t`County`}
             {column.getIsSorted() === 'asc' ? (
               <ChevronUp className="h-4 w-4" />
             ) : column.getIsSorted() === 'desc' ? (
@@ -227,7 +228,7 @@ export function AdvancedMapAnalyticsDataTable({
             >
               <span className="truncate max-w-[220px]">
                 {seriesColumn.label}
-                {isActiveSeries ? ' (active)' : ''}
+                {isActiveSeries ? t` (active)` : ''}
               </span>
               {column.getIsSorted() === 'asc' ? (
                 <ChevronUp className="h-4 w-4" />
@@ -278,14 +279,14 @@ export function AdvancedMapAnalyticsDataTable({
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
               <Filter className="mr-2 h-4 w-4" />
-              Filter
+              {t`Filter`}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="max-h-[70vh] w-80 overflow-y-auto">
-            <DropdownMenuLabel>Bins</DropdownMenuLabel>
+            <DropdownMenuLabel>{t`Bins`}</DropdownMenuLabel>
             {binsFilterSections.length === 0 ? (
               <div className="px-2 py-2 text-sm text-muted-foreground">
-                No bins presets configured.
+                {t`No bins presets configured.`}
               </div>
             ) : (
               binsFilterSections.map((section, sectionIndex) => (
@@ -308,7 +309,7 @@ export function AdvancedMapAnalyticsDataTable({
                       }}
                       disabled={section.options.every((option) => !option.checked)}
                     >
-                      Clear
+                      {t`Clear`}
                     </button>
                   </div>
 
@@ -318,7 +319,7 @@ export function AdvancedMapAnalyticsDataTable({
                     </div>
                   ) : section.options.length === 0 ? (
                     <div className="px-2 pb-2 text-xs text-muted-foreground">
-                      No bins configured.
+                      {t`No bins configured.`}
                     </div>
                   ) : (
                     section.options.map((option) => (
@@ -355,7 +356,7 @@ export function AdvancedMapAnalyticsDataTable({
                 }
               }}
             >
-              Clear all filters
+              {t`Clear all filters`}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -364,26 +365,26 @@ export function AdvancedMapAnalyticsDataTable({
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
               <MoreHorizontal className="mr-2 h-4 w-4" />
-              View
+              {t`View`}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64">
-            <DropdownMenuLabel>Density</DropdownMenuLabel>
+            <DropdownMenuLabel>{t`Density`}</DropdownMenuLabel>
             <DropdownMenuCheckboxItem
               checked={density === 'comfortable'}
               onCheckedChange={(checked) => checked && setDensity('comfortable')}
             >
-              Comfortable
+              {t`Comfortable`}
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem
               checked={density === 'compact'}
               onCheckedChange={(checked) => checked && setDensity('compact')}
             >
-              Compact
+              {t`Compact`}
             </DropdownMenuCheckboxItem>
 
             <DropdownMenuSeparator />
-            <DropdownMenuLabel>Columns</DropdownMenuLabel>
+            <DropdownMenuLabel>{t`Columns`}</DropdownMenuLabel>
             {table
               .getAllLeafColumns()
               .filter((column) => column.id !== 'row_number')
@@ -392,9 +393,9 @@ export function AdvancedMapAnalyticsDataTable({
                 const seriesLabel = seriesId
                   ? seriesColumns.find((entry) => entry.id === seriesId)?.label ?? seriesId
                   : column.id === 'uat_name'
-                    ? 'UAT'
+                    ? t`UAT`
                     : column.id === 'county_name'
-                      ? 'County'
+                      ? t`County`
                       : column.id === 'siruta_code'
                         ? 'SIRUTA'
                         : column.id;
@@ -444,7 +445,7 @@ export function AdvancedMapAnalyticsDataTable({
             {table.getRowModel().rows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
-                  No rows available.
+                  {t`No rows available.`}
                 </TableCell>
               </TableRow>
             ) : (

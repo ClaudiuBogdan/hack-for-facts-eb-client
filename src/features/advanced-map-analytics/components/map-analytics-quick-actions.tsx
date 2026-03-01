@@ -11,6 +11,7 @@ import { ensureShortRedirectUrl } from '@/lib/api/shortLinks';
 import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
+import { t } from '@lingui/core/macro';
 
 interface MapAnalyticsQuickActionsProps {
   mode: 'owner' | 'public';
@@ -62,12 +63,12 @@ export function MapAnalyticsQuickActions({
       }
 
       await navigator.clipboard.writeText(linkToCopy);
-      toast.success('Link copied to clipboard');
+      toast.success(t`Link copied to clipboard`);
       setIsShareCopied(true);
       resetShareCopiedStateWithDelay();
     } catch (error) {
       console.error('Copy failed', error);
-      toast.error('Failed to copy link');
+      toast.error(t`Failed to copy link`);
     }
   }, [isSignedIn, queryClient, resetShareCopiedStateWithDelay]);
 
@@ -110,8 +111,8 @@ export function MapAnalyticsQuickActions({
       >
         <Button
           type="button"
-          aria-label="Search Entities"
-          title="Search Entities"
+          aria-label={t`Search entities`}
+          title={t`Search entities`}
           variant="ghost"
           size="icon"
           className="h-10 w-10 rounded-full shadow-lg border border-border hover:bg-secondary/50 transition-colors"
@@ -122,8 +123,8 @@ export function MapAnalyticsQuickActions({
         {mode === 'public' ? (
           <Button
             type="button"
-            aria-label="Create Editable Copy"
-            title="Create Editable Copy"
+            aria-label={t`Create editable copy`}
+            title={t`Create editable copy`}
             variant="ghost"
             size="icon"
             className="h-10 w-10 rounded-full shadow-lg border border-border hover:bg-secondary/50 transition-colors"
@@ -134,8 +135,8 @@ export function MapAnalyticsQuickActions({
         ) : null}
         <Button
           type="button"
-          aria-label="Copy Share Link"
-          title="Copy Share Link"
+          aria-label={t`Copy share link`}
+          title={t`Copy share link`}
           variant="ghost"
           size="icon"
           className="h-10 w-10 rounded-full shadow-lg border border-border hover:bg-secondary/50 transition-colors"

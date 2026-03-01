@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { AuthSignInButton, useAuth } from '@/lib/auth';
 import { parseSearchParamJson } from '@/lib/router-search';
+import { t } from '@lingui/core/macro';
 import {
   AdvancedMapAnalyticsUrlStateSchema,
   type AdvancedMapAnalyticsUrlState,
@@ -136,7 +137,7 @@ export function NewMapRouteComponent() {
           replace: true,
         });
       })().catch((error) => {
-        const message = error instanceof Error ? error.message : 'Failed to create map';
+        const message = error instanceof Error ? error.message : t`Failed to create map`;
         setErrorMessage(message);
       });
     },
@@ -187,7 +188,7 @@ export function NewMapRouteComponent() {
   if (!isLoaded) {
     return (
       <div className="container mx-auto py-12">
-        <LoadingSpinner text="Preparing map creation..." />
+        <LoadingSpinner text={t`Preparing map creation...`} />
       </div>
     );
   }
@@ -197,12 +198,12 @@ export function NewMapRouteComponent() {
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Sign in required</CardTitle>
-            <CardDescription>You need to be signed in to create a map.</CardDescription>
+            <CardTitle>{t`Sign in required`}</CardTitle>
+            <CardDescription>{t`You need to be signed in to create a map.`}</CardDescription>
           </CardHeader>
           <CardContent>
             <AuthSignInButton>
-              <Button>Sign In</Button>
+              <Button>{t`Sign In`}</Button>
             </AuthSignInButton>
           </CardContent>
         </Card>
@@ -215,13 +216,13 @@ export function NewMapRouteComponent() {
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Invalid map link</CardTitle>
+            <CardTitle>{t`Invalid map link`}</CardTitle>
             <CardDescription>
-              The shared map configuration is invalid or unreadable. You can still create an empty map.
+              {t`The shared map configuration is invalid or unreadable. You can still create an empty map.`}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={handleCreateEmptyMap}>Create empty map</Button>
+            <Button onClick={handleCreateEmptyMap}>{t`Create empty map`}</Button>
           </CardContent>
         </Card>
       </div>
@@ -233,13 +234,11 @@ export function NewMapRouteComponent() {
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Failed to create map</CardTitle>
+            <CardTitle>{t`Failed to create map`}</CardTitle>
             <CardDescription>{errorMessage}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={handleRetryLastAttempt}>
-              Retry
-            </Button>
+            <Button onClick={handleRetryLastAttempt}>{t`Retry`}</Button>
           </CardContent>
         </Card>
       </div>
@@ -248,7 +247,7 @@ export function NewMapRouteComponent() {
 
   return (
     <div className="container mx-auto py-12">
-      <LoadingSpinner text="Creating map..." />
+      <LoadingSpinner text={t`Creating map...`} />
     </div>
   );
 }

@@ -41,6 +41,7 @@ describe('AdvancedMapAnalyticsBinsPanel', () => {
       />
     );
 
+    expect(screen.getByText('1 preset configured')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Set active bins preset' }));
     expect(onSetActivePreset).toHaveBeenCalledWith(preset.id);
   });

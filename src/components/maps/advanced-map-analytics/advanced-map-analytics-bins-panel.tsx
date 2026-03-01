@@ -4,6 +4,7 @@ import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import type { AdvancedMapAnalyticsBinsPreset } from '@/schemas/advanced-map-analytics';
 import { AdvancedMapAnalyticsBinsPresetList } from './advanced-map-analytics-bins-preset-list';
+import { t } from '@lingui/core/macro';
 
 interface AdvancedMapAnalyticsBinsPanelProps {
   collapsed: boolean;
@@ -30,30 +31,35 @@ export function AdvancedMapAnalyticsBinsPanel({
   onDeletePreset,
   onReorderPresets,
 }: Readonly<AdvancedMapAnalyticsBinsPanelProps>) {
+  const presetsConfiguredLabel =
+    presets.length === 1
+      ? t`${presets.length} preset configured`
+      : t`${presets.length} presets configured`;
+
   return (
     <section className="rounded-2xl border bg-card p-4 shadow-sm">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-2xl font-bold tracking-tight">Bins</h2>
+            <h2 className="text-2xl font-bold tracking-tight">{t`Bins`}</h2>
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8"
               onClick={() => onToggleCollapsed(!collapsed)}
-              aria-label={collapsed ? 'Expand bins panel' : 'Collapse bins panel'}
+              aria-label={collapsed ? t`Expand bins panel` : t`Collapse bins panel`}
             >
               <ChevronDown className={cn('h-4 w-4 transition-transform', !collapsed && 'rotate-180')} />
             </Button>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">{presets.length} presets configured</p>
+          <p className="mt-1 text-sm text-muted-foreground">{presetsConfiguredLabel}</p>
         </div>
 
         <Button
           size="icon"
           className="h-10 w-10 shrink-0 rounded-full"
           onClick={onAddPreset}
-          aria-label="Add bins preset"
+          aria-label={t`Add bins preset`}
           disabled={readOnly}
         >
           <Plus className="h-5 w-5" />

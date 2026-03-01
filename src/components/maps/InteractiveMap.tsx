@@ -21,6 +21,7 @@ import { Analytics } from '@/lib/analytics';
 import { MapLabels } from './MapLabels';
 import { shouldUseCanvasRenderer } from './leaflet-renderer';
 import type { LabelMode } from './polygonLabels';
+import { t } from '@lingui/core/macro';
 
 const MAP_VIEW_EPSILON = 1e-6;
 
@@ -229,7 +230,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   );
 
   if (!geoJsonData) {
-    return <div className="p-4 text-center text-muted-foreground">Map geometry not available.</div>;
+    return <div className="p-4 text-center text-muted-foreground">{t`Map geometry not available.`}</div>;
   }
 
   return (

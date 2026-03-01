@@ -5,13 +5,14 @@ import type {
   MapSupportedSeries,
 } from '@/schemas/advanced-map-analytics';
 import { createDefaultAdvancedMapAnalyticsSeries, getGeoJsonDatasetUnit } from '@/schemas/advanced-map-analytics';
+import { t } from '@lingui/core/macro';
 
 export const SERIES_TYPE_LABELS: Record<MapSupportedSeries['type'], string> = {
-  'line-items-aggregated-yearly': 'Execution analytics',
-  'commitments-analytics': 'Commitments analytics',
-  'ins-series': 'INS series',
-  'geojson-dataset-series': 'GeoJSON dataset',
-  'aggregated-series-calculation': 'Calculated series',
+  'line-items-aggregated-yearly': t`Execution analytics`,
+  'commitments-analytics': t`Commitments analytics`,
+  'ins-series': t`INS series`,
+  'geojson-dataset-series': t`GeoJSON dataset`,
+  'aggregated-series-calculation': t`Calculated series`,
 };
 
 export const SERIES_TYPE_ICONS: Record<MapSupportedSeries['type'], LucideIcon> = {

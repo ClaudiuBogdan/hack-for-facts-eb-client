@@ -9,6 +9,7 @@ import {
   type PublicMapViewport,
 } from '@/features/advanced-map-analytics/hooks/use-public-map-viewport';
 import { getRemoteGroupedSeriesHash } from '@/lib/map-series/grouped-series-request';
+import { t } from '@lingui/core/macro';
 
 interface MapAnalyticsPublicPageProps {
   publicId: string;
@@ -57,7 +58,7 @@ export function MapAnalyticsPublicPage({
   if (publicMapQuery.isLoading) {
     return (
       <div className="container mx-auto py-12">
-        <LoadingSpinner text="Loading public map..." />
+        <LoadingSpinner text={t`Loading public map...`} />
       </div>
     );
   }
@@ -67,7 +68,7 @@ export function MapAnalyticsPublicPage({
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Public map unavailable</CardTitle>
+            <CardTitle>{t`Public map unavailable`}</CardTitle>
             <CardDescription>{publicMapQuery.error.message}</CardDescription>
           </CardHeader>
         </Card>

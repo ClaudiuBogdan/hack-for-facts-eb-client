@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { t } from '@lingui/core/macro';
 import type {
   AdvancedMapAnalyticsStatsFilterType,
   AdvancedMapAnalyticsStatsValueFilterRule,
@@ -24,47 +25,47 @@ interface AdvancedMapAnalyticsValueFilterEditorModalProps {
 }
 
 const OPERATOR_OPTIONS: Array<{ value: AdvancedMapAnalyticsValueFilterOperator; label: string }> = [
-  { value: 'is_defined', label: 'Is defined' },
-  { value: 'is_undefined', label: 'Is undefined' },
-  { value: 'gt', label: 'Greater than' },
-  { value: 'gte', label: 'Greater or equal' },
-  { value: 'lt', label: 'Less than' },
-  { value: 'lte', label: 'Less or equal' },
-  { value: 'eq', label: 'Equal to' },
-  { value: 'neq', label: 'Not equal to' },
-  { value: 'between', label: 'Between (inclusive)' },
-  { value: 'not_between', label: 'Not between (inclusive)' },
+  { value: 'is_defined', label: t`Is defined` },
+  { value: 'is_undefined', label: t`Is undefined` },
+  { value: 'gt', label: t`Greater than` },
+  { value: 'gte', label: t`Greater or equal` },
+  { value: 'lt', label: t`Less than` },
+  { value: 'lte', label: t`Less or equal` },
+  { value: 'eq', label: t`Equal to` },
+  { value: 'neq', label: t`Not equal to` },
+  { value: 'between', label: t`Between (inclusive)` },
+  { value: 'not_between', label: t`Not between (inclusive)` },
 ];
 
 const RULE_KIND_OPTIONS: Array<{ value: AdvancedMapAnalyticsValueFilterRuleKind; label: string }> = [
-  { value: 'threshold', label: 'Threshold' },
-  { value: 'stats', label: 'Stats' },
+  { value: 'threshold', label: t`Threshold` },
+  { value: 'stats', label: t`Stats` },
 ];
 
 const STATS_TYPE_OPTIONS: Array<{ value: AdvancedMapAnalyticsStatsFilterType; label: string }> = [
   {
     value: 'percentile_band',
-    label: 'Percentile band',
+    label: t`Percentile band`,
   },
   {
     value: 'rank',
-    label: 'Rank (top/bottom N)',
+    label: t`Rank (top/bottom N)`,
   },
   {
     value: 'median_compare',
-    label: 'Median compare',
+    label: t`Median compare`,
   },
   {
     value: 'zscore',
-    label: 'Z-score',
+    label: t`Z-score`,
   },
   {
     value: 'iqr_outlier',
-    label: 'IQR outlier',
+    label: t`IQR outlier`,
   },
   {
     value: 'mad_robust_zscore',
-    label: 'MAD robust z-score',
+    label: t`MAD robust z-score`,
   },
 ];
 
@@ -77,77 +78,75 @@ interface StatsFilterExplanation {
 
 const STATS_FILTER_EXPLANATIONS: Record<AdvancedMapAnalyticsStatsFilterType, StatsFilterExplanation> = {
   percentile_band: {
-    title: 'Percentile band',
+    title: t`Percentile band`,
     explanation:
-      'Keeps UATs whose values fall between two percentiles of the selected series. ' +
-      'Use this when absolute thresholds are misleading because data is very skewed.',
+      t`Keeps UATs whose values fall between two percentiles of the selected series. Use this when absolute thresholds are misleading because data is very skewed.`,
     example:
-      'Example: 80-100 selects the top 20% by population. Combine with spending display to inspect high-population UATs.',
+      t`Example: 80-100 selects the top 20% by population. Combine with spending display to inspect high-population UATs.`,
     tips: [
-      'Percentiles are inclusive and min/max are normalized if swapped.',
-      'Use with OR to add extreme percentile groups without losing current matches.',
-      'Best for cross-county comparisons where scales are very different.',
+      t`Percentiles are inclusive and min/max are normalized if swapped.`,
+      t`Use with OR to add extreme percentile groups without losing current matches.`,
+      t`Best for cross-county comparisons where scales are very different.`,
     ],
   },
   rank: {
-    title: 'Rank (Top/Bottom N)',
+    title: t`Rank (Top/Bottom N)`,
     explanation:
-      'Selects exactly N UATs from the highest or lowest values in the selected source series.',
+      t`Selects exactly N UATs from the highest or lowest values in the selected source series.`,
     example:
-      'Example: Top 25 by population, while displaying budget deficit values on the map.',
+      t`Example: Top 25 by population, while displaying budget deficit values on the map.`,
     tips: [
-      'Good for shortlists used in audits, reporting, or manual review.',
-      'Tie-breaking is deterministic by value, then SIRUTA code.',
-      'If you need broader cohorts, use percentile instead of a very large N.',
+      t`Good for shortlists used in audits, reporting, or manual review.`,
+      t`Tie-breaking is deterministic by value, then SIRUTA code.`,
+      t`If you need broader cohorts, use percentile instead of a very large N.`,
     ],
   },
   median_compare: {
-    title: 'Median compare',
+    title: t`Median compare`,
     explanation:
-      'Splits UATs relative to the median value. More robust than mean-based filters when outliers exist.',
+      t`Splits UATs relative to the median value. More robust than mean-based filters when outliers exist.`,
     example:
-      'Example: >= median population, then AND with negative spending threshold.',
+      t`Example: >= median population, then AND with negative spending threshold.`,
     tips: [
-      'Use gt/gte/lt/lte based on how strict your split should be around the center.',
-      'Useful as a first segmentation before anomaly filters.',
-      'Prefer median over mean when one or two UATs dominate values.',
+      t`Use gt/gte/lt/lte based on how strict your split should be around the center.`,
+      t`Useful as a first segmentation before anomaly filters.`,
+      t`Prefer median over mean when one or two UATs dominate values.`,
     ],
   },
   zscore: {
-    title: 'Z-score',
+    title: t`Z-score`,
     explanation:
-      'Selects UATs by standardized distance from mean in standard deviations. ' +
-      'Great for anomaly detection when distribution is roughly normal.',
+      t`Selects UATs by standardized distance from mean in standard deviations. Great for anomaly detection when distribution is roughly normal.`,
     example:
-      'Example: |z| >= 2 highlights statistically unusual UATs in the selected source series.',
+      t`Example: |z| >= 2 highlights statistically unusual UATs in the selected source series.`,
     tips: [
-      'Requires variation; rule is skipped if standard deviation is zero.',
-      'Use abs_gte for two-sided anomalies, gte/lte for one-sided anomalies.',
-      'For heavily skewed data, compare with IQR or MAD robust z-score.',
+      t`Requires variation; rule is skipped if standard deviation is zero.`,
+      t`Use abs_gte for two-sided anomalies, gte/lte for one-sided anomalies.`,
+      t`For heavily skewed data, compare with IQR or MAD robust z-score.`,
     ],
   },
   iqr_outlier: {
-    title: 'IQR outlier',
+    title: t`IQR outlier`,
     explanation:
-      'Detects outliers using quartile fences: Q1 - m*IQR and Q3 + m*IQR. Works well for heavy-tailed financial data.',
+      t`Detects outliers using quartile fences: Q1 - m*IQR and Q3 + m*IQR. Works well for heavy-tailed financial data.`,
     example:
-      'Example: side=upper, multiplier=1.5 to focus on unusually high spending UATs.',
+      t`Example: side=upper, multiplier=1.5 to focus on unusually high spending UATs.`,
     tips: [
-      'Multiplier 1.5 is standard; use 3.0 for stricter outlier detection.',
-      'Use both sides when you want high and low extremes.',
-      'Needs enough sample coverage; otherwise rule is skipped with warning.',
+      t`Multiplier 1.5 is standard; use 3.0 for stricter outlier detection.`,
+      t`Use both sides when you want high and low extremes.`,
+      t`Needs enough sample coverage; otherwise rule is skipped with warning.`,
     ],
   },
   mad_robust_zscore: {
-    title: 'MAD robust z-score',
+    title: t`MAD robust z-score`,
     explanation:
-      'Robust anomaly detection based on median absolute deviation (MAD), less sensitive to extreme outliers than z-score.',
+      t`Robust anomaly detection based on median absolute deviation (MAD), less sensitive to extreme outliers than z-score.`,
     example:
-      'Example: threshold 3.5 to identify strong anomalies in volatile spending distributions.',
+      t`Example: threshold 3.5 to identify strong anomalies in volatile spending distributions.`,
     tips: [
-      'Use when z-score is unstable due to extreme values.',
-      'Rule is skipped when MAD is zero (no robust dispersion).',
-      'Start at 3.5, then lower gradually if you need more candidates.',
+      t`Use when z-score is unstable due to extreme values.`,
+      t`Rule is skipped when MAD is zero (no robust dispersion).`,
+      t`Start at 3.5, then lower gradually if you need more candidates.`,
     ],
   },
 };
@@ -165,7 +164,7 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
     return null;
   }
 
-  const modalTitle = mode === 'add' ? 'Add Value Filter Rule' : 'Edit Value Filter Rule';
+  const modalTitle = mode === 'add' ? t`Add Value Filter Rule` : t`Edit Value Filter Rule`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -173,14 +172,14 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
         <DialogHeader>
           <DialogTitle>{modalTitle}</DialogTitle>
           <DialogDescription>
-            Configure source series and filtering logic for this UAT-level value filter.
+            {t`Configure source series and filtering logic for this UAT-level value filter.`}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 sm:grid-cols-2">
           {(ruleIndex ?? 0) > 0 ? (
             <div className="space-y-1">
-              <Label htmlFor="value-filter-join">Join with previous</Label>
+              <Label htmlFor="value-filter-join">{t`Join with previous`}</Label>
               <Select
                 value={rule.joinWithPrevious}
                 onValueChange={(value) => {
@@ -193,18 +192,18 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
                 }}
               >
                 <SelectTrigger id="value-filter-join">
-                  <SelectValue placeholder="Connector" />
+                  <SelectValue placeholder={t`Connector`} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="AND">AND</SelectItem>
-                  <SelectItem value="OR">OR</SelectItem>
+                  <SelectItem value="AND">{t`AND`}</SelectItem>
+                  <SelectItem value="OR">{t`OR`}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           ) : null}
 
           <div className="space-y-1">
-            <Label htmlFor="value-filter-source">Source series</Label>
+            <Label htmlFor="value-filter-source">{t`Source series`}</Label>
             <Select
               value={getSeriesRefSelectValue(rule.seriesRef)}
               onValueChange={(value) =>
@@ -213,12 +212,12 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
                   seriesRef: parseSeriesRefSelectValue(value),
                 })
               }
-            >
+              >
               <SelectTrigger id="value-filter-source">
-                <SelectValue placeholder="Source series" />
+                <SelectValue placeholder={t`Source series`} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">Active series (dynamic)</SelectItem>
+                <SelectItem value="active">{t`Active series (dynamic)`}</SelectItem>
                 {series.map((seriesEntry) => (
                   <SelectItem key={seriesEntry.id} value={`series:${seriesEntry.id}`}>
                     {seriesEntry.label.trim().length > 0 ? seriesEntry.label : seriesEntry.id}
@@ -229,7 +228,7 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="value-filter-kind">Rule kind</Label>
+            <Label htmlFor="value-filter-kind">{t`Rule kind`}</Label>
             <Select
               value={rule.kind}
               onValueChange={(value) => {
@@ -240,9 +239,9 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
 
                 onRuleChange(nextKind === 'threshold' ? toThresholdRule(rule) : toStatsRule(rule));
               }}
-            >
+              >
               <SelectTrigger id="value-filter-kind">
-                <SelectValue placeholder="Rule kind" />
+                <SelectValue placeholder={t`Rule kind`} />
               </SelectTrigger>
               <SelectContent>
                 {RULE_KIND_OPTIONS.map((option) => (
@@ -283,7 +282,7 @@ function ThresholdEditor({
   return (
     <>
       <div className="space-y-1">
-        <Label htmlFor="value-filter-operator">Operator</Label>
+        <Label htmlFor="value-filter-operator">{t`Operator`}</Label>
         <Select
           value={rule.operator}
           onValueChange={(value) => {
@@ -308,7 +307,7 @@ function ThresholdEditor({
           }}
         >
           <SelectTrigger id="value-filter-operator">
-            <SelectValue placeholder="Operator" />
+            <SelectValue placeholder={t`Operator`} />
           </SelectTrigger>
           <SelectContent>
             {OPERATOR_OPTIONS.map((option) => (
@@ -322,7 +321,7 @@ function ThresholdEditor({
 
       {operatorArity >= 1 ? (
         <div className="space-y-1">
-          <Label htmlFor="value-filter-value">Value</Label>
+          <Label htmlFor="value-filter-value">{t`Value`}</Label>
           <Input
             id="value-filter-value"
             type="number"
@@ -334,14 +333,14 @@ function ThresholdEditor({
                 value: parseNumericInput(event.currentTarget.value),
               })
             }
-            placeholder="e.g. 0"
+            placeholder={t`e.g. 0`}
           />
         </div>
       ) : null}
 
       {operatorArity >= 2 ? (
         <div className="space-y-1">
-          <Label htmlFor="value-filter-second-value">Second value</Label>
+          <Label htmlFor="value-filter-second-value">{t`Second value`}</Label>
           <Input
             id="value-filter-second-value"
             type="number"
@@ -353,7 +352,7 @@ function ThresholdEditor({
                 secondValue: parseNumericInput(event.currentTarget.value),
               })
             }
-            placeholder="e.g. 1000"
+            placeholder={t`e.g. 1000`}
           />
         </div>
       ) : null}
@@ -371,7 +370,7 @@ function StatsEditor({
   return (
     <>
       <div className="space-y-1 sm:col-span-2">
-        <Label htmlFor="value-filter-stats-type">Stats type</Label>
+        <Label htmlFor="value-filter-stats-type">{t`Stats type`}</Label>
         <Select
           value={rule.statsType}
           onValueChange={(value) => {
@@ -384,7 +383,7 @@ function StatsEditor({
           }}
         >
           <SelectTrigger id="value-filter-stats-type">
-            <SelectValue placeholder="Stats type" />
+            <SelectValue placeholder={t`Stats type`} />
           </SelectTrigger>
           <SelectContent>
             {STATS_TYPE_OPTIONS.map((option) => (
@@ -399,7 +398,7 @@ function StatsEditor({
       {rule.statsType === 'percentile_band' ? (
         <>
           <div className="space-y-1">
-            <Label htmlFor="value-filter-min-percentile">Min percentile</Label>
+            <Label htmlFor="value-filter-min-percentile">{t`Min percentile`}</Label>
             <Input
               id="value-filter-min-percentile"
               type="number"
@@ -417,7 +416,7 @@ function StatsEditor({
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="value-filter-max-percentile">Max percentile</Label>
+            <Label htmlFor="value-filter-max-percentile">{t`Max percentile`}</Label>
             <Input
               id="value-filter-max-percentile"
               type="number"
@@ -440,7 +439,7 @@ function StatsEditor({
       {rule.statsType === 'rank' ? (
         <>
           <div className="space-y-1">
-            <Label htmlFor="value-filter-rank-direction">Direction</Label>
+            <Label htmlFor="value-filter-rank-direction">{t`Direction`}</Label>
             <Select
               value={rule.direction}
               onValueChange={(value) => {
@@ -453,16 +452,16 @@ function StatsEditor({
               }}
             >
               <SelectTrigger id="value-filter-rank-direction">
-                <SelectValue placeholder="Direction" />
+                <SelectValue placeholder={t`Direction`} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="top">Top</SelectItem>
-                <SelectItem value="bottom">Bottom</SelectItem>
+                <SelectItem value="top">{t`Top`}</SelectItem>
+                <SelectItem value="bottom">{t`Bottom`}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="value-filter-rank-count">Count</Label>
+            <Label htmlFor="value-filter-rank-count">{t`Count`}</Label>
             <Input
               id="value-filter-rank-count"
               type="number"
@@ -487,7 +486,7 @@ function StatsEditor({
 
       {rule.statsType === 'median_compare' ? (
         <div className="space-y-1">
-          <Label htmlFor="value-filter-median-mode">Mode</Label>
+          <Label htmlFor="value-filter-median-mode">{t`Mode`}</Label>
           <Select
             value={rule.mode}
             onValueChange={(value) => {
@@ -500,13 +499,13 @@ function StatsEditor({
             }}
           >
             <SelectTrigger id="value-filter-median-mode">
-              <SelectValue placeholder="Mode" />
+              <SelectValue placeholder={t`Mode`} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="gt">&gt; median</SelectItem>
-              <SelectItem value="gte">&gt;= median</SelectItem>
-              <SelectItem value="lt">&lt; median</SelectItem>
-              <SelectItem value="lte">&lt;= median</SelectItem>
+              <SelectItem value="gt">{t`> median`}</SelectItem>
+              <SelectItem value="gte">{t`>= median`}</SelectItem>
+              <SelectItem value="lt">{t`< median`}</SelectItem>
+              <SelectItem value="lte">{t`<= median`}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -515,7 +514,7 @@ function StatsEditor({
       {rule.statsType === 'zscore' ? (
         <>
           <div className="space-y-1">
-            <Label htmlFor="value-filter-zscore-mode">Mode</Label>
+            <Label htmlFor="value-filter-zscore-mode">{t`Mode`}</Label>
             <Select
               value={rule.mode}
               onValueChange={(value) => {
@@ -528,17 +527,17 @@ function StatsEditor({
               }}
             >
               <SelectTrigger id="value-filter-zscore-mode">
-                <SelectValue placeholder="Mode" />
+                <SelectValue placeholder={t`Mode`} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="abs_gte">|z| &gt;= threshold</SelectItem>
-                <SelectItem value="gte">z &gt;= threshold</SelectItem>
-                <SelectItem value="lte">z &lt;= threshold</SelectItem>
+                <SelectItem value="abs_gte">{t`|z| >= threshold`}</SelectItem>
+                <SelectItem value="gte">{t`z >= threshold`}</SelectItem>
+                <SelectItem value="lte">{t`z <= threshold`}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="value-filter-zscore-threshold">Threshold</Label>
+            <Label htmlFor="value-filter-zscore-threshold">{t`Threshold`}</Label>
             <Input
               id="value-filter-zscore-threshold"
               type="number"
@@ -560,7 +559,7 @@ function StatsEditor({
       {rule.statsType === 'iqr_outlier' ? (
         <>
           <div className="space-y-1">
-            <Label htmlFor="value-filter-iqr-side">Side</Label>
+            <Label htmlFor="value-filter-iqr-side">{t`Side`}</Label>
             <Select
               value={rule.side}
               onValueChange={(value) => {
@@ -573,17 +572,17 @@ function StatsEditor({
               }}
             >
               <SelectTrigger id="value-filter-iqr-side">
-                <SelectValue placeholder="Side" />
+                <SelectValue placeholder={t`Side`} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="upper">Upper fence</SelectItem>
-                <SelectItem value="lower">Lower fence</SelectItem>
-                <SelectItem value="both">Both fences</SelectItem>
+                <SelectItem value="upper">{t`Upper fence`}</SelectItem>
+                <SelectItem value="lower">{t`Lower fence`}</SelectItem>
+                <SelectItem value="both">{t`Both fences`}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="value-filter-iqr-multiplier">Multiplier</Label>
+            <Label htmlFor="value-filter-iqr-multiplier">{t`Multiplier`}</Label>
             <Input
               id="value-filter-iqr-multiplier"
               type="number"
@@ -604,7 +603,7 @@ function StatsEditor({
 
       {rule.statsType === 'mad_robust_zscore' ? (
         <div className="space-y-1">
-          <Label htmlFor="value-filter-mad-threshold">Threshold</Label>
+          <Label htmlFor="value-filter-mad-threshold">{t`Threshold`}</Label>
           <Input
             id="value-filter-mad-threshold"
             type="number"
@@ -637,11 +636,11 @@ function StatsFilterExplanationCard({ statsType }: Readonly<{ statsType: Advance
         {explanation.explanation}
       </p>
       <p className="mt-2 text-xs leading-relaxed">
-        <span className="font-semibold">Example:</span>{' '}
+        <span className="font-semibold">{t`Example:`}</span>{' '}
         <span className="text-muted-foreground">{explanation.example}</span>
       </p>
       <div className="mt-2">
-        <p className="text-xs font-semibold">Tips and tricks</p>
+        <p className="text-xs font-semibold">{t`Tips and tricks`}</p>
         <ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-muted-foreground">
           {explanation.tips.map((tip) => (
             <li key={tip}>{tip}</li>

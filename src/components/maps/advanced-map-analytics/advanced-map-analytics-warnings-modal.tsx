@@ -1,6 +1,7 @@
 import { AlertTriangle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { MapSeriesWarning } from '@/lib/map-series/interfaces';
+import { t } from '@lingui/core/macro';
 
 interface AdvancedMapAnalyticsWarningsModalProps {
   open: boolean;
@@ -17,16 +18,16 @@ export function AdvancedMapAnalyticsWarningsModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[min(96vw,1000px)] max-w-4xl h-[min(88vh,800px)] overflow-hidden p-0 gap-0 grid-rows-[auto_minmax(0,1fr)]">
         <DialogHeader className="border-b px-6 py-5">
-          <DialogTitle>Warnings</DialogTitle>
+          <DialogTitle>{t`Warnings`}</DialogTitle>
           <DialogDescription>
-            Detailed warnings generated for map-series fetch and calculations.
+            {t`Detailed warnings generated for map-series fetch and calculations.`}
           </DialogDescription>
         </DialogHeader>
 
         <div className="min-h-0 overflow-y-auto overscroll-contain px-6 py-4">
           {warnings.length === 0 ? (
             <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
-              No warnings.
+              {t`No warnings.`}
             </div>
           ) : (
             <div className="space-y-3">
@@ -41,10 +42,10 @@ export function AdvancedMapAnalyticsWarningsModal({
                   </div>
 
                   <div className="grid grid-cols-1 gap-1 text-xs text-muted-foreground md:grid-cols-2">
-                    <span>Series: {warning.seriesId || 'N/A'}</span>
-                    <span>Dependency: {warning.dependencySeriesId || 'N/A'}</span>
-                    <span>SIRUTA: {warning.sirutaCode || 'N/A'}</span>
-                    <span>Type: {warning.type}</span>
+                    <span>{t`Series`}: {warning.seriesId || t`N/A`}</span>
+                    <span>{t`Dependency`}: {warning.dependencySeriesId || t`N/A`}</span>
+                    <span>{t`SIRUTA`}: {warning.sirutaCode || t`N/A`}</span>
+                    <span>{t`Type`}: {warning.type}</span>
                   </div>
 
                   {warning.details ? (

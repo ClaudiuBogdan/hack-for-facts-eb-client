@@ -4,6 +4,7 @@ import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import type { MapSupportedSeries } from '@/schemas/advanced-map-analytics';
 import { AdvancedMapAnalyticsSeriesList } from './advanced-map-analytics-series-list';
 import { cn } from '@/lib/utils';
+import { t } from '@lingui/core/macro';
 
 interface AdvancedMapAnalyticsSeriesPanelProps {
   series: MapSupportedSeries[];
@@ -37,25 +38,25 @@ export function AdvancedMapAnalyticsSeriesPanel({
       <div className="mb-4 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-2xl font-bold tracking-tight">Data Series</h2>
+            <h2 className="text-2xl font-bold tracking-tight">{t`Data Series`}</h2>
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8"
               onClick={() => onToggleCollapsed(!collapsed)}
-              aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
+              aria-label={collapsed ? t`Expand panel` : t`Collapse panel`}
             >
               <ChevronDown className={cn('h-4 w-4 transition-transform', !collapsed && 'rotate-180')} />
             </Button>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">{series.length} series configured</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t`${series.length} series configured`}</p>
         </div>
 
         <Button
           size="icon"
           className="h-10 w-10 shrink-0 rounded-full"
           onClick={onAddSeries}
-          aria-label="Add series"
+          aria-label={t`Add series`}
           disabled={readOnly}
         >
           <Plus className="h-5 w-5" />

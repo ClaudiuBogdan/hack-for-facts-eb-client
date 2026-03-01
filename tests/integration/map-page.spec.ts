@@ -61,7 +61,7 @@ test.describe('Map Page', () => {
 		await page.goto('/map')
 		// Wait for filters region to be visible (indicates page loaded)
 		await expect(
-			page.getByRole('region', { name: /filtre.*hartă/i })
+			page.getByRole('region', { name: /filtre.*hartă|map.*filters/i })
 		).toBeVisible({ timeout: 15000 })
 		await expect(page.getByTestId('leaflet-map')).toBeVisible({ timeout: 15000 })
 		await waitForHydration(page)
@@ -70,39 +70,39 @@ test.describe('Map Page', () => {
   test('displays map filters region with title', async ({ page }) => {
     // Check for filters region
     await expect(
-      page.getByRole('region', { name: /filtre.*hartă/i })
+      page.getByRole('region', { name: /filtre.*hartă|map.*filters/i })
     ).toBeVisible()
 
     // Check for clear filters button
     await expect(
-      page.getByRole('button', { name: /șterge.*filtre/i })
+      page.getByRole('button', { name: /șterge.*filtre|clear.*filters/i })
     ).toBeVisible()
   })
 
   test('displays data view toggle (Map/Table/Chart)', async ({ page }) => {
     // Check for view type heading
     await expect(
-      page.getByRole('heading', { name: /vizualizare.*date/i, level: 4 })
+      page.getByRole('heading', { name: /vizualizare.*date|data.*view/i, level: 4 })
     ).toBeVisible({ timeout: 5000 })
 
     // Check for radio buttons
-    await expect(page.getByRole('radio', { name: /hartă/i })).toBeVisible()
-    await expect(page.getByRole('radio', { name: /tabel/i })).toBeVisible()
-    await expect(page.getByRole('radio', { name: /grafic/i })).toBeVisible()
+    await expect(page.getByRole('radio', { name: /hartă|map/i })).toBeVisible()
+    await expect(page.getByRole('radio', { name: /tabel|table/i })).toBeVisible()
+    await expect(page.getByRole('radio', { name: /grafic|chart/i })).toBeVisible()
 
     // Map should be selected by default
-    await expect(page.getByRole('radio', { name: /hartă/i })).toBeChecked()
+    await expect(page.getByRole('radio', { name: /hartă|map/i })).toBeChecked()
   })
 
   test('displays map view toggle (UAT/County)', async ({ page }) => {
     // Check for map view heading
     await expect(
-      page.getByRole('heading', { name: /vizualizare.*hartă/i, level: 4 })
+      page.getByRole('heading', { name: /vizualizare.*hartă|map.*view/i, level: 4 })
     ).toBeVisible({ timeout: 5000 })
 
     // Check for radio buttons
     await expect(page.getByRole('radio', { name: /uat/i })).toBeVisible()
-    await expect(page.getByRole('radio', { name: /județ/i })).toBeVisible()
+    await expect(page.getByRole('radio', { name: /județ|county/i })).toBeVisible()
 
     // UAT should be selected by default
     await expect(page.getByRole('radio', { name: /uat/i })).toBeChecked()
@@ -111,21 +111,21 @@ test.describe('Map Page', () => {
   test('displays income/expenses toggle', async ({ page }) => {
     // Check for income/expenses heading
     await expect(
-      page.getByRole('heading', { name: /venituri.*cheltuieli/i, level: 4 })
+      page.getByRole('heading', { name: /venituri.*cheltuieli|income.*expenses/i, level: 4 })
     ).toBeVisible({ timeout: 5000 })
 
     // Check for radio buttons
-    await expect(page.getByRole('radio', { name: /cheltuieli/i })).toBeVisible()
-    await expect(page.getByRole('radio', { name: /venituri/i })).toBeVisible()
+    await expect(page.getByRole('radio', { name: /cheltuieli|expenses/i })).toBeVisible()
+    await expect(page.getByRole('radio', { name: /venituri|income/i })).toBeVisible()
 
     // Expenses should be selected by default
-    await expect(page.getByRole('radio', { name: /cheltuieli/i })).toBeChecked()
+    await expect(page.getByRole('radio', { name: /cheltuieli|expenses/i })).toBeChecked()
   })
 
   test('displays normalization selector', async ({ page }) => {
     // Check for normalization heading
     await expect(
-      page.getByRole('heading', { name: /normalizare/i, level: 4 })
+      page.getByRole('heading', { name: /normalizare|normalization/i, level: 4 })
     ).toBeVisible({ timeout: 5000 })
 
     // Check for combobox
@@ -135,64 +135,64 @@ test.describe('Map Page', () => {
 
   test('displays period filter with year selected', async ({ page }) => {
     // Check for period button
-    const periodButton = page.getByRole('button', { name: /perioadă/i })
+    const periodButton = page.getByRole('button', { name: /perioadă|period/i })
     await expect(periodButton).toBeVisible({ timeout: 5000 })
 
     // Check for year tag within filters region (exclude footer)
-    const filtersRegion = page.getByRole('region', { name: /filtre.*hartă/i })
+    const filtersRegion = page.getByRole('region', { name: /filtre.*hartă|map.*filters/i })
     await expect(filtersRegion.getByText('2025')).toBeVisible()
   })
 
   test('displays entity filter sections', async ({ page }) => {
     // Check for Entities filter
     await expect(
-      page.getByRole('button', { name: /^entități$/i })
+      page.getByRole('button', { name: /^entități$|^entities$/i })
     ).toBeVisible({ timeout: 5000 })
 
     // Check for Creditor filter (exact match to avoid "Exclude Creditor Principal")
     await expect(
-      page.getByRole('button', { name: 'Creditor Principal', exact: true })
+      page.getByRole('button', { name: /^(Creditor Principal|Main Creditor)$/i })
     ).toBeVisible()
 
     // Check for UAT filter (exact match to avoid "Exclude UAT-uri")
     await expect(
-      page.getByRole('button', { name: 'UAT-uri', exact: true })
+      page.getByRole('button', { name: /^(UAT-uri|UATs)$/i })
     ).toBeVisible()
 
     // Check for Counties filter (exact match to avoid "Exclude Județe")
     await expect(
-      page.getByRole('button', { name: 'Județe', exact: true })
+      page.getByRole('button', { name: /^(Județe|Counties)$/i })
     ).toBeVisible()
   })
 
   test('displays classification filter sections', async ({ page }) => {
     // Check for Functional Classification filter
     await expect(
-      page.getByRole('button', { name: /clasificație.*funcțională/i }).first()
+      page.getByRole('button', { name: /clasificație.*funcțională|functional.*classification/i }).first()
     ).toBeVisible({ timeout: 5000 })
 
     // Check for Economic Classification filter
     await expect(
-      page.getByRole('button', { name: /clasificație.*economică/i }).first()
+      page.getByRole('button', { name: /clasificație.*economică|economic.*classification/i }).first()
     ).toBeVisible()
   })
 
   test('displays report type filter', async ({ page }) => {
     // Check for Report Type filter button
     await expect(
-      page.getByRole('button', { name: /tip.*raportare/i })
+      page.getByRole('button', { name: /tip.*raportare|report.*type/i })
     ).toBeVisible({ timeout: 5000 })
 
     // Check for selected report type
     await expect(
-      page.getByText(/executie.*bugetara.*agregata/i)
+      page.getByText(/executie.*bugetara.*agregata|aggregated.*budget.*execution/i)
     ).toBeVisible()
   })
 
   test('displays exclusion filters section', async ({ page }) => {
     // Check for exclusion filters button
     await expect(
-      page.getByRole('button', { name: /filtre.*excludere/i })
+      page.getByRole('button', { name: /filtre.*excludere|exclude.*filters/i })
     ).toBeVisible({ timeout: 5000 })
   })
 
@@ -211,7 +211,7 @@ test.describe('Map Page', () => {
   test('displays map legend', async ({ page }) => {
     // Check for legend heading
     await expect(
-      page.getByRole('heading', { name: /legendă/i, level: 4 })
+      page.getByRole('heading', { name: /legendă|legend/i, level: 4 })
     ).toBeVisible({ timeout: 5000 })
 
     // Check for value range in legend (RON values)
@@ -288,7 +288,7 @@ test.describe('Map Page - Interactions', () => {
 	test.beforeEach(async ({ page }) => {
 		await page.goto('/map')
 		await expect(
-			page.getByRole('region', { name: /filtre.*hartă/i })
+			page.getByRole('region', { name: /filtre.*hartă|map.*filters/i })
 		).toBeVisible({ timeout: 15000 })
 		await expect(page.getByTestId('leaflet-map')).toBeVisible({ timeout: 15000 })
 		await waitForHydration(page)
@@ -300,26 +300,26 @@ test.describe('Map Page - Interactions', () => {
     await expect(uatRadio).toBeChecked()
 
 		// Click County within the map view group (radio is sr-only)
-		const mapViewGroup = page.getByRole('group', { name: /vizualizare.*hartă/i })
-		await mapViewGroup.getByText(/județ/i).click()
+		const mapViewGroup = page.getByRole('group', { name: /vizualizare.*hartă|map.*view/i })
+		await mapViewGroup.getByText(/județ|county/i).click()
 
 		// Verify County is now selected
-		const countyRadio = page.getByRole('radio', { name: /județ/i })
+		const countyRadio = page.getByRole('radio', { name: /județ|county/i })
 		await expect(page).toHaveURL(/mapViewType=County/, { timeout: 10000 })
 		await expect(countyRadio).toBeChecked({ timeout: 10000 })
 	})
 
 	test('can switch between income and expenses', async ({ page }) => {
     // Verify Expenses is selected by default
-    const expensesRadio = page.getByRole('radio', { name: /cheltuieli/i })
+    const expensesRadio = page.getByRole('radio', { name: /cheltuieli|expenses/i })
     await expect(expensesRadio).toBeChecked()
 
 		// Click Income within the income/expenses group (radio is sr-only)
-		const incomeGroup = page.getByRole('group', { name: /venituri.*cheltuieli/i })
-		await incomeGroup.getByText(/venituri/i).click()
+		const incomeGroup = page.getByRole('group', { name: /venituri.*cheltuieli|income.*expenses/i })
+		await incomeGroup.getByText(/venituri|income/i).click()
 
 		// Verify Income is now selected
-		const incomeRadio = page.getByRole('radio', { name: /venituri/i })
+		const incomeRadio = page.getByRole('radio', { name: /venituri|income/i })
 		await expect(incomeRadio).toBeChecked({ timeout: 10000 })
 	})
 
@@ -340,11 +340,11 @@ test.describe('Map Page - Interactions', () => {
 
   test('filter sections are expandable', async ({ page }) => {
     // Verify filter section buttons exist
-    const entitiesButton = page.getByRole('button', { name: /^entități$/i })
+    const entitiesButton = page.getByRole('button', { name: /^entități$|^entities$/i })
     await expect(entitiesButton).toBeVisible({ timeout: 5000 })
 
     await expect(
-      page.getByRole('button', { name: 'Județe', exact: true })
+      page.getByRole('button', { name: /^(Județe|Counties)$/i })
     ).toBeVisible()
 
     // Click to expand entities section

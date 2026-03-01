@@ -38,6 +38,13 @@ import {
 } from '@/components/ui/select';
 import { Globe, MapPinned } from 'lucide-react';
 import { SERIES_TYPE_LABELS } from './advanced-map-analytics-series-utils';
+import { i18n } from '@lingui/core';
+import { msg, t } from '@lingui/core/macro';
+
+const GEOJSON_DATASET_DEFAULT_LABEL = msg`GeoJSON dataset`;
+const COUNTY_FILTER_PREFIX_LABEL = msg`County`;
+const REGION_FILTER_PREFIX_LABEL = msg`Region`;
+const NO_FILTER_SELECTION_LABEL = msg`none`;
 
 interface AdvancedMapAnalyticsSeriesEditorModalProps {
   open: boolean;
@@ -66,19 +73,19 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
     return null;
   }
 
-  const title = mode === 'add' ? 'Add Data Series' : 'Edit Data Series';
+  const title = mode === 'add' ? t`Add Data Series` : t`Edit Data Series`;
   const description =
     mode === 'add'
-      ? 'Configure a new series. Changes apply immediately while this modal is open.'
-      : 'Update the selected series configuration. Changes apply immediately while this modal is open.';
+      ? t`Configure a new series. Changes apply immediately while this modal is open.`
+      : t`Update the selected series configuration. Changes apply immediately while this modal is open.`;
   const configurationTitle =
     series.type === 'aggregated-series-calculation'
-      ? 'Calculation'
+      ? t`Calculation`
       : series.type === 'ins-series'
-        ? 'INS Settings'
+        ? t`INS Settings`
         : series.type === 'geojson-dataset-series'
-          ? 'GeoJSON dataset'
-        : 'Filters';
+          ? t`GeoJSON dataset`
+        : t`Filters`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -92,7 +99,7 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
           <section className="rounded-xl border bg-muted/20 p-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="advanced-map-analytics-series-label">Label</Label>
+                <Label htmlFor="advanced-map-analytics-series-label">{t`Label`}</Label>
                 <Input
                   id="advanced-map-analytics-series-label"
                   name="advanced-map-analytics-series-label"
@@ -103,13 +110,13 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
                       draft.label = nextValue;
                     });
                   }}
-                  placeholder="Series label…"
+                  placeholder={t`Series label…`}
                   autoComplete="off"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="advanced-map-analytics-series-unit">Unit override</Label>
+                <Label htmlFor="advanced-map-analytics-series-unit">{t`Unit override`}</Label>
                 <Input
                   id="advanced-map-analytics-series-unit"
                   name="advanced-map-analytics-series-unit"
@@ -120,13 +127,13 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
                       draft.unit = nextValue;
                     });
                   }}
-                  placeholder="Optional unit override…"
+                  placeholder={t`Optional unit override…`}
                   autoComplete="off"
                 />
               </div>
 
               <div className="space-y-2 md:max-w-sm">
-                <Label htmlFor="advanced-map-analytics-series-type">Series type</Label>
+                <Label htmlFor="advanced-map-analytics-series-type">{t`Series type`}</Label>
                 <Select
                   value={series.type}
                   onValueChange={(value) =>
@@ -134,7 +141,7 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
                   }
                 >
                   <SelectTrigger id="advanced-map-analytics-series-type">
-                    <SelectValue placeholder="Select series type" />
+                    <SelectValue placeholder={t`Select series type`} />
                   </SelectTrigger>
                   <SelectContent>
                     {(Object.keys(SERIES_TYPE_LABELS) as Array<MapSupportedSeries['type']>).map(
@@ -153,7 +160,7 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
           <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border">
             <div className="flex items-center justify-between border-b px-4 py-3">
               <h3 className="text-sm font-semibold">{configurationTitle}</h3>
-              <p className="text-xs text-muted-foreground">Live apply</p>
+              <p className="text-xs text-muted-foreground">{t`Live apply`}</p>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
               <SeriesConfigEditor
@@ -221,7 +228,7 @@ function SeriesConfigEditor({
         currentSeriesId={series.id}
         validateCalculation={(nextCalculation) => {
           if (hasCalculationCycle(series.id, nextCalculation, calculationCompatibleSeries)) {
-            return 'This change would create a circular dependency.';
+            return t`This change would create a circular dependency.`;
           }
           return null;
         }}
@@ -311,11 +318,11 @@ function GeoJsonDatasetSeriesEditor({
   );
 
   const CountyFilterList = useMemo(
-    () => createStaticGeoJsonFilterList(countyListOptions, 'No counties available.'),
+    () => createStaticGeoJsonFilterList(countyListOptions, t`No counties available.`),
     [countyListOptions]
   );
   const RegionFilterList = useMemo(
-    () => createStaticGeoJsonFilterList(regionListOptions, 'No regions available.'),
+    () => createStaticGeoJsonFilterList(regionListOptions, t`No regions available.`),
     [regionListOptions]
   );
 
@@ -374,17 +381,17 @@ function GeoJsonDatasetSeriesEditor({
   return (
     <div className="space-y-5">
       <p className="text-sm text-muted-foreground">
-        Values are always population. County and region selections filter the included UATs.
+        {t`Values are always population. County and region selections filter the included UATs.`}
       </p>
       <section
         className="space-y-3 rounded-lg border border-primary/40 bg-primary/5 p-4"
       >
         <div className="flex items-center justify-between gap-3">
-          <h4 className="text-sm font-semibold">Population</h4>
-          <span className="text-xs text-muted-foreground">Value source</span>
+          <h4 className="text-sm font-semibold">{t`Population`}</h4>
+          <span className="text-xs text-muted-foreground">{t`Value source`}</span>
         </div>
         <div className="space-y-2 md:max-w-md">
-          <Label htmlFor="advanced-map-analytics-geojson-population-key">Population field</Label>
+          <Label htmlFor="advanced-map-analytics-geojson-population-key">{t`Population field`}</Label>
           <Select
             value={selectedPopulationKey}
             onValueChange={(nextDatasetKey) => {
@@ -403,7 +410,7 @@ function GeoJsonDatasetSeriesEditor({
             }}
           >
             <SelectTrigger id="advanced-map-analytics-geojson-population-key">
-              <SelectValue placeholder="Select population field" />
+              <SelectValue placeholder={t`Select population field`} />
             </SelectTrigger>
             <SelectContent>
               {GEOJSON_POPULATION_DATASET_KEYS.map((populationKey) => (
@@ -421,20 +428,20 @@ function GeoJsonDatasetSeriesEditor({
           listComponent={CountyFilterList}
           selected={selectedCountyOptions}
           setSelected={setSelectedCountyOptions}
-          title="County Filters"
+          title={t`County Filters`}
           icon={<MapPinned className="h-4 w-4" />}
         />
         <FilterListContainer
           listComponent={RegionFilterList}
           selected={selectedRegionOptions}
           setSelected={setSelectedRegionOptions}
-          title="Region Filters"
+          title={t`Region Filters`}
           icon={<Globe className="h-4 w-4" />}
         />
       </div>
 
       <p className="text-xs text-muted-foreground">
-        County and region filters can both be selected and are combined using AND logic.
+        {t`County and region filters can both be selected and are combined using AND logic.`}
       </p>
     </div>
   );
@@ -495,11 +502,18 @@ function shouldAutoUpdateGeoJsonLabel(
     return true;
   }
 
+  const translatedGeoJsonDatasetLabel = i18n._(GEOJSON_DATASET_DEFAULT_LABEL);
+  const translatedCountyPrefix = i18n._(COUNTY_FILTER_PREFIX_LABEL);
+  const translatedRegionPrefix = i18n._(REGION_FILTER_PREFIX_LABEL);
+
   return (
     trimmedLabel === 'GeoJSON dataset' ||
+    trimmedLabel === translatedGeoJsonDatasetLabel ||
     trimmedLabel === getGeoJsonDatasetLabel(previousDatasetKey) ||
     trimmedLabel.startsWith('County:') ||
-    trimmedLabel.startsWith('Region:')
+    trimmedLabel.startsWith(`${translatedCountyPrefix}:`) ||
+    trimmedLabel.startsWith('Region:') ||
+    trimmedLabel.startsWith(`${translatedRegionPrefix}:`)
   );
 }
 
@@ -508,14 +522,21 @@ function buildFilterSelectionLabel(
   selectedIds: number[],
   options: GeoJsonFilterOption[]
 ): string {
+  const translatedPrefix = prefix === 'County'
+    ? i18n._(COUNTY_FILTER_PREFIX_LABEL)
+    : i18n._(REGION_FILTER_PREFIX_LABEL);
+  const translatedNoSelectionLabel = i18n._(NO_FILTER_SELECTION_LABEL);
+
   if (selectedIds.length === 0) {
-    return `${prefix}: none`;
+    return `${translatedPrefix}: ${translatedNoSelectionLabel}`;
   }
 
   if (selectedIds.length === 1) {
     const option = options.find((entry) => entry.id === selectedIds[0]);
-    return option ? `${prefix}: ${option.name}` : `${prefix}: ${selectedIds[0]}`;
+    return option
+      ? `${translatedPrefix}: ${option.name}`
+      : `${translatedPrefix}: ${selectedIds[0]}`;
   }
 
-  return `${prefix}: ${selectedIds.length} selected`;
+  return `${translatedPrefix}: ${selectedIds.length} ${t`selected`}`;
 }

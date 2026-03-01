@@ -80,6 +80,7 @@ describe('AdvancedMapAnalyticsValueFiltersPanel', () => {
       />
     );
 
+    expect(screen.getByText('1 rule configured')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Edit value filter rule 1' }));
     expect(onEditRule).toHaveBeenCalledWith(firstRule.id);
   });

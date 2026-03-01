@@ -77,6 +77,7 @@ export function HeatmapDataTable({
             per_capita_amount: true,
         },
     });
+    const getColumnMenuAriaLabel = (columnId: string) => t`Open ${columnId} column menu`;
 
     const columns = useMemo<ColumnDef<HeatmapUATDataPoint | HeatmapCountyDataPoint>[]>(
         () => [
@@ -127,7 +128,13 @@ export function HeatmapDataTable({
                             </div>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={`${column.id} menu`} onClick={(e) => e.stopPropagation()}>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6"
+                                        aria-label={getColumnMenuAriaLabel(column.id ?? 'column')}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -175,7 +182,7 @@ export function HeatmapDataTable({
                                 className="flex items-center gap-1 cursor-pointer"
                                 onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                             >
-                                <Trans>Județ</Trans>
+                                <Trans>County</Trans>
                                 {column.getIsSorted() === "asc" ? (
                                     <ChevronUp className="w-4 h-4" />
                                 ) : column.getIsSorted() === "desc" ? (
@@ -186,7 +193,13 @@ export function HeatmapDataTable({
                             </div>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={`${column.id} menu`} onClick={(e) => e.stopPropagation()}>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6"
+                                        aria-label={getColumnMenuAriaLabel(column.id ?? 'column')}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -240,7 +253,13 @@ export function HeatmapDataTable({
                             </div>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={`${column.id} menu`} onClick={(e) => e.stopPropagation()}>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6"
+                                        aria-label={getColumnMenuAriaLabel(column.id ?? 'column')}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -294,7 +313,13 @@ export function HeatmapDataTable({
                             </div>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={`${column.id} menu`} onClick={(e) => e.stopPropagation()}>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6"
+                                        aria-label={getColumnMenuAriaLabel(column.id ?? 'column')}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -356,7 +381,13 @@ export function HeatmapDataTable({
                             </div>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6" aria-label={`${column.id} menu`} onClick={(e) => e.stopPropagation()}>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6"
+                                        aria-label={getColumnMenuAriaLabel(column.id ?? 'column')}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
                                         <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -380,13 +411,13 @@ export function HeatmapDataTable({
                     if (currencyFormat === 'both') {
                         return (
                             <div className="text-right">
-                                <span className="block text-xs" title={`${formatCurrency(value, 'standard', currencyCode)} / capita`}>{formatCurrency(value, 'standard', currencyCode)} / capita</span>
-                                <span className="block text-xs text-muted-foreground">{formatCurrency(value, 'compact', currencyCode)} / capita</span>
+                                <span className="block text-xs" title={`${formatCurrency(value, 'standard', currencyCode)}${t` / capita`}`}>{formatCurrency(value, 'standard', currencyCode)}{t` / capita`}</span>
+                                <span className="block text-xs text-muted-foreground">{formatCurrency(value, 'compact', currencyCode)}{t` / capita`}</span>
                             </div>
                         );
                     }
                     const effectiveCurrency: 'RON' | 'EUR' | 'USD' = currencyFormat === 'euro' ? 'EUR' : currencyCode;
-                    return <span className="block text-right text-xs" title={`${formatCurrency(value, 'standard', effectiveCurrency)} / capita`}>{formatCurrency(value, 'compact', effectiveCurrency)} / capita</span>
+                    return <span className="block text-right text-xs" title={`${formatCurrency(value, 'standard', effectiveCurrency)}${t` / capita`}`}>{formatCurrency(value, 'compact', effectiveCurrency)}{t` / capita`}</span>
                 },
             },
         ],

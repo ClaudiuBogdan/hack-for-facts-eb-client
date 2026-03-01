@@ -80,8 +80,8 @@ describe('MapAnalyticsQuickActions', () => {
     render(<MapAnalyticsQuickActions mode="public" mapState={mapState} />);
 
     expect(screen.getByTestId('map-analytics-quick-actions')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Search Entities' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Copy Share Link' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Search entities' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Copy share link' })).toBeInTheDocument();
   });
 
   it('copies full URL when user is not signed in', async () => {
@@ -89,7 +89,7 @@ describe('MapAnalyticsQuickActions', () => {
 
     render(<MapAnalyticsQuickActions mode="public" mapState={mapState} />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Copy Share Link' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Copy share link' }));
 
     await waitFor(() => {
       expect(writeClipboardMock).toHaveBeenCalledWith(window.location.href);
@@ -107,7 +107,7 @@ describe('MapAnalyticsQuickActions', () => {
 
     render(<MapAnalyticsQuickActions mode="public" mapState={mapState} />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Copy Share Link' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Copy share link' }));
 
     await waitFor(() => {
       expect(ensureShortRedirectUrlMock).toHaveBeenCalledWith(
@@ -127,7 +127,7 @@ describe('MapAnalyticsQuickActions', () => {
 
     expect(screen.queryByTestId('floating-entity-search-open')).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Search Entities' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Search entities' }));
 
     expect(screen.getByTestId('floating-entity-search-open')).toBeInTheDocument();
   });
@@ -136,10 +136,10 @@ describe('MapAnalyticsQuickActions', () => {
     const { MapAnalyticsQuickActions } = await import('./map-analytics-quick-actions');
 
     const { rerender } = render(<MapAnalyticsQuickActions mode="public" mapState={mapState} />);
-    expect(screen.getByRole('button', { name: 'Create Editable Copy' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Create editable copy' })).toBeInTheDocument();
 
     rerender(<MapAnalyticsQuickActions mode="owner" mapState={mapState} />);
-    expect(screen.queryByRole('button', { name: 'Create Editable Copy' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Create editable copy' })).not.toBeInTheDocument();
   });
 
   it('navigates to map creation route with current map state when clicking editable copy', async () => {
@@ -147,7 +147,7 @@ describe('MapAnalyticsQuickActions', () => {
 
     render(<MapAnalyticsQuickActions mode="public" mapState={mapState} />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Create Editable Copy' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create editable copy' }));
 
     expect(navigateMock).toHaveBeenCalledWith({
       to: '/maps/editor/new',

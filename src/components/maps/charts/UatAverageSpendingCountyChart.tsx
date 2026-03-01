@@ -12,6 +12,7 @@ import {
 import { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap';
 import { formatCurrency } from '@/lib/utils';
 import { SafeResponsiveContainer } from '@/components/charts/safe-responsive-container';
+import { t } from '@lingui/core/macro';
 
 interface UatAverageSpendingCountyChartProps {
   data: (HeatmapUATDataPoint | HeatmapCountyDataPoint)[];
@@ -26,7 +27,7 @@ export const UatAverageSpendingCountyChart: React.FC<UatAverageSpendingCountyCha
   chartTitle,
   barColor = '#00C49F',
   xAxisLabel,
-  yAxisLabel = 'Avg. Amount per UAT',
+  yAxisLabel = t`Avg. Amount per UAT`,
 }) => {
   const processedData = React.useMemo(() => {
     const countyAggregates: { [key: string]: { totalAmount: number; count: number } } = {};
@@ -50,7 +51,7 @@ export const UatAverageSpendingCountyChart: React.FC<UatAverageSpendingCountyCha
   }, [data]);
 
   if (processedData.length === 0) {
-    return <p className="text-center text-sm text-muted-foreground">Not enough county data for average spending chart.</p>;
+    return <p className="text-center text-sm text-muted-foreground">{t`Not enough county data for average spending chart.`}</p>;
   }
 
   return (
@@ -69,9 +70,9 @@ export const UatAverageSpendingCountyChart: React.FC<UatAverageSpendingCountyCha
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="county_name" angle={-45} textAnchor="end" interval={0} tick={{ fontSize: 10 }} height={50} label={{ value: xAxisLabel, position: 'insideBottom', dy: 50, fontSize: 12 }} />
           <YAxis tickFormatter={(value) => formatCurrency(value, 'compact')} label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', dx: -75, fontSize: 12 }} />
-          <Tooltip formatter={(value) => [formatCurrency(Number(value ?? 0), 'compact'), 'Avg. Amount']} />
+          <Tooltip formatter={(value) => [formatCurrency(Number(value ?? 0), 'compact'), t`Avg. Amount`]} />
           <Legend verticalAlign="top" height={36} />
-          <Bar dataKey="average_amount" name="Avg. Amount per UAT" fill={barColor}>
+          <Bar dataKey="average_amount" name={t`Avg. Amount per UAT`} fill={barColor}>
             <LabelList dataKey="average_amount" position="top"  angle={-45} offset={50} formatter={(value: React.ReactNode) => typeof value === 'number' && value > 0 ? formatCurrency(value, 'compact') : ''} fontSize={10} />
           </Bar>
         </BarChart>

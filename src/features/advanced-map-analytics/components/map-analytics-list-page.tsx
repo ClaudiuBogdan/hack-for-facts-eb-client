@@ -19,6 +19,8 @@ import {
 } from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
 import type { AdvancedMapAnalyticsApiError } from '@/features/advanced-map-analytics/api/advanced-map-analytics-api';
 import { stripMapEditorSearchParams } from '@/features/advanced-map-analytics/map-editor-search';
+import { t } from '@lingui/core/macro';
+import { getUserLocale } from '@/lib/utils';
 
 export function MapAnalyticsListPage() {
   const navigate = useNavigate();
@@ -27,6 +29,7 @@ export function MapAnalyticsListPage() {
   const [cloneSnapshotMapId, setCloneSnapshotMapId] = useState<string | null>(null);
 
   const mapsQuery = useAdvancedMapAnalyticsMapsQuery();
+  const dateTimeLocale = getUserLocale() === 'en' ? 'en-US' : 'ro-RO';
 
   const cloneLatestQuery = useAdvancedMapAnalyticsMapQuery(
     cloneSourceMapId ?? '',
@@ -76,7 +79,7 @@ export function MapAnalyticsListPage() {
   if (!isLoaded || mapsQuery.isLoading) {
     return (
       <div className="container mx-auto py-12">
-        <LoadingSpinner text="Loading maps..." />
+        <LoadingSpinner text={t`Loading maps...`} />
       </div>
     );
   }
@@ -86,12 +89,12 @@ export function MapAnalyticsListPage() {
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Sign in required</CardTitle>
-            <CardDescription>You need to be signed in to access map editor.</CardDescription>
+            <CardTitle>{t`Sign in required`}</CardTitle>
+            <CardDescription>{t`You need to be signed in to access map editor.`}</CardDescription>
           </CardHeader>
           <CardContent>
             <AuthSignInButton>
-              <Button>Sign In</Button>
+              <Button>{t`Sign In`}</Button>
             </AuthSignInButton>
           </CardContent>
         </Card>
@@ -104,7 +107,7 @@ export function MapAnalyticsListPage() {
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Access denied</CardTitle>
+            <CardTitle>{t`Access denied`}</CardTitle>
             <CardDescription>{forbiddenError.message}</CardDescription>
           </CardHeader>
         </Card>
@@ -117,7 +120,7 @@ export function MapAnalyticsListPage() {
       <div className="container mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Failed to load maps</CardTitle>
+            <CardTitle>{t`Failed to load maps`}</CardTitle>
             <CardDescription>{mapsQuery.error.message}</CardDescription>
           </CardHeader>
         </Card>
@@ -131,16 +134,16 @@ export function MapAnalyticsListPage() {
     <div className="container mx-auto space-y-4 py-6">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Map editor</h1>
-          <p className="text-sm text-muted-foreground">Manage your advanced map analytics maps.</p>
+          <h1 className="text-2xl font-semibold">{t`Map editor`}</h1>
+          <p className="text-sm text-muted-foreground">{t`Manage your advanced map analytics maps.`}</p>
         </div>
-        <Button onClick={() => createMapFromState()}>Create map</Button>
+        <Button onClick={() => createMapFromState()}>{t`Create map`}</Button>
       </div>
 
       {maps.length === 0 ? (
         <Card>
           <CardContent className="py-8 text-sm text-muted-foreground">
-            No maps yet. Create your first map to get started.
+            {t`No maps yet. Create your first map to get started.`}
           </CardContent>
         </Card>
       ) : (
@@ -151,7 +154,8 @@ export function MapAnalyticsListPage() {
                 <div className="min-w-0">
                   <CardTitle className="truncate text-base">{map.title}</CardTitle>
                   <CardDescription>
-                    {map.state} · {map.snapshotCount} snapshots · updated {new Date(map.updatedAt).toLocaleString()}
+                    {map.state} · {map.snapshotCount} {t`snapshots`} · {t`updated`}{' '}
+                    {new Date(map.updatedAt).toLocaleString(dateTimeLocale)}
                   </CardDescription>
                 </div>
                 <DropdownMenu>
@@ -160,7 +164,7 @@ export function MapAnalyticsListPage() {
                       size="icon"
                       variant="ghost"
                       className="h-8 w-8 shrink-0"
-                      aria-label={`Open options for ${map.title}`}
+                      aria-label={t`Open options for ${map.title}`}
                     >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
@@ -168,11 +172,11 @@ export function MapAnalyticsListPage() {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onSelect={() => handleCloneLatest(map.id)}>
                       <History className="mr-2 h-4 w-4" />
-                      Clone latest
+                      {t`Clone latest`}
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => handleCloneSnapshot(map.id)}>
                       <Copy className="mr-2 h-4 w-4" />
-                      Clone snapshot
+                      {t`Clone snapshot`}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -186,7 +190,7 @@ export function MapAnalyticsListPage() {
                       stripMapEditorSearchParams(previousSearch as Record<string, unknown>)
                     }
                   >
-                    Open
+                    {t`Open`}
                   </Link>
                 </Button>
               </CardContent>
@@ -198,19 +202,19 @@ export function MapAnalyticsListPage() {
       <Dialog open={cloneSourceMapId !== null} onOpenChange={(open) => !open && setCloneSourceMapId(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Clone latest snapshot</DialogTitle>
-            <DialogDescription>Create a new map using the latest saved snapshot.</DialogDescription>
+            <DialogTitle>{t`Clone latest snapshot`}</DialogTitle>
+            <DialogDescription>{t`Create a new map using the latest saved snapshot.`}</DialogDescription>
           </DialogHeader>
 
           {cloneLatestQuery.isLoading ? (
-            <LoadingSpinner text="Loading latest snapshot..." />
+            <LoadingSpinner text={t`Loading latest snapshot...`} />
           ) : cloneLatestQuery.error ? (
             <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
               {cloneLatestQuery.error.message}
             </div>
           ) : (
             <div className="flex justify-end">
-              <Button onClick={completeCloneLatest}>Create from latest</Button>
+              <Button onClick={completeCloneLatest}>{t`Create from latest`}</Button>
             </div>
           )}
         </DialogContent>
@@ -219,12 +223,12 @@ export function MapAnalyticsListPage() {
       <Dialog open={cloneSnapshotMapId !== null} onOpenChange={(open) => !open && setCloneSnapshotMapId(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Clone from snapshot</DialogTitle>
-            <DialogDescription>Select a snapshot to clone into a new map.</DialogDescription>
+            <DialogTitle>{t`Clone from snapshot`}</DialogTitle>
+            <DialogDescription>{t`Select a snapshot to clone into a new map.`}</DialogDescription>
           </DialogHeader>
 
           {cloneSnapshotsQuery.isLoading ? (
-            <LoadingSpinner text="Loading snapshots..." />
+            <LoadingSpinner text={t`Loading snapshots...`} />
           ) : cloneSnapshotsQuery.error ? (
             <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
               {cloneSnapshotsQuery.error.message}
@@ -236,7 +240,8 @@ export function MapAnalyticsListPage() {
                   <div>
                     <p className="text-sm font-semibold">{snapshot.title}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(snapshot.createdAt).toLocaleString()} · {snapshot.stateAtSave}
+                      {new Date(snapshot.createdAt).toLocaleString(dateTimeLocale)}{' '}
+                      · {snapshot.stateAtSave}
                     </p>
                   </div>
                   <Button
@@ -246,7 +251,7 @@ export function MapAnalyticsListPage() {
                       setCloneSnapshotMapId(null);
                     }}
                   >
-                    Clone
+                    {t`Clone`}
                   </Button>
                 </article>
               ))}

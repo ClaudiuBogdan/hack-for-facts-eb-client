@@ -25,6 +25,7 @@ import type {
   AdvancedMapAnalyticsBinsPresetConfig,
 } from '@/schemas/advanced-map-analytics';
 import { AdvancedMapAnalyticsBinsList } from './advanced-map-analytics-bins-list';
+import { t } from '@lingui/core/macro';
 
 interface AdvancedMapAnalyticsBinsModalProps {
   open: boolean;
@@ -82,7 +83,7 @@ export function AdvancedMapAnalyticsBinsModal({
       return [];
     }
     if (presetConfig.bins.length === 0) {
-      return ['At least one bin is required.'];
+      return [t`At least one bin is required.`];
     }
     return validateBinsConfig(presetConfig).errors;
   }, [presetConfig]);
@@ -117,7 +118,7 @@ export function AdvancedMapAnalyticsBinsModal({
 
     const parsed = Number(defaultBinCountInput);
     if (!Number.isInteger(parsed) || parsed < 1) {
-      setInlineError('Default bin count must be an integer greater than or equal to 1.');
+      setInlineError(t`Default bin count must be an integer greater than or equal to 1.`);
       setDefaultBinCountInput(String(presetConfig.defaultBinCount));
       return;
     }
@@ -139,7 +140,7 @@ export function AdvancedMapAnalyticsBinsModal({
       updatedAt: new Date().toISOString(),
     });
     if (!result.ok) {
-      setInlineError(result.error ?? 'Invalid bins configuration.');
+      setInlineError(result.error ?? t`Invalid bins configuration.`);
       return;
     }
 
@@ -196,7 +197,7 @@ export function AdvancedMapAnalyticsBinsModal({
       presetConfig.gradient
     );
     if (generatedBins.length === 0) {
-      setInlineError('Cannot regenerate bins because active data has no numeric values.');
+      setInlineError(t`Cannot regenerate bins because active data has no numeric values.`);
       return;
     }
 
@@ -224,9 +225,9 @@ export function AdvancedMapAnalyticsBinsModal({
       >
         <DialogContent className="grid h-[min(92vh,940px)] w-[min(96vw,1200px)] max-w-5xl grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden p-0">
           <DialogHeader className="border-b px-6 py-5">
-            <DialogTitle>Edit Bins Preset</DialogTitle>
+            <DialogTitle>{t`Edit Bins Preset`}</DialogTitle>
             <DialogDescription>
-              Configure bins for this preset. Changes are local while this modal is open.
+              {t`Configure bins for this preset. Changes are local while this modal is open.`}
             </DialogDescription>
           </DialogHeader>
 
@@ -234,7 +235,7 @@ export function AdvancedMapAnalyticsBinsModal({
             <section className="rounded-xl border bg-muted/20 p-4">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="advanced-map-analytics-bins-preset-label">Preset label</Label>
+                  <Label htmlFor="advanced-map-analytics-bins-preset-label">{t`Preset label`}</Label>
                   <Input
                     id="advanced-map-analytics-bins-preset-label"
                     value={draftPreset.label}
@@ -251,7 +252,7 @@ export function AdvancedMapAnalyticsBinsModal({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="advanced-map-analytics-bins-title">Bins title</Label>
+                  <Label htmlFor="advanced-map-analytics-bins-title">{t`Bins title`}</Label>
                   <Input
                     id="advanced-map-analytics-bins-title"
                     value={presetConfig.title}
@@ -263,17 +264,17 @@ export function AdvancedMapAnalyticsBinsModal({
                       }));
                     }}
                     autoComplete="off"
-                    placeholder="Optional legend title"
+                    placeholder={t`Optional legend title`}
                   />
                 </div>
 
                 <div className="rounded-lg border bg-background p-3">
-                  <p className="text-sm font-medium">Active data series</p>
+                  <p className="text-sm font-medium">{t`Active data series`}</p>
                   <p className="truncate text-sm text-muted-foreground">{activeSeriesLabel}</p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="advanced-map-analytics-bins-color-mode">Color mode</Label>
+                  <Label htmlFor="advanced-map-analytics-bins-color-mode">{t`Color mode`}</Label>
                   <Select
                     value={presetConfig.colorMode}
                     onValueChange={(value) =>
@@ -281,17 +282,17 @@ export function AdvancedMapAnalyticsBinsModal({
                     }
                   >
                     <SelectTrigger id="advanced-map-analytics-bins-color-mode">
-                      <SelectValue placeholder="Select color mode" />
+                      <SelectValue placeholder={t`Select color mode`} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="manual">manual</SelectItem>
-                      <SelectItem value="gradient">gradient</SelectItem>
+                      <SelectItem value="manual">{t`manual`}</SelectItem>
+                      <SelectItem value="gradient">{t`gradient`}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="advanced-map-analytics-bins-default-count">Default bin count</Label>
+                  <Label htmlFor="advanced-map-analytics-bins-default-count">{t`Default bin count`}</Label>
                   <Input
                     id="advanced-map-analytics-bins-default-count"
                     type="number"
@@ -307,7 +308,7 @@ export function AdvancedMapAnalyticsBinsModal({
             </section>
 
             <section className="flex items-center gap-4 rounded-lg border px-3 py-2">
-              <span className="text-sm font-medium">Gradient</span>
+              <span className="text-sm font-medium">{t`Gradient`}</span>
               <div className="flex items-center gap-2">
                 <Input
                   id="advanced-map-analytics-bins-gradient-start"
@@ -355,12 +356,12 @@ export function AdvancedMapAnalyticsBinsModal({
                   }));
                 }}
               >
-                Apply
+                {t`Apply`}
               </Button>
             </section>
 
             <section className="flex flex-wrap items-center gap-3 rounded-lg border px-3 py-2">
-              <span className="text-sm font-medium">No data</span>
+              <span className="text-sm font-medium">{t`No data`}</span>
               <Input
                 id="advanced-map-analytics-bins-no-data-label"
                 value={presetConfig.noData.label}
@@ -395,7 +396,7 @@ export function AdvancedMapAnalyticsBinsModal({
               />
               <div className="ml-auto flex items-center gap-2">
                 <Label htmlFor="no-data-tooltip" className="cursor-pointer text-xs text-muted-foreground">
-                  Show in tooltip
+                  {t`Show in tooltip`}
                 </Label>
                 <Switch
                   id="no-data-tooltip"
@@ -415,9 +416,9 @@ export function AdvancedMapAnalyticsBinsModal({
 
             <section className="rounded-xl border p-4">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-semibold">Bins</h3>
+                <h3 className="text-sm font-semibold">{t`Bins`}</h3>
                 <Button type="button" variant="outline" size="sm" onClick={regenerateBins}>
-                  Regenerate from active data
+                  {t`Regenerate from active data`}
                 </Button>
               </div>
               <AdvancedMapAnalyticsBinsList
@@ -435,7 +436,7 @@ export function AdvancedMapAnalyticsBinsModal({
 
             {validationErrors.length > 0 ? (
               <section className="rounded-lg border border-destructive/30 bg-destructive/5 p-3">
-                <h4 className="mb-1 text-sm font-semibold text-destructive">Validation errors</h4>
+                <h4 className="mb-1 text-sm font-semibold text-destructive">{t`Validation errors`}</h4>
                 <div className="space-y-1">
                   {validationErrors.map((errorMessage) => (
                     <p key={errorMessage} className="text-xs text-destructive">
@@ -454,13 +455,13 @@ export function AdvancedMapAnalyticsBinsModal({
       <AlertDialog open={isDiscardDialogOpen} onOpenChange={setIsDiscardDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Discard local edits?</AlertDialogTitle>
+            <AlertDialogTitle>{t`Discard local edits?`}</AlertDialogTitle>
             <AlertDialogDescription>
-              Some local values are invalid. Closing now will discard unsaved local changes.
+              {t`Some local values are invalid. Closing now will discard unsaved local changes.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Continue editing</AlertDialogCancel>
+            <AlertDialogCancel>{t`Continue editing`}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 setIsDiscardDialogOpen(false);
@@ -469,7 +470,7 @@ export function AdvancedMapAnalyticsBinsModal({
                 onOpenChange(false);
               }}
             >
-              Discard & close
+              {t`Discard & close`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -481,16 +482,15 @@ export function AdvancedMapAnalyticsBinsModal({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Apply gradient colors?</AlertDialogTitle>
+            <AlertDialogTitle>{t`Apply gradient colors?`}</AlertDialogTitle>
             <AlertDialogDescription>
-              Switching to gradient mode will overwrite current bin colors using the selected
-              gradient anchors.
+              {t`Switching to gradient mode will overwrite current bin colors using the selected gradient anchors.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t`Cancel`}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmGradientOverwrite}>
-              Apply gradient
+              {t`Apply gradient`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

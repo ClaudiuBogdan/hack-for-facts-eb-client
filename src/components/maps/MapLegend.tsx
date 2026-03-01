@@ -20,9 +20,9 @@ const formatLegendValue = (
   currency: 'RON' | 'EUR' | 'USD',
   isPerCapita: boolean,
 ): string => {
-  if (value === undefined || value === null) return 'N/A';
+  if (value === undefined || value === null) return t`N/A`;
   if (unit.startsWith('%')) return `${formatNumber(value, 'compact')}%`;
-  return `${formatCurrency(value, 'compact', currency)}${isPerCapita ? ' / capita' : ''}`;
+  return `${formatCurrency(value, 'compact', currency)}${isPerCapita ? t` / capita` : ''}`;
 };
 
 export const MapLegend: React.FC<MapLegendProps> = ({
@@ -70,7 +70,7 @@ export const MapLegend: React.FC<MapLegendProps> = ({
         <div
           className="h-5 w-full border border-border"
           style={{ background: gradient }}
-          aria-label="Color gradient for the map legend"
+          aria-label={t`Color gradient for the map legend`}
         />
         <div className="flex justify-between text-xs">
           <span>{formatLegendValue(min, unit, currencyCode, isPerCapita)}</span>

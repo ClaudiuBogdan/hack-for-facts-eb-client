@@ -1,11 +1,12 @@
 import { formatCurrency, formatNumber } from '@/lib/utils';
+import { t } from '@lingui/core/macro';
 
 export function formatAdvancedMapAnalyticsSeriesValue(
   value: number | undefined,
   unit: string | undefined
 ): string {
   if (value === undefined || value === null || !Number.isFinite(value)) {
-    return 'Missing';
+    return t`Missing`;
   }
 
   if (!unit || unit.trim().length === 0) {

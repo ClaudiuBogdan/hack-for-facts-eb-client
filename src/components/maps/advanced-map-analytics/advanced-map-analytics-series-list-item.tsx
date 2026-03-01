@@ -13,6 +13,7 @@ import {
 import { cn } from '@/lib/utils';
 import type { MapSupportedSeries } from '@/schemas/advanced-map-analytics';
 import { SERIES_TYPE_ICONS, SERIES_TYPE_LABELS } from './advanced-map-analytics-series-utils';
+import { t } from '@lingui/core/macro';
 
 interface AdvancedMapAnalyticsSeriesListItemProps {
   series: MapSupportedSeries;
@@ -69,7 +70,7 @@ export const AdvancedMapAnalyticsSeriesListItem = memo(function AdvancedMapAnaly
         ) : (
           <button
             type="button"
-            aria-label="Reorder series"
+            aria-label={t`Reorder series`}
             className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing"
             onClick={(event) => event.stopPropagation()}
             {...attributes}
@@ -93,7 +94,7 @@ export const AdvancedMapAnalyticsSeriesListItem = memo(function AdvancedMapAnaly
             event.stopPropagation();
             onSetActive(series.id);
           }}
-          aria-label={isActive ? 'Series is active' : 'Set active series'}
+          aria-label={isActive ? t`Series is active` : t`Set active series`}
           disabled={readOnly}
         >
           <TypeIcon className="h-3.5 w-3.5" />
@@ -103,7 +104,7 @@ export const AdvancedMapAnalyticsSeriesListItem = memo(function AdvancedMapAnaly
           type="button"
           className="flex-1 min-w-0 text-left"
           onClick={() => onEdit(series.id)}
-          aria-label="Edit series"
+          aria-label={t`Edit series`}
           disabled={readOnly}
         >
           <p className="truncate text-sm font-semibold" title={displayLabel}>
@@ -118,7 +119,7 @@ export const AdvancedMapAnalyticsSeriesListItem = memo(function AdvancedMapAnaly
           checked={series.enabled}
           onClick={(event) => event.stopPropagation()}
           onCheckedChange={(checked) => onToggleEnabled(series.id, checked)}
-          aria-label={series.enabled ? 'Disable series' : 'Enable series'}
+          aria-label={series.enabled ? t`Disable series` : t`Enable series`}
           disabled={readOnly}
         />
 
@@ -129,7 +130,7 @@ export const AdvancedMapAnalyticsSeriesListItem = memo(function AdvancedMapAnaly
               size="icon"
               variant="ghost"
               className="h-7 w-7"
-              aria-label="Open row menu"
+              aria-label={t`Open row menu`}
               onClick={(event) => event.stopPropagation()}
             >
               <MoreVertical className="h-4 w-4" />
@@ -138,14 +139,14 @@ export const AdvancedMapAnalyticsSeriesListItem = memo(function AdvancedMapAnaly
           <DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
             <DropdownMenuItem onSelect={() => onEdit(series.id)}>
               <Pencil className="mr-2 h-4 w-4" />
-              Edit
+              {t`Edit`}
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive focus:text-destructive"
               onSelect={() => onDelete(series.id)}
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              Delete
+              {t`Delete`}
             </DropdownMenuItem>
           </DropdownMenuContent>
           </DropdownMenu>
