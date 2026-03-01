@@ -22,6 +22,8 @@ interface UseExperimentalMapSeriesDataParams {
   defaultInflationAdjusted: boolean;
   urlSearchLength?: number;
   enabled?: boolean;
+  localValuesBySeriesId?: MapSeriesVectorCache;
+  localUnitsBySeriesId?: Map<string, string | undefined>;
 }
 
 interface ExperimentalMapSeriesDataResult {
@@ -56,24 +58,29 @@ export function useExperimentalMapSeriesData(
     [normalizedEnabledSeries]
   );
 
+  const normalizedRemoteBaseSeries = useMemo(
+    () => normalizedBaseSeries.filter(isRemoteFetchSeries),
+    [normalizedBaseSeries]
+  );
+
   const baseSeriesHash = useMemo(
     () =>
       generateHash(
         stableSerialize(
-          normalizedBaseSeries.map((series) => ({
+          normalizedRemoteBaseSeries.map((series) => ({
             id: series.id,
             type: series.type,
             payload: normalizeSeriesForFetch(series),
           }))
         )
       ),
-    [normalizedBaseSeries]
+    [normalizedRemoteBaseSeries]
   );
 
   const groupedDataQuery = useQuery<GroupedSeriesDataResponse, Error>({
     queryKey: ['experimental-map-series-data', baseSeriesHash],
     queryFn: async () => {
-      if (normalizedBaseSeries.length === 0) {
+      if (normalizedRemoteBaseSeries.length === 0) {
         return {
           manifest: {
             generated_at: new Date().toISOString(),
@@ -92,7 +99,7 @@ export function useExperimentalMapSeriesData(
 
       return fetchGroupedSeriesData({
         granularity: 'UAT',
-        series: normalizedBaseSeries,
+        series: normalizedRemoteBaseSeries,
       });
     },
     staleTime: convertDaysToMs(1),
@@ -151,6 +158,33 @@ export function useExperimentalMapSeriesData(
       }
     }
 
+    if (params.localValuesBySeriesId?.size) {
+      for (const [seriesId, localVector] of params.localValuesBySeriesId.entries()) {
+        if (!baseVectors.has(seriesId)) {
+          baseVectors.set(seriesId, new Map());
+        }
+
+        const targetVector = baseVectors.get(seriesId);
+        if (targetVector === undefined) {
+          continue;
+        }
+
+        targetVector.clear();
+        for (const [sirutaCode, value] of localVector.entries()) {
+          targetVector.set(sirutaCode, value);
+        }
+      }
+    }
+
+    if (params.localUnitsBySeriesId?.size) {
+      for (const [seriesId, localUnit] of params.localUnitsBySeriesId.entries()) {
+        const normalizedLocalUnit = normalizeUnit(localUnit);
+        if (normalizedLocalUnit !== undefined || !baseUnits.has(seriesId)) {
+          baseUnits.set(seriesId, normalizedLocalUnit);
+        }
+      }
+    }
+
     const calculationResult = calculateMapSeriesValues({
       series: normalizedEnabledSeries,
       baseValuesBySeriesId: baseVectors,
@@ -174,6 +208,8 @@ export function useExperimentalMapSeriesData(
     };
   }, [
     groupedDataQuery.data,
+    params.localUnitsBySeriesId,
+    params.localValuesBySeriesId,
     normalizedEnabledSeries,
     normalizedBaseSeries,
     params.urlSearchLength,
@@ -241,7 +277,9 @@ function normalizeSeriesDefaults(
   } as MapSupportedSeries;
 }
 
-function normalizeSeriesForFetch(series: MapBaseSeries): unknown {
+function normalizeSeriesForFetch(
+  series: Exclude<MapBaseSeries, { type: 'geojson-dataset-series' }>
+): unknown {
   const unit = resolveSeriesUnitOverride(series);
 
   if (series.type === 'line-items-aggregated-yearly') {
@@ -273,6 +311,16 @@ function normalizeSeriesForFetch(series: MapBaseSeries): unknown {
     classificationSelections: series.classificationSelections,
     hasValue: series.hasValue,
   };
+}
+
+function isRemoteFetchSeries(
+  series: MapBaseSeries
+): series is Exclude<MapBaseSeries, { type: 'geojson-dataset-series' }> {
+  return (
+    series.type === 'line-items-aggregated-yearly' ||
+    series.type === 'commitments-analytics' ||
+    series.type === 'ins-series'
+  );
 }
 
 function stableSerialize(value: unknown): string {

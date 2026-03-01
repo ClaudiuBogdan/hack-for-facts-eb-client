@@ -3,6 +3,7 @@ import { createDefaultExperimentalMapSeries, ExperimentalMapUrlStateSchema } fro
 import {
   applySetActiveSeries,
   applyToggleSeriesEnabled,
+  convertSeriesToType,
   reorderSeriesByIds,
 } from './experimental-map-series-utils';
 
@@ -44,5 +45,17 @@ describe('experimental-map-series-utils', () => {
 
     expect(nextState.activeSeriesId).toBeUndefined();
     expect(nextState.series[0]?.enabled).toBe(false);
+  });
+
+  it('does not preserve geojson default units when changing series type', () => {
+    const geojsonSeries = createDefaultExperimentalMapSeries('geojson-dataset-series');
+    if (geojsonSeries.type !== 'geojson-dataset-series') {
+      throw new Error('Expected geojson series');
+    }
+
+    geojsonSeries.unit = 'inhabitants';
+    const converted = convertSeriesToType(geojsonSeries, 'line-items-aggregated-yearly');
+
+    expect((converted.unit ?? '').trim()).toBe('');
   });
 });

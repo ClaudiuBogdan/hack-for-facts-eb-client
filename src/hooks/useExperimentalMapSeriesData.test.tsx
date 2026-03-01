@@ -376,4 +376,127 @@ describe('useExperimentalMapSeriesData', () => {
 
     expect(result.current.unitsBySeriesId.get(insSeries.id)).toBeUndefined();
   });
+
+  it('loads local geojson dataset vectors without remote fetch rows', async () => {
+    const geojsonSeries = createDefaultExperimentalMapSeries('geojson-dataset-series');
+    if (geojsonSeries.type !== 'geojson-dataset-series') {
+      throw new Error('Unexpected series type in test setup');
+    }
+
+    const wrapper = createWrapper();
+    const { result } = renderHook(
+      () =>
+        useExperimentalMapSeriesData({
+          series: [geojsonSeries],
+          activeSeriesId: geojsonSeries.id,
+          defaultCurrency: 'RON',
+          defaultInflationAdjusted: false,
+          localValuesBySeriesId: new Map([
+            [
+              geojsonSeries.id,
+              new Map<string, number | undefined>([
+                ['1001', 5400],
+                ['1002', 2100],
+              ]),
+            ],
+          ]),
+          localUnitsBySeriesId: new Map([[geojsonSeries.id, 'inhabitants']]),
+        }),
+      { wrapper }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(fetchGroupedSeriesDataMock).not.toHaveBeenCalled();
+    expect(result.current.valuesBySeriesId.get(geojsonSeries.id)?.get('1001')).toBe(5400);
+    expect(result.current.unitsBySeriesId.get(geojsonSeries.id)).toBe('inhabitants');
+  });
+
+  it('excludes geojson dataset series from grouped-series API payload', async () => {
+    const executionSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+    const geojsonSeries = createDefaultExperimentalMapSeries('geojson-dataset-series');
+    if (geojsonSeries.type !== 'geojson-dataset-series') {
+      throw new Error('Unexpected series type in test setup');
+    }
+
+    fetchGroupedSeriesDataMock.mockResolvedValueOnce(
+      makeGroupedResponse({
+        series: [{ id: executionSeries.id, unit: 'RON' }],
+        rows: [{ series_id: executionSeries.id, siruta_code: '1001', value: 10 }],
+      })
+    );
+
+    const wrapper = createWrapper();
+    const { result } = renderHook(
+      () =>
+        useExperimentalMapSeriesData({
+          series: [executionSeries, geojsonSeries],
+          activeSeriesId: executionSeries.id,
+          defaultCurrency: 'RON',
+          defaultInflationAdjusted: false,
+          localValuesBySeriesId: new Map([
+            [geojsonSeries.id, new Map([['1001', 32]])],
+          ]),
+          localUnitsBySeriesId: new Map([[geojsonSeries.id, 'code']]),
+        }),
+      { wrapper }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(fetchGroupedSeriesDataMock).toHaveBeenCalledTimes(1);
+    const firstCallArg = fetchGroupedSeriesDataMock.mock.calls[0]?.[0];
+    expect(firstCallArg?.series).toHaveLength(1);
+    expect(firstCallArg?.series[0]?.id).toBe(executionSeries.id);
+  });
+
+  it('supports calculations depending on geojson dataset series', async () => {
+    const geojsonSeries = createDefaultExperimentalMapSeries('geojson-dataset-series');
+    const calculationSeries = createDefaultExperimentalMapSeries('aggregated-series-calculation');
+
+    if (geojsonSeries.type !== 'geojson-dataset-series') {
+      throw new Error('Unexpected geojson series type in test setup');
+    }
+    if (calculationSeries.type !== 'aggregated-series-calculation') {
+      throw new Error('Unexpected calculation series type in test setup');
+    }
+
+    calculationSeries.calculation = {
+      op: 'sum',
+      args: [geojsonSeries.id, 1],
+    };
+
+    const wrapper = createWrapper();
+    const { result } = renderHook(
+      () =>
+        useExperimentalMapSeriesData({
+          series: [geojsonSeries, calculationSeries],
+          activeSeriesId: calculationSeries.id,
+          defaultCurrency: 'RON',
+          defaultInflationAdjusted: false,
+          localValuesBySeriesId: new Map([
+            [
+              geojsonSeries.id,
+              new Map<string, number | undefined>([
+                ['1001', 9],
+                ['1002', 4],
+              ]),
+            ],
+          ]),
+          localUnitsBySeriesId: new Map([[geojsonSeries.id, 'inhabitants']]),
+        }),
+      { wrapper }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.valuesBySeriesId.get(calculationSeries.id)?.get('1001')).toBe(10);
+    expect(result.current.valuesBySeriesId.get(calculationSeries.id)?.get('1002')).toBe(5);
+  });
 });

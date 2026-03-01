@@ -23,11 +23,15 @@ import { ExperimentalMapDataTable } from '@/components/maps/experimental/experim
 import { formatExperimentalMapSeriesValue } from '@/components/maps/experimental/experimental-map-formatting';
 import type {
   ExperimentalMapUrlState,
+  GeoJsonFilterOption,
+  GeoJsonDatasetSeriesConfiguration,
   MapSupportedSeries,
 } from '@/schemas/experimental-map';
 import {
   createDefaultExperimentalMapSeries,
   ExperimentalMapUrlStateSchema,
+  getGeoJsonDatasetLabel,
+  getGeoJsonDatasetUnit,
 } from '@/schemas/experimental-map';
 import { getSiteUrl } from '@/config/env';
 import { useUserCurrency } from '@/lib/hooks/useUserCurrency';
@@ -231,6 +235,100 @@ export function ExperimentalMapPage() {
   }, [mapState]);
 
   const {
+    data: geoJsonData,
+    isLoading: isGeoJsonLoading,
+    error: geoJsonError,
+  } = useGeoJsonData('UAT');
+
+  const geoJsonFeatures = useMemo<UatFeature[]>(() => {
+    if (!geoJsonData || !('features' in geoJsonData) || !Array.isArray(geoJsonData.features)) {
+      return [];
+    }
+    return geoJsonData.features as UatFeature[];
+  }, [geoJsonData]);
+
+  const geoJsonCountyOptions = useMemo(
+    () => buildGeoJsonIdNameOptions(geoJsonFeatures, 'countyId', 'county'),
+    [geoJsonFeatures]
+  );
+
+  const geoJsonRegionOptions = useMemo(
+    () => buildGeoJsonIdNameOptions(geoJsonFeatures, 'regionId', 'region'),
+    [geoJsonFeatures]
+  );
+
+  const enabledGeoJsonDatasetSeries = useMemo(
+    () =>
+      mapState.series.filter(
+        (series): series is GeoJsonDatasetSeriesConfiguration =>
+          series.enabled && series.type === 'geojson-dataset-series'
+      ),
+    [mapState.series]
+  );
+
+  const localGeoJsonValuesBySeriesId = useMemo(() => {
+    const valuesBySeriesId = new Map<string, Map<string, number | undefined>>();
+
+    if (enabledGeoJsonDatasetSeries.length === 0 || geoJsonFeatures.length === 0) {
+      return valuesBySeriesId;
+    }
+
+    for (const series of enabledGeoJsonDatasetSeries) {
+      const vector = new Map<string, number | undefined>();
+      const selectedPopulationKey = series.datasetKey;
+      const countyFilterIdSet = new Set(series.countyFilterIds);
+      const regionFilterIdSet = new Set(series.regionFilterIds);
+
+      for (const feature of geoJsonFeatures) {
+        const properties = feature?.properties;
+        const sirutaCode = String(properties?.natcode ?? '').trim();
+        if (!sirutaCode) {
+          continue;
+        }
+
+        if (countyFilterIdSet.size > 0) {
+          const countyId = readFiniteNumber(properties?.countyId);
+          if (countyId === undefined || !countyFilterIdSet.has(countyId)) {
+            continue;
+          }
+        }
+
+        if (regionFilterIdSet.size > 0) {
+          const regionId = readFiniteNumber(properties?.regionId);
+          if (regionId === undefined || !regionFilterIdSet.has(regionId)) {
+            continue;
+          }
+        }
+
+        const populationValue = readFiniteNumber(properties?.[selectedPopulationKey]);
+        if (populationValue === undefined) {
+          continue;
+        }
+
+        vector.set(sirutaCode, populationValue);
+      }
+
+      valuesBySeriesId.set(series.id, vector);
+    }
+
+    return valuesBySeriesId;
+  }, [enabledGeoJsonDatasetSeries, geoJsonFeatures]);
+
+  const localGeoJsonUnitsBySeriesId = useMemo(() => {
+    const unitsBySeriesId = new Map<string, string | undefined>();
+    for (const series of enabledGeoJsonDatasetSeries) {
+      const unitOverride = typeof series.unit === 'string' ? series.unit.trim() : '';
+      unitsBySeriesId.set(
+        series.id,
+        unitOverride.length > 0
+          ? unitOverride
+          : getGeoJsonDatasetUnit(series.datasetKey)
+      );
+    }
+    return unitsBySeriesId;
+  }, [enabledGeoJsonDatasetSeries]);
+
+  const {
     valuesBySeriesId,
     unitsBySeriesId,
     warnings: seriesWarnings,
@@ -245,13 +343,9 @@ export function ExperimentalMapPage() {
     defaultInflationAdjusted: userInflationAdjusted,
     urlSearchLength: serializedSearchLength,
     enabled: editorState == null,
+    localValuesBySeriesId: localGeoJsonValuesBySeriesId,
+    localUnitsBySeriesId: localGeoJsonUnitsBySeriesId,
   });
-
-  const {
-    data: geoJsonData,
-    isLoading: isGeoJsonLoading,
-    error: geoJsonError,
-  } = useGeoJsonData('UAT');
 
   const activeSeries = useMemo(
     () => mapState.series.find((series) => series.id === activeSeriesId && series.enabled),
@@ -428,13 +522,6 @@ export function ExperimentalMapPage() {
     }));
   }, [activeSeriesId, enabledSeries, unitsBySeriesId]);
 
-  const geoJsonFeatures = useMemo<UatFeature[]>(() => {
-    if (!geoJsonData || !('features' in geoJsonData) || !Array.isArray(geoJsonData.features)) {
-      return [];
-    }
-    return geoJsonData.features as UatFeature[];
-  }, [geoJsonData]);
-
   const uatMetadataBySirutaCode = useMemo(() => {
     const metadataBySirutaCode = new Map<string, Omit<ExperimentalMapTableRow, 'sirutaCode' | 'valuesBySeriesId'>>();
 
@@ -577,12 +664,26 @@ export function ExperimentalMapPage() {
       mapViewType: 'UAT' | 'County';
       filters: AnalyticsFilterType;
     }) => {
+      const uatName = String(properties.name ?? 'UAT').trim();
+      const natLevelName = normalizeNatLevelPrefix(properties.natLevName);
+      const countyName = typeof properties.county === 'string'
+        ? properties.county.trim()
+        : '';
+      const entityCui = getEntityCuiFromUatProperties(properties);
+      const tooltipTitle = natLevelName.length > 0 ? `${natLevelName} ${uatName}` : uatName;
+      const countyRowHtml = countyName.length > 0
+        ? `<div style="font-size:12px;color:#6b7280;margin-bottom:10px;">Județ: ${escapeHtml(countyName)}</div>`
+        : '';
+
       if (!activeSeries) {
         return `
           <div style="font-family:Inter,sans-serif;font-size:13px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:220px;max-width:320px;padding:8px;">
-            <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${escapeHtml(
-              String(properties.name ?? 'UAT')
-            )}</div>
+            <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${escapeHtml(tooltipTitle)}</div>
+            <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '6px'};">CUI: ${escapeHtml(entityCui ?? 'N/A')}</div>
+            ${countyName.length > 0
+              ? `<div style="font-size:12px;color:#6b7280;margin-bottom:6px;">Județ: ${escapeHtml(countyName)}</div>`
+              : ''
+            }
             <div style="color:#6b7280;">No active series selected.</div>
           </div>
         `;
@@ -663,12 +764,9 @@ export function ExperimentalMapPage() {
 
       return `
         <div style="font-family:Inter,sans-serif;font-size:13px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:260px;max-width:360px;padding:8px;">
-          <div style="font-weight:700;font-size:14px;margin-bottom:2px;">${escapeHtml(
-            String(properties.name ?? 'UAT')
-          )}</div>
-          <div style="font-size:12px;color:#6b7280;margin-bottom:10px;">SIRUTA: ${escapeHtml(
-            sirutaCode
-          )}</div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:2px;">${escapeHtml(tooltipTitle)}</div>
+          <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '10px'};">CUI: ${escapeHtml(entityCui ?? 'N/A')}</div>
+          ${countyRowHtml}
           <div style="display:flex;flex-direction:column;gap:6px;">
             ${rowsHtml || '<span>No enabled series</span>'}
           </div>
@@ -710,7 +808,8 @@ export function ExperimentalMapPage() {
 
   const mapError = error || geoJsonError;
   const isMapLoading = isLoading || isGeoJsonLoading;
-  const isTableLoading = isLoading;
+  const isTableLoading = isLoading || (enabledGeoJsonDatasetSeries.length > 0 && isGeoJsonLoading);
+  const tableError = error || (enabledGeoJsonDatasetSeries.length > 0 ? geoJsonError : null);
   const activeUnit = activeSeries
     ? resolveSeriesDisplayUnit(activeSeries, unitsBySeriesId)
     : undefined;
@@ -864,9 +963,9 @@ export function ExperimentalMapPage() {
                 <div className="flex h-full items-center justify-center">
                   <LoadingSpinner size="lg" text="Loading table data..." />
                 </div>
-              ) : error ? (
+              ) : tableError ? (
                 <div className="flex h-full items-center justify-center text-red-600">
-                  {error.message}
+                  {tableError.message}
                 </div>
               ) : enabledSeries.length === 0 ? (
                 <div className="flex h-full items-center justify-center text-muted-foreground">
@@ -899,6 +998,8 @@ export function ExperimentalMapPage() {
         mode={editorState?.mode ?? 'edit'}
         series={modalSeries}
         allSeries={mapState.series}
+        geoJsonCountyOptions={geoJsonCountyOptions}
+        geoJsonRegionOptions={geoJsonRegionOptions}
         onOpenChange={(open) => {
           if (!open) {
             setEditorState(null);
@@ -1005,6 +1106,10 @@ function resolveSeriesDisplayLabel(series: MapSupportedSeries): string {
     return trimmedLabel;
   }
 
+  if (series.type === 'geojson-dataset-series') {
+    return getGeoJsonDatasetLabel(series.datasetKey);
+  }
+
   return series.id;
 }
 
@@ -1021,6 +1126,10 @@ function resolveSeriesDisplayUnit(
   }
 
   const fallbackUnit = typeof series.unit === 'string' ? series.unit.trim() : '';
+  if (series.type === 'geojson-dataset-series' && fallbackUnit.length === 0) {
+    return getGeoJsonDatasetUnit(series.datasetKey);
+  }
+
   if (fallbackUnit.length === 0) {
     return undefined;
   }
@@ -1030,6 +1139,78 @@ function resolveSeriesDisplayUnit(
   }
 
   return fallbackUnit;
+}
+
+function readFiniteNumber(value: unknown): number | undefined {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const trimmedValue = value.trim();
+    if (trimmedValue.length === 0) {
+      return undefined;
+    }
+
+    const parsedValue = Number(trimmedValue);
+    if (Number.isFinite(parsedValue)) {
+      return parsedValue;
+    }
+  }
+
+  return undefined;
+}
+
+function buildGeoJsonIdNameOptions(
+  features: UatFeature[],
+  idKey: 'countyId' | 'regionId',
+  nameKey: 'county' | 'region'
+): GeoJsonFilterOption[] {
+  const namesById = new Map<number, string>();
+
+  for (const feature of features) {
+    const properties = feature?.properties;
+    const rawId = readFiniteNumber(properties?.[idKey]);
+    if (rawId === undefined) {
+      continue;
+    }
+
+    const name = typeof properties?.[nameKey] === 'string'
+      ? properties[nameKey].trim()
+      : '';
+    if (name.length === 0 || namesById.has(rawId)) {
+      continue;
+    }
+
+    namesById.set(rawId, name);
+  }
+
+  return [...namesById.entries()]
+    .map(([id, name]) => ({ id, name }))
+    .sort((left, right) => {
+      const nameCompare = left.name.localeCompare(right.name, 'ro', { sensitivity: 'base' });
+      if (nameCompare !== 0) {
+        return nameCompare;
+      }
+
+      return left.id - right.id;
+    });
+}
+
+function normalizeNatLevelPrefix(rawNatLevelName: unknown): string {
+  if (typeof rawNatLevelName !== 'string') {
+    return '';
+  }
+
+  const normalized = rawNatLevelName
+    .replace(/\s*,?\s*altul decat resedinta de judet/gi, '')
+    .replace(/\s*,?\s*resedinta de judet/gi, '')
+    .replace(/\s*,?\s*sectoarele municipiului Bucuresti/gi, '')
+
+    .trim()
+    .replace(/\s+/g, ' ');
+
+  return normalized;
 }
 
 function buildExperimentalMapHead() {

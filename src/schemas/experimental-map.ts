@@ -13,10 +13,66 @@ import {
 } from '@/schemas/charts';
 import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES } from '@/lib/analytics-defaults';
 
+export const GEOJSON_POPULATION_DATASET_KEYS = [
+  'insPop2021',
+] as const;
+
+export const GeoJsonDatasetKeySchema = z.enum(GEOJSON_POPULATION_DATASET_KEYS);
+export type GeoJsonDatasetKey = z.infer<typeof GeoJsonDatasetKeySchema>;
+
+export interface GeoJsonFilterOption {
+  id: number;
+  name: string;
+}
+
+const GEOJSON_DATASET_LABELS_BY_KEY: Record<GeoJsonDatasetKey, string> = {
+  insPop2021: 'INS Population 2021',
+};
+
+const GEOJSON_DATASET_UNITS_BY_KEY: Record<GeoJsonDatasetKey, string> = {
+  insPop2021: 'inhabitants',
+};
+
+export function getGeoJsonDatasetUnit(datasetKey: GeoJsonDatasetKey): string {
+  return GEOJSON_DATASET_UNITS_BY_KEY[datasetKey];
+}
+
+export function getGeoJsonDatasetLabel(datasetKey: GeoJsonDatasetKey): string {
+  return GEOJSON_DATASET_LABELS_BY_KEY[datasetKey];
+}
+
+const GeoJsonFilterIdsSchema = z
+  .array(z.number().int())
+  .transform((ids) => [...new Set(ids)].sort((left, right) => left - right))
+  .default([]);
+
+export const GeoJsonDatasetSeriesConfigurationSchema = z.object({
+  id: z.string().default(() => crypto.randomUUID()),
+  type: z.literal('geojson-dataset-series'),
+  enabled: z.boolean().default(true),
+  label: z.string().default('GeoJSON dataset'),
+  unit: z.string().optional().default(''),
+  datasetKey: GeoJsonDatasetKeySchema.default('insPop2021'),
+  countyFilterIds: GeoJsonFilterIdsSchema,
+  regionFilterIds: GeoJsonFilterIdsSchema,
+  config: z.object({
+    showDataLabels: z.boolean().default(false),
+    color: z.string().default('#2563eb'),
+  }).default({
+    showDataLabels: false,
+    color: '#2563eb',
+  }),
+  createdAt: z.string().default(() => new Date().toISOString()),
+  updatedAt: z.string().default(() => new Date().toISOString()),
+});
+
+export type GeoJsonDatasetSeriesConfiguration = z.infer<typeof GeoJsonDatasetSeriesConfigurationSchema>;
+
 export const MapSupportedSeriesSchema = z.discriminatedUnion('type', [
   SeriesConfigurationSchema,
   CommitmentsSeriesConfigurationSchema,
   InsSeriesConfigurationSchema,
+  GeoJsonDatasetSeriesConfigurationSchema,
   SeriesGroupConfigurationSchema,
 ]);
 
@@ -168,7 +224,18 @@ export function createDefaultExperimentalMapSeries(
       label: 'INS series',
       aggregation: 'sum',
       hasValue: true,
+      unit: '',
     }) as InsSeriesConfiguration;
+    return series;
+  }
+
+  if (type === 'geojson-dataset-series') {
+    const defaultDatasetKey: GeoJsonDatasetKey = 'insPop2021';
+    const series = GeoJsonDatasetSeriesConfigurationSchema.parse({
+      type,
+      label: 'GeoJSON dataset',
+      datasetKey: defaultDatasetKey,
+    }) as GeoJsonDatasetSeriesConfiguration;
     return series;
   }
 

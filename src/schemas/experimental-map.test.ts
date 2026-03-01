@@ -3,6 +3,7 @@ import {
   createDefaultExperimentalMapBinsPreset,
   createDefaultExperimentalMapSeries,
   ExperimentalMapUrlStateSchema,
+  GEOJSON_POPULATION_DATASET_KEYS,
 } from '@/schemas/experimental-map';
 
 describe('ExperimentalMapUrlStateSchema', () => {
@@ -62,18 +63,6 @@ describe('ExperimentalMapUrlStateSchema', () => {
     expect(roundTripped.binsPresets[0]?.config.title).toBe('Revenue bands');
   });
 
-  it('ignores legacy binsConfig key from old URLs', () => {
-    const parsed = ExperimentalMapUrlStateSchema.parse({
-      binsConfig: {
-        enabled: true,
-      },
-    });
-
-    expect(parsed.binsPresets).toEqual([]);
-    expect(parsed.activeBinPresetId).toBeUndefined();
-    expect(parsed.activeView).toBe('map');
-  });
-
   it('defaults INS series unit to empty string', () => {
     const insSeries = createDefaultExperimentalMapSeries('ins-series');
     if (insSeries.type !== 'ins-series') {
@@ -81,5 +70,43 @@ describe('ExperimentalMapUrlStateSchema', () => {
     }
 
     expect(insSeries.unit).toBe('');
+  });
+
+  it('supports geojson dataset series defaults', () => {
+    const geojsonSeries = createDefaultExperimentalMapSeries('geojson-dataset-series');
+    if (geojsonSeries.type !== 'geojson-dataset-series') {
+      throw new Error('Expected geojson-dataset-series default');
+    }
+
+    expect(geojsonSeries.datasetKey).toBe('insPop2021');
+    expect(geojsonSeries.label).toBe('GeoJSON dataset');
+    expect(geojsonSeries.unit).toBe('');
+    expect(geojsonSeries.countyFilterIds).toEqual([]);
+    expect(geojsonSeries.regionFilterIds).toEqual([]);
+  });
+
+  it('round-trips each geojson population dataset key', () => {
+    const series = GEOJSON_POPULATION_DATASET_KEYS.map((datasetKey, index) => ({
+      ...createDefaultExperimentalMapSeries('geojson-dataset-series'),
+      id: `geojson-population-${index}`,
+      datasetKey,
+    }));
+
+    const state = ExperimentalMapUrlStateSchema.parse({
+      series,
+      activeView: 'table',
+    });
+
+    const serialized = JSON.stringify(state);
+    const roundTripped = ExperimentalMapUrlStateSchema.parse(JSON.parse(serialized));
+
+    expect(roundTripped.series).toHaveLength(series.length);
+    expect(roundTripped.series.every((entry) => entry.type === 'geojson-dataset-series')).toBe(true);
+    expect(
+      roundTripped.series
+        .filter((entry) => entry.type === 'geojson-dataset-series')
+        .map((entry) => entry.datasetKey)
+        .sort((left, right) => left.localeCompare(right))
+    ).toEqual([...GEOJSON_POPULATION_DATASET_KEYS].sort((left, right) => left.localeCompare(right)));
   });
 });

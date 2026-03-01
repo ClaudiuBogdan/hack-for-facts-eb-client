@@ -1,15 +1,16 @@
-import { BarChart3, Database, FileText, Sigma } from 'lucide-react';
+import { BarChart3, Database, FileText, Sigma, Shapes } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type {
   ExperimentalMapUrlState,
   MapSupportedSeries,
 } from '@/schemas/experimental-map';
-import { createDefaultExperimentalMapSeries } from '@/schemas/experimental-map';
+import { createDefaultExperimentalMapSeries, getGeoJsonDatasetUnit } from '@/schemas/experimental-map';
 
 export const SERIES_TYPE_LABELS: Record<MapSupportedSeries['type'], string> = {
   'line-items-aggregated-yearly': 'Execution analytics',
   'commitments-analytics': 'Commitments analytics',
   'ins-series': 'INS series',
+  'geojson-dataset-series': 'GeoJSON dataset',
   'aggregated-series-calculation': 'Calculated series',
 };
 
@@ -17,6 +18,7 @@ export const SERIES_TYPE_ICONS: Record<MapSupportedSeries['type'], LucideIcon> =
   'line-items-aggregated-yearly': BarChart3,
   'commitments-analytics': FileText,
   'ins-series': Database,
+  'geojson-dataset-series': Shapes,
   'aggregated-series-calculation': Sigma,
 };
 
@@ -95,7 +97,12 @@ export function convertSeriesToType(
   replacementSeries.createdAt = currentSeries.createdAt;
   replacementSeries.updatedAt = new Date().toISOString();
 
-  if ((currentSeries.unit ?? '').trim().length > 0) {
+  const normalizedUnit = (currentSeries.unit ?? '').trim();
+  const shouldPreserveGeoJsonUnit =
+    currentSeries.type !== 'geojson-dataset-series' ||
+    normalizedUnit !== getGeoJsonDatasetUnit(currentSeries.datasetKey);
+
+  if (normalizedUnit.length > 0 && shouldPreserveGeoJsonUnit) {
     replacementSeries.unit = currentSeries.unit;
   }
 

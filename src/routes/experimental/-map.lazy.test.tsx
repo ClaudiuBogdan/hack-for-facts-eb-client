@@ -8,6 +8,11 @@ import {
 
 const navigateMock = vi.fn();
 let mockedSearchState: Record<string, unknown> = {};
+let mockGeoJsonState = {
+  data: null as unknown,
+  isLoading: false,
+  error: null as Error | null,
+};
 
 vi.mock('@tanstack/react-router', () => ({
   createLazyFileRoute: () => () => ({}),
@@ -16,11 +21,7 @@ vi.mock('@tanstack/react-router', () => ({
 }));
 
 vi.mock('@/hooks/useGeoJson', () => ({
-  useGeoJsonData: () => ({
-    data: null,
-    isLoading: false,
-    error: null,
-  }),
+  useGeoJsonData: () => mockGeoJsonState,
 }));
 
 vi.mock('@/hooks/use-mobile', () => ({
@@ -56,14 +57,25 @@ let mockExperimentalSeriesData = {
   error: null as Error | null,
 };
 
+let latestUseExperimentalMapSeriesDataParams: unknown = null;
+const useExperimentalMapSeriesDataMock = vi.fn((params: unknown) => {
+  latestUseExperimentalMapSeriesDataParams = params;
+  return mockExperimentalSeriesData;
+});
+
 vi.mock('@/hooks/useExperimentalMapSeriesData', () => ({
-  useExperimentalMapSeriesData: () => mockExperimentalSeriesData,
+  useExperimentalMapSeriesData: (params: unknown) => useExperimentalMapSeriesDataMock(params),
 }));
 
 describe('ExperimentalMapPage', () => {
   beforeEach(() => {
     mockedSearchState = {};
     navigateMock.mockReset();
+    mockGeoJsonState = {
+      data: null,
+      isLoading: false,
+      error: null,
+    };
     mockExperimentalSeriesData = {
       valuesBySeriesId: new Map(),
       unitsBySeriesId: new Map(),
@@ -74,6 +86,8 @@ describe('ExperimentalMapPage', () => {
       isFetching: false,
       error: null,
     };
+    latestUseExperimentalMapSeriesDataParams = null;
+    useExperimentalMapSeriesDataMock.mockClear();
   });
 
   it('renders config, series, and bins panels in order and warning details in modal only', async () => {
@@ -163,6 +177,213 @@ describe('ExperimentalMapPage', () => {
 
     expect(screen.getByText('UAT 1001')).toBeInTheDocument();
     expect(screen.queryByText('UAT 1002')).not.toBeInTheDocument();
+  });
+
+  it('renders table rows for geojson dataset series', async () => {
+    const geojsonSeries = createDefaultExperimentalMapSeries('geojson-dataset-series');
+    if (geojsonSeries.type !== 'geojson-dataset-series') {
+      throw new Error('Unexpected series type in test setup');
+    }
+
+    mockedSearchState = {
+      activeView: 'table',
+      activeSeriesId: geojsonSeries.id,
+      series: [geojsonSeries],
+    };
+
+    mockGeoJsonState = {
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            geometry: null,
+            properties: {
+              natcode: '1001',
+              name: 'Geo UAT 1',
+              county: 'Geo County',
+              insPop2021: 3100,
+            },
+          },
+          {
+            type: 'Feature',
+            geometry: null,
+            properties: {
+              natcode: '1002',
+              name: 'Geo UAT 2',
+              county: 'Geo County',
+              insPop2021: 4200,
+            },
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    mockExperimentalSeriesData = {
+      valuesBySeriesId: new Map([
+        [
+          geojsonSeries.id,
+          new Map<string, number | undefined>([
+            ['1001', 3100],
+            ['1002', 4200],
+          ]),
+        ],
+      ]),
+      unitsBySeriesId: new Map([[geojsonSeries.id, 'inhabitants']]),
+      warnings: [],
+      activeSeriesId: geojsonSeries.id,
+      activeValues: new Map<string, number | undefined>([
+        ['1001', 3100],
+        ['1002', 4200],
+      ]),
+      isLoading: false,
+      isFetching: false,
+      error: null,
+    };
+
+    const { ExperimentalMapPage } = await import('./map.lazy');
+    render(<ExperimentalMapPage />);
+
+    expect(screen.getByText('Geo UAT 1')).toBeInTheDocument();
+    expect(screen.getByText('Geo UAT 2')).toBeInTheDocument();
+  });
+
+  it('builds geojson local vectors from population values with county+region AND filters', async () => {
+    const geojsonSeries = createDefaultExperimentalMapSeries('geojson-dataset-series');
+    if (geojsonSeries.type !== 'geojson-dataset-series') {
+      throw new Error('Unexpected series type in test setup');
+    }
+
+    geojsonSeries.countyFilterIds = [40];
+    geojsonSeries.regionFilterIds = [8];
+    mockedSearchState = {
+      activeView: 'table',
+      activeSeriesId: geojsonSeries.id,
+      series: [geojsonSeries],
+    };
+
+    mockGeoJsonState = {
+      data: {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            geometry: null,
+            properties: {
+              natcode: '1001',
+              countyId: 40,
+              regionId: 8,
+              insPop2021: 100,
+            },
+          },
+          {
+            type: 'Feature',
+            geometry: null,
+            properties: {
+              natcode: '1002',
+              countyId: 40,
+              regionId: 7,
+              insPop2021: 200,
+            },
+          },
+          {
+            type: 'Feature',
+            geometry: null,
+            properties: {
+              natcode: '1003',
+              countyId: 20,
+              regionId: 8,
+              insPop2021: 300,
+            },
+          },
+          {
+            type: 'Feature',
+            geometry: null,
+            properties: {
+              natcode: '1004',
+              countyId: 40,
+              regionId: 8,
+              insPop2021: 400,
+            },
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const { ExperimentalMapPage } = await import('./map.lazy');
+    render(<ExperimentalMapPage />);
+
+    const hookParams = latestUseExperimentalMapSeriesDataParams as {
+      localValuesBySeriesId?: Map<string, Map<string, number | undefined>>;
+    } | null;
+
+    const localVector = hookParams?.localValuesBySeriesId?.get(geojsonSeries.id);
+    expect(localVector?.get('1001')).toBe(100);
+    expect(localVector?.get('1004')).toBe(400);
+    expect(localVector?.has('1002')).toBe(false);
+    expect(localVector?.has('1003')).toBe(false);
+  });
+
+  it('passes geojson unit override to local units cache', async () => {
+    const geojsonSeries = createDefaultExperimentalMapSeries('geojson-dataset-series');
+    if (geojsonSeries.type !== 'geojson-dataset-series') {
+      throw new Error('Unexpected series type in test setup');
+    }
+
+    geojsonSeries.unit = 'people';
+    mockedSearchState = {
+      activeView: 'table',
+      activeSeriesId: geojsonSeries.id,
+      series: [geojsonSeries],
+    };
+
+    const { ExperimentalMapPage } = await import('./map.lazy');
+    render(<ExperimentalMapPage />);
+
+    const hookParams = latestUseExperimentalMapSeriesDataParams as {
+      localUnitsBySeriesId?: Map<string, string | undefined>;
+    } | null;
+
+    expect(hookParams?.localUnitsBySeriesId?.get(geojsonSeries.id)).toBe('people');
+  });
+
+  it('shows geojson fetch errors in table view for geojson series', async () => {
+    const geojsonSeries = createDefaultExperimentalMapSeries('geojson-dataset-series');
+    if (geojsonSeries.type !== 'geojson-dataset-series') {
+      throw new Error('Unexpected series type in test setup');
+    }
+
+    mockedSearchState = {
+      activeView: 'table',
+      activeSeriesId: geojsonSeries.id,
+      series: [geojsonSeries],
+    };
+
+    mockGeoJsonState = {
+      data: null,
+      isLoading: false,
+      error: new Error('GeoJSON fetch failed'),
+    };
+
+    mockExperimentalSeriesData = {
+      valuesBySeriesId: new Map([[geojsonSeries.id, new Map()]]),
+      unitsBySeriesId: new Map([[geojsonSeries.id, 'inhabitants']]),
+      warnings: [],
+      activeSeriesId: geojsonSeries.id,
+      activeValues: new Map(),
+      isLoading: false,
+      isFetching: false,
+      error: null,
+    };
+
+    const { ExperimentalMapPage } = await import('./map.lazy');
+    render(<ExperimentalMapPage />);
+
+    expect(screen.getByText('GeoJSON fetch failed')).toBeInTheDocument();
   });
 
   it('does not fallback to default RON unit when INS unit is missing from API metadata', async () => {

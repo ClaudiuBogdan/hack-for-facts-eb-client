@@ -1,10 +1,23 @@
+import { useMemo } from 'react';
 import type {
   CommitmentsSeriesConfiguration,
   SeriesConfiguration,
+  Series,
 } from '@/schemas/charts';
 import { hasCalculationCycle } from '@/lib/chart-calculation-utils';
-import type { MapSupportedSeries } from '@/schemas/experimental-map';
+import {
+  GEOJSON_POPULATION_DATASET_KEYS,
+  getGeoJsonDatasetLabel,
+  type GeoJsonFilterOption,
+  type GeoJsonDatasetKey,
+  type MapSupportedSeries,
+} from '@/schemas/experimental-map';
 import { CalculationEditor } from '@/components/charts/components/series-config/CalculationEditor';
+import type { BaseListProps, OptionItem } from '@/components/filters/base-filter/interfaces';
+import { FilterListContainer } from '@/components/filters/base-filter/FilterListContainer';
+import { ListContainerSimple } from '@/components/filters/base-filter/ListContainerSimple';
+import { ListOption } from '@/components/filters/base-filter/ListOption';
+import { NoResults } from '@/components/filters/base-filter/NoResults';
 import {
   InsSeriesEditor,
   type InsSeriesEditorAdapter,
@@ -16,7 +29,14 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Globe, MapPinned } from 'lucide-react';
 import { SERIES_TYPE_LABELS } from './experimental-map-series-utils';
 
 interface ExperimentalMapSeriesEditorModalProps {
@@ -24,6 +44,8 @@ interface ExperimentalMapSeriesEditorModalProps {
   mode: 'add' | 'edit';
   series?: MapSupportedSeries;
   allSeries: MapSupportedSeries[];
+  geoJsonCountyOptions?: GeoJsonFilterOption[];
+  geoJsonRegionOptions?: GeoJsonFilterOption[];
   onOpenChange: (open: boolean) => void;
   onUpdateSeries: (seriesId: string, updater: (draft: MapSupportedSeries) => void) => void;
   onChangeSeriesType: (seriesId: string, type: MapSupportedSeries['type']) => void;
@@ -34,6 +56,8 @@ export function ExperimentalMapSeriesEditorModal({
   mode,
   series,
   allSeries,
+  geoJsonCountyOptions = [],
+  geoJsonRegionOptions = [],
   onOpenChange,
   onUpdateSeries,
   onChangeSeriesType,
@@ -52,6 +76,8 @@ export function ExperimentalMapSeriesEditorModal({
       ? 'Calculation'
       : series.type === 'ins-series'
         ? 'INS Settings'
+        : series.type === 'geojson-dataset-series'
+          ? 'GeoJSON dataset'
         : 'Filters';
 
   return (
@@ -133,6 +159,8 @@ export function ExperimentalMapSeriesEditorModal({
               <SeriesConfigEditor
                 series={series}
                 allSeries={allSeries}
+                geoJsonCountyOptions={geoJsonCountyOptions}
+                geoJsonRegionOptions={geoJsonRegionOptions}
                 onUpdateSeries={onUpdateSeries}
               />
             </div>
@@ -146,10 +174,18 @@ export function ExperimentalMapSeriesEditorModal({
 interface SeriesConfigEditorProps {
   series: MapSupportedSeries;
   allSeries: MapSupportedSeries[];
+  geoJsonCountyOptions: GeoJsonFilterOption[];
+  geoJsonRegionOptions: GeoJsonFilterOption[];
   onUpdateSeries: (seriesId: string, updater: (draft: MapSupportedSeries) => void) => void;
 }
 
-function SeriesConfigEditor({ series, allSeries, onUpdateSeries }: Readonly<SeriesConfigEditorProps>) {
+function SeriesConfigEditor({
+  series,
+  allSeries,
+  geoJsonCountyOptions,
+  geoJsonRegionOptions,
+  onUpdateSeries,
+}: Readonly<SeriesConfigEditorProps>) {
   if (series.type === 'line-items-aggregated-yearly' || series.type === 'commitments-analytics') {
     const adapter: SeriesFilterAdapter = {
       series,
@@ -168,6 +204,8 @@ function SeriesConfigEditor({ series, allSeries, onUpdateSeries }: Readonly<Seri
   }
 
   if (series.type === 'aggregated-series-calculation') {
+    const calculationCompatibleSeries = allSeries as unknown as Series[];
+
     return (
       <CalculationEditor
         calculation={series.calculation}
@@ -179,14 +217,25 @@ function SeriesConfigEditor({ series, allSeries, onUpdateSeries }: Readonly<Seri
             draft.calculation = nextCalculation;
           });
         }}
-        allSeries={allSeries}
+        allSeries={calculationCompatibleSeries}
         currentSeriesId={series.id}
         validateCalculation={(nextCalculation) => {
-          if (hasCalculationCycle(series.id, nextCalculation, allSeries)) {
+          if (hasCalculationCycle(series.id, nextCalculation, calculationCompatibleSeries)) {
             return 'This change would create a circular dependency.';
           }
           return null;
         }}
+      />
+    );
+  }
+
+  if (series.type === 'geojson-dataset-series') {
+    return (
+      <GeoJsonDatasetSeriesEditor
+        series={series}
+        countyOptions={geoJsonCountyOptions}
+        regionOptions={geoJsonRegionOptions}
+        onUpdateSeries={onUpdateSeries}
       />
     );
   }
@@ -212,4 +261,261 @@ function SeriesConfigEditor({ series, allSeries, onUpdateSeries }: Readonly<Seri
   };
 
   return <InsSeriesEditor adapter={adapter} />;
+}
+
+function GeoJsonDatasetSeriesEditor({
+  series,
+  countyOptions,
+  regionOptions,
+  onUpdateSeries,
+}: Readonly<{
+  series: Extract<MapSupportedSeries, { type: 'geojson-dataset-series' }>;
+  countyOptions: GeoJsonFilterOption[];
+  regionOptions: GeoJsonFilterOption[];
+  onUpdateSeries: (seriesId: string, updater: (draft: MapSupportedSeries) => void) => void;
+}>) {
+  const selectedPopulationKey = series.datasetKey;
+  const countyListOptions = useMemo<OptionItem<number>[]>(
+    () => countyOptions.map((option) => ({ id: option.id, label: `${option.name} (${option.id})` })),
+    [countyOptions]
+  );
+  const regionListOptions = useMemo<OptionItem<number>[]>(
+    () => regionOptions.map((option) => ({ id: option.id, label: `${option.name} (${option.id})` })),
+    [regionOptions]
+  );
+
+  const countyOptionsById = useMemo(
+    () => new Map(countyOptions.map((option) => [option.id, option.name])),
+    [countyOptions]
+  );
+  const regionOptionsById = useMemo(
+    () => new Map(regionOptions.map((option) => [option.id, option.name])),
+    [regionOptions]
+  );
+
+  const selectedCountyOptions = useMemo<OptionItem<number>[]>(
+    () =>
+      series.countyFilterIds.map((id) => ({
+        id,
+        label: countyOptionsById.get(id) ? `${countyOptionsById.get(id)} (${id})` : String(id),
+      })),
+    [countyOptionsById, series.countyFilterIds]
+  );
+  const selectedRegionOptions = useMemo<OptionItem<number>[]>(
+    () =>
+      series.regionFilterIds.map((id) => ({
+        id,
+        label: regionOptionsById.get(id) ? `${regionOptionsById.get(id)} (${id})` : String(id),
+      })),
+    [regionOptionsById, series.regionFilterIds]
+  );
+
+  const CountyFilterList = useMemo(
+    () => createStaticGeoJsonFilterList(countyListOptions, 'No counties available.'),
+    [countyListOptions]
+  );
+  const RegionFilterList = useMemo(
+    () => createStaticGeoJsonFilterList(regionListOptions, 'No regions available.'),
+    [regionListOptions]
+  );
+
+  const setSelectedCountyOptions: React.Dispatch<React.SetStateAction<OptionItem<string | number>[]>> =
+    (action) => {
+      const nextSelectedOptions = typeof action === 'function'
+        ? action(selectedCountyOptions)
+        : action;
+      const nextCountyFilterIds = normalizeSelectedFilterIds(nextSelectedOptions);
+
+      onUpdateSeries(series.id, (draft) => {
+        if (draft.type !== 'geojson-dataset-series') {
+          return;
+        }
+
+        const shouldAutoLabel = shouldAutoUpdateGeoJsonLabel(
+          draft.label,
+          draft.datasetKey
+        );
+        draft.countyFilterIds = nextCountyFilterIds;
+
+        if (shouldAutoLabel) {
+          draft.label = buildFilterSelectionLabel('County', nextCountyFilterIds, countyOptions);
+        }
+      });
+
+      return nextSelectedOptions;
+    };
+
+  const setSelectedRegionOptions: React.Dispatch<React.SetStateAction<OptionItem<string | number>[]>> =
+    (action) => {
+      const nextSelectedOptions = typeof action === 'function'
+        ? action(selectedRegionOptions)
+        : action;
+      const nextRegionFilterIds = normalizeSelectedFilterIds(nextSelectedOptions);
+
+      onUpdateSeries(series.id, (draft) => {
+        if (draft.type !== 'geojson-dataset-series') {
+          return;
+        }
+
+        const shouldAutoLabel = shouldAutoUpdateGeoJsonLabel(
+          draft.label,
+          draft.datasetKey
+        );
+        draft.regionFilterIds = nextRegionFilterIds;
+
+        if (shouldAutoLabel) {
+          draft.label = buildFilterSelectionLabel('Region', nextRegionFilterIds, regionOptions);
+        }
+      });
+
+      return nextSelectedOptions;
+    };
+
+  return (
+    <div className="space-y-5">
+      <p className="text-sm text-muted-foreground">
+        Values are always population. County and region selections filter the included UATs.
+      </p>
+      <section
+        className="space-y-3 rounded-lg border border-primary/40 bg-primary/5 p-4"
+      >
+        <div className="flex items-center justify-between gap-3">
+          <h4 className="text-sm font-semibold">Population</h4>
+          <span className="text-xs text-muted-foreground">Value source</span>
+        </div>
+        <div className="space-y-2 md:max-w-md">
+          <Label htmlFor="experimental-geojson-population-key">Population field</Label>
+          <Select
+            value={selectedPopulationKey}
+            onValueChange={(nextDatasetKey) => {
+              onUpdateSeries(series.id, (draft) => {
+                if (draft.type !== 'geojson-dataset-series') {
+                  return;
+                }
+
+                const shouldAutoLabel = shouldAutoUpdateGeoJsonLabel(draft.label, draft.datasetKey);
+                draft.datasetKey = nextDatasetKey as GeoJsonDatasetKey;
+
+                if (shouldAutoLabel) {
+                  draft.label = getGeoJsonDatasetLabel(draft.datasetKey);
+                }
+              });
+            }}
+          >
+            <SelectTrigger id="experimental-geojson-population-key">
+              <SelectValue placeholder="Select population field" />
+            </SelectTrigger>
+            <SelectContent>
+              {GEOJSON_POPULATION_DATASET_KEYS.map((populationKey) => (
+                <SelectItem key={populationKey} value={populationKey}>
+                  {getGeoJsonDatasetLabel(populationKey)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </section>
+
+      <div className="rounded-lg border">
+        <FilterListContainer
+          listComponent={CountyFilterList}
+          selected={selectedCountyOptions}
+          setSelected={setSelectedCountyOptions}
+          title="County Filters"
+          icon={<MapPinned className="h-4 w-4" />}
+        />
+        <FilterListContainer
+          listComponent={RegionFilterList}
+          selected={selectedRegionOptions}
+          setSelected={setSelectedRegionOptions}
+          title="Region Filters"
+          icon={<Globe className="h-4 w-4" />}
+        />
+      </div>
+
+      <p className="text-xs text-muted-foreground">
+        County and region filters can both be selected and are combined using AND logic.
+      </p>
+    </div>
+  );
+}
+
+function normalizeSelectedFilterIds(values: Array<OptionItem<string | number>>): number[] {
+  return [...new Set(values
+    .map((value) => Number(value.id))
+    .filter((value) => Number.isFinite(value))
+  )].sort((left, right) => left - right);
+}
+
+function createStaticGeoJsonFilterList(
+  options: OptionItem<number>[],
+  emptyMessage: string
+) {
+  function StaticGeoJsonFilterList({
+    selectedOptions,
+    toggleSelect,
+  }: Readonly<BaseListProps>) {
+    const optionHeight = 46;
+
+    if (options.length === 0) {
+      return <NoResults message={emptyMessage} className="border rounded-md min-h-[10rem]" />;
+    }
+
+    return (
+      <ListContainerSimple
+        height={options.length * optionHeight}
+        className="min-h-[10rem]"
+        ariaLabel={emptyMessage}
+      >
+        {options.map((option, index) => (
+          <ListOption
+            key={option.id}
+            uniqueIdPart={`geojson-filter-${option.id}`}
+            onClick={() => toggleSelect(option)}
+            label={option.label}
+            selected={selectedOptions.some((selectedOption) => selectedOption.id === option.id)}
+            optionHeight={optionHeight}
+            optionStart={index * optionHeight}
+          />
+        ))}
+      </ListContainerSimple>
+    );
+  }
+
+  StaticGeoJsonFilterList.displayName = 'StaticGeoJsonFilterList';
+  return StaticGeoJsonFilterList;
+}
+
+function shouldAutoUpdateGeoJsonLabel(
+  currentLabel: string,
+  previousDatasetKey: GeoJsonDatasetKey
+): boolean {
+  const trimmedLabel = currentLabel.trim();
+  if (trimmedLabel.length === 0) {
+    return true;
+  }
+
+  return (
+    trimmedLabel === 'GeoJSON dataset' ||
+    trimmedLabel === getGeoJsonDatasetLabel(previousDatasetKey) ||
+    trimmedLabel.startsWith('County:') ||
+    trimmedLabel.startsWith('Region:')
+  );
+}
+
+function buildFilterSelectionLabel(
+  prefix: 'County' | 'Region',
+  selectedIds: number[],
+  options: GeoJsonFilterOption[]
+): string {
+  if (selectedIds.length === 0) {
+    return `${prefix}: none`;
+  }
+
+  if (selectedIds.length === 1) {
+    const option = options.find((entry) => entry.id === selectedIds[0]);
+    return option ? `${prefix}: ${option.name}` : `${prefix}: ${selectedIds[0]}`;
+  }
+
+  return `${prefix}: ${selectedIds.length} selected`;
 }
