@@ -31,7 +31,8 @@ import type {
 import {
   createDefaultExperimentalMapValueFilterRule,
   createDefaultExperimentalMapSeries,
-  ExperimentalMapUrlStateSchema,
+  createUniqueExperimentalMapId,
+  parseExperimentalMapUrlState,
   getGeoJsonDatasetLabel,
   getGeoJsonDatasetUnit,
 } from '@/schemas/experimental-map';
@@ -80,7 +81,7 @@ export const Route = createLazyFileRoute('/experimental/map')({
 export function ExperimentalMapPage() {
   const navigate = useNavigate({ from: '/experimental/map' });
   const search = useSearch({ from: '/experimental/map' });
-  const mapState = ExperimentalMapUrlStateSchema.parse(search);
+  const mapState = parseExperimentalMapUrlState(search);
   const [userCurrency] = useUserCurrency();
   const [userInflationAdjusted] = useUserInflationAdjusted();
   const isMobile = useIsMobile();
@@ -93,7 +94,7 @@ export function ExperimentalMapPage() {
     (updater: (draft: ExperimentalMapUrlState) => void) => {
       navigate({
         search: (prev) => {
-          const parsed = ExperimentalMapUrlStateSchema.parse(prev);
+          const parsed = parseExperimentalMapUrlState(prev);
           return produce(parsed, updater);
         },
         replace: true,
@@ -134,6 +135,7 @@ export function ExperimentalMapPage() {
 
   const addSeries = useCallback(() => {
     const nextSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+    nextSeries.id = createUniqueExperimentalMapId(mapState.series.map((series) => series.id));
 
     setEditorState({ mode: 'add', seriesId: nextSeries.id });
 
@@ -146,7 +148,7 @@ export function ExperimentalMapPage() {
         draft.activeSeriesId = nextSeries.id;
       }
     });
-  }, [updateState]);
+  }, [mapState.series, updateState]);
 
   const editSeries = useCallback((seriesId: string) => {
     setEditorState({ mode: 'edit', seriesId });
@@ -228,7 +230,9 @@ export function ExperimentalMapPage() {
 
   const addValueFilterRule = useCallback(() => {
     updateState((draft) => {
-      draft.valueFilters.rules.push(createDefaultExperimentalMapValueFilterRule());
+      const nextRule = createDefaultExperimentalMapValueFilterRule();
+      nextRule.id = createUniqueExperimentalMapId(draft.valueFilters.rules.map((rule) => rule.id));
+      draft.valueFilters.rules.push(nextRule);
     });
   }, [updateState]);
 

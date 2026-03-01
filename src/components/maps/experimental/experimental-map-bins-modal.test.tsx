@@ -1,13 +1,13 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createDefaultExperimentalMapBinsPreset } from '@/schemas/experimental-map';
+import { ExperimentalMapBinSchema, createDefaultExperimentalMapBinsPreset } from '@/schemas/experimental-map';
 import { ExperimentalMapBinsModal } from './experimental-map-bins-modal';
 
 function createPreset() {
   const preset = createDefaultExperimentalMapBinsPreset('Execution bins');
   preset.config.bins = [
-    { min: 0, max: 100, label: '0-100', color: '#ff0000' },
-    { min: 100, max: null, label: '>=100', color: '#00ff00' },
+    ExperimentalMapBinSchema.parse({ min: 0, max: 100, label: '0-100', color: '#ff0000' }),
+    ExperimentalMapBinSchema.parse({ min: 100, max: null, label: '>=100', color: '#00ff00' }),
   ];
   return preset;
 }
@@ -56,8 +56,8 @@ describe('ExperimentalMapBinsModal', () => {
   it('renders validation errors block', () => {
     const invalidPreset = createPreset();
     invalidPreset.config.bins = [
-      { min: 0, max: 10, label: '0-10', color: '#ff0000' },
-      { min: 9, max: null, label: '>=9', color: '#00ff00' },
+      ExperimentalMapBinSchema.parse({ min: 0, max: 10, label: '0-10', color: '#ff0000' }),
+      ExperimentalMapBinSchema.parse({ min: 9, max: null, label: '>=9', color: '#00ff00' }),
     ];
 
     render(

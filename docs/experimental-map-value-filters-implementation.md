@@ -81,19 +81,11 @@ State also includes:
 
 - `valueFiltersPanelCollapsed: boolean`
 
-## 5. Backward Compatibility and Migration
+## 5. Contract Strictness
 
-Two parser-level migrations are implemented:
-
-1. Legacy rules without `kind`.
-- Migrated to `kind: 'threshold'`.
-
-2. Legacy group-level `combinator`.
-- Migrated into per-rule `joinWithPrevious`:
-- First rule gets `AND`.
-- Next rules inherit old combinator.
-
-Legacy `combinator` is ignored on normalized output.
+- Current parser accepts only the canonical value-filter contract.
+- Legacy rule shapes are not migrated in place.
+- Rules must provide explicit `kind`.
 
 ## 6. Evaluation Semantics (Authoritative)
 
@@ -288,8 +280,8 @@ all observe the same filtered UAT set.
 Schema tests:
 
 - parse/serialize round-trip for rule list.
-- migration for old `combinator`.
-- migration for missing `kind`.
+- strict rejection for legacy `combinator`.
+- strict rejection for missing `kind`.
 
 Evaluator tests:
 
@@ -354,4 +346,3 @@ Guardrails:
 - show sample size and matched count per rule before apply.
 4. Server-side filtering option for very large datasets.
 5. Shareable "analysis recipe" snapshots with annotations.
-

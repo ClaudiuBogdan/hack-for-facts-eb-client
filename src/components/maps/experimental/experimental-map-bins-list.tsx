@@ -9,7 +9,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { getDefaultBinTitle } from '@/lib/map-bins/bins';
-import type { ExperimentalMapBin } from '@/schemas/experimental-map';
+import {
+  createUniqueExperimentalMapId,
+  type ExperimentalMapBin,
+} from '@/schemas/experimental-map';
 
 interface ExperimentalMapBinsListProps {
   bins: ExperimentalMapBin[];
@@ -123,9 +126,14 @@ export function ExperimentalMapBinsList({
   };
 
   const addBin = () => {
+    // Create a new unique bin ID. Prevents duplicate IDs when adding multiple bins.
+    const existingBinIds = bins.map((bin) => bin.id);
+    const nextBinId = createUniqueExperimentalMapId(existingBinIds);
+
     if (bins.length === 0) {
       const added = commit([
         {
+          id: nextBinId,
           min: 0,
           max: null,
           label: getDefaultBinTitle(0),
@@ -154,6 +162,7 @@ export function ExperimentalMapBinsList({
       ...bins.slice(0, lastIndex),
       previousLast,
       {
+        id: nextBinId,
         min: nextMin,
         max: null,
         label: getDefaultBinTitle(bins.length),
@@ -288,7 +297,7 @@ export function ExperimentalMapBinsList({
           const isEnabled = bin.disabled !== true;
           return (
             <div
-              key={`bin-${index}`}
+              key={bin.id}
               className={`group relative flex items-start gap-0 rounded-lg border transition-all ${
                 !isEnabled
                   ? 'border-border/40 bg-muted/30 opacity-60'

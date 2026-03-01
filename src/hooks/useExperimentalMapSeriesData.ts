@@ -174,7 +174,11 @@ export function useExperimentalMapSeriesData(
         }
       }
 
-      const parsedPayload = parseGroupedSeriesWideCsv(groupedResponse.payload.data);
+      const manifestSeriesIds = groupedResponse.manifest.series.map((entry) => entry.series_id);
+      const parsedPayload = parseGroupedSeriesWideCsv(
+        groupedResponse.payload.data,
+        manifestSeriesIds
+      );
       for (const [seriesId, vector] of parsedPayload.valuesBySeriesId.entries()) {
         if (!baseVectors.has(seriesId)) {
           baseVectors.set(seriesId, new Map());

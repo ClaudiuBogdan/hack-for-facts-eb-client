@@ -1,5 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
+  EXPERIMENTAL_MAP_VERSION,
+  ExperimentalMapBinSchema,
+  createUniqueExperimentalMapId,
   createDefaultExperimentalMapBinsPreset,
   createDefaultExperimentalMapStatsValueFilterRule,
   createDefaultExperimentalMapValueFilterRule,
@@ -12,6 +15,7 @@ describe('ExperimentalMapUrlStateSchema', () => {
   it('defaults to an empty state', () => {
     const parsed = ExperimentalMapUrlStateSchema.parse({});
 
+    expect(parsed.version).toBe(EXPERIMENTAL_MAP_VERSION);
     expect(parsed.series).toEqual([]);
     expect(parsed.activeSeriesId).toBeUndefined();
     expect(parsed.valueFilters.rules).toEqual([]);
@@ -26,17 +30,47 @@ describe('ExperimentalMapUrlStateSchema', () => {
     expect(parsed.tableBinFiltersByPresetId).toEqual({});
   });
 
+  it('retries id generation when candidate id already exists', () => {
+    const randomUuidSpy = vi.spyOn(globalThis.crypto, 'randomUUID')
+      .mockReturnValueOnce('abc12300-0000-4000-8000-000000000000')
+      .mockReturnValueOnce('def45600-0000-4000-8000-000000000000');
+
+    const id = createUniqueExperimentalMapId(['abc123']);
+    expect(id).toBe('def456');
+
+    randomUuidSpy.mockRestore();
+  });
+
   it('supports serialize/parse round-trip with multiple series and bins presets', () => {
     const baseSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
     const calcSeries = createDefaultExperimentalMapSeries('aggregated-series-calculation');
     const firstPreset = createDefaultExperimentalMapBinsPreset('Preset 1');
+    const firstPresetFirstBin = ExperimentalMapBinSchema.parse({
+      min: 0,
+      max: null,
+      label: '>= 0',
+      color: '#fee08b',
+      disabled: true,
+    });
     firstPreset.config.bins = [
-      { min: 0, max: null, label: '>= 0', color: '#fee08b', disabled: true },
+      firstPresetFirstBin,
     ];
     const secondPreset = createDefaultExperimentalMapBinsPreset('Preset 2');
+    const secondPresetFirstBin = ExperimentalMapBinSchema.parse({
+      min: 0,
+      max: 1000,
+      label: '0 - 1.000',
+      color: '#fee08b',
+    });
+    const secondPresetSecondBin = ExperimentalMapBinSchema.parse({
+      min: 1000,
+      max: null,
+      label: '>= 1.000',
+      color: '#f46d43',
+    });
     secondPreset.config.bins = [
-      { min: 0, max: 1000, label: '0 - 1.000', color: '#fee08b' },
-      { min: 1000, max: null, label: '>= 1.000', color: '#f46d43' },
+      secondPresetFirstBin,
+      secondPresetSecondBin,
     ];
     firstPreset.config.title = 'Revenue bands';
     secondPreset.config.showBinLabelOnLegend = false;
@@ -70,8 +104,8 @@ describe('ExperimentalMapUrlStateSchema', () => {
       binsPresets: [firstPreset, secondPreset],
       activeBinPresetId: secondPreset.id,
       tableBinFiltersByPresetId: {
-        [firstPreset.id]: ['G1', 'NO_DATA'],
-        [secondPreset.id]: ['G2'],
+        [firstPreset.id]: [firstPresetFirstBin.id, 'NO_DATA'],
+        [secondPreset.id]: [secondPresetSecondBin.id],
       },
       mapCenter: [45.1, 24.8],
       mapZoom: 7.2,
@@ -113,57 +147,69 @@ describe('ExperimentalMapUrlStateSchema', () => {
     });
   });
 
-  it('migrates legacy global combinator into per-rule joins', () => {
-    const firstRule = createDefaultExperimentalMapValueFilterRule();
-    const secondRule = createDefaultExperimentalMapValueFilterRule();
-    const thirdRule = createDefaultExperimentalMapValueFilterRule();
-
-    const parsed = ExperimentalMapUrlStateSchema.parse({
-      valueFilters: {
-        combinator: 'OR',
-        rules: [
-          {
-            ...firstRule,
-            joinWithPrevious: undefined,
-          },
-          {
-            ...secondRule,
-            joinWithPrevious: undefined,
-          },
-          {
-            ...thirdRule,
-            joinWithPrevious: undefined,
-          },
-        ],
-      },
-    });
-
-    expect(parsed.valueFilters.rules[0]?.joinWithPrevious).toBe('AND');
-    expect(parsed.valueFilters.rules[1]?.joinWithPrevious).toBe('OR');
-    expect(parsed.valueFilters.rules[2]?.joinWithPrevious).toBe('OR');
-  });
-
-  it('migrates legacy rules without kind to threshold kind', () => {
-    const legacyRule = {
+  it('rejects value filters rules without explicit kind', () => {
+    const invalidRule = {
       ...createDefaultExperimentalMapValueFilterRule(),
       kind: undefined,
       operator: 'gt',
       value: 5,
     };
 
-    const parsed = ExperimentalMapUrlStateSchema.parse({
-      valueFilters: {
-        rules: [legacyRule],
-      },
-    });
+    expect(() =>
+      ExperimentalMapUrlStateSchema.parse({
+        valueFilters: {
+          rules: [invalidRule],
+        },
+      })
+    ).toThrow();
+  });
 
-    expect(parsed.valueFilters.rules[0]?.kind).toBe('threshold');
-    if (parsed.valueFilters.rules[0]?.kind !== 'threshold') {
-      throw new Error('Expected threshold rule after migration');
-    }
+  it('rejects legacy value filter combinator shape', () => {
+    expect(() =>
+      ExperimentalMapUrlStateSchema.parse({
+        valueFilters: {
+          combinator: 'OR',
+          rules: [createDefaultExperimentalMapValueFilterRule()],
+        },
+      })
+    ).toThrow();
+  });
 
-    expect(parsed.valueFilters.rules[0].operator).toBe('gt');
-    expect(parsed.valueFilters.rules[0].value).toBe(5);
+  it('rejects unsupported schema versions', () => {
+    expect(() =>
+      ExperimentalMapUrlStateSchema.parse({
+        version: EXPERIMENTAL_MAP_VERSION + 1,
+      })
+    ).toThrow();
+  });
+
+  it('rejects invalid threshold parameters', () => {
+    const invalidRule = createDefaultExperimentalMapValueFilterRule();
+    invalidRule.operator = 'between';
+    invalidRule.value = 1;
+    invalidRule.secondValue = undefined;
+
+    expect(() =>
+      ExperimentalMapUrlStateSchema.parse({
+        valueFilters: {
+          rules: [invalidRule],
+        },
+      })
+    ).toThrow();
+  });
+
+  it('rejects invalid map viewport values', () => {
+    expect(() =>
+      ExperimentalMapUrlStateSchema.parse({
+        mapCenter: [120, 30],
+      })
+    ).toThrow();
+
+    expect(() =>
+      ExperimentalMapUrlStateSchema.parse({
+        mapZoom: 25,
+      })
+    ).toThrow();
   });
 
   it('defaults INS series unit to empty string', () => {

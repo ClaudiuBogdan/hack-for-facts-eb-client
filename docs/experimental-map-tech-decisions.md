@@ -14,6 +14,7 @@ For full value-filters internals and rationale, see `docs/experimental-map-value
 
 - URL is source of truth for map state.
 - Search schema includes:
+  - `version` (required contract version)
   - `series[]`
   - `activeSeriesId`
   - `valueFilters.rules[]` (per-rule `enabled`, `joinWithPrevious`, `seriesRef`)
@@ -27,6 +28,7 @@ For full value-filters internals and rationale, see `docs/experimental-map-value
   - `tableBinFiltersByPresetId`
   - `mapCenter`
   - `mapZoom`
+- Legacy URL shapes are intentionally unsupported in the current contract.
 - Long URL payload is allowed for now; warning-only URL budget guard is used.
 
 ## Series Model
@@ -101,9 +103,7 @@ For full value-filters internals and rationale, see `docs/experimental-map-value
   - `enabled` per rule
   - `joinWithPrevious: 'AND' | 'OR'` per rule
   - source target per rule (`active` dynamic or explicit `seriesId`)
-- Backward compatibility:
-  - legacy rules without `kind` are migrated to `kind='threshold'`
-  - legacy group `combinator` is migrated into per-rule `joinWithPrevious`
+- No backward-compatibility migration is applied for legacy rule shapes.
 
 ### Evaluation Semantics
 
@@ -205,7 +205,7 @@ For full value-filters internals and rationale, see `docs/experimental-map-value
   - navigate only when a resolvable `entityCui` exists
   - otherwise row remains non-navigable.
 - Table includes a dedicated `Filter` dropdown (separate from `View`).
-- Filter dropdown has one bins section per preset with checkbox options for `G1..Gn` and `NO_DATA`.
+- Filter dropdown has one bins section per preset with checkbox options for stable bin IDs and `NO_DATA`.
 - Filter selections are URL-persisted in `tableBinFiltersByPresetId`.
 - Table filter semantics:
   - no selected groups anywhere => no filtering (all rows visible)
@@ -220,7 +220,7 @@ For full value-filters internals and rationale, see `docs/experimental-map-value
 - Preset config includes optional `title`, used as discrete legend main title (with active series fallback).
 - Phase 1 scale mode is `sequential` only.
 - Boundary semantics are fixed to `[min, max)` and last bin must be open-ended (`max = null`).
-- Group ids are derived at runtime from ordered bins (`G1..Gn`) plus `NO_DATA`.
+- Group ids use stable bin IDs from schema plus `NO_DATA`.
 - Each bin can be optionally marked as disabled; disabled bins are skipped in classification.
 - `NO_DATA` label/color are user-editable; tooltip marker for `NO_DATA` is toggleable.
 - Missing/unmatched values map to `NO_DATA` (never coerced to zero).

@@ -543,11 +543,12 @@ function StatsEditor({
               id="value-filter-zscore-threshold"
               type="number"
               step="any"
+              min="0.000001"
               value={rule.threshold}
               onChange={(event) =>
                 onRuleChange({
                   ...rule,
-                  threshold: parseNumericInput(event.currentTarget.value) ?? 2,
+                  threshold: parsePositiveNumericInput(event.currentTarget.value, rule.threshold),
                 })
               }
               placeholder="2"
@@ -587,12 +588,12 @@ function StatsEditor({
               id="value-filter-iqr-multiplier"
               type="number"
               step="any"
-              min={0}
+              min="0.000001"
               value={rule.multiplier}
               onChange={(event) =>
                 onRuleChange({
                   ...rule,
-                  multiplier: parseNumericInput(event.currentTarget.value) ?? 1.5,
+                  multiplier: parsePositiveNumericInput(event.currentTarget.value, rule.multiplier),
                 })
               }
               placeholder="1.5"
@@ -608,12 +609,12 @@ function StatsEditor({
             id="value-filter-mad-threshold"
             type="number"
             step="any"
-            min={0}
+            min="0.000001"
             value={rule.threshold}
             onChange={(event) =>
               onRuleChange({
                 ...rule,
-                threshold: parseNumericInput(event.currentTarget.value) ?? 3.5,
+                threshold: parsePositiveNumericInput(event.currentTarget.value, rule.threshold),
               })
             }
             placeholder="3.5"
@@ -671,6 +672,14 @@ function parseNumericInput(rawValue: string): number | undefined {
 
   const parsedValue = Number(trimmedValue);
   return Number.isFinite(parsedValue) ? parsedValue : undefined;
+}
+
+function parsePositiveNumericInput(rawValue: string, fallback: number): number {
+  const parsedValue = parseNumericInput(rawValue);
+  if (parsedValue === undefined || parsedValue <= 0) {
+    return fallback;
+  }
+  return parsedValue;
 }
 
 function getSeriesRefSelectValue(seriesRef: ExperimentalMapValueFilterSeriesRef): string {

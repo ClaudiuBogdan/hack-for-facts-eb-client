@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { MapBaseSeries } from '@/schemas/experimental-map';
 
 export type MapSeriesWarningType =
@@ -99,3 +100,37 @@ export interface InsSeriesScalarResult {
   unit?: string;
   warnings: MapSeriesWarning[];
 }
+
+export const MapSeriesWarningSchema = z.object({
+  type: z.string(),
+  message: z.string(),
+  seriesId: z.string().optional(),
+  dependencySeriesId: z.string().optional(),
+  sirutaCode: z.string().optional(),
+  details: z.record(z.string(), z.unknown()).optional(),
+});
+
+export const GroupedSeriesManifestEntrySchema = z.object({
+  series_id: z.string(),
+  unit: z.string().optional(),
+  defined_value_count: z.number().int().optional(),
+});
+
+export const GroupedSeriesManifestSchema = z.object({
+  generated_at: z.string(),
+  format: z.literal('wide_matrix_v1'),
+  granularity: z.literal('UAT'),
+  series: z.array(GroupedSeriesManifestEntrySchema),
+});
+
+export const GroupedSeriesPayloadSchema = z.object({
+  mime: z.literal('text/csv'),
+  compression: z.literal('none'),
+  data: z.string(),
+});
+
+export const GroupedSeriesDataResponseSchema = z.object({
+  manifest: GroupedSeriesManifestSchema,
+  payload: GroupedSeriesPayloadSchema,
+  warnings: z.array(MapSeriesWarningSchema).optional(),
+});

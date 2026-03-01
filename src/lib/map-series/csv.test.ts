@@ -37,6 +37,18 @@ describe('parseGroupedSeriesWideCsv', () => {
     expect(parsed.valuesBySeriesId.get('s1')?.get('12345')).toBe(15);
     expect(parsed.warnings.some((warning) => warning.type === 'duplicate_row')).toBe(true);
   });
+
+  it('ignores unexpected series columns when expected manifest ids are provided', () => {
+    const csv = ['siruta_code,s1,s2,debug', '12345,10,20,999'].join('\n');
+
+    const parsed = parseGroupedSeriesWideCsv(csv, ['s1', 's2']);
+
+    expect(parsed.seriesIds).toEqual(['s1', 's2']);
+    expect(parsed.valuesBySeriesId.get('s1')?.get('12345')).toBe(10);
+    expect(parsed.valuesBySeriesId.get('s2')?.get('12345')).toBe(20);
+    expect(parsed.valuesBySeriesId.has('debug')).toBe(false);
+    expect(parsed.warnings.some((warning) => warning.message.includes('Ignored unexpected'))).toBe(true);
+  });
 });
 
 describe('serializeGroupedSeriesWideMatrixCsv', () => {

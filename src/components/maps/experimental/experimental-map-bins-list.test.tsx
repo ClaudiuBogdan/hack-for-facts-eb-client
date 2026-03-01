@@ -1,12 +1,17 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { ExperimentalMapBinSchema } from '@/schemas/experimental-map';
 import { ExperimentalMapBinsList } from './experimental-map-bins-list';
+
+function makeBin(input: Parameters<typeof ExperimentalMapBinSchema.parse>[0]) {
+  return ExperimentalMapBinSchema.parse(input);
+}
 
 describe('ExperimentalMapBinsList', () => {
   it('prevents deleting the last bin', () => {
     render(
       <ExperimentalMapBinsList
-        bins={[{ min: 0, max: null, label: '>=0', color: '#ff0000' }]}
+        bins={[makeBin({ min: 0, max: null, label: '>=0', color: '#ff0000' })]}
         onApplyBins={() => ({ ok: true })}
       />
     );
@@ -20,8 +25,8 @@ describe('ExperimentalMapBinsList', () => {
     render(
       <ExperimentalMapBinsList
         bins={[
-          { min: 0, max: 100, label: '0-100', color: '#ff0000' },
-          { min: 100, max: null, label: '>=100', color: '#00ff00' },
+          makeBin({ min: 0, max: 100, label: '0-100', color: '#ff0000' }),
+          makeBin({ min: 100, max: null, label: '>=100', color: '#00ff00' }),
         ]}
         onApplyBins={() => ({ ok: false, error: 'Bins overlap.' })}
       />
@@ -40,8 +45,8 @@ describe('ExperimentalMapBinsList', () => {
     render(
       <ExperimentalMapBinsList
         bins={[
-          { min: 0, max: 100, label: '0-100', color: '#ff0000' },
-          { min: 100, max: null, label: '>=100', color: '#00ff00' },
+          makeBin({ min: 0, max: 100, label: '0-100', color: '#ff0000' }),
+          makeBin({ min: 100, max: null, label: '>=100', color: '#00ff00' }),
         ]}
         onApplyBins={onApplyBins}
       />
@@ -57,8 +62,8 @@ describe('ExperimentalMapBinsList', () => {
 
   it('does not mutate source bins when reorder commit is rejected', () => {
     const originalBins = [
-      { min: 0, max: 10, label: '0-10', color: '#ff0000' },
-      { min: 10, max: null, label: '', color: '#00ff00' },
+      makeBin({ min: 0, max: 10, label: '0-10', color: '#ff0000' }),
+      makeBin({ min: 10, max: null, label: '', color: '#00ff00' }),
     ];
 
     render(
@@ -71,19 +76,18 @@ describe('ExperimentalMapBinsList', () => {
     fireEvent.click(screen.getAllByRole('button', { name: 'Move down' })[0]);
 
     expect(screen.getByText('Invalid reorder.')).toBeInTheDocument();
-    expect(originalBins[0]).toEqual({ min: 0, max: 10, label: '0-10', color: '#ff0000' });
-    expect(originalBins[1]).toEqual({ min: 10, max: null, label: '', color: '#00ff00' });
+    expect(originalBins[0]).toMatchObject({ min: 0, max: 10, label: '0-10', color: '#ff0000' });
+    expect(originalBins[1]).toMatchObject({ min: 10, max: null, label: '', color: '#00ff00' });
   });
 
   it('applies disabled toggle for a bin group', () => {
     const onApplyBins = vi.fn(() => ({ ok: true }));
+    const firstBin = makeBin({ min: 0, max: 100, label: '0-100', color: '#ff0000' });
+    const secondBin = makeBin({ min: 100, max: null, label: '>=100', color: '#00ff00' });
 
     render(
       <ExperimentalMapBinsList
-        bins={[
-          { min: 0, max: 100, label: '0-100', color: '#ff0000' },
-          { min: 100, max: null, label: '>=100', color: '#00ff00' },
-        ]}
+        bins={[firstBin, secondBin]}
         onApplyBins={onApplyBins}
       />
     );
@@ -91,8 +95,8 @@ describe('ExperimentalMapBinsList', () => {
     fireEvent.click(screen.getAllByRole('button', { name: 'Disable bin' })[0]);
 
     expect(onApplyBins).toHaveBeenCalledWith([
-      { min: 0, max: 100, label: '0-100', color: '#ff0000', disabled: true },
-      { min: 100, max: null, label: '>=100', color: '#00ff00' },
+      { ...firstBin, disabled: true },
+      secondBin,
     ]);
   });
 });

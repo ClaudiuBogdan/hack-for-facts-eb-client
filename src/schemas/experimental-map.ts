@@ -13,6 +13,28 @@ import {
 } from '@/schemas/charts';
 import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES } from '@/lib/analytics-defaults';
 
+export const EXPERIMENTAL_MAP_VERSION = 1 as const;
+const EXPERIMENTAL_MAP_ID_LENGTH = 6;
+const EXPERIMENTAL_MAP_ID_MAX_ATTEMPTS = 256;
+
+export function createExperimentalMapId(): string {
+  return crypto.randomUUID().replace(/-/g, '').slice(0, EXPERIMENTAL_MAP_ID_LENGTH);
+}
+
+export function createUniqueExperimentalMapId(existingIds: Iterable<string>): string {
+  const usedIds = new Set(existingIds);
+
+  for (let attempt = 0; attempt < EXPERIMENTAL_MAP_ID_MAX_ATTEMPTS; attempt += 1) {
+    const candidateId = createExperimentalMapId();
+    if (usedIds.has(candidateId)) {
+      continue;
+    }
+    return candidateId;
+  }
+
+  throw new Error('Failed to generate a unique experimental map id.');
+}
+
 export const GEOJSON_POPULATION_DATASET_KEYS = [
   'insPop2021',
 ] as const;
@@ -47,7 +69,7 @@ const GeoJsonFilterIdsSchema = z
   .default([]);
 
 export const GeoJsonDatasetSeriesConfigurationSchema = z.object({
-  id: z.string().default(() => crypto.randomUUID()),
+  id: z.string().default(() => createExperimentalMapId()),
   type: z.literal('geojson-dataset-series'),
   enabled: z.boolean().default(true),
   label: z.string().default('GeoJSON dataset'),
@@ -86,6 +108,7 @@ export type MapCalculationSeries = Extract<
 export type MapBaseSeries = Exclude<MapSupportedSeries, MapCalculationSeries>;
 
 export const ExperimentalMapBinSchema = z.object({
+  id: z.string().default(() => createExperimentalMapId()),
   min: z.number(),
   max: z.number().nullable(),
   label: z.string().default(''),
@@ -169,7 +192,7 @@ export const ExperimentalMapValueFilterOperatorSchema = z.enum([
 export type ExperimentalMapValueFilterOperator = z.infer<typeof ExperimentalMapValueFilterOperatorSchema>;
 
 const ExperimentalMapValueFilterRuleBaseSchema = z.object({
-  id: z.string().default(() => crypto.randomUUID()),
+  id: z.string().default(() => createExperimentalMapId()),
   enabled: z.boolean().default(true),
   joinWithPrevious: ExperimentalMapValueRuleJoinSchema.default('AND'),
   seriesRef: ExperimentalMapValueFilterSeriesRefSchema.default({
@@ -178,10 +201,66 @@ const ExperimentalMapValueFilterRuleBaseSchema = z.object({
 });
 
 export const ExperimentalMapThresholdValueFilterRuleSchema = ExperimentalMapValueFilterRuleBaseSchema.extend({
-  kind: z.literal('threshold').default('threshold'),
+  kind: z.literal('threshold'),
   operator: ExperimentalMapValueFilterOperatorSchema.default('is_defined'),
   value: z.number().optional(),
   secondValue: z.number().optional(),
+}).superRefine((rule, context) => {
+  const operator = rule.operator;
+  const hasValue = rule.value !== undefined;
+  const hasSecondValue = rule.secondValue !== undefined;
+
+  if (operator === 'is_defined' || operator === 'is_undefined') {
+    if (hasValue) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['value'],
+        message: `${operator} does not accept a value parameter.`,
+      });
+    }
+    if (hasSecondValue) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['secondValue'],
+        message: `${operator} does not accept a secondValue parameter.`,
+      });
+    }
+    return;
+  }
+
+  if (operator === 'between' || operator === 'not_between') {
+    if (!hasValue) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['value'],
+        message: `${operator} requires a value parameter.`,
+      });
+    }
+    if (!hasSecondValue) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['secondValue'],
+        message: `${operator} requires a secondValue parameter.`,
+      });
+    }
+    return;
+  }
+
+  if (!hasValue) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['value'],
+      message: `${operator} requires a value parameter.`,
+    });
+  }
+
+  if (hasSecondValue) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['secondValue'],
+      message: `${operator} does not accept a secondValue parameter.`,
+    });
+  }
 });
 export type ExperimentalMapThresholdValueFilterRule = z.infer<typeof ExperimentalMapThresholdValueFilterRuleSchema>;
 
@@ -210,8 +289,8 @@ export type ExperimentalMapStatsIqrSide = z.infer<typeof ExperimentalMapStatsIqr
 const ExperimentalMapStatsPercentileRuleSchema = ExperimentalMapValueFilterRuleBaseSchema.extend({
   kind: z.literal('stats'),
   statsType: z.literal('percentile_band'),
-  minPercentile: z.number().default(0),
-  maxPercentile: z.number().default(100),
+  minPercentile: z.number().min(0).max(100).default(0),
+  maxPercentile: z.number().min(0).max(100).default(100),
 });
 
 const ExperimentalMapStatsRankRuleSchema = ExperimentalMapValueFilterRuleBaseSchema.extend({
@@ -231,20 +310,20 @@ const ExperimentalMapStatsZScoreRuleSchema = ExperimentalMapValueFilterRuleBaseS
   kind: z.literal('stats'),
   statsType: z.literal('zscore'),
   mode: ExperimentalMapStatsZScoreModeSchema.default('abs_gte'),
-  threshold: z.number().default(2),
+  threshold: z.number().positive().default(2),
 });
 
 const ExperimentalMapStatsIqrRuleSchema = ExperimentalMapValueFilterRuleBaseSchema.extend({
   kind: z.literal('stats'),
   statsType: z.literal('iqr_outlier'),
   side: ExperimentalMapStatsIqrSideSchema.default('both'),
-  multiplier: z.number().default(1.5),
+  multiplier: z.number().positive().default(1.5),
 });
 
 const ExperimentalMapStatsMadRuleSchema = ExperimentalMapValueFilterRuleBaseSchema.extend({
   kind: z.literal('stats'),
   statsType: z.literal('mad_robust_zscore'),
-  threshold: z.number().default(3.5),
+  threshold: z.number().positive().default(3.5),
 });
 
 export const ExperimentalMapStatsValueFilterRuleSchema = z.union([
@@ -267,92 +346,12 @@ const ExperimentalMapAnyValueFilterRuleSchema = z.union([
   ExperimentalMapStatsMadRuleSchema,
 ]);
 
-function normalizeValueFilterRuleKind(input: unknown): unknown {
-  if (typeof input !== 'object' || input === null) {
-    return input;
-  }
-
-  const record = input as Record<string, unknown>;
-  if (typeof record.kind === 'string') {
-    if (record.kind === 'stats' && typeof record.statsType !== 'string') {
-      return {
-        ...record,
-        statsType: 'percentile_band',
-      };
-    }
-
-    return record;
-  }
-
-  return {
-    ...record,
-    kind: 'threshold',
-  };
-}
-
-export const ExperimentalMapValueFilterRuleSchema = z.preprocess(
-  normalizeValueFilterRuleKind,
-  ExperimentalMapAnyValueFilterRuleSchema
-);
+export const ExperimentalMapValueFilterRuleSchema = ExperimentalMapAnyValueFilterRuleSchema;
 export type ExperimentalMapValueFilterRule = z.infer<typeof ExperimentalMapValueFilterRuleSchema>;
 
-function normalizeLegacyCombinator(value: unknown): ExperimentalMapValueRuleJoin | undefined {
-  if (typeof value !== 'string') {
-    return undefined;
-  }
-
-  const normalizedValue = value.trim().toUpperCase();
-  if (normalizedValue === 'AND' || normalizedValue === 'OR') {
-    return normalizedValue;
-  }
-
-  return undefined;
-}
-
-function migrateLegacyValueFilterGroup(input: unknown): unknown {
-  if (typeof input !== 'object' || input === null) {
-    return input;
-  }
-
-  const record = input as Record<string, unknown>;
-  const rules = record.rules;
-  if (!Array.isArray(rules) || rules.length === 0) {
-    return input;
-  }
-
-  const legacyCombinator = normalizeLegacyCombinator(record.combinator);
-  if (!legacyCombinator) {
-    return input;
-  }
-
-  const migratedRules = rules.map((rule, index) => {
-    if (typeof rule !== 'object' || rule === null) {
-      return rule;
-    }
-
-    const normalizedRule = rule as Record<string, unknown>;
-    if (typeof normalizedRule.joinWithPrevious === 'string') {
-      return normalizedRule;
-    }
-
-    return {
-      ...normalizedRule,
-      joinWithPrevious: index === 0 ? 'AND' : legacyCombinator,
-    };
-  });
-
-  return {
-    ...record,
-    rules: migratedRules,
-  };
-}
-
-export const ExperimentalMapValueFilterGroupSchema = z.preprocess(
-  migrateLegacyValueFilterGroup,
-  z.object({
-    rules: z.array(ExperimentalMapValueFilterRuleSchema).default([]),
-  })
-);
+export const ExperimentalMapValueFilterGroupSchema = z.object({
+  rules: z.array(ExperimentalMapValueFilterRuleSchema).default([]),
+}).strict();
 export type ExperimentalMapValueFilterGroup = z.infer<typeof ExperimentalMapValueFilterGroupSchema>;
 
 export function createDefaultExperimentalMapBinsPresetConfig(): ExperimentalMapBinsPresetConfig {
@@ -360,7 +359,7 @@ export function createDefaultExperimentalMapBinsPresetConfig(): ExperimentalMapB
 }
 
 export const ExperimentalMapBinsPresetSchema = z.object({
-  id: z.string().default(() => crypto.randomUUID()),
+  id: z.string().default(() => createExperimentalMapId()),
   label: z.string().default('Bins preset'),
   config: ExperimentalMapBinsPresetConfigSchema.default(createDefaultExperimentalMapBinsPresetConfig()),
   createdAt: z.string().default(() => new Date().toISOString()),
@@ -378,6 +377,7 @@ export function createDefaultExperimentalMapBinsPreset(
 }
 
 export const ExperimentalMapUrlStateSchema = z.object({
+  version: z.literal(EXPERIMENTAL_MAP_VERSION).default(EXPERIMENTAL_MAP_VERSION),
   series: z.array(MapSupportedSeriesSchema).default([]),
   activeSeriesId: z.string().optional(),
   valueFilters: ExperimentalMapValueFilterGroupSchema.default({ rules: [] }),
@@ -390,11 +390,15 @@ export const ExperimentalMapUrlStateSchema = z.object({
   binsPresets: z.array(ExperimentalMapBinsPresetSchema).default([]),
   activeBinPresetId: z.string().optional(),
   tableBinFiltersByPresetId: z.record(z.string(), z.array(z.string())).default({}),
-  mapCenter: z.tuple([z.number(), z.number()]).optional(),
-  mapZoom: z.number().optional(),
+  mapCenter: z.tuple([z.number().min(-90).max(90), z.number().min(-180).max(180)]).optional(),
+  mapZoom: z.number().min(1).max(20).optional(),
 });
 
 export type ExperimentalMapUrlState = z.infer<typeof ExperimentalMapUrlStateSchema>;
+
+export function parseExperimentalMapUrlState(input: unknown): ExperimentalMapUrlState {
+  return ExperimentalMapUrlStateSchema.parse(input);
+}
 
 export function createDefaultExperimentalMapValueFilterRule(): ExperimentalMapThresholdValueFilterRule {
   return ExperimentalMapValueFilterRuleSchema.parse({
@@ -469,6 +473,7 @@ export function createDefaultExperimentalMapSeries(
 ): MapSupportedSeries {
   if (type === 'line-items-aggregated-yearly') {
     const series = SeriesConfigurationSchema.parse({
+      id: createExperimentalMapId(),
       type,
       label: 'Execution analytics',
       filter: {
@@ -487,6 +492,7 @@ export function createDefaultExperimentalMapSeries(
 
   if (type === 'commitments-analytics') {
     const series = CommitmentsSeriesConfigurationSchema.parse({
+      id: createExperimentalMapId(),
       type,
       label: 'Commitments analytics',
       metric: 'CREDITE_ANGAJAMENT',
@@ -505,6 +511,7 @@ export function createDefaultExperimentalMapSeries(
 
   if (type === 'ins-series') {
     const series = InsSeriesConfigurationSchema.parse({
+      id: createExperimentalMapId(),
       type,
       label: 'INS series',
       aggregation: 'sum',
@@ -517,6 +524,7 @@ export function createDefaultExperimentalMapSeries(
   if (type === 'geojson-dataset-series') {
     const defaultDatasetKey: GeoJsonDatasetKey = 'insPop2021';
     const series = GeoJsonDatasetSeriesConfigurationSchema.parse({
+      id: createExperimentalMapId(),
       type,
       label: 'GeoJSON dataset',
       datasetKey: defaultDatasetKey,
@@ -525,6 +533,7 @@ export function createDefaultExperimentalMapSeries(
   }
 
   const series = SeriesGroupConfigurationSchema.parse({
+    id: createExperimentalMapId(),
     type: 'aggregated-series-calculation',
     label: 'Calculated series',
     calculation: {

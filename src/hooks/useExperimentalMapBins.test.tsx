@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { useExperimentalMapBins } from '@/hooks/useExperimentalMapBins';
 import {
+  ExperimentalMapBinSchema,
   createDefaultExperimentalMapBinsPreset,
   createDefaultExperimentalMapSeries,
   ExperimentalMapUrlStateSchema,
@@ -11,7 +12,12 @@ describe('useExperimentalMapBins', () => {
   it('does not overwrite preset bins when regenerate has no finite active values', () => {
     const series = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
     const preset = createDefaultExperimentalMapBinsPreset('Preset 1');
-    preset.config.bins = [{ min: 0, max: null, label: '>=0', color: '#ff0000' }];
+    preset.config.bins = [ExperimentalMapBinSchema.parse({
+      min: 0,
+      max: null,
+      label: '>=0',
+      color: '#ff0000',
+    })];
 
     const mapState = ExperimentalMapUrlStateSchema.parse({
       series: [series],

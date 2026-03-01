@@ -11,7 +11,10 @@ interface ParsedWideCsvResult {
   warnings: MapSeriesWarning[];
 }
 
-export function parseGroupedSeriesWideCsv(csvRaw: string): ParsedWideCsvResult {
+export function parseGroupedSeriesWideCsv(
+  csvRaw: string,
+  expectedSeriesIds?: readonly string[]
+): ParsedWideCsvResult {
   const warnings: MapSeriesWarning[] = [];
 
   const parsed = Papa.parse<Record<string, string>>(csvRaw, {
@@ -48,7 +51,39 @@ export function parseGroupedSeriesWideCsv(csvRaw: string): ParsedWideCsvResult {
     };
   }
 
-  const seriesIds = fields.filter((field) => field !== 'siruta_code');
+  const discoveredSeriesIds = fields.filter((field) => field !== 'siruta_code');
+  const normalizedExpectedSeriesIds = expectedSeriesIds
+    ? [...new Set(expectedSeriesIds.filter((seriesId) => seriesId.trim().length > 0))]
+    : undefined;
+  const expectedSeriesIdSet = normalizedExpectedSeriesIds
+    ? new Set(normalizedExpectedSeriesIds)
+    : undefined;
+  const seriesIds = normalizedExpectedSeriesIds ?? discoveredSeriesIds;
+
+  if (expectedSeriesIdSet) {
+    for (const discoveredSeriesId of discoveredSeriesIds) {
+      if (expectedSeriesIdSet.has(discoveredSeriesId)) {
+        continue;
+      }
+      warnings.push({
+        type: 'invalid_row',
+        message: `Ignored unexpected CSV series column: ${discoveredSeriesId}`,
+        seriesId: discoveredSeriesId,
+      });
+    }
+
+    for (const expectedSeriesId of normalizedExpectedSeriesIds ?? []) {
+      if (discoveredSeriesIds.includes(expectedSeriesId)) {
+        continue;
+      }
+      warnings.push({
+        type: 'invalid_row',
+        message: `Expected CSV series column is missing: ${expectedSeriesId}`,
+        seriesId: expectedSeriesId,
+      });
+    }
+  }
+
   const valuesBySeriesId: MapSeriesVectorCache = new Map();
 
   for (const seriesId of seriesIds) {

@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MapSeriesWarning } from '@/lib/map-series/interfaces';
 import {
+  ExperimentalMapBinSchema,
   createDefaultExperimentalMapBinsPreset,
   createDefaultExperimentalMapSeries,
 } from '@/schemas/experimental-map';
@@ -550,8 +551,8 @@ describe('ExperimentalMapPage', () => {
   it('keeps bins modal edits local and commits only on close', async () => {
     const preset = createDefaultExperimentalMapBinsPreset('Preset 1');
     preset.config.bins = [
-      { min: 0, max: 10, label: 'Label 1', color: '#ff0000' },
-      { min: 10, max: null, label: 'Label 2', color: '#00ff00' },
+      ExperimentalMapBinSchema.parse({ min: 0, max: 10, label: 'Label 1', color: '#ff0000' }),
+      ExperimentalMapBinSchema.parse({ min: 10, max: null, label: 'Label 2', color: '#00ff00' }),
     ];
     mockedSearchState = {
       binsPresets: [preset],

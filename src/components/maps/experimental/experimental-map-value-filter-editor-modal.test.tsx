@@ -95,4 +95,79 @@ describe('ExperimentalMapValueFilterEditorModal', () => {
     expect(onRuleChange).toHaveBeenCalledWith(expect.objectContaining({ value: 12.5 }));
     expect(onRuleChange).toHaveBeenCalledWith(expect.objectContaining({ secondValue: 30 }));
   });
+
+  it('prevents non-positive values for z-score threshold', () => {
+    const onRuleChange = vi.fn();
+    const rule = createDefaultExperimentalMapStatsValueFilterRule('zscore');
+
+    render(
+      <ExperimentalMapValueFilterEditorModal
+        open
+        mode="edit"
+        rule={rule}
+        ruleIndex={0}
+        series={[]}
+        onOpenChange={vi.fn()}
+        onRuleChange={onRuleChange}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText('Threshold'), {
+      target: {
+        value: '0',
+      },
+    });
+
+    expect(onRuleChange).toHaveBeenCalledWith(expect.objectContaining({ threshold: 2 }));
+  });
+
+  it('prevents non-positive values for iqr multiplier', () => {
+    const onRuleChange = vi.fn();
+    const rule = createDefaultExperimentalMapStatsValueFilterRule('iqr_outlier');
+
+    render(
+      <ExperimentalMapValueFilterEditorModal
+        open
+        mode="edit"
+        rule={rule}
+        ruleIndex={0}
+        series={[]}
+        onOpenChange={vi.fn()}
+        onRuleChange={onRuleChange}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText('Multiplier'), {
+      target: {
+        value: '0',
+      },
+    });
+
+    expect(onRuleChange).toHaveBeenCalledWith(expect.objectContaining({ multiplier: 1.5 }));
+  });
+
+  it('prevents non-positive values for mad threshold', () => {
+    const onRuleChange = vi.fn();
+    const rule = createDefaultExperimentalMapStatsValueFilterRule('mad_robust_zscore');
+
+    render(
+      <ExperimentalMapValueFilterEditorModal
+        open
+        mode="edit"
+        rule={rule}
+        ruleIndex={0}
+        series={[]}
+        onOpenChange={vi.fn()}
+        onRuleChange={onRuleChange}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText('Threshold'), {
+      target: {
+        value: '0',
+      },
+    });
+
+    expect(onRuleChange).toHaveBeenCalledWith(expect.objectContaining({ threshold: 3.5 }));
+  });
 });

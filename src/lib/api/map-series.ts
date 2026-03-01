@@ -6,6 +6,7 @@ import type {
   GroupedSeriesDataRequest,
   GroupedSeriesDataResponse,
 } from '@/lib/map-series/interfaces';
+import { GroupedSeriesDataResponseSchema } from '@/lib/map-series/interfaces';
 
 const logger = createLogger('map-series-client');
 
@@ -139,7 +140,16 @@ export async function fetchGroupedSeriesData(
       throw new Error(message);
     }
 
-    return envelope.data;
+    const validationResult = GroupedSeriesDataResponseSchema.safeParse(envelope.data);
+    if (!validationResult.success) {
+      const firstIssue = validationResult.error.issues[0];
+      const issueMessage = firstIssue?.message ?? 'unknown validation error';
+      throw new Error(
+        `Experimental map grouped-series API returned invalid data: ${issueMessage}`
+      );
+    }
+
+    return validationResult.data;
   } catch (error) {
     logger.error('Failed to fetch grouped experimental map series data', {
       error,

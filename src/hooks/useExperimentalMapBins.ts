@@ -12,7 +12,10 @@ import type {
   ExperimentalMapUrlState,
   MapSupportedSeries,
 } from '@/schemas/experimental-map';
-import { createDefaultExperimentalMapBinsPreset } from '@/schemas/experimental-map';
+import {
+  createDefaultExperimentalMapBinsPreset,
+  createUniqueExperimentalMapId,
+} from '@/schemas/experimental-map';
 import {
   getNextBinsPresetLabel,
   reorderBinsPresetsByIds,
@@ -150,6 +153,7 @@ export function useExperimentalMapBins({
   const addBinsPreset = useCallback(() => {
     const presetLabel = getNextBinsPresetLabel(mapState.binsPresets);
     const nextPreset = createDefaultExperimentalMapBinsPreset(presetLabel);
+    nextPreset.id = createUniqueExperimentalMapId(mapState.binsPresets.map((preset) => preset.id));
 
     setBinsEditorState({ mode: 'add', presetId: nextPreset.id });
 

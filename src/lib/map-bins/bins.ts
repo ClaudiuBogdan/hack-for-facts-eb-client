@@ -1,5 +1,9 @@
 import type { MapSeriesWarning } from '@/lib/map-series/interfaces';
-import type { ExperimentalMapBin, ExperimentalMapBinsPresetConfig } from '@/schemas/experimental-map';
+import {
+  createUniqueExperimentalMapId,
+  type ExperimentalMapBin,
+  type ExperimentalMapBinsPresetConfig,
+} from '@/schemas/experimental-map';
 
 export const NO_DATA_GROUP_ID = 'NO_DATA';
 export const LARGE_BIN_WARNING_THRESHOLD = 12;
@@ -35,6 +39,7 @@ export interface ClassifySeriesValuesResult {
 export function validateBinsConfig(config: ExperimentalMapBinsPresetConfig): BinsValidationResult {
   const errors: string[] = [];
   const warnings: MapSeriesWarning[] = [];
+  const seenBinIds = new Set<string>();
 
   if (config.defaultBinCount < 1 || !Number.isInteger(config.defaultBinCount)) {
     errors.push('Default bin count must be an integer greater than or equal to 1.');
@@ -63,6 +68,14 @@ export function validateBinsConfig(config: ExperimentalMapBinsPresetConfig): Bin
     const currentBin = config.bins[index];
     if (!currentBin) {
       continue;
+    }
+
+    if (currentBin.id.trim().length === 0) {
+      errors.push(`Bin ${index + 1} id must be a non-empty string.`);
+    } else if (seenBinIds.has(currentBin.id)) {
+      errors.push(`Bin ${index + 1} id must be unique.`);
+    } else {
+      seenBinIds.add(currentBin.id);
     }
 
     if (!Number.isFinite(currentBin.min)) {
@@ -136,7 +149,7 @@ export function classifyValue(
     const isWithinMax = bin.max === null ? true : value < bin.max;
     if (isWithinMin && isWithinMax) {
       return {
-        groupId: getBinGroupId(index),
+        groupId: bin.id,
         label: getComposedBinLabel(bin, index),
         color: bin.color,
         isNoData: false,
@@ -221,6 +234,13 @@ export function generateSequentialBins(
     return [];
   }
 
+  const generatedBinIds = new Set<string>();
+  const createGeneratedBinId = () => {
+    const id = createUniqueExperimentalMapId(generatedBinIds);
+    generatedBinIds.add(id);
+    return id;
+  };
+
   const binCount = Math.max(1, Math.trunc(count));
   const minValue = Math.min(...finiteValues);
   const maxValue = Math.max(...finiteValues);
@@ -234,6 +254,7 @@ export function generateSequentialBins(
       const binMin = index === 0 ? minValue : minValue + index;
       const binMax = index === binCount - 1 ? null : binMin + 1;
       return {
+        id: createGeneratedBinId(),
         min: round(binMin),
         max: binMax === null ? null : round(binMax),
         label: getDefaultBinTitle(index),
@@ -251,6 +272,7 @@ export function generateSequentialBins(
     const roundedMax = binMax === null ? null : round(binMax);
 
     return {
+      id: createGeneratedBinId(),
       min: roundedMin,
       max: roundedMax,
       label: getDefaultBinTitle(index),
@@ -281,7 +303,7 @@ export function buildDiscretePaletteFromConfig(config: ExperimentalMapBinsPreset
     }
 
     accumulator.push({
-      groupId: getBinGroupId(index),
+      groupId: bin.id,
       label: getComposedBinLabel(bin, index),
       color: bin.color,
       isNoData: false,
@@ -300,10 +322,6 @@ export function getNoDataClassification(config: ExperimentalMapBinsPresetConfig)
     color: config.noData.color,
     isNoData: true,
   };
-}
-
-export function getBinGroupId(index: number): string {
-  return `G${index + 1}`;
 }
 
 export function getDefaultBinTitle(index: number): string {

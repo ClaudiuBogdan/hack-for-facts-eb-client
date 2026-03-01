@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createDefaultExperimentalMapBinsPreset } from '@/schemas/experimental-map';
+import { ExperimentalMapBinSchema, createDefaultExperimentalMapBinsPreset } from '@/schemas/experimental-map';
 import type { ExperimentalMapTableRow } from '@/components/maps/experimental/experimental-map-table-types';
 import { deriveExperimentalMapTableBinsFilter } from '@/hooks/useExperimentalMapTableBinsFilter';
 
@@ -33,9 +33,21 @@ const baseRows: ExperimentalMapTableRow[] = [
 describe('deriveExperimentalMapTableBinsFilter', () => {
   it('returns all rows when no preset has selected filters', () => {
     const preset = createDefaultExperimentalMapBinsPreset('Preset 1');
+    const firstBin = ExperimentalMapBinSchema.parse({
+      min: 0,
+      max: 10,
+      label: '0-10',
+      color: '#ff0000',
+    });
+    const secondBin = ExperimentalMapBinSchema.parse({
+      min: 10,
+      max: null,
+      label: '>=10',
+      color: '#00ff00',
+    });
     preset.config.bins = [
-      { min: 0, max: 10, label: '0-10', color: '#ff0000' },
-      { min: 10, max: null, label: '>=10', color: '#00ff00' },
+      firstBin,
+      secondBin,
     ];
 
     const result = deriveExperimentalMapTableBinsFilter({
@@ -54,9 +66,21 @@ describe('deriveExperimentalMapTableBinsFilter', () => {
 
   it('filters rows by selected groups within one preset', () => {
     const preset = createDefaultExperimentalMapBinsPreset('Preset 1');
+    const firstBin = ExperimentalMapBinSchema.parse({
+      min: 0,
+      max: 10,
+      label: '0-10',
+      color: '#ff0000',
+    });
+    const secondBin = ExperimentalMapBinSchema.parse({
+      min: 10,
+      max: null,
+      label: '>=10',
+      color: '#00ff00',
+    });
     preset.config.bins = [
-      { min: 0, max: 10, label: '0-10', color: '#ff0000' },
-      { min: 10, max: null, label: '>=10', color: '#00ff00' },
+      firstBin,
+      secondBin,
     ];
 
     const result = deriveExperimentalMapTableBinsFilter({
@@ -68,7 +92,7 @@ describe('deriveExperimentalMapTableBinsFilter', () => {
         ['1003', 30],
       ]),
       tableBinFiltersByPresetId: {
-        [preset.id]: ['G1'],
+        [preset.id]: [firstBin.id],
       },
     });
 
@@ -78,15 +102,39 @@ describe('deriveExperimentalMapTableBinsFilter', () => {
 
   it('supports OR logic across multiple presets', () => {
     const firstPreset = createDefaultExperimentalMapBinsPreset('Preset 1');
+    const firstPresetFirstBin = ExperimentalMapBinSchema.parse({
+      min: 0,
+      max: 10,
+      label: '0-10',
+      color: '#ff0000',
+    });
+    const firstPresetSecondBin = ExperimentalMapBinSchema.parse({
+      min: 10,
+      max: null,
+      label: '>=10',
+      color: '#00ff00',
+    });
     firstPreset.config.bins = [
-      { min: 0, max: 10, label: '0-10', color: '#ff0000' },
-      { min: 10, max: null, label: '>=10', color: '#00ff00' },
+      firstPresetFirstBin,
+      firstPresetSecondBin,
     ];
 
     const secondPreset = createDefaultExperimentalMapBinsPreset('Preset 2');
+    const secondPresetFirstBin = ExperimentalMapBinSchema.parse({
+      min: 0,
+      max: 100,
+      label: '0-100',
+      color: '#111111',
+    });
+    const secondPresetSecondBin = ExperimentalMapBinSchema.parse({
+      min: 100,
+      max: null,
+      label: '>=100',
+      color: '#222222',
+    });
     secondPreset.config.bins = [
-      { min: 0, max: 100, label: '0-100', color: '#111111' },
-      { min: 100, max: null, label: '>=100', color: '#222222' },
+      secondPresetFirstBin,
+      secondPresetSecondBin,
     ];
 
     const result = deriveExperimentalMapTableBinsFilter({
@@ -98,8 +146,8 @@ describe('deriveExperimentalMapTableBinsFilter', () => {
         ['1003', 150],
       ]),
       tableBinFiltersByPresetId: {
-        [firstPreset.id]: ['G1'],
-        [secondPreset.id]: ['G2'],
+        [firstPreset.id]: [firstPresetFirstBin.id],
+        [secondPreset.id]: [secondPresetSecondBin.id],
       },
     });
 
@@ -108,7 +156,13 @@ describe('deriveExperimentalMapTableBinsFilter', () => {
 
   it('treats missing classifications as NO_DATA', () => {
     const preset = createDefaultExperimentalMapBinsPreset('Preset 1');
-    preset.config.bins = [{ min: 0, max: null, label: '>=0', color: '#ff0000' }];
+    const firstBin = ExperimentalMapBinSchema.parse({
+      min: 0,
+      max: null,
+      label: '>=0',
+      color: '#ff0000',
+    });
+    preset.config.bins = [firstBin];
 
     const result = deriveExperimentalMapTableBinsFilter({
       rows: baseRows,
@@ -127,9 +181,21 @@ describe('deriveExperimentalMapTableBinsFilter', () => {
 
   it('disables invalid preset sections and ignores them in filtering', () => {
     const invalidPreset = createDefaultExperimentalMapBinsPreset('Invalid preset');
+    const invalidFirstBin = ExperimentalMapBinSchema.parse({
+      min: 0,
+      max: 10,
+      label: '0-10',
+      color: '#ff0000',
+    });
+    const invalidSecondBin = ExperimentalMapBinSchema.parse({
+      min: 9,
+      max: null,
+      label: '>=9',
+      color: '#00ff00',
+    });
     invalidPreset.config.bins = [
-      { min: 0, max: 10, label: '0-10', color: '#ff0000' },
-      { min: 9, max: null, label: '>=9', color: '#00ff00' },
+      invalidFirstBin,
+      invalidSecondBin,
     ];
 
     const result = deriveExperimentalMapTableBinsFilter({
@@ -140,7 +206,7 @@ describe('deriveExperimentalMapTableBinsFilter', () => {
         ['1002', 15],
       ]),
       tableBinFiltersByPresetId: {
-        [invalidPreset.id]: ['G1'],
+        [invalidPreset.id]: [invalidFirstBin.id],
       },
     });
 

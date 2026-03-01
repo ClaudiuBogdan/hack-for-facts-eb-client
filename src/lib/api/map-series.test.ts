@@ -161,4 +161,38 @@ describe('fetchGroupedSeriesData', () => {
       'Experimental map grouped-series request failed: DB down'
     );
   });
+
+  it('fails when server returns invalid grouped-series payload shape', async () => {
+    vi.mocked(getAuthToken).mockResolvedValue('test-token');
+
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      text: vi
+        .fn()
+        .mockResolvedValue(
+          JSON.stringify({
+            ok: true,
+            data: {
+              manifest: {
+                generated_at: '2026-02-28T10:00:00.000Z',
+                format: 'wide_matrix_v2',
+                granularity: 'UAT',
+                series: [],
+              },
+              payload: {
+                mime: 'text/csv',
+                compression: 'none',
+                data: 'siruta_code',
+              },
+            },
+          })
+        ),
+    } satisfies Partial<Response>);
+
+    await expect(fetchGroupedSeriesData(createSeriesRequest())).rejects.toThrow(
+      'Experimental map grouped-series API returned invalid data'
+    );
+  });
 });
