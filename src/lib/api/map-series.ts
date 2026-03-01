@@ -10,9 +10,9 @@ import { GroupedSeriesDataResponseSchema } from '@/lib/map-series/interfaces';
 
 const logger = createLogger('map-series-client');
 
-const GROUPED_SERIES_ENDPOINT_PATH = '/api/v1/experimental/map/grouped-series';
-const UNAUTHORIZED_MESSAGE = 'Sign in required for experimental map data.';
-const FORBIDDEN_MESSAGE = 'Your account is not allowlisted for experimental map access.';
+const GROUPED_SERIES_ENDPOINT_PATH = '/api/v1/advanced-map-analytics/grouped-series';
+const UNAUTHORIZED_MESSAGE = 'Sign in required for advanced map analytics data.';
+const FORBIDDEN_MESSAGE = 'Your account is not allowlisted for advanced map analytics access.';
 
 interface GroupedSeriesApiRequest extends GroupedSeriesDataRequest {
   payload: {
@@ -74,15 +74,15 @@ function buildHttpErrorMessage(
 
   const payloadMessage = getEnvelopeMessage(payload);
   if (payloadMessage !== undefined) {
-    return `Experimental map grouped-series request failed: ${payloadMessage}`;
+    return `Advanced map analytics grouped-series request failed: ${payloadMessage}`;
   }
 
   const rawMessage = raw.trim();
   if (rawMessage.length > 0) {
-    return `Experimental map grouped-series request failed: ${status} ${statusText} - ${rawMessage}`;
+    return `Advanced map analytics grouped-series request failed: ${status} ${statusText} - ${rawMessage}`;
   }
 
-  return `Experimental map grouped-series request failed: ${status} ${statusText}`;
+  return `Advanced map analytics grouped-series request failed: ${status} ${statusText}`;
 }
 
 function buildRequestBody(request: GroupedSeriesDataRequest): GroupedSeriesApiRequest {
@@ -107,7 +107,7 @@ export async function fetchGroupedSeriesData(
   const endpoint = `${getApiBaseUrl()}${GROUPED_SERIES_ENDPOINT_PATH}`;
 
   try {
-    logger.info('Fetching grouped experimental map series data', {
+    logger.info('Fetching grouped-series series data', {
       granularity: request.granularity,
       seriesCount: request.series.length,
     });
@@ -130,13 +130,13 @@ export async function fetchGroupedSeriesData(
     }
 
     if (typeof parsed !== 'object' || parsed === null) {
-      throw new Error('Experimental map grouped-series API returned an invalid response payload.');
+      throw new Error('Advanced map analytics grouped-series API returned an invalid response payload.');
     }
 
     const envelope = parsed as GroupedSeriesApiEnvelope;
     if (envelope.ok !== true) {
       const message =
-        getEnvelopeMessage(parsed) ?? 'Experimental map grouped-series API returned an unknown error.';
+        getEnvelopeMessage(parsed) ?? 'Advanced map analytics grouped-series API returned an unknown error.';
       throw new Error(message);
     }
 
@@ -145,13 +145,13 @@ export async function fetchGroupedSeriesData(
       const firstIssue = validationResult.error.issues[0];
       const issueMessage = firstIssue?.message ?? 'unknown validation error';
       throw new Error(
-        `Experimental map grouped-series API returned invalid data: ${issueMessage}`
+        `Advanced map analytics grouped-series API returned invalid data: ${issueMessage}`
       );
     }
 
     return validationResult.data;
   } catch (error) {
-    logger.error('Failed to fetch grouped experimental map series data', {
+    logger.error('Failed to fetch grouped-series series data', {
       error,
       granularity: request.granularity,
       seriesCount: request.series.length,
@@ -161,6 +161,6 @@ export async function fetchGroupedSeriesData(
       throw error;
     }
 
-    throw new Error('Failed to fetch grouped experimental map series data.');
+    throw new Error('Failed to fetch grouped-series series data.');
   }
 }

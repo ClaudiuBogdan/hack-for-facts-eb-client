@@ -17,13 +17,13 @@ vi.mock('@/config/env', () => ({
   getApiBaseUrl: vi.fn(() => 'https://api.example.com'),
 }));
 
-import { createDefaultExperimentalMapSeries } from '@/schemas/experimental-map';
+import { createDefaultAdvancedMapAnalyticsSeries } from '@/schemas/advanced-map-analytics';
 import { getAuthToken } from '../auth';
 import { API_FETCH_REFERRER_POLICY } from './fetch-options';
 import { fetchGroupedSeriesData } from './map-series';
 
 function createSeriesRequest() {
-  const series = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+  const series = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
   if (series.type === 'aggregated-series-calculation') {
     throw new Error('Unexpected calculation series in test setup');
   }
@@ -84,7 +84,7 @@ describe('fetchGroupedSeriesData', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe('https://api.example.com/api/v1/experimental/map/grouped-series');
+    expect(url).toBe('https://api.example.com/api/v1/advanced-map-analytics/grouped-series');
     expect(init.method).toBe('POST');
     expect(init.referrerPolicy).toBe(API_FETCH_REFERRER_POLICY);
 
@@ -113,7 +113,7 @@ describe('fetchGroupedSeriesData', () => {
     vi.mocked(getAuthToken).mockResolvedValue(null);
 
     await expect(fetchGroupedSeriesData(createSeriesRequest())).rejects.toThrow(
-      'Sign in required for experimental map data.'
+      'Sign in required for advanced map analytics data.'
     );
 
     expect(fetchMock).not.toHaveBeenCalled();
@@ -130,7 +130,7 @@ describe('fetchGroupedSeriesData', () => {
     } satisfies Partial<Response>);
 
     await expect(fetchGroupedSeriesData(createSeriesRequest())).rejects.toThrow(
-      'Sign in required for experimental map data.'
+      'Sign in required for advanced map analytics data.'
     );
 
     fetchMock.mockResolvedValueOnce({
@@ -141,7 +141,7 @@ describe('fetchGroupedSeriesData', () => {
     } satisfies Partial<Response>);
 
     await expect(fetchGroupedSeriesData(createSeriesRequest())).rejects.toThrow(
-      'Your account is not allowlisted for experimental map access.'
+      'Your account is not allowlisted for advanced map analytics access.'
     );
   });
 
@@ -158,7 +158,7 @@ describe('fetchGroupedSeriesData', () => {
     } satisfies Partial<Response>);
 
     await expect(fetchGroupedSeriesData(createSeriesRequest())).rejects.toThrow(
-      'Experimental map grouped-series request failed: DB down'
+      'Advanced map analytics grouped-series request failed: DB down'
     );
   });
 
@@ -192,7 +192,7 @@ describe('fetchGroupedSeriesData', () => {
     } satisfies Partial<Response>);
 
     await expect(fetchGroupedSeriesData(createSeriesRequest())).rejects.toThrow(
-      'Experimental map grouped-series API returned invalid data'
+      'Advanced map analytics grouped-series API returned invalid data'
     );
   });
 });

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { MapBaseSeries } from '@/schemas/experimental-map';
+import type { MapBaseSeries } from '@/schemas/advanced-map-analytics';
 
 export type MapSeriesWarningType =
   | 'missing_dependency'

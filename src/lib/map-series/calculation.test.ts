@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { calculateMapSeriesValues } from '@/lib/map-series/calculation';
-import { createDefaultExperimentalMapSeries } from '@/schemas/experimental-map';
-import type { MapSupportedSeries } from '@/schemas/experimental-map';
+import { createDefaultAdvancedMapAnalyticsSeries } from '@/schemas/advanced-map-analytics';
+import type { MapSupportedSeries } from '@/schemas/advanced-map-analytics';
 import type { MapSeriesVectorCache } from '@/lib/map-series/interfaces';
 
 function withCalculation(
@@ -20,10 +20,10 @@ function withCalculation(
 
 describe('calculateMapSeriesValues', () => {
   it('propagates undefined values in arithmetic merges', () => {
-    const baseSeriesA = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
-    const baseSeriesB = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+    const baseSeriesA = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    const baseSeriesB = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
     const calcSeries = withCalculation(
-      createDefaultExperimentalMapSeries('aggregated-series-calculation'),
+      createDefaultAdvancedMapAnalyticsSeries('aggregated-series-calculation'),
       {
         op: 'subtract',
         args: [baseSeriesA.id, baseSeriesB.id],
@@ -62,10 +62,10 @@ describe('calculateMapSeriesValues', () => {
   });
 
   it('marks divide-by-zero values as undefined and emits warnings', () => {
-    const baseSeriesA = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
-    const baseSeriesB = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+    const baseSeriesA = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    const baseSeriesB = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
     const calcSeries = withCalculation(
-      createDefaultExperimentalMapSeries('aggregated-series-calculation'),
+      createDefaultAdvancedMapAnalyticsSeries('aggregated-series-calculation'),
       {
         op: 'divide',
         args: [baseSeriesA.id, baseSeriesB.id],
@@ -92,7 +92,7 @@ describe('calculateMapSeriesValues', () => {
 
   it('warns when calculation dependencies are missing', () => {
     const calcSeries = withCalculation(
-      createDefaultExperimentalMapSeries('aggregated-series-calculation'),
+      createDefaultAdvancedMapAnalyticsSeries('aggregated-series-calculation'),
       {
         op: 'sum',
         args: ['missing-series'],
@@ -112,10 +112,10 @@ describe('calculateMapSeriesValues', () => {
   });
 
   it('supports nested calculations', () => {
-    const baseSeriesA = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
-    const baseSeriesB = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+    const baseSeriesA = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    const baseSeriesB = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
     const calcSeries = withCalculation(
-      createDefaultExperimentalMapSeries('aggregated-series-calculation'),
+      createDefaultAdvancedMapAnalyticsSeries('aggregated-series-calculation'),
       {
         op: 'divide',
         args: [

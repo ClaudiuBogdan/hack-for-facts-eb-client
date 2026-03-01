@@ -1,9 +1,9 @@
 import type { MapSeriesWarning } from '@/lib/map-series/interfaces';
 import {
-  createUniqueExperimentalMapId,
-  type ExperimentalMapBin,
-  type ExperimentalMapBinsPresetConfig,
-} from '@/schemas/experimental-map';
+  createUniqueAdvancedMapAnalyticsId,
+  type AdvancedMapAnalyticsBin,
+  type AdvancedMapAnalyticsBinsPresetConfig,
+} from '@/schemas/advanced-map-analytics';
 
 export const NO_DATA_GROUP_ID = 'NO_DATA';
 export const LARGE_BIN_WARNING_THRESHOLD = 12;
@@ -36,7 +36,7 @@ export interface ClassifySeriesValuesResult {
   warnings: MapSeriesWarning[];
 }
 
-export function validateBinsConfig(config: ExperimentalMapBinsPresetConfig): BinsValidationResult {
+export function validateBinsConfig(config: AdvancedMapAnalyticsBinsPresetConfig): BinsValidationResult {
   const errors: string[] = [];
   const warnings: MapSeriesWarning[] = [];
   const seenBinIds = new Set<string>();
@@ -130,7 +130,7 @@ export function validateBinsConfig(config: ExperimentalMapBinsPresetConfig): Bin
 
 export function classifyValue(
   value: number | undefined,
-  config: ExperimentalMapBinsPresetConfig
+  config: AdvancedMapAnalyticsBinsPresetConfig
 ): ClassifiedBin {
   if (value === undefined || value === null || !Number.isFinite(value)) {
     return getNoDataClassification(config);
@@ -162,7 +162,7 @@ export function classifyValue(
 
 export function classifySeriesValues(
   activeValues: Map<string, number | undefined> | undefined,
-  config: ExperimentalMapBinsPresetConfig
+  config: AdvancedMapAnalyticsBinsPresetConfig
 ): ClassifySeriesValuesResult {
   const groupsBySiruta = new Map<string, ClassifiedBin>();
   const palette = buildDiscretePaletteFromConfig(config);
@@ -226,9 +226,9 @@ export function classifySeriesValues(
 export function generateSequentialBins(
   values: Array<number | undefined>,
   count: number,
-  colorMode: ExperimentalMapBinsPresetConfig['colorMode'],
-  gradient: ExperimentalMapBinsPresetConfig['gradient']
-): ExperimentalMapBin[] {
+  colorMode: AdvancedMapAnalyticsBinsPresetConfig['colorMode'],
+  gradient: AdvancedMapAnalyticsBinsPresetConfig['gradient']
+): AdvancedMapAnalyticsBin[] {
   const finiteValues = values.filter((value): value is number => Number.isFinite(value));
   if (finiteValues.length === 0) {
     return [];
@@ -236,7 +236,7 @@ export function generateSequentialBins(
 
   const generatedBinIds = new Set<string>();
   const createGeneratedBinId = () => {
-    const id = createUniqueExperimentalMapId(generatedBinIds);
+    const id = createUniqueAdvancedMapAnalyticsId(generatedBinIds);
     generatedBinIds.add(id);
     return id;
   };
@@ -282,9 +282,9 @@ export function generateSequentialBins(
 }
 
 export function applyGradientColorsToBins(
-  bins: ExperimentalMapBin[],
-  gradient: ExperimentalMapBinsPresetConfig['gradient']
-): ExperimentalMapBin[] {
+  bins: AdvancedMapAnalyticsBin[],
+  gradient: AdvancedMapAnalyticsBinsPresetConfig['gradient']
+): AdvancedMapAnalyticsBin[] {
   if (bins.length === 0) {
     return bins;
   }
@@ -296,7 +296,7 @@ export function applyGradientColorsToBins(
   }));
 }
 
-export function buildDiscretePaletteFromConfig(config: ExperimentalMapBinsPresetConfig): ClassifiedBin[] {
+export function buildDiscretePaletteFromConfig(config: AdvancedMapAnalyticsBinsPresetConfig): ClassifiedBin[] {
   const rows = config.bins.reduce<ClassifiedBin[]>((accumulator, bin, index) => {
     if (isBinDisabled(bin)) {
       return accumulator;
@@ -315,7 +315,7 @@ export function buildDiscretePaletteFromConfig(config: ExperimentalMapBinsPreset
   return rows;
 }
 
-export function getNoDataClassification(config: ExperimentalMapBinsPresetConfig): ClassifiedBin {
+export function getNoDataClassification(config: AdvancedMapAnalyticsBinsPresetConfig): ClassifiedBin {
   return {
     groupId: NO_DATA_GROUP_ID,
     label: config.noData.label || 'Fara date',
@@ -328,18 +328,18 @@ export function getDefaultBinTitle(index: number): string {
   return `Label ${index + 1}`;
 }
 
-function getBinTitle(bin: ExperimentalMapBin, index: number): string {
+function getBinTitle(bin: AdvancedMapAnalyticsBin, index: number): string {
   if (bin.label.trim().length > 0) {
     return bin.label;
   }
   return getDefaultBinTitle(index);
 }
 
-function getComposedBinLabel(bin: ExperimentalMapBin, index: number): string {
+function getComposedBinLabel(bin: AdvancedMapAnalyticsBin, index: number): string {
   return `${getBinTitle(bin, index)} — ${formatBinLabel(bin.min, bin.max)}`;
 }
 
-function isBinDisabled(bin: ExperimentalMapBin): boolean {
+function isBinDisabled(bin: AdvancedMapAnalyticsBin): boolean {
   return bin.disabled === true;
 }
 

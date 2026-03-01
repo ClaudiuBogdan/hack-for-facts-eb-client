@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { applyExperimentalMapValueFilters } from '@/lib/map-series/value-filters';
+import { applyAdvancedMapAnalyticsValueFilters } from '@/lib/map-series/value-filters';
 import {
-  createDefaultExperimentalMapStatsValueFilterRule,
-  createDefaultExperimentalMapValueFilterRule,
-} from '@/schemas/experimental-map';
+  createDefaultAdvancedMapAnalyticsStatsValueFilterRule,
+  createDefaultAdvancedMapAnalyticsValueFilterRule,
+} from '@/schemas/advanced-map-analytics';
 import type { MapSeriesVectorCache } from '@/lib/map-series/interfaces';
 
 function createVectorCache(values: Record<string, Record<string, number | undefined>>): MapSeriesVectorCache {
@@ -16,7 +16,7 @@ function createVectorCache(values: Record<string, Record<string, number | undefi
   return cache;
 }
 
-describe('applyExperimentalMapValueFilters', () => {
+describe('applyAdvancedMapAnalyticsValueFilters', () => {
   it('evaluates mixed AND/OR rules left-to-right', () => {
     const allValuesBySeriesId = createVectorCache({
       active: {
@@ -27,21 +27,21 @@ describe('applyExperimentalMapValueFilters', () => {
       },
     });
 
-    const firstRule = createDefaultExperimentalMapValueFilterRule();
+    const firstRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     firstRule.operator = 'lt';
     firstRule.value = 30;
 
-    const secondRule = createDefaultExperimentalMapValueFilterRule();
+    const secondRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     secondRule.joinWithPrevious = 'OR';
     secondRule.operator = 'gt';
     secondRule.value = 10;
 
-    const thirdRule = createDefaultExperimentalMapValueFilterRule();
+    const thirdRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     thirdRule.joinWithPrevious = 'AND';
     thirdRule.operator = 'lt';
     thirdRule.value = 20;
 
-    const result = applyExperimentalMapValueFilters({
+    const result = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId,
       displayValuesBySeriesId: allValuesBySeriesId,
       activeSeriesId: 'active',
@@ -66,16 +66,16 @@ describe('applyExperimentalMapValueFilters', () => {
       },
     });
 
-    const thresholdRule = createDefaultExperimentalMapValueFilterRule();
+    const thresholdRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     thresholdRule.operator = 'lt';
     thresholdRule.value = 9;
 
-    const rankRule = createDefaultExperimentalMapStatsValueFilterRule('rank');
+    const rankRule = createDefaultAdvancedMapAnalyticsStatsValueFilterRule('rank');
     rankRule.joinWithPrevious = 'AND';
     rankRule.direction = 'top';
     rankRule.count = 1;
 
-    const result = applyExperimentalMapValueFilters({
+    const result = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -98,16 +98,16 @@ describe('applyExperimentalMapValueFilters', () => {
       },
     });
 
-    const thresholdRule = createDefaultExperimentalMapValueFilterRule();
+    const thresholdRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     thresholdRule.operator = 'lt';
     thresholdRule.value = 9;
 
-    const rankRule = createDefaultExperimentalMapStatsValueFilterRule('rank');
+    const rankRule = createDefaultAdvancedMapAnalyticsStatsValueFilterRule('rank');
     rankRule.joinWithPrevious = 'OR';
     rankRule.direction = 'top';
     rankRule.count = 1;
 
-    const result = applyExperimentalMapValueFilters({
+    const result = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -130,16 +130,16 @@ describe('applyExperimentalMapValueFilters', () => {
       },
     });
 
-    const enabledRule = createDefaultExperimentalMapValueFilterRule();
+    const enabledRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     enabledRule.operator = 'gt';
     enabledRule.value = 0;
 
-    const disabledRule = createDefaultExperimentalMapValueFilterRule();
+    const disabledRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     disabledRule.enabled = false;
     disabledRule.operator = 'lt';
     disabledRule.value = 0;
 
-    const result = applyExperimentalMapValueFilters({
+    const result = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -161,10 +161,10 @@ describe('applyExperimentalMapValueFilters', () => {
       },
     });
 
-    const baseRule = createDefaultExperimentalMapValueFilterRule();
+    const baseRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     baseRule.operator = 'eq';
     baseRule.value = 10;
-    const eqResult = applyExperimentalMapValueFilters({
+    const eqResult = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -174,10 +174,10 @@ describe('applyExperimentalMapValueFilters', () => {
     expect(eqResult.valuesBySeriesId.get('active')?.has('equalWithinEpsilon')).toBe(true);
     expect(eqResult.valuesBySeriesId.get('active')?.has('below')).toBe(false);
 
-    const neqRule = createDefaultExperimentalMapValueFilterRule();
+    const neqRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     neqRule.operator = 'neq';
     neqRule.value = 10;
-    const neqResult = applyExperimentalMapValueFilters({
+    const neqResult = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -186,11 +186,11 @@ describe('applyExperimentalMapValueFilters', () => {
     expect(neqResult.valuesBySeriesId.get('active')?.has('below')).toBe(true);
     expect(neqResult.valuesBySeriesId.get('active')?.has('undefinedValue')).toBe(false);
 
-    const betweenRule = createDefaultExperimentalMapValueFilterRule();
+    const betweenRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     betweenRule.operator = 'between';
     betweenRule.value = 9;
     betweenRule.secondValue = 10;
-    const betweenResult = applyExperimentalMapValueFilters({
+    const betweenResult = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -200,11 +200,11 @@ describe('applyExperimentalMapValueFilters', () => {
     expect(betweenResult.valuesBySeriesId.get('active')?.has('match')).toBe(true);
     expect(betweenResult.valuesBySeriesId.get('active')?.has('above')).toBe(false);
 
-    const notBetweenRule = createDefaultExperimentalMapValueFilterRule();
+    const notBetweenRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     notBetweenRule.operator = 'not_between';
     notBetweenRule.value = 9;
     notBetweenRule.secondValue = 10;
-    const notBetweenResult = applyExperimentalMapValueFilters({
+    const notBetweenResult = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -213,9 +213,9 @@ describe('applyExperimentalMapValueFilters', () => {
     expect(notBetweenResult.valuesBySeriesId.get('active')?.has('above')).toBe(true);
     expect(notBetweenResult.valuesBySeriesId.get('active')?.has('below')).toBe(false);
 
-    const isUndefinedRule = createDefaultExperimentalMapValueFilterRule();
+    const isUndefinedRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     isUndefinedRule.operator = 'is_undefined';
-    const isUndefinedResult = applyExperimentalMapValueFilters({
+    const isUndefinedResult = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -223,9 +223,9 @@ describe('applyExperimentalMapValueFilters', () => {
     });
     expect(isUndefinedResult.valuesBySeriesId.get('active')?.has('undefinedValue')).toBe(true);
 
-    const isDefinedRule = createDefaultExperimentalMapValueFilterRule();
+    const isDefinedRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     isDefinedRule.operator = 'is_defined';
-    const isDefinedResult = applyExperimentalMapValueFilters({
+    const isDefinedResult = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -245,11 +245,11 @@ describe('applyExperimentalMapValueFilters', () => {
       },
     });
 
-    const percentileRule = createDefaultExperimentalMapStatsValueFilterRule('percentile_band');
+    const percentileRule = createDefaultAdvancedMapAnalyticsStatsValueFilterRule('percentile_band');
     percentileRule.minPercentile = 0;
     percentileRule.maxPercentile = 50;
 
-    const percentileResult = applyExperimentalMapValueFilters({
+    const percentileResult = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -260,11 +260,11 @@ describe('applyExperimentalMapValueFilters', () => {
     expect(percentileResult.valuesBySeriesId.get('active')?.has('s3')).toBe(true);
     expect(percentileResult.valuesBySeriesId.get('active')?.has('s4')).toBe(false);
 
-    const rankRule = createDefaultExperimentalMapStatsValueFilterRule('rank');
+    const rankRule = createDefaultAdvancedMapAnalyticsStatsValueFilterRule('rank');
     rankRule.direction = 'top';
     rankRule.count = 2;
 
-    const rankResult = applyExperimentalMapValueFilters({
+    const rankResult = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -275,10 +275,10 @@ describe('applyExperimentalMapValueFilters', () => {
     expect(rankResult.valuesBySeriesId.get('active')?.has('s4')).toBe(true);
     expect(rankResult.valuesBySeriesId.get('active')?.size).toBe(2);
 
-    const medianRule = createDefaultExperimentalMapStatsValueFilterRule('median_compare');
+    const medianRule = createDefaultAdvancedMapAnalyticsStatsValueFilterRule('median_compare');
     medianRule.mode = 'gte';
 
-    const medianResult = applyExperimentalMapValueFilters({
+    const medianResult = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -301,11 +301,11 @@ describe('applyExperimentalMapValueFilters', () => {
       },
     });
 
-    const zScoreRule = createDefaultExperimentalMapStatsValueFilterRule('zscore');
+    const zScoreRule = createDefaultAdvancedMapAnalyticsStatsValueFilterRule('zscore');
     zScoreRule.mode = 'abs_gte';
     zScoreRule.threshold = 1;
 
-    const zScoreResult = applyExperimentalMapValueFilters({
+    const zScoreResult = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -314,11 +314,11 @@ describe('applyExperimentalMapValueFilters', () => {
 
     expect(zScoreResult.valuesBySeriesId.get('active')?.has('s5')).toBe(true);
 
-    const iqrRule = createDefaultExperimentalMapStatsValueFilterRule('iqr_outlier');
+    const iqrRule = createDefaultAdvancedMapAnalyticsStatsValueFilterRule('iqr_outlier');
     iqrRule.side = 'upper';
     iqrRule.multiplier = 1.5;
 
-    const iqrResult = applyExperimentalMapValueFilters({
+    const iqrResult = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -328,10 +328,10 @@ describe('applyExperimentalMapValueFilters', () => {
     expect(iqrResult.valuesBySeriesId.get('active')?.has('s5')).toBe(true);
     expect(iqrResult.valuesBySeriesId.get('active')?.size).toBe(1);
 
-    const madRule = createDefaultExperimentalMapStatsValueFilterRule('mad_robust_zscore');
+    const madRule = createDefaultAdvancedMapAnalyticsStatsValueFilterRule('mad_robust_zscore');
     madRule.threshold = 2;
 
-    const madResult = applyExperimentalMapValueFilters({
+    const madResult = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -351,11 +351,11 @@ describe('applyExperimentalMapValueFilters', () => {
       },
     });
 
-    const rankRule = createDefaultExperimentalMapStatsValueFilterRule('rank');
+    const rankRule = createDefaultAdvancedMapAnalyticsStatsValueFilterRule('rank');
     rankRule.direction = 'top';
     rankRule.count = 1;
 
-    const result = applyExperimentalMapValueFilters({
+    const result = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -385,7 +385,7 @@ describe('applyExperimentalMapValueFilters', () => {
       },
     });
 
-    const populationRule = createDefaultExperimentalMapValueFilterRule();
+    const populationRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     populationRule.seriesRef = {
       mode: 'series',
       seriesId: 'population',
@@ -393,7 +393,7 @@ describe('applyExperimentalMapValueFilters', () => {
     populationRule.operator = 'gte';
     populationRule.value = 3000;
 
-    const result = applyExperimentalMapValueFilters({
+    const result = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId,
       displayValuesBySeriesId,
       activeSeriesId: 'active',
@@ -412,24 +412,24 @@ describe('applyExperimentalMapValueFilters', () => {
       },
     });
 
-    const missingValueRule = createDefaultExperimentalMapValueFilterRule();
+    const missingValueRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     missingValueRule.operator = 'gt';
     missingValueRule.value = undefined;
 
-    const missingSeriesRule = createDefaultExperimentalMapValueFilterRule();
+    const missingSeriesRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     missingSeriesRule.seriesRef = {
       mode: 'series',
       seriesId: 'missing-series',
     };
     missingSeriesRule.operator = 'is_defined';
 
-    const missingActiveRule = createDefaultExperimentalMapValueFilterRule();
+    const missingActiveRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     missingActiveRule.seriesRef = {
       mode: 'active',
     };
     missingActiveRule.operator = 'is_defined';
 
-    const invalidResult = applyExperimentalMapValueFilters({
+    const invalidResult = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -442,7 +442,7 @@ describe('applyExperimentalMapValueFilters', () => {
       invalidResult.warnings.some((warning) => warning.type === 'value_filter_missing_series')
     ).toBe(true);
 
-    const missingActiveResult = applyExperimentalMapValueFilters({
+    const missingActiveResult = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: undefined,
@@ -462,15 +462,15 @@ describe('applyExperimentalMapValueFilters', () => {
       },
     });
 
-    const invalidPercentileRule = createDefaultExperimentalMapStatsValueFilterRule('percentile_band');
+    const invalidPercentileRule = createDefaultAdvancedMapAnalyticsStatsValueFilterRule('percentile_band');
     invalidPercentileRule.minPercentile = -10;
     invalidPercentileRule.maxPercentile = 90;
 
-    const zeroVarianceRule = createDefaultExperimentalMapStatsValueFilterRule('zscore');
+    const zeroVarianceRule = createDefaultAdvancedMapAnalyticsStatsValueFilterRule('zscore');
     zeroVarianceRule.mode = 'abs_gte';
     zeroVarianceRule.threshold = 2;
 
-    const result = applyExperimentalMapValueFilters({
+    const result = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -490,9 +490,9 @@ describe('applyExperimentalMapValueFilters', () => {
       },
     });
 
-    const statsRule = createDefaultExperimentalMapStatsValueFilterRule('median_compare');
+    const statsRule = createDefaultAdvancedMapAnalyticsStatsValueFilterRule('median_compare');
 
-    const result = applyExperimentalMapValueFilters({
+    const result = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',
@@ -511,11 +511,11 @@ describe('applyExperimentalMapValueFilters', () => {
       },
     });
 
-    const noMatchRule = createDefaultExperimentalMapValueFilterRule();
+    const noMatchRule = createDefaultAdvancedMapAnalyticsValueFilterRule();
     noMatchRule.operator = 'lt';
     noMatchRule.value = 0;
 
-    const result = applyExperimentalMapValueFilters({
+    const result = applyAdvancedMapAnalyticsValueFilters({
       allValuesBySeriesId: valuesBySeriesId,
       displayValuesBySeriesId: valuesBySeriesId,
       activeSeriesId: 'active',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ExperimentalMapBinSchema, ExperimentalMapBinsPresetConfigSchema } from '@/schemas/experimental-map';
+import { AdvancedMapAnalyticsBinSchema, AdvancedMapAnalyticsBinsPresetConfigSchema } from '@/schemas/advanced-map-analytics';
 import {
   applyGradientColorsToBins,
   classifySeriesValues,
@@ -11,13 +11,13 @@ import {
 
 describe('map-bins', () => {
   it('classifies null/NaN as NO_DATA', () => {
-    const firstBin = ExperimentalMapBinSchema.parse({
+    const firstBin = AdvancedMapAnalyticsBinSchema.parse({
       min: 0,
       max: null,
       label: '>= 0',
       color: '#ff0000',
     });
-    const config = ExperimentalMapBinsPresetConfigSchema.parse({
+    const config = AdvancedMapAnalyticsBinsPresetConfigSchema.parse({
       bins: [firstBin],
     });
 
@@ -26,19 +26,19 @@ describe('map-bins', () => {
   });
 
   it('uses [min, max) semantics and open-ended top bin', () => {
-    const firstBin = ExperimentalMapBinSchema.parse({
+    const firstBin = AdvancedMapAnalyticsBinSchema.parse({
       min: 0,
       max: 10,
       label: '0-10',
       color: '#ff0000',
     });
-    const secondBin = ExperimentalMapBinSchema.parse({
+    const secondBin = AdvancedMapAnalyticsBinSchema.parse({
       min: 10,
       max: null,
       label: '>=10',
       color: '#00ff00',
     });
-    const config = ExperimentalMapBinsPresetConfigSchema.parse({
+    const config = AdvancedMapAnalyticsBinsPresetConfigSchema.parse({
       bins: [firstBin, secondBin],
     });
 
@@ -48,19 +48,19 @@ describe('map-bins', () => {
   });
 
   it('maps out-of-range values to NO_DATA when there are gaps', () => {
-    const firstBin = ExperimentalMapBinSchema.parse({
+    const firstBin = AdvancedMapAnalyticsBinSchema.parse({
       min: 0,
       max: 10,
       label: '0-10',
       color: '#ff0000',
     });
-    const secondBin = ExperimentalMapBinSchema.parse({
+    const secondBin = AdvancedMapAnalyticsBinSchema.parse({
       min: 20,
       max: null,
       label: '>=20',
       color: '#00ff00',
     });
-    const config = ExperimentalMapBinsPresetConfigSchema.parse({
+    const config = AdvancedMapAnalyticsBinsPresetConfigSchema.parse({
       bins: [firstBin, secondBin],
     });
 
@@ -68,20 +68,20 @@ describe('map-bins', () => {
   });
 
   it('skips disabled bins during classification and palette generation', () => {
-    const disabledBin = ExperimentalMapBinSchema.parse({
+    const disabledBin = AdvancedMapAnalyticsBinSchema.parse({
       min: 0,
       max: 10,
       label: '0-10',
       color: '#ff0000',
       disabled: true,
     });
-    const enabledBin = ExperimentalMapBinSchema.parse({
+    const enabledBin = AdvancedMapAnalyticsBinSchema.parse({
       min: 10,
       max: null,
       label: '>=10',
       color: '#00ff00',
     });
-    const config = ExperimentalMapBinsPresetConfigSchema.parse({
+    const config = AdvancedMapAnalyticsBinsPresetConfigSchema.parse({
       bins: [disabledBin, enabledBin],
     });
 
@@ -99,38 +99,38 @@ describe('map-bins', () => {
   });
 
   it('validates overlaps as invalid while allowing gaps', () => {
-    const overlapFirstBin = ExperimentalMapBinSchema.parse({
+    const overlapFirstBin = AdvancedMapAnalyticsBinSchema.parse({
       min: 0,
       max: 10,
       label: '',
       color: '#ff0000',
     });
-    const overlapSecondBin = ExperimentalMapBinSchema.parse({
+    const overlapSecondBin = AdvancedMapAnalyticsBinSchema.parse({
       min: 9,
       max: null,
       label: '',
       color: '#00ff00',
     });
-    const overlapping = ExperimentalMapBinsPresetConfigSchema.parse({
+    const overlapping = AdvancedMapAnalyticsBinsPresetConfigSchema.parse({
       bins: [overlapFirstBin, overlapSecondBin],
     });
     const overlapResult = validateBinsConfig(overlapping);
     expect(overlapResult.isValid).toBe(false);
     expect(overlapResult.errors.join(' ')).toContain('overlaps');
 
-    const gapFirstBin = ExperimentalMapBinSchema.parse({
+    const gapFirstBin = AdvancedMapAnalyticsBinSchema.parse({
       min: 0,
       max: 10,
       label: '',
       color: '#ff0000',
     });
-    const gapSecondBin = ExperimentalMapBinSchema.parse({
+    const gapSecondBin = AdvancedMapAnalyticsBinSchema.parse({
       min: 15,
       max: null,
       label: '',
       color: '#00ff00',
     });
-    const gapped = ExperimentalMapBinsPresetConfigSchema.parse({
+    const gapped = AdvancedMapAnalyticsBinsPresetConfigSchema.parse({
       bins: [gapFirstBin, gapSecondBin],
     });
     const gapResult = validateBinsConfig(gapped);
@@ -138,19 +138,19 @@ describe('map-bins', () => {
   });
 
   it('classifies series vectors and returns deterministic palette', () => {
-    const firstBin = ExperimentalMapBinSchema.parse({
+    const firstBin = AdvancedMapAnalyticsBinSchema.parse({
       min: 0,
       max: 100,
       label: '0-100',
       color: '#ff0000',
     });
-    const secondBin = ExperimentalMapBinSchema.parse({
+    const secondBin = AdvancedMapAnalyticsBinSchema.parse({
       min: 100,
       max: null,
       label: '>=100',
       color: '#00ff00',
     });
-    const config = ExperimentalMapBinsPresetConfigSchema.parse({
+    const config = AdvancedMapAnalyticsBinsPresetConfigSchema.parse({
       bins: [firstBin, secondBin],
     });
 

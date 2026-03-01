@@ -1,10 +1,10 @@
 import type {
-  ExperimentalMapStatsValueFilterRule,
-  ExperimentalMapThresholdValueFilterRule,
-  ExperimentalMapValueFilterOperator,
-  ExperimentalMapValueFilterRule,
-  ExperimentalMapValueRuleJoin,
-} from '@/schemas/experimental-map';
+  AdvancedMapAnalyticsStatsValueFilterRule,
+  AdvancedMapAnalyticsThresholdValueFilterRule,
+  AdvancedMapAnalyticsValueFilterOperator,
+  AdvancedMapAnalyticsValueFilterRule,
+  AdvancedMapAnalyticsValueRuleJoin,
+} from '@/schemas/advanced-map-analytics';
 import type {
   MapSeriesVector,
   MapSeriesVectorCache,
@@ -16,22 +16,22 @@ const EQUALITY_EPSILON = 1e-9;
 const ZERO_VARIANCE_EPSILON = 1e-12;
 const ROBUST_Z_CONSISTENCY_CONSTANT = 0.67448975;
 
-interface ApplyExperimentalMapValueFiltersInput {
+interface ApplyAdvancedMapAnalyticsValueFiltersInput {
   allValuesBySeriesId: MapSeriesVectorCache;
   displayValuesBySeriesId: MapSeriesVectorCache;
   activeSeriesId?: string;
-  rules: ExperimentalMapValueFilterRule[];
+  rules: AdvancedMapAnalyticsValueFilterRule[];
 }
 
-export interface ApplyExperimentalMapValueFiltersResult {
+export interface ApplyAdvancedMapAnalyticsValueFiltersResult {
   valuesBySeriesId: MapSeriesVectorCache;
   matchedSirutaCodes?: Set<string>;
   warnings: MapSeriesWarning[];
 }
 
-export function applyExperimentalMapValueFilters(
-  input: ApplyExperimentalMapValueFiltersInput
-): ApplyExperimentalMapValueFiltersResult {
+export function applyAdvancedMapAnalyticsValueFilters(
+  input: ApplyAdvancedMapAnalyticsValueFiltersInput
+): ApplyAdvancedMapAnalyticsValueFiltersResult {
   const warnings: MapSeriesWarning[] = [];
   const enabledRules = input.rules.filter((rule) => rule.enabled);
   if (enabledRules.length === 0) {
@@ -223,7 +223,7 @@ function unionSets(left: Set<string>, right: Set<string>): Set<string> {
 }
 
 function resolveRuleSeriesVector(
-  rule: ExperimentalMapValueFilterRule,
+  rule: AdvancedMapAnalyticsValueFilterRule,
   allValuesBySeriesId: MapSeriesVectorCache,
   activeSeriesId: string | undefined
 ):
@@ -291,7 +291,7 @@ interface RuleEvaluationFailure {
 }
 
 function evaluateRule(
-  rule: ExperimentalMapValueFilterRule,
+  rule: AdvancedMapAnalyticsValueFilterRule,
   valuesBySiruta: MapSeriesVector,
   evaluationUniverse: Set<string>
 ): RuleEvaluationSuccess | RuleEvaluationFailure {
@@ -303,7 +303,7 @@ function evaluateRule(
 }
 
 function evaluateThresholdRule(
-  rule: ExperimentalMapThresholdValueFilterRule,
+  rule: AdvancedMapAnalyticsThresholdValueFilterRule,
   valuesBySiruta: MapSeriesVector,
   evaluationUniverse: Set<string>
 ): RuleEvaluationSuccess | RuleEvaluationFailure {
@@ -333,7 +333,7 @@ function evaluateThresholdRule(
 }
 
 function buildThresholdPredicate(
-  rule: ExperimentalMapThresholdValueFilterRule,
+  rule: AdvancedMapAnalyticsThresholdValueFilterRule,
   valuesBySiruta: MapSeriesVector
 ):
   | { ok: true; predicate: (sirutaCode: string) => boolean }
@@ -403,7 +403,7 @@ function buildThresholdPredicate(
 }
 
 function evaluateStatsRule(
-  rule: ExperimentalMapStatsValueFilterRule,
+  rule: AdvancedMapAnalyticsStatsValueFilterRule,
   valuesBySiruta: MapSeriesVector,
   evaluationUniverse: Set<string>
 ): RuleEvaluationSuccess | RuleEvaluationFailure {
@@ -832,7 +832,7 @@ function matchesMedianMode(
 }
 
 function operatorHasValidParameters(
-  operator: ExperimentalMapValueFilterOperator,
+  operator: AdvancedMapAnalyticsValueFilterOperator,
   value: number | undefined,
   secondValue: number | undefined
 ): boolean {
@@ -850,7 +850,7 @@ function operatorHasValidParameters(
 function matchesComparisonOperator(
   value: number,
   threshold: number,
-  operator: Exclude<ExperimentalMapValueFilterOperator, 'between' | 'not_between' | 'is_defined' | 'is_undefined'>
+  operator: Exclude<AdvancedMapAnalyticsValueFilterOperator, 'between' | 'not_between' | 'is_defined' | 'is_undefined'>
 ): boolean {
   if (operator === 'gt') {
     return value > threshold;
@@ -876,9 +876,9 @@ function matchesComparisonOperator(
 }
 
 function isComparisonOperator(
-  operator: ExperimentalMapValueFilterOperator
+  operator: AdvancedMapAnalyticsValueFilterOperator
 ): operator is Exclude<
-  ExperimentalMapValueFilterOperator,
+  AdvancedMapAnalyticsValueFilterOperator,
   'between' | 'not_between' | 'is_defined' | 'is_undefined'
 > {
   return (
@@ -902,7 +902,7 @@ function normalizeVectorValue(value: number | undefined): number | undefined {
 export function applyBooleanJoin(
   current: boolean,
   next: boolean,
-  joinWithPrevious: ExperimentalMapValueRuleJoin
+  joinWithPrevious: AdvancedMapAnalyticsValueRuleJoin
 ): boolean {
   if (joinWithPrevious === 'OR') {
     return current || next;

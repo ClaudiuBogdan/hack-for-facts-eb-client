@@ -25,7 +25,6 @@ import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$toke
 import { Route as ShareCodeRouteImport } from './routes/share.$code'
 import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
 import { Route as SettingsNotificationsRouteImport } from './routes/settings/notifications'
-import { Route as ExperimentalMapRouteImport } from './routes/experimental/map'
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
 import { Route as ChartsNewRouteImport } from './routes/charts/new'
 import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
@@ -36,11 +35,15 @@ import { Route as AlertsNewRouteImport } from './routes/alerts/new'
 import { Route as ChartsChartIdRouteRouteImport } from './routes/charts/$chartId/route'
 import { Route as AlertsAlertIdRouteRouteImport } from './routes/alerts/$alertId/route'
 import { Route as LangLearningRouteRouteImport } from './routes/$lang/learning/route'
+import { Route as MapsEditorIndexRouteImport } from './routes/maps/editor/index'
 import { Route as ClassificationsFunctionalIndexRouteImport } from './routes/classifications/functional/index'
 import { Route as ClassificationsEconomicIndexRouteImport } from './routes/classifications/economic/index'
 import { Route as BugeteLocale2026ChallengesIndexRouteImport } from './routes/bugete-locale-2026/challenges/index'
 import { Route as BugeteLocale2026CautaIndexRouteImport } from './routes/bugete-locale-2026/cauta/index'
 import { Route as LangLearningIndexRouteImport } from './routes/$lang/learning/index'
+import { Route as MapsPublicMapIdRouteImport } from './routes/maps/public/$mapId'
+import { Route as MapsEditorNewRouteImport } from './routes/maps/editor/new'
+import { Route as MapsEditorMapIdRouteImport } from './routes/maps/editor/$mapId'
 import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entities.$cui.share-image[.]png'
 import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
@@ -155,13 +158,6 @@ const SettingsNotificationsRoute = SettingsNotificationsRouteImport.update({
   path: '/settings/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ExperimentalMapRoute = ExperimentalMapRouteImport.update({
-  id: '/experimental/map',
-  path: '/experimental/map',
-  getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/experimental/map.lazy').then((d) => d.Route),
-)
 const EntitiesCuiRoute = EntitiesCuiRouteImport.update({
   id: '/entities/$cui',
   path: '/entities/$cui',
@@ -236,6 +232,13 @@ const AlertsAlertIdIndexLazyRoute = AlertsAlertIdIndexLazyRouteImport.update({
 } as any).lazy(() =>
   import('./routes/alerts/$alertId/index.lazy').then((d) => d.Route),
 )
+const MapsEditorIndexRoute = MapsEditorIndexRouteImport.update({
+  id: '/maps/editor/',
+  path: '/maps/editor/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/maps/editor/index.lazy').then((d) => d.Route),
+)
 const ClassificationsFunctionalIndexRoute =
   ClassificationsFunctionalIndexRouteImport.update({
     id: '/classifications/functional/',
@@ -278,6 +281,27 @@ const LangLearningIndexRoute = LangLearningIndexRouteImport.update({
   getParentRoute: () => LangLearningRouteRoute,
 } as any).lazy(() =>
   import('./routes/$lang/learning/index.lazy').then((d) => d.Route),
+)
+const MapsPublicMapIdRoute = MapsPublicMapIdRouteImport.update({
+  id: '/maps/public/$mapId',
+  path: '/maps/public/$mapId',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/maps/public/$mapId.lazy').then((d) => d.Route),
+)
+const MapsEditorNewRoute = MapsEditorNewRouteImport.update({
+  id: '/maps/editor/new',
+  path: '/maps/editor/new',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/maps/editor/new.lazy').then((d) => d.Route),
+)
+const MapsEditorMapIdRoute = MapsEditorMapIdRouteImport.update({
+  id: '/maps/editor/$mapId',
+  path: '/maps/editor/$mapId',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/maps/editor/$mapId.lazy').then((d) => d.Route),
 )
 const EntitiesCuiShareImageDotpngRoute =
   EntitiesCuiShareImageDotpngRouteImport.update({
@@ -379,7 +403,6 @@ export interface FileRoutesByFullPath {
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
-  '/experimental/map': typeof ExperimentalMapRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
@@ -392,11 +415,15 @@ export interface FileRoutesByFullPath {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
+  '/maps/editor/new': typeof MapsEditorNewRoute
+  '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/bugete-locale-2026/cauta/': typeof BugeteLocale2026CautaIndexRoute
   '/bugete-locale-2026/challenges/': typeof BugeteLocale2026ChallengesIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
+  '/maps/editor/': typeof MapsEditorIndexRoute
   '/alerts/$alertId/': typeof AlertsAlertIdIndexLazyRoute
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
@@ -421,7 +448,6 @@ export interface FileRoutesByTo {
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
-  '/experimental/map': typeof ExperimentalMapRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
@@ -434,11 +460,15 @@ export interface FileRoutesByTo {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
+  '/maps/editor/new': typeof MapsEditorNewRoute
+  '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/$lang/learning': typeof LangLearningIndexRoute
   '/bugete-locale-2026/cauta': typeof BugeteLocale2026CautaIndexRoute
   '/bugete-locale-2026/challenges': typeof BugeteLocale2026ChallengesIndexRoute
   '/classifications/economic': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional': typeof ClassificationsFunctionalIndexRoute
+  '/maps/editor': typeof MapsEditorIndexRoute
   '/alerts/$alertId': typeof AlertsAlertIdIndexLazyRoute
   '/charts/$chartId': typeof ChartsChartIdIndexLazyRoute
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
@@ -468,7 +498,6 @@ export interface FileRoutesById {
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
-  '/experimental/map': typeof ExperimentalMapRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
@@ -481,11 +510,15 @@ export interface FileRoutesById {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
+  '/maps/editor/new': typeof MapsEditorNewRoute
+  '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/bugete-locale-2026/cauta/': typeof BugeteLocale2026CautaIndexRoute
   '/bugete-locale-2026/challenges/': typeof BugeteLocale2026ChallengesIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
+  '/maps/editor/': typeof MapsEditorIndexRoute
   '/alerts/$alertId/': typeof AlertsAlertIdIndexLazyRoute
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
@@ -516,7 +549,6 @@ export interface FileRouteTypes {
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
-    | '/experimental/map'
     | '/settings/notifications'
     | '/settings/profile'
     | '/share/$code'
@@ -529,11 +561,15 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/maps/editor/$mapId'
+    | '/maps/editor/new'
+    | '/maps/public/$mapId'
     | '/$lang/learning/'
     | '/bugete-locale-2026/cauta/'
     | '/bugete-locale-2026/challenges/'
     | '/classifications/economic/'
     | '/classifications/functional/'
+    | '/maps/editor/'
     | '/alerts/$alertId/'
     | '/charts/$chartId/'
     | '/$lang/learning/certificates/$id'
@@ -558,7 +594,6 @@ export interface FileRouteTypes {
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
-    | '/experimental/map'
     | '/settings/notifications'
     | '/settings/profile'
     | '/share/$code'
@@ -571,11 +606,15 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/maps/editor/$mapId'
+    | '/maps/editor/new'
+    | '/maps/public/$mapId'
     | '/$lang/learning'
     | '/bugete-locale-2026/cauta'
     | '/bugete-locale-2026/challenges'
     | '/classifications/economic'
     | '/classifications/functional'
+    | '/maps/editor'
     | '/alerts/$alertId'
     | '/charts/$chartId'
     | '/$lang/learning/certificates/$id'
@@ -604,7 +643,6 @@ export interface FileRouteTypes {
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
-    | '/experimental/map'
     | '/settings/notifications'
     | '/settings/profile'
     | '/share/$code'
@@ -617,11 +655,15 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/maps/editor/$mapId'
+    | '/maps/editor/new'
+    | '/maps/public/$mapId'
     | '/$lang/learning/'
     | '/bugete-locale-2026/cauta/'
     | '/bugete-locale-2026/challenges/'
     | '/classifications/economic/'
     | '/classifications/functional/'
+    | '/maps/editor/'
     | '/alerts/$alertId/'
     | '/charts/$chartId/'
     | '/$lang/learning/certificates/$id'
@@ -648,7 +690,6 @@ export interface RootRouteChildren {
   CertificatesIdRoute: typeof CertificatesIdRoute
   ChartsNewRoute: typeof ChartsNewRoute
   EntitiesCuiRoute: typeof EntitiesCuiRouteWithChildren
-  ExperimentalMapRoute: typeof ExperimentalMapRoute
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
   SettingsProfileRoute: typeof SettingsProfileRoute
   ShareCodeRoute: typeof ShareCodeRoute
@@ -657,8 +698,12 @@ export interface RootRouteChildren {
   ChartsIndexLazyRoute: typeof ChartsIndexLazyRoute
   ClassificationsEconomicCodeRoute: typeof ClassificationsEconomicCodeRoute
   ClassificationsFunctionalCodeRoute: typeof ClassificationsFunctionalCodeRoute
+  MapsEditorMapIdRoute: typeof MapsEditorMapIdRoute
+  MapsEditorNewRoute: typeof MapsEditorNewRoute
+  MapsPublicMapIdRoute: typeof MapsPublicMapIdRoute
   ClassificationsEconomicIndexRoute: typeof ClassificationsEconomicIndexRoute
   ClassificationsFunctionalIndexRoute: typeof ClassificationsFunctionalIndexRoute
+  MapsEditorIndexRoute: typeof MapsEditorIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -782,13 +827,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsNotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/experimental/map': {
-      id: '/experimental/map'
-      path: '/experimental/map'
-      fullPath: '/experimental/map'
-      preLoaderRoute: typeof ExperimentalMapRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/entities/$cui': {
       id: '/entities/$cui'
       path: '/entities/$cui'
@@ -873,6 +911,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AlertsAlertIdIndexLazyRouteImport
       parentRoute: typeof AlertsAlertIdRouteRoute
     }
+    '/maps/editor/': {
+      id: '/maps/editor/'
+      path: '/maps/editor'
+      fullPath: '/maps/editor/'
+      preLoaderRoute: typeof MapsEditorIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/classifications/functional/': {
       id: '/classifications/functional/'
       path: '/classifications/functional'
@@ -907,6 +952,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/$lang/learning/'
       preLoaderRoute: typeof LangLearningIndexRouteImport
       parentRoute: typeof LangLearningRouteRoute
+    }
+    '/maps/public/$mapId': {
+      id: '/maps/public/$mapId'
+      path: '/maps/public/$mapId'
+      fullPath: '/maps/public/$mapId'
+      preLoaderRoute: typeof MapsPublicMapIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maps/editor/new': {
+      id: '/maps/editor/new'
+      path: '/maps/editor/new'
+      fullPath: '/maps/editor/new'
+      preLoaderRoute: typeof MapsEditorNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maps/editor/$mapId': {
+      id: '/maps/editor/$mapId'
+      path: '/maps/editor/$mapId'
+      fullPath: '/maps/editor/$mapId'
+      preLoaderRoute: typeof MapsEditorMapIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/entities/$cui/share-image.png': {
       id: '/entities/$cui/share-image.png'
@@ -1074,7 +1140,6 @@ const rootRouteChildren: RootRouteChildren = {
   CertificatesIdRoute: CertificatesIdRoute,
   ChartsNewRoute: ChartsNewRoute,
   EntitiesCuiRoute: EntitiesCuiRouteWithChildren,
-  ExperimentalMapRoute: ExperimentalMapRoute,
   SettingsNotificationsRoute: SettingsNotificationsRoute,
   SettingsProfileRoute: SettingsProfileRoute,
   ShareCodeRoute: ShareCodeRoute,
@@ -1083,8 +1148,12 @@ const rootRouteChildren: RootRouteChildren = {
   ChartsIndexLazyRoute: ChartsIndexLazyRoute,
   ClassificationsEconomicCodeRoute: ClassificationsEconomicCodeRoute,
   ClassificationsFunctionalCodeRoute: ClassificationsFunctionalCodeRoute,
+  MapsEditorMapIdRoute: MapsEditorMapIdRoute,
+  MapsEditorNewRoute: MapsEditorNewRoute,
+  MapsPublicMapIdRoute: MapsPublicMapIdRoute,
   ClassificationsEconomicIndexRoute: ClassificationsEconomicIndexRoute,
   ClassificationsFunctionalIndexRoute: ClassificationsFunctionalIndexRoute,
+  MapsEditorIndexRoute: MapsEditorIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

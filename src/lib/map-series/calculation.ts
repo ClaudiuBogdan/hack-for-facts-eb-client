@@ -1,5 +1,5 @@
 import type { Calculation, Operand } from '@/schemas/charts';
-import type { MapSupportedSeries } from '@/schemas/experimental-map';
+import type { MapSupportedSeries } from '@/schemas/advanced-map-analytics';
 import type {
   MapSeriesCalculationResult,
   MapSeriesVector,
