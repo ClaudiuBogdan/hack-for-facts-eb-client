@@ -1175,7 +1175,10 @@ export function MapAnalyticsWorkspace({
                       center={mapState.mapCenter}
                       mapViewType="UAT"
                       filters={defaultMapFilters}
-                      showLabels={false}
+                      showLabels={Boolean(activeSeries)}
+                      labelMode="active-series"
+                      activeSeriesValuesBySirutaCode={activeValues}
+                      activeSeriesUnit={activeUnit}
                       onViewChange={handleMapViewChange}
                       getTooltipContent={getTooltipContent}
                     />

@@ -20,6 +20,7 @@ import { AnalyticsFilterType } from '@/schemas/charts';
 import { Analytics } from '@/lib/analytics';
 import { MapLabels } from './MapLabels';
 import { shouldUseCanvasRenderer } from './leaflet-renderer';
+import type { LabelMode } from './polygonLabels';
 
 const MAP_VIEW_EPSILON = 1e-6;
 
@@ -67,6 +68,9 @@ interface InteractiveMapProps {
   mapViewType: 'UAT' | 'County';
   filters: AnalyticsFilterType;
   showLabels?: boolean;
+  labelMode?: LabelMode;
+  activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
+  activeSeriesUnit?: string;
   onViewChange?: (center: [number, number], zoom: number) => void;
   getTooltipContent?: TooltipContentBuilder;
 }
@@ -87,6 +91,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   scrollWheelZoom = true,
   filters,
   showLabels = true,
+  labelMode = 'legacy-heatmap',
+  activeSeriesValuesBySirutaCode,
+  activeSeriesUnit,
   onViewChange,
   getTooltipContent,
 }) => {
@@ -261,6 +268,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
             heatmapDataMap={heatmapDataMap}
             normalization={filters.normalization || 'total'}
             currency={(filters as any).currency}
+            labelMode={labelMode}
+            activeSeriesValuesBySirutaCode={activeSeriesValuesBySirutaCode}
+            activeSeriesUnit={activeSeriesUnit}
           />
         </>
       )}

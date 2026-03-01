@@ -4,6 +4,7 @@ import { GeoJsonObject } from 'geojson';
 import { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap';
 import { CanvasLabelLayer } from './CanvasLabelLayer';
 import type { Currency, Normalization } from '@/schemas/charts';
+import type { LabelMode } from './polygonLabels';
 
 interface MapLabelsProps {
   geoJsonData: GeoJsonObject | null;
@@ -12,6 +13,9 @@ interface MapLabelsProps {
   heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>;
   normalization: Normalization;
   currency?: Currency;
+  labelMode?: LabelMode;
+  activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
+  activeSeriesUnit?: string;
 }
 
 /**
@@ -25,6 +29,9 @@ export const MapLabels: React.FC<MapLabelsProps> = ({
   heatmapDataMap,
   normalization,
   currency,
+  labelMode = 'legacy-heatmap',
+  activeSeriesValuesBySirutaCode,
+  activeSeriesUnit,
 }) => {
   const map = useMap();
   const layerRef = useRef<CanvasLabelLayer | null>(null);
@@ -41,6 +48,9 @@ export const MapLabels: React.FC<MapLabelsProps> = ({
       normalization,
       currency,
       showLabels,
+      labelMode,
+      activeSeriesValuesBySirutaCode,
+      activeSeriesUnit,
     });
 
     // Add layer to map
@@ -66,9 +76,22 @@ export const MapLabels: React.FC<MapLabelsProps> = ({
         normalization,
         currency,
         showLabels,
+        labelMode,
+        activeSeriesValuesBySirutaCode,
+        activeSeriesUnit,
       });
     }
-  }, [geoJsonData, mapViewType, heatmapDataMap, normalization, currency, showLabels]);
+  }, [
+    geoJsonData,
+    mapViewType,
+    heatmapDataMap,
+    normalization,
+    currency,
+    showLabels,
+    labelMode,
+    activeSeriesValuesBySirutaCode,
+    activeSeriesUnit,
+  ]);
 
   // This component doesn't render anything - the canvas layer handles rendering
   return null;

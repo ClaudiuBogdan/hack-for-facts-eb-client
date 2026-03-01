@@ -1,7 +1,18 @@
 import L from 'leaflet';
-import { GeoJsonObject, Feature, Geometry } from 'geojson';
+import { Feature, GeoJsonObject, Geometry } from 'geojson';
 import { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap';
-import { processFeatureForLabel, PolygonLabelData } from './polygonLabels';
+import {
+  buildFeatureLabelGeometry,
+  estimateTextWidth,
+  processFeatureForLabel,
+  type FeatureLabelGeometry,
+  type LabelMode,
+  type PolygonLabelData,
+} from './polygonLabels';
+import {
+  selectNonOverlappingLabelCandidates,
+  type LabelCollisionCandidate,
+} from './label-collision';
 import type { Currency, Normalization } from '@/schemas/charts';
 
 interface CanvasLabelLayerOptions extends L.LayerOptions {
@@ -11,6 +22,21 @@ interface CanvasLabelLayerOptions extends L.LayerOptions {
   normalization: Normalization;
   currency?: Currency;
   showLabels?: boolean;
+  labelMode?: LabelMode;
+  activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
+  activeSeriesUnit?: string;
+}
+
+interface CachedFeatureGeometryEntry {
+  feature: Feature<Geometry, Record<string, unknown>>;
+  geometry: FeatureLabelGeometry;
+}
+
+interface LabelDrawCandidate extends LabelCollisionCandidate {
+  label: PolygonLabelData;
+  textX: number;
+  textY: number;
+  amountY: number;
 }
 
 /**
@@ -26,6 +52,8 @@ export class CanvasLabelLayer extends L.Layer {
   private isZooming = false;
   private isPanning = false;
   private origin: L.Point = L.point(0, 0);
+  private geometryCache: CachedFeatureGeometryEntry[] = [];
+  private geometryCacheGeoJsonReference: GeoJsonObject | null = null;
 
   constructor(options: CanvasLabelLayerOptions) {
     super(options);
@@ -33,7 +61,6 @@ export class CanvasLabelLayer extends L.Layer {
   }
 
   onAdd(map: L.Map): this {
-    // Create canvas element
     this.canvas = L.DomUtil.create('canvas', 'leaflet-zoom-hide leaflet-label-layer');
     this.ctx = this.canvas.getContext('2d', {
       alpha: true,
@@ -45,22 +72,17 @@ export class CanvasLabelLayer extends L.Layer {
       return this;
     }
 
-    // Configure canvas for crisp rendering and transparency
     this.canvas.style.position = 'absolute';
     this.canvas.style.pointerEvents = 'none';
     this.canvas.style.zIndex = '450';
-    // Ensure canvas is transparent - critical for mobile browsers
-    this.canvas.style.opacity = '1'
-    // Use GPU compositing for better performance
+    this.canvas.style.opacity = '1';
     this.canvas.style.willChange = 'contents';
 
-    // Add to map pane
     const pane = map.getPane('overlayPane');
     if (pane) {
       pane.appendChild(this.canvas);
     }
 
-    // Register event handlers
     map.on('zoom', this.handleZoom, this);
     map.on('zoomstart', this.handleZoomStart, this);
     map.on('zoomend', this.handleZoomEnd, this);
@@ -70,8 +92,8 @@ export class CanvasLabelLayer extends L.Layer {
     map.on('resize', this.handleResize, this);
     map.on('viewreset', this.reset, this);
 
-    // Initial setup
     this.reset();
+    this.rebuildGeometryCache(true);
     this.processLabels();
     this.scheduleRedraw();
 
@@ -79,7 +101,6 @@ export class CanvasLabelLayer extends L.Layer {
   }
 
   onRemove(map: L.Map): this {
-    // Clean up event handlers
     map.off('zoom', this.handleZoom, this);
     map.off('zoomstart', this.handleZoomStart, this);
     map.off('zoomend', this.handleZoomEnd, this);
@@ -89,90 +110,139 @@ export class CanvasLabelLayer extends L.Layer {
     map.off('resize', this.handleResize, this);
     map.off('viewreset', this.reset, this);
 
-    // Cancel pending animation frame
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
     }
 
-    // Remove canvas
     if (this.canvas && this.canvas.parentNode) {
       this.canvas.parentNode.removeChild(this.canvas);
     }
 
     this.canvas = null;
     this.ctx = null;
+    this.geometryCache = [];
+    this.geometryCacheGeoJsonReference = null;
 
     return this;
   }
 
   /**
-   * Update layer options and trigger recalculation
+   * Update layer options and trigger recalculation.
    */
   updateOptions(options: Partial<CanvasLabelLayerOptions>): void {
+    const previousGeoJsonData = this.layerOptions.geoJsonData;
     this.layerOptions = { ...this.layerOptions, ...options };
+
+    if (options.geoJsonData !== undefined && options.geoJsonData !== previousGeoJsonData) {
+      this.rebuildGeometryCache(true);
+    }
+
     this.processLabels();
     this.scheduleRedraw();
   }
 
   /**
-   * Process GeoJSON features to extract label data
-   * Only processes features that intersect with the current viewport
+   * Precompute geometry metadata once per GeoJSON reference.
+   */
+  private rebuildGeometryCache(force: boolean = false): void {
+    const { geoJsonData } = this.layerOptions;
+    if (!force && this.geometryCacheGeoJsonReference === geoJsonData) {
+      return;
+    }
+
+    this.geometryCache = [];
+    this.geometryCacheGeoJsonReference = geoJsonData ?? null;
+
+    if (!geoJsonData || geoJsonData.type !== 'FeatureCollection' || !('features' in geoJsonData)) {
+      return;
+    }
+
+    for (const rawFeature of geoJsonData.features as Feature<Geometry, Record<string, unknown>>[]) {
+      const geometry = buildFeatureLabelGeometry(rawFeature);
+      if (!geometry) {
+        continue;
+      }
+
+      this.geometryCache.push({
+        feature: rawFeature,
+        geometry,
+      });
+    }
+  }
+
+  /**
+   * Process GeoJSON features to extract label data.
    */
   private processLabels(): void {
-    const { geoJsonData, mapViewType, heatmapDataMap, normalization, showLabels } = this.layerOptions;
+    const {
+      geoJsonData,
+      mapViewType,
+      heatmapDataMap,
+      normalization,
+      showLabels,
+      labelMode = 'legacy-heatmap',
+      activeSeriesValuesBySirutaCode,
+      activeSeriesUnit,
+    } = this.layerOptions;
 
     if (!geoJsonData || geoJsonData.type !== 'FeatureCollection' || !showLabels || !this._map) {
       this.labels = [];
       return;
     }
 
-    // Defensive check: ensure map is in valid state
     try {
       const pane = this._map.getPane('overlayPane');
       if (!pane) {
         this.labels = [];
         return;
       }
-    } catch (e) {
-      // Map is being destroyed, bail out
+    } catch {
       this.labels = [];
       return;
     }
+
+    this.rebuildGeometryCache();
 
     const currentZoom = this._map.getZoom();
     const viewportBounds = this._map.getBounds();
     const labelData: PolygonLabelData[] = [];
 
-    // Calculate max population for font size scaling
-    let maxValue = 0;
-    for (const dataPoint of heatmapDataMap.values()) {
-      // Use population for font sizing
-      const value = mapViewType === 'County'
-        ? (dataPoint as any).county_population
-        : (dataPoint as any).population;
-      if (value !== null && value !== undefined && value > maxValue) {
-        maxValue = value;
+    let maxPopulation = 0;
+    if (labelMode === 'legacy-heatmap') {
+      for (const dataPoint of heatmapDataMap.values()) {
+        const value =
+          mapViewType === 'County'
+            ? Number((dataPoint as { county_population?: number }).county_population)
+            : Number((dataPoint as { population?: number }).population);
+        if (Number.isFinite(value) && value > maxPopulation) {
+          maxPopulation = value;
+        }
       }
     }
 
-    const features = 'features' in geoJsonData ? geoJsonData.features : [];
-    for (const feature of features as Feature<Geometry, any>[]) {
-      // Quick viewport check before processing
-      if (!this.featureIntersectsViewport(feature, viewportBounds)) {
+    for (const cachedFeature of this.geometryCache) {
+      if (!cachedFeature.geometry.bounds.intersects(viewportBounds)) {
         continue;
       }
 
       const labelInfo = processFeatureForLabel(
-        feature,
+        cachedFeature.feature,
         this._map,
         currentZoom,
         mapViewType,
         heatmapDataMap,
         normalization,
         this.layerOptions.currency,
-        maxValue
+        maxPopulation,
+        {
+          labelMode,
+          activeSeriesValuesBySirutaCode,
+          activeSeriesUnit,
+          precomputedGeometry: cachedFeature.geometry,
+        }
       );
+
       if (labelInfo) {
         labelData.push(labelInfo);
       }
@@ -182,107 +252,53 @@ export class CanvasLabelLayer extends L.Layer {
   }
 
   /**
-   * Quick check if a feature might intersect with viewport
-   * Uses a bounding box check for performance
-   */
-  private featureIntersectsViewport(feature: Feature<Geometry, any>, viewportBounds: L.LatLngBounds): boolean {
-    const geometry = feature.geometry;
-    if (!geometry) return false;
-
-    // Get all coordinates from the geometry
-    let coords: number[][] = [];
-    if (geometry.type === 'Polygon') {
-      coords = geometry.coordinates[0];
-    } else if (geometry.type === 'MultiPolygon') {
-      // Flatten all polygons
-      geometry.coordinates.forEach(polygon => {
-        coords.push(...polygon[0]);
-      });
-    } else {
-      return false;
-    }
-
-    // Check if any coordinate is within viewport
-    for (const coord of coords) {
-      const latLng = L.latLng(coord[1], coord[0]);
-      if (viewportBounds.contains(latLng)) {
-        return true;
-      }
-    }
-
-    // Check if viewport is completely inside the polygon (rare but possible)
-    // For performance, we'll just check the center
-    const center = viewportBounds.getCenter();
-    return this.pointInPolygon(center, coords);
-  }
-
-  /**
-   * Simple point-in-polygon check
-   */
-  private pointInPolygon(point: L.LatLng, polygon: number[][]): boolean {
-    let inside = false;
-    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-      const xi = polygon[i][0], yi = polygon[i][1];
-      const xj = polygon[j][0], yj = polygon[j][1];
-
-      const intersect = ((yi > point.lat) !== (yj > point.lat))
-        && (point.lng < (xj - xi) * (point.lat - yi) / (yj - yi) + xi);
-      if (intersect) inside = !inside;
-    }
-    return inside;
-  }
-
-  /**
-   * Reset canvas size and position
+   * Reset canvas size and position.
    */
   private reset(): void {
-    if (!this.canvas || !this._map || !this.ctx) return;
+    if (!this.canvas || !this._map || !this.ctx) {
+      return;
+    }
 
-    // Defensive check: ensure map panes are still valid (not destroyed/unmounting)
     try {
       const pane = this._map.getPane('overlayPane');
-      if (!pane) return;
-    } catch (e) {
-      // Map is being destroyed, bail out
+      if (!pane) {
+        return;
+      }
+    } catch {
       return;
     }
 
     const size = this._map.getSize();
     const topLeft = this._map.containerPointToLayerPoint([0, 0]);
-
-    // Update canvas dimensions (accounting for device pixel ratio for crisp rendering)
-    // Clamp device pixel ratio to prevent excessive memory usage on high-DPI mobile devices
     const devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+
     this.canvas.width = size.x * devicePixelRatio;
     this.canvas.height = size.y * devicePixelRatio;
     this.canvas.style.width = `${size.x}px`;
     this.canvas.style.height = `${size.y}px`;
 
-    // Position canvas
     L.DomUtil.setPosition(this.canvas, topLeft);
     this.origin = topLeft.clone();
 
-    // Scale context for device pixel ratio
-    // Note: This needs to be reapplied after every canvas resize
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform first
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.scale(devicePixelRatio, devicePixelRatio);
-
-    // Clear the canvas to ensure transparency (critical for mobile browsers)
     this.ctx.clearRect(0, 0, size.x, size.y);
   }
 
   /**
-   * Update canvas position without resizing (for smooth pan operations)
+   * Update canvas position without resizing (for smooth pan operations).
    */
   private updatePosition(): void {
-    if (!this.canvas || !this._map) return;
+    if (!this.canvas || !this._map) {
+      return;
+    }
 
-    // Defensive check: ensure map is in valid state
     try {
       const pane = this._map.getPane('overlayPane');
-      if (!pane) return;
-    } catch (e) {
-      // Map is being destroyed, bail out
+      if (!pane) {
+        return;
+      }
+    } catch {
       return;
     }
 
@@ -292,7 +308,7 @@ export class CanvasLabelLayer extends L.Layer {
   }
 
   /**
-   * Handle resize events
+   * Handle resize events.
    */
   private handleResize(): void {
     this.reset();
@@ -300,7 +316,7 @@ export class CanvasLabelLayer extends L.Layer {
   }
 
   /**
-   * Handle zoom start (hide labels during zoom)
+   * Handle zoom start (hide labels during zoom).
    */
   private handleZoomStart(): void {
     this.isZooming = true;
@@ -308,15 +324,14 @@ export class CanvasLabelLayer extends L.Layer {
   }
 
   /**
-   * Handle zoom events
+   * Handle zoom events.
    */
   private handleZoom(): void {
-    // Update canvas position during zoom
     this.reset();
   }
 
   /**
-   * Handle zoom end (recalculate and show labels)
+   * Handle zoom end (recalculate and show labels).
    */
   private handleZoomEnd(): void {
     this.isZooming = false;
@@ -325,7 +340,7 @@ export class CanvasLabelLayer extends L.Layer {
   }
 
   /**
-   * Handle movement start (pan/drag start)
+   * Handle movement start (pan/drag start).
    */
   private handleMoveStart(): void {
     this.isPanning = true;
@@ -333,14 +348,14 @@ export class CanvasLabelLayer extends L.Layer {
   }
 
   /**
-   * Handle map movement (pan/drag)
+   * Handle map movement (pan/drag).
    */
   private handleMove(): void {
-    // Keep canvas hidden during pan
+    // Keep canvas hidden during pan.
   }
 
   /**
-   * Handle movement end (recalculate labels)
+   * Handle movement end (recalculate labels).
    */
   private handleMoveEnd(): void {
     this.isPanning = false;
@@ -350,7 +365,7 @@ export class CanvasLabelLayer extends L.Layer {
   }
 
   /**
-   * Schedule a redraw using requestAnimationFrame for smooth performance
+   * Schedule a redraw using requestAnimationFrame for smooth performance.
    */
   private scheduleRedraw(): void {
     if (this.animationFrameId !== null || this.isZooming || this.isPanning) {
@@ -364,17 +379,76 @@ export class CanvasLabelLayer extends L.Layer {
   }
 
   /**
-   * Clear the canvas
+   * Clear the canvas.
    */
   private clearCanvas(): void {
-    if (!this.canvas || !this.ctx || !this._map) return;
+    if (!this.canvas || !this.ctx || !this._map) {
+      return;
+    }
+
     const size = this._map.getSize();
-    // Use CSS dimensions, not physical canvas dimensions (which are scaled by devicePixelRatio)
     this.ctx.clearRect(0, 0, size.x, size.y);
   }
 
+  private buildDrawCandidates(viewportBounds: L.LatLngBounds): LabelDrawCandidate[] {
+    if (!this._map) {
+      return [];
+    }
+
+    const drawCandidates: LabelDrawCandidate[] = [];
+
+    for (const label of this.labels) {
+      if (!label.visible) {
+        continue;
+      }
+
+      const labelLatLng = L.latLng(label.position[0], label.position[1]);
+      if (!viewportBounds.contains(labelLatLng)) {
+        continue;
+      }
+
+      const point = this._map.latLngToLayerPoint(labelLatLng);
+      const localPoint = point.subtract(this.origin);
+      const textX = localPoint.x;
+      const textY = label.showAmount ? localPoint.y - 6 : localPoint.y;
+      const amountY = localPoint.y + label.fontSize * 0.7;
+
+      const nameWidth = estimateTextWidth(label.text, label.fontSize) + 12;
+      const amountWidth =
+        label.showAmount && label.amount
+          ? estimateTextWidth(label.amount, label.fontSize * 0.75) + 10
+          : 0;
+
+      const width = Math.max(nameWidth, amountWidth);
+      const height = label.showAmount ? label.fontSize * 2.1 : label.fontSize * 1.3;
+      const valuePriority =
+        this.layerOptions.labelMode === 'active-series' &&
+        label.value !== undefined &&
+        Number.isFinite(label.value)
+          ? label.value
+          : 0;
+
+      drawCandidates.push({
+        featureId: label.featureId,
+        x: textX,
+        y: localPoint.y,
+        width,
+        height,
+        hasValue: label.hasValue,
+        area: label.area,
+        valuePriority,
+        label,
+        textX,
+        textY,
+        amountY,
+      });
+    }
+
+    return drawCandidates;
+  }
+
   /**
-   * Main draw method - renders all labels to canvas
+   * Main draw method - renders all labels to canvas.
    */
   private draw(): void {
     if (!this.canvas || !this.ctx || !this._map || this.isZooming || this.isPanning) {
@@ -387,45 +461,37 @@ export class CanvasLabelLayer extends L.Layer {
       return;
     }
 
-    // Defensive check: ensure map is in valid state before drawing
     try {
       const pane = this._map.getPane('overlayPane');
-      if (!pane) return;
-    } catch (e) {
-      // Map is being destroyed, bail out
+      if (!pane) {
+        return;
+      }
+    } catch {
       return;
     }
 
-    // Clear canvas
     this.clearCanvas();
-
-    // Configure context for high-quality text rendering
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
 
-    // Get viewport bounds for filtering
     const viewportBounds = this._map.getBounds();
+    const drawCandidates = this.buildDrawCandidates(viewportBounds);
+    const selectedCandidates = selectNonOverlappingLabelCandidates(
+      drawCandidates,
+      this._map.getZoom()
+    );
 
-    // Sort labels by font size (ascending) so larger labels are drawn on top
-    const sortedLabels = [...this.labels].sort((a, b) => a.fontSize - b.fontSize);
+    const sortedCandidates = [...selectedCandidates].sort(
+      (left, right) => left.label.fontSize - right.label.fontSize
+    );
 
-    // Draw each label (only those in viewport)
-    for (const label of sortedLabels) {
-      if (!label.visible) continue;
+    for (const candidate of sortedCandidates) {
+      const label = candidate.label;
 
-      // Check if label is in viewport
-      const labelLatLng = L.latLng(label.position[0], label.position[1]);
-      if (!viewportBounds.contains(labelLatLng)) continue;
-
-      // Convert lat/lng to layer coordinates (relative to canvas origin)
-      const point = this._map.latLngToLayerPoint(labelLatLng);
-      const local = point.subtract(this.origin);
-
-      // Draw label name
       this.drawText(
         label.text,
-        local.x,
-        label.showAmount ? local.y - 6 : local.y,
+        candidate.textX,
+        candidate.textY,
         label.fontSize,
         '#1f2937',
         '#ccc',
@@ -433,14 +499,11 @@ export class CanvasLabelLayer extends L.Layer {
         600
       );
 
-      // Draw amount if visible
       if (label.showAmount && label.amount) {
-        const unit = label.unit || '';
-        const amountWithUnit = `${label.amount} ${unit}`.trim();
         this.drawText(
-          amountWithUnit,
-          local.x,
-          local.y + label.fontSize * 0.7,
+          label.amount,
+          candidate.textX,
+          candidate.amountY,
           label.fontSize * 0.75,
           '#fff',
           '#000',
@@ -452,7 +515,7 @@ export class CanvasLabelLayer extends L.Layer {
   }
 
   /**
-   * Draw text with stroke (outline) effect for better readability
+   * Draw text with stroke (outline) effect for better readability.
    */
   private drawText(
     text: string,
@@ -464,24 +527,22 @@ export class CanvasLabelLayer extends L.Layer {
     strokeWidth: number,
     fontWeight: number
   ): void {
-    if (!this.ctx) return;
+    if (!this.ctx) {
+      return;
+    }
 
     this.ctx.font = `${fontWeight} ${fontSize}px Inter, system-ui, sans-serif`;
-
-    // Draw stroke first (outline)
     this.ctx.strokeStyle = strokeColor;
     this.ctx.lineWidth = strokeWidth;
     this.ctx.lineJoin = 'round';
     this.ctx.strokeText(text, x, y);
-
-    // Draw fill on top
     this.ctx.fillStyle = fillColor;
     this.ctx.fillText(text, x, y);
   }
 }
 
 /**
- * Factory function to create a canvas label layer
+ * Factory function to create a canvas label layer.
  */
 export function createCanvasLabelLayer(options: CanvasLabelLayerOptions): CanvasLabelLayer {
   return new CanvasLabelLayer(options);
