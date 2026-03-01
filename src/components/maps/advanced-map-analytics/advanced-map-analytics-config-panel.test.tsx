@@ -98,4 +98,5 @@ describe('AdvancedMapAnalyticsConfigPanel', () => {
     fireEvent.click(screen.getByText('Table'));
     expect(onActiveViewChange).toHaveBeenCalledWith('table');
   });
+
 });

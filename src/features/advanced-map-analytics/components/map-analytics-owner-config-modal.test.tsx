@@ -128,7 +128,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
     });
   });
 
-  it('saves checkpoint with optional snapshot description and clears input after save', async () => {
+  it('saves checkpoint directly for private maps and clears input after save', async () => {
     const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
     render(
       <MapAnalyticsOwnerConfigModal
@@ -150,6 +150,8 @@ describe('MapAnalyticsOwnerConfigModal', () => {
     fireEvent.change(descriptionInput, { target: { value: 'checkpoint note' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save checkpoint' }));
 
+    expect(screen.queryByText('Save public checkpoint?')).not.toBeInTheDocument();
+
     await waitFor(() => {
       expect(saveSnapshotMutateAsyncMock).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -163,6 +165,67 @@ describe('MapAnalyticsOwnerConfigModal', () => {
 
     await waitFor(() => {
       expect(screen.getByLabelText('Snapshot description (optional)')).toHaveValue('');
+    });
+  });
+
+  it('asks confirmation before saving checkpoint when map is public and cancels cleanly', async () => {
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentTitle="My map"
+        currentVisibility="public"
+        currentPublicId="abc123"
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onLoadSnapshot={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save checkpoint' }));
+
+    expect(screen.getByText('Save public checkpoint?')).toBeInTheDocument();
+    expect(saveSnapshotMutateAsyncMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(saveSnapshotMutateAsyncMock).not.toHaveBeenCalled();
+  });
+
+  it('confirms public checkpoint save and keeps public stateAtSave even without publicId', async () => {
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentTitle="My map"
+        currentVisibility="public"
+        currentPublicId={null}
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onLoadSnapshot={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save checkpoint' }));
+    expect(screen.getByText('Save public checkpoint?')).toBeInTheDocument();
+    expect(saveSnapshotMutateAsyncMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm save' }));
+
+    await waitFor(() => {
+      expect(saveSnapshotMutateAsyncMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          mapId: 'map_1',
+          stateAtSave: 'public',
+        })
+      );
     });
   });
 

@@ -85,6 +85,7 @@ describe('MapAnalyticsPublicPage', () => {
       expect.objectContaining({
         mode: 'public',
         capabilities: { readOnly: true },
+        mobileControlsDefaultCollapsed: true,
         bundledGroupedSeriesData: groupedSeriesData,
         bundledRemoteBaseSeriesHash: expect.any(String),
       })

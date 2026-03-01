@@ -103,6 +103,7 @@ export function AdvancedMapAnalyticsConfigPanel({
           </div>
         </CollapsibleContent>
       </Collapsible>
+
     </section>
   );
 }

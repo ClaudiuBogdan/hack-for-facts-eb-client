@@ -11,6 +11,7 @@ import { useAdvancedMapAnalyticsBins } from '@/hooks/useAdvancedMapAnalyticsBins
 import { useAdvancedMapAnalyticsTableBinsFilter } from '@/hooks/useAdvancedMapAnalyticsTableBinsFilter';
 import { buildDiscretePaletteFromConfig } from '@/lib/map-bins/bins';
 import { getHeatmapColor, getPercentileValues, normalizeValue } from '@/components/maps/utils';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import type { UatFeature, UatProperties } from '@/components/maps/interfaces';
 import type { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap';
 import { defaultMapFilters } from '@/schemas/map-filters';
@@ -86,6 +87,7 @@ interface MapAnalyticsWorkspaceProps {
   onOpenOwnerConfig?: () => void;
   bundledGroupedSeriesData?: GroupedSeriesDataResponse;
   bundledRemoteBaseSeriesHash?: string;
+  mobileControlsDefaultCollapsed?: boolean;
 }
 
 const DEFAULT_MAP_NAME = 'Untitled map';
@@ -98,6 +100,7 @@ export function MapAnalyticsWorkspace({
   onOpenOwnerConfig,
   bundledGroupedSeriesData,
   bundledRemoteBaseSeriesHash,
+  mobileControlsDefaultCollapsed = false,
 }: Readonly<MapAnalyticsWorkspaceProps>) {
   const navigate = useNavigate();
   const [userCurrency] = useUserCurrency();
@@ -106,7 +109,13 @@ export function MapAnalyticsWorkspace({
   const [editorState, setEditorState] = useState<EditorState | null>(null);
   const [valueFilterEditorState, setValueFilterEditorState] = useState<ValueFilterEditorState | null>(null);
   const [isWarningsModalOpen, setIsWarningsModalOpen] = useState(false);
+  const [isMobileControlsCollapsed, setIsMobileControlsCollapsed] = useState(
+    mobileControlsDefaultCollapsed
+  );
   const isReadOnly = mode === 'public' || capabilities.readOnly;
+  const isMobileControlsCollapseEnabled = isMobile && mobileControlsDefaultCollapsed;
+  const shouldOverlayMobileControls = mode === 'public' && isMobileControlsCollapseEnabled;
+  const mobileControlsContentId = 'map-analytics-mobile-controls';
 
   const updateState = useCallback(
     (updater: (draft: AdvancedMapAnalyticsUrlState) => void) => {
@@ -1061,6 +1070,30 @@ export function MapAnalyticsWorkspace({
     [navigate]
   );
 
+  const handleMapFeatureClick = useCallback(
+    (properties: UatProperties) => {
+      if (mode !== 'public') {
+        return;
+      }
+
+      const directEntityCui = getEntityCuiFromUatProperties(properties);
+      const sirutaCode = String(properties?.natcode ?? '').trim();
+      const metadataEntityCui =
+        sirutaCode.length > 0 ? uatMetadataBySirutaCode.get(sirutaCode)?.entityCui : undefined;
+      const entityCui = directEntityCui ?? metadataEntityCui;
+
+      if (!entityCui) {
+        return;
+      }
+
+      navigate({
+        to: '/entities/$cui',
+        params: { cui: entityCui },
+      });
+    },
+    [mode, navigate, uatMetadataBySirutaCode]
+  );
+
   useEffect(() => {
     if (editorState?.mode === 'edit' && !modalSeries) {
       setEditorState(null);
@@ -1073,67 +1106,139 @@ export function MapAnalyticsWorkspace({
     }
   }, [modalValueFilterRule, valueFilterEditorState]);
 
+  useEffect(() => {
+    if (!isMobileControlsCollapseEnabled) {
+      setIsMobileControlsCollapsed(false);
+      return;
+    }
+
+    setIsMobileControlsCollapsed(true);
+  }, [isMobileControlsCollapseEnabled]);
+
+  const controlsPanels = (
+    <>
+      <AdvancedMapAnalyticsConfigPanel
+        collapsed={Boolean(mapState.configPanelCollapsed)}
+        activeView={mapState.activeView}
+        mapName={mapName}
+        warningCount={combinedWarnings.length}
+        readOnly={isReadOnly}
+        onToggleCollapsed={toggleConfigPanelCollapsed}
+        onActiveViewChange={setActiveView}
+        onOpenConfig={() => {
+          if (!isReadOnly && onOpenOwnerConfig) {
+            onOpenOwnerConfig();
+          }
+        }}
+        onOpenWarnings={() => setIsWarningsModalOpen(true)}
+      />
+      <AdvancedMapAnalyticsSeriesPanel
+        series={mapState.series}
+        activeSeriesId={activeSeriesId}
+        collapsed={Boolean(mapState.seriesPanelCollapsed)}
+        readOnly={isReadOnly}
+        onToggleCollapsed={togglePanelCollapsed}
+        onAddSeries={addSeries}
+        onSetActive={setActiveSeries}
+        onToggleEnabled={toggleSeriesEnabled}
+        onEdit={editSeries}
+        onDelete={deleteSeries}
+        onReorder={reorderSeries}
+      />
+      <AdvancedMapAnalyticsValueFiltersPanel
+        collapsed={Boolean(mapState.valueFiltersPanelCollapsed)}
+        rules={mapState.valueFilters.rules}
+        series={mapState.series}
+        readOnly={isReadOnly}
+        onToggleCollapsed={toggleValueFiltersPanelCollapsed}
+        onAddRule={addValueFilterRule}
+        onReorder={reorderValueFilterRules}
+        onEditRule={editValueFilterRule}
+        onDeleteRule={deleteValueFilterRule}
+        onMoveRule={moveValueFilterRule}
+        onRuleEnabledChange={updateValueFilterRuleEnabled}
+      />
+      <AdvancedMapAnalyticsBinsPanel
+        collapsed={Boolean(mapState.binsPanelCollapsed)}
+        presets={mapState.binsPresets}
+        activePresetId={mapState.activeBinPresetId}
+        readOnly={isReadOnly}
+        onToggleCollapsed={toggleBinsPanelCollapsed}
+        onAddPreset={addBinsPreset}
+        onSetActivePreset={setActiveBinsPreset}
+        onEditPreset={editBinsPreset}
+        onDeletePreset={deleteBinsPreset}
+        onReorderPresets={reorderBinsPresets}
+      />
+    </>
+  );
+
+  const geoJsonSourceFooter = (
+    <footer className="border-t pt-3 text-xs text-muted-foreground">
+      <div className="flex items-center gap-1">
+        <span>GeoJSON source:</span>
+        <a
+          href="https://geo-spatial.org?utm_source=transparenta.eu"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="map-geojson-source-link"
+          className="rounded-sm underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          geo-spatial.org
+        </a>
+      </div>
+    </footer>
+  );
+
   return (
-    <div className="flex flex-col md:flex-row md:h-screen bg-background">
-      <aside className="md:w-[430px] md:min-w-[430px] border-r border-border bg-card text-card-foreground overflow-y-auto">
+    <div className="relative flex flex-col bg-background md:h-screen md:flex-row">
+      <aside
+        className={
+          shouldOverlayMobileControls
+            ? 'absolute inset-x-0 top-0 z-[650] max-h-[80vh] overflow-y-auto'
+            : 'border-r border-border bg-card text-card-foreground overflow-y-auto md:w-[430px] md:min-w-[430px]'
+        }
+      >
         <div className="space-y-4 p-4">
-          <AdvancedMapAnalyticsConfigPanel
-            collapsed={Boolean(mapState.configPanelCollapsed)}
-            activeView={mapState.activeView}
-            mapName={mapName}
-            warningCount={combinedWarnings.length}
-            readOnly={isReadOnly}
-            onToggleCollapsed={toggleConfigPanelCollapsed}
-            onActiveViewChange={setActiveView}
-            onOpenConfig={() => {
-              if (!isReadOnly && onOpenOwnerConfig) {
-                onOpenOwnerConfig();
-              }
-            }}
-            onOpenWarnings={() => setIsWarningsModalOpen(true)}
-          />
-          <AdvancedMapAnalyticsSeriesPanel
-            series={mapState.series}
-            activeSeriesId={activeSeriesId}
-            collapsed={Boolean(mapState.seriesPanelCollapsed)}
-            readOnly={isReadOnly}
-            onToggleCollapsed={togglePanelCollapsed}
-            onAddSeries={addSeries}
-            onSetActive={setActiveSeries}
-            onToggleEnabled={toggleSeriesEnabled}
-            onEdit={editSeries}
-            onDelete={deleteSeries}
-            onReorder={reorderSeries}
-          />
-          <AdvancedMapAnalyticsValueFiltersPanel
-            collapsed={Boolean(mapState.valueFiltersPanelCollapsed)}
-            rules={mapState.valueFilters.rules}
-            series={mapState.series}
-            readOnly={isReadOnly}
-            onToggleCollapsed={toggleValueFiltersPanelCollapsed}
-            onAddRule={addValueFilterRule}
-            onReorder={reorderValueFilterRules}
-            onEditRule={editValueFilterRule}
-            onDeleteRule={deleteValueFilterRule}
-            onMoveRule={moveValueFilterRule}
-            onRuleEnabledChange={updateValueFilterRuleEnabled}
-          />
-          <AdvancedMapAnalyticsBinsPanel
-            collapsed={Boolean(mapState.binsPanelCollapsed)}
-            presets={mapState.binsPresets}
-            activePresetId={mapState.activeBinPresetId}
-            readOnly={isReadOnly}
-            onToggleCollapsed={toggleBinsPanelCollapsed}
-            onAddPreset={addBinsPreset}
-            onSetActivePreset={setActiveBinsPreset}
-            onEditPreset={editBinsPreset}
-            onDeletePreset={deleteBinsPreset}
-            onReorderPresets={reorderBinsPresets}
-          />
+          {isMobileControlsCollapseEnabled ? (
+            <>
+              <section className="rounded-2xl border bg-card p-3 shadow-sm">
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between rounded-lg border border-border px-3 py-2 text-left text-sm font-medium hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={() => setIsMobileControlsCollapsed((previousState) => !previousState)}
+                  aria-expanded={!isMobileControlsCollapsed}
+                  aria-controls={mobileControlsContentId}
+                >
+                  {isMobileControlsCollapsed ? 'Show Map Controls' : 'Hide Map Controls'}
+                </button>
+              </section>
+
+              <Collapsible
+                open={!isMobileControlsCollapsed}
+                onOpenChange={(isOpen) => setIsMobileControlsCollapsed(!isOpen)}
+              >
+                <CollapsibleContent
+                  id={mobileControlsContentId}
+                  className="space-y-4 data-[state=open]:animate-in data-[state=closed]:animate-out"
+                >
+                  {controlsPanels}
+                  {geoJsonSourceFooter}
+                </CollapsibleContent>
+              </Collapsible>
+            </>
+          ) : (
+            <>
+              {controlsPanels}
+              {geoJsonSourceFooter}
+            </>
+          )}
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col min-h-[55vh] md:min-h-0">
+      <main
+        className={`flex-1 flex flex-col ${shouldOverlayMobileControls ? 'min-h-screen' : 'min-h-[55vh]'} md:min-h-0`}
+      >
         <div className="flex-1 relative overflow-hidden">
           {isMapViewActive ? (
             isMapLoading ? (
@@ -1165,9 +1270,7 @@ export function MapAnalyticsWorkspace({
                     }
                   >
                     <InteractiveMap
-                      onFeatureClick={() => {
-                        // Navigation is intentionally disabled in the map analytics route.
-                      }}
+                      onFeatureClick={handleMapFeatureClick}
                       getFeatureStyle={getFeatureStyle}
                       heatmapData={activeHeatmapData}
                       geoJsonData={geoJsonData}
@@ -1210,6 +1313,7 @@ export function MapAnalyticsWorkspace({
                     )}
                   </div>
                 ) : null}
+
               </>
             )
           ) : (

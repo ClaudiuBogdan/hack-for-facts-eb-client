@@ -59,6 +59,7 @@ export function MapAnalyticsOwnerConfigModal({
   const [deleteConfirmationInput, setDeleteConfirmationInput] = useState('');
   const [pendingVisibilityTarget, setPendingVisibilityTarget] = useState<AdvancedMapAnalyticsVisibility | null>(null);
   const [pendingLoadSnapshotId, setPendingLoadSnapshotId] = useState<string | null>(null);
+  const [isSaveCheckpointConfirmOpen, setIsSaveCheckpointConfirmOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   const snapshotsQuery = useAdvancedMapAnalyticsSnapshotsQuery(mapId, page, 20, open);
@@ -77,6 +78,7 @@ export function MapAnalyticsOwnerConfigModal({
     setDeleteConfirmationInput('');
     setPendingVisibilityTarget(null);
     setPendingLoadSnapshotId(null);
+    setIsSaveCheckpointConfirmOpen(false);
     setIsDeleteConfirmOpen(false);
   }, [open, currentVisibility]);
 
@@ -160,7 +162,18 @@ export function MapAnalyticsOwnerConfigModal({
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to save checkpoint';
       toast.error(message);
+    } finally {
+      setIsSaveCheckpointConfirmOpen(false);
     }
+  };
+
+  const handleRequestSaveCheckpoint = () => {
+    if (visibility === 'public') {
+      setIsSaveCheckpointConfirmOpen(true);
+      return;
+    }
+
+    void handleSaveCheckpoint();
   };
 
   const handleConfirmLoadSnapshot = async () => {
@@ -289,7 +302,7 @@ export function MapAnalyticsOwnerConfigModal({
             <section className="space-y-3 rounded-lg border p-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold">Snapshots</h3>
-                <Button onClick={handleSaveCheckpoint} disabled={isBusy} size="sm">
+                <Button onClick={handleRequestSaveCheckpoint} disabled={isBusy} size="sm">
                   Save checkpoint
                 </Button>
               </div>
@@ -427,6 +440,23 @@ export function MapAnalyticsOwnerConfigModal({
             <AlertDialogCancel disabled={isBusy}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={() => void handleConfirmLoadSnapshot()} disabled={isBusy}>
               Confirm load
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isSaveCheckpointConfirmOpen} onOpenChange={setIsSaveCheckpointConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Save public checkpoint?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This map is public and the latest checkpoint can be visible on the public route.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isBusy}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void handleSaveCheckpoint()} disabled={isBusy}>
+              Confirm save
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
