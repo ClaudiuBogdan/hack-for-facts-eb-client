@@ -50,6 +50,11 @@ interface CreateSnapshotInput {
   title?: string;
   description?: string | null;
   stateAtSave?: AdvancedMapAnalyticsVisibility;
+  mapPatch?: {
+    title?: string;
+    description?: string | null;
+    state?: AdvancedMapAnalyticsVisibility;
+  };
   schemaVersion: number;
   config: AdvancedMapAnalyticsUrlState;
 }
@@ -276,11 +281,17 @@ export async function createAdvancedMapAnalyticsSnapshot(
   if (input.title !== undefined) {
     mapPatch.title = input.title;
   }
-  if (input.description !== undefined) {
-    mapPatch.description = input.description;
-  }
   if (input.stateAtSave !== undefined) {
     mapPatch.visibility = input.stateAtSave;
+  }
+  if (input.mapPatch?.title !== undefined) {
+    mapPatch.title = input.mapPatch.title;
+  }
+  if (input.mapPatch?.description !== undefined) {
+    mapPatch.description = input.mapPatch.description;
+  }
+  if (input.mapPatch?.state !== undefined) {
+    mapPatch.visibility = input.mapPatch.state;
   }
 
   const payload = await ownerRequest(`/maps/${encodeURIComponent(mapId)}/snapshots`, {

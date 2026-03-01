@@ -13,6 +13,7 @@ import { AdvancedMapAnalyticsUrlStateSchema } from '@/schemas/advanced-map-analy
 import { API_FETCH_REFERRER_POLICY } from '@/lib/api/fetch-options';
 import {
   createAdvancedMapAnalyticsMap,
+  createAdvancedMapAnalyticsSnapshot,
   getAdvancedMapAnalyticsMap,
   getPublicAdvancedMapAnalyticsMap,
   listAdvancedMapAnalyticsSnapshots,
@@ -111,6 +112,60 @@ describe('advanced-map-analytics api client', () => {
         schemaVersion: mapState.version,
       })
     );
+  });
+
+  it('saves snapshot with separate snapshot description and mapPatch description', async () => {
+    vi.mocked(getAuthToken).mockResolvedValue('token-123');
+    const mapState = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Snapshot map' });
+
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 201,
+      statusText: 'Created',
+      text: vi.fn().mockResolvedValue(
+        JSON.stringify({
+          ok: true,
+          data: {
+            snapshotId: 'snap_123',
+            createdAt: '2026-03-01T10:00:00.000Z',
+            schemaVersion: 1,
+            stateAtSave: 'private',
+            title: 'Checkpoint title',
+            description: 'Snapshot note',
+            config: mapState,
+          },
+        })
+      ),
+    } satisfies Partial<Response>);
+
+    const result = await createAdvancedMapAnalyticsSnapshot('map_123', {
+      config: mapState,
+      schemaVersion: mapState.version,
+      title: 'Checkpoint title',
+      description: 'Snapshot note',
+      stateAtSave: 'private',
+      mapPatch: {
+        description: '## Map markdown description',
+      },
+    });
+
+    expect(result.description).toBe('Snapshot note');
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('https://api.example.com/api/v1/advanced-map-analytics/maps/map_123/snapshots');
+    expect(init.method).toBe('POST');
+
+    const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+    expect(body).toEqual({
+      state: mapState,
+      title: 'Checkpoint title',
+      description: 'Snapshot note',
+      mapPatch: {
+        title: 'Checkpoint title',
+        visibility: 'private',
+        description: '## Map markdown description',
+      },
+    });
   });
 
   it('throws explicit 401 error when token is missing', async () => {

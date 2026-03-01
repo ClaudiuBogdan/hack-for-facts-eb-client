@@ -136,6 +136,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
         mapId="map_1"
         currentMapState={baseMapState}
         mapName="My map"
+        mapDescription="**Map markdown description**"
         currentTitle="My map"
         currentVisibility="private"
         currentPublicId={null}
@@ -159,6 +160,9 @@ describe('MapAnalyticsOwnerConfigModal', () => {
           title: 'My map',
           description: 'checkpoint note',
           stateAtSave: 'private',
+          mapPatch: {
+            description: '**Map markdown description**',
+          },
         })
       );
     });
@@ -166,6 +170,48 @@ describe('MapAnalyticsOwnerConfigModal', () => {
     await waitFor(() => {
       expect(screen.getByLabelText('Snapshot description (optional)')).toHaveValue('');
     });
+  });
+
+  it('opens split description editor from config modal and emits description changes', async () => {
+    const onMapDescriptionChange = vi.fn();
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        mapDescription="# Existing description"
+        currentTitle="My map"
+        currentVisibility="private"
+        currentPublicId={null}
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onMapDescriptionChange={onMapDescriptionChange}
+        onLoadSnapshot={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    const readMoreButton = screen.getByRole('button', { name: 'Read more' });
+    expect(readMoreButton).toHaveClass('w-full');
+    expect(readMoreButton).toHaveClass('bg-accent');
+    expect(readMoreButton).toHaveClass('text-accent-foreground');
+
+    fireEvent.click(readMoreButton);
+
+    expect(screen.getByText('Map description')).toBeInTheDocument();
+    expect(screen.getByLabelText('Map description markdown editor')).toBeInTheDocument();
+    expect(screen.getByText('Preview')).toBeInTheDocument();
+    expect(
+      screen.queryByText('Edit markdown on the left and preview rendered output on the right.')
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Rendered markdown description for this map.')).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText('Map description markdown editor'), {
+      target: { value: '## Updated description' },
+    });
+    expect(onMapDescriptionChange).toHaveBeenCalledWith('## Updated description');
   });
 
   it('asks confirmation before saving checkpoint when map is public and cancels cleanly', async () => {

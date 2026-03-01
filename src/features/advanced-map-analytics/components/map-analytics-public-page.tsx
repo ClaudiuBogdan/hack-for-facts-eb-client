@@ -58,6 +58,7 @@ export function MapAnalyticsPublicPage({ publicId }: Readonly<MapAnalyticsPublic
       mode="public"
       mapState={mapState}
       setMapState={setMapState}
+      mapDescription={publicMapQuery.data?.description ?? ''}
       capabilities={{ readOnly: true }}
       mobileControlsDefaultCollapsed={true}
       bundledGroupedSeriesData={publicMapQuery.data?.groupedSeriesData}

@@ -1,14 +1,17 @@
+import { useState } from 'react';
 import { AlertTriangle, ChevronDown, MapIcon, Settings2, TableIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import type { AdvancedMapAnalyticsActiveView } from '@/schemas/advanced-map-analytics';
 import { ViewTypeRadioGroup } from '@/components/filters/ViewTypeRadioGroup';
+import { AdvancedMapAnalyticsDescriptionModal } from './advanced-map-analytics-description-modal';
 
 interface AdvancedMapAnalyticsConfigPanelProps {
   collapsed: boolean;
   activeView: AdvancedMapAnalyticsActiveView;
   mapName: string;
+  mapDescription?: string;
   warningCount: number;
   readOnly?: boolean;
   onToggleCollapsed: (collapsed: boolean) => void;
@@ -21,6 +24,7 @@ export function AdvancedMapAnalyticsConfigPanel({
   collapsed,
   activeView,
   mapName,
+  mapDescription = '',
   warningCount,
   readOnly = false,
   onToggleCollapsed,
@@ -29,6 +33,9 @@ export function AdvancedMapAnalyticsConfigPanel({
   onOpenWarnings,
 }: Readonly<AdvancedMapAnalyticsConfigPanelProps>) {
   const hasWarnings = warningCount > 0;
+  const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
+  const trimmedMapDescription = mapDescription.trim();
+  const hasMapDescription = trimmedMapDescription.length > 0;
 
   return (
     <section className="rounded-2xl border bg-card p-4 shadow-sm">
@@ -83,6 +90,16 @@ export function AdvancedMapAnalyticsConfigPanel({
                 ariaLabel="Advanced map analytics active view"
               />
             </div>
+            <div className="border-b px-3 py-2.5">
+              <Button
+                type="button"
+                className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+                onClick={() => setIsDescriptionModalOpen(true)}
+                disabled={!hasMapDescription}
+              >
+                Read more
+              </Button>
+            </div>
             {hasWarnings ? (
               <div className="flex items-center justify-between gap-3 px-3 py-2.5">
                 <span className="text-sm font-medium">Warnings</span>
@@ -101,6 +118,13 @@ export function AdvancedMapAnalyticsConfigPanel({
           </div>
         </CollapsibleContent>
       </Collapsible>
+
+      <AdvancedMapAnalyticsDescriptionModal
+        open={isDescriptionModalOpen}
+        onOpenChange={setIsDescriptionModalOpen}
+        description={mapDescription}
+        mode="preview"
+      />
 
     </section>
   );

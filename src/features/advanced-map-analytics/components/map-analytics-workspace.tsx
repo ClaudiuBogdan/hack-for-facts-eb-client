@@ -82,6 +82,7 @@ interface MapAnalyticsWorkspaceProps {
       | AdvancedMapAnalyticsUrlState
       | ((previousState: AdvancedMapAnalyticsUrlState) => AdvancedMapAnalyticsUrlState)
   ) => void;
+  mapDescription?: string;
   mode: 'owner' | 'public';
   capabilities: MapAnalyticsWorkspaceCapabilities;
   onOpenOwnerConfig?: () => void;
@@ -95,6 +96,7 @@ const DEFAULT_MAP_NAME = 'Untitled map';
 export function MapAnalyticsWorkspace({
   mapState,
   setMapState,
+  mapDescription = '',
   mode,
   capabilities,
   onOpenOwnerConfig,
@@ -1103,6 +1105,7 @@ export function MapAnalyticsWorkspace({
         collapsed={Boolean(mapState.configPanelCollapsed)}
         activeView={mapState.activeView}
         mapName={mapName}
+        mapDescription={mapDescription}
         warningCount={combinedWarnings.length}
         readOnly={isReadOnly}
         onToggleCollapsed={toggleConfigPanelCollapsed}

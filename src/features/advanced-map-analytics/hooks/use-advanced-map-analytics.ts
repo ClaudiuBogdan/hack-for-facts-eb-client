@@ -35,6 +35,11 @@ interface SaveSnapshotInput {
   title?: string;
   description?: string | null;
   stateAtSave?: AdvancedMapAnalyticsVisibility;
+  mapPatch?: {
+    title?: string;
+    description?: string | null;
+    state?: AdvancedMapAnalyticsVisibility;
+  };
 }
 
 interface CreateMapInput {
@@ -197,6 +202,7 @@ export function useSaveAdvancedMapAnalyticsSnapshotMutation() {
         title: input.title,
         description: input.description,
         stateAtSave: input.stateAtSave,
+        mapPatch: input.mapPatch,
         schemaVersion: input.mapState.version,
         config: input.mapState,
       }),

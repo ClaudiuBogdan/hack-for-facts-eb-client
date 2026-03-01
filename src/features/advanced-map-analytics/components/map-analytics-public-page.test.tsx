@@ -67,6 +67,7 @@ describe('MapAnalyticsPublicPage', () => {
       isLoading: false,
       error: null,
       data: {
+        description: '# Public description',
         groupedSeriesData,
         lastSnapshot: {
           config: mapState,
@@ -86,6 +87,7 @@ describe('MapAnalyticsPublicPage', () => {
         mode: 'public',
         capabilities: { readOnly: true },
         mobileControlsDefaultCollapsed: true,
+        mapDescription: '# Public description',
         bundledGroupedSeriesData: groupedSeriesData,
         bundledRemoteBaseSeriesHash: expect.any(String),
       })

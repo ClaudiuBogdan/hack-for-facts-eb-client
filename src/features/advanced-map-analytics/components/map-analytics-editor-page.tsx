@@ -34,12 +34,16 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
   const { isLoaded, isSignedIn } = useAuth();
   const navigate = useNavigate();
   const [isOwnerConfigModalOpen, setIsOwnerConfigModalOpen] = useState(false);
+  const [mapDescriptionDraft, setMapDescriptionDraft] = useState('');
   const hasHydratedFromApiRef = useRef(false);
+  const hasHydratedDescriptionFromApiRef = useRef(false);
 
   const mapQuery = useAdvancedMapAnalyticsMapQuery(mapId, isLoaded && isSignedIn);
 
   useEffect(() => {
     hasHydratedFromApiRef.current = false;
+    hasHydratedDescriptionFromApiRef.current = false;
+    setMapDescriptionDraft('');
   }, [mapId]);
 
   useEffect(() => {
@@ -53,6 +57,15 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
 
     hasHydratedFromApiRef.current = true;
   }, [mapQuery.data, mapState, setMapState]);
+
+  useEffect(() => {
+    if (!mapQuery.data || hasHydratedDescriptionFromApiRef.current) {
+      return;
+    }
+
+    setMapDescriptionDraft(mapQuery.data.description ?? '');
+    hasHydratedDescriptionFromApiRef.current = true;
+  }, [mapQuery.data]);
 
   const forbiddenError = useMemo(() => {
     if (!mapQuery.error) {
@@ -133,6 +146,7 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
         mode="owner"
         mapState={mapState}
         setMapState={setMapState}
+        mapDescription={mapDescriptionDraft}
         capabilities={{ readOnly: false }}
         onOpenOwnerConfig={() => setIsOwnerConfigModalOpen(true)}
         bundledGroupedSeriesData={mapQuery.data.groupedSeriesData}
@@ -147,6 +161,8 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
         currentTitle={mapQuery.data.title}
         currentVisibility={mapQuery.data.state}
         currentPublicId={mapQuery.data.publicId}
+        mapDescription={mapDescriptionDraft}
+        onMapDescriptionChange={setMapDescriptionDraft}
         onOpenChange={setIsOwnerConfigModalOpen}
         onMapNameChange={(nextMapName) => {
           setMapState((previousState) => ({

@@ -79,7 +79,7 @@ describe('MapAnalyticsEditorPage', () => {
       data: {
         publicId: 'public_abc123',
         title: 'Hydrated map',
-        description: null,
+        description: '## Saved map description',
         state: 'private',
         groupedSeriesData,
         lastSnapshot: {
@@ -105,6 +105,7 @@ describe('MapAnalyticsEditorPage', () => {
     expect(screen.getByTestId('owner-config-modal')).toBeInTheDocument();
     expect(workspaceMock).toHaveBeenCalledWith(
       expect.objectContaining({
+        mapDescription: '## Saved map description',
         bundledGroupedSeriesData: groupedSeriesData,
         bundledRemoteBaseSeriesHash: expect.any(String),
       })
@@ -112,6 +113,8 @@ describe('MapAnalyticsEditorPage', () => {
     expect(ownerConfigModalMock).toHaveBeenCalledWith(
       expect.objectContaining({
         currentPublicId: 'public_abc123',
+        mapDescription: '## Saved map description',
+        onMapDescriptionChange: expect.any(Function),
       })
     );
   });

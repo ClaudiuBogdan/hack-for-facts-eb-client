@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Switch } from '@/components/ui/switch';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
+import { AdvancedMapAnalyticsDescriptionModal } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal';
 import {
   fetchAdvancedMapAnalyticsSnapshotForRestore,
   useAdvancedMapAnalyticsSnapshotsQuery,
@@ -31,11 +32,13 @@ interface MapAnalyticsOwnerConfigModalProps {
   mapId: string;
   currentMapState: AdvancedMapAnalyticsUrlState;
   mapName: string;
+  mapDescription?: string;
   currentTitle: string;
   currentVisibility: AdvancedMapAnalyticsVisibility;
   currentPublicId: string | null;
   onOpenChange: (open: boolean) => void;
   onMapNameChange: (nextMapName: string) => void;
+  onMapDescriptionChange?: (nextDescription: string) => void;
   onLoadSnapshot: (mapState: AdvancedMapAnalyticsUrlState) => void;
   onDeleted: () => void;
 }
@@ -45,11 +48,13 @@ export function MapAnalyticsOwnerConfigModal({
   mapId,
   currentMapState,
   mapName,
+  mapDescription = '',
   currentTitle,
   currentVisibility,
   currentPublicId,
   onOpenChange,
   onMapNameChange,
+  onMapDescriptionChange,
   onLoadSnapshot,
   onDeleted,
 }: Readonly<MapAnalyticsOwnerConfigModalProps>) {
@@ -61,6 +66,7 @@ export function MapAnalyticsOwnerConfigModal({
   const [pendingLoadSnapshotId, setPendingLoadSnapshotId] = useState<string | null>(null);
   const [isSaveCheckpointConfirmOpen, setIsSaveCheckpointConfirmOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isDescriptionEditorModalOpen, setIsDescriptionEditorModalOpen] = useState(false);
 
   const snapshotsQuery = useAdvancedMapAnalyticsSnapshotsQuery(mapId, page, 20, open);
   const updateMapMutation = useUpdateAdvancedMapAnalyticsMapMutation();
@@ -80,6 +86,7 @@ export function MapAnalyticsOwnerConfigModal({
     setPendingLoadSnapshotId(null);
     setIsSaveCheckpointConfirmOpen(false);
     setIsDeleteConfirmOpen(false);
+    setIsDescriptionEditorModalOpen(false);
   }, [open, currentVisibility]);
 
   const isBusy =
@@ -95,6 +102,7 @@ export function MapAnalyticsOwnerConfigModal({
     [snapshotDescriptionDraft]
   );
   const trimmedMapName = useMemo(() => mapName.trim(), [mapName]);
+  const trimmedMapDescription = useMemo(() => mapDescription.trim(), [mapDescription]);
   const snapshotTitle = trimmedMapName.length > 0 ? trimmedMapName : currentTitle;
   const deleteInputMatchesTitle = deleteConfirmationInput === mapName;
   const visibilityLabel = visibility === 'public' ? 'Public' : 'Private';
@@ -156,6 +164,9 @@ export function MapAnalyticsOwnerConfigModal({
         title: snapshotTitle,
         description: trimmedSnapshotDescription.length > 0 ? trimmedSnapshotDescription : null,
         stateAtSave: visibility,
+        mapPatch: {
+          description: trimmedMapDescription.length > 0 ? trimmedMapDescription : null,
+        },
       });
       setSnapshotDescriptionDraft('');
       toast.success('Checkpoint saved');
@@ -218,6 +229,10 @@ export function MapAnalyticsOwnerConfigModal({
     } catch {
       toast.error('Failed to copy public map link');
     }
+  };
+
+  const handleMapDescriptionChange = (nextDescription: string) => {
+    onMapDescriptionChange?.(nextDescription);
   };
 
   return (
@@ -297,6 +312,13 @@ export function MapAnalyticsOwnerConfigModal({
                   ) : null}
                 </div>
               </div>
+              <Button
+                type="button"
+                className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+                onClick={() => setIsDescriptionEditorModalOpen(true)}
+              >
+                Read more
+              </Button>
             </section>
 
             <section className="space-y-3 rounded-lg border p-3">
@@ -406,6 +428,14 @@ export function MapAnalyticsOwnerConfigModal({
           </div>
         </DialogContent>
       </Dialog>
+
+      <AdvancedMapAnalyticsDescriptionModal
+        open={isDescriptionEditorModalOpen}
+        onOpenChange={setIsDescriptionEditorModalOpen}
+        description={mapDescription}
+        mode="edit"
+        onDescriptionChange={handleMapDescriptionChange}
+      />
 
       <AlertDialog open={isVisibilityConfirmOpen} onOpenChange={(nextOpen) => !nextOpen && setPendingVisibilityTarget(null)}>
         <AlertDialogContent>
