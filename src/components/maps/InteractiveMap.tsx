@@ -32,6 +32,11 @@ interface FeatureInteractionContext {
   onFeatureClick: (properties: UatProperties, event: LeafletMouseEvent) => void;
 }
 
+interface FeatureLayerRecord {
+  layer: Layer;
+  properties: UatProperties;
+}
+
 type TooltipContentBuilder = (context: {
   properties: UatProperties;
   heatmapData: HeatmapUATDataPoint[] | HeatmapCountyDataPoint[];
@@ -86,8 +91,10 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   getTooltipContent,
 }) => {
   const geoJsonLayerRef = useRef<L.GeoJSON | null>(null);
+  const featureLayerRecordsRef = useRef<FeatureLayerRecord[]>([]);
   const latestFeatureStyleRef = useRef<FeatureStyleResolver>(() => DEFAULT_FEATURE_STYLE);
   const useCanvasRenderer = useMemo(() => shouldUseCanvasRenderer(), []);
+  const latestTooltipContentBuilderRef = useRef<TooltipContentBuilder | undefined>(getTooltipContent);
   const latestInteractionContextRef = useRef<FeatureInteractionContext>({
     heatmapData,
     mapViewType,
@@ -124,22 +131,32 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
     };
   }, [filters, heatmapData, mapViewType, onFeatureClick]);
 
+  useEffect(() => {
+    latestTooltipContentBuilderRef.current = getTooltipContent;
+  }, [getTooltipContent]);
+
   // Re-apply styles to all features when the style function logic changes (e.g., normalization toggles)
   useEffect(() => {
     restyleAllFeatures(geoJsonLayerRef.current, latestFeatureStyleRef.current);
   }, [resolveFeatureStyle]);
 
-  const applyTooltipForFeature = useCallback((layer: Layer, properties: UatProperties) => {
-    const tooltipLayer = layer as TooltipLayer;
+  const buildTooltipHtml = useCallback((properties: UatProperties): string => {
     const { heatmapData, mapViewType, filters } = latestInteractionContextRef.current;
-    const tooltipHtml = getTooltipContent
-      ? getTooltipContent({
+    const tooltipContentBuilder = latestTooltipContentBuilderRef.current;
+
+    return tooltipContentBuilder
+      ? tooltipContentBuilder({
           properties,
           heatmapData,
           mapViewType,
           filters,
         })
       : createTooltipContent(properties, heatmapData, mapViewType, filters);
+  }, []);
+
+  const applyTooltipForFeature = useCallback((layer: Layer, properties: UatProperties) => {
+    const tooltipLayer = layer as TooltipLayer;
+    const tooltipHtml = buildTooltipHtml(properties);
 
     if (!tooltipLayer.getTooltip()) {
       tooltipLayer.bindTooltip(tooltipHtml);
@@ -148,13 +165,37 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
     }
 
     tooltipLayer.openTooltip();
-  }, [getTooltipContent]);
+  }, [buildTooltipHtml]);
+
+  // Keep already-bound tooltips in sync when data, filters or custom tooltip builder change.
+  useEffect(() => {
+    for (const { layer, properties } of featureLayerRecordsRef.current) {
+      const tooltipLayer = layer as TooltipLayer;
+      if (!tooltipLayer.getTooltip()) {
+        continue;
+      }
+
+      tooltipLayer.setTooltipContent(buildTooltipHtml(properties));
+    }
+  }, [buildTooltipHtml, filters, getTooltipContent, heatmapData, mapViewType]);
 
   const onEachFeature = useCallback(
     (feature: Feature<Geometry, unknown>, layer: Layer) => {
       if (!feature.properties) return;
 
       const uatProps = feature.properties as UatProperties;
+      const existingRecordIndex = featureLayerRecordsRef.current.findIndex((record) => record.layer === layer);
+      if (existingRecordIndex === -1) {
+        featureLayerRecordsRef.current.push({
+          layer,
+          properties: uatProps,
+        });
+      } else {
+        featureLayerRecordsRef.current[existingRecordIndex] = {
+          layer,
+          properties: uatProps,
+        };
+      }
 
       // Lazy tooltip creation: create it only on mouseover for better initial performance.
       layer.on({

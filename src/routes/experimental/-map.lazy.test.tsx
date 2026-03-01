@@ -90,19 +90,23 @@ describe('ExperimentalMapPage', () => {
     useExperimentalMapSeriesDataMock.mockClear();
   });
 
-  it('renders config, series, and bins panels in order and warning details in modal only', async () => {
+  it('renders config, series, value-filters, and bins panels in order and warning details in modal only', async () => {
     const { ExperimentalMapPage } = await import('./map.lazy');
     render(<ExperimentalMapPage />);
 
     const configHeading = screen.getByRole('heading', { name: 'Config' });
     const seriesHeading = screen.getByRole('heading', { name: 'Data Series' });
+    const valueFiltersHeading = screen.getByRole('heading', { name: 'Value Filters' });
     const binsHeading = screen.getByRole('heading', { name: 'Bins' });
 
     expect(
       configHeading.compareDocumentPosition(seriesHeading) & Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
     expect(
-      seriesHeading.compareDocumentPosition(binsHeading) & Node.DOCUMENT_POSITION_FOLLOWING
+      seriesHeading.compareDocumentPosition(valueFiltersHeading) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    expect(
+      valueFiltersHeading.compareDocumentPosition(binsHeading) & Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
 
     expect(screen.queryByText('Division by zero in calc-series')).not.toBeInTheDocument();
@@ -441,6 +445,27 @@ describe('ExperimentalMapPage', () => {
 
     const nextSearch = latestNavigateArg.search(mockedSearchState);
     expect(nextSearch.activeView).toBe('table');
+  });
+
+  it('sets first added data series as active by default', async () => {
+    mockedSearchState = {
+      series: [],
+      activeSeriesId: undefined,
+    };
+
+    const { ExperimentalMapPage } = await import('./map.lazy');
+    render(<ExperimentalMapPage />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add series' }));
+
+    expect(navigateMock).toHaveBeenCalled();
+    const latestNavigateArg =
+      navigateMock.mock.calls[navigateMock.mock.calls.length - 1]?.[0];
+    expect(typeof latestNavigateArg?.search).toBe('function');
+
+    const nextSearch = latestNavigateArg.search(mockedSearchState);
+    expect(nextSearch.series).toHaveLength(1);
+    expect(nextSearch.activeSeriesId).toBe(nextSearch.series[0]?.id);
   });
 
   it('shows warning when active bins preset is missing', async () => {

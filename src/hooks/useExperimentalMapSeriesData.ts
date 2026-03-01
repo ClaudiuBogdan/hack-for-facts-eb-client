@@ -1,10 +1,15 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { Currency } from '@/schemas/charts';
-import type { MapBaseSeries, MapSupportedSeries } from '@/schemas/experimental-map';
+import type {
+  ExperimentalMapValueFilterRule,
+  MapBaseSeries,
+  MapSupportedSeries,
+} from '@/schemas/experimental-map';
 import { fetchGroupedSeriesData } from '@/lib/api/map-series';
 import { calculateMapSeriesValues } from '@/lib/map-series/calculation';
 import { parseGroupedSeriesWideCsv } from '@/lib/map-series/csv';
+import { applyExperimentalMapValueFilters } from '@/lib/map-series/value-filters';
 import type {
   GroupedSeriesDataResponse,
   MapSeriesVectorCache,
@@ -22,6 +27,7 @@ interface UseExperimentalMapSeriesDataParams {
   defaultInflationAdjusted: boolean;
   urlSearchLength?: number;
   enabled?: boolean;
+  valueFilterRules?: ExperimentalMapValueFilterRule[];
   localValuesBySeriesId?: MapSeriesVectorCache;
   localUnitsBySeriesId?: Map<string, string | undefined>;
 }
@@ -30,6 +36,7 @@ interface ExperimentalMapSeriesDataResult {
   valuesBySeriesId: MapSeriesVectorCache;
   unitsBySeriesId: Map<string, string | undefined>;
   warnings: MapSeriesWarning[];
+  matchedSirutaCodes?: Set<string>;
   activeSeriesId?: string;
   activeValues?: Map<string, number | undefined>;
   isLoading: boolean;
@@ -40,22 +47,56 @@ interface ExperimentalMapSeriesDataResult {
 export function useExperimentalMapSeriesData(
   params: UseExperimentalMapSeriesDataParams
 ): ExperimentalMapSeriesDataResult {
-  const normalizedEnabledSeries = useMemo(
+  const normalizedSeries = useMemo(
     () =>
-      params.series
-        .filter((series) => series.enabled)
-        .map((series) =>
-          normalizeSeriesDefaults(series, params.defaultCurrency, params.defaultInflationAdjusted)
-        ),
+      params.series.map((series) =>
+        normalizeSeriesDefaults(series, params.defaultCurrency, params.defaultInflationAdjusted)
+      ),
     [params.defaultCurrency, params.defaultInflationAdjusted, params.series]
   );
 
+  const normalizedEnabledSeries = useMemo(
+    () => normalizedSeries.filter((series) => series.enabled),
+    [normalizedSeries]
+  );
+
+  const resolvedActiveSeriesId = useMemo(() => {
+    if (!params.activeSeriesId) {
+      return undefined;
+    }
+
+    return normalizedEnabledSeries.some((series) => series.id === params.activeSeriesId)
+      ? params.activeSeriesId
+      : undefined;
+  }, [normalizedEnabledSeries, params.activeSeriesId]);
+
+  const relevantWarningSeriesIds = useMemo(() => {
+    const scopedSeriesIds = new Set(normalizedEnabledSeries.map((series) => series.id));
+
+    for (const rule of params.valueFilterRules ?? []) {
+      if (!rule.enabled) {
+        continue;
+      }
+
+      if (rule.seriesRef.mode === 'series') {
+        scopedSeriesIds.add(rule.seriesRef.seriesId);
+        continue;
+      }
+
+      if (resolvedActiveSeriesId) {
+        scopedSeriesIds.add(resolvedActiveSeriesId);
+      }
+    }
+
+    return scopedSeriesIds;
+  }, [normalizedEnabledSeries, params.valueFilterRules, resolvedActiveSeriesId]);
+
   const normalizedBaseSeries = useMemo(
     () =>
-      normalizedEnabledSeries
+      normalizedSeries
         .filter((series): series is MapBaseSeries => series.type !== 'aggregated-series-calculation')
         .sort((left, right) => left.id.localeCompare(right.id)),
-    [normalizedEnabledSeries]
+    [normalizedSeries]
   );
 
   const normalizedRemoteBaseSeries = useMemo(
@@ -186,12 +227,32 @@ export function useExperimentalMapSeriesData(
     }
 
     const calculationResult = calculateMapSeriesValues({
-      series: normalizedEnabledSeries,
+      series: normalizedSeries,
       baseValuesBySeriesId: baseVectors,
       unitsBySeriesId: baseUnits,
     });
 
-    warnings.push(...calculationResult.warnings);
+    const displayValuesBySeriesId: MapSeriesVectorCache = new Map();
+    for (const series of normalizedEnabledSeries) {
+      displayValuesBySeriesId.set(
+        series.id,
+        new Map(calculationResult.valuesBySeriesId.get(series.id) ?? [])
+      );
+    }
+
+    const valueFilterResult = applyExperimentalMapValueFilters({
+      allValuesBySeriesId: calculationResult.valuesBySeriesId,
+      displayValuesBySeriesId,
+      activeSeriesId: resolvedActiveSeriesId,
+      rules: params.valueFilterRules ?? [],
+    });
+
+    const scopedCalculationWarnings = calculationResult.warnings.filter((warning) =>
+      isWarningRelevantToSeriesScope(warning, relevantWarningSeriesIds)
+    );
+
+    warnings.push(...scopedCalculationWarnings);
+    warnings.push(...valueFilterResult.warnings);
 
     if ((params.urlSearchLength ?? 0) > URL_SEARCH_WARNING_THRESHOLD) {
       warnings.push({
@@ -202,8 +263,9 @@ export function useExperimentalMapSeriesData(
     }
 
     return {
-      valuesBySeriesId: calculationResult.valuesBySeriesId,
+      valuesBySeriesId: valueFilterResult.valuesBySeriesId,
       unitsBySeriesId: calculationResult.unitsBySeriesId,
+      matchedSirutaCodes: valueFilterResult.matchedSirutaCodes,
       warnings,
     };
   }, [
@@ -211,24 +273,19 @@ export function useExperimentalMapSeriesData(
     params.localUnitsBySeriesId,
     params.localValuesBySeriesId,
     normalizedEnabledSeries,
+    normalizedSeries,
     normalizedBaseSeries,
+    params.valueFilterRules,
+    relevantWarningSeriesIds,
+    resolvedActiveSeriesId,
     params.urlSearchLength,
   ]);
-
-  const resolvedActiveSeriesId = useMemo(() => {
-    if (!params.activeSeriesId) {
-      return undefined;
-    }
-
-    return normalizedEnabledSeries.some((series) => series.id === params.activeSeriesId)
-      ? params.activeSeriesId
-      : undefined;
-  }, [normalizedEnabledSeries, params.activeSeriesId]);
 
   return {
     valuesBySeriesId: calculated.valuesBySeriesId,
     unitsBySeriesId: calculated.unitsBySeriesId,
     warnings: calculated.warnings,
+    matchedSirutaCodes: calculated.matchedSirutaCodes,
     activeSeriesId: resolvedActiveSeriesId,
     activeValues: resolvedActiveSeriesId
       ? calculated.valuesBySeriesId.get(resolvedActiveSeriesId)
@@ -372,4 +429,19 @@ function resolveSeriesUnitOverride(series: MapBaseSeries): string | undefined {
   }
 
   return normalizedUnit;
+}
+
+function isWarningRelevantToSeriesScope(
+  warning: MapSeriesWarning,
+  relevantSeriesIds: Set<string>
+): boolean {
+  if (warning.seriesId && relevantSeriesIds.has(warning.seriesId)) {
+    return true;
+  }
+
+  if (warning.dependencySeriesId && relevantSeriesIds.has(warning.dependencySeriesId)) {
+    return true;
+  }
+
+  return warning.seriesId === undefined && warning.dependencySeriesId === undefined;
 }

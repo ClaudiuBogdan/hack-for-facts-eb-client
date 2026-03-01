@@ -137,6 +137,224 @@ export type ExperimentalMapBinsPresetConfig = z.infer<typeof ExperimentalMapBins
 export const ExperimentalMapActiveViewSchema = z.enum(['map', 'table']);
 export type ExperimentalMapActiveView = z.infer<typeof ExperimentalMapActiveViewSchema>;
 
+export const ExperimentalMapValueRuleJoinSchema = z.enum(['AND', 'OR']);
+export type ExperimentalMapValueRuleJoin = z.infer<typeof ExperimentalMapValueRuleJoinSchema>;
+
+export const ExperimentalMapValueFilterRuleKindSchema = z.enum(['threshold', 'stats']);
+export type ExperimentalMapValueFilterRuleKind = z.infer<typeof ExperimentalMapValueFilterRuleKindSchema>;
+
+export const ExperimentalMapValueFilterSeriesRefSchema = z.discriminatedUnion('mode', [
+  z.object({
+    mode: z.literal('active'),
+  }),
+  z.object({
+    mode: z.literal('series'),
+    seriesId: z.string(),
+  }),
+]);
+export type ExperimentalMapValueFilterSeriesRef = z.infer<typeof ExperimentalMapValueFilterSeriesRefSchema>;
+
+export const ExperimentalMapValueFilterOperatorSchema = z.enum([
+  'gt',
+  'gte',
+  'lt',
+  'lte',
+  'eq',
+  'neq',
+  'between',
+  'not_between',
+  'is_defined',
+  'is_undefined',
+]);
+export type ExperimentalMapValueFilterOperator = z.infer<typeof ExperimentalMapValueFilterOperatorSchema>;
+
+const ExperimentalMapValueFilterRuleBaseSchema = z.object({
+  id: z.string().default(() => crypto.randomUUID()),
+  enabled: z.boolean().default(true),
+  joinWithPrevious: ExperimentalMapValueRuleJoinSchema.default('AND'),
+  seriesRef: ExperimentalMapValueFilterSeriesRefSchema.default({
+    mode: 'active',
+  }),
+});
+
+export const ExperimentalMapThresholdValueFilterRuleSchema = ExperimentalMapValueFilterRuleBaseSchema.extend({
+  kind: z.literal('threshold').default('threshold'),
+  operator: ExperimentalMapValueFilterOperatorSchema.default('is_defined'),
+  value: z.number().optional(),
+  secondValue: z.number().optional(),
+});
+export type ExperimentalMapThresholdValueFilterRule = z.infer<typeof ExperimentalMapThresholdValueFilterRuleSchema>;
+
+export const ExperimentalMapStatsFilterTypeSchema = z.enum([
+  'percentile_band',
+  'rank',
+  'median_compare',
+  'zscore',
+  'iqr_outlier',
+  'mad_robust_zscore',
+]);
+export type ExperimentalMapStatsFilterType = z.infer<typeof ExperimentalMapStatsFilterTypeSchema>;
+
+export const ExperimentalMapStatsRankDirectionSchema = z.enum(['top', 'bottom']);
+export type ExperimentalMapStatsRankDirection = z.infer<typeof ExperimentalMapStatsRankDirectionSchema>;
+
+export const ExperimentalMapStatsMedianCompareModeSchema = z.enum(['gt', 'gte', 'lt', 'lte']);
+export type ExperimentalMapStatsMedianCompareMode = z.infer<typeof ExperimentalMapStatsMedianCompareModeSchema>;
+
+export const ExperimentalMapStatsZScoreModeSchema = z.enum(['abs_gte', 'gte', 'lte']);
+export type ExperimentalMapStatsZScoreMode = z.infer<typeof ExperimentalMapStatsZScoreModeSchema>;
+
+export const ExperimentalMapStatsIqrSideSchema = z.enum(['upper', 'lower', 'both']);
+export type ExperimentalMapStatsIqrSide = z.infer<typeof ExperimentalMapStatsIqrSideSchema>;
+
+const ExperimentalMapStatsPercentileRuleSchema = ExperimentalMapValueFilterRuleBaseSchema.extend({
+  kind: z.literal('stats'),
+  statsType: z.literal('percentile_band'),
+  minPercentile: z.number().default(0),
+  maxPercentile: z.number().default(100),
+});
+
+const ExperimentalMapStatsRankRuleSchema = ExperimentalMapValueFilterRuleBaseSchema.extend({
+  kind: z.literal('stats'),
+  statsType: z.literal('rank'),
+  direction: ExperimentalMapStatsRankDirectionSchema.default('top'),
+  count: z.number().int().min(1).default(10),
+});
+
+const ExperimentalMapStatsMedianRuleSchema = ExperimentalMapValueFilterRuleBaseSchema.extend({
+  kind: z.literal('stats'),
+  statsType: z.literal('median_compare'),
+  mode: ExperimentalMapStatsMedianCompareModeSchema.default('gte'),
+});
+
+const ExperimentalMapStatsZScoreRuleSchema = ExperimentalMapValueFilterRuleBaseSchema.extend({
+  kind: z.literal('stats'),
+  statsType: z.literal('zscore'),
+  mode: ExperimentalMapStatsZScoreModeSchema.default('abs_gte'),
+  threshold: z.number().default(2),
+});
+
+const ExperimentalMapStatsIqrRuleSchema = ExperimentalMapValueFilterRuleBaseSchema.extend({
+  kind: z.literal('stats'),
+  statsType: z.literal('iqr_outlier'),
+  side: ExperimentalMapStatsIqrSideSchema.default('both'),
+  multiplier: z.number().default(1.5),
+});
+
+const ExperimentalMapStatsMadRuleSchema = ExperimentalMapValueFilterRuleBaseSchema.extend({
+  kind: z.literal('stats'),
+  statsType: z.literal('mad_robust_zscore'),
+  threshold: z.number().default(3.5),
+});
+
+export const ExperimentalMapStatsValueFilterRuleSchema = z.union([
+  ExperimentalMapStatsPercentileRuleSchema,
+  ExperimentalMapStatsRankRuleSchema,
+  ExperimentalMapStatsMedianRuleSchema,
+  ExperimentalMapStatsZScoreRuleSchema,
+  ExperimentalMapStatsIqrRuleSchema,
+  ExperimentalMapStatsMadRuleSchema,
+]);
+export type ExperimentalMapStatsValueFilterRule = z.infer<typeof ExperimentalMapStatsValueFilterRuleSchema>;
+
+const ExperimentalMapAnyValueFilterRuleSchema = z.union([
+  ExperimentalMapThresholdValueFilterRuleSchema,
+  ExperimentalMapStatsPercentileRuleSchema,
+  ExperimentalMapStatsRankRuleSchema,
+  ExperimentalMapStatsMedianRuleSchema,
+  ExperimentalMapStatsZScoreRuleSchema,
+  ExperimentalMapStatsIqrRuleSchema,
+  ExperimentalMapStatsMadRuleSchema,
+]);
+
+function normalizeValueFilterRuleKind(input: unknown): unknown {
+  if (typeof input !== 'object' || input === null) {
+    return input;
+  }
+
+  const record = input as Record<string, unknown>;
+  if (typeof record.kind === 'string') {
+    if (record.kind === 'stats' && typeof record.statsType !== 'string') {
+      return {
+        ...record,
+        statsType: 'percentile_band',
+      };
+    }
+
+    return record;
+  }
+
+  return {
+    ...record,
+    kind: 'threshold',
+  };
+}
+
+export const ExperimentalMapValueFilterRuleSchema = z.preprocess(
+  normalizeValueFilterRuleKind,
+  ExperimentalMapAnyValueFilterRuleSchema
+);
+export type ExperimentalMapValueFilterRule = z.infer<typeof ExperimentalMapValueFilterRuleSchema>;
+
+function normalizeLegacyCombinator(value: unknown): ExperimentalMapValueRuleJoin | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const normalizedValue = value.trim().toUpperCase();
+  if (normalizedValue === 'AND' || normalizedValue === 'OR') {
+    return normalizedValue;
+  }
+
+  return undefined;
+}
+
+function migrateLegacyValueFilterGroup(input: unknown): unknown {
+  if (typeof input !== 'object' || input === null) {
+    return input;
+  }
+
+  const record = input as Record<string, unknown>;
+  const rules = record.rules;
+  if (!Array.isArray(rules) || rules.length === 0) {
+    return input;
+  }
+
+  const legacyCombinator = normalizeLegacyCombinator(record.combinator);
+  if (!legacyCombinator) {
+    return input;
+  }
+
+  const migratedRules = rules.map((rule, index) => {
+    if (typeof rule !== 'object' || rule === null) {
+      return rule;
+    }
+
+    const normalizedRule = rule as Record<string, unknown>;
+    if (typeof normalizedRule.joinWithPrevious === 'string') {
+      return normalizedRule;
+    }
+
+    return {
+      ...normalizedRule,
+      joinWithPrevious: index === 0 ? 'AND' : legacyCombinator,
+    };
+  });
+
+  return {
+    ...record,
+    rules: migratedRules,
+  };
+}
+
+export const ExperimentalMapValueFilterGroupSchema = z.preprocess(
+  migrateLegacyValueFilterGroup,
+  z.object({
+    rules: z.array(ExperimentalMapValueFilterRuleSchema).default([]),
+  })
+);
+export type ExperimentalMapValueFilterGroup = z.infer<typeof ExperimentalMapValueFilterGroupSchema>;
+
 export function createDefaultExperimentalMapBinsPresetConfig(): ExperimentalMapBinsPresetConfig {
   return ExperimentalMapBinsPresetConfigSchema.parse({});
 }
@@ -162,10 +380,12 @@ export function createDefaultExperimentalMapBinsPreset(
 export const ExperimentalMapUrlStateSchema = z.object({
   series: z.array(MapSupportedSeriesSchema).default([]),
   activeSeriesId: z.string().optional(),
+  valueFilters: ExperimentalMapValueFilterGroupSchema.default({ rules: [] }),
   activeView: ExperimentalMapActiveViewSchema.default('map'),
   mapName: z.string().default('Experimental UAT Map'),
   seriesPanelCollapsed: z.boolean().default(false),
   configPanelCollapsed: z.boolean().default(false),
+  valueFiltersPanelCollapsed: z.boolean().default(false),
   binsPanelCollapsed: z.boolean().default(false),
   binsPresets: z.array(ExperimentalMapBinsPresetSchema).default([]),
   activeBinPresetId: z.string().optional(),
@@ -175,6 +395,71 @@ export const ExperimentalMapUrlStateSchema = z.object({
 });
 
 export type ExperimentalMapUrlState = z.infer<typeof ExperimentalMapUrlStateSchema>;
+
+export function createDefaultExperimentalMapValueFilterRule(): ExperimentalMapThresholdValueFilterRule {
+  return ExperimentalMapValueFilterRuleSchema.parse({
+    kind: 'threshold',
+  }) as ExperimentalMapThresholdValueFilterRule;
+}
+
+type ExperimentalMapStatsRuleByType<T extends ExperimentalMapStatsFilterType> = Extract<
+  ExperimentalMapStatsValueFilterRule,
+  { statsType: T }
+>;
+
+export function createDefaultExperimentalMapStatsValueFilterRule<
+  T extends ExperimentalMapStatsFilterType = 'percentile_band',
+>(statsType: T = 'percentile_band' as T): ExperimentalMapStatsRuleByType<T> {
+  if (statsType === 'percentile_band') {
+    return ExperimentalMapValueFilterRuleSchema.parse({
+      kind: 'stats',
+      statsType,
+      minPercentile: 0,
+      maxPercentile: 100,
+    }) as ExperimentalMapStatsRuleByType<T>;
+  }
+
+  if (statsType === 'rank') {
+    return ExperimentalMapValueFilterRuleSchema.parse({
+      kind: 'stats',
+      statsType,
+      direction: 'top',
+      count: 10,
+    }) as ExperimentalMapStatsRuleByType<T>;
+  }
+
+  if (statsType === 'median_compare') {
+    return ExperimentalMapValueFilterRuleSchema.parse({
+      kind: 'stats',
+      statsType,
+      mode: 'gte',
+    }) as ExperimentalMapStatsRuleByType<T>;
+  }
+
+  if (statsType === 'zscore') {
+    return ExperimentalMapValueFilterRuleSchema.parse({
+      kind: 'stats',
+      statsType,
+      mode: 'abs_gte',
+      threshold: 2,
+    }) as ExperimentalMapStatsRuleByType<T>;
+  }
+
+  if (statsType === 'iqr_outlier') {
+    return ExperimentalMapValueFilterRuleSchema.parse({
+      kind: 'stats',
+      statsType,
+      side: 'both',
+      multiplier: 1.5,
+    }) as ExperimentalMapStatsRuleByType<T>;
+  }
+
+  return ExperimentalMapValueFilterRuleSchema.parse({
+    kind: 'stats',
+    statsType: 'mad_robust_zscore',
+    threshold: 3.5,
+  }) as ExperimentalMapStatsRuleByType<T>;
+}
 
 const DEFAULT_EXECUTION_REPORT_TYPE =
   'Executie bugetara agregata la nivel de ordonator principal' as const;

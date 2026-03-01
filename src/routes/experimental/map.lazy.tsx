@@ -23,11 +23,13 @@ import { ExperimentalMapDataTable } from '@/components/maps/experimental/experim
 import { formatExperimentalMapSeriesValue } from '@/components/maps/experimental/experimental-map-formatting';
 import type {
   ExperimentalMapUrlState,
+  ExperimentalMapValueFilterRule,
   GeoJsonFilterOption,
   GeoJsonDatasetSeriesConfiguration,
   MapSupportedSeries,
 } from '@/schemas/experimental-map';
 import {
+  createDefaultExperimentalMapValueFilterRule,
   createDefaultExperimentalMapSeries,
   ExperimentalMapUrlStateSchema,
   getGeoJsonDatasetLabel,
@@ -43,6 +45,8 @@ import { ExperimentalMapBinsModal } from '@/components/maps/experimental/experim
 import { ExperimentalMapBinsPanel } from '@/components/maps/experimental/experimental-map-bins-panel';
 import { ExperimentalMapDiscreteLegend } from '@/components/maps/experimental/experimental-map-discrete-legend';
 import { ExperimentalMapSeriesPanel } from '@/components/maps/experimental/experimental-map-series-panel';
+import { ExperimentalMapValueFilterEditorModal } from '@/components/maps/experimental/experimental-map-value-filter-editor-modal';
+import { ExperimentalMapValueFiltersPanel } from '@/components/maps/experimental/experimental-map-value-filters-panel';
 import { ExperimentalMapSeriesEditorModal } from '@/components/maps/experimental/experimental-map-series-editor-modal';
 import { ExperimentalMapWarningsModal } from '@/components/maps/experimental/experimental-map-warnings-modal';
 import {
@@ -62,6 +66,11 @@ interface EditorState {
   seriesId: string;
 }
 
+interface ValueFilterEditorState {
+  mode: 'add' | 'edit';
+  ruleId: string;
+}
+
 const DEFAULT_MAP_NAME = 'Experimental UAT Map';
 
 export const Route = createLazyFileRoute('/experimental/map')({
@@ -76,6 +85,7 @@ export function ExperimentalMapPage() {
   const [userInflationAdjusted] = useUserInflationAdjusted();
   const isMobile = useIsMobile();
   const [editorState, setEditorState] = useState<EditorState | null>(null);
+  const [valueFilterEditorState, setValueFilterEditorState] = useState<ValueFilterEditorState | null>(null);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isWarningsModalOpen, setIsWarningsModalOpen] = useState(false);
 
@@ -108,13 +118,33 @@ export function ExperimentalMapPage() {
     [updateState]
   );
 
+  const updateValueFilterRule = useCallback(
+    (ruleId: string, updater: (draft: ExperimentalMapValueFilterRule) => void) => {
+      updateState((draft) => {
+        const ruleIndex = draft.valueFilters.rules.findIndex((rule) => rule.id === ruleId);
+        if (ruleIndex === -1) {
+          return;
+        }
+
+        updater(draft.valueFilters.rules[ruleIndex]);
+      });
+    },
+    [updateState]
+  );
+
   const addSeries = useCallback(() => {
     const nextSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
 
     setEditorState({ mode: 'add', seriesId: nextSeries.id });
 
     updateState((draft) => {
+      const isFirstSeries = draft.series.length === 0;
+      nextSeries.label = `Data series ${draft.series.length + 1}`;
       draft.series.push(nextSeries);
+
+      if (isFirstSeries) {
+        draft.activeSeriesId = nextSeries.id;
+      }
     });
   }, [updateState]);
 
@@ -182,6 +212,117 @@ export function ExperimentalMapPage() {
     (collapsed: boolean) => {
       updateState((draft) => {
         draft.configPanelCollapsed = collapsed;
+      });
+    },
+    [updateState]
+  );
+
+  const toggleValueFiltersPanelCollapsed = useCallback(
+    (collapsed: boolean) => {
+      updateState((draft) => {
+        draft.valueFiltersPanelCollapsed = collapsed;
+      });
+    },
+    [updateState]
+  );
+
+  const addValueFilterRule = useCallback(() => {
+    updateState((draft) => {
+      draft.valueFilters.rules.push(createDefaultExperimentalMapValueFilterRule());
+    });
+  }, [updateState]);
+
+  const editValueFilterRule = useCallback((ruleId: string) => {
+    setValueFilterEditorState({
+      mode: 'edit',
+      ruleId,
+    });
+  }, []);
+
+  const deleteValueFilterRule = useCallback(
+    (ruleId: string) => {
+      updateState((draft) => {
+        draft.valueFilters.rules = draft.valueFilters.rules.filter((rule) => rule.id !== ruleId);
+      });
+
+      setValueFilterEditorState((previousState) =>
+        previousState?.ruleId === ruleId ? null : previousState
+      );
+    },
+    [updateState]
+  );
+
+  const moveValueFilterRule = useCallback(
+    (ruleId: string, direction: 'up' | 'down') => {
+      updateState((draft) => {
+        const currentIndex = draft.valueFilters.rules.findIndex((rule) => rule.id === ruleId);
+        if (currentIndex === -1) {
+          return;
+        }
+
+        const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+        if (targetIndex < 0 || targetIndex >= draft.valueFilters.rules.length) {
+          return;
+        }
+
+        const reorderedRules = [...draft.valueFilters.rules];
+        const [movedRule] = reorderedRules.splice(currentIndex, 1);
+        if (!movedRule) {
+          return;
+        }
+        reorderedRules.splice(targetIndex, 0, movedRule);
+        draft.valueFilters.rules = reorderedRules;
+      });
+    },
+    [updateState]
+  );
+
+  const reorderValueFilterRules = useCallback(
+    (activeRuleId: string, overRuleId: string) => {
+      if (activeRuleId === overRuleId) {
+        return;
+      }
+
+      updateState((draft) => {
+        const currentIndex = draft.valueFilters.rules.findIndex((rule) => rule.id === activeRuleId);
+        const targetIndex = draft.valueFilters.rules.findIndex((rule) => rule.id === overRuleId);
+        if (currentIndex === -1 || targetIndex === -1) {
+          return;
+        }
+
+        const reorderedRules = [...draft.valueFilters.rules];
+        const [movedRule] = reorderedRules.splice(currentIndex, 1);
+        if (!movedRule) {
+          return;
+        }
+        reorderedRules.splice(targetIndex, 0, movedRule);
+        draft.valueFilters.rules = reorderedRules;
+      });
+    },
+    [updateState]
+  );
+
+  const updateValueFilterRuleEnabled = useCallback(
+    (ruleId: string, enabled: boolean) => {
+      updateValueFilterRule(ruleId, (rule) => {
+        rule.enabled = enabled;
+      });
+    },
+    [updateValueFilterRule]
+  );
+
+  const replaceValueFilterRule = useCallback(
+    (ruleId: string, nextRule: ExperimentalMapValueFilterRule) => {
+      updateState((draft) => {
+        const ruleIndex = draft.valueFilters.rules.findIndex((rule) => rule.id === ruleId);
+        if (ruleIndex === -1) {
+          return;
+        }
+
+        draft.valueFilters.rules[ruleIndex] = {
+          ...nextRule,
+          id: ruleId,
+        };
       });
     },
     [updateState]
@@ -339,6 +480,7 @@ export function ExperimentalMapPage() {
   } = useExperimentalMapSeriesData({
     series: mapState.series,
     activeSeriesId: mapState.activeSeriesId,
+    valueFilterRules: mapState.valueFilters.rules,
     defaultCurrency: userCurrency,
     defaultInflationAdjusted: userInflationAdjusted,
     urlSearchLength: serializedSearchLength,
@@ -816,6 +958,12 @@ export function ExperimentalMapPage() {
   const modalSeries = editorState
     ? mapState.series.find((series) => series.id === editorState.seriesId)
     : undefined;
+  const modalValueFilterRule = valueFilterEditorState
+    ? mapState.valueFilters.rules.find((rule) => rule.id === valueFilterEditorState.ruleId)
+    : undefined;
+  const modalValueFilterRuleIndex = modalValueFilterRule
+    ? mapState.valueFilters.rules.findIndex((rule) => rule.id === modalValueFilterRule.id)
+    : -1;
   const activeSeriesDisplayLabel = activeSeries
     ? resolveSeriesDisplayLabel(activeSeries)
     : activeSeriesId || 'None';
@@ -841,6 +989,12 @@ export function ExperimentalMapPage() {
       setEditorState(null);
     }
   }, [editorState, modalSeries]);
+
+  useEffect(() => {
+    if (valueFilterEditorState?.mode === 'edit' && !modalValueFilterRule) {
+      setValueFilterEditorState(null);
+    }
+  }, [modalValueFilterRule, valueFilterEditorState]);
 
   return (
     <div className="flex flex-col md:flex-row md:h-screen bg-background">
@@ -868,6 +1022,18 @@ export function ExperimentalMapPage() {
             onEdit={editSeries}
             onDelete={deleteSeries}
             onReorder={reorderSeries}
+          />
+          <ExperimentalMapValueFiltersPanel
+            collapsed={Boolean(mapState.valueFiltersPanelCollapsed)}
+            rules={mapState.valueFilters.rules}
+            series={mapState.series}
+            onToggleCollapsed={toggleValueFiltersPanelCollapsed}
+            onAddRule={addValueFilterRule}
+            onReorder={reorderValueFilterRules}
+            onEditRule={editValueFilterRule}
+            onDeleteRule={deleteValueFilterRule}
+            onMoveRule={moveValueFilterRule}
+            onRuleEnabledChange={updateValueFilterRuleEnabled}
           />
           <ExperimentalMapBinsPanel
             collapsed={Boolean(mapState.binsPanelCollapsed)}
@@ -933,8 +1099,10 @@ export function ExperimentalMapPage() {
                 </ClientOnly>
 
                 {!activeSeries ? (
-                  <div className="pointer-events-none absolute left-4 top-4 z-[500] rounded-md border bg-card/95 px-3 py-2 text-sm text-muted-foreground shadow-sm">
-                    No active series selected.
+                  <div className="pointer-events-none absolute inset-0 z-[500] flex items-center justify-center p-4">
+                    <div className="rounded-md border bg-card/95 px-3 py-2 text-sm text-muted-foreground shadow-sm">
+                      No active series selected.
+                    </div>
                   </div>
                 ) : null}
 
@@ -1007,6 +1175,26 @@ export function ExperimentalMapPage() {
         }}
         onUpdateSeries={updateSeries}
         onChangeSeriesType={changeSeriesType}
+      />
+
+      <ExperimentalMapValueFilterEditorModal
+        open={valueFilterEditorState != null && modalValueFilterRule != null}
+        mode={valueFilterEditorState?.mode ?? 'edit'}
+        rule={modalValueFilterRule}
+        ruleIndex={modalValueFilterRuleIndex}
+        series={mapState.series}
+        onOpenChange={(open) => {
+          if (!open) {
+            setValueFilterEditorState(null);
+          }
+        }}
+        onRuleChange={(nextRule) => {
+          if (!modalValueFilterRule) {
+            return;
+          }
+
+          replaceValueFilterRule(modalValueFilterRule.id, nextRule);
+        }}
       />
 
       <ExperimentalMapConfigModal

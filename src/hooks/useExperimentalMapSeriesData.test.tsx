@@ -3,7 +3,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 
 import { useExperimentalMapSeriesData } from '@/hooks/useExperimentalMapSeriesData';
-import { createDefaultExperimentalMapSeries } from '@/schemas/experimental-map';
+import {
+  createDefaultExperimentalMapSeries,
+  createDefaultExperimentalMapStatsValueFilterRule,
+  createDefaultExperimentalMapValueFilterRule,
+} from '@/schemas/experimental-map';
 import { serializeGroupedSeriesWideMatrixCsv } from '@/lib/map-series/csv';
 
 const fetchGroupedSeriesDataMock = vi.hoisted(() => vi.fn());
@@ -498,5 +502,359 @@ describe('useExperimentalMapSeriesData', () => {
 
     expect(result.current.valuesBySeriesId.get(calculationSeries.id)?.get('1001')).toBe(10);
     expect(result.current.valuesBySeriesId.get(calculationSeries.id)?.get('1002')).toBe(5);
+  });
+
+  it('applies value filters after calculations', async () => {
+    const baseSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+    const calcSeries = createDefaultExperimentalMapSeries('aggregated-series-calculation');
+    if (calcSeries.type !== 'aggregated-series-calculation') {
+      throw new Error('Unexpected calculation series type in test setup');
+    }
+
+    calcSeries.calculation = {
+      op: 'sum',
+      args: [baseSeries.id, 1],
+    };
+
+    fetchGroupedSeriesDataMock.mockResolvedValueOnce(
+      makeGroupedResponse({
+        series: [{ id: baseSeries.id, unit: 'RON' }],
+        rows: [
+          { series_id: baseSeries.id, siruta_code: '1001', value: 2 },
+          { series_id: baseSeries.id, siruta_code: '1002', value: 10 },
+        ],
+      })
+    );
+
+    const rule = createDefaultExperimentalMapValueFilterRule();
+    rule.operator = 'lt';
+    rule.value = 5;
+
+    const wrapper = createWrapper();
+    const { result } = renderHook(
+      () =>
+        useExperimentalMapSeriesData({
+          series: [baseSeries, calcSeries],
+          activeSeriesId: calcSeries.id,
+          valueFilterRules: [rule],
+          defaultCurrency: 'RON',
+          defaultInflationAdjusted: false,
+        }),
+      { wrapper }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.valuesBySeriesId.get(calcSeries.id)?.has('1001')).toBe(true);
+    expect(result.current.valuesBySeriesId.get(calcSeries.id)?.has('1002')).toBe(false);
+  });
+
+  it('does not include calculation warnings from disabled series outside current scope', async () => {
+    const baseSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+    const disabledCalcSeries = createDefaultExperimentalMapSeries('aggregated-series-calculation');
+    if (disabledCalcSeries.type !== 'aggregated-series-calculation') {
+      throw new Error('Unexpected calculation series type in test setup');
+    }
+
+    disabledCalcSeries.enabled = false;
+    disabledCalcSeries.calculation = {
+      op: 'divide',
+      args: [1, 0],
+    };
+
+    fetchGroupedSeriesDataMock.mockResolvedValueOnce(
+      makeGroupedResponse({
+        series: [{ id: baseSeries.id, unit: 'RON' }],
+        rows: [{ series_id: baseSeries.id, siruta_code: '1001', value: 10 }],
+      })
+    );
+
+    const wrapper = createWrapper();
+    const { result } = renderHook(
+      () =>
+        useExperimentalMapSeriesData({
+          series: [baseSeries, disabledCalcSeries],
+          activeSeriesId: baseSeries.id,
+          defaultCurrency: 'RON',
+          defaultInflationAdjusted: false,
+        }),
+      { wrapper }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.warnings.some((warning) => warning.seriesId === disabledCalcSeries.id)).toBe(false);
+  });
+
+  it('keeps calculation warnings for disabled series used by active value filters', async () => {
+    const baseSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+    const disabledCalcSeries = createDefaultExperimentalMapSeries('aggregated-series-calculation');
+    if (disabledCalcSeries.type !== 'aggregated-series-calculation') {
+      throw new Error('Unexpected calculation series type in test setup');
+    }
+
+    disabledCalcSeries.enabled = false;
+    disabledCalcSeries.calculation = {
+      op: 'divide',
+      args: [1, 0],
+    };
+
+    fetchGroupedSeriesDataMock.mockResolvedValueOnce(
+      makeGroupedResponse({
+        series: [{ id: baseSeries.id, unit: 'RON' }],
+        rows: [{ series_id: baseSeries.id, siruta_code: '1001', value: 10 }],
+      })
+    );
+
+    const sourceRule = createDefaultExperimentalMapValueFilterRule();
+    sourceRule.seriesRef = {
+      mode: 'series',
+      seriesId: disabledCalcSeries.id,
+    };
+    sourceRule.operator = 'is_defined';
+
+    const wrapper = createWrapper();
+    const { result } = renderHook(
+      () =>
+        useExperimentalMapSeriesData({
+          series: [baseSeries, disabledCalcSeries],
+          activeSeriesId: baseSeries.id,
+          valueFilterRules: [sourceRule],
+          defaultCurrency: 'RON',
+          defaultInflationAdjusted: false,
+        }),
+      { wrapper }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(
+      result.current.warnings.some((warning) =>
+        warning.type === 'divide_by_zero' && warning.seriesId === disabledCalcSeries.id
+      )
+    ).toBe(true);
+  });
+
+  it('supports active-series dynamic value filter source without refetch', async () => {
+    const firstSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+    const secondSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+
+    fetchGroupedSeriesDataMock.mockResolvedValue(
+      makeGroupedResponse({
+        series: [
+          { id: firstSeries.id, unit: 'RON' },
+          { id: secondSeries.id, unit: 'RON' },
+        ],
+        rows: [
+          { series_id: firstSeries.id, siruta_code: '1001', value: 10 },
+          { series_id: firstSeries.id, siruta_code: '1002', value: 2 },
+          { series_id: secondSeries.id, siruta_code: '1001', value: 1 },
+          { series_id: secondSeries.id, siruta_code: '1002', value: 20 },
+        ],
+      })
+    );
+
+    const rule = createDefaultExperimentalMapValueFilterRule();
+    rule.operator = 'gt';
+    rule.value = 5;
+
+    const wrapper = createWrapper();
+    const { result, rerender } = renderHook(
+      ({ activeSeriesId }) =>
+        useExperimentalMapSeriesData({
+          series: [firstSeries, secondSeries],
+          activeSeriesId,
+          valueFilterRules: [rule],
+          defaultCurrency: 'RON',
+          defaultInflationAdjusted: false,
+        }),
+      {
+        wrapper,
+        initialProps: { activeSeriesId: firstSeries.id },
+      }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.valuesBySeriesId.get(firstSeries.id)?.has('1001')).toBe(true);
+    expect(result.current.valuesBySeriesId.get(firstSeries.id)?.has('1002')).toBe(false);
+    expect(fetchGroupedSeriesDataMock).toHaveBeenCalledTimes(1);
+
+    rerender({ activeSeriesId: secondSeries.id });
+
+    await waitFor(() => {
+      expect(result.current.activeSeriesId).toBe(secondSeries.id);
+    });
+
+    expect(result.current.valuesBySeriesId.get(secondSeries.id)?.has('1002')).toBe(true);
+    expect(result.current.valuesBySeriesId.get(secondSeries.id)?.has('1001')).toBe(false);
+    expect(fetchGroupedSeriesDataMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses explicit filter source series even when source is disabled for display', async () => {
+    const spendingSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+    const populationSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+    populationSeries.enabled = false;
+
+    fetchGroupedSeriesDataMock.mockResolvedValueOnce(
+      makeGroupedResponse({
+        series: [
+          { id: spendingSeries.id, unit: 'RON' },
+          { id: populationSeries.id, unit: 'inhabitants' },
+        ],
+        rows: [
+          { series_id: spendingSeries.id, siruta_code: '1001', value: 100 },
+          { series_id: spendingSeries.id, siruta_code: '1002', value: 200 },
+          { series_id: populationSeries.id, siruta_code: '1001', value: 4500 },
+          { series_id: populationSeries.id, siruta_code: '1002', value: 1500 },
+        ],
+      })
+    );
+
+    const populationRule = createDefaultExperimentalMapValueFilterRule();
+    populationRule.seriesRef = {
+      mode: 'series',
+      seriesId: populationSeries.id,
+    };
+    populationRule.operator = 'gte';
+    populationRule.value = 3000;
+
+    const wrapper = createWrapper();
+    const { result } = renderHook(
+      () =>
+        useExperimentalMapSeriesData({
+          series: [spendingSeries, populationSeries],
+          activeSeriesId: spendingSeries.id,
+          valueFilterRules: [populationRule],
+          defaultCurrency: 'RON',
+          defaultInflationAdjusted: false,
+        }),
+      { wrapper }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.valuesBySeriesId.has(populationSeries.id)).toBe(false);
+    expect(result.current.valuesBySeriesId.get(spendingSeries.id)?.has('1001')).toBe(true);
+    expect(result.current.valuesBySeriesId.get(spendingSeries.id)?.has('1002')).toBe(false);
+  });
+
+  it('does not refetch when value filter rules change', async () => {
+    const baseSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+
+    fetchGroupedSeriesDataMock.mockResolvedValue(
+      makeGroupedResponse({
+        series: [{ id: baseSeries.id, unit: 'RON' }],
+        rows: [
+          { series_id: baseSeries.id, siruta_code: '1001', value: 10 },
+          { series_id: baseSeries.id, siruta_code: '1002', value: 20 },
+        ],
+      })
+    );
+
+    const wrapper = createWrapper();
+    const firstRule = createDefaultExperimentalMapValueFilterRule();
+    firstRule.operator = 'gt';
+    firstRule.value = 5;
+
+    const secondRule = createDefaultExperimentalMapValueFilterRule();
+    secondRule.operator = 'gt';
+    secondRule.value = 15;
+
+    const { result, rerender } = renderHook(
+      ({ rules }) =>
+        useExperimentalMapSeriesData({
+          series: [baseSeries],
+          activeSeriesId: baseSeries.id,
+          valueFilterRules: rules,
+          defaultCurrency: 'RON',
+          defaultInflationAdjusted: false,
+        }),
+      {
+        wrapper,
+        initialProps: { rules: [firstRule] },
+      }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.valuesBySeriesId.get(baseSeries.id)?.size).toBe(2);
+    expect(fetchGroupedSeriesDataMock).toHaveBeenCalledTimes(1);
+
+    rerender({ rules: [secondRule] });
+
+    await waitFor(() => {
+      expect(result.current.isFetching).toBe(false);
+    });
+
+    expect(result.current.valuesBySeriesId.get(baseSeries.id)?.size).toBe(1);
+    expect(fetchGroupedSeriesDataMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not refetch when stats value filter parameters change', async () => {
+    const baseSeries = createDefaultExperimentalMapSeries('line-items-aggregated-yearly');
+
+    fetchGroupedSeriesDataMock.mockResolvedValue(
+      makeGroupedResponse({
+        series: [{ id: baseSeries.id, unit: 'RON' }],
+        rows: [
+          { series_id: baseSeries.id, siruta_code: '1001', value: 10 },
+          { series_id: baseSeries.id, siruta_code: '1002', value: 20 },
+          { series_id: baseSeries.id, siruta_code: '1003', value: 30 },
+        ],
+      })
+    );
+
+    const wrapper = createWrapper();
+    const firstRule = createDefaultExperimentalMapStatsValueFilterRule('percentile_band');
+    firstRule.minPercentile = 0;
+    firstRule.maxPercentile = 50;
+
+    const secondRule = createDefaultExperimentalMapStatsValueFilterRule('percentile_band');
+    secondRule.minPercentile = 50;
+    secondRule.maxPercentile = 100;
+
+    const { result, rerender } = renderHook(
+      ({ rules }) =>
+        useExperimentalMapSeriesData({
+          series: [baseSeries],
+          activeSeriesId: baseSeries.id,
+          valueFilterRules: rules,
+          defaultCurrency: 'RON',
+          defaultInflationAdjusted: false,
+        }),
+      {
+        wrapper,
+        initialProps: { rules: [firstRule] },
+      }
+    );
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(fetchGroupedSeriesDataMock).toHaveBeenCalledTimes(1);
+    expect(result.current.valuesBySeriesId.get(baseSeries.id)?.size).toBe(2);
+
+    rerender({ rules: [secondRule] });
+
+    await waitFor(() => {
+      expect(result.current.isFetching).toBe(false);
+    });
+
+    expect(fetchGroupedSeriesDataMock).toHaveBeenCalledTimes(1);
+    expect(result.current.valuesBySeriesId.get(baseSeries.id)?.size).toBe(2);
   });
 });

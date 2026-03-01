@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   createDefaultExperimentalMapBinsPreset,
+  createDefaultExperimentalMapStatsValueFilterRule,
+  createDefaultExperimentalMapValueFilterRule,
   createDefaultExperimentalMapSeries,
   ExperimentalMapUrlStateSchema,
   GEOJSON_POPULATION_DATASET_KEYS,
@@ -12,10 +14,12 @@ describe('ExperimentalMapUrlStateSchema', () => {
 
     expect(parsed.series).toEqual([]);
     expect(parsed.activeSeriesId).toBeUndefined();
+    expect(parsed.valueFilters.rules).toEqual([]);
     expect(parsed.activeView).toBe('map');
     expect(parsed.mapName).toBe('Experimental UAT Map');
     expect(parsed.seriesPanelCollapsed).toBe(false);
     expect(parsed.configPanelCollapsed).toBe(false);
+    expect(parsed.valueFiltersPanelCollapsed).toBe(false);
     expect(parsed.binsPanelCollapsed).toBe(false);
     expect(parsed.binsPresets).toEqual([]);
     expect(parsed.activeBinPresetId).toBeUndefined();
@@ -37,14 +41,31 @@ describe('ExperimentalMapUrlStateSchema', () => {
     firstPreset.config.title = 'Revenue bands';
     secondPreset.config.showBinLabelOnLegend = false;
     secondPreset.config.defaultBinCount = 7;
+    const firstValueRule = createDefaultExperimentalMapValueFilterRule();
+    firstValueRule.operator = 'lt';
+    firstValueRule.value = 0;
+    const secondValueRule = createDefaultExperimentalMapValueFilterRule();
+    secondValueRule.operator = 'between';
+    secondValueRule.value = 1000;
+    secondValueRule.secondValue = 2000;
+    secondValueRule.joinWithPrevious = 'OR';
+    secondValueRule.seriesRef = {
+      mode: 'series',
+      seriesId: baseSeries.id,
+    };
+    secondValueRule.enabled = false;
 
     const state = ExperimentalMapUrlStateSchema.parse({
       series: [baseSeries, calcSeries],
       activeSeriesId: calcSeries.id,
+      valueFilters: {
+        rules: [firstValueRule, secondValueRule],
+      },
       activeView: 'table',
       mapName: 'Custom Experimental Map',
       seriesPanelCollapsed: true,
       configPanelCollapsed: true,
+      valueFiltersPanelCollapsed: true,
       binsPanelCollapsed: true,
       binsPresets: [firstPreset, secondPreset],
       activeBinPresetId: secondPreset.id,
@@ -61,6 +82,88 @@ describe('ExperimentalMapUrlStateSchema', () => {
 
     expect(roundTripped).toEqual(state);
     expect(roundTripped.binsPresets[0]?.config.title).toBe('Revenue bands');
+    expect(roundTripped.valueFilters.rules[1]?.joinWithPrevious).toBe('OR');
+  });
+
+  it('supports threshold and stats rules round-trip', () => {
+    const thresholdRule = createDefaultExperimentalMapValueFilterRule();
+    thresholdRule.operator = 'lt';
+    thresholdRule.value = 0;
+
+    const statsRule = createDefaultExperimentalMapStatsValueFilterRule('rank');
+    statsRule.joinWithPrevious = 'OR';
+    statsRule.direction = 'top';
+    statsRule.count = 25;
+
+    const parsed = ExperimentalMapUrlStateSchema.parse({
+      valueFilters: {
+        rules: [thresholdRule, statsRule],
+      },
+    });
+
+    const serialized = JSON.stringify(parsed);
+    const roundTripped = ExperimentalMapUrlStateSchema.parse(JSON.parse(serialized));
+
+    expect(roundTripped.valueFilters.rules[0]?.kind).toBe('threshold');
+    expect(roundTripped.valueFilters.rules[1]?.kind).toBe('stats');
+    expect(roundTripped.valueFilters.rules[1]).toMatchObject({
+      statsType: 'rank',
+      direction: 'top',
+      count: 25,
+    });
+  });
+
+  it('migrates legacy global combinator into per-rule joins', () => {
+    const firstRule = createDefaultExperimentalMapValueFilterRule();
+    const secondRule = createDefaultExperimentalMapValueFilterRule();
+    const thirdRule = createDefaultExperimentalMapValueFilterRule();
+
+    const parsed = ExperimentalMapUrlStateSchema.parse({
+      valueFilters: {
+        combinator: 'OR',
+        rules: [
+          {
+            ...firstRule,
+            joinWithPrevious: undefined,
+          },
+          {
+            ...secondRule,
+            joinWithPrevious: undefined,
+          },
+          {
+            ...thirdRule,
+            joinWithPrevious: undefined,
+          },
+        ],
+      },
+    });
+
+    expect(parsed.valueFilters.rules[0]?.joinWithPrevious).toBe('AND');
+    expect(parsed.valueFilters.rules[1]?.joinWithPrevious).toBe('OR');
+    expect(parsed.valueFilters.rules[2]?.joinWithPrevious).toBe('OR');
+  });
+
+  it('migrates legacy rules without kind to threshold kind', () => {
+    const legacyRule = {
+      ...createDefaultExperimentalMapValueFilterRule(),
+      kind: undefined,
+      operator: 'gt',
+      value: 5,
+    };
+
+    const parsed = ExperimentalMapUrlStateSchema.parse({
+      valueFilters: {
+        rules: [legacyRule],
+      },
+    });
+
+    expect(parsed.valueFilters.rules[0]?.kind).toBe('threshold');
+    if (parsed.valueFilters.rules[0]?.kind !== 'threshold') {
+      throw new Error('Expected threshold rule after migration');
+    }
+
+    expect(parsed.valueFilters.rules[0].operator).toBe('gt');
+    expect(parsed.valueFilters.rules[0].value).toBe(5);
   });
 
   it('defaults INS series unit to empty string', () => {
