@@ -4,6 +4,7 @@ export const MAP_EDITOR_SEARCH_KEYS = [
   'activeSeriesId',
   'valueFilters',
   'activeView',
+  'analyticsWidgets',
   'mapName',
   'showCountyBoundaries',
   'seriesPanelCollapsed',

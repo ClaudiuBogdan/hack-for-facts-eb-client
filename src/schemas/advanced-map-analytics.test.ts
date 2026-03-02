@@ -4,6 +4,7 @@ import {
   AdvancedMapAnalyticsBinSchema,
   createUniqueAdvancedMapAnalyticsId,
   createDefaultAdvancedMapAnalyticsBinsPreset,
+  createDefaultAdvancedMapAnalyticsWidgets,
   createDefaultAdvancedMapAnalyticsStatsValueFilterRule,
   createDefaultAdvancedMapAnalyticsValueFilterRule,
   createDefaultAdvancedMapAnalyticsSeries,
@@ -20,6 +21,7 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
     expect(parsed.activeSeriesId).toBeUndefined();
     expect(parsed.valueFilters.rules).toEqual([]);
     expect(parsed.activeView).toBe('map');
+    expect(parsed.analyticsWidgets).toEqual(createDefaultAdvancedMapAnalyticsWidgets());
     expect(parsed.mapName).toBe('Untitled map');
     expect(parsed.showCountyBoundaries).toBe(true);
     expect(parsed.seriesPanelCollapsed).toBe(false);
@@ -89,6 +91,36 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
       seriesId: baseSeries.id,
     };
     secondValueRule.enabled = false;
+    const analyticsWidgets = createDefaultAdvancedMapAnalyticsWidgets().map((widget) => {
+      if (widget.key === 'distribution') {
+        return {
+          ...widget,
+          enabled: false,
+          binCount: 20,
+          seriesId: calcSeries.id,
+          viewMode: 'table' as const,
+        };
+      }
+
+      if (widget.key === 'outliers') {
+        return {
+          ...widget,
+          iqrMultiplier: 2.2,
+          limit: 5,
+          seriesId: calcSeries.id,
+          viewMode: 'chart' as const,
+        };
+      }
+
+      if (widget.key === 'series_coverage') {
+        return {
+          ...widget,
+          showCoveragePercent: false,
+        };
+      }
+
+      return widget;
+    });
 
     const state = AdvancedMapAnalyticsUrlStateSchema.parse({
       series: [baseSeries, calcSeries],
@@ -97,6 +129,7 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
         rules: [firstValueRule, secondValueRule],
       },
       activeView: 'table',
+      analyticsWidgets,
       mapName: 'Custom map',
       showCountyBoundaries: false,
       seriesPanelCollapsed: true,
@@ -120,6 +153,47 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
     expect(roundTripped.showCountyBoundaries).toBe(false);
     expect(roundTripped.binsPresets[0]?.config.title).toBe('Revenue bands');
     expect(roundTripped.valueFilters.rules[1]?.joinWithPrevious).toBe('OR');
+    expect(roundTripped.analyticsWidgets).toEqual(analyticsWidgets);
+  });
+
+  it('normalizes analytics widgets by deduping keys and filling missing defaults', () => {
+    const parsed = AdvancedMapAnalyticsUrlStateSchema.parse({
+      analyticsWidgets: [
+        { key: 'distribution', enabled: false, binCount: 17, seriesId: 'series-custom' },
+        { key: 'series_coverage', enabled: true, showCoveragePercent: false },
+        { key: 'distribution', enabled: true, binCount: 3 },
+        { key: 'outliers', enabled: true, method: 'iqr', iqrMultiplier: 2, limit: 4 },
+        { key: 'invalid_widget' },
+      ],
+    });
+
+    expect(parsed.analyticsWidgets).toHaveLength(4);
+    expect(parsed.analyticsWidgets.map((widget) => widget.key)).toEqual([
+      'distribution',
+      'series_coverage',
+      'outliers',
+      'series_totals',
+    ]);
+    expect(parsed.analyticsWidgets[0]).toMatchObject({
+      key: 'distribution',
+      enabled: false,
+      binCount: 17,
+      seriesId: 'series-custom',
+    });
+    expect(parsed.analyticsWidgets[1]).toMatchObject({
+      key: 'series_coverage',
+      showCoveragePercent: false,
+    });
+    expect(parsed.analyticsWidgets[2]).toMatchObject({
+      key: 'outliers',
+      method: 'iqr',
+      iqrMultiplier: 2,
+      limit: 4,
+    });
+    expect(parsed.analyticsWidgets[3]).toMatchObject({
+      key: 'series_totals',
+      enabled: true,
+    });
   });
 
   it('supports threshold and stats rules round-trip', () => {
@@ -176,6 +250,48 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
         },
       })
     ).toThrow();
+  });
+
+  it('defaults distribution viewMode to chart and outliers viewMode to table', () => {
+    const widgets = createDefaultAdvancedMapAnalyticsWidgets();
+    const distribution = widgets.find((widget) => widget.key === 'distribution');
+    const outliers = widgets.find((widget) => widget.key === 'outliers');
+
+    expect(distribution).toBeDefined();
+    expect(outliers).toBeDefined();
+    if (distribution?.key === 'distribution') {
+      expect(distribution.viewMode).toBe('chart');
+      expect(distribution.binMethod).toBe('log');
+    }
+    if (outliers?.key === 'outliers') {
+      expect(outliers.viewMode).toBe('table');
+    }
+  });
+
+  it('round-trips viewMode values through parse', () => {
+    const widgets = createDefaultAdvancedMapAnalyticsWidgets().map((widget) => {
+      if (widget.key === 'distribution') {
+        return { ...widget, viewMode: 'table' as const };
+      }
+      if (widget.key === 'outliers') {
+        return { ...widget, viewMode: 'chart' as const };
+      }
+      return widget;
+    });
+
+    const state = AdvancedMapAnalyticsUrlStateSchema.parse({ analyticsWidgets: widgets });
+    const serialized = JSON.stringify(state);
+    const roundTripped = AdvancedMapAnalyticsUrlStateSchema.parse(JSON.parse(serialized));
+
+    const distribution = roundTripped.analyticsWidgets.find((widget) => widget.key === 'distribution');
+    const outliers = roundTripped.analyticsWidgets.find((widget) => widget.key === 'outliers');
+
+    if (distribution?.key === 'distribution') {
+      expect(distribution.viewMode).toBe('table');
+    }
+    if (outliers?.key === 'outliers') {
+      expect(outliers.viewMode).toBe('chart');
+    }
   });
 
   it('rejects unsupported schema versions', () => {

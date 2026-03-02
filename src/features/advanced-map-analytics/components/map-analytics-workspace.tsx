@@ -23,6 +23,8 @@ import type {
 import { AdvancedMapAnalyticsDataTable } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-data-table';
 import { formatAdvancedMapAnalyticsSeriesValue } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-formatting';
 import type {
+  AdvancedMapAnalyticsWidget,
+  AdvancedMapAnalyticsWidgetKey,
   AdvancedMapAnalyticsUrlState,
   AdvancedMapAnalyticsValueFilterRule,
   GeoJsonFilterOption,
@@ -49,6 +51,7 @@ import { AdvancedMapAnalyticsValueFilterEditorModal } from '@/components/maps/ad
 import { AdvancedMapAnalyticsValueFiltersPanel } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel';
 import { AdvancedMapAnalyticsSeriesEditorModal } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal';
 import { AdvancedMapAnalyticsWarningsModal } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal';
+import { AdvancedMapAnalyticsAnalyticsView } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view';
 import { MapAnalyticsQuickActions } from './map-analytics-quick-actions';
 import {
   applySetActiveSeries,
@@ -413,12 +416,73 @@ export function MapAnalyticsWorkspace({
   );
 
   const setActiveView = useCallback(
-    (activeView: 'map' | 'table') => {
+    (activeView: AdvancedMapAnalyticsUrlState['activeView']) => {
       updateState((draft) => {
         draft.activeView = activeView;
       });
     },
     [updateState]
+  );
+
+  const toggleAnalyticsWidgetEnabled = useCallback(
+    (widgetKey: AdvancedMapAnalyticsWidgetKey, enabled: boolean) => {
+      if (isReadOnly) {
+        return;
+      }
+
+      updateState((draft) => {
+        const widget = draft.analyticsWidgets.find((entry) => entry.key === widgetKey);
+        if (!widget) {
+          return;
+        }
+
+        widget.enabled = enabled;
+      });
+    },
+    [isReadOnly, updateState]
+  );
+
+  const reorderAnalyticsWidgets = useCallback(
+    (activeWidgetKey: AdvancedMapAnalyticsWidgetKey, overWidgetKey: AdvancedMapAnalyticsWidgetKey) => {
+      if (isReadOnly || activeWidgetKey === overWidgetKey) {
+        return;
+      }
+
+      updateState((draft) => {
+        const activeIndex = draft.analyticsWidgets.findIndex((widget) => widget.key === activeWidgetKey);
+        const overIndex = draft.analyticsWidgets.findIndex((widget) => widget.key === overWidgetKey);
+        if (activeIndex === -1 || overIndex === -1) {
+          return;
+        }
+
+        const reorderedWidgets = [...draft.analyticsWidgets];
+        const [movedWidget] = reorderedWidgets.splice(activeIndex, 1);
+        if (!movedWidget) {
+          return;
+        }
+        reorderedWidgets.splice(overIndex, 0, movedWidget);
+        draft.analyticsWidgets = reorderedWidgets;
+      });
+    },
+    [isReadOnly, updateState]
+  );
+
+  const updateAnalyticsWidget = useCallback(
+    (nextWidget: AdvancedMapAnalyticsWidget) => {
+      if (isReadOnly) {
+        return;
+      }
+
+      updateState((draft) => {
+        const widgetIndex = draft.analyticsWidgets.findIndex((widget) => widget.key === nextWidget.key);
+        if (widgetIndex === -1) {
+          return;
+        }
+
+        draft.analyticsWidgets[widgetIndex] = nextWidget;
+      });
+    },
+    [isReadOnly, updateState]
   );
 
   const setShowCountyBoundaries = useCallback(
@@ -1095,10 +1159,13 @@ export function MapAnalyticsWorkspace({
     [updateState]
   );
 
+  const hasEnabledGeoJsonDatasetSeries = enabledGeoJsonDatasetSeries.length > 0;
   const mapError = error || geoJsonError;
   const isMapLoading = isLoading || isGeoJsonLoading;
-  const isTableLoading = isLoading || (enabledGeoJsonDatasetSeries.length > 0 && isGeoJsonLoading);
-  const tableError = error || (enabledGeoJsonDatasetSeries.length > 0 ? geoJsonError : null);
+  const isTableLoading = isLoading || (hasEnabledGeoJsonDatasetSeries && isGeoJsonLoading);
+  const tableError = error || (hasEnabledGeoJsonDatasetSeries ? geoJsonError : null);
+  const isAnalyticsLoading = isLoading || (hasEnabledGeoJsonDatasetSeries && isGeoJsonLoading);
+  const analyticsError = error || (hasEnabledGeoJsonDatasetSeries ? geoJsonError : null);
   const activeUnit = activeSeries
     ? resolveSeriesDisplayUnit(activeSeries, unitsBySeriesId)
     : undefined;
@@ -1115,7 +1182,9 @@ export function MapAnalyticsWorkspace({
     ? resolveSeriesDisplayLabel(activeSeries)
     : activeSeriesId || t`None`;
   const mapName = mapState.mapName || t`Untitled map`;
-  const isMapViewActive = mapState.activeView !== 'table';
+  const isMapViewActive = mapState.activeView === 'map';
+  const isTableViewActive = mapState.activeView === 'table';
+  const isAnalyticsViewActive = mapState.activeView === 'analytics';
   const countyBoundaryGeoJsonData = mapState.showCountyBoundaries ? countyGeoJsonData : null;
 
   const handleTableRowClick = useCallback(
@@ -1397,7 +1466,7 @@ export function MapAnalyticsWorkspace({
 
               </>
             )
-          ) : (
+          ) : isTableViewActive ? (
             <div className="h-full w-full p-4">
               {isTableLoading ? (
                 <div className="flex h-full items-center justify-center">
@@ -1429,7 +1498,32 @@ export function MapAnalyticsWorkspace({
                 />
               )}
             </div>
-          )}
+          ) : isAnalyticsViewActive ? (
+            <div className="h-full w-full p-4">
+              {isAnalyticsLoading ? (
+                <div className="flex h-full items-center justify-center">
+                  <LoadingSpinner size="lg" text={t`Loading analytics data...`} />
+                </div>
+              ) : analyticsError ? (
+                <div className="flex h-full items-center justify-center text-red-600">
+                  {analyticsError.message}
+                </div>
+              ) : (
+                <AdvancedMapAnalyticsAnalyticsView
+                  widgets={mapState.analyticsWidgets}
+                  series={mapState.series}
+                  activeSeriesId={activeSeriesId}
+                  valuesBySeriesId={valuesBySeriesId}
+                  unitsBySeriesId={unitsBySeriesId}
+                  uatMetadataBySirutaCode={uatMetadataBySirutaCode}
+                  readOnly={isReadOnly}
+                  onToggleWidgetEnabled={toggleAnalyticsWidgetEnabled}
+                  onReorderWidgets={reorderAnalyticsWidgets}
+                  onUpdateWidget={updateAnalyticsWidget}
+                />
+              )}
+            </div>
+          ) : null}
         </div>
       </main>
 

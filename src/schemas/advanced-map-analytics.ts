@@ -178,8 +178,68 @@ export const AdvancedMapAnalyticsBinsPresetConfigSchema = z.object({
 export type AdvancedMapAnalyticsBin = z.infer<typeof AdvancedMapAnalyticsBinSchema>;
 export type AdvancedMapAnalyticsBinsPresetConfig = z.infer<typeof AdvancedMapAnalyticsBinsPresetConfigSchema>;
 
-export const AdvancedMapAnalyticsActiveViewSchema = z.enum(['map', 'table']);
+export const AdvancedMapAnalyticsActiveViewSchema = z.enum(['map', 'table', 'analytics']);
 export type AdvancedMapAnalyticsActiveView = z.infer<typeof AdvancedMapAnalyticsActiveViewSchema>;
+
+export const ADVANCED_MAP_ANALYTICS_WIDGET_KEYS = [
+  'series_coverage',
+  'series_totals',
+  'distribution',
+  'outliers',
+] as const;
+
+export const AdvancedMapAnalyticsWidgetKeySchema = z.enum(ADVANCED_MAP_ANALYTICS_WIDGET_KEYS);
+export type AdvancedMapAnalyticsWidgetKey = z.infer<typeof AdvancedMapAnalyticsWidgetKeySchema>;
+
+const AdvancedMapAnalyticsWidgetBaseSchema = z.object({
+  enabled: z.boolean().default(true),
+});
+
+const AdvancedMapAnalyticsSeriesCoverageWidgetSchema = AdvancedMapAnalyticsWidgetBaseSchema.extend({
+  key: z.literal('series_coverage'),
+  showCoveragePercent: z.boolean().default(true),
+});
+
+const AdvancedMapAnalyticsSeriesTotalsWidgetSchema = AdvancedMapAnalyticsWidgetBaseSchema.extend({
+  key: z.literal('series_totals'),
+});
+
+const AdvancedMapAnalyticsWidgetViewModeSchema = z.enum(['chart', 'table']);
+export type AdvancedMapAnalyticsWidgetViewMode = z.infer<typeof AdvancedMapAnalyticsWidgetViewModeSchema>;
+
+const AdvancedMapAnalyticsBinMethodSchema = z.enum(['equal-width', 'log']);
+export type AdvancedMapAnalyticsBinMethod = z.infer<typeof AdvancedMapAnalyticsBinMethodSchema>;
+
+const AdvancedMapAnalyticsDistributionWidgetSchema = AdvancedMapAnalyticsWidgetBaseSchema.extend({
+  key: z.literal('distribution'),
+  seriesId: z.string().optional(),
+  binCount: z.number().int().min(3).max(30).default(10),
+  binMethod: AdvancedMapAnalyticsBinMethodSchema.default('log'),
+  viewMode: AdvancedMapAnalyticsWidgetViewModeSchema.default('chart'),
+});
+
+const AdvancedMapAnalyticsOutliersWidgetSchema = AdvancedMapAnalyticsWidgetBaseSchema.extend({
+  key: z.literal('outliers'),
+  seriesId: z.string().optional(),
+  method: z.literal('iqr').default('iqr'),
+  iqrMultiplier: z.number().positive().default(1.5),
+  limit: z.number().int().min(1).max(100).default(10),
+  viewMode: AdvancedMapAnalyticsWidgetViewModeSchema.default('table'),
+  scatterXSeriesId: z.string().optional(),
+  scatterYSeriesId: z.string().optional(),
+});
+
+export const AdvancedMapAnalyticsWidgetSchema = z.discriminatedUnion('key', [
+  AdvancedMapAnalyticsSeriesCoverageWidgetSchema,
+  AdvancedMapAnalyticsSeriesTotalsWidgetSchema,
+  AdvancedMapAnalyticsDistributionWidgetSchema,
+  AdvancedMapAnalyticsOutliersWidgetSchema,
+]);
+export type AdvancedMapAnalyticsWidget = z.infer<typeof AdvancedMapAnalyticsWidgetSchema>;
+export type AdvancedMapAnalyticsSeriesCoverageWidget = z.infer<typeof AdvancedMapAnalyticsSeriesCoverageWidgetSchema>;
+export type AdvancedMapAnalyticsSeriesTotalsWidget = z.infer<typeof AdvancedMapAnalyticsSeriesTotalsWidgetSchema>;
+export type AdvancedMapAnalyticsDistributionWidget = z.infer<typeof AdvancedMapAnalyticsDistributionWidgetSchema>;
+export type AdvancedMapAnalyticsOutliersWidget = z.infer<typeof AdvancedMapAnalyticsOutliersWidgetSchema>;
 
 export const AdvancedMapAnalyticsValueRuleJoinSchema = z.enum(['AND', 'OR']);
 export type AdvancedMapAnalyticsValueRuleJoin = z.infer<typeof AdvancedMapAnalyticsValueRuleJoinSchema>;
@@ -398,12 +458,92 @@ export function createDefaultAdvancedMapAnalyticsBinsPreset(
   });
 }
 
+type AdvancedMapAnalyticsWidgetByKey<T extends AdvancedMapAnalyticsWidgetKey> = Extract<
+  AdvancedMapAnalyticsWidget,
+  { key: T }
+>;
+
+function createDefaultAdvancedMapAnalyticsWidget<T extends AdvancedMapAnalyticsWidgetKey>(
+  key: T
+): AdvancedMapAnalyticsWidgetByKey<T> {
+  if (key === 'series_coverage') {
+    return AdvancedMapAnalyticsWidgetSchema.parse({
+      key,
+      enabled: true,
+      showCoveragePercent: true,
+    }) as AdvancedMapAnalyticsWidgetByKey<T>;
+  }
+
+  if (key === 'series_totals') {
+    return AdvancedMapAnalyticsWidgetSchema.parse({
+      key,
+      enabled: true,
+    }) as AdvancedMapAnalyticsWidgetByKey<T>;
+  }
+
+  if (key === 'distribution') {
+    return AdvancedMapAnalyticsWidgetSchema.parse({
+      key,
+      enabled: true,
+      binCount: 10,
+    }) as AdvancedMapAnalyticsWidgetByKey<T>;
+  }
+
+  return AdvancedMapAnalyticsWidgetSchema.parse({
+    key: 'outliers',
+    enabled: true,
+    method: 'iqr',
+    iqrMultiplier: 1.5,
+    limit: 10,
+  }) as AdvancedMapAnalyticsWidgetByKey<T>;
+}
+
+export function createDefaultAdvancedMapAnalyticsWidgets(): AdvancedMapAnalyticsWidget[] {
+  return ADVANCED_MAP_ANALYTICS_WIDGET_KEYS.map((key) =>
+    createDefaultAdvancedMapAnalyticsWidget(key)
+  );
+}
+
+function normalizeAdvancedMapAnalyticsWidgets(input: unknown): AdvancedMapAnalyticsWidget[] {
+  const firstWidgetByKey = new Map<AdvancedMapAnalyticsWidgetKey, AdvancedMapAnalyticsWidget>();
+  const orderedWidgetKeys: AdvancedMapAnalyticsWidgetKey[] = [];
+
+  if (Array.isArray(input)) {
+    for (const rawWidget of input) {
+      const parsedWidget = AdvancedMapAnalyticsWidgetSchema.safeParse(rawWidget);
+      if (!parsedWidget.success || firstWidgetByKey.has(parsedWidget.data.key)) {
+        continue;
+      }
+
+      firstWidgetByKey.set(parsedWidget.data.key, parsedWidget.data);
+      orderedWidgetKeys.push(parsedWidget.data.key);
+    }
+  }
+
+  for (const widgetKey of ADVANCED_MAP_ANALYTICS_WIDGET_KEYS) {
+    if (firstWidgetByKey.has(widgetKey)) {
+      continue;
+    }
+    orderedWidgetKeys.push(widgetKey);
+  }
+
+  return orderedWidgetKeys.map((widgetKey) =>
+    firstWidgetByKey.get(widgetKey) ?? createDefaultAdvancedMapAnalyticsWidget(widgetKey)
+  );
+}
+
+const AdvancedMapAnalyticsWidgetsSchema = z.preprocess(
+  (value) => normalizeAdvancedMapAnalyticsWidgets(value),
+  z.array(AdvancedMapAnalyticsWidgetSchema)
+);
+
 export const AdvancedMapAnalyticsUrlStateSchema = z.object({
   version: z.literal(ADVANCED_MAP_ANALYTICS_VERSION).default(ADVANCED_MAP_ANALYTICS_VERSION),
   series: z.array(MapSupportedSeriesSchema).default([]),
   activeSeriesId: z.string().optional(),
   valueFilters: AdvancedMapAnalyticsValueFilterGroupSchema.default({ rules: [] }),
   activeView: AdvancedMapAnalyticsActiveViewSchema.default('map'),
+  analyticsWidgets: AdvancedMapAnalyticsWidgetsSchema.default(createDefaultAdvancedMapAnalyticsWidgets()),
   mapName: z.string().default('Untitled map'),
   showCountyBoundaries: z.boolean().default(true),
   seriesPanelCollapsed: z.boolean().default(false),

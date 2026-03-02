@@ -78,6 +78,15 @@ describe('AdvancedMapAnalyticsConfigPanel', () => {
     expect(onActiveViewChange).toHaveBeenCalledWith('table');
   });
 
+  it('calls onActiveViewChange when analytics view is selected', () => {
+    const onActiveViewChange = vi.fn();
+
+    renderConfigPanel({ onActiveViewChange });
+
+    fireEvent.click(screen.getByText('Analytics'));
+    expect(onActiveViewChange).toHaveBeenCalledWith('analytics');
+  });
+
   it('calls onShowCountyBoundariesChange when county boundaries switch changes', () => {
     const onShowCountyBoundariesChange = vi.fn();
 

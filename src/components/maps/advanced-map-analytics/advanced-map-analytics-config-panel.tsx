@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, ChevronDown, MapIcon, Settings2, TableIcon } from 'lucide-react';
+import { AlertTriangle, BarChart3, ChevronDown, MapIcon, Settings2, TableIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { Switch } from '@/components/ui/switch';
@@ -92,6 +92,7 @@ export function AdvancedMapAnalyticsConfigPanel({
                 viewOptions={[
                   { id: 'map', label: t`Map`, icon: MapIcon },
                   { id: 'table', label: t`Table`, icon: TableIcon },
+                  { id: 'analytics', label: t`Analytics`, icon: BarChart3 },
                 ]}
                 ariaLabel={t`Advanced map analytics active view`}
               />

@@ -21,6 +21,7 @@ describe('map-editor-search', () => {
       mapName: 'Snapshot A',
       showCountyBoundaries: false,
       activeView: 'table',
+      analyticsWidgets: [{ key: 'series_totals', enabled: true }],
       mapCenter: [46.5, 24.5],
       mapZoom: 9,
     };

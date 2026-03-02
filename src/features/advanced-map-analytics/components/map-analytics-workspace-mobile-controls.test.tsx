@@ -197,6 +197,12 @@ vi.mock('@/components/maps/advanced-map-analytics/advanced-map-analytics-warning
   AdvancedMapAnalyticsWarningsModal: () => null,
 }));
 
+vi.mock('@/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view', () => ({
+  AdvancedMapAnalyticsAnalyticsView: () => (
+    <div data-testid="advanced-map-analytics-main-view">Analytics Main View</div>
+  ),
+}));
+
 vi.mock('./map-analytics-quick-actions', () => ({
   MapAnalyticsQuickActions: () => <div data-testid="map-analytics-quick-actions">Quick Actions</div>,
 }));
@@ -279,6 +285,104 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(screen.queryByTestId('map-analytics-quick-actions')).not.toBeInTheDocument();
     const controlsContainer = screen.getByRole('complementary');
     expect(controlsContainer).toHaveClass('absolute');
+  });
+
+  it('renders analytics main view when activeView is analytics', async () => {
+    mockIsMobile.mockReturnValue(false);
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({ activeView: 'analytics' })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    expect(screen.getByTestId('advanced-map-analytics-main-view')).toBeInTheDocument();
+    expect(screen.queryByTestId('interactive-map')).not.toBeInTheDocument();
+  });
+
+  it('shows analytics loading state when geojson-backed series are still loading', async () => {
+    mockIsMobile.mockReturnValue(false);
+    const geoJsonSeries = createDefaultAdvancedMapAnalyticsSeries('geojson-dataset-series');
+    geoJsonSeries.enabled = true;
+    mockGeoJsonData = {
+      data: null,
+      isLoading: true,
+      error: null,
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({
+          activeView: 'analytics',
+          series: [geoJsonSeries],
+        })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    expect(screen.getByText('Loading analytics data...')).toBeInTheDocument();
+    expect(screen.queryByTestId('advanced-map-analytics-main-view')).not.toBeInTheDocument();
+  });
+
+  it('shows analytics error when geojson-backed series request fails', async () => {
+    mockIsMobile.mockReturnValue(false);
+    const geoJsonSeries = createDefaultAdvancedMapAnalyticsSeries('geojson-dataset-series');
+    geoJsonSeries.enabled = true;
+    mockGeoJsonData = {
+      data: null,
+      isLoading: false,
+      error: new Error('GeoJSON analytics request failed'),
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({
+          activeView: 'analytics',
+          series: [geoJsonSeries],
+        })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    expect(screen.getByText('GeoJSON analytics request failed')).toBeInTheDocument();
+    expect(screen.queryByTestId('advanced-map-analytics-main-view')).not.toBeInTheDocument();
+  });
+
+  it('keeps table view behavior unchanged', async () => {
+    mockIsMobile.mockReturnValue(false);
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({ activeView: 'table' })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    expect(screen.getByText('No enabled series.')).toBeInTheDocument();
+    expect(screen.queryByTestId('advanced-map-analytics-main-view')).not.toBeInTheDocument();
   });
 
   it('expands and collapses full controls from the top toggle on mobile', async () => {
