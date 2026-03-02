@@ -60,7 +60,7 @@ import {
   reorderSeriesByIds,
 } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils';
 import { t } from '@lingui/core/macro';
-import { getUserLocale } from '@/lib/utils';
+import { cn, getUserLocale } from '@/lib/utils';
 
 // Lazy load InteractiveMap to avoid Leaflet evaluation on the server.
 const InteractiveMap = lazy(() =>
@@ -123,7 +123,7 @@ export function MapAnalyticsWorkspace({
   );
   const isReadOnly = mode === 'public' || capabilities.readOnly;
   const isMobileControlsCollapseEnabled = isMobile && mobileControlsDefaultCollapsed;
-  const shouldOverlayMobileControls = mode === 'public' && isMobileControlsCollapseEnabled;
+  const shouldOverlayMobileControls = mode === 'public' && isMobileControlsCollapseEnabled && mapState.activeView === 'map';
   const mobileControlsContentId = 'map-analytics-mobile-controls';
 
   const updateState = useCallback(
@@ -1326,11 +1326,22 @@ export function MapAnalyticsWorkspace({
 
   return (
     <div className="relative flex flex-col bg-background md:h-screen md:flex-row">
-      {!isMobile ? <MapAnalyticsQuickActions mode={mode} mapState={mapState} /> : null}
+      <MapAnalyticsQuickActions
+        mode={mode}
+        mapState={mapState}
+        hiddenOnMobile={shouldOverlayMobileControls && !isMobileControlsCollapsed}
+      />
+      {shouldOverlayMobileControls && !isMobileControlsCollapsed ? (
+        <div
+          className="fixed inset-0 z-[640] bg-black/40"
+          onClick={() => setIsMobileControlsCollapsed(true)}
+          aria-hidden="true"
+        />
+      ) : null}
       <aside
         className={
           shouldOverlayMobileControls
-            ? 'absolute inset-x-0 top-0 z-[650] max-h-[80vh] overflow-y-auto'
+            ? 'absolute inset-x-0 top-0 z-[650] max-h-[80vh] overflow-y-auto bg-card rounded-b-2xl shadow-lg'
             : 'border-r border-border bg-card text-card-foreground overflow-y-auto md:w-[430px] md:min-w-[430px]'
         }
       >
@@ -1347,6 +1358,11 @@ export function MapAnalyticsWorkspace({
                 >
                   {isMobileControlsCollapsed ? t`Show Map Controls` : t`Hide Map Controls`}
                 </button>
+                {isMobileControlsCollapsed ? (
+                  <p className="mt-2 truncate text-sm text-muted-foreground" title={mapState.mapName}>
+                    {mapState.mapName}
+                  </p>
+                ) : null}
               </section>
 
               <Collapsible
@@ -1372,7 +1388,10 @@ export function MapAnalyticsWorkspace({
       </aside>
 
       <main
-        className={`flex-1 flex flex-col ${shouldOverlayMobileControls ? 'min-h-screen' : 'min-h-[55vh]'} md:min-h-0`}
+        className={cn(
+          'flex-1 flex flex-col md:min-h-0',
+          shouldOverlayMobileControls ? 'min-h-screen pt-[72px]' : 'min-h-[55vh]'
+        )}
       >
         <div className="flex-1 relative overflow-hidden">
           {isMapViewActive ? (

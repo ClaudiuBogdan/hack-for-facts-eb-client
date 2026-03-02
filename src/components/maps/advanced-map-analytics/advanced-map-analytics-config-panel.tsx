@@ -76,14 +76,27 @@ export function AdvancedMapAnalyticsConfigPanel({
         ) : null}
       </div>
 
+      <div className="rounded-xl border bg-muted/20">
+        <div className="border-b px-3 py-2.5">
+          <p className="truncate text-sm font-medium" title={mapName}>
+            {mapName}
+          </p>
+        </div>
+        <div className="border-b px-3 py-2.5">
+          <Button
+            type="button"
+            className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+            onClick={() => setIsDescriptionModalOpen(true)}
+            disabled={!hasMapDescription}
+          >
+            {t`Read more`}
+          </Button>
+        </div>
+      </div>
+
       <Collapsible open={!collapsed} onOpenChange={(open) => onToggleCollapsed(!open)}>
         <CollapsibleContent className="space-y-2 data-[state=open]:animate-in data-[state=closed]:animate-out">
           <div className="rounded-xl border bg-muted/20">
-            <div className="border-b px-3 py-2.5">
-              <p className="truncate text-sm font-medium" title={mapName}>
-                {mapName}
-              </p>
-            </div>
             <div className="border-b px-3 py-2.5">
               <div className="mb-2 text-sm font-medium">{t`View`}</div>
               <ViewTypeRadioGroup
@@ -106,16 +119,6 @@ export function AdvancedMapAnalyticsConfigPanel({
                   aria-label={t`Toggle county boundaries`}
                 />
               </div>
-            </div>
-            <div className="border-b px-3 py-2.5">
-              <Button
-                type="button"
-                className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
-                onClick={() => setIsDescriptionModalOpen(true)}
-                disabled={!hasMapDescription}
-              >
-                {t`Read more`}
-              </Button>
             </div>
             {hasWarnings ? (
               <div className="flex items-center justify-between gap-3 px-3 py-2.5">

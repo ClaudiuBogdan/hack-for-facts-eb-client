@@ -539,6 +539,7 @@ function SeriesCoverageWidgetContent({
   }
 
   return (
+    <div className="overflow-auto">
     <Table>
       <TableHeader>
         <TableRow>
@@ -566,6 +567,7 @@ function SeriesCoverageWidgetContent({
         ))}
       </TableBody>
     </Table>
+    </div>
   );
 }
 
@@ -575,6 +577,7 @@ function SeriesTotalsWidgetContent({ rows }: Readonly<{ rows: AdvancedMapAnalyti
   }
 
   return (
+    <div className="overflow-auto">
     <Table>
       <TableHeader>
         <TableRow>
@@ -601,6 +604,7 @@ function SeriesTotalsWidgetContent({ rows }: Readonly<{ rows: AdvancedMapAnalyti
         ))}
       </TableBody>
     </Table>
+    </div>
   );
 }
 
@@ -623,7 +627,7 @@ function DistributionWidgetContent({
 }: Readonly<DistributionWidgetContentProps>) {
   return (
     <div className="space-y-4">
-      <div className="flex items-end gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="grid flex-1 gap-3 sm:grid-cols-3">
           <div className="space-y-1.5">
             <Label htmlFor={`distribution-series-${widget.key}`}>{t`Series`}</Label>
@@ -905,7 +909,7 @@ function OutliersWidgetContent({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-end gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="grid flex-1 gap-3 sm:grid-cols-3">
           <div className="space-y-1.5">
             <Label htmlFor={`outliers-series-${widget.key}`}>{t`Series`}</Label>
@@ -1067,6 +1071,7 @@ function OutliersWidgetContent({
           ) : (
             <div className="space-y-3">
               <Badge variant="destructive">{t`${outlierResult.rows.length} outliers found`}</Badge>
+              <div className="overflow-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -1089,6 +1094,7 @@ function OutliersWidgetContent({
                   ))}
                 </TableBody>
               </Table>
+              </div>
             </div>
           )}
         </>

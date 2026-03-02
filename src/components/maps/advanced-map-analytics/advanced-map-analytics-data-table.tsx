@@ -403,12 +403,12 @@ export function AdvancedMapAnalyticsDataTable({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-end gap-2 py-2">
+      <div className="flex flex-wrap items-center justify-end gap-2 py-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
-              <Filter className="mr-2 h-4 w-4" />
-              {t`Filter`}
+              <Filter className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">{t`Filter`}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="max-h-[70vh] w-80 overflow-y-auto">
@@ -493,8 +493,8 @@ export function AdvancedMapAnalyticsDataTable({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
-              <MoreHorizontal className="mr-2 h-4 w-4" />
-              {t`View`}
+              <MoreHorizontal className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">{t`View`}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64">
@@ -543,7 +543,9 @@ export function AdvancedMapAnalyticsDataTable({
         ) : null}
       </div>
 
-      <div className="flex-grow overflow-auto rounded-md border bg-card">
+      <div className="relative flex-grow">
+        <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-6 bg-gradient-to-l from-card to-transparent md:hidden" />
+        <div className="h-full overflow-auto rounded-md border bg-card">
         <Table className="min-w-[920px]">
           <TableHeader className="sticky top-0 z-10 bg-card/95 backdrop-blur">
             {table.getHeaderGroups().map((headerGroup) => (
@@ -618,6 +620,7 @@ export function AdvancedMapAnalyticsDataTable({
             )}
           </TableBody>
         </Table>
+        </div>
       </div>
 
       <div className="mt-auto border-t bg-card p-3">

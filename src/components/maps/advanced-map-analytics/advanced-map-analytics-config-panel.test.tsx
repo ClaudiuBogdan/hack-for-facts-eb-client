@@ -57,7 +57,8 @@ describe('AdvancedMapAnalyticsConfigPanel', () => {
       />
     );
 
-    expect(screen.queryByText('Untitled map')).not.toBeInTheDocument();
+    expect(screen.getByText('Untitled map')).toBeInTheDocument();
+    expect(screen.queryByText('View')).not.toBeInTheDocument();
   });
 
   it('shows warning count button and opens warnings modal callback', () => {

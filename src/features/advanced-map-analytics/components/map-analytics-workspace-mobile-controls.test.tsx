@@ -282,9 +282,9 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(toggleButton).toBeInTheDocument();
     expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByText('Config Panel')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('map-analytics-quick-actions')).not.toBeInTheDocument();
+    expect(screen.getByTestId('map-analytics-quick-actions')).toBeInTheDocument();
     const controlsContainer = screen.getByRole('complementary');
-    expect(controlsContainer).toHaveClass('absolute');
+    expect(controlsContainer).toHaveClass('border-r');
   });
 
   it('renders analytics main view when activeView is analytics', async () => {

@@ -17,12 +17,14 @@ interface MapAnalyticsQuickActionsProps {
   mode: 'owner' | 'public';
   mapState: AdvancedMapAnalyticsUrlState;
   className?: string;
+  hiddenOnMobile?: boolean;
 }
 
 export function MapAnalyticsQuickActions({
   mode,
   mapState,
   className,
+  hiddenOnMobile,
 }: Readonly<MapAnalyticsQuickActionsProps>) {
   const { isSignedIn } = useAuth();
   const navigate = useNavigate();
@@ -104,7 +106,10 @@ export function MapAnalyticsQuickActions({
     <>
       <div
         className={cn(
-          'hidden md:flex fixed top-10 right-4 z-[700] flex-col gap-2',
+          'fixed z-[700] flex gap-2',
+          'md:top-10 md:right-4 md:flex-col',
+          'bottom-4 right-4 flex-row md:bottom-auto',
+          hiddenOnMobile && 'hidden md:flex',
           className
         )}
         data-testid="map-analytics-quick-actions"
