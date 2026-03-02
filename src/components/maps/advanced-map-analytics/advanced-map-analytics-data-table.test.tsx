@@ -43,6 +43,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
       <AdvancedMapAnalyticsDataTable
         rows={rows}
         seriesColumns={seriesColumns}
+        mapTitle="Demo map"
+        showExportCsv={false}
         activeSeriesId="series-active"
         binsFilterSections={binsFilterSections}
         onToggleBinFilter={vi.fn()}
@@ -71,6 +73,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
           },
         ]}
         seriesColumns={seriesColumns}
+        mapTitle="Demo map"
+        showExportCsv={false}
         activeSeriesId="series-active"
         onRowClick={onRowClick}
         binsFilterSections={binsFilterSections}
@@ -95,6 +99,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
       <AdvancedMapAnalyticsDataTable
         rows={rows}
         seriesColumns={seriesColumns}
+        mapTitle="Demo map"
+        showExportCsv={false}
         activeSeriesId="series-active"
         onRowClick={onRowClick}
         binsFilterSections={binsFilterSections}
@@ -121,6 +127,8 @@ describe('AdvancedMapAnalyticsDataTable', () => {
       <AdvancedMapAnalyticsDataTable
         rows={rows}
         seriesColumns={seriesColumns}
+        mapTitle="Demo map"
+        showExportCsv={false}
         activeSeriesId="series-active"
         binsFilterSections={binsFilterSections}
         onToggleBinFilter={onToggleBinFilter}
@@ -145,5 +153,162 @@ describe('AdvancedMapAnalyticsDataTable', () => {
 
     fireEvent.click(screen.getByRole('menuitem', { name: 'Clear all filters' }));
     expect(onClearAllBinFilters).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders Export CSV button only when enabled', () => {
+    const { rerender } = render(
+      <AdvancedMapAnalyticsDataTable
+        rows={rows}
+        seriesColumns={seriesColumns}
+        mapTitle="Demo map"
+        showExportCsv={false}
+        activeSeriesId="series-active"
+        binsFilterSections={binsFilterSections}
+        onToggleBinFilter={vi.fn()}
+        onClearPresetBinFilters={vi.fn()}
+        onClearAllBinFilters={vi.fn()}
+        hasActiveBinFilters={false}
+      />
+    );
+
+    expect(screen.queryByRole('button', { name: 'Export CSV' })).not.toBeInTheDocument();
+
+    rerender(
+      <AdvancedMapAnalyticsDataTable
+        rows={rows}
+        seriesColumns={seriesColumns}
+        mapTitle="Demo map"
+        showExportCsv={true}
+        activeSeriesId="series-active"
+        binsFilterSections={binsFilterSections}
+        onToggleBinFilter={vi.fn()}
+        onClearPresetBinFilters={vi.fn()}
+        onClearAllBinFilters={vi.fn()}
+        hasActiveBinFilters={false}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Export CSV' })).toBeInTheDocument();
+  });
+
+  it('exports sorted visible columns as CSV', async () => {
+    const exportRows: AdvancedMapAnalyticsTableRow[] = [
+      {
+        sirutaCode: '200',
+        uatName: 'Zeta, "Town"',
+        countyName: 'Y County',
+        entityCui: '87654321',
+        valuesBySeriesId: {
+          'series-active': 300,
+          'series-secondary': 5,
+        },
+      },
+      {
+        sirutaCode: '100',
+        uatName: 'Alpha\nCity',
+        countyName: 'A County',
+        valuesBySeriesId: {
+          'series-active': 100,
+          'series-secondary': undefined,
+        },
+      },
+    ];
+
+    const createObjectURLMock = vi.fn((_blob: Blob) => 'blob:advanced-map-analytics-table');
+    const revokeObjectURLMock = vi.fn((_url: string) => undefined);
+    const originalCreateObjectURL = URL.createObjectURL;
+    const originalRevokeObjectURL = URL.revokeObjectURL;
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      writable: true,
+      value: createObjectURLMock,
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      writable: true,
+      value: revokeObjectURLMock,
+    });
+
+    let createdAnchor: HTMLAnchorElement | undefined;
+    const anchorClickMock = vi.fn();
+    const originalCreateElement = document.createElement.bind(document);
+    const createElementSpy = vi
+      .spyOn(document, 'createElement')
+      .mockImplementation(((tagName: string, options?: ElementCreationOptions) => {
+        const element = originalCreateElement(tagName, options);
+        if (tagName.toLowerCase() === 'a') {
+          createdAnchor = element as HTMLAnchorElement;
+          createdAnchor.click = anchorClickMock;
+        }
+        return element;
+      }) as typeof document.createElement);
+
+    try {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2026-03-02T03:17:19Z'));
+
+      render(
+        <AdvancedMapAnalyticsDataTable
+          rows={exportRows}
+          seriesColumns={seriesColumns}
+          mapTitle="Public Budget Map"
+          showExportCsv={true}
+          activeSeriesId="series-active"
+          binsFilterSections={binsFilterSections}
+          onToggleBinFilter={vi.fn()}
+          onClearPresetBinFilters={vi.fn()}
+          onClearAllBinFilters={vi.fn()}
+          hasActiveBinFilters={false}
+        />
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'County' }));
+      fireEvent.pointerDown(screen.getByRole('button', { name: 'View' }));
+      fireEvent.click(screen.getByRole('menuitemcheckbox', { name: 'SIRUTA' }));
+
+      fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+
+      expect(createObjectURLMock).toHaveBeenCalledTimes(1);
+      const csvBlob = createObjectURLMock.mock.calls[0]?.[0];
+      expect(csvBlob).toBeInstanceOf(Blob);
+      if (!(csvBlob instanceof Blob)) {
+        throw new Error('Expected CSV export to create a Blob.');
+      }
+      const csvContent = await csvBlob.text();
+      expect(csvContent).toBe(
+        [
+          'SIRUTA,CUI,UAT,County,Execution analytics,INS Population',
+          '100,,"Alpha\nCity",A County,100,',
+          '200,87654321,"Zeta, ""Town""",Y County,300,5',
+        ].join('\n')
+      );
+
+      expect(createdAnchor).toBeDefined();
+      expect(createdAnchor?.download).toBe('map-public-budget-map-20260302-031719.csv');
+      expect(createdAnchor?.href).toBe('blob:advanced-map-analytics-table');
+      expect(anchorClickMock).toHaveBeenCalledTimes(1);
+      expect(revokeObjectURLMock).toHaveBeenCalledWith('blob:advanced-map-analytics-table');
+    } finally {
+      vi.useRealTimers();
+      createElementSpy.mockRestore();
+      if (originalCreateObjectURL) {
+        Object.defineProperty(URL, 'createObjectURL', {
+          configurable: true,
+          writable: true,
+          value: originalCreateObjectURL,
+        });
+      } else {
+        delete (URL as unknown as Record<string, unknown>).createObjectURL;
+      }
+      if (originalRevokeObjectURL) {
+        Object.defineProperty(URL, 'revokeObjectURL', {
+          configurable: true,
+          writable: true,
+          value: originalRevokeObjectURL,
+        });
+      } else {
+        delete (URL as unknown as Record<string, unknown>).revokeObjectURL;
+      }
+    }
   });
 });

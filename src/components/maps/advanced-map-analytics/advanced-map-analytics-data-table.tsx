@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   type ColumnDef,
   type PaginationState,
@@ -23,7 +23,7 @@ import {
 import { Pagination } from '@/components/ui/pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useTablePreferences } from '@/hooks/useTablePreferences';
-import { cn } from '@/lib/utils';
+import { cn, slugify } from '@/lib/utils';
 import { formatAdvancedMapAnalyticsSeriesValue } from './advanced-map-analytics-formatting';
 import { t } from '@lingui/core/macro';
 import type {
@@ -41,6 +41,8 @@ export type {
 interface AdvancedMapAnalyticsDataTableProps {
   rows: AdvancedMapAnalyticsTableRow[];
   seriesColumns: AdvancedMapAnalyticsTableSeriesColumn[];
+  mapTitle: string;
+  showExportCsv: boolean;
   activeSeriesId?: string;
   onRowClick?: (row: AdvancedMapAnalyticsTableRow) => void;
   binsFilterSections: AdvancedMapAnalyticsBinsFilterSection[];
@@ -58,9 +60,91 @@ function getSeriesIdFromColumnId(columnId: string): string | undefined {
   return columnId.startsWith('series:') ? columnId.slice('series:'.length) : undefined;
 }
 
+function getColumnLabel(
+  columnId: string,
+  seriesLabelById: Map<string, string>
+): string {
+  const seriesId = getSeriesIdFromColumnId(columnId);
+  if (seriesId) {
+    return seriesLabelById.get(seriesId) ?? seriesId;
+  }
+
+  if (columnId === 'uat_name') {
+    return t`UAT`;
+  }
+
+  if (columnId === 'county_name') {
+    return t`County`;
+  }
+
+  if (columnId === 'siruta_code') {
+    return 'SIRUTA';
+  }
+
+  return columnId;
+}
+
+function getColumnRowValue(row: AdvancedMapAnalyticsTableRow, columnId: string): string {
+  if (columnId === 'uat_name') {
+    return row.uatName;
+  }
+
+  if (columnId === 'county_name') {
+    return row.countyName;
+  }
+
+  if (columnId === 'siruta_code') {
+    return row.sirutaCode;
+  }
+
+  const seriesId = getSeriesIdFromColumnId(columnId);
+  if (!seriesId) {
+    return '';
+  }
+
+  const value = row.valuesBySeriesId[seriesId];
+  if (value === undefined || !Number.isFinite(value)) {
+    return '';
+  }
+
+  return value.toString();
+}
+
+function escapeCsvCell(value: string): string {
+  const shouldQuote = value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r');
+  if (!shouldQuote) {
+    return value;
+  }
+
+  return `"${value.replace(/"/g, '""')}"`;
+}
+
+function padTimestampPart(value: number): string {
+  return value.toString().padStart(2, '0');
+}
+
+function formatTimestampUtc(date: Date): string {
+  const year = date.getUTCFullYear();
+  const month = padTimestampPart(date.getUTCMonth() + 1);
+  const day = padTimestampPart(date.getUTCDate());
+  const hours = padTimestampPart(date.getUTCHours());
+  const minutes = padTimestampPart(date.getUTCMinutes());
+  const seconds = padTimestampPart(date.getUTCSeconds());
+
+  return `${year}${month}${day}-${hours}${minutes}${seconds}`;
+}
+
+function buildCsvExportFileName(mapTitle: string): string {
+  const normalizedTitle = slugify(mapTitle) || 'untitled-map';
+  const timestamp = formatTimestampUtc(new Date());
+  return `map-${normalizedTitle}-${timestamp}.csv`;
+}
+
 export function AdvancedMapAnalyticsDataTable({
   rows,
   seriesColumns,
+  mapTitle,
+  showExportCsv,
   activeSeriesId,
   onRowClick,
   binsFilterSections,
@@ -122,6 +206,14 @@ export function AdvancedMapAnalyticsDataTable({
       return changed ? nextVisibility : previousVisibility;
     });
   }, [columnVisibility, seriesColumns, setColumnVisibility]);
+
+  const seriesLabelById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const seriesColumn of seriesColumns) {
+      map.set(seriesColumn.id, seriesColumn.label);
+    }
+    return map;
+  }, [seriesColumns]);
 
   const columns = useMemo<ColumnDef<AdvancedMapAnalyticsTableRow>[]>(
     () => [
@@ -272,6 +364,43 @@ export function AdvancedMapAnalyticsDataTable({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
+  const handleExportCsv = useCallback(() => {
+    const visibleColumns = table
+      .getVisibleLeafColumns()
+      .filter(
+        (column) =>
+          column.id !== 'row_number' &&
+          column.id !== 'siruta_code' &&
+          column.id !== 'entity_cui'
+      );
+
+    const csvHeader = [
+      'SIRUTA',
+      'CUI',
+      ...visibleColumns.map((column) => getColumnLabel(column.id, seriesLabelById)),
+    ]
+      .map((value) => escapeCsvCell(value))
+      .join(',');
+
+    const csvRows = table.getSortedRowModel().rows.map((row) => {
+      const rowValues = [
+        row.original.sirutaCode,
+        row.original.entityCui ?? '',
+        ...visibleColumns.map((column) => getColumnRowValue(row.original, column.id)),
+      ];
+      return rowValues.map((value) => escapeCsvCell(value)).join(',');
+    });
+
+    const csv = [csvHeader, ...csvRows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = buildCsvExportFileName(mapTitle);
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }, [mapTitle, seriesLabelById, table]);
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-end gap-2 py-2">
@@ -389,29 +518,29 @@ export function AdvancedMapAnalyticsDataTable({
               .getAllLeafColumns()
               .filter((column) => column.id !== 'row_number')
               .map((column) => {
-                const seriesId = getSeriesIdFromColumnId(column.id);
-                const seriesLabel = seriesId
-                  ? seriesColumns.find((entry) => entry.id === seriesId)?.label ?? seriesId
-                  : column.id === 'uat_name'
-                    ? t`UAT`
-                    : column.id === 'county_name'
-                      ? t`County`
-                      : column.id === 'siruta_code'
-                        ? 'SIRUTA'
-                        : column.id;
-
                 return (
                   <DropdownMenuCheckboxItem
                     key={column.id}
                     checked={column.getIsVisible()}
                     onCheckedChange={(checked) => column.toggleVisibility(Boolean(checked))}
                   >
-                    {seriesLabel}
+                    {getColumnLabel(column.id, seriesLabelById)}
                   </DropdownMenuCheckboxItem>
                 );
               })}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {showExportCsv ? (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExportCsv}
+            disabled={rows.length === 0}
+          >
+            {t`Export CSV`}
+          </Button>
+        ) : null}
       </div>
 
       <div className="flex-grow overflow-auto rounded-md border bg-card">

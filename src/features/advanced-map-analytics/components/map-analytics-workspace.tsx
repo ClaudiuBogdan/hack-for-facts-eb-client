@@ -1488,6 +1488,8 @@ export function MapAnalyticsWorkspace({
                 <AdvancedMapAnalyticsDataTable
                   rows={filteredTableRows}
                   seriesColumns={seriesColumns}
+                  mapTitle={mapState.mapName}
+                  showExportCsv={mode === 'owner'}
                   activeSeriesId={activeSeriesId}
                   onRowClick={handleTableRowClick}
                   binsFilterSections={binsFilterSections}
