@@ -375,6 +375,7 @@ export function MapAnalyticsOwnerConfigModal({
                       onClick={() => void handleCopyPublicLink()}
                       disabled={isBusy}
                       variant="secondary"
+                      aria-label={t`Copy link`}
                     >
                       <Copy className="h-4 w-4" />
                     </Button>

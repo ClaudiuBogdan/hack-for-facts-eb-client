@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AdvancedMapAnalyticsUrlStateSchema } from '@/schemas/advanced-map-analytics';
 import { toast } from 'sonner';
@@ -125,12 +125,12 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('switch', { name: 'Map visibility' }));
+    fireEvent.click(screen.getByRole('switch', { name: 'Toggle map visibility' }));
 
     expect(updateMutateAsyncMock).not.toHaveBeenCalled();
-    expect(screen.getByText('Publish map?')).toBeInTheDocument();
+    expect(screen.getByText('Make map public?')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Make public' }));
 
     await waitFor(() => {
       expect(updateMutateAsyncMock).toHaveBeenCalledWith({
@@ -159,11 +159,11 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    const descriptionInput = screen.getByLabelText('Snapshot description (optional)');
+    const descriptionInput = screen.getByLabelText('Snapshot note');
     fireEvent.change(descriptionInput, { target: { value: 'checkpoint note' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save checkpoint' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save snapshot' }));
 
-    expect(screen.queryByText('Save public checkpoint?')).not.toBeInTheDocument();
+    expect(screen.queryByText('Save version to public map?')).not.toBeInTheDocument();
 
     await waitFor(() => {
       expect(saveSnapshotMutateAsyncMock).toHaveBeenCalledWith(
@@ -180,7 +180,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Snapshot description (optional)')).toHaveValue('');
+      expect(screen.getByLabelText('Snapshot note')).toHaveValue('');
     });
   });
 
@@ -205,10 +205,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    const readMoreButton = screen.getByRole('button', { name: 'Read more' });
-    expect(readMoreButton).toHaveClass('w-full');
-    expect(readMoreButton).toHaveClass('bg-accent');
-    expect(readMoreButton).toHaveClass('text-accent-foreground');
+    const readMoreButton = screen.getByRole('button', { name: 'Edit description' });
 
     fireEvent.click(readMoreButton);
 
@@ -244,9 +241,9 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Save checkpoint' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save snapshot' }));
 
-    expect(screen.getByText('Save public checkpoint?')).toBeInTheDocument();
+    expect(screen.getByText('Save version to public map?')).toBeInTheDocument();
     expect(saveSnapshotMutateAsyncMock).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
@@ -271,11 +268,11 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Save checkpoint' }));
-    expect(screen.getByText('Save public checkpoint?')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Save snapshot' }));
+    expect(screen.getByText('Save version to public map?')).toBeInTheDocument();
     expect(saveSnapshotMutateAsyncMock).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm save' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save anyway' }));
 
     await waitFor(() => {
       expect(saveSnapshotMutateAsyncMock).toHaveBeenCalledWith(
@@ -307,11 +304,12 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Load' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Restore' }));
     expect(fetchSnapshotForRestoreMock).not.toHaveBeenCalled();
-    expect(screen.getByText('Load snapshot?')).toBeInTheDocument();
+    expect(screen.getByText('Restore this version?')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Confirm load' }));
+    const restoreConfirmDialog = screen.getByRole('alertdialog');
+    fireEvent.click(within(restoreConfirmDialog).getByRole('button', { name: 'Restore' }));
 
     await waitFor(() => {
       expect(fetchSnapshotForRestoreMock).toHaveBeenCalledWith('map_1', 'snap_1');
@@ -322,7 +320,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
     expect(saveSnapshotMutateAsyncMock).not.toHaveBeenCalled();
   });
 
-  it('requires typed title before delete and asks final confirmation', async () => {
+  it('asks final confirmation before delete and deletes after confirm', async () => {
     const onOpenChange = vi.fn();
     const onDeleted = vi.fn();
 
@@ -343,21 +341,14 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    const deleteButtonsBeforeMatch = screen.getAllByRole('button', { name: 'Delete map' });
-    expect(deleteButtonsBeforeMatch[0]).toBeDisabled();
+    const deleteButton = screen.getByRole('button', { name: 'Delete map' });
+    expect(deleteButton).toBeEnabled();
 
-    fireEvent.change(screen.getByLabelText('Delete map confirmation input'), {
-      target: { value: 'My map' },
-    });
+    fireEvent.click(deleteButton);
+    expect(screen.getByText('Delete this map?')).toBeInTheDocument();
 
-    const deleteButtonsAfterMatch = screen.getAllByRole('button', { name: 'Delete map' });
-    expect(deleteButtonsAfterMatch[0]).toBeEnabled();
-
-    fireEvent.click(deleteButtonsAfterMatch[0]);
-    expect(screen.getByText('Delete map permanently?')).toBeInTheDocument();
-
-    const deleteButtonsInConfirm = screen.getAllByRole('button', { name: 'Delete map' });
-    fireEvent.click(deleteButtonsInConfirm[deleteButtonsInConfirm.length - 1]);
+    const deleteConfirmDialog = screen.getByRole('alertdialog');
+    fireEvent.click(within(deleteConfirmDialog).getByRole('button', { name: 'Delete permanently' }));
 
     await waitFor(() => {
       expect(deleteMapMutateAsyncMock).toHaveBeenCalledWith({ mapId: 'map_1' });
@@ -385,7 +376,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    const publicUrlInput = screen.getByLabelText('Public map URL');
+    const publicUrlInput = screen.getByLabelText('Public link');
     expect(String((publicUrlInput as HTMLInputElement).value)).toContain('/maps/public/abc123');
     expect(screen.getByRole('button', { name: 'Copy link' })).toBeEnabled();
   });
@@ -408,11 +399,11 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    expect(screen.queryByLabelText('Public map URL')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Public link')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Copy link' })).not.toBeInTheDocument();
   });
 
-  it('shows Copy map button when map is private', async () => {
+  it('shows Share configuration button when map is private', async () => {
     const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
     render(
       <MapAnalyticsOwnerConfigModal
@@ -430,10 +421,10 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    expect(screen.getByRole('button', { name: 'Copy map' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Share configuration' })).toBeInTheDocument();
   });
 
-  it('shows Copy map button when map is public', async () => {
+  it('shows Share configuration button when map is public', async () => {
     const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
     render(
       <MapAnalyticsOwnerConfigModal
@@ -451,10 +442,10 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    expect(screen.getByRole('button', { name: 'Copy map' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Share configuration' })).toBeInTheDocument();
   });
 
-  it('shows unavailable public URL message and disabled copy when publicId is missing', async () => {
+  it('hides public link copy section when publicId is missing', async () => {
     const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
     render(
       <MapAnalyticsOwnerConfigModal
@@ -472,10 +463,8 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    expect(
-      screen.getByText('Public URL is not available yet. Refresh after publishing.')
-    ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Copy link' })).toBeDisabled();
+    expect(screen.queryByLabelText('Public link')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Copy link' })).not.toBeInTheDocument();
   });
 
   it('copies map short link and shows share/open success notification', async () => {
@@ -498,7 +487,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Copy map' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Share configuration' }));
 
     await waitFor(() => {
       expect(ensureShortRedirectUrlMock).toHaveBeenCalledWith(
@@ -517,8 +506,8 @@ describe('MapAnalyticsOwnerConfigModal', () => {
     await waitFor(() => {
       expect(clipboardWriteTextMock).toHaveBeenCalledWith('https://transparenta.eu/share/short-map');
     });
-    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Map link copied to clipboard', {
-      description: 'Now you can share or open it in a new tab.',
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Configuration link copied', {
+      description: 'Share this link so others can create a map based on your setup.',
     });
   });
 
@@ -542,15 +531,15 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Copy map' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Share configuration' }));
 
     await waitFor(() => {
       expect(clipboardWriteTextMock).toHaveBeenCalledWith(
         expect.stringContaining('/maps/editor/new?state=')
       );
     });
-    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Map link copied to clipboard', {
-      description: 'Now you can share or open it in a new tab.',
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Configuration link copied', {
+      description: 'Share this link so others can create a map based on your setup.',
     });
   });
 
@@ -574,7 +563,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Copy map' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Share configuration' }));
 
     await waitFor(() => {
       expect(vi.mocked(toast.error)).toHaveBeenCalledWith('Failed to copy map link');
