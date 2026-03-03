@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   type ColumnDef,
+  type ColumnFiltersState,
   type PaginationState,
   type SortingState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
@@ -20,6 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import { Pagination } from '@/components/ui/pagination';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useTablePreferences } from '@/hooks/useTablePreferences';
@@ -140,6 +143,20 @@ function buildCsvExportFileName(mapTitle: string): string {
   return `map-${normalizedTitle}-${timestamp}.csv`;
 }
 
+function compareRowsByNameAndSiruta(
+  left: Pick<AdvancedMapAnalyticsTableRow, 'uatName' | 'sirutaCode'>,
+  right: Pick<AdvancedMapAnalyticsTableRow, 'uatName' | 'sirutaCode'>
+): number {
+  const nameCompare = left.uatName.localeCompare(right.uatName, undefined, {
+    sensitivity: 'base',
+  });
+  if (nameCompare !== 0) {
+    return nameCompare;
+  }
+
+  return left.sirutaCode.localeCompare(right.sirutaCode);
+}
+
 export function AdvancedMapAnalyticsDataTable({
   rows,
   seriesColumns,
@@ -154,10 +171,30 @@ export function AdvancedMapAnalyticsDataTable({
   hasActiveBinFilters,
 }: Readonly<AdvancedMapAnalyticsDataTableProps>) {
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 25,
   });
+
+  useEffect(() => {
+    const hasValidActiveSeries =
+      typeof activeSeriesId === 'string' &&
+      seriesColumns.some((seriesColumn) => seriesColumn.id === activeSeriesId);
+
+    if (!hasValidActiveSeries) {
+      setSorting([]);
+      return;
+    }
+
+    setSorting([
+      {
+        id: getSeriesColumnId(activeSeriesId),
+        desc: true,
+      },
+    ]);
+  }, [activeSeriesId, seriesColumns]);
+
   const { density, setDensity, columnVisibility, setColumnVisibility } = useTablePreferences(
     'advanced-map-analytics-data-table',
     {
@@ -215,6 +252,45 @@ export function AdvancedMapAnalyticsDataTable({
     return map;
   }, [seriesColumns]);
 
+  const rankBySirutaCode = useMemo(() => {
+    const rankMap = new Map<string, number>();
+    const hasValidActiveSeries =
+      typeof activeSeriesId === 'string' &&
+      seriesColumns.some((seriesColumn) => seriesColumn.id === activeSeriesId);
+
+    if (!hasValidActiveSeries) {
+      const sortedRows = [...rows].sort(compareRowsByNameAndSiruta);
+      for (const [index, row] of sortedRows.entries()) {
+        rankMap.set(row.sirutaCode, index + 1);
+      }
+
+      return rankMap;
+    }
+
+    const rankedRows = rows
+      .map((row) => ({
+        row,
+        activeValue: row.valuesBySeriesId[activeSeriesId],
+      }))
+      .filter(
+        (entry): entry is { row: AdvancedMapAnalyticsTableRow; activeValue: number } =>
+          typeof entry.activeValue === 'number' && Number.isFinite(entry.activeValue)
+      )
+      .sort((left, right) => {
+        if (left.activeValue !== right.activeValue) {
+          return right.activeValue - left.activeValue;
+        }
+
+        return compareRowsByNameAndSiruta(left.row, right.row);
+      });
+
+    for (const [index, entry] of rankedRows.entries()) {
+      rankMap.set(entry.row.sirutaCode, index + 1);
+    }
+
+    return rankMap;
+  }, [activeSeriesId, rows, seriesColumns]);
+
   const columns = useMemo<ColumnDef<AdvancedMapAnalyticsTableRow>[]>(
     () => [
       {
@@ -222,11 +298,12 @@ export function AdvancedMapAnalyticsDataTable({
         header: () => <span className="text-xs text-muted-foreground">{t`#`}</span>,
         size: 40,
         enableHiding: false,
-        cell: ({ row, table }) => {
-          const { pageIndex, pageSize } = table.getState().pagination;
+        cell: ({ row }) => {
+          const rank = rankBySirutaCode.get(row.original.sirutaCode);
+
           return (
             <span className="text-xs text-muted-foreground">
-              {pageIndex * pageSize + row.index + 1}
+              {rank ?? '-'}
             </span>
           );
         },
@@ -234,6 +311,14 @@ export function AdvancedMapAnalyticsDataTable({
       {
         id: 'uat_name',
         accessorKey: 'uatName',
+        filterFn: (row, _, filterValue) => {
+          const searchValue = typeof filterValue === 'string' ? filterValue.trim().toLocaleLowerCase() : '';
+          if (searchValue.length === 0) {
+            return true;
+          }
+
+          return row.original.uatName.toLocaleLowerCase().includes(searchValue);
+        },
         header: ({ column }) => (
           <button
             type="button"
@@ -345,7 +430,7 @@ export function AdvancedMapAnalyticsDataTable({
         };
       }),
     ],
-    [activeSeriesId, seriesColumns]
+    [activeSeriesId, rankBySirutaCode, seriesColumns]
   );
 
   const table = useReactTable({
@@ -353,13 +438,16 @@ export function AdvancedMapAnalyticsDataTable({
     columns,
     state: {
       sorting,
+      columnFilters,
       pagination,
       columnVisibility,
     },
     onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
     onColumnVisibilityChange: setColumnVisibility,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
@@ -401,9 +489,28 @@ export function AdvancedMapAnalyticsDataTable({
     URL.revokeObjectURL(url);
   }, [mapTitle, seriesLabelById, table]);
 
+  const uatNameSearchValue = (() => {
+    const filterValue = table.getColumn('uat_name')?.getFilterValue();
+    return typeof filterValue === 'string' ? filterValue : '';
+  })();
+
   return (
     <div className="flex h-full flex-col">
-      <div className="flex flex-wrap items-center justify-end gap-2 py-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 py-2">
+        <div className="w-full sm:w-[280px]">
+          <Input
+            value={uatNameSearchValue}
+            onChange={(event) => {
+              table.getColumn('uat_name')?.setFilterValue(event.currentTarget.value);
+              table.setPageIndex(0);
+            }}
+            placeholder={t`Search entity name`}
+            aria-label={t`Search entity name`}
+            className="h-8"
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center justify-end gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
@@ -541,6 +648,7 @@ export function AdvancedMapAnalyticsDataTable({
             {t`Export CSV`}
           </Button>
         ) : null}
+        </div>
       </div>
 
       <div className="relative flex-grow">
@@ -627,7 +735,7 @@ export function AdvancedMapAnalyticsDataTable({
         <Pagination
           currentPage={table.getState().pagination.pageIndex + 1}
           pageSize={table.getState().pagination.pageSize}
-          totalCount={rows.length}
+          totalCount={table.getFilteredRowModel().rows.length}
           onPageChange={(page) => table.setPageIndex(Math.max(0, page - 1))}
           onPageSizeChange={(size) => table.setPageSize(size)}
         />

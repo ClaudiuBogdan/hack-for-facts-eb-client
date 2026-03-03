@@ -879,19 +879,12 @@ export function MapAnalyticsWorkspace({
       return [];
     }
 
-    const activeSeries = activeSeriesId
-      ? enabledSeries.find((series) => series.id === activeSeriesId)
-      : undefined;
-    const orderedSeries = activeSeries
-      ? [activeSeries, ...enabledSeries.filter((series) => series.id !== activeSeries.id)]
-      : enabledSeries;
-
-    return orderedSeries.map((series) => ({
+    return enabledSeries.map((series) => ({
       id: series.id,
       label: resolveSeriesDisplayLabel(series),
       unit: resolveSeriesDisplayUnit(series, unitsBySeriesId),
     }));
-  }, [activeSeriesId, enabledSeries, unitsBySeriesId]);
+  }, [enabledSeries, unitsBySeriesId]);
 
   const uatMetadataBySirutaCode = useMemo(() => {
     const metadataBySirutaCode = new Map<string, Omit<AdvancedMapAnalyticsTableRow, 'sirutaCode' | 'valuesBySeriesId'>>();

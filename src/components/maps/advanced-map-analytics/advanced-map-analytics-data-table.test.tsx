@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
   AdvancedMapAnalyticsDataTable,
@@ -38,6 +38,29 @@ describe('AdvancedMapAnalyticsDataTable', () => {
     },
   ];
 
+  function getRankValueByUatName(uatName: string): string {
+    const row = screen.getByText(uatName).closest('tr');
+    if (!row) {
+      throw new Error(`Expected row for UAT "${uatName}".`);
+    }
+
+    const cells = within(row).getAllByRole('cell');
+    return cells[0]?.textContent?.trim() ?? '';
+  }
+
+  function getVisibleUatOrder(): string[] {
+    const rowsWithCells = screen
+      .getAllByRole('row')
+      .filter((row) => within(row).queryAllByRole('cell').length > 0);
+
+    return rowsWithCells
+      .map((row) => {
+        const cells = within(row).getAllByRole('cell');
+        return cells[1]?.textContent?.trim() ?? '';
+      })
+      .filter((value) => value.length > 0);
+  }
+
   it('renders static and dynamic columns and formats missing values', () => {
     render(
       <AdvancedMapAnalyticsDataTable
@@ -60,6 +83,300 @@ describe('AdvancedMapAnalyticsDataTable', () => {
     expect(screen.getByText('Execution analytics (active)')).toBeInTheDocument();
     expect(screen.getByText('INS Population')).toBeInTheDocument();
     expect(screen.getByText('Missing')).toBeInTheDocument();
+  });
+
+  it('renders row rank by active-series descending order', () => {
+    render(
+      <AdvancedMapAnalyticsDataTable
+        rows={[
+          {
+            sirutaCode: '4',
+            uatName: 'Gamma',
+            countyName: 'County 4',
+            valuesBySeriesId: {
+              'series-active': 100,
+              'series-secondary': 20,
+            },
+          },
+          {
+            sirutaCode: '1',
+            uatName: 'Alpha',
+            countyName: 'County 1',
+            valuesBySeriesId: {
+              'series-active': 300,
+              'series-secondary': 50,
+            },
+          },
+          {
+            sirutaCode: '2',
+            uatName: 'beta',
+            countyName: 'County 2',
+            valuesBySeriesId: {
+              'series-active': 300,
+              'series-secondary': 10,
+            },
+          },
+          {
+            sirutaCode: '3',
+            uatName: 'No Value',
+            countyName: 'County 3',
+            valuesBySeriesId: {
+              'series-active': undefined,
+              'series-secondary': 30,
+            },
+          },
+        ]}
+        seriesColumns={seriesColumns}
+        mapTitle="Demo map"
+        showExportCsv={false}
+        activeSeriesId="series-active"
+        binsFilterSections={binsFilterSections}
+        onToggleBinFilter={vi.fn()}
+        onClearPresetBinFilters={vi.fn()}
+        onClearAllBinFilters={vi.fn()}
+        hasActiveBinFilters={false}
+      />
+    );
+
+    expect(getRankValueByUatName('Alpha')).toBe('1');
+    expect(getRankValueByUatName('beta')).toBe('2');
+    expect(getRankValueByUatName('Gamma')).toBe('3');
+    expect(getRankValueByUatName('No Value')).toBe('-');
+  });
+
+  it('auto-sorts table rows by active series descending', () => {
+    render(
+      <AdvancedMapAnalyticsDataTable
+        rows={[
+          {
+            sirutaCode: '1',
+            uatName: 'Alpha',
+            countyName: 'County 1',
+            valuesBySeriesId: {
+              'series-active': 100,
+              'series-secondary': 5,
+            },
+          },
+          {
+            sirutaCode: '2',
+            uatName: 'Beta',
+            countyName: 'County 2',
+            valuesBySeriesId: {
+              'series-active': 300,
+              'series-secondary': 10,
+            },
+          },
+          {
+            sirutaCode: '3',
+            uatName: 'Gamma',
+            countyName: 'County 3',
+            valuesBySeriesId: {
+              'series-active': 200,
+              'series-secondary': 15,
+            },
+          },
+        ]}
+        seriesColumns={seriesColumns}
+        mapTitle="Demo map"
+        showExportCsv={false}
+        activeSeriesId="series-active"
+        binsFilterSections={binsFilterSections}
+        onToggleBinFilter={vi.fn()}
+        onClearPresetBinFilters={vi.fn()}
+        onClearAllBinFilters={vi.fn()}
+        hasActiveBinFilters={false}
+      />
+    );
+
+    expect(getVisibleUatOrder()).toEqual(['Beta', 'Gamma', 'Alpha']);
+  });
+
+  it('renders series columns in the same order as provided series', () => {
+    const customSeriesColumns: AdvancedMapAnalyticsTableSeriesColumn[] = [
+      { id: 'series-secondary', label: 'INS Population', unit: undefined },
+      { id: 'series-active', label: 'Execution analytics', unit: 'RON' },
+    ];
+
+    render(
+      <AdvancedMapAnalyticsDataTable
+        rows={rows}
+        seriesColumns={customSeriesColumns}
+        mapTitle="Demo map"
+        showExportCsv={false}
+        activeSeriesId="series-active"
+        binsFilterSections={binsFilterSections}
+        onToggleBinFilter={vi.fn()}
+        onClearPresetBinFilters={vi.fn()}
+        onClearAllBinFilters={vi.fn()}
+        hasActiveBinFilters={false}
+      />
+    );
+
+    const headerTexts = screen.getAllByRole('columnheader').map((header) =>
+      (header.textContent ?? '').replace(/\s+/g, ' ').trim()
+    );
+    const secondarySeriesIndex = headerTexts.findIndex((headerText) =>
+      headerText.includes('INS Population')
+    );
+    const activeSeriesIndex = headerTexts.findIndex((headerText) =>
+      headerText.includes('Execution analytics (active)')
+    );
+
+    expect(secondarySeriesIndex).toBeGreaterThan(-1);
+    expect(activeSeriesIndex).toBeGreaterThan(-1);
+    expect(secondarySeriesIndex).toBeLessThan(activeSeriesIndex);
+  });
+
+  it('keeps rank tied to active-series order when sorting by a different series', () => {
+    render(
+      <AdvancedMapAnalyticsDataTable
+        rows={[
+          {
+            sirutaCode: '1',
+            uatName: 'Alpha',
+            countyName: 'County 1',
+            valuesBySeriesId: {
+              'series-active': 100,
+              'series-secondary': 1,
+            },
+          },
+          {
+            sirutaCode: '2',
+            uatName: 'Beta',
+            countyName: 'County 2',
+            valuesBySeriesId: {
+              'series-active': 300,
+              'series-secondary': 3,
+            },
+          },
+          {
+            sirutaCode: '3',
+            uatName: 'Gamma',
+            countyName: 'County 3',
+            valuesBySeriesId: {
+              'series-active': 200,
+              'series-secondary': 2,
+            },
+          },
+        ]}
+        seriesColumns={seriesColumns}
+        mapTitle="Demo map"
+        showExportCsv={false}
+        activeSeriesId="series-active"
+        binsFilterSections={binsFilterSections}
+        onToggleBinFilter={vi.fn()}
+        onClearPresetBinFilters={vi.fn()}
+        onClearAllBinFilters={vi.fn()}
+        hasActiveBinFilters={false}
+      />
+    );
+
+    expect(getRankValueByUatName('Beta')).toBe('1');
+    expect(getRankValueByUatName('Gamma')).toBe('2');
+    expect(getRankValueByUatName('Alpha')).toBe('3');
+
+    fireEvent.click(screen.getByRole('button', { name: 'INS Population' }));
+
+    expect(getRankValueByUatName('Beta')).toBe('1');
+    expect(getRankValueByUatName('Gamma')).toBe('2');
+    expect(getRankValueByUatName('Alpha')).toBe('3');
+  });
+
+  it('filters rows by UAT/entity name only with case-insensitive search', () => {
+    render(
+      <AdvancedMapAnalyticsDataTable
+        rows={[
+          {
+            sirutaCode: '1',
+            uatName: 'Alpha City',
+            countyName: 'County One',
+            valuesBySeriesId: {
+              'series-active': 10,
+              'series-secondary': 1,
+            },
+          },
+          {
+            sirutaCode: '2',
+            uatName: 'Beta Village',
+            countyName: 'Alpha County',
+            valuesBySeriesId: {
+              'series-active': 20,
+              'series-secondary': 2,
+            },
+          },
+        ]}
+        seriesColumns={seriesColumns}
+        mapTitle="Demo map"
+        showExportCsv={false}
+        activeSeriesId="series-active"
+        binsFilterSections={binsFilterSections}
+        onToggleBinFilter={vi.fn()}
+        onClearPresetBinFilters={vi.fn()}
+        onClearAllBinFilters={vi.fn()}
+        hasActiveBinFilters={false}
+      />
+    );
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search entity name' }), {
+      target: { value: 'ALPHA' },
+    });
+
+    expect(screen.getByText('Alpha City')).toBeInTheDocument();
+    expect(screen.queryByText('Beta Village')).not.toBeInTheDocument();
+  });
+
+  it('keeps global rank values when search narrows visible rows', () => {
+    render(
+      <AdvancedMapAnalyticsDataTable
+        rows={[
+          {
+            sirutaCode: '1',
+            uatName: 'Alpha',
+            countyName: 'County 1',
+            valuesBySeriesId: {
+              'series-active': 300,
+              'series-secondary': 0,
+            },
+          },
+          {
+            sirutaCode: '2',
+            uatName: 'Beta',
+            countyName: 'County 2',
+            valuesBySeriesId: {
+              'series-active': 200,
+              'series-secondary': 0,
+            },
+          },
+          {
+            sirutaCode: '3',
+            uatName: 'Gamma',
+            countyName: 'County 3',
+            valuesBySeriesId: {
+              'series-active': 100,
+              'series-secondary': 0,
+            },
+          },
+        ]}
+        seriesColumns={seriesColumns}
+        mapTitle="Demo map"
+        showExportCsv={false}
+        activeSeriesId="series-active"
+        binsFilterSections={binsFilterSections}
+        onToggleBinFilter={vi.fn()}
+        onClearPresetBinFilters={vi.fn()}
+        onClearAllBinFilters={vi.fn()}
+        hasActiveBinFilters={false}
+      />
+    );
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search entity name' }), {
+      target: { value: 'ma' },
+    });
+
+    expect(screen.getByText('Gamma')).toBeInTheDocument();
+    expect(screen.queryByText('Alpha')).not.toBeInTheDocument();
+    expect(screen.queryByText('Beta')).not.toBeInTheDocument();
+    expect(getRankValueByUatName('Gamma')).toBe('3');
   });
 
   it('calls onRowClick only when entity CUI is available', () => {
