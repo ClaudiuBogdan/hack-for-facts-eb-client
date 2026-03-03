@@ -1,5 +1,5 @@
-import { createLazyFileRoute, useNavigate, useSearch, Link } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { createLazyFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
+import { useQueries, useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
 import { Trans } from '@lingui/react/macro'
 import { useMemo, useEffect } from 'react'
@@ -11,38 +11,43 @@ import {
 } from '@/schemas/charts'
 import { convertDaysToMs, generateHash } from '@/lib/utils'
 import { fetchAggregatedLineItems } from '@/lib/api/entity-analytics'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
 import { BudgetExplorerHeader } from '@/components/budget-explorer/BudgetExplorerHeader'
-import { BudgetTreemap } from '@/components/budget-explorer/BudgetTreemap'
-import { BudgetCategoryList } from '@/components/budget-explorer/BudgetCategoryList'
-import { BudgetLineItemsPreview } from '@/components/budget-explorer/BudgetLineItemsPreview'
-import { useTreemapDrilldown } from '@/components/budget-explorer/useTreemapDrilldown'
-import { SpendingBreakdown } from '@/components/budget-explorer/SpendingBreakdown'
-import { RevenueBreakdown } from '@/components/budget-explorer/RevenueBreakdown'
 import { FloatingQuickNav } from '@/components/ui/FloatingQuickNav'
-import { ChartPreview } from '@/components/charts/components/chart-preview/ChartPreview'
-import { Chart, ChartSchema, SeriesConfigurationSchema } from '@/schemas/charts'
-import { BarChart2, ExternalLink } from 'lucide-react'
-import { getSeriesColor } from '@/components/charts/components/chart-renderer/utils';
-import { getClassificationName } from '@/lib/classifications'
-import { getEconomicChapterName } from '@/lib/economic-classifications'
-import { useIsMobile } from '@/hooks/use-mobile'
 import { usePeriodLabel } from '@/hooks/use-period-label'
 import { useUserCurrency } from '@/lib/hooks/useUserCurrency'
 import { useUserInflationAdjusted } from '@/lib/hooks/useUserInflationAdjusted'
-import { Label } from '@/components/ui/label'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { t } from '@lingui/core/macro'
+import { usePersistedState } from '@/lib/hooks/usePersistedState'
 import { getSiteUrl } from '@/config/env'
-import { withDefaultExcludes } from '@/lib/filterUtils'
 import type { ReportPeriodInput } from '@/schemas/reporting'
-import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES, DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES } from '@/lib/analytics-defaults'
 import { parseSearchParamJson } from '@/lib/router-search'
 import { createValidationError } from '@/lib/errors/types'
-// JSON-LD injected via Route.head
+import { NationalBudgetDisclaimerCard } from '@/components/national-budget/national-budget-disclaimer-card'
+import { NationalBudgetWhyDifferentCard } from '@/components/national-budget/national-budget-why-different-card'
+import { NationalBudgetSectorSection } from '@/components/national-budget/national-budget-sector-section'
+import { fetchBudgetSectors, fetchFundingSources } from '@/features/national-budget/national-budget-api'
+import {
+  getSectorDefinitionById,
+  NATIONAL_BUDGET_SECTOR_DEFINITIONS,
+  NATIONAL_BUDGET_SECTOR_ORDER,
+} from '@/features/national-budget/national-budget-sector-definitions'
+import {
+  buildFundingSourceIdsByKey,
+  buildNationalBudgetLineItemsFilter,
+  buildNationalBudgetSectorBaseFilter,
+  NATIONAL_BUDGET_FUNDING_SOURCE_KEYS,
+  type NationalBudgetFundingSourceKey,
+} from '@/features/national-budget/national-budget-filter-presets'
+import { getFormulaRulesForSector } from '@/features/national-budget/national-budget-formula-rules'
+import {
+  buildTotalBudgetLineItemsFilter,
+  mergeNationalBudgetSectionNodes,
+} from '@/features/national-budget/national-budget-total-merge'
+import type { NationalBudgetAccountCategory, NationalBudgetTransferFilter } from '@/features/national-budget/national-budget-types'
+import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
 
 export const Route = createLazyFileRoute('/budget-explorer')({
   component: BudgetExplorerPage,
@@ -50,6 +55,7 @@ export const Route = createLazyFileRoute('/budget-explorer')({
 
 const PrimaryLevelEnum = z.enum(['fn', 'ec'])
 const DepthEnum = z.enum(['chapter', 'subchapter', 'paragraph'])
+const TransferFilterEnum = z.enum(['all', 'no-transfers'])
 const ViewEnum = z.enum(['overview', 'treemap', 'sankey', 'list'])
 
 const baseDefaultFilter: AnalyticsFilterType = {
@@ -57,18 +63,98 @@ const baseDefaultFilter: AnalyticsFilterType = {
   account_category: 'ch',
   report_type: 'Executie bugetara agregata la nivel de ordonator principal',
 }
-const defaultFilter: AnalyticsFilterType = withDefaultExcludes(baseDefaultFilter)
+const defaultFilter: AnalyticsFilterType = {
+  ...baseDefaultFilter,
+}
 const defaultReportPeriod = createDefaultExecutionYearReportPeriod() as ReportPeriodInput
 type BudgetExplorerFilter = Omit<AnalyticsFilterType, 'report_period'> & { report_period: ReportPeriodInput }
 const defaultBudgetExplorerFilter: BudgetExplorerFilter = {
   ...defaultFilter,
   report_period: defaultReportPeriod,
 }
+const BUDGET_EXPLORER_DISCLAIMER_COLLAPSED_STORAGE_KEY = 'budget-explorer:main-disclaimer-collapsed'
+
+type BudgetExplorerSectionDefinition = {
+  id: string
+  label: string
+  badge: string
+  order: number
+  sectorIdForRules?: string
+  baseFilter: AnalyticsFilterType
+}
+
+type DocumentBudgetSectionConfig = {
+  id: string
+  label: string
+  badge: string
+  order: number
+  budgetSectorIdsByAccountCategory: Record<NationalBudgetAccountCategory, string[] | undefined>
+  fundingSourceKeysByAccountCategory: Record<NationalBudgetAccountCategory, NationalBudgetFundingSourceKey[]>
+}
+
+const DOCUMENT_BUDGET_SECTION_CONFIGS: DocumentBudgetSectionConfig[] = [
+  {
+    id: 'document-institutions-own-revenue',
+    label: 'Bugetul instituțiilor publice finanțate integral sau parțial din venituri proprii',
+    badge: 'Venituri proprii',
+    order: 6,
+    budgetSectorIdsByAccountCategory: {
+      ch: ['1'],
+      vn: ['1'],
+    },
+    fundingSourceKeysByAccountCategory: {
+      ch: [
+        NATIONAL_BUDGET_FUNDING_SOURCE_KEYS.CREDITE_EXTERNE,
+        NATIONAL_BUDGET_FUNDING_SOURCE_KEYS.CREDITE_INTERNE,
+        NATIONAL_BUDGET_FUNDING_SOURCE_KEYS.FONDURI_EXTERNE_NERAMBURSABILE,
+        NATIONAL_BUDGET_FUNDING_SOURCE_KEYS.ACTIVITATI_FINANTATE_INTEGRAL_DIN_VENITURI_PROPRII,
+        NATIONAL_BUDGET_FUNDING_SOURCE_KEYS.INTEGRAL_VENITURI_PROPRII,
+        NATIONAL_BUDGET_FUNDING_SOURCE_KEYS.VENITURI_PROPRII_SI_SUBVENTII,
+        NATIONAL_BUDGET_FUNDING_SOURCE_KEYS.BUGET_PRIVATIZARE,
+        NATIONAL_BUDGET_FUNDING_SOURCE_KEYS.BUGETUL_FONDULUI_PENTRU_MEDIU,
+        NATIONAL_BUDGET_FUNDING_SOURCE_KEYS.BUGETUL_TREZORERIEI_STATULUI,
+      ],
+      vn: [
+        NATIONAL_BUDGET_FUNDING_SOURCE_KEYS.ACTIVITATI_FINANTATE_INTEGRAL_DIN_VENITURI_PROPRII,
+        NATIONAL_BUDGET_FUNDING_SOURCE_KEYS.INTEGRAL_VENITURI_PROPRII,
+        NATIONAL_BUDGET_FUNDING_SOURCE_KEYS.VENITURI_PROPRII_SI_SUBVENTII,
+      ],
+    },
+  },
+  {
+    id: 'document-fen',
+    label: 'Fonduri Externe Nerambursabile',
+    badge: 'Fonduri UE',
+    order: 7,
+    budgetSectorIdsByAccountCategory: {
+      ch: [],
+      vn: [],
+    },
+    fundingSourceKeysByAccountCategory: {
+      ch: [NATIONAL_BUDGET_FUNDING_SOURCE_KEYS.FONDURI_EXTERNE_NERAMBURSABILE],
+      vn: [NATIONAL_BUDGET_FUNDING_SOURCE_KEYS.FONDURI_EXTERNE_NERAMBURSABILE],
+    },
+  },
+  {
+    id: 'document-treasury',
+    label: 'Bugetul Trezoreriei Statului',
+    badge: 'Trezorerie',
+    order: 8,
+    budgetSectorIdsByAccountCategory: {
+      ch: [],
+      vn: [],
+    },
+    fundingSourceKeysByAccountCategory: {
+      ch: [NATIONAL_BUDGET_FUNDING_SOURCE_KEYS.BUGETUL_TREZORERIEI_STATULUI],
+      vn: [NATIONAL_BUDGET_FUNDING_SOURCE_KEYS.BUGETUL_TREZORERIEI_STATULUI],
+    },
+  },
+]
 
 function normalizeBudgetExplorerFilterInput(rawValue: unknown): unknown {
   const parsed = parseSearchParamJson(rawValue)
 
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return parsed
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return parsed
 
   const rawFilter = parsed as Record<string, unknown>
   const fixedFilter = { ...rawFilter }
@@ -93,29 +179,20 @@ const BudgetExplorerFilterSchema = z.preprocess(
 })
 
 const SearchSchema = z.object({
-  view: ViewEnum.default('overview').describe('View type: overview | treemap | sankey | list.'),
+  view: ViewEnum.default('treemap').describe('Legacy view parameter kept for backward compatibility.'),
   primary: PrimaryLevelEnum.default('fn').describe('Primary grouping: fn (functional) or ec (economic).'),
   depth: DepthEnum.default('chapter').describe('Detail level: chapter (chapters) or subchapter (subcategories).'),
+  transferFilter: TransferFilterEnum.default('all').describe('Transfer mode: include all transfers or exclude transfer flows.'),
   search: z.string().optional().describe('Text search within categories.'),
   filter: z.preprocess((value) => (value === undefined ? defaultFilter : value), BudgetExplorerFilterSchema).describe(
     'Budget filter including report_period, account_category, normalization, report_type.',
   ),
-  treemapPrimary: PrimaryLevelEnum.optional().describe('Explicit treemap grouping override: fn | ec.'),
-  treemapPath: z.coerce.string().optional().describe('Treemap drilldown breadcrumb codes, comma-separated.'),
+  treemapPrimary: PrimaryLevelEnum.optional().describe('Legacy parameter kept for backward compatibility.'),
+  treemapPath: z.coerce.string().optional().describe('Legacy parameter kept for backward compatibility.'),
   year: z.coerce.number().optional().describe('Shorthand for setting report year (overrides filter.report_period).'),
 })
 
 export type BudgetExplorerState = z.infer<typeof SearchSchema>
-
-// Removed ministries list (unused after simplifying charts)
-
-const functionalMainChapters = ['68', '66', '65', '84', '51', '61', '70', '83', '60', '74', '55', '67'] as const
-const economicMainChapters = [57, 10, 20, 51, 30, 55, 56, 61] as const
-// Revenue-focused top functional categories (codes provided by product spec)
-const revenueTopFunctionalChapters = ['21', '10', '42', '03', '14', '01', '33'] as const
-
-
-// JSON-LD is injected within the component render (accepted by crawlers)
 
 function computeTemporalCoverage(period: BudgetExplorerState['filter']['report_period']): string | undefined {
   if (!period || !period.selection) return undefined
@@ -136,20 +213,20 @@ export function head({ search }: { search: BudgetExplorerState }) {
   const canonical = `${site}/budget-explorer`
   const period = search.filter?.report_period
   const temporalCoverage = computeTemporalCoverage(period)
-  const title = 'Budget Explorer – Transparenta.eu'
-  const description = 'Explore Romania public finance by category and year. Switch between overview, treemap, sankey and list; filter by spending or revenue.'
+  const title = 'National Budget – Transparenta.eu'
+  const description = 'Segmented national budget overview by sector with transparent formula-based adjustments and quick line-item drilldowns.'
 
   const dataset = {
     '@context': 'https://schema.org',
     '@type': 'Dataset',
-    name: 'Romanian Public Budget – Explorer',
+    name: 'Romanian Public Budget – National Segmented View',
     description,
     url: canonical,
     temporalCoverage: temporalCoverage ?? undefined,
     spatialCoverage: { '@type': 'Place', name: 'Romania' },
     publisher: { '@type': 'Organization', '@id': `${site}#organization`, name: 'Transparenta.eu', url: site },
-    keywords: ['budget', 'Romania', 'public finance', 'transparency', 'spending', 'revenue'],
-    isBasedOn: 'https://mfinante.gov.ro',
+    keywords: ['budget', 'Romania', 'public finance', 'segmented budget', 'state budget', 'local budget'],
+    isBasedOn: 'https://mfinante.gov.ro/transparenta-bugetara',
   }
 
   return {
@@ -168,20 +245,6 @@ export function head({ search }: { search: BudgetExplorerState }) {
   }
 }
 
-
-function buildSeriesFilter(base: AnalyticsFilterType, overrides: Partial<AnalyticsFilterType>) {
-  return {
-    ...base,
-    functional_codes: undefined,
-    functional_prefixes: undefined,
-    economic_codes: undefined,
-    economic_prefixes: undefined,
-    report_type: 'Executie bugetara agregata la nivel de ordonator principal',
-    ...overrides,
-    report_period: undefined,
-  } as AnalyticsFilterType
-}
-
 function BudgetExplorerPage() {
   const raw = useSearch({ from: '/budget-explorer' })
   const navigate = useNavigate({ from: '/budget-explorer' })
@@ -198,13 +261,14 @@ function BudgetExplorerPage() {
   }
 
   const search = parsedSearch.data
-  const isMobile = useIsMobile()
   const [userCurrency, setUserCurrency] = useUserCurrency()
   const [userInflationAdjusted, setUserInflationAdjusted] = useUserInflationAdjusted()
+  const [isMainDisclaimerCollapsed, setIsMainDisclaimerCollapsed] = usePersistedState<boolean>(
+    BUDGET_EXPLORER_DISCLAIMER_COLLAPSED_STORAGE_KEY,
+    false,
+  )
+  const { year } = search
 
-	  const { primary, depth, treemapPrimary, treemapPath, year } = search
-
-  // Apply year shorthand: if year is provided in URL, override filter.report_period
   const filter = useMemo(() => {
     if (year && Number.isFinite(year)) {
       return {
@@ -217,16 +281,17 @@ function BudgetExplorerPage() {
     }
     return search.filter
   }, [search.filter, year])
-	  const effectiveNormalization = useMemo(() => {
-	    const rawNormalization = filter.normalization ?? 'total'
-	    let normalized = rawNormalization
-	    if (rawNormalization === 'total_euro') {
-	      normalized = 'total'
-	    } else if (rawNormalization === 'per_capita_euro') {
-	      normalized = 'per_capita'
-	    }
-	    return normalized
-	  }, [filter.normalization])
+
+  const effectiveNormalization = useMemo(() => {
+    const rawNormalization = filter.normalization ?? 'total'
+    let normalized = rawNormalization
+    if (rawNormalization === 'total_euro') {
+      normalized = 'total'
+    } else if (rawNormalization === 'per_capita_euro') {
+      normalized = 'per_capita'
+    }
+    return normalized
+  }, [filter.normalization])
 
   const effectiveCurrency = useMemo(() => {
     const rawNormalization = filter.normalization
@@ -245,27 +310,34 @@ function BudgetExplorerPage() {
     currency: effectiveCurrency,
     inflation_adjusted: effectiveInflationAdjusted,
   }), [effectiveCurrency, effectiveInflationAdjusted, effectiveNormalization, filter])
+  const effectiveTreemapPrimary: 'fn' | 'ec' = effectiveFilter.account_category === 'vn' ? 'fn' : search.primary
+  const parsedTreemapPath = useMemo(
+    () =>
+      (search.treemapPath ?? '')
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean),
+    [search.treemapPath],
+  )
 
-  const filterHash = generateHash(JSON.stringify(effectiveFilter))
+  const handleFilterChange = (partial: Partial<BudgetExplorerState>) => {
+    const { filter: partialFilter, ...restPartial } = partial
+    const nextFilter = {
+      ...defaultFilter,
+      ...filter,
+      ...(partialFilter ?? {}),
+    }
 
-  // Use treemapPrimary from URL if available, otherwise fall back to primary
-  const initialTreemapPrimary = treemapPrimary ?? primary
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['budget-explorer', 'aggregatedLineItems', filterHash],
-    queryFn: () =>
-      fetchAggregatedLineItems({
-        filter: effectiveFilter,
-        limit: 150000,
+    navigate({
+      search: (prev) => ({
+        ...(prev as unknown as BudgetExplorerState),
+        ...restPartial,
+        filter: nextFilter,
       }),
-    staleTime: convertDaysToMs(3),
-    gcTime: convertDaysToMs(3),
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false,
-  })
-
-  // Drawer/side panel removed to match unified behavior
+      replace: true,
+      resetScroll: false,
+    })
+  }
 
   useEffect(() => {
     const urlCurrency = filter.currency
@@ -295,8 +367,10 @@ function BudgetExplorerPage() {
       shouldPatchFilter = true
     }
 
-	    if (shouldPatchFilter) handleFilterChange({ filter: nextFilterPatch as BudgetExplorerState['filter'] })
-	  }, [
+    if (shouldPatchFilter) {
+      handleFilterChange({ filter: nextFilterPatch as BudgetExplorerState['filter'] })
+    }
+  }, [
     filter.currency,
     filter.inflation_adjusted,
     filter.normalization,
@@ -306,186 +380,187 @@ function BudgetExplorerPage() {
     setUserInflationAdjusted,
   ])
 
-  // Exclude non-direct spending items for spending view (account_category='ch')
-  const excludeEcCodes = filter.account_category === 'ch' ? [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES] : []
-  // Exclude transfer codes for income view (account_category='vn')
-  const excludeFnCodes = filter.account_category === 'vn' ? [...DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES] : []
+  const filterHash = generateHash(JSON.stringify(effectiveFilter))
+  const periodLabel = usePeriodLabel(filter.report_period)
 
-  // Unified drilldown state using shared hook
   const {
-    primary: treemapUiPrimary,
-    setPrimary: setTreemapUiPrimary,
-    activePrimary,
-    breadcrumbs,
-    treemapData,
-    excludedItemsSummary,
-    onNodeClick,
-    onBreadcrumbClick,
-    reset,
-  } = useTreemapDrilldown({
-    nodes: data?.nodes ?? [],
-    initialPrimary: initialTreemapPrimary,
-    rootDepth: depth === 'paragraph' ? 6 : depth === 'subchapter' ? 4 : 2,
-    excludeEcCodes,
-    excludeFnCodes,
-    initialPath: (treemapPath ?? '')
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean),
-    onPrimaryChange: (p) => handleFilterChange({ treemapPrimary: p }),
-    onPathChange: (codes) => {
-      const next = codes.join(',') || undefined
-      navigate({
-        replace: true,
-        resetScroll: false,
-        search: (prev) => ({
-          ...(prev as unknown as BudgetExplorerState),
-          treemapPath: next,
-        }),
-      })
-    },
+    data: availableBudgetSectors,
+    isLoading: isLoadingBudgetSectors,
+    error: budgetSectorsError,
+  } = useQuery({
+    queryKey: ['budget-explorer', 'budget-sectors'],
+    queryFn: fetchBudgetSectors,
+    staleTime: convertDaysToMs(7),
+    gcTime: convertDaysToMs(7),
+    refetchOnWindowFocus: false,
   })
 
-  // Keep label helpers for other components if needed
-  const nodes = data?.nodes ?? []
+  const {
+    data: availableFundingSources,
+    isLoading: isLoadingFundingSources,
+  } = useQuery({
+    queryKey: ['budget-explorer', 'funding-sources'],
+    queryFn: fetchFundingSources,
+    staleTime: convertDaysToMs(7),
+    gcTime: convertDaysToMs(7),
+    refetchOnWindowFocus: false,
+  })
 
+  const fundingSourceIdsByKey = useMemo(
+    () => buildFundingSourceIdsByKey(availableFundingSources ?? []),
+    [availableFundingSources],
+  )
+  const fundingSourceIdsByKeyHash = useMemo(
+    () => generateHash(JSON.stringify(fundingSourceIdsByKey)),
+    [fundingSourceIdsByKey],
+  )
 
-  const functionalChart: Chart = useMemo(() => {
-    const series = functionalMainChapters.map((code, index) => {
-      const seriesFilter = buildSeriesFilter(effectiveFilter, { functional_prefixes: [code] })
-      const seriesId = generateHash(JSON.stringify(seriesFilter))
-      return SeriesConfigurationSchema.parse({
-        id: seriesId,
-        type: 'line-items-aggregated-yearly',
-        label: getClassificationName(code) ?? `fn:${code}`,
-        filter: seriesFilter,
-        config: {
-          color: getSeriesColor(index),
-          showDataLabels: index === 0,
-        },
+  const visibleSectors = useMemo(() => {
+    const apiById = new Map((availableBudgetSectors ?? []).map((sector) => [sector.sector_id, sector]))
+
+    const ids = budgetSectorsError
+      ? NATIONAL_BUDGET_SECTOR_ORDER
+      : NATIONAL_BUDGET_SECTOR_ORDER.filter((sectorId) => apiById.has(sectorId))
+
+    return ids
+      .map((sectorId) => {
+        const fallbackDefinition = getSectorDefinitionById(sectorId)
+        if (!fallbackDefinition) return null
+
+        const apiSector = apiById.get(sectorId)
+        const label = apiSector?.sector_description?.trim() || fallbackDefinition.label
+
+        return {
+          ...fallbackDefinition,
+          label,
+        }
       })
-    })
+      .filter((sector): sector is (typeof NATIONAL_BUDGET_SECTOR_DEFINITIONS)[number] => Boolean(sector))
+  }, [availableBudgetSectors, budgetSectorsError])
 
-    const chartId = generateHash(JSON.stringify({ title: 'Functional Categories Comparison', filter: effectiveFilter }))
-    return ChartSchema.parse({
-      id: chartId,
-      title: 'Functional Categories Comparison',
-      config: {
-        chartType: 'area',
-        showLegend: !isMobile,
-        showTooltip: !isMobile,
-      },
-      series,
-    })
-  }, [effectiveFilter, isMobile])
+  const documentBudgetSections = useMemo(() => {
+    const accountCategory: NationalBudgetAccountCategory = effectiveFilter.account_category ?? 'ch'
 
-  const economicChart: Chart = useMemo(() => {
-    const series = economicMainChapters.map((ecCode, index) => {
-      const seriesFilter = buildSeriesFilter(effectiveFilter, { economic_prefixes: [ecCode.toString()] })
-      const seriesId = generateHash(JSON.stringify(seriesFilter))
-      return SeriesConfigurationSchema.parse({
-        id: seriesId,
-        type: 'line-items-aggregated-yearly',
-        label: getEconomicChapterName(ecCode.toString()) ?? ecCode.toString(),
-        filter: seriesFilter,
-        config: {
-          color: getSeriesColor(index),
-          showDataLabels: index === 0,
+    return DOCUMENT_BUDGET_SECTION_CONFIGS.map((config): BudgetExplorerSectionDefinition | null => {
+      const fundingSourceKeys = config.fundingSourceKeysByAccountCategory[accountCategory]
+      const fundingSourceIds = fundingSourceKeys
+        .map((sourceKey) => fundingSourceIdsByKey[sourceKey])
+        .filter((sourceId): sourceId is string => Boolean(sourceId))
+
+      // Avoid rendering broad incorrect sections if any required source mapping is unavailable.
+      if (fundingSourceIds.length !== fundingSourceKeys.length) return null
+
+      const baseSectorFilter = buildNationalBudgetSectorBaseFilter(effectiveFilter, '1', { fundingSourceIdsByKey })
+
+      return {
+        id: config.id,
+        label: config.label,
+        badge: config.badge,
+        order: config.order,
+        baseFilter: {
+          ...baseSectorFilter,
+          budget_sector_ids: config.budgetSectorIdsByAccountCategory[accountCategory],
+          funding_source_ids: fundingSourceIds.length > 0 ? fundingSourceIds : undefined,
         },
+      }
+    }).filter((section): section is BudgetExplorerSectionDefinition => Boolean(section))
+  }, [effectiveFilter, fundingSourceIdsByKey])
+
+  const sectionDefinitions = useMemo(() => {
+    const sectorSections: BudgetExplorerSectionDefinition[] = visibleSectors.map((sector) => ({
+      id: sector.id,
+      label: sector.label,
+      badge: sector.badge,
+      order: sector.order,
+      sectorIdForRules: sector.id,
+      baseFilter: buildNationalBudgetSectorBaseFilter(effectiveFilter, sector.id, { fundingSourceIdsByKey }),
+    }))
+
+    return [...sectorSections, ...documentBudgetSections].sort((a, b) => a.order - b.order)
+  }, [documentBudgetSections, effectiveFilter, fundingSourceIdsByKey, visibleSectors])
+
+  const sectorQueries = useQueries({
+    queries: sectionDefinitions.map((section) => ({
+      queryKey: ['budget-explorer', 'sector-aggregated-line-items', section.id, filterHash, fundingSourceIdsByKeyHash],
+      queryFn: () =>
+        fetchAggregatedLineItems({
+          filter: section.baseFilter,
+          limit: 150000,
+        }),
+      staleTime: convertDaysToMs(3),
+      gcTime: convertDaysToMs(3),
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
+      enabled: sectionDefinitions.length > 0 && !isLoadingFundingSources,
+    })),
+  })
+
+  const sectorSections = useMemo(() => {
+    return sectionDefinitions.map((section, index) => {
+      const query = sectorQueries[index]
+      const nodes: AggregatedNode[] = (query?.data?.nodes ?? []).map((node) => ({
+        fn_c: node.fn_c,
+        fn_n: node.fn_n,
+        ec_c: node.ec_c,
+        ec_n: node.ec_n,
+        amount: node.amount,
+        count: node.count,
+      }))
+
+      const accountCategory: NationalBudgetAccountCategory = effectiveFilter.account_category ?? 'ch'
+      const formulaRules = section.sectorIdForRules
+        ? getFormulaRulesForSector(section.sectorIdForRules, accountCategory)
+        : []
+      const lineItemsFilter = buildNationalBudgetLineItemsFilter(section.baseFilter, {
+        sectorId: section.sectorIdForRules ?? section.id,
+        rules: formulaRules,
+        transferFilter: search.transferFilter,
       })
+      const excludeEconomicPrefixes = lineItemsFilter.exclude?.economic_prefixes ?? []
+      const excludeFunctionalPrefixes = lineItemsFilter.exclude?.functional_prefixes ?? []
+
+      return {
+        section,
+        nodes,
+        lineItemsFilter,
+        excludeEconomicPrefixes,
+        excludeFunctionalPrefixes,
+        isLoading: query?.isLoading ?? false,
+        hasError: Boolean(query?.error),
+      }
+    })
+  }, [effectiveFilter.account_category, search.transferFilter, sectionDefinitions, sectorQueries])
+
+  const totalSection = useMemo(() => {
+    if (sectorSections.length === 0) return null
+
+    const mergedNodes = mergeNationalBudgetSectionNodes(sectorSections.map((sectionData) => sectionData.nodes))
+    const totalLineItemsFilter = buildTotalBudgetLineItemsFilter({
+      baseFilter: effectiveFilter,
+      sectionLineItemsFilters: sectorSections.map((sectionData) => sectionData.lineItemsFilter),
+      transferFilter: search.transferFilter,
     })
 
-    const chartId = generateHash(JSON.stringify({ title: 'Economic Categories Comparison', filter: effectiveFilter }))
-    return ChartSchema.parse({
-      id: chartId,
-      title: 'Economic Categories Comparison',
-      config: {
-        chartType: 'area',
-        showLegend: !isMobile,
-        showTooltip: !isMobile,
-      },
-      series,
-    })
-  }, [effectiveFilter, isMobile])
-
-  // Revenue: Top Functional Categories comparison
-  const revenueChart: Chart = useMemo(() => {
-    const series = revenueTopFunctionalChapters.map((code, index) => {
-      const seriesFilter = buildSeriesFilter(effectiveFilter, { functional_prefixes: [code] })
-      const seriesId = generateHash(JSON.stringify(seriesFilter))
-      return SeriesConfigurationSchema.parse({
-        id: seriesId,
-        type: 'line-items-aggregated-yearly',
-        label: getClassificationName(code) ?? `fn:${code}`,
-        filter: seriesFilter,
-        config: {
-          color: getSeriesColor(index),
-          showDataLabels: index === 0,
-        },
-      })
-    })
-
-    const chartId = generateHash(JSON.stringify({ title: 'Top Functional Categories (Revenue)', filter: effectiveFilter }))
-    return ChartSchema.parse({
-      id: chartId,
-      title: 'Top Functional Categories',
-      config: {
-        chartType: 'area',
-        showLegend: !isMobile,
-        showTooltip: !isMobile,
-      },
-      series,
-    })
-  }, [effectiveFilter, isMobile])
-
-  const handleFilterChange = (partial: Partial<BudgetExplorerState>) => {
-    const { filter: partialFilter, primary: partialPrimary, treemapPrimary: partialTreemapPrimary, ...restPartial } = partial
-    const nextFilter = {
-      ...defaultFilter,
-      ...filter,
-      ...(partialFilter ?? {}),
+    return {
+      id: 'total-budget',
+      label: 'Total buget',
+      badge: 'Agregat informativ',
+      lineItemsFilter: totalLineItemsFilter,
+      nodes: mergedNodes,
+      excludeEconomicPrefixes: totalLineItemsFilter.exclude?.economic_prefixes ?? [],
+      excludeFunctionalPrefixes: totalLineItemsFilter.exclude?.functional_prefixes ?? [],
+      isLoading: sectorSections.some((sectionData) => sectionData.isLoading),
+      hasError: sectorSections.some((sectionData) => sectionData.hasError),
+      helperText: 'Totalul este un agregat informativ al secțiunilor vizibile și nu reprezintă consolidarea oficială BGC.',
     }
-    let nextPrimary: BudgetExplorerState['primary'] = partialPrimary ?? primary
-    let nextTreemapPrimary: BudgetExplorerState['primary'] | undefined = partialTreemapPrimary ?? treemapPrimary
-    if (nextFilter.account_category === 'vn') {
-      nextPrimary = 'fn'
-      nextTreemapPrimary = 'fn'
-    }
+  }, [effectiveFilter, search.transferFilter, sectorSections])
 
-    // Decide whether the treemap path should be cleared
-    let shouldClearPath = false
-    if (partialPrimary !== undefined && partialPrimary !== primary) shouldClearPath = true
-    if (partialTreemapPrimary !== undefined && partialTreemapPrimary !== treemapPrimary) shouldClearPath = true
-    if (partialFilter?.account_category !== undefined && partialFilter.account_category !== filter.account_category) shouldClearPath = true
-    if (partial.depth !== undefined && partial.depth !== depth) shouldClearPath = true
-
-    navigate({
-      search: (prev) => ({
-        ...(prev as unknown as BudgetExplorerState),
-        ...restPartial,
-        primary: nextPrimary,
-        filter: nextFilter,
-        treemapPrimary: nextTreemapPrimary,
-        treemapPath: shouldClearPath ? undefined : (prev as unknown as BudgetExplorerState).treemapPath,
-      }),
-      replace: true,
-      resetScroll: false,
-    })
-    if (shouldClearPath) reset()
-  }
-
-  const handleNodeClick = (code: string | null) => {
-    onNodeClick(code)
-  }
-
-
-  const currentDepthNumeric = useMemo(() => (depth === 'paragraph' ? 6 : depth === 'subchapter' ? 4 : 2) as 2 | 4 | 6, [depth])
-  const periodLabel = usePeriodLabel(filter.report_period)
-  const isRevenueView = filter.account_category === 'vn'
+  const nextAccountCategory = effectiveFilter.account_category === 'ch' ? 'vn' : 'ch'
+  const quickSwitchLabel = nextAccountCategory === 'vn' ? 'Vezi venituri' : 'Vezi cheltuieli'
 
   return (
     <div className="px-4 lg:px-6 py-4">
-      {/* Head and JSON-LD handled by Route.head */}
       <FloatingQuickNav
         mapViewType="UAT"
         mapActive
@@ -494,207 +569,172 @@ function BudgetExplorerPage() {
         filterInput={effectiveFilter}
       />
       <div className="w-full max-w-[1200px] mx-auto space-y-6 lg:space-y-8">
-        <BudgetExplorerHeader
-          state={search}
-          onChange={handleFilterChange}
-        />
+        <BudgetExplorerHeader state={search} onChange={handleFilterChange} />
 
-        <Card className="shadow-sm">
-          <CardHeader>
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-4">
-              <h3 className="text-xl sm:text-3xl font-bold flex items-center gap-2">
-                <span className="text-wrap">
-                  <Trans>Budget Distribution</Trans> {periodLabel}
-                </span>
-                <Button
-                  asChild
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  aria-label={t`Open in entity analytics`}
-                >
-                  <Link
-                    to="/entity-analytics"
-                    search={{
-                      view: 'line-items',
-                      sortOrder: 'desc',
-                      page: 1,
-                      pageSize: 25,
-                      filter: {
-                        report_period: filter.report_period,
-                        account_category: filter.account_category,
-                        normalization: effectiveFilter.normalization,
-                        report_type: filter.report_type,
-                      },
-                      treemapPrimary: activePrimary,
-                      treemapDepth: depth === 'chapter' ? 'chapter' : 'subchapter',
-                    }}
-                    preload="intent"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </h3>
-              <div className="flex flex-col gap-3 lg:flex-row items-start lg:gap-4 lg:flex-wrap">
-                <div className="flex flex-col gap-1.5">
-                  <Label className="text-xs text-muted-foreground"><Trans>Grouping</Trans></Label>
-                  <ToggleGroup
-                    type="single"
-                    value={treemapUiPrimary}
-                    onValueChange={(v: 'fn' | 'ec') => { if (v) setTreemapUiPrimary(v) }}
-                    variant="outline"
-                    size="sm"
-                    className="w-full sm:w-auto justify-start sm:justify-end"
-                  >
-                    <ToggleGroupItem value="fn" className="data-[state=on]:bg-foreground data-[state=on]:text-background px-4 whitespace-nowrap">
-                      <Trans>Functional</Trans>
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="ec" disabled={isRevenueView} className="data-[state=on]:bg-foreground data-[state=on]:text-background px-4 whitespace-nowrap">
-                      <Trans>Economic</Trans>
-                    </ToggleGroupItem>
-                  </ToggleGroup>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label className="text-xs text-muted-foreground"><Trans>Detail level</Trans></Label>
-                  <ToggleGroup
-                    type="single"
-                    value={depth}
-                    onValueChange={(v: 'chapter' | 'subchapter' | 'paragraph') => { if (v) handleFilterChange({ depth: v }) }}
-                    variant="outline"
-                    size="sm"
-                    className="w-full sm:w-auto justify-start sm:justify-end"
-                  >
-                    <ToggleGroupItem value="chapter" className="data-[state=on]:bg-foreground data-[state=on]:text-background px-3 whitespace-nowrap">
-                      <Trans>Main chapters</Trans>
-                    </ToggleGroupItem>
-                    <ToggleGroupItem value="subchapter" className="data-[state=on]:bg-foreground data-[state=on]:text-background px-3 whitespace-nowrap">
-                      <Trans>Detailed categories</Trans>
-                    </ToggleGroupItem>
-                  </ToggleGroup>
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="px-0 sm:px-6">
-            {isLoading && <Skeleton className="w-full h-[600px]" />}
-            {!isLoading && error && (
-              <p className="text-sm text-red-500"><Trans>Failed to load data.</Trans></p>
-            )}
-            {!isLoading && !error && (
-              <BudgetTreemap
-                data={treemapData}
-                onNodeClick={handleNodeClick}
-                onBreadcrumbClick={onBreadcrumbClick}
-                path={breadcrumbs}
-                primary={activePrimary}
-                normalization={effectiveFilter.normalization}
-                currency={effectiveFilter.currency}
-                excludedItemsSummary={excludedItemsSummary}
-              />
-            )}
-          </CardContent>
-        </Card>
+        <div className="space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-balance">
+            <Trans>National Budget</Trans>
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            <Trans>Budget Distribution</Trans> {periodLabel}
+          </p>
+        </div>
 
-        {/* Breakdowns: show spending or revenue based on active filter */}
-        {filter.account_category === 'ch' && (
-          <SpendingBreakdown nodes={nodes} normalization={effectiveFilter.normalization} currency={effectiveFilter.currency} periodLabel={periodLabel} isLoading={isLoading} />
-        )}
-        {filter.account_category === 'vn' && (
-          <RevenueBreakdown nodes={nodes} normalization={effectiveFilter.normalization} currency={effectiveFilter.currency} periodLabel={periodLabel} isLoading={isLoading} />
-        )}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">Nivel de detaliu</p>
+            <ToggleGroup
+              type="single"
+              value={search.depth}
+              onValueChange={(value: 'chapter' | 'subchapter' | 'paragraph') => {
+                if (!value) return
+                handleFilterChange({ depth: value })
+              }}
+              variant="outline"
+              size="default"
+              className="w-full sm:w-auto justify-start"
+            >
+              <ToggleGroupItem value="chapter" className="data-[state=on]:bg-foreground data-[state=on]:text-background">
+                <Trans>Chapter</Trans>
+              </ToggleGroupItem>
+              <ToggleGroupItem value="subchapter" className="data-[state=on]:bg-foreground data-[state=on]:text-background">
+                <Trans>Subchapter</Trans>
+              </ToggleGroupItem>
+              <ToggleGroupItem value="paragraph" className="data-[state=on]:bg-foreground data-[state=on]:text-background">
+                <Trans>Paragraph</Trans>
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
 
-        <Card className="shadow-sm">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <h3 className="text-base sm:text-lg font-semibold"><Trans>Top Categories</Trans></h3>
-              <Button asChild variant="outline" size="sm">
-                <Link to="/entity-analytics" search={{ view: 'line-items', filter: { ...filter, currency: undefined, inflation_adjusted: undefined } }}>
-                  <Trans>See advanced view</Trans>
-                </Link>
-              </Button>
-            </div>
-          </CardHeader>
-        <CardContent>
-          <BudgetCategoryList
-              aggregated={nodes}
-              depth={currentDepthNumeric}
-              accountCategory={filter.account_category}
-              normalization={effectiveFilter.normalization}
-              currency={effectiveFilter.currency}
-              isLoading={isLoading}
-            />
-          </CardContent>
-        </Card>
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">Transferuri</p>
+            <ToggleGroup
+              type="single"
+              value={search.transferFilter}
+              onValueChange={(value) => {
+                if (value !== 'all' && value !== 'no-transfers') return
+                handleFilterChange({ transferFilter: value as NationalBudgetTransferFilter })
+              }}
+              variant="outline"
+              size="default"
+              className="w-full sm:w-auto justify-start"
+            >
+              <ToggleGroupItem value="all" className="data-[state=on]:bg-foreground data-[state=on]:text-background">
+                Include transferuri
+              </ToggleGroupItem>
+              <ToggleGroupItem value="no-transfers" className="data-[state=on]:bg-foreground data-[state=on]:text-background">
+                Exclude transferuri
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+        </div>
 
-        {/* TODO: fix chart glitch on scroll and improve ux with useful info */}
-        {filter.account_category === 'ch' && (
-          <>
-            <Card className="shadow-sm hidden">
-              <CardHeader>
-                <div className="flex items-center justify-end">
-                  <Button asChild variant="outline" size="sm">
-                    <Link to={'/charts/$chartId'} params={{ chartId: functionalChart.id }} search={{ chart: functionalChart, view: 'overview' }}>
-                      <BarChart2 className="w-4 h-4 mr-2" />
-                      <Trans>Open in Chart Builder</Trans>
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ChartPreview chart={functionalChart} height={400} margins={{ left: 50 }} />
-              </CardContent>
-            </Card>
+        {!isMainDisclaimerCollapsed ? (
+          <NationalBudgetDisclaimerCard
+            readMoreHref="#budget-explanations"
+            onClose={() => {
+              setIsMainDisclaimerCollapsed(true)
+            }}
+          />
+        ) : null}
 
-            <Card className="shadow-sm hidden">
-              <CardHeader>
-                <div className="flex items-center justify-end">
-                  <Button asChild variant="outline" size="sm">
-                    <Link to={'/charts/$chartId'} params={{ chartId: economicChart.id }} search={{ chart: economicChart, view: 'overview' }}>
-                      <BarChart2 className="w-4 h-4 mr-2" />
-                      <Trans>Open in Chart Builder</Trans>
-                    </Link>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ChartPreview chart={economicChart} height={400} margins={{ left: 50 }} />
-              </CardContent>
-            </Card>
-          </>
-        )}
-
-        {filter.account_category === 'vn' && (
-          <Card className="shadow-sm hidden">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <h3 className="text-base sm:text-lg font-semibold"><Trans>Top Functional Categories</Trans></h3>
-                <Button asChild variant="outline" size="sm">
-                  <Link to={'/charts/$chartId'} params={{ chartId: revenueChart.id }} search={{ chart: revenueChart, view: 'overview' }}>
-                    <BarChart2 className="w-4 h-4 mr-2" />
-                    <Trans>Open in Chart Builder</Trans>
-                  </Link>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ChartPreview chart={revenueChart} height={400} margins={{ left: 50 }} />
+        {isLoadingBudgetSectors ? (
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground">
+                <Trans>Loading budget sectors…</Trans>
+              </p>
             </CardContent>
           </Card>
-        )}
+        ) : null}
 
-        <Card className="shadow-sm">
-          <CardContent className="pt-6">
-            <BudgetLineItemsPreview
-              data={data}
-              groupBy={activePrimary}
-              isLoading={isLoading}
-              filter={effectiveFilter}
-            />
-          </CardContent>
-        </Card>
+        {budgetSectorsError ? (
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-sm text-red-500">
+                <Trans>Failed to load budget sectors. Falling back to predefined sectors 1-5.</Trans>
+              </p>
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {totalSection ? (
+          <NationalBudgetSectorSection
+            key={`${totalSection.id}-${effectiveTreemapPrimary}-${search.depth}-${search.transferFilter}-${parsedTreemapPath.join('.')}`}
+            sectorId={totalSection.id}
+            sectorLabel={totalSection.label}
+            sectorBadge={totalSection.badge}
+            periodLabel={periodLabel}
+            accountCategory={effectiveFilter.account_category ?? 'ch'}
+            filter={effectiveFilter}
+            lineItemsFilter={totalSection.lineItemsFilter}
+            treemapPrimary={effectiveTreemapPrimary}
+            treemapDepth={search.depth}
+            treemapPath={parsedTreemapPath}
+            nodes={totalSection.nodes}
+            excludeEconomicPrefixes={totalSection.excludeEconomicPrefixes}
+            excludeFunctionalPrefixes={totalSection.excludeFunctionalPrefixes}
+            deepLinkTransferFilter={search.transferFilter}
+            sectionDescription={totalSection.helperText}
+            isLoading={totalSection.isLoading}
+            hasError={totalSection.hasError}
+          />
+        ) : null}
+
+        {sectorSections.map(
+          ({
+            section,
+            nodes,
+            lineItemsFilter,
+            excludeEconomicPrefixes,
+            excludeFunctionalPrefixes,
+            isLoading,
+            hasError,
+          }) => (
+          <NationalBudgetSectorSection
+            key={`${section.id}-${effectiveTreemapPrimary}-${search.depth}-${search.transferFilter}-${parsedTreemapPath.join('.')}`}
+            sectorId={section.id}
+            sectorLabel={section.label}
+            sectorBadge={section.badge}
+            periodLabel={periodLabel}
+            accountCategory={effectiveFilter.account_category ?? 'ch'}
+            filter={effectiveFilter}
+            lineItemsFilter={lineItemsFilter}
+            treemapPrimary={effectiveTreemapPrimary}
+            treemapDepth={search.depth}
+            treemapPath={parsedTreemapPath}
+            nodes={nodes}
+            excludeEconomicPrefixes={excludeEconomicPrefixes}
+            excludeFunctionalPrefixes={excludeFunctionalPrefixes}
+            deepLinkTransferFilter={search.transferFilter}
+            isLoading={isLoading}
+            hasError={hasError}
+          />
+        ))}
+
+        <div id="budget-explanations" className="space-y-6 scroll-mt-24">
+          <Button
+            type="button"
+            size="lg"
+            className="w-full sm:w-auto text-base px-6 py-6"
+            onClick={() => {
+              handleFilterChange({
+                filter: {
+                  ...effectiveFilter,
+                  account_category: nextAccountCategory,
+                } as BudgetExplorerState['filter'],
+                primary: nextAccountCategory === 'vn' ? 'fn' : search.primary,
+              })
+            }}
+          >
+            {quickSwitchLabel}
+          </Button>
+
+          {isMainDisclaimerCollapsed ? <NationalBudgetDisclaimerCard /> : null}
+
+          <NationalBudgetWhyDifferentCard />
+        </div>
       </div>
-
-      {/* Side panel removed for unified behavior */}
     </div>
   )
 }

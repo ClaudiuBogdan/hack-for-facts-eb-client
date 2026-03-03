@@ -33,7 +33,7 @@ const mainItems = [
     icon: BarChart2,
   },
   {
-    title: <Trans>Budget Explorer</Trans>,
+    title: <Trans>National Budget</Trans>,
     url: "/budget-explorer",
     icon: Boxes,
   },

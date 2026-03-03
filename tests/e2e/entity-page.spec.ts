@@ -101,7 +101,7 @@ test.describe('Landing Page', () => {
     ).toBeVisible()
 
     await expect(
-      page.getByRole('link', { name: /budget.*explorer|explorator/i }).first()
+      page.getByRole('link', { name: /budget.*explorer|explorator|national.*budget|buget.*național/i }).first()
     ).toBeVisible()
   })
 

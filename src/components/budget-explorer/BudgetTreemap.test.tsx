@@ -109,7 +109,7 @@ vi.mock('recharts', () => ({
         >
           {content?.({
             name: item.name,
-            value: item.value,
+            value: (item as unknown as { layoutValue?: number }).layoutValue ?? item.value,
             code: item.code,
             depth: 1,
             x: 0,
@@ -117,7 +117,15 @@ vi.mock('recharts', () => ({
             width: 100,
             height: 100,
             fill: '#0088FE',
-            root: { value: data.reduce((sum, d) => sum + d.value, 0) },
+            payload: {
+              ...item,
+              value: (item as unknown as { layoutValue?: number }).layoutValue ?? item.value,
+              signedValue: (item as unknown as { signedValue?: number }).signedValue ?? item.value,
+              fill: '#0088FE',
+            },
+            root: {
+              value: data.reduce((sum, d) => sum + ((d as unknown as { layoutValue?: number }).layoutValue ?? Math.abs(d.value)), 0),
+            },
           })}
         </g>
       ))}
@@ -273,6 +281,20 @@ describe('BudgetTreemap Component', () => {
       // Check that the formatted total value is displayed (appears in compact and standard formats)
       const totalValues = screen.getAllByText('6,000,000 RON')
       expect(totalValues.length).toBeGreaterThanOrEqual(1)
+    })
+
+    it('should keep negative values visible and include them in signed total', () => {
+      const data: TreemapInput[] = [
+        { name: 'Negative Category', value: -1000000, code: 'neg', isLeaf: true, children: [] },
+        { name: 'Positive Category', value: 200000, code: 'pos', isLeaf: true, children: [] },
+      ]
+
+      render(<BudgetTreemap data={data} primary="fn" />)
+
+      expect(screen.getByTestId('treemap-node-neg')).toBeInTheDocument()
+      expect(screen.getByTestId('treemap-node-pos')).toBeInTheDocument()
+      expect(screen.getByText('-1,000,000 RON')).toBeInTheDocument()
+      expect(screen.getAllByText('-800,000 RON').length).toBeGreaterThanOrEqual(1)
     })
   })
 

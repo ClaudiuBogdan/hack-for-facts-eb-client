@@ -183,10 +183,6 @@ vi.mock('@/components/budget-explorer/BudgetTreemap', () => ({
   ),
 }))
 
-vi.mock('@/components/budget-explorer/BudgetCategoryList', () => ({
-  BudgetCategoryList: () => <div data-testid="budget-category-list">Category List</div>,
-}))
-
 vi.mock('../EntityLineItemsTabs', () => ({
   EntityLineItemsTabs: ({
     onYearChange,
@@ -374,24 +370,6 @@ describe('TrendsView', () => {
       )
 
       expect(screen.getByTestId('budget-treemap')).toBeInTheDocument()
-    })
-
-    it('renders BudgetCategoryList', () => {
-      render(
-        <TrendsView
-          entity={createMockEntity()}
-          type="expense"
-          currentYear={2024}
-          onYearClick={mockOnYearClick}
-          onSearchChange={mockOnSearchChange}
-          normalizationOptions={defaultNormalization}
-          onNormalizationChange={mockOnNormalizationChange}
-          reportPeriod={defaultReportPeriod}
-          trendPeriod={defaultTrendPeriod}
-        />
-      )
-
-      expect(screen.getByTestId('budget-category-list')).toBeInTheDocument()
     })
 
     it('renders ChartCard', () => {

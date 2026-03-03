@@ -1,0 +1,52 @@
+{
+  "data": {
+    "fundingSources": {
+      "nodes": [
+        {
+          "source_id": "1",
+          "source_description": "Integral de la buget"
+        },
+        {
+          "source_id": "2",
+          "source_description": "Credite externe"
+        },
+        {
+          "source_id": "3",
+          "source_description": "Credite interne"
+        },
+        {
+          "source_id": "4",
+          "source_description": "Fonduri externe nerambursabile"
+        },
+        {
+          "source_id": "5",
+          "source_description": "Activitati finantate integral din venituri proprii"
+        },
+        {
+          "source_id": "6",
+          "source_description": "Integral venituri proprii"
+        },
+        {
+          "source_id": "7",
+          "source_description": "Venituri proprii si subventii"
+        },
+        {
+          "source_id": "8",
+          "source_description": "Buget aferent activitatii din privatizare"
+        },
+        {
+          "source_id": "9",
+          "source_description": "Bugetul Fondului pentru Mediu"
+        },
+        {
+          "source_id": "10",
+          "source_description": "Bugetul Trezoreriei Statului"
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 10,
+        "hasNextPage": false
+      }
+    }
+  }
+}

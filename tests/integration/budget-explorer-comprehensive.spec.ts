@@ -1,773 +1,239 @@
 /**
- * Budget Explorer - Comprehensive E2E Tests
+ * National Budget Page Integration Tests
  *
  * Route: /budget-explorer
- * Tests: Treemap visualization, drilldown, classification switching,
- *        spending/revenue toggle, category list, URL state preservation
- *
- * Based on: docs/e2e-flows/03-budget-explorer.md
- *
- * Test Reliability Principles:
- * 1. Never use waitForTimeout - it's inherently flaky
- * 2. Wait for URL changes (source of truth) before checking element state
- * 3. Use Playwright's auto-retry assertions
- * 4. Wait for page to be fully hydrated before interactions
+ * Focus: sector segmentation, disclaimer/source messaging, deep links.
  */
 
 import { test, expect } from '../utils/integration-base'
-import {
-  waitForHydration,
-  clickToggleWithUrlVerification,
-  selectOptionAndWait,
-  waitForPageReady,
-  safeClick,
-} from '../utils/test-helpers'
+import { waitForPageReady, clickToggleWithUrlVerification } from '../utils/test-helpers'
 
-// Test constants (EN/RO language support)
 const SELECTORS = {
-  // Page headings and sections
-  budgetDistribution: /budget.*distribution|distribuția.*buget/i,
-  topCategories: /top.*categories|categorii.*principale/i,
-  mainCategories: /main.*categories|categorii.*principale/i,
-
-  // Toggles and filters
+  nationalBudgetHeading: /national budget|buget național/i,
+  budgetDistribution: /budget distribution|distribuția bugetului/i,
+  disclaimer: /data is informational, not official consolidated publication/i,
+  discrepancy: /discrepancies may exist/i,
+  sourceLink: /ministerul finanțelor/i,
+  executionReferenceLink: /informații execuție bugetară/i,
+  totalDisclaimer: /total buget is a merged informational treemap/i,
+  analyzeLineItems: /analyze line items/i,
   incomeLabel: /^income$|^venituri$/i,
   expensesLabel: /^expenses$|^cheltuieli$/i,
-  functionalLabel: /^functional$|^funcțional/i,
-  economicLabel: /^economic$|^economic/i,
-  mainChaptersLabel: /main.*chapters|capitole.*principale/i,
-  detailedCategoriesLabel: /detailed.*categories|categorii.*detaliate/i,
-
-  // Normalization options
-  totalLabel: /^total$/i,
-  perCapitaLabel: /per.*capita/i,
-
-  // Actions
-  seeAdvancedView: /see.*advanced.*view|vezi.*vizualizare.*avansată/i,
-  viewAsChart: /view.*as.*chart|vezi.*ca.*grafic/i,
-  goBack: /go.*back|înapoi/i,
-  resetFilter: /reset.*filter|resetează.*filtru/i,
-
-  // Error states
-  failedToLoad: /failed.*to.*load|nu.*s-a.*putut.*încărca/i,
-  noData: /no.*data|nu.*există.*date/i,
+  dismissDisclaimer: /dismiss disclaimer/i,
 }
 
-test.describe('Budget Explorer - Comprehensive Tests', () => {
-  // ===================================================
-  // 1. PAGE LAYOUT AND INITIAL LOAD
-  // ===================================================
-  test.describe('1. Page Layout and Initial Load', () => {
-    test.beforeEach(async ({ mockApi }) => {
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
-    })
-
-    test('1.1 Page loads with treemap visualization', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Verify page structure
-      await expect(page.getByRole('heading', { name: SELECTORS.budgetDistribution })).toBeVisible({ timeout: 10000 })
-      // Use h3 specifically for "Top Categories" to avoid matching h4 subheadings
-      await expect(page.locator('h3').filter({ hasText: SELECTORS.topCategories })).toBeVisible({ timeout: 10000 })
-
-      // Verify treemap container is rendered
-      const treemapContainer = page.locator('.recharts-responsive-container').first()
-      await expect(treemapContainer).toBeVisible({ timeout: 10000 })
-    })
-
-    test('1.2 Default filter state is spending (ch)', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Verify expenses toggle is selected by default
-      const expensesToggle = page.locator('[data-state="on"]').filter({ hasText: SELECTORS.expensesLabel })
-      await expect(expensesToggle).toBeVisible({ timeout: 10000 })
-    })
-
-    test('1.3 Default classification is functional', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Verify functional grouping is selected by default
-      const functionalToggle = page.locator('[data-state="on"]').filter({ hasText: SELECTORS.functionalLabel })
-      await expect(functionalToggle).toBeVisible({ timeout: 10000 })
-    })
-
-    test('1.4 Default depth is main chapters', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Verify main chapters is selected by default
-      const mainChaptersToggle = page.locator('[data-state="on"]').filter({ hasText: SELECTORS.mainChaptersLabel })
-      await expect(mainChaptersToggle).toBeVisible({ timeout: 10000 })
-    })
-
-    test('1.5 Treemap shows colored rectangles with labels', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Wait for treemap to render
-      await page.waitForSelector('.recharts-treemap-depth-1', { timeout: 10000 }).catch(() => null)
-
-      // Verify treemap has visible cells (rectangles)
-      const treemapCells = page.locator('.recharts-treemap rect, .recharts-responsive-container rect')
-      await expect(treemapCells.first()).toBeVisible({ timeout: 10000 })
-    })
-
-    test('1.6 Header controls are visible', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Verify all header controls
-      await expect(page.getByText(SELECTORS.incomeLabel).first()).toBeVisible()
-      await expect(page.getByText(SELECTORS.expensesLabel).first()).toBeVisible()
-
-      // Normalization select should be visible
-      const normalizationSelect = page.getByRole('combobox').first()
-      await expect(normalizationSelect).toBeVisible()
-    })
-
-    test('1.7 Category list section is visible', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Verify top categories section (use h3 specifically)
-      await expect(page.locator('h3').filter({ hasText: SELECTORS.topCategories })).toBeVisible()
-
-      // Verify advanced view link
-      await expect(page.getByRole('link', { name: SELECTORS.seeAdvancedView })).toBeVisible()
-    })
+test.describe('National Budget Page', () => {
+  test.beforeEach(async ({ mockApi }) => {
+    await mockApi.mockGraphQL('BudgetSectors', 'budget-sectors')
+    await mockApi.mockGraphQL('NationalBudgetFundingSources', 'funding-sources')
+    await mockApi.mockGraphQL('AggregatedLineItems', [
+      'aggregated-line-items',
+      'aggregated-line-items',
+      'aggregated-line-items',
+      'aggregated-line-items',
+      'aggregated-line-items',
+    ])
   })
 
-  // ===================================================
-  // 2. TREEMAP INTERACTIONS
-  // ===================================================
-  test.describe('2. Treemap Interactions', () => {
-    test.beforeEach(async ({ mockApi }) => {
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
-    })
+  test('loads segmented national budget sections with disclaimer', async ({ page }) => {
+    await page.goto('/budget-explorer')
+    await waitForPageReady(page)
 
-    test('2.1 Treemap cells are clickable', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
+    await expect(page.getByRole('heading', { name: SELECTORS.nationalBudgetHeading })).toBeVisible()
+    await expect(page.getByText(SELECTORS.budgetDistribution)).toBeVisible()
+    await expect(page.getByText(SELECTORS.disclaimer)).toBeVisible()
+    await expect(page.getByText(SELECTORS.discrepancy)).toBeVisible()
+    await expect(page.getByText(SELECTORS.totalDisclaimer)).toBeVisible()
+    await expect(page.locator('a[href="#budget-explanations"]').first()).toBeVisible()
 
-      // Find and click a treemap cell
-      const treemapCell = page.locator('.recharts-treemap g[cursor="pointer"]').first()
+    const sourceLink = page.getByRole('link', { name: SELECTORS.sourceLink }).first()
+    await expect(sourceLink).toBeVisible()
+    await expect(sourceLink).toHaveAttribute('href', 'https://mfinante.gov.ro/transparenta-bugetara')
 
-      if (await treemapCell.isVisible()) {
-        await safeClick(treemapCell)
-        // Wait for any state change (URL might update with treemapPath)
-        await page.waitForLoadState('networkidle').catch(() => {})
+    const executionReferenceLink = page.getByRole('link', { name: SELECTORS.executionReferenceLink }).first()
+    await expect(executionReferenceLink).toBeVisible()
+    await expect(executionReferenceLink).toHaveAttribute('href', 'https://mfinante.gov.ro/domenii/bugetul-de-stat/informatii-executie-bugetara')
+  })
+
+  test('persists collapsed top disclaimer and moves it to disclaimer section', async ({ page }) => {
+    await page.goto('/budget-explorer')
+    await waitForPageReady(page)
+
+    await page.getByRole('button', { name: SELECTORS.dismissDisclaimer }).click()
+    await expect(page.locator('a[href="#budget-explanations"]')).toHaveCount(0)
+
+    await page.locator('#budget-explanations').scrollIntoViewIfNeeded()
+    await expect(page.locator('#budget-explanations').getByText(SELECTORS.disclaimer)).toBeVisible()
+
+    await page.reload()
+    await waitForPageReady(page)
+    await expect(page.locator('a[href="#budget-explanations"]')).toHaveCount(0)
+    await expect(page.locator('#budget-explanations').getByText(SELECTORS.disclaimer)).toBeVisible()
+  })
+
+  test('renders sector and document budget sections in expected order', async ({ page }) => {
+    await page.goto('/budget-explorer')
+    await waitForPageReady(page)
+
+    const sectorCards = page.locator('[id^="sector-"]')
+    expect(await sectorCards.count()).toBeGreaterThanOrEqual(9)
+    await expect(sectorCards.nth(0)).toHaveAttribute('id', 'sector-total-budget')
+    await expect(sectorCards.nth(1)).toHaveAttribute('id', 'sector-1')
+    await expect(sectorCards.nth(2)).toHaveAttribute('id', 'sector-2')
+    await expect(sectorCards.nth(3)).toHaveAttribute('id', 'sector-3')
+    await expect(sectorCards.nth(4)).toHaveAttribute('id', 'sector-4')
+    await expect(sectorCards.nth(5)).toHaveAttribute('id', 'sector-5')
+
+    await expect(page.getByRole('heading', { name: /total buget/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /bugetul de stat/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /bugetul local/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /asigurarilor sociale/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /fondului de somaj/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /fnuass|fondului de sanatate/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /institu.*venituri proprii/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /fonduri externe nerambursabile/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /trezoreriei statului/i })).toBeVisible()
+    await expect(page.getByText(/main categories|categorii principale/i).first()).toBeVisible()
+  })
+
+  test('shows deep links to entity analytics line items for each section', async ({ page }) => {
+    await page.goto('/budget-explorer')
+    await waitForPageReady(page)
+
+    const analyzeLinks = page.getByRole('link', { name: SELECTORS.analyzeLineItems })
+    await expect(analyzeLinks.first()).toBeVisible()
+    expect(await analyzeLinks.count()).toBeGreaterThanOrEqual(5)
+
+    const totalHref = await page.locator('#sector-total-budget').getByRole('link', { name: SELECTORS.analyzeLineItems }).first().getAttribute('href')
+    const decodedHref = decodeURIComponent(totalHref ?? '')
+
+    expect(totalHref ?? '').toContain('/entity-analytics')
+    expect(decodedHref).toContain('line-items')
+    expect(decodedHref).toContain('budget_sector_ids')
+    expect(decodedHref).toMatch(/"account_category":"ch"|account_category=ch/i)
+
+    const parsedTotalUrl = new URL(totalHref ?? '', 'https://transparenta.eu')
+    const parsedTotalFilter = JSON.parse(decodeURIComponent(parsedTotalUrl.searchParams.get('filter') ?? '{}'))
+    expect(parsedTotalFilter.budget_sector_ids).toEqual(['1', '2', '3', '4', '5'])
+    expect(parsedTotalUrl.searchParams.get('transferFilter')).toBe('all')
+
+    const expectedFundingSourcesBySector: Record<string, string[] | undefined> = {
+      '1': ['1'],
+      '2': ['1', '6', '5', '7'],
+      '3': ['1'],
+      '4': undefined,
+      '5': undefined,
+    }
+    for (const [sectorId, expectedFundingSourceIds] of Object.entries(expectedFundingSourcesBySector)) {
+      const sectionHref = await page.locator(`#sector-${sectorId}`).getByRole('link', { name: SELECTORS.analyzeLineItems }).first().getAttribute('href')
+      expect(sectionHref).toBeTruthy()
+
+      const sectionUrl = new URL(sectionHref!, 'https://transparenta.eu')
+      const sectionFilter = JSON.parse(decodeURIComponent(sectionUrl.searchParams.get('filter') ?? '{}'))
+      expect(sectionFilter.budget_sector_ids).toEqual([sectorId])
+      if (expectedFundingSourceIds) {
+        expect(sectionFilter.funding_source_ids).toEqual(expectedFundingSourceIds)
+      } else {
+        expect(sectionFilter.funding_source_ids).toBeUndefined()
       }
-    })
+      expect(sectionUrl.searchParams.get('transferFilter')).toBe('all')
+    }
+  })
 
-    test('2.2 Breadcrumb shows Main Categories at root level', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
+  test('switches to income mode and keeps segmented layout', async ({ page }) => {
+    await page.goto('/budget-explorer')
+    await waitForPageReady(page)
 
-      // Verify breadcrumb shows root
-      await expect(page.getByText(SELECTORS.mainCategories).first()).toBeVisible({ timeout: 10000 })
-    })
+    const incomeToggle = page.locator('button[role="radio"]').filter({ hasText: SELECTORS.incomeLabel }).first()
+    await clickToggleWithUrlVerification(page, incomeToggle, /budget-explorer/)
 
-    test('2.3 Click on breadcrumb navigates back', async ({ page }) => {
-      // Start with a drilldown path
-      await page.goto('/budget-explorer?treemapPath=68')
-      await waitForPageReady(page)
+    await expect(page.getByRole('heading', { name: /bugetul de stat/i })).toBeVisible()
+    await expect(page.getByText(/main categories|categorii principale/i).first()).toBeVisible()
+    await expect(page.getByRole('radio', { name: /^economic$/i })).toBeDisabled()
 
-      // Click on Main Categories breadcrumb - target the breadcrumb navigation specifically
-      // The breadcrumb is in an ol element with breadcrumb items
-      const breadcrumbNav = page.locator('nav[aria-label*="breadcrumb" i], ol[class*="breadcrumb" i]').first()
-      const mainCategoriesBreadcrumb = breadcrumbNav.locator('a, button').filter({ hasText: SELECTORS.mainCategories }).first()
+    const expectedFundingSourcesBySector: Record<string, string[]> = {
+      '1': ['1'],
+      '2': ['1', '4', '6'],
+      '3': ['1'],
+      '4': ['1'],
+      '5': ['1', '4'],
+    }
+    for (const sectorId of ['1', '2', '3', '4', '5']) {
+      const href = await page.locator(`#sector-${sectorId}`).getByRole('link', { name: SELECTORS.analyzeLineItems }).first().getAttribute('href')
+      expect(decodeURIComponent(href ?? '')).toMatch(/"account_category":"vn"|account_category=vn/i)
 
-      if (await mainCategoriesBreadcrumb.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await mainCategoriesBreadcrumb.click()
-
-        // Verify URL is updated - treemapPath should be removed
-        await expect(page).toHaveURL(/\/budget-explorer(?!\?treemapPath)/)
+      const parsedUrl = new URL(href ?? '', 'https://transparenta.eu')
+      const parsedFilter = JSON.parse(decodeURIComponent(parsedUrl.searchParams.get('filter') ?? '{}'))
+      const parsedSectorId = String(parsedFilter.budget_sector_ids?.[0] ?? '')
+      if (expectedFundingSourcesBySector[parsedSectorId]) {
+        expect(parsedFilter.funding_source_ids).toEqual(expectedFundingSourcesBySector[parsedSectorId])
       }
-    })
-
-    test('2.4 Back button appears during drilldown', async ({ page }) => {
-      // Start with a drilldown path
-      await page.goto('/budget-explorer?treemapPath=68')
-      await waitForPageReady(page)
-
-      // Back button should be visible
-      const backButton = page.getByRole('button', { name: /back|înapoi/i })
-      await expect(backButton).toBeVisible().catch(() => {
-        // Back button might be an icon button
-        const iconButton = page.locator('button[aria-label*="back" i], button[aria-label*="înapoi" i]')
-        return expect(iconButton).toBeVisible()
-      })
-    })
-
-    test('2.5 Total value is displayed below treemap', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Verify total value display
-      await expect(page.getByText(/^total$/i)).toBeVisible()
-    })
+      expect(parsedFilter.exclude ?? {}).toEqual({})
+      expect(parsedUrl.searchParams.get('transferFilter')).toBeNull()
+    }
   })
 
-  // ===================================================
-  // 3. CLASSIFICATION SWITCHING
-  // ===================================================
-  test.describe('3. Classification Switching', () => {
-    test.beforeEach(async ({ mockApi }) => {
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
-    })
+  test('keeps expenses selected by default', async ({ page }) => {
+    await page.goto('/budget-explorer')
+    await waitForPageReady(page)
 
-    test('3.1 Switch to economic classification', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Find the economic toggle
-      const economicToggle = page.locator('button[role="radio"]').filter({ hasText: SELECTORS.economicLabel }).first()
-
-      // Click and wait for URL update (URL is source of truth)
-      await clickToggleWithUrlVerification(page, economicToggle, /treemapPrimary=ec/)
-    })
-
-    test('3.2 Switch back to functional classification', async ({ page }) => {
-      // Start with economic
-      await page.goto('/budget-explorer?treemapPrimary=ec')
-      await waitForPageReady(page)
-
-      // Click functional toggle - when switching to functional, URL might remove treemapPrimary or set it to fn
-      const functionalToggle = page.locator('button[role="radio"]').filter({ hasText: SELECTORS.functionalLabel }).first()
-      await expect(functionalToggle).toBeVisible({ timeout: 10000 })
-      await expect(functionalToggle).toBeEnabled({ timeout: 10000 })
-      await functionalToggle.click()
-
-      // Wait for toggle state to update
-      await expect(functionalToggle).toHaveAttribute('data-state', 'on', { timeout: 10000 })
-    })
-
-    test('3.3 Economic classification is disabled for revenue view', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Click income toggle to switch to revenue view
-      const incomeToggle = page.locator('button[role="radio"]').filter({ hasText: SELECTORS.incomeLabel }).first()
-      await clickToggleWithUrlVerification(page, incomeToggle, /account_category.*vn/i)
-
-      // Economic toggle should be disabled
-      const economicToggle = page.locator('button[role="radio"]').filter({ hasText: SELECTORS.economicLabel }).first()
-      await expect(economicToggle).toBeDisabled({ timeout: 10000 })
-    })
-
-    test('3.4 Classification selection persists in URL', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Click economic toggle
-      const economicToggle = page.locator('button[role="radio"]').filter({ hasText: SELECTORS.economicLabel }).first()
-      await clickToggleWithUrlVerification(page, economicToggle, /treemapPrimary=ec/)
-    })
+    const expensesToggle = page.locator('[data-state="on"]').filter({ hasText: SELECTORS.expensesLabel }).first()
+    await expect(expensesToggle).toBeVisible()
+    const includeTransfersToggle = page.locator('[data-state="on"]').filter({ hasText: /include transferuri/i }).first()
+    await expect(includeTransfersToggle).toBeVisible()
   })
 
-  // ===================================================
-  // 4. DEPTH LEVEL SWITCHING
-  // ===================================================
-  test.describe('4. Depth Level Switching', () => {
-    test.beforeEach(async ({ mockApi }) => {
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
-    })
+  test('updates URL when treemap grouping and detail controls change', async ({ page }) => {
+    await page.goto('/budget-explorer')
+    await waitForPageReady(page)
 
-    test('4.1 Switch to detailed categories', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
+    const economicToggle = page.getByRole('radio', { name: /^economic$/i }).first()
+    await economicToggle.click()
+    await expect(page).toHaveURL(/primary=ec/, { timeout: 10000 })
 
-      // Click detailed categories toggle
-      const detailedToggle = page.locator('button[role="radio"]').filter({ hasText: SELECTORS.detailedCategoriesLabel }).first()
-      await clickToggleWithUrlVerification(page, detailedToggle, /depth=subchapter/)
-    })
+    const subchapterToggle = page.getByRole('radio', { name: /^subchapter$/i }).first()
+    await subchapterToggle.click()
+    await expect(page).toHaveURL(/depth=subchapter/, { timeout: 10000 })
 
-    test('4.2 Switch back to main chapters', async ({ page }) => {
-      // Start with detailed
-      await page.goto('/budget-explorer?depth=subchapter')
-      await waitForPageReady(page)
+    const excludeTransfersToggle = page.getByRole('radio', { name: /exclude transferuri/i }).first()
+    await excludeTransfersToggle.click()
+    await expect(page).toHaveURL(/transferFilter=no-transfers/, { timeout: 10000 })
 
-      // Click main chapters toggle
-      const mainChaptersToggle = page.locator('button[role="radio"]').filter({ hasText: SELECTORS.mainChaptersLabel }).first()
-      await expect(mainChaptersToggle).toBeVisible({ timeout: 10000 })
-      await expect(mainChaptersToggle).toBeEnabled({ timeout: 10000 })
-      await mainChaptersToggle.click()
-
-      // Wait for toggle state to update
-      await expect(mainChaptersToggle).toHaveAttribute('data-state', 'on', { timeout: 10000 })
-    })
-
-    test('4.3 Depth selection persists in URL', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Click detailed categories
-      const detailedToggle = page.locator('button[role="radio"]').filter({ hasText: SELECTORS.detailedCategoriesLabel }).first()
-      await clickToggleWithUrlVerification(page, detailedToggle, /depth=subchapter/)
-    })
+    const sectorOneHref = await page.locator('#sector-1').getByRole('link', { name: SELECTORS.analyzeLineItems }).first().getAttribute('href')
+    const parsedSectorOneUrl = new URL(sectorOneHref ?? '', 'https://transparenta.eu')
+    const parsedSectorOneFilter = JSON.parse(decodeURIComponent(parsedSectorOneUrl.searchParams.get('filter') ?? '{}'))
+    expect(parsedSectorOneUrl.searchParams.get('transferFilter')).toBe('no-transfers')
+    expect(parsedSectorOneFilter.exclude?.economic_prefixes).toEqual(['51.01', '51.02'])
   })
 
-  // ===================================================
-  // 5. SPENDING/REVENUE TOGGLE
-  // ===================================================
-  test.describe('5. Spending/Revenue Toggle', () => {
-    test.beforeEach(async ({ mockApi }) => {
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
-    })
+  test('shows quick switch button before explanation cards', async ({ page }) => {
+    await page.goto('/budget-explorer')
+    await waitForPageReady(page)
 
-    test('5.1 Switch to revenue view', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Click income toggle
-      const incomeToggle = page.locator('button[role="radio"]').filter({ hasText: SELECTORS.incomeLabel }).first()
-      await clickToggleWithUrlVerification(page, incomeToggle, /account_category.*vn/i)
-    })
-
-    test('5.2 Switch back to spending view', async ({ page }) => {
-      // Start with revenue view
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // First switch to revenue
-      const incomeToggle = page.locator('button[role="radio"]').filter({ hasText: SELECTORS.incomeLabel }).first()
-      await clickToggleWithUrlVerification(page, incomeToggle, /account_category.*vn/i)
-
-      // Now switch back to expenses
-      const expensesToggle = page.locator('button[role="radio"]').filter({ hasText: SELECTORS.expensesLabel }).first()
-      await expect(expensesToggle).toBeVisible({ timeout: 10000 })
-      await expect(expensesToggle).toBeEnabled({ timeout: 10000 })
-      await expensesToggle.click()
-
-      // Verify expenses is selected
-      await expect(expensesToggle).toHaveAttribute('data-state', 'on', { timeout: 10000 })
-    })
-
-    test('5.3 Spending/revenue selection persists in URL', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Click income
-      const incomeToggle = page.locator('button[role="radio"]').filter({ hasText: SELECTORS.incomeLabel }).first()
-      await clickToggleWithUrlVerification(page, incomeToggle, /account_category.*vn/i)
-    })
-
-    test('5.4 Revenue view shows revenue-specific categories', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Click income toggle
-      const incomeToggle = page.locator('button[role="radio"]').filter({ hasText: SELECTORS.incomeLabel }).first()
-      await clickToggleWithUrlVerification(page, incomeToggle, /account_category.*vn/i)
-
-      // Wait for treemap to render
-      await page.waitForSelector('.recharts-responsive-container', { timeout: 10000 })
-
-      // Verify page shows data (treemap should be visible)
-      const treemapContainer = page.locator('.recharts-responsive-container').first()
-      await expect(treemapContainer).toBeVisible()
-    })
+    await page.locator('#budget-explanations').scrollIntoViewIfNeeded()
+    await expect(page.getByRole('button', { name: /vezi venituri|vezi cheltuieli/i })).toBeVisible()
   })
 
-  // ===================================================
-  // 6. NORMALIZATION
-  // ===================================================
-  test.describe('6. Normalization', () => {
-    test.beforeEach(async ({ mockApi }) => {
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
-    })
+  test('keeps legacy URL params compatible', async ({ page }) => {
+    await page.goto('/budget-explorer?view=treemap&primary=ec&depth=subchapter&treemapPrimary=ec&treemapPath=65&year=2024')
+    await waitForPageReady(page)
 
-    test('6.1 Default normalization is Total', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Find the normalization select - wait for it to have content
-      const normSelect = page.getByRole('combobox').first()
-      await expect(normSelect).toBeVisible({ timeout: 10000 })
-      // The select should contain "total" text
-      await expect(normSelect).toContainText(/total/i, { timeout: 10000 })
-    })
-
-    test('6.2 Switch to per capita normalization', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Click the normalization select
-      const normSelect = page.getByRole('combobox').first()
-      await selectOptionAndWait(
-        page,
-        normSelect,
-        page.getByRole('option', { name: SELECTORS.perCapitaLabel }),
-        /per.*capita/i
-      )
-    })
-
-    test('6.3 Normalization persists in URL', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Click the normalization select
-      const normSelect = page.getByRole('combobox').first()
-      await expect(normSelect).toBeVisible({ timeout: 10000 })
-      await normSelect.click()
-
-      // Select per capita option
-      const perCapitaOption = page.getByRole('option', { name: SELECTORS.perCapitaLabel })
-      await expect(perCapitaOption).toBeVisible({ timeout: 5000 })
-      await perCapitaOption.click()
-
-      // Verify URL contains normalization
-      await expect(page).toHaveURL(/normalization.*per_capita/i, { timeout: 10000 })
-    })
+    await expect(page.getByRole('heading', { name: SELECTORS.nationalBudgetHeading })).toBeVisible()
+    await expect(page.locator('[id^="sector-"]').first()).toBeVisible()
   })
 
-  // ===================================================
-  // 7. PERIOD FILTER
-  // ===================================================
-  test.describe('7. Period Filter', () => {
-    test.beforeEach(async ({ mockApi }) => {
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
-    })
-
-    test('7.1 Period button is visible', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Period button should be visible - look for button with year or period label
-      const periodButton = page.locator('button[aria-label*="period" i]')
-        .or(page.locator('button').filter({ hasText: /202\d|an|year/i }))
-
-      await expect(periodButton.first()).toBeVisible()
-    })
-
-    test('7.2 Period popover opens on click', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Click period button - look for button with year label
-      const periodButton = page.locator('button[aria-label*="period" i]')
-        .or(page.locator('button').filter({ hasText: /202\d|an|year/i }))
-
-      await safeClick(periodButton.first())
-
-      // Verify popover opens (look for year selection, checkboxes, or period picker)
-      const popoverContent = page.getByRole('dialog')
-        .or(page.locator('[role="listbox"]'))
-        .or(page.locator('[class*="popover"]'))
-        .or(page.locator('[data-radix-popper-content-wrapper]'))
-
-      await expect(popoverContent.first()).toBeVisible({ timeout: 5000 })
-    })
-  })
-
-  // ===================================================
-  // 8. CATEGORY LIST
-  // ===================================================
-  test.describe('8. Category List', () => {
-    test.beforeEach(async ({ mockApi }) => {
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
-    })
-
-    test('8.1 Category list shows categories', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Verify categories are displayed
-      const categoryItems = page.locator('[class*="card"] >> text=/\\d+.*lei|RON/i')
-        .or(page.locator('text=/asigurări|sănătate|învățământ|transport/i').first())
-
-      await expect(categoryItems.first()).toBeVisible().catch(() => {
-        // Categories should be in the list - just verify the section exists
-        const topCategoriesSection = page.getByRole('heading', { name: SELECTORS.topCategories })
-        return expect(topCategoriesSection).toBeVisible()
-      })
-    })
-
-    test('8.2 Advanced view link navigates to entity analytics', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Click advanced view link
-      const advancedLink = page.getByRole('link', { name: SELECTORS.seeAdvancedView })
-      await advancedLink.click()
-
-      // Verify navigation to entity analytics
-      await expect(page).toHaveURL(/entity-analytics/)
-    })
-  })
-
-  // ===================================================
-  // 9. URL STATE PRESERVATION
-  // ===================================================
-  test.describe('9. URL State Preservation', () => {
-    test.beforeEach(async ({ mockApi }) => {
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
-    })
-
-    test('9.1 Direct URL with parameters loads correctly', async ({ page }) => {
-      // Navigate with specific parameters
-      await page.goto('/budget-explorer?treemapPrimary=ec&depth=subchapter')
-      await waitForPageReady(page)
-
-      // Verify economic is selected
-      const economicToggle = page.locator('[data-state="on"]').filter({ hasText: SELECTORS.economicLabel })
-      await expect(economicToggle).toBeVisible({ timeout: 10000 })
-
-      // Verify detailed categories is selected
-      const detailedToggle = page.locator('[data-state="on"]').filter({ hasText: SELECTORS.detailedCategoriesLabel })
-      await expect(detailedToggle).toBeVisible({ timeout: 10000 })
-    })
-
-    test('9.2 Page refresh preserves state', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Change classification to economic
-      const economicToggle = page.locator('button[role="radio"]').filter({ hasText: SELECTORS.economicLabel }).first()
-      await clickToggleWithUrlVerification(page, economicToggle, /treemapPrimary=ec/)
-
-      // Refresh page
-      await page.reload()
-      await waitForPageReady(page)
-
-      // Verify economic is still selected
-      const selectedToggle = page.locator('[data-state="on"]').filter({ hasText: SELECTORS.economicLabel })
-      await expect(selectedToggle).toBeVisible({ timeout: 10000 })
-    })
-
-    test('9.3 Browser back works with URL history', async ({ page }) => {
-      // Start with base URL
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Navigate to a different page first to create history
-      await page.goto('/entity-analytics')
-      await expect(page).toHaveURL(/entity-analytics/)
-
-      // Go back to budget explorer
-      await page.goBack()
-
-      // Should be back at budget explorer
-      await expect(page).toHaveURL(/budget-explorer/)
-    })
-
-    test('9.4 Drilldown path persists in URL', async ({ page }) => {
-      await page.goto('/budget-explorer?treemapPath=68')
-      await waitForPageReady(page)
-
-      // Verify URL contains the path
-      await expect(page).toHaveURL(/treemapPath=68/)
-
-      // Refresh and verify path is preserved
-      await page.reload()
-      await expect(page).toHaveURL(/treemapPath=68/)
-    })
-  })
-
-  // ===================================================
-  // 10. LOADING STATES
-  // ===================================================
-  test.describe('10. Loading States', () => {
-    test('10.1 Page shows content after loading', async ({ mockApi, page }) => {
-      // Mock with short delay to simulate loading
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items', { delay: 500 })
-
-      await page.goto('/budget-explorer')
-
-      // Page should eventually show the treemap
-      await expect(page.locator('.recharts-responsive-container').first()).toBeVisible({ timeout: 15000 })
-
-      // Verify the page is interactive
-      await waitForHydration(page)
-      const expensesToggle = page.locator('[data-state="on"]').filter({ hasText: SELECTORS.expensesLabel })
-      await expect(expensesToggle).toBeVisible()
-    })
-  })
-
-  // ===================================================
-  // 11. ERROR HANDLING
-  // ===================================================
-  test.describe('11. Error Handling', () => {
-    test('11.1 Page handles API errors gracefully', async ({ mockApi, page }) => {
-      // Mock with error - note: GraphQL errors return 200 with error in body
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items', { status: 500 })
-
-      await page.goto('/budget-explorer')
-
-      // Page should still load - either show error message or handle gracefully
-      // Check that page doesn't crash and shows some content
-      await expect(page.getByRole('heading', { name: SELECTORS.budgetDistribution })).toBeVisible({ timeout: 10000 }).catch(() => {
-        // If header is not visible, check for error message
-        return expect(page.getByText(/error|failed|eroare/i).first()).toBeVisible({ timeout: 5000 })
-      })
-    })
-
-    test('11.2 Empty state when no data', async ({ mockApi, page }) => {
-      // Mock with empty data
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items-empty')
-
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Verify page loads without crash
-      expect(page.url()).toContain('/budget-explorer')
-
-      // The treemap might show a message or be empty
-      const pageContent = page.locator('.recharts-responsive-container, [class*="card"]').first()
-      await expect(pageContent).toBeVisible({ timeout: 5000 })
-    })
-  })
-
-  // ===================================================
-  // 12. NAVIGATION LINKS
-  // ===================================================
-  test.describe('12. Navigation Links', () => {
-    test.beforeEach(async ({ mockApi }) => {
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
-    })
-
-    test('12.1 External link to entity analytics is visible', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Find the external link icon button
-      const externalLink = page.locator('a[href*="entity-analytics"]').first()
-      await expect(externalLink).toBeVisible()
-    })
-
-    test('12.2 Quick nav toolbar is present', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Verify floating quick nav is visible
-      const quickNav = page.locator('[class*="floating"], [class*="quick-nav"]')
-        .or(page.getByRole('button', { name: /hartă|harta|map/i }))
-
-      await expect(quickNav.first()).toBeVisible().catch(() => {
-        // Quick nav might be positioned fixed - just verify page loads
-        expect(page.url()).toContain('/budget-explorer')
-      })
-    })
-  })
-
-  // ===================================================
-  // 13. RESPONSIVE BEHAVIOR
-  // ===================================================
-  test.describe('13. Responsive Behavior', () => {
-    test.beforeEach(async ({ mockApi }) => {
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
-    })
-
-    test('13.1 Mobile viewport shows treemap', async ({ page }) => {
-      await page.setViewportSize({ width: 375, height: 667 })
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Treemap should still be visible
-      const treemapContainer = page.locator('.recharts-responsive-container').first()
-      await expect(treemapContainer).toBeVisible({ timeout: 10000 })
-    })
-
-    test('13.2 Controls stack on mobile', async ({ page }) => {
-      await page.setViewportSize({ width: 375, height: 667 })
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Verify controls are visible (might be stacked)
-      await expect(page.getByText(SELECTORS.incomeLabel).first()).toBeVisible()
-      await expect(page.getByText(SELECTORS.expensesLabel).first()).toBeVisible()
-    })
-
-    test('13.3 Tablet viewport works correctly', async ({ page }) => {
-      await page.setViewportSize({ width: 768, height: 1024 })
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Page should load normally
-      const treemapContainer = page.locator('.recharts-responsive-container').first()
-      await expect(treemapContainer).toBeVisible({ timeout: 10000 })
-    })
-  })
-
-  // ===================================================
-  // 14. ACCESSIBILITY
-  // ===================================================
-  test.describe('14. Accessibility', () => {
-    test.beforeEach(async ({ mockApi }) => {
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
-    })
-
-    test('14.1 Toggle groups have proper ARIA roles', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Verify toggle groups have radiogroup role
-      const toggleGroups = page.locator('[role="group"]')
-      await expect(toggleGroups.first()).toBeVisible()
-    })
-
-    test('14.2 Buttons have accessible labels', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Verify period button has aria-label
-      const periodButton = page.locator('button[aria-label*="period" i], button[aria-label*="reporting" i]')
-      await expect(periodButton).toBeVisible().catch(() => {
-        // Alternative: just verify buttons exist with text
-        const anyButton = page.getByRole('button').first()
-        return expect(anyButton).toBeVisible()
-      })
-    })
-
-    test('14.3 Keyboard navigation works on toggles', async ({ page }) => {
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      // Focus on first toggle
-      const firstToggle = page.locator('button').filter({ hasText: SELECTORS.incomeLabel })
-      await firstToggle.focus()
-
-      // Verify focus is visible
-      await expect(firstToggle).toBeFocused()
-    })
-  })
-
-  // ===================================================
-  // 15. PERFORMANCE
-  // ===================================================
-  test.describe('15. Performance', () => {
-    test('15.1 Page loads within acceptable time', async ({ mockApi, page }) => {
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
-
-      const startTime = Date.now()
-      await page.goto('/budget-explorer')
-
-      // Wait for treemap to be visible
-      await expect(page.locator('.recharts-responsive-container').first()).toBeVisible({ timeout: 15000 })
-
-      const loadTime = Date.now() - startTime
-      expect(loadTime).toBeLessThan(15000) // Should load within 15 seconds (increased for CI)
-    })
-
-    test('15.2 Toggle switches respond quickly', async ({ mockApi, page }) => {
-      await mockApi.mockGraphQL('AggregatedLineItems', 'aggregated-line-items')
-      await page.goto('/budget-explorer')
-      await waitForPageReady(page)
-
-      const startTime = Date.now()
-
-      // Click economic toggle
-      const economicToggle = page.locator('button').filter({ hasText: SELECTORS.economicLabel })
-      await safeClick(economicToggle)
-
-      // Verify toggle changed state (wait for URL to update)
-      await expect(page).toHaveURL(/treemapPrimary=ec/, { timeout: 10000 })
-
-      const responseTime = Date.now() - startTime
-      expect(responseTime).toBeLessThan(10000) // Toggle should respond within 10 seconds (relaxed for CI)
-    })
+  test('renders stacked sections on mobile without horizontal overflow', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/budget-explorer')
+    await waitForPageReady(page)
+
+    const sectorCards = page.locator('[id^="sector-"]')
+    expect(await sectorCards.count()).toBeGreaterThanOrEqual(9)
+    await expect(sectorCards.first()).toBeVisible()
+    await expect(sectorCards.nth(8)).toBeVisible()
+    await expect(page.getByRole('link', { name: SELECTORS.analyzeLineItems }).first()).toBeVisible()
+
+    const hasHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 4)
+    expect(hasHorizontalOverflow).toBe(false)
   })
 })

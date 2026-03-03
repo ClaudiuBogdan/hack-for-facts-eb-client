@@ -16,7 +16,6 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { BudgetTreemap } from '@/components/budget-explorer/BudgetTreemap'
-import { BudgetCategoryList } from '@/components/budget-explorer/BudgetCategoryList'
 import { useTreemapDrilldown } from '@/components/budget-explorer/useTreemapDrilldown'
 import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
 import { getNormalizationUnit } from '@/lib/utils';
@@ -237,31 +236,6 @@ export const TrendsView: React.FC<BaseTrendsViewProps> = ({ entity, type, curren
               normalization={normalized.normalization}
               currency={normalized.currency}
               excludedItemsSummary={excludedItemsSummary}
-            />
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="shadow-sm">
-        <CardHeader>
-          <h3 className='sr-only'>Top Categories</h3>
-        </CardHeader>
-        <CardContent>
-          {isLoading || !fullLineItems ? (
-            <Skeleton className="w-full h-[260px]" />
-          ) : (
-            <BudgetCategoryList
-              aggregated={aggregatedNodes}
-              depth={2}
-              accountCategory={accountCategory}
-              normalization={normalized.normalization}
-              currency={normalized.currency}
-              showEconomic={type !== 'income'}
-              economicInfoText={
-                <span>
-                  Economic breakdown is not available for income. Switch to <span className="font-semibold">Expenses</span> to view economic categories.
-                </span>
-              }
             />
           )}
         </CardContent>

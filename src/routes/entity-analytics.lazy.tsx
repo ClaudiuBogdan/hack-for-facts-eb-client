@@ -15,16 +15,12 @@ import { EntityAnalyticsLayout } from '@/components/entity-analytics/EntityAnaly
 import { AnalyticsFilterType } from '@/schemas/charts'
 import { EntityAnalyticsLineItems } from '@/components/entity-analytics/EntityAnalyticsLineItems'
 import { EntityAnalyticsTreemap } from '@/components/entity-analytics/EntityAnalyticsTreemap'
-import { SpendingBreakdown } from '@/components/budget-explorer/SpendingBreakdown'
-import { RevenueBreakdown } from '@/components/budget-explorer/RevenueBreakdown'
-import { AggregatedNode } from '@/components/budget-explorer/budget-transform'
 import { generateHash } from '@/lib/utils'
 import { Analytics } from '@/lib/analytics'
 import { getSiteUrl } from '@/config/env'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { FloatingQuickNav } from '@/components/ui/FloatingQuickNav'
-import { usePeriodLabel } from '@/hooks/use-period-label'
 import { useUserCurrency } from '@/lib/hooks/useUserCurrency'
 import { useUserInflationAdjusted } from '@/lib/hooks/useUserInflationAdjusted'
 import type { Currency, Normalization } from '@/schemas/charts'
@@ -69,7 +65,6 @@ function EntityAnalyticsPage() {
 
   const offset = useMemo(() => (page - 1) * pageSize, [page, pageSize])
   const filterHash = useMemo(() => generateHash(JSON.stringify(effectiveFilter)), [effectiveFilter])
-  const periodLabel = usePeriodLabel(filter.report_period)
   const previousFilterHashRef = useRef<string>(filterHash)
   const normalizedTreemapPrimary: 'fn' | 'ec' = filter.account_category === 'vn' ? 'fn' : (treemapPrimary ?? 'fn')
 
@@ -113,18 +108,6 @@ function EntityAnalyticsPage() {
     staleTime: 1000 * 60 * 5, // 5 minutes
     enabled: view === 'line-items',
   });
-
-  const aggregatedNodes = useMemo<AggregatedNode[]>(() => {
-    if (!aggregatedData?.nodes) return []
-    return aggregatedData.nodes.map((n) => ({
-      fn_c: n.fn_c,
-      fn_n: n.fn_n,
-      ec_c: n.ec_c,
-      ec_n: n.ec_n,
-      amount: n.amount,
-      count: n.count,
-    }))
-  }, [aggregatedData])
 
   const nodes: readonly EntityAnalyticsDataPoint[] = data?.nodes ?? []
 
@@ -302,11 +285,6 @@ function EntityAnalyticsPage() {
               treemapPath={treemapPath}
               onTreemapPathChange={setTreemapPath}
             />
-            {filter.account_category === 'ch' ? (
-                <SpendingBreakdown nodes={aggregatedNodes} normalization={effectiveFilter.normalization} currency={effectiveFilter.currency} isLoading={isLoadingAggregated} periodLabel={periodLabel} />
-            ) : (
-                <RevenueBreakdown nodes={aggregatedNodes} normalization={effectiveFilter.normalization} currency={effectiveFilter.currency} isLoading={isLoadingAggregated} periodLabel={periodLabel} />
-            )}
             <EntityAnalyticsLineItems
               filter={effectiveFilter}
               title={filter.account_category === 'vn' ? t`Income` : t`Expenses`}

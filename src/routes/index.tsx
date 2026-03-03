@@ -72,7 +72,7 @@ function Index() {
               imageAlt="Map preview"
             />
             <PageCard
-              title={t`Budget Explorer`}
+              title={t`National Budget`}
               description={t`Explore national budget.`}
               to="/budget-explorer"
               image={morePreview}

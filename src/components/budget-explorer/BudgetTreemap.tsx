@@ -92,6 +92,15 @@ type Props = {
   chartFilterInput?: AnalyticsFilterType // Optional filter input for the chart link
 }
 
+type TreemapNodePayload = {
+  name: string
+  value: number
+  signedValue: number
+  layoutValue: number
+  code: string
+  fill: string
+}
+
 const CustomizedContent: FC<{
   name: string
   value: number
@@ -107,8 +116,9 @@ const CustomizedContent: FC<{
   primary?: 'fn' | 'ec'
   code?: string
   allowScaleAnimation?: boolean
+  signedValue?: number
   // Recharts passes the original datum under `payload`. We use its fill for stable coloring.
-  payload?: { fill?: string; code?: string; name?: string; value?: number }
+  payload?: TreemapNodePayload
 }> = (props) => {
   const { name, value, depth, x = 0, y = 0, width = 0, height = 0, fill, root, normalization, currency, primary, allowScaleAnimation = true } = props
   const hasAnimatedInRef = useRef(false)
@@ -126,10 +136,14 @@ const CustomizedContent: FC<{
     return null
   }
 
+  const signedValue = Number.isFinite(props.signedValue)
+    ? props.signedValue!
+    : (Number.isFinite(props.payload?.signedValue) ? props.payload!.signedValue : value)
+  const magnitudeValue = Math.abs(signedValue)
   const total = root?.value ?? 0
-  const percentage = total > 0 ? (value / total) * 100 : 0
+  const percentage = total > 0 ? (magnitudeValue / total) * 100 : 0
   const unit = getNormalizationUnit({ normalization: (normalization ?? 'total') as any, currency: currency as any })
-  const displayValue = yValueFormatter(value, unit, 'compact')
+  const displayValue = yValueFormatter(signedValue, unit, 'compact')
 
   const baseColor = '#FFFFFF'
   const nameFontSize = 16
@@ -398,10 +412,12 @@ export function BudgetTreemap({ data, primary, onNodeClick, onBreadcrumbClick, p
   const deferredData = useDeferredValue(data)
   const deferredPath = useDeferredValue(path)
 
-  const payloadData = useMemo(() => {
+  const payloadData = useMemo<TreemapNodePayload[]>(() => {
     return deferredData.map((node) => ({
       name: node.name,
       value: node.value,
+      signedValue: node.value,
+      layoutValue: Math.abs(Number.isFinite(node.value) ? node.value : 0),
       code: node.code,
       fill: getColor(`${primary}-${node.code}`),
     }))
@@ -484,11 +500,22 @@ export function BudgetTreemap({ data, primary, onNodeClick, onBreadcrumbClick, p
     })
   }, [deferredAmountRange, payloadData, minValue, maxValue, amountRange])
 
-  const totalValue = useMemo(() => filteredData.reduce((acc, curr) => acc + (Number.isFinite(curr.value) ? curr.value : 0), 0), [filteredData])
+  const totalValue = useMemo(
+    () => filteredData.reduce((acc, curr) => acc + (Number.isFinite(curr.value) ? curr.value : 0), 0),
+    [filteredData],
+  )
+  const totalMagnitudeValue = useMemo(
+    () => filteredData.reduce((acc, curr) => acc + Math.abs(Number.isFinite(curr.value) ? curr.value : 0), 0),
+    [filteredData],
+  )
   const unit = getNormalizationUnit({ normalization: normalization ?? 'total', currency })
 
   // Memoize root object to prevent unnecessary re-renders
-  const rootValue = useMemo(() => ({ value: totalValue }), [totalValue])
+  const rootValue = useMemo(() => ({ value: totalMagnitudeValue }), [totalMagnitudeValue])
+  const signedValueByCode = useMemo(
+    () => new Map(filteredData.map((node) => [node.code, node.signedValue])),
+    [filteredData],
+  )
 
   const handleNodeClick = (event: unknown) => {
     const target = event as { code?: string; payload?: { code?: string } }
@@ -501,6 +528,8 @@ export function BudgetTreemap({ data, primary, onNodeClick, onBreadcrumbClick, p
   // Memoize content renderer to prevent unnecessary re-renders in Recharts
   const renderContent = useCallback((props: any) => {
     const codeFromPayload = props?.code ?? props?.payload?.code
+    const signedValueFromPayload = Number.isFinite(props?.payload?.signedValue) ? props.payload.signedValue : undefined
+    const signedValueFromMap = codeFromPayload ? signedValueByCode.get(codeFromPayload) : undefined
     return (
       <CustomizedContent
         {...props}
@@ -511,19 +540,21 @@ export function BudgetTreemap({ data, primary, onNodeClick, onBreadcrumbClick, p
         normalization={normalization}
         currency={currency}
         primary={primary}
+        signedValue={signedValueFromPayload ?? signedValueFromMap}
         allowScaleAnimation={allowScaleAnimation}
       />
     )
-  }, [rootValue, normalization, currency, primary, allowScaleAnimation])
+  }, [rootValue, normalization, currency, primary, signedValueByCode, allowScaleAnimation])
 
   const memoizedTooltip = useMemo(() => (
     <CustomTooltip
-      total={totalValue}
+      total={totalMagnitudeValue}
       primary={primary}
       normalization={normalization}
       currency={currency}
+      signedValueByCode={signedValueByCode}
     />
-  ), [totalValue, primary, normalization, currency])
+  ), [totalMagnitudeValue, primary, normalization, currency, signedValueByCode])
 
   // On mobile, show only last 2 breadcrumb items
   const displayPath = isMobile && deferredPath.length > 2 ? deferredPath.slice(-2) : deferredPath
@@ -657,7 +688,7 @@ export function BudgetTreemap({ data, primary, onNodeClick, onBreadcrumbClick, p
             <SafeResponsiveContainer width="100%" height="100%">
               <Treemap
                 data={filteredData}
-                dataKey="value"
+                dataKey="layoutValue"
                 nameKey="name"
                 isAnimationActive={false}
                 onClick={handleNodeClick}
@@ -712,13 +743,14 @@ export function BudgetTreemap({ data, primary, onNodeClick, onBreadcrumbClick, p
   )
 }
 
-const CustomTooltip = ({ active, payload, total, primary, normalization, currency }: {
+const CustomTooltip = ({ active, payload, total, primary, normalization, currency, signedValueByCode }: {
   active?: boolean,
   payload?: any[],
   total: number,
   primary: 'fn' | 'ec',
   normalization?: Normalization,
   currency?: Currency,
+  signedValueByCode?: Map<string, number>,
 }) => {
   const lastTooltipDataRef = useRef<Readonly<{
     name: string
@@ -731,18 +763,31 @@ const CustomTooltip = ({ active, payload, total, primary, normalization, currenc
 
   // Update ref when new valid data is available
   if (isVisible && payload?.[0]?.payload) {
+    const payloadNode = payload[0].payload as TreemapNodePayload
+    const payloadCode = payloadNode.code ?? ''
+    const resolvedSignedValue = Number.isFinite(payloadNode.signedValue)
+      ? payloadNode.signedValue
+      : (payloadCode ? signedValueByCode?.get(payloadCode) : undefined) ?? payloadNode.value
     lastTooltipDataRef.current = {
-      name: payload?.[0]?.payload?.name,
-      code: payload?.[0]?.payload?.code,
-      fill: payload?.[0]?.payload?.fill,
-      value: payload?.[0]?.value,
+      name: payloadNode.name,
+      code: payloadCode,
+      fill: payloadNode.fill,
+      value: resolvedSignedValue,
     }
   }
 
   // Use current data if visible, otherwise fall back to cached data
-  const data = isVisible ? payload?.[0]?.payload : lastTooltipDataRef.current
-  const value = isVisible ? payload?.[0]?.value : (lastTooltipDataRef.current?.value ?? 0)
-  const percentage = total > 0 ? (value / total) * 100 : 0
+  const data = isVisible ? (payload?.[0]?.payload as TreemapNodePayload) : lastTooltipDataRef.current
+  const visiblePayloadNode = isVisible ? (payload?.[0]?.payload as TreemapNodePayload) : undefined
+  const visiblePayloadCode = visiblePayloadNode?.code ?? ''
+  const value = isVisible
+    ? (
+      Number.isFinite(visiblePayloadNode?.signedValue)
+        ? visiblePayloadNode!.signedValue
+        : (visiblePayloadCode ? signedValueByCode?.get(visiblePayloadCode) : undefined) ?? visiblePayloadNode?.value ?? 0
+    )
+    : (lastTooltipDataRef.current?.value ?? 0)
+  const percentage = total > 0 ? (Math.abs(value) / total) * 100 : 0
   const unit = getNormalizationUnit({ normalization: normalization ?? 'total', currency })
 
 

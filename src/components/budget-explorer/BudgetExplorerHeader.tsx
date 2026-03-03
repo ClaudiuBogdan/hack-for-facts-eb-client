@@ -18,6 +18,8 @@ export function BudgetExplorerHeader({ state, onChange }: Props) {
   const { filter } = state
   const [advancedOpen, setAdvancedOpen] = useState(false)
   const period = filter.report_period
+  const primaryValue = filter.account_category === 'vn' ? 'fn' : state.primary
+
   const handleNormalizationChange = (normalization: BudgetExplorerState['filter']['normalization']) => {
     onChange({
       filter: {
@@ -30,7 +32,7 @@ export function BudgetExplorerHeader({ state, onChange }: Props) {
   return (
     <div className="md:sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border rounded-xl shadow-md">
       <div className="flex flex-col gap-4 p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <div className="flex flex-col gap-2">
             <Label className="text-xs text-muted-foreground">
               <Trans>Income vs Expenses</Trans>
@@ -54,7 +56,7 @@ export function BudgetExplorerHeader({ state, onChange }: Props) {
               }}
               variant="outline"
               size="default"
-              className="w-full"
+              className="w-full justify-start"
             >
               <ToggleGroupItem
                 value="vn"
@@ -73,11 +75,44 @@ export function BudgetExplorerHeader({ state, onChange }: Props) {
 
           <div className="flex flex-col gap-2">
             <Label className="text-xs text-muted-foreground">
+              <Trans>Grouping</Trans>
+            </Label>
+            <ToggleGroup
+              type="single"
+              value={primaryValue}
+              onValueChange={(value: 'fn' | 'ec') => {
+                if (!value) return
+                if (filter.account_category === 'vn' && value === 'ec') return
+                onChange({ primary: value })
+              }}
+              variant="outline"
+              size="default"
+              className="w-full justify-start"
+            >
+              <ToggleGroupItem
+                value="fn"
+                className="flex-1 data-[state=on]:bg-foreground data-[state=on]:text-background"
+              >
+                <Trans>Functional</Trans>
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="ec"
+                disabled={filter.account_category === 'vn'}
+                className="flex-1 data-[state=on]:bg-foreground data-[state=on]:text-background"
+              >
+                <Trans>Economic</Trans>
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label className="text-xs text-muted-foreground">
               <Trans>Normalization</Trans>
             </Label>
             <NormalizationModeSelect value={filter.normalization} allowPerCapita onChange={handleNormalizationChange} triggerClassName="w-full" />
           </div>
-          <div className="flex flex-col gap-2 md:col-span-2 lg:col-span-1">
+
+          <div className="flex flex-col gap-2 md:col-span-2 xl:col-span-1">
             <Label className="text-xs text-muted-foreground">
               <Trans>Period</Trans>
             </Label>

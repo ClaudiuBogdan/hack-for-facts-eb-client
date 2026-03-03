@@ -112,6 +112,7 @@ const createState = (
       currency: 'RON',
     },
     primary: 'fn',
+    depth: 'chapter',
     ...overrides,
   }) as BudgetExplorerState
 
@@ -149,6 +150,14 @@ describe('BudgetExplorerHeader', () => {
       )
 
       expect(screen.getByText('Normalization')).toBeInTheDocument()
+    })
+
+    it('renders grouping label', () => {
+      render(
+        <BudgetExplorerHeader state={createState()} onChange={defaultOnChange} />
+      )
+
+      expect(screen.getByText('Grouping')).toBeInTheDocument()
     })
 
     it('renders period label', () => {
@@ -228,6 +237,30 @@ describe('BudgetExplorerHeader', () => {
           primary: 'fn',
         })
       )
+    })
+
+    it('updates grouping when switching to economic', () => {
+      const onChange = vi.fn()
+      render(<BudgetExplorerHeader state={createState()} onChange={onChange} />)
+
+      fireEvent.click(screen.getByText('Economic'))
+
+      expect(onChange).toHaveBeenCalledWith({ primary: 'ec' })
+    })
+
+    it('disables economic grouping for income', () => {
+      const state = createState({
+        filter: {
+          account_category: 'vn',
+          normalization: 'total',
+          report_period: { type: 'YEAR', selection: { dates: ['2023'] } },
+          currency: 'RON',
+        } as BudgetExplorerState['filter'],
+      })
+
+      render(<BudgetExplorerHeader state={state} onChange={defaultOnChange} />)
+
+      expect(screen.getByRole('radio', { name: 'Economic' })).toBeDisabled()
     })
   })
 
@@ -327,7 +360,7 @@ describe('BudgetExplorerHeader', () => {
       const grid = container.querySelector('.grid')
       expect(grid).toHaveClass('grid-cols-1')
       expect(grid).toHaveClass('md:grid-cols-2')
-      expect(grid).toHaveClass('lg:grid-cols-3')
+      expect(grid).toHaveClass('xl:grid-cols-4')
     })
   })
 

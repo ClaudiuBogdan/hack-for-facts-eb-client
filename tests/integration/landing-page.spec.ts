@@ -40,8 +40,8 @@ test.describe('Landing Page', () => {
     await expect(mapCard).toBeVisible({ timeout: 5000 })
     await expect(mapCard).toHaveAttribute('href', '/map')
 
-    // Budget Explorer card
-    const budgetCard = page.getByRole('link', { name: /explorator bugetar|budget explorer/i }).filter({
+    // National Budget card
+    const budgetCard = page.getByRole('link', { name: /buget național|national budget|explorator bugetar|budget explorer/i }).filter({
       has: page.locator('img[alt*="Budget explorer preview"]'),
     })
     await expect(budgetCard).toBeVisible({ timeout: 5000 })

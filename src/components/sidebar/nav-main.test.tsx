@@ -120,7 +120,7 @@ describe('NavMain', () => {
       render(<NavMain />)
 
       expect(screen.getByTestId('link-/budget-explorer')).toBeInTheDocument()
-      expect(screen.getByText('Budget Explorer')).toBeInTheDocument()
+      expect(screen.getByText('National Budget')).toBeInTheDocument()
     })
 
     it('renders Entity Analytics link', () => {

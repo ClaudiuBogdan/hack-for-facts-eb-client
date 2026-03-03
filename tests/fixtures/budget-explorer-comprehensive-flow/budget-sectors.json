@@ -1,0 +1,32 @@
+{
+  "data": {
+    "budgetSectors": {
+      "nodes": [
+        {
+          "sector_id": "1",
+          "sector_description": "Bugetul de stat (administratie centrala)"
+        },
+        {
+          "sector_id": "2",
+          "sector_description": "Bugetul local   (administratie locala)"
+        },
+        {
+          "sector_id": "3",
+          "sector_description": "Bugetul asigurarilor sociale de stat"
+        },
+        {
+          "sector_id": "4",
+          "sector_description": "Bugetul fondului de somaj"
+        },
+        {
+          "sector_id": "5",
+          "sector_description": "Bugetul fondului de sanatate (FNUASS)"
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 5,
+        "hasNextPage": false
+      }
+    }
+  }
+}
