@@ -1,5 +1,6 @@
 import { Trans } from '@lingui/react/macro'
 import { X } from 'lucide-react'
+import { i18n } from '@lingui/core'
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -9,14 +10,38 @@ type NationalBudgetDisclaimerCardProps = {
   onClose?: () => void
 }
 
+const DISCLAIMER_COPY = {
+  en: {
+    main: 'Data is informational, not official consolidated publication.',
+    discrepancy: 'Discrepancies may exist.',
+    sourceData: 'Source data uses only budget execution datasets (execuții bugetare).',
+    coverage: 'Data is not consolidated and does not include the full national budget coverage (for example Eximbank and other BGC components).',
+    totalNote: 'Total buget is a merged informational treemap of available sections, not an official consolidated total.',
+    sourceLabel: 'Source:',
+    referenceLabel: 'Reference:',
+    referenceName: 'Budget execution information',
+  },
+  ro: {
+    main: 'Datele sunt informative și nu reprezintă publicarea oficială consolidată.',
+    discrepancy: 'Pot exista discrepanțe.',
+    sourceData: 'Datele sursă folosesc doar seturile de execuție bugetară.',
+    coverage: 'Datele nu sunt consolidate și nu acoperă integral bugetul național (de exemplu Eximbank și alte componente BGC).',
+    totalNote: 'Total buget este o agregare informativă a secțiunilor disponibile și nu reprezintă totalul oficial consolidat.',
+    sourceLabel: 'Sursă:',
+    referenceLabel: 'Referință:',
+    referenceName: 'Informații execuție bugetară',
+  },
+} as const
+
 export function NationalBudgetDisclaimerCard({ readMoreHref, onClose }: NationalBudgetDisclaimerCardProps) {
+  const locale = (i18n.locale ?? 'en').toLowerCase()
+  const copy = locale.startsWith('ro') ? DISCLAIMER_COPY.ro : DISCLAIMER_COPY.en
+
   return (
     <Card className="border-amber-300 bg-amber-50/60 dark:bg-amber-950/20">
       <CardContent className="pt-6 space-y-2 text-sm">
         <div className="flex items-start justify-between gap-3">
-          <p className="font-medium">
-            <Trans>Data is informational, not official consolidated publication.</Trans>
-          </p>
+          <p className="font-medium">{copy.main}</p>
           {onClose ? (
             <Button
               type="button"
@@ -30,22 +55,12 @@ export function NationalBudgetDisclaimerCard({ readMoreHref, onClose }: National
             </Button>
           ) : null}
         </div>
-        <p className="text-muted-foreground">
-          <Trans>Discrepancies may exist.</Trans>
-        </p>
-        <p className="text-muted-foreground">
-          <Trans>Source data uses only budget execution datasets (execuții bugetare).</Trans>
-        </p>
-        <p className="text-muted-foreground">
-          <Trans>
-            Data is not consolidated and does not include the full national budget coverage (for example Eximbank and other BGC components).
-          </Trans>
-        </p>
-        <p className="text-muted-foreground">
-          <Trans>Total buget is a merged informational treemap of available sections, not an official consolidated total.</Trans>
-        </p>
+        <p className="text-muted-foreground">{copy.discrepancy}</p>
+        <p className="text-muted-foreground">{copy.sourceData}</p>
+        <p className="text-muted-foreground">{copy.coverage}</p>
+        <p className="text-muted-foreground">{copy.totalNote}</p>
         <p>
-          <Trans>Source: </Trans>
+          {copy.sourceLabel}{' '}
           <a
             href="https://mfinante.gov.ro/transparenta-bugetara"
             target="_blank"
@@ -56,14 +71,14 @@ export function NationalBudgetDisclaimerCard({ readMoreHref, onClose }: National
           </a>
         </p>
         <p>
-          <Trans>Reference: </Trans>
+          {copy.referenceLabel}{' '}
           <a
             href="https://mfinante.gov.ro/domenii/bugetul-de-stat/informatii-executie-bugetara"
             target="_blank"
             rel="noopener noreferrer"
             className="underline underline-offset-4 font-medium"
           >
-            Informații execuție bugetară
+            {copy.referenceName}
           </a>
         </p>
         {readMoreHref ? (

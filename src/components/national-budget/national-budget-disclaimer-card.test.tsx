@@ -20,7 +20,7 @@ describe('NationalBudgetDisclaimerCard', () => {
     const sourceLink = screen.getByRole('link', { name: 'Ministerul Finanțelor' })
     expect(sourceLink).toHaveAttribute('href', 'https://mfinante.gov.ro/transparenta-bugetara')
 
-    const executionReferenceLink = screen.getByRole('link', { name: 'Informații execuție bugetară' })
+    const executionReferenceLink = screen.getByRole('link', { name: /Informații execuție bugetară|Budget execution information/i })
     expect(executionReferenceLink).toHaveAttribute('href', 'https://mfinante.gov.ro/domenii/bugetul-de-stat/informatii-executie-bugetara')
   })
 

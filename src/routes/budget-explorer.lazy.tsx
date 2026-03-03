@@ -2,7 +2,7 @@ import { createLazyFileRoute, useNavigate, useSearch } from '@tanstack/react-rou
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { z } from 'zod'
 import { Trans } from '@lingui/react/macro'
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, useCallback } from 'react'
 
 import {
   AnalyticsFilterSchema,
@@ -31,7 +31,6 @@ import { NationalBudgetSectorSection } from '@/components/national-budget/nation
 import { fetchBudgetSectors, fetchFundingSources } from '@/features/national-budget/national-budget-api'
 import {
   getSectorDefinitionById,
-  NATIONAL_BUDGET_SECTOR_DEFINITIONS,
   NATIONAL_BUDGET_SECTOR_ORDER,
 } from '@/features/national-budget/national-budget-sector-definitions'
 import {
@@ -46,7 +45,7 @@ import {
   buildTotalBudgetLineItemsFilter,
   mergeNationalBudgetSectionNodes,
 } from '@/features/national-budget/national-budget-total-merge'
-import type { NationalBudgetAccountCategory, NationalBudgetTransferFilter } from '@/features/national-budget/national-budget-types'
+import type { NationalBudgetAccountCategory, NationalBudgetSectorDefinition, NationalBudgetTransferFilter } from '@/features/national-budget/national-budget-types'
 import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
 
 export const Route = createLazyFileRoute('/budget-explorer')({
@@ -158,11 +157,6 @@ function normalizeBudgetExplorerFilterInput(rawValue: unknown): unknown {
 
   const rawFilter = parsed as Record<string, unknown>
   const fixedFilter = { ...rawFilter }
-
-  if (!('report_period' in fixedFilter) && 'report_periodfsd' in fixedFilter) {
-    fixedFilter.report_period = fixedFilter.report_periodfsd
-    delete fixedFilter.report_periodfsd
-  }
 
   return fixedFilter
 }
@@ -320,7 +314,7 @@ function BudgetExplorerPage() {
     [search.treemapPath],
   )
 
-  const handleFilterChange = (partial: Partial<BudgetExplorerState>) => {
+  const handleFilterChange = useCallback((partial: Partial<BudgetExplorerState>) => {
     const { filter: partialFilter, ...restPartial } = partial
     const nextFilter = {
       ...defaultFilter,
@@ -337,7 +331,7 @@ function BudgetExplorerPage() {
       replace: true,
       resetScroll: false,
     })
-  }
+  }, [filter, navigate])
 
   useEffect(() => {
     const urlCurrency = filter.currency
@@ -378,6 +372,7 @@ function BudgetExplorerPage() {
     userInflationAdjusted,
     setUserCurrency,
     setUserInflationAdjusted,
+    handleFilterChange,
   ])
 
   const filterHash = generateHash(JSON.stringify(effectiveFilter))
@@ -435,7 +430,7 @@ function BudgetExplorerPage() {
           label,
         }
       })
-      .filter((sector): sector is (typeof NATIONAL_BUDGET_SECTOR_DEFINITIONS)[number] => Boolean(sector))
+      .filter((sector): sector is NationalBudgetSectorDefinition => Boolean(sector))
   }, [availableBudgetSectors, budgetSectorsError])
 
   const documentBudgetSections = useMemo(() => {

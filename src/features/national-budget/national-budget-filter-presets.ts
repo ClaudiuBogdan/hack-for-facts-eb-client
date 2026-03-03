@@ -78,14 +78,12 @@ function buildNormalizedLabelCandidates(rawLabel: string): string[] {
 }
 
 export function buildFundingSourceIdsByKey(fundingSources: FundingSourceApiNode[]): NationalBudgetFundingSourceIdsByKey {
-  const normalizedSources = fundingSources.map((source) => ({
-    sourceId: source.source_id,
-    candidates: buildNormalizedLabelCandidates(source.source_description ?? ''),
-  }))
-
   const sourceIdByNormalizedLabel = new Map<string, string>()
+  const normalizedSources: { sourceId: string; candidates: string[] }[] = []
+
   for (const source of fundingSources) {
     const candidates = buildNormalizedLabelCandidates(source.source_description ?? '')
+    normalizedSources.push({ sourceId: source.source_id, candidates })
     for (const candidate of candidates) {
       sourceIdByNormalizedLabel.set(candidate, source.source_id)
     }
@@ -95,8 +93,8 @@ export function buildFundingSourceIdsByKey(fundingSources: FundingSourceApiNode[
   for (const [key, aliases] of Object.entries(FUNDING_SOURCE_LABEL_ALIASES) as [NationalBudgetFundingSourceKey, string[]][]) {
     const normalizedAliases = aliases.map((alias) => normalizeLabel(alias))
 
-    for (const alias of aliases) {
-      const sourceId = sourceIdByNormalizedLabel.get(normalizeLabel(alias))
+    for (const normalizedAlias of normalizedAliases) {
+      const sourceId = sourceIdByNormalizedLabel.get(normalizedAlias)
       if (!sourceId) continue
       fundingSourceIdsByKey[key] = sourceId
       break
