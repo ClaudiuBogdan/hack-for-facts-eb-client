@@ -1,6 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { produce } from 'immer';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Save } from 'lucide-react';
 
 import { ClientOnly } from '@/components/ssr/ClientOnly';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -12,6 +14,7 @@ import { useAdvancedMapAnalyticsTableBinsFilter } from '@/hooks/useAdvancedMapAn
 import { buildDiscretePaletteFromConfig, getContinuousGradientColor } from '@/lib/map-bins/bins';
 import { getHeatmapColor, getPercentileValues, normalizeValue } from '@/components/maps/utils';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
+import { Button } from '@/components/ui/button';
 import type { UatFeature, UatProperties } from '@/components/maps/interfaces';
 import type { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap';
 import { defaultMapFilters } from '@/schemas/map-filters';
@@ -92,6 +95,11 @@ interface MapAnalyticsWorkspaceProps {
   mode: 'owner' | 'public';
   capabilities: MapAnalyticsWorkspaceCapabilities;
   onOpenOwnerConfig?: () => void;
+  hasPendingChanges?: boolean;
+  onRequestSaveSnapshot?: () => void;
+  onOpenLocalSnapshots?: () => void;
+  isSavingSnapshot?: boolean;
+  localSnapshotCount?: number;
   bundledGroupedSeriesData?: GroupedSeriesDataResponse;
   bundledRemoteBaseSeriesHash?: string;
   mobileControlsDefaultCollapsed?: boolean;
@@ -107,6 +115,11 @@ export function MapAnalyticsWorkspace({
   mode,
   capabilities,
   onOpenOwnerConfig,
+  hasPendingChanges = false,
+  onRequestSaveSnapshot,
+  onOpenLocalSnapshots,
+  isSavingSnapshot = false,
+  localSnapshotCount = 0,
   bundledGroupedSeriesData,
   bundledRemoteBaseSeriesHash,
   mobileControlsDefaultCollapsed = false,
@@ -1185,7 +1198,14 @@ export function MapAnalyticsWorkspace({
   const isMapViewActive = mapState.activeView === 'map';
   const isTableViewActive = mapState.activeView === 'table';
   const isAnalyticsViewActive = mapState.activeView === 'analytics';
+  const canOpenLocalSnapshots = !isReadOnly && typeof onOpenLocalSnapshots === 'function';
+  const shouldShowSaveSnapshotCallToAction =
+    !isReadOnly &&
+    isMapViewActive &&
+    hasPendingChanges &&
+    typeof onRequestSaveSnapshot === 'function';
   const countyBoundaryGeoJsonData = mapState.showCountyBoundaries ? countyGeoJsonData : null;
+
 
   const handleTableRowClick = useCallback(
     (row: AdvancedMapAnalyticsTableRow) => {
@@ -1324,6 +1344,25 @@ export function MapAnalyticsWorkspace({
     </footer>
   );
 
+  const localSnapshotsFooter = canOpenLocalSnapshots ? (
+    <section className="rounded-xl border bg-muted/20 p-3">
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        onClick={onOpenLocalSnapshots}
+        disabled={isSavingSnapshot}
+      >
+        {localSnapshotCount > 0
+          ? t`Local snapshots (${localSnapshotCount})`
+          : t`Local snapshots`}
+      </Button>
+      <p className="mt-2 text-xs text-muted-foreground">
+        {t`Stored only in this browser on this device.`}
+      </p>
+    </section>
+  ) : null;
+
   return (
     <div className="relative flex flex-col bg-background md:h-screen md:flex-row">
       <MapAnalyticsQuickActions
@@ -1375,6 +1414,7 @@ export function MapAnalyticsWorkspace({
                 >
                   {controlsPanels}
                   {geoJsonSourceFooter}
+                  {localSnapshotsFooter}
                 </CollapsibleContent>
               </Collapsible>
             </>
@@ -1382,6 +1422,7 @@ export function MapAnalyticsWorkspace({
             <>
               {controlsPanels}
               {geoJsonSourceFooter}
+              {localSnapshotsFooter}
             </>
           )}
         </div>
@@ -1393,7 +1434,7 @@ export function MapAnalyticsWorkspace({
           shouldOverlayMobileControls ? 'min-h-screen pt-[72px]' : 'min-h-[55vh]'
         )}
       >
-        <div className="flex-1 relative overflow-hidden">
+        <div className="flex-1 relative isolate overflow-hidden">
           {isMapViewActive ? (
             isMapLoading ? (
               <div className="h-full w-full flex items-center justify-center">
@@ -1450,6 +1491,29 @@ export function MapAnalyticsWorkspace({
                     </div>
                   </div>
                 ) : null}
+
+                <AnimatePresence>
+                  {shouldShowSaveSnapshotCallToAction ? (
+                    <motion.div
+                      key="save-snapshot-cta"
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      transition={{ duration: 0.2, ease: 'easeOut' }}
+                      className="pointer-events-none absolute inset-x-0 bottom-14 z-[520] flex justify-center px-4"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => onRequestSaveSnapshot?.()}
+                        disabled={isSavingSnapshot}
+                        className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-2 text-sm font-medium text-accent shadow-lg shadow-accent/10 backdrop-blur-md transition-colors hover:bg-accent/20 disabled:pointer-events-none disabled:opacity-50 dark:border-accent-foreground/20 dark:bg-accent dark:text-accent-foreground dark:shadow-accent/5 dark:hover:bg-accent/80"
+                      >
+                        <Save className="h-3.5 w-3.5" />
+                        {isSavingSnapshot ? t`Saving…` : t`Save snapshot`}
+                      </button>
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
 
                 {activeSeries ? (
                   <div className="absolute bottom-4 right-4 z-[500]">

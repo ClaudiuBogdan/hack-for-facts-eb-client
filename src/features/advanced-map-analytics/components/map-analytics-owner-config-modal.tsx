@@ -30,7 +30,6 @@ import {
   fetchAdvancedMapAnalyticsSnapshotForRestore,
   useAdvancedMapAnalyticsSnapshotsQuery,
   useDeleteAdvancedMapAnalyticsMapMutation,
-  useSaveAdvancedMapAnalyticsSnapshotMutation,
   useUpdateAdvancedMapAnalyticsMapMutation,
 } from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
 import type { AdvancedMapAnalyticsVisibility } from '@/features/advanced-map-analytics/api/schemas';
@@ -43,12 +42,12 @@ interface MapAnalyticsOwnerConfigModalProps {
   currentMapState: AdvancedMapAnalyticsUrlState;
   mapName: string;
   mapDescription?: string;
-  currentTitle: string;
   currentVisibility: AdvancedMapAnalyticsVisibility;
   currentPublicId: string | null;
   onOpenChange: (open: boolean) => void;
   onMapNameChange: (nextMapName: string) => void;
   onMapDescriptionChange?: (nextDescription: string) => void;
+  onRequestSaveSnapshot: () => void;
   onLoadSnapshot: (mapState: AdvancedMapAnalyticsUrlState) => void;
   onDeleted: () => void;
 }
@@ -59,29 +58,26 @@ export function MapAnalyticsOwnerConfigModal({
   currentMapState,
   mapName,
   mapDescription = '',
-  currentTitle,
   currentVisibility,
   currentPublicId,
   onOpenChange,
   onMapNameChange,
   onMapDescriptionChange,
+  onRequestSaveSnapshot,
   onLoadSnapshot,
   onDeleted,
 }: Readonly<MapAnalyticsOwnerConfigModalProps>) {
   const dateTimeLocale = getUserLocale() === 'en' ? 'en-US' : 'ro-RO';
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [snapshotDescriptionDraft, setSnapshotDescriptionDraft] = useState('');
   const [visibility, setVisibility] = useState<AdvancedMapAnalyticsVisibility>(currentVisibility);
   const [pendingVisibilityTarget, setPendingVisibilityTarget] = useState<AdvancedMapAnalyticsVisibility | null>(null);
   const [pendingLoadSnapshotId, setPendingLoadSnapshotId] = useState<string | null>(null);
-  const [isSaveCheckpointConfirmOpen, setIsSaveCheckpointConfirmOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isDescriptionEditorModalOpen, setIsDescriptionEditorModalOpen] = useState(false);
 
   const snapshotsQuery = useAdvancedMapAnalyticsSnapshotsQuery(mapId, page, 20, open);
   const updateMapMutation = useUpdateAdvancedMapAnalyticsMapMutation();
-  const saveSnapshotMutation = useSaveAdvancedMapAnalyticsSnapshotMutation();
   const deleteMapMutation = useDeleteAdvancedMapAnalyticsMapMutation();
 
   useEffect(() => {
@@ -90,29 +86,18 @@ export function MapAnalyticsOwnerConfigModal({
     }
 
     setPage(1);
-    setSnapshotDescriptionDraft('');
     setVisibility(currentVisibility);
     setPendingVisibilityTarget(null);
     setPendingLoadSnapshotId(null);
-    setIsSaveCheckpointConfirmOpen(false);
     setIsDeleteConfirmOpen(false);
     setIsDescriptionEditorModalOpen(false);
   }, [open, currentVisibility]);
 
-  const isBusy =
-    updateMapMutation.isPending ||
-    saveSnapshotMutation.isPending ||
-    deleteMapMutation.isPending;
+  const isBusy = updateMapMutation.isPending || deleteMapMutation.isPending;
 
   const snapshots = snapshotsQuery.data?.snapshots ?? [];
   const canGoPrevious = page > 1;
   const canGoNext = snapshotsQuery.data?.hasNextPage ?? false;
-  const trimmedSnapshotDescription = useMemo(
-    () => snapshotDescriptionDraft.trim(),
-    [snapshotDescriptionDraft]
-  );
-  const trimmedMapDescription = useMemo(() => mapDescription.trim(), [mapDescription]);
-  const snapshotTitle = mapName.trim().length > 0 ? mapName.trim() : currentTitle;
   const isVisibilityConfirmOpen = pendingVisibilityTarget !== null;
   const isLoadConfirmOpen = pendingLoadSnapshotId !== null;
   const normalizedPublicId =
@@ -164,35 +149,8 @@ export function MapAnalyticsOwnerConfigModal({
     }
   };
 
-  const handleSaveCheckpoint = async () => {
-    try {
-      await saveSnapshotMutation.mutateAsync({
-        mapId,
-        mapState: currentMapState,
-        title: snapshotTitle,
-        description: trimmedSnapshotDescription.length > 0 ? trimmedSnapshotDescription : null,
-        stateAtSave: visibility,
-        mapPatch: {
-          description: trimmedMapDescription.length > 0 ? trimmedMapDescription : null,
-        },
-      });
-      setSnapshotDescriptionDraft('');
-      toast.success(t`Snapshot saved`);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : t`Failed to save snapshot`;
-      toast.error(message);
-    } finally {
-      setIsSaveCheckpointConfirmOpen(false);
-    }
-  };
-
   const handleRequestSaveCheckpoint = () => {
-    if (visibility === 'public') {
-      setIsSaveCheckpointConfirmOpen(true);
-      return;
-    }
-
-    void handleSaveCheckpoint();
+    onRequestSaveSnapshot();
   };
 
   const handleConfirmLoadSnapshot = async () => {
@@ -398,19 +356,6 @@ export function MapAnalyticsOwnerConfigModal({
                 </Button>
               }
             >
-              <FormField label={t`Snapshot note`} htmlFor="snapshot-description">
-                <Input
-                  id="snapshot-description"
-                  value={snapshotDescriptionDraft}
-                  onChange={(event) => setSnapshotDescriptionDraft(event.currentTarget.value)}
-                  disabled={isBusy}
-                  placeholder={t`Optional note about what changed…`}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t`Add a brief note to help identify this version later.`}
-                </p>
-              </FormField>
-
               {snapshotsQuery.isLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -550,23 +495,6 @@ export function MapAnalyticsOwnerConfigModal({
             <AlertDialogCancel disabled={isBusy}>{t`Cancel`}</AlertDialogCancel>
             <AlertDialogAction onClick={() => void handleConfirmLoadSnapshot()} disabled={isBusy}>
               {t`Restore`}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={isSaveCheckpointConfirmOpen} onOpenChange={setIsSaveCheckpointConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t`Save version to public map?`}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t`This map is public. The latest saved version will be visible to anyone with the link.`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isBusy}>{t`Cancel`}</AlertDialogCancel>
-            <AlertDialogAction onClick={() => void handleSaveCheckpoint()} disabled={isBusy}>
-              {t`Save anyway`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

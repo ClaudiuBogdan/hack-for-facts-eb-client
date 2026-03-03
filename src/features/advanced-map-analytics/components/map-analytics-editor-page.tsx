@@ -1,17 +1,22 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { AuthSignInButton, useAuth } from '@/lib/auth';
-import {
-  AdvancedMapAnalyticsUrlStateSchema,
-  type AdvancedMapAnalyticsUrlState,
-} from '@/schemas/advanced-map-analytics';
+import { type AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 import { MapAnalyticsWorkspace } from '@/features/advanced-map-analytics/components/map-analytics-workspace';
 import { MapAnalyticsOwnerConfigModal } from '@/features/advanced-map-analytics/components/map-analytics-owner-config-modal';
-import { useAdvancedMapAnalyticsMapQuery } from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
+import { MapAnalyticsSaveSnapshotDialog } from '@/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog';
+import { MapAnalyticsLocalSnapshotsModal } from '@/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal';
+import {
+  useAdvancedMapAnalyticsMapQuery,
+  useSaveAdvancedMapAnalyticsSnapshotMutation,
+} from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
 import type { AdvancedMapAnalyticsApiError } from '@/features/advanced-map-analytics/api/advanced-map-analytics-api';
+import { useMapLocalSnapshots } from '@/features/advanced-map-analytics/hooks/use-map-local-snapshots';
+import { useMapEditorInitialState } from '@/features/advanced-map-analytics/hooks/use-map-editor-initial-state';
 import { getRemoteGroupedSeriesHash } from '@/lib/map-series/grouped-series-request';
 import { t } from '@lingui/core/macro';
 
@@ -25,48 +30,51 @@ interface MapAnalyticsEditorPageProps {
   ) => void;
 }
 
-const DEFAULT_MAP_STATE = AdvancedMapAnalyticsUrlStateSchema.parse({});
-
-function isDefaultMapState(mapState: AdvancedMapAnalyticsUrlState): boolean {
-  return JSON.stringify(mapState) === JSON.stringify(DEFAULT_MAP_STATE);
-}
-
 export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonly<MapAnalyticsEditorPageProps>) {
   const { isLoaded, isSignedIn } = useAuth();
   const navigate = useNavigate({ from: '/maps/editor/$mapId' });
   const [isOwnerConfigModalOpen, setIsOwnerConfigModalOpen] = useState(false);
+  const [isSaveSnapshotDialogOpen, setIsSaveSnapshotDialogOpen] = useState(false);
+  const [isLocalSnapshotsModalOpen, setIsLocalSnapshotsModalOpen] = useState(false);
   const [mapDescriptionDraft, setMapDescriptionDraft] = useState('');
-  const hasHydratedFromApiRef = useRef(false);
-  const hasHydratedDescriptionFromApiRef = useRef(false);
+  const [isInitialStateResolved, setIsInitialStateResolved] = useState(false);
 
   const mapQuery = useAdvancedMapAnalyticsMapQuery(mapId, isLoaded && isSignedIn);
+  const saveSnapshotMutation = useSaveAdvancedMapAnalyticsSnapshotMutation();
+  const {
+    snapshots: localSnapshots,
+    isLoading: isLocalSnapshotsLoading,
+    isDirty,
+    createManualSnapshot,
+    restoreSnapshot,
+    deleteSnapshot,
+    clearSnapshots,
+    markCurrentAsSaved,
+    setBaselineFromHash,
+  } = useMapLocalSnapshots({
+    mapId,
+    mapState,
+    mapDescription: mapDescriptionDraft,
+    currentVisibility: mapQuery.data?.state ?? 'private',
+    enabled: isLoaded && isSignedIn && Boolean(mapQuery.data),
+    isBaselineReady: isInitialStateResolved,
+  });
+
+  useMapEditorInitialState({
+    mapId,
+    mapQueryData: mapQuery.data,
+    isLoaded,
+    isSignedIn,
+    setMapState,
+    setBaselineFromHash,
+    setMapDescriptionDraft,
+    setIsInitialStateResolved,
+  });
 
   useEffect(() => {
-    hasHydratedFromApiRef.current = false;
-    hasHydratedDescriptionFromApiRef.current = false;
-    setMapDescriptionDraft('');
+    setIsSaveSnapshotDialogOpen(false);
+    setIsLocalSnapshotsModalOpen(false);
   }, [mapId]);
-
-  useEffect(() => {
-    if (!mapQuery.data || hasHydratedFromApiRef.current) {
-      return;
-    }
-
-    if (isDefaultMapState(mapState)) {
-      setMapState(mapQuery.data.lastSnapshot.config);
-    }
-
-    hasHydratedFromApiRef.current = true;
-  }, [mapQuery.data, mapState, setMapState]);
-
-  useEffect(() => {
-    if (!mapQuery.data || hasHydratedDescriptionFromApiRef.current) {
-      return;
-    }
-
-    setMapDescriptionDraft(mapQuery.data.description ?? '');
-    hasHydratedDescriptionFromApiRef.current = true;
-  }, [mapQuery.data]);
 
   const forbiddenError = useMemo(() => {
     if (!mapQuery.error) {
@@ -84,6 +92,58 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
 
     return getRemoteGroupedSeriesHash(mapQuery.data.lastSnapshot.config.series);
   }, [mapQuery.data]);
+
+  const handleConfirmSaveSnapshot = async (input: {
+    description: string | null;
+    stateAtSave: 'private' | 'public';
+  }) => {
+    if (!mapQuery.data) {
+      return;
+    }
+
+    const mapTitle = mapState.mapName.trim();
+    const trimmedMapDescription = mapDescriptionDraft.trim();
+
+    try {
+      await saveSnapshotMutation.mutateAsync({
+        mapId,
+        mapState,
+        title: mapTitle.length > 0 ? mapTitle : mapQuery.data.title,
+        description: input.description,
+        stateAtSave: input.stateAtSave,
+        mapPatch: {
+          description: trimmedMapDescription.length > 0 ? trimmedMapDescription : null,
+          state: input.stateAtSave,
+        },
+      });
+      try {
+        await createManualSnapshot({
+          description: input.description,
+          stateAtSave: input.stateAtSave,
+        });
+      } catch {
+        // Local snapshot failure is non-fatal — server save already succeeded
+      }
+      markCurrentAsSaved();
+      setIsSaveSnapshotDialogOpen(false);
+      toast.success(t`Snapshot saved`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : t`Failed to save snapshot`;
+      toast.error(message);
+    }
+  };
+
+  const handleRestoreLocalSnapshot = async (snapshotId: number) => {
+    const snapshot = await restoreSnapshot(snapshotId);
+    if (!snapshot) {
+      return;
+    }
+
+    setMapState(snapshot.mapState);
+    setMapDescriptionDraft(snapshot.mapDescription);
+    setIsLocalSnapshotsModalOpen(false);
+    toast.success(t`Local snapshot restored`);
+  };
 
   if (!isLoaded || (mapQuery.isLoading && isSignedIn)) {
     return (
@@ -150,6 +210,11 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
         mapDescription={mapDescriptionDraft}
         capabilities={{ readOnly: false }}
         onOpenOwnerConfig={() => setIsOwnerConfigModalOpen(true)}
+        hasPendingChanges={isInitialStateResolved && isDirty}
+        onRequestSaveSnapshot={() => setIsSaveSnapshotDialogOpen(true)}
+        onOpenLocalSnapshots={() => setIsLocalSnapshotsModalOpen(true)}
+        isSavingSnapshot={saveSnapshotMutation.isPending}
+        localSnapshotCount={localSnapshots.length}
         bundledGroupedSeriesData={mapQuery.data.groupedSeriesData}
         bundledRemoteBaseSeriesHash={bundledRemoteBaseSeriesHash}
       />
@@ -159,12 +224,12 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
         mapId={mapId}
         currentMapState={mapState}
         mapName={mapState.mapName}
-        currentTitle={mapQuery.data.title}
         currentVisibility={mapQuery.data.state}
         currentPublicId={mapQuery.data.publicId}
         mapDescription={mapDescriptionDraft}
         onMapDescriptionChange={setMapDescriptionDraft}
         onOpenChange={setIsOwnerConfigModalOpen}
+        onRequestSaveSnapshot={() => setIsSaveSnapshotDialogOpen(true)}
         onMapNameChange={(nextMapName) => {
           setMapState((previousState) => ({
             ...previousState,
@@ -177,6 +242,25 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
         onDeleted={() => {
           navigate({ to: '/maps/editor', replace: true });
         }}
+      />
+
+      <MapAnalyticsSaveSnapshotDialog
+        open={isSaveSnapshotDialogOpen}
+        defaultVisibility={mapQuery.data.state}
+        isPending={saveSnapshotMutation.isPending}
+        onOpenChange={setIsSaveSnapshotDialogOpen}
+        onConfirm={handleConfirmSaveSnapshot}
+      />
+
+      <MapAnalyticsLocalSnapshotsModal
+        open={isLocalSnapshotsModalOpen}
+        snapshots={localSnapshots}
+        isLoading={isLocalSnapshotsLoading}
+        isBusy={saveSnapshotMutation.isPending}
+        onOpenChange={setIsLocalSnapshotsModalOpen}
+        onLoad={handleRestoreLocalSnapshot}
+        onDelete={deleteSnapshot}
+        onClearAll={clearSnapshots}
       />
     </>
   );

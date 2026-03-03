@@ -742,4 +742,68 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(tooltipHtml).not.toContain('>Group<');
   });
 
+  it('shows save call to action for owner map view with pending changes', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const onRequestSaveSnapshot = vi.fn();
+    const onOpenLocalSnapshots = vi.fn();
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="owner"
+        mapState={createMapState({ activeView: 'map' })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: false }}
+        hasPendingChanges
+        onRequestSaveSnapshot={onRequestSaveSnapshot}
+        onOpenLocalSnapshots={onOpenLocalSnapshots}
+        localSnapshotCount={2}
+      />
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Save snapshot' }));
+    expect(onRequestSaveSnapshot).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'Local snapshots (2)' })).toBeInTheDocument();
+    expect(screen.getByText('Stored only in this browser on this device.')).toBeInTheDocument();
+  });
+
+  it('hides save call to action when there are no pending changes', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="owner"
+        mapState={createMapState({ activeView: 'map' })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: false }}
+        hasPendingChanges={false}
+        onRequestSaveSnapshot={vi.fn()}
+      />
+    );
+
+    await screen.findByTestId('interactive-map');
+    expect(screen.queryByRole('button', { name: 'Save snapshot' })).not.toBeInTheDocument();
+  });
+
 });
