@@ -25,6 +25,20 @@ import { t } from '@lingui/core/macro';
 
 const MAP_VIEW_EPSILON = 1e-6;
 
+type DestroyAwareMap = L.Map & {
+  __isBeingDestroyed?: boolean;
+};
+
+function markMapDestroying(map: L.Map, isBeingDestroyed: boolean): void {
+  const destroyAwareMap = map as DestroyAwareMap;
+  destroyAwareMap.__isBeingDestroyed = isBeingDestroyed;
+}
+
+function isMapDestroying(map: L.Map): boolean {
+  const destroyAwareMap = map as DestroyAwareMap;
+  return destroyAwareMap.__isBeingDestroyed === true;
+}
+
 type FeatureStyleResolver = (feature?: Feature<Geometry, unknown>) => PathOptions;
 
 interface FeatureInteractionContext {
@@ -346,7 +360,10 @@ const MapTestIds: React.FC = () => {
 const MapCleanup: React.FC = () => {
   const map = useMap();
   useLayoutEffect(() => {
+    markMapDestroying(map, false);
+
     return () => {
+      markMapDestroying(map, true);
       try {
         // Stop pan/zoom animations before MapContainer destroys Leaflet internals.
         map.stop();
@@ -367,6 +384,10 @@ const MapUpdater: React.FC<{ center: LatLngExpression, zoom: number }> = ({ cent
 
   const updateViewIfNeeded = useCallback(() => {
     if (!center || !Number.isFinite(zoom)) {
+      return;
+    }
+
+    if (isMapDestroying(map)) {
       return;
     }
 
@@ -393,7 +414,6 @@ const MapUpdater: React.FC<{ center: LatLngExpression, zoom: number }> = ({ cent
       updateViewIfNeeded();
     } catch {
       // Map is being destroyed or in invalid state, ignore.
-      console.debug('MapUpdater: Could not update view, map may be unmounting');
     }
   }, [updateViewIfNeeded]);
 
@@ -407,9 +427,15 @@ const MapUpdater: React.FC<{ center: LatLngExpression, zoom: number }> = ({ cent
 const MapViewChangeListener: React.FC<{ onViewChange?: (center: [number, number], zoom: number) => void }> = ({ onViewChange }) => {
   const notifyViewChange = useCallback((map: L.Map) => {
     if (!onViewChange) return;
+    if (isMapDestroying(map)) {
+      return;
+    }
+
     const mapCenter = map.getCenter();
     const mapZoom = map.getZoom();
-    onViewChange([Number(mapCenter.lat), Number(mapCenter.lng)], Number(mapZoom));
+    const nextCenter: [number, number] = [Number(mapCenter.lat), Number(mapCenter.lng)];
+    const nextZoom = Number(mapZoom);
+    onViewChange(nextCenter, nextZoom);
   }, [onViewChange]);
 
   useMapEvents({

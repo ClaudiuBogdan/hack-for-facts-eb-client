@@ -9,13 +9,19 @@ import { t } from '@lingui/core/macro';
 interface AdvancedMapAnalyticsSeriesPanelProps {
   series: MapSupportedSeries[];
   activeSeriesId?: string;
+  selectedSeriesId?: string;
   collapsed: boolean;
   readOnly?: boolean;
   onToggleCollapsed: (collapsed: boolean) => void;
   onAddSeries: () => void;
-  onSetActive: (seriesId: string) => void;
-  onToggleEnabled: (seriesId: string, enabled: boolean) => void;
+  onSelectSeries: (seriesId: string) => void;
+  onActivate: (seriesId: string, enabled: boolean) => void;
+  onMakeMain: (seriesId: string) => void;
   onEdit: (seriesId: string) => void;
+  onMoveUp: (seriesId: string) => void;
+  onMoveDown: (seriesId: string) => void;
+  onDuplicate: (seriesId: string) => void;
+  onCopy: (seriesId: string) => void;
   onDelete: (seriesId: string) => void;
   onReorder: (activeSeriesId: string, overSeriesId: string) => void;
 }
@@ -23,13 +29,19 @@ interface AdvancedMapAnalyticsSeriesPanelProps {
 export function AdvancedMapAnalyticsSeriesPanel({
   series,
   activeSeriesId,
+  selectedSeriesId,
   collapsed,
   readOnly = false,
   onToggleCollapsed,
   onAddSeries,
-  onSetActive,
-  onToggleEnabled,
+  onSelectSeries,
+  onActivate,
+  onMakeMain,
   onEdit,
+  onMoveUp,
+  onMoveDown,
+  onDuplicate,
+  onCopy,
   onDelete,
   onReorder,
 }: Readonly<AdvancedMapAnalyticsSeriesPanelProps>) {
@@ -68,9 +80,15 @@ export function AdvancedMapAnalyticsSeriesPanel({
           <AdvancedMapAnalyticsSeriesList
             series={series}
             activeSeriesId={activeSeriesId}
-            onSetActive={onSetActive}
-            onToggleEnabled={onToggleEnabled}
+            selectedSeriesId={selectedSeriesId}
+            onSelectSeries={onSelectSeries}
+            onActivate={onActivate}
+            onMakeMain={onMakeMain}
             onEdit={onEdit}
+            onMoveUp={onMoveUp}
+            onMoveDown={onMoveDown}
+            onDuplicate={onDuplicate}
+            onCopy={onCopy}
             onDelete={onDelete}
             onReorder={onReorder}
             readOnly={readOnly}

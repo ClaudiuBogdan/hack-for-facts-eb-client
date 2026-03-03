@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   AdvancedMapAnalyticsUrlStateSchema,
@@ -8,6 +8,12 @@ import {
 
 const mockIsMobile = vi.fn(() => false);
 const navigateMock = vi.fn();
+const useHotkeysMock = vi.fn();
+const toastSuccessMock = vi.fn();
+const toastWarningMock = vi.fn();
+const toastErrorMock = vi.fn();
+const clipboardWriteTextMock = vi.fn();
+const clipboardReadTextMock = vi.fn();
 let capturedGetTooltipContent:
   | ((args: {
       properties: Record<string, unknown>;
@@ -17,6 +23,7 @@ let capturedGetTooltipContent:
     }) => string)
   | undefined;
 let latestInteractiveMapProps: Record<string, unknown> | undefined;
+let latestSeriesPanelProps: Record<string, unknown> | undefined;
 let mockGeoJsonData: {
   data: unknown;
   isLoading: boolean;
@@ -67,6 +74,18 @@ let mockBinsResult = {
 
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigateMock,
+}));
+
+vi.mock('react-hotkeys-hook', () => ({
+  useHotkeys: (...args: unknown[]) => useHotkeysMock(...args),
+}));
+
+vi.mock('sonner', () => ({
+  toast: {
+    success: (...args: unknown[]) => toastSuccessMock(...args),
+    warning: (...args: unknown[]) => toastWarningMock(...args),
+    error: (...args: unknown[]) => toastErrorMock(...args),
+  },
 }));
 
 vi.mock('@/hooks/use-mobile', () => ({
@@ -170,7 +189,10 @@ vi.mock('@/components/maps/advanced-map-analytics/advanced-map-analytics-config-
 }));
 
 vi.mock('@/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel', () => ({
-  AdvancedMapAnalyticsSeriesPanel: () => <div>Series Panel</div>,
+  AdvancedMapAnalyticsSeriesPanel: (props: Record<string, unknown>) => {
+    latestSeriesPanelProps = props;
+    return <div>Series Panel</div>;
+  },
 }));
 
 vi.mock('@/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel', () => ({
@@ -219,8 +241,22 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     navigateMock.mockReset();
+    useHotkeysMock.mockReset();
+    toastSuccessMock.mockReset();
+    toastWarningMock.mockReset();
+    toastErrorMock.mockReset();
+    clipboardWriteTextMock.mockReset();
+    clipboardReadTextMock.mockReset();
     capturedGetTooltipContent = undefined;
     latestInteractiveMapProps = undefined;
+    latestSeriesPanelProps = undefined;
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: clipboardWriteTextMock,
+        readText: clipboardReadTextMock,
+      },
+    });
     mockIsMobile.mockReturnValue(false);
     mockGeoJsonData = {
       data: null,
@@ -740,6 +776,187 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(tooltipHtml).toContain('Data series 1');
     expect(tooltipHtml).not.toContain('>Bins<');
     expect(tooltipHtml).not.toContain('>Group<');
+  });
+
+  it('dispatches copy, duplicate, and paste keyboard shortcuts in owner mode', async () => {
+    const selectedSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    selectedSeries.id = 'series_1';
+    selectedSeries.label = 'Selected series';
+
+    const pastedSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    pastedSeries.id = 'clipboard-series';
+    pastedSeries.label = 'Clipboard series';
+
+    clipboardReadTextMock.mockResolvedValue(
+      JSON.stringify({
+        type: 'advanced-map-series-copy',
+        payload: [pastedSeries],
+      })
+    );
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="owner"
+        mapState={createMapState({
+          activeView: 'map',
+          series: [selectedSeries],
+        })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: false }}
+      />
+    );
+
+    const onSelectSeries = latestSeriesPanelProps?.onSelectSeries as ((seriesId: string) => void) | undefined;
+    expect(onSelectSeries).toBeTypeOf('function');
+    act(() => {
+      onSelectSeries?.(selectedSeries.id);
+    });
+
+    const latestCopyHotkeyCall = useHotkeysMock.mock.calls.filter((call) => call[0] === 'mod+c').slice(-1)[0];
+    const latestPasteHotkeyCall = useHotkeysMock.mock.calls.filter((call) => call[0] === 'mod+v').slice(-1)[0];
+    const latestDuplicateHotkeyCall = useHotkeysMock.mock.calls.filter((call) => call[0] === 'mod+d').slice(-1)[0];
+    const copyHandler = latestCopyHotkeyCall?.[1] as
+      | ((event: { preventDefault: () => void; target: EventTarget | null }) => void)
+      | undefined;
+    const pasteHandler = latestPasteHotkeyCall?.[1] as
+      | ((event: { preventDefault: () => void; target: EventTarget | null }) => void)
+      | undefined;
+    const duplicateHandler = latestDuplicateHotkeyCall?.[1] as
+      | ((event: { preventDefault: () => void; target: EventTarget | null }) => void)
+      | undefined;
+
+    expect(copyHandler).toBeTypeOf('function');
+    expect(pasteHandler).toBeTypeOf('function');
+    expect(duplicateHandler).toBeTypeOf('function');
+
+    await act(async () => {
+      copyHandler?.({
+        preventDefault: vi.fn(),
+        target: document.body,
+      });
+    });
+    expect(clipboardWriteTextMock).toHaveBeenCalledTimes(1);
+
+    const setMapStateCallsBeforeDuplicate = setMapState.mock.calls.length;
+    act(() => {
+      duplicateHandler?.({
+        preventDefault: vi.fn(),
+        target: document.body,
+      });
+    });
+    expect(setMapState.mock.calls.length).toBeGreaterThan(setMapStateCallsBeforeDuplicate);
+
+    const setMapStateCallsBeforePaste = setMapState.mock.calls.length;
+    await act(async () => {
+      pasteHandler?.({
+        preventDefault: vi.fn(),
+        target: document.body,
+      });
+    });
+    expect(clipboardReadTextMock).toHaveBeenCalledTimes(1);
+    expect(setMapState.mock.calls.length).toBeGreaterThan(setMapStateCallsBeforePaste);
+  });
+
+  it('duplicates first available series on mod+d when no series is selected', async () => {
+    const baseSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    baseSeries.id = 'series_1';
+    baseSeries.label = 'Base series';
+
+    const initialState = createMapState({
+      activeView: 'map',
+      series: [baseSeries],
+    });
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="owner"
+        mapState={initialState}
+        setMapState={setMapState}
+        capabilities={{ readOnly: false }}
+      />
+    );
+
+    const latestDuplicateHotkeyCall = useHotkeysMock.mock.calls.filter((call) => call[0] === 'mod+d').slice(-1)[0];
+    const duplicateHandler = latestDuplicateHotkeyCall?.[1] as
+      | ((event: { preventDefault: () => void; target: EventTarget | null }) => void)
+      | undefined;
+
+    expect(duplicateHandler).toBeTypeOf('function');
+
+    act(() => {
+      duplicateHandler?.({
+        preventDefault: vi.fn(),
+        target: document.body,
+      });
+    });
+
+    const updateCall = setMapState.mock.calls[0]?.[0] as
+      | ((previousState: ReturnType<typeof createMapState>) => ReturnType<typeof createMapState>)
+      | undefined;
+    expect(typeof updateCall).toBe('function');
+
+    const nextState = updateCall?.(initialState);
+    expect(nextState?.series).toHaveLength(2);
+    expect(nextState?.series[1]?.label).toContain('(copy)');
+    expect(nextState?.series[1]?.id).not.toBe(baseSeries.id);
+  });
+
+  it('does not run series shortcuts in read-only mode', async () => {
+    const selectedSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    selectedSeries.id = 'series_1';
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({
+          activeView: 'map',
+          series: [selectedSeries],
+        })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+      />
+    );
+
+    const latestCopyHotkeyCall = useHotkeysMock.mock.calls.filter((call) => call[0] === 'mod+c').slice(-1)[0];
+    const latestPasteHotkeyCall = useHotkeysMock.mock.calls.filter((call) => call[0] === 'mod+v').slice(-1)[0];
+    const latestDuplicateHotkeyCall = useHotkeysMock.mock.calls.filter((call) => call[0] === 'mod+d').slice(-1)[0];
+    const copyHandler = latestCopyHotkeyCall?.[1] as
+      | ((event: { preventDefault: () => void; target: EventTarget | null }) => void)
+      | undefined;
+    const pasteHandler = latestPasteHotkeyCall?.[1] as
+      | ((event: { preventDefault: () => void; target: EventTarget | null }) => void)
+      | undefined;
+    const duplicateHandler = latestDuplicateHotkeyCall?.[1] as
+      | ((event: { preventDefault: () => void; target: EventTarget | null }) => void)
+      | undefined;
+
+    act(() => {
+      copyHandler?.({
+        preventDefault: vi.fn(),
+        target: document.body,
+      });
+      duplicateHandler?.({
+        preventDefault: vi.fn(),
+        target: document.body,
+      });
+      pasteHandler?.({
+        preventDefault: vi.fn(),
+        target: document.body,
+      });
+    });
+
+    expect(clipboardWriteTextMock).not.toHaveBeenCalled();
+    expect(clipboardReadTextMock).not.toHaveBeenCalled();
+    expect(setMapState).not.toHaveBeenCalled();
   });
 
   it('shows save call to action for owner map view with pending changes', async () => {

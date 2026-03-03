@@ -18,10 +18,16 @@ import { AdvancedMapAnalyticsSeriesListItem } from './advanced-map-analytics-ser
 interface AdvancedMapAnalyticsSeriesListProps {
   series: MapSupportedSeries[];
   activeSeriesId?: string;
+  selectedSeriesId?: string;
   readOnly?: boolean;
-  onSetActive: (seriesId: string) => void;
-  onToggleEnabled: (seriesId: string, enabled: boolean) => void;
+  onSelectSeries: (seriesId: string) => void;
+  onActivate: (seriesId: string, enabled: boolean) => void;
+  onMakeMain: (seriesId: string) => void;
   onEdit: (seriesId: string) => void;
+  onMoveUp: (seriesId: string) => void;
+  onMoveDown: (seriesId: string) => void;
+  onDuplicate: (seriesId: string) => void;
+  onCopy: (seriesId: string) => void;
   onDelete: (seriesId: string) => void;
   onReorder: (activeSeriesId: string, overSeriesId: string) => void;
 }
@@ -29,10 +35,16 @@ interface AdvancedMapAnalyticsSeriesListProps {
 export function AdvancedMapAnalyticsSeriesList({
   series,
   activeSeriesId,
+  selectedSeriesId,
   readOnly = false,
-  onSetActive,
-  onToggleEnabled,
+  onSelectSeries,
+  onActivate,
+  onMakeMain,
   onEdit,
+  onMoveUp,
+  onMoveDown,
+  onDuplicate,
+  onCopy,
   onDelete,
   onReorder,
 }: Readonly<AdvancedMapAnalyticsSeriesListProps>) {
@@ -67,15 +79,23 @@ export function AdvancedMapAnalyticsSeriesList({
 
   const renderedItems = (
     <div className="space-y-2.5">
-      {series.map((item) => (
+      {series.map((item, index) => (
         <AdvancedMapAnalyticsSeriesListItem
           key={item.id}
           series={item}
           isActive={item.id === activeSeriesId}
+          isSelected={item.id === selectedSeriesId}
+          isMoveUpDisabled={index === 0}
+          isMoveDownDisabled={index === series.length - 1}
           readOnly={readOnly}
-          onSetActive={onSetActive}
-          onToggleEnabled={onToggleEnabled}
+          onSelectSeries={onSelectSeries}
+          onActivate={onActivate}
+          onMakeMain={onMakeMain}
           onEdit={onEdit}
+          onMoveUp={onMoveUp}
+          onMoveDown={onMoveDown}
+          onDuplicate={onDuplicate}
+          onCopy={onCopy}
           onDelete={onDelete}
         />
       ))}

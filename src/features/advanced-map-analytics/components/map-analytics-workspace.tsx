@@ -3,6 +3,8 @@ import { useNavigate } from '@tanstack/react-router';
 import { produce } from 'immer';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Save } from 'lucide-react';
+import { useHotkeys } from 'react-hotkeys-hook';
+import { toast } from 'sonner';
 
 import { ClientOnly } from '@/components/ssr/ClientOnly';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -60,6 +62,9 @@ import {
   applySetActiveSeries,
   applyToggleSeriesEnabled,
   convertSeriesToType,
+  createCopiedMapSeriesPayload,
+  duplicateSeriesAfterSource,
+  normalizePastedMapSeries,
   reorderSeriesByIds,
 } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils';
 import { t } from '@lingui/core/macro';
@@ -131,6 +136,7 @@ export function MapAnalyticsWorkspace({
   const [editorState, setEditorState] = useState<EditorState | null>(null);
   const [valueFilterEditorState, setValueFilterEditorState] = useState<ValueFilterEditorState | null>(null);
   const [isWarningsModalOpen, setIsWarningsModalOpen] = useState(false);
+  const [selectedSeriesId, setSelectedSeriesId] = useState<string | undefined>(undefined);
   const [isMobileControlsCollapsed, setIsMobileControlsCollapsed] = useState(
     mobileControlsDefaultCollapsed
   );
@@ -185,6 +191,10 @@ export function MapAnalyticsWorkspace({
     [isReadOnly, updateState]
   );
 
+  const selectSeries = useCallback((seriesId: string) => {
+    setSelectedSeriesId(seriesId);
+  }, []);
+
   const addSeries = useCallback(() => {
     if (isReadOnly) {
       return;
@@ -194,6 +204,7 @@ export function MapAnalyticsWorkspace({
     nextSeries.id = createUniqueAdvancedMapAnalyticsId(mapState.series.map((series) => series.id));
 
     setEditorState({ mode: 'add', seriesId: nextSeries.id });
+    setSelectedSeriesId(nextSeries.id);
 
     updateState((draft) => {
       const isFirstSeries = draft.series.length === 0;
@@ -211,6 +222,7 @@ export function MapAnalyticsWorkspace({
       return;
     }
 
+    setSelectedSeriesId(seriesId);
     setEditorState({ mode: 'edit', seriesId });
   }, [isReadOnly]);
 
@@ -230,16 +242,20 @@ export function MapAnalyticsWorkspace({
       setEditorState((prevState) =>
         prevState?.seriesId === seriesId ? null : prevState
       );
+      setSelectedSeriesId((previousSelectedSeriesId) =>
+        previousSelectedSeriesId === seriesId ? undefined : previousSelectedSeriesId
+      );
     },
     [isReadOnly, updateState]
   );
 
-  const setActiveSeries = useCallback(
+  const makeSeriesMain = useCallback(
     (seriesId: string) => {
       if (isReadOnly) {
         return;
       }
 
+      setSelectedSeriesId(seriesId);
       updateState((draft) => {
         const nextState = applySetActiveSeries(draft, seriesId);
         draft.series = nextState.series;
@@ -249,12 +265,13 @@ export function MapAnalyticsWorkspace({
     [isReadOnly, updateState]
   );
 
-  const toggleSeriesEnabled = useCallback(
+  const setSeriesActivation = useCallback(
     (seriesId: string, enabled: boolean) => {
       if (isReadOnly) {
         return;
       }
 
+      setSelectedSeriesId(seriesId);
       updateState((draft) => {
         const nextState = applyToggleSeriesEnabled(draft, seriesId, enabled);
         draft.series = nextState.series;
@@ -263,6 +280,145 @@ export function MapAnalyticsWorkspace({
     },
     [isReadOnly, updateState]
   );
+
+  const moveSeriesUp = useCallback(
+    (seriesId: string) => {
+      if (isReadOnly) {
+        return;
+      }
+
+      updateState((draft) => {
+        const sourceIndex = draft.series.findIndex((series) => series.id === seriesId);
+        if (sourceIndex <= 0) {
+          return;
+        }
+
+        const previousSeriesId = draft.series[sourceIndex - 1]?.id;
+        if (!previousSeriesId) {
+          return;
+        }
+
+        draft.series = reorderSeriesByIds(draft.series, seriesId, previousSeriesId);
+      });
+    },
+    [isReadOnly, updateState]
+  );
+
+  const moveSeriesDown = useCallback(
+    (seriesId: string) => {
+      if (isReadOnly) {
+        return;
+      }
+
+      updateState((draft) => {
+        const sourceIndex = draft.series.findIndex((series) => series.id === seriesId);
+        if (sourceIndex === -1 || sourceIndex >= draft.series.length - 1) {
+          return;
+        }
+
+        const nextSeriesId = draft.series[sourceIndex + 1]?.id;
+        if (!nextSeriesId) {
+          return;
+        }
+
+        draft.series = reorderSeriesByIds(draft.series, seriesId, nextSeriesId);
+      });
+    },
+    [isReadOnly, updateState]
+  );
+
+  const duplicateSeries = useCallback(
+    (seriesId: string) => {
+      if (isReadOnly) {
+        return;
+      }
+
+      const preferredDuplicatedSeriesId = createUniqueAdvancedMapAnalyticsId(
+        mapState.series.map((series) => series.id)
+      );
+      updateState((draft) => {
+        const duplicateResult = duplicateSeriesAfterSource(
+          draft.series,
+          seriesId,
+          preferredDuplicatedSeriesId
+        );
+        draft.series = duplicateResult.series;
+      });
+
+      setSelectedSeriesId(preferredDuplicatedSeriesId);
+    },
+    [isReadOnly, mapState.series, updateState]
+  );
+
+  const copySeriesToClipboard = useCallback(
+    async (seriesId: string) => {
+      if (isReadOnly) {
+        return;
+      }
+
+      const clipboardPayload = createCopiedMapSeriesPayload(mapState.series, seriesId);
+      if (!clipboardPayload) {
+        toast.error(t`Copy failed`);
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(clipboardPayload));
+        toast.success(t`Series copied to clipboard`);
+      } catch {
+        toast.error(t`Could not copy series to clipboard`);
+      }
+    },
+    [isReadOnly, mapState.series]
+  );
+
+  const pasteSeriesFromClipboard = useCallback(async () => {
+    if (isReadOnly) {
+      return;
+    }
+
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      const normalizedPasteResult = normalizePastedMapSeries(clipboardText, mapState.series);
+      if (!normalizedPasteResult) {
+        toast.warning(t`Nothing to paste`);
+        return;
+      }
+
+      if (normalizedPasteResult.seriesToInsert.length === 0) {
+        if (normalizedPasteResult.skippedUnsupportedCount > 0) {
+          toast.warning(
+            t`No compatible series found in clipboard`
+          );
+        } else {
+          toast.warning(t`Nothing to paste`);
+        }
+        return;
+      }
+
+      const firstPastedSeriesId = normalizedPasteResult.seriesToInsert[0]?.id;
+
+      updateState((draft) => {
+        draft.series.push(...normalizedPasteResult.seriesToInsert);
+      });
+
+      if (firstPastedSeriesId) {
+        setSelectedSeriesId(firstPastedSeriesId);
+      }
+
+      toast.success(
+        t`${normalizedPasteResult.seriesToInsert.length} series pasted`
+      );
+
+      if (normalizedPasteResult.skippedUnsupportedCount > 0) {
+        toast.warning(
+          t`${normalizedPasteResult.skippedUnsupportedCount} unsupported series were skipped`
+        );
+      }
+    } catch {
+      toast.error(t`Paste failed`);
+    }
+  }, [isReadOnly, mapState.series, updateState]);
 
   const reorderSeries = useCallback(
     (activeSeriesId: string, overSeriesId: string) => {
@@ -685,6 +841,61 @@ export function MapAnalyticsWorkspace({
     activeSeriesId,
     activeValues,
     seriesWarnings,
+  });
+
+  useEffect(() => {
+    if (!selectedSeriesId) {
+      return;
+    }
+
+    if (mapState.series.some((series) => series.id === selectedSeriesId)) {
+      return;
+    }
+
+    setSelectedSeriesId(undefined);
+  }, [mapState.series, selectedSeriesId]);
+
+  const areSeriesHotkeysDisabled =
+    isReadOnly ||
+    editorState !== null ||
+    valueFilterEditorState !== null ||
+    binsEditorState !== null ||
+    isWarningsModalOpen;
+
+  useHotkeys('mod+c', (event) => {
+    if (
+      areSeriesHotkeysDisabled ||
+      !selectedSeriesId ||
+      isEditableEventTarget(event.target)
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    void copySeriesToClipboard(selectedSeriesId);
+  });
+
+  useHotkeys('mod+v', (event) => {
+    if (areSeriesHotkeysDisabled || isEditableEventTarget(event.target)) {
+      return;
+    }
+
+    event.preventDefault();
+    void pasteSeriesFromClipboard();
+  });
+
+  useHotkeys('mod+d', (event) => {
+    if (areSeriesHotkeysDisabled || isEditableEventTarget(event.target)) {
+      return;
+    }
+
+    const duplicateTargetSeriesId = selectedSeriesId ?? activeSeriesId ?? mapState.series[0]?.id;
+    if (!duplicateTargetSeriesId) {
+      return;
+    }
+
+    event.preventDefault();
+    duplicateSeries(duplicateTargetSeriesId);
   });
 
   const activeBinsLegendTitle = useMemo(() => {
@@ -1282,13 +1493,19 @@ export function MapAnalyticsWorkspace({
       <AdvancedMapAnalyticsSeriesPanel
         series={mapState.series}
         activeSeriesId={activeSeriesId}
+        selectedSeriesId={selectedSeriesId}
         collapsed={Boolean(mapState.seriesPanelCollapsed)}
         readOnly={isReadOnly}
         onToggleCollapsed={togglePanelCollapsed}
         onAddSeries={addSeries}
-        onSetActive={setActiveSeries}
-        onToggleEnabled={toggleSeriesEnabled}
+        onSelectSeries={selectSeries}
+        onActivate={setSeriesActivation}
+        onMakeMain={makeSeriesMain}
         onEdit={editSeries}
+        onMoveUp={moveSeriesUp}
+        onMoveDown={moveSeriesDown}
+        onDuplicate={duplicateSeries}
+        onCopy={(seriesId) => void copySeriesToClipboard(seriesId)}
         onDelete={deleteSeries}
         onReorder={reorderSeries}
       />
@@ -1773,6 +1990,19 @@ function resolveSeriesDisplayUnit(
   }
 
   return fallbackUnit;
+}
+
+function isEditableEventTarget(eventTarget: EventTarget | null): boolean {
+  if (!(eventTarget instanceof HTMLElement)) {
+    return false;
+  }
+
+  if (eventTarget.isContentEditable) {
+    return true;
+  }
+
+  const closestEditableElement = eventTarget.closest('input, textarea, select, [contenteditable="true"]');
+  return closestEditableElement !== null;
 }
 
 function readFiniteNumber(value: unknown): number | undefined {

@@ -100,6 +100,12 @@ export const MapSupportedSeriesSchema = z.discriminatedUnion('type', [
 
 export type MapSupportedSeries = z.infer<typeof MapSupportedSeriesSchema>;
 
+export const CopiedAdvancedMapSeriesSchema = z.object({
+  type: z.literal('advanced-map-series-copy'),
+  payload: z.array(MapSupportedSeriesSchema),
+});
+export type CopiedAdvancedMapSeries = z.infer<typeof CopiedAdvancedMapSeriesSchema>;
+
 export type MapCalculationSeries = Extract<
   MapSupportedSeries,
   { type: 'aggregated-series-calculation' }

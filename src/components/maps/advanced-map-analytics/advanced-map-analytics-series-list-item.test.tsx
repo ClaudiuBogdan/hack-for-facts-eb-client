@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { AdvancedMapAnalyticsSeriesListItem } from './advanced-map-analytics-series-list-item';
 import { createDefaultAdvancedMapAnalyticsSeries } from '@/schemas/advanced-map-analytics';
 
@@ -30,101 +30,125 @@ vi.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenuItem: ({
     children,
     onSelect,
+    disabled,
   }: {
     children: ReactNode;
     onSelect?: () => void;
+    disabled?: boolean;
   }) => (
-    <button type="button" onClick={onSelect}>
+    <button type="button" onClick={onSelect} disabled={disabled}>
       {children}
     </button>
   ),
+  DropdownMenuSeparator: () => <div />,
 }));
 
 describe('AdvancedMapAnalyticsSeriesListItem', () => {
-  it('opens edit when row label is clicked', () => {
+  function renderItem(overrides?: Partial<ComponentProps<typeof AdvancedMapAnalyticsSeriesListItem>>) {
     const series = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
-    const onEdit = vi.fn();
+    const props = {
+      series,
+      isActive: false,
+      isSelected: false,
+      isMoveUpDisabled: false,
+      isMoveDownDisabled: false,
+      onSelectSeries: vi.fn(),
+      onMakeMain: vi.fn(),
+      onActivate: vi.fn(),
+      onEdit: vi.fn(),
+      onMoveUp: vi.fn(),
+      onMoveDown: vi.fn(),
+      onDuplicate: vi.fn(),
+      onCopy: vi.fn(),
+      onDelete: vi.fn(),
+      ...overrides,
+    };
 
-    render(
-      <AdvancedMapAnalyticsSeriesListItem
-        series={series}
-        isActive={false}
-        onSetActive={vi.fn()}
-        onToggleEnabled={vi.fn()}
-        onEdit={onEdit}
-        onDelete={vi.fn()}
-      />
-    );
+    render(<AdvancedMapAnalyticsSeriesListItem {...props} />);
+    return props;
+  }
+
+  it('opens edit when row label is clicked', () => {
+    const props = renderItem();
 
     fireEvent.click(screen.getByText('Execution analytics'));
 
-    expect(onEdit).toHaveBeenCalledWith(series.id);
+    expect(props.onSelectSeries).toHaveBeenCalledWith(props.series.id);
+    expect(props.onEdit).toHaveBeenCalledWith(props.series.id);
   });
 
-  it('calls onSetActive when icon button is clicked', () => {
-    const series = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
-    const onSetActive = vi.fn();
-
-    render(
-      <AdvancedMapAnalyticsSeriesListItem
-        series={series}
-        isActive={false}
-        onSetActive={onSetActive}
-        onToggleEnabled={vi.fn()}
-        onEdit={vi.fn()}
-        onDelete={vi.fn()}
-      />
-    );
+  it('calls onMakeMain when icon button is clicked', () => {
+    const props = renderItem();
 
     fireEvent.click(screen.getByLabelText('Set active series'));
 
-    expect(onSetActive).toHaveBeenCalledWith(series.id);
+    expect(props.onSelectSeries).toHaveBeenCalledWith(props.series.id);
+    expect(props.onMakeMain).toHaveBeenCalledWith(props.series.id);
   });
 
-  it('calls onToggleEnabled when switch changes', () => {
+  it('calls onActivate when switch changes', () => {
     const series = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
     series.enabled = true;
-
-    const onToggleEnabled = vi.fn();
-
-    render(
-      <AdvancedMapAnalyticsSeriesListItem
-        series={series}
-        isActive={false}
-        onSetActive={vi.fn()}
-        onToggleEnabled={onToggleEnabled}
-        onEdit={vi.fn()}
-        onDelete={vi.fn()}
-      />
-    );
+    const props = renderItem({ series });
 
     fireEvent.click(screen.getByRole('switch'));
 
-    expect(onToggleEnabled).toHaveBeenCalledWith(series.id, false);
+    expect(props.onActivate).toHaveBeenCalledWith(series.id, false);
   });
 
-  it('calls onEdit and onDelete from overflow menu', () => {
-    const series = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
-    const onEdit = vi.fn();
-    const onDelete = vi.fn();
-
-    render(
-      <AdvancedMapAnalyticsSeriesListItem
-        series={series}
-        isActive={false}
-        onSetActive={vi.fn()}
-        onToggleEnabled={vi.fn()}
-        onEdit={onEdit}
-        onDelete={onDelete}
-      />
-    );
+  it('calls row menu actions', () => {
+    const props = renderItem();
 
     fireEvent.click(screen.getByLabelText('Open row menu'));
     fireEvent.click(screen.getByText('Edit'));
-    expect(onEdit).toHaveBeenCalledWith(series.id);
+    expect(props.onEdit).toHaveBeenCalledWith(props.series.id);
+
+    fireEvent.click(screen.getByLabelText('Open row menu'));
+    fireEvent.click(screen.getByText('Make main'));
+    expect(props.onMakeMain).toHaveBeenCalledWith(props.series.id);
+
+    fireEvent.click(screen.getByLabelText('Open row menu'));
+    fireEvent.click(screen.getByText('Deactivate'));
+    expect(props.onActivate).toHaveBeenCalledWith(props.series.id, false);
+
+    fireEvent.click(screen.getByLabelText('Open row menu'));
+    fireEvent.click(screen.getByText('Move up'));
+    expect(props.onMoveUp).toHaveBeenCalledWith(props.series.id);
+
+    fireEvent.click(screen.getByLabelText('Open row menu'));
+    fireEvent.click(screen.getByText('Move down'));
+    expect(props.onMoveDown).toHaveBeenCalledWith(props.series.id);
+
+    fireEvent.click(screen.getByLabelText('Open row menu'));
+    fireEvent.click(screen.getByText('Duplicate'));
+    expect(props.onDuplicate).toHaveBeenCalledWith(props.series.id);
+
+    fireEvent.click(screen.getByLabelText('Open row menu'));
+    fireEvent.click(screen.getByText('Copy'));
+    expect(props.onCopy).toHaveBeenCalledWith(props.series.id);
 
     fireEvent.click(screen.getByLabelText('Open row menu'));
     fireEvent.click(screen.getByText('Delete'));
-    expect(onDelete).toHaveBeenCalledWith(series.id);
+    expect(props.onDelete).toHaveBeenCalledWith(props.series.id);
+  });
+
+  it('disables move actions when row is at boundaries', () => {
+    renderItem({
+      isMoveUpDisabled: true,
+      isMoveDownDisabled: true,
+    });
+
+    fireEvent.click(screen.getByLabelText('Open row menu'));
+    expect(screen.getByText('Move up')).toBeDisabled();
+    expect(screen.getByText('Move down')).toBeDisabled();
+  });
+
+  it('disables make main action when series is already main', () => {
+    renderItem({
+      isActive: true,
+    });
+
+    fireEvent.click(screen.getByLabelText('Open row menu'));
+    expect(screen.getByText('Make main')).toBeDisabled();
   });
 });
