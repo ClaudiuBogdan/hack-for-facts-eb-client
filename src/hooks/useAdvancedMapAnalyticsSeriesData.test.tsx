@@ -88,7 +88,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
           activeSeriesId,
           defaultCurrency: 'RON',
           defaultInflationAdjusted: false,
-          urlSearchLength: 100,
+          serializedDraftLength: 100,
         }),
       {
         wrapper,
@@ -240,7 +240,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
           activeSeriesId: baseSeries.id,
           defaultCurrency: 'RON',
           defaultInflationAdjusted: false,
-          urlSearchLength: 100,
+          serializedDraftLength: 100,
         }),
       {
         wrapper,
@@ -281,7 +281,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
           activeSeriesId: baseSeries.id,
           defaultCurrency: 'RON',
           defaultInflationAdjusted: false,
-          urlSearchLength: 2200,
+          serializedDraftLength: 2200,
         }),
       { wrapper }
     );
@@ -311,7 +311,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
           activeSeriesId: baseSeries.id,
           defaultCurrency: 'RON',
           defaultInflationAdjusted: false,
-          urlSearchLength: 120,
+          serializedDraftLength: 120,
           enabled: false,
         }),
       { wrapper }
@@ -342,7 +342,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
           activeSeriesId: baseSeries.id,
           defaultCurrency: 'RON',
           defaultInflationAdjusted: false,
-          urlSearchLength: 120,
+          serializedDraftLength: 120,
           enabled,
         }),
       {
@@ -399,7 +399,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
           activeSeriesId: insSeries.id,
           defaultCurrency: 'RON',
           defaultInflationAdjusted: false,
-          urlSearchLength: 100,
+          serializedDraftLength: 100,
         }),
       { wrapper }
     );
@@ -438,7 +438,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
           activeSeriesId: insSeries.id,
           defaultCurrency: 'RON',
           defaultInflationAdjusted: false,
-          urlSearchLength: 100,
+          serializedDraftLength: 100,
         }),
       { wrapper }
     );
@@ -472,7 +472,7 @@ describe('useAdvancedMapAnalyticsSeriesData', () => {
           activeSeriesId: insSeries.id,
           defaultCurrency: 'RON',
           defaultInflationAdjusted: false,
-          urlSearchLength: 100,
+          serializedDraftLength: 100,
         }),
       { wrapper }
     );

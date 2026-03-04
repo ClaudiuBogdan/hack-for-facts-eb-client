@@ -9,7 +9,10 @@ const updateMutateAsyncMock = vi.fn();
 const deleteMapMutateAsyncMock = vi.fn();
 const fetchSnapshotForRestoreMock = vi.fn();
 const clipboardWriteTextMock = vi.fn();
+const clipboardReadTextMock = vi.fn();
 const ensureShortRedirectUrlMock = vi.fn();
+const createObjectUrlMock = vi.fn();
+const revokeObjectUrlMock = vi.fn();
 
 vi.mock('@tanstack/react-query', () => ({
   useQueryClient: () => queryClientMock,
@@ -18,6 +21,7 @@ vi.mock('@tanstack/react-query', () => ({
 vi.mock('sonner', () => ({
   toast: {
     success: vi.fn(),
+    warning: vi.fn(),
     error: vi.fn(),
   },
 }));
@@ -49,8 +53,12 @@ describe('MapAnalyticsOwnerConfigModal', () => {
     deleteMapMutateAsyncMock.mockReset();
     fetchSnapshotForRestoreMock.mockReset();
     clipboardWriteTextMock.mockReset();
+    clipboardReadTextMock.mockReset();
     ensureShortRedirectUrlMock.mockReset();
+    createObjectUrlMock.mockReset();
+    revokeObjectUrlMock.mockReset();
     vi.mocked(toast.success).mockReset();
+    vi.mocked(toast.warning).mockReset();
     vi.mocked(toast.error).mockReset();
     ensureShortRedirectUrlMock.mockResolvedValue('https://transparenta.eu/share/map-copy');
 
@@ -92,7 +100,17 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       configurable: true,
       value: {
         writeText: clipboardWriteTextMock,
+        readText: clipboardReadTextMock,
       },
+    });
+    createObjectUrlMock.mockReturnValue('blob:map-config');
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: createObjectUrlMock,
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: revokeObjectUrlMock,
     });
   });
 
@@ -114,6 +132,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
         onMapNameChange={vi.fn()}
         onRequestSaveSnapshot={vi.fn()}
         onLoadSnapshot={onLoadSnapshot}
+        onApplyImportedConfig={vi.fn()}
         onDeleted={onDeleted}
       />
     );
@@ -149,6 +168,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
         onMapNameChange={vi.fn()}
         onRequestSaveSnapshot={onRequestSaveSnapshot}
         onLoadSnapshot={vi.fn()}
+        onApplyImportedConfig={vi.fn()}
         onDeleted={vi.fn()}
       />
     );
@@ -176,6 +196,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
         onMapDescriptionChange={onMapDescriptionChange}
         onRequestSaveSnapshot={vi.fn()}
         onLoadSnapshot={vi.fn()}
+        onApplyImportedConfig={vi.fn()}
         onDeleted={vi.fn()}
       />
     );
@@ -191,6 +212,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
 
   it('loads snapshot after confirmation and only replaces current config', async () => {
     const onLoadSnapshot = vi.fn();
+    const currentMapDescription = 'Current map description';
 
     const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
     render(
@@ -199,12 +221,14 @@ describe('MapAnalyticsOwnerConfigModal', () => {
         mapId="map_1"
         currentMapState={baseMapState}
         mapName="My map"
+        mapDescription={currentMapDescription}
         currentVisibility="private"
         currentPublicId={null}
         onOpenChange={vi.fn()}
         onMapNameChange={vi.fn()}
         onRequestSaveSnapshot={vi.fn()}
         onLoadSnapshot={onLoadSnapshot}
+        onApplyImportedConfig={vi.fn()}
         onDeleted={vi.fn()}
       />
     );
@@ -220,7 +244,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       expect(fetchSnapshotForRestoreMock).toHaveBeenCalledWith('map_1', 'snap_1');
     });
 
-    expect(onLoadSnapshot).toHaveBeenCalledWith(snapshotState);
+    expect(onLoadSnapshot).toHaveBeenCalledWith(snapshotState, currentMapDescription);
     expect(updateMutateAsyncMock).not.toHaveBeenCalled();
   });
 
@@ -241,6 +265,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
         onMapNameChange={vi.fn()}
         onRequestSaveSnapshot={vi.fn()}
         onLoadSnapshot={vi.fn()}
+        onApplyImportedConfig={vi.fn()}
         onDeleted={onDeleted}
       />
     );
@@ -273,6 +298,7 @@ describe('MapAnalyticsOwnerConfigModal', () => {
         onMapNameChange={vi.fn()}
         onRequestSaveSnapshot={vi.fn()}
         onLoadSnapshot={vi.fn()}
+        onApplyImportedConfig={vi.fn()}
         onDeleted={vi.fn()}
       />
     );
@@ -285,5 +311,138 @@ describe('MapAnalyticsOwnerConfigModal', () => {
     await waitFor(() => {
       expect(clipboardWriteTextMock).toHaveBeenCalled();
     });
+  });
+
+  it('imports pasted JSON config and delegates full replacement to parent handler', async () => {
+    const onApplyImportedConfig = vi.fn().mockResolvedValue(undefined);
+    clipboardReadTextMock.mockResolvedValue(
+      JSON.stringify({
+        type: 'advanced-map-analytics-config',
+        version: 1,
+        mapState: {
+          mapName: 'Imported map',
+          activeView: 'table',
+        },
+        mapDescription: 'Imported description',
+      })
+    );
+
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentVisibility="private"
+        currentPublicId={null}
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onRequestSaveSnapshot={vi.fn()}
+        onLoadSnapshot={vi.fn()}
+        onApplyImportedConfig={onApplyImportedConfig}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Paste config' }));
+
+    await waitFor(() => {
+      expect(onApplyImportedConfig).toHaveBeenCalledWith(
+        expect.objectContaining({
+          mapDescription: 'Imported description',
+          mapState: expect.objectContaining({
+            mapName: 'Imported map',
+            activeView: 'table',
+          }),
+        })
+      );
+    });
+  });
+
+  it('creates local snapshot hook before exporting config', async () => {
+    const onBeforeExportConfig = vi.fn().mockResolvedValue(undefined);
+    const anchorClickMock = vi.fn();
+    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
+      const element = document.createElementNS('http://www.w3.org/1999/xhtml', tagName);
+      if (tagName.toLowerCase() === 'a') {
+        (element as HTMLAnchorElement).click = anchorClickMock;
+      }
+      return element as HTMLElementTagNameMap[keyof HTMLElementTagNameMap];
+    });
+
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentVisibility="private"
+        currentPublicId={null}
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onRequestSaveSnapshot={vi.fn()}
+        onBeforeExportConfig={onBeforeExportConfig}
+        onLoadSnapshot={vi.fn()}
+        onApplyImportedConfig={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Export config' }));
+
+    await waitFor(() => {
+      expect(onBeforeExportConfig).toHaveBeenCalledTimes(1);
+      expect(createObjectUrlMock).toHaveBeenCalledTimes(1);
+      expect(anchorClickMock).toHaveBeenCalledTimes(1);
+    });
+
+    createElementSpy.mockRestore();
+  });
+
+  it('still exports config when pre-export snapshot hook fails', async () => {
+    const onBeforeExportConfig = vi.fn().mockRejectedValue(new Error('snapshot failed'));
+    const anchorClickMock = vi.fn();
+    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
+      const element = document.createElementNS('http://www.w3.org/1999/xhtml', tagName);
+      if (tagName.toLowerCase() === 'a') {
+        (element as HTMLAnchorElement).click = anchorClickMock;
+      }
+      return element as HTMLElementTagNameMap[keyof HTMLElementTagNameMap];
+    });
+
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentVisibility="private"
+        currentPublicId={null}
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onRequestSaveSnapshot={vi.fn()}
+        onBeforeExportConfig={onBeforeExportConfig}
+        onLoadSnapshot={vi.fn()}
+        onApplyImportedConfig={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Export config' }));
+
+    await waitFor(() => {
+      expect(onBeforeExportConfig).toHaveBeenCalledTimes(1);
+      expect(toast.warning).toHaveBeenCalledWith(
+        'Local backup failed. Exporting configuration anyway.'
+      );
+      expect(createObjectUrlMock).toHaveBeenCalledTimes(1);
+      expect(anchorClickMock).toHaveBeenCalledTimes(1);
+      expect(toast.success).toHaveBeenCalledWith('Configuration exported');
+    });
+
+    createElementSpy.mockRestore();
   });
 });

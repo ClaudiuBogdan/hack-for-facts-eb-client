@@ -5,11 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { AuthSignInButton, useAuth } from '@/lib/auth';
 import { parseSearchParamJson } from '@/lib/router-search';
+import { Analytics } from '@/lib/analytics';
 import { t } from '@lingui/core/macro';
 import {
   AdvancedMapAnalyticsUrlStateSchema,
   type AdvancedMapAnalyticsUrlState,
 } from '@/schemas/advanced-map-analytics';
+import { useMapEditorStorageFallbackWarning } from '@/features/advanced-map-analytics/hooks/use-map-editor-storage-fallback-warning';
+import { consumeMapCloneHandoff } from '@/features/advanced-map-analytics/store/map-clone-handoff';
 import {
   useCreateAdvancedMapAnalyticsMapMutation,
   useSaveAdvancedMapAnalyticsSnapshotMutation,
@@ -42,6 +45,8 @@ interface CloneStateResolutionMissing {
 interface CloneStateResolutionValid {
   status: 'valid';
   mapState: AdvancedMapAnalyticsUrlState;
+  mapDescription: string;
+  source: 'clone_ref' | 'legacy_state';
 }
 
 interface CloneStateResolutionInvalid {
@@ -55,30 +60,9 @@ type CloneStateResolution =
 
 interface MapCreationAttempt {
   mapState: AdvancedMapAnalyticsUrlState;
+  mapDescription: string;
   shouldSaveCloneSnapshot: boolean;
   existingMapId?: string;
-}
-
-function resolveCloneState(search: unknown): CloneStateResolution {
-  if (!hasStateSearchParam(search)) {
-    return { status: 'missing' };
-  }
-
-  const searchState =
-    typeof search === 'object' && search !== null && Object.prototype.hasOwnProperty.call(search, 'state')
-      ? (search as Record<string, unknown>).state
-      : undefined;
-  const parsedSearchState = parseSearchParamJson(searchState);
-  const parsedMapState = AdvancedMapAnalyticsUrlStateSchema.safeParse(parsedSearchState);
-
-  if (!parsedMapState.success) {
-    return { status: 'invalid' };
-  }
-
-  return {
-    status: 'valid',
-    mapState: parsedMapState.data,
-  };
 }
 
 export function NewMapRouteComponent() {
@@ -90,7 +74,69 @@ export function NewMapRouteComponent() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const hasTriggeredCreationRef = useRef(false);
   const lastAttemptRef = useRef<MapCreationAttempt | null>(null);
-  const cloneStateResolution = useMemo(() => resolveCloneState(search), [search]);
+  const cachedCloneResolutionByRef = useRef(new Map<string, CloneStateResolution>());
+
+  useMapEditorStorageFallbackWarning();
+
+  const cloneStateResolution = useMemo<CloneStateResolution>(() => {
+    const cloneRef =
+      typeof search === 'object' && search !== null && typeof (search as Record<string, unknown>).cloneRef === 'string'
+        ? ((search as Record<string, unknown>).cloneRef as string).trim()
+        : '';
+
+    if (cloneRef.length > 0) {
+      const cachedResolution = cachedCloneResolutionByRef.current.get(cloneRef);
+      if (cachedResolution) {
+        return cachedResolution;
+      }
+
+      const cloneHandoff = consumeMapCloneHandoff(cloneRef);
+      if (!cloneHandoff) {
+        const invalidResolution: CloneStateResolution = { status: 'invalid' };
+        cachedCloneResolutionByRef.current.set(cloneRef, invalidResolution);
+        return invalidResolution;
+      }
+
+      Analytics.capture(Analytics.EVENTS.AdvancedMapAnalyticsCloneHandoffUsed, {
+        source: 'new_route_clone_ref',
+      });
+
+      const validResolution: CloneStateResolution = {
+        status: 'valid',
+        mapState: cloneHandoff.mapState,
+        mapDescription: cloneHandoff.mapDescription ?? '',
+        source: 'clone_ref',
+      };
+      cachedCloneResolutionByRef.current.set(cloneRef, validResolution);
+      return validResolution;
+    }
+
+    if (!hasStateSearchParam(search)) {
+      return { status: 'missing' };
+    }
+
+    const searchState =
+      typeof search === 'object' && search !== null && Object.prototype.hasOwnProperty.call(search, 'state')
+        ? (search as Record<string, unknown>).state
+        : undefined;
+    const parsedSearchState = parseSearchParamJson(searchState);
+    const parsedMapState = AdvancedMapAnalyticsUrlStateSchema.safeParse(parsedSearchState);
+
+    if (!parsedMapState.success) {
+      return { status: 'invalid' };
+    }
+
+    Analytics.capture(Analytics.EVENTS.AdvancedMapAnalyticsLegacyCloneStateUsed, {
+      source: 'new_route_legacy_state',
+    });
+
+    return {
+      status: 'valid',
+      mapState: parsedMapState.data,
+      mapDescription: '',
+      source: 'legacy_state',
+    };
+  }, [search]);
 
   const handleCreateMapFromState = useCallback(
     (attempt: MapCreationAttempt) => {
@@ -104,6 +150,7 @@ export function NewMapRouteComponent() {
 
       const initialMapState = attempt.mapState;
       const title = initialMapState.mapName?.trim();
+      const description = attempt.mapDescription.trim();
 
       void (async () => {
         let mapId = attempt.existingMapId;
@@ -112,6 +159,7 @@ export function NewMapRouteComponent() {
           const createdMap = await createMapMutation.mutateAsync({
             mapState: initialMapState,
             title: title && title.length > 0 ? title : undefined,
+            description: description.length > 0 ? description : undefined,
             state: 'private',
           });
           mapId = createdMap.id;
@@ -127,13 +175,21 @@ export function NewMapRouteComponent() {
             mapState: initialMapState,
             title: title && title.length > 0 ? title : undefined,
             stateAtSave: 'private',
+            mapPatch: {
+              description: description.length > 0 ? description : null,
+            },
           });
         }
 
         navigate({
           to: '/maps/editor/$mapId',
           params: { mapId },
-          search: initialMapState,
+          search: (previousSearch) => {
+            const nextSearch = { ...(previousSearch as Record<string, unknown>) };
+            delete nextSearch.cloneRef;
+            delete nextSearch.state;
+            return nextSearch;
+          },
           replace: true,
         });
       })().catch((error) => {
@@ -156,6 +212,7 @@ export function NewMapRouteComponent() {
     if (cloneStateResolution.status === 'valid') {
       handleCreateMapFromState({
         mapState: cloneStateResolution.mapState,
+        mapDescription: cloneStateResolution.mapDescription,
         shouldSaveCloneSnapshot: true,
       });
       return;
@@ -163,6 +220,7 @@ export function NewMapRouteComponent() {
 
     handleCreateMapFromState({
       mapState: createDefaultMapState(),
+      mapDescription: '',
       shouldSaveCloneSnapshot: false,
     });
   }, [cloneStateResolution, handleCreateMapFromState, isLoaded, isSignedIn]);
@@ -181,6 +239,7 @@ export function NewMapRouteComponent() {
     hasTriggeredCreationRef.current = false;
     handleCreateMapFromState({
       mapState: createDefaultMapState(),
+      mapDescription: '',
       shouldSaveCloneSnapshot: false,
     });
   };

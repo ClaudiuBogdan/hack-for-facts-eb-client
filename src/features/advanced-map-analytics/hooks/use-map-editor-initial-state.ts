@@ -4,12 +4,14 @@ import { t } from '@lingui/core/macro';
 import type { AdvancedMapAnalyticsMapDetail } from '@/features/advanced-map-analytics/api/schemas';
 import { getLatestLocalMapSnapshot } from '@/features/advanced-map-analytics/local-snapshots/local-map-snapshots-db';
 import { createComparableMapEditorHash } from '@/features/advanced-map-analytics/local-snapshots/map-editor-dirty-state';
-import { hasMapEditorSearchParams } from '@/features/advanced-map-analytics/map-editor-search';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 
 interface UseMapEditorInitialStateInput {
   mapId: string;
   mapQueryData: AdvancedMapAnalyticsMapDetail | undefined;
+  draftMapState: AdvancedMapAnalyticsUrlState;
+  draftMapDescription: string;
+  draftUpdatedAt: string | null;
   isLoaded: boolean;
   isSignedIn: boolean;
   setMapState: (
@@ -33,6 +35,9 @@ function toTimestampMs(value: string | null | undefined): number {
 export function useMapEditorInitialState({
   mapId,
   mapQueryData,
+  draftMapState,
+  draftMapDescription,
+  draftUpdatedAt,
   isLoaded,
   isSignedIn,
   setMapState,
@@ -45,8 +50,7 @@ export function useMapEditorInitialState({
   useEffect(() => {
     hasResolvedInitialStateRef.current = false;
     setIsInitialStateResolved(false);
-    setMapDescriptionDraft('');
-  }, [mapId, setIsInitialStateResolved, setMapDescriptionDraft]);
+  }, [mapId, setIsInitialStateResolved]);
 
   useEffect(() => {
     if (
@@ -63,48 +67,60 @@ export function useMapEditorInitialState({
     const resolveInitialState = async () => {
       const serverSnapshotState = mapQueryData.lastSnapshot.config;
       const serverDescription = mapQueryData.description ?? '';
+      const serverSnapshotCreatedAtMs = toTimestampMs(
+        mapQueryData.lastSnapshot.createdAt
+      );
       const serverBaselineHash = createComparableMapEditorHash(
         serverSnapshotState,
         serverDescription
       );
       setBaselineFromHash(serverBaselineHash);
 
-      const hasUrlEditorState = hasMapEditorSearchParams(
-        typeof window === 'undefined' ? '' : window.location.search
-      );
       let resolvedMapState = serverSnapshotState;
       let resolvedDescription = serverDescription;
+      let newestDraftTimestampMs = Number.NaN;
 
-      if (!hasUrlEditorState) {
-        try {
-          const latestLocalSnapshot = await getLatestLocalMapSnapshot(mapId);
-          if (latestLocalSnapshot) {
-            const latestLocalSnapshotUpdatedAtMs = toTimestampMs(latestLocalSnapshot.updatedAt);
-            const serverSnapshotCreatedAtMs = toTimestampMs(
-              mapQueryData.lastSnapshot.createdAt
-            );
-            const isLocalSnapshotNewerThanServerSnapshot =
-              Number.isFinite(latestLocalSnapshotUpdatedAtMs) &&
-              (!Number.isFinite(serverSnapshotCreatedAtMs) ||
-                latestLocalSnapshotUpdatedAtMs > serverSnapshotCreatedAtMs);
+      const draftUpdatedAtMs = toTimestampMs(draftUpdatedAt);
+      if (Number.isFinite(draftUpdatedAtMs)) {
+        newestDraftTimestampMs = draftUpdatedAtMs;
+        resolvedMapState = draftMapState;
+        resolvedDescription = draftMapDescription;
+      }
 
-            if (isLocalSnapshotNewerThanServerSnapshot) {
-              resolvedMapState = latestLocalSnapshot.mapState;
-              resolvedDescription = latestLocalSnapshot.mapDescription;
-            }
+      try {
+        const latestLocalSnapshot = await getLatestLocalMapSnapshot(mapId);
+        if (latestLocalSnapshot) {
+          const latestLocalSnapshotUpdatedAtMs = toTimestampMs(latestLocalSnapshot.updatedAt);
+          const shouldUseLocalSnapshot =
+            Number.isFinite(latestLocalSnapshotUpdatedAtMs) &&
+            (!Number.isFinite(newestDraftTimestampMs) ||
+              latestLocalSnapshotUpdatedAtMs > newestDraftTimestampMs);
+
+          if (shouldUseLocalSnapshot) {
+            newestDraftTimestampMs = latestLocalSnapshotUpdatedAtMs;
+            resolvedMapState = latestLocalSnapshot.mapState;
+            resolvedDescription = latestLocalSnapshot.mapDescription;
           }
-        } catch {
-          toast.error(t`Failed to load local snapshots`);
         }
+      } catch {
+        toast.error(t`Failed to load local snapshots`);
+      }
+
+      const shouldUseServerSnapshot =
+        !Number.isFinite(newestDraftTimestampMs) ||
+        (Number.isFinite(serverSnapshotCreatedAtMs) &&
+          newestDraftTimestampMs <= serverSnapshotCreatedAtMs);
+
+      if (shouldUseServerSnapshot) {
+        resolvedMapState = serverSnapshotState;
+        resolvedDescription = serverDescription;
       }
 
       if (isCancelled) {
         return;
       }
 
-      if (!hasUrlEditorState) {
-        setMapState(resolvedMapState);
-      }
+      setMapState(resolvedMapState);
       setMapDescriptionDraft(resolvedDescription);
       hasResolvedInitialStateRef.current = true;
       setIsInitialStateResolved(true);
@@ -115,5 +131,17 @@ export function useMapEditorInitialState({
     return () => {
       isCancelled = true;
     };
-  }, [isLoaded, isSignedIn, mapId, mapQueryData, setBaselineFromHash, setMapState, setMapDescriptionDraft, setIsInitialStateResolved]);
+  }, [
+    draftMapDescription,
+    draftMapState,
+    draftUpdatedAt,
+    isLoaded,
+    isSignedIn,
+    mapId,
+    mapQueryData,
+    setBaselineFromHash,
+    setMapState,
+    setMapDescriptionDraft,
+    setIsInitialStateResolved,
+  ]);
 }

@@ -64,9 +64,15 @@ import {
   convertSeriesToType,
   createCopiedMapSeriesPayload,
   duplicateSeriesAfterSource,
+  ensureActiveSeriesSelection,
   normalizePastedMapSeries,
   reorderSeriesByIds,
 } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils';
+import {
+  createMapConfigTransferEnvelope,
+  parseMapConfigTransferInput,
+  type ImportedMapConfig,
+} from '@/features/advanced-map-analytics/store/map-config-transfer';
 import { t } from '@lingui/core/macro';
 import { cn, getUserLocale } from '@/lib/utils';
 
@@ -108,6 +114,8 @@ interface MapAnalyticsWorkspaceProps {
   bundledGroupedSeriesData?: GroupedSeriesDataResponse;
   bundledRemoteBaseSeriesHash?: string;
   mobileControlsDefaultCollapsed?: boolean;
+  onApplyImportedConfig?: (config: ImportedMapConfig) => Promise<void> | void;
+  onBeforeExportConfig?: () => Promise<void> | void;
 }
 
 // NOTE: Do not use module-scope t`` — it freezes the translation at import time.
@@ -128,6 +136,8 @@ export function MapAnalyticsWorkspace({
   bundledGroupedSeriesData,
   bundledRemoteBaseSeriesHash,
   mobileControlsDefaultCollapsed = false,
+  onApplyImportedConfig,
+  onBeforeExportConfig,
 }: Readonly<MapAnalyticsWorkspaceProps>) {
   const navigate = useNavigate();
   const [userCurrency] = useUserCurrency();
@@ -233,10 +243,10 @@ export function MapAnalyticsWorkspace({
       }
 
       updateState((draft) => {
-        draft.series = draft.series.filter((series) => series.id !== seriesId);
-        if (draft.activeSeriesId === seriesId) {
-          draft.activeSeriesId = undefined;
-        }
+        const nextSeries = draft.series.filter((series) => series.id !== seriesId);
+        const ensuredSelection = ensureActiveSeriesSelection(nextSeries, draft.activeSeriesId);
+        draft.series = ensuredSelection.series;
+        draft.activeSeriesId = ensuredSelection.activeSeriesId;
       });
 
       setEditorState((prevState) =>
@@ -372,28 +382,38 @@ export function MapAnalyticsWorkspace({
     [isReadOnly, mapState.series]
   );
 
-  const pasteSeriesFromClipboard = useCallback(async () => {
+  const copyMapConfigToClipboard = useCallback(async () => {
     if (isReadOnly) {
       return;
     }
 
+    const clipboardPayload = createMapConfigTransferEnvelope({
+      mapState,
+      mapDescription,
+    });
+
     try {
-      const clipboardText = await navigator.clipboard.readText();
+      await navigator.clipboard.writeText(JSON.stringify(clipboardPayload, null, 2));
+      toast.success(t`Map configuration copied to clipboard`);
+    } catch {
+      toast.error(t`Could not copy map configuration`);
+    }
+  }, [isReadOnly, mapDescription, mapState]);
+
+  const pasteSeriesFromClipboardText = useCallback(
+    (clipboardText: string): boolean => {
       const normalizedPasteResult = normalizePastedMapSeries(clipboardText, mapState.series);
       if (!normalizedPasteResult) {
-        toast.warning(t`Nothing to paste`);
-        return;
+        return false;
       }
 
       if (normalizedPasteResult.seriesToInsert.length === 0) {
         if (normalizedPasteResult.skippedUnsupportedCount > 0) {
-          toast.warning(
-            t`No compatible series found in clipboard`
-          );
+          toast.warning(t`No compatible series found in clipboard`);
         } else {
           toast.warning(t`Nothing to paste`);
         }
-        return;
+        return true;
       }
 
       const firstPastedSeriesId = normalizedPasteResult.seriesToInsert[0]?.id;
@@ -415,10 +435,99 @@ export function MapAnalyticsWorkspace({
           t`${normalizedPasteResult.skippedUnsupportedCount} unsupported series were skipped`
         );
       }
+      return true;
+    },
+    [mapState.series, updateState]
+  );
+
+  const pasteMapConfigFromClipboardText = useCallback(
+    async (clipboardText: string): Promise<boolean> => {
+      if (clipboardText.trim().length === 0) {
+        return false;
+      }
+
+      let parsedClipboardValue: unknown;
+      try {
+        parsedClipboardValue = JSON.parse(clipboardText) as unknown;
+      } catch {
+        return false;
+      }
+
+      if (
+        typeof parsedClipboardValue !== 'object' ||
+        parsedClipboardValue === null
+      ) {
+        return false;
+      }
+
+      const clipboardRecord = parsedClipboardValue as Record<string, unknown>;
+      const hasExplicitConfigShape =
+        clipboardRecord.type === 'advanced-map-analytics-config' ||
+        Object.prototype.hasOwnProperty.call(clipboardRecord, 'mapState');
+      const hasMapStateHintKeys = [
+        'series',
+        'activeView',
+        'mapName',
+        'valueFilters',
+        'binsPresets',
+      ].some((key) => Object.prototype.hasOwnProperty.call(clipboardRecord, key));
+
+      if (!hasExplicitConfigShape && !hasMapStateHintKeys) {
+        return false;
+      }
+
+      const importedConfig = parseMapConfigTransferInput(parsedClipboardValue);
+      if (!importedConfig) {
+        toast.warning(t`Map configuration in clipboard is invalid`);
+        return true;
+      }
+
+      try {
+        if (onApplyImportedConfig) {
+          await onApplyImportedConfig(importedConfig);
+        } else {
+          setMapState(importedConfig.mapState);
+          toast.success(t`Map configuration imported`);
+        }
+      } catch {
+        toast.error(t`Failed to import map configuration`);
+      }
+
+      return true;
+    },
+    [onApplyImportedConfig, setMapState]
+  );
+
+  const pasteFromClipboard = useCallback(async () => {
+    if (isReadOnly) {
+      return;
+    }
+
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      if (selectedSeriesId) {
+        if (pasteSeriesFromClipboardText(clipboardText)) {
+          return;
+        }
+
+        if (await pasteMapConfigFromClipboardText(clipboardText)) {
+          return;
+        }
+      } else {
+        if (await pasteMapConfigFromClipboardText(clipboardText)) {
+          return;
+        }
+
+        if (pasteSeriesFromClipboardText(clipboardText)) {
+          return;
+        }
+      }
+
+      toast.warning(t`Nothing to paste`);
     } catch {
       toast.error(t`Paste failed`);
     }
-  }, [isReadOnly, mapState.series, updateState]);
+  }, [isReadOnly, pasteMapConfigFromClipboardText, pasteSeriesFromClipboardText, selectedSeriesId]);
 
   const reorderSeries = useCallback(
     (activeSeriesId: string, overSeriesId: string) => {
@@ -688,12 +797,10 @@ export function MapAnalyticsWorkspace({
 
   const mapZoom = mapState.mapZoom ?? (isMobile ? 6 : 7.7);
 
-  const serializedSearchLength = useMemo(() => {
-    if (typeof window !== 'undefined') {
-      return window.location.search.length;
-    }
-    return JSON.stringify(mapState).length;
-  }, [mapState]);
+  const serializedDraftLength = useMemo(
+    () => JSON.stringify({ mapState, mapDescription }).length,
+    [mapDescription, mapState]
+  );
 
   const {
     data: geoJsonData,
@@ -805,7 +912,7 @@ export function MapAnalyticsWorkspace({
     valueFilterRules: mapState.valueFilters.rules,
     defaultCurrency: userCurrency,
     defaultInflationAdjusted: userInflationAdjusted,
-    urlSearchLength: serializedSearchLength,
+    serializedDraftLength,
     enabled: editorState == null,
     localValuesBySeriesId: localGeoJsonValuesBySeriesId,
     localUnitsBySeriesId: localGeoJsonUnitsBySeriesId,
@@ -865,14 +972,18 @@ export function MapAnalyticsWorkspace({
   useHotkeys('mod+c', (event) => {
     if (
       areSeriesHotkeysDisabled ||
-      !selectedSeriesId ||
       isEditableEventTarget(event.target)
     ) {
       return;
     }
 
     event.preventDefault();
-    void copySeriesToClipboard(selectedSeriesId);
+    if (selectedSeriesId) {
+      void copySeriesToClipboard(selectedSeriesId);
+      return;
+    }
+
+    void copyMapConfigToClipboard();
   });
 
   useHotkeys('mod+v', (event) => {
@@ -881,7 +992,7 @@ export function MapAnalyticsWorkspace({
     }
 
     event.preventDefault();
-    void pasteSeriesFromClipboard();
+    void pasteFromClipboard();
   });
 
   useHotkeys('mod+d', (event) => {
@@ -1578,6 +1689,8 @@ export function MapAnalyticsWorkspace({
       <MapAnalyticsQuickActions
         mode={mode}
         mapState={mapState}
+        mapDescription={mapDescription}
+        onBeforeExportConfig={onBeforeExportConfig}
         hiddenOnMobile={shouldOverlayMobileControls && !isMobileControlsCollapsed}
       />
       {shouldOverlayMobileControls && !isMobileControlsCollapsed ? (

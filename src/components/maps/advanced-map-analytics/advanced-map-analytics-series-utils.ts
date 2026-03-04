@@ -101,14 +101,64 @@ export function applyToggleSeriesEnabled(
   const nextSeries = state.series.map((series) =>
     series.id === seriesId ? { ...series, enabled } : series
   );
-
-  const nextActiveSeriesId =
-    !enabled && state.activeSeriesId === seriesId ? undefined : state.activeSeriesId;
+  const ensuredSelection = ensureActiveSeriesSelection(nextSeries, state.activeSeriesId);
 
   return {
     ...state,
-    series: nextSeries,
-    activeSeriesId: nextActiveSeriesId,
+    series: ensuredSelection.series,
+    activeSeriesId: ensuredSelection.activeSeriesId,
+  };
+}
+
+export function ensureActiveSeriesSelection(
+  seriesList: MapSupportedSeries[],
+  activeSeriesId: string | undefined
+): { series: MapSupportedSeries[]; activeSeriesId: string | undefined } {
+  if (seriesList.length === 0) {
+    return {
+      series: seriesList,
+      activeSeriesId: undefined,
+    };
+  }
+
+  if (
+    typeof activeSeriesId === 'string' &&
+    seriesList.some((series) => series.id === activeSeriesId && series.enabled)
+  ) {
+    return {
+      series: seriesList,
+      activeSeriesId,
+    };
+  }
+
+  const firstEnabledSeries = seriesList.find((series) => series.enabled);
+  if (firstEnabledSeries) {
+    return {
+      series: seriesList,
+      activeSeriesId: firstEnabledSeries.id,
+    };
+  }
+
+  const [firstSeries, ...remainingSeries] = seriesList;
+  if (!firstSeries) {
+    return {
+      series: seriesList,
+      activeSeriesId: undefined,
+    };
+  }
+
+  const nextSeriesList = [
+    {
+      ...firstSeries,
+      enabled: true,
+      updatedAt: new Date().toISOString(),
+    },
+    ...remainingSeries,
+  ];
+
+  return {
+    series: nextSeriesList,
+    activeSeriesId: nextSeriesList[0]?.id,
   };
 }
 

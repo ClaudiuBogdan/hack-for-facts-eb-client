@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { Copy, History, MoreVertical } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -18,7 +19,11 @@ import {
   useAdvancedMapAnalyticsSnapshotsQuery,
 } from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
 import type { AdvancedMapAnalyticsApiError } from '@/features/advanced-map-analytics/api/advanced-map-analytics-api';
+import { useMapEditorStorageFallbackWarning } from '@/features/advanced-map-analytics/hooks/use-map-editor-storage-fallback-warning';
 import { stripMapEditorSearchParams } from '@/features/advanced-map-analytics/map-editor-search';
+import { createMapCloneHandoff } from '@/features/advanced-map-analytics/store/map-clone-handoff';
+import { AdvancedMapAnalyticsUrlStateSchema } from '@/schemas/advanced-map-analytics';
+import { Analytics } from '@/lib/analytics';
 import { t } from '@lingui/core/macro';
 import { getUserLocale } from '@/lib/utils';
 
@@ -30,6 +35,8 @@ export function MapAnalyticsListPage() {
 
   const mapsQuery = useAdvancedMapAnalyticsMapsQuery();
   const dateTimeLocale = getUserLocale() === 'en' ? 'en-US' : 'ro-RO';
+
+  useMapEditorStorageFallbackWarning();
 
   const cloneLatestQuery = useAdvancedMapAnalyticsMapQuery(
     cloneSourceMapId ?? '',
@@ -52,10 +59,32 @@ export function MapAnalyticsListPage() {
     return error.status === 403 ? error : null;
   }, [mapsQuery.error]);
 
-  const createMapFromState = (state?: unknown) => {
+  const createMapFromState = (state?: unknown, mapDescription?: string | null) => {
+    if (state === undefined) {
+      navigate({
+        to: '/maps/editor/new',
+        search: {},
+      });
+      return;
+    }
+
+    const parsedMapState = AdvancedMapAnalyticsUrlStateSchema.safeParse(state);
+    if (!parsedMapState.success) {
+      toast.error(t`Failed to clone map configuration`);
+      return;
+    }
+
+    const cloneRef = createMapCloneHandoff({
+      mapState: parsedMapState.data,
+      mapDescription: mapDescription ?? '',
+    });
+    Analytics.capture(Analytics.EVENTS.AdvancedMapAnalyticsCloneHandoffUsed, {
+      source: 'editor_list',
+    });
+
     navigate({
       to: '/maps/editor/new',
-      search: state ? { state } : {},
+      search: { cloneRef },
     });
   };
 
@@ -72,7 +101,10 @@ export function MapAnalyticsListPage() {
       return;
     }
 
-    createMapFromState(cloneLatestQuery.data.lastSnapshot.config);
+    createMapFromState(
+      cloneLatestQuery.data.lastSnapshot.config,
+      cloneLatestQuery.data.description
+    );
     setCloneSourceMapId(null);
   };
 
@@ -129,6 +161,8 @@ export function MapAnalyticsListPage() {
   }
 
   const maps = mapsQuery.data ?? [];
+  const cloneSnapshotSourceMapDescription =
+    maps.find((map) => map.id === cloneSnapshotMapId)?.description ?? null;
 
   return (
     <div className="container mx-auto space-y-4 py-6">
@@ -247,7 +281,7 @@ export function MapAnalyticsListPage() {
                   <Button
                     size="sm"
                     onClick={() => {
-                      createMapFromState(snapshot.config);
+                      createMapFromState(snapshot.config, cloneSnapshotSourceMapDescription);
                       setCloneSnapshotMapId(null);
                     }}
                   >

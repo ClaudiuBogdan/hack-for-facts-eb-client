@@ -8,14 +8,19 @@ import { FloatingEntitySearch } from '@/components/entities/FloatingEntitySearch
 import { Button } from '@/components/ui/button';
 import { getSiteUrl } from '@/config/env';
 import { ensureShortRedirectUrl } from '@/lib/api/shortLinks';
+import { Analytics } from '@/lib/analytics';
 import { useAuth } from '@/lib/auth';
-import { cn } from '@/lib/utils';
+import { cn, slugify } from '@/lib/utils';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
+import { createMapCloneHandoff } from '@/features/advanced-map-analytics/store/map-clone-handoff';
+import { createMapConfigTransferEnvelope } from '@/features/advanced-map-analytics/store/map-config-transfer';
 import { t } from '@lingui/core/macro';
 
 interface MapAnalyticsQuickActionsProps {
   mode: 'owner' | 'public';
   mapState: AdvancedMapAnalyticsUrlState;
+  mapDescription?: string;
+  onBeforeExportConfig?: () => Promise<void> | void;
   className?: string;
   hiddenOnMobile?: boolean;
 }
@@ -23,6 +28,8 @@ interface MapAnalyticsQuickActionsProps {
 export function MapAnalyticsQuickActions({
   mode,
   mapState,
+  mapDescription = '',
+  onBeforeExportConfig,
   className,
   hiddenOnMobile,
 }: Readonly<MapAnalyticsQuickActionsProps>) {
@@ -79,11 +86,56 @@ export function MapAnalyticsQuickActions({
   }, []);
 
   const handleCreateEditableCopy = useCallback(() => {
+    const cloneRef = createMapCloneHandoff({
+      mapState,
+      mapDescription,
+    });
+    Analytics.capture(Analytics.EVENTS.AdvancedMapAnalyticsCloneHandoffUsed, {
+      source: 'public_quick_actions',
+    });
+
     navigate({
       to: '/maps/editor/new',
-      search: { state: mapState },
+      search: { cloneRef },
     });
-  }, [mapState, navigate]);
+  }, [mapDescription, mapState, navigate]);
+
+  const getConfigExportFileName = useCallback(() => {
+    const normalizedMapName = slugify(mapState.mapName) || 'untitled-map';
+    const exportTimestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    return `map-config-${normalizedMapName}-${exportTimestamp}.json`;
+  }, [mapState.mapName]);
+
+  const handleExportConfigFile = useCallback(async () => {
+    if (onBeforeExportConfig) {
+      try {
+        await onBeforeExportConfig();
+      } catch {
+        toast.warning(t`Local backup failed. Exporting configuration anyway.`);
+      }
+    }
+
+    try {
+      const transferPayload = createMapConfigTransferEnvelope({
+        mapState,
+        mapDescription,
+      });
+      const configBlob = new Blob([JSON.stringify(transferPayload, null, 2)], {
+        type: 'application/json',
+      });
+      const configBlobUrl = URL.createObjectURL(configBlob);
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.href = configBlobUrl;
+      downloadAnchor.download = getConfigExportFileName();
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      URL.revokeObjectURL(configBlobUrl);
+      toast.success(t`Configuration exported`);
+    } catch {
+      toast.error(t`Failed to export configuration`);
+    }
+  }, [getConfigExportFileName, mapDescription, mapState, onBeforeExportConfig]);
 
   useHotkeys(
     'mod+k',
@@ -97,6 +149,11 @@ export function MapAnalyticsQuickActions({
     'mod+s',
     (event) => {
       event.preventDefault();
+      if (mode === 'owner') {
+        void handleExportConfigFile();
+        return;
+      }
+
       void handleCopyShareLink();
     },
     { enableOnFormTags: ['INPUT', 'TEXTAREA', 'SELECT'] }

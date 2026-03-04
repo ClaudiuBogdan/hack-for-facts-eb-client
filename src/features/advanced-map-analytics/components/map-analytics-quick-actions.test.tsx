@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AdvancedMapAnalyticsUrlStateSchema } from '@/schemas/advanced-map-analytics';
 
@@ -6,9 +6,14 @@ const useAuthMock = vi.fn();
 const useQueryClientMock = vi.fn();
 const ensureShortRedirectUrlMock = vi.fn();
 const toastSuccessMock = vi.fn();
+const toastWarningMock = vi.fn();
 const toastErrorMock = vi.fn();
 const useHotkeysMock = vi.fn();
 const navigateMock = vi.fn();
+const createMapCloneHandoffMock = vi.fn();
+const analyticsCaptureMock = vi.fn();
+const createObjectUrlMock = vi.fn();
+const revokeObjectUrlMock = vi.fn();
 
 vi.mock('@/components/entities/FloatingEntitySearch', () => ({
   FloatingEntitySearch: ({ externalOpen }: { externalOpen?: boolean }) =>
@@ -42,12 +47,26 @@ vi.mock('@/config/env', () => ({
 vi.mock('sonner', () => ({
   toast: {
     success: (...args: unknown[]) => toastSuccessMock(...args),
+    warning: (...args: unknown[]) => toastWarningMock(...args),
     error: (...args: unknown[]) => toastErrorMock(...args),
   },
 }));
 
 vi.mock('react-hotkeys-hook', () => ({
   useHotkeys: (...args: unknown[]) => useHotkeysMock(...args),
+}));
+
+vi.mock('@/features/advanced-map-analytics/store/map-clone-handoff', () => ({
+  createMapCloneHandoff: (...args: unknown[]) => createMapCloneHandoffMock(...args),
+}));
+
+vi.mock('@/lib/analytics', () => ({
+  Analytics: {
+    capture: (...args: unknown[]) => analyticsCaptureMock(...args),
+    EVENTS: {
+      AdvancedMapAnalyticsCloneHandoffUsed: 'advanced_map_analytics_clone_handoff_used',
+    },
+  },
 }));
 
 describe('MapAnalyticsQuickActions', () => {
@@ -64,7 +83,9 @@ describe('MapAnalyticsQuickActions', () => {
     });
     useQueryClientMock.mockReturnValue(queryClient);
     ensureShortRedirectUrlMock.mockResolvedValue('https://transparenta.eu/share/abc123');
+    createMapCloneHandoffMock.mockReturnValue('clone_ref_1');
     writeClipboardMock.mockResolvedValue(undefined);
+    toastWarningMock.mockReset();
     Object.defineProperty(navigator, 'clipboard', {
       value: {
         writeText: writeClipboardMock,
@@ -72,6 +93,17 @@ describe('MapAnalyticsQuickActions', () => {
       configurable: true,
     });
     window.history.replaceState({}, '', '/maps/public/map-1?foo=bar');
+    createObjectUrlMock.mockReset();
+    revokeObjectUrlMock.mockReset();
+    createObjectUrlMock.mockReturnValue('blob:map-config');
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: createObjectUrlMock,
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: revokeObjectUrlMock,
+    });
   });
 
   it('renders search and share actions', async () => {
@@ -142,16 +174,118 @@ describe('MapAnalyticsQuickActions', () => {
     expect(screen.queryByRole('button', { name: 'Create editable copy' })).not.toBeInTheDocument();
   });
 
-  it('navigates to map creation route with current map state when clicking editable copy', async () => {
+  it('navigates to map creation route with cloneRef when clicking editable copy', async () => {
     const { MapAnalyticsQuickActions } = await import('./map-analytics-quick-actions');
 
     render(<MapAnalyticsQuickActions mode="public" mapState={mapState} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Create editable copy' }));
 
+    expect(createMapCloneHandoffMock).toHaveBeenCalledWith({
+      mapState,
+      mapDescription: '',
+    });
+
     expect(navigateMock).toHaveBeenCalledWith({
       to: '/maps/editor/new',
-      search: { state: mapState },
+      search: { cloneRef: 'clone_ref_1' },
     });
+  });
+
+  it('exports map configuration on mod+s in owner mode', async () => {
+    const onBeforeExportConfig = vi.fn().mockResolvedValue(undefined);
+    const appendChildSpy = vi.spyOn(document.body, 'appendChild');
+    const removeChildSpy = vi.spyOn(document.body, 'removeChild');
+    const anchorClickMock = vi.fn();
+    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
+      const element = document.createElementNS('http://www.w3.org/1999/xhtml', tagName);
+      if (tagName.toLowerCase() === 'a') {
+        (element as HTMLAnchorElement).click = anchorClickMock;
+      }
+      return element as HTMLElementTagNameMap[keyof HTMLElementTagNameMap];
+    });
+
+    const { MapAnalyticsQuickActions } = await import('./map-analytics-quick-actions');
+
+    render(
+      <MapAnalyticsQuickActions
+        mode="owner"
+        mapState={mapState}
+        mapDescription="Owner description"
+        onBeforeExportConfig={onBeforeExportConfig}
+      />
+    );
+
+    const latestSaveHotkeyCall = useHotkeysMock.mock.calls.filter((call) => call[0] === 'mod+s').slice(-1)[0];
+    const saveHandler = latestSaveHotkeyCall?.[1] as
+      | ((event: { preventDefault: () => void; target: EventTarget | null }) => void)
+      | undefined;
+    const preventDefaultMock = vi.fn();
+
+    await act(async () => {
+      saveHandler?.({
+        preventDefault: preventDefaultMock,
+        target: document.body,
+      });
+    });
+
+    expect(preventDefaultMock).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(onBeforeExportConfig).toHaveBeenCalledTimes(1);
+      expect(createObjectUrlMock).toHaveBeenCalledTimes(1);
+      expect(anchorClickMock).toHaveBeenCalledTimes(1);
+      expect(revokeObjectUrlMock).toHaveBeenCalledWith('blob:map-config');
+      expect(toastSuccessMock).toHaveBeenCalledWith('Configuration exported');
+    });
+
+    createElementSpy.mockRestore();
+    appendChildSpy.mockRestore();
+    removeChildSpy.mockRestore();
+  });
+
+  it('still exports config when pre-export snapshot hook fails', async () => {
+    const onBeforeExportConfig = vi.fn().mockRejectedValue(new Error('snapshot failed'));
+    const anchorClickMock = vi.fn();
+    const createElementSpy = vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
+      const element = document.createElementNS('http://www.w3.org/1999/xhtml', tagName);
+      if (tagName.toLowerCase() === 'a') {
+        (element as HTMLAnchorElement).click = anchorClickMock;
+      }
+      return element as HTMLElementTagNameMap[keyof HTMLElementTagNameMap];
+    });
+
+    const { MapAnalyticsQuickActions } = await import('./map-analytics-quick-actions');
+    render(
+      <MapAnalyticsQuickActions
+        mode="owner"
+        mapState={mapState}
+        mapDescription="Owner description"
+        onBeforeExportConfig={onBeforeExportConfig}
+      />
+    );
+
+    const latestSaveHotkeyCall = useHotkeysMock.mock.calls.filter((call) => call[0] === 'mod+s').slice(-1)[0];
+    const saveHandler = latestSaveHotkeyCall?.[1] as
+      | ((event: { preventDefault: () => void; target: EventTarget | null }) => void)
+      | undefined;
+
+    await act(async () => {
+      saveHandler?.({
+        preventDefault: vi.fn(),
+        target: document.body,
+      });
+    });
+
+    await waitFor(() => {
+      expect(onBeforeExportConfig).toHaveBeenCalledTimes(1);
+      expect(toastWarningMock).toHaveBeenCalledWith(
+        'Local backup failed. Exporting configuration anyway.'
+      );
+      expect(createObjectUrlMock).toHaveBeenCalledTimes(1);
+      expect(anchorClickMock).toHaveBeenCalledTimes(1);
+      expect(toastSuccessMock).toHaveBeenCalledWith('Configuration exported');
+    });
+
+    createElementSpy.mockRestore();
   });
 });

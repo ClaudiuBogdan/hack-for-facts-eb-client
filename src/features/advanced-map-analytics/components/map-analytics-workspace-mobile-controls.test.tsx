@@ -860,6 +860,87 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(setMapState.mock.calls.length).toBeGreaterThan(setMapStateCallsBeforePaste);
   });
 
+  it('copies and pastes map configuration when no series is selected', async () => {
+    const baseSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    baseSeries.id = 'series_1';
+    baseSeries.label = 'Base series';
+
+    const onApplyImportedConfig = vi.fn().mockResolvedValue(undefined);
+    clipboardReadTextMock.mockResolvedValue(
+      JSON.stringify({
+        type: 'advanced-map-analytics-config',
+        version: 1,
+        mapState: {
+          mapName: 'Imported map',
+          activeView: 'table',
+        },
+        mapDescription: 'Imported description',
+      })
+    );
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="owner"
+        mapState={createMapState({
+          activeView: 'map',
+          mapName: 'Current map',
+          series: [baseSeries],
+        })}
+        mapDescription="Current description"
+        setMapState={setMapState}
+        capabilities={{ readOnly: false }}
+        onApplyImportedConfig={onApplyImportedConfig}
+      />
+    );
+
+    const latestCopyHotkeyCall = useHotkeysMock.mock.calls.filter((call) => call[0] === 'mod+c').slice(-1)[0];
+    const latestPasteHotkeyCall = useHotkeysMock.mock.calls.filter((call) => call[0] === 'mod+v').slice(-1)[0];
+    const copyHandler = latestCopyHotkeyCall?.[1] as
+      | ((event: { preventDefault: () => void; target: EventTarget | null }) => void)
+      | undefined;
+    const pasteHandler = latestPasteHotkeyCall?.[1] as
+      | ((event: { preventDefault: () => void; target: EventTarget | null }) => void)
+      | undefined;
+
+    await act(async () => {
+      copyHandler?.({
+        preventDefault: vi.fn(),
+        target: document.body,
+      });
+    });
+
+    expect(clipboardWriteTextMock).toHaveBeenCalledTimes(1);
+    const copiedPayload = JSON.parse(String(clipboardWriteTextMock.mock.calls[0]?.[0]));
+    expect(copiedPayload).toMatchObject({
+      type: 'advanced-map-analytics-config',
+      mapDescription: 'Current description',
+      mapState: {
+        mapName: 'Current map',
+      },
+    });
+
+    await act(async () => {
+      pasteHandler?.({
+        preventDefault: vi.fn(),
+        target: document.body,
+      });
+    });
+
+    expect(onApplyImportedConfig).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mapDescription: 'Imported description',
+        mapState: expect.objectContaining({
+          mapName: 'Imported map',
+          activeView: 'table',
+        }),
+      })
+    );
+    expect(setMapState).not.toHaveBeenCalled();
+  });
+
   it('duplicates first available series on mod+d when no series is selected', async () => {
     const baseSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
     baseSeries.id = 'series_1';
@@ -905,6 +986,50 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(nextState?.series).toHaveLength(2);
     expect(nextState?.series[1]?.label).toContain('(copy)');
     expect(nextState?.series[1]?.id).not.toBe(baseSeries.id);
+  });
+
+  it('promotes first enabled series when deleting the active one', async () => {
+    const firstSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    firstSeries.id = 'series_1';
+    firstSeries.label = 'First series';
+
+    const secondSeries = createDefaultAdvancedMapAnalyticsSeries('commitments-analytics');
+    secondSeries.id = 'series_2';
+    secondSeries.label = 'Second series';
+
+    const initialState = createMapState({
+      activeView: 'map',
+      series: [firstSeries, secondSeries],
+      activeSeriesId: firstSeries.id,
+    });
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="owner"
+        mapState={initialState}
+        setMapState={setMapState}
+        capabilities={{ readOnly: false }}
+      />
+    );
+
+    const onDeleteSeries = latestSeriesPanelProps?.onDelete as ((seriesId: string) => void) | undefined;
+    expect(onDeleteSeries).toBeTypeOf('function');
+
+    act(() => {
+      onDeleteSeries?.(firstSeries.id);
+    });
+
+    const updateCall = setMapState.mock.calls[0]?.[0] as
+      | ((previousState: ReturnType<typeof createMapState>) => ReturnType<typeof createMapState>)
+      | undefined;
+    expect(typeof updateCall).toBe('function');
+
+    const nextState = updateCall?.(initialState);
+    expect(nextState?.series.map((series) => series.id)).toEqual([secondSeries.id]);
+    expect(nextState?.activeSeriesId).toBe(secondSeries.id);
   });
 
   it('does not run series shortcuts in read-only mode', async () => {

@@ -17,6 +17,8 @@ import {
 import type { AdvancedMapAnalyticsApiError } from '@/features/advanced-map-analytics/api/advanced-map-analytics-api';
 import { useMapLocalSnapshots } from '@/features/advanced-map-analytics/hooks/use-map-local-snapshots';
 import { useMapEditorInitialState } from '@/features/advanced-map-analytics/hooks/use-map-editor-initial-state';
+import { useMapEditorDraftStore } from '@/features/advanced-map-analytics/store/map-editor-draft-store';
+import type { ImportedMapConfig } from '@/features/advanced-map-analytics/store/map-config-transfer';
 import { getRemoteGroupedSeriesHash } from '@/lib/map-series/grouped-series-request';
 import { t } from '@lingui/core/macro';
 
@@ -36,8 +38,10 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
   const [isOwnerConfigModalOpen, setIsOwnerConfigModalOpen] = useState(false);
   const [isSaveSnapshotDialogOpen, setIsSaveSnapshotDialogOpen] = useState(false);
   const [isLocalSnapshotsModalOpen, setIsLocalSnapshotsModalOpen] = useState(false);
-  const [mapDescriptionDraft, setMapDescriptionDraft] = useState('');
   const [isInitialStateResolved, setIsInitialStateResolved] = useState(false);
+  const mapDescriptionDraft = useMapEditorDraftStore(mapId, (state) => state.mapDescription);
+  const draftUpdatedAt = useMapEditorDraftStore(mapId, (state) => state.updatedAt);
+  const setMapDescriptionDraft = useMapEditorDraftStore(mapId, (state) => state.updateMapDescription);
 
   const mapQuery = useAdvancedMapAnalyticsMapQuery(mapId, isLoaded && isSignedIn);
   const saveSnapshotMutation = useSaveAdvancedMapAnalyticsSnapshotMutation();
@@ -63,6 +67,9 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
   useMapEditorInitialState({
     mapId,
     mapQueryData: mapQuery.data,
+    draftMapState: mapState,
+    draftMapDescription: mapDescriptionDraft,
+    draftUpdatedAt,
     isLoaded,
     isSignedIn,
     setMapState,
@@ -145,6 +152,38 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
     toast.success(t`Local snapshot restored`);
   };
 
+  const handleApplyImportedConfig = async (nextConfig: ImportedMapConfig) => {
+    if (mapQuery.data) {
+      try {
+        await createManualSnapshot({
+          description: t`Backup before config import`,
+          stateAtSave: mapQuery.data.state,
+        });
+      } catch {
+        // Best-effort backup. Import should still continue when local snapshots fail.
+      }
+    }
+
+    setMapState(nextConfig.mapState);
+    setMapDescriptionDraft(nextConfig.mapDescription);
+    toast.success(t`Map configuration imported`);
+  };
+
+  const handleBeforeExportConfig = async () => {
+    if (!mapQuery.data) {
+      return;
+    }
+
+    try {
+      await createManualSnapshot({
+        description: t`Backup before config export`,
+        stateAtSave: mapQuery.data.state,
+      });
+    } catch {
+      // Best-effort backup. Export should still continue when local snapshots fail.
+    }
+  };
+
   if (!isLoaded || (mapQuery.isLoading && isSignedIn)) {
     return (
       <div className="container mx-auto py-12">
@@ -217,6 +256,8 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
         localSnapshotCount={localSnapshots.length}
         bundledGroupedSeriesData={mapQuery.data.groupedSeriesData}
         bundledRemoteBaseSeriesHash={bundledRemoteBaseSeriesHash}
+        onApplyImportedConfig={handleApplyImportedConfig}
+        onBeforeExportConfig={handleBeforeExportConfig}
       />
 
       <MapAnalyticsOwnerConfigModal
@@ -230,15 +271,18 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
         onMapDescriptionChange={setMapDescriptionDraft}
         onOpenChange={setIsOwnerConfigModalOpen}
         onRequestSaveSnapshot={() => setIsSaveSnapshotDialogOpen(true)}
+        onBeforeExportConfig={handleBeforeExportConfig}
         onMapNameChange={(nextMapName) => {
           setMapState((previousState) => ({
             ...previousState,
             mapName: nextMapName,
           }));
         }}
-        onLoadSnapshot={(nextMapState) => {
+        onLoadSnapshot={(nextMapState, nextMapDescription) => {
           setMapState(nextMapState);
+          setMapDescriptionDraft(nextMapDescription);
         }}
+        onApplyImportedConfig={handleApplyImportedConfig}
         onDeleted={() => {
           navigate({ to: '/maps/editor', replace: true });
         }}

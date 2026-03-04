@@ -20,7 +20,7 @@ import type {
 } from '@/lib/map-series/interfaces';
 import { convertDaysToMs } from '@/lib/utils';
 
-const URL_SEARCH_WARNING_THRESHOLD = 1800;
+const DRAFT_SIZE_WARNING_THRESHOLD = 1800;
 const isBrowser = typeof window !== 'undefined';
 
 interface UseAdvancedMapAnalyticsSeriesDataParams {
@@ -28,7 +28,7 @@ interface UseAdvancedMapAnalyticsSeriesDataParams {
   activeSeriesId?: string;
   defaultCurrency: Currency;
   defaultInflationAdjusted: boolean;
-  urlSearchLength?: number;
+  serializedDraftLength?: number;
   enabled?: boolean;
   valueFilterRules?: AdvancedMapAnalyticsValueFilterRule[];
   localValuesBySeriesId?: MapSeriesVectorCache;
@@ -246,10 +246,10 @@ export function useAdvancedMapAnalyticsSeriesData(
     warnings.push(...scopedCalculationWarnings);
     warnings.push(...valueFilterResult.warnings);
 
-    if ((params.urlSearchLength ?? 0) > URL_SEARCH_WARNING_THRESHOLD) {
+    if ((params.serializedDraftLength ?? 0) > DRAFT_SIZE_WARNING_THRESHOLD) {
       warnings.push({
         type: 'url_budget',
-        message: `URL search payload is large (${params.urlSearchLength} characters).` +
+        message: `Draft state is large (${params.serializedDraftLength} characters).` +
           ' Consider reducing the number of series/filters.',
       });
     }
@@ -270,7 +270,7 @@ export function useAdvancedMapAnalyticsSeriesData(
     params.valueFilterRules,
     relevantWarningSeriesIds,
     resolvedActiveSeriesId,
-    params.urlSearchLength,
+    params.serializedDraftLength,
   ]);
 
   return {

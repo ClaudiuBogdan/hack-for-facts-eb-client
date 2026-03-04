@@ -49,6 +49,8 @@ function createDeferredPromise<T>() {
   };
 }
 
+const defaultDraftMapState = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Draft map' });
+
 describe('useMapEditorInitialState', () => {
   beforeEach(() => {
     getLatestLocalMapSnapshotMock.mockReset();
@@ -56,7 +58,7 @@ describe('useMapEditorInitialState', () => {
     window.history.replaceState(null, '', '/maps/editor/map1');
   });
 
-  it('resolves server state and sets baseline hash when no URL state or local snapshot', async () => {
+  it('resolves server state and sets baseline hash when no local or session draft is newer', async () => {
     const setMapState = vi.fn();
     const setBaselineFromHash = vi.fn();
     const setMapDescriptionDraft = vi.fn();
@@ -69,6 +71,9 @@ describe('useMapEditorInitialState', () => {
       useMapEditorInitialState({
         mapId: 'map1',
         mapQueryData,
+        draftMapState: defaultDraftMapState,
+        draftMapDescription: '',
+        draftUpdatedAt: null,
         isLoaded: true,
         isSignedIn: true,
         setMapState,
@@ -128,6 +133,9 @@ describe('useMapEditorInitialState', () => {
       useMapEditorInitialState({
         mapId: 'map1',
         mapQueryData,
+        draftMapState: defaultDraftMapState,
+        draftMapDescription: '',
+        draftUpdatedAt: null,
         isLoaded: true,
         isSignedIn: true,
         setMapState,
@@ -144,14 +152,38 @@ describe('useMapEditorInitialState', () => {
     });
   });
 
-  it('skips local snapshot check when URL editor state is present', async () => {
+  it('prefers newer session draft over local snapshot and server snapshot', async () => {
     const setMapState = vi.fn();
     const setBaselineFromHash = vi.fn();
     const setMapDescriptionDraft = vi.fn();
     const setIsInitialStateResolved = vi.fn();
-    const mapQueryData = createMapQueryData();
+    const sessionDraftState = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Session draft' });
+    const localMapState = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Local draft' });
 
-    window.history.replaceState(null, '', '/maps/editor/map1?mapName=URL%20state');
+    const mapQueryData = createMapQueryData({
+      lastSnapshot: {
+        snapshotId: 'snap1',
+        createdAt: '2026-03-01T10:00:00.000Z',
+        schemaVersion: 1,
+        stateAtSave: 'private',
+        title: 'Test map',
+        description: null,
+        config: AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Server map' }),
+      },
+    });
+
+    getLatestLocalMapSnapshotMock.mockResolvedValue({
+      id: 1,
+      mapId: 'map1',
+      createdAt: '2026-03-01T11:00:00.000Z',
+      updatedAt: '2026-03-01T11:00:00.000Z',
+      source: 'auto',
+      description: null,
+      stateAtSave: 'private',
+      mapState: localMapState,
+      mapDescription: 'Local description',
+      comparableHash: 'hash_local',
+    });
 
     const { useMapEditorInitialState } = await import('./use-map-editor-initial-state');
 
@@ -159,6 +191,9 @@ describe('useMapEditorInitialState', () => {
       useMapEditorInitialState({
         mapId: 'map1',
         mapQueryData,
+        draftMapState: sessionDraftState,
+        draftMapDescription: 'Session description',
+        draftUpdatedAt: '2026-03-01T12:00:00.000Z',
         isLoaded: true,
         isSignedIn: true,
         setMapState,
@@ -169,11 +204,88 @@ describe('useMapEditorInitialState', () => {
     );
 
     await waitFor(() => {
+      expect(setMapState).toHaveBeenCalledWith(sessionDraftState);
+      expect(setMapDescriptionDraft).toHaveBeenCalledWith('Session description');
       expect(setIsInitialStateResolved).toHaveBeenCalledWith(true);
     });
+  });
 
-    expect(setMapState).not.toHaveBeenCalled();
-    expect(getLatestLocalMapSnapshotMock).not.toHaveBeenCalled();
+  it('re-resolves with updated draft input before initial resolution completes', async () => {
+    const setMapState = vi.fn();
+    const setBaselineFromHash = vi.fn();
+    const setMapDescriptionDraft = vi.fn();
+    const setIsInitialStateResolved = vi.fn();
+    const firstResolutionDeferred = createDeferredPromise<null>();
+    const updatedDraftState = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Updated draft' });
+    const mapQueryData = createMapQueryData({
+      lastSnapshot: {
+        snapshotId: 'snap1',
+        createdAt: '2026-03-01T10:00:00.000Z',
+        schemaVersion: 1,
+        stateAtSave: 'private',
+        title: 'Test map',
+        description: null,
+        config: AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Server map' }),
+      },
+    });
+
+    getLatestLocalMapSnapshotMock
+      .mockReturnValueOnce(firstResolutionDeferred.promise)
+      .mockResolvedValueOnce(null);
+
+    const { useMapEditorInitialState } = await import('./use-map-editor-initial-state');
+    const initialDraftProps: {
+      draftMapState: ReturnType<typeof AdvancedMapAnalyticsUrlStateSchema.parse>;
+      draftMapDescription: string;
+      draftUpdatedAt: string | null;
+    } = {
+      draftMapState: defaultDraftMapState,
+      draftMapDescription: '',
+      draftUpdatedAt: null,
+    };
+    const { rerender } = renderHook(
+      ({
+        draftMapState,
+        draftMapDescription,
+        draftUpdatedAt,
+      }: {
+        draftMapState: ReturnType<typeof AdvancedMapAnalyticsUrlStateSchema.parse>;
+        draftMapDescription: string;
+        draftUpdatedAt: string | null;
+      }) =>
+        useMapEditorInitialState({
+          mapId: 'map1',
+          mapQueryData,
+          draftMapState,
+          draftMapDescription,
+          draftUpdatedAt,
+          isLoaded: true,
+          isSignedIn: true,
+          setMapState,
+          setBaselineFromHash,
+          setMapDescriptionDraft,
+          setIsInitialStateResolved,
+        }),
+      {
+        initialProps: initialDraftProps,
+      }
+    );
+
+    rerender({
+      draftMapState: updatedDraftState,
+      draftMapDescription: 'Updated draft description',
+      draftUpdatedAt: '2026-03-01T12:00:00.000Z',
+    });
+    firstResolutionDeferred.resolve(null);
+
+    await waitFor(() => {
+      expect(setMapState).toHaveBeenCalledWith(updatedDraftState);
+      expect(setMapDescriptionDraft).toHaveBeenCalledWith('Updated draft description');
+      expect(setIsInitialStateResolved).toHaveBeenCalledWith(true);
+    });
+    expect(setMapState).not.toHaveBeenCalledWith(
+      AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Server map' })
+    );
   });
 
   it('does not resolve when auth is not loaded', async () => {
@@ -186,6 +298,9 @@ describe('useMapEditorInitialState', () => {
       useMapEditorInitialState({
         mapId: 'map1',
         mapQueryData,
+        draftMapState: defaultDraftMapState,
+        draftMapDescription: '',
+        draftUpdatedAt: null,
         isLoaded: false,
         isSignedIn: false,
         setMapState: vi.fn(),
@@ -198,7 +313,7 @@ describe('useMapEditorInitialState', () => {
     expect(setIsInitialStateResolved).not.toHaveBeenCalledWith(true);
   });
 
-  it('resets state when mapId changes', async () => {
+  it('resets initial-state resolution when mapId changes', async () => {
     const setMapDescriptionDraft = vi.fn();
     const setIsInitialStateResolved = vi.fn();
     const mapQueryData = createMapQueryData();
@@ -210,6 +325,9 @@ describe('useMapEditorInitialState', () => {
         useMapEditorInitialState({
           mapId,
           mapQueryData,
+          draftMapState: defaultDraftMapState,
+          draftMapDescription: '',
+          draftUpdatedAt: null,
           isLoaded: true,
           isSignedIn: true,
           setMapState: vi.fn(),
@@ -230,7 +348,7 @@ describe('useMapEditorInitialState', () => {
     rerender({ mapId: 'map2' });
 
     expect(setIsInitialStateResolved).toHaveBeenCalledWith(false);
-    expect(setMapDescriptionDraft).toHaveBeenCalledWith('');
+    expect(setMapDescriptionDraft).not.toHaveBeenCalledWith('');
   });
 
   it('ignores stale async resolution after mapId changes', async () => {
@@ -272,6 +390,9 @@ describe('useMapEditorInitialState', () => {
         useMapEditorInitialState({
           mapId,
           mapQueryData,
+          draftMapState: defaultDraftMapState,
+          draftMapDescription: '',
+          draftUpdatedAt: null,
           isLoaded: true,
           isSignedIn: true,
           setMapState,
@@ -352,6 +473,9 @@ describe('useMapEditorInitialState', () => {
       useMapEditorInitialState({
         mapId: 'map1',
         mapQueryData,
+        draftMapState: defaultDraftMapState,
+        draftMapDescription: '',
+        draftUpdatedAt: null,
         isLoaded: true,
         isSignedIn: true,
         setMapState,

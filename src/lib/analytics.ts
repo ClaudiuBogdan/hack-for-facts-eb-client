@@ -51,6 +51,14 @@ const EVENTS = {
   MapFilterChanged: "map_filter_changed",
   MapActiveViewChanged: "map_active_view_changed",
   MapViewTypeChanged: "map_view_type_changed",
+  AdvancedMapAnalyticsLegacyEditorUrlMigrated:
+    "advanced_map_analytics_legacy_editor_url_migrated",
+  AdvancedMapAnalyticsLegacyCloneStateUsed:
+    "advanced_map_analytics_legacy_clone_state_used",
+  AdvancedMapAnalyticsCloneHandoffUsed:
+    "advanced_map_analytics_clone_handoff_used",
+  AdvancedMapAnalyticsStorageFallbackTriggered:
+    "advanced_map_analytics_storage_fallback_triggered",
 
   CampaignEntitySelectorOpened: "campaign_entity_selector_opened",
   CampaignEntityMapSelectorOpened: "campaign_entity_map_selector_opened",

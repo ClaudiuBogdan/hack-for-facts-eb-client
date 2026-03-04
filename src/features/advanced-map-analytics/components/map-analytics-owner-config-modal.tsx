@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { Copy, EyeOff, FileText, Globe, Loader2, Share2, Trash2 } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Copy, Download, EyeOff, FileText, Globe, Loader2, ClipboardPaste, Upload, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,9 +22,13 @@ import { ModalHeader, ModalTitle } from '@/components/ui/modal-header';
 import { ModalSection } from '@/components/ui/modal-section';
 import { modalHeaderClassName, modalSizes } from '@/components/ui/modal-sizes';
 import { Switch } from '@/components/ui/switch';
-import { ensureShortRedirectUrl } from '@/lib/api/shortLinks';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 import { AdvancedMapAnalyticsDescriptionModal } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal';
+import {
+  createMapConfigTransferEnvelope,
+  parseMapConfigTransferInput,
+  type ImportedMapConfig,
+} from '@/features/advanced-map-analytics/store/map-config-transfer';
 import {
   fetchAdvancedMapAnalyticsSnapshotForRestore,
   useAdvancedMapAnalyticsSnapshotsQuery,
@@ -34,7 +37,7 @@ import {
 } from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
 import type { AdvancedMapAnalyticsVisibility } from '@/features/advanced-map-analytics/api/schemas';
 import { t } from '@lingui/core/macro';
-import { cn, getUserLocale } from '@/lib/utils';
+import { cn, getUserLocale, slugify } from '@/lib/utils';
 
 interface MapAnalyticsOwnerConfigModalProps {
   open: boolean;
@@ -48,7 +51,9 @@ interface MapAnalyticsOwnerConfigModalProps {
   onMapNameChange: (nextMapName: string) => void;
   onMapDescriptionChange?: (nextDescription: string) => void;
   onRequestSaveSnapshot: () => void;
-  onLoadSnapshot: (mapState: AdvancedMapAnalyticsUrlState) => void;
+  onBeforeExportConfig?: () => Promise<void> | void;
+  onLoadSnapshot: (mapState: AdvancedMapAnalyticsUrlState, mapDescription: string) => void;
+  onApplyImportedConfig: (config: ImportedMapConfig) => Promise<void> | void;
   onDeleted: () => void;
 }
 
@@ -64,17 +69,19 @@ export function MapAnalyticsOwnerConfigModal({
   onMapNameChange,
   onMapDescriptionChange,
   onRequestSaveSnapshot,
+  onBeforeExportConfig,
   onLoadSnapshot,
+  onApplyImportedConfig,
   onDeleted,
 }: Readonly<MapAnalyticsOwnerConfigModalProps>) {
   const dateTimeLocale = getUserLocale() === 'en' ? 'en-US' : 'ro-RO';
-  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [visibility, setVisibility] = useState<AdvancedMapAnalyticsVisibility>(currentVisibility);
   const [pendingVisibilityTarget, setPendingVisibilityTarget] = useState<AdvancedMapAnalyticsVisibility | null>(null);
   const [pendingLoadSnapshotId, setPendingLoadSnapshotId] = useState<string | null>(null);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isDescriptionEditorModalOpen, setIsDescriptionEditorModalOpen] = useState(false);
+  const importConfigFileInputRef = useRef<HTMLInputElement | null>(null);
 
   const snapshotsQuery = useAdvancedMapAnalyticsSnapshotsQuery(mapId, page, 20, open);
   const updateMapMutation = useUpdateAdvancedMapAnalyticsMapMutation();
@@ -160,7 +167,7 @@ export function MapAnalyticsOwnerConfigModal({
 
     try {
       const snapshot = await fetchAdvancedMapAnalyticsSnapshotForRestore(mapId, pendingLoadSnapshotId);
-      onLoadSnapshot(snapshot.config);
+      onLoadSnapshot(snapshot.config, mapDescription);
       toast.success(t`Version restored`);
     } catch (error) {
       const message = error instanceof Error ? error.message : t`Failed to restore version`;
@@ -197,33 +204,90 @@ export function MapAnalyticsOwnerConfigModal({
     }
   };
 
-  const handleCopyMapLink = async () => {
-    const params = new URLSearchParams();
-    params.set('state', JSON.stringify(currentMapState));
-    const mapClonePath = `/maps/editor/new?${params.toString()}`;
-    const currentOrigin =
-      typeof window !== 'undefined' && typeof window.location.origin === 'string'
-        ? window.location.origin
-        : '';
-    const fullMapCloneUrl =
-      currentOrigin.length > 0 ? `${currentOrigin}${mapClonePath}` : mapClonePath;
+  const getConfigExportFileName = () => {
+    const normalizedMapName = slugify(mapName) || 'untitled-map';
+    const exportTimestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    return `map-config-${normalizedMapName}-${exportTimestamp}.json`;
+  };
 
-    let linkToCopy = fullMapCloneUrl;
-    if (currentOrigin.length > 0) {
+  const buildTransferPayload = () =>
+    createMapConfigTransferEnvelope({
+      mapState: currentMapState,
+      mapDescription,
+    });
+
+  const handleExportConfigFile = async () => {
+    if (onBeforeExportConfig) {
       try {
-        linkToCopy = await ensureShortRedirectUrl(fullMapCloneUrl, currentOrigin, queryClient);
+        await onBeforeExportConfig();
       } catch {
-        // Short-link generation is optional for copy-map; fallback to full URL.
+        toast.warning(t`Local backup failed. Exporting configuration anyway.`);
       }
     }
 
     try {
-      await navigator.clipboard.writeText(linkToCopy);
-      toast.success(t`Configuration link copied`, {
-        description: t`Share this link so others can create a map based on your setup.`,
+      const transferPayload = buildTransferPayload();
+      const configBlob = new Blob([JSON.stringify(transferPayload, null, 2)], {
+        type: 'application/json',
       });
+      const configBlobUrl = URL.createObjectURL(configBlob);
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.href = configBlobUrl;
+      downloadAnchor.download = getConfigExportFileName();
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      URL.revokeObjectURL(configBlobUrl);
+      toast.success(t`Configuration exported`);
     } catch {
-      toast.error(t`Failed to copy map link`);
+      toast.error(t`Failed to export configuration`);
+    }
+  };
+
+  const handleCopyConfigToClipboard = async () => {
+    try {
+      const transferPayload = buildTransferPayload();
+      await navigator.clipboard.writeText(JSON.stringify(transferPayload, null, 2));
+      toast.success(t`Configuration copied`);
+    } catch {
+      toast.error(t`Failed to copy configuration`);
+    }
+  };
+
+  const applyImportedConfig = async (rawInput: unknown) => {
+    const importedConfig = parseMapConfigTransferInput(rawInput);
+    if (!importedConfig) {
+      toast.error(t`Invalid map configuration`);
+      return;
+    }
+
+    await onApplyImportedConfig(importedConfig);
+  };
+
+  const handleImportConfigFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    try {
+      const fileContent = await file.text();
+      const parsedJson = JSON.parse(fileContent) as unknown;
+      await applyImportedConfig(parsedJson);
+    } catch {
+      toast.error(t`Failed to import configuration file`);
+    } finally {
+      event.currentTarget.value = '';
+    }
+  };
+
+  const handlePasteConfigFromClipboard = async () => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      const parsedJson = JSON.parse(clipboardText) as unknown;
+      await applyImportedConfig(parsedJson);
+    } catch {
+      toast.error(t`Failed to import pasted configuration`);
     }
   };
 
@@ -277,14 +341,57 @@ export function MapAnalyticsOwnerConfigModal({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => void handleCopyMapLink()}
+                  onClick={() => void handleExportConfigFile()}
                   disabled={isBusy}
                   className="flex-1"
                 >
-                  <Share2 className="mr-2 h-4 w-4" />
-                  {t`Share configuration`}
+                  <Download className="mr-2 h-4 w-4" />
+                  {t`Export config`}
                 </Button>
               </div>
+
+              <div className="grid gap-2 mt-3 sm:grid-cols-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => importConfigFileInputRef.current?.click()}
+                  disabled={isBusy}
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  {t`Import file`}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void handlePasteConfigFromClipboard()}
+                  disabled={isBusy}
+                >
+                  <ClipboardPaste className="mr-2 h-4 w-4" />
+                  {t`Paste config`}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void handleCopyConfigToClipboard()}
+                  disabled={isBusy}
+                >
+                  <Copy className="mr-2 h-4 w-4" />
+                  {t`Copy config`}
+                </Button>
+              </div>
+
+              <input
+                ref={importConfigFileInputRef}
+                type="file"
+                accept="application/json"
+                className="hidden"
+                onChange={(event) => {
+                  void handleImportConfigFile(event);
+                }}
+              />
             </ModalSection>
 
             {/* Visibility Section */}

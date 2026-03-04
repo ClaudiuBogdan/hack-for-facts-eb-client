@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { AdvancedMapAnalyticsUrlStateSchema } from '@/schemas/advanced-map-analytics';
@@ -14,6 +14,8 @@ const ownerConfigModalMock = vi.fn();
 const saveSnapshotDialogMock = vi.fn();
 const localSnapshotsModalMock = vi.fn();
 const navigateMock = vi.fn();
+const updateMapDescriptionMock = vi.fn();
+const mapEditorDraftByMapId = new Map<string, { mapDescription: string; updatedAt: string | null }>();
 
 vi.mock('@/lib/auth', () => ({
   useAuth: () => useAuthMock(),
@@ -31,6 +33,28 @@ vi.mock('@/features/advanced-map-analytics/hooks/use-map-local-snapshots', () =>
 
 vi.mock('@/features/advanced-map-analytics/local-snapshots/local-map-snapshots-db', () => ({
   getLatestLocalMapSnapshot: (...args: unknown[]) => getLatestLocalMapSnapshotMock(...args),
+}));
+
+vi.mock('@/features/advanced-map-analytics/store/map-editor-draft-store', () => ({
+  useMapEditorDraftStore: (
+    mapId: string,
+    selector: (state: {
+      mapDescription: string;
+      updatedAt: string | null;
+      updateMapDescription: (value: string) => void;
+    }) => unknown
+  ) => {
+    if (!mapEditorDraftByMapId.has(mapId)) {
+      mapEditorDraftByMapId.set(mapId, { mapDescription: '', updatedAt: null });
+    }
+
+    const draftState = mapEditorDraftByMapId.get(mapId)!;
+    return selector({
+      mapDescription: draftState.mapDescription,
+      updatedAt: draftState.updatedAt,
+      updateMapDescription: (value: string) => updateMapDescriptionMock(mapId, value),
+    });
+  },
 }));
 
 vi.mock('@tanstack/react-router', () => ({
@@ -109,6 +133,18 @@ describe('MapAnalyticsEditorPage', () => {
     saveSnapshotDialogMock.mockReset();
     localSnapshotsModalMock.mockReset();
     navigateMock.mockReset();
+    updateMapDescriptionMock.mockReset();
+    mapEditorDraftByMapId.clear();
+    mapEditorDraftByMapId.set('map1', { mapDescription: '', updatedAt: null });
+    updateMapDescriptionMock.mockImplementation((mapId: string, value: string) => {
+      const draftState = mapEditorDraftByMapId.get(mapId);
+      if (!draftState) {
+        return;
+      }
+
+      draftState.mapDescription = value;
+      draftState.updatedAt = new Date().toISOString();
+    });
     window.history.replaceState(null, '', '/maps/editor/map1');
 
     useSaveSnapshotMutationMock.mockReturnValue({
@@ -222,7 +258,7 @@ describe('MapAnalyticsEditorPage', () => {
     ).toBeInTheDocument();
   });
 
-  it('keeps URL-provided editor state and skips local restore when URL state exists', async () => {
+  it('resolves with server snapshot when no newer draft timestamp exists', async () => {
     const setMapState = vi.fn();
     const providedMapState = AdvancedMapAnalyticsUrlStateSchema.parse({
       mapName: 'Provided map state',
@@ -253,9 +289,10 @@ describe('MapAnalyticsEditorPage', () => {
     const { MapAnalyticsEditorPage } = await import('./map-analytics-editor-page');
     render(<MapAnalyticsEditorPage mapId="map1" mapState={providedMapState} setMapState={setMapState} />);
 
-    expect(screen.getByTestId('map-workspace')).toBeInTheDocument();
-    expect(setMapState).not.toHaveBeenCalled();
-    expect(getLatestLocalMapSnapshotMock).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(setMapState).toHaveBeenCalledWith(lastSnapshotConfig);
+    });
+    expect(getLatestLocalMapSnapshotMock).toHaveBeenCalledWith('map1');
   });
 
   it('sets baseline from server snapshot when URL state differs only in ignored fields', async () => {
@@ -554,6 +591,7 @@ describe('MapAnalyticsEditorPage', () => {
   });
 
   it('navigates to maps editor list when delete succeeds', async () => {
+    const setMapState = vi.fn();
     useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
     useMapQueryMock.mockReturnValue({
       isLoading: false,
@@ -574,13 +612,19 @@ describe('MapAnalyticsEditorPage', () => {
       <MapAnalyticsEditorPage
         mapId="map1"
         mapState={AdvancedMapAnalyticsUrlStateSchema.parse({})}
-        setMapState={vi.fn()}
+        setMapState={setMapState}
       />
     );
 
+    await waitFor(() => {
+      expect(setMapState).toHaveBeenCalled();
+    });
+
     const modalProps = ownerConfigModalMock.mock.calls[0]?.[0] as { onDeleted: () => void } | undefined;
     expect(modalProps).toBeDefined();
-    modalProps?.onDeleted();
+    act(() => {
+      modalProps?.onDeleted();
+    });
 
     expect(navigateMock).toHaveBeenCalledWith({ to: '/maps/editor', replace: true });
   });
@@ -690,9 +734,67 @@ describe('MapAnalyticsEditorPage', () => {
       | { onLoad: (snapshotId: number) => Promise<void> }
       | undefined;
     expect(localSnapshotsModalProps).toBeDefined();
-    await localSnapshotsModalProps?.onLoad(1);
+    await act(async () => {
+      await localSnapshotsModalProps?.onLoad(1);
+    });
 
     expect(setMapState).toHaveBeenCalledWith(restoredMapState);
     expect(setBaselineFromHash).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps export backup best-effort when local snapshot creation fails', async () => {
+    const setMapState = vi.fn();
+    const createManualSnapshot = vi.fn().mockRejectedValue(new Error('indexeddb unavailable'));
+    useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
+    useMapQueryMock.mockReturnValue({
+      isLoading: false,
+      error: null,
+      data: {
+        publicId: null,
+        title: 'Map one',
+        description: null,
+        state: 'private',
+        lastSnapshot: {
+          config: AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Map one snapshot' }),
+        },
+      },
+    });
+    useMapLocalSnapshotsMock.mockReturnValue({
+      snapshots: [],
+      isLoading: false,
+      isDirty: false,
+      createManualSnapshot,
+      restoreSnapshot: vi.fn(),
+      deleteSnapshot: vi.fn(),
+      clearSnapshots: vi.fn(),
+      markCurrentAsSaved: vi.fn(),
+      setBaselineFromHash: vi.fn(),
+    });
+
+    const { MapAnalyticsEditorPage } = await import('./map-analytics-editor-page');
+    render(
+      <MapAnalyticsEditorPage
+        mapId="map1"
+        mapState={AdvancedMapAnalyticsUrlStateSchema.parse({})}
+        setMapState={setMapState}
+      />
+    );
+
+    await waitFor(() => {
+      expect(setMapState).toHaveBeenCalled();
+    });
+
+    const workspaceProps = workspaceMock.mock.calls[0]?.[0] as
+      | { onBeforeExportConfig?: () => Promise<void> }
+      | undefined;
+    const ownerModalProps = ownerConfigModalMock.mock.calls[0]?.[0] as
+      | { onBeforeExportConfig?: () => Promise<void> }
+      | undefined;
+    expect(workspaceProps?.onBeforeExportConfig).toBeTypeOf('function');
+    expect(ownerModalProps?.onBeforeExportConfig).toBeTypeOf('function');
+
+    await expect(workspaceProps?.onBeforeExportConfig?.()).resolves.toBeUndefined();
+    await expect(ownerModalProps?.onBeforeExportConfig?.()).resolves.toBeUndefined();
+    expect(createManualSnapshot).toHaveBeenCalledTimes(2);
   });
 });

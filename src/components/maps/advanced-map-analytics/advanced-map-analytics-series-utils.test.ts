@@ -36,18 +36,36 @@ describe('advanced-map-analytics-series-utils', () => {
     expect(nextState.series[0]?.enabled).toBe(true);
   });
 
-  it('clears activeSeriesId when disabling active series', () => {
+  it('promotes the first enabled series when disabling the active series', () => {
     const base = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    const fallback = createDefaultAdvancedMapAnalyticsSeries('commitments-analytics');
 
     const initialState = AdvancedMapAnalyticsUrlStateSchema.parse({
-      series: [base],
+      series: [base, fallback],
       activeSeriesId: base.id,
     });
 
     const nextState = applyToggleSeriesEnabled(initialState, base.id, false);
 
-    expect(nextState.activeSeriesId).toBeUndefined();
+    expect(nextState.activeSeriesId).toBe(fallback.id);
     expect(nextState.series[0]?.enabled).toBe(false);
+  });
+
+  it('enables first series when disabling active series leaves no enabled series', () => {
+    const firstSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    const secondSeries = createDefaultAdvancedMapAnalyticsSeries('commitments-analytics');
+    secondSeries.enabled = false;
+
+    const initialState = AdvancedMapAnalyticsUrlStateSchema.parse({
+      series: [firstSeries, secondSeries],
+      activeSeriesId: firstSeries.id,
+    });
+
+    const nextState = applyToggleSeriesEnabled(initialState, firstSeries.id, false);
+
+    expect(nextState.activeSeriesId).toBe(firstSeries.id);
+    expect(nextState.series[0]?.enabled).toBe(true);
+    expect(nextState.series[1]?.enabled).toBe(false);
   });
 
   it('does not preserve geojson default units when changing series type', () => {
