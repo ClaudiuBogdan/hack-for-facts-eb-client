@@ -16,7 +16,10 @@ const SELECTORS = {
   sourceLink: /ministerul finanțelor/i,
   executionReferenceLink: /informații execuție bugetară|budget execution information/i,
   totalDisclaimer: /total buget is a merged informational treemap|total buget este o agregare informativă/i,
-  analyzeLineItems: /analyze line items/i,
+  analyzeLineItems: /analyze line items|analizează articolele bugetare/i,
+  chapterLabel: /^chapter$|^capitol$/i,
+  subchapterLabel: /^subchapter$|^subcapitol$/i,
+  paragraphLabel: /^paragraph$|^paragraf$/i,
   incomeLabel: /^income$|^venituri$/i,
   expensesLabel: /^expenses$|^cheltuieli$/i,
   dismissDisclaimer: /dismiss disclaimer/i,
@@ -191,7 +194,7 @@ test.describe('National Budget Page', () => {
     await economicToggle.click()
     await expect(page).toHaveURL(/primary=ec/, { timeout: 10000 })
 
-    const subchapterToggle = page.getByRole('radio', { name: /^subchapter$/i }).first()
+    const subchapterToggle = page.getByRole('radio', { name: SELECTORS.subchapterLabel }).first()
     await subchapterToggle.click()
     await expect(page).toHaveURL(/depth=subchapter/, { timeout: 10000 })
 
