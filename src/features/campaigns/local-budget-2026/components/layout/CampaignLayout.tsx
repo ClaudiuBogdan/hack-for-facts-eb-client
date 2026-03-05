@@ -11,11 +11,12 @@ export function CampaignLayout() {
 
 function CampaignLayoutInner() {
   const location = useLocation()
-  const isChallengesRoute = location.pathname.includes('/challenges')
+  const isChallengesShellRoute =
+    location.pathname.includes('/challenges') || location.pathname.includes('/calendar')
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-zinc-50 to-zinc-100 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
-      {isChallengesRoute ? (
+      {isChallengesShellRoute ? (
         <Outlet />
       ) : (
         <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">

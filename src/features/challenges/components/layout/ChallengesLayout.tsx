@@ -8,7 +8,7 @@ import {
   Library,
   Trophy,
 } from 'lucide-react'
-import { useEffect, useMemo, useState, type RefObject } from 'react'
+import { useEffect, useMemo, useState, type ReactNode, type RefObject } from 'react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -355,15 +355,19 @@ function ChallengesSidebar({
   )
 }
 
-export function ChallengesLayout() {
+type ChallengesLayoutProps = {
+  readonly children?: ReactNode
+}
+
+export function ChallengesLayout({ children }: ChallengesLayoutProps) {
   return (
     <LearningProgressProvider>
-      <ChallengesLayoutInner />
+      <ChallengesLayoutInner>{children}</ChallengesLayoutInner>
     </LearningProgressProvider>
   )
 }
 
-function ChallengesLayoutInner() {
+function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
   const location = useLocation()
   const [isOpen, setIsOpen] = useState(false)
   const locale = resolveCampaignLocale(location.search as CampaignRouteSearch | undefined)
@@ -394,7 +398,7 @@ function ChallengesLayoutInner() {
       {/* Main Content */}
       <div className="flex-1">
         <div className="mx-auto max-w-3xl px-6 py-8 lg:px-10 lg:py-10">
-          <Outlet />
+          {children ?? <Outlet />}
         </div>
       </div>
     </div>
