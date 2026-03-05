@@ -75,9 +75,9 @@ export function ChallengeModulePage({ locale, moduleSlug }: ChallengeModulePageP
         <div className="h-20 w-20 rounded-3xl bg-muted/30 flex items-center justify-center mb-6">
           <BookOpen className="h-10 w-10 text-muted-foreground/50" />
         </div>
-        <h2 className="text-2xl font-black tracking-tight">{t`Module not found`}</h2>
+        <h2 className="text-2xl font-black tracking-tight">{t`Not found`}</h2>
         <p className="text-lg text-muted-foreground font-medium mt-2 max-w-md mx-auto">
-          {t`The module you're looking for doesn't exist or has been moved.`}
+          {t`The content you're looking for doesn't exist or has been moved.`}
         </p>
         <Button asChild className="mt-8 rounded-2xl h-12 px-8 font-bold" variant="outline">
           <Link to={CHALLENGES_BASE_PATH as '/'}>{t`Back to Challenges`}</Link>
@@ -143,7 +143,7 @@ export function ChallengeModulePage({ locale, moduleSlug }: ChallengeModulePageP
                     {isComplete ? (
                       <>
                         <BookOpen className="mr-2 h-5 w-5" />
-                        {t`Review Module`}
+                        {t`Review`}
                       </>
                     ) : stats.completedCount > 0 ? (
                       <>
@@ -202,7 +202,7 @@ export function ChallengeModulePage({ locale, moduleSlug }: ChallengeModulePageP
 
             {!hasStartStepTarget && (
               <p className="text-sm text-muted-foreground">
-                {t`This module has no valid steps yet. Please check back later.`}
+                {t`No steps available yet. Please check back later.`}
               </p>
             )}
           </div>
@@ -217,7 +217,7 @@ export function ChallengeModulePage({ locale, moduleSlug }: ChallengeModulePageP
           {module.challenges.length === 0 ? (
             <Card className="border-dashed">
               <CardContent className="py-10 text-center text-muted-foreground">
-                {t`No challenges are available for this module yet.`}
+                {t`No challenges available yet.`}
               </CardContent>
             </Card>
           ) : (

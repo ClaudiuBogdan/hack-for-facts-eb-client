@@ -220,7 +220,7 @@ export function ChallengeStepPlayer({
               <ArrowLeft className="h-4 w-4 text-muted-foreground" />
             </div>
             <span className="text-sm font-medium text-muted-foreground">
-              {t`Back to module`}
+              {t`Back to overview`}
             </span>
           </Link>
         )}
@@ -247,11 +247,11 @@ export function ChallengeStepPlayer({
           </Link>
         ) : (
           <Link
-            to={`${CHALLENGES_BASE_PATH}/${moduleSlug}` as '/'}
+            to={CHALLENGES_BASE_PATH as '/'}
             resetScroll={true}
             className="group flex items-center gap-3 p-3 rounded-xl bg-primary/10 text-primary hover:bg-primary/15 transition-all"
           >
-            <span className="text-sm font-medium">{t`Complete module`}</span>
+            <span className="text-sm font-medium">🎉 {t`Finish`}</span>
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
               <CheckCircle2 className="h-4 w-4" />
             </div>

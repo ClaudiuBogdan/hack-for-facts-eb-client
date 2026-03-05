@@ -114,7 +114,7 @@ export function ChallengesHubPage({ locale }: ChallengesHubPageProps) {
           <Trophy className="h-16 w-16 text-primary/40 mb-6" />
           <h3 className="text-2xl font-black tracking-tight mb-2">{t`Congratulations!`}</h3>
           <p className="text-muted-foreground font-medium mb-8">
-            {t`You've completed this module.`}
+            {t`You've completed all challenges!`}
           </p>
           <Button
             asChild
@@ -122,7 +122,7 @@ export function ChallengesHubPage({ locale }: ChallengesHubPageProps) {
             className="rounded-2xl px-8 h-12 font-bold"
           >
             <Link to={`${CHALLENGES_BASE_PATH}/${activeModuleData.module.slug}` as '/'}>
-              {t`Review Module`}
+              {t`Review`}
             </Link>
           </Button>
         </div>
@@ -138,7 +138,7 @@ export function ChallengesHubPage({ locale }: ChallengesHubPageProps) {
       {otherModulesData.length > 0 && (
         <div className="space-y-5">
           <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground pl-2">
-            {t`More Modules`}
+            {t`Up Next`}
           </h2>
           <div className="space-y-6">
             {otherModulesData.map(({ module, stats, nextStepUrl }) => (

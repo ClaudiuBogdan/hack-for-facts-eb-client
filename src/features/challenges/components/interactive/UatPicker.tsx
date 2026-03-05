@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { i18n } from '@lingui/core'
-import { ArrowRight, CheckCircle2, MapPin, RefreshCw } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { CheckCircle2, MapPin, RefreshCw } from 'lucide-react'
 import {
   CampaignEntitySelectorGate,
   type EntitySelection,
@@ -11,7 +9,6 @@ import {
 import { useCampaignProgress } from '@/features/campaigns/local-budget-2026/hooks/use-campaign-progress'
 import { useLessonCompletion } from '@/features/learning/hooks/use-learning-interactions'
 import { getEntityLabels } from '@/lib/api/labels'
-import { CHALLENGES_BASE_PATH } from '../../constants'
 import type { CampaignLocale } from '@/features/campaigns/local-budget-2026/types'
 
 type UatPickerProps = {
@@ -83,7 +80,7 @@ export function UatPicker({ contentId }: UatPickerProps) {
 
   if (selected) {
     return (
-      <div className="my-6 space-y-4">
+      <div className="my-6">
         <div className="flex items-center gap-4 rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 p-5">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500 text-white">
             <CheckCircle2 className="h-5 w-5" />
@@ -110,18 +107,6 @@ export function UatPicker({ contentId }: UatPickerProps) {
             <RefreshCw className="h-3.5 w-3.5" />
             {t`Change`}
           </button>
-        </div>
-
-        <div className="flex justify-center">
-          <Button
-            asChild
-            className="rounded-2xl h-12 px-8 font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
-          >
-            <Link to={CHALLENGES_BASE_PATH as '/'}>
-              {t`Continue to challenges`}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
         </div>
       </div>
     )

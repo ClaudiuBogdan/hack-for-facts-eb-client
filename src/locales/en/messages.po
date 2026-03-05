@@ -1227,8 +1227,8 @@ msgid "Back to Learning Hub"
 msgstr "Back to Learning Hub"
 
 #: src/features/challenges/components/player/ChallengeStepPlayer.tsx:223
-msgid "Back to module"
-msgstr "Back to module"
+msgid "Back to overview"
+msgstr "Back to overview"
 
 #: src/components/entities/EntityReports.tsx:81
 msgid "Back to Overview"
@@ -1563,7 +1563,7 @@ msgstr "Challenge Question"
 msgid "Challenges"
 msgstr "Challenges"
 
-#: src/features/challenges/components/interactive/UatPicker.tsx:111
+#: src/features/challenges/components/interactive/UatPicker.tsx:108
 msgid "Change"
 msgstr "Change"
 
@@ -1903,10 +1903,6 @@ msgstr "Compact"
 msgid "Compare with death rate and migration to understand if growth is structural or temporary."
 msgstr "Compare with death rate and migration to understand if growth is structural or temporary."
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:254
-msgid "Complete module"
-msgstr "Complete module"
-
 #: src/features/learning/components/player/LessonPlayer.tsx:633
 msgid "Complete path"
 msgstr "Complete path"
@@ -1918,6 +1914,10 @@ msgstr "Complete this lesson"
 #: src/features/learning/components/interactive/FlashCardDeck.tsx:270
 msgid "Complete!"
 msgstr "Complete!"
+
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:94
+msgid "Completed"
+msgstr "Completed"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:228
 #: src/features/learning/components/cards/LearningPathCard.tsx:114
@@ -2053,10 +2053,6 @@ msgstr "Continue"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:608
 msgid "Continue editing"
 msgstr "Continue editing"
-
-#: src/features/challenges/components/interactive/UatPicker.tsx:121
-msgid "Continue to challenges"
-msgstr "Continue to challenges"
 
 #: src/features/learning/components/player/MarkComplete.tsx:71
 msgid "Continue to the next chapter to complete the module."
@@ -3807,6 +3803,10 @@ msgstr "Find Entity to Monitor"
 msgid "Find resources, report issues, or get in touch."
 msgstr "Find resources, report issues, or get in touch."
 
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:254
+msgid "Finish"
+msgstr "Finish"
+
 #: src/components/charts/components/views/SeriesConfigView.tsx:504
 msgid "First value only"
 msgstr "First value only"
@@ -5320,22 +5320,6 @@ msgstr "Mnemonic:"
 msgid "Mode"
 msgstr "Mode"
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:260
-msgid "Module"
-msgstr "Module"
-
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:94
-msgid "Module Completed"
-msgstr "Module Completed"
-
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:78
-msgid "Module not found"
-msgstr "Module not found"
-
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:204
-msgid "Module Progress"
-msgstr "Module Progress"
-
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:146
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:148
 msgid "Modules"
@@ -5386,10 +5370,6 @@ msgstr "more"
 #: src/components/ui/breadcrumb.tsx:103
 msgid "More"
 msgstr "More"
-
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:141
-msgid "More Modules"
-msgstr "More Modules"
 
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:143
 msgid "Most people think they know, but the reality often surprises. Ready to test your intuition?"
@@ -5646,8 +5626,8 @@ msgid "No certificate record was found for this ID in local storage."
 msgstr "No certificate record was found for this ID in local storage."
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:220
-msgid "No challenges are available for this module yet."
-msgstr "No challenges are available for this module yet."
+msgid "No challenges available yet."
+msgstr "No challenges available yet."
 
 #: src/features/learning/components/interactive/RectificationFlow.tsx:189
 msgid "No change"
@@ -5907,6 +5887,10 @@ msgstr "No SIRUTA code associated."
 msgid "No steps available"
 msgstr "No steps available"
 
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:205
+msgid "No steps available yet. Please check back later."
+msgstr "No steps available yet. Please check back later."
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:118
 msgid "No value filters configured yet."
 msgstr "No value filters configured yet."
@@ -5997,6 +5981,10 @@ msgstr "Not enough values to build distribution."
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:39
 msgid "Not equal to"
 msgstr "Not equal to"
+
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:78
+msgid "Not found"
+msgstr "Not found"
 
 #: src/features/learning/components/assessment/Quiz.tsx:158
 msgid "Not Quite"
@@ -6645,6 +6633,7 @@ msgstr "Processing..."
 msgid "Product"
 msgstr "Product"
 
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:204
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:165
 msgid "Progress"
 msgstr "Progress"
@@ -7011,14 +7000,14 @@ msgstr "Revenues/Expenses"
 msgid "Revert"
 msgstr "Revert"
 
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:146
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:125
+msgid "Review"
+msgstr "Review"
+
 #: src/features/notifications/components/NotificationList.tsx:150
 msgid "Review and manage alerts created from your custom data series."
 msgstr "Review and manage alerts created from your custom data series."
-
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:146
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:125
-msgid "Review Module"
-msgstr "Review Module"
 
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:125
 #: src/routes/$lang/learning/index.lazy.tsx:241
@@ -7298,10 +7287,6 @@ msgstr "Select a local entity to view INS Tempo data."
 msgid "Select a metric card or dataset from the list to load full history."
 msgstr "Select a metric card or dataset from the list to load full history."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:349
-msgid "Select a module to begin"
-msgstr "Select a module to begin"
-
 #: src/components/alerts/components/AlertEditorView.tsx:240
 msgid "Select a predefined dataset to track"
 msgstr "Select a predefined dataset to track"
@@ -7309,6 +7294,10 @@ msgstr "Select a predefined dataset to track"
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:261
 msgid "Select a snapshot to clone into a new map."
 msgstr "Select a snapshot to clone into a new map."
+
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:349
+msgid "Select a topic to begin"
+msgstr "Select a topic to begin"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:363
 msgid "Select color mode"
@@ -7329,10 +7318,6 @@ msgstr "Select field first"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:345
 msgid "Select interval mode"
 msgstr "Select interval mode"
-
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:265
-msgid "Select Module"
-msgstr "Select Module"
 
 #: src/components/charts/components/series-config/CalculationEditor.tsx:141
 msgid "Select operation"
@@ -7370,6 +7355,10 @@ msgstr "Select Series Type"
 msgid "Select specific years. If none selected, all years will be shown."
 msgstr "Select specific years. If none selected, all years will be shown."
 
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:265
+msgid "Select topic"
+msgstr "Select topic"
+
 #: src/components/charts/components/series-config/DataLabelSelector.tsx:29
 msgid "Select years..."
 msgstr "Select years..."
@@ -7381,7 +7370,7 @@ msgstr "selected"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1300
 #: src/components/filters/base-filter/SelectedOptionsDisplay.tsx:47
-#: src/features/challenges/components/interactive/UatPicker.tsx:93
+#: src/features/challenges/components/interactive/UatPicker.tsx:90
 msgid "Selected"
 msgstr "Selected"
 
@@ -7800,6 +7789,7 @@ msgstr "Standard"
 msgid "Standard Contractual Clauses (SCCs) approved by the European Commission"
 msgstr "Standard Contractual Clauses (SCCs) approved by the European Commission"
 
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:145
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:156
 msgid "Start"
 msgstr "Start"
@@ -7820,10 +7810,6 @@ msgstr "Start by entering your monthly Gross (Brut) income."
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:135
 msgid "Start Learning"
 msgstr "Start Learning"
-
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:145
-msgid "Start Module"
-msgstr "Start Module"
 
 #: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:445
 #: src/features/learning/components/interactive/FlashCardDeck.tsx:357
@@ -8039,6 +8025,10 @@ msgstr "The answer is:"
 msgid "The classification code \"{selectedCode}\" could not be found."
 msgstr "The classification code \"{selectedCode}\" could not be found."
 
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:80
+msgid "The content you're looking for doesn't exist or has been moved."
+msgstr "The content you're looking for doesn't exist or has been moved."
+
 #: src/components/entities/views/EmployeesView.tsx:81
 msgid "The data is presented for informational purposes, based on government data available for September 2025. This temporary view is intended to simplify the Government's explanation of the simulated local administration reform."
 msgstr "The data is presented for informational purposes, based on government data available for September 2025. This temporary view is intended to simplify the Government's explanation of the simulated local administration reform."
@@ -8071,10 +8061,6 @@ msgstr "The learning path you're looking for doesn't exist."
 #: src/features/learning/components/player/LessonPlayer.tsx:453
 msgid "The lesson you're looking for doesn't exist or may have been moved."
 msgstr "The lesson you're looking for doesn't exist or may have been moved."
-
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:80
-msgid "The module you're looking for doesn't exist or has been moved."
-msgstr "The module you're looking for doesn't exist or has been moved."
 
 #: src/features/learning/components/interactive/VATReformCard.tsx:24
 msgid "The new fiscal reality affecting your wallet."
@@ -8208,10 +8194,6 @@ msgstr "This is a proof-of-concept verification page stored in your browser."
 #: src/components/entities/views/ins-stats-view.derived.ts:134
 msgid "This is not an employment rate by age group; it is a general intensity indicator."
 msgstr "This is not an employment rate by age group; it is a general intensity indicator."
-
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:205
-msgid "This module has no valid steps yet. Please check back later."
-msgstr "This module has no valid steps yet. Please check back later."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:69
 msgid "This name appears as the map title for viewers."
@@ -8357,6 +8339,10 @@ msgstr "Top 15 Counties by Total Amount"
 #: src/components/maps/charts/UatDataCharts.tsx:100
 msgid "Top 15 UATs by Total Amount"
 msgstr "Top 15 UATs by Total Amount"
+
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:260
+msgid "Topic"
+msgstr "Topic"
 
 #: src/routes/charts/index.lazy.tsx:176
 msgid "total"
@@ -8674,6 +8660,10 @@ msgstr "Untitled map"
 #: src/components/charts/components/series-config/CalculationEditor.tsx:287
 msgid "Untitled Series"
 msgstr "Untitled Series"
+
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:141
+msgid "Up Next"
+msgstr "Up Next"
 
 #. js-lingui-explicit-id
 #: src/lib/errors-utils.ts:5
@@ -9229,13 +9219,13 @@ msgstr "You will no longer receive notifications via email."
 msgid "You're doing great. Keep up the momentum."
 msgstr "You're doing great. Keep up the momentum."
 
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:117
+msgid "You've completed all challenges!"
+msgstr "You've completed all challenges!"
+
 #: src/routes/$lang/learning/index.lazy.tsx:239
 msgid "You've completed this learning path."
 msgstr "You've completed this learning path."
-
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:117
-msgid "You've completed this module."
-msgstr "You've completed this module."
 
 #: src/features/learning/components/interactive/PhaseCards.tsx:609
 msgid "You've explored all 6 phases of the budget cycle!"

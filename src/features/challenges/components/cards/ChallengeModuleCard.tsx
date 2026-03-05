@@ -91,7 +91,7 @@ function ActionButton({
         className={`rounded-[22px] px-8 ${styles.buttonHeight} ${styles.buttonTextSize} font-black border-2 border-green-500/20 bg-green-500/[0.05] text-green-600 hover:bg-green-500/10 transition-all`}
       >
         <Trophy className="mr-2 lg:mr-3 h-5 w-5" />
-        {t`Module Completed`}
+        {t`Completed`}
       </Button>
     )
   }
@@ -142,7 +142,7 @@ export function ChallengeModuleCard({
   const isCompleted = stats.percentage === 100
   const isActive = variant === 'active'
   const styles = getVariantStyles(isActive)
-  const actionButtonLabel = hasProgress ? t`Continue` : t`Start Module`
+  const actionButtonLabel = hasProgress ? t`Continue` : t`Start`
 
   return (
     <Card
@@ -201,7 +201,7 @@ export function ChallengeModuleCard({
             <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground px-1">
               <span className="flex items-center gap-2">
                 <div className="h-1 w-1 rounded-full bg-primary" />
-                {t`Module Progress`}
+                {t`Progress`}
               </span>
               <span className="text-primary">
                 {stats.percentage}%

@@ -257,12 +257,12 @@ function ChallengesSidebar({
                 <button className="w-full flex items-center justify-between py-3 px-4 hover:bg-muted/50 transition-all text-left outline-none group border-none bg-transparent">
                   <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] leading-none">
-                      {t`Module`}
+                      {t`Topic`}
                     </span>
                     <span className="font-semibold text-sm truncate w-full text-foreground group-hover:text-primary transition-colors">
                       {activeModule
                         ? getTranslatedText(activeModule.title, locale)
-                        : t`Select Module`}
+                        : t`Select topic`}
                     </span>
                   </div>
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all ml-3 shrink-0">
@@ -346,7 +346,7 @@ function ChallengesSidebar({
               <div className="h-14 w-14 rounded-xl bg-muted/50 flex items-center justify-center mb-4">
                 <Trophy className="h-7 w-7 text-muted-foreground/40" />
               </div>
-              <p className="text-xs text-muted-foreground">{t`Select a module to begin`}</p>
+              <p className="text-xs text-muted-foreground">{t`Select a topic to begin`}</p>
             </div>
           )}
         </nav>
