@@ -33,6 +33,7 @@ import { Route as BugeteLocale2026OnboardingRouteImport } from './routes/bugete-
 import { Route as BugeteLocale2026ForumRouteImport } from './routes/bugete-locale-2026/forum'
 import { Route as AlertsNewRouteImport } from './routes/alerts/new'
 import { Route as ChartsChartIdRouteRouteImport } from './routes/charts/$chartId/route'
+import { Route as BugeteLocale2026ChallengesRouteRouteImport } from './routes/bugete-locale-2026/challenges/route'
 import { Route as AlertsAlertIdRouteRouteImport } from './routes/alerts/$alertId/route'
 import { Route as LangLearningRouteRouteImport } from './routes/$lang/learning/route'
 import { Route as MapsEditorIndexRouteImport } from './routes/maps/editor/index'
@@ -47,11 +48,12 @@ import { Route as MapsEditorMapIdRouteImport } from './routes/maps/editor/$mapId
 import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entities.$cui.share-image[.]png'
 import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
-import { Route as BugeteLocale2026ChallengesChallengeSlugRouteImport } from './routes/bugete-locale-2026/challenges/$challengeSlug'
 import { Route as LangLearningOnboardingRouteImport } from './routes/$lang/learning/onboarding'
+import { Route as BugeteLocale2026ChallengesModuleSlugIndexRouteImport } from './routes/bugete-locale-2026/challenges/$moduleSlug/index'
 import { Route as BugeteLocale2026CautaHartaIndexRouteImport } from './routes/bugete-locale-2026/cauta/harta/index'
 import { Route as LangLearningPathIdIndexRouteImport } from './routes/$lang/learning/$pathId/index'
 import { Route as LangLearningCertificatesIdRouteImport } from './routes/$lang/learning/certificates.$id'
+import { Route as BugeteLocale2026ChallengesModuleSlugChallengeSlugStepSlugRouteImport } from './routes/bugete-locale-2026/challenges/$moduleSlug/$challengeSlug/$stepSlug'
 import { Route as LangLearningPathIdModuleIdLessonIdRouteImport } from './routes/$lang/learning/$pathId/$moduleId/$lessonId'
 
 const TermsLazyRouteImport = createFileRoute('/terms')()
@@ -206,6 +208,16 @@ const ChartsChartIdRouteRoute = ChartsChartIdRouteRouteImport.update({
   path: '/charts/$chartId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BugeteLocale2026ChallengesRouteRoute =
+  BugeteLocale2026ChallengesRouteRouteImport.update({
+    id: '/challenges',
+    path: '/challenges',
+    getParentRoute: () => BugeteLocale2026RouteRoute,
+  } as any).lazy(() =>
+    import('./routes/bugete-locale-2026/challenges/route.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const AlertsAlertIdRouteRoute = AlertsAlertIdRouteRouteImport.update({
   id: '/alerts/$alertId',
   path: '/alerts/$alertId',
@@ -259,9 +271,9 @@ const ClassificationsEconomicIndexRoute =
   )
 const BugeteLocale2026ChallengesIndexRoute =
   BugeteLocale2026ChallengesIndexRouteImport.update({
-    id: '/challenges/',
-    path: '/challenges/',
-    getParentRoute: () => BugeteLocale2026RouteRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => BugeteLocale2026ChallengesRouteRoute,
   } as any).lazy(() =>
     import('./routes/bugete-locale-2026/challenges/index.lazy').then(
       (d) => d.Route,
@@ -327,16 +339,6 @@ const ClassificationsEconomicCodeRoute =
   } as any).lazy(() =>
     import('./routes/classifications/economic/$code.lazy').then((d) => d.Route),
   )
-const BugeteLocale2026ChallengesChallengeSlugRoute =
-  BugeteLocale2026ChallengesChallengeSlugRouteImport.update({
-    id: '/challenges/$challengeSlug',
-    path: '/challenges/$challengeSlug',
-    getParentRoute: () => BugeteLocale2026RouteRoute,
-  } as any).lazy(() =>
-    import('./routes/bugete-locale-2026/challenges/$challengeSlug.lazy').then(
-      (d) => d.Route,
-    ),
-  )
 const LangLearningOnboardingRoute = LangLearningOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -344,6 +346,16 @@ const LangLearningOnboardingRoute = LangLearningOnboardingRouteImport.update({
 } as any).lazy(() =>
   import('./routes/$lang/learning/onboarding.lazy').then((d) => d.Route),
 )
+const BugeteLocale2026ChallengesModuleSlugIndexRoute =
+  BugeteLocale2026ChallengesModuleSlugIndexRouteImport.update({
+    id: '/$moduleSlug/',
+    path: '/$moduleSlug/',
+    getParentRoute: () => BugeteLocale2026ChallengesRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/bugete-locale-2026/challenges/$moduleSlug/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const BugeteLocale2026CautaHartaIndexRoute =
   BugeteLocale2026CautaHartaIndexRouteImport.update({
     id: '/cauta/harta/',
@@ -371,6 +383,16 @@ const LangLearningCertificatesIdRoute =
       (d) => d.Route,
     ),
   )
+const BugeteLocale2026ChallengesModuleSlugChallengeSlugStepSlugRoute =
+  BugeteLocale2026ChallengesModuleSlugChallengeSlugStepSlugRouteImport.update({
+    id: '/$moduleSlug/$challengeSlug/$stepSlug',
+    path: '/$moduleSlug/$challengeSlug/$stepSlug',
+    getParentRoute: () => BugeteLocale2026ChallengesRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/bugete-locale-2026/challenges/$moduleSlug/$challengeSlug/$stepSlug.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const LangLearningPathIdModuleIdLessonIdRoute =
   LangLearningPathIdModuleIdLessonIdRouteImport.update({
     id: '/$pathId/$moduleId/$lessonId',
@@ -395,6 +417,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsLazyRoute
   '/$lang/learning': typeof LangLearningRouteRouteWithChildren
   '/alerts/$alertId': typeof AlertsAlertIdRouteRouteWithChildren
+  '/bugete-locale-2026/challenges': typeof BugeteLocale2026ChallengesRouteRouteWithChildren
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/forum': typeof BugeteLocale2026ForumRoute
@@ -411,7 +434,6 @@ export interface FileRoutesByFullPath {
   '/bugete-locale-2026/': typeof BugeteLocale2026IndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
-  '/bugete-locale-2026/challenges/$challengeSlug': typeof BugeteLocale2026ChallengesChallengeSlugRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -429,7 +451,9 @@ export interface FileRoutesByFullPath {
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
   '/$lang/learning/$pathId/': typeof LangLearningPathIdIndexRoute
   '/bugete-locale-2026/cauta/harta/': typeof BugeteLocale2026CautaHartaIndexRoute
+  '/bugete-locale-2026/challenges/$moduleSlug/': typeof BugeteLocale2026ChallengesModuleSlugIndexRoute
   '/$lang/learning/$pathId/$moduleId/$lessonId': typeof LangLearningPathIdModuleIdLessonIdRoute
+  '/bugete-locale-2026/challenges/$moduleSlug/$challengeSlug/$stepSlug': typeof BugeteLocale2026ChallengesModuleSlugChallengeSlugStepSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -456,7 +480,6 @@ export interface FileRoutesByTo {
   '/bugete-locale-2026': typeof BugeteLocale2026IndexRoute
   '/charts': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
-  '/bugete-locale-2026/challenges/$challengeSlug': typeof BugeteLocale2026ChallengesChallengeSlugRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -474,7 +497,9 @@ export interface FileRoutesByTo {
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
   '/$lang/learning/$pathId': typeof LangLearningPathIdIndexRoute
   '/bugete-locale-2026/cauta/harta': typeof BugeteLocale2026CautaHartaIndexRoute
+  '/bugete-locale-2026/challenges/$moduleSlug': typeof BugeteLocale2026ChallengesModuleSlugIndexRoute
   '/$lang/learning/$pathId/$moduleId/$lessonId': typeof LangLearningPathIdModuleIdLessonIdRoute
+  '/bugete-locale-2026/challenges/$moduleSlug/$challengeSlug/$stepSlug': typeof BugeteLocale2026ChallengesModuleSlugChallengeSlugStepSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -490,6 +515,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsLazyRoute
   '/$lang/learning': typeof LangLearningRouteRouteWithChildren
   '/alerts/$alertId': typeof AlertsAlertIdRouteRouteWithChildren
+  '/bugete-locale-2026/challenges': typeof BugeteLocale2026ChallengesRouteRouteWithChildren
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/alerts/new': typeof AlertsNewRoute
   '/bugete-locale-2026/forum': typeof BugeteLocale2026ForumRoute
@@ -506,7 +532,6 @@ export interface FileRoutesById {
   '/bugete-locale-2026/': typeof BugeteLocale2026IndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
-  '/bugete-locale-2026/challenges/$challengeSlug': typeof BugeteLocale2026ChallengesChallengeSlugRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -524,7 +549,9 @@ export interface FileRoutesById {
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
   '/$lang/learning/$pathId/': typeof LangLearningPathIdIndexRoute
   '/bugete-locale-2026/cauta/harta/': typeof BugeteLocale2026CautaHartaIndexRoute
+  '/bugete-locale-2026/challenges/$moduleSlug/': typeof BugeteLocale2026ChallengesModuleSlugIndexRoute
   '/$lang/learning/$pathId/$moduleId/$lessonId': typeof LangLearningPathIdModuleIdLessonIdRoute
+  '/bugete-locale-2026/challenges/$moduleSlug/$challengeSlug/$stepSlug': typeof BugeteLocale2026ChallengesModuleSlugChallengeSlugStepSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -541,6 +568,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/$lang/learning'
     | '/alerts/$alertId'
+    | '/bugete-locale-2026/challenges'
     | '/charts/$chartId'
     | '/alerts/new'
     | '/bugete-locale-2026/forum'
@@ -557,7 +585,6 @@ export interface FileRouteTypes {
     | '/bugete-locale-2026/'
     | '/charts/'
     | '/$lang/learning/onboarding'
-    | '/bugete-locale-2026/challenges/$challengeSlug'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -575,7 +602,9 @@ export interface FileRouteTypes {
     | '/$lang/learning/certificates/$id'
     | '/$lang/learning/$pathId/'
     | '/bugete-locale-2026/cauta/harta/'
+    | '/bugete-locale-2026/challenges/$moduleSlug/'
     | '/$lang/learning/$pathId/$moduleId/$lessonId'
+    | '/bugete-locale-2026/challenges/$moduleSlug/$challengeSlug/$stepSlug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -602,7 +631,6 @@ export interface FileRouteTypes {
     | '/bugete-locale-2026'
     | '/charts'
     | '/$lang/learning/onboarding'
-    | '/bugete-locale-2026/challenges/$challengeSlug'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -620,7 +648,9 @@ export interface FileRouteTypes {
     | '/$lang/learning/certificates/$id'
     | '/$lang/learning/$pathId'
     | '/bugete-locale-2026/cauta/harta'
+    | '/bugete-locale-2026/challenges/$moduleSlug'
     | '/$lang/learning/$pathId/$moduleId/$lessonId'
+    | '/bugete-locale-2026/challenges/$moduleSlug/$challengeSlug/$stepSlug'
   id:
     | '__root__'
     | '/'
@@ -635,6 +665,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/$lang/learning'
     | '/alerts/$alertId'
+    | '/bugete-locale-2026/challenges'
     | '/charts/$chartId'
     | '/alerts/new'
     | '/bugete-locale-2026/forum'
@@ -651,7 +682,6 @@ export interface FileRouteTypes {
     | '/bugete-locale-2026/'
     | '/charts/'
     | '/$lang/learning/onboarding'
-    | '/bugete-locale-2026/challenges/$challengeSlug'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -669,7 +699,9 @@ export interface FileRouteTypes {
     | '/$lang/learning/certificates/$id'
     | '/$lang/learning/$pathId/'
     | '/bugete-locale-2026/cauta/harta/'
+    | '/bugete-locale-2026/challenges/$moduleSlug/'
     | '/$lang/learning/$pathId/$moduleId/$lessonId'
+    | '/bugete-locale-2026/challenges/$moduleSlug/$challengeSlug/$stepSlug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -883,6 +915,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChartsChartIdRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bugete-locale-2026/challenges': {
+      id: '/bugete-locale-2026/challenges'
+      path: '/challenges'
+      fullPath: '/bugete-locale-2026/challenges'
+      preLoaderRoute: typeof BugeteLocale2026ChallengesRouteRouteImport
+      parentRoute: typeof BugeteLocale2026RouteRoute
+    }
     '/alerts/$alertId': {
       id: '/alerts/$alertId'
       path: '/alerts/$alertId'
@@ -934,10 +973,10 @@ declare module '@tanstack/react-router' {
     }
     '/bugete-locale-2026/challenges/': {
       id: '/bugete-locale-2026/challenges/'
-      path: '/challenges'
+      path: '/'
       fullPath: '/bugete-locale-2026/challenges/'
       preLoaderRoute: typeof BugeteLocale2026ChallengesIndexRouteImport
-      parentRoute: typeof BugeteLocale2026RouteRoute
+      parentRoute: typeof BugeteLocale2026ChallengesRouteRoute
     }
     '/bugete-locale-2026/cauta/': {
       id: '/bugete-locale-2026/cauta/'
@@ -995,19 +1034,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassificationsEconomicCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/bugete-locale-2026/challenges/$challengeSlug': {
-      id: '/bugete-locale-2026/challenges/$challengeSlug'
-      path: '/challenges/$challengeSlug'
-      fullPath: '/bugete-locale-2026/challenges/$challengeSlug'
-      preLoaderRoute: typeof BugeteLocale2026ChallengesChallengeSlugRouteImport
-      parentRoute: typeof BugeteLocale2026RouteRoute
-    }
     '/$lang/learning/onboarding': {
       id: '/$lang/learning/onboarding'
       path: '/onboarding'
       fullPath: '/$lang/learning/onboarding'
       preLoaderRoute: typeof LangLearningOnboardingRouteImport
       parentRoute: typeof LangLearningRouteRoute
+    }
+    '/bugete-locale-2026/challenges/$moduleSlug/': {
+      id: '/bugete-locale-2026/challenges/$moduleSlug/'
+      path: '/$moduleSlug'
+      fullPath: '/bugete-locale-2026/challenges/$moduleSlug/'
+      preLoaderRoute: typeof BugeteLocale2026ChallengesModuleSlugIndexRouteImport
+      parentRoute: typeof BugeteLocale2026ChallengesRouteRoute
     }
     '/bugete-locale-2026/cauta/harta/': {
       id: '/bugete-locale-2026/cauta/harta/'
@@ -1030,6 +1069,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangLearningCertificatesIdRouteImport
       parentRoute: typeof LangLearningRouteRoute
     }
+    '/bugete-locale-2026/challenges/$moduleSlug/$challengeSlug/$stepSlug': {
+      id: '/bugete-locale-2026/challenges/$moduleSlug/$challengeSlug/$stepSlug'
+      path: '/$moduleSlug/$challengeSlug/$stepSlug'
+      fullPath: '/bugete-locale-2026/challenges/$moduleSlug/$challengeSlug/$stepSlug'
+      preLoaderRoute: typeof BugeteLocale2026ChallengesModuleSlugChallengeSlugStepSlugRouteImport
+      parentRoute: typeof BugeteLocale2026ChallengesRouteRoute
+    }
     '/$lang/learning/$pathId/$moduleId/$lessonId': {
       id: '/$lang/learning/$pathId/$moduleId/$lessonId'
       path: '/$pathId/$moduleId/$lessonId'
@@ -1040,26 +1086,44 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface BugeteLocale2026ChallengesRouteRouteChildren {
+  BugeteLocale2026ChallengesIndexRoute: typeof BugeteLocale2026ChallengesIndexRoute
+  BugeteLocale2026ChallengesModuleSlugIndexRoute: typeof BugeteLocale2026ChallengesModuleSlugIndexRoute
+  BugeteLocale2026ChallengesModuleSlugChallengeSlugStepSlugRoute: typeof BugeteLocale2026ChallengesModuleSlugChallengeSlugStepSlugRoute
+}
+
+const BugeteLocale2026ChallengesRouteRouteChildren: BugeteLocale2026ChallengesRouteRouteChildren =
+  {
+    BugeteLocale2026ChallengesIndexRoute: BugeteLocale2026ChallengesIndexRoute,
+    BugeteLocale2026ChallengesModuleSlugIndexRoute:
+      BugeteLocale2026ChallengesModuleSlugIndexRoute,
+    BugeteLocale2026ChallengesModuleSlugChallengeSlugStepSlugRoute:
+      BugeteLocale2026ChallengesModuleSlugChallengeSlugStepSlugRoute,
+  }
+
+const BugeteLocale2026ChallengesRouteRouteWithChildren =
+  BugeteLocale2026ChallengesRouteRoute._addFileChildren(
+    BugeteLocale2026ChallengesRouteRouteChildren,
+  )
+
 interface BugeteLocale2026RouteRouteChildren {
+  BugeteLocale2026ChallengesRouteRoute: typeof BugeteLocale2026ChallengesRouteRouteWithChildren
   BugeteLocale2026ForumRoute: typeof BugeteLocale2026ForumRoute
   BugeteLocale2026OnboardingRoute: typeof BugeteLocale2026OnboardingRoute
   BugeteLocale2026PrincipalRoute: typeof BugeteLocale2026PrincipalRoute
   BugeteLocale2026IndexRoute: typeof BugeteLocale2026IndexRoute
-  BugeteLocale2026ChallengesChallengeSlugRoute: typeof BugeteLocale2026ChallengesChallengeSlugRoute
   BugeteLocale2026CautaIndexRoute: typeof BugeteLocale2026CautaIndexRoute
-  BugeteLocale2026ChallengesIndexRoute: typeof BugeteLocale2026ChallengesIndexRoute
   BugeteLocale2026CautaHartaIndexRoute: typeof BugeteLocale2026CautaHartaIndexRoute
 }
 
 const BugeteLocale2026RouteRouteChildren: BugeteLocale2026RouteRouteChildren = {
+  BugeteLocale2026ChallengesRouteRoute:
+    BugeteLocale2026ChallengesRouteRouteWithChildren,
   BugeteLocale2026ForumRoute: BugeteLocale2026ForumRoute,
   BugeteLocale2026OnboardingRoute: BugeteLocale2026OnboardingRoute,
   BugeteLocale2026PrincipalRoute: BugeteLocale2026PrincipalRoute,
   BugeteLocale2026IndexRoute: BugeteLocale2026IndexRoute,
-  BugeteLocale2026ChallengesChallengeSlugRoute:
-    BugeteLocale2026ChallengesChallengeSlugRoute,
   BugeteLocale2026CautaIndexRoute: BugeteLocale2026CautaIndexRoute,
-  BugeteLocale2026ChallengesIndexRoute: BugeteLocale2026ChallengesIndexRoute,
   BugeteLocale2026CautaHartaIndexRoute: BugeteLocale2026CautaHartaIndexRoute,
 }
 

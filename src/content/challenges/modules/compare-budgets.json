@@ -1,0 +1,115 @@
+{
+  "id": "compare-budgets",
+  "slug": "compare-budgets",
+  "difficulty": "intermediate",
+  "title": {
+    "en": "Compare Budgets",
+    "ro": "Compară bugetele"
+  },
+  "description": {
+    "en": "Compare budgets across years and municipalities to discover trends and outliers.",
+    "ro": "Compară bugetele între ani și municipalități pentru a descoperi tendințe și anomalii."
+  },
+  "challenges": [
+    {
+      "id": "year-over-year",
+      "slug": "year-over-year",
+      "title": {
+        "en": "Year-over-Year Analysis",
+        "ro": "Analiza an peste an"
+      },
+      "description": {
+        "en": "Track how your municipality's budget changed over time.",
+        "ro": "Urmărește cum s-a schimbat bugetul municipalității tale în timp."
+      },
+      "steps": [
+        {
+          "id": "ch-compare-01-select-years",
+          "slug": "01-select-years",
+          "title": {
+            "en": "Select Years to Compare",
+            "ro": "Selectează anii de comparat"
+          },
+          "durationMinutes": 5,
+          "contentDir": "compare-budgets/01-select-years",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-compare-02-spot-changes",
+          "slug": "02-spot-changes",
+          "title": {
+            "en": "Spot Major Changes",
+            "ro": "Identifică schimbările majore"
+          },
+          "durationMinutes": 8,
+          "contentDir": "compare-budgets/02-spot-changes",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-compare-03-inflation",
+          "slug": "03-inflation-adjustment",
+          "title": {
+            "en": "Account for Inflation",
+            "ro": "Ajustează pentru inflație"
+          },
+          "durationMinutes": 7,
+          "contentDir": "compare-budgets/03-inflation-adjustment",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        }
+      ]
+    },
+    {
+      "id": "cross-municipality",
+      "slug": "cross-municipality",
+      "title": {
+        "en": "Cross-Municipality Comparison",
+        "ro": "Comparație între municipalități"
+      },
+      "description": {
+        "en": "Compare spending patterns between similar municipalities.",
+        "ro": "Compară modelele de cheltuieli între municipalități similare."
+      },
+      "steps": [
+        {
+          "id": "ch-compare-04-find-peers",
+          "slug": "04-find-peers",
+          "title": {
+            "en": "Find Peer Municipalities",
+            "ro": "Găsește municipalități similare"
+          },
+          "durationMinutes": 6,
+          "contentDir": "compare-budgets/04-find-peers",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-compare-05-per-capita",
+          "slug": "05-per-capita",
+          "title": {
+            "en": "Per-Capita Comparison",
+            "ro": "Comparație per capita"
+          },
+          "durationMinutes": 8,
+          "contentDir": "compare-budgets/05-per-capita",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-compare-06-draw-conclusions",
+          "slug": "06-draw-conclusions",
+          "title": {
+            "en": "Draw Conclusions",
+            "ro": "Trage concluzii"
+          },
+          "durationMinutes": 10,
+          "contentDir": "compare-budgets/06-draw-conclusions",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        }
+      ]
+    }
+  ]
+}

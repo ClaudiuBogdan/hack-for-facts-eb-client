@@ -1,0 +1,115 @@
+{
+  "id": "detect-anomalies",
+  "slug": "detect-anomalies",
+  "difficulty": "advanced",
+  "title": {
+    "en": "Detect Budget Anomalies",
+    "ro": "Detectează anomalii bugetare"
+  },
+  "description": {
+    "en": "Learn to identify suspicious patterns, unusual spending, and red flags in public budgets.",
+    "ro": "Învață să identifici tipare suspecte, cheltuieli neobișnuite și semnale de alarmă în bugetele publice."
+  },
+  "challenges": [
+    {
+      "id": "spending-patterns",
+      "slug": "spending-patterns",
+      "title": {
+        "en": "Suspicious Spending Patterns",
+        "ro": "Tipare suspecte de cheltuieli"
+      },
+      "description": {
+        "en": "Learn to recognize common patterns that indicate potential misuse of public funds.",
+        "ro": "Învață să recunoști tipare comune care indică o posibilă utilizare necorespunzătoare a fondurilor publice."
+      },
+      "steps": [
+        {
+          "id": "ch-anomaly-01-common-red-flags",
+          "slug": "01-common-red-flags",
+          "title": {
+            "en": "Common Red Flags",
+            "ro": "Semnale de alarmă frecvente"
+          },
+          "durationMinutes": 10,
+          "contentDir": "detect-anomalies/01-common-red-flags",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-anomaly-02-election-spending",
+          "slug": "02-election-spending",
+          "title": {
+            "en": "Election Year Spending",
+            "ro": "Cheltuieli în ani electorali"
+          },
+          "durationMinutes": 8,
+          "contentDir": "detect-anomalies/02-election-spending",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-anomaly-03-hidden-costs",
+          "slug": "03-hidden-costs",
+          "title": {
+            "en": "Find Hidden Costs",
+            "ro": "Găsește costuri ascunse"
+          },
+          "durationMinutes": 12,
+          "contentDir": "detect-anomalies/03-hidden-costs",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        }
+      ]
+    },
+    {
+      "id": "investigate-anomaly",
+      "slug": "investigate-anomaly",
+      "title": {
+        "en": "Investigate an Anomaly",
+        "ro": "Investighează o anomalie"
+      },
+      "description": {
+        "en": "Put your skills together and investigate a real anomaly step by step.",
+        "ro": "Pune-ți abilitățile cap la cap și investighează o anomalie reală pas cu pas."
+      },
+      "steps": [
+        {
+          "id": "ch-anomaly-04-pick-anomaly",
+          "slug": "04-pick-anomaly",
+          "title": {
+            "en": "Pick an Anomaly",
+            "ro": "Alege o anomalie"
+          },
+          "durationMinutes": 5,
+          "contentDir": "detect-anomalies/04-pick-anomaly",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-anomaly-05-gather-evidence",
+          "slug": "05-gather-evidence",
+          "title": {
+            "en": "Gather Evidence",
+            "ro": "Adună dovezi"
+          },
+          "durationMinutes": 15,
+          "contentDir": "detect-anomalies/05-gather-evidence",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-anomaly-06-write-report",
+          "slug": "06-write-report",
+          "title": {
+            "en": "Write Your Report",
+            "ro": "Scrie raportul tău"
+          },
+          "durationMinutes": 15,
+          "contentDir": "detect-anomalies/06-write-report",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        }
+      ]
+    }
+  ]
+}

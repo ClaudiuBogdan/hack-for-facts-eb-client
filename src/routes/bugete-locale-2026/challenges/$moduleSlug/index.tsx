@@ -4,35 +4,32 @@ import {
   CampaignRouteSearchSchema,
   resolveCampaignLocale,
 } from '@/features/campaigns/local-budget-2026/schemas/campaign-route-search-schema'
-import { getCampaignChallengeBySlug } from '@/features/campaigns/local-budget-2026/hooks/use-campaign-content'
 import { buildCampaignRouteHead } from '@/features/campaigns/local-budget-2026/seo/campaign-seo'
 import type { CampaignRouteSearch } from '@/features/campaigns/local-budget-2026/types'
+import { getChallengeModuleBySlug } from '@/features/challenges/utils/modules'
 
-export const Route = createFileRoute('/bugete-locale-2026/challenges/$challengeSlug')({
+export const Route = createFileRoute(
+  '/bugete-locale-2026/challenges/$moduleSlug/',
+)({
   ssr: true,
   validateSearch: CampaignRouteSearchSchema,
+  loader: ({ params }) => {
+    const module = getChallengeModuleBySlug(params.moduleSlug)
+    if (!module) {
+      throw notFound()
+    }
+  },
   headers: () =>
     createPublicPageCacheHeaders({
       browserMaxAgeSeconds: 0,
       sharedMaxAgeSeconds: 600,
       staleWhileRevalidateSeconds: 3600,
     }),
-  loader: ({ params }) => {
-    const challenge = getCampaignChallengeBySlug(params.challengeSlug)
-    if (!challenge) {
-      throw notFound()
-    }
-
-    return {
-      challengeSlug: challenge.slug,
-    }
-  },
-  head: ({ match, params }) => {
+  head: ({ match }) => {
     const locale = resolveCampaignLocale(match.search as CampaignRouteSearch)
     return buildCampaignRouteHead({
-      pageKind: 'challenge-detail',
+      pageKind: 'challenges',
       locale,
-      challengeSlug: params.challengeSlug,
     })
   },
 })
