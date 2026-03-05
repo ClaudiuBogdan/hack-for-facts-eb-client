@@ -60,7 +60,7 @@ export function CampaignHubPage({
         </div>
       </section>
 
-      <CampaignCalendarSection locale={locale} entries={entries} />
+      <CampaignCalendarSection locale={locale} entries={entries} entityCui={selectedEntityCui} />
       <CampaignResourcesSection locale={locale} resources={resources} />
       <CampaignChallengeListSection locale={locale} challenges={challengeList} getChallengeStatus={getChallengeStatus} />
     </div>

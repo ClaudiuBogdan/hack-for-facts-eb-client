@@ -1,19 +1,16 @@
 {
-  "anchorDate": "2026-02-06",
+  "anchorDate": "2026-03-09",
   "anchorLabel": {
-    "ro": "Publicare lege buget de stat în Monitorul Oficial",
-    "en": "State budget law publication in Official Gazette"
+    "ro": "Publicare lege buget de stat în Monitorul Oficial (T0)",
+    "en": "State budget law publication in Official Gazette (T0)"
   },
   "entries": [
     {
       "id": "publicare-buget-de-stat",
-      "title": {
-        "ro": "Legea bugetului de stat publicată",
-        "en": "State budget law published"
-      },
+      "title": { "ro": "Legea bugetului de stat publicată", "en": "State budget law published" },
       "description": {
-        "ro": "Momentul de referință pentru calculul termenelor locale.",
-        "en": "Reference point for local deadlines."
+        "ro": "Moment de referință (T0) pentru toate termenele bugetelor locale.",
+        "en": "Reference point (T0) for all local budget deadlines."
       },
       "dayOffset": 0,
       "isActionable": false
@@ -21,40 +18,50 @@
     {
       "id": "publicare-proiect-buget-local",
       "title": {
-        "ro": "Publicare proiect buget local",
-        "en": "Draft local budget publication"
+        "ro": "Publicare proiect buget local + deschidere contestații",
+        "en": "Draft local budget published + objection window opens"
       },
       "description": {
-        "ro": "Termen legal orientativ: în cel mult 15 zile de la bugetul de stat.",
-        "en": "Indicative legal deadline: within 15 days from state budget publication."
+        "ro": "Primăria publică proiectul de buget local (termen maxim: 15 zile de la T0). Din această zi, locuitorii pot depune contestații timp de 15 zile.",
+        "en": "The city hall publishes the draft budget (deadline: 15 days from T0). From this day, residents may submit objections for 15 days."
       },
       "dayOffset": 15,
       "isActionable": true
     },
     {
-      "id": "inchidere-consultare-publica",
-      "title": {
-        "ro": "Închidere consultare publică",
-        "en": "Public consultation closes"
-      },
+      "id": "inchidere-contestatii",
+      "title": { "ro": "Termen-limită depunere contestații", "en": "Objection submission deadline" },
       "description": {
-        "ro": "Perioada minimă de consultare publică pentru proiectul de buget.",
-        "en": "Minimum public consultation period for the draft budget."
+        "ro": "Contestațiile se depun în 15 zile calendaristice de la publicarea proiectului de buget.",
+        "en": "Objections must be submitted within 15 calendar days of draft publication."
       },
       "dayOffset": 30,
+      "relativeTo": "publicare-proiect-buget-local",
+      "relativeDayOffset": 15,
       "isActionable": true
     },
     {
-      "id": "termen-aprobare-buget-local",
-      "title": {
-        "ro": "Termen-limită aprobare buget local",
-        "en": "Local budget approval deadline"
-      },
+      "id": "depunere-spre-aprobare",
+      "title": { "ro": "Proiect înaintat consiliului local", "en": "Draft forwarded to local council" },
       "description": {
-        "ro": "Bugetul local trebuie adoptat în maximum 45 de zile.",
-        "en": "Local budget must be adopted in up to 45 days."
+        "ro": "Primarul înaintează proiectul + raportul + contestațiile primite către consiliul local, în max. 5 zile de la expirarea termenului de contestații.",
+        "en": "The mayor forwards the draft + report + received objections to the local council, within 5 days after the objection deadline."
+      },
+      "dayOffset": 35,
+      "relativeTo": "inchidere-contestatii",
+      "relativeDayOffset": 5,
+      "isActionable": true
+    },
+    {
+      "id": "vot-aprobare-buget-local",
+      "title": { "ro": "Vot și adoptare buget local", "en": "Council vote and budget adoption" },
+      "description": {
+        "ro": "Consiliul local soluționează contestațiile și adoptă bugetul în max. 10 zile de la depunere, dar nu mai târziu de 45 de zile calendaristice de la T0.",
+        "en": "The local council resolves objections and adopts the budget within 10 days of submission, but no later than 45 calendar days from T0."
       },
       "dayOffset": 45,
+      "relativeTo": "depunere-spre-aprobare",
+      "relativeDayOffset": 10,
       "isActionable": true
     }
   ]

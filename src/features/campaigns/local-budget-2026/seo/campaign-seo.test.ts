@@ -97,6 +97,17 @@ describe('campaign-seo', () => {
     expect(metadata.title).toContain('Provocare Inexistentă')
   })
 
+  it('builds indexable calendar metadata with correct canonical path', () => {
+    const metadata = buildCampaignSeoMetadata({
+      pageKind: 'calendar',
+      locale: 'ro',
+    })
+
+    expect(metadata.robots).toBe('index,follow')
+    expect(metadata.canonicalUrl).toContain('/bugete-locale-2026/calendar')
+    expect(metadata.canonicalUrl).not.toContain('?lang=en')
+  })
+
   it('includes canonical and hreflang links in route head', () => {
     const head = buildCampaignRouteHead({
       pageKind: 'challenges',

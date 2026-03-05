@@ -17,7 +17,7 @@
   ],
   "deadlineRule": {
     "type": "relative_to_timeline",
-    "timelineEntryId": "inchidere-consultare-publica",
+    "timelineEntryId": "inchidere-contestatii",
     "lockAfterDays": 0
   },
   "lockReasonTemplate": {

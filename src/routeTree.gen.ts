@@ -31,6 +31,7 @@ import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
 import { Route as BugeteLocale2026PrincipalRouteImport } from './routes/bugete-locale-2026/principal'
 import { Route as BugeteLocale2026OnboardingRouteImport } from './routes/bugete-locale-2026/onboarding'
 import { Route as BugeteLocale2026ForumRouteImport } from './routes/bugete-locale-2026/forum'
+import { Route as BugeteLocale2026CalendarRouteImport } from './routes/bugete-locale-2026/calendar'
 import { Route as AlertsNewRouteImport } from './routes/alerts/new'
 import { Route as ChartsChartIdRouteRouteImport } from './routes/charts/$chartId/route'
 import { Route as BugeteLocale2026ChallengesRouteRouteImport } from './routes/bugete-locale-2026/challenges/route'
@@ -198,6 +199,14 @@ const BugeteLocale2026ForumRoute = BugeteLocale2026ForumRouteImport.update({
 } as any).lazy(() =>
   import('./routes/bugete-locale-2026/forum.lazy').then((d) => d.Route),
 )
+const BugeteLocale2026CalendarRoute =
+  BugeteLocale2026CalendarRouteImport.update({
+    id: '/calendar',
+    path: '/calendar',
+    getParentRoute: () => BugeteLocale2026RouteRoute,
+  } as any).lazy(() =>
+    import('./routes/bugete-locale-2026/calendar.lazy').then((d) => d.Route),
+  )
 const AlertsNewRoute = AlertsNewRouteImport.update({
   id: '/alerts/new',
   path: '/alerts/new',
@@ -420,6 +429,7 @@ export interface FileRoutesByFullPath {
   '/bugete-locale-2026/challenges': typeof BugeteLocale2026ChallengesRouteRouteWithChildren
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/alerts/new': typeof AlertsNewRoute
+  '/bugete-locale-2026/calendar': typeof BugeteLocale2026CalendarRoute
   '/bugete-locale-2026/forum': typeof BugeteLocale2026ForumRoute
   '/bugete-locale-2026/onboarding': typeof BugeteLocale2026OnboardingRoute
   '/bugete-locale-2026/principal': typeof BugeteLocale2026PrincipalRoute
@@ -466,6 +476,7 @@ export interface FileRoutesByTo {
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
   '/alerts/new': typeof AlertsNewRoute
+  '/bugete-locale-2026/calendar': typeof BugeteLocale2026CalendarRoute
   '/bugete-locale-2026/forum': typeof BugeteLocale2026ForumRoute
   '/bugete-locale-2026/onboarding': typeof BugeteLocale2026OnboardingRoute
   '/bugete-locale-2026/principal': typeof BugeteLocale2026PrincipalRoute
@@ -518,6 +529,7 @@ export interface FileRoutesById {
   '/bugete-locale-2026/challenges': typeof BugeteLocale2026ChallengesRouteRouteWithChildren
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/alerts/new': typeof AlertsNewRoute
+  '/bugete-locale-2026/calendar': typeof BugeteLocale2026CalendarRoute
   '/bugete-locale-2026/forum': typeof BugeteLocale2026ForumRoute
   '/bugete-locale-2026/onboarding': typeof BugeteLocale2026OnboardingRoute
   '/bugete-locale-2026/principal': typeof BugeteLocale2026PrincipalRoute
@@ -571,6 +583,7 @@ export interface FileRouteTypes {
     | '/bugete-locale-2026/challenges'
     | '/charts/$chartId'
     | '/alerts/new'
+    | '/bugete-locale-2026/calendar'
     | '/bugete-locale-2026/forum'
     | '/bugete-locale-2026/onboarding'
     | '/bugete-locale-2026/principal'
@@ -617,6 +630,7 @@ export interface FileRouteTypes {
     | '/test-error'
     | '/terms'
     | '/alerts/new'
+    | '/bugete-locale-2026/calendar'
     | '/bugete-locale-2026/forum'
     | '/bugete-locale-2026/onboarding'
     | '/bugete-locale-2026/principal'
@@ -668,6 +682,7 @@ export interface FileRouteTypes {
     | '/bugete-locale-2026/challenges'
     | '/charts/$chartId'
     | '/alerts/new'
+    | '/bugete-locale-2026/calendar'
     | '/bugete-locale-2026/forum'
     | '/bugete-locale-2026/onboarding'
     | '/bugete-locale-2026/principal'
@@ -901,6 +916,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BugeteLocale2026ForumRouteImport
       parentRoute: typeof BugeteLocale2026RouteRoute
     }
+    '/bugete-locale-2026/calendar': {
+      id: '/bugete-locale-2026/calendar'
+      path: '/calendar'
+      fullPath: '/bugete-locale-2026/calendar'
+      preLoaderRoute: typeof BugeteLocale2026CalendarRouteImport
+      parentRoute: typeof BugeteLocale2026RouteRoute
+    }
     '/alerts/new': {
       id: '/alerts/new'
       path: '/alerts/new'
@@ -1108,6 +1130,7 @@ const BugeteLocale2026ChallengesRouteRouteWithChildren =
 
 interface BugeteLocale2026RouteRouteChildren {
   BugeteLocale2026ChallengesRouteRoute: typeof BugeteLocale2026ChallengesRouteRouteWithChildren
+  BugeteLocale2026CalendarRoute: typeof BugeteLocale2026CalendarRoute
   BugeteLocale2026ForumRoute: typeof BugeteLocale2026ForumRoute
   BugeteLocale2026OnboardingRoute: typeof BugeteLocale2026OnboardingRoute
   BugeteLocale2026PrincipalRoute: typeof BugeteLocale2026PrincipalRoute
@@ -1119,6 +1142,7 @@ interface BugeteLocale2026RouteRouteChildren {
 const BugeteLocale2026RouteRouteChildren: BugeteLocale2026RouteRouteChildren = {
   BugeteLocale2026ChallengesRouteRoute:
     BugeteLocale2026ChallengesRouteRouteWithChildren,
+  BugeteLocale2026CalendarRoute: BugeteLocale2026CalendarRoute,
   BugeteLocale2026ForumRoute: BugeteLocale2026ForumRoute,
   BugeteLocale2026OnboardingRoute: BugeteLocale2026OnboardingRoute,
   BugeteLocale2026PrincipalRoute: BugeteLocale2026PrincipalRoute,

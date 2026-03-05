@@ -82,6 +82,16 @@ const CAMPAIGN_COPY: Record<
       en: 'Select your city hall directly from the UAT map to continue to the campaign main page.',
     },
   },
+  calendar: {
+    title: {
+      ro: 'Calendar Bugete Locale 2026: Termene legale și etape',
+      en: 'Local Budgets 2026 Calendar: Legal deadlines and milestones',
+    },
+    description: {
+      ro: 'Consultă calendarul complet al bugetelor locale 2026 cu termenele legale prevăzute de Art. 39, Legea 273/2006.',
+      en: 'View the full 2026 local budget calendar with legal deadlines per Art. 39, Law 273/2006.',
+    },
+  },
 }
 
 function withSiteName(title: string): string {
@@ -98,6 +108,7 @@ function resolvePagePath(params: {
   if (params.pageKind === 'principal-map') return `${CAMPAIGN_BASE_PATH}/cauta/harta`
   if (params.pageKind === 'challenges') return `${CAMPAIGN_BASE_PATH}/challenges`
   if (params.pageKind === 'onboarding') return `${CAMPAIGN_BASE_PATH}/onboarding`
+  if (params.pageKind === 'calendar') return `${CAMPAIGN_BASE_PATH}/calendar`
 
   const challengeSlug = params.challengeSlug ?? ''
   return `${CAMPAIGN_BASE_PATH}/challenges/${challengeSlug}`

@@ -4,11 +4,12 @@ import { z } from 'zod'
 import campaignContent from '@/content/campaigns/bugete-locale-2026/campaign.json'
 import resourcesContent from '@/content/campaigns/bugete-locale-2026/resources.json'
 import timelineContent from '@/content/campaigns/bugete-locale-2026/timeline.json'
+import uatCalendarOverridesContent from '@/content/campaigns/bugete-locale-2026/uat-calendar-overrides.json'
 import { campaignChallengeMdxModules } from './campaign-challenge-mdx-index'
 import { CAMPAIGN_DEFAULT_LOCALE } from '../constants'
 import { parseCampaignDefinition, CampaignTranslatedStringSchema } from '../schemas/campaign-schema'
 import { parseCampaignChallengeDefinition } from '../schemas/challenge-schema'
-import { parseCampaignTimelineDefinition } from '../schemas/timeline-schema'
+import { parseCampaignTimelineDefinition, parseCampaignUatCalendarOverridesFile } from '../schemas/timeline-schema'
 import type {
   CampaignChallengeDefinition,
   CampaignDefinition,
@@ -16,6 +17,7 @@ import type {
   CampaignResourceDefinition,
   CampaignTranslatedString,
   CampaignTimelineDefinition,
+  CampaignUatCalendarOverride,
 } from '../types'
 
 type MdxContentProps = {
@@ -55,6 +57,7 @@ const CHALLENGE_MDX_PATH_PATTERN = /\/challenges\/([^/]+)\/index\.(ro|en)\.mdx$/
 
 const campaignDefinition = parseCampaignDefinition(campaignContent)
 const campaignTimelineDefinition = parseCampaignTimelineDefinition(timelineContent)
+const campaignUatCalendarOverridesFile = parseCampaignUatCalendarOverridesFile(uatCalendarOverridesContent)
 const campaignResources = CampaignResourcesFileSchema.parse(resourcesContent).resources
 
 const campaignChallengeDefinitions = Object.entries(CHALLENGE_JSON_MODULES)
@@ -141,6 +144,25 @@ export function getCampaignDefinition(): CampaignDefinition {
 
 export function getCampaignTimelineDefinition(): CampaignTimelineDefinition {
   return campaignTimelineDefinition
+}
+
+/**
+ * Build a per-CUI override by pivoting the file format (entryId → CUI → date)
+ * into the hook format (entryId → date) for a specific CUI.
+ */
+export function getCampaignUatOverrideForCui(cui: string): CampaignUatCalendarOverride | undefined {
+  const result: Record<string, string> = {}
+  let found = false
+
+  for (const [entryId, cuiMap] of Object.entries(campaignUatCalendarOverridesFile)) {
+    const date = cuiMap[cui]
+    if (date) {
+      result[entryId] = date
+      found = true
+    }
+  }
+
+  return found ? result : undefined
 }
 
 export function getCampaignResources(): readonly CampaignResourceDefinition[] {

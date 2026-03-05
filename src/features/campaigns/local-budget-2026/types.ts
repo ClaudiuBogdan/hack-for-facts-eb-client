@@ -10,6 +10,10 @@ export type CampaignPrincipalRouteSearch = CampaignRouteSearch & {
   readonly entityCui?: string
 }
 
+export type CampaignCalendarRouteSearch = CampaignRouteSearch & {
+  readonly entityCui?: string
+}
+
 export type CampaignTranslatedString = {
   readonly ro: string
   readonly en?: string
@@ -61,6 +65,8 @@ export type CampaignTimelineEntryDefinition = {
   readonly description: CampaignTranslatedString
   readonly dayOffset: number
   readonly isActionable: boolean
+  readonly relativeTo?: string
+  readonly relativeDayOffset?: number
 }
 
 export type CampaignTimelineDefinition = {
@@ -72,7 +78,16 @@ export type CampaignTimelineDefinition = {
 export type CampaignTimelineEntry = CampaignTimelineEntryDefinition & {
   readonly computedDate: string
   readonly isClosed: boolean
+  readonly isEstimated: boolean
 }
+
+/** Per-entry override for a specific UAT: maps entry ID → date string. */
+export type CampaignUatCalendarOverride = Readonly<Record<string, string>>
+
+/** Raw overrides file: maps entry ID → CUI → date string. */
+export type CampaignUatCalendarOverridesFile = Readonly<
+  Record<string, Readonly<Record<string, string>>>
+>
 
 export type CampaignResourceKind = 'guide' | 'tutorial' | 'template' | 'reference'
 
@@ -106,6 +121,7 @@ export type CampaignSeoPageKind =
   | 'challenge-detail'
   | 'onboarding'
   | 'principal-map'
+  | 'calendar'
 
 export type CampaignSeoImage = {
   readonly url: string
