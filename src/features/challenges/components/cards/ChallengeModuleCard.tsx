@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { ArrowRight, Clock, Play, Trophy } from 'lucide-react'
+import { ArrowRight, Play, Trophy } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { getTranslatedText } from '../../utils/modules'
@@ -46,8 +46,8 @@ export function formatTotalTime(minutes: number): string {
 
 function getCardStyles(isActive: boolean): string {
   return isActive
-    ? 'shadow-2xl shadow-primary/5 bg-gradient-to-br from-background via-background to-primary/[0.03] group hover:shadow-primary/10'
-    : 'shadow-xl shadow-primary/5 bg-gradient-to-br from-background via-background to-muted/30 hover:shadow-primary/10'
+    ? 'shadow-lg shadow-primary/5 bg-gradient-to-br from-background via-background to-primary/[0.03] group hover:shadow-xl hover:shadow-primary/8'
+    : 'shadow-md shadow-primary/3 bg-gradient-to-br from-background via-background to-muted/30 hover:shadow-lg hover:shadow-primary/5'
 }
 
 function getVariantStyles(isActive: boolean) {
@@ -58,10 +58,7 @@ function getVariantStyles(isActive: boolean) {
     buttonMinWidth: isActive ? 'min-w-[240px]' : 'min-w-[200px]',
     buttonHeight: isActive ? 'h-16' : 'h-14',
     buttonTextSize: isActive ? 'text-lg' : 'text-base',
-    iconSize: isActive ? 'h-10 w-10' : 'h-9 w-9',
-    statTextSize: isActive ? 'text-xl' : 'text-lg',
     spacing: isActive ? 'space-y-10' : 'space-y-8',
-    statsGap: isActive ? 'justify-center sm:justify-start gap-8 pt-8' : 'gap-6 pt-6',
     detailsButtonHeight: isActive ? 'h-14' : 'h-12',
   }
 }
@@ -101,7 +98,7 @@ function ActionButton({
       <Button
         asChild
         size="lg"
-        className={`rounded-[22px] px-8 lg:px-10 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-2xl shadow-primary/20 transition-all hover:scale-[1.03] active:scale-95 bg-primary text-primary-foreground border-none`}
+        className={`rounded-[22px] px-8 lg:px-10 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-lg shadow-primary/15 transition-all hover:scale-[1.03] active:scale-95 bg-primary text-primary-foreground border-none`}
       >
         <Link to={nextStepUrl as '/'}>
           <Play className="mr-2 lg:mr-3 h-5 w-5 fill-current" />
@@ -116,7 +113,7 @@ function ActionButton({
       <Button
         asChild
         size="lg"
-        className={`rounded-[22px] px-8 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 bg-primary text-primary-foreground border-none`}
+        className={`rounded-[22px] px-8 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-md shadow-primary/10 transition-all hover:scale-[1.02] active:scale-95 bg-primary text-primary-foreground border-none`}
         onClick={onNavigateAndSwitch}
       >
         <Link to={nextStepUrl as '/'}>
@@ -215,68 +212,6 @@ export function ChallengeModuleCard({
             </div>
           </div>
         )}
-
-        {/* Stats Footer */}
-        <div
-          className={`flex flex-wrap items-center ${styles.statsGap} border-t border-border/30`}
-        >
-          {/* Completion % - only shown when has progress */}
-          {hasProgress && (
-            <div className="flex items-center gap-3 group cursor-default">
-              <div className="flex flex-col">
-                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                  {t`Completion`}
-                </span>
-                <div className="flex items-baseline gap-0.5">
-                  <span className={`${styles.statTextSize} font-black tabular-nums tracking-tighter`}>
-                    {stats.percentage}
-                  </span>
-                  <span className="text-xs font-black text-muted-foreground">%</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Steps count */}
-          <div className="flex items-center gap-3 group cursor-default">
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                {t`Steps`}
-              </span>
-              <div className="flex items-baseline gap-0.5">
-                {hasProgress ? (
-                  <>
-                    <span className={`${styles.statTextSize} font-black tabular-nums tracking-tighter`}>
-                      {stats.completedCount}
-                    </span>
-                    <span className="text-xs font-black text-muted-foreground">/ {stats.totalCount}</span>
-                  </>
-                ) : (
-                  <span className={`${styles.statTextSize} font-black tabular-nums tracking-tighter`}>
-                    {stats.totalCount}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Time estimate/duration */}
-          <div className="flex items-center gap-3 group cursor-default">
-            <div
-              className={`${styles.iconSize} rounded-2xl bg-muted/50 flex items-center justify-center group-hover:bg-primary/5 transition-colors`}
-            >
-              <Clock className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                {hasProgress ? t`Estimate` : t`Duration`}
-              </span>
-              <span className="text-xs font-bold text-foreground tracking-tight">
-                {hasProgress ? formatRemainingTime(stats.remainingMinutes) : formatTotalTime(stats.totalMinutes)}
-              </span>
-            </div>
-          </div>
-        </div>
       </CardContent>
     </Card>
   )
