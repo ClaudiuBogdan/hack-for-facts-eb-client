@@ -15,6 +15,7 @@ import type { ChallengeLocale, ChallengeModuleDefinition } from '../../types'
 import { ChallengeModuleCard, type ChallengeModuleCardStats } from '../cards/ChallengeModuleCard'
 import { BudgetTimelineStrip } from './BudgetTimelineStrip'
 import { QuickResourcesPreview } from './QuickResourcesPreview'
+import { UatSwitchBadge } from './UatSwitchBadge'
 
 type ChallengesHubPageProps = {
   readonly locale: ChallengeLocale
@@ -65,9 +66,12 @@ export function ChallengesHubPage({ locale }: ChallengesHubPageProps) {
     })
   }, [modules, getStepStatus, isStepCompleted])
 
-  // First module is "active", rest are "other"
-  const activeModuleData = modulesWithStats[0] ?? null
-  const otherModulesData = modulesWithStats.slice(1)
+  // First incomplete module is "active"; if all complete, show the last one
+  const activeModuleData =
+    modulesWithStats.find((m) => m.stats.percentage < 100) ??
+    modulesWithStats[modulesWithStats.length - 1] ??
+    null
+  const otherModulesData = modulesWithStats.filter((m) => m !== activeModuleData)
 
   const greeting =
     (activeModuleData?.stats.completedCount ?? 0) > 0
@@ -89,6 +93,11 @@ export function ChallengesHubPage({ locale }: ChallengesHubPageProps) {
       <div className="space-y-2 pl-2">
         <h1 className="text-3xl md:text-4xl font-black tracking-tight">{greeting}</h1>
         <p className="text-muted-foreground font-medium text-base opacity-60">{subtitle}</p>
+        {selectedEntityCui && (
+          <div className="pt-1">
+            <UatSwitchBadge entityCui={selectedEntityCui} />
+          </div>
+        )}
       </div>
 
       {/* Active Module Card */}

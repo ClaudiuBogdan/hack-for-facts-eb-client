@@ -1202,7 +1202,7 @@ msgstr "Înapoi la alertă"
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:83
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:120
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:131
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:136
 msgid "Back to Challenges"
 msgstr "Înapoi la provocări"
 
@@ -1226,7 +1226,7 @@ msgstr "Înapoi la învățare"
 msgid "Back to Learning Hub"
 msgstr "Înapoi la Hub-ul de învățare"
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:218
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:223
 msgid "Back to module"
 msgstr "Înapoi la modul"
 
@@ -1368,7 +1368,7 @@ msgstr "Detalierea clasificației selectate, incluzând capitolele grupate și t
 msgid "Browse and download all financial reports submitted by this entity"
 msgstr "Răsfoiți și descărcați toate rapoartele financiare depuse de această entitate"
 
-#: src/features/challenges/components/hub/BudgetTimelineStrip.tsx:33
+#: src/features/challenges/components/hub/BudgetTimelineStrip.tsx:34
 msgid "Budget Calendar"
 msgstr "Calendar bugetar"
 
@@ -1562,6 +1562,10 @@ msgstr "Întrebare de provocare"
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:243
 msgid "Challenges"
 msgstr "Provocări"
+
+#: src/features/challenges/components/interactive/UatPicker.tsx:111
+msgid "Change"
+msgstr ""
 
 #: src/routes/privacy.lazy.tsx:146
 msgid "Changes to this policy"
@@ -1899,7 +1903,7 @@ msgstr "Compact"
 msgid "Compare with death rate and migration to understand if growth is structural or temporary."
 msgstr "Comparați cu rata mortalității și migrația pentru a înțelege dacă creșterea este structurală sau temporară."
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:249
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:254
 msgid "Complete module"
 msgstr "Finalizează modulul"
 
@@ -2005,7 +2009,7 @@ msgstr "Confirmă înlocuirea"
 msgid "Confirm unsubscribe"
 msgstr "Confirmare dezabonare"
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:103
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:115
 #: src/routes/$lang/learning/index.lazy.tsx:238
 msgid "Congratulations!"
 msgstr "Felicitări!"
@@ -2049,6 +2053,10 @@ msgstr "Continuă"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:608
 msgid "Continue editing"
 msgstr "Continuă editarea"
+
+#: src/features/challenges/components/interactive/UatPicker.tsx:121
+msgid "Continue to challenges"
+msgstr ""
 
 #: src/features/learning/components/player/MarkComplete.tsx:71
 msgid "Continue to the next chapter to complete the module."
@@ -5374,7 +5382,7 @@ msgstr "mai mult"
 msgid "More"
 msgstr "Mai mult"
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:129
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:141
 msgid "More Modules"
 msgstr "Mai multe module"
 
@@ -5567,7 +5575,7 @@ msgstr "Buletine informative și notificări"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:202
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:536
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:233
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:238
 #: src/features/learning/components/player/LessonPlayer.tsx:620
 msgid "Next"
 msgstr "Următorul"
@@ -6595,7 +6603,7 @@ msgstr "Previzualizare a graficului și setărilor alertei."
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:191
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:524
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:201
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:206
 #: src/features/learning/components/player/LessonPlayer.tsx:596
 msgid "Previous"
 msgstr "Anterior"
@@ -6938,7 +6946,7 @@ msgstr "Resetează la perioada disponibilă"
 msgid "Reset to default"
 msgstr "Resetează la valoarea implicită"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:32
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:34
 msgid "Resources"
 msgstr "Resurse"
 
@@ -7003,7 +7011,7 @@ msgid "Review and manage alerts created from your custom data series."
 msgstr "Examinați și gestionați alertele create din seriile de date personalizate."
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:146
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:113
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:125
 msgid "Review Module"
 msgstr "Revezi modulul"
 
@@ -7368,6 +7376,7 @@ msgstr "selectate"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1300
 #: src/components/filters/base-filter/SelectedOptionsDisplay.tsx:47
+#: src/features/challenges/components/interactive/UatPicker.tsx:93
 msgid "Selected"
 msgstr "Selectat"
 
@@ -7873,7 +7882,7 @@ msgstr "Situația pe Capitole Bugetare"
 msgid "Stay here"
 msgstr "Rămâi aici"
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:126
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:131
 msgid "Step not found"
 msgstr "Pasul nu a fost găsit"
 
@@ -7926,6 +7935,10 @@ msgstr "Sumă"
 #: src/routes/privacy.lazy.tsx:152
 msgid "Supervisory authority"
 msgstr "Autoritatea de supraveghere"
+
+#: src/features/challenges/components/hub/UatSwitchBadge.tsx:31
+msgid "Switch city hall"
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:431
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:432
@@ -8107,7 +8120,7 @@ msgstr "Totalul reținut de stat este <0>{0}</0>."
 msgid "The Step Between Budget and Payment"
 msgstr "Pasul dintre Buget și Plată"
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:128
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:133
 msgid "The step you're looking for doesn't exist or may have been moved."
 msgstr "Pasul pe care îl cauți nu există sau este posibil să fi fost mutat."
 
@@ -8843,7 +8856,7 @@ msgstr "Versiune restaurată"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:101
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:604
 #: src/components/maps/HeatmapDataTable.tsx:469
-#: src/features/challenges/components/hub/BudgetTimelineStrip.tsx:36
+#: src/features/challenges/components/hub/BudgetTimelineStrip.tsx:37
 #: src/routes/entity-analytics.lazy.tsx:219
 msgid "View"
 msgstr "Vizualizare"
@@ -8860,7 +8873,7 @@ msgstr "Vezi {warningCount} avertismente"
 msgid "View 1 warning"
 msgstr "Vezi 1 avertisment"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:65
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:68
 msgid "View all"
 msgstr "Vezi tot"
 
@@ -9018,7 +9031,7 @@ msgstr "Vom începe cu parcursul care se potrivește obiectivului și alegerilor
 msgid "Weather, heating systems, and local industry can materially affect year-to-year variation."
 msgstr "Vremea, sistemele de încălzire și industria locală pot afecta semnificativ variațiile de la an la an."
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:71
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:78
 #: src/routes/$lang/learning/index.lazy.tsx:178
 msgid "Welcome back."
 msgstr "Bine ai revenit."
@@ -9206,7 +9219,7 @@ msgstr "Trebuie să fiți autentificat pentru a vă abona la notificări"
 msgid "You will no longer receive notifications via email."
 msgstr "Nu veți mai primi notificări prin e-mail."
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:78
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:85
 #: src/routes/$lang/learning/index.lazy.tsx:182
 msgid "You're doing great. Keep up the momentum."
 msgstr "Te descurci de minune. Menține ritmul."
@@ -9215,7 +9228,7 @@ msgstr "Te descurci de minune. Menține ritmul."
 msgid "You've completed this learning path."
 msgstr "Ai finalizat acest parcurs de învățare."
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:105
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:117
 msgid "You've completed this module."
 msgstr "Ai finalizat acest modul."
 

@@ -32,7 +32,7 @@ import {
   type ChallengeMarkCompleteMdxProps,
   type ChallengeQuizMdxProps,
 } from './challenge-mdx-components'
-import { challengeCustomMdxComponents } from './challenge-custom-mdx-components'
+import { buildChallengeCustomMdxComponents } from './challenge-custom-mdx-components'
 
 type ChallengeStepPlayerProps = {
   readonly locale: ChallengeLocale
@@ -106,14 +106,19 @@ export function ChallengeStepPlayer({
     [stepId],
   )
 
+  const customComponents = useMemo(
+    () => buildChallengeCustomMdxComponents(stepId),
+    [stepId],
+  )
+
   const mdxComponents = useMemo(
     () =>
       buildChallengeMdxComponents({
         QuizComponent: QuizWrapper,
         MarkCompleteComponent: MarkCompleteWrapper,
-        customComponents: challengeCustomMdxComponents,
+        customComponents,
       }),
-    [QuizWrapper, MarkCompleteWrapper],
+    [QuizWrapper, MarkCompleteWrapper, customComponents],
   )
 
   if (!module || !challenge || !step) {

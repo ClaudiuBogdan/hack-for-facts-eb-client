@@ -24,11 +24,11 @@ function CampaignSelectorRoutePage() {
   const { setSelectedEntity } = useCampaignProgress()
 
   const handleEntitySelected = useCallback(
-    (entityCui: string) => {
-      setSelectedEntity({ entityCui })
+    (entity: { cui: string }) => {
+      setSelectedEntity({ entityCui: entity.cui })
       void navigate({
         to: `${CAMPAIGN_BASE_PATH}/principal` as '/',
-        search: getPrincipalSearch(search.lang, entityCui),
+        search: getPrincipalSearch(search.lang, entity.cui),
         replace: true,
         resetScroll: false,
       })

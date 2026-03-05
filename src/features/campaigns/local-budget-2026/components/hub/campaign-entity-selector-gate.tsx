@@ -1,16 +1,25 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
 import { MapPinned } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EntitySearchInput } from '@/components/entities/EntitySearch'
 import { Analytics } from '@/lib/analytics'
+import { useRecentEntities } from '@/hooks/useRecentEntities'
 import { CAMPAIGN_BASE_PATH } from '../../constants'
 import type { CampaignLocale } from '../../types'
+import { RecentUatBadges } from './RecentUatBadges'
+
+export type EntitySelection = {
+  readonly cui: string
+  readonly name: string
+  readonly entityType?: string | null
+  readonly countyName?: string | null
+}
 
 type CampaignEntitySelectorGateProps = {
   readonly locale: CampaignLocale
   readonly languageQuery?: CampaignLocale
-  readonly onEntitySelected: (entityCui: string) => void
+  readonly onEntitySelected: (entity: EntitySelection) => void
 }
 
 export function CampaignEntitySelectorGate({
@@ -18,9 +27,39 @@ export function CampaignEntitySelectorGate({
   languageQuery,
   onEntitySelected,
 }: CampaignEntitySelectorGateProps) {
+  const { addRecentEntity } = useRecentEntities()
+
   useEffect(() => {
     Analytics.capture(Analytics.EVENTS.CampaignEntitySelectorOpened)
   }, [])
+
+  const handleSelect = useCallback(
+    (entity: EntitySelection) => {
+      addRecentEntity({
+        cui: entity.cui,
+        name: entity.name,
+        entity_type: entity.entityType,
+      })
+      Analytics.capture(Analytics.EVENTS.CampaignEntitySelectedFromSearch, {
+        source: 'search',
+        entityCui: entity.cui,
+      })
+      onEntitySelected(entity)
+    },
+    [addRecentEntity, onEntitySelected],
+  )
+
+  const handleBadgeSelect = useCallback(
+    (entityCui: string) => {
+      Analytics.capture(Analytics.EVENTS.CampaignEntitySelectedFromSearch, {
+        source: 'recent-badge',
+        entityCui,
+      })
+      // Badges don't carry name/type — pass CUI only
+      onEntitySelected({ cui: entityCui, name: '' })
+    },
+    [onEntitySelected],
+  )
 
   const title =
     locale === 'en' ? 'Find your city hall first' : 'Alege mai întâi primăria ta'
@@ -52,14 +91,17 @@ export function CampaignEntitySelectorGate({
           placeholder={searchPlaceholder}
           selectionBehavior="callback-only"
           entitySearchFilter={{ isUat: true, excludeCounty: true }}
-          onSelect={(entity) => {
-            Analytics.capture(Analytics.EVENTS.CampaignEntitySelectedFromSearch, {
-              source: 'search',
-              entityCui: entity.cui,
+          onSelect={(entity) =>
+            handleSelect({
+              cui: entity.cui,
+              name: entity.name,
+              entityType: entity.entity_type,
+              countyName: entity.uat?.county_name,
             })
-            onEntitySelected(entity.cui)
-          }}
+          }
         />
+
+        <RecentUatBadges locale={locale} onSelect={handleBadgeSelect} />
       </div>
 
       <div className="mt-10 flex items-center gap-4 sm:gap-6">
