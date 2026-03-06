@@ -9,6 +9,6 @@ type MdxModule = {
 }
 
 export const campaignChallengeMdxModules = import.meta.glob<MdxModule>(
-  '/src/content/campaigns/buget-primarie/challenges/*/index.*.mdx',
+  '/src/content/campaigns/buget/challenges/*/index.*.mdx',
   { eager: true },
 )

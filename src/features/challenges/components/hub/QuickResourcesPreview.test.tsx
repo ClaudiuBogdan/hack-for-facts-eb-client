@@ -68,7 +68,7 @@ describe('QuickResourcesPreview', () => {
     expect(screen.getByText('Primăria mea')).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: /Primăria mea/i }),
-    ).toHaveAttribute('href', '/buget-primarie/12345678/primarie')
+    ).toHaveAttribute('href', '/buget/12345678/primarie')
   })
 
   it('shows campaign resources without the entity shortcut when no entity is available', () => {

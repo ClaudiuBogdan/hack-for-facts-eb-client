@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ChallengesLayout } from './ChallengesLayout'
 
 const mockLocation = {
-  pathname: '/buget-primarie/87654321/provocari/test-module/test-challenge/test-step',
+  pathname: '/buget/87654321/provocari/test-module/test-challenge/test-step',
   search: {},
 }
 
@@ -148,7 +148,7 @@ vi.mock('../../utils/modules', () => ({
 describe('ChallengesLayout', () => {
   beforeEach(() => {
     mockLocation.pathname =
-      '/buget-primarie/87654321/provocari/test-module/test-challenge/test-step'
+      '/buget/87654321/provocari/test-module/test-challenge/test-step'
     mockLocation.search = {}
     mockCampaignProgressReady = true
     mockCampaignInitialResolutionReady = true
@@ -185,7 +185,7 @@ describe('ChallengesLayout', () => {
       for (const stepLink of stepLinks) {
         expect(stepLink).toHaveAttribute(
           'href',
-          '/buget-primarie/87654321/provocari/test-module/test-challenge/test-step',
+          '/buget/87654321/provocari/test-module/test-challenge/test-step',
         )
       }
     })

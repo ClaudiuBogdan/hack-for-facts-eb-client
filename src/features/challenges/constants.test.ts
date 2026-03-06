@@ -11,10 +11,10 @@ describe('challenge route builders', () => {
   it('builds entity-scoped campaign routes', () => {
     expect(
       buildCampaignProvocariPath('12345678'),
-    ).toBe('/buget-primarie/12345678/provocari')
+    ).toBe('/buget/12345678/provocari')
     expect(
       buildCampaignProvocariModulePath('12345678', 'modulul-meu'),
-    ).toBe('/buget-primarie/12345678/provocari/modulul-meu')
+    ).toBe('/buget/12345678/provocari/modulul-meu')
     expect(
       buildCampaignProvocariStepPath(
         '12345678',
@@ -23,11 +23,11 @@ describe('challenge route builders', () => {
         'pasul-meu',
       ),
     ).toBe(
-      '/buget-primarie/12345678/provocari/modulul-meu/provocarea-mea/pasul-meu',
+      '/buget/12345678/provocari/modulul-meu/provocarea-mea/pasul-meu',
     )
     expect(
       buildCampaignPrimariePath('12345678'),
-    ).toBe('/buget-primarie/12345678/primarie')
+    ).toBe('/buget/12345678/primarie')
   })
 })
 
@@ -35,20 +35,20 @@ describe('resolveCampaignEntityCuiFromPathname', () => {
   it('extracts the selected entity from entity-scoped routes', () => {
     expect(
       resolveCampaignEntityCuiFromPathname(
-        '/buget-primarie/4305857/provocari/modulul-meu',
+        '/buget/4305857/provocari/modulul-meu',
       ),
     ).toBe('4305857')
     expect(
-      resolveCampaignEntityCuiFromPathname('/buget-primarie/4305857/primarie'),
+      resolveCampaignEntityCuiFromPathname('/buget/4305857/primarie'),
     ).toBe('4305857')
   })
 
   it('ignores static campaign routes', () => {
     expect(
-      resolveCampaignEntityCuiFromPathname('/buget-primarie/cauta'),
+      resolveCampaignEntityCuiFromPathname('/buget/cauta'),
     ).toBeUndefined()
     expect(
-      resolveCampaignEntityCuiFromPathname('/buget-primarie/forum'),
+      resolveCampaignEntityCuiFromPathname('/buget/forum'),
     ).toBeUndefined()
   })
 })

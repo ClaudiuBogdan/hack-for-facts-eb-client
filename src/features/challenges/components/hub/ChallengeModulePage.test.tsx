@@ -89,7 +89,7 @@ describe('ChallengeModulePage', () => {
     expect(screen.getByText('Test challenge')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Test step/i })).toHaveAttribute(
       'href',
-      '/buget-primarie/12345678/provocari/test-module/test-challenge/test-step',
+      '/buget/12345678/provocari/test-module/test-challenge/test-step',
     )
     expect(
       screen.getByRole('heading', { name: /Conectează-te ca să participi la provocări/i }),

@@ -166,7 +166,7 @@ vi.mock('./challenge-entity-analysis-header', () => ({
       {props.showInflationBadge ? (
         <div>Valori ajustate cu inflația (2024)</div>
       ) : null}
-      <a href="/buget-primarie/cauta">Schimbă Primăria</a>
+      <a href="/buget/cauta">Schimbă Primăria</a>
     </div>
   ),
 }))
@@ -523,7 +523,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     ).not.toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: 'Schimbă Primăria' }),
-    ).toHaveAttribute('href', '/buget-primarie/cauta')
+    ).toHaveAttribute('href', '/buget/cauta')
     expect(screen.getByText('Cum s-au cheltuit banii')).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Arată pe ce s-au cheltuit banii' }),

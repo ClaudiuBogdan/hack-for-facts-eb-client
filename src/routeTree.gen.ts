@@ -18,9 +18,9 @@ import { Route as EntityAnalyticsRouteImport } from './routes/entity-analytics'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
 import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
-import { Route as BugetPrimarieRouteRouteImport } from './routes/buget-primarie/route'
+import { Route as BugetRouteRouteImport } from './routes/buget/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as BugetPrimarieIndexRouteImport } from './routes/buget-primarie/index'
+import { Route as BugetIndexRouteImport } from './routes/buget/index'
 import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$token'
 import { Route as ShareCodeRouteImport } from './routes/share.$code'
 import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
@@ -28,16 +28,16 @@ import { Route as SettingsNotificationsRouteImport } from './routes/settings/not
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
 import { Route as ChartsNewRouteImport } from './routes/charts/new'
 import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
-import { Route as BugetPrimarieForumRouteImport } from './routes/buget-primarie/forum'
+import { Route as BugetForumRouteImport } from './routes/buget/forum'
 import { Route as AlertsNewRouteImport } from './routes/alerts/new'
 import { Route as ChartsChartIdRouteRouteImport } from './routes/charts/$chartId/route'
-import { Route as BugetPrimarieCuiRouteRouteImport } from './routes/buget-primarie/$cui/route'
+import { Route as BugetCuiRouteRouteImport } from './routes/buget/$cui/route'
 import { Route as AlertsAlertIdRouteRouteImport } from './routes/alerts/$alertId/route'
 import { Route as LangLearningRouteRouteImport } from './routes/$lang/learning/route'
 import { Route as MapsEditorIndexRouteImport } from './routes/maps/editor/index'
 import { Route as ClassificationsFunctionalIndexRouteImport } from './routes/classifications/functional/index'
 import { Route as ClassificationsEconomicIndexRouteImport } from './routes/classifications/economic/index'
-import { Route as BugetPrimarieCautaIndexRouteImport } from './routes/buget-primarie/cauta/index'
+import { Route as BugetCautaIndexRouteImport } from './routes/buget/cauta/index'
 import { Route as LangLearningIndexRouteImport } from './routes/$lang/learning/index'
 import { Route as MapsPublicMapIdRouteImport } from './routes/maps/public/$mapId'
 import { Route as MapsEditorNewRouteImport } from './routes/maps/editor/new'
@@ -45,17 +45,17 @@ import { Route as MapsEditorMapIdRouteImport } from './routes/maps/editor/$mapId
 import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entities.$cui.share-image[.]png'
 import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
-import { Route as BugetPrimarieCuiPrimarieRouteImport } from './routes/buget-primarie/$cui/primarie'
-import { Route as BugetPrimarieCuiCalendarRouteImport } from './routes/buget-primarie/$cui/calendar'
+import { Route as BugetCuiPrimarieRouteImport } from './routes/buget/$cui/primarie'
+import { Route as BugetCuiCalendarRouteImport } from './routes/buget/$cui/calendar'
 import { Route as LangLearningOnboardingRouteImport } from './routes/$lang/learning/onboarding'
-import { Route as BugetPrimarieCuiProvocariRouteRouteImport } from './routes/buget-primarie/$cui/provocari/route'
-import { Route as BugetPrimarieCautaHartaIndexRouteImport } from './routes/buget-primarie/cauta/harta/index'
-import { Route as BugetPrimarieCuiProvocariIndexRouteImport } from './routes/buget-primarie/$cui/provocari/index'
+import { Route as BugetCuiProvocariRouteRouteImport } from './routes/buget/$cui/provocari/route'
+import { Route as BugetCautaHartaIndexRouteImport } from './routes/buget/cauta/harta/index'
+import { Route as BugetCuiProvocariIndexRouteImport } from './routes/buget/$cui/provocari/index'
 import { Route as LangLearningPathIdIndexRouteImport } from './routes/$lang/learning/$pathId/index'
 import { Route as LangLearningCertificatesIdRouteImport } from './routes/$lang/learning/certificates.$id'
-import { Route as BugetPrimarieCuiProvocariModuleSlugIndexRouteImport } from './routes/buget-primarie/$cui/provocari/$moduleSlug/index'
+import { Route as BugetCuiProvocariModuleSlugIndexRouteImport } from './routes/buget/$cui/provocari/$moduleSlug/index'
 import { Route as LangLearningPathIdModuleIdLessonIdRouteImport } from './routes/$lang/learning/$pathId/$moduleId/$lessonId'
-import { Route as BugetPrimarieCuiProvocariModuleSlugChallengeSlugStepSlugRouteImport } from './routes/buget-primarie/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug'
+import { Route as BugetCuiProvocariModuleSlugChallengeSlugStepSlugRouteImport } from './routes/buget/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug'
 
 const TermsLazyRouteImport = createFileRoute('/terms')()
 const ChartsIndexLazyRouteImport = createFileRoute('/charts/')()
@@ -109,13 +109,11 @@ const BudgetExplorerRoute = BudgetExplorerRouteImport.update({
 } as any).lazy(() =>
   import('./routes/budget-explorer.lazy').then((d) => d.Route),
 )
-const BugetPrimarieRouteRoute = BugetPrimarieRouteRouteImport.update({
-  id: '/buget-primarie',
-  path: '/buget-primarie',
+const BugetRouteRoute = BugetRouteRouteImport.update({
+  id: '/buget',
+  path: '/buget',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/buget-primarie/route.lazy').then((d) => d.Route),
-)
+} as any).lazy(() => import('./routes/buget/route.lazy').then((d) => d.Route))
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -126,13 +124,11 @@ const ChartsIndexLazyRoute = ChartsIndexLazyRouteImport.update({
   path: '/charts/',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/charts/index.lazy').then((d) => d.Route))
-const BugetPrimarieIndexRoute = BugetPrimarieIndexRouteImport.update({
+const BugetIndexRoute = BugetIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => BugetPrimarieRouteRoute,
-} as any).lazy(() =>
-  import('./routes/buget-primarie/index.lazy').then((d) => d.Route),
-)
+  getParentRoute: () => BugetRouteRoute,
+} as any).lazy(() => import('./routes/buget/index.lazy').then((d) => d.Route))
 const ResearchEmployeesDataLazyRoute =
   ResearchEmployeesDataLazyRouteImport.update({
     id: '/research/employees-data',
@@ -176,13 +172,11 @@ const CertificatesIdRoute = CertificatesIdRouteImport.update({
   path: '/certificates/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BugetPrimarieForumRoute = BugetPrimarieForumRouteImport.update({
+const BugetForumRoute = BugetForumRouteImport.update({
   id: '/forum',
   path: '/forum',
-  getParentRoute: () => BugetPrimarieRouteRoute,
-} as any).lazy(() =>
-  import('./routes/buget-primarie/forum.lazy').then((d) => d.Route),
-)
+  getParentRoute: () => BugetRouteRoute,
+} as any).lazy(() => import('./routes/buget/forum.lazy').then((d) => d.Route))
 const AlertsNewRoute = AlertsNewRouteImport.update({
   id: '/alerts/new',
   path: '/alerts/new',
@@ -193,12 +187,12 @@ const ChartsChartIdRouteRoute = ChartsChartIdRouteRouteImport.update({
   path: '/charts/$chartId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BugetPrimarieCuiRouteRoute = BugetPrimarieCuiRouteRouteImport.update({
+const BugetCuiRouteRoute = BugetCuiRouteRouteImport.update({
   id: '/$cui',
   path: '/$cui',
-  getParentRoute: () => BugetPrimarieRouteRoute,
+  getParentRoute: () => BugetRouteRoute,
 } as any).lazy(() =>
-  import('./routes/buget-primarie/$cui/route.lazy').then((d) => d.Route),
+  import('./routes/buget/$cui/route.lazy').then((d) => d.Route),
 )
 const AlertsAlertIdRouteRoute = AlertsAlertIdRouteRouteImport.update({
   id: '/alerts/$alertId',
@@ -251,12 +245,12 @@ const ClassificationsEconomicIndexRoute =
   } as any).lazy(() =>
     import('./routes/classifications/economic/index.lazy').then((d) => d.Route),
   )
-const BugetPrimarieCautaIndexRoute = BugetPrimarieCautaIndexRouteImport.update({
+const BugetCautaIndexRoute = BugetCautaIndexRouteImport.update({
   id: '/cauta/',
   path: '/cauta/',
-  getParentRoute: () => BugetPrimarieRouteRoute,
+  getParentRoute: () => BugetRouteRoute,
 } as any).lazy(() =>
-  import('./routes/buget-primarie/cauta/index.lazy').then((d) => d.Route),
+  import('./routes/buget/cauta/index.lazy').then((d) => d.Route),
 )
 const LangLearningIndexRoute = LangLearningIndexRouteImport.update({
   id: '/',
@@ -310,22 +304,20 @@ const ClassificationsEconomicCodeRoute =
   } as any).lazy(() =>
     import('./routes/classifications/economic/$code.lazy').then((d) => d.Route),
   )
-const BugetPrimarieCuiPrimarieRoute =
-  BugetPrimarieCuiPrimarieRouteImport.update({
-    id: '/primarie',
-    path: '/primarie',
-    getParentRoute: () => BugetPrimarieCuiRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/buget-primarie/$cui/primarie.lazy').then((d) => d.Route),
-  )
-const BugetPrimarieCuiCalendarRoute =
-  BugetPrimarieCuiCalendarRouteImport.update({
-    id: '/calendar',
-    path: '/calendar',
-    getParentRoute: () => BugetPrimarieCuiRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/buget-primarie/$cui/calendar.lazy').then((d) => d.Route),
-  )
+const BugetCuiPrimarieRoute = BugetCuiPrimarieRouteImport.update({
+  id: '/primarie',
+  path: '/primarie',
+  getParentRoute: () => BugetCuiRouteRoute,
+} as any).lazy(() =>
+  import('./routes/buget/$cui/primarie.lazy').then((d) => d.Route),
+)
+const BugetCuiCalendarRoute = BugetCuiCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => BugetCuiRouteRoute,
+} as any).lazy(() =>
+  import('./routes/buget/$cui/calendar.lazy').then((d) => d.Route),
+)
 const LangLearningOnboardingRoute = LangLearningOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -333,32 +325,25 @@ const LangLearningOnboardingRoute = LangLearningOnboardingRouteImport.update({
 } as any).lazy(() =>
   import('./routes/$lang/learning/onboarding.lazy').then((d) => d.Route),
 )
-const BugetPrimarieCuiProvocariRouteRoute =
-  BugetPrimarieCuiProvocariRouteRouteImport.update({
-    id: '/provocari',
-    path: '/provocari',
-    getParentRoute: () => BugetPrimarieCuiRouteRoute,
-  } as any)
-const BugetPrimarieCautaHartaIndexRoute =
-  BugetPrimarieCautaHartaIndexRouteImport.update({
-    id: '/cauta/harta/',
-    path: '/cauta/harta/',
-    getParentRoute: () => BugetPrimarieRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/buget-primarie/cauta/harta/index.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const BugetPrimarieCuiProvocariIndexRoute =
-  BugetPrimarieCuiProvocariIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => BugetPrimarieCuiProvocariRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/buget-primarie/$cui/provocari/index.lazy').then(
-      (d) => d.Route,
-    ),
-  )
+const BugetCuiProvocariRouteRoute = BugetCuiProvocariRouteRouteImport.update({
+  id: '/provocari',
+  path: '/provocari',
+  getParentRoute: () => BugetCuiRouteRoute,
+} as any)
+const BugetCautaHartaIndexRoute = BugetCautaHartaIndexRouteImport.update({
+  id: '/cauta/harta/',
+  path: '/cauta/harta/',
+  getParentRoute: () => BugetRouteRoute,
+} as any).lazy(() =>
+  import('./routes/buget/cauta/harta/index.lazy').then((d) => d.Route),
+)
+const BugetCuiProvocariIndexRoute = BugetCuiProvocariIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BugetCuiProvocariRouteRoute,
+} as any).lazy(() =>
+  import('./routes/buget/$cui/provocari/index.lazy').then((d) => d.Route),
+)
 const LangLearningPathIdIndexRoute = LangLearningPathIdIndexRouteImport.update({
   id: '/$pathId/',
   path: '/$pathId/',
@@ -376,13 +361,13 @@ const LangLearningCertificatesIdRoute =
       (d) => d.Route,
     ),
   )
-const BugetPrimarieCuiProvocariModuleSlugIndexRoute =
-  BugetPrimarieCuiProvocariModuleSlugIndexRouteImport.update({
+const BugetCuiProvocariModuleSlugIndexRoute =
+  BugetCuiProvocariModuleSlugIndexRouteImport.update({
     id: '/$moduleSlug/',
     path: '/$moduleSlug/',
-    getParentRoute: () => BugetPrimarieCuiProvocariRouteRoute,
+    getParentRoute: () => BugetCuiProvocariRouteRoute,
   } as any).lazy(() =>
-    import('./routes/buget-primarie/$cui/provocari/$moduleSlug/index.lazy').then(
+    import('./routes/buget/$cui/provocari/$moduleSlug/index.lazy').then(
       (d) => d.Route,
     ),
   )
@@ -396,20 +381,20 @@ const LangLearningPathIdModuleIdLessonIdRoute =
       (d) => d.Route,
     ),
   )
-const BugetPrimarieCuiProvocariModuleSlugChallengeSlugStepSlugRoute =
-  BugetPrimarieCuiProvocariModuleSlugChallengeSlugStepSlugRouteImport.update({
+const BugetCuiProvocariModuleSlugChallengeSlugStepSlugRoute =
+  BugetCuiProvocariModuleSlugChallengeSlugStepSlugRouteImport.update({
     id: '/$moduleSlug/$challengeSlug/$stepSlug',
     path: '/$moduleSlug/$challengeSlug/$stepSlug',
-    getParentRoute: () => BugetPrimarieCuiProvocariRouteRoute,
+    getParentRoute: () => BugetCuiProvocariRouteRoute,
   } as any).lazy(() =>
-    import('./routes/buget-primarie/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug.lazy').then(
+    import('./routes/buget/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug.lazy').then(
       (d) => d.Route,
     ),
   )
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/buget-primarie': typeof BugetPrimarieRouteRouteWithChildren
+  '/buget': typeof BugetRouteRouteWithChildren
   '/budget-explorer': typeof BudgetExplorerRoute
   '/cookie-policy': typeof CookiePolicyRoute
   '/cookies': typeof CookiesRoute
@@ -420,10 +405,10 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsLazyRoute
   '/$lang/learning': typeof LangLearningRouteRouteWithChildren
   '/alerts/$alertId': typeof AlertsAlertIdRouteRouteWithChildren
-  '/buget-primarie/$cui': typeof BugetPrimarieCuiRouteRouteWithChildren
+  '/buget/$cui': typeof BugetCuiRouteRouteWithChildren
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/alerts/new': typeof AlertsNewRoute
-  '/buget-primarie/forum': typeof BugetPrimarieForumRoute
+  '/buget/forum': typeof BugetForumRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
@@ -432,12 +417,12 @@ export interface FileRoutesByFullPath {
   '/share/$code': typeof ShareCodeRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
-  '/buget-primarie/': typeof BugetPrimarieIndexRoute
+  '/buget/': typeof BugetIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
-  '/buget-primarie/$cui/provocari': typeof BugetPrimarieCuiProvocariRouteRouteWithChildren
+  '/buget/$cui/provocari': typeof BugetCuiProvocariRouteRouteWithChildren
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
-  '/buget-primarie/$cui/calendar': typeof BugetPrimarieCuiCalendarRoute
-  '/buget-primarie/$cui/primarie': typeof BugetPrimarieCuiPrimarieRoute
+  '/buget/$cui/calendar': typeof BugetCuiCalendarRoute
+  '/buget/$cui/primarie': typeof BugetCuiPrimarieRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -445,7 +430,7 @@ export interface FileRoutesByFullPath {
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
-  '/buget-primarie/cauta/': typeof BugetPrimarieCautaIndexRoute
+  '/buget/cauta/': typeof BugetCautaIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
   '/maps/editor/': typeof MapsEditorIndexRoute
@@ -453,11 +438,11 @@ export interface FileRoutesByFullPath {
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
   '/$lang/learning/$pathId/': typeof LangLearningPathIdIndexRoute
-  '/buget-primarie/$cui/provocari/': typeof BugetPrimarieCuiProvocariIndexRoute
-  '/buget-primarie/cauta/harta/': typeof BugetPrimarieCautaHartaIndexRoute
+  '/buget/$cui/provocari/': typeof BugetCuiProvocariIndexRoute
+  '/buget/cauta/harta/': typeof BugetCautaHartaIndexRoute
   '/$lang/learning/$pathId/$moduleId/$lessonId': typeof LangLearningPathIdModuleIdLessonIdRoute
-  '/buget-primarie/$cui/provocari/$moduleSlug/': typeof BugetPrimarieCuiProvocariModuleSlugIndexRoute
-  '/buget-primarie/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug': typeof BugetPrimarieCuiProvocariModuleSlugChallengeSlugStepSlugRoute
+  '/buget/$cui/provocari/$moduleSlug/': typeof BugetCuiProvocariModuleSlugIndexRoute
+  '/buget/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug': typeof BugetCuiProvocariModuleSlugChallengeSlugStepSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -469,9 +454,9 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
-  '/buget-primarie/$cui': typeof BugetPrimarieCuiRouteRouteWithChildren
+  '/buget/$cui': typeof BugetCuiRouteRouteWithChildren
   '/alerts/new': typeof AlertsNewRoute
-  '/buget-primarie/forum': typeof BugetPrimarieForumRoute
+  '/buget/forum': typeof BugetForumRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
@@ -480,11 +465,11 @@ export interface FileRoutesByTo {
   '/share/$code': typeof ShareCodeRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
-  '/buget-primarie': typeof BugetPrimarieIndexRoute
+  '/buget': typeof BugetIndexRoute
   '/charts': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
-  '/buget-primarie/$cui/calendar': typeof BugetPrimarieCuiCalendarRoute
-  '/buget-primarie/$cui/primarie': typeof BugetPrimarieCuiPrimarieRoute
+  '/buget/$cui/calendar': typeof BugetCuiCalendarRoute
+  '/buget/$cui/primarie': typeof BugetCuiPrimarieRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -492,7 +477,7 @@ export interface FileRoutesByTo {
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/$lang/learning': typeof LangLearningIndexRoute
-  '/buget-primarie/cauta': typeof BugetPrimarieCautaIndexRoute
+  '/buget/cauta': typeof BugetCautaIndexRoute
   '/classifications/economic': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional': typeof ClassificationsFunctionalIndexRoute
   '/maps/editor': typeof MapsEditorIndexRoute
@@ -500,16 +485,16 @@ export interface FileRoutesByTo {
   '/charts/$chartId': typeof ChartsChartIdIndexLazyRoute
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
   '/$lang/learning/$pathId': typeof LangLearningPathIdIndexRoute
-  '/buget-primarie/$cui/provocari': typeof BugetPrimarieCuiProvocariIndexRoute
-  '/buget-primarie/cauta/harta': typeof BugetPrimarieCautaHartaIndexRoute
+  '/buget/$cui/provocari': typeof BugetCuiProvocariIndexRoute
+  '/buget/cauta/harta': typeof BugetCautaHartaIndexRoute
   '/$lang/learning/$pathId/$moduleId/$lessonId': typeof LangLearningPathIdModuleIdLessonIdRoute
-  '/buget-primarie/$cui/provocari/$moduleSlug': typeof BugetPrimarieCuiProvocariModuleSlugIndexRoute
-  '/buget-primarie/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug': typeof BugetPrimarieCuiProvocariModuleSlugChallengeSlugStepSlugRoute
+  '/buget/$cui/provocari/$moduleSlug': typeof BugetCuiProvocariModuleSlugIndexRoute
+  '/buget/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug': typeof BugetCuiProvocariModuleSlugChallengeSlugStepSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/buget-primarie': typeof BugetPrimarieRouteRouteWithChildren
+  '/buget': typeof BugetRouteRouteWithChildren
   '/budget-explorer': typeof BudgetExplorerRoute
   '/cookie-policy': typeof CookiePolicyRoute
   '/cookies': typeof CookiesRoute
@@ -520,10 +505,10 @@ export interface FileRoutesById {
   '/terms': typeof TermsLazyRoute
   '/$lang/learning': typeof LangLearningRouteRouteWithChildren
   '/alerts/$alertId': typeof AlertsAlertIdRouteRouteWithChildren
-  '/buget-primarie/$cui': typeof BugetPrimarieCuiRouteRouteWithChildren
+  '/buget/$cui': typeof BugetCuiRouteRouteWithChildren
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/alerts/new': typeof AlertsNewRoute
-  '/buget-primarie/forum': typeof BugetPrimarieForumRoute
+  '/buget/forum': typeof BugetForumRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
@@ -532,12 +517,12 @@ export interface FileRoutesById {
   '/share/$code': typeof ShareCodeRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
-  '/buget-primarie/': typeof BugetPrimarieIndexRoute
+  '/buget/': typeof BugetIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
-  '/buget-primarie/$cui/provocari': typeof BugetPrimarieCuiProvocariRouteRouteWithChildren
+  '/buget/$cui/provocari': typeof BugetCuiProvocariRouteRouteWithChildren
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
-  '/buget-primarie/$cui/calendar': typeof BugetPrimarieCuiCalendarRoute
-  '/buget-primarie/$cui/primarie': typeof BugetPrimarieCuiPrimarieRoute
+  '/buget/$cui/calendar': typeof BugetCuiCalendarRoute
+  '/buget/$cui/primarie': typeof BugetCuiPrimarieRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
@@ -545,7 +530,7 @@ export interface FileRoutesById {
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
-  '/buget-primarie/cauta/': typeof BugetPrimarieCautaIndexRoute
+  '/buget/cauta/': typeof BugetCautaIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
   '/maps/editor/': typeof MapsEditorIndexRoute
@@ -553,17 +538,17 @@ export interface FileRoutesById {
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
   '/$lang/learning/$pathId/': typeof LangLearningPathIdIndexRoute
-  '/buget-primarie/$cui/provocari/': typeof BugetPrimarieCuiProvocariIndexRoute
-  '/buget-primarie/cauta/harta/': typeof BugetPrimarieCautaHartaIndexRoute
+  '/buget/$cui/provocari/': typeof BugetCuiProvocariIndexRoute
+  '/buget/cauta/harta/': typeof BugetCautaHartaIndexRoute
   '/$lang/learning/$pathId/$moduleId/$lessonId': typeof LangLearningPathIdModuleIdLessonIdRoute
-  '/buget-primarie/$cui/provocari/$moduleSlug/': typeof BugetPrimarieCuiProvocariModuleSlugIndexRoute
-  '/buget-primarie/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug': typeof BugetPrimarieCuiProvocariModuleSlugChallengeSlugStepSlugRoute
+  '/buget/$cui/provocari/$moduleSlug/': typeof BugetCuiProvocariModuleSlugIndexRoute
+  '/buget/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug': typeof BugetCuiProvocariModuleSlugChallengeSlugStepSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/buget-primarie'
+    | '/buget'
     | '/budget-explorer'
     | '/cookie-policy'
     | '/cookies'
@@ -574,10 +559,10 @@ export interface FileRouteTypes {
     | '/terms'
     | '/$lang/learning'
     | '/alerts/$alertId'
-    | '/buget-primarie/$cui'
+    | '/buget/$cui'
     | '/charts/$chartId'
     | '/alerts/new'
-    | '/buget-primarie/forum'
+    | '/buget/forum'
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
@@ -586,12 +571,12 @@ export interface FileRouteTypes {
     | '/share/$code'
     | '/unsubscribe/$token'
     | '/research/employees-data'
-    | '/buget-primarie/'
+    | '/buget/'
     | '/charts/'
-    | '/buget-primarie/$cui/provocari'
+    | '/buget/$cui/provocari'
     | '/$lang/learning/onboarding'
-    | '/buget-primarie/$cui/calendar'
-    | '/buget-primarie/$cui/primarie'
+    | '/buget/$cui/calendar'
+    | '/buget/$cui/primarie'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -599,7 +584,7 @@ export interface FileRouteTypes {
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/$lang/learning/'
-    | '/buget-primarie/cauta/'
+    | '/buget/cauta/'
     | '/classifications/economic/'
     | '/classifications/functional/'
     | '/maps/editor/'
@@ -607,11 +592,11 @@ export interface FileRouteTypes {
     | '/charts/$chartId/'
     | '/$lang/learning/certificates/$id'
     | '/$lang/learning/$pathId/'
-    | '/buget-primarie/$cui/provocari/'
-    | '/buget-primarie/cauta/harta/'
+    | '/buget/$cui/provocari/'
+    | '/buget/cauta/harta/'
     | '/$lang/learning/$pathId/$moduleId/$lessonId'
-    | '/buget-primarie/$cui/provocari/$moduleSlug/'
-    | '/buget-primarie/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug'
+    | '/buget/$cui/provocari/$moduleSlug/'
+    | '/buget/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -623,9 +608,9 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/test-error'
     | '/terms'
-    | '/buget-primarie/$cui'
+    | '/buget/$cui'
     | '/alerts/new'
-    | '/buget-primarie/forum'
+    | '/buget/forum'
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
@@ -634,11 +619,11 @@ export interface FileRouteTypes {
     | '/share/$code'
     | '/unsubscribe/$token'
     | '/research/employees-data'
-    | '/buget-primarie'
+    | '/buget'
     | '/charts'
     | '/$lang/learning/onboarding'
-    | '/buget-primarie/$cui/calendar'
-    | '/buget-primarie/$cui/primarie'
+    | '/buget/$cui/calendar'
+    | '/buget/$cui/primarie'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -646,7 +631,7 @@ export interface FileRouteTypes {
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/$lang/learning'
-    | '/buget-primarie/cauta'
+    | '/buget/cauta'
     | '/classifications/economic'
     | '/classifications/functional'
     | '/maps/editor'
@@ -654,15 +639,15 @@ export interface FileRouteTypes {
     | '/charts/$chartId'
     | '/$lang/learning/certificates/$id'
     | '/$lang/learning/$pathId'
-    | '/buget-primarie/$cui/provocari'
-    | '/buget-primarie/cauta/harta'
+    | '/buget/$cui/provocari'
+    | '/buget/cauta/harta'
     | '/$lang/learning/$pathId/$moduleId/$lessonId'
-    | '/buget-primarie/$cui/provocari/$moduleSlug'
-    | '/buget-primarie/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug'
+    | '/buget/$cui/provocari/$moduleSlug'
+    | '/buget/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug'
   id:
     | '__root__'
     | '/'
-    | '/buget-primarie'
+    | '/buget'
     | '/budget-explorer'
     | '/cookie-policy'
     | '/cookies'
@@ -673,10 +658,10 @@ export interface FileRouteTypes {
     | '/terms'
     | '/$lang/learning'
     | '/alerts/$alertId'
-    | '/buget-primarie/$cui'
+    | '/buget/$cui'
     | '/charts/$chartId'
     | '/alerts/new'
-    | '/buget-primarie/forum'
+    | '/buget/forum'
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
@@ -685,12 +670,12 @@ export interface FileRouteTypes {
     | '/share/$code'
     | '/unsubscribe/$token'
     | '/research/employees-data'
-    | '/buget-primarie/'
+    | '/buget/'
     | '/charts/'
-    | '/buget-primarie/$cui/provocari'
+    | '/buget/$cui/provocari'
     | '/$lang/learning/onboarding'
-    | '/buget-primarie/$cui/calendar'
-    | '/buget-primarie/$cui/primarie'
+    | '/buget/$cui/calendar'
+    | '/buget/$cui/primarie'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
@@ -698,7 +683,7 @@ export interface FileRouteTypes {
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/$lang/learning/'
-    | '/buget-primarie/cauta/'
+    | '/buget/cauta/'
     | '/classifications/economic/'
     | '/classifications/functional/'
     | '/maps/editor/'
@@ -706,16 +691,16 @@ export interface FileRouteTypes {
     | '/charts/$chartId/'
     | '/$lang/learning/certificates/$id'
     | '/$lang/learning/$pathId/'
-    | '/buget-primarie/$cui/provocari/'
-    | '/buget-primarie/cauta/harta/'
+    | '/buget/$cui/provocari/'
+    | '/buget/cauta/harta/'
     | '/$lang/learning/$pathId/$moduleId/$lessonId'
-    | '/buget-primarie/$cui/provocari/$moduleSlug/'
-    | '/buget-primarie/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug'
+    | '/buget/$cui/provocari/$moduleSlug/'
+    | '/buget/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  BugetPrimarieRouteRoute: typeof BugetPrimarieRouteRouteWithChildren
+  BugetRouteRoute: typeof BugetRouteRouteWithChildren
   BudgetExplorerRoute: typeof BudgetExplorerRoute
   CookiePolicyRoute: typeof CookiePolicyRoute
   CookiesRoute: typeof CookiesRoute
@@ -805,11 +790,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BudgetExplorerRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/buget-primarie': {
-      id: '/buget-primarie'
-      path: '/buget-primarie'
-      fullPath: '/buget-primarie'
-      preLoaderRoute: typeof BugetPrimarieRouteRouteImport
+    '/buget': {
+      id: '/buget'
+      path: '/buget'
+      fullPath: '/buget'
+      preLoaderRoute: typeof BugetRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -826,12 +811,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChartsIndexLazyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/buget-primarie/': {
-      id: '/buget-primarie/'
+    '/buget/': {
+      id: '/buget/'
       path: '/'
-      fullPath: '/buget-primarie/'
-      preLoaderRoute: typeof BugetPrimarieIndexRouteImport
-      parentRoute: typeof BugetPrimarieRouteRoute
+      fullPath: '/buget/'
+      preLoaderRoute: typeof BugetIndexRouteImport
+      parentRoute: typeof BugetRouteRoute
     }
     '/research/employees-data': {
       id: '/research/employees-data'
@@ -889,12 +874,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CertificatesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/buget-primarie/forum': {
-      id: '/buget-primarie/forum'
+    '/buget/forum': {
+      id: '/buget/forum'
       path: '/forum'
-      fullPath: '/buget-primarie/forum'
-      preLoaderRoute: typeof BugetPrimarieForumRouteImport
-      parentRoute: typeof BugetPrimarieRouteRoute
+      fullPath: '/buget/forum'
+      preLoaderRoute: typeof BugetForumRouteImport
+      parentRoute: typeof BugetRouteRoute
     }
     '/alerts/new': {
       id: '/alerts/new'
@@ -910,12 +895,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChartsChartIdRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/buget-primarie/$cui': {
-      id: '/buget-primarie/$cui'
+    '/buget/$cui': {
+      id: '/buget/$cui'
       path: '/$cui'
-      fullPath: '/buget-primarie/$cui'
-      preLoaderRoute: typeof BugetPrimarieCuiRouteRouteImport
-      parentRoute: typeof BugetPrimarieRouteRoute
+      fullPath: '/buget/$cui'
+      preLoaderRoute: typeof BugetCuiRouteRouteImport
+      parentRoute: typeof BugetRouteRoute
     }
     '/alerts/$alertId': {
       id: '/alerts/$alertId'
@@ -966,12 +951,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassificationsEconomicIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/buget-primarie/cauta/': {
-      id: '/buget-primarie/cauta/'
+    '/buget/cauta/': {
+      id: '/buget/cauta/'
       path: '/cauta'
-      fullPath: '/buget-primarie/cauta/'
-      preLoaderRoute: typeof BugetPrimarieCautaIndexRouteImport
-      parentRoute: typeof BugetPrimarieRouteRoute
+      fullPath: '/buget/cauta/'
+      preLoaderRoute: typeof BugetCautaIndexRouteImport
+      parentRoute: typeof BugetRouteRoute
     }
     '/$lang/learning/': {
       id: '/$lang/learning/'
@@ -1022,19 +1007,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClassificationsEconomicCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/buget-primarie/$cui/primarie': {
-      id: '/buget-primarie/$cui/primarie'
+    '/buget/$cui/primarie': {
+      id: '/buget/$cui/primarie'
       path: '/primarie'
-      fullPath: '/buget-primarie/$cui/primarie'
-      preLoaderRoute: typeof BugetPrimarieCuiPrimarieRouteImport
-      parentRoute: typeof BugetPrimarieCuiRouteRoute
+      fullPath: '/buget/$cui/primarie'
+      preLoaderRoute: typeof BugetCuiPrimarieRouteImport
+      parentRoute: typeof BugetCuiRouteRoute
     }
-    '/buget-primarie/$cui/calendar': {
-      id: '/buget-primarie/$cui/calendar'
+    '/buget/$cui/calendar': {
+      id: '/buget/$cui/calendar'
       path: '/calendar'
-      fullPath: '/buget-primarie/$cui/calendar'
-      preLoaderRoute: typeof BugetPrimarieCuiCalendarRouteImport
-      parentRoute: typeof BugetPrimarieCuiRouteRoute
+      fullPath: '/buget/$cui/calendar'
+      preLoaderRoute: typeof BugetCuiCalendarRouteImport
+      parentRoute: typeof BugetCuiRouteRoute
     }
     '/$lang/learning/onboarding': {
       id: '/$lang/learning/onboarding'
@@ -1043,26 +1028,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangLearningOnboardingRouteImport
       parentRoute: typeof LangLearningRouteRoute
     }
-    '/buget-primarie/$cui/provocari': {
-      id: '/buget-primarie/$cui/provocari'
+    '/buget/$cui/provocari': {
+      id: '/buget/$cui/provocari'
       path: '/provocari'
-      fullPath: '/buget-primarie/$cui/provocari'
-      preLoaderRoute: typeof BugetPrimarieCuiProvocariRouteRouteImport
-      parentRoute: typeof BugetPrimarieCuiRouteRoute
+      fullPath: '/buget/$cui/provocari'
+      preLoaderRoute: typeof BugetCuiProvocariRouteRouteImport
+      parentRoute: typeof BugetCuiRouteRoute
     }
-    '/buget-primarie/cauta/harta/': {
-      id: '/buget-primarie/cauta/harta/'
+    '/buget/cauta/harta/': {
+      id: '/buget/cauta/harta/'
       path: '/cauta/harta'
-      fullPath: '/buget-primarie/cauta/harta/'
-      preLoaderRoute: typeof BugetPrimarieCautaHartaIndexRouteImport
-      parentRoute: typeof BugetPrimarieRouteRoute
+      fullPath: '/buget/cauta/harta/'
+      preLoaderRoute: typeof BugetCautaHartaIndexRouteImport
+      parentRoute: typeof BugetRouteRoute
     }
-    '/buget-primarie/$cui/provocari/': {
-      id: '/buget-primarie/$cui/provocari/'
+    '/buget/$cui/provocari/': {
+      id: '/buget/$cui/provocari/'
       path: '/'
-      fullPath: '/buget-primarie/$cui/provocari/'
-      preLoaderRoute: typeof BugetPrimarieCuiProvocariIndexRouteImport
-      parentRoute: typeof BugetPrimarieCuiProvocariRouteRoute
+      fullPath: '/buget/$cui/provocari/'
+      preLoaderRoute: typeof BugetCuiProvocariIndexRouteImport
+      parentRoute: typeof BugetCuiProvocariRouteRoute
     }
     '/$lang/learning/$pathId/': {
       id: '/$lang/learning/$pathId/'
@@ -1078,12 +1063,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangLearningCertificatesIdRouteImport
       parentRoute: typeof LangLearningRouteRoute
     }
-    '/buget-primarie/$cui/provocari/$moduleSlug/': {
-      id: '/buget-primarie/$cui/provocari/$moduleSlug/'
+    '/buget/$cui/provocari/$moduleSlug/': {
+      id: '/buget/$cui/provocari/$moduleSlug/'
       path: '/$moduleSlug'
-      fullPath: '/buget-primarie/$cui/provocari/$moduleSlug/'
-      preLoaderRoute: typeof BugetPrimarieCuiProvocariModuleSlugIndexRouteImport
-      parentRoute: typeof BugetPrimarieCuiProvocariRouteRoute
+      fullPath: '/buget/$cui/provocari/$moduleSlug/'
+      preLoaderRoute: typeof BugetCuiProvocariModuleSlugIndexRouteImport
+      parentRoute: typeof BugetCuiProvocariRouteRoute
     }
     '/$lang/learning/$pathId/$moduleId/$lessonId': {
       id: '/$lang/learning/$pathId/$moduleId/$lessonId'
@@ -1092,72 +1077,71 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangLearningPathIdModuleIdLessonIdRouteImport
       parentRoute: typeof LangLearningRouteRoute
     }
-    '/buget-primarie/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug': {
-      id: '/buget-primarie/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug'
+    '/buget/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug': {
+      id: '/buget/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug'
       path: '/$moduleSlug/$challengeSlug/$stepSlug'
-      fullPath: '/buget-primarie/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug'
-      preLoaderRoute: typeof BugetPrimarieCuiProvocariModuleSlugChallengeSlugStepSlugRouteImport
-      parentRoute: typeof BugetPrimarieCuiProvocariRouteRoute
+      fullPath: '/buget/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug'
+      preLoaderRoute: typeof BugetCuiProvocariModuleSlugChallengeSlugStepSlugRouteImport
+      parentRoute: typeof BugetCuiProvocariRouteRoute
     }
   }
 }
 
-interface BugetPrimarieCuiProvocariRouteRouteChildren {
-  BugetPrimarieCuiProvocariIndexRoute: typeof BugetPrimarieCuiProvocariIndexRoute
-  BugetPrimarieCuiProvocariModuleSlugIndexRoute: typeof BugetPrimarieCuiProvocariModuleSlugIndexRoute
-  BugetPrimarieCuiProvocariModuleSlugChallengeSlugStepSlugRoute: typeof BugetPrimarieCuiProvocariModuleSlugChallengeSlugStepSlugRoute
+interface BugetCuiProvocariRouteRouteChildren {
+  BugetCuiProvocariIndexRoute: typeof BugetCuiProvocariIndexRoute
+  BugetCuiProvocariModuleSlugIndexRoute: typeof BugetCuiProvocariModuleSlugIndexRoute
+  BugetCuiProvocariModuleSlugChallengeSlugStepSlugRoute: typeof BugetCuiProvocariModuleSlugChallengeSlugStepSlugRoute
 }
 
-const BugetPrimarieCuiProvocariRouteRouteChildren: BugetPrimarieCuiProvocariRouteRouteChildren =
+const BugetCuiProvocariRouteRouteChildren: BugetCuiProvocariRouteRouteChildren =
   {
-    BugetPrimarieCuiProvocariIndexRoute: BugetPrimarieCuiProvocariIndexRoute,
-    BugetPrimarieCuiProvocariModuleSlugIndexRoute:
-      BugetPrimarieCuiProvocariModuleSlugIndexRoute,
-    BugetPrimarieCuiProvocariModuleSlugChallengeSlugStepSlugRoute:
-      BugetPrimarieCuiProvocariModuleSlugChallengeSlugStepSlugRoute,
+    BugetCuiProvocariIndexRoute: BugetCuiProvocariIndexRoute,
+    BugetCuiProvocariModuleSlugIndexRoute:
+      BugetCuiProvocariModuleSlugIndexRoute,
+    BugetCuiProvocariModuleSlugChallengeSlugStepSlugRoute:
+      BugetCuiProvocariModuleSlugChallengeSlugStepSlugRoute,
   }
 
-const BugetPrimarieCuiProvocariRouteRouteWithChildren =
-  BugetPrimarieCuiProvocariRouteRoute._addFileChildren(
-    BugetPrimarieCuiProvocariRouteRouteChildren,
+const BugetCuiProvocariRouteRouteWithChildren =
+  BugetCuiProvocariRouteRoute._addFileChildren(
+    BugetCuiProvocariRouteRouteChildren,
   )
 
-interface BugetPrimarieCuiRouteRouteChildren {
-  BugetPrimarieCuiProvocariRouteRoute: typeof BugetPrimarieCuiProvocariRouteRouteWithChildren
-  BugetPrimarieCuiCalendarRoute: typeof BugetPrimarieCuiCalendarRoute
-  BugetPrimarieCuiPrimarieRoute: typeof BugetPrimarieCuiPrimarieRoute
+interface BugetCuiRouteRouteChildren {
+  BugetCuiProvocariRouteRoute: typeof BugetCuiProvocariRouteRouteWithChildren
+  BugetCuiCalendarRoute: typeof BugetCuiCalendarRoute
+  BugetCuiPrimarieRoute: typeof BugetCuiPrimarieRoute
 }
 
-const BugetPrimarieCuiRouteRouteChildren: BugetPrimarieCuiRouteRouteChildren = {
-  BugetPrimarieCuiProvocariRouteRoute:
-    BugetPrimarieCuiProvocariRouteRouteWithChildren,
-  BugetPrimarieCuiCalendarRoute: BugetPrimarieCuiCalendarRoute,
-  BugetPrimarieCuiPrimarieRoute: BugetPrimarieCuiPrimarieRoute,
+const BugetCuiRouteRouteChildren: BugetCuiRouteRouteChildren = {
+  BugetCuiProvocariRouteRoute: BugetCuiProvocariRouteRouteWithChildren,
+  BugetCuiCalendarRoute: BugetCuiCalendarRoute,
+  BugetCuiPrimarieRoute: BugetCuiPrimarieRoute,
 }
 
-const BugetPrimarieCuiRouteRouteWithChildren =
-  BugetPrimarieCuiRouteRoute._addFileChildren(
-    BugetPrimarieCuiRouteRouteChildren,
-  )
+const BugetCuiRouteRouteWithChildren = BugetCuiRouteRoute._addFileChildren(
+  BugetCuiRouteRouteChildren,
+)
 
-interface BugetPrimarieRouteRouteChildren {
-  BugetPrimarieCuiRouteRoute: typeof BugetPrimarieCuiRouteRouteWithChildren
-  BugetPrimarieForumRoute: typeof BugetPrimarieForumRoute
-  BugetPrimarieIndexRoute: typeof BugetPrimarieIndexRoute
-  BugetPrimarieCautaIndexRoute: typeof BugetPrimarieCautaIndexRoute
-  BugetPrimarieCautaHartaIndexRoute: typeof BugetPrimarieCautaHartaIndexRoute
+interface BugetRouteRouteChildren {
+  BugetCuiRouteRoute: typeof BugetCuiRouteRouteWithChildren
+  BugetForumRoute: typeof BugetForumRoute
+  BugetIndexRoute: typeof BugetIndexRoute
+  BugetCautaIndexRoute: typeof BugetCautaIndexRoute
+  BugetCautaHartaIndexRoute: typeof BugetCautaHartaIndexRoute
 }
 
-const BugetPrimarieRouteRouteChildren: BugetPrimarieRouteRouteChildren = {
-  BugetPrimarieCuiRouteRoute: BugetPrimarieCuiRouteRouteWithChildren,
-  BugetPrimarieForumRoute: BugetPrimarieForumRoute,
-  BugetPrimarieIndexRoute: BugetPrimarieIndexRoute,
-  BugetPrimarieCautaIndexRoute: BugetPrimarieCautaIndexRoute,
-  BugetPrimarieCautaHartaIndexRoute: BugetPrimarieCautaHartaIndexRoute,
+const BugetRouteRouteChildren: BugetRouteRouteChildren = {
+  BugetCuiRouteRoute: BugetCuiRouteRouteWithChildren,
+  BugetForumRoute: BugetForumRoute,
+  BugetIndexRoute: BugetIndexRoute,
+  BugetCautaIndexRoute: BugetCautaIndexRoute,
+  BugetCautaHartaIndexRoute: BugetCautaHartaIndexRoute,
 }
 
-const BugetPrimarieRouteRouteWithChildren =
-  BugetPrimarieRouteRoute._addFileChildren(BugetPrimarieRouteRouteChildren)
+const BugetRouteRouteWithChildren = BugetRouteRoute._addFileChildren(
+  BugetRouteRouteChildren,
+)
 
 interface LangLearningRouteRouteChildren {
   LangLearningOnboardingRoute: typeof LangLearningOnboardingRoute
@@ -1215,7 +1199,7 @@ const EntitiesCuiRouteWithChildren = EntitiesCuiRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  BugetPrimarieRouteRoute: BugetPrimarieRouteRouteWithChildren,
+  BugetRouteRoute: BugetRouteRouteWithChildren,
   BudgetExplorerRoute: BudgetExplorerRoute,
   CookiePolicyRoute: CookiePolicyRoute,
   CookiesRoute: CookiesRoute,

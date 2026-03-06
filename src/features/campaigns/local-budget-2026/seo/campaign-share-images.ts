@@ -2,7 +2,7 @@ import type { CampaignLocale, CampaignSeoImage, CampaignSeoPageKind } from '../t
 
 const DEFAULT_IMAGE_WIDTH = 1200
 const DEFAULT_IMAGE_HEIGHT = 630
-const CAMPAIGN_SHARE_IMAGE_BASE_PATH = '/assets/images/campaigns/buget-primarie/share'
+const CAMPAIGN_SHARE_IMAGE_BASE_PATH = '/assets/images/campaigns/buget/share'
 
 const CAMPAIGN_SHARE_IMAGES = {
   landing: 'landing.png',

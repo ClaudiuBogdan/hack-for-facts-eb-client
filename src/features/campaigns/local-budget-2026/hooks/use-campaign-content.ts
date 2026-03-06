@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 import type { ComponentType } from 'react'
 import { z } from 'zod'
-import campaignContent from '@/content/campaigns/buget-primarie/campaign.json'
-import resourcesContent from '@/content/campaigns/buget-primarie/resources.json'
-import timelineContent from '@/content/campaigns/buget-primarie/timeline.json'
-import uatCalendarOverridesContent from '@/content/campaigns/buget-primarie/uat-calendar-overrides.json'
+import campaignContent from '@/content/campaigns/buget/campaign.json'
+import resourcesContent from '@/content/campaigns/buget/resources.json'
+import timelineContent from '@/content/campaigns/buget/timeline.json'
+import uatCalendarOverridesContent from '@/content/campaigns/buget/uat-calendar-overrides.json'
 import { campaignChallengeMdxModules } from './campaign-challenge-mdx-index'
 import { CAMPAIGN_DEFAULT_LOCALE } from '../constants'
 import { parseCampaignDefinition, CampaignTranslatedStringSchema } from '../schemas/campaign-schema'
@@ -48,7 +48,7 @@ const CampaignResourcesFileSchema = z.object({
 })
 
 const CHALLENGE_JSON_MODULES = import.meta.glob<ChallengeJsonModule>(
-  '/src/content/campaigns/buget-primarie/challenges/*/challenge.json',
+  '/src/content/campaigns/buget/challenges/*/challenge.json',
   { eager: true },
 )
 
