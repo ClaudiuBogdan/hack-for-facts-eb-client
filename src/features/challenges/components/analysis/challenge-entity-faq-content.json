@@ -1,0 +1,96 @@
+{
+  "ro": {
+    "title": "Întrebări frecvente",
+    "description": "Explicații scurte despre sursa datelor și cum ar trebui citite cifrele din această pagină.",
+    "items": [
+      {
+        "id": "data-source",
+        "question": "De unde vin datele din această pagină?",
+        "answerParagraphs": [
+          "Datele vin din rapoartele de execuție bugetară publicate în portalul Ministerului Finanțelor / ANAF pentru afișarea execuțiilor bugetare.",
+          "Aceste rapoarte sunt utile pentru analiză și comparații, dar pot fi actualizate sau corectate în timp. Dacă ai nevoie de o confirmare oficială a sumelor, cel mai sigur este să ceri un răspuns direct de la instituție, inclusiv în baza Legii 544/2001."
+        ]
+      },
+      {
+        "id": "report-types",
+        "question": "Care este diferența dintre execuția agregată și execuția detaliată?",
+        "answerParagraphs": [
+          "Execuția bugetară detaliată arată separat ce a raportat fiecare instituție. Cu alte cuvinte, poți vedea distinct primăria, o școală, un spital sau altă instituție subordonată.",
+          "Execuția bugetară agregată la nivel de ordonator principal de credite adună la un loc primăria și instituțiile subordonate care țin de același buget. Este utilă dacă vrei imaginea de ansamblu: cât s-a administrat în total în toată structura."
+        ]
+      },
+      {
+        "id": "population-2021",
+        "question": "Ce populație folosiți în partea de sus a paginii și la calculele per capita?",
+        "answerParagraphs": [
+          "Populația afișată în partea de sus a paginii și folosită la calculele per capita este populația rezidentă publicată de INS, pe baza Recensământului din 2021.",
+          "Folosim această valoare ca reper comun, ca să putem compara mai ușor localitățile și anii între ei. Cu alte cuvinte, este o valoare de referință fixă, nu o estimare nouă pentru fiecare an afișat în pagină."
+        ]
+      },
+      {
+        "id": "consolidation-caveat",
+        "question": "Totalurile pot include dublări?",
+        "answerParagraphs": [
+          "Am încercat să eliminăm transferurile dintre instituția principală și instituțiile subordonate, ca să reducem riscul ca aceiași bani să apară de două ori în totaluri.",
+          "Totuși, această consolidare nu este garantată ca fiind perfectă în toate situațiile. Dacă ai nevoie de o valoare oficială, cel mai sigur este să ceri direct instituției un răspuns sau un raport, inclusiv în baza Legii 544/2001."
+        ]
+      },
+      {
+        "id": "inflation-2024",
+        "question": "Ce înseamnă valorile ajustate cu inflația?",
+        "requiresInflationAdjusted": true,
+        "answerParagraphs": [
+          "Când ajustarea cu inflația este activă, valorile din anii anteriori sunt recalculate în prețuri 2024.",
+          "Ajustarea folosește indicele prețurilor de consum publicat de INS și ajută la compararea mai corectă a anilor diferiți."
+        ]
+      }
+    ]
+  },
+  "en": {
+    "title": "Frequently asked questions",
+    "description": "Short explanations about where the data comes from and how to read the figures on this page.",
+    "items": [
+      {
+        "id": "data-source",
+        "question": "Where does the data on this page come from?",
+        "answerParagraphs": [
+          "The data on this page comes from the budget execution reports published through the Ministry of Finance / ANAF portal.",
+          "These reports are useful for analysis and comparison, but they may be updated or corrected over time. If you need an official confirmation of the amounts, the safest option is to ask the institution directly, including under Law 544/2001."
+        ]
+      },
+      {
+        "id": "report-types",
+        "question": "What is the difference between aggregate and detailed budget execution?",
+        "answerParagraphs": [
+          "Detailed budget execution shows separately what each institution reported. In other words, you can look at the city hall, a school, a hospital, or another subordinate institution as a distinct reporting unit.",
+          "Aggregate budget execution at the main-creditor level adds together the city hall and the subordinate institutions that belong to the same budget structure. It is useful when you want the big picture: how much money was managed across the whole structure."
+        ]
+      },
+      {
+        "id": "population-2021",
+        "question": "Which population figure is used at the top of the page and in per capita calculations?",
+        "answerParagraphs": [
+          "The population shown at the top of the page and used in per capita calculations is the resident population published by INS, based on the 2021 census.",
+          "We use this value as a common reference point so places and years can be compared more easily. In other words, it is a fixed baseline, not a newly updated estimate for each year shown on the page."
+        ]
+      },
+      {
+        "id": "consolidation-caveat",
+        "question": "Can totals still include double counting?",
+        "answerParagraphs": [
+          "We try to remove transfers between the main institution and subordinate institutions so the same money is less likely to appear twice in the totals.",
+          "Even so, this consolidation is not guaranteed to be perfect in every situation. If you need an official value, the safest option is to ask the institution directly for a response or report, including under Law 544/2001."
+        ]
+      },
+      {
+        "id": "inflation-2024",
+        "question": "What do inflation-adjusted values mean?",
+        "requiresInflationAdjusted": true,
+        "answerParagraphs": [
+          "When inflation adjustment is enabled, values from earlier years are recalculated in 2024 prices.",
+          "This adjustment uses the consumer price index published by INS and helps make year-to-year comparisons easier to read."
+        ]
+      }
+    ]
+  }
+}

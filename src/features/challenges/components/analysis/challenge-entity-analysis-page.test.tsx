@@ -193,6 +193,17 @@ vi.mock('./challenge-entity-category-evolution', () => ({
   ),
 }))
 
+vi.mock('./challenge-entity-faq-section', () => ({
+  ChallengeEntityFaqSection: (props: any) => (
+    <div data-testid="analysis-faq">
+      {props.locale === 'en'
+        ? 'Frequently asked questions'
+        : 'Întrebări frecvente'}
+      :{String(props.inflationAdjusted)}
+    </div>
+  ),
+}))
+
 const entityDetails: EntityDetailsData = {
   cui: '12345678',
   name: 'Primăria Sibiu',
@@ -610,6 +621,9 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(screen.getByText('Semnale de Alarmă')).toBeInTheDocument()
     expect(screen.getByText(/Anomalie YTD/)).toBeInTheDocument()
     expect(screen.getByText(/Lipsește/)).toBeInTheDocument()
+    expect(screen.getByTestId('analysis-faq')).toHaveTextContent(
+      'Întrebări frecvente:false',
+    )
     expect(
       screen.getByRole('button', { name: 'Arată Detaliile' }),
     ).toBeInTheDocument()

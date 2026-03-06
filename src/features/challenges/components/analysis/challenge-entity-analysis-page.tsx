@@ -45,6 +45,7 @@ import type { PublicMapViewport } from '@/features/advanced-map-analytics/hooks/
 import { areMapCentersEqual } from '@/features/advanced-map-analytics/map-viewport-utils'
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics'
 import { ChallengeEntityAnalysisExplainer } from './challenge-entity-analysis-explainer'
+import { ChallengeEntityFaqSection } from './challenge-entity-faq-section'
 import { ChallengeEntityAnalysisHeader } from './challenge-entity-analysis-header'
 import { ChallengeEntityAnomalySummary } from './challenge-entity-anomaly-summary'
 import { ChallengeEntityCategoryEvolution } from './challenge-entity-category-evolution'
@@ -1426,6 +1427,11 @@ export function ChallengeEntityAnalysisPage({
         entityCui={entityCui}
         selectedYear={selectedYear}
         reportType={selectedReportType}
+      />
+
+      <ChallengeEntityFaqSection
+        locale={locale}
+        inflationAdjusted={displayInflationAdjusted}
       />
     </div>
   )
