@@ -135,18 +135,6 @@ vi.mock('recharts', () => ({
   Tooltip: () => null,
 }))
 
-// Mock FilteredSpendingInfo - simplified version
-vi.mock('./FilteredSpendingInfo', () => ({
-  FilteredSpendingInfo: ({
-    excludedItemsSummary,
-  }: {
-    excludedItemsSummary?: ExcludedItemsSummary
-  }) =>
-    excludedItemsSummary ? (
-      <div data-testid="filtered-spending-info">Filtered Spending Info</div>
-    ) : null,
-}))
-
 // Mock ClassificationInfoLink
 vi.mock('@/components/common/classification-info-link', () => ({
   ClassificationInfoLink: () => null,
@@ -188,6 +176,19 @@ const createMockExcludedSummary = (): ExcludedItemsSummary => ({
   totalBeforeExclusion: 5000000,
   totalAfterExclusion: 4500000,
   items: [{ code: 'ec:51', label: 'Transfers', amount: 500000 }],
+})
+
+const createAmountFilter = (overrides: Partial<{
+  minValue: number
+  maxValue: number
+  range: [number, number]
+  onChange: (value: [number, number]) => void
+}> = {}) => ({
+  minValue: 1000000,
+  maxValue: 3000000,
+  range: [1000000, 3000000] as [number, number],
+  onChange: vi.fn(),
+  ...overrides,
 })
 
 // ============================================================================
@@ -502,8 +503,8 @@ describe('BudgetTreemap Component', () => {
     })
   })
 
-  describe('Filtered Spending Info', () => {
-    it('should render FilteredSpendingInfo when excludedItemsSummary is provided', () => {
+  describe('Amount Filter', () => {
+    it('does not render the old footer filter trigger', () => {
       const data = createMockTreemapData()
       const excludedSummary = createMockExcludedSummary()
 
@@ -515,7 +516,45 @@ describe('BudgetTreemap Component', () => {
         />
       )
 
-      expect(screen.getByTestId('filtered-spending-info')).toBeInTheDocument()
+      expect(screen.queryByTestId('filtered-spending-info')).not.toBeInTheDocument()
+    })
+
+    it('filters treemap nodes using an external amount filter', () => {
+      const data = createMockTreemapData()
+
+      render(
+        <BudgetTreemap
+          data={data}
+          primary="fn"
+          amountFilter={createAmountFilter({
+            range: [1500000, 3000000],
+          })}
+        />
+      )
+
+      expect(screen.getByTestId('treemap-node-1')).toBeInTheDocument()
+      expect(screen.getByTestId('treemap-node-2')).toBeInTheDocument()
+      expect(screen.queryByTestId('treemap-node-3')).not.toBeInTheDocument()
+    })
+
+    it('resets the external amount filter from the empty state', () => {
+      const data = createMockTreemapData()
+      const onChange = vi.fn()
+
+      render(
+        <BudgetTreemap
+          data={data}
+          primary="fn"
+          amountFilter={createAmountFilter({
+            range: [3500000, 4000000],
+            onChange,
+          })}
+        />
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: /reset amount filter/i }))
+
+      expect(onChange).toHaveBeenCalledWith([1000000, 3000000])
     })
   })
 

@@ -16,7 +16,9 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { BudgetTreemap } from '@/components/budget-explorer/BudgetTreemap'
+import { FilteredSpendingInfo } from '@/components/budget-explorer/FilteredSpendingInfo'
 import { useTreemapDrilldown } from '@/components/budget-explorer/useTreemapDrilldown'
+import { useTreemapAmountFilter } from '@/components/budget-explorer/useTreemapAmountFilter'
 import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
 import { usePeriodLabel } from '@/hooks/use-period-label'
 import { Trans } from '@lingui/react/macro'
@@ -224,6 +226,11 @@ export const Overview = ({
             .filter(Boolean),
         onPathChange: (codes) => onTreemapPathChange?.(codes.join(',') || undefined),
     })
+    const { amountFilter, unit: treemapUnit } = useTreemapAmountFilter({
+        data: treemapData,
+        normalization: normalized.normalization as any,
+        currency: normalized.currency as any,
+    })
 
     const entityAnalyticsLink = useMemo<EntityAnalyticsUrlState>(() => ({
         view: 'line-items',
@@ -305,6 +312,12 @@ export const Overview = ({
                                 <ToggleGroupItem value="fn" className="data-[state=on]:bg-foreground data-[state=on]:text-background px-4 flex-1 sm:flex-none"><Trans>Functional</Trans></ToggleGroupItem>
                                 <ToggleGroupItem value="ec" disabled={accountCategory === 'vn'} className="data-[state=on]:bg-foreground data-[state=on]:text-background px-4 flex-1 sm:flex-none"><Trans>Economic</Trans></ToggleGroupItem>
                             </ToggleGroup>
+                            <FilteredSpendingInfo
+                                excludedItemsSummary={excludedItemsSummary ?? undefined}
+                                unit={treemapUnit}
+                                amountFilter={amountFilter}
+                                triggerVariant="icon"
+                            />
                         </div>
                     </div>
                 </CardHeader>
@@ -321,6 +334,7 @@ export const Overview = ({
                             normalization={normalized.normalization as any}
                             currency={normalized.currency as any}
                             excludedItemsSummary={excludedItemsSummary}
+                            amountFilter={amountFilter}
                         />
                     )}
                 </CardContent>

@@ -69,6 +69,7 @@ vi.mock('@/lib/analytics-utils', () => ({
 // Mock chart utils
 vi.mock('@/components/charts/components/chart-renderer/utils', () => ({
   getSeriesColor: (index: number) => `#color-${index}`,
+  yValueFormatter: (value: number) => `${value.toLocaleString()} RON`,
 }))
 
 // Mock entity line items hook
@@ -352,6 +353,26 @@ describe('TrendsView', () => {
       )
 
       expect(screen.getByText(/Budget Distribution/)).toBeInTheDocument()
+    })
+
+    it('renders the treemap info button in the header', () => {
+      render(
+        <TrendsView
+          entity={createMockEntity()}
+          type="expense"
+          currentYear={2024}
+          onYearClick={mockOnYearClick}
+          onSearchChange={mockOnSearchChange}
+          normalizationOptions={defaultNormalization}
+          onNormalizationChange={mockOnNormalizationChange}
+          reportPeriod={defaultReportPeriod}
+          trendPeriod={defaultTrendPeriod}
+        />
+      )
+
+      expect(
+        screen.getByRole('button', { name: 'Spending Calculation' })
+      ).toBeInTheDocument()
     })
 
     it('renders BudgetTreemap', () => {

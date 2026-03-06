@@ -13,6 +13,8 @@ import {
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BudgetTreemap } from '@/components/budget-explorer/BudgetTreemap'
+import { FilteredSpendingInfo } from '@/components/budget-explorer/FilteredSpendingInfo'
+import { useTreemapAmountFilter } from '@/components/budget-explorer/useTreemapAmountFilter'
 import type { TreemapInput } from '@/components/budget-explorer/budget-transform'
 import { cn } from '@/lib/utils'
 import {
@@ -94,6 +96,11 @@ export function ClassificationExplorer({
     }
     return sourceUrl
   }, [sourceUrl, currentView])
+  const { amountFilter, unit: treemapUnit } = useTreemapAmountFilter({
+    data: treemapData,
+    normalization: 'total',
+    currency: 'RON',
+  })
 
   // Handlers
   const handleViewChange = useCallback((view: ClassificationView) => {
@@ -311,6 +318,13 @@ export function ClassificationExplorer({
 
                 {/* Treemap */}
                 <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 p-2 sm:p-4">
+                  <div className="mb-3 flex justify-end">
+                    <FilteredSpendingInfo
+                      unit={treemapUnit}
+                      amountFilter={amountFilter}
+                      triggerVariant="icon"
+                    />
+                  </div>
                   <BudgetTreemap
                     data={treemapData}
                     primary={currentView}
@@ -319,6 +333,7 @@ export function ClassificationExplorer({
                     path={path}
                     normalization="total"
                     currency="RON"
+                    amountFilter={amountFilter}
                   />
                 </div>
 

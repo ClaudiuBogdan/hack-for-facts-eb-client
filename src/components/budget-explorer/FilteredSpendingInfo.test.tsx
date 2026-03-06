@@ -133,21 +133,54 @@ describe('FilteredSpendingInfo', () => {
     })
   })
 
-  describe('desktop layout (popover)', () => {
-    it('renders popover trigger button', () => {
+  describe('desktop layout (dialog)', () => {
+    it('renders the default trigger button', () => {
       const summary = createExcludedSummary()
       render(<FilteredSpendingInfo unit="RON" excludedItemsSummary={summary} />)
 
       expect(screen.getByText('Filtered')).toBeInTheDocument()
     })
 
-    it('opens popover on click', () => {
+    it('opens the dialog on click', () => {
       const summary = createExcludedSummary()
       render(<FilteredSpendingInfo unit="RON" excludedItemsSummary={summary} />)
 
       fireEvent.click(screen.getByText('Filtered'))
 
-      expect(screen.getByText('Spending Calculation')).toBeInTheDocument()
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+    })
+
+    it('renders the icon trigger variant', () => {
+      const summary = createExcludedSummary()
+      render(
+        <FilteredSpendingInfo
+          unit="RON"
+          excludedItemsSummary={summary}
+          triggerVariant="icon"
+        />
+      )
+
+      expect(
+        screen.getByRole('button', { name: 'Spending Calculation' })
+      ).toBeInTheDocument()
+      expect(screen.queryByText('Filtered')).not.toBeInTheDocument()
+    })
+
+    it('opens the dialog from the icon trigger', () => {
+      const summary = createExcludedSummary()
+      render(
+        <FilteredSpendingInfo
+          unit="RON"
+          excludedItemsSummary={summary}
+          triggerVariant="icon"
+        />
+      )
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Spending Calculation' })
+      )
+
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
     })
   })
 
@@ -172,6 +205,23 @@ describe('FilteredSpendingInfo', () => {
 
       expect(screen.getByRole('dialog')).toBeInTheDocument()
     })
+
+    it('opens dialog from the icon trigger on mobile', () => {
+      const summary = createExcludedSummary()
+      render(
+        <FilteredSpendingInfo
+          unit="RON"
+          excludedItemsSummary={summary}
+          triggerVariant="icon"
+        />
+      )
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Spending Calculation' })
+      )
+
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+    })
   })
 
   describe('excluded items display', () => {
@@ -181,7 +231,7 @@ describe('FilteredSpendingInfo', () => {
 
       fireEvent.click(screen.getByText('Filtered'))
 
-      expect(screen.getByText('Spending Calculation')).toBeInTheDocument()
+      expect(screen.getAllByText('Spending Calculation').length).toBeGreaterThan(0)
     })
 
     it('shows total spending value', () => {
@@ -360,7 +410,7 @@ describe('FilteredSpendingInfo', () => {
 
       fireEvent.click(screen.getByText('Filtered'))
 
-      expect(screen.getByText('Spending Calculation')).toBeInTheDocument()
+      expect(screen.getAllByText('Spending Calculation').length).toBeGreaterThan(0)
       expect(screen.getByText('Amount filter (this layer)')).toBeInTheDocument()
     })
   })

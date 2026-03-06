@@ -1,14 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
-import type { ReactElement } from 'react';
+import type { FC } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
+import { t } from '@lingui/core/macro';
+
+export interface ScrollWheelZoomControlProps {
+  isMobile?: boolean;
+  mobilePanMode?: 'default' | 'pinch-zoom-until-unlocked';
+}
 
 /**
  * ScrollWheelZoomControl
  * - Adds a Leaflet control next to the zoom controls to toggle persistent scroll zoom
  * - Uses Cmd/Ctrl hotkeys to temporarily enable scroll zoom while pressed
  */
-export function ScrollWheelZoomControl(): ReactElement | null {
+export const ScrollWheelZoomControl: FC<ScrollWheelZoomControlProps> = ({
+  isMobile = false,
+  mobilePanMode = 'default',
+}) => {
   const map = useMap() as L.Map & { _scrollWheelZoomPersistent?: boolean };
   const [enabled, setEnabled] = useState<boolean>(() => map._scrollWheelZoomPersistent === true);
   const linkRef = useRef<HTMLAnchorElement | null>(null);
@@ -16,20 +25,25 @@ export function ScrollWheelZoomControl(): ReactElement | null {
     meta: false,
     ctrl: false,
   });
-
-  // Ensure scroll is disabled by default unless persistent
-  useEffect(() => {
-    if (!map._scrollWheelZoomPersistent) {
-      map.scrollWheelZoom.disable();
-    }
-  }, [map]);
+  const shouldUseMapInteractionCopy =
+    isMobile && mobilePanMode === 'pinch-zoom-until-unlocked';
+  const controlAriaLabel = shouldUseMapInteractionCopy
+    ? t`Toggle map interaction`
+    : t`Toggle scroll zoom`;
+  const controlTitle = enabled
+    ? shouldUseMapInteractionCopy
+      ? t`Map interaction: On`
+      : t`Scroll zoom: On`
+    : shouldUseMapInteractionCopy
+      ? t`Map interaction: Off`
+      : t`Scroll zoom: Off`;
 
   // Keep modifier-driven zoom deterministic. The previous hotkey-based
   // implementation could leave wheel zoom enabled when the release path
   // did not fire as expected.
   useEffect(() => {
     const syncTemporaryZoomState = () => {
-      if (map._scrollWheelZoomPersistent) {
+      if (enabled) {
         return;
       }
 
@@ -88,10 +102,15 @@ export function ScrollWheelZoomControl(): ReactElement | null {
       window.removeEventListener('blur', handleWindowBlur);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [map]);
+  }, [enabled, map]);
 
   // Persist toggle state to map and update button visual state
   useEffect(() => {
+    const shouldLockMobilePan =
+      isMobile &&
+      mobilePanMode === 'pinch-zoom-until-unlocked' &&
+      !enabled;
+
     map._scrollWheelZoomPersistent = enabled;
     if (enabled) {
       map.scrollWheelZoom.enable();
@@ -101,13 +120,21 @@ export function ScrollWheelZoomControl(): ReactElement | null {
       map.scrollWheelZoom.disable();
     }
 
+    if (shouldLockMobilePan) {
+      map.dragging.disable();
+      map.touchZoom.enable();
+    } else {
+      map.dragging.enable();
+    }
+
     const link = linkRef.current;
     if (link) {
+      link.setAttribute('aria-label', controlAriaLabel);
       link.setAttribute('aria-pressed', enabled ? 'true' : 'false');
-      link.title = `Scroll zoom: ${enabled ? 'On' : 'Off'}`;
+      link.title = controlTitle;
       link.style.opacity = enabled ? '1' : '0.6';
     }
-  }, [enabled, map]);
+  }, [controlAriaLabel, controlTitle, enabled, isMobile, map, mobilePanMode]);
 
   // Create Leaflet control (once)
   useEffect(() => {
@@ -118,9 +145,9 @@ export function ScrollWheelZoomControl(): ReactElement | null {
       linkRef.current = link;
       link.href = '#';
       link.role = 'button';
-      link.setAttribute('aria-label', 'Toggle scroll zoom');
+      link.setAttribute('aria-label', controlAriaLabel);
       link.setAttribute('aria-pressed', enabled ? 'true' : 'false');
-      link.title = `Scroll zoom: ${enabled ? 'On' : 'Off'}`;
+      link.title = controlTitle;
       // Match Leaflet zoom button sizing
       link.style.width = '30px';
       link.style.height = '26px';
@@ -156,4 +183,4 @@ export function ScrollWheelZoomControl(): ReactElement | null {
   }, [map]);
 
   return null;
-}
+};

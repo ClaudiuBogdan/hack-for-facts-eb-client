@@ -9,13 +9,13 @@ import { yValueFormatter } from '@/components/charts/components/chart-renderer/u
 import { SafeResponsiveContainer } from '@/components/charts/safe-responsive-container'
 import { Button } from '@/components/ui/button'
 import type { TreemapInput, ExcludedItemsSummary } from './budget-transform'
-import { FilteredSpendingInfo } from './FilteredSpendingInfo'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { getNormalizationUnit } from '@/lib/utils'
 import type { AnalyticsFilterType, Currency, Normalization } from '@/schemas/charts'
 import { useTreemapChartLink } from './useTreemapChartLink'
 import { buildTreemapChartLink } from '@/lib/chart-links'
 import { ClassificationInfoLink } from '@/components/common/classification-info-link'
+import type { TreemapAmountFilter } from './useTreemapAmountFilter'
 
 const COLORS = [
   '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d',
@@ -90,6 +90,7 @@ type Props = {
   currency?: Currency
   excludedItemsSummary?: ExcludedItemsSummary
   chartFilterInput?: AnalyticsFilterType // Optional filter input for the chart link
+  amountFilter?: TreemapAmountFilter
 }
 
 type TreemapNodePayload = {
@@ -403,7 +404,19 @@ const CustomizedContent: FC<{
   )
 }
 
-export function BudgetTreemap({ data, primary, onNodeClick, onBreadcrumbClick, path = [], onViewDetails, showViewDetails = false, normalization, currency, excludedItemsSummary, chartFilterInput: filterInput }: Props) {
+export function BudgetTreemap({
+  data,
+  primary,
+  onNodeClick,
+  onBreadcrumbClick,
+  path = [],
+  onViewDetails,
+  showViewDetails = false,
+  normalization,
+  currency,
+  chartFilterInput: filterInput,
+  amountFilter,
+}: Props) {
   const isMobile = useIsMobile()
   const navigate = useNavigate()
   const [allowScaleAnimation] = useState(() => !isSafariBrowser())
@@ -475,22 +488,15 @@ export function BudgetTreemap({ data, primary, onNodeClick, onBreadcrumbClick, p
     return { minValue: min, maxValue: max }
   }, [payloadData])
 
-  // Amount range for this layer. Always resets to [min,max] when those change.
-  const [amountRange, setAmountRange] = useState<[number, number]>([minValue, maxValue])
-  const deferredAmountRange = useDeferredValue(amountRange)
-  const handleAmountRangeChange = useCallback((val: [number, number]) => {
-    setAmountRange(val)
-  }, [])
-
-  useEffect(() => {
-    const next = [minValue, maxValue] as [number, number]
-    setAmountRange(next)
-  }, [minValue, maxValue])
+  const currentAmountRange = amountFilter?.range ?? ([minValue, maxValue] as [number, number])
+  const deferredAmountRange = useDeferredValue(currentAmountRange)
 
   // Apply range-based filtering to nodes
   const filteredData = useMemo(() => {
+    if (!amountFilter) return payloadData
+
     // Check if range has been reset to full span (not user-modified)
-    const isResetToFullSpan = amountRange[0] === minValue && amountRange[1] === maxValue
+    const isResetToFullSpan = currentAmountRange[0] === minValue && currentAmountRange[1] === maxValue
     if (isResetToFullSpan) return payloadData
 
     const [low, high] = deferredAmountRange
@@ -498,7 +504,7 @@ export function BudgetTreemap({ data, primary, onNodeClick, onBreadcrumbClick, p
       const v = Number.isFinite(n.value) ? n.value : 0
       return v >= low && v <= high
     })
-  }, [deferredAmountRange, payloadData, minValue, maxValue, amountRange])
+  }, [amountFilter, currentAmountRange, deferredAmountRange, payloadData, minValue, maxValue])
 
   const totalValue = useMemo(
     () => filteredData.reduce((acc, curr) => acc + (Number.isFinite(curr.value) ? curr.value : 0), 0),
@@ -558,6 +564,8 @@ export function BudgetTreemap({ data, primary, onNodeClick, onBreadcrumbClick, p
 
   // On mobile, show only last 2 breadcrumb items
   const displayPath = isMobile && deferredPath.length > 2 ? deferredPath.slice(-2) : deferredPath
+  const hasModifiedAmountRange = !!amountFilter
+    && (currentAmountRange[0] > minValue || currentAmountRange[1] < maxValue)
 
   return (
     <div className="w-full space-y-0.75">
@@ -665,8 +673,12 @@ export function BudgetTreemap({ data, primary, onNodeClick, onBreadcrumbClick, p
               <Trans>Go to Main Categories</Trans>
             </Button>
           )}
-          {((amountRange[0] > minValue || amountRange[1] < maxValue)) && (
-            <Button variant="ghost" size="sm" onClick={() => handleAmountRangeChange([minValue, maxValue])}>
+          {hasModifiedAmountRange && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => amountFilter?.onChange([minValue, maxValue])}
+            >
               <Trans>Reset amount filter</Trans>
             </Button>
           )}
@@ -713,28 +725,22 @@ export function BudgetTreemap({ data, primary, onNodeClick, onBreadcrumbClick, p
               </Treemap>
             </SafeResponsiveContainer>
           </div>
-          <div className="flex flex-col items-center gap-2 text-center mt-4">
-            <div className="text-sm sm:text-xl font-semibold">
-              <Trans>Total</Trans>: <span className="font-bold">{yValueFormatter(totalValue, unit, 'compact')}</span>
+          <div className="mt-4 space-y-2">
+            <div className="flex flex-col items-center gap-2 text-center">
+              <div className="text-sm sm:text-xl font-semibold">
+                <Trans>Total</Trans>: <span className="font-bold">{yValueFormatter(totalValue, unit, 'compact')}</span>
+              </div>
+              <div className="text-sm text-muted-foreground">
+                <span className="font-mono">{yValueFormatter(totalValue, unit, 'standard')}</span>
+              </div>
             </div>
-            <div className="text-sm text-muted-foreground">
-              <span className="font-mono">{yValueFormatter(totalValue, unit, 'standard')}</span>
-            </div>
-            <FilteredSpendingInfo
-              excludedItemsSummary={excludedItemsSummary}
-              unit={unit}
-              amountFilter={{
-                minValue,
-                maxValue,
-                range: amountRange as [number, number],
-                onChange: handleAmountRangeChange,
-              }}
-            />
             {hasChartLink && (
-              <Button variant="outline" size="sm" onClick={handleViewAsChart} className="gap-2 ml-auto mr-2 -mb-4">
-                <LineChart className="w-4 h-4" />
-                <Trans>View as Chart</Trans>
-              </Button>
+              <div className="flex justify-end">
+                <Button variant="outline" size="sm" onClick={handleViewAsChart} className="gap-2">
+                  <LineChart className="w-4 h-4" />
+                  <Trans>View as Chart</Trans>
+                </Button>
+              </div>
             )}
           </div>
         </>

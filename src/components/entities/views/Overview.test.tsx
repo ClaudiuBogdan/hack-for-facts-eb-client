@@ -546,6 +546,29 @@ describe('Overview', () => {
       expect(screen.getByText(/Budget Distribution/)).toBeInTheDocument()
     })
 
+    it('renders the treemap info button in the header', () => {
+      render(
+        <Overview
+          cui="test-cui"
+          entity={createMockEntity()}
+          isLoading={false}
+          selectedYear={2024}
+          normalizationOptions={defaultNormalization}
+          years={[2020, 2021, 2022, 2023, 2024]}
+          reportPeriod={defaultReportPeriod}
+          search={defaultSearch}
+          onChartNormalizationChange={mockOnChartNormalizationChange}
+          onYearChange={mockOnYearChange}
+          onSearchChange={mockOnSearchChange}
+          onAnalyticsChange={mockOnAnalyticsChange}
+        />
+      )
+
+      expect(
+        screen.getByRole('button', { name: 'Spending Calculation' })
+      ).toBeInTheDocument()
+    })
+
     it('renders external link to entity analytics', () => {
       render(
         <Overview

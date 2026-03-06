@@ -8,7 +8,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import type { AnalyticsFilterType } from '@/schemas/charts'
 import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
 import { BudgetTreemap } from '@/components/budget-explorer/BudgetTreemap'
+import { FilteredSpendingInfo } from '@/components/budget-explorer/FilteredSpendingInfo'
 import { useTreemapDrilldown } from '@/components/budget-explorer/useTreemapDrilldown'
+import { useTreemapAmountFilter } from '@/components/budget-explorer/useTreemapAmountFilter'
 
 type NationalBudgetSectorSectionProps = {
   sectorId: string
@@ -60,6 +62,11 @@ export function NationalBudgetSectorSection({
     excludeEcCodes: excludeEconomicPrefixes,
     excludeFnCodes: excludeFunctionalPrefixes,
   })
+  const { amountFilter, unit: treemapUnit } = useTreemapAmountFilter({
+    data: treemapData,
+    normalization: filter.normalization,
+    currency: filter.currency,
+  })
 
   return (
     <Card className="shadow-sm" id={`sector-${sectorId}`}>
@@ -73,20 +80,28 @@ export function NationalBudgetSectorSection({
             </div>
             {sectionDescription ? <p className="text-xs text-muted-foreground">{sectionDescription}</p> : null}
           </div>
-          <Button asChild variant="outline" size="sm" className="self-start md:self-auto">
-            <Link
-              to="/entity-analytics"
-              search={{
-                view: 'line-items',
-                transferFilter,
-                filter: lineItemsFilter,
-              }}
-              preload="intent"
-            >
-              <Trans>Analyze line items</Trans>
-              <ExternalLink className="w-4 h-4 ml-2" aria-hidden="true" />
-            </Link>
-          </Button>
+          <div className="flex items-center gap-3 self-start md:self-auto">
+            <FilteredSpendingInfo
+              excludedItemsSummary={excludedItemsSummary ?? undefined}
+              unit={treemapUnit}
+              amountFilter={amountFilter}
+              triggerVariant="icon"
+            />
+            <Button asChild variant="outline" size="sm">
+              <Link
+                to="/entity-analytics"
+                search={{
+                  view: 'line-items',
+                  transferFilter,
+                  filter: lineItemsFilter,
+                }}
+                preload="intent"
+              >
+                <Trans>Analyze line items</Trans>
+                <ExternalLink className="w-4 h-4 ml-2" aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -109,6 +124,7 @@ export function NationalBudgetSectorSection({
             currency={filter.currency}
             excludedItemsSummary={excludedItemsSummary}
             chartFilterInput={filter}
+            amountFilter={amountFilter}
           />
         )}
       </CardContent>

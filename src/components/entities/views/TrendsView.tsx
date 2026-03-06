@@ -16,7 +16,9 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { BudgetTreemap } from '@/components/budget-explorer/BudgetTreemap'
+import { FilteredSpendingInfo } from '@/components/budget-explorer/FilteredSpendingInfo'
 import { useTreemapDrilldown } from '@/components/budget-explorer/useTreemapDrilldown'
+import { useTreemapAmountFilter } from '@/components/budget-explorer/useTreemapAmountFilter'
 import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
 import { getNormalizationUnit } from '@/lib/utils';
 import { Trans } from '@lingui/react/macro'
@@ -206,6 +208,11 @@ export const TrendsView: React.FC<BaseTrendsViewProps> = ({ entity, type, curren
       .filter(Boolean),
     onPathChange: (codes) => onTreemapPathChange?.(codes.join(',') || undefined),
   })
+  const { amountFilter, unit: treemapUnit } = useTreemapAmountFilter({
+    data: treemapData,
+    normalization: normalized.normalization,
+    currency: normalized.currency,
+  })
 
   if (isLoading || !entity || !trendChart) {
     return <TrendsViewSkeleton />;
@@ -217,10 +224,18 @@ export const TrendsView: React.FC<BaseTrendsViewProps> = ({ entity, type, curren
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
             <h3 className="text-base sm:text-lg font-semibold"><Trans>Budget Distribution</Trans> - {periodLabel}</h3>
-            <ToggleGroup type="single" value={primary} onValueChange={(v) => v && setPrimary(v as 'fn' | 'ec')} variant="outline" size="sm">
-              <ToggleGroupItem value="fn" className="data-[state=on]:bg-foreground data-[state=on]:text-background px-4"><Trans>Functional</Trans></ToggleGroupItem>
-              <ToggleGroupItem value="ec" disabled={type === 'income'} className="data-[state=on]:bg-foreground data-[state=on]:text-background px-4"><Trans>Economic</Trans></ToggleGroupItem>
-            </ToggleGroup>
+            <div className="flex items-center gap-3">
+              <ToggleGroup type="single" value={primary} onValueChange={(v) => v && setPrimary(v as 'fn' | 'ec')} variant="outline" size="sm">
+                <ToggleGroupItem value="fn" className="data-[state=on]:bg-foreground data-[state=on]:text-background px-4"><Trans>Functional</Trans></ToggleGroupItem>
+                <ToggleGroupItem value="ec" disabled={type === 'income'} className="data-[state=on]:bg-foreground data-[state=on]:text-background px-4"><Trans>Economic</Trans></ToggleGroupItem>
+              </ToggleGroup>
+              <FilteredSpendingInfo
+                excludedItemsSummary={excludedItemsSummary ?? undefined}
+                unit={treemapUnit}
+                amountFilter={amountFilter}
+                triggerVariant="icon"
+              />
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -236,6 +251,7 @@ export const TrendsView: React.FC<BaseTrendsViewProps> = ({ entity, type, curren
               normalization={normalized.normalization}
               currency={normalized.currency}
               excludedItemsSummary={excludedItemsSummary}
+              amountFilter={amountFilter}
             />
           )}
         </CardContent>

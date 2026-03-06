@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { usePeriodLabel } from '@/hooks/use-period-label'
 import type { AnalyticsFilterType } from '@/schemas/charts'
+import { FilteredSpendingInfo } from '@/components/budget-explorer/FilteredSpendingInfo'
 import { useTreemapDrilldown } from '@/components/budget-explorer/useTreemapDrilldown'
+import { useTreemapAmountFilter } from '@/components/budget-explorer/useTreemapAmountFilter'
 import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
 import { BudgetTreemap } from '@/components/budget-explorer/BudgetTreemap'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -83,6 +85,11 @@ export function EntityAnalyticsTreemap({
       .filter(Boolean),
     onPathChange: (codes) => onTreemapPathChange?.(codes.join(',') || undefined),
   })
+  const { amountFilter, unit: treemapUnit } = useTreemapAmountFilter({
+    data: treemapData,
+    normalization: filter.normalization,
+    currency: filter.currency,
+  })
 
   const isRevenueView = filter.account_category === 'vn'
   const periodLabel = usePeriodLabel(filter.report_period)
@@ -145,6 +152,12 @@ export function EntityAnalyticsTreemap({
                 </ToggleGroupItem>
               </ToggleGroup>
             </div>
+            <FilteredSpendingInfo
+              excludedItemsSummary={excludedItemsSummary ?? undefined}
+              unit={treemapUnit}
+              amountFilter={amountFilter}
+              triggerVariant="icon"
+            />
           </div>
         </div>
       </CardHeader>
@@ -166,6 +179,7 @@ export function EntityAnalyticsTreemap({
             currency={filter.currency}
             excludedItemsSummary={excludedItemsSummary}
             chartFilterInput={filter}
+            amountFilter={amountFilter}
           />
         )}
       </CardContent>

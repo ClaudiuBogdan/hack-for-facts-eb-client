@@ -1,31 +1,35 @@
 import { useEffect, useState } from 'react'
+import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { Info, X } from 'lucide-react'
 import { yValueFormatter } from '@/components/charts/components/chart-renderer/utils'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import type { ExcludedItemsSummary } from './budget-transform'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Slider } from '@/components/ui/slider'
 import { Label } from '@/components/ui/label'
 import { useDebouncedCallback } from '@/lib/hooks/useDebouncedCallback'
+import { cn } from '@/lib/utils'
+import type { TreemapAmountFilter } from './useTreemapAmountFilter'
 
 type Props = {
   readonly excludedItemsSummary?: ExcludedItemsSummary
   readonly unit: string
-  readonly amountFilter?: {
-    minValue: number
-    maxValue: number
-    range: [number, number]
-    onChange: (val: [number, number]) => void
-  }
+  readonly amountFilter?: TreemapAmountFilter
+  readonly triggerVariant?: 'text' | 'icon'
+  readonly buttonClassName?: string
 }
 
-export function FilteredSpendingInfo({ excludedItemsSummary, unit, amountFilter }: Props) {
+export function FilteredSpendingInfo({
+  excludedItemsSummary,
+  unit,
+  amountFilter,
+  triggerVariant = 'text',
+  buttonClassName,
+}: Props) {
   const isMobile = useIsMobile()
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [popoverOpen, setPopoverOpen] = useState(false)
   const [uiRange, setUiRange] = useState<[number, number]>(amountFilter?.range ?? [0, 0])
 
   // All hooks must be called before any early returns
@@ -200,64 +204,68 @@ export function FilteredSpendingInfo({ excludedItemsSummary, unit, amountFilter 
     </div>
   )
 
-  // Mobile: Use Dialog for better touch experience
-  if (isMobile) {
-    return (
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 px-2.5 text-xs gap-1.5 bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-900 dark:bg-amber-950 dark:hover:bg-amber-900 dark:border-amber-800 dark:text-amber-100"
-          >
-            <Info className="w-3.5 h-3.5" />
-            <Trans>Filtered</Trans>
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-[calc(100vw-2rem)] w-[calc(100vw-2rem)] p-0 rounded-lg overflow-hidden">
-          <DialogHeader className="sticky top-0 z-10 bg-background/95 supports-[backdrop-filter]:bg-background/80 backdrop-blur border-b px-5 py-3">
-            <DialogTitle className="text-base">
-              <Trans>Spending Calculation</Trans>
-            </DialogTitle>
-            <DialogDescription className="sr-only">
-              <Trans>Details about excluded items and amount filters used in this view.</Trans>
-            </DialogDescription>
-            <DialogClose asChild>
-              <Button variant="ghost" size="icon" className="absolute right-4 top-1/2 -translate-y-1/2">
-                <X className="w-4 h-4" />
-              </Button>
-            </DialogClose>
-          </DialogHeader>
-          <div className="px-5 py-4 max-h-[calc(100dvh-10rem)] overflow-y-auto">
-            {content}
-          </div>
-        </DialogContent>
-      </Dialog>
-    )
-  }
+  const trigger = triggerVariant === 'icon' ? (
+    <Button
+      type="button"
+      variant="outline"
+      size="icon"
+      className={cn('shrink-0 rounded-full', buttonClassName)}
+      aria-label={t`Spending Calculation`}
+      title={t`Spending Calculation`}
+    >
+      <Info className="h-4 w-4" />
+    </Button>
+  ) : (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className={cn(
+        'h-7 px-2.5 text-xs gap-1.5 bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-900 dark:bg-amber-950 dark:hover:bg-amber-900 dark:border-amber-800 dark:text-amber-100',
+        buttonClassName,
+      )}
+    >
+      <Info className="w-3.5 h-3.5" />
+      <Trans>Filtered</Trans>
+    </Button>
+  )
 
-  // Desktop: Use Popover with click trigger
   return (
-    <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-      <PopoverTrigger asChild>
-        <button
-          onClick={() => setPopoverOpen(!popoverOpen)}
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-        >
-          <span className="font-medium">
-            <Trans>Filtered</Trans>
-          </span>
-          <Info className="w-3.5 h-3.5" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-[420px] p-5 z-10"
-        align="center"
-        side="bottom"
-        sideOffset={8}
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <DialogTrigger asChild>
+        {trigger}
+      </DialogTrigger>
+      <DialogContent
+        hideCloseButton={true}
+        className={cn(
+          'overflow-hidden p-0',
+          isMobile
+            ? 'max-w-[calc(100vw-2rem)] w-[calc(100vw-2rem)] rounded-lg'
+            : 'max-w-xl',
+        )}
       >
-        {content}
-      </PopoverContent>
-    </Popover>
+        <DialogHeader className="sticky top-0 z-10 border-b bg-background/95 px-5 py-3 supports-[backdrop-filter]:bg-background/80">
+          <DialogTitle className="text-base">
+            <Trans>Spending Calculation</Trans>
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            <Trans>Details about excluded items and amount filters used in this view.</Trans>
+          </DialogDescription>
+          <DialogClose asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full"
+              aria-label={t`Close`}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </DialogClose>
+        </DialogHeader>
+        <div className="max-h-[calc(100dvh-10rem)] overflow-y-auto px-5 py-4">
+          {content}
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -86,6 +86,9 @@ describe('NationalBudgetSectorSection', () => {
     )
 
     expect(screen.getByTestId('budget-treemap')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Spending Calculation' })
+    ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Analyze line items/i })).toHaveAttribute('href', expect.stringContaining('/entity-analytics'))
     expect(screen.getByText('Agregat informativ')).toBeInTheDocument()
 

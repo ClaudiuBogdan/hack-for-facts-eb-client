@@ -607,6 +607,9 @@ describe('ChallengeEntityAnalysisPage', () => {
       screen.getByRole('button', { name: 'Arată venituri' }),
     ).toBeInTheDocument()
     expect(
+      screen.getByRole('button', { name: 'Spending Calculation' }),
+    ).toBeInTheDocument()
+    expect(
       screen.getAllByRole('button', { name: 'Arată Doar Cheltuieli Primăriei' }),
     ).toHaveLength(2)
     expect(

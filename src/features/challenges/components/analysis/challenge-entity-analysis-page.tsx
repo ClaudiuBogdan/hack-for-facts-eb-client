@@ -3,8 +3,10 @@ import { AlertTriangle, Minus, Plus, RefreshCw, Users } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BudgetTreemap } from '@/components/budget-explorer/BudgetTreemap'
+import { FilteredSpendingInfo } from '@/components/budget-explorer/FilteredSpendingInfo'
 import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
 import { useTreemapDrilldown } from '@/components/budget-explorer/useTreemapDrilldown'
+import { useTreemapAmountFilter } from '@/components/budget-explorer/useTreemapAmountFilter'
 import { getEntityFeatureInfo } from '@/components/entities/utils'
 import { EntityFinancialSummary, type EntityFinancialSummaryTrend } from '@/components/entities/EntityFinancialSummary'
 import { EntityFinancialSummarySkeleton } from '@/components/entities/EntityFinancialSummarySkeleton'
@@ -761,6 +763,11 @@ export function ChallengeEntityAnalysisPage({
         : [],
     onPathChange: (path) => onStateChange({ treemapPath: path }),
   })
+  const { amountFilter, unit: treemapUnit } = useTreemapAmountFilter({
+    data: treemapData,
+    normalization: displayNormalizationOptions.normalization,
+    currency: displayNormalizationOptions.currency,
+  })
 
   const visibleSubordinateRankings = useMemo(
     () => subordinateRankingQuery.data?.nodes ?? [],
@@ -1303,15 +1310,25 @@ export function ChallengeEntityAnalysisPage({
       <div className="space-y-3">
         <Card className="rounded-[28px] border-border/50">
           <CardHeader>
-            <div className="space-y-1">
-              <CardTitle className="text-xl font-black tracking-tight">
-                {treemapTitle}
-              </CardTitle>
-              <p className="text-sm font-medium text-muted-foreground">
-                {showsIncomeEconomicMessage
-                  ? pageCopy.revenueWithoutEconomicCode
-                  : treemapSubtitle}
-              </p>
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1">
+                <CardTitle className="text-xl font-black tracking-tight">
+                  {treemapTitle}
+                </CardTitle>
+                <p className="text-sm font-medium text-muted-foreground">
+                  {showsIncomeEconomicMessage
+                    ? pageCopy.revenueWithoutEconomicCode
+                    : treemapSubtitle}
+                </p>
+              </div>
+              {showsIncomeEconomicMessage ? null : (
+                <FilteredSpendingInfo
+                  excludedItemsSummary={excludedItemsSummary ?? undefined}
+                  unit={treemapUnit}
+                  amountFilter={amountFilter}
+                  triggerVariant="icon"
+                />
+              )}
             </div>
           </CardHeader>
           <CardContent className="-mx-4 px-4 sm:mx-0 sm:px-0">
@@ -1329,6 +1346,7 @@ export function ChallengeEntityAnalysisPage({
                 normalization={displayNormalizationOptions.normalization}
                 currency={displayNormalizationOptions.currency}
                 excludedItemsSummary={excludedItemsSummary}
+                amountFilter={amountFilter}
               />
             )}
           </CardContent>
