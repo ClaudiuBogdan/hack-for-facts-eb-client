@@ -316,6 +316,11 @@ ${buildPreviewConfigSection({
   reportType,
 })}
 
+### Serii de date
+
+- **Cheltuieli UAT** — cheltuieli totale pentru fiecare UAT
+- **Populație** — serie auxiliară INS 2021 disponibilă pentru context geografic
+
 ### Ce include
 
 - Totalul cheltuielilor pentru UAT, folosind aceeași configurație de raportare ca în sumar și tendințe
@@ -356,6 +361,7 @@ ${buildPreviewConfigSection({
             inflation_adjusted: false,
           },
         }),
+        createGeoJsonPopulationSeries('population-2021'),
       ],
     }),
   },
@@ -450,6 +456,11 @@ ${buildPreviewConfigSection({
   reportType,
 })}
 
+### Serii de date
+
+- **Balanță bugetară** — venituri totale minus cheltuieli totale
+- **Populație** — serie auxiliară INS 2021 disponibilă pentru context geografic
+
 ### Ce include
 
 - Venituri totale minus cheltuieli totale, folosind aceeași configurație de raportare ca în sumar și tendințe
@@ -511,6 +522,7 @@ ${buildPreviewConfigSection({
             args: ['balance-income', 'balance-expenses'],
           },
         }),
+        createGeoJsonPopulationSeries('population-2021'),
       ],
     }),
   },
@@ -543,10 +555,11 @@ ${buildPreviewConfigSection({
   reportType,
 })}
 
-### Componente
+### Serii de date
 
 - **Impozite și taxe pe proprietate** (fn:07)
 - **Taxe pe utilizarea bunurilor** (fn:16)
+- **Populație** — serie auxiliară INS 2021 disponibilă pentru context geografic
 
 ### Ce include
 
@@ -609,6 +622,7 @@ ${buildPreviewConfigSection({
             args: ['local-taxes-property', 'local-taxes-goods-use'],
           },
         }),
+        createGeoJsonPopulationSeries('population-2021'),
       ],
     }),
   },

@@ -52,7 +52,7 @@ const entity = {
   },
 }
 
-function renderHeader() {
+function renderHeader(languageQuery?: 'ro' | 'en') {
   return render(
     <ChallengeEntityAnalysisHeader
       entity={entity}
@@ -60,6 +60,7 @@ function renderHeader() {
       availableYears={[2025, 2024, 2023]}
       onYearChange={vi.fn()}
       showInflationBadge
+      languageQuery={languageQuery}
     />,
   )
 }
@@ -198,5 +199,14 @@ describe('ChallengeEntityAnalysisHeader', () => {
       'motion-reduce:translate-y-0',
       'motion-reduce:transition-opacity',
     )
+  })
+
+  it('uses english short-form entity type labels when the page is in english', () => {
+    renderHeader('en')
+
+    expect(screen.getByText('My City Hall')).toBeInTheDocument()
+    expect(screen.getByText('Municipality')).toBeInTheDocument()
+    expect(screen.getByText('134,309 inhabitants')).toBeInTheDocument()
+    expect(screen.getByText('Change City Hall')).toBeInTheDocument()
   })
 })

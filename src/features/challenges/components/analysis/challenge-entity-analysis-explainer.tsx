@@ -1,4 +1,3 @@
-import { t } from '@lingui/core/macro'
 import type { GqlReportType } from '@/schemas/reporting'
 import { Info } from 'lucide-react'
 import { useState } from 'react'
@@ -15,6 +14,8 @@ type ChallengeEntityAnalysisExplainerProps = {
 
 const EXPLAINER_COPY = {
   ro: {
+    showLess: 'Arată mai puțin',
+    showMore: 'Citește mai mult',
     showDetailed: 'Arată Doar Cheltuieli Primăriei',
     showAggregated: 'Arată Cheltuieli Primăriei și Instituțiilor Subordonate',
     aggregatedPrimary:
@@ -33,6 +34,8 @@ const EXPLAINER_COPY = {
       'Ajustarea la inflație folosește indicele prețurilor de consum (IPC) publicat de INS. Fără această ajustare, sumele din anii anteriori par mai mici decât sunt în realitate, deoarece inflația erodează puterea de cumpărare a banului. De exemplu, 1 milion RON în 2015 avea o putere de cumpărare semnificativ mai mare decât 1 milion RON în 2024. Ajustarea elimină acest efect, astfel încât creșterile sau scăderile pe care le vezi reflectă schimbări reale în cheltuieli sau venituri, nu doar efectul inflației.',
   },
   en: {
+    showLess: 'Show less',
+    showMore: 'Read more',
     showDetailed: 'Show only city hall spending',
     showAggregated: 'Show city hall and subordinate spending',
     aggregatedPrimary:
@@ -113,7 +116,7 @@ export function ChallengeEntityAnalysisExplainer({
                 className="h-auto justify-start px-0 text-sm font-semibold"
                 onClick={() => setIsExpanded((currentValue) => !currentValue)}
               >
-                {isExpanded ? t`Arată mai puțin` : t`Citește mai mult`}
+                {isExpanded ? copy.showLess : copy.showMore}
               </Button>
 
               <Button

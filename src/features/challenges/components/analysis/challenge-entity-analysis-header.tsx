@@ -30,16 +30,44 @@ type ChallengeEntityAnalysisHeaderProps = {
   readonly languageQuery?: ChallengeLocale
 }
 
-const LOCAL_GOVERNMENT_TYPE_LABELS: Record<string, string> = {
-  admin_county_council: 'Județ',
-  admin_municipality: 'Municipiu',
-  admin_town_hall: 'Oraș',
-  admin_commune_hall: 'Comună',
-  admin_sector_hall: 'Sector',
-}
+const LOCAL_GOVERNMENT_TYPE_LABELS = {
+  ro: {
+    admin_county_council: 'Județ',
+    admin_municipality: 'Municipiu',
+    admin_town_hall: 'Oraș',
+    admin_commune_hall: 'Comună',
+    admin_sector_hall: 'Sector',
+  },
+  en: {
+    admin_county_council: 'County',
+    admin_municipality: 'Municipality',
+    admin_town_hall: 'Town',
+    admin_commune_hall: 'Commune',
+    admin_sector_hall: 'Sector',
+  },
+} as const
 const COMPACT_HEADER_SHOW_THRESHOLD = 320
 const COMPACT_HEADER_RESET_THRESHOLD = 160
 const COMPACT_HEADER_TRANSITION_MS = 260
+
+const HEADER_COPY = {
+  ro: {
+    inhabitants: 'locuitori',
+    myCityHall: 'Primăria Mea',
+    period: 'Perioada',
+    selectYear: 'Selectează anul',
+    copyLink: 'Copiază link',
+    changeCityHall: 'Schimbă Primăria',
+  },
+  en: {
+    inhabitants: 'inhabitants',
+    myCityHall: 'My City Hall',
+    period: 'Period',
+    selectYear: 'Select year',
+    copyLink: 'Copy link',
+    changeCityHall: 'Change City Hall',
+  },
+} as const
 
 function normalizeDisplayText(
   value: string,
@@ -63,6 +91,8 @@ export function ChallengeEntityAnalysisHeader({
   showInflationBadge = false,
   languageQuery,
 }: ChallengeEntityAnalysisHeaderProps) {
+  const locale = languageQuery === 'en' ? 'en' : 'ro'
+  const copy = HEADER_COPY[locale]
   const { isSignedIn } = useAuth()
   const queryClient = useQueryClient()
   const [shareCopied, setShareCopied] = useState(false)
@@ -70,8 +100,13 @@ export function ChallengeEntityAnalysisHeader({
   const rawEntityCategory = entity.entity_type
     ? entityTypeLabel.map(entity.entity_type)
     : null
+  const localGovernmentTypeLabel = entity.entity_type
+    ? LOCAL_GOVERNMENT_TYPE_LABELS[locale][
+        entity.entity_type as keyof (typeof LOCAL_GOVERNMENT_TYPE_LABELS)['ro']
+      ]
+    : null
   const entityCategory = entity.entity_type
-    ? LOCAL_GOVERNMENT_TYPE_LABELS[entity.entity_type] ??
+    ? localGovernmentTypeLabel ??
       (rawEntityCategory && !rawEntityCategory.startsWith('id::')
         ? normalizeDisplayText(
             rawEntityCategory.replace(/^primărie\s+/i, ''),
@@ -311,7 +346,7 @@ export function ChallengeEntityAnalysisHeader({
                       className="gap-1.5 bg-background/80 px-3 py-1 text-[11px] sm:text-xs"
                     >
                       <Users className="h-3.5 w-3.5" aria-hidden="true" />
-                      {population} {t`locuitori`}
+                      {population} {copy.inhabitants}
                     </Badge>
                   ) : null}
                 </div>
@@ -329,7 +364,7 @@ export function ChallengeEntityAnalysisHeader({
           <div className="min-w-0 space-y-4">
             <div className="space-y-2">
               <p className="text-[11px] font-black uppercase tracking-[0.28em] text-muted-foreground">
-                {t`Primăria Mea`}
+                {copy.myCityHall}
               </p>
               <h1 className="text-balance text-[1.85rem] font-black leading-[0.94] tracking-tight text-foreground sm:text-[2.55rem] md:text-[2.85rem] lg:text-5xl">
                 {displayName}
@@ -357,7 +392,7 @@ export function ChallengeEntityAnalysisHeader({
               {population ? (
                 <Badge variant="outline" className="gap-1.5 px-3 py-1">
                   <Users className="h-3.5 w-3.5" aria-hidden="true" />
-                  {population} {t`locuitori`}
+                  {population} {copy.inhabitants}
                 </Badge>
               ) : null}
             </div>
@@ -366,14 +401,14 @@ export function ChallengeEntityAnalysisHeader({
           <div className="flex flex-col items-start gap-3 md:items-end">
             <div className="rounded-2xl border border-border/60 bg-background/80 px-4 py-2">
               <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                {t`Perioada`}
+                {copy.period}
               </p>
               <Select
                 value={String(selectedYear)}
                 onValueChange={(value) => onYearChange(Number(value))}
               >
                 <SelectTrigger
-                  aria-label={t`Selectează anul`}
+                  aria-label={copy.selectYear}
                   className="mt-1 h-auto w-auto min-w-[8.5rem] gap-2 border-0 bg-transparent p-0 text-left shadow-none focus:ring-2 focus:ring-primary/60"
                 >
                   <span className="text-sm font-semibold text-foreground tabular-nums">
@@ -394,7 +429,7 @@ export function ChallengeEntityAnalysisHeader({
               <button
                 type="button"
                 onClick={handleShare}
-                aria-label={t`Copiază link`}
+                aria-label={copy.copyLink}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-muted/40 text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
               >
                 {shareCopied ? (
@@ -409,7 +444,7 @@ export function ChallengeEntityAnalysisHeader({
                 className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
               >
                 <ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
-                {t`Schimbă Primăria`}
+                {copy.changeCityHall}
               </Link>
             </div>
           </div>

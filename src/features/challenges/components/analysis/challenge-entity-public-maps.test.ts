@@ -1,10 +1,28 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES } from '@/lib/analytics-defaults'
 import {
+  CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS,
   getChallengeEntityMapPreviewDefinition,
 } from './challenge-entity-public-maps'
 
 describe('challenge-entity-public-maps', () => {
+  it('adds a single INS population geojson series to every preview while preserving active series ids', () => {
+    for (const definition of CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS) {
+      const populationSeries = definition.mapState.series.filter(
+        (series) => series.type === 'geojson-dataset-series',
+      )
+
+      expect(populationSeries).toHaveLength(1)
+      expect(populationSeries[0]?.datasetKey).toBe('insPop2021')
+      expect(definition.mapState.activeSeriesId).toBeDefined()
+      expect(
+        definition.mapState.series.some(
+          (series) => series.id === definition.mapState.activeSeriesId,
+        ),
+      ).toBe(true)
+    }
+  })
+
   it('keeps income broad, but applies the treemap transfer exclusion to expense series', () => {
     const expensesDefinition = getChallengeEntityMapPreviewDefinition('expenses')
     const incomeDefinition = getChallengeEntityMapPreviewDefinition('income')
@@ -59,6 +77,7 @@ describe('challenge-entity-public-maps', () => {
     expect(previewCopy.mapDescription).toContain('Execuție bugetară detaliată')
     expect(previewCopy.mapDescription).toContain('Normalizare: **per capita**')
     expect(previewCopy.mapDescription).toContain('Monedă: **EUR**')
+    expect(previewCopy.mapDescription).toContain('**Populație**')
   })
 
   it('uses the inverted warning gradient for the balance legend preset', () => {

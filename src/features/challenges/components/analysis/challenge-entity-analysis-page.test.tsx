@@ -167,9 +167,17 @@ vi.mock('./challenge-entity-analysis-header', () => ({
       <div>{props.entity?.name}</div>
       <div>{props.selectedYear}</div>
       {props.showInflationBadge ? (
-        <div>Valori ajustate cu inflația (2024)</div>
+        <div>
+          {props.languageQuery === 'en'
+            ? 'Inflation-adjusted values (2024)'
+            : 'Valori ajustate cu inflația (2024)'}
+        </div>
       ) : null}
-      <a href="/buget/cauta">Schimbă Primăria</a>
+      <a href="/buget/cauta">
+        {props.languageQuery === 'en'
+          ? 'Change City Hall'
+          : 'Schimbă Primăria'}
+      </a>
     </div>
   ),
 }))
@@ -552,9 +560,9 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(screen.getByTestId('financial-trends')).toHaveTextContent(
       '12345678:false:false:2025',
     )
-    expect(screen.getByText('Rapoarte financiare')).toBeInTheDocument()
-    expect(screen.getByText('octombrie 2025')).toBeInTheDocument()
     await waitFor(() => {
+      expect(screen.getByText('Rapoarte financiare')).toBeInTheDocument()
+      expect(screen.getAllByText(/octombrie 2025/i).length).toBeGreaterThan(0)
       expect(screen.getByTestId('public-map-preview')).toHaveTextContent(
         'expenses:2025:Executie bugetara agregata la nivel de ordonator principal:total:RON:false:8.1:46.77|23.59:Cheltuieli UAT (2025)',
       )
@@ -565,7 +573,7 @@ describe('ChallengeEntityAnalysisPage', () => {
       }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Show map preview options' }),
+      screen.getByRole('button', { name: 'Arată opțiunile hărții' }),
     ).toBeInTheDocument()
     expect(
       screen.queryByRole('button', {
@@ -660,7 +668,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'Show map preview options' }),
+      screen.getByRole('button', { name: 'Arată opțiunile hărții' }),
     )
 
     fireEvent.click(
@@ -690,7 +698,7 @@ describe('ChallengeEntityAnalysisPage', () => {
       })
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Show map preview options' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Arată opțiunile hărții' }))
 
     fireEvent.click(
       screen.getByRole('button', {
@@ -737,7 +745,7 @@ describe('ChallengeEntityAnalysisPage', () => {
       }),
     ).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Show map preview options' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Arată opțiunile hărții' }))
 
     expect(
       screen.getByRole('button', {
@@ -745,10 +753,10 @@ describe('ChallengeEntityAnalysisPage', () => {
       }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Hide map preview options' }),
+      screen.getByRole('button', { name: 'Ascunde opțiunile hărții' }),
     ).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Hide map preview options' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ascunde opțiunile hărții' }))
 
     expect(
       screen.queryByRole('button', {
@@ -756,7 +764,7 @@ describe('ChallengeEntityAnalysisPage', () => {
       }),
     ).not.toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Show map preview options' }),
+      screen.getByRole('button', { name: 'Arată opțiunile hărții' }),
     ).toBeInTheDocument()
   })
 
@@ -1114,6 +1122,67 @@ describe('ChallengeEntityAnalysisPage', () => {
       'data-search',
       expect.stringContaining('"lang":"en"'),
     )
+  })
+
+  it('localizes the main page buttons and map preview labels for english', async () => {
+    renderAnalysisPage({
+      languageQuery: 'en',
+    })
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: 'Change City Hall' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Read more' })).toBeInTheDocument()
+      expect(
+        screen.getAllByRole('button', { name: 'Show only city hall spending' }),
+      ).toHaveLength(2)
+      expect(
+        screen.getAllByRole('button', { name: 'Show per capita' }),
+      ).toHaveLength(2)
+      expect(screen.getByRole('button', { name: 'Show revenue' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'Show where the money was spent' }),
+      ).toBeInTheDocument()
+      expect(getLatestPublicPreviewCardProps()).toMatchObject({
+        mapNameOverride: 'Expenses by UAT (2025)',
+      })
+    })
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Show map preview options' }),
+    )
+
+    expect(screen.getByRole('button', { name: 'Expenses' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Revenue' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Budget balance' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Local taxes and fees' }),
+    ).toBeInTheDocument()
+  })
+
+  it('localizes the population geojson series unit for english previews', async () => {
+    renderAnalysisPage({
+      languageQuery: 'en',
+      state: {
+        mapPreviewKey: 'income',
+      },
+    })
+
+    await waitFor(() => {
+      const latestPreviewProps = getLatestPublicPreviewCardProps()
+      const mapStateDefinition = latestPreviewProps.mapStateDefinition as {
+        series: Array<{ type: string; label?: string; unit?: string }>
+      }
+      const populationSeries = mapStateDefinition.series.find(
+        (series) => series.type === 'geojson-dataset-series',
+      )
+
+      expect(populationSeries).toMatchObject({
+        label: 'Population',
+        unit: 'inhabitants',
+      })
+    })
   })
 
   it('queries subordinate cards from entity analytics with the current period and current-entity exclusion', async () => {

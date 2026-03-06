@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import type { ReactElement } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { useHotkeys } from 'react-hotkeys-hook';
 
 /**
  * ScrollWheelZoomControl
@@ -13,6 +12,10 @@ export function ScrollWheelZoomControl(): ReactElement | null {
   const map = useMap() as L.Map & { _scrollWheelZoomPersistent?: boolean };
   const [enabled, setEnabled] = useState<boolean>(() => map._scrollWheelZoomPersistent === true);
   const linkRef = useRef<HTMLAnchorElement | null>(null);
+  const pressedModifiersRef = useRef({
+    meta: false,
+    ctrl: false,
+  });
 
   // Ensure scroll is disabled by default unless persistent
   useEffect(() => {
@@ -21,50 +24,71 @@ export function ScrollWheelZoomControl(): ReactElement | null {
     }
   }, [map]);
 
-  // Hotkeys: temporary enable while Cmd/Ctrl is pressed
-  useHotkeys(
-    'meta',
-    () => {
-      if (!map._scrollWheelZoomPersistent) {
+  // Keep modifier-driven zoom deterministic. The previous hotkey-based
+  // implementation could leave wheel zoom enabled when the release path
+  // did not fire as expected.
+  useEffect(() => {
+    const syncTemporaryZoomState = () => {
+      if (map._scrollWheelZoomPersistent) {
+        return;
+      }
+
+      if (pressedModifiersRef.current.meta || pressedModifiersRef.current.ctrl) {
         map.scrollWheelZoom.enable();
+        return;
       }
-    },
-    { keydown: true },
-    [map]
-  );
 
-  useHotkeys(
-    'meta',
-    (e) => {
-      if (!map._scrollWheelZoomPersistent && !e.metaKey && !e.ctrlKey) {
-        map.scrollWheelZoom.disable();
-      }
-    },
-    { keyup: true },
-    [map]
-  );
+      map.scrollWheelZoom.disable();
+    };
 
-  useHotkeys(
-    'ctrl',
-    () => {
-      if (!map._scrollWheelZoomPersistent) {
-        map.scrollWheelZoom.enable();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Meta') {
+        pressedModifiersRef.current.meta = true;
       }
-    },
-    { keydown: true },
-    [map]
-  );
 
-  useHotkeys(
-    'ctrl',
-    (e) => {
-      if (!map._scrollWheelZoomPersistent && !e.metaKey && !e.ctrlKey) {
-        map.scrollWheelZoom.disable();
+      if (event.key === 'Control') {
+        pressedModifiersRef.current.ctrl = true;
       }
-    },
-    { keyup: true },
-    [map]
-  );
+
+      syncTemporaryZoomState();
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.key === 'Meta') {
+        pressedModifiersRef.current.meta = false;
+      }
+
+      if (event.key === 'Control') {
+        pressedModifiersRef.current.ctrl = false;
+      }
+
+      syncTemporaryZoomState();
+    };
+
+    const handleWindowBlur = () => {
+      pressedModifiersRef.current.meta = false;
+      pressedModifiersRef.current.ctrl = false;
+      syncTemporaryZoomState();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') {
+        handleWindowBlur();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('blur', handleWindowBlur);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('blur', handleWindowBlur);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [map]);
 
   // Persist toggle state to map and update button visual state
   useEffect(() => {
@@ -72,6 +96,8 @@ export function ScrollWheelZoomControl(): ReactElement | null {
     if (enabled) {
       map.scrollWheelZoom.enable();
     } else {
+      pressedModifiersRef.current.meta = false;
+      pressedModifiersRef.current.ctrl = false;
       map.scrollWheelZoom.disable();
     }
 

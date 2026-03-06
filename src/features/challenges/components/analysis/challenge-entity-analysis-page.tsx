@@ -43,6 +43,7 @@ import type { ChallengeLocale } from '../../types'
 import { MapAnalyticsPublicPreviewCard } from '@/features/advanced-map-analytics/components/map-analytics-public-preview-card'
 import type { PublicMapViewport } from '@/features/advanced-map-analytics/hooks/use-public-map-viewport'
 import { areMapCentersEqual } from '@/features/advanced-map-analytics/map-viewport-utils'
+import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics'
 import { ChallengeEntityAnalysisExplainer } from './challenge-entity-analysis-explainer'
 import { ChallengeEntityAnalysisHeader } from './challenge-entity-analysis-header'
 import { ChallengeEntityAnomalySummary } from './challenge-entity-anomaly-summary'
@@ -100,6 +101,239 @@ const CHALLENGE_AVAILABLE_YEARS = Array.from(
   (_, index) => DEFAULT_SELECTED_YEAR - index,
 )
 
+const MAP_PREVIEW_LABELS = {
+  ro: {
+    expenses: 'Cheltuieli',
+    income: 'Venituri',
+    balance: 'Balanță bugetară',
+    'local-taxes': 'Taxe și impozite locale',
+  },
+  en: {
+    expenses: 'Expenses',
+    income: 'Revenue',
+    balance: 'Budget balance',
+    'local-taxes': 'Local taxes and fees',
+  },
+} as const satisfies Record<
+  'ro' | 'en',
+  Record<ChallengeEntityMapPreviewKey, string>
+>
+
+const MAP_PREVIEW_BASE_NAMES = {
+  ro: {
+    expenses: 'Cheltuieli UAT',
+    income: 'Venituri UAT',
+    balance: 'Balanță bugetară UAT',
+    'local-taxes': 'Taxe și impozite locale UAT',
+  },
+  en: {
+    expenses: 'Expenses by UAT',
+    income: 'Revenue by UAT',
+    balance: 'Budget Balance by UAT',
+    'local-taxes': 'Local Taxes and Fees by UAT',
+  },
+} as const satisfies Record<
+  'ro' | 'en',
+  Record<ChallengeEntityMapPreviewKey, string>
+>
+
+const MAP_PREVIEW_SERIES_LABELS = {
+  ro: {
+    expenses: 'Cheltuieli',
+    income: 'Venituri',
+    'balance-income': 'Venituri',
+    'balance-expenses': 'Cheltuieli',
+    balance: 'Balanță bugetară',
+    'local-taxes-property': 'Impozite și taxe pe proprietate',
+    'local-taxes-goods-use': 'Taxe pe utilizarea bunurilor',
+    'local-taxes': 'Taxe și impozite locale',
+    'population-2021': 'Populație',
+  },
+  en: {
+    expenses: 'Expenses',
+    income: 'Revenue',
+    'balance-income': 'Revenue',
+    'balance-expenses': 'Expenses',
+    balance: 'Budget balance',
+    'local-taxes-property': 'Property taxes and fees',
+    'local-taxes-goods-use': 'Taxes on goods use',
+    'local-taxes': 'Local taxes and fees',
+    'population-2021': 'Population',
+  },
+} as const
+
+const MAP_PREVIEW_MISC_COPY = {
+  ro: {
+    populationUnit: 'loc.',
+    noData: 'Fără date',
+    showRevenue: 'Arată venituri',
+    showSpending: 'Arată cheltuieli',
+    showGroupedRevenue: 'Arată cum sunt grupate veniturile',
+    showRevenueSources: 'Arată din ce au venit banii',
+    showGroupedSpending: 'Arată cum s-au cheltuit banii',
+    showSpendingUses: 'Arată pe ce s-au cheltuit banii',
+    showAllSpending: 'Arată toate cheltuielile',
+    showAdministrativeSpending: 'Arată cheltuieli administrative primărie',
+    revenueWithoutEconomicCode: 'Veniturile nu au cod economic.',
+    showMapPreviewOptions: 'Arată opțiunile hărții',
+    hideMapPreviewOptions: 'Ascunde opțiunile hărții',
+    spendingDistribution: 'Distribuția Cheltuielilor',
+    revenueDistribution: 'Distribuția Veniturilor',
+    spendingGrouped: 'Cum s-au cheltuit banii',
+    spendingUses: 'Pe ce s-au cheltuit banii',
+    revenueGrouped: 'Cum sunt grupate veniturile',
+    revenueSources: 'Din ce au venit banii',
+  },
+  en: {
+    populationUnit: 'inhabitants',
+    noData: 'No data',
+    showRevenue: 'Show revenue',
+    showSpending: 'Show spending',
+    showGroupedRevenue: 'Show how revenue is grouped',
+    showRevenueSources: 'Show where the money came from',
+    showGroupedSpending: 'Show how the money was spent',
+    showSpendingUses: 'Show where the money was spent',
+    showAllSpending: 'Show all spending',
+    showAdministrativeSpending: 'Show city hall administrative spending',
+    revenueWithoutEconomicCode: 'Revenue has no economic code.',
+    showMapPreviewOptions: 'Show map preview options',
+    hideMapPreviewOptions: 'Hide map preview options',
+    spendingDistribution: 'Spending breakdown',
+    revenueDistribution: 'Revenue breakdown',
+    spendingGrouped: 'How the money was spent',
+    spendingUses: 'Where the money was spent',
+    revenueGrouped: 'How revenue is grouped',
+    revenueSources: 'Where the money came from',
+  },
+} as const
+
+function resolveChallengePageLocale(
+  locale: ChallengeLocale | undefined,
+): 'ro' | 'en' {
+  return locale === 'en' ? 'en' : 'ro'
+}
+
+function getLocalizedMapPreviewLabel(
+  previewKey: ChallengeEntityMapPreviewKey,
+  locale: ChallengeLocale | undefined,
+): string {
+  return MAP_PREVIEW_LABELS[resolveChallengePageLocale(locale)][previewKey]
+}
+
+function getLocalizedMapPreviewBaseName(
+  previewKey: ChallengeEntityMapPreviewKey,
+  locale: ChallengeLocale | undefined,
+): string {
+  return MAP_PREVIEW_BASE_NAMES[resolveChallengePageLocale(locale)][previewKey]
+}
+
+function formatLocalizedMapPreviewName(
+  previewKey: ChallengeEntityMapPreviewKey,
+  locale: ChallengeLocale | undefined,
+  selectedYear: number,
+): string {
+  return `${getLocalizedMapPreviewBaseName(previewKey, locale)} (${selectedYear})`
+}
+
+function localizeMapPreviewState(
+  previewKey: ChallengeEntityMapPreviewKey,
+  mapState: AdvancedMapAnalyticsUrlState,
+  languageQuery: ChallengeLocale | undefined,
+): AdvancedMapAnalyticsUrlState {
+  const pageLocale = resolveChallengePageLocale(languageQuery)
+  const localizedPopulationLabel =
+    MAP_PREVIEW_SERIES_LABELS[pageLocale]['population-2021']
+  const localizedPopulationUnit =
+    MAP_PREVIEW_MISC_COPY[pageLocale].populationUnit
+  const localizedMapName = getLocalizedMapPreviewBaseName(
+    previewKey,
+    languageQuery,
+  )
+  let didChangeSeries = false
+  let didChangeBins = false
+
+  const localizedSeries = mapState.series.map((series) => {
+    const localizedSeriesLabel =
+      MAP_PREVIEW_SERIES_LABELS[pageLocale][
+        series.id as keyof typeof MAP_PREVIEW_SERIES_LABELS.ro
+      ]
+
+    if (
+      series.type !== 'geojson-dataset-series' ||
+      series.datasetKey !== 'insPop2021'
+    ) {
+      if (!localizedSeriesLabel || series.label === localizedSeriesLabel) {
+        return series
+      }
+
+      didChangeSeries = true
+      return {
+        ...series,
+        label: localizedSeriesLabel,
+      }
+    }
+
+    if (
+      series.label === localizedPopulationLabel &&
+      series.unit === localizedPopulationUnit
+    ) {
+      return series
+    }
+
+    didChangeSeries = true
+    return {
+      ...series,
+      label: localizedPopulationLabel,
+      unit: localizedPopulationUnit,
+    }
+  })
+
+  const localizedBinsPresets = mapState.binsPresets.map((preset) => {
+    const localizedTitle = getLocalizedMapPreviewBaseName(
+      previewKey,
+      languageQuery,
+    )
+    const localizedNoDataLabel = MAP_PREVIEW_MISC_COPY[pageLocale].noData
+
+    if (
+      preset.label === localizedTitle &&
+      preset.config.title === localizedTitle &&
+      preset.config.noData.label === localizedNoDataLabel
+    ) {
+      return preset
+    }
+
+    didChangeBins = true
+    return {
+      ...preset,
+      label: localizedTitle,
+      config: {
+        ...preset.config,
+        title: localizedTitle,
+        noData: {
+          ...preset.config.noData,
+          label: localizedNoDataLabel,
+        },
+      },
+    }
+  })
+
+  if (
+    !didChangeSeries &&
+    !didChangeBins &&
+    mapState.mapName === localizedMapName
+  ) {
+    return mapState
+  }
+
+  return {
+    ...mapState,
+    mapName: localizedMapName,
+    series: localizedSeries,
+    binsPresets: localizedBinsPresets,
+  }
+}
+
 function toTrendValues(
   series: EntityDetailsData['incomeTrend'],
   selectedYear: number,
@@ -128,40 +362,40 @@ function resolveErrorMessage(error: unknown): string {
   return t`Încearcă din nou peste câteva momente.`
 }
 
-function getTreemapTitle(accountCategory: ChallengeTreemapAccountCategory) {
-  return accountCategory === 'vn'
-    ? t`Distribuția Veniturilor`
-    : t`Distribuția Cheltuielilor`
-}
-
 function getTreemapSubtitle(
+  locale: ChallengeLocale | undefined,
   accountCategory: ChallengeTreemapAccountCategory,
   activePrimary: 'fn' | 'ec',
 ) {
+  const pageCopy = MAP_PREVIEW_MISC_COPY[resolveChallengePageLocale(locale)]
+
   if (accountCategory === 'vn') {
     return activePrimary === 'ec'
-      ? t`Din ce au venit banii`
-      : t`Cum sunt grupate veniturile`
+      ? pageCopy.revenueSources
+      : pageCopy.revenueGrouped
   }
 
   return activePrimary === 'ec'
-    ? t`Pe ce s-au cheltuit banii`
-    : t`Cum s-au cheltuit banii`
+    ? pageCopy.spendingUses
+    : pageCopy.spendingGrouped
 }
 
 function getTreemapPrimaryCtaLabel(
+  locale: ChallengeLocale | undefined,
   accountCategory: ChallengeTreemapAccountCategory,
   activePrimary: 'fn' | 'ec',
 ) {
+  const pageCopy = MAP_PREVIEW_MISC_COPY[resolveChallengePageLocale(locale)]
+
   if (accountCategory === 'vn') {
     return activePrimary === 'ec'
-      ? t`Arată cum sunt grupate veniturile`
-      : t`Arată din ce au venit banii`
+      ? pageCopy.showGroupedRevenue
+      : pageCopy.showRevenueSources
   }
 
   return activePrimary === 'ec'
-    ? t`Arată cum s-au cheltuit banii`
-    : t`Arată pe ce s-au cheltuit banii`
+    ? pageCopy.showGroupedSpending
+    : pageCopy.showSpendingUses
 }
 
 function getReportTypeCtaLabel(
@@ -335,6 +569,15 @@ export function ChallengeEntityAnalysisPage({
     () => clonePublicMapViewport(selectedMapPreviewDefinition.fallbackViewport),
     [selectedMapPreviewDefinition],
   )
+  const selectedMapPreviewStateDefinition = useMemo(
+    () =>
+      localizeMapPreviewState(
+        selectedMapPreviewDefinition.key,
+        selectedMapPreviewDefinition.mapState,
+        languageQuery,
+      ),
+    [languageQuery, selectedMapPreviewDefinition],
+  )
   const [isMapPreviewSelectorExpanded, setIsMapPreviewSelectorExpanded] =
     useState(false)
   const [publicMapViewport, setPublicMapViewport] =
@@ -400,6 +643,15 @@ export function ChallengeEntityAnalysisPage({
       selectedMapPreviewDefinition,
       selectedYear,
     ],
+  )
+  const localizedSelectedMapPreviewName = useMemo(
+    () =>
+      formatLocalizedMapPreviewName(
+        selectedMapPreviewDefinition.key,
+        languageQuery,
+        selectedYear,
+      ),
+    [languageQuery, selectedMapPreviewDefinition.key, selectedYear],
   )
   const entityDetailsQuery = useEntityDetails({
     cui: entityCui,
@@ -881,19 +1133,27 @@ export function ChallengeEntityAnalysisPage({
     )
   }
 
-  const treemapTitle = getTreemapTitle(treemapAccountCategory)
+  const pageCopy = MAP_PREVIEW_MISC_COPY[resolveChallengePageLocale(languageQuery)]
+  const treemapTitle =
+    treemapAccountCategory === 'vn'
+      ? pageCopy.revenueDistribution
+      : pageCopy.spendingDistribution
   const isIncomeTreemap = treemapAccountCategory === 'vn'
   const showsIncomeEconomicMessage = isIncomeTreemap && activePrimary === 'ec'
   const treemapSubtitle = getTreemapSubtitle(
+    languageQuery,
     treemapAccountCategory,
     activePrimary,
   )
   const treemapPrimaryCtaLabel = getTreemapPrimaryCtaLabel(
+    languageQuery,
     treemapAccountCategory,
     activePrimary,
   )
   const treemapAccountCategoryCtaLabel =
-    treemapAccountCategory === 'ch' ? t`Arată venituri` : t`Arată cheltuieli`
+    treemapAccountCategory === 'ch'
+      ? pageCopy.showRevenue
+      : pageCopy.showSpending
   const reportTypeCtaLabel = getReportTypeCtaLabel(
     languageQuery,
     selectedReportType,
@@ -976,13 +1236,13 @@ export function ChallengeEntityAnalysisPage({
           <MapAnalyticsPublicPreviewCard
             mapKey={selectedMapPreviewDefinition.key}
             mapDescription={selectedMapPreviewCopy.mapDescription}
-            mapStateDefinition={selectedMapPreviewDefinition.mapState}
+            mapStateDefinition={selectedMapPreviewStateDefinition}
             selectedYearOverride={selectedYear}
             reportTypeOverride={toReportTypeValue(selectedReportType)}
             normalizationOverride={normalizationMode}
             currencyOverride={currency}
             inflationAdjustedOverride={inflationAdjusted}
-            mapNameOverride={selectedMapPreviewCopy.mapName}
+            mapNameOverride={localizedSelectedMapPreviewName}
             mapZoomOverride={publicMapViewport.mapZoom}
             mapCenterOverride={publicMapViewport.mapCenter}
             onMapViewportChange={handlePublicMapViewportChange}
@@ -1014,7 +1274,10 @@ export function ChallengeEntityAnalysisPage({
                 handleMapPreviewSelection(mapPreviewDefinition.key)
               }
             >
-              {mapPreviewDefinition.label}
+              {getLocalizedMapPreviewLabel(
+                mapPreviewDefinition.key,
+                languageQuery,
+              )}
             </Button>
           ))}
           <Button
@@ -1027,8 +1290,8 @@ export function ChallengeEntityAnalysisPage({
             aria-expanded={isMapPreviewSelectorExpanded}
             aria-label={
               isMapPreviewSelectorExpanded
-                ? t`Hide map preview options`
-                : t`Show map preview options`
+                ? pageCopy.hideMapPreviewOptions
+                : pageCopy.showMapPreviewOptions
             }
           >
             {isMapPreviewSelectorExpanded ? <Minus /> : <Plus />}
@@ -1045,7 +1308,7 @@ export function ChallengeEntityAnalysisPage({
               </CardTitle>
               <p className="text-sm font-medium text-muted-foreground">
                 {showsIncomeEconomicMessage
-                  ? t`Veniturile nu au cod economic.`
+                  ? pageCopy.revenueWithoutEconomicCode
                   : treemapSubtitle}
               </p>
             </div>
@@ -1053,7 +1316,7 @@ export function ChallengeEntityAnalysisPage({
           <CardContent className="-mx-4 px-4 sm:mx-0 sm:px-0">
             {showsIncomeEconomicMessage ? (
               <div className="rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-6 py-12 text-center text-sm font-medium text-muted-foreground">
-                {t`Veniturile nu au cod economic.`}
+                {pageCopy.revenueWithoutEconomicCode}
               </div>
             ) : (
               <BudgetTreemap
@@ -1110,7 +1373,7 @@ export function ChallengeEntityAnalysisPage({
               className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
               onClick={handleResetTreemapToAllExpenses}
             >
-              {t`Arată toate cheltuielile`}
+              {pageCopy.showAllSpending}
             </Button>
           ) : (
             <Button
@@ -1120,7 +1383,7 @@ export function ChallengeEntityAnalysisPage({
               className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
               onClick={handleAdministrativeExpensesShortcut}
             >
-              {t`Arată cheltuieli administrative primărie`}
+              {pageCopy.showAdministrativeSpending}
             </Button>
           )}
         </div>
