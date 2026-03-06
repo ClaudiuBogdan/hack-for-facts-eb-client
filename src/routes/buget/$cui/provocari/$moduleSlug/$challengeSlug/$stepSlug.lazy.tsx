@@ -1,5 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { resolveCampaignLocale } from '@/features/campaigns/local-budget-2026/schemas/campaign-route-search-schema'
+import { resolveCampaignLocale } from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
 import { ChallengeStepPlayer } from '@/features/challenges/components/player/ChallengeStepPlayer'
 
 export const Route = createLazyFileRoute(

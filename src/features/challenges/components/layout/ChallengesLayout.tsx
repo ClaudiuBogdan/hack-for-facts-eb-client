@@ -24,9 +24,9 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { cn } from '@/lib/utils'
-import { useCampaignProgress } from '@/features/campaigns/local-budget-2026/hooks/use-campaign-progress'
-import { resolveCampaignLocale } from '@/features/campaigns/local-budget-2026/schemas/campaign-route-search-schema'
-import type { CampaignRouteSearch } from '@/features/campaigns/local-budget-2026/types'
+import { useCampaignProgress } from '@/features/campaigns/buget/hooks/use-campaign-progress'
+import { resolveCampaignLocale } from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
+import type { CampaignRouteSearch } from '@/features/campaigns/buget/types'
 import { LearningProgressProvider } from '@/features/learning/hooks/use-learning-progress'
 import { useScrollToActive } from '@/features/learning/hooks/use-scroll-to-active'
 import { useChallengeProgress } from '../../hooks/use-challenge-progress'
@@ -468,7 +468,7 @@ function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
 
       {/* Main Content */}
       <div className="flex-1">
-        <div className="mx-auto max-w-3xl px-6 py-8 lg:px-10 lg:py-10">
+        <div className="mx-auto max-w-3xl px-4 py-5 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
           {children ?? <Outlet />}
         </div>
       </div>

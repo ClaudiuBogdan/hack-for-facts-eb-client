@@ -1,4 +1,4 @@
-import { useCampaignRegistration } from '@/features/campaigns/local-budget-2026/hooks/use-campaign-registration'
+import { useCampaignRegistration } from '@/features/campaigns/buget/hooks/use-campaign-registration'
 import { useAuth } from '@/lib/auth'
 
 export type ChallengeAccessCardVariant = 'loading' | 'auth' | 'register'

@@ -3,9 +3,9 @@ import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import {
   CampaignRouteSearchSchema,
   resolveCampaignLocale,
-} from '@/features/campaigns/local-budget-2026/schemas/campaign-route-search-schema'
-import { buildCampaignRouteHead } from '@/features/campaigns/local-budget-2026/seo/campaign-seo'
-import type { CampaignRouteSearch } from '@/features/campaigns/local-budget-2026/types'
+} from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
+import { buildCampaignRouteHead } from '@/features/campaigns/buget/seo/campaign-seo'
+import type { CampaignRouteSearch } from '@/features/campaigns/buget/types'
 
 export const Route = createFileRoute('/buget/$cui/provocari/')({
   ssr: true,

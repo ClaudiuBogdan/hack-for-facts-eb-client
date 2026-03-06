@@ -1,15 +1,15 @@
 import { Outlet, useLocation } from '@tanstack/react-router'
 import { CampaignProgressProvider } from '../../hooks/use-campaign-progress'
 
-export function CampaignLayout() {
+export function BugetLayout() {
   return (
     <CampaignProgressProvider>
-      <CampaignLayoutInner />
+      <BugetLayoutInner />
     </CampaignProgressProvider>
   )
 }
 
-function CampaignLayoutInner() {
+function BugetLayoutInner() {
   const location = useLocation()
   const isChallengesShellRoute =
     location.pathname.includes('/provocari') ||

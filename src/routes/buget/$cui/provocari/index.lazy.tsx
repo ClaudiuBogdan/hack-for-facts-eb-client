@@ -1,5 +1,5 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { resolveCampaignLocale } from '@/features/campaigns/local-budget-2026/schemas/campaign-route-search-schema'
+import { resolveCampaignLocale } from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
 import { ChallengesHubPage } from '@/features/challenges/components/hub/ChallengesHubPage'
 
 export const Route = createLazyFileRoute('/buget/$cui/provocari/')({

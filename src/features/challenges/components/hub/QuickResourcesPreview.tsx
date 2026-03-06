@@ -5,8 +5,8 @@ import { BookOpen, GraduationCap, FileText, Library, ExternalLink, ArrowRight, B
 import {
   getCampaignResources,
   getCampaignText,
-} from '@/features/campaigns/local-budget-2026/hooks/use-campaign-content'
-import type { CampaignResourceKind } from '@/features/campaigns/local-budget-2026/types'
+} from '@/features/campaigns/buget/hooks/use-campaign-content'
+import type { CampaignResourceKind } from '@/features/campaigns/buget/types'
 import { Button } from '@/components/ui/button'
 import { buildCampaignPrimariePath } from '../../constants'
 import type { ChallengeLocale } from '../../types'

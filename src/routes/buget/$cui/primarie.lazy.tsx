@@ -11,7 +11,7 @@ import {
   ChallengeEntityAnalysisPage,
   type ChallengeEntityAnalysisPageState,
 } from '@/features/challenges/components/analysis/challenge-entity-analysis-page'
-import { useCampaignProgress } from '@/features/campaigns/local-budget-2026/hooks/use-campaign-progress'
+import { useCampaignProgress } from '@/features/campaigns/buget/hooks/use-campaign-progress'
 import {
   type ChallengeEntityAnalysisRouteSearch,
   type ChallengeEntityAnalysisUrlState,

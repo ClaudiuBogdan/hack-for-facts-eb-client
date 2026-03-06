@@ -4,9 +4,9 @@ import { ArrowRight } from 'lucide-react'
 import {
   buildCampaignCalendarPath,
   CAMPAIGN_BASE_PATH,
-} from '@/features/campaigns/local-budget-2026/constants'
-import { useCampaignTimeline } from '@/features/campaigns/local-budget-2026/hooks/use-campaign-timeline'
-import { getCampaignText } from '@/features/campaigns/local-budget-2026/hooks/use-campaign-content'
+} from '@/features/campaigns/buget/constants'
+import { useCampaignTimeline } from '@/features/campaigns/buget/hooks/use-campaign-timeline'
+import { getCampaignText } from '@/features/campaigns/buget/hooks/use-campaign-content'
 import type { ChallengeLocale } from '../../types'
 
 type BudgetTimelineStripProps = {

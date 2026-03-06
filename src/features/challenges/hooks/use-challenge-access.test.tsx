@@ -34,7 +34,7 @@ vi.mock('@/lib/auth', () => ({
   useAuth: () => authState,
 }))
 
-vi.mock('@/features/campaigns/local-budget-2026/hooks/use-campaign-registration', () => ({
+vi.mock('@/features/campaigns/buget/hooks/use-campaign-registration', () => ({
   useCampaignRegistration: () => registrationState,
 }))
 

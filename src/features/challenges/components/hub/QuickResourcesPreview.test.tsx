@@ -18,7 +18,7 @@ vi.mock('@tanstack/react-router', () => ({
   },
 }))
 
-vi.mock('@/features/campaigns/local-budget-2026/hooks/use-campaign-content', () => ({
+vi.mock('@/features/campaigns/buget/hooks/use-campaign-content', () => ({
   getCampaignResources: () => [
     {
       id: 'resource-1',

@@ -52,7 +52,7 @@ vi.mock('@/lib/auth', () => ({
   AuthSignInButton: ({ children }: { children: ReactNode }) => <>{children}</>,
 }))
 
-vi.mock('@/features/campaigns/local-budget-2026/hooks/use-campaign-registration', () => ({
+vi.mock('@/features/campaigns/buget/hooks/use-campaign-registration', () => ({
   useCampaignRegistration: () => registrationState,
 }))
 

@@ -1,11 +1,11 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { getCampaignDefinition } from '@/features/campaigns/local-budget-2026/hooks/use-campaign-content'
+import { getCampaignDefinition } from '@/features/campaigns/buget/hooks/use-campaign-content'
 
 export const Route = createLazyFileRoute('/buget/forum')({
-  component: CampaignForumRedirectPage,
+  component: BugetForumRedirectPage,
 })
 
-function CampaignForumRedirectPage() {
+function BugetForumRedirectPage() {
   const campaign = getCampaignDefinition()
 
   return (

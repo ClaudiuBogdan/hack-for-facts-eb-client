@@ -23,7 +23,7 @@ import { getCampaignText, getCampaignUatOverrideForCui } from '../../hooks/use-c
 import { buildCampaignProvocariPath } from '@/features/challenges/constants'
 import type { CampaignLocale, CampaignTimelineEntry } from '../../types'
 
-type CampaignCalendarPageProps = {
+type BugetCalendarPageProps = {
   readonly locale: CampaignLocale
   readonly entityCui: string
 }
@@ -155,7 +155,7 @@ function formatMilestoneDate(dateStr: string, locale: CampaignLocale): string {
 /** Icon size in px — keep in sync with the Tailwind classes below. */
 const ICON_SIZE_PX = 30
 
-export function CampaignCalendarPage({ locale, entityCui }: CampaignCalendarPageProps) {
+export function BugetCalendarPage({ locale, entityCui }: BugetCalendarPageProps) {
   const uatOverride = getCampaignUatOverrideForCui(entityCui)
   const isPersonalized = Boolean(uatOverride)
   const timeline = useCampaignTimeline(uatOverride)

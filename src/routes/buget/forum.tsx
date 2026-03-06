@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { getCampaignDefinition } from '@/features/campaigns/local-budget-2026/hooks/use-campaign-content'
+import { getCampaignDefinition } from '@/features/campaigns/buget/hooks/use-campaign-content'
 
 export const Route = createFileRoute('/buget/forum')({
   ssr: true,

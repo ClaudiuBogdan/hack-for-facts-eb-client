@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import { resolveCampaignLocale } from '@/features/campaigns/local-budget-2026/schemas/campaign-route-search-schema'
-import { buildCampaignRouteHead } from '@/features/campaigns/local-budget-2026/seo/campaign-seo'
-import type { CampaignRouteSearch } from '@/features/campaigns/local-budget-2026/types'
+import { resolveCampaignLocale } from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
+import { buildCampaignRouteHead } from '@/features/campaigns/buget/seo/campaign-seo'
+import type { CampaignRouteSearch } from '@/features/campaigns/buget/types'
 import { ChallengeEntityAnalysisRouteSearchSchema } from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
 
 export const Route = createFileRoute('/buget/$cui/primarie')({

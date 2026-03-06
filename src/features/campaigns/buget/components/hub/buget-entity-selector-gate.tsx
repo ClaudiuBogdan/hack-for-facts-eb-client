@@ -7,7 +7,7 @@ import { Analytics } from '@/lib/analytics'
 import { useRecentEntities } from '@/hooks/useRecentEntities'
 import { CAMPAIGN_BASE_PATH } from '../../constants'
 import type { CampaignLocale } from '../../types'
-import { RecentUatBadges } from './RecentUatBadges'
+import { RecentUatBadges } from './recent-uat-badges'
 
 export type EntitySelection = {
   readonly cui: string
@@ -16,17 +16,17 @@ export type EntitySelection = {
   readonly countyName?: string | null
 }
 
-type CampaignEntitySelectorGateProps = {
+type BugetEntitySelectorGateProps = {
   readonly locale: CampaignLocale
   readonly languageQuery?: CampaignLocale
   readonly onEntitySelected: (entity: EntitySelection) => void
 }
 
-export function CampaignEntitySelectorGate({
+export function BugetEntitySelectorGate({
   locale,
   languageQuery,
   onEntitySelected,
-}: CampaignEntitySelectorGateProps) {
+}: BugetEntitySelectorGateProps) {
   const { addRecentEntity } = useRecentEntities()
 
   useEffect(() => {

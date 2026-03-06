@@ -11,7 +11,7 @@ import { CAMPAIGN_BASE_PATH } from '../../constants'
 import { getCampaignDefinition, getCampaignText } from '../../hooks/use-campaign-content'
 import type { CampaignLocale } from '../../types'
 
-type CampaignLandingPageProps = {
+type BugetLandingPageProps = {
   readonly locale: CampaignLocale
 }
 
@@ -23,7 +23,7 @@ type LandingStoryItem = {
   readonly image: string
 }
 
-export function CampaignLandingPage({ locale }: CampaignLandingPageProps) {
+export function BugetLandingPage({ locale }: BugetLandingPageProps) {
   const campaign = getCampaignDefinition()
 
   const storyItems: readonly LandingStoryItem[] =

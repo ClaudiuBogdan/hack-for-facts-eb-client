@@ -12,7 +12,7 @@ import {
   SelectTrigger,
 } from '@/components/ui/select'
 import { getSiteUrl } from '@/config/env'
-import { CAMPAIGN_BASE_PATH } from '@/features/campaigns/local-budget-2026/constants'
+import { CAMPAIGN_BASE_PATH } from '@/features/campaigns/buget/constants'
 import { useEntityTypeLabel } from '@/hooks/filters/useFilterLabels'
 import { ensureShortRedirectUrl } from '@/lib/api/shortLinks'
 import { useAuth } from '@/lib/auth'

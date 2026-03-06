@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
 import { createLazyFileRoute, useNavigate } from '@tanstack/react-router'
-import { CampaignEntitySelectorGate } from '@/features/campaigns/local-budget-2026/components/hub/campaign-entity-selector-gate'
-import { useCampaignProgress } from '@/features/campaigns/local-budget-2026/hooks/use-campaign-progress'
-import { resolveCampaignLocale } from '@/features/campaigns/local-budget-2026/schemas/campaign-route-search-schema'
-import type { CampaignLocale } from '@/features/campaigns/local-budget-2026/types'
+import { BugetEntitySelectorGate } from '@/features/campaigns/buget/components/hub/buget-entity-selector-gate'
+import { useCampaignProgress } from '@/features/campaigns/buget/hooks/use-campaign-progress'
+import { resolveCampaignLocale } from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
+import type { CampaignLocale } from '@/features/campaigns/buget/types'
 import { buildCampaignProvocariPath } from '@/features/challenges/constants'
 
 export const Route = createLazyFileRoute('/buget/cauta/')({
-  component: CampaignSelectorRoutePage,
+  component: BugetSelectorRoutePage,
 })
 
 function getProvocariSearch(languageQuery: CampaignLocale | undefined) {
@@ -16,7 +16,7 @@ function getProvocariSearch(languageQuery: CampaignLocale | undefined) {
   }
 }
 
-function CampaignSelectorRoutePage() {
+function BugetSelectorRoutePage() {
   const search = Route.useSearch()
   const locale = resolveCampaignLocale(search)
   const navigate = useNavigate({ from: '/buget/cauta/' })
@@ -36,7 +36,7 @@ function CampaignSelectorRoutePage() {
   )
 
   return (
-    <CampaignEntitySelectorGate
+    <BugetEntitySelectorGate
       locale={locale}
       languageQuery={search.lang}
       onEntitySelected={handleEntitySelected}

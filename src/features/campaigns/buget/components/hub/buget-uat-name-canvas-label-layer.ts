@@ -18,7 +18,7 @@ const DEFAULT_MIN_ZOOM = 11
 const DEFAULT_MAX_LABELS = 180
 const DEFAULT_FONT_SIZE = 13
 
-export class CampaignUatNameCanvasLabelLayer extends L.Layer {
+export class BugetUatNameCanvasLabelLayer extends L.Layer {
   private canvas: HTMLCanvasElement | null = null
   private context: CanvasRenderingContext2D | null = null
   private labels: UatNameLabel[] = []

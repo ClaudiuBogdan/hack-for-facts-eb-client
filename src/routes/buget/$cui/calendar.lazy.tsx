@@ -1,15 +1,15 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { CampaignCalendarPage } from '@/features/campaigns/local-budget-2026/components/calendar/CampaignCalendarPage'
-import { resolveCampaignCalendarLocale } from '@/features/campaigns/local-budget-2026/schemas/campaign-calendar-search-schema'
+import { BugetCalendarPage } from '@/features/campaigns/buget/components/calendar/buget-calendar-page'
+import { resolveCampaignCalendarLocale } from '@/features/campaigns/buget/schemas/campaign-calendar-search-schema'
 
 export const Route = createLazyFileRoute('/buget/$cui/calendar')({
-  component: CampaignCalendarRoutePage,
+  component: BugetCalendarRoutePage,
 })
 
-function CampaignCalendarRoutePage() {
+function BugetCalendarRoutePage() {
   const { cui } = Route.useParams()
   const search = Route.useSearch()
   const locale = resolveCampaignCalendarLocale(search)
 
-  return <CampaignCalendarPage locale={locale} entityCui={cui} />
+  return <BugetCalendarPage locale={locale} entityCui={cui} />
 }

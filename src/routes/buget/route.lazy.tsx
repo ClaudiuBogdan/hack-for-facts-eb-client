@@ -1,6 +1,6 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { CampaignLayout } from '@/features/campaigns/local-budget-2026/components/layout/CampaignLayout'
+import { BugetLayout } from '@/features/campaigns/buget/components/layout/buget-layout'
 
 export const Route = createLazyFileRoute('/buget')({
-  component: CampaignLayout,
+  component: BugetLayout,
 })

@@ -3,9 +3,9 @@ import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import {
   CampaignCalendarRouteSearchSchema,
   resolveCampaignCalendarLocale,
-} from '@/features/campaigns/local-budget-2026/schemas/campaign-calendar-search-schema'
-import { buildCampaignRouteHead } from '@/features/campaigns/local-budget-2026/seo/campaign-seo'
-import type { CampaignCalendarRouteSearch } from '@/features/campaigns/local-budget-2026/types'
+} from '@/features/campaigns/buget/schemas/campaign-calendar-search-schema'
+import { buildCampaignRouteHead } from '@/features/campaigns/buget/seo/campaign-seo'
+import type { CampaignCalendarRouteSearch } from '@/features/campaigns/buget/types'
 
 export const Route = createFileRoute('/buget/$cui/calendar')({
   ssr: true,

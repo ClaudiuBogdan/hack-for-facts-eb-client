@@ -1,14 +1,14 @@
 import { createLazyFileRoute } from '@tanstack/react-router'
-import { CampaignLandingPage } from '@/features/campaigns/local-budget-2026/components/landing/CampaignLandingPage'
-import { resolveCampaignLocale } from '@/features/campaigns/local-budget-2026/schemas/campaign-route-search-schema'
+import { BugetLandingPage } from '@/features/campaigns/buget/components/landing/buget-landing-page'
+import { resolveCampaignLocale } from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
 
 export const Route = createLazyFileRoute('/buget/')({
-  component: CampaignLandingRoutePage,
+  component: BugetLandingRoutePage,
 })
 
-function CampaignLandingRoutePage() {
+function BugetLandingRoutePage() {
   const search = Route.useSearch()
   const locale = resolveCampaignLocale(search)
 
-  return <CampaignLandingPage locale={locale} />
+  return <BugetLandingPage locale={locale} />
 }

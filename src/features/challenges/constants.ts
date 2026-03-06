@@ -1,4 +1,4 @@
-import { CAMPAIGN_BASE_PATH } from '@/features/campaigns/local-budget-2026/constants'
+import { CAMPAIGN_BASE_PATH } from '@/features/campaigns/buget/constants'
 import type { ChallengeLocale } from './types'
 
 export const CAMPAIGN_PROVOCARI_ROUTE = `${CAMPAIGN_BASE_PATH}/$cui/provocari`

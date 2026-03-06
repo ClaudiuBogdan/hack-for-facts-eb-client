@@ -11,9 +11,9 @@ import {
   DEFAULT_MIN_ZOOM,
 } from '@/components/maps/constants'
 import type { CampaignLocale } from '../../types'
-import { CampaignUatNameCanvasLabelLayer } from './campaign-uat-name-canvas-label-layer'
+import { BugetUatNameCanvasLabelLayer } from './buget-uat-name-canvas-label-layer'
 
-type CampaignEntityMapSelectorMapProps = {
+type BugetEntityMapSelectorMapProps = {
   readonly uatGeoJson: GeoJsonObject
   readonly countyGeoJson: GeoJsonObject
   readonly locale: CampaignLocale
@@ -113,16 +113,16 @@ function formatCityHallLabel(label: string, locale: CampaignLocale): string {
   return `Primăria ${trimmedLabel}`
 }
 
-function CampaignUatCanvasLabelsOverlay({
+function BugetUatCanvasLabelsOverlay({
   uatGeoJson,
 }: {
   readonly uatGeoJson: GeoJsonObject
 }) {
   const map = useMap()
-  const labelLayerRef = useRef<CampaignUatNameCanvasLabelLayer | null>(null)
+  const labelLayerRef = useRef<BugetUatNameCanvasLabelLayer | null>(null)
 
   useEffect(() => {
-    const layer = new CampaignUatNameCanvasLabelLayer({
+    const layer = new BugetUatNameCanvasLabelLayer({
       geoJsonData: uatGeoJson,
       minZoom: UAT_LABEL_MIN_ZOOM,
       maxLabels: UAT_LABEL_MAX_VISIBLE,
@@ -152,12 +152,12 @@ function CampaignUatCanvasLabelsOverlay({
   return null
 }
 
-export function CampaignEntityMapSelectorMap({
+export function BugetEntityMapSelectorMap({
   uatGeoJson,
   countyGeoJson,
   locale,
   onUatSelect,
-}: CampaignEntityMapSelectorMapProps) {
+}: BugetEntityMapSelectorMapProps) {
   const handleEachUatFeature = useCallback(
     (feature: Feature<Geometry, unknown>, layer: Layer) => {
       const featureProperties = parseUatFeatureProperties(feature)
@@ -216,7 +216,7 @@ export function CampaignEntityMapSelectorMap({
         <GeoJSON data={countyGeoJson} style={COUNTY_BORDER_STYLE} />
       ) : null}
 
-      <CampaignUatCanvasLabelsOverlay uatGeoJson={uatGeoJson} />
+      <BugetUatCanvasLabelsOverlay uatGeoJson={uatGeoJson} />
     </MapContainer>
   )
 }

@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { ArrowLeftRight } from 'lucide-react'
 import { getEntityLabels } from '@/lib/api/labels'
-import { CAMPAIGN_BASE_PATH } from '@/features/campaigns/local-budget-2026/constants'
+import { CAMPAIGN_BASE_PATH } from '@/features/campaigns/buget/constants'
 
 type UatSwitchBadgeProps = {
   readonly entityCui: string

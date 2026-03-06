@@ -23,7 +23,7 @@ vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigateMock,
 }))
 
-vi.mock('@/features/campaigns/local-budget-2026/hooks/use-campaign-progress', () => ({
+vi.mock('@/features/campaigns/buget/hooks/use-campaign-progress', () => ({
   useCampaignProgress: () => campaignProgressState,
 }))
 

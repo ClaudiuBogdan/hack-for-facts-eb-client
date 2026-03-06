@@ -21,13 +21,13 @@ import { useUatCuiMap } from '../../hooks/use-uat-cui-map'
 import type { CampaignLocale } from '../../types'
 import { buildCampaignProvocariPath } from '@/features/challenges/constants'
 
-const CampaignEntityMapSelectorMap = lazy(() =>
-  import('./campaign-entity-map-selector-map').then((module) => ({
-    default: module.CampaignEntityMapSelectorMap,
+const BugetEntityMapSelectorMap = lazy(() =>
+  import('./buget-entity-map-selector-map').then((module) => ({
+    default: module.BugetEntityMapSelectorMap,
   })),
 )
 
-type CampaignEntityMapSelectorPageProps = {
+type BugetEntityMapSelectorPageProps = {
   readonly locale: CampaignLocale
   readonly languageQuery?: CampaignLocale
 }
@@ -74,10 +74,10 @@ function getProvocariSearch(languageQuery: CampaignLocale | undefined) {
   }
 }
 
-export function CampaignEntityMapSelectorPage({
+export function BugetEntityMapSelectorPage({
   locale,
   languageQuery,
-}: CampaignEntityMapSelectorPageProps) {
+}: BugetEntityMapSelectorPageProps) {
   const navigate = useNavigate({ from: '/buget/cauta/harta/' })
   const { setSelectedEntity } = useCampaignProgress()
   const [pendingUatSelection, setPendingUatSelection] = useState<PendingUatSelection | null>(null)
@@ -215,7 +215,7 @@ export function CampaignEntityMapSelectorPage({
                 </div>
               }
             >
-              <CampaignEntityMapSelectorMap
+              <BugetEntityMapSelectorMap
                 uatGeoJson={uatGeoJson}
                 countyGeoJson={countyGeoJson}
                 locale={locale}

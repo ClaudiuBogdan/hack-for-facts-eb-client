@@ -96,7 +96,7 @@ vi.mock('@/components/ui/collapsible', () => ({
   CollapsibleTrigger: ({ children }: PropsWithChildren) => <button type="button">{children}</button>,
 }))
 
-vi.mock('@/features/campaigns/local-budget-2026/hooks/use-campaign-progress', () => ({
+vi.mock('@/features/campaigns/buget/hooks/use-campaign-progress', () => ({
   useCampaignProgress: () => ({
     isReady: mockCampaignProgressReady,
     isInitialResolutionReady: mockCampaignInitialResolutionReady,
