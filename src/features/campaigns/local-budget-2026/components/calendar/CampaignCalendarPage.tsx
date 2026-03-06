@@ -20,12 +20,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { useCampaignTimeline } from '../../hooks/use-campaign-timeline'
 import { getCampaignText, getCampaignUatOverrideForCui } from '../../hooks/use-campaign-content'
-import { CHALLENGES_BASE_PATH } from '@/features/challenges/constants'
+import { buildCampaignProvocariPath } from '@/features/challenges/constants'
 import type { CampaignLocale, CampaignTimelineEntry } from '../../types'
 
 type CampaignCalendarPageProps = {
   readonly locale: CampaignLocale
-  readonly entityCui?: string
+  readonly entityCui: string
 }
 
 type MilestoneState = 'closed' | 'current' | 'future'
@@ -156,7 +156,7 @@ function formatMilestoneDate(dateStr: string, locale: CampaignLocale): string {
 const ICON_SIZE_PX = 30
 
 export function CampaignCalendarPage({ locale, entityCui }: CampaignCalendarPageProps) {
-  const uatOverride = entityCui ? getCampaignUatOverrideForCui(entityCui) : undefined
+  const uatOverride = getCampaignUatOverrideForCui(entityCui)
   const isPersonalized = Boolean(uatOverride)
   const timeline = useCampaignTimeline(uatOverride)
   const backLinkSearch: Record<string, string> = {}
@@ -269,7 +269,10 @@ export function CampaignCalendarPage({ locale, entityCui }: CampaignCalendarPage
       {/* Bottom back button */}
       <div className="mt-8 flex justify-center">
         <Button asChild variant="outline" className="rounded-full">
-          <Link to={`${CHALLENGES_BASE_PATH}` as '/'} search={backLinkSearch}>
+          <Link
+            to={buildCampaignProvocariPath(entityCui) as '/'}
+            search={backLinkSearch}
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             {BACK_LABEL[locale]}
           </Link>

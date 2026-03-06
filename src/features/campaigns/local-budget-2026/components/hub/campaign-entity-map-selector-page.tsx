@@ -19,6 +19,7 @@ import { CAMPAIGN_BASE_PATH } from '../../constants'
 import { useCampaignProgress } from '../../hooks/use-campaign-progress'
 import { useUatCuiMap } from '../../hooks/use-uat-cui-map'
 import type { CampaignLocale } from '../../types'
+import { buildCampaignProvocariPath } from '@/features/challenges/constants'
 
 const CampaignEntityMapSelectorMap = lazy(() =>
   import('./campaign-entity-map-selector-map').then((module) => ({
@@ -67,10 +68,9 @@ function formatCityHallLabel(label: string, locale: CampaignLocale): string {
   return `Primăria ${trimmedLabel}`
 }
 
-function getPrincipalSearch(languageQuery: CampaignLocale | undefined, entityCui?: string) {
+function getProvocariSearch(languageQuery: CampaignLocale | undefined) {
   return {
     ...(languageQuery === 'en' ? { lang: 'en' as const } : {}),
-    ...(entityCui ? { entityCui } : {}),
   }
 }
 
@@ -119,8 +119,8 @@ export function CampaignEntityMapSelectorPage({
 
       setSelectedEntity({ entityCui })
       void navigate({
-        to: `${CAMPAIGN_BASE_PATH}/principal` as '/',
-        search: getPrincipalSearch(languageQuery, entityCui),
+        to: buildCampaignProvocariPath(entityCui) as '/',
+        search: getProvocariSearch(languageQuery),
         replace: true,
       })
       setPendingUatSelection(null)

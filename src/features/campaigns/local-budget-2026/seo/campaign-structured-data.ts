@@ -5,6 +5,7 @@ import type {
   CampaignSeoPageKind,
 } from '../types'
 import { getCampaignText } from '../hooks/use-campaign-content'
+import { buildCampaignProvocariPath } from '@/features/challenges/constants'
 
 function getLanguageTag(locale: CampaignLocale): string {
   return locale === 'en' ? 'en-US' : 'ro-RO'
@@ -61,9 +62,13 @@ function buildChallengeBreadcrumbList(params: {
   readonly siteUrl: string
   readonly locale: CampaignLocale
   readonly canonicalUrl: string
+  readonly entityCui?: string
   readonly challenge: CampaignChallengeDefinition
 }): Record<string, unknown> {
   const langSuffix = params.locale === 'en' ? '?lang=en' : ''
+  const provocariUrl = params.entityCui
+    ? `${params.siteUrl}${buildCampaignProvocariPath(params.entityCui)}${langSuffix}`
+    : `${params.siteUrl}/bugete-locale-2026/cauta${langSuffix}`
 
   return {
     '@context': 'https://schema.org',
@@ -79,7 +84,7 @@ function buildChallengeBreadcrumbList(params: {
         '@type': 'ListItem',
         position: 2,
         name: params.locale === 'en' ? 'Challenges' : 'Provocări',
-        item: `${params.siteUrl}/bugete-locale-2026/challenges${langSuffix}`,
+        item: provocariUrl,
       },
       {
         '@type': 'ListItem',
@@ -118,6 +123,7 @@ export function buildCampaignStructuredData(params: {
   readonly title: string
   readonly description: string
   readonly pageKind: CampaignSeoPageKind
+  readonly entityCui?: string
   readonly campaign: CampaignDefinition
   readonly challenge: CampaignChallengeDefinition | null
 }): readonly Record<string, unknown>[] {
@@ -151,6 +157,7 @@ export function buildCampaignStructuredData(params: {
     siteUrl: params.siteUrl,
     locale: params.locale,
     canonicalUrl: params.canonicalUrl,
+    entityCui: params.entityCui,
     challenge: params.challenge,
   })
 

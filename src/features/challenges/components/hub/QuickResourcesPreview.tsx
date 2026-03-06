@@ -1,16 +1,19 @@
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { BookOpen, GraduationCap, FileText, Library, ExternalLink, ArrowRight } from 'lucide-react'
+import { useState } from 'react'
+import { BookOpen, GraduationCap, FileText, Library, ExternalLink, ArrowRight, Building2 } from 'lucide-react'
 import {
   getCampaignResources,
   getCampaignText,
 } from '@/features/campaigns/local-budget-2026/hooks/use-campaign-content'
-import { CAMPAIGN_BASE_PATH } from '@/features/campaigns/local-budget-2026/constants'
 import type { CampaignResourceKind } from '@/features/campaigns/local-budget-2026/types'
+import { Button } from '@/components/ui/button'
+import { buildCampaignPrimariePath } from '../../constants'
 import type { ChallengeLocale } from '../../types'
 
 type QuickResourcesPreviewProps = {
   readonly locale: ChallengeLocale
+  readonly entityCui?: string
 }
 
 const RESOURCE_ICONS: Record<CampaignResourceKind, typeof BookOpen> = {
@@ -20,12 +23,17 @@ const RESOURCE_ICONS: Record<CampaignResourceKind, typeof BookOpen> = {
   reference: Library,
 }
 
-export function QuickResourcesPreview({ locale }: QuickResourcesPreviewProps) {
-  const resources = getCampaignResources().slice(0, 3)
+export function QuickResourcesPreview({
+  locale,
+  entityCui,
+}: QuickResourcesPreviewProps) {
+  const resources = getCampaignResources()
+  const [showsAllResources, setShowsAllResources] = useState(false)
+  const visibleResources = showsAllResources ? resources : resources.slice(0, 3)
   const linkSearch: Record<string, string> = {}
   if (locale === 'en') linkSearch.lang = 'en'
 
-  if (resources.length === 0) return null
+  if (resources.length === 0 && !entityCui) return null
 
   return (
     <div className="rounded-2xl bg-muted/20 p-5 border border-border/30">
@@ -36,7 +44,28 @@ export function QuickResourcesPreview({ locale }: QuickResourcesPreviewProps) {
 
       {/* Resource items */}
       <div className="mt-4 space-y-1">
-        {resources.map((resource) => {
+        {entityCui ? (
+          <Link
+            to={buildCampaignPrimariePath(entityCui) as '/'}
+            search={linkSearch}
+            className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+          >
+            <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Building2 className="h-4 w-4 text-primary" aria-hidden="true" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-medium text-foreground/80">
+                {t`Primăria mea`}
+              </span>
+              <span className="block text-xs text-muted-foreground">
+                {t`Vezi analiza bugetară pentru entitatea selectată.`}
+              </span>
+            </div>
+            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 transition-colors flex-shrink-0" aria-hidden="true" />
+          </Link>
+        ) : null}
+
+        {visibleResources.map((resource) => {
           const Icon = RESOURCE_ICONS[resource.kind] ?? BookOpen
           return (
             <a
@@ -44,7 +73,7 @@ export function QuickResourcesPreview({ locale }: QuickResourcesPreviewProps) {
               href={resource.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 p-2.5 -mx-1 hover:bg-muted/40 rounded-xl transition-colors group/item"
+              className="flex items-center gap-3 p-2.5 -mx-1 hover:bg-muted/40 rounded-xl transition-colors group/item focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
             >
               <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
                 <Icon className="h-4 w-4 text-muted-foreground" />
@@ -59,16 +88,22 @@ export function QuickResourcesPreview({ locale }: QuickResourcesPreviewProps) {
       </div>
 
       {/* View all footer */}
-      <div className="mt-4 pt-4 border-t border-border/20">
-        <Link
-          to={`${CAMPAIGN_BASE_PATH}/principal` as '/'}
-          search={linkSearch}
-          className="text-xs font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
-        >
-          {t`View all`}
-          <ArrowRight className="h-3 w-3" />
-        </Link>
-      </div>
+      {resources.length > 3 ? (
+        <div className="mt-4 pt-4 border-t border-border/20">
+          <Button
+            type="button"
+            variant="link"
+            className="h-auto px-0 text-xs font-semibold text-muted-foreground hover:text-primary"
+            onClick={() => setShowsAllResources((currentValue) => !currentValue)}
+          >
+            {showsAllResources ? t`Show less` : t`View all`}
+            <ArrowRight
+              className={`ml-1 h-3 w-3 transition-transform ${showsAllResources ? 'rotate-90' : ''}`}
+              aria-hidden="true"
+            />
+          </Button>
+        </div>
+      ) : null}
     </div>
   )
 }

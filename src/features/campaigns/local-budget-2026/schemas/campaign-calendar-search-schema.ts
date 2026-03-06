@@ -4,7 +4,6 @@ import type { CampaignLocale } from '../types'
 
 export const CampaignCalendarRouteSearchSchema = z.object({
   lang: z.enum(['ro', 'en']).optional(),
-  entityCui: z.coerce.string().trim().min(1).max(64).optional(),
 })
 
 export function resolveCampaignCalendarLocale(

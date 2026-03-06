@@ -257,6 +257,7 @@ export const Overview = ({
             />
 
             <EntityFinancialTrends
+                entityCui={cui}
                 incomeTrend={entity?.incomeTrend ?? null}
                 expenseTrend={entity?.expenseTrend ?? null}
                 balanceTrend={entity?.balanceTrend ?? null}

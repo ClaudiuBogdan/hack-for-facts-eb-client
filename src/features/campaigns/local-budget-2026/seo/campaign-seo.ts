@@ -1,5 +1,11 @@
 import { getSiteUrl } from '@/config/env'
-import { CAMPAIGN_BASE_PATH } from '../constants'
+import { buildCampaignCalendarPath, CAMPAIGN_BASE_PATH } from '../constants'
+import {
+  buildCampaignPrimariePath,
+  buildCampaignProvocariModulePath,
+  buildCampaignProvocariPath,
+  buildCampaignProvocariStepPath,
+} from '@/features/challenges/constants'
 import {
   getCampaignChallengeBySlug,
   getCampaignDefinition,
@@ -62,14 +68,14 @@ const CAMPAIGN_COPY: Record<
       en: 'Browse all Local Budgets 2026 civic challenges and pick your next action.',
     },
   },
-  onboarding: {
+  primarie: {
     title: {
-      ro: 'Onboarding Campanie: Bugete Locale 2026',
-      en: 'Campaign Onboarding: Local Budgets 2026',
+      ro: 'Primăria mea: Bugete Locale 2026',
+      en: 'My City Hall: Local Budgets 2026',
     },
     description: {
-      ro: 'Finalizează onboarding-ul pentru a participa activ la provocările campaniei.',
-      en: 'Complete onboarding to actively participate in campaign challenges.',
+      ro: 'Analizează veniturile, cheltuielile și principalele semnale pentru primăria selectată.',
+      en: 'Explore revenue, spending, and key signals for the selected city hall.',
     },
   },
   'principal-map': {
@@ -100,18 +106,60 @@ function withSiteName(title: string): string {
 
 function resolvePagePath(params: {
   readonly pageKind: CampaignSeoPageKind
+  readonly entityCui?: string
+  readonly moduleSlug?: string
   readonly challengeSlug?: string
+  readonly stepSlug?: string
 }): string {
   if (params.pageKind === 'landing') return CAMPAIGN_BASE_PATH
-  if (params.pageKind === 'hub') return `${CAMPAIGN_BASE_PATH}/principal`
   if (params.pageKind === 'principal-selector') return `${CAMPAIGN_BASE_PATH}/cauta`
   if (params.pageKind === 'principal-map') return `${CAMPAIGN_BASE_PATH}/cauta/harta`
-  if (params.pageKind === 'challenges') return `${CAMPAIGN_BASE_PATH}/challenges`
-  if (params.pageKind === 'onboarding') return `${CAMPAIGN_BASE_PATH}/onboarding`
-  if (params.pageKind === 'calendar') return `${CAMPAIGN_BASE_PATH}/calendar`
+  if (params.pageKind === 'calendar') {
+    return params.entityCui
+      ? buildCampaignCalendarPath(params.entityCui)
+      : `${CAMPAIGN_BASE_PATH}/cauta`
+  }
+  if (params.pageKind === 'hub') {
+    return params.entityCui
+      ? buildCampaignProvocariPath(params.entityCui)
+      : `${CAMPAIGN_BASE_PATH}/cauta`
+  }
+  if (params.pageKind === 'primarie') {
+    return params.entityCui
+      ? buildCampaignPrimariePath(params.entityCui)
+      : `${CAMPAIGN_BASE_PATH}/cauta`
+  }
+  if (params.pageKind === 'challenges') {
+    if (params.entityCui && params.moduleSlug && params.challengeSlug && params.stepSlug) {
+      return buildCampaignProvocariStepPath(
+        params.entityCui,
+        params.moduleSlug,
+        params.challengeSlug,
+        params.stepSlug,
+      )
+    }
 
-  const challengeSlug = params.challengeSlug ?? ''
-  return `${CAMPAIGN_BASE_PATH}/challenges/${challengeSlug}`
+    if (params.entityCui && params.moduleSlug) {
+      return buildCampaignProvocariModulePath(params.entityCui, params.moduleSlug)
+    }
+
+    return params.entityCui
+      ? buildCampaignProvocariPath(params.entityCui)
+      : `${CAMPAIGN_BASE_PATH}/cauta`
+  }
+
+  if (params.entityCui && params.moduleSlug && params.challengeSlug && params.stepSlug) {
+    return buildCampaignProvocariStepPath(
+      params.entityCui,
+      params.moduleSlug,
+      params.challengeSlug,
+      params.stepSlug,
+    )
+  }
+
+  return params.entityCui
+    ? buildCampaignProvocariPath(params.entityCui)
+    : `${CAMPAIGN_BASE_PATH}/cauta`
 }
 
 function buildUrl(params: {
@@ -129,13 +177,19 @@ function buildUrl(params: {
 export function buildCampaignSeoMetadata(params: {
   readonly pageKind: CampaignSeoPageKind
   readonly locale: CampaignLocale
+  readonly entityCui?: string
+  readonly moduleSlug?: string
   readonly challengeSlug?: string
+  readonly stepSlug?: string
 }): CampaignSeoMetadata {
   const campaign = getCampaignDefinition()
   const siteUrl = getSiteUrl()
   const path = resolvePagePath({
     pageKind: params.pageKind,
+    entityCui: params.entityCui,
+    moduleSlug: params.moduleSlug,
     challengeSlug: params.challengeSlug,
+    stepSlug: params.stepSlug,
   })
 
   const challenge =
@@ -212,6 +266,7 @@ export function buildCampaignSeoMetadata(params: {
     title: withSiteName(pageTitle),
     description: pageDescription,
     pageKind: params.pageKind,
+    entityCui: params.entityCui,
     campaign,
     challenge,
   })
@@ -222,7 +277,7 @@ export function buildCampaignSeoMetadata(params: {
     canonicalUrl,
     robots:
       params.pageKind === 'hub' ||
-      params.pageKind === 'onboarding' ||
+      params.pageKind === 'primarie' ||
       params.pageKind === 'principal-selector' ||
       params.pageKind === 'principal-map' ||
       isUnknownChallenge
@@ -237,7 +292,10 @@ export function buildCampaignSeoMetadata(params: {
 export function buildCampaignRouteHead(params: {
   readonly pageKind: CampaignSeoPageKind
   readonly locale: CampaignLocale
+  readonly entityCui?: string
+  readonly moduleSlug?: string
   readonly challengeSlug?: string
+  readonly stepSlug?: string
 }) {
   const metadata = buildCampaignSeoMetadata(params)
   const ogLocale = params.locale === 'en' ? 'en_US' : 'ro_RO'

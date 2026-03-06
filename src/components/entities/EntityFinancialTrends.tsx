@@ -17,7 +17,6 @@ import { yValueFormatter } from '../charts/components/chart-renderer/utils';
 import { EntityFinancialTrendsSkeleton } from './EntityFinancialTrendsSkeleton';
 import { Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
-import { useParams } from '@tanstack/react-router';
 import { buildEntityIncomeExpenseChartLink } from '@/lib/chart-links';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
@@ -33,13 +32,14 @@ import { NormalizationModeSelect } from '@/components/normalization/normalizatio
 import { SafeResponsiveContainer } from '@/components/charts/safe-responsive-container';
 
 interface EntityFinancialTrendsProps {
+  entityCui?: string;
   incomeTrend?: AnalyticsSeries | null;
   expenseTrend?: AnalyticsSeries | null;
   balanceTrend?: AnalyticsSeries | null;
   currentYear: number;
   entityName: string;
   normalizationOptions: NormalizationOptions;
-  onNormalizationChange: (next: NormalizationOptions) => void;
+  onNormalizationChange?: (next: NormalizationOptions) => void;
   allowPerCapita?: boolean;
   onYearChange?: (year: number) => void;
   isLoading?: boolean;
@@ -48,9 +48,12 @@ interface EntityFinancialTrendsProps {
   selectedQuarter?: string;
   selectedMonth?: string;
   onPrefetchPeriod?: (label: string) => void;
+  showControls?: boolean;
+  showChartEditorLink?: boolean;
 }
 
 const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
+  entityCui,
   incomeTrend,
   expenseTrend,
   balanceTrend,
@@ -65,10 +68,10 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
   onSelectPeriod,
   selectedQuarter,
   selectedMonth,
-  onPrefetchPeriod
+  onPrefetchPeriod,
+  showControls = true,
+  showChartEditorLink = true,
 }) => {
-
-  const { cui } = useParams({ from: '/entities/$cui' });
   const isMobile = useMediaQuery('(max-width: 768px)');
   const normalized = normalizeNormalizationOptions(normalizationOptions)
   const unit = getNormalizationUnit({ normalization: normalized.normalization, currency: normalized.currency, show_period_growth: normalized.show_period_growth })
@@ -161,7 +164,13 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
     onPrefetchPeriod(label);
   };
 
-  const incomeExpenseChartLink = useMemo(() => cui ? buildEntityIncomeExpenseChartLink(cui, entityName, normalizationOptions) : null, [cui, entityName, normalizationOptions]);
+  const incomeExpenseChartLink = useMemo(
+    () =>
+      entityCui
+        ? buildEntityIncomeExpenseChartLink(entityCui, entityName, normalizationOptions)
+        : null,
+    [entityCui, entityName, normalizationOptions],
+  );
 
   // Avoid restarting animations when data hasn't changed
   const dataSignature = useMemo(() => {
@@ -185,41 +194,45 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-6 w-6" />
             <span><Trans>Financial Trends</Trans></span>
-            <Button asChild variant="ghost" size="icon" className="h-7 w-7 ml-1" aria-label={t`Open in chart editor`}>
-              <Link to={incomeExpenseChartLink?.to ?? '/charts/$chartId'} params={incomeExpenseChartLink?.params as any} search={incomeExpenseChartLink?.search as any} preload="intent">
-                <ExternalLink className="h-4 w-4" />
-              </Link>
-            </Button>
+            {showChartEditorLink && incomeExpenseChartLink ? (
+              <Button asChild variant="ghost" size="icon" className="h-7 w-7 ml-1" aria-label={t`Open in chart editor`}>
+                <Link to={incomeExpenseChartLink.to} params={incomeExpenseChartLink.params as any} search={incomeExpenseChartLink.search as any} preload="intent">
+                  <ExternalLink className="h-4 w-4" />
+                </Link>
+              </Button>
+            ) : null}
           </CardTitle>
-          <div className="flex items-center gap-3">
-            <Checkbox
-              id="entity-growth-toggle"
-              checked={showPeriodGrowth}
-              onCheckedChange={(checked) => {
-                onNormalizationChange({
-                  ...normalizationOptions,
-                  show_period_growth: Boolean(checked),
-                })
-              }}
-            />
-            <Label htmlFor="entity-growth-toggle" className="text-xs text-muted-foreground cursor-pointer">
-              <Trans>Show growth (%)</Trans>
-            </Label>
+          {showControls ? (
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id="entity-growth-toggle"
+                checked={showPeriodGrowth}
+                onCheckedChange={(checked) => {
+                  onNormalizationChange?.({
+                    ...normalizationOptions,
+                    show_period_growth: Boolean(checked),
+                  })
+                }}
+              />
+              <Label htmlFor="entity-growth-toggle" className="text-xs text-muted-foreground cursor-pointer">
+                <Trans>Show growth (%)</Trans>
+              </Label>
 
-            <NormalizationModeSelect
-              value={normalized.normalization as any}
-              allowPerCapita={allowPerCapita}
-              onChange={(nextNormalization) => {
-                onNormalizationChange({
-                  ...normalizationOptions,
-                  normalization: nextNormalization,
-                  inflation_adjusted: nextNormalization === 'percent_gdp' ? false : normalizationOptions.inflation_adjusted,
-                })
-              }}
-              triggerClassName="h-8 text-xs"
-              className="w-[180px]"
-            />
-          </div>
+              <NormalizationModeSelect
+                value={normalized.normalization as any}
+                allowPerCapita={allowPerCapita}
+                onChange={(nextNormalization) => {
+                  onNormalizationChange?.({
+                    ...normalizationOptions,
+                    normalization: nextNormalization,
+                    inflation_adjusted: nextNormalization === 'percent_gdp' ? false : normalizationOptions.inflation_adjusted,
+                  })
+                }}
+                triggerClassName="h-8 text-xs"
+                className="w-[180px]"
+              />
+            </div>
+          ) : null}
         </div>
       </CardHeader>
       <CardContent className="pt-6">
@@ -331,6 +344,7 @@ function arePropsEqual(prev: EntityFinancialTrendsProps, next: EntityFinancialTr
     areSeriesEqual(prev.expenseTrend, next.expenseTrend) &&
     areSeriesEqual(prev.balanceTrend, next.balanceTrend) &&
     prev.currentYear === next.currentYear &&
+    prev.entityCui === next.entityCui &&
     prev.entityName === next.entityName &&
     prev.normalizationOptions.normalization === next.normalizationOptions.normalization &&
     prev.normalizationOptions.currency === next.normalizationOptions.currency &&
@@ -339,6 +353,8 @@ function arePropsEqual(prev: EntityFinancialTrendsProps, next: EntityFinancialTr
     (prev.periodType ?? 'YEAR') === (next.periodType ?? 'YEAR') &&
     prev.selectedQuarter === next.selectedQuarter &&
     prev.selectedMonth === next.selectedMonth &&
+    prev.showControls === next.showControls &&
+    prev.showChartEditorLink === next.showChartEditorLink &&
     !!prev.isLoading === !!next.isLoading
   )
 }

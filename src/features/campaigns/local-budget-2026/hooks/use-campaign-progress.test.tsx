@@ -8,12 +8,14 @@ import {
 } from '../constants'
 import { CampaignProgressProvider, useCampaignProgress } from './use-campaign-progress'
 
+let authState = {
+  isLoaded: true,
+  isSignedIn: false,
+  user: null as null | { id: string },
+}
+
 vi.mock('@/lib/auth', () => ({
-  useAuth: () => ({
-    isLoaded: true,
-    isSignedIn: false,
-    user: null,
-  }),
+  useAuth: () => authState,
 }))
 
 function Wrapper({ children }: { readonly children: ReactNode }) {
@@ -23,6 +25,11 @@ function Wrapper({ children }: { readonly children: ReactNode }) {
 describe('use-campaign-progress', () => {
   beforeEach(() => {
     window.localStorage.clear()
+    authState = {
+      isLoaded: true,
+      isSignedIn: false,
+      user: null,
+    }
   })
 
   it('stores campaign progress without mutating learning storage keys', async () => {
@@ -85,5 +92,21 @@ describe('use-campaign-progress', () => {
 
     const parsedSnapshot = JSON.parse(rawSnapshot ?? '{}') as { selectedEntityCui?: string | null }
     expect(parsedSnapshot.selectedEntityCui).toBe('12345678')
+  })
+
+  it('keeps local campaign state ready while auth is still loading', async () => {
+    authState = {
+      isLoaded: false,
+      isSignedIn: false,
+      user: null,
+    }
+
+    const { result } = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true)
+    })
+
+    expect(result.current.isInitialResolutionReady).toBe(true)
   })
 })

@@ -1,19 +1,18 @@
 import { useCallback } from 'react'
 import { createLazyFileRoute, useNavigate } from '@tanstack/react-router'
 import { CampaignEntitySelectorGate } from '@/features/campaigns/local-budget-2026/components/hub/campaign-entity-selector-gate'
-import { CAMPAIGN_BASE_PATH } from '@/features/campaigns/local-budget-2026/constants'
 import { useCampaignProgress } from '@/features/campaigns/local-budget-2026/hooks/use-campaign-progress'
 import { resolveCampaignLocale } from '@/features/campaigns/local-budget-2026/schemas/campaign-route-search-schema'
 import type { CampaignLocale } from '@/features/campaigns/local-budget-2026/types'
+import { buildCampaignProvocariPath } from '@/features/challenges/constants'
 
 export const Route = createLazyFileRoute('/bugete-locale-2026/cauta/')({
   component: CampaignSelectorRoutePage,
 })
 
-function getPrincipalSearch(languageQuery: CampaignLocale | undefined, entityCui: string) {
+function getProvocariSearch(languageQuery: CampaignLocale | undefined) {
   return {
     ...(languageQuery === 'en' ? { lang: 'en' as const } : {}),
-    entityCui,
   }
 }
 
@@ -27,8 +26,8 @@ function CampaignSelectorRoutePage() {
     (entity: { cui: string }) => {
       setSelectedEntity({ entityCui: entity.cui })
       void navigate({
-        to: `${CAMPAIGN_BASE_PATH}/principal` as '/',
-        search: getPrincipalSearch(search.lang, entity.cui),
+        to: buildCampaignProvocariPath(entity.cui) as '/',
+        search: getProvocariSearch(search.lang),
         replace: true,
         resetScroll: false,
       })

@@ -8,7 +8,7 @@ import {
   Library,
   Trophy,
 } from 'lucide-react'
-import { useEffect, useMemo, useState, type ReactNode, type RefObject } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -24,6 +24,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { cn } from '@/lib/utils'
+import { useCampaignProgress } from '@/features/campaigns/local-budget-2026/hooks/use-campaign-progress'
 import { resolveCampaignLocale } from '@/features/campaigns/local-budget-2026/schemas/campaign-route-search-schema'
 import type { CampaignRouteSearch } from '@/features/campaigns/local-budget-2026/types'
 import { LearningProgressProvider } from '@/features/learning/hooks/use-learning-progress'
@@ -35,7 +36,12 @@ import {
   getChallengeModuleStats,
   getTranslatedText,
 } from '../../utils/modules'
-import { CHALLENGES_BASE_PATH } from '../../constants'
+import {
+  buildCampaignProvocariModulePath,
+  buildCampaignProvocariPath,
+  buildCampaignProvocariStepPath,
+  resolveCampaignEntityCuiFromPathname,
+} from '../../constants'
 import type { ChallengeDefinition, ChallengeLocale } from '../../types'
 
 function parseChallengesRoute(pathname: string): {
@@ -44,11 +50,11 @@ function parseChallengesRoute(pathname: string): {
   readonly stepSlug: string | null
 } {
   const parts = pathname.split('/').filter(Boolean)
-  // Route: /bugete-locale-2026/challenges/$moduleSlug/$challengeSlug/$stepSlug
-  const challengesIndex = parts.indexOf('challenges')
-  const moduleSlug = challengesIndex >= 0 ? (parts[challengesIndex + 1] ?? null) : null
-  const challengeSlug = challengesIndex >= 0 ? (parts[challengesIndex + 2] ?? null) : null
-  const stepSlug = challengesIndex >= 0 ? (parts[challengesIndex + 3] ?? null) : null
+  // Route: /bugete-locale-2026/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug
+  const provocariIndex = parts.indexOf('provocari')
+  const moduleSlug = provocariIndex >= 0 ? (parts[provocariIndex + 1] ?? null) : null
+  const challengeSlug = provocariIndex >= 0 ? (parts[provocariIndex + 2] ?? null) : null
+  const stepSlug = provocariIndex >= 0 ? (parts[provocariIndex + 3] ?? null) : null
 
   return { moduleSlug, challengeSlug, stepSlug }
 }
@@ -76,6 +82,7 @@ function StepStatusIcon({
 type ChallengeNavProps = {
   readonly challenge: ChallengeDefinition
   readonly moduleSlug: string
+  readonly entityCui?: string
   readonly locale: ChallengeLocale
   readonly currentStepSlug: string | null
   readonly currentChallengeSlug: string | null
@@ -88,6 +95,7 @@ type ChallengeNavProps = {
 function ChallengeNav({
   challenge,
   moduleSlug,
+  entityCui,
   locale,
   currentStepSlug,
   currentChallengeSlug,
@@ -99,6 +107,12 @@ function ChallengeNav({
   const completedSteps = challenge.steps.filter((step) => isStepCompleted(step.id)).length
   const isChallengeComplete = completedSteps === challenge.steps.length
   const isThisChallenge = challenge.slug === currentChallengeSlug
+  const hubPath = entityCui
+    ? buildCampaignProvocariPath(entityCui)
+    : '/bugete-locale-2026/cauta'
+  const fallbackPath = entityCui
+    ? buildCampaignProvocariModulePath(entityCui, moduleSlug)
+    : hubPath
 
   return (
     <Collapsible open={isOpen} onOpenChange={onOpenChange}>
@@ -132,7 +146,16 @@ function ChallengeNav({
               <Link
                 key={step.id}
                 ref={isActive ? activeStepRef : undefined}
-                to={`${CHALLENGES_BASE_PATH}/${moduleSlug}/${challenge.slug}/${step.slug}` as '/'}
+                to={
+                  entityCui
+                    ? (buildCampaignProvocariStepPath(
+                        entityCui,
+                        moduleSlug,
+                        challenge.slug,
+                        step.slug,
+                      ) as '/')
+                    : (fallbackPath as '/')
+                }
                 className={cn(
                   'group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] transition-all duration-200 min-w-0 overflow-hidden',
                   isActive
@@ -179,9 +202,11 @@ function ModuleProgress({ percent }: { readonly percent: number }) {
 
 function ChallengesSidebar({
   pathname,
+  entityCui,
   locale,
 }: {
   readonly pathname: string
+  readonly entityCui?: string
   readonly locale: ChallengeLocale
 }) {
   const { isStepCompleted, getStepStatus } = useChallengeProgress()
@@ -225,16 +250,16 @@ function ChallengesSidebar({
       [challengeSlugToUpdate]: isOpen,
     }))
   }
+  const hubPath = entityCui
+    ? buildCampaignProvocariPath(entityCui)
+    : '/bugete-locale-2026/cauta'
 
   return (
     <div className="flex h-full flex-col bg-background border-r border-border/50">
       <div className="shrink-0">
         {/* Header */}
         <div className="relative overflow-hidden bg-linear-to-b from-amber-50/50 to-transparent dark:from-amber-950/20 py-4 px-4">
-          <Link
-            to={CHALLENGES_BASE_PATH as '/'}
-            className="relative group flex items-center gap-3"
-          >
+          <Link to={hubPath as '/'} className="relative group flex items-center gap-3">
             <div className="flex h-6 w-6 items-center justify-center rounded-xl bg-amber-600 text-white shadow-sm shadow-amber-600/20 transition-all duration-200 group-hover:scale-105 group-hover:bg-amber-700">
               <Trophy className="h-5 w-5" />
             </div>
@@ -287,7 +312,11 @@ function ChallengesSidebar({
                       )}
                     >
                       <Link
-                        to={`${CHALLENGES_BASE_PATH}/${module.slug}` as '/'}
+                        to={
+                          (entityCui
+                            ? buildCampaignProvocariModulePath(entityCui, module.slug)
+                            : hubPath) as '/'
+                        }
                         className="flex flex-col items-start gap-0 py-2 px-2.5 rounded-md w-full"
                       >
                         <div className="flex items-center gap-2 w-full">
@@ -331,6 +360,7 @@ function ChallengesSidebar({
                   key={challenge.id}
                   challenge={challenge}
                   moduleSlug={activeModule.slug}
+                  entityCui={entityCui}
                   locale={locale}
                   currentStepSlug={stepSlug}
                   currentChallengeSlug={challengeSlug}
@@ -371,6 +401,39 @@ function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
   const location = useLocation()
   const [isOpen, setIsOpen] = useState(false)
   const locale = resolveCampaignLocale(location.search as CampaignRouteSearch | undefined)
+  const {
+    isReady,
+    isInitialResolutionReady,
+    progress,
+    setSelectedEntity,
+  } = useCampaignProgress()
+  const syncedEntityCuiRef = useRef<string | null>(null)
+  const pathnameEntityCui = resolveCampaignEntityCuiFromPathname(location.pathname)
+  const currentEntityCui =
+    pathnameEntityCui ??
+    progress.selectedEntityCui ??
+    undefined
+
+  useEffect(() => {
+    if (
+      !pathnameEntityCui ||
+      !isReady ||
+      !isInitialResolutionReady ||
+      syncedEntityCuiRef.current === pathnameEntityCui ||
+      progress.selectedEntityCui === pathnameEntityCui
+    ) {
+      return
+    }
+
+    syncedEntityCuiRef.current = pathnameEntityCui
+    setSelectedEntity({ entityCui: pathnameEntityCui })
+  }, [
+    isInitialResolutionReady,
+    isReady,
+    pathnameEntityCui,
+    progress.selectedEntityCui,
+    setSelectedEntity,
+  ])
 
   return (
     <div className="flex min-h-full w-full">
@@ -386,13 +449,21 @@ function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-72 p-0">
-          <ChallengesSidebar pathname={location.pathname} locale={locale} />
+          <ChallengesSidebar
+            pathname={location.pathname}
+            entityCui={currentEntityCui}
+            locale={locale}
+          />
         </SheetContent>
       </Sheet>
 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:w-72 xl:w-80 lg:shrink-0 lg:flex-col lg:sticky lg:top-0 lg:h-svh">
-        <ChallengesSidebar pathname={location.pathname} locale={locale} />
+        <ChallengesSidebar
+          pathname={location.pathname}
+          entityCui={currentEntityCui}
+          locale={locale}
+        />
       </aside>
 
       {/* Main Content */}

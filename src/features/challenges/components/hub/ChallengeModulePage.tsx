@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { useChallengeAccess } from '../../hooks/use-challenge-access'
 import { useChallengeProgress } from '../../hooks/use-challenge-progress'
 import {
   getAllSteps,
@@ -20,10 +21,16 @@ import {
   getChallengeModuleStats,
   getTranslatedText,
 } from '../../utils/modules'
-import { CHALLENGES_BASE_PATH } from '../../constants'
+import {
+  buildCampaignProvocariModulePath,
+  buildCampaignProvocariPath,
+  buildCampaignProvocariStepPath,
+} from '../../constants'
 import type { ChallengeLocale } from '../../types'
+import { ChallengeHubAccessCard } from './challenge-hub-access-card'
 
 type ChallengeModulePageProps = {
+  readonly entityCui: string
   readonly locale: ChallengeLocale
   readonly moduleSlug: string
 }
@@ -42,8 +49,18 @@ function formatTime(minutes: number): string {
   return t`${hours}h ${mins}m`
 }
 
-export function ChallengeModulePage({ locale, moduleSlug }: ChallengeModulePageProps) {
+export function ChallengeModulePage({
+  entityCui,
+  locale,
+  moduleSlug,
+}: ChallengeModulePageProps) {
   const module = getChallengeModuleBySlug(moduleSlug)
+  const {
+    accessCardVariant,
+    isAccessGranted,
+    isSubmitting,
+    register,
+  } = useChallengeAccess()
   const { getStepStatus, isStepCompleted } = useChallengeProgress()
 
   const stats = useMemo(() => {
@@ -80,7 +97,9 @@ export function ChallengeModulePage({ locale, moduleSlug }: ChallengeModulePageP
           {t`The content you're looking for doesn't exist or has been moved.`}
         </p>
         <Button asChild className="mt-8 rounded-2xl h-12 px-8 font-bold" variant="outline">
-          <Link to={CHALLENGES_BASE_PATH as '/'}>{t`Back to Challenges`}</Link>
+          <Link to={buildCampaignProvocariPath(entityCui) as '/'}>
+            {t`Back to Challenges`}
+          </Link>
         </Button>
       </div>
     )
@@ -104,8 +123,41 @@ export function ChallengeModulePage({ locale, moduleSlug }: ChallengeModulePageP
 
   const hasStartStepTarget = startStepTarget !== null
   const startHref = hasStartStepTarget
-    ? `${CHALLENGES_BASE_PATH}/${module.slug}/${startStepTarget.challengeSlug}/${startStepTarget.stepSlug}`
-    : `${CHALLENGES_BASE_PATH}/${module.slug}`
+    ? buildCampaignProvocariStepPath(
+        entityCui,
+        module.slug,
+        startStepTarget.challengeSlug,
+        startStepTarget.stepSlug,
+      )
+    : buildCampaignProvocariModulePath(entityCui, module.slug)
+  const statsSummary = (
+    <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-medium text-muted-foreground">
+      <div className="flex items-center gap-2">
+        <Layers className="h-4 w-4" />
+        <span>
+          {module.challenges.length} {t`Challenges`}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <Clock className="h-4 w-4" />
+        <span>
+          {formatTime(
+            stats.completedCount > 0 && !isComplete
+              ? remainingMinutes
+              : totalMinutes,
+          )}
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <CheckCircle2 className="h-4 w-4" />
+        <span className="tabular-nums">
+          {stats.completedCount}/{stats.totalCount} {t`Steps`}
+        </span>
+      </div>
+    </div>
+  )
 
   return (
     <div className="max-w-4xl mx-auto space-y-16 animate-in fade-in duration-700 pb-20 pt-8 px-4 md:px-6">
@@ -113,7 +165,7 @@ export function ChallengeModulePage({ locale, moduleSlug }: ChallengeModulePageP
       <div className="space-y-8">
         {/* Back Link */}
         <Link
-          to={CHALLENGES_BASE_PATH as '/'}
+          to={buildCampaignProvocariPath(entityCui) as '/'}
           className="inline-flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors group"
         >
           <ArrowRight className="h-4 w-4 rotate-180 group-hover:-translate-x-1 transition-transform" />
@@ -132,75 +184,61 @@ export function ChallengeModulePage({ locale, moduleSlug }: ChallengeModulePageP
 
           {/* Controls & Stats Bar */}
           <div className="space-y-3 pt-4">
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-8">
-              {hasStartStepTarget ? (
-                <Button
-                  asChild
-                  size="lg"
-                  className="rounded-full h-14 px-8 text-base font-bold shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
-                >
-                  <Link to={startHref as '/'}>
-                    {isComplete ? (
-                      <>
-                        <BookOpen className="mr-2 h-5 w-5" />
-                        {t`Review`}
-                      </>
-                    ) : stats.completedCount > 0 ? (
-                      <>
-                        <Play className="mr-2 h-5 w-5 fill-current" />
-                        {t`Continue`}
-                      </>
-                    ) : (
-                      <>
-                        <Play className="mr-2 h-5 w-5 fill-current" />
-                        {t`Start`}
-                      </>
-                    )}
-                  </Link>
-                </Button>
-              ) : (
-                <Button
-                  size="lg"
-                  disabled
-                  className="rounded-full h-14 px-8 text-base font-bold"
-                >
-                  {t`No steps available`}
-                </Button>
-              )}
+            {isAccessGranted ? (
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-8">
+                {hasStartStepTarget ? (
+                  <Button
+                    asChild
+                    size="lg"
+                    className="rounded-full h-14 px-8 text-base font-bold shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                  >
+                    <Link to={startHref as '/'}>
+                      {isComplete ? (
+                        <>
+                          <BookOpen className="mr-2 h-5 w-5" />
+                          {t`Review`}
+                        </>
+                      ) : stats.completedCount > 0 ? (
+                        <>
+                          <Play className="mr-2 h-5 w-5 fill-current" />
+                          {t`Continue`}
+                        </>
+                      ) : (
+                        <>
+                          <Play className="mr-2 h-5 w-5 fill-current" />
+                          {t`Start`}
+                        </>
+                      )}
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button
+                    size="lg"
+                    disabled
+                    className="rounded-full h-14 px-8 text-base font-bold"
+                  >
+                    {t`No steps available`}
+                  </Button>
+                )}
 
-              {/* Divider for desktop */}
-              <div className="hidden md:block h-10 w-px bg-border/60" />
-
-              {/* Compact Stats */}
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-medium text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Layers className="h-4 w-4" />
-                  <span>
-                    {module.challenges.length} {t`Challenges`}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  <span>
-                    {formatTime(
-                      stats.completedCount > 0 && !isComplete
-                        ? remainingMinutes
-                        : totalMinutes,
-                    )}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span className="tabular-nums">
-                    {stats.completedCount}/{stats.totalCount} {t`Steps`}
-                  </span>
+                <div className="hidden md:block h-10 w-px bg-border/60" />
+                {statsSummary}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {statsSummary}
+                <div className="max-w-2xl">
+                  <ChallengeHubAccessCard
+                    locale={locale}
+                    variant={accessCardVariant ?? 'loading'}
+                    isSubmitting={isSubmitting}
+                    onRegister={register}
+                  />
                 </div>
               </div>
-            </div>
+            )}
 
-            {!hasStartStepTarget && (
+            {!hasStartStepTarget && isAccessGranted && (
               <p className="text-sm text-muted-foreground">
                 {t`No steps available yet. Please check back later.`}
               </p>
@@ -292,9 +330,12 @@ export function ChallengeModulePage({ locale, moduleSlug }: ChallengeModulePageP
                         return (
                           <Link
                             key={step.id}
-                            to={
-                              `${CHALLENGES_BASE_PATH}/${module.slug}/${challenge.slug}/${step.slug}` as '/'
-                            }
+                            to={buildCampaignProvocariStepPath(
+                              entityCui,
+                              module.slug,
+                              challenge.slug,
+                              step.slug,
+                            ) as '/'}
                             className={cn(
                               'group flex items-center gap-5 p-5 md:p-6 transition-all duration-200',
                               'hover:bg-muted/40',

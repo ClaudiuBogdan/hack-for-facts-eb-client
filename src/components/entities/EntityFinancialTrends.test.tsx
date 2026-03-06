@@ -36,7 +36,6 @@ vi.mock('@lingui/core/macro', () => ({
 
 // Mock TanStack Router
 vi.mock('@tanstack/react-router', () => ({
-  useParams: () => ({ cui: 'entity-123' }),
   Link: ({ children, to, ...props }: any) => (
     <a href={to} data-testid="router-link" {...props}>
       {children}
@@ -215,6 +214,7 @@ describe('EntityFinancialTrends', () => {
     it('renders external link to chart editor', () => {
       render(
         <EntityFinancialTrends
+          entityCui="entity-123"
           incomeTrend={createMockTrendSeries('income')}
           currentYear={2024}
           entityName="Test Entity"
@@ -224,6 +224,25 @@ describe('EntityFinancialTrends', () => {
       )
 
       expect(screen.getByLabelText('Open in chart editor')).toBeInTheDocument()
+    })
+
+    it('hides challenge-only controls when requested', () => {
+      render(
+        <EntityFinancialTrends
+          entityCui="entity-123"
+          incomeTrend={createMockTrendSeries('income')}
+          currentYear={2024}
+          entityName="Test Entity"
+          normalizationOptions={createDefaultNormalizationOptions()}
+          onNormalizationChange={mockOnNormalizationChange}
+          showControls={false}
+          showChartEditorLink={false}
+        />
+      )
+
+      expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('normalization-select')).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('Open in chart editor')).not.toBeInTheDocument()
     })
 
     it('renders chart components when data available', () => {
@@ -559,6 +578,7 @@ describe('EntityFinancialTrends', () => {
     it('external link button has aria-label', () => {
       render(
         <EntityFinancialTrends
+          entityCui="entity-123"
           incomeTrend={createMockTrendSeries('income')}
           currentYear={2024}
           entityName="Test Entity"

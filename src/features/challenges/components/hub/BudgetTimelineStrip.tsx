@@ -1,9 +1,12 @@
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { ArrowRight } from 'lucide-react'
+import {
+  buildCampaignCalendarPath,
+  CAMPAIGN_BASE_PATH,
+} from '@/features/campaigns/local-budget-2026/constants'
 import { useCampaignTimeline } from '@/features/campaigns/local-budget-2026/hooks/use-campaign-timeline'
 import { getCampaignText } from '@/features/campaigns/local-budget-2026/hooks/use-campaign-content'
-import { CAMPAIGN_BASE_PATH } from '@/features/campaigns/local-budget-2026/constants'
 import type { ChallengeLocale } from '../../types'
 
 type BudgetTimelineStripProps = {
@@ -20,11 +23,13 @@ export function BudgetTimelineStrip({ locale, entityCui }: BudgetTimelineStripPr
 
   const linkSearch: Record<string, string> = {}
   if (locale === 'en') linkSearch.lang = 'en'
-  if (entityCui) linkSearch.entityCui = entityCui
+  const calendarPath = entityCui
+    ? buildCampaignCalendarPath(entityCui)
+    : `${CAMPAIGN_BASE_PATH}/cauta`
 
   return (
     <Link
-      to={`${CAMPAIGN_BASE_PATH}/calendar` as '/'}
+      to={calendarPath as '/'}
       search={linkSearch}
       className="block rounded-2xl bg-muted/20 p-5 hover:bg-muted/30 border border-border/30 transition-colors group"
     >

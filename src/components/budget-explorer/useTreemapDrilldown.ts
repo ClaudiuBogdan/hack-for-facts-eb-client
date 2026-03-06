@@ -87,15 +87,29 @@ export function useTreemapDrilldown({
   // UI-selected primary (from toggle)
   const [primary, setPrimary] = useState<'fn' | 'ec'>(initialPrimary)
   // Full breadcrumb path as source-of-truth (codes in click order)
-  const [fullPath, setFullPath] = useState<string[]>(() => initialPath.map((c) => normalizeCode(c)))
+  const normalizedInitialPath = useMemo(
+    () => initialPath.map((code) => normalizeCode(code)).filter(Boolean),
+    [initialPath],
+  )
+  const [fullPath, setFullPath] = useState<string[]>(normalizedInitialPath)
 
-  // Reset when initialPrimary changes from above
+  // Sync primary when controlled above
   useEffect(() => {
     if (primary !== initialPrimary) {
       setPrimary(initialPrimary)
-      setFullPath([])
     }
   }, [initialPrimary, primary])
+
+  // Sync path when controlled above (supports URL restore/back-forward)
+  useEffect(() => {
+    const isSamePath =
+      fullPath.length === normalizedInitialPath.length &&
+      fullPath.every((code, index) => code === normalizedInitialPath[index])
+
+    if (!isSamePath) {
+      setFullPath(normalizedInitialPath)
+    }
+  }, [fullPath, normalizedInitialPath])
 
   // Compute pivot index: first 6-digit code in the path
   const pivotIndex = useMemo(() => fullPath.findIndex((c) => c.split('.').length >= 3), [fullPath])
@@ -261,6 +275,12 @@ export function useTreemapDrilldown({
     onPathChange?.([])
   }, [onPrimaryChange, onPathChange])
 
+  const setPath = useCallback((path: string[]) => {
+    const normalizedPath = path.map((code) => normalizeCode(code)).filter(Boolean)
+    setFullPath(normalizedPath)
+    onPathChange?.(normalizedPath)
+  }, [onPathChange])
+
   const reset = useCallback(() => {
     setFullPath([])
     onPathChange?.([])
@@ -275,6 +295,7 @@ export function useTreemapDrilldown({
     excludedItemsSummary,
     onNodeClick,
     onBreadcrumbClick,
+    setPath,
     reset,
   }
 }

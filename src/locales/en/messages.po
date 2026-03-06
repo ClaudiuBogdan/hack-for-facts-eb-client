@@ -138,38 +138,38 @@ msgstr "{0} view enabled"
 msgid "{0} views enabled"
 msgstr "{0} views enabled"
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:43
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:41
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:44
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:48
 #: src/features/learning/components/cards/LearningPathCard.tsx:200
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:90
 msgid "{hours}h"
 msgstr "{hours}h"
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:44
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:42
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:45
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:49
 #: src/features/learning/components/cards/LearningPathCard.tsx:201
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:91
 msgid "{hours}h {mins}m"
 msgstr "{hours}h {mins}m"
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:35
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:36
 #: src/features/learning/components/cards/LearningPathCard.tsx:192
 msgid "{hours}h {mins}m remaining"
 msgstr "{hours}h {mins}m remaining"
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:34
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:35
 #: src/features/learning/components/cards/LearningPathCard.tsx:191
 msgid "{hours}h remaining"
 msgstr "{hours}h remaining"
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:40
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:38
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:41
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:45
 #: src/features/learning/components/cards/LearningPathCard.tsx:197
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:87
 msgid "{minutes}m"
 msgstr "{minutes}m"
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:31
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:32
 #: src/features/learning/components/cards/LearningPathCard.tsx:188
 msgid "{minutes}m remaining"
 msgstr "{minutes}m remaining"
@@ -177,6 +177,10 @@ msgstr "{minutes}m remaining"
 #: src/components/classification-explorer/ClassificationSearch.tsx:46
 msgid "{resultsCount} results found"
 msgstr "{resultsCount} results found"
+
+#: src/features/challenges/components/analysis/challenge-entity-subordinates-section.tsx:126
+#~ msgid "{totalChildrenCount} instituții"
+#~ msgstr "{totalChildrenCount} instituții"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:135
 msgid "{warningCount} warning"
@@ -610,6 +614,10 @@ msgstr "Accept All"
 msgid "Acceptance"
 msgstr "Acceptance"
 
+#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:85
+msgid "Access"
+msgstr "Access"
+
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:218
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:142
 msgid "Access denied"
@@ -656,6 +664,10 @@ msgstr "Active series (dynamic)"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1417
 msgid "Active series criteria:"
 msgstr "Active series criteria:"
+
+#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:103
+#~ msgid "Activează participarea în campanie"
+#~ msgstr "Activează participarea în campanie"
 
 #: src/components/budget-explorer/FilteredSpendingInfo.tsx:113
 msgid "Actual impact on budget"
@@ -824,6 +836,14 @@ msgstr "Agriculture"
 msgid "Agriculture & land"
 msgstr "Agriculture & land"
 
+#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:106
+#~ msgid "Ai cont și ai ales deja primăria. Mai lipsește confirmarea participării ca să poți începe provocările și să-ți păstrezi progresul."
+#~ msgstr "Ai cont și ai ales deja primăria. Mai lipsește confirmarea participării ca să poți începe provocările și să-ți păstrezi progresul."
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-explainer.tsx:76
+#~ msgid "Ajustarea la inflație folosește indicele prețurilor de consum (IPC) publicat de INS. Fără această ajustare, sumele din anii anteriori par mai mici decât sunt în realitate, deoarece inflația erodează puterea de cumpărare a banului. De exemplu, 1 milion RON în 2015 avea o putere de cumpărare semnificativ mai mare decât 1 milion RON în 2024. Ajustarea elimină acest efect, astfel încât creșterile sau scăderile pe care le vezi reflectă schimbări reale în cheltuieli sau venituri, nu doar efectul inflației."
+#~ msgstr "Ajustarea la inflație folosește indicele prețurilor de consum (IPC) publicat de INS. Fără această ajustare, sumele din anii anteriori par mai mici decât sunt în realitate, deoarece inflația erodează puterea de cumpărare a banului. De exemplu, 1 milion RON în 2015 avea o putere de cumpărare semnificativ mai mare decât 1 milion RON în 2024. Ajustarea elimină acest efect, astfel încât creșterile sau scăderile pe care le vezi reflectă schimbări reale în cheltuieli sau venituri, nu doar efectul inflației."
+
 #: src/features/notifications/components/alerts/AlertCard.tsx:55
 msgid "Alert"
 msgstr "Alert"
@@ -938,6 +958,10 @@ msgstr "Allow essential only"
 msgid "Always enabled"
 msgstr "Always enabled"
 
+#: src/features/challenges/components/analysis/challenge-entity-subordinates-section.tsx:143
+#~ msgid "Am ordonat instituțiile după cheltuielile raportate prin această primărie, ca ordonator principal de credite, pentru anul selectat."
+#~ msgstr "Am ordonat instituțiile după cheltuielile raportate prin această primărie, ca ordonator principal de credite, pentru anul selectat."
+
 #: src/components/maps/charts/UatDataCharts.tsx:101
 #: src/components/maps/charts/UatDataCharts.tsx:139
 #: src/components/maps/charts/UatPopulationSpendingScatterPlot.tsx:51
@@ -1041,6 +1065,10 @@ msgstr "Annual budget unavailable"
 msgid "Annual vs Multi‑Year"
 msgstr "Annual vs Multi‑Year"
 
+#: src/features/challenges/components/analysis/challenge-entity-anomaly-summary.tsx:30
+msgid "Anomalie YTD"
+msgstr "Anomalie YTD"
+
 #: src/routes/cookies.lazy.tsx:147
 msgid "Anonymous usage patterns, page views, interactions."
 msgstr "Anonymous usage patterns, page views, interactions."
@@ -1078,9 +1106,75 @@ msgid "Apply gradient colors?"
 msgstr "Apply gradient colors?"
 
 #: src/components/commitments/commitments-trends.tsx:190
-#: src/components/entities/EntityFinancialTrends.tsx:97
+#: src/components/entities/EntityFinancialTrends.tsx:100
 msgid "April"
 msgstr "April"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:633
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:182
+msgid "Arată cheltuieli"
+msgstr "Arată cheltuieli"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:771
+msgid "Arată cheltuieli administrative primărie"
+msgstr "Arată cheltuieli administrative primărie"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-explainer.tsx:19
+#~ msgid "Arată Cheltuieli Primăriei și Instituțiilor Subordonate"
+#~ msgstr "Arată Cheltuieli Primăriei și Instituțiilor Subordonate"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:151
+msgid "Arată cum s-au cheltuit banii"
+msgstr "Arată cum s-au cheltuit banii"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:146
+msgid "Arată cum sunt grupate veniturile"
+msgstr "Arată cum sunt grupate veniturile"
+
+#: src/features/challenges/components/analysis/challenge-entity-anomaly-summary.tsx:122
+#~ msgid "Arată Detaliile"
+#~ msgstr "Arată Detaliile"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:147
+msgid "Arată din ce au venit banii"
+msgstr "Arată din ce au venit banii"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-explainer.tsx:18
+#~ msgid "Arată Doar Cheltuieli Primăriei"
+#~ msgstr "Arată Doar Cheltuieli Primăriei"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-explainer.tsx:116
+msgid "Arată mai puțin"
+msgstr "Arată mai puțin"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:152
+msgid "Arată pe ce s-au cheltuit banii"
+msgstr "Arată pe ce s-au cheltuit banii"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:749
+msgid "Arată per capita"
+msgstr "Arată per capita"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:761
+msgid "Arată toate cheltuielile"
+msgstr "Arată toate cheltuielile"
+
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:142
+msgid "Arată top categorii economice"
+msgstr "Arată top categorii economice"
+
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:141
+msgid "Arată top categorii funcționale"
+msgstr "Arată top categorii funcționale"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:750
+msgid "Arată total"
+msgstr "Arată total"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:633
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:182
+msgid "Arată venituri"
+msgstr "Arată venituri"
 
 #: src/features/notifications/components/alerts/AlertCard.tsx:115
 #: src/routes/alerts/$alertId/index.lazy.tsx:310
@@ -1115,6 +1209,10 @@ msgstr "Arrears"
 msgid "As a data subject under GDPR, you have the following rights:"
 msgstr "As a data subject under GDPR, you have the following rights:"
 
+#: src/features/challenges/components/analysis/challenge-entity-anomaly-summary.tsx:117
+#~ msgid "Ascunde Detaliile"
+#~ msgstr "Ascunde Detaliile"
+
 #: src/features/learning/components/interactive/lesson-discussion.tsx:136
 msgid "Ask questions and discuss this lesson with the community."
 msgstr "Ask questions and discuss this lesson with the community."
@@ -1135,7 +1233,7 @@ msgid "Aug 1, 2025"
 msgstr "Aug 1, 2025"
 
 #: src/components/commitments/commitments-trends.tsx:194
-#: src/components/entities/EntityFinancialTrends.tsx:98
+#: src/components/entities/EntityFinancialTrends.tsx:101
 msgid "August"
 msgstr "August"
 
@@ -1200,9 +1298,9 @@ msgstr "Back"
 msgid "Back to alert"
 msgstr "Back to alert"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:83
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:120
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:136
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:101
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:172
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:222
 msgid "Back to Challenges"
 msgstr "Back to Challenges"
 
@@ -1226,7 +1324,7 @@ msgstr "Back to learning"
 msgid "Back to Learning Hub"
 msgstr "Back to Learning Hub"
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:223
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:313
 msgid "Back to overview"
 msgstr "Back to overview"
 
@@ -1259,7 +1357,7 @@ msgstr "Backup before config export"
 msgid "Backup before config import"
 msgstr "Backup before config import"
 
-#: src/components/entities/EntityFinancialTrends.tsx:296
+#: src/components/entities/EntityFinancialTrends.tsx:309
 msgid "Balance"
 msgstr "Balance"
 
@@ -1368,7 +1466,7 @@ msgstr "Breakdown of the selected classification, including grouped chapters and
 msgid "Browse and download all financial reports submitted by this entity"
 msgstr "Browse and download all financial reports submitted by this entity"
 
-#: src/features/challenges/components/hub/BudgetTimelineStrip.tsx:34
+#: src/features/challenges/components/hub/BudgetTimelineStrip.tsx:39
 msgid "Budget Calendar"
 msgstr "Budget Calendar"
 
@@ -1400,7 +1498,7 @@ msgstr "Budget credits are annual (cash you can pay within the selected year). L
 msgid "Budget Cycle Timeline"
 msgstr "Budget Cycle Timeline"
 
-#: src/components/entities/views/Overview.tsx:281
+#: src/components/entities/views/Overview.tsx:282
 #: src/components/entities/views/TrendsView.tsx:219
 #: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:100
 #: src/routes/budget-explorer.lazy.tsx:574
@@ -1557,15 +1655,14 @@ msgstr "Certificate verified (PoC)"
 msgid "Challenge Question"
 msgstr "Challenge Question"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:179
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:214
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:243
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:138
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:252
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:349
 msgid "Challenges"
 msgstr "Challenges"
 
-#: src/features/challenges/components/interactive/UatPicker.tsx:108
-msgid "Change"
-msgstr "Change"
+#~ msgid "Change"
+#~ msgstr "Change"
 
 #: src/routes/privacy.lazy.tsx:146
 msgid "Changes to this policy"
@@ -1643,6 +1740,10 @@ msgstr "Choose between essential-only or all cookies, then fine-tune options bel
 #: src/components/alerts/components/ConditionsList.tsx:87
 msgid "Choose operator"
 msgstr "Choose operator"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-explainer.tsx:116
+msgid "Citește mai mult"
+msgstr "Citește mai mult"
 
 #: src/components/common/classification-info-link.tsx:105
 #: src/components/common/classification-info-link.tsx:150
@@ -1915,11 +2016,10 @@ msgstr "Complete this lesson"
 msgid "Complete!"
 msgstr "Complete!"
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:94
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:92
 msgid "Completed"
 msgstr "Completed"
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:228
 #: src/features/learning/components/cards/LearningPathCard.tsx:114
 #: src/routes/certificates.$id.tsx:64
 msgid "Completion"
@@ -1933,6 +2033,14 @@ msgstr "Concerning"
 #: src/components/alerts/components/ConditionsList.tsx:64
 msgid "Condition {0}"
 msgstr "Condition {0}"
+
+#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:104
+msgid "Conectează-te"
+msgstr "Conectează-te"
+
+#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:64
+#~ msgid "Conectează-te ca să participi la provocări"
+#~ msgstr "Conectează-te ca să participi la provocări"
 
 #: src/components/entities/views/ins-stats-view.formatters.ts:15
 #: src/components/entities/views/ins-stats-view.formatters.ts:16
@@ -2009,7 +2117,7 @@ msgstr "Confirm replace"
 msgid "Confirm unsubscribe"
 msgstr "Confirm unsubscribe"
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:115
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:142
 #: src/routes/$lang/learning/index.lazy.tsx:238
 msgid "Congratulations!"
 msgstr "Congratulations!"
@@ -2043,8 +2151,8 @@ msgstr "Contact us at contact@transparenta.eu See also our <0>Privacy Policy</0>
 msgid "Context"
 msgstr "Context"
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:145
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:151
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:144
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:204
 #: src/features/learning/components/cards/LearningPathCard.tsx:24
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:130
 msgid "Continue"
@@ -2095,6 +2203,10 @@ msgstr "Cookie Policy"
 #: src/routes/cookies.lazy.tsx:103
 msgid "Cookie Settings"
 msgstr "Cookie Settings"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-header.tsx:195
+msgid "Copiază link"
+msgstr "Copiază link"
 
 #: src/components/charts/components/ChartDataError.tsx:278
 msgid "Copied to clipboard"
@@ -2382,6 +2494,14 @@ msgstr "CUI"
 msgid "Culture & tourism"
 msgstr "Culture & tourism"
 
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:137
+msgid "Cum s-au cheltuit banii"
+msgstr "Cum s-au cheltuit banii"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:132
+msgid "Cum sunt grupate veniturile"
+msgstr "Cum sunt grupate veniturile"
+
 #: src/components/charts/components/series-config/SeriesFilter.tsx:738
 #: src/components/maps/HeatmapDataTable.tsx:476
 #: src/components/normalization/normalization-controls.tsx:84
@@ -2413,6 +2533,10 @@ msgstr "Custom Series"
 #: src/components/charts/components/views/SeriesConfigView.tsx:316
 msgid "Custom Series Value"
 msgstr "Custom Series Value"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-explainer.tsx:35
+#~ msgid "Dacă revii la varianta agregată, sumele pot fi mai mari decât aparatul propriu al primăriei, pentru că includ și instituțiile subordonate din aceeași structură de finanțare."
+#~ msgstr "Dacă revii la varianta agregată, sumele pot fi mai mari decât aparatul propriu al primăriei, pentru că includ și instituțiile subordonate din aceeași structură de finanțare."
 
 #: src/features/learning/components/cards/LearningPathCard.tsx:174
 msgid "Daily Streak"
@@ -2535,6 +2659,14 @@ msgstr "Dataset explorer"
 msgid "Dataset metadata is loading or unavailable, but historical data can still be viewed below."
 msgstr "Dataset metadata is loading or unavailable, but historical data can still be viewed below."
 
+#: src/features/challenges/components/analysis/challenge-entity-analysis-explainer.tsx:27
+#~ msgid "Datele din această pagină arată doar execuțiile raportate direct de primărie. În acest mod, instituțiile finanțate prin același ordonator principal nu mai sunt incluse în totalurile și graficele principale."
+#~ msgstr "Datele din această pagină arată doar execuțiile raportate direct de primărie. În acest mod, instituțiile finanțate prin același ordonator principal nu mai sunt incluse în totalurile și graficele principale."
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-explainer.tsx:26
+#~ msgid "Datele din această pagină vin din execuții bugetare agregate la nivel de ordonator principal de credite. Asta înseamnă că totalurile includ atât finanțele primăriei, cât și instituțiile finanțate prin același ordonator principal."
+#~ msgstr "Datele din această pagină vin din execuții bugetare agregate la nivel de ordonator principal de credite. Asta înseamnă că totalurile includ atât finanțele primăriei, cât și instituțiile finanțate prin același ordonator principal."
+
 #: src/components/filters/period-filter/PeriodFilter.tsx:417
 msgid "Dates"
 msgstr "Dates"
@@ -2568,7 +2700,7 @@ msgid "Deaths (POP206D)"
 msgstr "Deaths (POP206D)"
 
 #: src/components/commitments/commitments-trends.tsx:198
-#: src/components/entities/EntityFinancialTrends.tsx:98
+#: src/components/entities/EntityFinancialTrends.tsx:101
 msgid "December"
 msgstr "December"
 
@@ -2682,6 +2814,10 @@ msgstr "Dependency"
 msgid "Derived indicators"
 msgstr "Derived indicators"
 
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:317
+#~ msgid "Deschide în pagina de grafice"
+#~ msgstr "Deschide în pagina de grafice"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:57
 msgid "Describe what this map shows..."
 msgstr "Describe what this map shows..."
@@ -2759,6 +2895,10 @@ msgstr "Differences can reflect housing stock structure, tourism pressure, and s
 msgid "Dimensions"
 msgstr "Dimensions"
 
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:131
+msgid "Din ce au venit banii"
+msgstr "Din ce au venit banii"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:446
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:459
 msgid "Direction"
@@ -2818,6 +2958,14 @@ msgstr "Display mode"
 msgid "Display Options"
 msgstr "Display Options"
 
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:122
+msgid "Distribuția Cheltuielilor"
+msgstr "Distribuția Cheltuielilor"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:121
+msgid "Distribuția Veniturilor"
+msgstr "Distribuția Veniturilor"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:1491
 msgid "Distribution"
 msgstr "Distribution"
@@ -2826,9 +2974,9 @@ msgstr "Distribution"
 msgid "Distribution series"
 msgstr "Distribution series"
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:30
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:39
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:37
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:31
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:40
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:44
 #: src/features/learning/components/cards/LearningPathCard.tsx:187
 #: src/features/learning/components/cards/LearningPathCard.tsx:196
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:86
@@ -2871,7 +3019,6 @@ msgstr "Duplicate series"
 msgid "Duplicate Series"
 msgstr "Duplicate Series"
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:272
 #: src/features/learning/components/cards/LearningPathCard.tsx:158
 msgid "Duration"
 msgstr "Duration"
@@ -2915,7 +3062,7 @@ msgstr "Ec"
 #: src/components/commitments/DetailTable.tsx:554
 #: src/components/common/classification-info-link.tsx:89
 #: src/components/common/classification-info-link.tsx:134
-#: src/components/entities/views/Overview.tsx:305
+#: src/components/entities/views/Overview.tsx:306
 #: src/components/entities/views/TrendsView.tsx:222
 #: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:124
 #: src/lib/ins/ins-metric-registry.ts:108
@@ -3274,7 +3421,6 @@ msgstr "Essential storage is required for the app to work."
 msgid "Essentials"
 msgstr "Essentials"
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:272
 #: src/features/learning/components/cards/LearningPathCard.tsx:158
 msgid "Estimate"
 msgstr "Estimate"
@@ -3303,6 +3449,26 @@ msgstr "EUR"
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:228
 msgid "Ever wondered where your money actually goes?"
 msgstr "Ever wondered where your money actually goes?"
+
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:80
+#~ msgid "Evoluția Cheltuielilor"
+#~ msgstr "Evoluția Cheltuielilor"
+
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:107
+#~ msgid "Evoluția primelor 5 categorii de venituri"
+#~ msgstr "Evoluția primelor 5 categorii de venituri"
+
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:111
+#~ msgid "Evoluția primelor 5 categorii economice de cheltuieli"
+#~ msgstr "Evoluția primelor 5 categorii economice de cheltuieli"
+
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:112
+#~ msgid "Evoluția primelor 5 categorii funcționale de cheltuieli"
+#~ msgstr "Evoluția primelor 5 categorii funcționale de cheltuieli"
+
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:79
+#~ msgid "Evoluția Veniturilor"
+#~ msgstr "Evoluția Veniturilor"
 
 #: src/lib/chart-links.ts:433
 msgid "Evolution of Top 15 Counties"
@@ -3457,12 +3623,12 @@ msgid "Expense Type"
 msgstr "Expense Type"
 
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:71
-#: src/components/entities/EntityFinancialTrends.tsx:280
+#: src/components/entities/EntityFinancialTrends.tsx:293
 #: src/components/entities/EntityLineItems.tsx:95
 #: src/components/entities/EntityLineItemsTabs.tsx:84
 #: src/components/entities/LineItemsAnalytics.tsx:135
 #: src/components/entities/views/MapView.tsx:143
-#: src/components/entities/views/Overview.tsx:301
+#: src/components/entities/views/Overview.tsx:302
 #: src/components/filters/account-type-filter/AccountCategoryRadio.tsx:12
 #: src/components/filters/EntityAnalyticsFilter.tsx:452
 #: src/components/filters/MapFilter.tsx:245
@@ -3571,6 +3737,7 @@ msgstr "Failed to copy email address."
 
 #: src/components/ui/FloatingQuickNav.tsx:83
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:80
+#: src/features/challenges/components/analysis/challenge-entity-analysis-header.tsx:115
 msgid "Failed to copy link"
 msgstr "Failed to copy link"
 
@@ -3692,7 +3859,7 @@ msgid "Favorites first"
 msgstr "Favorites first"
 
 #: src/components/commitments/commitments-trends.tsx:188
-#: src/components/entities/EntityFinancialTrends.tsx:97
+#: src/components/entities/EntityFinancialTrends.tsx:100
 msgid "February"
 msgstr "February"
 
@@ -3790,7 +3957,7 @@ msgstr "Financial Evolution - {entityName}"
 msgid "Financial Reports"
 msgstr "Financial Reports"
 
-#: src/components/entities/EntityFinancialTrends.tsx:187
+#: src/components/entities/EntityFinancialTrends.tsx:196
 msgid "Financial Trends"
 msgstr "Financial Trends"
 
@@ -3803,7 +3970,7 @@ msgstr "Find Entity to Monitor"
 msgid "Find resources, report issues, or get in touch."
 msgstr "Find resources, report issues, or get in touch."
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:254
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:347
 msgid "Finish"
 msgstr "Finish"
 
@@ -3882,7 +4049,7 @@ msgstr "Full historical observations exceeded the page cap for this view. Showin
 #: src/components/commitments/DetailTable.tsx:553
 #: src/components/common/classification-info-link.tsx:89
 #: src/components/common/classification-info-link.tsx:134
-#: src/components/entities/views/Overview.tsx:304
+#: src/components/entities/views/Overview.tsx:305
 #: src/components/entities/views/TrendsView.tsx:221
 #: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:117
 msgid "Functional"
@@ -4297,6 +4464,22 @@ msgstr "in \"invisible\" consumption taxes."
 msgid "In one year, you will pay"
 msgstr "In one year, you will pay"
 
+#: src/features/challenges/components/analysis/challenge-entity-analysis-explainer.tsx:72
+#~ msgid "În practică, această vedere este utilă când vrei imaginea completă a banilor administrați de primărie. O vedere detaliată, la nivel de instituție sau linie bugetară, poate arăta alte totaluri pentru că separă primăria de fiecare instituție subordonată și coboară mai mult în structură."
+#~ msgstr "În practică, această vedere este utilă când vrei imaginea completă a banilor administrați de primărie. O vedere detaliată, la nivel de instituție sau linie bugetară, poate arăta alte totaluri pentru că separă primăria de fiecare instituție subordonată și coboară mai mult în structură."
+
+#: src/features/challenges/components/analysis/challenge-entity-subordinates-section.tsx:208
+msgid "Încearcă din nou"
+msgstr "Încearcă din nou"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:614
+msgid "Încearcă Din Nou"
+msgstr "Încearcă Din Nou"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:116
+msgid "Încearcă din nou peste câteva momente."
+msgstr "Încearcă din nou peste câteva momente."
+
 #: src/routes/terms.lazy.tsx:82
 msgid "Include visible attribution to the data source and Transparenta.eu when sharing charts/maps."
 msgstr "Include visible attribution to the data source and Transparenta.eu when sharing charts/maps."
@@ -4310,10 +4493,10 @@ msgid "Includes EU money (PNRR) and profits from state-owned companies. Essentia
 msgstr "Includes EU money (PNRR) and profits from state-owned companies. Essential but smaller."
 
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:65
-#: src/components/entities/EntityFinancialTrends.tsx:266
+#: src/components/entities/EntityFinancialTrends.tsx:279
 #: src/components/entities/LineItemsAnalytics.tsx:135
 #: src/components/entities/views/MapView.tsx:147
-#: src/components/entities/views/Overview.tsx:300
+#: src/components/entities/views/Overview.tsx:301
 #: src/components/filters/account-type-filter/AccountCategoryRadio.tsx:13
 #: src/components/filters/EntityAnalyticsFilter.tsx:453
 #: src/components/filters/MapFilter.tsx:246
@@ -4323,7 +4506,7 @@ msgstr "Includes EU money (PNRR) and profits from state-owned companies. Essenti
 msgid "Income"
 msgstr "Income"
 
-#: src/components/entities/EntityFinancialSummary.tsx:83
+#: src/components/entities/EntityFinancialSummary.tsx:306
 msgid "Income - Expenses"
 msgstr "Income - Expenses"
 
@@ -4438,6 +4621,10 @@ msgstr "INS terms"
 msgid "INS Trends - {normalizedDatasetLabel} ({entityName})"
 msgstr "INS Trends - {normalizedDatasetLabel} ({entityName})"
 
+#: src/features/challenges/components/analysis/challenge-entity-subordinates-section.tsx:134
+#~ msgid "Instituții subordonate"
+#~ msgstr "Instituții subordonate"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:1066
 msgid "Insufficient data"
 msgstr "Insufficient data"
@@ -4549,7 +4736,7 @@ msgid "Item Amount"
 msgstr "Item Amount"
 
 #: src/components/commitments/commitments-trends.tsx:187
-#: src/components/entities/EntityFinancialTrends.tsx:97
+#: src/components/entities/EntityFinancialTrends.tsx:100
 msgid "January"
 msgstr "January"
 
@@ -4558,12 +4745,12 @@ msgid "Join with previous"
 msgstr "Join with previous"
 
 #: src/components/commitments/commitments-trends.tsx:193
-#: src/components/entities/EntityFinancialTrends.tsx:98
+#: src/components/entities/EntityFinancialTrends.tsx:101
 msgid "July"
 msgstr "July"
 
 #: src/components/commitments/commitments-trends.tsx:192
-#: src/components/entities/EntityFinancialTrends.tsx:97
+#: src/components/entities/EntityFinancialTrends.tsx:100
 msgid "June"
 msgstr "June"
 
@@ -4753,10 +4940,23 @@ msgstr "Line Items"
 msgid "Line Items Aggregated Yearly"
 msgstr "Line Items Aggregated Yearly"
 
+#: src/features/challenges/components/analysis/challenge-entity-anomaly-summary.tsx:24
+#~ msgid "Linia bugetară nu mai apare în raportarea curentă și poate indica o mutare între clasificări."
+#~ msgstr "Linia bugetară nu mai apare în raportarea curentă și poate indica o mutare între clasificări."
+
+#: src/features/challenges/components/analysis/challenge-entity-anomaly-summary.tsx:35
+#~ msgid "Linie bugetară"
+#~ msgstr "Linie bugetară"
+
 #: src/components/ui/FloatingQuickNav.tsx:78
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:75
+#: src/features/challenges/components/analysis/challenge-entity-analysis-header.tsx:110
 msgid "Link copied to clipboard"
 msgstr "Link copied to clipboard"
+
+#: src/features/challenges/components/analysis/challenge-entity-anomaly-summary.tsx:36
+msgid "Lipsește"
+msgstr "Lipsește"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:213
 msgid "Live apply"
@@ -4824,6 +5024,10 @@ msgstr "Loading chart configuration..."
 #: src/components/charts/components/chart-view/ChartDisplayArea.tsx:160
 msgid "Loading chart data..."
 msgstr "Loading chart data..."
+
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:341
+#~ msgid "Loading chart data…"
+#~ msgstr "Loading chart data…"
 
 #: src/features/learning/components/interactive/lesson-discussion.tsx:138
 msgid "Loading comments..."
@@ -4910,6 +5114,7 @@ msgstr "Loading..."
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:117
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:469
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:157
 msgid "Loading…"
 msgstr "Loading…"
 
@@ -4918,7 +5123,7 @@ msgstr "Loading…"
 msgid "Local backup failed. Exporting configuration anyway."
 msgstr "Local backup failed. Exporting configuration anyway."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:246
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:352
 msgid "Local Budgets 2026"
 msgstr "Local Budgets 2026"
 
@@ -4966,6 +5171,10 @@ msgstr "Lock In Prediction"
 msgid "Locked"
 msgstr "Locked"
 
+#: src/features/challenges/components/analysis/challenge-entity-analysis-header.tsx:158
+msgid "locuitori"
+msgstr "locuitori"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:693
 msgid "Log scale"
 msgstr "Log scale"
@@ -4977,6 +5186,14 @@ msgstr "Low opportunity"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:578
 msgid "Lower fence"
 msgstr "Lower fence"
+
+#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:169
+msgid "Mă înscriu în campanie"
+msgstr "Mă înscriu în campanie"
+
+#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:123
+#~ msgid "Mă înscriu în campanie și confirm că am citit <0>termenii campaniei</0>."
+#~ msgstr "Mă înscriu în campanie și confirm că am citit <0>termenii campaniei</0>."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:76
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:151
@@ -5167,7 +5384,7 @@ msgid "Maps"
 msgstr "Maps"
 
 #: src/components/commitments/commitments-trends.tsx:189
-#: src/components/entities/EntityFinancialTrends.tsx:97
+#: src/components/entities/EntityFinancialTrends.tsx:100
 msgid "March"
 msgstr "March"
 
@@ -5201,7 +5418,7 @@ msgid "Maximum"
 msgstr "Maximum"
 
 #: src/components/commitments/commitments-trends.tsx:191
-#: src/components/entities/EntityFinancialTrends.tsx:97
+#: src/components/entities/EntityFinancialTrends.tsx:100
 msgid "May"
 msgstr "May"
 
@@ -5246,7 +5463,7 @@ msgstr "Metric"
 msgid "Migrating map editor link..."
 msgstr "Migrating map editor link..."
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:342
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:383
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:272
 msgid "min"
 msgstr "min"
@@ -5272,6 +5489,7 @@ msgstr "Minimum Pay"
 #: src/components/entities/views/ins-stats-view.formatters.ts:14
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:548
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-formatting.ts:9
+#: src/features/challenges/components/analysis/challenge-entity-anomaly-summary.tsx:59
 msgid "Missing"
 msgstr "Missing"
 
@@ -5338,7 +5556,7 @@ msgid "Monitor this institution"
 msgstr "Monitor this institution"
 
 #: src/components/commitments/commitments-trends.tsx:201
-#: src/components/entities/EntityFinancialTrends.tsx:100
+#: src/components/entities/EntityFinancialTrends.tsx:103
 #: src/components/entities/EntityReportControls.tsx:243
 #: src/components/entities/views/ins-stats-view.filters.ts:20
 msgid "Month"
@@ -5560,7 +5778,7 @@ msgstr "Newsletters and notifications"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:202
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:536
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:238
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:331
 #: src/features/learning/components/player/LessonPlayer.tsx:620
 msgid "Next"
 msgstr "Next"
@@ -5625,7 +5843,7 @@ msgstr "No category data available"
 msgid "No certificate record was found for this ID in local storage."
 msgstr "No certificate record was found for this ID in local storage."
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:220
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:258
 msgid "No challenges available yet."
 msgstr "No challenges available yet."
 
@@ -5704,7 +5922,7 @@ msgstr "No data available to display charts."
 msgid "No data available to display commitment evolution."
 msgstr "No data available to display commitment evolution."
 
-#: src/components/entities/EntityFinancialTrends.tsx:227
+#: src/components/entities/EntityFinancialTrends.tsx:240
 msgid "No data available to display financial evolution."
 msgstr "No data available to display financial evolution."
 
@@ -5883,11 +6101,11 @@ msgstr "No series found."
 msgid "No SIRUTA code associated."
 msgstr "No SIRUTA code associated."
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:167
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:220
 msgid "No steps available"
 msgstr "No steps available"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:205
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:243
 msgid "No steps available yet. Please check back later."
 msgstr "No steps available yet. Please check back later."
 
@@ -5982,7 +6200,7 @@ msgstr "Not enough values to build distribution."
 msgid "Not equal to"
 msgstr "Not equal to"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:78
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:95
 msgid "Not found"
 msgstr "Not found"
 
@@ -6025,7 +6243,7 @@ msgid "Notifications Settings"
 msgstr "Notifications Settings"
 
 #: src/components/commitments/commitments-trends.tsx:197
-#: src/components/entities/EntityFinancialTrends.tsx:98
+#: src/components/entities/EntityFinancialTrends.tsx:101
 msgid "November"
 msgstr "November"
 
@@ -6033,13 +6251,42 @@ msgstr "November"
 msgid "Now"
 msgstr "Now"
 
+#: src/features/challenges/components/analysis/challenge-entity-subordinates-section.tsx:175
+#~ msgid "Nu am găsit cheltuieli raportate pentru instituțiile subordonate în perioada selectată."
+#~ msgstr "Nu am găsit cheltuieli raportate pentru instituțiile subordonate în perioada selectată."
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:604
+msgid "Nu am putut încărca analiza."
+msgstr "Nu am putut încărca analiza."
+
+#: src/features/challenges/components/analysis/challenge-entity-subordinates-section.tsx:157
+#~ msgid "Nu am putut încărca instituțiile subordonate pentru această perioadă."
+#~ msgstr "Nu am putut încărca instituțiile subordonate pentru această perioadă."
+
+#: src/features/challenges/components/analysis/challenge-entity-subordinates-section.tsx:171
+#~ msgid "Nu există instituții subordonate conectate acestei primării în datele disponibile."
+#~ msgstr "Nu există instituții subordonate conectate acestei primării în datele disponibile."
+
+#: src/features/challenges/components/analysis/challenge-entity-anomaly-summary.tsx:88
+#~ msgid "Nu există semnale de alarmă pentru perioada curentă."
+#~ msgstr "Nu există semnale de alarmă pentru perioada curentă."
+
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:337
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:349
+#~ msgid "Nu există suficiente date pentru topul categoriilor în perioada selectată."
+#~ msgstr "Nu există suficiente date pentru topul categoriilor în perioada selectată."
+
+#: src/features/challenges/components/analysis/challenge-entity-anomaly-summary.tsx:132
+#~ msgid "Nu s-au găsit linii bugetare marcate cu anomalii."
+#~ msgstr "Nu s-au găsit linii bugetare marcate cu anomalii."
+
 #: src/components/maps/charts/UatDistributionChart.tsx:39
 #: src/components/maps/charts/UatDistributionChart.tsx:105
 msgid "Number of UATs"
 msgstr "Number of UATs"
 
 #: src/components/commitments/commitments-trends.tsx:196
-#: src/components/entities/EntityFinancialTrends.tsx:98
+#: src/components/entities/EntityFinancialTrends.tsx:101
 msgid "October"
 msgstr "October"
 
@@ -6152,7 +6399,7 @@ msgid "Open floating entity search"
 msgstr "Open floating entity search"
 
 #: src/components/commitments/commitments-trends.tsx:301
-#: src/components/entities/EntityFinancialTrends.tsx:188
+#: src/components/entities/EntityFinancialTrends.tsx:198
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1045
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1046
 msgid "Open in chart editor"
@@ -6167,7 +6414,7 @@ msgstr "Open in Chart Editor"
 msgid "Open in charts"
 msgstr "Open in charts"
 
-#: src/components/entities/views/Overview.tsx:287
+#: src/components/entities/views/Overview.tsx:288
 msgid "Open in entity analytics"
 msgstr "Open in entity analytics"
 
@@ -6331,6 +6578,10 @@ msgstr "Parent Categories"
 msgid "Partial history"
 msgstr "Partial history"
 
+#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:124
+msgid "Participare"
+msgstr "Participare"
+
 #: src/components/charts/components/chart-config/SeriesToolbar.tsx:37
 msgid "Paste"
 msgstr "Paste"
@@ -6382,6 +6633,10 @@ msgstr "Payments"
 msgid "Payments Made"
 msgstr "Payments Made"
 
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:136
+msgid "Pe ce s-au cheltuit banii"
+msgstr "Pe ce s-au cheltuit banii"
+
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:351
 msgid "Pension (CAS)"
 msgstr "Pension (CAS)"
@@ -6431,6 +6686,10 @@ msgstr "Percentile band"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:97
 msgid "Percentiles are inclusive and min/max are normalized if swapped."
 msgstr "Percentiles are inclusive and min/max are normalized if swapped."
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-header.tsx:167
+msgid "Perioada"
+msgstr "Perioada"
 
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:117
 #: src/components/charts/components/series-config/InsSeriesEditor.tsx:598
@@ -6564,6 +6823,10 @@ msgstr "Position"
 msgid "Positive values indicate natural growth; negative values indicate natural decline."
 msgstr "Positive values indicate natural growth; negative values indicate natural decline."
 
+#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:67
+#~ msgid "Poți explora în continuare calendarul și resursele, dar pentru a începe provocările și a salva progresul ai nevoie de autentificare."
+#~ msgstr "Poți explora în continuare calendarul și resursele, dar pentru a începe provocările și a salva progresul ai nevoie de autentificare."
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:123
 msgid "Prefer median over mean when one or two UATs dominate values."
 msgstr "Prefer median over mean when one or two UATs dominate values."
@@ -6596,7 +6859,7 @@ msgstr "Preview of the alert chart and settings."
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:191
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:524
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:206
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:296
 #: src/features/learning/components/player/LessonPlayer.tsx:596
 msgid "Previous"
 msgstr "Previous"
@@ -6604,6 +6867,14 @@ msgstr "Previous"
 #: src/components/theme/inflation-toggle.tsx:54
 msgid "Prices"
 msgstr "Prices"
+
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:58
+msgid "Primăria mea"
+msgstr "Primăria mea"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-header.tsx:130
+msgid "Primăria Mea"
+msgstr "Primăria Mea"
 
 #: src/components/entities/EntityReports.tsx:172
 msgid "Principal Aggregated"
@@ -6633,8 +6904,8 @@ msgstr "Processing..."
 msgid "Product"
 msgstr "Product"
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:204
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:165
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:203
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:189
 msgid "Progress"
 msgstr "Progress"
 
@@ -6678,7 +6949,7 @@ msgid "Public sector information from Ministerul Finanțelor. No government affi
 msgstr "Public sector information from Ministerul Finanțelor. No government affiliation."
 
 #: src/components/commitments/commitments-trends.tsx:201
-#: src/components/entities/EntityFinancialTrends.tsx:100
+#: src/components/entities/EntityFinancialTrends.tsx:103
 #: src/components/entities/EntityReportControls.tsx:233
 #: src/components/entities/views/ins-stats-view.filters.ts:19
 msgid "Quarter"
@@ -6940,7 +7211,7 @@ msgstr "Reset to available period"
 msgid "Reset to default"
 msgstr "Reset to default"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:34
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:42
 msgid "Resources"
 msgstr "Resources"
 
@@ -7000,8 +7271,8 @@ msgstr "Revenues/Expenses"
 msgid "Revert"
 msgstr "Revert"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:146
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:125
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:199
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:157
 msgid "Review"
 msgstr "Review"
 
@@ -7013,6 +7284,10 @@ msgstr "Review and manage alerts created from your custom data series."
 #: src/routes/$lang/learning/index.lazy.tsx:241
 msgid "Review Path"
 msgstr "Review Path"
+
+#: src/features/challenges/components/analysis/challenge-entity-anomaly-summary.tsx:87
+#~ msgid "Revizuiește liniile bugetare semnalate pentru perioada curentă."
+#~ msgstr "Revizuiește liniile bugetare semnalate pentru perioada curentă."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:153
 msgid "Robust anomaly detection based on median absolute deviation (MAD), less sensitive to extreme outliers than z-score."
@@ -7112,6 +7387,10 @@ msgstr "Save your progress"
 msgid "Saving…"
 msgstr "Saving…"
 
+#: src/features/challenges/components/analysis/challenge-entity-analysis-header.tsx:210
+msgid "Schimbă Primăria"
+msgstr "Schimbă Primăria"
+
 #: src/lib/ins/ins-dashboard-config.ts:142
 msgid "Schools, students and teachers."
 msgstr "Schools, students and teachers."
@@ -7123,6 +7402,10 @@ msgstr "SDG 2020"
 #: src/lib/ins/ins-metric-registry.ts:114
 msgid "SDG 2030"
 msgstr "SDG 2030"
+
+#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:169
+msgid "Se înregistrează…"
+msgstr "Se înregistrează…"
 
 #: src/features/learning/components/player/MarkComplete.tsx:94
 msgid "Seal your progress and move closer to becoming a budget expert."
@@ -7295,7 +7578,7 @@ msgstr "Select a predefined dataset to track"
 msgid "Select a snapshot to clone into a new map."
 msgstr "Select a snapshot to clone into a new map."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:349
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:460
 msgid "Select a topic to begin"
 msgstr "Select a topic to begin"
 
@@ -7355,13 +7638,17 @@ msgstr "Select Series Type"
 msgid "Select specific years. If none selected, all years will be shown."
 msgstr "Select specific years. If none selected, all years will be shown."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:265
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:371
 msgid "Select topic"
 msgstr "Select topic"
 
 #: src/components/charts/components/series-config/DataLabelSelector.tsx:29
 msgid "Select years..."
 msgstr "Select years..."
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-header.tsx:174
+msgid "Selectează anul"
+msgstr "Selectează anul"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1251
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:590
@@ -7370,7 +7657,6 @@ msgstr "selected"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1300
 #: src/components/filters/base-filter/SelectedOptionsDisplay.tsx:47
-#: src/features/challenges/components/interactive/UatPicker.tsx:90
 msgid "Selected"
 msgstr "Selected"
 
@@ -7394,6 +7680,10 @@ msgstr "Selects UATs by standardized distance from mean in standard deviations. 
 msgid "Seller Keeps"
 msgstr "Seller Keeps"
 
+#: src/features/challenges/components/analysis/challenge-entity-anomaly-summary.tsx:79
+#~ msgid "Semnale de Alarmă"
+#~ msgstr "Semnale de Alarmă"
+
 #: src/components/feedback/FeedbackFab.tsx:14
 #: src/components/footer/AppFooter.tsx:181
 #: src/components/sentry/SendFeedbackAction.tsx:17
@@ -7401,7 +7691,7 @@ msgid "Send feedback"
 msgstr "Send feedback"
 
 #: src/components/commitments/commitments-trends.tsx:195
-#: src/components/entities/EntityFinancialTrends.tsx:98
+#: src/components/entities/EntityFinancialTrends.tsx:101
 msgid "September"
 msgstr "September"
 
@@ -7562,7 +7852,7 @@ msgstr "Show Grid Lines"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:440
 #: src/components/charts/components/series-config/SeriesFilter.tsx:802
 #: src/components/commitments/commitments-trends.tsx:328
-#: src/components/entities/EntityFinancialTrends.tsx:206
+#: src/components/entities/EntityFinancialTrends.tsx:218
 #: src/components/entities/views/ChartCard.tsx:75
 msgid "Show growth (%)"
 msgstr "Show growth (%)"
@@ -7580,6 +7870,7 @@ msgstr "Show Legend"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1063
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1563
 #: src/components/filters/base-filter/SelectedOptionsDisplay.tsx:63
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:99
 msgid "Show less"
 msgstr "Show less"
 
@@ -7789,8 +8080,8 @@ msgstr "Standard"
 msgid "Standard Contractual Clauses (SCCs) approved by the European Commission"
 msgstr "Standard Contractual Clauses (SCCs) approved by the European Commission"
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:145
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:156
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:144
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:209
 msgid "Start"
 msgstr "Start"
 
@@ -7873,7 +8164,7 @@ msgstr "Status by Budget Chapters"
 msgid "Stay here"
 msgstr "Stay here"
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:131
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:216
 msgid "Step not found"
 msgstr "Step not found"
 
@@ -7881,9 +8172,8 @@ msgstr "Step not found"
 msgid "Step Successfully Finished"
 msgstr "Step Successfully Finished"
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:244
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:197
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:271
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:156
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:309
 msgid "Steps"
 msgstr "Steps"
 
@@ -7922,6 +8212,14 @@ msgstr "Successfully unsubscribed"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:585
 msgid "Sum"
 msgstr "Sum"
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-explainer.tsx:34
+#~ msgid "Sumele pot fi mai mari decât aparatul propriu al primăriei: ele reflectă banii administrați împreună cu instituțiile subordonate din aceeași structură de finanțare."
+#~ msgstr "Sumele pot fi mai mari decât aparatul propriu al primăriei: ele reflectă banii administrați împreună cu instituțiile subordonate din aceeași structură de finanțare."
+
+#: src/features/challenges/components/analysis/challenge-entity-analysis-explainer.tsx:62
+#~ msgid "Sumele sunt ajustate la inflație, iar valorile din anii anteriori sunt recalculate în prețuri 2024."
+#~ msgstr "Sumele sunt ajustate la inflație, iar valorile din anii anteriori sunt recalculate în prețuri 2024."
 
 #: src/routes/privacy.lazy.tsx:152
 msgid "Supervisory authority"
@@ -8025,7 +8323,7 @@ msgstr "The answer is:"
 msgid "The classification code \"{selectedCode}\" could not be found."
 msgstr "The classification code \"{selectedCode}\" could not be found."
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:80
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:97
 msgid "The content you're looking for doesn't exist or has been moved."
 msgstr "The content you're looking for doesn't exist or has been moved."
 
@@ -8111,7 +8409,7 @@ msgstr "The state total claim is <0>{0}</0>."
 msgid "The Step Between Budget and Payment"
 msgstr "The Step Between Budget and Payment"
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:133
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:218
 msgid "The step you're looking for doesn't exist or may have been moved."
 msgstr "The step you're looking for doesn't exist or may have been moved."
 
@@ -8324,6 +8622,10 @@ msgstr "Tooltip"
 msgid "Top"
 msgstr "Top"
 
+#: src/features/challenges/components/analysis/challenge-entity-subordinates-section.tsx:125
+#~ msgid "Top {0} din {totalChildrenCount}"
+#~ msgstr "Top {0} din {totalChildrenCount}"
+
 #: src/components/entities/views/TrendsView.tsx:105
 msgid "Top {TOP_CATEGORIES_COUNT} Income Categories for {entityName}"
 msgstr "Top {TOP_CATEGORIES_COUNT} Income Categories for {entityName}"
@@ -8340,7 +8642,16 @@ msgstr "Top 15 Counties by Total Amount"
 msgid "Top 15 UATs by Total Amount"
 msgstr "Top 15 UATs by Total Amount"
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:260
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:92
+#~ msgid "Top 5 categorii economice pentru anul selectat"
+#~ msgstr "Top 5 categorii economice pentru anul selectat"
+
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:88
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:93
+#~ msgid "Top 5 categorii funcționale pentru anul selectat"
+#~ msgstr "Top 5 categorii funcționale pentru anul selectat"
+
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:366
 msgid "Topic"
 msgstr "Topic"
 
@@ -8384,15 +8695,19 @@ msgstr "Total amount"
 msgid "Total Amount"
 msgstr "Total Amount"
 
+#: src/features/challenges/components/analysis/challenge-entity-subordinates-section.tsx:95
+#~ msgid "Total cheltuieli"
+#~ msgstr "Total cheltuieli"
+
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:151
 msgid "Total Duration"
 msgstr "Total Duration"
 
-#: src/components/entities/EntityFinancialSummary.tsx:82
+#: src/components/entities/EntityFinancialSummary.tsx:305
 msgid "Total Expenses"
 msgstr "Total Expenses"
 
-#: src/components/entities/EntityFinancialSummary.tsx:81
+#: src/components/entities/EntityFinancialSummary.tsx:304
 msgid "Total Income"
 msgstr "Total Income"
 
@@ -8661,7 +8976,7 @@ msgstr "Untitled map"
 msgid "Untitled Series"
 msgstr "Untitled Series"
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:141
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:188
 msgid "Up Next"
 msgstr "Up Next"
 
@@ -8787,6 +9102,10 @@ msgstr "Utilization"
 msgid "Validation errors"
 msgstr "Validation errors"
 
+#: src/features/challenges/components/analysis/challenge-entity-anomaly-summary.tsx:19
+#~ msgid "Valorile scad între raportări și pot indica o corecție sau o reclasificare."
+#~ msgstr "Valorile scad între raportări și pot indica o corecție sau o reclasificare."
+
 #: src/components/charts/components/series-config/CustomSeriesDataEditor.tsx:95
 #: src/components/charts/components/series-config/CustomSeriesValueEditor.tsx:38
 #: src/components/entities/views/ins-stats-view.presentation.tsx:971
@@ -8835,6 +9154,11 @@ msgstr "VAT Reality Check"
 msgid "VAT, Income, Profit"
 msgstr "VAT, Income, Profit"
 
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:694
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:702
+msgid "Veniturile nu au cod economic."
+msgstr "Veniturile nu au cod economic."
+
 #: src/routes/$lang/learning/certificates.$id.lazy.tsx:93
 msgid "Verify a learning certificate (proof of concept)."
 msgstr "Verify a learning certificate (proof of concept)."
@@ -8847,11 +9171,19 @@ msgstr "Version history"
 msgid "Version restored"
 msgstr "Version restored"
 
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:61
+msgid "Vezi analiza bugetară pentru entitatea selectată."
+msgstr "Vezi analiza bugetară pentru entitatea selectată."
+
+#: src/features/challenges/components/analysis/challenge-entity-subordinates-section.tsx:192
+#~ msgid "Vezi toate instituțiile"
+#~ msgstr "Vezi toate instituțiile"
+
 #: src/components/filters/EntityAnalyticsFilter.tsx:436
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:101
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:604
 #: src/components/maps/HeatmapDataTable.tsx:469
-#: src/features/challenges/components/hub/BudgetTimelineStrip.tsx:37
+#: src/features/challenges/components/hub/BudgetTimelineStrip.tsx:42
 #: src/routes/entity-analytics.lazy.tsx:219
 msgid "View"
 msgstr "View"
@@ -8868,7 +9200,7 @@ msgstr "View {warningCount} warnings"
 msgid "View 1 warning"
 msgstr "View 1 warning"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:68
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:99
 msgid "View all"
 msgstr "View all"
 
@@ -8896,7 +9228,7 @@ msgid "View Chart"
 msgstr "View Chart"
 
 #: src/components/budget-explorer/BudgetTreemap.tsx:646
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:191
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:190
 #: src/features/learning/components/cards/LearningPathCard.tsx:75
 msgid "View Details"
 msgstr "View Details"
@@ -9026,7 +9358,7 @@ msgstr "We'll start with the path that matches your goal and choices."
 msgid "Weather, heating systems, and local industry can materially affect year-to-year variation."
 msgstr "Weather, heating systems, and local industry can materially affect year-to-year variation."
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:78
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:96
 #: src/routes/$lang/learning/index.lazy.tsx:178
 msgid "Welcome back."
 msgstr "Welcome back."
@@ -9125,7 +9457,7 @@ msgstr "Y axis series"
 
 #: src/components/charts/components/series-config/CustomSeriesDataEditor.tsx:94
 #: src/components/commitments/commitments-trends.tsx:201
-#: src/components/entities/EntityFinancialTrends.tsx:100
+#: src/components/entities/EntityFinancialTrends.tsx:103
 #: src/components/entities/EntityReportControls.tsx:206
 #: src/components/entities/EntityReports.tsx:184
 #: src/components/entities/views/ins-stats-view.filters.ts:18
@@ -9214,12 +9546,12 @@ msgstr "You need to be signed in to subscribe to notifications"
 msgid "You will no longer receive notifications via email."
 msgstr "You will no longer receive notifications via email."
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:85
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:103
 #: src/routes/$lang/learning/index.lazy.tsx:182
 msgid "You're doing great. Keep up the momentum."
 msgstr "You're doing great. Keep up the momentum."
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:117
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:144
 msgid "You've completed all challenges!"
 msgstr "You've completed all challenges!"
 
@@ -9294,6 +9626,14 @@ msgstr "Your rights under GDPR"
 #: src/routes/terms.lazy.tsx:33
 msgid "Your use of the Service is also governed by our <0>Privacy Policy</0> and <1>Cookie Policy</1>, which describe how we process personal data, including security logs, authentication data, and your communication preferences."
 msgstr "Your use of the Service is also governed by our <0>Privacy Policy</0> and <1>Cookie Policy</1>, which describe how we process personal data, including security logs, authentication data, and your communication preferences."
+
+#: src/components/entities/EntityFinancialSummary.tsx:110
+msgid "YoY"
+msgstr "YoY"
+
+#: src/features/challenges/components/analysis/challenge-entity-anomaly-summary.tsx:53
+msgid "YTD anomaly"
+msgstr "YTD anomaly"
 
 #: src/components/commitments/CommitmentsTable.tsx:65
 msgid "YTD Anomaly"

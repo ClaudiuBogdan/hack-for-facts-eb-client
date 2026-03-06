@@ -6,13 +6,7 @@ export type CampaignRouteSearch = {
   readonly lang?: CampaignLocale
 }
 
-export type CampaignPrincipalRouteSearch = CampaignRouteSearch & {
-  readonly entityCui?: string
-}
-
-export type CampaignCalendarRouteSearch = CampaignRouteSearch & {
-  readonly entityCui?: string
-}
+export type CampaignCalendarRouteSearch = CampaignRouteSearch
 
 export type CampaignTranslatedString = {
   readonly ro: string
@@ -119,7 +113,7 @@ export type CampaignSeoPageKind =
   | 'principal-selector'
   | 'challenges'
   | 'challenge-detail'
-  | 'onboarding'
+  | 'primarie'
   | 'principal-map'
   | 'calendar'
 
@@ -163,11 +157,4 @@ export type CampaignProgressSnapshot = {
   readonly selectedEntityCui: string | null
   readonly challenges: Readonly<Record<string, CampaignChallengeProgress>>
   readonly lastUpdated: string
-}
-
-export type CampaignAuthIntent = {
-  readonly actionId: string
-  readonly challengeSlug?: string
-  readonly redirectTo: string
-  readonly createdAt: string
 }

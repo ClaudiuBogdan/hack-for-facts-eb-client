@@ -3,21 +3,26 @@ import { t } from '@lingui/core/macro'
 import { useMemo } from 'react'
 import { Trophy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useCampaignProgress } from '@/features/campaigns/local-budget-2026/hooks/use-campaign-progress'
+import { useChallengeAccess } from '../../hooks/use-challenge-access'
 import { useChallengeProgress } from '../../hooks/use-challenge-progress'
 import {
   getAllSteps,
   getChallengeModules,
   getChallengeModuleStats,
 } from '../../utils/modules'
-import { CHALLENGES_BASE_PATH } from '../../constants'
+import {
+  buildCampaignProvocariModulePath,
+  buildCampaignProvocariStepPath,
+} from '../../constants'
 import type { ChallengeLocale, ChallengeModuleDefinition } from '../../types'
 import { ChallengeModuleCard, type ChallengeModuleCardStats } from '../cards/ChallengeModuleCard'
 import { BudgetTimelineStrip } from './BudgetTimelineStrip'
+import { ChallengeHubAccessCard } from './challenge-hub-access-card'
 import { QuickResourcesPreview } from './QuickResourcesPreview'
 import { UatSwitchBadge } from './UatSwitchBadge'
 
 type ChallengesHubPageProps = {
+  readonly entityCui: string
   readonly locale: ChallengeLocale
 }
 
@@ -27,11 +32,18 @@ type ModuleWithStats = {
   readonly nextStepUrl: string | undefined
 }
 
-export function ChallengesHubPage({ locale }: ChallengesHubPageProps) {
+export function ChallengesHubPage({
+  entityCui,
+  locale,
+}: ChallengesHubPageProps) {
   const modules = useMemo(() => getChallengeModules(), [])
-  const { progress: campaignProgress } = useCampaignProgress()
+  const {
+    accessCardVariant,
+    isAccessGranted,
+    isSubmitting,
+    register,
+  } = useChallengeAccess()
   const { getStepStatus, isStepCompleted } = useChallengeProgress()
-  const selectedEntityCui = campaignProgress.selectedEntityCui ?? undefined
 
   // Compute stats for all modules
   const modulesWithStats = useMemo<readonly ModuleWithStats[]>(() => {
@@ -49,7 +61,12 @@ export function ChallengesHubPage({ locale }: ChallengesHubPageProps) {
 
       const nextStepUrl =
         moduleStats.nextStep && moduleStats.nextChallengeSlug
-          ? `${CHALLENGES_BASE_PATH}/${module.slug}/${moduleStats.nextChallengeSlug}/${moduleStats.nextStep.slug}`
+          ? buildCampaignProvocariStepPath(
+              entityCui,
+              module.slug,
+              moduleStats.nextChallengeSlug,
+              moduleStats.nextStep.slug,
+            )
           : undefined
 
       return {
@@ -64,13 +81,14 @@ export function ChallengesHubPage({ locale }: ChallengesHubPageProps) {
         nextStepUrl,
       }
     })
-  }, [modules, getStepStatus, isStepCompleted])
+  }, [entityCui, modules, getStepStatus, isStepCompleted])
 
   // First incomplete module is "active"; if all complete, show the last one
   const activeModuleData =
     modulesWithStats.find((m) => m.stats.percentage < 100) ??
     modulesWithStats[modulesWithStats.length - 1] ??
     null
+  const fallbackModuleData = modulesWithStats[0] ?? null
   const otherModulesData = modulesWithStats.filter((m) => m !== activeModuleData)
 
   const greeting =
@@ -87,52 +105,81 @@ export function ChallengesHubPage({ locale }: ChallengesHubPageProps) {
         ? 'Test your skills with hands-on budget exploration challenges.'
         : 'Testează-ți abilitățile cu provocări practice de explorare a bugetelor.'
 
-  return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700 py-6 px-4">
-      {/* Header — compact */}
-      <div className="space-y-2 pl-2">
-        <h1 className="text-3xl md:text-4xl font-black tracking-tight">{greeting}</h1>
-        <p className="text-muted-foreground font-medium text-base opacity-60">{subtitle}</p>
-        {selectedEntityCui && (
-          <div className="pt-1">
-            <UatSwitchBadge entityCui={selectedEntityCui} />
-          </div>
-        )}
-      </div>
+  const mainHero = (() => {
+    if (!isAccessGranted) {
+      return (
+        <ChallengeHubAccessCard
+          locale={locale}
+          variant={accessCardVariant ?? 'loading'}
+          isSubmitting={isSubmitting}
+          onRegister={register}
+        />
+      )
+    }
 
-      {/* Active Module Card */}
-      {activeModuleData && activeModuleData.stats.percentage < 100 ? (
+    if (!fallbackModuleData) return null
+
+    if (activeModuleData && activeModuleData.stats.percentage < 100) {
+      return (
         <ChallengeModuleCard
+          entityCui={entityCui}
           module={activeModuleData.module}
           stats={activeModuleData.stats}
           locale={locale}
           variant="active"
           nextStepUrl={activeModuleData.nextStepUrl}
         />
-      ) : activeModuleData ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center bg-muted/20 rounded-[40px] border-2 border-dashed border-muted">
-          <Trophy className="h-16 w-16 text-primary/40 mb-6" />
-          <h3 className="text-2xl font-black tracking-tight mb-2">{t`Congratulations!`}</h3>
-          <p className="text-muted-foreground font-medium mb-8">
-            {t`You've completed all challenges!`}
-          </p>
-          <Button
-            asChild
-            variant="outline"
-            className="rounded-2xl px-8 h-12 font-bold"
+      )
+    }
+
+    if (!activeModuleData) {
+      return null
+    }
+
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center bg-muted/20 rounded-[40px] border-2 border-dashed border-muted">
+        <Trophy className="h-16 w-16 text-primary/40 mb-6" />
+        <h3 className="text-2xl font-black tracking-tight mb-2">{t`Congratulations!`}</h3>
+        <p className="text-muted-foreground font-medium mb-8">
+          {t`You've completed all challenges!`}
+        </p>
+        <Button
+          asChild
+          variant="outline"
+          className="rounded-2xl px-8 h-12 font-bold"
+        >
+          <Link
+            to={buildCampaignProvocariModulePath(
+              entityCui,
+              activeModuleData.module.slug,
+            ) as '/'}
           >
-            <Link to={`${CHALLENGES_BASE_PATH}/${activeModuleData.module.slug}` as '/'}>
-              {t`Review`}
-            </Link>
-          </Button>
+            {t`Review`}
+          </Link>
+        </Button>
+      </div>
+    )
+  })()
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700 py-6 px-4">
+      {/* Header — compact */}
+      <div className="space-y-2 pl-2">
+        <h1 className="text-3xl md:text-4xl font-black tracking-tight">{greeting}</h1>
+        <p className="text-muted-foreground font-medium text-base opacity-60">{subtitle}</p>
+        <div className="pt-1">
+          <UatSwitchBadge entityCui={entityCui} />
         </div>
-      ) : null}
+      </div>
+
+      {/* Active Module Card */}
+      {mainHero}
 
       {/* Budget Timeline */}
-      <BudgetTimelineStrip locale={locale} entityCui={selectedEntityCui} />
+      <BudgetTimelineStrip locale={locale} entityCui={entityCui} />
 
       {/* Quick Resources */}
-      <QuickResourcesPreview locale={locale} />
+      <QuickResourcesPreview locale={locale} entityCui={entityCui} />
 
       {/* Other Modules — flat, no collapsible */}
       {otherModulesData.length > 0 && (
@@ -144,11 +191,12 @@ export function ChallengesHubPage({ locale }: ChallengesHubPageProps) {
             {otherModulesData.map(({ module, stats, nextStepUrl }) => (
               <ChallengeModuleCard
                 key={module.id}
+                entityCui={entityCui}
                 module={module}
                 stats={stats}
                 locale={locale}
                 variant="other"
-                nextStepUrl={nextStepUrl}
+                nextStepUrl={isAccessGranted ? nextStepUrl : undefined}
               />
             ))}
           </div>

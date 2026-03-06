@@ -4,7 +4,7 @@ import { ArrowRight, Play, Trophy } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { getTranslatedText } from '../../utils/modules'
-import { CHALLENGES_BASE_PATH } from '../../constants'
+import { buildCampaignProvocariModulePath } from '../../constants'
 import type { ChallengeLocale, ChallengeModuleDefinition } from '../../types'
 
 export type ChallengeModuleCardStats = {
@@ -18,6 +18,7 @@ export type ChallengeModuleCardStats = {
 export type ChallengeModuleCardVariant = 'active' | 'other'
 
 export type ChallengeModuleCardProps = {
+  readonly entityCui: string
   readonly module: ChallengeModuleDefinition
   readonly stats: ChallengeModuleCardStats
   readonly locale: ChallengeLocale
@@ -128,6 +129,7 @@ function ActionButton({
 }
 
 export function ChallengeModuleCard({
+  entityCui,
   module,
   stats,
   locale,
@@ -184,7 +186,7 @@ export function ChallengeModuleCard({
               variant="ghost"
               className={`rounded-2xl ${styles.detailsButtonHeight} text-sm font-black text-muted-foreground hover:bg-transparent hover:text-foreground group/link`}
             >
-              <Link to={`${CHALLENGES_BASE_PATH}/${module.slug}` as '/'}>
+              <Link to={buildCampaignProvocariModulePath(entityCui, module.slug) as '/'}>
                 {t`View Details`}
                 <ArrowRight className="ml-2 h-4 w-4 group-hover/link:translate-x-1 transition-transform" />
               </Link>

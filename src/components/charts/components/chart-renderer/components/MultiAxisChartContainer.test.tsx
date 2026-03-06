@@ -421,6 +421,34 @@ describe('MultiAxisChartContainer', () => {
       expect(capturedLegendProps.verticalAlign).toBe('bottom')
       expect(capturedLegendProps.height).toBe(36)
     })
+
+    it('truncates long legend labels', () => {
+      const longLabel =
+        'Cote și sume defalcate din impozitul pe venit pentru bugetul local'
+
+      render(
+        <MultiAxisChartContainer
+          chart={createMockChart({
+            config: { ...createMockChart().config, showLegend: true },
+            series: [
+              createMockSeries({
+                label: longLabel,
+              }),
+            ],
+          })}
+          unitMap={mockUnitMap}
+          onAnnotationPositionChange={mockOnAnnotationPositionChange}
+        >
+          <div>Content</div>
+        </MultiAxisChartContainer>
+      )
+
+      const formattedLabel = capturedLegendProps.formatter(longLabel)
+
+      expect(formattedLabel).not.toBe(longLabel)
+      expect(formattedLabel.endsWith('…')).toBe(true)
+      expect(formattedLabel.length).toBe(36)
+    })
   })
 
   describe('annotations', () => {

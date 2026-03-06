@@ -47,22 +47,14 @@ describe('campaign-seo', () => {
     expect(metadata.image.url).toContain('/assets/images/campaigns/bugete-locale-2026/share/landing.png')
   })
 
-  it('builds principal canonical with lang query and noindex', () => {
+  it('builds provocari canonical with lang query and noindex', () => {
     const metadata = buildCampaignSeoMetadata({
       pageKind: 'hub',
       locale: 'en',
+      entityCui: '12345678',
     })
 
-    expect(metadata.canonicalUrl).toContain('/bugete-locale-2026/principal?lang=en')
-    expect(metadata.robots).toBe('noindex,follow')
-  })
-
-  it('marks onboarding route as noindex', () => {
-    const metadata = buildCampaignSeoMetadata({
-      pageKind: 'onboarding',
-      locale: 'ro',
-    })
-
+    expect(metadata.canonicalUrl).toContain('/bugete-locale-2026/12345678/provocari?lang=en')
     expect(metadata.robots).toBe('noindex,follow')
   })
 
@@ -90,6 +82,7 @@ describe('campaign-seo', () => {
     const metadata = buildCampaignSeoMetadata({
       pageKind: 'challenge-detail',
       locale: 'ro',
+      entityCui: '12345678',
       challengeSlug: 'not-a-real-slug',
     })
 
@@ -101,10 +94,11 @@ describe('campaign-seo', () => {
     const metadata = buildCampaignSeoMetadata({
       pageKind: 'calendar',
       locale: 'ro',
+      entityCui: '4305857',
     })
 
     expect(metadata.robots).toBe('index,follow')
-    expect(metadata.canonicalUrl).toContain('/bugete-locale-2026/calendar')
+    expect(metadata.canonicalUrl).toContain('/bugete-locale-2026/4305857/calendar')
     expect(metadata.canonicalUrl).not.toContain('?lang=en')
   })
 
@@ -112,6 +106,7 @@ describe('campaign-seo', () => {
     const head = buildCampaignRouteHead({
       pageKind: 'challenges',
       locale: 'ro',
+      entityCui: '12345678',
     })
 
     expect(head.links).toEqual(

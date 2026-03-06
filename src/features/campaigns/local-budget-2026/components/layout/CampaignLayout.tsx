@@ -12,7 +12,9 @@ export function CampaignLayout() {
 function CampaignLayoutInner() {
   const location = useLocation()
   const isChallengesShellRoute =
-    location.pathname.includes('/challenges') || location.pathname.includes('/calendar')
+    location.pathname.includes('/provocari') ||
+    location.pathname.includes('/primarie') ||
+    location.pathname.includes('/calendar')
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-zinc-50 to-zinc-100 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">

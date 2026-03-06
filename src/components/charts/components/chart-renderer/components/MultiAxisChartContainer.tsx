@@ -17,6 +17,16 @@ interface MultiAxisChartContainerProps {
   disableTooltip?: boolean;
   diffStateKey?: string;
 }
+const MAX_LEGEND_LABEL_LENGTH = 36
+
+function truncateLegendLabel(value: string | number) {
+  const trimmedValue = String(value).trim()
+  if (trimmedValue.length <= MAX_LEGEND_LABEL_LENGTH) {
+    return trimmedValue
+  }
+
+  return `${trimmedValue.slice(0, MAX_LEGEND_LABEL_LENGTH - 1)}…`
+}
 
 // Custom comparison function that ignores the children function prop
 // since it's recreated on every parent render but the chart structure stays the same
@@ -69,6 +79,10 @@ export const MultiAxisChartContainer = memo(function MultiAxisChartContainer({ u
 
   // Stable legend sorter; must be declared unconditionally to respect hooks rules
   const legendItemSorter = useCallback(() => 0, []);
+  const legendFormatter = useCallback(
+    (value: string | number) => truncateLegendLabel(value),
+    [],
+  )
 
   // Memoized props/objects to avoid prop identity changes causing re-renders/flicker
   const xAxisTickProps = useMemo(() => ({ fontSize: 12 }), []);
@@ -120,6 +134,7 @@ export const MultiAxisChartContainer = memo(function MultiAxisChartContainer({ u
         height={36}
         wrapperStyle={legendWrapperStyle}
         itemSorter={legendItemSorter}
+        formatter={legendFormatter}
       />}
 
       {/* Pass the getYAxisId function to children */}

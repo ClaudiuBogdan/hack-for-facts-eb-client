@@ -118,6 +118,7 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     }
 
     setIsReady(true)
+    setIsInitialResolutionReady(true)
   }, [])
 
   useEffect(() => {
@@ -220,10 +221,15 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
   }, [isLoaded, isSignedIn, syncSnapshot])
 
   useEffect(() => {
-    if (!isReady || !isLoaded) return
+    if (!isReady) return
 
     let isActive = true
-    setIsInitialResolutionReady(false)
+
+    if (!isLoaded) {
+      return () => {
+        isActive = false
+      }
+    }
 
     const resolveInitialState = async () => {
       if (!isSignedIn) {

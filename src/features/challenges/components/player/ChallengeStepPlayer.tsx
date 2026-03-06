@@ -15,8 +15,13 @@ import {
   getChallengeModuleBySlug,
   getTranslatedText,
 } from '../../utils/modules'
-import { CHALLENGES_BASE_PATH } from '../../constants'
+import {
+  buildCampaignProvocariModulePath,
+  buildCampaignProvocariPath,
+  buildCampaignProvocariStepPath,
+} from '../../constants'
 import type { ChallengeLocale } from '../../types'
+import { useChallengeAccess } from '../../hooks/use-challenge-access'
 import { Quiz } from '@/features/learning/components/assessment/Quiz'
 import { MarkComplete } from '@/features/learning/components/player/MarkComplete'
 import {
@@ -32,9 +37,11 @@ import {
   type ChallengeMarkCompleteMdxProps,
   type ChallengeQuizMdxProps,
 } from './challenge-mdx-components'
-import { buildChallengeCustomMdxComponents } from './challenge-custom-mdx-components'
+import { ChallengeHubAccessCard } from '../hub/challenge-hub-access-card'
+import type { ChallengeAccessCardVariant } from '../../hooks/use-challenge-access'
 
 type ChallengeStepPlayerProps = {
+  readonly entityCui: string
   readonly locale: ChallengeLocale
   readonly moduleSlug: string
   readonly challengeSlug: string
@@ -43,9 +50,47 @@ type ChallengeStepPlayerProps = {
 
 type StepQuizWrapperProps = ChallengeQuizMdxProps & {
   readonly stepId: string
+  readonly locale: ChallengeLocale
+  readonly accessCardVariant: ChallengeAccessCardVariant | null
+  readonly isAccessGranted: boolean
+  readonly isSubmitting: boolean
+  readonly onRegister: () => Promise<void>
 }
 
-function StepQuizWrapper({ stepId, ...props }: StepQuizWrapperProps) {
+type ChallengeInteractionAccessReplacementProps = {
+  readonly locale: ChallengeLocale
+  readonly accessCardVariant: ChallengeAccessCardVariant | null
+  readonly isSubmitting: boolean
+  readonly onRegister: () => Promise<void>
+}
+
+function ChallengeInteractionAccessReplacement({
+  locale,
+  accessCardVariant,
+  isSubmitting,
+  onRegister,
+}: ChallengeInteractionAccessReplacementProps) {
+  return (
+    <div className="not-prose my-8">
+      <ChallengeHubAccessCard
+        locale={locale}
+        variant={accessCardVariant ?? 'loading'}
+        isSubmitting={isSubmitting}
+        onRegister={onRegister}
+      />
+    </div>
+  )
+}
+
+function StepQuizWrapper({
+  stepId,
+  locale,
+  accessCardVariant,
+  isAccessGranted,
+  isSubmitting,
+  onRegister,
+  ...props
+}: StepQuizWrapperProps) {
   const { progress } = useLearningProgress()
   const interaction = progress.content[stepId]?.interactions?.[props.id]
   const selectedOptionId = interaction?.kind === 'quiz' ? interaction.selectedOptionId : null
@@ -54,10 +99,22 @@ function StepQuizWrapper({ stepId, ...props }: StepQuizWrapperProps) {
 
   useRegisterLessonChallenge({ id: `quiz:${props.id}`, isCompleted })
 
+  if (!isAccessGranted) {
+    return (
+      <ChallengeInteractionAccessReplacement
+        locale={locale}
+        accessCardVariant={accessCardVariant}
+        isSubmitting={isSubmitting}
+        onRegister={onRegister}
+      />
+    )
+  }
+
   return <Quiz {...props} contentId={stepId} />
 }
 
 export function ChallengeStepPlayer({
+  entityCui,
   locale,
   moduleSlug,
   challengeSlug,
@@ -66,6 +123,12 @@ export function ChallengeStepPlayer({
   const module = getChallengeModuleBySlug(moduleSlug)
   const challenge = module?.challenges.find((c) => c.slug === challengeSlug) ?? null
   const step = challenge?.steps.find((s) => s.slug === stepSlug) ?? null
+  const {
+    accessCardVariant,
+    isAccessGranted,
+    isSubmitting,
+    register,
+  } = useChallengeAccess()
 
   const { Component, isLoading, error } = useChallengeStepContent({
     contentDir: step?.contentDir ?? 'missing',
@@ -95,20 +158,43 @@ export function ChallengeStepPlayer({
   const stepId = step?.id ?? ''
 
   const QuizWrapper = useCallback(
-    (props: ChallengeQuizMdxProps) => <StepQuizWrapper {...props} stepId={stepId} />,
-    [stepId],
+    (props: ChallengeQuizMdxProps) => (
+      <StepQuizWrapper
+        {...props}
+        stepId={stepId}
+        locale={locale}
+        accessCardVariant={accessCardVariant}
+        isAccessGranted={isAccessGranted}
+        isSubmitting={isSubmitting}
+        onRegister={register}
+      />
+    ),
+    [
+      accessCardVariant,
+      isAccessGranted,
+      isSubmitting,
+      locale,
+      register,
+      stepId,
+    ],
   )
 
   const MarkCompleteWrapper = useCallback(
-    (props: ChallengeMarkCompleteMdxProps) => (
-      <MarkComplete {...props} contentId={stepId} />
-    ),
-    [stepId],
-  )
+    (props: ChallengeMarkCompleteMdxProps) => {
+      if (!isAccessGranted) {
+        return (
+          <ChallengeInteractionAccessReplacement
+            locale={locale}
+            accessCardVariant={accessCardVariant}
+            isSubmitting={isSubmitting}
+            onRegister={register}
+          />
+        )
+      }
 
-  const customComponents = useMemo(
-    () => buildChallengeCustomMdxComponents(stepId),
-    [stepId],
+      return <MarkComplete {...props} contentId={stepId} />
+    },
+    [accessCardVariant, isAccessGranted, isSubmitting, locale, register, stepId],
   )
 
   const mdxComponents = useMemo(
@@ -116,9 +202,8 @@ export function ChallengeStepPlayer({
       buildChallengeMdxComponents({
         QuizComponent: QuizWrapper,
         MarkCompleteComponent: MarkCompleteWrapper,
-        customComponents,
       }),
-    [QuizWrapper, MarkCompleteWrapper, customComponents],
+    [QuizWrapper, MarkCompleteWrapper],
   )
 
   if (!module || !challenge || !step) {
@@ -133,7 +218,9 @@ export function ChallengeStepPlayer({
             {t`The step you're looking for doesn't exist or may have been moved.`}
           </p>
           <Button asChild className="mt-4">
-            <Link to={CHALLENGES_BASE_PATH as '/'}>{t`Back to Challenges`}</Link>
+            <Link to={buildCampaignProvocariPath(entityCui) as '/'}>
+              {t`Back to Challenges`}
+            </Link>
           </Button>
         </CardContent>
       </Card>
@@ -192,9 +279,12 @@ export function ChallengeStepPlayer({
       <nav className="flex items-center justify-between gap-3 pt-8 mt-8 border-t">
         {prev ? (
           <Link
-            to={
-              `${CHALLENGES_BASE_PATH}/${moduleSlug}/${findChallengeSlugForAdjacentStep(prev.id)}/${prev.slug}` as '/'
-            }
+            to={buildCampaignProvocariStepPath(
+              entityCui,
+              moduleSlug,
+              findChallengeSlugForAdjacentStep(prev.id),
+              prev.slug,
+            ) as '/'}
             resetScroll={true}
             className="group flex items-center gap-3 flex-1 min-w-0 max-w-[48%] p-3 rounded-xl border border-border/60 hover:border-border hover:bg-muted/30 transition-all"
           >
@@ -212,7 +302,7 @@ export function ChallengeStepPlayer({
           </Link>
         ) : (
           <Link
-            to={`${CHALLENGES_BASE_PATH}/${moduleSlug}` as '/'}
+            to={buildCampaignProvocariModulePath(entityCui, moduleSlug) as '/'}
             resetScroll={true}
             className="group flex items-center gap-3 p-3 rounded-xl border border-border/60 hover:border-border hover:bg-muted/30 transition-all"
           >
@@ -227,9 +317,12 @@ export function ChallengeStepPlayer({
 
         {next ? (
           <Link
-            to={
-              `${CHALLENGES_BASE_PATH}/${moduleSlug}/${findChallengeSlugForAdjacentStep(next.id)}/${next.slug}` as '/'
-            }
+            to={buildCampaignProvocariStepPath(
+              entityCui,
+              moduleSlug,
+              findChallengeSlugForAdjacentStep(next.id),
+              next.slug,
+            ) as '/'}
             resetScroll={true}
             className="group flex items-center justify-end gap-3 flex-1 min-w-0 max-w-[48%] p-3 rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-all"
           >
@@ -247,7 +340,7 @@ export function ChallengeStepPlayer({
           </Link>
         ) : (
           <Link
-            to={CHALLENGES_BASE_PATH as '/'}
+            to={buildCampaignProvocariPath(entityCui) as '/'}
             resetScroll={true}
             className="group flex items-center gap-3 p-3 rounded-xl bg-primary/10 text-primary hover:bg-primary/15 transition-all"
           >
