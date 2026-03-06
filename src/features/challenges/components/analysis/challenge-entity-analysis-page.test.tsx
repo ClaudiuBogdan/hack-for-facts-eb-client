@@ -13,6 +13,7 @@ import {
 
 const useEntityDetailsMock = vi.fn()
 const useEntityExecutionLineItemsMock = vi.fn()
+const useReportsConnectionMock = vi.fn()
 const useTreemapDrilldownMock = vi.fn()
 const useQueryMock = vi.fn()
 const useGlobalSettingsMock = vi.fn()
@@ -79,6 +80,8 @@ vi.mock('@/lib/hooks/useEntityDetails', () => ({
   useEntityDetails: (...args: unknown[]) => useEntityDetailsMock(...args),
   useEntityExecutionLineItems: (...args: unknown[]) =>
     useEntityExecutionLineItemsMock(...args),
+  useReportsConnection: (...args: unknown[]) =>
+    useReportsConnectionMock(...args),
 }))
 
 vi.mock('@/lib/hooks/useGlobalSettings', () => ({
@@ -348,6 +351,46 @@ const subordinateRankingNodes = [
   },
 ]
 
+const reportsConnection = {
+  nodes: [
+    {
+      report_id: 'report-1',
+      reporting_year: 2025,
+      report_type: 'PRINCIPAL_AGGREGATED',
+      report_date: '1761868800000',
+      download_links: ['https://example.com/report-1.pdf'],
+      main_creditor: {
+        cui: '12345678',
+        name: 'Primăria Sibiu',
+      },
+      budgetSector: {
+        sector_id: '2',
+        sector_description: 'Buget local',
+      },
+    },
+    {
+      report_id: 'report-2',
+      reporting_year: 2025,
+      report_type: 'PRINCIPAL_AGGREGATED',
+      report_date: '1759190400000',
+      download_links: ['https://example.com/report-2.pdf'],
+      main_creditor: {
+        cui: '12345678',
+        name: 'Primăria Sibiu',
+      },
+      budgetSector: {
+        sector_id: '2',
+        sector_description: 'Buget local',
+      },
+    },
+  ],
+  pageInfo: {
+    totalCount: 2,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  },
+}
+
 function createSubordinateRankingConnection(
   nodes: typeof subordinateRankingNodes = subordinateRankingNodes,
   totalCount: number = nodes.length,
@@ -442,6 +485,12 @@ describe('ChallengeEntityAnalysisPage', () => {
       reset: resetTreemapMock,
       setPrimary: setPrimaryMock,
     })
+    useReportsConnectionMock.mockReturnValue({
+      data: reportsConnection,
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    })
     fetchEntityAnalyticsMock.mockResolvedValue(
       createSubordinateRankingConnection(),
     )
@@ -503,6 +552,8 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(screen.getByTestId('financial-trends')).toHaveTextContent(
       '12345678:false:false:2025',
     )
+    expect(screen.getByText('Rapoarte financiare')).toBeInTheDocument()
+    expect(screen.getByText('octombrie 2025')).toBeInTheDocument()
     await waitFor(() => {
       expect(screen.getByTestId('public-map-preview')).toHaveTextContent(
         'expenses:2025:Executie bugetara agregata la nivel de ordonator principal:total:RON:false:8.1:46.77|23.59:Cheltuieli UAT (2025)',
@@ -1100,7 +1151,7 @@ describe('ChallengeEntityAnalysisPage', () => {
           by: 'total_amount',
           order: 'desc',
         },
-        limit: 3,
+        limit: 5,
         offset: 0,
       })
     })

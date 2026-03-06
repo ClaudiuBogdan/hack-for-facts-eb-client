@@ -47,6 +47,7 @@ import { ChallengeEntityAnalysisExplainer } from './challenge-entity-analysis-ex
 import { ChallengeEntityAnalysisHeader } from './challenge-entity-analysis-header'
 import { ChallengeEntityAnomalySummary } from './challenge-entity-anomaly-summary'
 import { ChallengeEntityCategoryEvolution } from './challenge-entity-category-evolution'
+import { ChallengeEntityReportsSection } from './challenge-entity-reports-section'
 import {
   CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS,
   getChallengeEntityMapPreviewDefinition,
@@ -1155,6 +1156,13 @@ export function ChallengeEntityAnalysisPage({
         locale={locale}
         lineItems={entityLineItemsQuery.data?.nodes ?? []}
         normalizationOptions={displayNormalizationOptions}
+      />
+
+      <ChallengeEntityReportsSection
+        locale={locale}
+        entityCui={entityCui}
+        selectedYear={selectedYear}
+        reportType={selectedReportType}
       />
     </div>
   )
