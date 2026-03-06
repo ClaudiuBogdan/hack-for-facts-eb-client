@@ -122,19 +122,19 @@ export function ChallengeEntityAnalysisHeader({
       : 'Valori ajustate cu inflația (2024)'
 
   return (
-    <section className="rounded-[32px] border border-border/50 bg-linear-to-br from-background via-background to-primary/[0.04] px-6 py-7 shadow-sm sm:px-8">
-      <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+    <section className="rounded-[32px] border border-border/50 bg-linear-to-br from-background via-background to-primary/[0.04] px-5 py-5 shadow-sm sm:px-6 sm:py-7 md:px-8">
+      <div className="flex flex-col gap-4 sm:gap-6 md:flex-row md:items-start md:justify-between">
         <div className="space-y-4 min-w-0">
           <div className="space-y-2">
             <p className="text-[11px] font-black uppercase tracking-[0.28em] text-muted-foreground">
               {t`Primăria Mea`}
             </p>
-            <h1 className="text-balance text-[2.55rem] font-black leading-[0.94] tracking-tight text-foreground sm:text-[2.85rem] lg:text-5xl">
+            <h1 className="text-balance text-[1.85rem] font-black leading-[0.94] tracking-tight text-foreground sm:text-[2.55rem] md:text-[2.85rem] lg:text-5xl">
               {displayName}
             </h1>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             {showInflationBadge ? (
               <Badge variant="secondary" className="gap-1.5 px-3 py-1">
                 {inflationBadgeLabel}

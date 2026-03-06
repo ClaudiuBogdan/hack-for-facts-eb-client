@@ -123,4 +123,23 @@ describe('EntityFinancialSummary', () => {
       ),
     ).not.toBeInTheDocument()
   })
+
+  it('does not append capita when per-capita values are missing', () => {
+    render(
+      <EntityFinancialSummary
+        totalIncome={null}
+        totalExpenses={null}
+        budgetBalance={null}
+        periodLabel="2025 YTD"
+        normalizationOptions={{
+          ...normalizationOptions,
+          normalization: 'per_capita',
+        }}
+      />,
+    )
+
+    expect(screen.getAllByText('N/A').length).toBeGreaterThanOrEqual(3)
+    expect(screen.queryByText(/N\/A\/capita/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/\/capita/)).not.toBeInTheDocument()
+  })
 })

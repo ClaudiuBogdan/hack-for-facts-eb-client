@@ -22,13 +22,18 @@ export function cn(...inputs: ClassValue[]) {
 export function formatCurrency(amount: number, notation?: "standard" | "compact", currency: "RON" | "EUR" | "USD" = "RON"): string {
   const locale = getUserLocale();
   const numberLocale = locale === "ro" ? "ro-RO" : "en-US";
-  return new Intl.NumberFormat(numberLocale, {
+  const formatted = new Intl.NumberFormat(numberLocale, {
     style: "currency",
     currency: currency,
     notation: notation || "standard",
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(amount);
+  // ro-RO compact uses "K" for thousands — replace with "mii"
+  if (notation === 'compact' && locale === 'ro') {
+    return formatted.replace(/\sK$/, ' mii');
+  }
+  return formatted;
 }
 
 /**
@@ -41,12 +46,17 @@ export const formatNumber = (value: number | null | undefined, notation?: "stand
   const locale = getUserLocale();
 
   const numberLocale = locale === "ro" ? "ro-RO" : "en-GB";
-  return new Intl.NumberFormat(numberLocale, {
+  const formatted = new Intl.NumberFormat(numberLocale, {
     style: "decimal",
     notation: notation || "standard",
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(value);
+  // ro-RO compact uses "K" for thousands — replace with "mii"
+  if (notation === 'compact' && locale === 'ro') {
+    return formatted.replace(/\sK$/, ' mii');
+  }
+  return formatted;
 };
 
 export function generateHash(message: string): string {

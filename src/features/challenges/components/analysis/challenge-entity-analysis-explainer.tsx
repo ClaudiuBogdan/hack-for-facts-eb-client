@@ -75,15 +75,15 @@ export function ChallengeEntityAnalysisExplainer({
 
   return (
     <Card className="rounded-[28px] border-border/50 bg-muted/[0.18]">
-      <CardContent className="px-6 py-5 sm:px-7">
-        <div className="flex items-start gap-4">
+      <CardContent className="px-4 py-4 sm:px-6 sm:py-5 md:px-7">
+        <div className="flex items-start gap-3 sm:gap-4">
           <Info
             className="mt-1 h-4 w-4 shrink-0 text-muted-foreground"
             aria-hidden="true"
           />
 
           <div className="min-w-0 flex-1 space-y-3">
-            <p className="text-sm leading-7 text-foreground sm:text-[1.05rem]">
+            <p className="text-[13px] leading-6 text-foreground sm:text-sm sm:leading-7 md:text-[1.05rem]">
               {primaryParagraph}
               {inflationAdjusted
                 ? ` ${copy.inflationAdjusted}`

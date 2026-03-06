@@ -91,7 +91,7 @@ const CHALLENGE_TREND_PERIOD = makeTrendPeriod(
   DEFAULT_SELECTED_YEAR,
 ) as ReportPeriodInput
 const CHALLENGE_DETAILED_ANALYTICS_REPORT_TYPE = toReportTypeValue('DETAILED')
-const MAX_VISIBLE_SUBORDINATE_CARDS = 3
+const MAX_VISIBLE_SUBORDINATE_CARDS = 5
 const CHALLENGE_ADMINISTRATIVE_EXPENSE_PATH = ['51', '51.01', '51.01.03'] as const
 const CHALLENGE_SHOW_PERIOD_GROWTH = false
 const CHALLENGE_AVAILABLE_YEARS = Array.from(
@@ -908,7 +908,7 @@ export function ChallengeEntityAnalysisPage({
   const isSubordinatesSectionError = subordinateRankingQuery.isError
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 sm:space-y-6 pb-10">
       <ChallengeEntityAnalysisHeader
         entity={entityDetailsQuery.data}
         selectedYear={selectedYear}

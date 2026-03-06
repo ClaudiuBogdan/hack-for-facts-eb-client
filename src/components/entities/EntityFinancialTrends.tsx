@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect } from 'react';
+import React, { useMemo, useRef, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ComposedChart,
@@ -26,10 +26,63 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import type { NormalizationOptions } from '@/lib/normalization';
 import { normalizeNormalizationOptions } from '@/lib/normalization';
-import { getNormalizationUnit } from '@/lib/utils';
+import { formatNumber, getNormalizationUnit } from '@/lib/utils';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { NormalizationModeSelect } from '@/components/normalization/normalization-mode-select';
 import { SafeResponsiveContainer } from '@/components/charts/safe-responsive-container';
+
+/**
+ * Given the merged chart data and the currently-selected year, return the Set
+ * of data-point indices that should display a bar / line label.
+ *
+ * Rules:
+ *  - ≤ 5 points  → label every point
+ *  - ≤ 10 points → first, last, current year
+ *  - > 10 points → current year only
+ */
+function selectLabelIndices(
+  data: readonly { label: string }[],
+  currentYear: number,
+): Set<number> {
+  const count = data.length
+  if (count === 0) return new Set()
+
+  if (count <= 5) {
+    return new Set(data.map((_, i) => i))
+  }
+
+  const indices = new Set<number>()
+
+  if (count <= 10) {
+    indices.add(0)
+    indices.add(count - 1)
+  }
+
+  const currentYearStr = String(currentYear)
+  for (let i = 0; i < count; i++) {
+    if (data[i].label.startsWith(currentYearStr)) {
+      indices.add(i)
+      break
+    }
+  }
+
+  return indices
+}
+
+function MultiLineYAxisTick(props: {
+  x?: number
+  y?: number
+  payload?: { value: number }
+  unit: string
+}) {
+  const { x = 0, y = 0, payload, unit } = props
+  return (
+    <text x={x} y={y} textAnchor="end" fontSize={12} fill="currentColor">
+      <tspan x={x} dy={-6}>{formatNumber(payload?.value, 'compact')}</tspan>
+      <tspan x={x} dy={14} fontSize={10} opacity={0.6}>{unit}</tspan>
+    </text>
+  )
+}
 
 interface EntityFinancialTrendsProps {
   entityCui?: string;
@@ -183,6 +236,51 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
     prevSignatureRef.current = dataSignature
   }, [dataSignature])
 
+  const labelIndices = useMemo(
+    () => selectLabelIndices(mergedData, currentYear),
+    [mergedData, currentYear],
+  )
+
+  const makeSelectiveLabelContent = useCallback(
+    (
+      baseAngle: number,
+      baseOffset: number,
+      showUnit: boolean,
+    ) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return function SelectiveLabel(props: any) {
+        const x = Number(props.x ?? 0)
+        const y = Number(props.y ?? 0)
+        const index = Number(props.index ?? 0)
+        const value = props.value ?? 0
+
+        if (!showUnit && !labelIndices.has(index)) return null
+
+        const text = showUnit
+          ? yValueFormatter(Number(value), unit, 'compact')
+          : formatNumber(Number(value), 'compact')
+        const transform = baseAngle
+          ? `rotate(${baseAngle}, ${x}, ${y - baseOffset})`
+          : undefined
+
+        return (
+          <text
+            x={x}
+            y={y - baseOffset}
+            textAnchor="middle"
+            fontSize={11}
+            fill="currentColor"
+            className="text-foreground"
+            transform={transform}
+          >
+            {text}
+          </text>
+        )
+      }
+    },
+    [labelIndices, unit],
+  )
+
   if (isLoading) {
     return <EntityFinancialTrendsSkeleton />;
   }
@@ -242,7 +340,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
           <SafeResponsiveContainer width="100%" height={400}>
             <ComposedChart
               data={mergedData}
-              margin={{ top: 30, right: 40, left: unit.length * 5 + 30, bottom: 5 }}
+              margin={{ top: 30, right: 40, left: 60, bottom: 5 }}
               onClick={handleChartClick}
               onMouseMove={handleChartHover}
               className="cursor-pointer"
@@ -255,8 +353,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
                 axisLine={false}
               />
               <YAxis
-                tickFormatter={(val) => yValueFormatter(val, unit)}
-                tick={{ fontSize: 12 }}
+                tick={<MultiLineYAxisTick unit={unit} />}
                 tickLine={false}
                 axisLine={false}
               />
@@ -286,7 +383,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
                 animationEasing='ease-in-out'
                 animationBegin={shouldAnimate ? 300 : 0}
               >
-                {!isMobile && <LabelList dataKey="income" position="top" angle={periodType === 'QUARTER' ? 0 : -45} offset={24} fontSize={11} formatter={(v: unknown) => yValueFormatter(Number(v), unit, 'compact')} />}
+                {!isMobile && <LabelList dataKey="income" content={makeSelectiveLabelContent(periodType === 'QUARTER' ? 0 : -45, 24, false)} />}
               </Bar>
               <Bar
                 dataKey="expense"
@@ -300,7 +397,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
                 animationEasing='ease-in-out'
                 animationBegin={shouldAnimate ? 300 : 0}
               >
-                {!isMobile && <LabelList dataKey="expense" position="top" angle={periodType === 'QUARTER' ? 0 : -45} offset={24} fontSize={11} formatter={(v: unknown) => yValueFormatter(Number(v), unit, 'compact')} />}
+                {!isMobile && <LabelList dataKey="expense" content={makeSelectiveLabelContent(periodType === 'QUARTER' ? 0 : -45, 24, true)} />}
               </Bar>
 
               <Line
@@ -314,7 +411,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
                 dot={{ r: 4, fill: '#6366f1', strokeWidth: 2, stroke: '#f8fafc' }}
                 activeDot={{ r: 6 }}
               >
-                {!isMobile && <LabelList dataKey="balance" position="top" offset={8} fontSize={11} formatter={(v: unknown) => yValueFormatter(Number(v), unit, 'compact')} />}
+                {!isMobile && <LabelList dataKey="balance" content={makeSelectiveLabelContent(0, 12, false)} />}
               </Line>
             </ComposedChart>
           </SafeResponsiveContainer>

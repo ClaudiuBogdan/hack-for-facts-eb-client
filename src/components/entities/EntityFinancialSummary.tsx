@@ -16,6 +16,7 @@ interface EntityFinancialSummaryCardProps {
   color: string;
   format: 'currency' | 'percent';
   currency: 'RON' | 'EUR' | 'USD';
+  isPerCapita?: boolean;
   trend?: EntityFinancialSummaryTrend;
   density?: EntityFinancialSummaryDensity;
   metricKind: EntityFinancialSummaryMetricKind;
@@ -159,11 +160,12 @@ function splitCompactCurrencyValue(
   }
 }
 
-export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProps> = ({ title, value, icon: Icon, color, periodLabel, currency, format, trend, density = 'default', metricKind }) => {
+export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProps> = ({ title, value, icon: Icon, color, periodLabel, currency, format, isPerCapita = false, trend, density = 'default', metricKind }) => {
   const displayValueCompact = formatDisplayValue(value, 'compact', format, currency);
   const displayValueStandard = formatDisplayValue(value, 'standard', format, currency);
   const iconColor = iconColorMap[color] ?? 'text-slate-500 dark:text-slate-400';
   const isCompactDesktop = density === 'compact-desktop';
+  const shouldShowPerCapitaSuffix = isPerCapita && Number.isFinite(value);
   const compactDesktopTitle = toCompactDesktopTitle(title);
   const compactDesktopYear = toCompactDesktopYear(periodLabel);
   const compactCurrencyValueParts =
@@ -175,23 +177,23 @@ export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProp
     <Card
       className={cn(
         'flex flex-col items-center justify-center border-border/60 shadow-sm transition-shadow duration-200 hover:shadow-md',
-        isCompactDesktop && 'lg:h-full lg:items-stretch lg:justify-start',
+        isCompactDesktop && 'items-stretch justify-start lg:h-full',
       )}
     >
       <CardHeader
         className={cn(
           'flex flex-row items-start justify-center gap-4 px-6 pt-6 pb-3',
           isCompactDesktop &&
-            'relative lg:w-full lg:justify-start lg:gap-0 lg:space-y-0 lg:px-5 lg:pt-4 lg:pb-0',
+            'relative justify-start gap-0 space-y-0 px-3 pt-3 pb-0 lg:w-full lg:px-5 lg:pt-4',
         )}
       >
         {isCompactDesktop ? (
           <div className="w-full">
-            <div className="mx-auto flex flex-col items-center gap-0.5 text-center lg:mx-0 lg:max-w-none lg:flex-1 lg:items-start lg:text-left">
-              <CardTitle className="text-balance text-center text-sm font-medium leading-tight text-muted-foreground lg:text-left">
+            <div className="flex flex-col items-start gap-0.5 text-left lg:flex-1">
+              <CardTitle className="text-balance text-left text-xs font-medium leading-tight text-muted-foreground sm:text-sm">
                 {compactDesktopTitle}
               </CardTitle>
-              <p className="text-center text-xs font-medium tracking-wide text-muted-foreground/70 tabular-nums lg:text-left">
+              <p className="text-left text-[10px] font-medium tracking-wide text-muted-foreground/70 tabular-nums sm:text-xs">
                 {compactDesktopYear}
               </p>
             </div>
@@ -215,22 +217,25 @@ export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProp
         className={cn(
           'flex flex-col items-center justify-center px-6 pb-6',
           isCompactDesktop &&
-            'lg:flex lg:w-full lg:flex-1 lg:flex-col lg:items-stretch lg:justify-between lg:px-5 lg:pt-3 lg:pb-4',
+            'items-stretch justify-between px-3 pt-2 pb-3 lg:flex lg:w-full lg:flex-1 lg:flex-col lg:px-5 lg:pt-3 lg:pb-4',
         )}
       >
-        <div className={cn(isCompactDesktop && 'lg:flex lg:w-full lg:min-h-[3rem] lg:min-w-0 lg:items-baseline')}>
+        <div className={cn(isCompactDesktop && 'flex w-full min-w-0 items-baseline lg:min-h-[3rem]')}>
           {compactCurrencyValueParts ? (
             <p
               className={cn(
                 'text-center text-3xl font-bold leading-none text-foreground sm:text-3xl',
                 'flex max-w-full flex-col items-center',
                 isCompactDesktop &&
-                  'lg:min-w-0 lg:w-full lg:items-start lg:text-left lg:leading-tight lg:tabular-nums lg:text-2xl xl:text-[1.75rem]',
+                  'min-w-0 w-full items-start text-left leading-tight tabular-nums text-lg sm:text-2xl lg:text-2xl xl:text-[1.75rem]',
               )}
             >
               <span className="min-w-0">{compactCurrencyValueParts.amountLabel}</span>
-              <span className="mt-1 whitespace-nowrap text-sm font-semibold text-muted-foreground">
-                {compactCurrencyValueParts.currencyLabel}
+              <span className={cn(
+                'mt-1 whitespace-nowrap text-sm font-semibold text-muted-foreground',
+                isCompactDesktop && 'text-xs sm:text-sm',
+              )}>
+                {compactCurrencyValueParts.currencyLabel}{shouldShowPerCapitaSuffix ? '/capita' : ''}
               </span>
             </p>
           ) : (
@@ -238,7 +243,7 @@ export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProp
               className={cn(
                 'text-center text-3xl font-bold leading-none text-foreground sm:text-3xl',
                 isCompactDesktop &&
-                  'lg:min-w-0 lg:w-full lg:text-left lg:leading-tight lg:tabular-nums lg:text-2xl xl:text-[1.75rem]',
+                  'min-w-0 w-full text-left leading-tight tabular-nums text-lg sm:text-2xl lg:text-2xl xl:text-[1.75rem]',
               )}
             >
               {displayValueCompact}
@@ -248,20 +253,20 @@ export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProp
         {isCompactDesktop ? null : (
           <p className="mt-2 flex items-center gap-1">
             <span className="text-sm text-muted-foreground">
-              {displayValueStandard}
+              {displayValueStandard}{shouldShowPerCapitaSuffix ? '/capita' : ''}
             </span>
           </p>
         )}
         <div
           className={cn(
             'mt-3 min-h-6',
-            isCompactDesktop && 'lg:mt-2.5 lg:min-h-[1.5rem] lg:self-start',
+            isCompactDesktop && 'mt-2 self-start min-h-[1.25rem] sm:mt-2.5 sm:min-h-[1.5rem]',
           )}
         >
           <TrendBadge
             trend={trend}
             metricKind={metricKind}
-            className={isCompactDesktop ? 'lg:px-2 lg:py-0.5 lg:text-xs' : undefined}
+            className={isCompactDesktop ? 'text-[10px] px-1.5 py-0 sm:text-xs sm:px-2 sm:py-0.5' : undefined}
           />
         </div>
       </CardContent>
@@ -293,17 +298,18 @@ export const EntityFinancialSummary: React.FC<EntityFinancialSummaryProps> = (
 
   const normalized = normalizeNormalizationOptions(normalizationOptions)
   const format: 'currency' | 'percent' = normalized.normalization === 'percent_gdp' ? 'percent' : 'currency'
+  const isPerCapita = normalized.normalization === 'per_capita'
 
   return (
     <section
       className={cn(
         'mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3',
-        density === 'compact-desktop' && 'lg:mb-5 lg:gap-4',
+        density === 'compact-desktop' && 'grid-cols-3 gap-2.5 sm:gap-4 lg:mb-5 lg:gap-4',
       )}
     >
-      <EntityFinancialSummaryCard title={t`Total Income`} value={totalIncome} icon={TrendingUp} color="green" periodLabel={periodLabel} currency={normalized.currency} format={format} trend={trends?.income} density={density} metricKind="income" />
-      <EntityFinancialSummaryCard title={t`Total Expenses`} value={totalExpenses} icon={TrendingDown} color="red" periodLabel={periodLabel} currency={normalized.currency} format={format} trend={trends?.expenses} density={density} metricKind="expenses" />
-      <EntityFinancialSummaryCard title={t`Income - Expenses`} value={budgetBalance} icon={Scale} color="blue" periodLabel={periodLabel} currency={normalized.currency} format={format} trend={trends?.balance} density={density} metricKind="balance" />
+      <EntityFinancialSummaryCard title={t`Total Income`} value={totalIncome} icon={TrendingUp} color="green" periodLabel={periodLabel} currency={normalized.currency} format={format} isPerCapita={isPerCapita} trend={trends?.income} density={density} metricKind="income" />
+      <EntityFinancialSummaryCard title={t`Total Expenses`} value={totalExpenses} icon={TrendingDown} color="red" periodLabel={periodLabel} currency={normalized.currency} format={format} isPerCapita={isPerCapita} trend={trends?.expenses} density={density} metricKind="expenses" />
+      <EntityFinancialSummaryCard title={t`Income - Expenses`} value={budgetBalance} icon={Scale} color="blue" periodLabel={periodLabel} currency={normalized.currency} format={format} isPerCapita={isPerCapita} trend={trends?.balance} density={density} metricKind="balance" />
     </section>
   );
 }; 

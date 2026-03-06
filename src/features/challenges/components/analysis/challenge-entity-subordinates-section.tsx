@@ -64,89 +64,63 @@ const SUBORDINATES_COPY = {
   },
 } as const
 
-function ChallengeEntitySubordinateCardSkeleton() {
+function ChallengeEntitySubordinateRowSkeleton() {
   return (
-    <Card className="rounded-[24px] border-border/50">
-      <CardContent className="space-y-3 p-4 sm:p-5">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-6 w-12 rounded-full" />
-          <Skeleton className="h-6 w-32 rounded-full" />
-        </div>
-        <div className="flex items-start justify-between gap-3">
-          <Skeleton className="h-7 w-2/3" />
-          <Skeleton className="h-5 w-5 rounded-full" />
-        </div>
-        <div className="grid gap-3">
-          <Skeleton className="h-14 w-full rounded-[16px]" />
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex items-center gap-3 py-3.5">
+      <Skeleton className="h-5 w-8 rounded-full shrink-0" />
+      <div className="min-w-0 flex-1 space-y-1.5">
+        <Skeleton className="h-4 w-2/3" />
+        <Skeleton className="h-3.5 w-24 rounded-full" />
+      </div>
+      <Skeleton className="h-5 w-24 shrink-0" />
+    </div>
   )
 }
 
-function ChallengeEntitySubordinateCard({
-  locale,
+function ChallengeEntitySubordinateRow({
   index,
   item,
   normalizationOptions,
 }: {
-  readonly locale: ChallengeLocale
   readonly index: number
   readonly item: ChallengeEntitySubordinateCardItem
   readonly normalizationOptions: NormalizationOptions
 }) {
-  const copy = SUBORDINATES_COPY[locale]
-
   return (
-    <Card className="rounded-[24px] border-border/50 shadow-sm">
-      <CardContent className="p-4 sm:p-5">
-        <Link
-          to="/entities/$cui"
-          params={{ cui: item.entityCui }}
-          search={item.entitySearch as any}
-          className="group block rounded-md text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1 space-y-2">
-              <div className="flex flex-wrap items-center gap-1.5">
-                <Badge variant="outline" className="px-1.5 py-0 text-[11px] tabular-nums">
-                  #{index + 1}
-                </Badge>
-                {item.entityTypeLabel ? (
-                  <Badge variant="secondary" className="px-1.5 py-0 text-[11px]">
-                    {item.entityTypeLabel}
-                  </Badge>
-                ) : null}
-              </div>
+    <Link
+      to="/entities/$cui"
+      params={{ cui: item.entityCui }}
+      search={item.entitySearch as any}
+      className="group flex items-center gap-3 py-3.5 text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:rounded-md"
+    >
+      <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground/60">
+        #{index + 1}
+      </span>
 
-              <p className="text-pretty text-[0.9375rem] font-semibold leading-snug text-foreground decoration-2 underline-offset-4 group-hover:text-primary group-hover:underline group-focus-visible:underline">
-                {item.entityName}
-              </p>
-            </div>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-semibold leading-snug text-foreground decoration-2 underline-offset-4 group-hover:text-primary group-hover:underline group-focus-visible:underline">
+          {item.entityName}
+        </p>
+        {item.entityTypeLabel ? (
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {item.entityTypeLabel}
+          </p>
+        ) : null}
+      </div>
 
-            <ArrowUpRight
-              className="mt-1 h-4 w-4 shrink-0 text-muted-foreground/60 transition-colors group-hover:text-primary"
-              aria-hidden="true"
-            />
-          </div>
+      <span className="shrink-0 text-sm font-bold tabular-nums text-foreground">
+        {formatNormalizedValue(
+          item.totalSpending,
+          normalizationOptions,
+          'compact',
+        )}
+      </span>
 
-          <div className="mt-3 rounded-2xl bg-muted/18 px-3.5 py-2.5">
-            <div className="flex flex-col items-end text-right">
-              <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-                {copy.totalSpending}
-              </p>
-              <p className="mt-1 text-lg font-bold leading-none tabular-nums text-foreground">
-                {formatNormalizedValue(
-                  item.totalSpending,
-                  normalizationOptions,
-                  'compact',
-                )}
-              </p>
-            </div>
-          </div>
-        </Link>
-      </CardContent>
-    </Card>
+      <ArrowUpRight
+        className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary"
+        aria-hidden="true"
+      />
+    </Link>
   )
 }
 
@@ -186,9 +160,9 @@ export function ChallengeEntitySubordinatesSection({
 
       <CardContent className="space-y-5">
         {isLoading ? (
-          <div className="space-y-4">
+          <div className="divide-y divide-border/40">
             {Array.from({ length: 3 }, (_, index) => (
-              <ChallengeEntitySubordinateCardSkeleton key={index} />
+              <ChallengeEntitySubordinateRowSkeleton key={index} />
             ))}
           </div>
         ) : isError ? (
@@ -212,11 +186,10 @@ export function ChallengeEntitySubordinatesSection({
           </div>
         ) : (
           <>
-            <div className="space-y-4">
+            <div className="divide-y divide-border/40">
               {items.map((item, index) => (
-                <ChallengeEntitySubordinateCard
+                <ChallengeEntitySubordinateRow
                   key={item.entityCui}
-                  locale={locale}
                   index={index}
                   item={item}
                   normalizationOptions={normalizationOptions}
