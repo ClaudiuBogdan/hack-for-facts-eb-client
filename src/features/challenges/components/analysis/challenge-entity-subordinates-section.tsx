@@ -81,45 +81,54 @@ function ChallengeEntitySubordinateRow({
   index,
   item,
   normalizationOptions,
+  totalSpendingLabel,
 }: {
   readonly index: number
   readonly item: ChallengeEntitySubordinateCardItem
   readonly normalizationOptions: NormalizationOptions
+  readonly totalSpendingLabel: string
 }) {
   return (
     <Link
       to="/entities/$cui"
       params={{ cui: item.entityCui }}
       search={item.entitySearch as any}
-      className="group flex items-center gap-3 py-3.5 text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:rounded-md"
+      className="group flex flex-col gap-1.5 py-3.5 text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:rounded-md"
     >
-      <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground/60">
-        #{index + 1}
-      </span>
+      <div className="flex items-center gap-3">
+        <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground/60">
+          #{index + 1}
+        </span>
 
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold leading-snug text-foreground decoration-2 underline-offset-4 group-hover:text-primary group-hover:underline group-focus-visible:underline">
-          {item.entityName}
-        </p>
-        {item.entityTypeLabel ? (
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            {item.entityTypeLabel}
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold leading-snug text-foreground decoration-2 underline-offset-4 group-hover:text-primary group-hover:underline group-focus-visible:underline">
+            {item.entityName}
           </p>
-        ) : null}
+          {item.entityTypeLabel ? (
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {item.entityTypeLabel}
+            </p>
+          ) : null}
+        </div>
+
+        <ArrowUpRight
+          className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary"
+          aria-hidden="true"
+        />
       </div>
 
-      <span className="shrink-0 text-sm font-bold tabular-nums text-foreground">
-        {formatNormalizedValue(
-          item.totalSpending,
-          normalizationOptions,
-          'compact',
-        )}
-      </span>
-
-      <ArrowUpRight
-        className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary"
-        aria-hidden="true"
-      />
+      <div className="flex flex-col items-end">
+        <span className="text-[11px] text-muted-foreground">
+          {totalSpendingLabel}
+        </span>
+        <span className="text-sm font-bold tabular-nums text-foreground">
+          {formatNormalizedValue(
+            item.totalSpending,
+            normalizationOptions,
+            'compact',
+          )}
+        </span>
+      </div>
     </Link>
   )
 }
@@ -193,6 +202,7 @@ export function ChallengeEntitySubordinatesSection({
                   index={index}
                   item={item}
                   normalizationOptions={normalizationOptions}
+                  totalSpendingLabel={copy.totalSpending}
                 />
               ))}
             </div>
