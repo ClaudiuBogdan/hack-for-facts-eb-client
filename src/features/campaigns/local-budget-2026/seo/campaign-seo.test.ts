@@ -3,14 +3,14 @@ import { buildCampaignRouteHead, buildCampaignSeoMetadata } from './campaign-seo
 
 vi.mock('../hooks/use-campaign-content', () => ({
   getCampaignDefinition: () => ({
-    id: 'bugete-locale-2026',
-    slug: 'bugete-locale-2026',
+    id: 'buget-primarie',
+    slug: 'buget-primarie',
     title: { ro: 'Provocarea civică Bugete Locale 2026', en: 'Local Budgets Civic Challenge 2026' },
     description: {
       ro: 'Descriere campanie',
       en: 'Campaign description',
     },
-    forumUrl: 'https://forum.transparenta.eu/tag/bugete-locale-2026',
+    forumUrl: 'https://forum.transparenta.eu/tag/buget-primarie',
     isActive: true,
     startDate: '2026-02-15',
     endDate: '2026-05-15',
@@ -41,10 +41,10 @@ describe('campaign-seo', () => {
     })
 
     expect(metadata.robots).toBe('index,follow')
-    expect(metadata.canonicalUrl).toContain('/bugete-locale-2026')
+    expect(metadata.canonicalUrl).toContain('/buget-primarie')
     expect(metadata.canonicalUrl).not.toContain('?lang=en')
     expect(metadata.alternateUrls.en).toContain('?lang=en')
-    expect(metadata.image.url).toContain('/assets/images/campaigns/bugete-locale-2026/share/landing.png')
+    expect(metadata.image.url).toContain('/assets/images/campaigns/buget-primarie/share/landing.png')
   })
 
   it('builds provocari canonical with lang query and noindex', () => {
@@ -54,7 +54,7 @@ describe('campaign-seo', () => {
       entityCui: '12345678',
     })
 
-    expect(metadata.canonicalUrl).toContain('/bugete-locale-2026/12345678/provocari?lang=en')
+    expect(metadata.canonicalUrl).toContain('/buget-primarie/12345678/provocari?lang=en')
     expect(metadata.robots).toBe('noindex,follow')
   })
 
@@ -65,7 +65,7 @@ describe('campaign-seo', () => {
     })
 
     expect(metadata.robots).toBe('noindex,follow')
-    expect(metadata.canonicalUrl).toContain('/bugete-locale-2026/cauta/harta')
+    expect(metadata.canonicalUrl).toContain('/buget-primarie/cauta/harta')
   })
 
   it('marks principal selector route as noindex', () => {
@@ -75,7 +75,7 @@ describe('campaign-seo', () => {
     })
 
     expect(metadata.robots).toBe('noindex,follow')
-    expect(metadata.canonicalUrl).toContain('/bugete-locale-2026/cauta')
+    expect(metadata.canonicalUrl).toContain('/buget-primarie/cauta')
   })
 
   it('marks unknown challenge as noindex', () => {
@@ -98,7 +98,7 @@ describe('campaign-seo', () => {
     })
 
     expect(metadata.robots).toBe('index,follow')
-    expect(metadata.canonicalUrl).toContain('/bugete-locale-2026/4305857/calendar')
+    expect(metadata.canonicalUrl).toContain('/buget-primarie/4305857/calendar')
     expect(metadata.canonicalUrl).not.toContain('?lang=en')
   })
 

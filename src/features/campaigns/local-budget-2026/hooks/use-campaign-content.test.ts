@@ -11,7 +11,7 @@ import {
 
 vi.mock('./campaign-challenge-mdx-index', () => ({
   campaignChallengeMdxModules: {
-    '/src/content/campaigns/bugete-locale-2026/challenges/cauta-bugetul-localitatii-tale/index.ro.mdx': {
+    '/src/content/campaigns/buget-primarie/challenges/cauta-bugetul-localitatii-tale/index.ro.mdx': {
       default: () => null,
     },
   },
@@ -24,7 +24,7 @@ describe('use-campaign-content', () => {
     const resources = getCampaignResources()
     const challenges = getCampaignChallengeList()
 
-    expect(campaign.id).toBe('bugete-locale-2026')
+    expect(campaign.id).toBe('buget-primarie')
     expect(timeline.entries.length).toBeGreaterThan(0)
     expect(resources.length).toBeGreaterThan(0)
     expect(challenges.length).toBeGreaterThan(0)

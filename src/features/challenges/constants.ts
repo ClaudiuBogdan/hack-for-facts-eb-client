@@ -44,7 +44,7 @@ export function resolveCampaignEntityCuiFromPathname(
   pathname: string,
 ): string | undefined {
   const parts = pathname.split('/').filter(Boolean)
-  const campaignIndex = parts.indexOf('bugete-locale-2026')
+  const campaignIndex = parts.indexOf('buget-primarie')
   const candidate = campaignIndex >= 0 ? parts[campaignIndex + 1] : undefined
 
   if (!candidate) {

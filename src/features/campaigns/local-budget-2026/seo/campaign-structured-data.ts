@@ -19,11 +19,11 @@ function buildCampaignEntity(params: {
   return {
     '@context': 'https://schema.org',
     '@type': 'CreativeWork',
-    '@id': `${params.siteUrl}/bugete-locale-2026#campaign`,
+    '@id': `${params.siteUrl}/buget-primarie#campaign`,
     additionalType: 'https://schema.org/Campaign',
     name: getCampaignText(params.campaign.title, params.locale),
     description: getCampaignText(params.campaign.description, params.locale),
-    url: `${params.siteUrl}/bugete-locale-2026`,
+    url: `${params.siteUrl}/buget-primarie`,
     inLanguage: getLanguageTag(params.locale),
     publisher: {
       '@type': 'Organization',
@@ -47,7 +47,7 @@ function buildChallengeEntity(params: {
     '@type': 'LearningResource',
     '@id': `${params.canonicalUrl}#challenge`,
     isPartOf: {
-      '@id': `${params.siteUrl}/bugete-locale-2026#campaign`,
+      '@id': `${params.siteUrl}/buget-primarie#campaign`,
     },
     name: getCampaignText(params.challenge.title, params.locale),
     description: getCampaignText(params.challenge.summary, params.locale),
@@ -68,7 +68,7 @@ function buildChallengeBreadcrumbList(params: {
   const langSuffix = params.locale === 'en' ? '?lang=en' : ''
   const provocariUrl = params.entityCui
     ? `${params.siteUrl}${buildCampaignProvocariPath(params.entityCui)}${langSuffix}`
-    : `${params.siteUrl}/bugete-locale-2026/cauta${langSuffix}`
+    : `${params.siteUrl}/buget-primarie/cauta${langSuffix}`
 
   return {
     '@context': 'https://schema.org',
@@ -78,7 +78,7 @@ function buildChallengeBreadcrumbList(params: {
         '@type': 'ListItem',
         position: 1,
         name: params.locale === 'en' ? 'Campaign' : 'Campanie',
-        item: `${params.siteUrl}/bugete-locale-2026${langSuffix}`,
+        item: `${params.siteUrl}/buget-primarie${langSuffix}`,
       },
       {
         '@type': 'ListItem',

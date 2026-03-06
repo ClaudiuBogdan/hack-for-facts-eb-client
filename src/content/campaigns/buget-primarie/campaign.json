@@ -1,0 +1,16 @@
+{
+  "id": "buget-primarie",
+  "slug": "buget-primarie",
+  "title": {
+    "ro": "Provocarea civică Bugete Locale 2026",
+    "en": "Local Budgets Civic Challenge 2026"
+  },
+  "description": {
+    "ro": "Participă activ la procesul de bugetare locală: înțelege datele, compară bugete și transmite solicitări către autorități.",
+    "en": "Participate in the local budgeting process: understand data, compare budgets, and send requests to authorities."
+  },
+  "forumUrl": "https://forum.transparenta.eu/tag/buget-primarie",
+  "isActive": true,
+  "startDate": "2026-02-15",
+  "endDate": "2026-05-15"
+}

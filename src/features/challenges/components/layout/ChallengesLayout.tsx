@@ -50,7 +50,7 @@ function parseChallengesRoute(pathname: string): {
   readonly stepSlug: string | null
 } {
   const parts = pathname.split('/').filter(Boolean)
-  // Route: /bugete-locale-2026/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug
+  // Route: /buget-primarie/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug
   const provocariIndex = parts.indexOf('provocari')
   const moduleSlug = provocariIndex >= 0 ? (parts[provocariIndex + 1] ?? null) : null
   const challengeSlug = provocariIndex >= 0 ? (parts[provocariIndex + 2] ?? null) : null
@@ -109,7 +109,7 @@ function ChallengeNav({
   const isThisChallenge = challenge.slug === currentChallengeSlug
   const hubPath = entityCui
     ? buildCampaignProvocariPath(entityCui)
-    : '/bugete-locale-2026/cauta'
+    : '/buget-primarie/cauta'
   const fallbackPath = entityCui
     ? buildCampaignProvocariModulePath(entityCui, moduleSlug)
     : hubPath
@@ -252,7 +252,7 @@ function ChallengesSidebar({
   }
   const hubPath = entityCui
     ? buildCampaignProvocariPath(entityCui)
-    : '/bugete-locale-2026/cauta'
+    : '/buget-primarie/cauta'
 
   return (
     <div className="flex h-full flex-col bg-background border-r border-border/50">

@@ -29,7 +29,7 @@ The challenge learning flow asks users to select a UAT (city/commune) as their "
 ### Route
 
 ```
-/bugete-locale-2026/challenges/my-city
+/buget-primarie/challenges/my-city
 ```
 
 A peer route to module pages, nested inside the `ChallengesLayout` (so the sidebar and learning progress provider are available).
@@ -38,7 +38,7 @@ A peer route to module pages, nested inside the `ChallengesLayout` (so the sideb
 
 - Accessible via **QuickLinks** / resources section from any challenge step
 - Also linked from the **ChallengesHubPage** when an entity is selected (e.g. next to the entity badge)
-- The active entity comes from the route CUI (`/bugete-locale-2026/$cui/...`), so no separate UAT selection step is required
+- The active entity comes from the route CUI (`/buget-primarie/$cui/...`), so no separate UAT selection step is required
 
 ### Data Source
 
@@ -208,7 +208,7 @@ Add the entity analysis page to the `QuickLinks` component available in MDX step
 
 ```mdx
 <QuickLinks links={[
-  { label: "Your City's Budget", href: "/bugete-locale-2026/challenges/my-city" }
+  { label: "Your City's Budget", href: "/buget-primarie/challenges/my-city" }
 ]} />
 ```
 
@@ -240,7 +240,7 @@ src/features/challenges/
 
 New route file:
 ```
-src/routes/bugete-locale-2026/challenges/my-city.lazy.tsx
+src/routes/buget-primarie/challenges/my-city.lazy.tsx
 ```
 
 ---
@@ -293,7 +293,7 @@ Both paths use the same `useEntityDetails` query key, so TanStack Query deduplic
 ## 8. MVP Delivery Checklist
 
 ### Phase 1: Entity Analysis Page
-- [ ] Create route `/bugete-locale-2026/challenges/my-city`
+- [ ] Create route `/buget-primarie/challenges/my-city`
 - [ ] Build `EntityAnalysisPage` composing header + KPIs + trends + treemap + anomalies
 - [ ] Build `EntityAnalysisHeader` with entity info and change link
 - [ ] Add YoY trend indicators to KPI cards (wrap or extend `EntityFinancialSummary`)

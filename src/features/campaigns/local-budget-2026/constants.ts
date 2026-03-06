@@ -1,6 +1,6 @@
-export const CAMPAIGN_ID = 'bugete-locale-2026'
-export const CAMPAIGN_SLUG = 'bugete-locale-2026'
-export const CAMPAIGN_BASE_PATH = '/bugete-locale-2026'
+export const CAMPAIGN_ID = 'buget-primarie'
+export const CAMPAIGN_SLUG = 'buget-primarie'
+export const CAMPAIGN_BASE_PATH = '/buget-primarie'
 export const CAMPAIGN_CALENDAR_ROUTE = `${CAMPAIGN_BASE_PATH}/$cui/calendar`
 
 export const CAMPAIGN_PROGRESS_STORAGE_KEY = `campaign_progress_snapshot:${CAMPAIGN_ID}`

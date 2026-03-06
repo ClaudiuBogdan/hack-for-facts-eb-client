@@ -78,7 +78,7 @@ export function CampaignEntityMapSelectorPage({
   locale,
   languageQuery,
 }: CampaignEntityMapSelectorPageProps) {
-  const navigate = useNavigate({ from: '/bugete-locale-2026/cauta/harta/' })
+  const navigate = useNavigate({ from: '/buget-primarie/cauta/harta/' })
   const { setSelectedEntity } = useCampaignProgress()
   const [pendingUatSelection, setPendingUatSelection] = useState<PendingUatSelection | null>(null)
   const {
