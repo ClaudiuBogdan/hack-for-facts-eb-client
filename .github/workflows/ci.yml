@@ -89,7 +89,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run Integration Tests
-        run: npx playwright test --project=integration --reporter=list --max-failures=5 --workers=5 --retries=2
+        run: npx playwright test --project=integration --reporter=list --max-failures=5 --retries=2
         env:
           CI: true
           VITE_API_URL: https://api-dev.transparenta.eu

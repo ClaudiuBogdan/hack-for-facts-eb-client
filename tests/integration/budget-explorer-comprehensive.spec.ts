@@ -7,6 +7,7 @@
 
 import { test, expect } from '../utils/integration-base'
 import { waitForPageReady, clickToggleWithUrlVerification } from '../utils/test-helpers'
+import type { Locator, Page } from '@playwright/test'
 
 const SELECTORS = {
   nationalBudgetHeading: /national budget|buget național/i,
@@ -23,6 +24,29 @@ const SELECTORS = {
   incomeLabel: /^income$|^venituri$/i,
   expensesLabel: /^expenses$|^cheltuieli$/i,
   dismissDisclaimer: /dismiss disclaimer/i,
+}
+
+async function waitForBudgetExplorerSections(page: Page) {
+  await expect(page.locator('#sector-total-budget')).toBeVisible({ timeout: 15000 })
+  await expect(page.locator('#sector-5')).toBeVisible({ timeout: 15000 })
+  await expect(
+    page.getByRole('link', { name: SELECTORS.analyzeLineItems }).first()
+  ).toBeVisible({ timeout: 15000 })
+}
+
+async function waitForLinkHref(link: Locator, hrefPattern = /\/entity-analytics/) {
+  await expect(link).toBeVisible({ timeout: 15000 })
+  await expect.poll(async () => {
+    const href = await link.getAttribute('href')
+    return typeof href === 'string' && hrefPattern.test(href)
+  }, { timeout: 15000 }).toBe(true)
+
+  const href = await link.getAttribute('href')
+  if (!href) {
+    throw new Error('Expected link href to be available')
+  }
+
+  return href
 }
 
 test.describe('National Budget Page', () => {
@@ -102,12 +126,15 @@ test.describe('National Budget Page', () => {
   test('shows deep links to entity analytics line items for each section', async ({ page }) => {
     await page.goto('/budget-explorer')
     await waitForPageReady(page)
+    await waitForBudgetExplorerSections(page)
 
     const analyzeLinks = page.getByRole('link', { name: SELECTORS.analyzeLineItems })
     await expect(analyzeLinks.first()).toBeVisible()
     expect(await analyzeLinks.count()).toBeGreaterThanOrEqual(5)
 
-    const totalHref = await page.locator('#sector-total-budget').getByRole('link', { name: SELECTORS.analyzeLineItems }).first().getAttribute('href')
+    const totalHref = await waitForLinkHref(
+      page.locator('#sector-total-budget').getByRole('link', { name: SELECTORS.analyzeLineItems }).first()
+    )
     const decodedHref = decodeURIComponent(totalHref ?? '')
 
     expect(totalHref ?? '').toContain('/entity-analytics')
@@ -128,7 +155,9 @@ test.describe('National Budget Page', () => {
       '5': undefined,
     }
     for (const [sectorId, expectedFundingSourceIds] of Object.entries(expectedFundingSourcesBySector)) {
-      const sectionHref = await page.locator(`#sector-${sectorId}`).getByRole('link', { name: SELECTORS.analyzeLineItems }).first().getAttribute('href')
+      const sectionHref = await waitForLinkHref(
+        page.locator(`#sector-${sectorId}`).getByRole('link', { name: SELECTORS.analyzeLineItems }).first()
+      )
       expect(sectionHref).toBeTruthy()
 
       const sectionUrl = new URL(sectionHref!, 'https://transparenta.eu')
@@ -146,9 +175,14 @@ test.describe('National Budget Page', () => {
   test('switches to income mode and keeps segmented layout', async ({ page }) => {
     await page.goto('/budget-explorer')
     await waitForPageReady(page)
+    await waitForBudgetExplorerSections(page)
 
     const incomeToggle = page.locator('button[role="radio"]').filter({ hasText: SELECTORS.incomeLabel }).first()
-    await clickToggleWithUrlVerification(page, incomeToggle, /budget-explorer/)
+    await clickToggleWithUrlVerification(
+      page,
+      incomeToggle,
+      /account_category=vn|account_category%22%3A%22vn|%22account_category%22:%22vn/i
+    )
 
     await expect(page.getByRole('heading', { name: /bugetul de stat/i })).toBeVisible()
     await expect(page.getByText(/main categories|categorii principale/i).first()).toBeVisible()
@@ -162,7 +196,9 @@ test.describe('National Budget Page', () => {
       '5': ['1', '4'],
     }
     for (const sectorId of ['1', '2', '3', '4', '5']) {
-      const href = await page.locator(`#sector-${sectorId}`).getByRole('link', { name: SELECTORS.analyzeLineItems }).first().getAttribute('href')
+      const href = await waitForLinkHref(
+        page.locator(`#sector-${sectorId}`).getByRole('link', { name: SELECTORS.analyzeLineItems }).first()
+      )
       expect(decodeURIComponent(href ?? '')).toMatch(/"account_category":"vn"|account_category=vn/i)
 
       const parsedUrl = new URL(href ?? '', 'https://transparenta.eu')
@@ -189,6 +225,7 @@ test.describe('National Budget Page', () => {
   test('updates URL when treemap grouping and detail controls change', async ({ page }) => {
     await page.goto('/budget-explorer')
     await waitForPageReady(page)
+    await waitForBudgetExplorerSections(page)
 
     const economicToggle = page.getByRole('radio', { name: /^economic$/i }).first()
     await economicToggle.click()
@@ -202,7 +239,9 @@ test.describe('National Budget Page', () => {
     await excludeTransfersToggle.click()
     await expect(page).toHaveURL(/transferFilter=no-transfers/, { timeout: 10000 })
 
-    const sectorOneHref = await page.locator('#sector-1').getByRole('link', { name: SELECTORS.analyzeLineItems }).first().getAttribute('href')
+    const sectorOneHref = await waitForLinkHref(
+      page.locator('#sector-1').getByRole('link', { name: SELECTORS.analyzeLineItems }).first()
+    )
     const parsedSectorOneUrl = new URL(sectorOneHref ?? '', 'https://transparenta.eu')
     const parsedSectorOneFilter = JSON.parse(decodeURIComponent(parsedSectorOneUrl.searchParams.get('filter') ?? '{}'))
     expect(parsedSectorOneUrl.searchParams.get('transferFilter')).toBe('no-transfers')
@@ -229,6 +268,7 @@ test.describe('National Budget Page', () => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/budget-explorer')
     await waitForPageReady(page)
+    await waitForBudgetExplorerSections(page)
 
     const sectorCards = page.locator('[id^="sector-"]')
     expect(await sectorCards.count()).toBeGreaterThanOrEqual(9)
@@ -236,7 +276,8 @@ test.describe('National Budget Page', () => {
     await expect(sectorCards.nth(8)).toBeVisible()
     await expect(page.getByRole('link', { name: SELECTORS.analyzeLineItems }).first()).toBeVisible()
 
-    const hasHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 4)
-    expect(hasHorizontalOverflow).toBe(false)
+    await expect.poll(async () => page.evaluate(() => (
+      document.documentElement.scrollWidth <= window.innerWidth + 4
+    )), { timeout: 15000 }).toBe(true)
   })
 })

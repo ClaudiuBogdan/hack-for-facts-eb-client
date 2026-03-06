@@ -69,8 +69,8 @@ describe('challenge-entity-public-maps', () => {
 
     expect(balanceBinsPreset?.config.intervalMode).toBe('continuous')
     expect(balanceBinsPreset?.config.continuousPercentiles).toEqual({
-      min: 5,
-      max: 95,
+      min: 10,
+      max: 90,
     })
     expect(balanceBinsPreset?.config.gradient).toEqual({
       startColor: '#ff1900',

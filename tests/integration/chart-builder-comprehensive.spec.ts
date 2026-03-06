@@ -142,8 +142,7 @@ test.describe('Chart Builder - Comprehensive Tests', () => {
   // ===================================================
   test.describe('2. Chart Configuration', () => {
     test('2.1 Chart type selector is available', async ({ page }) => {
-      await page.goto('/charts/new')
-      await expect(page).toHaveURL(/\/charts\/[a-f0-9-]+/i, { timeout: 10000 })
+      await gotoNewChartAndWaitForConfig(page)
 
       // Find chart type selector - use label text
       const chartTypeLabel = page.getByText(SELECTORS.chartType)
@@ -437,8 +436,7 @@ test.describe('Chart Builder - Comprehensive Tests', () => {
   // ===================================================
   test.describe('6. Breadcrumb Navigation', () => {
     test('6.1 Breadcrumb is visible in config view', async ({ page }) => {
-      await page.goto('/charts/new')
-      await expect(page).toHaveURL(/\/charts\/[a-f0-9-]+/i, { timeout: 10000 })
+      await gotoNewChartAndWaitForConfig(page)
 
       // Breadcrumb should be visible
       const breadcrumb = page.locator('nav[aria-label*="breadcrumb" i]')

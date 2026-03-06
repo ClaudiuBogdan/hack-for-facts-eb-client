@@ -397,20 +397,20 @@ test.describe('Entity Analytics - Comprehensive Tests', () => {
   test.describe('Interactions', () => {
     test('can toggle between table and line items view', async ({ page }) => {
       await page.goto('/entity-analytics?view=table')
-      await page.waitForLoadState('networkidle').catch(() => {})
+      await waitForHydration(page)
 
       // Verify table is shown
       await expect(page.locator('table')).toBeVisible({ timeout: 15000 })
 
       // Click Line Items radio (via label to avoid sr-only issues)
       const lineItemsLabel = page.locator('label').filter({ hasText: /linii.*bugetare|line.*items/i }).first()
+      await expect(lineItemsLabel).toBeVisible({ timeout: 10000 })
       await lineItemsLabel.click()
 
-      // Wait for view change
-      await page.waitForTimeout(500)
-
-      // Verify URL changed
-      expect(page.url()).toContain('view=line-items')
+      await expect(page).toHaveURL(/view=line-items/, { timeout: 10000 })
+      await expect(
+        page.locator('text=/budget.*distribution|distribuția.*bugetului/i').first()
+      ).toBeVisible({ timeout: 15000 })
     })
 
     test('can toggle between income and expenses', async ({ page }) => {
