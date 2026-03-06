@@ -27,7 +27,14 @@ const MAP_VIEW_EPSILON = 1e-6;
 
 type DestroyAwareMap = L.Map & {
   __isBeingDestroyed?: boolean;
+  __pendingProgrammaticViewTarget?: {
+    center: L.LatLng;
+    zoom: number;
+    expiresAt: number;
+  };
 };
+
+const PROGRAMMATIC_VIEW_CHANGE_TTL_MS = 250;
 
 function markMapDestroying(map: L.Map, isBeingDestroyed: boolean): void {
   const destroyAwareMap = map as DestroyAwareMap;
@@ -37,6 +44,46 @@ function markMapDestroying(map: L.Map, isBeingDestroyed: boolean): void {
 function isMapDestroying(map: L.Map): boolean {
   const destroyAwareMap = map as DestroyAwareMap;
   return destroyAwareMap.__isBeingDestroyed === true;
+}
+
+function markProgrammaticViewTarget(
+  map: L.Map,
+  center: L.LatLng,
+  zoom: number,
+): void {
+  const destroyAwareMap = map as DestroyAwareMap;
+  destroyAwareMap.__pendingProgrammaticViewTarget = {
+    center,
+    zoom,
+    expiresAt: Date.now() + PROGRAMMATIC_VIEW_CHANGE_TTL_MS,
+  };
+}
+
+function shouldIgnoreProgrammaticViewChange(
+  map: L.Map,
+  nextCenter: L.LatLng,
+  nextZoom: number,
+): boolean {
+  const destroyAwareMap = map as DestroyAwareMap;
+  const pendingProgrammaticViewTarget =
+    destroyAwareMap.__pendingProgrammaticViewTarget;
+
+  if (!pendingProgrammaticViewTarget) {
+    return false;
+  }
+
+  if (Date.now() > pendingProgrammaticViewTarget.expiresAt) {
+    destroyAwareMap.__pendingProgrammaticViewTarget = undefined;
+    return false;
+  }
+
+  const hasSameCenter =
+    Math.abs(pendingProgrammaticViewTarget.center.lat - nextCenter.lat) <= MAP_VIEW_EPSILON &&
+    Math.abs(pendingProgrammaticViewTarget.center.lng - nextCenter.lng) <= MAP_VIEW_EPSILON;
+  const hasSameZoom =
+    Math.abs(pendingProgrammaticViewTarget.zoom - nextZoom) <= MAP_VIEW_EPSILON;
+
+  return hasSameCenter && hasSameZoom;
 }
 
 type FeatureStyleResolver = (feature?: Feature<Geometry, unknown>) => PathOptions;
@@ -272,6 +319,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       preferCanvas={useCanvasRenderer}
     >
       <MapCleanup />
+      <MapSizeInvalidator />
       <MapTestIds />
       {scrollWheelZoom !== false && <ScrollWheelZoomControl />}
       <MapUpdater center={center} zoom={zoom} />
@@ -356,6 +404,83 @@ const MapTestIds: React.FC = () => {
   return null;
 };
 
+const MapSizeInvalidator: React.FC = () => {
+  const map = useMap();
+  const lastMeasuredSizeRef = useRef<{ width: number; height: number } | null>(
+    null
+  );
+
+  useEffect(() => {
+    const mapContainer = map.getContainer();
+    if (!mapContainer) {
+      return;
+    }
+
+    let animationFrameId: number | null = null;
+
+    const invalidateSizeIfNeeded = () => {
+      if (isMapDestroying(map)) {
+        return;
+      }
+
+      const nextWidth = mapContainer.clientWidth;
+      const nextHeight = mapContainer.clientHeight;
+
+      if (nextWidth <= 0 || nextHeight <= 0) {
+        return;
+      }
+
+      const previousMeasuredSize = lastMeasuredSizeRef.current;
+      const hasSameSize =
+        previousMeasuredSize?.width === nextWidth &&
+        previousMeasuredSize?.height === nextHeight;
+
+      if (hasSameSize) {
+        return;
+      }
+
+      lastMeasuredSizeRef.current = {
+        width: nextWidth,
+        height: nextHeight,
+      };
+
+      map.invalidateSize({ pan: false, debounceMoveend: true });
+    };
+
+    const scheduleInvalidateSize = () => {
+      if (animationFrameId !== null) {
+        window.cancelAnimationFrame(animationFrameId);
+      }
+
+      animationFrameId = window.requestAnimationFrame(() => {
+        animationFrameId = null;
+        invalidateSizeIfNeeded();
+      });
+    };
+
+    scheduleInvalidateSize();
+
+    const resizeObserver =
+      typeof ResizeObserver === 'undefined'
+        ? null
+        : new ResizeObserver(() => {
+            scheduleInvalidateSize();
+          });
+
+    resizeObserver?.observe(mapContainer);
+
+    return () => {
+      if (animationFrameId !== null) {
+        window.cancelAnimationFrame(animationFrameId);
+      }
+
+      resizeObserver?.disconnect();
+    };
+  }, [map]);
+
+  return null;
+};
+
 // Leaflet can keep animation/state tied to DOM nodes; stop animations on unmount.
 const MapCleanup: React.FC = () => {
   const map = useMap();
@@ -405,6 +530,7 @@ const MapUpdater: React.FC<{ center: LatLngExpression, zoom: number }> = ({ cent
 
     // Avoid redundant view updates and disable animation to reduce teardown races.
     if (hasCenterChanged || hasZoomChanged) {
+      markProgrammaticViewTarget(map, nextCenter, zoom);
       map.setView(center, zoom, { animate: false });
     }
   }, [center, map, zoom]);
@@ -433,6 +559,11 @@ const MapViewChangeListener: React.FC<{ onViewChange?: (center: [number, number]
 
     const mapCenter = map.getCenter();
     const mapZoom = map.getZoom();
+
+    if (shouldIgnoreProgrammaticViewChange(map, mapCenter, mapZoom)) {
+      return;
+    }
+
     const nextCenter: [number, number] = [Number(mapCenter.lat), Number(mapCenter.lng)];
     const nextZoom = Number(mapZoom);
     onViewChange(nextCenter, nextZoom);

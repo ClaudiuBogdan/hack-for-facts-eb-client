@@ -1,6 +1,10 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { useState } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
+  CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS,
+} from './challenge-entity-public-maps'
 import type { EntityDetailsData, ExecutionLineItem } from '@/lib/api/entities'
 import {
   ChallengeEntityAnalysisPage,
@@ -9,14 +13,24 @@ import {
 
 const useEntityDetailsMock = vi.fn()
 const useEntityExecutionLineItemsMock = vi.fn()
-const useEntityRelationshipsMock = vi.fn()
 const useTreemapDrilldownMock = vi.fn()
 const useQueryMock = vi.fn()
 const useGlobalSettingsMock = vi.fn()
+const fetchEntityAnalyticsMock = vi.fn()
 const budgetTreemapMock = vi.fn()
+const getEntityFeatureInfoMock = vi.fn()
+const mapAnalyticsPublicPreviewCardMock = vi.fn()
 const setPrimaryMock = vi.fn()
 const setPathMock = vi.fn()
 const resetTreemapMock = vi.fn()
+let mockGeoJsonData = {
+  data: {
+    type: 'FeatureCollection',
+    features: [],
+  },
+  isLoading: false,
+  error: null as Error | null,
+}
 
 function buildHref(to: unknown, params?: Record<string, string>) {
   if (typeof to !== 'string') return '#'
@@ -65,12 +79,22 @@ vi.mock('@/lib/hooks/useEntityDetails', () => ({
   useEntityDetails: (...args: unknown[]) => useEntityDetailsMock(...args),
   useEntityExecutionLineItems: (...args: unknown[]) =>
     useEntityExecutionLineItemsMock(...args),
-  useEntityRelationships: (...args: unknown[]) =>
-    useEntityRelationshipsMock(...args),
 }))
 
 vi.mock('@/lib/hooks/useGlobalSettings', () => ({
   useGlobalSettings: (...args: unknown[]) => useGlobalSettingsMock(...args),
+}))
+
+vi.mock('@/lib/api/entity-analytics', () => ({
+  fetchEntityAnalytics: (...args: unknown[]) => fetchEntityAnalyticsMock(...args),
+}))
+
+vi.mock('@/hooks/useGeoJson', () => ({
+  useGeoJsonData: () => mockGeoJsonData,
+}))
+
+vi.mock('@/components/entities/utils', () => ({
+  getEntityFeatureInfo: (...args: unknown[]) => getEntityFeatureInfoMock(...args),
 }))
 
 vi.mock('@/components/budget-explorer/useTreemapDrilldown', () => ({
@@ -102,6 +126,37 @@ vi.mock('@/components/budget-explorer/BudgetTreemap', () => ({
     return <div data-testid="budget-treemap">{props.primary}</div>
   },
 }))
+
+vi.mock(
+  '@/features/advanced-map-analytics/components/map-analytics-public-preview-card',
+  () => ({
+    MapAnalyticsPublicPreviewCard: (props: Record<string, unknown>) => {
+      mapAnalyticsPublicPreviewCardMock(props)
+      const onMapViewportChange = props.onMapViewportChange as
+        | ((viewport: { mapZoom: number; mapCenter: [number, number] }) => void)
+        | undefined
+      return (
+        <div data-testid="public-map-preview">
+          {String(props.mapKey)}:{String(props.selectedYearOverride)}:
+          {String(props.reportTypeOverride)}:{String(props.normalizationOverride)}:{String(props.currencyOverride)}:{String(props.inflationAdjustedOverride)}:
+          {String(props.mapZoomOverride)}:{(props.mapCenterOverride as number[] | undefined)?.join('|') ?? ''}:
+          {String(props.mapNameOverride)}
+          <button
+            type="button"
+            onClick={() =>
+              onMapViewportChange?.({
+                mapZoom: 9.6,
+                mapCenter: [47.1, 26.2],
+              })
+            }
+          >
+            Pan preview map
+          </button>
+        </div>
+      )
+    },
+  }),
+)
 
 vi.mock('./challenge-entity-analysis-header', () => ({
   ChallengeEntityAnalysisHeader: (props: any) => (
@@ -293,6 +348,20 @@ const subordinateRankingNodes = [
   },
 ]
 
+function createSubordinateRankingConnection(
+  nodes: typeof subordinateRankingNodes = subordinateRankingNodes,
+  totalCount: number = nodes.length,
+) {
+  return {
+    nodes,
+    pageInfo: {
+      totalCount,
+      hasNextPage: totalCount > nodes.length,
+      hasPreviousPage: false,
+    },
+  }
+}
+
 const DEFAULT_PAGE_STATE: ChallengeEntityAnalysisPageState = {
   selectedYear: 2025,
   reportType: 'PRINCIPAL_AGGREGATED',
@@ -302,6 +371,7 @@ const DEFAULT_PAGE_STATE: ChallengeEntityAnalysisPageState = {
   treemapPath: [],
   evolutionAccountCategory: 'ch',
   evolutionPrimary: 'fn',
+  mapPreviewKey: DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
 }
 
 function renderAnalysisPage(
@@ -360,19 +430,6 @@ describe('ChallengeEntityAnalysisPage', () => {
         refetch: vi.fn(),
       }),
     )
-    useEntityRelationshipsMock.mockReturnValue({
-      data: {
-        children: [
-          { cui: '99887766', name: 'Liceul Teoretic Avram Iancu' },
-          { cui: '11223344', name: 'Teatrul Municipal' },
-        ],
-      },
-      isLoading: false,
-      isFetching: false,
-      isError: false,
-      error: null,
-      refetch: vi.fn(),
-    })
     useTreemapDrilldownMock.mockReturnValue({
       primary: 'fn',
       activePrimary: 'fn',
@@ -385,15 +442,22 @@ describe('ChallengeEntityAnalysisPage', () => {
       reset: resetTreemapMock,
       setPrimary: setPrimaryMock,
     })
-    useQueryMock.mockReturnValue({
-      data: {
-        nodes: subordinateRankingNodes,
-      },
-      isLoading: false,
-      isFetching: false,
-      isError: false,
-      error: null,
-      refetch: vi.fn(),
+    fetchEntityAnalyticsMock.mockResolvedValue(
+      createSubordinateRankingConnection(),
+    )
+    useQueryMock.mockImplementation((options: any) => {
+      if (options?.enabled !== false) {
+        void options?.queryFn?.()
+      }
+
+      return {
+        data: createSubordinateRankingConnection(),
+        isLoading: false,
+        isFetching: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      }
     })
     useGlobalSettingsMock.mockReturnValue({
       currency: 'RON',
@@ -403,12 +467,28 @@ describe('ChallengeEntityAnalysisPage', () => {
       confirmSettingsApplied: vi.fn(),
     })
     budgetTreemapMock.mockReset()
+    mapAnalyticsPublicPreviewCardMock.mockReset()
+    fetchEntityAnalyticsMock.mockClear()
+    getEntityFeatureInfoMock.mockReset()
     setPrimaryMock.mockReset()
     setPathMock.mockReset()
     resetTreemapMock.mockReset()
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    }
+    getEntityFeatureInfoMock.mockReturnValue({
+      center: [46.77, 23.59],
+      zoom: 8.1,
+      featureId: '12345678',
+    })
   })
 
-  it('renders the analysis sections for the selected entity', () => {
+  it('renders the analysis sections for the selected entity', async () => {
     renderAnalysisPage({
       entityCui: '12345678',
       languageQuery: 'ro',
@@ -423,6 +503,24 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(screen.getByTestId('financial-trends')).toHaveTextContent(
       '12345678:false:false:2025',
     )
+    await waitFor(() => {
+      expect(screen.getByTestId('public-map-preview')).toHaveTextContent(
+        'expenses:2025:Executie bugetara agregata la nivel de ordonator principal:total:RON:false:8.1:46.77|23.59:Cheltuieli UAT (2025)',
+      )
+    })
+    expect(
+      screen.getByRole('button', {
+        name: CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS[0].label,
+      }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Show map preview options' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', {
+        name: 'Taxe și impozite locale',
+      }),
+    ).not.toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: 'Schimbă Primăria' }),
     ).toHaveAttribute('href', '/bugete-locale-2026/cauta')
@@ -439,8 +537,11 @@ describe('ChallengeEntityAnalysisPage', () => {
       screen.getByRole('button', { name: 'Arată venituri' }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Arată Doar Cheltuieli Primăriei' }),
-    ).toBeInTheDocument()
+      screen.getAllByRole('button', { name: 'Arată Doar Cheltuieli Primăriei' }),
+    ).toHaveLength(2)
+    expect(
+      screen.getAllByRole('button', { name: 'Arată per capita' }),
+    ).toHaveLength(2)
     expect(screen.getByTestId('budget-treemap')).toHaveTextContent('fn')
     expect(screen.getByTestId('category-evolution')).toHaveTextContent(
       '12345678:2025:PRINCIPAL_AGGREGATED',
@@ -456,6 +557,156 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(
       screen.queryByText('Învățământ / Bunuri și servicii'),
     ).not.toBeInTheDocument()
+  })
+
+  it('seeds the preview viewport from the entity-centered map position', async () => {
+    renderAnalysisPage()
+
+    await waitFor(() => {
+      expect(getLatestPublicPreviewCardProps()).toMatchObject({
+        mapKey: DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
+        mapZoomOverride: 8.1,
+        mapCenterOverride: [46.77, 23.59],
+        selectedYearOverride: 2025,
+      })
+    })
+    expect(getEntityFeatureInfoMock).toHaveBeenCalled()
+  })
+
+  it('falls back to the selected map viewport when entity centering is unavailable', async () => {
+    getEntityFeatureInfoMock.mockReturnValue(null)
+
+    renderAnalysisPage({
+      state: {
+        mapPreviewKey: 'balance',
+      },
+    })
+
+    await waitFor(() => {
+      expect(getLatestPublicPreviewCardProps()).toMatchObject({
+        mapKey: 'balance',
+        mapZoomOverride: 7.4,
+        mapCenterOverride: [45.69134, 25.01306],
+      })
+    })
+  })
+
+  it('updates the auto-seeded fallback viewport when switching preview maps', async () => {
+    getEntityFeatureInfoMock.mockReturnValue(null)
+
+    renderAnalysisPage({
+      state: {
+        mapPreviewKey: 'balance',
+      },
+    })
+
+    await waitFor(() => {
+      expect(getLatestPublicPreviewCardProps()).toMatchObject({
+        mapKey: 'balance',
+        mapZoomOverride: 7.4,
+        mapCenterOverride: [45.69134, 25.01306],
+      })
+    })
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Show map preview options' }),
+    )
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Taxe și impozite locale',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(getLatestPublicPreviewCardProps()).toMatchObject({
+        mapKey: 'local-taxes',
+        mapZoomOverride: 7.4,
+        mapCenterOverride: [46.05086, 25.01306],
+      })
+    })
+  })
+
+  it('preserves the preview viewport when switching maps and changing the selected year', async () => {
+    renderAnalysisPage()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Pan preview map' }))
+
+    await waitFor(() => {
+      expect(getLatestPublicPreviewCardProps()).toMatchObject({
+        mapZoomOverride: 9.6,
+        mapCenterOverride: [47.1, 26.2],
+      })
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show map preview options' }))
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Taxe și impozite locale',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(getLatestPublicPreviewCardProps()).toMatchObject({
+        mapKey: 'local-taxes',
+        mapZoomOverride: 9.6,
+        mapCenterOverride: [47.1, 26.2],
+      })
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select 2024' }))
+
+    await waitFor(() => {
+      expect(getLatestPublicPreviewCardProps()).toMatchObject({
+        mapKey: 'local-taxes',
+        selectedYearOverride: 2024,
+        mapNameOverride: 'Taxe și impozite locale UAT (2024)',
+        mapZoomOverride: 9.6,
+        mapCenterOverride: [47.1, 26.2],
+      })
+    })
+  })
+
+  it('expands and collapses the preview map selector from the trailing toggle button', async () => {
+    renderAnalysisPage()
+
+    await waitFor(() => {
+      expect(screen.getByTestId('public-map-preview')).toBeInTheDocument()
+    })
+
+    expect(
+      screen.getByRole('button', {
+        name: CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS[0].label,
+      }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', {
+        name: CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS[1].label,
+      }),
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show map preview options' }))
+
+    expect(
+      screen.getByRole('button', {
+        name: CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS[1].label,
+      }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Hide map preview options' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Hide map preview options' }))
+
+    expect(
+      screen.queryByRole('button', {
+        name: CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS[1].label,
+      }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Show map preview options' }),
+    ).toBeInTheDocument()
   })
 
   it('keeps the anomaly details collapsed by default and expands on demand', async () => {
@@ -498,6 +749,45 @@ describe('ChallengeEntityAnalysisPage', () => {
         inflation_adjusted: true,
       }),
     )
+    expect(getLatestPublicPreviewCardProps()).toMatchObject({
+      reportTypeOverride: 'Executie bugetara agregata la nivel de ordonator principal',
+      normalizationOverride: 'total',
+      currencyOverride: 'EUR',
+      inflationAdjustedOverride: true,
+      mapNameOverride: 'Cheltuieli UAT (2025)',
+    })
+  })
+
+  it('passes the selected report type through to the map preview runtime config', async () => {
+    renderAnalysisPage()
+
+    fireEvent.click(
+      screen.getAllByRole('button', { name: 'Arată Doar Cheltuieli Primăriei' })[0],
+    )
+
+    await waitFor(() => {
+      expect(getLatestPublicPreviewCardProps()).toMatchObject({
+        reportTypeOverride: 'Executie bugetara detaliata',
+      })
+    })
+  })
+
+  it('passes the selected normalization through to the map preview runtime config from the duplicated controls', async () => {
+    renderAnalysisPage()
+
+    fireEvent.click(
+      screen.getAllByRole('button', { name: 'Arată per capita' })[0],
+    )
+
+    await waitFor(() => {
+      expect(getLatestPublicPreviewCardProps()).toMatchObject({
+        normalizationOverride: 'per_capita',
+      })
+    })
+
+    expect(
+      screen.getAllByRole('button', { name: 'Arată total' }),
+    ).toHaveLength(2)
   })
 
   it('keeps only the first paragraph visible until the explainer is expanded', async () => {
@@ -542,7 +832,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     renderAnalysisPage()
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'Arată Doar Cheltuieli Primăriei' }),
+      screen.getAllByRole('button', { name: 'Arată Doar Cheltuieli Primăriei' })[0],
     )
 
     await waitFor(() => {
@@ -580,10 +870,10 @@ describe('ChallengeEntityAnalysisPage', () => {
       ),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', {
+      screen.getAllByRole('button', {
         name: 'Arată Cheltuieli Primăriei și Instituțiilor Subordonate',
       }),
-    ).toBeInTheDocument()
+    ).toHaveLength(2)
   })
 
   it('switches the treemap grouping when the primary CTA is clicked', async () => {
@@ -761,6 +1051,10 @@ describe('ChallengeEntityAnalysisPage', () => {
     )
     expect(showAllLink).toHaveAttribute(
       'data-search',
+      expect.stringContaining('"entity_cuis":["12345678"]'),
+    )
+    expect(showAllLink).toHaveAttribute(
+      'data-search',
       expect.stringContaining(
         '"report_type":"Executie bugetara detaliata"',
       ),
@@ -769,6 +1063,85 @@ describe('ChallengeEntityAnalysisPage', () => {
       'data-search',
       expect.stringContaining('"lang":"en"'),
     )
+  })
+
+  it('queries subordinate cards from entity analytics with the current period and current-entity exclusion', async () => {
+    renderAnalysisPage({
+      entityCui: '12345678',
+      state: {
+        selectedYear: 2024,
+      },
+    })
+
+    await waitFor(() => {
+      expect(fetchEntityAnalyticsMock).toHaveBeenCalledWith({
+        filter: {
+          account_category: 'ch',
+          main_creditor_cui: '12345678',
+          report_period: {
+            type: 'YEAR',
+            selection: {
+              interval: {
+                start: '2024',
+                end: '2024',
+              },
+            },
+          },
+          report_type: 'Executie bugetara detaliata',
+          normalization: 'total',
+          currency: 'RON',
+          inflation_adjusted: false,
+          show_period_growth: false,
+          exclude: {
+            entity_cuis: ['12345678'],
+          },
+        },
+        sort: {
+          by: 'total_amount',
+          order: 'desc',
+        },
+        limit: 3,
+        offset: 0,
+      })
+    })
+
+    const subordinateQueryOptions = useQueryMock.mock.calls[0]?.[0]
+    expect(subordinateQueryOptions?.queryKey).toEqual([
+      'challenge-entity-subordinates',
+      '12345678',
+      {
+        type: 'YEAR',
+        selection: {
+          interval: {
+            start: '2024',
+            end: '2024',
+          },
+        },
+      },
+      'RON',
+      false,
+    ])
+  })
+
+  it('uses the paginated analytics total count for the subordinate badge', () => {
+    useQueryMock.mockImplementation((options: any) => {
+      if (options?.enabled !== false) {
+        void options?.queryFn?.()
+      }
+
+      return {
+        data: createSubordinateRankingConnection(subordinateRankingNodes, 12),
+        isLoading: false,
+        isFetching: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      }
+    })
+
+    renderAnalysisPage()
+
+    expect(screen.getByText('Top 2 din 12')).toBeInTheDocument()
   })
 
   it('updates the selected year when the trends chart requests a different year', async () => {
@@ -842,34 +1215,113 @@ describe('ChallengeEntityAnalysisPage', () => {
     )
   })
 
-  it('shows a subordinate empty state when the selected entity has no children', () => {
-    useEntityRelationshipsMock.mockReturnValue({
-      data: {
-        children: [],
+  it('recomputes the preview viewport when the entity changes', async () => {
+    useEntityDetailsMock.mockImplementation(
+      ({ cui, reportType }: { cui?: string; reportType?: string }) => ({
+        data: {
+          ...(reportType === 'DETAILED'
+            ? detailedEntityDetails
+            : entityDetails),
+          cui: cui ?? '12345678',
+        },
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      }),
+    )
+    getEntityFeatureInfoMock.mockImplementation(
+      (entity: { cui?: string }) => {
+        if (entity.cui === '87654321') {
+          return {
+            center: [45.65, 25.61],
+            zoom: 7.4,
+            featureId: '87654321',
+          }
+        }
+
+        return {
+          center: [46.77, 23.59],
+          zoom: 8.1,
+          featureId: entity.cui ?? '12345678',
+        }
       },
-      isLoading: false,
-      isFetching: false,
-      isError: false,
-      error: null,
-      refetch: vi.fn(),
+    )
+
+    const { rerender } = render(
+      <ChallengeEntityAnalysisPage
+        entityCui="12345678"
+        state={DEFAULT_PAGE_STATE}
+        onStateChange={vi.fn()}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(getLatestPublicPreviewCardProps()).toMatchObject({
+        mapZoomOverride: 8.1,
+        mapCenterOverride: [46.77, 23.59],
+      })
     })
-    useQueryMock.mockReturnValue({
-      data: {
-        nodes: [],
-      },
-      isLoading: false,
-      isFetching: false,
-      isError: false,
-      error: null,
-      refetch: vi.fn(),
+
+    fireEvent.click(screen.getByRole('button', { name: 'Pan preview map' }))
+
+    await waitFor(() => {
+      expect(getLatestPublicPreviewCardProps()).toMatchObject({
+        mapZoomOverride: 9.6,
+        mapCenterOverride: [47.1, 26.2],
+      })
+    })
+
+    rerender(
+      <ChallengeEntityAnalysisPage
+        entityCui="87654321"
+        state={DEFAULT_PAGE_STATE}
+        onStateChange={vi.fn()}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(getLatestPublicPreviewCardProps()).toMatchObject({
+        mapZoomOverride: 7.4,
+        mapCenterOverride: [45.65, 25.61],
+      })
+    })
+  })
+
+  it('shows the selected-period empty state when the subordinate analytics query returns no rows', () => {
+    useQueryMock.mockImplementation((options: any) => {
+      if (options?.enabled !== false) {
+        void options?.queryFn?.()
+      }
+
+      return {
+        data: createSubordinateRankingConnection([], 0),
+        isLoading: false,
+        isFetching: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      }
     })
 
     renderAnalysisPage()
 
     expect(
       screen.getByText(
-        'Nu există instituții subordonate conectate acestei primării în datele disponibile.',
+        'Nu am găsit cheltuieli raportate pentru instituțiile subordonate în perioada selectată.',
       ),
     ).toBeInTheDocument()
+    expect(screen.queryByText(/Top /)).not.toBeInTheDocument()
   })
 })
+
+function getLatestPublicPreviewCardProps(): Record<string, unknown> {
+  const latestCallIndex = mapAnalyticsPublicPreviewCardMock.mock.calls.length - 1
+  const latestCall = mapAnalyticsPublicPreviewCardMock.mock.calls[latestCallIndex]?.[0]
+
+  if (!latestCall) {
+    throw new Error('Missing public map preview props.')
+  }
+
+  return latestCall
+}

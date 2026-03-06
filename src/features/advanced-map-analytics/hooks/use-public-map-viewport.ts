@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { AdvancedMapAnalyticsUrlStateSchema, type AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
+import { areMapCentersEqual } from '@/features/advanced-map-analytics/map-viewport-utils';
 
 export interface PublicMapViewport {
   mapZoom?: number;
@@ -12,19 +13,17 @@ const PublicMapViewportSearchSchema = AdvancedMapAnalyticsUrlStateSchema.pick({
   mapZoom: true,
 });
 
-function areMapCentersEqual(
-  firstMapCenter: [number, number] | undefined,
-  secondMapCenter: [number, number] | undefined
+function doesMapStateMatchViewportOverride(
+  mapState: AdvancedMapAnalyticsUrlState,
+  viewportOverride: PublicMapViewport
 ): boolean {
-  if (firstMapCenter === undefined && secondMapCenter === undefined) {
-    return true;
-  }
+  const hasZoomMismatch =
+    viewportOverride.mapZoom !== undefined && mapState.mapZoom !== viewportOverride.mapZoom;
+  const hasCenterMismatch =
+    viewportOverride.mapCenter !== undefined &&
+    !areMapCentersEqual(mapState.mapCenter, viewportOverride.mapCenter);
 
-  if (firstMapCenter === undefined || secondMapCenter === undefined) {
-    return false;
-  }
-
-  return firstMapCenter[0] === secondMapCenter[0] && firstMapCenter[1] === secondMapCenter[1];
+  return !hasZoomMismatch && !hasCenterMismatch;
 }
 
 interface UsePublicMapViewportUrlSyncInput {
@@ -91,7 +90,7 @@ export function usePublicMapViewportUrlSync({
 }
 
 interface UsePublicMapViewportSyncInput {
-  publicId: string;
+  mapKey: string;
   enabled: boolean;
   mapState: AdvancedMapAnalyticsUrlState;
   setMapState: Dispatch<SetStateAction<AdvancedMapAnalyticsUrlState>>;
@@ -101,7 +100,7 @@ interface UsePublicMapViewportSyncInput {
 }
 
 export function usePublicMapViewportSync({
-  publicId,
+  mapKey,
   enabled,
   mapState,
   setMapState,
@@ -110,10 +109,24 @@ export function usePublicMapViewportSync({
   onMapViewportChange,
 }: Readonly<UsePublicMapViewportSyncInput>) {
   const lastViewportEmissionRef = useRef<string | null>(null);
+  const externalViewportOverride = useMemo<PublicMapViewport>(
+    () => ({
+      mapZoom: mapZoomOverride,
+      mapCenter: mapCenterOverride,
+    }),
+    [mapCenterOverride, mapZoomOverride]
+  );
+  const hasPendingExternalViewportOverride = useMemo(
+    () =>
+      enabled &&
+      (mapZoomOverride !== undefined || mapCenterOverride !== undefined) &&
+      !doesMapStateMatchViewportOverride(mapState, externalViewportOverride),
+    [enabled, externalViewportOverride, mapCenterOverride, mapState, mapZoomOverride]
+  );
 
   useEffect(() => {
     lastViewportEmissionRef.current = null;
-  }, [publicId]);
+  }, [mapKey]);
 
   useEffect(() => {
     if (!enabled) {
@@ -147,6 +160,12 @@ export function usePublicMapViewportSync({
       return;
     }
 
+    // Do not emit a stale viewport upstream while the local map state is still
+    // converging to an externally controlled center/zoom.
+    if (hasPendingExternalViewportOverride) {
+      return;
+    }
+
     if (mapState.mapZoom === undefined && mapState.mapCenter === undefined) {
       return;
     }
@@ -163,5 +182,11 @@ export function usePublicMapViewportSync({
 
     lastViewportEmissionRef.current = nextViewportKey;
     onMapViewportChange(nextViewport);
-  }, [enabled, mapState.mapCenter, mapState.mapZoom, onMapViewportChange]);
+  }, [
+    enabled,
+    hasPendingExternalViewportOverride,
+    mapState.mapCenter,
+    mapState.mapZoom,
+    onMapViewportChange,
+  ]);
 }

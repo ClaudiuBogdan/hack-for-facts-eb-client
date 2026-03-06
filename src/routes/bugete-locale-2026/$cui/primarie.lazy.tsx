@@ -60,6 +60,7 @@ function toPageState(
     treemapPath: searchState.treemap_path?.split(',').filter(Boolean) ?? [],
     evolutionAccountCategory: searchState.evolution_account,
     evolutionPrimary: searchState.evolution_primary,
+    mapPreviewKey: searchState.public_map,
   }
 }
 
@@ -193,6 +194,10 @@ export function PrimarieEntityRoutePage() {
 
       if (patch.evolutionPrimary !== undefined) {
         searchPatch.evolution_primary = patch.evolutionPrimary
+      }
+
+      if (patch.mapPreviewKey !== undefined) {
+        searchPatch.public_map = patch.mapPreviewKey
       }
 
       const nextNormalizedState = normalizeChallengeEntityAnalysisSearch({

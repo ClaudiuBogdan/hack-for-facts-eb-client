@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY } from '@/features/challenges/components/analysis/challenge-entity-public-maps'
 
 const navigateMock = vi.fn()
 const setSelectedEntityMock = vi.fn()
@@ -40,7 +41,7 @@ vi.mock(
         {entityCui}:{languageQuery ?? 'ro'}:{state.selectedYear}:
         {state.reportType}:{state.treemapAccountCategory}:{state.treemapPrimary}:
         {state.treemapPath.join('|')}:{state.evolutionAccountCategory}:
-        {state.evolutionPrimary}
+        {state.evolutionPrimary}:{state.mapPreviewKey}
         <button type="button" onClick={() => onEntityResolved?.()}>
           Resolve entity
         </button>
@@ -50,6 +51,7 @@ vi.mock(
             onStateChange?.({
               selectedYear: 2023,
               treemapPath: ['51', '51.01.03'],
+              mapPreviewKey: 'local-taxes',
             })
           }
         >
@@ -92,7 +94,7 @@ describe('PrimarieEntityRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      '87654321:ro:2025:PRINCIPAL_AGGREGATED:ch:fn::ch:fn',
+      `87654321:ro:2025:PRINCIPAL_AGGREGATED:ch:fn::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}`,
     )
   })
 
@@ -106,6 +108,7 @@ describe('PrimarieEntityRoutePage', () => {
       treemap_path: '51,51.01',
       evolution_account: 'vn',
       evolution_primary: 'ec',
+      public_map: 'invalid-map',
     }
 
     const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
@@ -113,7 +116,7 @@ describe('PrimarieEntityRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      '12345678:en:2024:DETAILED:vn:fn:51|51.01:vn:fn',
+      `12345678:en:2024:DETAILED:vn:fn:51|51.01:vn:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}`,
     )
 
     await waitFor(() => {
@@ -126,6 +129,32 @@ describe('PrimarieEntityRoutePage', () => {
     expect(canonicalSearch).toMatchObject({
       treemap_primary: 'fn',
       evolution_primary: 'fn',
+      public_map: DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
+    })
+  })
+
+  it('canonicalizes legacy public map ids to local preview keys', async () => {
+    mockedSearch = {
+      public_map: 'gxnEfLoy3EqI',
+    }
+
+    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+
+    render(<PrimarieEntityRoutePage />)
+
+    expect(screen.getByTestId('analysis-page')).toHaveTextContent(
+      '12345678:ro:2025:PRINCIPAL_AGGREGATED:ch:fn::ch:fn:local-taxes',
+    )
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalled()
+    })
+
+    const canonicalizeCall = navigateMock.mock.calls[0]?.[0]
+    const canonicalSearch = canonicalizeCall.search(mockedSearch)
+
+    expect(canonicalSearch).toMatchObject({
+      public_map: 'local-taxes',
     })
   })
 
@@ -170,6 +199,7 @@ describe('PrimarieEntityRoutePage', () => {
       treemap_primary: 'fn',
       evolution_account: 'ch',
       evolution_primary: 'fn',
+      public_map: DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
     }
 
     const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
@@ -192,6 +222,7 @@ describe('PrimarieEntityRoutePage', () => {
       inflation_adjusted: true,
       year: 2023,
       treemap_path: '51,51.01.03',
+      public_map: 'local-taxes',
     })
   })
 })

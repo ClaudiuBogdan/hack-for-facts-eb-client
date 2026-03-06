@@ -109,14 +109,35 @@ describe('fetchGroupedSeriesData', () => {
     });
   });
 
-  it('throws auth-required error and skips fetch when token is missing', async () => {
+  it('posts grouped-series request without auth when token is missing', async () => {
     vi.mocked(getAuthToken).mockResolvedValue(null);
 
-    await expect(fetchGroupedSeriesData(createSeriesRequest())).rejects.toThrow(
-      'Sign in required for advanced map analytics data.'
-    );
+    const request = createSeriesRequest();
+    const groupedData = createGroupedData(request.series[0].id);
 
-    expect(fetchMock).not.toHaveBeenCalled();
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      text: vi.fn().mockResolvedValue(JSON.stringify({ ok: true, data: groupedData })),
+    } satisfies Partial<Response>);
+
+    const result = await fetchGroupedSeriesData(request);
+
+    expect(result).toEqual(groupedData);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(init.headers).toEqual(
+      expect.objectContaining({
+        'Content-Type': 'application/json',
+      })
+    );
+    expect(init.headers).not.toEqual(
+      expect.objectContaining({
+        Authorization: expect.any(String),
+      })
+    );
   });
 
   it('maps 401 and 403 responses to explicit authz messages', async () => {

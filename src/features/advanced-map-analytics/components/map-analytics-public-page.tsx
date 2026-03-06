@@ -1,14 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { AdvancedMapAnalyticsUrlStateSchema, type AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 import { MapAnalyticsWorkspace } from '@/features/advanced-map-analytics/components/map-analytics-workspace';
-import { useAdvancedMapAnalyticsPublicMapQuery } from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
+import type { PublicMapViewport } from '@/features/advanced-map-analytics/hooks/use-public-map-viewport';
 import {
-  usePublicMapViewportSync,
-  type PublicMapViewport,
-} from '@/features/advanced-map-analytics/hooks/use-public-map-viewport';
-import { getRemoteGroupedSeriesHash } from '@/lib/map-series/grouped-series-request';
+  usePublicMapRuntimeState,
+} from '@/features/advanced-map-analytics/hooks/use-public-map-runtime-state';
 import { t } from '@lingui/core/macro';
 
 interface MapAnalyticsPublicPageProps {
@@ -24,36 +20,19 @@ export function MapAnalyticsPublicPage({
   mapCenterOverride,
   onMapViewportChange,
 }: Readonly<MapAnalyticsPublicPageProps>) {
-  const publicMapQuery = useAdvancedMapAnalyticsPublicMapQuery(publicId, true);
-  const [mapState, setMapState] = useState<AdvancedMapAnalyticsUrlState>(() =>
-    AdvancedMapAnalyticsUrlStateSchema.parse({})
-  );
-
-  useEffect(() => {
-    if (!publicMapQuery.data) {
-      return;
-    }
-
-    setMapState(publicMapQuery.data.lastSnapshot.config);
-  }, [publicMapQuery.data]);
-
-  usePublicMapViewportSync({
-    publicId,
-    enabled: Boolean(publicMapQuery.data),
+  const {
+    publicMapQuery,
     mapState,
     setMapState,
+    mapDescription,
+    bundledGroupedSeriesData,
+    bundledRemoteBaseSeriesHash,
+  } = usePublicMapRuntimeState({
+    publicId,
     mapZoomOverride,
     mapCenterOverride,
     onMapViewportChange,
   });
-
-  const bundledRemoteBaseSeriesHash = useMemo(() => {
-    if (!publicMapQuery.data) {
-      return undefined;
-    }
-
-    return getRemoteGroupedSeriesHash(publicMapQuery.data.lastSnapshot.config.series);
-  }, [publicMapQuery.data]);
 
   if (publicMapQuery.isLoading) {
     return (
@@ -81,10 +60,10 @@ export function MapAnalyticsPublicPage({
       mode="public"
       mapState={mapState}
       setMapState={setMapState}
-      mapDescription={publicMapQuery.data?.description ?? ''}
+      mapDescription={mapDescription}
       capabilities={{ readOnly: true }}
       mobileControlsDefaultCollapsed={true}
-      bundledGroupedSeriesData={publicMapQuery.data?.groupedSeriesData}
+      bundledGroupedSeriesData={bundledGroupedSeriesData}
       bundledRemoteBaseSeriesHash={bundledRemoteBaseSeriesHash}
     />
   );

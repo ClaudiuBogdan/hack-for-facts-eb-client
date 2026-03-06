@@ -1,5 +1,10 @@
 import { z } from 'zod'
 import { DEFAULT_SELECTED_YEAR, defaultYearRange } from '@/schemas/charts'
+import {
+  DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
+  normalizeChallengeEntityMapPreviewKey,
+  type ChallengeEntityMapPreviewKey,
+} from '@/features/challenges/components/analysis/challenge-entity-public-maps'
 
 export const ChallengeEntityAnalysisReportTypeSchema = z.enum([
   'PRINCIPAL_AGGREGATED',
@@ -30,6 +35,7 @@ export const ChallengeEntityAnalysisRouteSearchSchema = z.object({
   treemap_path: z.string().optional(),
   evolution_account: ChallengeEntityAnalysisAccountCategorySchema.optional(),
   evolution_primary: ChallengeEntityAnalysisPrimarySchema.optional(),
+  public_map: z.string().optional(),
 })
 
 export type ChallengeEntityAnalysisRouteSearch = z.infer<
@@ -46,6 +52,7 @@ export type ChallengeEntityAnalysisUrlState = {
   readonly treemap_path?: string
   readonly evolution_account: 'ch' | 'vn'
   readonly evolution_primary: 'fn' | 'ec'
+  readonly public_map: ChallengeEntityMapPreviewKey
 }
 
 const TREEMAP_PATH_CODE_PATTERN = /^\d+(?:\.\d+)*$/
@@ -104,6 +111,7 @@ export function normalizeChallengeEntityAnalysisSearch(
 ): ChallengeEntityAnalysisUrlState {
   const treemapAccountCategory = search?.treemap_account ?? 'ch'
   const evolutionAccountCategory = search?.evolution_account ?? 'ch'
+  const mapPreviewKey = normalizeChallengeEntityMapPreviewKey(search?.public_map)
 
   return {
     lang: search?.lang,
@@ -123,6 +131,7 @@ export function normalizeChallengeEntityAnalysisSearch(
       evolutionAccountCategory === 'vn'
         ? 'fn'
         : (search?.evolution_primary ?? 'fn'),
+    public_map: mapPreviewKey,
   }
 }
 
@@ -162,6 +171,13 @@ export function buildChallengeEntityAnalysisCanonicalSearchPatch(
 
   if (search?.evolution_primary !== normalizedSearch.evolution_primary) {
     patch.evolution_primary = normalizedSearch.evolution_primary
+  }
+
+  if (
+    (search?.public_map ?? DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY) !==
+    normalizedSearch.public_map
+  ) {
+    patch.public_map = normalizedSearch.public_map
   }
 
   return patch

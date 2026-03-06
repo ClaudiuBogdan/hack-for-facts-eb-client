@@ -11,6 +11,23 @@ interface FeatureInfo {
     featureId: string | number;
 }
 
+const MIN_FEATURE_BBOX_DELTA = 1e-6;
+const DEFAULT_ENTITY_FEATURE_ZOOM = 7;
+const MAX_ENTITY_FEATURE_ZOOM = 15;
+const BUCHAREST_MUNICIPALITY_CUI = '4267117';
+
+function isCountyLevelEntity(entity: EntityDetailsData): boolean {
+    return entity.entity_type === 'admin_county_council' || entity.cui === BUCHAREST_MUNICIPALITY_CUI;
+}
+
+function normalizeCountyCode(countyCode: string | null | undefined): string {
+    return countyCode?.trim().toUpperCase() ?? '';
+}
+
+function normalizeSirutaCode(sirutaCode: string | number | null | undefined): string {
+    return sirutaCode == null ? '' : String(sirutaCode).trim();
+}
+
 export const getEntityFeatureInfo = (entity: EntityDetailsData, geoJsonData: GeoJsonObject): FeatureInfo | null => {
     if (geoJsonData.type !== 'FeatureCollection') {
         return null;
@@ -21,12 +38,18 @@ export const getEntityFeatureInfo = (entity: EntityDetailsData, geoJsonData: Geo
     let feature: Feature | undefined;
     let featureId: string | number | undefined;
 
-    if (entity.entity_type === 'admin_county_council') {
-        const countyCode = entity.uat?.county_code;
-        feature = featureCollection.features.find(f => f.properties?.mnemonic === countyCode);
+    if (isCountyLevelEntity(entity)) {
+        const countyCode = normalizeCountyCode(entity.uat?.county_code);
+        feature = featureCollection.features.find(
+            (geoJsonFeature) =>
+                normalizeCountyCode(String(geoJsonFeature.properties?.mnemonic ?? '')) === countyCode
+        );
         featureId = feature?.properties?.mnemonic;
     } else {
-        feature = featureCollection.features.find(f => f.properties?.natcode === entity.uat?.siruta_code?.toString());
+        const sirutaCode = normalizeSirutaCode(entity.uat?.siruta_code);
+        feature = featureCollection.features.find(
+            (geoJsonFeature) => normalizeSirutaCode(geoJsonFeature.properties?.natcode) === sirutaCode
+        );
         featureId = feature?.properties?.natcode;
     }
 
@@ -39,18 +62,18 @@ export const getEntityFeatureInfo = (entity: EntityDetailsData, geoJsonData: Geo
 
     const [minLon, minLat, maxLon, maxLat] = featureBbox;
 
-    const lonDiff = maxLon - minLon;
-    const latDiff = maxLat - minLat;
+    const lonDiff = Math.max(maxLon - minLon, MIN_FEATURE_BBOX_DELTA);
+    const latDiff = Math.max(maxLat - minLat, MIN_FEATURE_BBOX_DELTA);
 
     const zoomLat = Math.log(360 / latDiff) / Math.LN2;
     const zoomLon = Math.log(360 / lonDiff) / Math.LN2;
-
-    const zoom = Math.min(zoomLat, zoomLon, 15);
+    const zoom = Math.min(zoomLat, zoomLon, MAX_ENTITY_FEATURE_ZOOM);
+    const [centerLongitude, centerLatitude] = featureCenter.geometry.coordinates;
 
 
     return {
-        center: featureCenter.geometry.coordinates.reverse() as LatLngExpression,
-        zoom: zoom,
+        center: [centerLatitude, centerLongitude] as LatLngExpression,
+        zoom: Number.isFinite(zoom) ? zoom : DEFAULT_ENTITY_FEATURE_ZOOM,
         featureId: featureId || entity.cui,
     };
 };

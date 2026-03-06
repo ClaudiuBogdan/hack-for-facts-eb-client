@@ -116,6 +116,7 @@ interface MapAnalyticsWorkspaceProps {
   mobileControlsDefaultCollapsed?: boolean;
   onApplyImportedConfig?: (config: ImportedMapConfig) => Promise<void> | void;
   onBeforeExportConfig?: () => Promise<void> | void;
+  layout?: 'full' | 'preview';
 }
 
 // NOTE: Do not use module-scope t`` — it freezes the translation at import time.
@@ -138,6 +139,7 @@ export function MapAnalyticsWorkspace({
   mobileControlsDefaultCollapsed = false,
   onApplyImportedConfig,
   onBeforeExportConfig,
+  layout = 'full',
 }: Readonly<MapAnalyticsWorkspaceProps>) {
   const navigate = useNavigate();
   const [userCurrency] = useUserCurrency();
@@ -151,8 +153,13 @@ export function MapAnalyticsWorkspace({
     mobileControlsDefaultCollapsed
   );
   const isReadOnly = mode === 'public' || capabilities.readOnly;
+  const isPreviewLayout = layout === 'preview';
   const isMobileControlsCollapseEnabled = isMobile && mobileControlsDefaultCollapsed;
-  const shouldOverlayMobileControls = mode === 'public' && isMobileControlsCollapseEnabled && mapState.activeView === 'map';
+  const shouldOverlayMobileControls =
+    !isPreviewLayout &&
+    mode === 'public' &&
+    isMobileControlsCollapseEnabled &&
+    mapState.activeView === 'map';
   const mobileControlsContentId = 'map-analytics-mobile-controls';
 
   const updateState = useCallback(
@@ -1479,12 +1486,20 @@ export function MapAnalyticsWorkspace({
       const nextCenter: [number, number] = [roundTo(center[0], 5), roundTo(center[1], 5)];
       const nextZoom = roundTo(zoom, 1);
 
+      const hasSameCenter =
+        mapState.mapCenter?.[0] === nextCenter[0] && mapState.mapCenter?.[1] === nextCenter[1];
+      const hasSameZoom = mapState.mapZoom === nextZoom;
+
+      if (hasSameCenter && hasSameZoom) {
+        return;
+      }
+
       updateState((draft) => {
         draft.mapCenter = nextCenter;
         draft.mapZoom = nextZoom;
       });
     },
-    [updateState]
+    [mapState.mapCenter, mapState.mapZoom, updateState]
   );
 
   const hasEnabledGeoJsonDatasetSeries = enabledGeoJsonDatasetSeries.length > 0;
@@ -1510,9 +1525,9 @@ export function MapAnalyticsWorkspace({
     ? resolveSeriesDisplayLabel(activeSeries)
     : activeSeriesId || t`None`;
   const mapName = mapState.mapName || t`Untitled map`;
-  const isMapViewActive = mapState.activeView === 'map';
-  const isTableViewActive = mapState.activeView === 'table';
-  const isAnalyticsViewActive = mapState.activeView === 'analytics';
+  const isMapViewActive = isPreviewLayout || mapState.activeView === 'map';
+  const isTableViewActive = !isPreviewLayout && mapState.activeView === 'table';
+  const isAnalyticsViewActive = !isPreviewLayout && mapState.activeView === 'analytics';
   const canOpenLocalSnapshots = !isReadOnly && typeof onOpenLocalSnapshots === 'function';
   const shouldShowSaveSnapshotCallToAction =
     !isReadOnly &&
@@ -1684,6 +1699,103 @@ export function MapAnalyticsWorkspace({
     </section>
   ) : null;
 
+  if (isPreviewLayout) {
+    return (
+      <div className="relative isolate h-[420px] overflow-hidden sm:h-[460px]">
+        {isMapLoading ? (
+          <div className="flex h-full w-full items-center justify-center">
+            <LoadingSpinner size="lg" text={t`Loading advanced map analytics...`} />
+          </div>
+        ) : mapError ? (
+          <div className="flex h-full w-full items-center justify-center p-6 text-center text-red-600">
+            {mapError.message}
+          </div>
+        ) : !geoJsonData ? (
+          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+            {t`Map geometry is unavailable.`}
+          </div>
+        ) : (
+          <>
+            <ClientOnly
+              fallback={
+                <div className="flex h-full w-full items-center justify-center">
+                  <LoadingSpinner size="lg" text={t`Loading map...`} />
+                </div>
+              }
+            >
+              <Suspense
+                fallback={
+                  <div className="flex h-full w-full items-center justify-center">
+                    <LoadingSpinner size="lg" text={t`Loading map...`} />
+                  </div>
+                }
+              >
+                <InteractiveMap
+                  onFeatureClick={handleMapFeatureClick}
+                  getFeatureStyle={getFeatureStyle}
+                  heatmapData={activeHeatmapData}
+                  geoJsonData={geoJsonData}
+                  countyBoundaryGeoJsonData={countyBoundaryGeoJsonData}
+                  zoom={mapZoom}
+                  center={mapState.mapCenter}
+                  mapViewType="UAT"
+                  filters={defaultMapFilters}
+                  mapHeight="100%"
+                  showLabels={Boolean(activeSeries)}
+                  labelMode="active-series"
+                  activeSeriesValuesBySirutaCode={activeValues}
+                  activeSeriesUnit={activeUnit}
+                  onViewChange={handleMapViewChange}
+                  getTooltipContent={getTooltipContent}
+                />
+              </Suspense>
+            </ClientOnly>
+
+            {!activeSeries ? (
+              <div className="pointer-events-none absolute inset-0 z-[500] flex items-center justify-center p-4">
+                <div className="rounded-md border bg-card/95 px-3 py-2 text-sm text-muted-foreground shadow-sm">
+                  {t`No active series selected.`}
+                </div>
+              </div>
+            ) : null}
+
+            {activeSeries ? (
+              <div className="absolute bottom-4 right-4 z-[500]">
+                {binsCanApply ? (
+                  <AdvancedMapAnalyticsDiscreteLegend
+                    title={activeBinsLegendTitle}
+                    entries={binsClassification.palette}
+                  />
+                ) : (
+                  <LegendCard
+                    min={realDataMin}
+                    max={realDataMax}
+                    unit={activeUnit}
+                    title={
+                      isContinuousIntervalMode
+                        ? activeBinsLegendTitle
+                        : resolveSeriesDisplayLabel(activeSeries)
+                    }
+                    startColor={
+                      isContinuousIntervalMode
+                        ? (activeBinsPreset?.config.gradient.startColor ?? '#fff7bc')
+                        : undefined
+                    }
+                    endColor={
+                      isContinuousIntervalMode
+                        ? (activeBinsPreset?.config.gradient.endColor ?? '#d7301f')
+                        : undefined
+                    }
+                  />
+                )}
+              </div>
+            ) : null}
+          </>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="relative flex flex-col bg-background md:h-screen md:flex-row">
       <MapAnalyticsQuickActions
@@ -1847,8 +1959,8 @@ export function MapAnalyticsWorkspace({
                       />
                     ) : (
                       <LegendCard
-                        min={isContinuousIntervalMode ? realDataMin : colorRangeMin}
-                        max={isContinuousIntervalMode ? realDataMax : colorRangeMax}
+                        min={realDataMin}
+                        max={realDataMax}
                         unit={activeUnit}
                         title={
                           isContinuousIntervalMode

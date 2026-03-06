@@ -20,10 +20,9 @@ export type ChallengeEntitySubordinateCardItem = {
 type ChallengeEntitySubordinatesSectionProps = {
   readonly locale: ChallengeLocale
   readonly items: readonly ChallengeEntitySubordinateCardItem[]
-  readonly totalChildrenCount: number
+  readonly totalResultsCount: number
   readonly isLoading: boolean
   readonly isError: boolean
-  readonly hasChildren: boolean
   readonly onRetry: () => void
   readonly normalizationOptions: NormalizationOptions
   readonly showAllSearch: Record<string, unknown>
@@ -154,18 +153,17 @@ function ChallengeEntitySubordinateCard({
 export function ChallengeEntitySubordinatesSection({
   locale,
   items,
-  totalChildrenCount,
+  totalResultsCount,
   isLoading,
   isError,
-  hasChildren,
   onRetry,
   normalizationOptions,
   showAllSearch,
 }: ChallengeEntitySubordinatesSectionProps) {
   const copy = SUBORDINATES_COPY[locale]
   const summaryCountLabel =
-    totalChildrenCount > 0
-      ? copy.formatSummaryCount(items.length, totalChildrenCount)
+    totalResultsCount > 0 && items.length > 0
+      ? copy.formatSummaryCount(items.length, totalResultsCount)
       : null
 
   return (
@@ -207,10 +205,6 @@ export function ChallengeEntitySubordinatesSection({
             >
               {t`Încearcă din nou`}
             </Button>
-          </div>
-        ) : !hasChildren ? (
-          <div className="rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-5 py-6 text-sm text-muted-foreground">
-            {copy.emptyChildren}
           </div>
         ) : items.length === 0 ? (
           <div className="rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-5 py-6 text-sm text-muted-foreground">

@@ -778,6 +778,63 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(tooltipHtml).not.toContain('>Group<');
   });
 
+  it('shows absolute min and max values in the default range legend', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const activeSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    activeSeries.id = 'series_legend';
+    activeSeries.label = 'Legend Series';
+    activeSeries.enabled = true;
+
+    const activeValues = new Map<string, number | undefined>([
+      ['1001', 0],
+      ['1002', 50],
+      ['1003', 100],
+    ]);
+
+    mockSeriesDataResult = {
+      valuesBySeriesId: new Map([[activeSeries.id, activeValues]]),
+      unitsBySeriesId: new Map([[activeSeries.id, undefined]]),
+      warnings: [],
+      activeSeriesId: activeSeries.id,
+      activeValues,
+      isLoading: false,
+      error: null,
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({
+          activeView: 'map',
+          series: [activeSeries],
+          activeSeriesId: activeSeries.id,
+        })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    await screen.findByTestId('interactive-map');
+
+    const legendCard = screen.getByText('Legend Series').closest('div');
+    expect(legendCard).not.toBeNull();
+    expect(legendCard).toHaveTextContent('0');
+    expect(legendCard).toHaveTextContent('100');
+  });
+
   it('dispatches copy, duplicate, and paste keyboard shortcuts in owner mode', async () => {
     const selectedSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
     selectedSeries.id = 'series_1';
@@ -1146,6 +1203,35 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     await screen.findByTestId('interactive-map');
     expect(screen.queryByRole('button', { name: 'Save snapshot' })).not.toBeInTheDocument();
+  });
+
+  it('sizes the preview layout map to the preview container height', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        layout="preview"
+        mapState={createMapState({ activeView: 'map' })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+      />
+    );
+
+    await screen.findByTestId('interactive-map');
+
+    expect(latestInteractiveMapProps?.mapHeight).toBe('100%');
   });
 
 });

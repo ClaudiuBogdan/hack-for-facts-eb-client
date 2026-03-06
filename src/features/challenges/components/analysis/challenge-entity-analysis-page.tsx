@@ -1,10 +1,11 @@
 import { t } from '@lingui/core/macro'
-import { AlertTriangle, RefreshCw, Users } from 'lucide-react'
+import { AlertTriangle, Minus, Plus, RefreshCw, Users } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BudgetTreemap } from '@/components/budget-explorer/BudgetTreemap'
 import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
 import { useTreemapDrilldown } from '@/components/budget-explorer/useTreemapDrilldown'
+import { getEntityFeatureInfo } from '@/components/entities/utils'
 import { EntityFinancialSummary, type EntityFinancialSummaryTrend } from '@/components/entities/EntityFinancialSummary'
 import { EntityFinancialSummarySkeleton } from '@/components/entities/EntityFinancialSummarySkeleton'
 import { EntityFinancialTrends } from '@/components/entities/EntityFinancialTrends'
@@ -12,8 +13,10 @@ import { EntityFinancialTrendsSkeleton } from '@/components/entities/EntityFinan
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useEntityTypeLabel } from '@/hooks/filters/useFilterLabels'
+import { useGeoJsonData } from '@/hooks/useGeoJson'
 import {
   DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES,
   DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES,
@@ -25,7 +28,6 @@ import { useGlobalSettings } from '@/lib/hooks/useGlobalSettings'
 import {
   useEntityDetails,
   useEntityExecutionLineItems,
-  useEntityRelationships,
 } from '@/lib/hooks/useEntityDetails'
 import type { NormalizationOptions } from '@/lib/normalization'
 import { DEFAULT_SELECTED_YEAR, defaultYearRange } from '@/schemas/charts'
@@ -38,10 +40,18 @@ import {
   toReportTypeValue,
 } from '@/schemas/reporting'
 import type { ChallengeLocale } from '../../types'
+import { MapAnalyticsPublicPreviewCard } from '@/features/advanced-map-analytics/components/map-analytics-public-preview-card'
+import type { PublicMapViewport } from '@/features/advanced-map-analytics/hooks/use-public-map-viewport'
+import { areMapCentersEqual } from '@/features/advanced-map-analytics/map-viewport-utils'
 import { ChallengeEntityAnalysisExplainer } from './challenge-entity-analysis-explainer'
 import { ChallengeEntityAnalysisHeader } from './challenge-entity-analysis-header'
 import { ChallengeEntityAnomalySummary } from './challenge-entity-anomaly-summary'
 import { ChallengeEntityCategoryEvolution } from './challenge-entity-category-evolution'
+import {
+  CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS,
+  getChallengeEntityMapPreviewDefinition,
+  type ChallengeEntityMapPreviewKey,
+} from './challenge-entity-public-maps'
 import {
   ChallengeEntitySubordinatesSection,
   type ChallengeEntitySubordinateCardItem,
@@ -71,6 +81,7 @@ export type ChallengeEntityAnalysisPageState = {
   readonly treemapPath: readonly string[]
   readonly evolutionAccountCategory: ChallengeTreemapAccountCategory
   readonly evolutionPrimary: 'fn' | 'ec'
+  readonly mapPreviewKey: ChallengeEntityMapPreviewKey
 }
 
 const CHALLENGE_TREND_PERIOD = makeTrendPeriod(
@@ -152,6 +163,89 @@ function getTreemapPrimaryCtaLabel(
     : t`Arată pe ce s-au cheltuit banii`
 }
 
+function getReportTypeCtaLabel(
+  locale: ChallengeLocale | undefined,
+  reportType: ChallengeEntityReportType,
+) {
+  if (locale === 'en') {
+    return reportType === 'PRINCIPAL_AGGREGATED'
+      ? 'Show only city hall spending'
+      : 'Show city hall and subordinate spending'
+  }
+
+  return reportType === 'PRINCIPAL_AGGREGATED'
+    ? 'Arată Doar Cheltuieli Primăriei'
+    : 'Arată Cheltuieli Primăriei și Instituțiilor Subordonate'
+}
+
+function getNormalizationCtaLabel(
+  locale: ChallengeLocale | undefined,
+  normalization: ChallengeEntityAnalysisPageState['normalization'],
+) {
+  if (locale === 'en') {
+    return normalization === 'total'
+      ? 'Show per capita'
+      : 'Show total'
+  }
+
+  return normalization === 'total'
+    ? 'Arată per capita'
+    : 'Arată total'
+}
+
+function arePublicMapViewportsEqual(
+  firstViewport: PublicMapViewport | undefined,
+  secondViewport: PublicMapViewport | undefined,
+) {
+  if (firstViewport === undefined && secondViewport === undefined) {
+    return true
+  }
+
+  if (firstViewport === undefined || secondViewport === undefined) {
+    return false
+  }
+
+  return (
+    firstViewport.mapZoom === secondViewport.mapZoom &&
+    areMapCentersEqual(firstViewport.mapCenter, secondViewport.mapCenter)
+  )
+}
+
+function toPublicMapViewport(
+  featureInfo:
+    | ReturnType<typeof getEntityFeatureInfo>
+    | null
+    | undefined,
+): PublicMapViewport | undefined {
+  if (!featureInfo || !Array.isArray(featureInfo.center)) {
+    return undefined
+  }
+
+  const [latitude, longitude] = featureInfo.center
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return undefined
+  }
+
+  return {
+    mapCenter: [latitude, longitude],
+    mapZoom: featureInfo.zoom,
+  }
+}
+
+function clonePublicMapViewport(
+  viewport: {
+    readonly mapCenter?: readonly [number, number]
+    readonly mapZoom?: number
+  },
+): PublicMapViewport {
+  return {
+    mapCenter: viewport.mapCenter
+      ? [...viewport.mapCenter] as [number, number]
+      : undefined,
+    mapZoom: viewport.mapZoom,
+  }
+}
+
 export function ChallengeEntityAnalysisLoadingShell() {
   return (
     <div className="space-y-6" aria-label={t`Loading…`}>
@@ -228,9 +322,29 @@ export function ChallengeEntityAnalysisPage({
     treemapPath,
     evolutionAccountCategory,
     evolutionPrimary,
+    mapPreviewKey,
   } = state
   const locale = languageQuery === 'en' ? 'en' : 'ro'
   const entityTypeLabel = useEntityTypeLabel()
+  const selectedMapPreviewDefinition = useMemo(
+    () => getChallengeEntityMapPreviewDefinition(mapPreviewKey),
+    [mapPreviewKey],
+  )
+  const selectedMapPreviewFallbackViewport = useMemo(
+    () => clonePublicMapViewport(selectedMapPreviewDefinition.fallbackViewport),
+    [selectedMapPreviewDefinition],
+  )
+  const [isMapPreviewSelectorExpanded, setIsMapPreviewSelectorExpanded] =
+    useState(false)
+  const [publicMapViewport, setPublicMapViewport] =
+    useState<PublicMapViewport>()
+  const seededPublicMapEntityCuiRef = useRef<string | null>(null)
+  const seededPublicMapViewportSourceRef = useRef<'fallback' | 'entity' | null>(
+    null,
+  )
+  const lastAutoSeededPublicMapViewportRef = useRef<
+    PublicMapViewport | undefined
+  >(undefined)
   const {
     currency,
     inflationAdjusted,
@@ -268,6 +382,24 @@ export function ChallengeEntityAnalysisPage({
     }),
     [displayCurrency, displayInflationAdjusted, normalizationMode],
   )
+  const selectedMapPreviewCopy = useMemo(
+    () =>
+      selectedMapPreviewDefinition.buildPreviewCopy({
+        selectedYear,
+        normalization: normalizationMode,
+        currency,
+        inflationAdjusted,
+        reportType: selectedReportType,
+      }),
+    [
+      currency,
+      inflationAdjusted,
+      normalizationMode,
+      selectedReportType,
+      selectedMapPreviewDefinition,
+      selectedYear,
+    ],
+  )
   const entityDetailsQuery = useEntityDetails({
     cui: entityCui,
     reportPeriod,
@@ -281,23 +413,23 @@ export function ChallengeEntityAnalysisPage({
     reportType: selectedReportType,
     ...queryNormalizationOptions,
   })
-  const relationshipsQuery = useEntityRelationships({
-    cui: entityCui,
-  })
+  const entityMapViewType = useMemo<'UAT' | 'County'>(() => {
+    if (
+      entityDetailsQuery.data?.entity_type === 'admin_county_council' ||
+      entityDetailsQuery.data?.cui === '4267117'
+    ) {
+      return 'County'
+    }
 
-  const subordinateEntityCuis = useMemo(
-    () =>
-      (relationshipsQuery.data?.children ?? [])
-        .map((child) => child.cui)
-        .filter((childCui): childCui is string => Boolean(childCui)),
-    [relationshipsQuery.data?.children],
-  )
+    return 'UAT'
+  }, [entityDetailsQuery.data?.cui, entityDetailsQuery.data?.entity_type])
+  const entityGeoJsonQuery = useGeoJsonData(entityMapViewType)
+  const entityGeoJsonData = entityGeoJsonQuery.data
 
   const subordinateRankingQuery = useQuery({
     queryKey: [
       'challenge-entity-subordinates',
       entityCui,
-      subordinateEntityCuis,
       reportPeriod,
       currency,
       inflationAdjusted,
@@ -307,21 +439,24 @@ export function ChallengeEntityAnalysisPage({
         filter: {
           account_category: 'ch',
           main_creditor_cui: entityCui,
-          entity_cuis: subordinateEntityCuis,
           report_period: reportPeriod,
           report_type: CHALLENGE_DETAILED_ANALYTICS_REPORT_TYPE,
           normalization: 'total',
           currency,
           inflation_adjusted: inflationAdjusted,
           show_period_growth: CHALLENGE_SHOW_PERIOD_GROWTH,
+          exclude: {
+            entity_cuis: [entityCui],
+          },
         },
         sort: {
           by: 'total_amount',
           order: 'desc',
         },
-        limit: subordinateEntityCuis.length,
+        limit: MAX_VISIBLE_SUBORDINATE_CARDS,
+        offset: 0,
       }),
-    enabled: subordinateEntityCuis.length > 0,
+    enabled: entityCui.length > 0,
     staleTime: 1000 * 60 * 5,
   })
 
@@ -374,17 +509,11 @@ export function ChallengeEntityAnalysisPage({
   })
 
   const visibleSubordinateRankings = useMemo(
-    () =>
-      [...(subordinateRankingQuery.data?.nodes ?? [])]
-        .filter((node) => Number(node.total_amount ?? node.amount ?? 0) > 0)
-        .sort(
-          (leftNode, rightNode) =>
-            Number(rightNode.total_amount ?? rightNode.amount ?? 0) -
-            Number(leftNode.total_amount ?? leftNode.amount ?? 0),
-        )
-        .slice(0, MAX_VISIBLE_SUBORDINATE_CARDS),
+    () => subordinateRankingQuery.data?.nodes ?? [],
     [subordinateRankingQuery.data?.nodes],
   )
+  const totalSubordinateCount =
+    subordinateRankingQuery.data?.pageInfo?.totalCount ?? 0
 
   const summaryTrends = useMemo(
     () => ({
@@ -456,6 +585,52 @@ export function ChallengeEntityAnalysisPage({
     ],
   )
 
+  const entityPublicMapViewport = useMemo(() => {
+    if (!entityDetailsQuery.data || !entityGeoJsonData) {
+      return undefined
+    }
+
+    return toPublicMapViewport(
+      getEntityFeatureInfo(entityDetailsQuery.data, entityGeoJsonData),
+    )
+  }, [entityDetailsQuery.data, entityGeoJsonData])
+  const isEntityPublicMapViewportReady = useMemo(
+    () =>
+      Boolean(entityDetailsQuery.data) &&
+      !entityDetailsQuery.isFetching &&
+      (
+        Boolean(entityGeoJsonData) ||
+        Boolean(entityGeoJsonQuery.error) ||
+        !entityGeoJsonQuery.isLoading
+      ),
+    [
+      entityDetailsQuery.data,
+      entityDetailsQuery.isFetching,
+      entityGeoJsonData,
+      entityGeoJsonQuery.error,
+      entityGeoJsonQuery.isLoading,
+    ],
+  )
+  const isPublicMapPreviewReady =
+    publicMapViewport !== undefined &&
+    seededPublicMapEntityCuiRef.current === entityCui &&
+    seededPublicMapViewportSourceRef.current !== null
+
+  const seedPublicMapViewport = useCallback(
+    (nextViewport: PublicMapViewport, source: 'fallback' | 'entity') => {
+      setPublicMapViewport((previousViewport) =>
+        arePublicMapViewportsEqual(previousViewport, nextViewport)
+          ? previousViewport
+          : nextViewport,
+      )
+      seededPublicMapEntityCuiRef.current = entityCui
+      seededPublicMapViewportSourceRef.current = source
+      lastAutoSeededPublicMapViewportRef.current =
+        clonePublicMapViewport(nextViewport)
+    },
+    [entityCui],
+  )
+
   const showAllSubordinatesSearch = useMemo(
     () => ({
       ...(languageQuery === 'en' ? { lang: 'en' as const } : {}),
@@ -471,6 +646,9 @@ export function ChallengeEntityAnalysisPage({
         currency: displayCurrency,
         inflation_adjusted: displayInflationAdjusted,
         show_period_growth: CHALLENGE_SHOW_PERIOD_GROWTH,
+        exclude: {
+          entity_cuis: [entityCui],
+        },
       },
     }),
     [
@@ -500,11 +678,7 @@ export function ChallengeEntityAnalysisPage({
       !entityDetailsQuery.isFetching &&
       !entityLineItemsQuery.isFetching
 
-    const isSubordinatesFlowSettled =
-      !relationshipsQuery.isFetching &&
-      !subordinateRankingQuery.isFetching
-
-    if (areCoreQueriesSettled && isSubordinatesFlowSettled) {
+    if (areCoreQueriesSettled && !subordinateRankingQuery.isFetching) {
       confirmSettingsApplied()
     }
   }, [
@@ -513,9 +687,76 @@ export function ChallengeEntityAnalysisPage({
     entityDetailsQuery.isFetching,
     entityLineItemsQuery.data,
     entityLineItemsQuery.isFetching,
-    relationshipsQuery.isFetching,
     subordinateRankingQuery.isFetching,
   ])
+
+  useEffect(() => {
+    if (seededPublicMapEntityCuiRef.current !== entityCui) {
+      if (!isEntityPublicMapViewportReady) {
+        return
+      }
+
+      const nextViewport =
+        entityPublicMapViewport ?? selectedMapPreviewFallbackViewport
+
+      seedPublicMapViewport(
+        nextViewport,
+        entityPublicMapViewport ? 'entity' : 'fallback',
+      )
+      return
+    }
+
+    if (seededPublicMapViewportSourceRef.current !== 'fallback') {
+      return
+    }
+
+    const lastAutoSeededViewport = lastAutoSeededPublicMapViewportRef.current
+    const isUsingAutoSeededFallbackViewport = arePublicMapViewportsEqual(
+      publicMapViewport,
+      lastAutoSeededViewport,
+    )
+
+    if (!isUsingAutoSeededFallbackViewport) {
+      return
+    }
+
+    if (entityPublicMapViewport) {
+      seedPublicMapViewport(entityPublicMapViewport, 'entity')
+      return
+    }
+
+    if (
+      !arePublicMapViewportsEqual(
+        lastAutoSeededViewport,
+        selectedMapPreviewFallbackViewport,
+      )
+    ) {
+      seedPublicMapViewport(selectedMapPreviewFallbackViewport, 'fallback')
+    }
+  }, [
+    entityCui,
+    isEntityPublicMapViewportReady,
+    entityPublicMapViewport,
+    publicMapViewport,
+    seedPublicMapViewport,
+    selectedMapPreviewFallbackViewport,
+  ])
+
+  const handlePublicMapViewportChange = useCallback(
+    (nextViewport: PublicMapViewport) => {
+      setPublicMapViewport((previousViewport) => {
+        const mergedViewport: PublicMapViewport = {
+          mapZoom: nextViewport.mapZoom ?? previousViewport?.mapZoom,
+          mapCenter: nextViewport.mapCenter ?? previousViewport?.mapCenter,
+        }
+
+        return arePublicMapViewportsEqual(previousViewport, mergedViewport)
+          ? previousViewport
+          : mergedViewport
+      })
+    },
+    [],
+  )
 
   const handleYearChange = (nextYear: number) => {
     if (!Number.isFinite(nextYear) || nextYear === selectedYear) {
@@ -579,13 +820,34 @@ export function ChallengeEntityAnalysisPage({
     })
   }
 
+  const handleMapPreviewSelection = (nextMapPreviewKey: ChallengeEntityMapPreviewKey) => {
+    if (nextMapPreviewKey === mapPreviewKey) {
+      return
+    }
+
+    onStateChange({
+      mapPreviewKey: nextMapPreviewKey,
+    })
+  }
+
+  const handleMapPreviewSelectorToggle = useCallback(() => {
+    setIsMapPreviewSelectorExpanded((previousState) => !previousState)
+  }, [])
+
+  const visibleMapPreviewDefinitions = useMemo(
+    () =>
+      isMapPreviewSelectorExpanded
+        ? CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS
+        : [selectedMapPreviewDefinition],
+    [isMapPreviewSelectorExpanded, selectedMapPreviewDefinition],
+  )
+
   const handleRetry = () => {
     void entityDetailsQuery.refetch()
     void entityLineItemsQuery.refetch()
   }
 
   const handleSubordinatesRetry = () => {
-    void relationshipsQuery.refetch()
     void subordinateRankingQuery.refetch()
   }
 
@@ -631,15 +893,19 @@ export function ChallengeEntityAnalysisPage({
   )
   const treemapAccountCategoryCtaLabel =
     treemapAccountCategory === 'ch' ? t`Arată venituri` : t`Arată cheltuieli`
+  const reportTypeCtaLabel = getReportTypeCtaLabel(
+    languageQuery,
+    selectedReportType,
+  )
+  const normalizationCtaLabel = getNormalizationCtaLabel(
+    languageQuery,
+    normalizationMode,
+  )
   const showTreemapResetShortcut =
     treemapAccountCategory === 'ch' && breadcrumbs.length > 0
   const isSubordinatesSectionLoading =
-    (relationshipsQuery.isLoading && !relationshipsQuery.data) ||
-    (subordinateEntityCuis.length > 0 &&
-      subordinateRankingQuery.isLoading &&
-      !subordinateRankingQuery.data)
-  const isSubordinatesSectionError =
-    relationshipsQuery.isError || subordinateRankingQuery.isError
+    subordinateRankingQuery.isLoading && !subordinateRankingQuery.data
+  const isSubordinatesSectionError = subordinateRankingQuery.isError
 
   return (
     <div className="space-y-6 pb-10">
@@ -681,6 +947,93 @@ export function ChallengeEntityAnalysisPage({
         showControls={false}
         showChartEditorLink={false}
       />
+
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+          onClick={handleReportTypeToggle}
+        >
+          {reportTypeCtaLabel}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+          onClick={handleNormalizationToggle}
+        >
+          <Users className="mr-1.5 h-4 w-4" aria-hidden="true" />
+          {normalizationCtaLabel}
+        </Button>
+      </div>
+
+      <div className="space-y-3">
+        {isPublicMapPreviewReady ? (
+          <MapAnalyticsPublicPreviewCard
+            mapKey={selectedMapPreviewDefinition.key}
+            mapDescription={selectedMapPreviewCopy.mapDescription}
+            mapStateDefinition={selectedMapPreviewDefinition.mapState}
+            selectedYearOverride={selectedYear}
+            reportTypeOverride={toReportTypeValue(selectedReportType)}
+            normalizationOverride={normalizationMode}
+            currencyOverride={currency}
+            inflationAdjustedOverride={inflationAdjusted}
+            mapNameOverride={selectedMapPreviewCopy.mapName}
+            mapZoomOverride={publicMapViewport.mapZoom}
+            mapCenterOverride={publicMapViewport.mapCenter}
+            onMapViewportChange={handlePublicMapViewportChange}
+          />
+        ) : (
+          <Card className="overflow-hidden rounded-[28px] border-border/50">
+            <CardContent className="flex h-[420px] items-center justify-center p-6 sm:h-[460px]">
+              <LoadingSpinner text={t`Loading map...`} />
+            </CardContent>
+          </Card>
+        )}
+
+        <div
+          id="challenge-entity-map-preview-switcher"
+          className="flex flex-col gap-2 sm:flex-row sm:flex-wrap"
+        >
+          {visibleMapPreviewDefinitions.map((mapPreviewDefinition) => (
+            <Button
+              key={mapPreviewDefinition.key}
+              type="button"
+              variant={
+                mapPreviewDefinition.key === selectedMapPreviewDefinition.key
+                  ? 'default'
+                  : 'outline'
+              }
+              size="sm"
+              className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+              onClick={() =>
+                handleMapPreviewSelection(mapPreviewDefinition.key)
+              }
+            >
+              {mapPreviewDefinition.label}
+            </Button>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="rounded-full"
+            onClick={handleMapPreviewSelectorToggle}
+            aria-controls="challenge-entity-map-preview-switcher"
+            aria-expanded={isMapPreviewSelectorExpanded}
+            aria-label={
+              isMapPreviewSelectorExpanded
+                ? t`Hide map preview options`
+                : t`Show map preview options`
+            }
+          >
+            {isMapPreviewSelectorExpanded ? <Minus /> : <Plus />}
+          </Button>
+        </div>
+      </div>
 
       <div className="space-y-3">
         <Card className="rounded-[28px] border-border/50">
@@ -745,9 +1098,7 @@ export function ChallengeEntityAnalysisPage({
             onClick={handleNormalizationToggle}
           >
             <Users className="mr-1.5 h-4 w-4" aria-hidden="true" />
-            {normalizationMode === 'total'
-              ? t`Arată per capita`
-              : t`Arată total`}
+            {normalizationCtaLabel}
           </Button>
           <div className="hidden basis-full sm:block" />
           {isIncomeTreemap ? null : showTreemapResetShortcut ? (
@@ -792,10 +1143,9 @@ export function ChallengeEntityAnalysisPage({
       <ChallengeEntitySubordinatesSection
         locale={locale}
         items={subordinateCards}
-        totalChildrenCount={subordinateEntityCuis.length}
+        totalResultsCount={totalSubordinateCount}
         isLoading={isSubordinatesSectionLoading}
         isError={isSubordinatesSectionError}
-        hasChildren={subordinateEntityCuis.length > 0}
         onRetry={handleSubordinatesRetry}
         normalizationOptions={displayNormalizationOptions}
         showAllSearch={showAllSubordinatesSearch}

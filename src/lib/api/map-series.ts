@@ -100,11 +100,13 @@ export async function fetchGroupedSeriesData(
   request: GroupedSeriesDataRequest
 ): Promise<GroupedSeriesDataResponse> {
   const token = await getAuthToken();
-  if (token === null || token.trim().length === 0) {
-    throw new Error(UNAUTHORIZED_MESSAGE);
-  }
-
   const endpoint = `${getApiBaseUrl()}${GROUPED_SERIES_ENDPOINT_PATH}`;
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token && token.trim().length > 0) {
+    headers.Authorization = `Bearer ${token}`;
+  }
 
   try {
     logger.info('Fetching grouped-series series data', {
@@ -115,10 +117,7 @@ export async function fetchGroupedSeriesData(
     const response = await fetch(endpoint, {
       method: 'POST',
       referrerPolicy: API_FETCH_REFERRER_POLICY,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
+      headers,
       body: JSON.stringify(buildRequestBody(request)),
     });
 
