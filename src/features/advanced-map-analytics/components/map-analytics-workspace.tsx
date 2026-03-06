@@ -1747,6 +1747,7 @@ export function MapAnalyticsWorkspace({
                   activeSeriesUnit={activeUnit}
                   onViewChange={handleMapViewChange}
                   getTooltipContent={getTooltipContent}
+                  mobilePanMode="pinch-zoom-until-unlocked"
                 />
               </Suspense>
             </ClientOnly>
@@ -1915,6 +1916,7 @@ export function MapAnalyticsWorkspace({
                       activeSeriesUnit={activeUnit}
                       onViewChange={handleMapViewChange}
                       getTooltipContent={getTooltipContent}
+                      mobilePanMode="pinch-zoom-until-unlocked"
                     />
                   </Suspense>
                 </ClientOnly>

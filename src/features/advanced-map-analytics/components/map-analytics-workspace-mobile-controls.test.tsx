@@ -566,6 +566,36 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(navigateMock).not.toHaveBeenCalled();
   });
 
+  it('passes the mobile pan lock mode to the public full map', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({ activeView: 'map' })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+      />
+    );
+
+    await screen.findByTestId('interactive-map');
+
+    expect(latestInteractiveMapProps?.mobilePanMode).toBe(
+      'pinch-zoom-until-unlocked'
+    );
+  });
+
   it('does not navigate on owner map click even when CUI is available', async () => {
     mockIsMobile.mockReturnValue(false);
     mockGeoJsonData = {
@@ -1232,6 +1262,9 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     await screen.findByTestId('interactive-map');
 
     expect(latestInteractiveMapProps?.mapHeight).toBe('100%');
+    expect(latestInteractiveMapProps?.mobilePanMode).toBe(
+      'pinch-zoom-until-unlocked'
+    );
   });
 
 });

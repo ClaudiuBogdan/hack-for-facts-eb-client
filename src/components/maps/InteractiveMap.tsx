@@ -21,6 +21,7 @@ import { Analytics } from '@/lib/analytics';
 import { MapLabels } from './MapLabels';
 import { shouldUseCanvasRenderer } from './leaflet-renderer';
 import type { LabelMode } from './polygonLabels';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { t } from '@lingui/core/macro';
 
 const MAP_VIEW_EPSILON = 1e-6;
@@ -143,6 +144,7 @@ interface InteractiveMapProps {
   activeSeriesUnit?: string;
   onViewChange?: (center: [number, number], zoom: number) => void;
   getTooltipContent?: TooltipContentBuilder;
+  mobilePanMode?: 'default' | 'pinch-zoom-until-unlocked';
 }
 
 export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
@@ -167,11 +169,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   activeSeriesUnit,
   onViewChange,
   getTooltipContent,
+  mobilePanMode = 'default',
 }) => {
   const geoJsonLayerRef = useRef<L.GeoJSON | null>(null);
   const featureLayerRecordsRef = useRef<FeatureLayerRecord[]>([]);
   const latestFeatureStyleRef = useRef<FeatureStyleResolver>(() => DEFAULT_FEATURE_STYLE);
   const useCanvasRenderer = useMemo(() => shouldUseCanvasRenderer(), []);
+  const isMobile = useIsMobile();
   const latestTooltipContentBuilderRef = useRef<TooltipContentBuilder | undefined>(getTooltipContent);
   const latestInteractionContextRef = useRef<FeatureInteractionContext>({
     heatmapData,
@@ -179,6 +183,8 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
     filters,
     onFeatureClick,
   });
+  const shouldLockMobilePanByDefault =
+    isMobile && mobilePanMode === 'pinch-zoom-until-unlocked';
 
   const heatmapDataMap = useMemo(() => buildHeatmapDataMap(heatmapData), [heatmapData]);
 
@@ -312,6 +318,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       minZoom={minZoom}
       maxZoom={maxZoom}
       maxBounds={maxBounds}
+      dragging={!shouldLockMobilePanByDefault}
       scrollWheelZoom={false}
       style={{ height: mapHeight, width: '100%', backgroundColor: 'transparent' }}
       className="z-0 isolate"
@@ -321,7 +328,12 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       <MapCleanup />
       <MapSizeInvalidator />
       <MapTestIds />
-      {scrollWheelZoom !== false && <ScrollWheelZoomControl />}
+      {scrollWheelZoom !== false && (
+        <ScrollWheelZoomControl
+          isMobile={isMobile}
+          mobilePanMode={mobilePanMode}
+        />
+      )}
       <MapUpdater center={center} zoom={zoom} />
       <MapViewChangeListener onViewChange={onViewChange} />
       {geoJsonData.type === 'FeatureCollection' && (
