@@ -80,6 +80,7 @@ vi.mock('@/components/ui/scroll-area', () => ({
 vi.mock('@/components/ui/sheet', () => ({
   Sheet: ({ children }: PropsWithChildren) => <div>{children}</div>,
   SheetContent: ({ children }: PropsWithChildren) => <div>{children}</div>,
+  SheetTitle: ({ children }: PropsWithChildren) => <div>{children}</div>,
   SheetTrigger: ({ children }: PropsWithChildren) => <div>{children}</div>,
 }))
 
