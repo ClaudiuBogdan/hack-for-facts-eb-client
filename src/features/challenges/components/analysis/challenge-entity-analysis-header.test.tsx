@@ -84,8 +84,25 @@ function setScrollPosition(nextY: number) {
   fireEvent.scroll(window)
 }
 
+function setMobileViewport(isMobile: boolean) {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation((query: string) => ({
+      matches: isMobile,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  })
+}
+
 describe('ChallengeEntityAnalysisHeader', () => {
   beforeEach(() => {
+    setMobileViewport(false)
     Object.defineProperty(window, 'pageYOffset', {
       configurable: true,
       writable: true,
@@ -140,7 +157,6 @@ describe('ChallengeEntityAnalysisHeader', () => {
 
     const compactHeader = screen.getByTestId('challenge-entity-compact-header')
     expect(within(compactHeader).getByText('Primăria Sibiu')).toBeInTheDocument()
-    expect(within(compactHeader).getByText('Municipiu')).toBeInTheDocument()
     expect(within(compactHeader).getByText('Județul Sibiu')).toBeInTheDocument()
     expect(within(compactHeader).getByText('134.309 locuitori')).toBeInTheDocument()
     expect(within(compactHeader).getAllByText('2025')).not.toHaveLength(0)
@@ -208,5 +224,21 @@ describe('ChallengeEntityAnalysisHeader', () => {
     expect(screen.getByText('Municipality')).toBeInTheDocument()
     expect(screen.getByText('134,309 inhabitants')).toBeInTheDocument()
     expect(screen.getByText('Change City Hall')).toBeInTheDocument()
+  })
+
+  it('hides share and change city hall actions on mobile', () => {
+    setMobileViewport(true)
+
+    renderHeader()
+
+    expect(
+      screen.queryByRole('button', { name: 'Copiază link' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'Schimbă Primăria' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Selectează anul' }),
+    ).toBeInTheDocument()
   })
 })

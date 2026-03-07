@@ -95,8 +95,8 @@ function ChallengeEntitySubordinateRow({
       search={item.entitySearch as any}
       className="group flex flex-col gap-1.5 py-3.5 text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:rounded-md"
     >
-      <div className="flex items-center gap-3">
-        <span className="shrink-0 text-xs font-medium tabular-nums text-muted-foreground/60">
+      <div className="flex items-start gap-3">
+        <span className="shrink-0 pt-0.5 text-xs font-medium tabular-nums text-muted-foreground/60">
           #{index + 1}
         </span>
 
@@ -112,7 +112,7 @@ function ChallengeEntitySubordinateRow({
         </div>
 
         <ArrowUpRight
-          className="h-3.5 w-3.5 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary"
+          className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/40 transition-colors group-hover:text-primary"
           aria-hidden="true"
         />
       </div>

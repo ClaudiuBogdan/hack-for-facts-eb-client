@@ -14,6 +14,7 @@ import {
 import { getSiteUrl } from '@/config/env'
 import { CAMPAIGN_BASE_PATH } from '@/features/campaigns/buget/constants'
 import { useEntityTypeLabel } from '@/hooks/filters/useFilterLabels'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { ensureShortRedirectUrl } from '@/lib/api/shortLinks'
 import { useAuth } from '@/lib/auth'
 import type { EntityDetailsData } from '@/lib/api/entities'
@@ -94,6 +95,7 @@ export function ChallengeEntityAnalysisHeader({
   const locale = languageQuery === 'en' ? 'en' : 'ro'
   const copy = HEADER_COPY[locale]
   const { isSignedIn } = useAuth()
+  const isMobile = useIsMobile()
   const queryClient = useQueryClient()
   const [shareCopied, setShareCopied] = useState(false)
   const entityTypeLabel = useEntityTypeLabel()
@@ -309,7 +311,7 @@ export function ChallengeEntityAnalysisHeader({
         >
           <div className="w-full">
             <section className="rounded-b-[28px] border-x border-b border-border/50 bg-linear-to-br from-background/92 via-background/88 to-primary/[0.08] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.32)] supports-[backdrop-filter]:bg-background/78 sm:px-5">
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-1">
                 <div className="flex min-w-0 items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="min-w-0 text-balance text-[1.65rem] font-black leading-[0.94] tracking-tight text-foreground sm:text-[2.8rem]">
@@ -322,15 +324,6 @@ export function ChallengeEntityAnalysisHeader({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                  {entityCategory ? (
-                    <Badge
-                      variant="secondary"
-                      className="gap-1.5 px-3 py-1 text-[11px] sm:text-xs"
-                    >
-                      <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
-                      {entityCategory}
-                    </Badge>
-                  ) : null}
                   {countyName ? (
                     <Badge
                       variant="outline"
@@ -425,28 +418,30 @@ export function ChallengeEntityAnalysisHeader({
               </Select>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleShare}
-                aria-label={copy.copyLink}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-muted/40 text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-              >
-                {shareCopied ? (
-                  <Check className="h-4 w-4" aria-hidden="true" />
-                ) : (
-                  <Link2 className="h-4 w-4" aria-hidden="true" />
-                )}
-              </button>
-              <Link
-                to={`${CAMPAIGN_BASE_PATH}/cauta` as '/'}
-                search={linkSearch}
-                className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-              >
-                <ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
-                {copy.changeCityHall}
-              </Link>
-            </div>
+            {!isMobile ? (
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  aria-label={copy.copyLink}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-muted/40 text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                >
+                  {shareCopied ? (
+                    <Check className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <Link2 className="h-4 w-4" aria-hidden="true" />
+                  )}
+                </button>
+                <Link
+                  to={`${CAMPAIGN_BASE_PATH}/cauta` as '/'}
+                  search={linkSearch}
+                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                >
+                  <ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
+                  {copy.changeCityHall}
+                </Link>
+              </div>
+            ) : null}
           </div>
         </div>
       </section>
