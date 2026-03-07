@@ -12,7 +12,7 @@ import {
   ReferenceLine,
   LabelList
 } from 'recharts';
-import { TrendingUp, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { yValueFormatter } from '../charts/components/chart-renderer/utils';
 import { EntityFinancialTrendsSkeleton } from './EntityFinancialTrendsSkeleton';
 import { Link } from '@tanstack/react-router';
@@ -74,12 +74,20 @@ function MultiLineYAxisTick(props: {
   y?: number
   payload?: { value: number }
   unit: string
+  mirror?: boolean
 }) {
-  const { x = 0, y = 0, payload, unit } = props
+  const { x = 0, y = 0, payload, unit, mirror } = props
   return (
-    <text x={x} y={y} textAnchor="end" fontSize={12} fill="currentColor">
-      <tspan x={x} dy={-6}>{formatNumber(payload?.value, 'compact')}</tspan>
-      <tspan x={x} dy={14} fontSize={10} opacity={0.6}>{unit}</tspan>
+    <text
+      x={mirror ? x + 4 : x}
+      y={y}
+      textAnchor={mirror ? 'start' : 'end'}
+      fontSize={mirror ? 10 : 12}
+      fill="currentColor"
+      opacity={mirror ? 0.7 : 1}
+    >
+      <tspan x={mirror ? x + 4 : x} dy={-6}>{formatNumber(payload?.value, 'compact')}</tspan>
+      <tspan x={mirror ? x + 4 : x} dy={mirror ? 12 : 14} fontSize={mirror ? 8 : 10} opacity={0.6}>{unit}</tspan>
     </text>
   )
 }
@@ -146,6 +154,16 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
       balance: getValue(balanceTrend, label),
     }));
   }, [incomeTrend, expenseTrend, balanceTrend]);
+
+  const yAxisWidth = useMemo(() => {
+    if (!mergedData.length) return 40
+    const allValues = mergedData.flatMap((d) => [d.income, d.expense, d.balance])
+    const maxAbsValue = Math.max(...allValues.map(Math.abs))
+    const longestLabel = formatNumber(maxAbsValue, 'compact')
+    const charCount = Math.max(longestLabel.length, unit.length)
+    // ~7px per character at fontSize 12, plus 6px padding
+    return charCount * 7 + 6
+  }, [mergedData, unit])
 
   const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; color: string; stroke?: string; dataKey: string; }[]; label?: string }) => {
     if (active && payload?.length) {
@@ -290,7 +308,6 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 w-full">
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-6 w-6" />
             <span><Trans>Financial Trends</Trans></span>
             {showChartEditorLink && incomeExpenseChartLink ? (
               <Button asChild variant="ghost" size="icon" className="h-7 w-7 ml-1" aria-label={t`Open in chart editor`}>
@@ -340,7 +357,10 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
           <SafeResponsiveContainer width="100%" height={400}>
             <ComposedChart
               data={mergedData}
-              margin={{ top: 30, right: 40, left: 60, bottom: 5 }}
+              margin={isMobile
+                ? { top: 30, right: 8, left: 0, bottom: 5 }
+                : { top: 30, right: 40, left: 4, bottom: 5 }
+              }
               onClick={handleChartClick}
               onMouseMove={handleChartHover}
               className="cursor-pointer"
@@ -348,14 +368,16 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
               <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
               <XAxis
                 dataKey="label"
-                tick={{ fontSize: 12 }}
+                tick={{ fontSize: isMobile ? 10 : 12 }}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                tick={<MultiLineYAxisTick unit={unit} />}
+                tick={<MultiLineYAxisTick unit={unit} mirror={isMobile} />}
                 tickLine={false}
                 axisLine={false}
+                mirror={isMobile}
+                width={isMobile ? 0 : yAxisWidth}
               />
               <Tooltip content={<CustomTooltip />} isAnimationActive={false} />
               <Legend wrapperStyle={{ fontSize: '14px' }} />

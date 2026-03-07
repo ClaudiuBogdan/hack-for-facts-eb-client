@@ -9,15 +9,12 @@ type ChallengeEntityAnalysisExplainerProps = {
   readonly locale: ChallengeLocale
   readonly reportType: Extract<GqlReportType, 'PRINCIPAL_AGGREGATED' | 'DETAILED'>
   readonly inflationAdjusted: boolean
-  readonly onReportTypeToggle: () => void
 }
 
 const EXPLAINER_COPY = {
   ro: {
     showLess: 'Arată mai puțin',
     showMore: 'Citește mai mult',
-    showDetailed: 'Arată Doar Cheltuieli Primăriei',
-    showAggregated: 'Arată Cheltuieli Primăriei și Instituțiilor Subordonate',
     aggregatedPrimary:
       'Datele din această pagină vin din execuții bugetare agregate la nivel de ordonator principal de credite. Asta înseamnă că totalurile includ atât finanțele primăriei, cât și instituțiile finanțate prin același ordonator principal.',
     detailedPrimary:
@@ -36,8 +33,6 @@ const EXPLAINER_COPY = {
   en: {
     showLess: 'Show less',
     showMore: 'Read more',
-    showDetailed: 'Show only city hall spending',
-    showAggregated: 'Show city hall and subordinate spending',
     aggregatedPrimary:
       'This page uses aggregate execution data at the main-creditor level. That means the totals include both the city hall and the institutions financed through the same main creditor.',
     detailedPrimary:
@@ -59,7 +54,6 @@ export function ChallengeEntityAnalysisExplainer({
   locale,
   reportType,
   inflationAdjusted,
-  onReportTypeToggle,
 }: ChallengeEntityAnalysisExplainerProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const copy = EXPLAINER_COPY[locale]
@@ -71,11 +65,6 @@ export function ChallengeEntityAnalysisExplainer({
     reportType === 'PRINCIPAL_AGGREGATED'
       ? copy.aggregatedSecondary
       : copy.detailedSecondary
-  const reportTypeToggleLabel =
-    reportType === 'PRINCIPAL_AGGREGATED'
-      ? copy.showDetailed
-      : copy.showAggregated
-
   return (
     <Card className="rounded-[28px] border-border/50 bg-muted/[0.18]">
       <CardContent className="px-4 py-4 sm:px-6 sm:py-5 md:px-7">
@@ -109,7 +98,7 @@ export function ChallengeEntityAnalysisExplainer({
               </div>
             ) : null}
 
-            <div className="flex flex-col gap-2 pt-1 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center pt-1">
               <Button
                 type="button"
                 variant="link"
@@ -117,16 +106,6 @@ export function ChallengeEntityAnalysisExplainer({
                 onClick={() => setIsExpanded((currentValue) => !currentValue)}
               >
                 {isExpanded ? copy.showLess : copy.showMore}
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-                onClick={onReportTypeToggle}
-              >
-                {reportTypeToggleLabel}
               </Button>
             </div>
           </div>

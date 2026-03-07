@@ -184,16 +184,16 @@ export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProp
         className={cn(
           'flex flex-row items-start justify-center gap-4 px-6 pt-6 pb-3',
           isCompactDesktop &&
-            'relative justify-start gap-0 space-y-0 px-3 pt-3 pb-0 lg:w-full lg:px-5 lg:pt-4',
+            'relative justify-start gap-0 space-y-0 px-2 pt-2 pb-0 sm:px-3 sm:pt-3 lg:w-full lg:px-5 lg:pt-4',
         )}
       >
         {isCompactDesktop ? (
           <div className="w-full">
-            <div className="flex flex-col items-start gap-0.5 text-left lg:flex-1">
-              <CardTitle className="text-balance text-left text-xs font-medium leading-tight text-muted-foreground sm:text-sm">
+            <div className="flex flex-col items-start gap-0 text-left sm:gap-0.5 lg:flex-1">
+              <CardTitle className="text-balance text-left text-[10px] font-medium leading-tight text-muted-foreground sm:text-sm">
                 {compactDesktopTitle}
               </CardTitle>
-              <p className="text-left text-[10px] font-medium tracking-wide text-muted-foreground/70 tabular-nums sm:text-xs">
+              <p className="text-left text-[9px] font-medium tracking-wide text-muted-foreground/70 tabular-nums sm:text-xs">
                 {compactDesktopYear}
               </p>
             </div>
@@ -217,7 +217,7 @@ export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProp
         className={cn(
           'flex flex-col items-center justify-center px-6 pb-6',
           isCompactDesktop &&
-            'items-stretch justify-between px-3 pt-2 pb-3 lg:flex lg:w-full lg:flex-1 lg:flex-col lg:px-5 lg:pt-3 lg:pb-4',
+            'items-stretch justify-between px-2 pt-1 pb-2 sm:px-3 sm:pt-2 sm:pb-3 lg:flex lg:w-full lg:flex-1 lg:flex-col lg:px-5 lg:pt-3 lg:pb-4',
         )}
       >
         <div className={cn(isCompactDesktop && 'flex w-full min-w-0 items-baseline lg:min-h-[3rem]')}>
@@ -227,13 +227,13 @@ export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProp
                 'text-center text-3xl font-bold leading-none text-foreground sm:text-3xl',
                 'flex max-w-full flex-col items-center',
                 isCompactDesktop &&
-                  'min-w-0 w-full items-start text-left leading-tight tabular-nums text-lg sm:text-2xl lg:text-2xl xl:text-[1.75rem]',
+                  'min-w-0 w-full items-start text-left leading-tight tabular-nums text-base sm:text-2xl lg:text-2xl xl:text-[1.75rem]',
               )}
             >
               <span className="min-w-0">{compactCurrencyValueParts.amountLabel}</span>
               <span className={cn(
                 'mt-1 whitespace-nowrap text-sm font-semibold text-muted-foreground',
-                isCompactDesktop && 'text-xs sm:text-sm',
+                isCompactDesktop && 'mt-0.5 text-[10px] sm:mt-1 sm:text-sm',
               )}>
                 {compactCurrencyValueParts.currencyLabel}{shouldShowPerCapitaSuffix ? '/capita' : ''}
               </span>
@@ -243,7 +243,7 @@ export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProp
               className={cn(
                 'text-center text-3xl font-bold leading-none text-foreground sm:text-3xl',
                 isCompactDesktop &&
-                  'min-w-0 w-full text-left leading-tight tabular-nums text-lg sm:text-2xl lg:text-2xl xl:text-[1.75rem]',
+                  'min-w-0 w-full text-left leading-tight tabular-nums text-base sm:text-2xl lg:text-2xl xl:text-[1.75rem]',
               )}
             >
               {displayValueCompact}
@@ -260,13 +260,13 @@ export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProp
         <div
           className={cn(
             'mt-3 min-h-6',
-            isCompactDesktop && 'mt-2 self-start min-h-[1.25rem] sm:mt-2.5 sm:min-h-[1.5rem]',
+            isCompactDesktop && 'mt-1.5 self-start min-h-[1.25rem] sm:mt-2.5 sm:min-h-[1.5rem]',
           )}
         >
           <TrendBadge
             trend={trend}
             metricKind={metricKind}
-            className={isCompactDesktop ? 'text-[10px] px-1.5 py-0 sm:text-xs sm:px-2 sm:py-0.5' : undefined}
+            className={isCompactDesktop ? 'text-[9px] px-1 py-0 sm:text-xs sm:px-2 sm:py-0.5' : undefined}
           />
         </div>
       </CardContent>
@@ -304,7 +304,7 @@ export const EntityFinancialSummary: React.FC<EntityFinancialSummaryProps> = (
     <section
       className={cn(
         'mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3',
-        density === 'compact-desktop' && 'grid-cols-3 gap-2.5 sm:gap-4 lg:mb-5 lg:gap-4',
+        density === 'compact-desktop' && 'grid-cols-3 gap-1.5 sm:gap-3 lg:mb-5 lg:gap-4',
       )}
     >
       <EntityFinancialSummaryCard title={t`Total Income`} value={totalIncome} icon={TrendingUp} color="green" periodLabel={periodLabel} currency={normalized.currency} format={format} isPerCapita={isPerCapita} trend={trends?.income} density={density} metricKind="income" />

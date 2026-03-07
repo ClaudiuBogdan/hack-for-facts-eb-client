@@ -28,7 +28,7 @@ export function ChallengeEntityFaqSection({
           {content.title}
         </CardTitle>
         {content.description ? (
-          <p className="max-w-2xl text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground sm:max-w-2xl">
             {content.description}
           </p>
         ) : null}
@@ -43,11 +43,11 @@ export function ChallengeEntityFaqSection({
                 value={item.id}
                 className="border-border/40"
               >
-                <AccordionTrigger className="gap-6 py-5 text-base font-semibold tracking-tight text-foreground hover:no-underline">
-                  <span className="text-left text-balance">{item.question}</span>
+                <AccordionTrigger className="gap-3 py-5 text-sm font-semibold tracking-tight text-foreground hover:no-underline sm:gap-6 sm:text-base">
+                  <span className="text-left">{item.question}</span>
                 </AccordionTrigger>
                 <AccordionContent className="pb-5">
-                  <div className="max-w-3xl space-y-3 pr-8 text-sm leading-6 text-muted-foreground">
+                  <div className="space-y-3 pr-0 text-sm leading-6 text-muted-foreground sm:max-w-3xl sm:pr-8">
                     {item.answerParagraphs.map((paragraph) => (
                       <p key={paragraph}>{paragraph}</p>
                     ))}

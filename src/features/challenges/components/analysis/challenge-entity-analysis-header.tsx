@@ -312,7 +312,7 @@ export function ChallengeEntityAnalysisHeader({
               <div className="flex flex-col gap-2.5">
                 <div className="flex min-w-0 items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="min-w-0 truncate text-[2.35rem] font-black leading-[0.9] tracking-tight text-foreground sm:text-[2.8rem]">
+                    <p className="min-w-0 text-balance text-[1.65rem] font-black leading-[0.94] tracking-tight text-foreground sm:text-[2.8rem]">
                       {displayName}
                     </p>
                   </div>

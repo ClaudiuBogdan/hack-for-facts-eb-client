@@ -1191,7 +1191,6 @@ export function ChallengeEntityAnalysisPage({
         locale={locale}
         reportType={selectedReportType}
         inflationAdjusted={displayInflationAdjusted}
-        onReportTypeToggle={handleReportTypeToggle}
       />
 
       <EntityFinancialSummary

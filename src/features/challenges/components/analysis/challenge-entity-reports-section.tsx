@@ -161,8 +161,8 @@ function ChallengeEntityReportsRow({
   const sortedDownloadLinks = sortDownloadLinks(report.download_links)
 
   return (
-    <li className="flex items-center justify-between gap-4 py-3.5">
-      <div className="min-w-0 shrink-0">
+    <li className="flex flex-col gap-2 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+      <div className="min-w-0">
         <p className="text-sm font-semibold tabular-nums text-foreground">
           {formattedMonthYear}
         </p>
@@ -171,7 +171,7 @@ function ChallengeEntityReportsRow({
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2 justify-end">
+      <div className="flex flex-wrap gap-2">
         {sortedDownloadLinks.map((link) => {
           const fileType = toDownloadType(link)
 
