@@ -8,10 +8,10 @@ import {
   Library,
   Trophy,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -400,6 +400,43 @@ export function ChallengesLayout({ children }: ChallengesLayoutProps) {
 function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
   const location = useLocation()
   const [isOpen, setIsOpen] = useState(false)
+
+  // Swipe from left edge to open sidebar
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
+
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    const touch = e.touches[0]
+    if (touch.clientX < 30) {
+      touchStartRef.current = { x: touch.clientX, y: touch.clientY }
+    }
+  }, [])
+
+  const handleTouchEnd = useCallback(
+    (e: TouchEvent) => {
+      if (!touchStartRef.current) return
+      const touch = e.changedTouches[0]
+      const dx = touch.clientX - touchStartRef.current.x
+      const dy = Math.abs(touch.clientY - touchStartRef.current.y)
+      touchStartRef.current = null
+      if (dx > 50 && dy < dx) {
+        setIsOpen(true)
+      }
+    },
+    [],
+  )
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)')
+    if (!mq.matches) return
+
+    document.addEventListener('touchstart', handleTouchStart, { passive: true })
+    document.addEventListener('touchend', handleTouchEnd, { passive: true })
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart)
+      document.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [handleTouchStart, handleTouchEnd])
+
   const locale = resolveCampaignLocale(location.search as CampaignRouteSearch | undefined)
   const {
     isReady,
@@ -442,13 +479,16 @@ function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
         <SheetTrigger asChild>
           <Button
             variant="outline"
-            size="icon"
-            className="lg:hidden fixed left-6 md:left-16 bottom-24 md:bottom-6 z-50 h-14 w-14 rounded-full shadow-lg bg-background/95 backdrop-blur-sm border-border hover:bg-muted transition-all active:scale-95"
+            className="lg:hidden fixed left-0 bottom-24 md:bottom-6 z-50 h-14 !rounded-l-none !rounded-r-full border-l-0 pl-2 pr-4 shadow-lg bg-background/95 backdrop-blur-sm border-border hover:bg-muted transition-all active:scale-95"
           >
-            <Library className="h-6 w-6" />
+            <Library className="h-5 w-5" />
+            <ChevronRight className="h-4 w-4 -ml-1" />
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-72 p-0">
+          <SheetTitle className="sr-only">
+            {t`Challenges`}
+          </SheetTitle>
           <ChallengesSidebar
             pathname={location.pathname}
             entityCui={currentEntityCui}
