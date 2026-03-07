@@ -10,6 +10,28 @@ import { yTickFormatter } from '../utils';
 import { UnitMap } from '@/components/charts/hooks/useChartData';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+function YAxisUnitLabel({ viewBox, value }: { viewBox?: { x: number; y: number; width: number; height: number }; value?: string }) {
+  if (!viewBox || !value) return null;
+  const fontSize = 12;
+  const paddingX = 6;
+  const paddingY = 10;
+  const cx = viewBox.x + viewBox.width / 2 - paddingX;
+  const cy = viewBox.y + viewBox.height - paddingY;
+
+  return (
+    <g transform={`rotate(-90, ${cx}, ${cy})`}>
+      <text
+        x={cx} y={cy}
+        fontSize={fontSize} fontWeight={500}
+        textAnchor="middle" dominantBaseline="central"
+        fill="var(--color-muted-foreground, #64748b)"
+      >
+        {value}
+      </text>
+    </g>
+  );
+}
+
 interface MultiAxisChartContainerProps {
   chart: Chart;
   unitMap: UnitMap;
@@ -125,12 +147,9 @@ export const MultiAxisChartContainer = memo(function MultiAxisChartContainer({ u
             allowDataOverflow={false}
             mirror={isMobile}
             width={isMobile ? 0 : undefined}
-            label={!isMobile && group.unit && !group.unit.includes('%') ? {
-              value: group.unit,
-              angle: -90,
-              position: axisIndex % 2 === 0 ? 'insideLeft' : 'insideRight',
-              style: { textAnchor: 'middle', fontSize: 11, fill: 'var(--color-muted-foreground)' },
-            } : undefined}
+            label={!isMobile && group.unit && !group.unit.includes('%')
+              ? <YAxisUnitLabel value={group.unit} />
+              : undefined}
           />
         );
       })}
@@ -164,6 +183,7 @@ export const MultiAxisChartContainer = memo(function MultiAxisChartContainer({ u
           onPositionChange={onAnnotationPositionChange}
         />
       ))}
+
     </>
   );
 }, arePropsEqual);
