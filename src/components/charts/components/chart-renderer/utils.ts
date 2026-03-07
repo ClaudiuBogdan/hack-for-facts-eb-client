@@ -31,17 +31,32 @@ export const unitFormatters: Record<string, (value: number, notation: 'standard'
 type SupportedCurrency = 'RON' | 'EUR' | 'USD';
 
 function parseCurrencyUnit(unit: string): { currency: SupportedCurrency; suffix: string } | null {
-    const normalizedUnit = unit.trim().replace(/\s+/g, '');
-    if (!normalizedUnit) return null;
+    const trimmedUnit = unit.trim();
+    if (!trimmedUnit) return null;
 
     const supportedCurrencies: SupportedCurrency[] = ['RON', 'EUR', 'USD'];
     for (const currency of supportedCurrencies) {
-        if (normalizedUnit === currency) return { currency, suffix: '' };
-        if (normalizedUnit.startsWith(`${currency}/`)) return { currency, suffix: normalizedUnit.slice(currency.length) };
+        if (trimmedUnit === currency) return { currency, suffix: '' };
+        // Match "RON/capita", "RON (real 2024)", "RON/pers." etc.
+        const afterCurrency = trimmedUnit.slice(currency.length);
+        if (afterCurrency.length > 0 && /^[/\s(]/.test(afterCurrency)) {
+            return { currency, suffix: afterCurrency.startsWith(' ') ? afterCurrency : ` ${afterCurrency}` };
+        }
     }
 
     return null;
 }
+
+/**
+ * Formats only the numeric part of a Y-axis tick (no unit suffix).
+ * The unit should be displayed once via the YAxis label prop.
+ */
+export const yTickFormatter = (value: number, unit: string = '', notation: 'standard' | 'compact' = 'compact') => {
+    if (unit.includes('%')) {
+        return `${formatNumber(value, notation)}%`;
+    }
+    return formatNumber(value, notation);
+};
 
 export const yValueFormatter = (value: number, unit: string = '', notation: 'standard' | 'compact' = 'compact') => {
     const formatter = unitFormatters[unit];

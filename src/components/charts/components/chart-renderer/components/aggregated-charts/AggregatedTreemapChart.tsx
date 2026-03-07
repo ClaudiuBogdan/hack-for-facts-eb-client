@@ -7,6 +7,7 @@ import { yValueFormatter } from '../../utils';
 import { DataPointPayload } from '@/components/charts/hooks/useChartData';
 import { ChartAnnotation } from '../ChartAnnotation';
 import { SafeResponsiveContainer } from '@/components/charts/safe-responsive-container';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const MIN_WIDTH_FOR_NAME = 50;
 const MIN_HEIGHT_FOR_NAME = 20;
@@ -97,6 +98,7 @@ export type TreemapData = {
 }
 
 export function AggregatedTreemapChart({ chart, aggregatedData, unitMap, height, onAnnotationPositionChange }: ChartRendererProps) {
+    const isMobile = useIsMobile();
     const units = new Set(unitMap.values());
 
     const treemapData: TreemapData[] = useMemo(() => {
@@ -149,9 +151,9 @@ export function AggregatedTreemapChart({ chart, aggregatedData, unitMap, height,
                 animationBegin={0}
                 content={(props) => <CustomizedContent {...(props)} />}
             >
-                <Tooltip
+                {!isMobile && <Tooltip
                     content={({ active, payload }) => <CustomSeriesTooltip active={active} payload={payload.map(p => p.payload)} chartConfig={chart.config} chart={chart} />}
-                />
+                />}
                 {chart.config.showAnnotations && chart.annotations.filter(a => a.enabled).map((annotation) => (
                     <ChartAnnotation
                         key={annotation.id}

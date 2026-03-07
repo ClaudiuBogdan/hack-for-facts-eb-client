@@ -6,9 +6,11 @@ import { CustomSeriesTooltip } from '../Tooltips';
 import { AlertTriangle } from 'lucide-react';
 import { ChartAnnotation } from '../ChartAnnotation';
 import { SafeResponsiveContainer } from '@/components/charts/safe-responsive-container';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 
 export function AggregatedBarChart({ chart, aggregatedData, unitMap, height, onAnnotationPositionChange }: ChartRendererProps) {
+    const isMobile = useIsMobile();
 
     const displayUnit = unitMap.get(aggregatedData[0]?.id) || '';
 
@@ -33,7 +35,7 @@ export function AggregatedBarChart({ chart, aggregatedData, unitMap, height, onA
 
     return (
         <SafeResponsiveContainer width="100%" height={height}>
-            <BarChart data={aggregatedData} layout="vertical" margin={{ top: 50, right: 40, left: 40, bottom: 20 }}>
+            <BarChart data={aggregatedData} layout="vertical" margin={isMobile ? { top: 30, right: 10, left: 10, bottom: 10 } : { top: 50, right: 40, left: 40, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                     type="number"
@@ -42,11 +44,11 @@ export function AggregatedBarChart({ chart, aggregatedData, unitMap, height, onA
                 <YAxis
                     dataKey="series.label"
                     type="category"
-                    width={120}
+                    width={isMobile ? 80 : 120}
                     interval={0}
-                    tickFormatter={(value) => truncateLabel(value, aggregatedData.length > 5 ? 14 : 100)}
+                    tickFormatter={(value) => truncateLabel(value, isMobile ? 10 : (aggregatedData.length > 5 ? 14 : 100))}
                 />
-                {chart.config.showTooltip && (
+                {chart.config.showTooltip && !isMobile && (
                     <Tooltip
                         cursor={{ fill: 'rgba(206, 206, 206, 0.2)' }}
                         content={(props) => (

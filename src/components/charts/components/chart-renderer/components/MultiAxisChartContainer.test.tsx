@@ -68,6 +68,8 @@ vi.mock('./Tooltips', () => ({
 vi.mock('../utils', () => ({
   yValueFormatter: (value: number, unit?: string) =>
     `${value?.toLocaleString() ?? 0} ${unit ?? ''}`.trim(),
+  yTickFormatter: (value: number) =>
+    `${value?.toLocaleString() ?? 0}`,
 }))
 
 // ============================================================================

@@ -9,6 +9,8 @@ import { AggregatedTreemapChart } from './aggregated-charts/AggregatedTreemapCha
 import { AggregatedSankeyChart } from './aggregated-charts/AggregatedSankeyChart';
 import { DataPointPayload, DataSeriesMap, TimeSeriesDataPoint, UnitMap } from '../../../hooks/useChartData';
 import { Trans } from '@lingui/react/macro';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useMemo } from 'react';
 
 export interface ChartRendererProps {
   chart: Chart;
@@ -26,6 +28,11 @@ export interface ChartRendererProps {
 }
 
 export function ChartRenderer({ chart, dataMap, unitMap, aggregatedData, timeSeriesData, className, height = 400, isPreview, margins, onAnnotationPositionChange, xAxisMarker, onXAxisClick }: ChartRendererProps) {
+  const isMobile = useIsMobile();
+  const effectiveMargins = useMemo(() => {
+    if (!isMobile) return margins;
+    return { top: 20, right: 8, left: 0, bottom: 5, ...margins };
+  }, [isMobile, margins]);
 
   if (chart.series.filter(s => s.enabled).length === 0) {
     return (
@@ -55,7 +62,7 @@ export function ChartRenderer({ chart, dataMap, unitMap, aggregatedData, timeSer
     timeSeriesData,
     xAxisMarker,
     onXAxisClick,
-    margins,
+    margins: effectiveMargins,
   }
 
 

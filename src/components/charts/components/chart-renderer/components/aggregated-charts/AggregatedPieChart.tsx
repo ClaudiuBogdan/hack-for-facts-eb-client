@@ -4,6 +4,7 @@ import { AlertTriangle } from 'lucide-react';
 import { CustomSeriesTooltip } from '../Tooltips';
 import { ChartAnnotation } from '../ChartAnnotation';
 import { SafeResponsiveContainer } from '@/components/charts/safe-responsive-container';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Modern color palette for better visual appeal
 const PIE_COLORS = [
@@ -20,6 +21,7 @@ const PIE_COLORS = [
 ];
 
 export function AggregatedPieChart({ chart, aggregatedData, unitMap, height, onAnnotationPositionChange }: ChartRendererProps) {
+    const isMobile = useIsMobile();
     const units = new Set(unitMap.values());
 
     if (units.size > 1) {
@@ -42,7 +44,7 @@ export function AggregatedPieChart({ chart, aggregatedData, unitMap, height, onA
 
     return (
         <SafeResponsiveContainer width="100%" height={height}>
-            <PieChart margin={{ top: 40, right: 5, bottom: 70, left: 5 }}>
+            <PieChart margin={isMobile ? { top: 20, right: 2, bottom: 50, left: 2 } : { top: 40, right: 5, bottom: 70, left: 5 }}>
                 <Pie
                     data={aggregatedData}
                     dataKey="value"
@@ -95,7 +97,7 @@ export function AggregatedPieChart({ chart, aggregatedData, unitMap, height, onA
                     ))}
                 </Pie>
 
-                {chart.config.showTooltip && (
+                {chart.config.showTooltip && !isMobile && (
                     <Tooltip
                         content={(props) => (
                             <CustomSeriesTooltip

@@ -6,8 +6,9 @@ import { CustomSeriesTooltip } from './Tooltips';
 import { ReactNode, useCallback, useMemo, memo } from 'react';
 import { ChartAnnotation } from './ChartAnnotation';
 import { AnnotationPositionChange } from './interfaces';
-import { yValueFormatter } from '../utils';
+import { yTickFormatter } from '../utils';
 import { UnitMap } from '@/components/charts/hooks/useChartData';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MultiAxisChartContainerProps {
   chart: Chart;
@@ -17,15 +18,13 @@ interface MultiAxisChartContainerProps {
   disableTooltip?: boolean;
   diffStateKey?: string;
 }
-const MAX_LEGEND_LABEL_LENGTH = 36
-
-function truncateLegendLabel(value: string | number) {
+function truncateLegendLabel(value: string | number, maxLength: number = 36) {
   const trimmedValue = String(value).trim()
-  if (trimmedValue.length <= MAX_LEGEND_LABEL_LENGTH) {
+  if (trimmedValue.length <= maxLength) {
     return trimmedValue
   }
 
-  return `${trimmedValue.slice(0, MAX_LEGEND_LABEL_LENGTH - 1)}…`
+  return `${trimmedValue.slice(0, maxLength - 1)}…`
 }
 
 // Custom comparison function that ignores the children function prop
@@ -45,6 +44,7 @@ function arePropsEqual(
 }
 
 export const MultiAxisChartContainer = memo(function MultiAxisChartContainer({ unitMap, chart, children, onAnnotationPositionChange, disableTooltip, diffStateKey: _diffStateKey }: MultiAxisChartContainerProps) {
+  const isMobile = useIsMobile();
 
   // Group series by unit with stable, sorted order for consistent axis IDs/orientation
   const unitGroups = useMemo(() => {
@@ -79,10 +79,18 @@ export const MultiAxisChartContainer = memo(function MultiAxisChartContainer({ u
 
   // Stable legend sorter; must be declared unconditionally to respect hooks rules
   const legendItemSorter = useCallback(() => 0, []);
+  const maxLegendLabelLength = isMobile ? 20 : 36;
   const legendFormatter = useCallback(
-    (value: string | number) => truncateLegendLabel(value),
-    [],
+    (value: string | number) => truncateLegendLabel(value, maxLegendLabelLength),
+    [maxLegendLabelLength],
   )
+
+  const enabledSeriesCount = chart.series.filter(s => s.enabled).length;
+  const legendHeight = useMemo(() => {
+    const itemsPerRow = isMobile ? 2 : 4;
+    const rows = Math.max(1, Math.ceil(enabledSeriesCount / itemsPerRow));
+    return 16 + rows * 20;
+  }, [enabledSeriesCount, isMobile]);
 
   // Memoized props/objects to avoid prop identity changes causing re-renders/flicker
   const xAxisTickProps = useMemo(() => ({ fontSize: 12 }), []);
@@ -113,13 +121,21 @@ export const MultiAxisChartContainer = memo(function MultiAxisChartContainer({ u
             yAxisId={`yaxis-${axisIndex}`}
             orientation={axisIndex % 2 === 0 ? 'left' : 'right'}
             className="text-xs fill-muted-foreground select-none"
-            tickFormatter={(value: number) => yValueFormatter(value, group.unit)}
+            tickFormatter={(value: number) => yTickFormatter(value, group.unit)}
             allowDataOverflow={false}
+            mirror={isMobile}
+            width={isMobile ? 0 : undefined}
+            label={!isMobile && group.unit && !group.unit.includes('%') ? {
+              value: group.unit,
+              angle: -90,
+              position: axisIndex % 2 === 0 ? 'insideLeft' : 'insideRight',
+              style: { textAnchor: 'middle', fontSize: 11, fill: 'var(--color-muted-foreground)' },
+            } : undefined}
           />
         );
       })}
 
-      {chart.config.showTooltip && !disableTooltip && (
+      {chart.config.showTooltip && !disableTooltip && !isMobile && (
         <Tooltip
           reverseDirection={tooltipReverseDirection}
           animationDuration={100}
@@ -131,7 +147,7 @@ export const MultiAxisChartContainer = memo(function MultiAxisChartContainer({ u
 
       {chart.config.showLegend && <Legend
         verticalAlign="bottom"
-        height={36}
+        height={legendHeight}
         wrapperStyle={legendWrapperStyle}
         itemSorter={legendItemSorter}
         formatter={legendFormatter}
