@@ -40,7 +40,7 @@ const GroupedChapterAccordion: React.FC<GroupedChapterAccordionProps> = ({ ch, b
 
   return (
     <AccordionItem key={ch.prefix} value={ch.prefix}>
-      <AccordionTrigger className="group items-start gap-3 py-2 px-3 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 sm:px-4 [&[data-state=open]]:bg-slate-100 dark:[&[data-state=open]]:bg-slate-700 [&>svg]:mt-0.5">
+      <AccordionTrigger className="group items-start gap-3 py-2 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 [&[data-state=open]]:bg-slate-100 dark:[&[data-state=open]]:bg-slate-700 [&>svg]:mt-0.5">
         <div className={GROUPED_CHAPTER_TRIGGER_CONTENT_CLASS_NAME}>
           <div className={GROUPED_LABEL_BLOCK_CLASS_NAME}>
             <div className={GROUPED_CHAPTER_LABEL_ROW_CLASS_NAME}>
