@@ -55,10 +55,10 @@ export function QuickResourcesPreview({
             </div>
             <div className="min-w-0 flex-1">
               <span className="block truncate text-sm font-medium text-foreground/80">
-                {t`Primăria mea`}
+                {t`My city hall`}
               </span>
               <span className="block text-xs text-muted-foreground">
-                {t`Vezi analiza bugetară pentru entitatea selectată.`}
+                {t`See the budget analysis for the selected entity.`}
               </span>
             </div>
             <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 transition-colors flex-shrink-0" aria-hidden="true" />

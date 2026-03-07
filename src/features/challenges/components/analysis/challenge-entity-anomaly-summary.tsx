@@ -27,13 +27,13 @@ const ANOMALY_COPY = {
     budgetLine: 'Linie bugetară',
     anomalies: {
       YTD_ANOMALY: {
-        label: t`Anomalie YTD`,
+        label: t`YTD anomaly`,
         description:
           'Valorile scad între raportări și pot indica o corecție sau o reclasificare.',
         badgeVariant: 'destructive' as const,
       },
       MISSING_LINE_ITEM: {
-        label: t`Lipsește`,
+        label: t`Missing`,
         description:
           'Linia bugetară nu mai apare în raportarea curentă și poate indica o mutare între clasificări.',
         badgeVariant: 'secondary' as const,

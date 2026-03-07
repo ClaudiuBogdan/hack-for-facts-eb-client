@@ -138,8 +138,8 @@ function getEvolutionSubtitle(
 
 function getEvolutionPrimaryCtaLabel(primary: ChallengeEvolutionPrimary) {
   return primary === 'ec'
-    ? t`Arată top categorii funcționale`
-    : t`Arată top categorii economice`
+    ? t`Show top functional categories`
+    : t`Show top economic categories`
 }
 
 function getEvolutionChartTitle(
@@ -179,7 +179,7 @@ export function ChallengeEntityCategoryEvolution({
     ? copy.noEconomicCode
     : getEvolutionSubtitle(locale, accountCategory, primary)
   const accountCategoryCtaLabel =
-    accountCategory === 'ch' ? t`Arată venituri` : t`Arată cheltuieli`
+    accountCategory === 'ch' ? t`Show revenue` : t`Show spending`
   const primaryCtaLabel = getEvolutionPrimaryCtaLabel(primary)
 
   const filteredLineItems = useMemo(

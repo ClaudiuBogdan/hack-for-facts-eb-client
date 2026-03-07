@@ -101,7 +101,7 @@ export function ChallengeHubAccessCard({
                   size="lg"
                   className="w-full rounded-[22px] px-8 lg:px-10 h-16 text-lg font-black shadow-lg shadow-primary/15 transition-all hover:scale-[1.03] active:scale-95 bg-primary text-primary-foreground border-none"
                 >
-                  {t`Conectează-te`}
+                  {t`Sign in`}
                 </Button>
               </AuthSignInButton>
             </div>
@@ -121,7 +121,7 @@ export function ChallengeHubAccessCard({
         <div className="space-y-4">
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/8 px-3 py-1 text-xs font-black uppercase tracking-[0.2em] text-primary">
             <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-            {t`Participare`}
+            {t`Participation`}
           </div>
           <div className="space-y-3">
             <h3 className="text-3xl md:text-4xl font-black tracking-tighter leading-[1.1] text-foreground text-balance">
@@ -166,7 +166,7 @@ export function ChallengeHubAccessCard({
             }}
             className="w-full rounded-[22px] h-14 text-base font-black shadow-lg shadow-primary/15 transition-all hover:scale-[1.01] active:scale-95"
           >
-            {isSubmitting ? t`Se înregistrează…` : t`Mă înscriu în campanie`}
+            {isSubmitting ? t`Joining…` : t`Join the campaign`}
           </Button>
         </div>
       </CardContent>

@@ -384,7 +384,7 @@ describe('ChallengeEntityCategoryEvolution', () => {
     renderCategoryEvolution()
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'Arată top categorii economice' }),
+      screen.getByRole('button', { name: 'Show top economic categories' }),
     )
 
     await waitFor(() => {
@@ -411,14 +411,14 @@ describe('ChallengeEntityCategoryEvolution', () => {
       inflationAdjusted: true,
     })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Arată venituri' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Show revenue' }))
 
     await waitFor(() => {
       expect(screen.getByText('Evoluția Veniturilor')).toBeInTheDocument()
     })
 
     expect(
-      screen.queryByRole('button', { name: /Arată top categorii/ }),
+      screen.queryByRole('button', { name: /Show top (economic|functional) categories/ }),
     ).not.toBeInTheDocument()
 
     const chartLink = screen.getByRole('link', {

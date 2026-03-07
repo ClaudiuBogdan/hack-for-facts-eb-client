@@ -186,7 +186,7 @@ export function ChallengeEntitySubordinatesSection({
               className="mt-4 rounded-full"
               onClick={onRetry}
             >
-              {t`Încearcă din nou`}
+              {t`Try again`}
             </Button>
           </div>
         ) : items.length === 0 ? (

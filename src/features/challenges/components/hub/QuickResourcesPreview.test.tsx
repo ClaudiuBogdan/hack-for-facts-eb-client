@@ -62,19 +62,19 @@ vi.mock('@/features/campaigns/buget/hooks/use-campaign-content', () => ({
 }))
 
 describe('QuickResourcesPreview', () => {
-  it('shows the Primăria mea shortcut when an entity is available', () => {
+  it('shows the My city hall shortcut when an entity is available', () => {
     render(<QuickResourcesPreview locale="ro" entityCui="12345678" />)
 
-    expect(screen.getByText('Primăria mea')).toBeInTheDocument()
+    expect(screen.getByText('My city hall')).toBeInTheDocument()
     expect(
-      screen.getByRole('link', { name: /Primăria mea/i }),
+      screen.getByRole('link', { name: /My city hall/i }),
     ).toHaveAttribute('href', '/buget/12345678/primarie')
   })
 
   it('shows campaign resources without the entity shortcut when no entity is available', () => {
     render(<QuickResourcesPreview locale="ro" />)
 
-    expect(screen.queryByText('Primăria mea')).not.toBeInTheDocument()
+    expect(screen.queryByText('My city hall')).not.toBeInTheDocument()
     expect(screen.getByText('Resursă')).toBeInTheDocument()
   })
 

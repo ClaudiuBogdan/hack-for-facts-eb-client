@@ -610,8 +610,8 @@ describe('ChallengeEntityAnalysisPage', () => {
       screen.getByRole('button', { name: 'Spending Calculation' }),
     ).toBeInTheDocument()
     expect(
-      screen.getAllByRole('button', { name: 'Arată Doar Cheltuieli Primăriei' }),
-    ).toHaveLength(2)
+      screen.getByRole('button', { name: 'Arată Doar Cheltuieli Primăriei' }),
+    ).toBeInTheDocument()
     expect(
       screen.getAllByRole('button', { name: 'Arată per capita' }),
     ).toHaveLength(2)
@@ -622,8 +622,8 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(screen.getByText('Instituții subordonate')).toBeInTheDocument()
     expect(screen.getByText('Liceul Teoretic Avram Iancu')).toBeInTheDocument()
     expect(screen.getByText('Semnale de Alarmă')).toBeInTheDocument()
-    expect(screen.getByText(/Anomalie YTD/)).toBeInTheDocument()
-    expect(screen.getByText(/Lipsește/)).toBeInTheDocument()
+    expect(screen.getByText(/YTD anomaly/)).toBeInTheDocument()
+    expect(screen.getByText(/Missing/)).toBeInTheDocument()
     expect(screen.getByTestId('analysis-faq')).toHaveTextContent(
       'Întrebări frecvente:false',
     )
@@ -946,10 +946,10 @@ describe('ChallengeEntityAnalysisPage', () => {
       ),
     ).toBeInTheDocument()
     expect(
-      screen.getAllByRole('button', {
+      screen.getByRole('button', {
         name: 'Arată Cheltuieli Primăriei și Instituțiilor Subordonate',
       }),
-    ).toHaveLength(2)
+    ).toBeInTheDocument()
   })
 
   it('switches the treemap grouping when the primary CTA is clicked', async () => {
@@ -1150,8 +1150,8 @@ describe('ChallengeEntityAnalysisPage', () => {
       expect(screen.getByRole('link', { name: 'Change City Hall' })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'Read more' })).toBeInTheDocument()
       expect(
-        screen.getAllByRole('button', { name: 'Show only city hall spending' }),
-      ).toHaveLength(2)
+        screen.getByRole('button', { name: 'Show only city hall spending' }),
+      ).toBeInTheDocument()
       expect(
         screen.getAllByRole('button', { name: 'Show per capita' }),
       ).toHaveLength(2)

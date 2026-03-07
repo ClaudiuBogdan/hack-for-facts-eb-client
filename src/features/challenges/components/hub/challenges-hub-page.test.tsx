@@ -104,7 +104,7 @@ describe('ChallengesHubPage', () => {
     expect(
       screen.getByRole('heading', { name: /Conectează-te ca să participi la provocări/i }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Conectează-te/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Sign in/i })).toBeInTheDocument()
     expect(screen.queryByTestId('module-card-active')).not.toBeInTheDocument()
     expect(screen.getByText('Budget Timeline')).toBeInTheDocument()
     expect(screen.getByText('Quick Resources')).toBeInTheDocument()
@@ -125,7 +125,7 @@ describe('ChallengesHubPage', () => {
     ).toBeInTheDocument()
 
     const registerButton = screen.getByRole('button', {
-      name: /Mă înscriu în campanie/i,
+      name: /Join the campaign/i,
     })
 
     expect(registerButton).toBeDisabled()

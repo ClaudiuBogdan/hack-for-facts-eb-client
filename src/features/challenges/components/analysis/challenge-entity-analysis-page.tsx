@@ -362,7 +362,7 @@ function resolveErrorMessage(error: unknown): string {
     return error.message
   }
 
-  return t`Încearcă din nou peste câteva momente.`
+  return t`Try again in a few moments.`
 }
 
 function getTreemapSubtitle(
@@ -1124,7 +1124,7 @@ export function ChallengeEntityAnalysisPage({
     return (
       <Alert className="rounded-[28px] border-destructive/50 bg-destructive/5">
         <AlertTriangle className="h-5 w-5" />
-        <AlertTitle>{t`Nu am putut încărca analiza.`}</AlertTitle>
+        <AlertTitle>{t`We could not load the analysis.`}</AlertTitle>
         <AlertDescription className="space-y-4">
           <p>
             {resolveErrorMessage(
@@ -1134,7 +1134,7 @@ export function ChallengeEntityAnalysisPage({
           </p>
           <Button type="button" variant="outline" onClick={handleRetry}>
             <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
-            {t`Încearcă Din Nou`}
+            {t`Try Again`}
           </Button>
         </AlertDescription>
       </Alert>

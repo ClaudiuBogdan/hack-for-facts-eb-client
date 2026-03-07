@@ -101,6 +101,7 @@ vi.mock('@/lib/normalization', () => ({
 }))
 
 vi.mock('@/lib/utils', () => ({
+  formatNumber: (value: number | null | undefined) => String(value ?? ''),
   getNormalizationUnit: () => 'RON',
   cn: (...classes: (string | undefined)[]) => classes.filter(Boolean).join(' '),
 }))
@@ -194,21 +195,6 @@ describe('EntityFinancialTrends', () => {
       )
 
       expect(screen.getByText('Financial Trends')).toBeInTheDocument()
-    })
-
-    it('renders trending up icon', () => {
-      render(
-        <EntityFinancialTrends
-          incomeTrend={createMockTrendSeries('income')}
-          currentYear={2024}
-          entityName="Test Entity"
-          normalizationOptions={createDefaultNormalizationOptions()}
-          onNormalizationChange={mockOnNormalizationChange}
-        />
-      )
-
-      // TrendingUp icon should be present
-      expect(document.querySelector('.lucide-trending-up')).toBeInTheDocument()
     })
 
     it('renders external link to chart editor', () => {

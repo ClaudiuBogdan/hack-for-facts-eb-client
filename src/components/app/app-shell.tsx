@@ -16,14 +16,12 @@ import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { Toaster } from "sonner";
 import { ErrorProvider } from "@/contexts/ErrorContext";
 import { HotkeysProvider } from "react-hotkeys-hook";
-import { MobileSidebarFab } from "@/components/sidebar/mobile-sidebar-fab";
-import { FloatingEntitySearch } from "@/components/entities/FloatingEntitySearch";
 import { AppFooter } from "@/components/footer/AppFooter";
 import { ChatFab } from "@/components/footer/ChatFab";
 import { FeedbackFab } from "@/components/feedback/FeedbackFab";
 import { CookieConsentBanner } from "@/components/privacy/CookieConsentBanner";
+import { MobileBottomDock } from "@/components/mobile/mobile-bottom-dock";
 import { Analytics } from "@/lib/analytics";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 const isBrowser = typeof window !== 'undefined';
 
@@ -36,7 +34,6 @@ type AppShellProps = {
 export function AppShell({ queryClient, ssrTheme }: AppShellProps) {
   const router = useRouter();
   const hasSentryConsent = useSentryConsent();
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     const userLocale = getUserLocale();
@@ -95,18 +92,20 @@ export function AppShell({ queryClient, ssrTheme }: AppShellProps) {
                     <div className="flex min-h-screen min-w-full">
                       <AppSidebar />
                       <SidebarInset>
-                        <main role="main" className="flex-1">
+                        <main
+                          role="main"
+                          className="flex-1 pb-[calc(env(safe-area-inset-bottom)+4.5rem)] md:pb-0"
+                        >
                           <div>
                             <AnalyticsPageviewBridge />
                             <Outlet />
                             <Toaster />
-                            {isMobile && <FloatingEntitySearch showButton />}
                           </div>
                         </main>
                         <AppFooter />
                         <ChatFab />
                         <FeedbackFab />
-                        <MobileSidebarFab />
+                        <MobileBottomDock />
                         <CookieConsentBanner />
                       </SidebarInset>
                     </div>
