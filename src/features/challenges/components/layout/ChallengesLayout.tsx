@@ -479,13 +479,13 @@ function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
         <SheetTrigger asChild>
           <Button
             variant="outline"
-            className="lg:hidden fixed left-0 bottom-24 md:bottom-6 z-50 h-14 !rounded-l-none !rounded-r-full border-l-0 pl-2 pr-4 shadow-lg bg-background/95 backdrop-blur-sm border-border hover:bg-muted transition-all active:scale-95"
+            className="lg:hidden fixed left-0 md:left-16 bottom-16 md:bottom-6 z-50 h-14 rounded-l-none! rounded-r-full! md:rounded-full! border-l-0 md:border-l pl-2 pr-4 md:px-4 shadow-lg bg-background/95 backdrop-blur-sm border-border hover:bg-muted transition-all active:scale-95"
           >
             <Library className="h-5 w-5" />
             <ChevronRight className="h-4 w-4 -ml-1" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-72 p-0">
+        <SheetContent side="left" className="w-72 p-0" aria-describedby={undefined}>
           <SheetTitle className="sr-only">
             {t`Challenges`}
           </SheetTitle>
