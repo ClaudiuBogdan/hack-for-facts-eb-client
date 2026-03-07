@@ -62,18 +62,18 @@ export const SearchToggleInput: React.FC<SearchToggleInputProps> = ({
           animate={{ width, opacity: 1 }}
           exit={{ width: 0, opacity: 0 }}
           transition={{ duration: 0.25, ease: "easeInOut" }}
-          className="flex items-center overflow-hidden space-x-1"
+          className="flex h-9 items-center gap-1 overflow-hidden"
         >
           <Input
             ref={inputRef}
             value={searchTerm}
             onChange={handleChange}
             placeholder={placeholder}
-            className="h-8 text-sm flex-1 m-2"
+            className="h-9 flex-1 text-sm"
             autoFocus
           />
           <X
-            className="h-4 w-4 m-4 ml-0 cursor-pointer text-muted-foreground flex-shrink-0"
+            className="h-4 w-4 cursor-pointer text-muted-foreground flex-shrink-0"
             onClick={() => handleClear()}
           />
         </motion.div>
@@ -85,9 +85,9 @@ export const SearchToggleInput: React.FC<SearchToggleInputProps> = ({
           exit={{ scale: 0.5, opacity: 0 }}
           transition={{ duration: 0.15 }}
           onClick={() => onToggle(true)}
-          className="text-muted-foreground"
+          className="inline-flex h-9 w-9 items-center justify-center text-muted-foreground"
         >
-          <Search className="h-4 w-4 m-4 cursor-pointer" />
+          <Search className="h-5 w-5" />
         </motion.button>
       )}
     </AnimatePresence>

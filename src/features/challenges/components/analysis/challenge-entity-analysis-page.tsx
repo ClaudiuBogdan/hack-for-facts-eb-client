@@ -24,7 +24,7 @@ import {
   DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES,
 } from '@/lib/analytics-defaults'
 import { fetchEntityAnalytics } from '@/lib/api/entity-analytics'
-import type { EntityDetailsData } from '@/lib/api/entities'
+import type { EntityDetailsData, ExecutionLineItem } from '@/lib/api/entities'
 import { DEFAULT_CURRENCY, DEFAULT_INFLATION_ADJUSTED } from '@/lib/globalSettings/params'
 import { useGlobalSettings } from '@/lib/hooks/useGlobalSettings'
 import {
@@ -51,6 +51,7 @@ import { ChallengeEntityFaqSection } from './challenge-entity-faq-section'
 import { ChallengeEntityAnalysisHeader } from './challenge-entity-analysis-header'
 import { ChallengeEntityAnomalySummary } from './challenge-entity-anomaly-summary'
 import { ChallengeEntityCategoryEvolution } from './challenge-entity-category-evolution'
+import { ChallengeEntityGroupedLineItems } from './challenge-entity-grouped-line-items'
 import { ChallengeEntityReportsSection } from './challenge-entity-reports-section'
 import {
   CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS,
@@ -363,6 +364,48 @@ function resolveErrorMessage(error: unknown): string {
   }
 
   return t`Try again in a few moments.`
+}
+
+function normalizeClassificationCode(code: string | null | undefined) {
+  return (code ?? '').replace(/[^0-9.]/g, '')
+}
+
+function hasClassificationPrefix(
+  code: string,
+  prefixes: readonly string[],
+) {
+  return prefixes.some((prefix) => code.startsWith(prefix))
+}
+
+function filterTopLevelGroupedLineItems(
+  lineItems: readonly ExecutionLineItem[],
+  excludeEconomicCodes: readonly string[],
+  excludeFunctionalCodes: readonly string[],
+) {
+  return lineItems.filter((lineItem) => {
+    const economicCode = normalizeClassificationCode(
+      lineItem.economicClassification?.economic_code,
+    )
+    const functionalCode = normalizeClassificationCode(
+      lineItem.functionalClassification?.functional_code,
+    )
+
+    if (
+      excludeEconomicCodes.length > 0 &&
+      hasClassificationPrefix(economicCode, excludeEconomicCodes)
+    ) {
+      return false
+    }
+
+    if (
+      excludeFunctionalCodes.length > 0 &&
+      hasClassificationPrefix(functionalCode, excludeFunctionalCodes)
+    ) {
+      return false
+    }
+
+    return true
+  })
 }
 
 function getTreemapSubtitle(
@@ -727,6 +770,33 @@ export function ChallengeEntityAnalysisPage({
       ),
     [entityLineItemsQuery.data?.nodes, treemapAccountCategory],
   )
+  const treemapExcludeEconomicCodes = useMemo(
+    () =>
+      treemapAccountCategory === 'ch'
+        ? [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES]
+        : [],
+    [treemapAccountCategory],
+  )
+  const treemapExcludeFunctionalCodes = useMemo(
+    () =>
+      treemapAccountCategory === 'vn'
+        ? [...DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES]
+        : [],
+    [treemapAccountCategory],
+  )
+  const groupedLineItems = useMemo(
+    () =>
+      filterTopLevelGroupedLineItems(
+        treemapLineItems,
+        treemapExcludeEconomicCodes,
+        treemapExcludeFunctionalCodes,
+      ),
+    [
+      treemapExcludeEconomicCodes,
+      treemapExcludeFunctionalCodes,
+      treemapLineItems,
+    ],
+  )
 
   const treemapNodes = useMemo<AggregatedNode[]>(
     () =>
@@ -753,14 +823,8 @@ export function ChallengeEntityAnalysisPage({
     initialPrimary: treemapPrimary,
     initialPath: [...treemapPath],
     rootDepth: 2,
-    excludeEcCodes:
-      treemapAccountCategory === 'ch'
-        ? [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES]
-        : [],
-    excludeFnCodes:
-      treemapAccountCategory === 'vn'
-        ? [...DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES]
-        : [],
+    excludeEcCodes: treemapExcludeEconomicCodes,
+    excludeFnCodes: treemapExcludeFunctionalCodes,
     onPathChange: (path) => onStateChange({ treemapPath: path }),
   })
   const { amountFilter, unit: treemapUnit } = useTreemapAmountFilter({
@@ -1158,6 +1222,10 @@ export function ChallengeEntityAnalysisPage({
     treemapAccountCategory,
     activePrimary,
   )
+  const groupedLineItemsAccountTitle =
+    treemapAccountCategory === 'vn'
+      ? getLocalizedMapPreviewLabel('income', languageQuery)
+      : getLocalizedMapPreviewLabel('expenses', languageQuery)
   const treemapAccountCategoryCtaLabel =
     treemapAccountCategory === 'ch'
       ? pageCopy.showRevenue
@@ -1330,81 +1398,92 @@ export function ChallengeEntityAnalysisPage({
               )}
             </div>
           </CardHeader>
-          <CardContent className="-mx-4 px-4 sm:mx-0 sm:px-0">
-            {showsIncomeEconomicMessage ? (
-              <div className="rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-6 py-12 text-center text-sm font-medium text-muted-foreground">
-                {pageCopy.revenueWithoutEconomicCode}
-              </div>
-            ) : (
-              <BudgetTreemap
-                data={treemapData}
-                primary={activePrimary}
-                onNodeClick={onNodeClick}
-                onBreadcrumbClick={onBreadcrumbClick}
-                path={breadcrumbs}
-                normalization={displayNormalizationOptions.normalization}
-                currency={displayNormalizationOptions.currency}
-                excludedItemsSummary={excludedItemsSummary}
-                amountFilter={amountFilter}
-              />
-            )}
+          <CardContent className="space-y-4">
+            <div className="-mx-4 px-4 sm:mx-0 sm:px-0">
+              {showsIncomeEconomicMessage ? (
+                <div className="rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-6 py-12 text-center text-sm font-medium text-muted-foreground">
+                  {pageCopy.revenueWithoutEconomicCode}
+                </div>
+              ) : (
+                <BudgetTreemap
+                  data={treemapData}
+                  primary={activePrimary}
+                  onNodeClick={onNodeClick}
+                  onBreadcrumbClick={onBreadcrumbClick}
+                  path={breadcrumbs}
+                  normalization={displayNormalizationOptions.normalization}
+                  currency={displayNormalizationOptions.currency}
+                  excludedItemsSummary={excludedItemsSummary}
+                  amountFilter={amountFilter}
+                />
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                onClick={handleTreemapAccountCategoryToggle}
+              >
+                {treemapAccountCategoryCtaLabel}
+              </Button>
+              {isIncomeTreemap ? null : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                  onClick={handleTreemapPrimaryToggle}
+                >
+                  {treemapPrimaryCtaLabel}
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                onClick={handleNormalizationToggle}
+              >
+                <Users className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                {normalizationCtaLabel}
+              </Button>
+              <div className="hidden basis-full sm:block" />
+              {isIncomeTreemap ? null : showTreemapResetShortcut ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                  onClick={handleResetTreemapToAllExpenses}
+                >
+                  {pageCopy.showAllSpending}
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                  onClick={handleAdministrativeExpensesShortcut}
+                >
+                  {pageCopy.showAdministrativeSpending}
+                </Button>
+              )}
+            </div>
+
+            <ChallengeEntityGroupedLineItems
+              accountTitle={groupedLineItemsAccountTitle}
+              lineItems={groupedLineItems}
+              accountCategory={treemapAccountCategory}
+              groupBy={treemapPrimary}
+              currentYear={selectedYear}
+              normalizationOptions={displayNormalizationOptions}
+            />
           </CardContent>
         </Card>
-
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-            onClick={handleTreemapAccountCategoryToggle}
-          >
-            {treemapAccountCategoryCtaLabel}
-          </Button>
-          {isIncomeTreemap ? null : (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-              onClick={handleTreemapPrimaryToggle}
-            >
-              {treemapPrimaryCtaLabel}
-            </Button>
-          )}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-            onClick={handleNormalizationToggle}
-          >
-            <Users className="mr-1.5 h-4 w-4" aria-hidden="true" />
-            {normalizationCtaLabel}
-          </Button>
-          <div className="hidden basis-full sm:block" />
-          {isIncomeTreemap ? null : showTreemapResetShortcut ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-              onClick={handleResetTreemapToAllExpenses}
-            >
-              {pageCopy.showAllSpending}
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-              onClick={handleAdministrativeExpensesShortcut}
-            >
-              {pageCopy.showAdministrativeSpending}
-            </Button>
-          )}
-        </div>
       </div>
 
       <ChallengeEntityCategoryEvolution

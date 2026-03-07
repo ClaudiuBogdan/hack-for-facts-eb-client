@@ -23,6 +23,7 @@ import { ClassificationDescription } from '@/components/classification-explorer/
 import type { ClassificationType } from '@/types/classification-explorer'
 import { Link } from '@tanstack/react-router'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { cn } from '@/lib/utils'
 
 // Static classes extracted outside component to avoid recreation
 const BASE_CLASSES = 'inline-flex items-center justify-center rounded-full p-1 hover:scale-110 transition-scale duration-200 cursor-pointer'
@@ -186,7 +187,7 @@ export const ClassificationInfoLink = memo(function ClassificationInfoLink({
 
   const mergedClassName = useMemo(() => {
     const hoverClasses = showOnHoverOnly ? HOVER_CLASSES_HIDDEN : HOVER_CLASSES_VISIBLE
-    return ['ml-2', BASE_CLASSES, hoverClasses, className].filter(Boolean).join(' ')
+    return cn('ml-2', BASE_CLASSES, hoverClasses, className)
   }, [showOnHoverOnly, className])
 
   const titleAttr = useMemo(

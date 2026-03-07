@@ -19,6 +19,7 @@ const useQueryMock = vi.fn()
 const useGlobalSettingsMock = vi.fn()
 const fetchEntityAnalyticsMock = vi.fn()
 const budgetTreemapMock = vi.fn()
+const challengeGroupedLineItemsMock = vi.fn()
 const getEntityFeatureInfoMock = vi.fn()
 const mapAnalyticsPublicPreviewCardMock = vi.fn()
 const setPrimaryMock = vi.fn()
@@ -127,6 +128,17 @@ vi.mock('@/components/budget-explorer/BudgetTreemap', () => ({
   BudgetTreemap: (props: any) => {
     budgetTreemapMock(props)
     return <div data-testid="budget-treemap">{props.primary}</div>
+  },
+}))
+
+vi.mock('./challenge-entity-grouped-line-items', () => ({
+  ChallengeEntityGroupedLineItems: (props: any) => {
+    challengeGroupedLineItemsMock(props)
+    return (
+      <div data-testid="challenge-grouped-line-items">
+        {`Grouped:${props.accountTitle}:${props.accountCategory}:${props.groupBy}:${props.lineItems.length}`}
+      </div>
+    )
   },
 }))
 
@@ -535,6 +547,7 @@ describe('ChallengeEntityAnalysisPage', () => {
       confirmSettingsApplied: vi.fn(),
     })
     budgetTreemapMock.mockReset()
+    challengeGroupedLineItemsMock.mockReset()
     mapAnalyticsPublicPreviewCardMock.mockReset()
     fetchEntityAnalyticsMock.mockClear()
     getEntityFeatureInfoMock.mockReset()
@@ -616,6 +629,14 @@ describe('ChallengeEntityAnalysisPage', () => {
       screen.getAllByRole('button', { name: 'Arată per capita' }),
     ).toHaveLength(2)
     expect(screen.getByTestId('budget-treemap')).toHaveTextContent('fn')
+    expect(screen.getByTestId('challenge-grouped-line-items')).toHaveTextContent(
+      'Grouped:Cheltuieli:ch:fn:1',
+    )
+    expect(
+      screen.getByTestId('budget-treemap').compareDocumentPosition(
+        screen.getByTestId('challenge-grouped-line-items'),
+      ) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
     expect(screen.getByTestId('category-evolution')).toHaveTextContent(
       '12345678:2025:PRINCIPAL_AGGREGATED',
     )
@@ -902,6 +923,93 @@ describe('ChallengeEntityAnalysisPage', () => {
       }),
     )
     expect(useTreemapDrilldownMock.mock.calls[0]?.[0]?.nodes).toHaveLength(1)
+  })
+
+  it('passes the grouped subsection the top-level treemap state instead of the drilled active primary', () => {
+    useTreemapDrilldownMock.mockReturnValue({
+      primary: 'fn',
+      activePrimary: 'ec',
+      treemapData: [{ name: 'Cheltuieli de personal', value: 650000 }],
+      breadcrumbs: [
+        { code: '51', label: 'Autorități publice și acțiuni externe', type: 'fn' },
+        { code: '51.01', label: 'Autorități executive și legislative', type: 'fn' },
+        { code: '51.01.03', label: 'Autorități executive', type: 'fn' },
+      ],
+      excludedItemsSummary: null,
+      onNodeClick: vi.fn(),
+      onBreadcrumbClick: vi.fn(),
+      setPath: setPathMock,
+      reset: resetTreemapMock,
+      setPrimary: setPrimaryMock,
+    })
+
+    renderAnalysisPage()
+
+    expect(getLatestGroupedLineItemsProps()).toMatchObject({
+      accountTitle: 'Cheltuieli',
+      accountCategory: 'ch',
+      groupBy: 'fn',
+    })
+  })
+
+  it('filters grouped subsection line items with the same default treemap exclusions', async () => {
+    useEntityExecutionLineItemsMock.mockReturnValue({
+      data: {
+        nodes: [
+          {
+            ...lineItems[0],
+            line_item_id: 'expense-transfer',
+            economicClassification: {
+              economic_code: '51.01',
+              economic_name: 'Transferuri',
+            },
+          },
+          {
+            ...lineItems[0],
+            line_item_id: 'expense-visible',
+          },
+          {
+            ...lineItems[1],
+            line_item_id: 'revenue-transfer',
+            functionalClassification: {
+              functional_code: '37.02.03',
+              functional_name: 'Transferuri primite',
+            },
+          },
+          {
+            ...lineItems[1],
+            line_item_id: 'revenue-visible',
+          },
+        ],
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+
+    renderAnalysisPage()
+
+    expect(getLatestGroupedLineItemsProps().lineItems).toEqual([
+      expect.objectContaining({
+        line_item_id: 'expense-visible',
+      }),
+    ])
+
+    fireEvent.click(screen.getByRole('button', { name: 'Arată venituri' }))
+
+    await waitFor(() => {
+      expect(getLatestGroupedLineItemsProps()).toMatchObject({
+        accountTitle: 'Venituri',
+        accountCategory: 'vn',
+        groupBy: 'fn',
+      })
+      expect(getLatestGroupedLineItemsProps().lineItems).toEqual([
+        expect.objectContaining({
+          line_item_id: 'revenue-visible',
+        }),
+      ])
+    })
   })
 
   it('applies the report toggle to entity totals, trends, and line items', async () => {
@@ -1458,6 +1566,17 @@ function getLatestPublicPreviewCardProps(): Record<string, unknown> {
 
   if (!latestCall) {
     throw new Error('Missing public map preview props.')
+  }
+
+  return latestCall
+}
+
+function getLatestGroupedLineItemsProps(): Record<string, any> {
+  const latestCallIndex = challengeGroupedLineItemsMock.mock.calls.length - 1
+  const latestCall = challengeGroupedLineItemsMock.mock.calls[latestCallIndex]?.[0]
+
+  if (!latestCall) {
+    throw new Error('Missing grouped line items props.')
   }
 
   return latestCall
