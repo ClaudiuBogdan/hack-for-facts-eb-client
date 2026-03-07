@@ -119,7 +119,7 @@ describe('ChallengeEntityAnalysisHeader', () => {
       value: 0,
     })
     vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) => {
-      callback(0)
+      queueMicrotask(() => callback(0))
       return 1
     })
   })
@@ -165,19 +165,19 @@ describe('ChallengeEntityAnalysisHeader', () => {
   it('hides the compact header again when scrolling up', async () => {
     renderHeader()
 
-    setScrollPosition(340)
+    setScrollPosition(360)
     await waitFor(() => {
       expect(
         screen.getByTestId('challenge-entity-compact-header'),
       ).toBeInTheDocument()
     })
 
-    setScrollPosition(280)
+    setScrollPosition(330)
 
     await waitFor(() => {
       expect(
-        screen.queryByTestId('challenge-entity-compact-header'),
-      ).not.toBeInTheDocument()
+        screen.getByTestId('challenge-entity-compact-header'),
+      ).toHaveAttribute('aria-hidden', 'true')
     })
   })
 
@@ -195,8 +195,8 @@ describe('ChallengeEntityAnalysisHeader', () => {
 
     await waitFor(() => {
       expect(
-        screen.queryByTestId('challenge-entity-compact-header'),
-      ).not.toBeInTheDocument()
+        screen.getByTestId('challenge-entity-compact-header'),
+      ).toHaveAttribute('aria-hidden', 'true')
     })
   })
 

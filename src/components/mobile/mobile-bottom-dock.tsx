@@ -10,7 +10,6 @@ import { ensureShortRedirectUrl } from "@/lib/api/shortLinks";
 import { useAuth } from "@/lib/auth";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useScrollDirection } from "@/lib/hooks";
 import { cn } from "@/lib/utils";
 
 const MOBILE_DOCK_HIDE_THRESHOLD = 80;
@@ -22,15 +21,25 @@ const MOBILE_DOCK_BUTTON_CLASS_NAME =
 
 export function MobileBottomDock() {
   const isMobile = useIsMobile();
+
+  if (!isMobile) {
+    return null;
+  }
+
+  return <MobileBottomDockContent />;
+}
+
+function MobileBottomDockContent() {
   const { isSignedIn } = useAuth();
   const queryClient = useQueryClient();
   const { setOpenMobile } = useSidebar();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isShareCopied, setIsShareCopied] = useState(false);
+  const [isDockVisible, setIsDockVisible] = useState(true);
   const shareCopiedResetTimeoutRef = useRef<number | undefined>(undefined);
-  const { direction, isPastThreshold, y } = useScrollDirection({
-    threshold: MOBILE_DOCK_HIDE_THRESHOLD,
-  });
+  const lastScrollYRef = useRef(0);
+  const isDockVisibleRef = useRef(true);
+  const scrollFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
     return () => {
@@ -48,6 +57,58 @@ export function MobileBottomDock() {
     shareCopiedResetTimeoutRef.current = window.setTimeout(() => {
       setIsShareCopied(false);
     }, 2000);
+  }, []);
+
+  useEffect(() => {
+    const getScrollY = () =>
+      window.pageYOffset || document.documentElement.scrollTop || 0;
+
+    const updateDockVisibility = (nextVisibility: boolean) => {
+      if (nextVisibility === isDockVisibleRef.current) {
+        return;
+      }
+
+      isDockVisibleRef.current = nextVisibility;
+      setIsDockVisible(nextVisibility);
+    };
+
+    lastScrollYRef.current = getScrollY();
+    updateDockVisibility(
+      lastScrollYRef.current <= MOBILE_DOCK_TOP_VISIBILITY_THRESHOLD ||
+        lastScrollYRef.current <= MOBILE_DOCK_HIDE_THRESHOLD
+    );
+
+    const handleScroll = () => {
+      if (scrollFrameRef.current !== null) {
+        return;
+      }
+
+      scrollFrameRef.current = window.requestAnimationFrame(() => {
+        scrollFrameRef.current = null;
+
+        const currentScrollY = getScrollY();
+        const delta = currentScrollY - lastScrollYRef.current;
+        const nextDirection = delta > 0 ? "down" : delta < 0 ? "up" : null;
+        const nextVisibility =
+          currentScrollY <= MOBILE_DOCK_TOP_VISIBILITY_THRESHOLD ||
+          currentScrollY <= MOBILE_DOCK_HIDE_THRESHOLD ||
+          nextDirection === "up";
+
+        updateDockVisibility(nextVisibility);
+        lastScrollYRef.current = currentScrollY;
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+
+      if (scrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollFrameRef.current);
+        scrollFrameRef.current = null;
+      }
+    };
   }, []);
 
   const handleCopyShareLink = useCallback(async () => {
@@ -78,15 +139,6 @@ export function MobileBottomDock() {
       toast.error(t`Failed to copy link`);
     }
   }, [isSignedIn, queryClient, resetShareCopiedStateWithDelay]);
-
-  if (!isMobile) {
-    return null;
-  }
-
-  const isDockVisible =
-    y <= MOBILE_DOCK_TOP_VISIBILITY_THRESHOLD ||
-    !isPastThreshold ||
-    direction === "up";
 
   const hiddenTabIndex = isDockVisible ? 0 : -1;
 

@@ -9,19 +9,6 @@ const mockSetOpenMobile = vi.fn();
 const toastSuccessMock = vi.fn();
 const toastErrorMock = vi.fn();
 const mockUseAuth = vi.fn(() => ({ isSignedIn: false }));
-type MockScrollDirectionResult = {
-  readonly direction: "up" | "down";
-  readonly isPastThreshold: boolean;
-  readonly y: number;
-};
-
-const mockScrollDirection = vi.fn<(options?: unknown) => MockScrollDirectionResult>(
-  () => ({
-    direction: "up",
-    isPastThreshold: false,
-    y: 0,
-  })
-);
 
 vi.mock("@/hooks/use-mobile", () => ({
   useIsMobile: () => mockIsMobile(),
@@ -49,10 +36,6 @@ vi.mock("@/components/ui/sidebar", () => ({
   }),
 }));
 
-vi.mock("@/lib/hooks", () => ({
-  useScrollDirection: (options?: unknown) => mockScrollDirection(options),
-}));
-
 vi.mock("@/components/entities/FloatingEntitySearch", () => ({
   FloatingEntitySearch: ({
     externalOpen,
@@ -73,6 +56,25 @@ vi.mock("@/components/sentry/SendErrorAction", () => ({
 }));
 
 describe("MobileBottomDock", () => {
+  function setScrollPosition(nextY: number) {
+    Object.defineProperty(window, "pageYOffset", {
+      configurable: true,
+      writable: true,
+      value: nextY,
+    });
+    Object.defineProperty(window, "scrollY", {
+      configurable: true,
+      writable: true,
+      value: nextY,
+    });
+    Object.defineProperty(document.documentElement, "scrollTop", {
+      configurable: true,
+      writable: true,
+      value: nextY,
+    });
+    fireEvent.scroll(window);
+  }
+
   beforeEach(() => {
     vi.clearAllMocks();
     ensureShortRedirectUrlMock.mockReset();
@@ -80,14 +82,28 @@ describe("MobileBottomDock", () => {
     toastErrorMock.mockReset();
     mockIsMobile.mockReturnValue(true);
     mockUseAuth.mockReturnValue({ isSignedIn: false });
-    mockScrollDirection.mockReturnValue({
-      direction: "up",
-      isPastThreshold: false,
-      y: 0,
-    });
     ensureShortRedirectUrlMock.mockResolvedValue(
       "https://transparenta.eu/share/abc123"
     );
+    Object.defineProperty(window, "pageYOffset", {
+      configurable: true,
+      writable: true,
+      value: 0,
+    });
+    Object.defineProperty(window, "scrollY", {
+      configurable: true,
+      writable: true,
+      value: 0,
+    });
+    Object.defineProperty(document.documentElement, "scrollTop", {
+      configurable: true,
+      writable: true,
+      value: 0,
+    });
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      queueMicrotask(() => callback(0));
+      return 1;
+    });
     Object.defineProperty(window, "location", {
       configurable: true,
       value: {
@@ -247,36 +263,30 @@ describe("MobileBottomDock", () => {
     expect(mockSetOpenMobile).toHaveBeenCalledWith(true);
   });
 
-  it("hides on downward scroll past the threshold and reappears on upward scroll", () => {
-    const { rerender } = render(<MobileBottomDock />);
+  it("hides on downward scroll past the threshold and reappears on upward scroll", async () => {
+    render(<MobileBottomDock />);
 
     expect(screen.getByTestId("mobile-bottom-dock")).toHaveClass(
       "translate-y-0",
       "opacity-100"
     );
 
-    mockScrollDirection.mockReturnValue({
-      direction: "down",
-      isPastThreshold: true,
-      y: 120,
+    setScrollPosition(120);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("mobile-bottom-dock")).toHaveClass(
+        "translate-y-full",
+        "opacity-0"
+      );
     });
-    rerender(<MobileBottomDock />);
 
-    expect(screen.getByTestId("mobile-bottom-dock")).toHaveClass(
-      "translate-y-full",
-      "opacity-0"
-    );
+    setScrollPosition(90);
 
-    mockScrollDirection.mockReturnValue({
-      direction: "up",
-      isPastThreshold: true,
-      y: 120,
+    await waitFor(() => {
+      expect(screen.getByTestId("mobile-bottom-dock")).toHaveClass(
+        "translate-y-0",
+        "opacity-100"
+      );
     });
-    rerender(<MobileBottomDock />);
-
-    expect(screen.getByTestId("mobile-bottom-dock")).toHaveClass(
-      "translate-y-0",
-      "opacity-100"
-    );
   });
 });

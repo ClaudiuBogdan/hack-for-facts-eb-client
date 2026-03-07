@@ -18,7 +18,6 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { ensureShortRedirectUrl } from '@/lib/api/shortLinks'
 import { useAuth } from '@/lib/auth'
 import type { EntityDetailsData } from '@/lib/api/entities'
-import { useScrollDirection } from '@/lib/hooks'
 import { cn } from '@/lib/utils'
 import type { ChallengeLocale } from '../../types'
 
@@ -48,8 +47,6 @@ const LOCAL_GOVERNMENT_TYPE_LABELS = {
   },
 } as const
 const COMPACT_HEADER_SHOW_THRESHOLD = 320
-const COMPACT_HEADER_RESET_THRESHOLD = 160
-const COMPACT_HEADER_TRANSITION_MS = 260
 
 const HEADER_COPY = {
   ro: {
@@ -128,22 +125,18 @@ export function ChallengeEntityAnalysisHeader({
         ).format(entity.uat.population)
       : null
   const linkSearch = languageQuery === 'en' ? { lang: 'en' as const } : {}
-  const { direction, isPastThreshold, y } = useScrollDirection({
-    threshold: COMPACT_HEADER_SHOW_THRESHOLD,
-  })
   const heroHeaderRef = useRef<HTMLElement | null>(null)
-  const compactHeaderExitTimeoutRef = useRef<number | null>(null)
   const compactHeaderEnterFrameRef = useRef<number | null>(null)
-  const [isCompactHeaderMounted, setIsCompactHeaderMounted] = useState(false)
+  const compactHeaderScrollFrameRef = useRef<number | null>(null)
+  const compactHeaderLastScrollYRef = useRef(0)
+  const shouldShowCompactHeaderRef = useRef(false)
+  const [shouldShowCompactHeader, setShouldShowCompactHeader] = useState(false)
+  const [hasRenderedCompactHeader, setHasRenderedCompactHeader] = useState(false)
   const [isCompactHeaderVisible, setIsCompactHeaderVisible] = useState(false)
   const [compactHeaderFrame, setCompactHeaderFrame] = useState<{
     readonly left: number
     readonly width: number
   } | null>(null)
-  const shouldShowCompactHeader =
-    y >= COMPACT_HEADER_RESET_THRESHOLD &&
-    isPastThreshold &&
-    direction === 'down'
 
   useEffect(() => {
     const syncCompactHeaderFrame = () => {
@@ -182,6 +175,47 @@ export function ChallengeEntityAnalysisHeader({
   }, [])
 
   useEffect(() => {
+    const getScrollY = () =>
+      window.pageYOffset || document.documentElement.scrollTop || 0
+
+    compactHeaderLastScrollYRef.current = getScrollY()
+
+    const handleScroll = () => {
+      if (compactHeaderScrollFrameRef.current !== null) {
+        return
+      }
+
+      compactHeaderScrollFrameRef.current = window.requestAnimationFrame(() => {
+        compactHeaderScrollFrameRef.current = null
+
+        const currentY = getScrollY()
+        const delta = currentY - compactHeaderLastScrollYRef.current
+        const nextShouldShowCompactHeader =
+          currentY > COMPACT_HEADER_SHOW_THRESHOLD &&
+          delta > 0
+
+        if (nextShouldShowCompactHeader !== shouldShowCompactHeaderRef.current) {
+          shouldShowCompactHeaderRef.current = nextShouldShowCompactHeader
+          setShouldShowCompactHeader(nextShouldShowCompactHeader)
+        }
+
+        compactHeaderLastScrollYRef.current = currentY
+      })
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+
+      if (compactHeaderScrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(compactHeaderScrollFrameRef.current)
+        compactHeaderScrollFrameRef.current = null
+      }
+    }
+  }, [])
+
+  useEffect(() => {
     const syncCompactHeaderFrame = () => {
       const heroHeaderElement = heroHeaderRef.current
       if (!heroHeaderElement) {
@@ -193,22 +227,27 @@ export function ChallengeEntityAnalysisHeader({
         return
       }
 
-      setCompactHeaderFrame({
-        left: nextFrame.left,
-        width: nextFrame.width,
+      setCompactHeaderFrame((currentFrame) => {
+        if (
+          currentFrame &&
+          currentFrame.left === nextFrame.left &&
+          currentFrame.width === nextFrame.width
+        ) {
+          return currentFrame
+        }
+
+        return {
+          left: nextFrame.left,
+          width: nextFrame.width,
+        }
       })
     }
 
     if (shouldShowCompactHeader) {
-      if (compactHeaderExitTimeoutRef.current !== null) {
-        window.clearTimeout(compactHeaderExitTimeoutRef.current)
-        compactHeaderExitTimeoutRef.current = null
-      }
-
       syncCompactHeaderFrame()
 
-      if (!isCompactHeaderMounted) {
-        setIsCompactHeaderMounted(true)
+      if (!hasRenderedCompactHeader) {
+        setHasRenderedCompactHeader(true)
         return
       }
 
@@ -219,38 +258,20 @@ export function ChallengeEntityAnalysisHeader({
       return
     }
 
-    if (!isCompactHeaderMounted) {
-      setIsCompactHeaderVisible(false)
-      return
-    }
-
     setIsCompactHeaderVisible(false)
-    compactHeaderExitTimeoutRef.current = window.setTimeout(() => {
-      setIsCompactHeaderMounted(false)
-      compactHeaderExitTimeoutRef.current = null
-    }, COMPACT_HEADER_TRANSITION_MS)
 
     return () => {
       if (compactHeaderEnterFrameRef.current !== null) {
         window.cancelAnimationFrame(compactHeaderEnterFrameRef.current)
         compactHeaderEnterFrameRef.current = null
       }
-
-      if (compactHeaderExitTimeoutRef.current !== null) {
-        window.clearTimeout(compactHeaderExitTimeoutRef.current)
-        compactHeaderExitTimeoutRef.current = null
-      }
     }
-  }, [isCompactHeaderMounted, shouldShowCompactHeader])
+  }, [hasRenderedCompactHeader, shouldShowCompactHeader])
 
   useEffect(() => {
     return () => {
       if (compactHeaderEnterFrameRef.current !== null) {
         window.cancelAnimationFrame(compactHeaderEnterFrameRef.current)
-      }
-
-      if (compactHeaderExitTimeoutRef.current !== null) {
-        window.clearTimeout(compactHeaderExitTimeoutRef.current)
       }
     }
   }, [])
@@ -290,9 +311,10 @@ export function ChallengeEntityAnalysisHeader({
 
   return (
     <>
-      {isCompactHeaderMounted ? (
+      {hasRenderedCompactHeader ? (
         <div
           data-testid="challenge-entity-compact-header"
+          aria-hidden={!isCompactHeaderVisible}
           className={cn(
             'pointer-events-none fixed top-0 z-40 overflow-hidden rounded-b-[28px] shadow-[0_16px_34px_-22px_rgba(15,23,42,0.32)] backdrop-blur-xl will-change-[translate,opacity]',
             'transition-[opacity,translate] duration-[260ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:translate-y-0 motion-reduce:transition-opacity',
