@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { GroupedItemsDisplay } from '@/components/entities/FinancialDataCard'
 import { SearchToggleInput } from '@/components/entities/SearchToggleInput'
 import { useFinancialData } from '@/hooks/useFinancialData'
@@ -15,6 +15,7 @@ type ChallengeGroupedLineItemsProps = {
     NormalizationOptions,
     'normalization' | 'currency'
   >
+  readonly presetSearchTerm?: string
 }
 
 export function ChallengeEntityGroupedLineItems({
@@ -24,6 +25,7 @@ export function ChallengeEntityGroupedLineItems({
   groupBy,
   currentYear,
   normalizationOptions,
+  presetSearchTerm,
 }: ChallengeGroupedLineItemsProps) {
   const normalizedLineItems = useMemo(() => [...lineItems], [lineItems])
   const totalAmount = useMemo(
@@ -34,18 +36,23 @@ export function ChallengeEntityGroupedLineItems({
       ),
     [normalizedLineItems],
   )
+  const [expenseSearchTerm, setExpenseSearchTerm] = useState(
+    () => presetSearchTerm ?? '',
+  )
+  const [expenseSearchActive, setExpenseSearchActive] = useState(
+    () => Boolean(presetSearchTerm),
+  )
+  const [incomeSearchTerm, setIncomeSearchTerm] = useState('')
+  const [incomeSearchActive, setIncomeSearchActive] = useState(false)
+  const previousPresetSearchTermRef = useRef<string | undefined>(
+    presetSearchTerm,
+  )
+  const deferredExpenseSearchTerm = useDeferredValue(expenseSearchTerm)
+  const deferredIncomeSearchTerm = useDeferredValue(incomeSearchTerm)
 
   const {
-    expenseSearchTerm,
-    onExpenseSearchChange,
-    expenseSearchActive,
-    onExpenseSearchToggle,
     filteredExpenseGroups,
     expenseBase,
-    incomeSearchTerm,
-    onIncomeSearchChange,
-    incomeSearchActive,
-    onIncomeSearchToggle,
     filteredIncomeGroups,
     incomeBase,
     filteredEconomicGroups,
@@ -53,10 +60,27 @@ export function ChallengeEntityGroupedLineItems({
     normalizedLineItems,
     accountCategory === 'vn' ? totalAmount : null,
     accountCategory === 'ch' ? totalAmount : null,
-    '',
-    '',
-    { computeEconomic: groupBy === 'ec' },
+    deferredExpenseSearchTerm,
+    deferredIncomeSearchTerm,
+    {
+      computeEconomic: groupBy === 'ec',
+      searchDebounceMs: 0,
+    },
   )
+
+  useEffect(() => {
+    if (previousPresetSearchTermRef.current === presetSearchTerm) {
+      return
+    }
+
+    previousPresetSearchTermRef.current = presetSearchTerm
+
+    const nextExpenseSearchTerm = presetSearchTerm ?? ''
+    const shouldActivateExpenseSearch = nextExpenseSearchTerm.length > 0
+
+    setExpenseSearchTerm(nextExpenseSearchTerm)
+    setExpenseSearchActive(shouldActivateExpenseSearch)
+  }, [presetSearchTerm])
 
   const groupsToDisplay =
     groupBy === 'ec'
@@ -66,12 +90,16 @@ export function ChallengeEntityGroupedLineItems({
         : filteredExpenseGroups
   const baseTotalToDisplay =
     accountCategory === 'vn' ? incomeBase : expenseBase
-  const currentSearchTerm =
+  const currentSearchInputTerm =
+    accountCategory === 'vn'
+      ? incomeSearchTerm
+      : expenseSearchTerm
+  const currentSearchFilterTerm =
     groupBy === 'ec'
-      ? expenseSearchTerm
+      ? deferredExpenseSearchTerm
       : accountCategory === 'vn'
-        ? incomeSearchTerm
-        : expenseSearchTerm
+        ? deferredIncomeSearchTerm
+        : deferredExpenseSearchTerm
   const currentSearchActive =
     groupBy === 'ec'
       ? expenseSearchActive
@@ -80,19 +108,19 @@ export function ChallengeEntityGroupedLineItems({
         : expenseSearchActive
   const handleSearchChange = (value: string) => {
     if (accountCategory === 'vn') {
-      onIncomeSearchChange(value)
+      setIncomeSearchTerm(value)
       return
     }
 
-    onExpenseSearchChange(value)
+    setExpenseSearchTerm(value)
   }
   const handleSearchToggle = (isActive: boolean) => {
     if (accountCategory === 'vn') {
-      onIncomeSearchToggle(isActive)
+      setIncomeSearchActive(isActive)
       return
     }
 
-    onExpenseSearchToggle(isActive)
+    setExpenseSearchActive(isActive)
   }
   const searchFocusKey = accountCategory === 'vn' ? 'mod+l' : 'mod+j'
 
@@ -111,10 +139,11 @@ export function ChallengeEntityGroupedLineItems({
         <div className="ml-auto flex-shrink-0">
           <SearchToggleInput
             active={currentSearchActive}
-            initialSearchTerm={currentSearchTerm}
+            initialSearchTerm={currentSearchInputTerm}
             onToggle={handleSearchToggle}
             onChange={handleSearchChange}
             focusKey={searchFocusKey}
+            debounceMs={0}
           />
         </div>
       </div>
@@ -123,7 +152,7 @@ export function ChallengeEntityGroupedLineItems({
         groups={groupsToDisplay}
         title={accountTitle}
         baseTotal={baseTotalToDisplay}
-        searchTerm={currentSearchTerm}
+        searchTerm={currentSearchFilterTerm}
         currentYear={currentYear}
         showTotalValueHeader={currentSearchActive}
         normalization={normalizationOptions.normalization}

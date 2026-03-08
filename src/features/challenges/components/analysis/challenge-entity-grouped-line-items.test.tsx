@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ExecutionLineItem } from '@/lib/api/entities'
 import { ChallengeEntityGroupedLineItems } from './challenge-entity-grouped-line-items'
@@ -164,6 +164,7 @@ describe('ChallengeEntityGroupedLineItems', () => {
     expect(useFinancialDataMock.mock.calls[0]?.[2]).toBe(120)
     expect(useFinancialDataMock.mock.calls[0]?.[5]).toEqual({
       computeEconomic: false,
+      searchDebounceMs: 0,
     })
     expect(groupedItemsDisplayMock).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -183,27 +184,12 @@ describe('ChallengeEntityGroupedLineItems', () => {
         active: false,
         initialSearchTerm: '',
         focusKey: 'mod+j',
+        debounceMs: 0,
       }),
     )
   })
 
   it('uses economic groups when the subsection is in economic mode', () => {
-    useFinancialDataMock.mockReturnValue({
-      expenseSearchTerm: 'personal',
-      onExpenseSearchChange: vi.fn(),
-      expenseSearchActive: true,
-      onExpenseSearchToggle: vi.fn(),
-      filteredExpenseGroups: financialDataResult.filteredExpenseGroups,
-      expenseBase: financialDataResult.expenseBase,
-      incomeSearchTerm: '',
-      onIncomeSearchChange: vi.fn(),
-      incomeSearchActive: false,
-      onIncomeSearchToggle: vi.fn(),
-      filteredIncomeGroups: financialDataResult.filteredIncomeGroups,
-      incomeBase: financialDataResult.incomeBase,
-      filteredEconomicGroups: financialDataResult.filteredEconomicGroups,
-    })
-
     render(
       <ChallengeEntityGroupedLineItems
         {...defaultProps}
@@ -213,14 +199,15 @@ describe('ChallengeEntityGroupedLineItems', () => {
 
     expect(useFinancialDataMock.mock.calls[0]?.[5]).toEqual({
       computeEconomic: true,
+      searchDebounceMs: 0,
     })
     expect(groupedItemsDisplayMock).toHaveBeenCalledWith(
       expect.objectContaining({
         groups: financialDataResult.filteredEconomicGroups,
         title: 'Cheltuieli',
         baseTotal: financialDataResult.expenseBase,
-        searchTerm: 'personal',
-        showTotalValueHeader: true,
+        searchTerm: '',
+        showTotalValueHeader: false,
         subchapterCodePrefix: 'ec',
       }),
     )
@@ -228,27 +215,11 @@ describe('ChallengeEntityGroupedLineItems', () => {
       'ec:120:1',
     )
     expect(screen.getByTestId('search-toggle-input')).toHaveTextContent(
-      'search:personal:true:mod+j',
+      'search::false:mod+j',
     )
   })
 
   it('hides the primary toggle and uses income groups in revenue mode', () => {
-    useFinancialDataMock.mockReturnValue({
-      expenseSearchTerm: '',
-      onExpenseSearchChange: vi.fn(),
-      expenseSearchActive: false,
-      onExpenseSearchToggle: vi.fn(),
-      filteredExpenseGroups: financialDataResult.filteredExpenseGroups,
-      expenseBase: financialDataResult.expenseBase,
-      incomeSearchTerm: 'taxe',
-      onIncomeSearchChange: vi.fn(),
-      incomeSearchActive: true,
-      onIncomeSearchToggle: vi.fn(),
-      filteredIncomeGroups: financialDataResult.filteredIncomeGroups,
-      incomeBase: financialDataResult.incomeBase,
-      filteredEconomicGroups: financialDataResult.filteredEconomicGroups,
-    })
-
     render(
       <ChallengeEntityGroupedLineItems
         {...defaultProps}
@@ -266,39 +237,68 @@ describe('ChallengeEntityGroupedLineItems', () => {
         groups: financialDataResult.filteredIncomeGroups,
         title: 'Venituri',
         baseTotal: financialDataResult.incomeBase,
-        searchTerm: 'taxe',
-        showTotalValueHeader: true,
+        searchTerm: '',
+        showTotalValueHeader: false,
         subchapterCodePrefix: 'fn',
       }),
     )
     expect(screen.getByTestId('search-toggle-input')).toHaveTextContent(
-      'search:taxe:true:mod+l',
+      'search::false:mod+l',
     )
   })
 
-  it('wires the search toggle to the matching account category search state', () => {
-    const onExpenseSearchToggle = vi.fn()
+  it('seeds and clears the expense search from the preset term', async () => {
+    const { rerender } = render(
+      <ChallengeEntityGroupedLineItems
+        {...defaultProps}
+        presetSearchTerm="fn:51.01.03"
+      />,
+    )
 
-    useFinancialDataMock.mockReturnValue({
-      expenseSearchTerm: '',
-      onExpenseSearchChange: vi.fn(),
-      expenseSearchActive: false,
-      onExpenseSearchToggle,
-      filteredExpenseGroups: financialDataResult.filteredExpenseGroups,
-      expenseBase: financialDataResult.expenseBase,
-      incomeSearchTerm: '',
-      onIncomeSearchChange: vi.fn(),
-      incomeSearchActive: false,
-      onIncomeSearchToggle: vi.fn(),
-      filteredIncomeGroups: financialDataResult.filteredIncomeGroups,
-      incomeBase: financialDataResult.incomeBase,
-      filteredEconomicGroups: financialDataResult.filteredEconomicGroups,
+    expect(getLatestGroupedItemsDisplayProps()).toEqual(
+      expect.objectContaining({
+        searchTerm: 'fn:51.01.03',
+        showTotalValueHeader: true,
+      }),
+    )
+    expect(screen.getByTestId('search-toggle-input')).toHaveTextContent(
+      'search:fn:51.01.03:true:mod+j',
+    )
+
+    rerender(<ChallengeEntityGroupedLineItems {...defaultProps} />)
+
+    await waitFor(() => {
+      expect(getLatestGroupedItemsDisplayProps()).toEqual(
+        expect.objectContaining({
+          searchTerm: '',
+          showTotalValueHeader: false,
+        }),
+      )
     })
 
+    expect(screen.getByTestId('search-toggle-input')).toHaveTextContent(
+      'search::false:mod+j',
+    )
+  })
+
+  it('wires the search toggle to the local search state', () => {
     render(<ChallengeEntityGroupedLineItems {...defaultProps} />)
 
     fireEvent.click(screen.getByTestId('search-toggle-input'))
 
-    expect(onExpenseSearchToggle).toHaveBeenCalledWith(true)
+    expect(screen.getByTestId('search-toggle-input')).toHaveTextContent(
+      'search::true:mod+j',
+    )
   })
 })
+
+function getLatestGroupedItemsDisplayProps(): Record<string, unknown> {
+  const latestCallIndex = groupedItemsDisplayMock.mock.calls.length - 1
+  const latestCall = groupedItemsDisplayMock.mock.calls[latestCallIndex]?.[0]
+
+  if (!latestCall) {
+    throw new Error('Missing grouped items display props.')
+  }
+
+  return latestCall
+}

@@ -91,6 +91,8 @@ export type ChallengeEntityAnalysisPageState = {
 }
 
 const CHALLENGE_ADMINISTRATIVE_EXPENSE_PATH = ['51', '51.01', '51.01.03'] as const
+const CHALLENGE_ADMINISTRATIVE_EXPENSE_SEARCH_TERM =
+  `fn:${CHALLENGE_ADMINISTRATIVE_EXPENSE_PATH[CHALLENGE_ADMINISTRATIVE_EXPENSE_PATH.length - 1]}` as const
 const CHALLENGE_SHOW_PERIOD_GROWTH = false
 const CHALLENGE_AVAILABLE_YEARS = Array.from(
   { length: DEFAULT_SELECTED_YEAR - defaultYearRange.start + 1 },
@@ -398,6 +400,13 @@ function hasClassificationPrefix(
   prefixes: readonly string[],
 ) {
   return prefixes.some((prefix) => code.startsWith(prefix))
+}
+
+function doesCodePathStartWith(
+  path: readonly string[],
+  prefix: readonly string[],
+) {
+  return prefix.every((segment, index) => path[index] === segment)
 }
 
 function filterTopLevelGroupedLineItems(
@@ -778,6 +787,22 @@ export function ChallengeEntityAnalysisPage({
       treemapLineItems,
     ],
   )
+  const groupedLineItemsPresetSearchTerm = useMemo(() => {
+    if (treemapAccountCategory !== 'ch' || treemapPrimary !== 'fn') {
+      return undefined
+    }
+
+    if (
+      !doesCodePathStartWith(
+        treemapPath,
+        CHALLENGE_ADMINISTRATIVE_EXPENSE_PATH,
+      )
+    ) {
+      return undefined
+    }
+
+    return CHALLENGE_ADMINISTRATIVE_EXPENSE_SEARCH_TERM
+  }, [treemapAccountCategory, treemapPath, treemapPrimary])
 
   const treemapNodes = useMemo<AggregatedNode[]>(
     () =>
@@ -1480,6 +1505,7 @@ export function ChallengeEntityAnalysisPage({
               groupBy={treemapPrimary}
               currentYear={selectedYear}
               normalizationOptions={displayNormalizationOptions}
+              presetSearchTerm={groupedLineItemsPresetSearchTerm}
             />
           </CardContent>
         </Card>

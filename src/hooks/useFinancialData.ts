@@ -469,7 +469,7 @@ export const useFinancialData = (
   totalExpenses: number | null,
   initialExpenseSearchTerm?: string,
   initialIncomeSearchTerm?: string,
-  options?: { computeEconomic?: boolean }
+  options?: { computeEconomic?: boolean; searchDebounceMs?: number }
 ) => {
   // Lazy maps
   const { data: chapterMap = new Map<string, string>() } = useChapterMap();
@@ -494,8 +494,13 @@ export const useFinancialData = (
     }
   }, [initialIncomeSearchTerm, incomeSearchTerm]);
 
-  const debouncedExpenseSearchTerm = useDebouncedValue(expenseSearchTerm, 300);
-  const debouncedIncomeSearchTerm = useDebouncedValue(incomeSearchTerm, 300);
+  const searchDebounceMs = options?.searchDebounceMs ?? 300;
+  const debouncedExpenseSearchTerm = useDebouncedValue(expenseSearchTerm, searchDebounceMs);
+  const debouncedIncomeSearchTerm = useDebouncedValue(incomeSearchTerm, searchDebounceMs);
+  const resolvedExpenseSearchTerm =
+    searchDebounceMs <= 0 ? expenseSearchTerm : debouncedExpenseSearchTerm;
+  const resolvedIncomeSearchTerm =
+    searchDebounceMs <= 0 ? incomeSearchTerm : debouncedIncomeSearchTerm;
 
   const expenses = useMemo(() => lineItems.filter((li) => li.account_category === 'ch'), [lineItems]);
   const incomes = useMemo(() => lineItems.filter((li) => li.account_category === 'vn'), [lineItems]);
@@ -506,16 +511,16 @@ export const useFinancialData = (
   const economicGroups = useMemo(() => (options?.computeEconomic ? groupByEconomic(expenses) : []), [expenses, options?.computeEconomic]);
 
   const filteredExpenseGroups = useMemo(
-    () => filterGroups(expenseGroups, debouncedExpenseSearchTerm),
-    [expenseGroups, debouncedExpenseSearchTerm]
+    () => filterGroups(expenseGroups, resolvedExpenseSearchTerm),
+    [expenseGroups, resolvedExpenseSearchTerm]
   );
   const filteredIncomeGroups = useMemo(
-    () => filterGroups(incomeGroups, debouncedIncomeSearchTerm),
-    [incomeGroups, debouncedIncomeSearchTerm]
+    () => filterGroups(incomeGroups, resolvedIncomeSearchTerm),
+    [incomeGroups, resolvedIncomeSearchTerm]
   );
   const filteredEconomicGroups = useMemo(
-    () => filterGroups(economicGroups, debouncedExpenseSearchTerm, { subchapterCodePrefix: 'ec' }),
-    [economicGroups, debouncedExpenseSearchTerm]
+    () => filterGroups(economicGroups, resolvedExpenseSearchTerm, { subchapterCodePrefix: 'ec' }),
+    [economicGroups, resolvedExpenseSearchTerm]
   );
 
   const expenseBase = useMemo(

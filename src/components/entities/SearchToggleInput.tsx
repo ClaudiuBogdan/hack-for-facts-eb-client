@@ -14,6 +14,7 @@ interface SearchToggleInputProps {
   placeholder?: string;
   width?: number; // target width in px
   focusKey?: string;
+  debounceMs?: number;
 }
 
 export const SearchToggleInput: React.FC<SearchToggleInputProps> = ({
@@ -24,6 +25,7 @@ export const SearchToggleInput: React.FC<SearchToggleInputProps> = ({
   placeholder = t`Search...`,
   width = 160,
   focusKey = '',
+  debounceMs = 500,
 }) => {
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -40,11 +42,19 @@ export const SearchToggleInput: React.FC<SearchToggleInputProps> = ({
     enableOnFormTags: ['INPUT', 'TEXTAREA', 'SELECT'],
   });
 
-  const debouncedOnChange = useDebouncedCallback<[string]>((value) => onChange(value), 500);
+  const debouncedOnChange = useDebouncedCallback<[string]>((value) => onChange(value), debounceMs);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    debouncedOnChange(e.target.value);
+    const nextSearchTerm = e.target.value;
+
+    setSearchTerm(nextSearchTerm);
+
+    if (debounceMs <= 0) {
+      onChange(nextSearchTerm);
+      return;
+    }
+
+    debouncedOnChange(nextSearchTerm);
   };
 
   const handleClear = () => {

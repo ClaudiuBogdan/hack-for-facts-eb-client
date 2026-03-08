@@ -1271,6 +1271,9 @@ describe('ChallengeEntityAnalysisPage', () => {
         initialPath: ['51', '51.01', '51.01.03'],
       }),
     )
+    expect(getLatestGroupedLineItemsProps()).toMatchObject({
+      presetSearchTerm: 'fn:51.01.03',
+    })
   })
 
   it('switches the treemap to revenue data when the category CTA is clicked', async () => {
@@ -1325,7 +1328,11 @@ describe('ChallengeEntityAnalysisPage', () => {
       setPrimary: setPrimaryMock,
     })
 
-    renderAnalysisPage()
+    renderAnalysisPage({
+      state: {
+        treemapPath: ['51', '51.01', '51.01.03'],
+      },
+    })
 
     expect(
       screen.queryByRole('button', {
@@ -1346,6 +1353,9 @@ describe('ChallengeEntityAnalysisPage', () => {
         initialPath: [],
       }),
     )
+    expect(getLatestGroupedLineItemsProps()).toMatchObject({
+      presetSearchTerm: undefined,
+    })
   })
 
   it('shows an explanatory message instead of the treemap when income lands on economic mode', async () => {
