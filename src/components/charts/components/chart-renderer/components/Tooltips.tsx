@@ -133,11 +133,11 @@ export function CustomSeriesTooltip({
                                 <span className="font-medium text-sm text-foreground break-words">
                                     {dataPoint.series?.label}
                                 </span>
-                                <div className="flex flex-col items-end">
-                                    <span className="text-sm font-semibold">
+                                <div className="flex flex-col items-end flex-shrink-0 text-right">
+                                    <span className="text-sm font-semibold whitespace-nowrap">
                                         {primaryDisplayValue}
                                     </span>
-                                    <span className="text-xs text-muted-foreground">
+                                    <span className="text-xs text-muted-foreground whitespace-nowrap">
                                         {secondaryDisplayValue}
                                     </span>
                                 </div>

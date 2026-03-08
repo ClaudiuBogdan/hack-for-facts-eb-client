@@ -88,6 +88,7 @@ function toPageState(
     activeView: searchState.view,
     treemapAccountCategory: searchState.treemap_account,
     treemapPrimary: searchState.treemap_primary,
+    treemapDepth: searchState.treemap_depth,
     treemapPath: searchState.treemap_path?.split(',').filter(Boolean) ?? [],
     evolutionAccountCategory: searchState.evolution_account,
     evolutionPrimary: searchState.evolution_primary,
@@ -229,8 +230,14 @@ export function PrimarieEntityRoutePage() {
         searchPatch.treemap_primary = patch.treemapPrimary
       }
 
+      if (patch.treemapDepth !== undefined) {
+        searchPatch.treemap_depth = patch.treemapDepth
+      }
+
       if (patch.treemapPath !== undefined) {
         searchPatch.treemap_path = encodeChallengeTreemapPath(patch.treemapPath)
+      } else if (patch.treemapDepth !== undefined) {
+        searchPatch.treemap_path = undefined
       }
 
       if (patch.evolutionAccountCategory !== undefined) {

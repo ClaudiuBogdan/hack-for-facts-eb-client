@@ -1,10 +1,33 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ExecutionLineItem } from '@/lib/api/entities'
+
+const { getEconomicClassificationNameMock } = vi.hoisted(() => ({
+  getEconomicClassificationNameMock: vi.fn<
+    (code: string) => string | undefined
+  >(),
+}))
+
+vi.mock('@/lib/economic-classifications', async () => {
+  const actual =
+    await vi.importActual<typeof import('@/lib/economic-classifications')>(
+      '@/lib/economic-classifications',
+    )
+
+  return {
+    ...actual,
+    getEconomicClassificationName: (code: string) =>
+      getEconomicClassificationNameMock(code) ??
+      actual.getEconomicClassificationName(code),
+  }
+})
+
 import { ChallengeEntityGroupedLineItems } from './challenge-entity-grouped-line-items'
 
 const useFinancialDataMock = vi.fn()
 const groupedItemsDisplayMock = vi.fn()
+const groupedSubchapterAccordionMock = vi.fn()
+const groupedFunctionalAccordionMock = vi.fn()
 const searchToggleInputMock = vi.fn()
 
 vi.mock('@/hooks/useFinancialData', () => ({
@@ -32,6 +55,28 @@ vi.mock('@/components/entities/FinancialDataCard', () => ({
     return (
       <div data-testid="grouped-items-display">
         {`${props.subchapterCodePrefix}:${props.baseTotal}:${props.groups.length}`}
+      </div>
+    )
+  },
+}))
+
+vi.mock('@/components/entities/GroupedSubchapterAccordion', () => ({
+  default: (props: any) => {
+    groupedSubchapterAccordionMock(props)
+    return (
+      <div data-testid="grouped-subchapter-accordion">
+        {`${props.codePrefix}:${props.sub.code}`}
+      </div>
+    )
+  },
+}))
+
+vi.mock('@/components/entities/GroupedFunctionalAccordion', () => ({
+  default: (props: any) => {
+    groupedFunctionalAccordionMock(props)
+    return (
+      <div data-testid="grouped-functional-accordion">
+        {`fn:${props.func.code}`}
       </div>
     )
   },
@@ -77,6 +122,26 @@ const incomeLineItems: ExecutionLineItem[] = [
   },
 ]
 
+const expenseParagraphLineItems: ExecutionLineItem[] = [
+  {
+    line_item_id: 'expense-paragraph-line',
+    account_category: 'ch',
+    funding_source_id: 1,
+    functionalClassification: {
+      functional_code: '65.02.01',
+      functional_name: 'Învățământ preșcolar',
+    },
+    economicClassification: {
+      economic_code: '20.01.01',
+      economic_name: 'Furnituri de birou',
+    },
+    ytd_amount: 180,
+    quarterly_amount: 180,
+    monthly_amount: 180,
+    amount: 180,
+  },
+]
+
 const financialDataResult = {
   filteredExpenseGroups: [
     {
@@ -113,6 +178,7 @@ const defaultProps = {
   lineItems: expenseLineItems,
   accountCategory: 'ch' as const,
   groupBy: 'fn' as const,
+  depth: 'chapter' as const,
   currentYear: 2025,
   normalizationOptions: {
     normalization: 'total' as const,
@@ -123,6 +189,7 @@ const defaultProps = {
 describe('ChallengeEntityGroupedLineItems', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    getEconomicClassificationNameMock.mockReset()
     useFinancialDataMock.mockReturnValue({
       expenseSearchTerm: '',
       onExpenseSearchChange: vi.fn(),
@@ -206,6 +273,77 @@ describe('ChallengeEntityGroupedLineItems', () => {
     )
   })
 
+  it('renders subchapter-first rows when the depth is subchapter', () => {
+    render(
+      <ChallengeEntityGroupedLineItems
+        {...defaultProps}
+        lineItems={expenseParagraphLineItems}
+        depth="subchapter"
+      />,
+    )
+
+    expect(groupedItemsDisplayMock).not.toHaveBeenCalled()
+    expect(groupedSubchapterAccordionMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        codePrefix: 'fn',
+        sub: expect.objectContaining({
+          code: '65.02',
+          functionals: [
+            expect.objectContaining({
+              code: '65.02.01',
+            }),
+          ],
+        }),
+      }),
+    )
+    expect(screen.getByTestId('grouped-subchapter-accordion')).toHaveTextContent(
+      'fn:65.02',
+    )
+  })
+
+  it('does not keep economic-only matches in subchapter mode', () => {
+    render(
+      <ChallengeEntityGroupedLineItems
+        {...defaultProps}
+        lineItems={expenseParagraphLineItems}
+        depth="subchapter"
+        presetSearchTerm="ec:20.01.01"
+      />,
+    )
+
+    expect(groupedSubchapterAccordionMock).not.toHaveBeenCalled()
+    expect(
+      screen.getByText('No results for "ec:20.01.01"'),
+    ).toBeInTheDocument()
+  })
+
+  it('renders paragraph rows when the depth is paragraph in functional mode', () => {
+    render(
+      <ChallengeEntityGroupedLineItems
+        {...defaultProps}
+        lineItems={expenseParagraphLineItems}
+        depth="paragraph"
+      />,
+    )
+
+    expect(groupedItemsDisplayMock).not.toHaveBeenCalled()
+    expect(groupedFunctionalAccordionMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        func: expect.objectContaining({
+          code: '65.02.01',
+          economics: [
+            expect.objectContaining({
+              code: '20.01.01',
+            }),
+          ],
+        }),
+      }),
+    )
+    expect(screen.getByTestId('grouped-functional-accordion')).toHaveTextContent(
+      'fn:65.02.01',
+    )
+  })
+
   it('uses economic groups when the subsection is in economic mode', () => {
     render(
       <ChallengeEntityGroupedLineItems
@@ -233,6 +371,40 @@ describe('ChallengeEntityGroupedLineItems', () => {
     )
     expect(screen.getByTestId('search-toggle-input')).toHaveTextContent(
       'search::false:mod+j',
+    )
+  })
+
+  it('renders economic paragraph rows through the subchapter renderer', () => {
+    getEconomicClassificationNameMock.mockImplementation((code) =>
+      code === '20.01.01' ? 'Static economic label' : undefined,
+    )
+
+    render(
+      <ChallengeEntityGroupedLineItems
+        {...defaultProps}
+        lineItems={expenseParagraphLineItems}
+        groupBy="ec"
+        depth="paragraph"
+      />,
+    )
+
+    expect(groupedItemsDisplayMock).not.toHaveBeenCalled()
+    expect(groupedSubchapterAccordionMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        codePrefix: 'ec',
+        sub: expect.objectContaining({
+          code: '20.01.01',
+          name: 'Furnituri de birou',
+          functionals: [
+            expect.objectContaining({
+              code: '65.02.01',
+            }),
+          ],
+        }),
+      }),
+    )
+    expect(screen.getByTestId('grouped-subchapter-accordion')).toHaveTextContent(
+      'ec:20.01.01',
     )
   })
 

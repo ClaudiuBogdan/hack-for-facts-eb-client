@@ -65,18 +65,21 @@ const GroupedSubchapterAccordion: React.FC<GroupedSubchapterAccordionProps> = ({
 
     if (singleZeroChild || singleSameDescriptionChild) {
         // Render as a single non-accordion row to avoid duplicating the same item
-        const fnCode = sub.functionals[0].code;
-        const fnName = sub.name;
+        const childFunctionalCode = sub.functionals[0].code;
+        const collapsedCode = codePrefix === 'ec' ? sub.code : childFunctionalCode;
+        const collapsedLabel = sub.name;
+        const collapsedClassificationType = codePrefix === 'ec' ? 'economic' : 'functional';
+
         return (
             <div className="group border-b py-2 px-3 sm:px-4">
                 <div className={GROUPED_ROW_CONTENT_CLASS_NAME}>
                     <div className={GROUPED_LABEL_BLOCK_CLASS_NAME}>
                         <div className={GROUPED_LABEL_ROW_CLASS_NAME}>
-                            <span className={GROUPED_CODE_CLASS_NAME}>{highlightText(`${codePrefix}:${fnCode}`, searchTerm)}</span>
-                            <span className={GROUPED_ITEM_LABEL_CLASS_NAME}>{highlightText(fnName, searchTerm)}</span>
+                            <span className={GROUPED_CODE_CLASS_NAME}>{highlightText(`${codePrefix}:${collapsedCode}`, searchTerm)}</span>
+                            <span className={GROUPED_ITEM_LABEL_CLASS_NAME}>{highlightText(collapsedLabel, searchTerm)}</span>
                             <ClassificationInfoLink
-                                type={codePrefix === 'ec' ? 'economic' : 'functional'}
-                                code={fnCode}
+                                type={collapsedClassificationType}
+                                code={collapsedCode}
                                 className={GROUPED_INFO_LINK_CLASS_NAME}
                                 showOnHoverOnly={false}
                                 menuActions={
@@ -88,17 +91,11 @@ const GroupedSubchapterAccordion: React.FC<GroupedSubchapterAccordionProps> = ({
                                                 onSelect: () =>
                                                     onAnalyticsRequest(
                                                         buildGroupedItemAnalyticsRequest({
-                                                            subjectLabel: fnName,
-                                                            selection:
-                                                                codePrefix === 'ec'
-                                                                    ? {
-                                                                        ...subchapterSelection,
-                                                                        functionalCode: fnCode,
-                                                                    }
-                                                                    : {
-                                                                        ...subchapterSelection,
-                                                                        functionalCode: fnCode,
-                                                                    },
+                                                            subjectLabel: collapsedLabel,
+                                                            selection: {
+                                                                ...subchapterSelection,
+                                                                functionalCode: childFunctionalCode,
+                                                            },
                                                             pathOrder: analyticsPathOrder,
                                                         }),
                                                     ),
@@ -122,7 +119,11 @@ const GroupedSubchapterAccordion: React.FC<GroupedSubchapterAccordionProps> = ({
     }
 
     return (
-        <Accordion type="single" collapsible>
+        <Accordion
+            type="single"
+            collapsible
+            {...(searchTerm ? { defaultValue: sub.code } : {})}
+        >
             <AccordionItem value={sub.code}>
                 <AccordionTrigger className="group items-start gap-3 py-2 px-3 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 sm:px-4 [&[data-state=open]]:bg-slate-100 dark:[&[data-state=open]]:bg-slate-700 [&>svg]:mt-0.5">
                     <div className={GROUPED_TRIGGER_CONTENT_CLASS_NAME}>

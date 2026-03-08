@@ -78,6 +78,7 @@ import { DeferredSectionGate } from './challenge-entity-deferred-section-gate'
 import type {
   ChallengeEntityAnalysisCommitmentsDetailLevel,
   ChallengeEntityAnalysisCommitmentsGrouping,
+  ChallengeEntityAnalysisTreemapDepth,
   ChallengeEntityAnalysisView,
 } from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
 
@@ -115,6 +116,7 @@ export type ChallengeEntityAnalysisPageState = {
   readonly activeView: ChallengeEntityAnalysisView
   readonly treemapAccountCategory: ChallengeTreemapAccountCategory
   readonly treemapPrimary: 'fn' | 'ec'
+  readonly treemapDepth: ChallengeEntityAnalysisTreemapDepth
   readonly treemapPath: readonly string[]
   readonly evolutionAccountCategory: ChallengeTreemapAccountCategory
   readonly evolutionPrimary: 'fn' | 'ec'
@@ -288,6 +290,10 @@ const MAP_PREVIEW_MISC_COPY = {
     revenueWithoutEconomicCode: 'Veniturile nu au cod economic.',
     showMapPreviewOptions: 'Arată opțiunile hărții',
     hideMapPreviewOptions: 'Ascunde opțiunile hărții',
+    detailLevel: 'Nivel de detaliu',
+    chapter: 'Capitol',
+    subchapter: 'Subcapitol',
+    paragraph: 'Paragraf',
     spendingDistribution: 'Distribuția Cheltuielilor',
     revenueDistribution: 'Distribuția Veniturilor',
     spendingGrouped: 'Cum s-au cheltuit banii',
@@ -309,6 +315,10 @@ const MAP_PREVIEW_MISC_COPY = {
     revenueWithoutEconomicCode: 'Revenue has no economic code.',
     showMapPreviewOptions: 'Show map preview options',
     hideMapPreviewOptions: 'Hide map preview options',
+    detailLevel: 'Detail level',
+    chapter: 'Chapter',
+    subchapter: 'Subchapter',
+    paragraph: 'Paragraph',
     spendingDistribution: 'Spending breakdown',
     revenueDistribution: 'Revenue breakdown',
     spendingGrouped: 'How the money was spent',
@@ -588,6 +598,20 @@ function getNormalizationCtaLabel(
     : 'Arată total'
 }
 
+function getNextTreemapDepth(
+  depth: ChallengeEntityAnalysisTreemapDepth,
+): ChallengeEntityAnalysisTreemapDepth {
+  switch (depth) {
+    case 'chapter':
+      return 'subchapter'
+    case 'subchapter':
+      return 'paragraph'
+    case 'paragraph':
+    default:
+      return 'chapter'
+  }
+}
+
 function arePublicMapViewportsEqual(
   firstViewport: PublicMapViewport | undefined,
   secondViewport: PublicMapViewport | undefined,
@@ -714,6 +738,7 @@ export function ChallengeEntityAnalysisPage({
     activeView,
     treemapAccountCategory,
     treemapPrimary,
+    treemapDepth,
     treemapPath,
     evolutionAccountCategory,
     evolutionPrimary,
@@ -928,7 +953,12 @@ export function ChallengeEntityAnalysisPage({
     nodes: treemapNodes,
     initialPrimary: treemapPrimary,
     initialPath: [...treemapPath],
-    rootDepth: 2,
+    rootDepth:
+      treemapDepth === 'paragraph'
+        ? 6
+        : treemapDepth === 'subchapter'
+          ? 4
+          : 2,
     excludeEcCodes: treemapExcludeEconomicCodes,
     excludeFnCodes: treemapExcludeFunctionalCodes,
     onPathChange: (path) => onStateChange({ treemapPath: path }),
@@ -1327,6 +1357,23 @@ export function ChallengeEntityAnalysisPage({
     })
   }
 
+  const handleTreemapDepthChange = (
+    nextDepth: ChallengeEntityAnalysisTreemapDepth,
+  ) => {
+    if (nextDepth === treemapDepth) {
+      return
+    }
+
+    onStateChange({
+      treemapDepth: nextDepth,
+      treemapPath: [],
+    })
+  }
+
+  const handleTreemapDepthToggle = () => {
+    handleTreemapDepthChange(getNextTreemapDepth(treemapDepth))
+  }
+
   const handleAdministrativeExpensesShortcut = () => {
     onStateChange({
       treemapAccountCategory: 'ch',
@@ -1539,6 +1586,13 @@ export function ChallengeEntityAnalysisPage({
     treemapAccountCategory,
     activePrimary,
   )
+  const treemapDepthLabel =
+    treemapDepth === 'chapter'
+      ? pageCopy.chapter
+      : treemapDepth === 'subchapter'
+        ? pageCopy.subchapter
+        : pageCopy.paragraph
+  const treemapDepthCtaLabel = `${pageCopy.detailLevel}: ${treemapDepthLabel}`
   const groupedLineItemsAccountTitle =
     treemapAccountCategory === 'vn'
       ? getLocalizedMapPreviewLabel('income', languageQuery)
@@ -1840,6 +1894,15 @@ export function ChallengeEntityAnalysisPage({
                         {pageCopy.showAdministrativeSpending}
                       </Button>
                     )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                      onClick={handleTreemapDepthToggle}
+                    >
+                      {treemapDepthCtaLabel}
+                    </Button>
                   </div>
 
                   <ChallengeEntityGroupedLineItems
@@ -1847,6 +1910,7 @@ export function ChallengeEntityAnalysisPage({
                     lineItems={groupedLineItems}
                     accountCategory={treemapAccountCategory}
                     groupBy={treemapPrimary}
+                    depth={treemapDepth}
                     currentYear={selectedYear}
                     normalizationOptions={displayNormalizationOptions}
                     presetSearchTerm={groupedLineItemsPresetSearchTerm}

@@ -58,6 +58,14 @@ export const ChallengeEntityAnalysisAccountCategorySchema = z.enum(['ch', 'vn'])
 
 export const ChallengeEntityAnalysisPrimarySchema = z.enum(['fn', 'ec'])
 
+export const CHALLENGE_ENTITY_ANALYSIS_TREEMAP_DEPTH_VALUES = [
+  'chapter',
+  'subchapter',
+  'paragraph',
+] as const
+export type ChallengeEntityAnalysisTreemapDepth =
+  (typeof CHALLENGE_ENTITY_ANALYSIS_TREEMAP_DEPTH_VALUES)[number]
+
 export const ChallengeEntityAnalysisNormalizationSchema = z.enum([
   'total',
   'per_capita',
@@ -105,6 +113,7 @@ export const ChallengeEntityAnalysisRouteSearchSchema = z.object({
   normalization: ChallengeEntityAnalysisNormalizationSchema.optional(),
   treemap_account: ChallengeEntityAnalysisAccountCategorySchema.optional(),
   treemap_primary: ChallengeEntityAnalysisPrimarySchema.optional(),
+  treemap_depth: z.string().optional(),
   treemap_path: z.string().optional(),
   evolution_account: ChallengeEntityAnalysisAccountCategorySchema.optional(),
   evolution_primary: ChallengeEntityAnalysisPrimarySchema.optional(),
@@ -139,6 +148,7 @@ export type ChallengeEntityAnalysisUrlState = {
   readonly view: ChallengeEntityAnalysisView
   readonly treemap_account: 'ch' | 'vn'
   readonly treemap_primary: 'fn' | 'ec'
+  readonly treemap_depth: ChallengeEntityAnalysisTreemapDepth
   readonly treemap_path?: string
   readonly evolution_account: 'ch' | 'vn'
   readonly evolution_primary: 'fn' | 'ec'
@@ -154,6 +164,9 @@ const CHALLENGE_ENTITY_COMMITMENTS_GROUPING_SET = new Set(
 )
 const CHALLENGE_ENTITY_COMMITMENTS_DETAIL_LEVEL_SET = new Set(
   CHALLENGE_ENTITY_ANALYSIS_COMMITMENTS_DETAIL_LEVEL_VALUES,
+)
+const CHALLENGE_ENTITY_TREEMAP_DEPTH_SET = new Set(
+  CHALLENGE_ENTITY_ANALYSIS_TREEMAP_DEPTH_VALUES,
 )
 
 function normalizePathCode(code: string): string {
@@ -225,6 +238,21 @@ function normalizeCommitmentsDetailLevel(
   }
 
   return undefined
+}
+
+function normalizeTreemapDepth(
+  depth: string | undefined,
+): ChallengeEntityAnalysisTreemapDepth {
+  if (
+    depth &&
+    CHALLENGE_ENTITY_TREEMAP_DEPTH_SET.has(
+      depth as ChallengeEntityAnalysisTreemapDepth,
+    )
+  ) {
+    return depth as ChallengeEntityAnalysisTreemapDepth
+  }
+
+  return 'chapter'
 }
 
 export function decodeChallengeTreemapPath(
@@ -311,6 +339,7 @@ export function normalizeChallengeEntityAnalysisSearch(
       treemapAccountCategory === 'vn'
         ? 'fn'
         : (search?.treemap_primary ?? 'fn'),
+    treemap_depth: normalizeTreemapDepth(search?.treemap_depth),
     treemap_path: encodeChallengeTreemapPath(
       decodeChallengeTreemapPath(search?.treemap_path),
     ),
@@ -364,6 +393,10 @@ export function buildChallengeEntityAnalysisCanonicalSearchPatch(
 
   if (search?.treemap_primary !== normalizedSearch.treemap_primary) {
     patch.treemap_primary = normalizedSearch.treemap_primary
+  }
+
+  if ((search?.treemap_depth ?? undefined) !== normalizedSearch.treemap_depth) {
+    patch.treemap_depth = normalizedSearch.treemap_depth
   }
 
   if ((search?.treemap_path ?? undefined) !== normalizedSearch.treemap_path) {

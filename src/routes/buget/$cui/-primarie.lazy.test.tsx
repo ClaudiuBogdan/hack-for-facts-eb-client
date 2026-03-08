@@ -60,7 +60,7 @@ vi.mock(
       <div data-testid="analysis-page">
         {entityCui}:{languageQuery ?? 'ro'}:{state.selectedYear}:
         {state.reportType}:{state.activeView}:{state.treemapAccountCategory}:{state.treemapPrimary}:
-        {state.treemapPath.join('|')}:{state.evolutionAccountCategory}:
+        {state.treemapDepth}:{state.treemapPath.join('|')}:{state.evolutionAccountCategory}:
         {state.evolutionPrimary}:{state.mapPreviewKey}:
         {JSON.stringify(analyticsTarget ?? null)}:
         {commitmentsGrouping ?? 'none'}:{commitmentsDetailLevel ?? 'none'}:
@@ -90,6 +90,16 @@ vi.mock(
           }
         >
           Change view
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            onStateChange?.({
+              treemapDepth: 'subchapter',
+            })
+          }
+        >
+          Change treemap depth
         </button>
         <button
           type="button"
@@ -168,7 +178,7 @@ describe('PrimarieEntityRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      `87654321:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:fn::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:null:none:none:RON:false`,
+      `87654321:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:fn:chapter::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:null:none:none:RON:false`,
     )
   })
 
@@ -203,7 +213,7 @@ describe('PrimarieEntityRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      `12345678:en:2024:DETAILED:main-info:vn:fn:51|51.01:vn:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:{"target":{"subjectLabel":"Education salaries","path":[{"type":"fn","code":"65.02"},{"type":"ec","code":"10.01"}]},"view":{"tab":"execution","timeframe":"selected","commitmentsMetric":"CREDITE_ANGAJAMENT"}}:none:none:RON:false`,
+      `12345678:en:2024:DETAILED:main-info:vn:fn:chapter:51|51.01:vn:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:{"target":{"subjectLabel":"Education salaries","path":[{"type":"fn","code":"65.02"},{"type":"ec","code":"10.01"}]},"view":{"tab":"execution","timeframe":"selected","commitmentsMetric":"CREDITE_ANGAJAMENT"}}:none:none:RON:false`,
     )
 
     await waitFor(() => {
@@ -248,7 +258,7 @@ describe('PrimarieEntityRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      '12345678:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:fn::ch:fn:local-taxes:null:none:none:RON:false',
+      '12345678:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:fn:chapter::ch:fn:local-taxes:null:none:none:RON:false',
     )
 
     await waitFor(() => {
@@ -305,6 +315,7 @@ describe('PrimarieEntityRoutePage', () => {
       year: 2025,
       treemap_account: 'ch',
       treemap_primary: 'fn',
+      treemap_depth: 'chapter',
       evolution_account: 'ch',
       evolution_primary: 'fn',
       public_map: DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
@@ -334,10 +345,45 @@ describe('PrimarieEntityRoutePage', () => {
       view: 'main-info',
       year: 2023,
       treemap_path: '51,51.01.03',
+      treemap_depth: 'chapter',
       public_map: 'local-taxes',
       insDataset: 'POP107D',
       insRoot: 'population',
     })
+  })
+
+  it('writes treemap depth changes back into the URL search and resets the path', async () => {
+    mockedSearch = {
+      view: 'main-info',
+      treemap_account: 'ch',
+      treemap_primary: 'fn',
+      treemap_depth: 'chapter',
+      treemap_path: '51,51.01.03',
+    }
+
+    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+
+    render(<PrimarieEntityRoutePage />)
+
+    navigateMock.mockClear()
+    fireEvent.click(screen.getByRole('button', { name: 'Change treemap depth' }))
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalled()
+    })
+
+    const updateCall = navigateMock.mock.calls[0]?.[0]
+    const nextSearch = updateCall.search(mockedSearch)
+
+    expect(updateCall.replace).toBe(true)
+    expect(updateCall.resetScroll).toBe(false)
+    expect(nextSearch).toMatchObject({
+      view: 'main-info',
+      treemap_account: 'ch',
+      treemap_primary: 'fn',
+      treemap_depth: 'subchapter',
+    })
+    expect(nextSearch).not.toHaveProperty('treemap_path')
   })
 
   it('pushes history and resets scroll when the active view changes', async () => {

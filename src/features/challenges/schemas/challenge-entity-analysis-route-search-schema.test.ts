@@ -83,6 +83,20 @@ describe('challenge entity analytics search normalization', () => {
     ).toBeUndefined()
   })
 
+  it('defaults invalid treemap depth values to chapter', () => {
+    expect(
+      normalizeChallengeEntityAnalysisSearch({
+        treemap_depth: 'invalid-depth',
+      } as any).treemap_depth,
+    ).toBe('chapter')
+
+    expect(
+      normalizeChallengeEntityAnalysisSearch({
+        treemap_depth: 'paragraph',
+      }).treemap_depth,
+    ).toBe('paragraph')
+  })
+
   it('canonicalizes analytics targets and defaults the view in the route patch builder', () => {
     const rawSearch = {
       analytics: {
@@ -116,6 +130,20 @@ describe('challenge entity analytics search normalization', () => {
           commitmentsMetric: 'CREDITE_ANGAJAMENT',
         },
       },
+    })
+  })
+
+  it('canonicalizes treemap depth in the route patch builder', () => {
+    const rawSearch = {
+      treemap_depth: 'invalid-depth',
+    } as any
+
+    const normalizedSearch = normalizeChallengeEntityAnalysisSearch(rawSearch)
+
+    expect(
+      buildChallengeEntityAnalysisCanonicalSearchPatch(rawSearch, normalizedSearch),
+    ).toMatchObject({
+      treemap_depth: 'chapter',
     })
   })
 })

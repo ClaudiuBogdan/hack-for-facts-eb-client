@@ -117,14 +117,14 @@ describe('GroupedSubchapterAccordion', () => {
     })
   })
 
-  it('preserves the parent economic code in the collapsed single-child analytics path', () => {
+  it('keeps the economic paragraph label paired with the economic code in collapsed rows', () => {
     const onAnalyticsRequest = vi.fn()
 
     render(
       <GroupedSubchapterAccordion
         sub={{
-          code: '10.01',
-          name: 'Cheltuieli de personal',
+          code: '10.01.01',
+          name: 'Salarii de bază',
           totalAmount: 52_000_000,
           functionals: [
             {
@@ -142,18 +142,22 @@ describe('GroupedSubchapterAccordion', () => {
       />,
     )
 
+    expect(screen.getByText('ec:10.01.01')).toBeInTheDocument()
+    expect(screen.queryByText('ec:65.02.00')).not.toBeInTheDocument()
+
     const collapsedInfoLinkProps = classificationInfoLinkMock.mock.calls
       .map(([props]) => props)
-      .find((props) => props.code === '65.02.00')
+      .find((props) => props.code === '10.01.01')
 
     expect(collapsedInfoLinkProps?.menuActions).toHaveLength(1)
+    expect(collapsedInfoLinkProps?.type).toBe('economic')
 
     collapsedInfoLinkProps?.menuActions?.[0]?.onSelect()
 
     expect(onAnalyticsRequest).toHaveBeenCalledWith({
-      subjectLabel: 'Cheltuieli de personal',
+      subjectLabel: 'Salarii de bază',
       path: [
-        { type: 'ec', code: '10.01' },
+        { type: 'ec', code: '10.01.01' },
         { type: 'fn', code: '65.02' },
       ],
     })

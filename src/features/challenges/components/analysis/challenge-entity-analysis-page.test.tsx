@@ -196,7 +196,7 @@ vi.mock('./challenge-entity-grouped-line-items', () => ({
     challengeGroupedLineItemsMock(props)
     return (
       <div data-testid="challenge-grouped-line-items">
-        {`Grouped:${props.accountTitle}:${props.accountCategory}:${props.groupBy}:${props.lineItems.length}`}
+        {`Grouped:${props.accountTitle}:${props.accountCategory}:${props.groupBy}:${props.depth}:${props.lineItems.length}`}
       </div>
     )
   },
@@ -547,6 +547,7 @@ const DEFAULT_PAGE_STATE: ChallengeEntityAnalysisPageState = {
   activeView: 'main-info',
   treemapAccountCategory: 'ch',
   treemapPrimary: 'fn',
+  treemapDepth: 'chapter',
   treemapPath: [],
   evolutionAccountCategory: 'ch',
   evolutionPrimary: 'fn',
@@ -818,7 +819,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     ).toHaveLength(2)
     expect(screen.getByTestId('budget-treemap')).toHaveTextContent('fn')
     expect(screen.getByTestId('challenge-grouped-line-items')).toHaveTextContent(
-      'Grouped:Cheltuieli:ch:fn:1',
+      'Grouped:Cheltuieli:ch:fn:chapter:1',
     )
     expect(
       screen.getByTestId('budget-treemap').compareDocumentPosition(
@@ -1553,6 +1554,7 @@ describe('ChallengeEntityAnalysisPage', () => {
       expect.objectContaining({
         initialPrimary: 'fn',
         initialPath: [],
+        rootDepth: 2,
         nodes: [
           expect.objectContaining({
             fn_c: '65.02',
@@ -1563,6 +1565,50 @@ describe('ChallengeEntityAnalysisPage', () => {
       }),
     )
     expect(useTreemapDrilldownMock.mock.calls[0]?.[0]?.nodes).toHaveLength(1)
+    expect(getLatestGroupedLineItemsProps()).toMatchObject({
+      depth: 'chapter',
+    })
+  })
+
+  it('updates the treemap root depth and grouped list depth when the detail level changes', async () => {
+    renderAnalysisPage()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Nivel de detaliu: Capitol' }),
+    )
+
+    await waitFor(() => {
+      expect(useTreemapDrilldownMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          rootDepth: 4,
+          initialPath: [],
+        }),
+      )
+    })
+
+    expect(getLatestGroupedLineItemsProps()).toMatchObject({
+      depth: 'subchapter',
+    })
+    expect(
+      screen.getByRole('button', { name: 'Nivel de detaliu: Subcapitol' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Nivel de detaliu: Subcapitol' }),
+    )
+
+    await waitFor(() => {
+      expect(useTreemapDrilldownMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          rootDepth: 6,
+          initialPath: [],
+        }),
+      )
+    })
+
+    expect(getLatestGroupedLineItemsProps()).toMatchObject({
+      depth: 'paragraph',
+    })
   })
 
   it('passes the grouped subsection the top-level treemap state instead of the drilled active primary', () => {
