@@ -1,7 +1,43 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import {
+  cloneElement,
+  isValidElement,
+  type HTMLAttributes,
+  type PropsWithChildren,
+  type ReactNode,
+  type SVGProps,
+} from 'react'
+import { within } from '@testing-library/react'
 import { render, screen, fireEvent } from '@/test/test-utils'
 import { BudgetTreemap } from './BudgetTreemap'
 import type { TreemapInput, ExcludedItemsSummary } from './budget-transform'
+import { formatValueWithUnit, getNormalizationUnit } from '@/lib/utils'
+
+const { mockI18n, rechartsState } = vi.hoisted(() => {
+  const i18n = {
+    locale: 'en',
+    _: (message: string | { id: string }) => {
+      const id = typeof message === 'string' ? message : message.id
+
+      if (id === '/capita') {
+        return i18n.locale === 'ro' ? '/locuitor' : '/capita'
+      }
+
+      if (id === '% of GDP') {
+        return i18n.locale === 'ro' ? '% din PIB' : '% of GDP'
+      }
+
+      return id
+    },
+  }
+
+  return {
+    mockI18n: i18n,
+    rechartsState: {
+      latestData: [] as Array<Record<string, unknown>>,
+    },
+  }
+})
 
 // ============================================================================
 // MOCKS
@@ -11,7 +47,7 @@ import type { TreemapInput, ExcludedItemsSummary } from './budget-transform'
 const mockNavigate = vi.fn()
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => mockNavigate,
-  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
+  Link: ({ children, to }: { children: ReactNode; to: string }) => (
     <a href={to}>{children}</a>
   ),
 }))
@@ -40,20 +76,20 @@ vi.mock('@/lib/chart-links', () => ({
   })),
 }))
 
-// Mock motion/react to render static elements (skip animations)
-vi.mock('motion/react', () => ({
+// Mock framer-motion to render static elements (skip animations)
+vi.mock('framer-motion', () => ({
   motion: {
-    g: ({ children, ...props }: React.PropsWithChildren<React.SVGProps<SVGGElement>>) => (
+    g: ({ children, ...props }: PropsWithChildren<SVGProps<SVGGElement>>) => (
       <g {...props}>{children}</g>
     ),
-    rect: (props: React.SVGProps<SVGRectElement>) => <rect {...props} />,
-    text: ({ children, ...props }: React.PropsWithChildren<React.SVGProps<SVGTextElement>>) => (
+    rect: (props: SVGProps<SVGRectElement>) => <rect {...props} />,
+    text: ({ children, ...props }: PropsWithChildren<SVGProps<SVGTextElement>>) => (
       <text {...props}>{children}</text>
     ),
-    foreignObject: ({ children, ...props }: React.PropsWithChildren<React.SVGProps<SVGForeignObjectElement>>) => (
+    foreignObject: ({ children, ...props }: PropsWithChildren<SVGProps<SVGForeignObjectElement>>) => (
       <foreignObject {...props}>{children}</foreignObject>
     ),
-    div: ({ children, ...props }: React.PropsWithChildren<React.HTMLAttributes<HTMLDivElement>>) => (
+    div: ({ children, ...props }: PropsWithChildren<HTMLAttributes<HTMLDivElement>>) => (
       <div {...props}>{children}</div>
     ),
   },
@@ -65,7 +101,7 @@ vi.mock('motion/react', () => ({
 
 // Mock Lingui Trans component
 vi.mock('@lingui/react/macro', () => ({
-  Trans: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  Trans: ({ children }: { children: ReactNode }) => <>{children}</>,
 }))
 
 // Mock Lingui core macro - include all exports used by dependencies
@@ -78,15 +114,12 @@ vi.mock('@lingui/core/macro', () => ({
 
 // Mock Lingui core - for i18n usage
 vi.mock('@lingui/core', () => ({
-  i18n: {
-    _: (message: string | { id: string }) => 
-      typeof message === 'string' ? message : message.id,
-  },
+  i18n: mockI18n,
 }))
 
 // Mock recharts components
 vi.mock('recharts', () => ({
-  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+  ResponsiveContainer: ({ children }: { children: ReactNode }) => (
     <div data-testid="responsive-container">{children}</div>
   ),
   Treemap: ({
@@ -95,63 +128,98 @@ vi.mock('recharts', () => ({
     onClick,
     content,
   }: {
-    children?: React.ReactNode
+    children?: ReactNode
     data: TreemapInput[]
     onClick?: (event: unknown) => void
-    content?: (props: unknown) => React.ReactNode
-  }) => (
-    <svg data-testid="treemap">
-      {data.map((item) => (
-        <g
-          key={item.code}
-          data-testid={`treemap-node-${item.code}`}
-          onClick={() => onClick?.({ code: item.code })}
-        >
-          {content?.({
-            name: item.name,
-            value: (item as unknown as { layoutValue?: number }).layoutValue ?? item.value,
-            code: item.code,
-            depth: 1,
-            x: 0,
-            y: 0,
-            width: 100,
-            height: 100,
-            fill: '#0088FE',
-            payload: {
-              ...item,
-              value: (item as unknown as { layoutValue?: number }).layoutValue ?? item.value,
-              signedValue: (item as unknown as { signedValue?: number }).signedValue ?? item.value,
+    content?: (props: unknown) => ReactNode
+  }) => {
+    rechartsState.latestData = data as Array<Record<string, unknown>>
+
+    return (
+      <svg data-testid="treemap">
+        {data.map((item) => (
+          <g
+            key={item.code}
+            data-testid={`treemap-node-${item.code}`}
+            onClick={() => onClick?.({ code: item.code })}
+          >
+            {content?.({
+              name: item.name,
+              value:
+                (item as unknown as { layoutValue?: number }).layoutValue ??
+                item.value,
+              code: item.code,
+              depth: 1,
+              x: 0,
+              y: 0,
+              width: 100,
+              height: 100,
               fill: '#0088FE',
-            },
-            root: {
-              value: data.reduce((sum, d) => sum + ((d as unknown as { layoutValue?: number }).layoutValue ?? Math.abs(d.value)), 0),
-            },
-          })}
-        </g>
-      ))}
-      {children}
-    </svg>
-  ),
-  Tooltip: () => null,
+              payload: {
+                ...item,
+                value:
+                  (item as unknown as { layoutValue?: number }).layoutValue ??
+                  item.value,
+                signedValue:
+                  (item as unknown as { signedValue?: number }).signedValue ??
+                  item.value,
+                fill: '#0088FE',
+              },
+              root: {
+                value: data.reduce(
+                  (sum, datum) =>
+                    sum +
+                    ((datum as unknown as { layoutValue?: number }).layoutValue ??
+                      Math.abs(datum.value)),
+                  0,
+                ),
+              },
+            })}
+          </g>
+        ))}
+        {children}
+      </svg>
+    )
+  },
+  Tooltip: ({ content }: { content?: ReactNode }) => {
+    const firstNode = rechartsState.latestData[0] as
+      | {
+          name: string
+          code: string
+          value: number
+          layoutValue?: number
+          signedValue?: number
+        }
+      | undefined
+
+    if (!content || !firstNode) {
+      return null
+    }
+
+    const payloadNode = {
+      ...firstNode,
+      value: firstNode.layoutValue ?? Math.abs(firstNode.value),
+      signedValue: firstNode.signedValue ?? firstNode.value,
+      fill: '#0088FE',
+    }
+    const tooltipProps = {
+      active: true,
+      payload: [{ payload: payloadNode }],
+    }
+
+    return (
+      <div data-testid="treemap-tooltip">
+        {isValidElement(content)
+          ? cloneElement(content, tooltipProps)
+          : content}
+      </div>
+    )
+  },
 }))
 
 // Mock ClassificationInfoLink
 vi.mock('@/components/common/classification-info-link', () => ({
   ClassificationInfoLink: () => null,
-}))
-
-// Mock getNormalizationUnit
-vi.mock('@/lib/utils', async (importOriginal) => {
-  const original = await importOriginal<typeof import('@/lib/utils')>()
-  return {
-    ...original,
-    getNormalizationUnit: () => 'RON',
-  }
-})
-
-// Mock yValueFormatter
-vi.mock('@/components/charts/components/chart-renderer/utils', () => ({
-  yValueFormatter: (value: number) => `${value.toLocaleString()} RON`,
 }))
 
 // ============================================================================
@@ -190,6 +258,37 @@ const createAmountFilter = (overrides: Partial<{
   onChange: vi.fn(),
   ...overrides,
 })
+
+function formatTreemapValue(
+  value: number,
+  options: {
+    normalization?: 'total' | 'per_capita'
+    currency?: 'RON' | 'EUR' | 'USD'
+    notation?: 'standard' | 'compact'
+  } = {},
+) {
+  const unit = getNormalizationUnit({
+    normalization: options.normalization ?? 'total',
+    currency: options.currency ?? 'RON',
+  })
+
+  return formatValueWithUnit(
+    value,
+    unit,
+    options.notation ?? 'standard',
+  )
+}
+
+function normalizeTextContent(text: string) {
+  return text.replace(/\s+/gu, ' ').trim()
+}
+
+function hasExactText(expectedText: string) {
+  const normalizedExpectedText = normalizeTextContent(expectedText)
+
+  return (_content: string, element: Element | null) =>
+    normalizeTextContent(element?.textContent ?? '') === normalizedExpectedText
+}
 
 // ============================================================================
 // UTILITY FUNCTION TESTS
@@ -239,6 +338,8 @@ describe('BudgetTreemap Component', () => {
     vi.clearAllMocks()
     mockUseIsMobile.mockReturnValue(false)
     mockNavigate.mockClear()
+    mockI18n.locale = 'en'
+    rechartsState.latestData = []
   })
 
   describe('Basic Rendering', () => {
@@ -274,14 +375,17 @@ describe('BudgetTreemap Component', () => {
 
     it('should render total value display', () => {
       const data = createMockTreemapData(3)
+      const totalCompact = formatTreemapValue(6000000, {
+        notation: 'compact',
+      })
+      const totalStandard = formatTreemapValue(6000000)
 
       render(<BudgetTreemap data={data} primary="fn" />)
 
-      // Check for "Total" label - it's combined with ": " so use a text matcher
-      expect(screen.getByText(/Total/)).toBeInTheDocument()
-      // Check that the formatted total value is displayed (appears in compact and standard formats)
-      const totalValues = screen.getAllByText('6,000,000 RON')
-      expect(totalValues.length).toBeGreaterThanOrEqual(1)
+      expect(
+        screen.getByText(hasExactText(`Total: ${totalCompact}`)),
+      ).toBeInTheDocument()
+      expect(screen.getAllByText(hasExactText(totalStandard)).length).toBeGreaterThanOrEqual(1)
     })
 
     it('should keep negative values visible and include them in signed total', () => {
@@ -289,13 +393,23 @@ describe('BudgetTreemap Component', () => {
         { name: 'Negative Category', value: -1000000, code: 'neg', isLeaf: true, children: [] },
         { name: 'Positive Category', value: 200000, code: 'pos', isLeaf: true, children: [] },
       ]
+      const nodeValue = formatTreemapValue(-1000000, {
+        notation: 'compact',
+      })
+      const totalValue = formatTreemapValue(-800000, {
+        notation: 'standard',
+      })
 
       render(<BudgetTreemap data={data} primary="fn" />)
 
       expect(screen.getByTestId('treemap-node-neg')).toBeInTheDocument()
       expect(screen.getByTestId('treemap-node-pos')).toBeInTheDocument()
-      expect(screen.getByText('-1,000,000 RON')).toBeInTheDocument()
-      expect(screen.getAllByText('-800,000 RON').length).toBeGreaterThanOrEqual(1)
+      expect(
+        within(screen.getByTestId('treemap-node-neg')).getByText(
+          hasExactText(nodeValue),
+        ),
+      ).toBeInTheDocument()
+      expect(screen.getAllByText(hasExactText(totalValue)).length).toBeGreaterThanOrEqual(1)
     })
   })
 
@@ -626,6 +740,132 @@ describe('BudgetTreemap Component', () => {
 
       // Component should render without errors
       expect(screen.getByTestId('treemap')).toBeInTheDocument()
+    })
+
+    it('updates node labels, totals, and tooltip values when switching from RON to EUR in Romanian per-capita mode', () => {
+      mockI18n.locale = 'ro'
+      const data: TreemapInput[] = [
+        {
+          name: 'Category 1',
+          value: 1167.21,
+          code: '1',
+          isLeaf: true,
+          children: [],
+        },
+      ]
+      const ronCompact = formatTreemapValue(1167.21, {
+        normalization: 'per_capita',
+        currency: 'RON',
+        notation: 'compact',
+      })
+      const ronStandard = formatTreemapValue(1167.21, {
+        normalization: 'per_capita',
+        currency: 'RON',
+        notation: 'standard',
+      })
+      const eurCompact = formatTreemapValue(1167.21, {
+        normalization: 'per_capita',
+        currency: 'EUR',
+        notation: 'compact',
+      })
+      const eurStandard = formatTreemapValue(1167.21, {
+        normalization: 'per_capita',
+        currency: 'EUR',
+        notation: 'standard',
+      })
+
+      const { rerender } = render(
+        <BudgetTreemap
+          data={data}
+          primary="fn"
+          normalization="per_capita"
+          currency="RON"
+        />,
+      )
+
+      expect(
+        within(screen.getByTestId('treemap-node-1')).getByText(hasExactText(ronCompact)),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(hasExactText(`Total: ${ronCompact}`)),
+      ).toBeInTheDocument()
+      expect(
+        within(screen.getByTestId('treemap-tooltip')).getByText(hasExactText(ronCompact)),
+      ).toBeInTheDocument()
+      expect(
+        within(screen.getByTestId('treemap-tooltip')).getByText(hasExactText(ronStandard)),
+      ).toBeInTheDocument()
+
+      rerender(
+        <BudgetTreemap
+          data={data}
+          primary="fn"
+          normalization="per_capita"
+          currency="EUR"
+        />,
+      )
+
+      expect(
+        within(screen.getByTestId('treemap-node-1')).getByText(hasExactText(eurCompact)),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(hasExactText(`Total: ${eurCompact}`)),
+      ).toBeInTheDocument()
+      expect(
+        within(screen.getByTestId('treemap-tooltip')).getByText(hasExactText(eurCompact)),
+      ).toBeInTheDocument()
+      expect(
+        within(screen.getByTestId('treemap-tooltip')).getByText(hasExactText(eurStandard)),
+      ).toBeInTheDocument()
+    })
+
+    it('keeps the English per-capita unit in sync when switching currencies', () => {
+      mockI18n.locale = 'en'
+      const data: TreemapInput[] = [
+        {
+          name: 'Category 1',
+          value: 1167.21,
+          code: '1',
+          isLeaf: true,
+          children: [],
+        },
+      ]
+      const ronCompact = formatTreemapValue(1167.21, {
+        normalization: 'per_capita',
+        currency: 'RON',
+        notation: 'compact',
+      })
+      const eurCompact = formatTreemapValue(1167.21, {
+        normalization: 'per_capita',
+        currency: 'EUR',
+        notation: 'compact',
+      })
+
+      const { rerender } = render(
+        <BudgetTreemap
+          data={data}
+          primary="fn"
+          normalization="per_capita"
+          currency="RON"
+        />,
+      )
+
+      expect(
+        within(screen.getByTestId('treemap-tooltip')).getByText(hasExactText(ronCompact)),
+      ).toBeInTheDocument()
+
+      rerender(
+        <BudgetTreemap
+          data={data}
+          primary="fn"
+          normalization="per_capita"
+          currency="EUR"
+        />,
+      )
+
+      expect(
+        within(screen.getByTestId('treemap-tooltip')).getByText(hasExactText(eurCompact)),
+      ).toBeInTheDocument()
     })
   })
 })

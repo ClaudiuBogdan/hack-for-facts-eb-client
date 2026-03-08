@@ -303,7 +303,7 @@ export const EntityFinancialSummary: React.FC<EntityFinancialSummaryProps> = (
   return (
     <section
       className={cn(
-        'mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3',
+        'mb-8 grid grid-cols-1 gap-6 md:grid-cols-3',
         density === 'compact-desktop' && 'grid-cols-3 gap-1.5 sm:gap-3 lg:mb-5 lg:gap-4',
       )}
     >

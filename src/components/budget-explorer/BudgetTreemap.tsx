@@ -93,6 +93,10 @@ type Props = {
   amountFilter?: TreemapAmountFilter
 }
 
+type BudgetTreemapViewProps = Props & {
+  unit: string
+}
+
 type TreemapNodePayload = {
   name: string
   value: number
@@ -112,8 +116,7 @@ const CustomizedContent: FC<{
   height: number
   fill: string
   root: { value: number }
-  normalization?: Normalization
-  currency?: Currency
+  unit: string
   primary?: 'fn' | 'ec'
   code?: string
   allowScaleAnimation?: boolean
@@ -121,7 +124,7 @@ const CustomizedContent: FC<{
   // Recharts passes the original datum under `payload`. We use its fill for stable coloring.
   payload?: TreemapNodePayload
 }> = (props) => {
-  const { name, value, depth, x = 0, y = 0, width = 0, height = 0, fill, root, normalization, currency, primary, allowScaleAnimation = true } = props
+  const { name, value, depth, x = 0, y = 0, width = 0, height = 0, fill, root, unit, primary, allowScaleAnimation = true } = props
   const hasAnimatedInRef = useRef(false)
   const [isHovered, setIsHovered] = useState(false)
   const code = props.code ?? props.payload?.code
@@ -143,7 +146,6 @@ const CustomizedContent: FC<{
   const magnitudeValue = Math.abs(signedValue)
   const total = root?.value ?? 0
   const percentage = total > 0 ? (magnitudeValue / total) * 100 : 0
-  const unit = getNormalizationUnit({ normalization: (normalization ?? 'total') as any, currency: currency as any })
   const displayValue = yValueFormatter(signedValue, unit, 'compact')
 
   const baseColor = '#FFFFFF'
@@ -404,7 +406,16 @@ const CustomizedContent: FC<{
   )
 }
 
-export function BudgetTreemap({
+export function BudgetTreemap(props: Props) {
+  const unit = getNormalizationUnit({
+    normalization: props.normalization ?? 'total',
+    currency: props.currency,
+  })
+
+  return <BudgetTreemapView key={unit} {...props} unit={unit} />
+}
+
+function BudgetTreemapView({
   data,
   primary,
   onNodeClick,
@@ -413,10 +424,10 @@ export function BudgetTreemap({
   onViewDetails,
   showViewDetails = false,
   normalization,
-  currency,
   chartFilterInput: filterInput,
   amountFilter,
-}: Props) {
+  unit,
+}: BudgetTreemapViewProps) {
   const isMobile = useIsMobile()
   const navigate = useNavigate()
   const [allowScaleAnimation] = useState(() => !isSafariBrowser())
@@ -514,7 +525,6 @@ export function BudgetTreemap({
     () => filteredData.reduce((acc, curr) => acc + Math.abs(Number.isFinite(curr.value) ? curr.value : 0), 0),
     [filteredData],
   )
-  const unit = getNormalizationUnit({ normalization: normalization ?? 'total', currency })
 
   // Memoize root object to prevent unnecessary re-renders
   const rootValue = useMemo(() => ({ value: totalMagnitudeValue }), [totalMagnitudeValue])
@@ -543,24 +553,22 @@ export function BudgetTreemap({
         fill={props?.payload?.fill ?? props.fill}
         root={rootValue}
         code={codeFromPayload}
-        normalization={normalization}
-        currency={currency}
+        unit={unit}
         primary={primary}
         signedValue={signedValueFromPayload ?? signedValueFromMap}
         allowScaleAnimation={allowScaleAnimation}
       />
     )
-  }, [rootValue, normalization, currency, primary, signedValueByCode, allowScaleAnimation])
+  }, [rootValue, unit, primary, signedValueByCode, allowScaleAnimation])
 
   const memoizedTooltip = useMemo(() => (
     <CustomTooltip
       total={totalMagnitudeValue}
       primary={primary}
-      normalization={normalization}
-      currency={currency}
+      unit={unit}
       signedValueByCode={signedValueByCode}
     />
-  ), [totalMagnitudeValue, primary, normalization, currency, signedValueByCode])
+  ), [totalMagnitudeValue, primary, unit, signedValueByCode])
 
   // On mobile, show only last 2 breadcrumb items
   const displayPath = isMobile && deferredPath.length > 2 ? deferredPath.slice(-2) : deferredPath
@@ -749,13 +757,12 @@ export function BudgetTreemap({
   )
 }
 
-const CustomTooltip = ({ active, payload, total, primary, normalization, currency, signedValueByCode }: {
+const CustomTooltip = ({ active, payload, total, primary, unit, signedValueByCode }: {
   active?: boolean,
   payload?: any[],
   total: number,
   primary: 'fn' | 'ec',
-  normalization?: Normalization,
-  currency?: Currency,
+  unit: string,
   signedValueByCode?: Map<string, number>,
 }) => {
   const lastTooltipDataRef = useRef<Readonly<{
@@ -794,7 +801,6 @@ const CustomTooltip = ({ active, payload, total, primary, normalization, currenc
     )
     : (lastTooltipDataRef.current?.value ?? 0)
   const percentage = total > 0 ? (Math.abs(value) / total) * 100 : 0
-  const unit = getNormalizationUnit({ normalization: normalization ?? 'total', currency })
 
 
   return (
