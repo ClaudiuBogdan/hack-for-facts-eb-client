@@ -6,6 +6,39 @@ import {
   type ChallengeEntityMapPreviewKey,
 } from '@/features/challenges/components/analysis/challenge-entity-public-maps'
 
+export const CHALLENGE_ENTITY_ANALYSIS_VIEW_VALUES = [
+  'main-info',
+  'contracts',
+  'commitments',
+  'ins',
+] as const
+export type ChallengeEntityAnalysisView =
+  (typeof CHALLENGE_ENTITY_ANALYSIS_VIEW_VALUES)[number]
+
+export const CHALLENGE_ENTITY_ANALYSIS_COMMITMENTS_GROUPING_VALUES = [
+  'fn',
+  'ec',
+] as const
+export type ChallengeEntityAnalysisCommitmentsGrouping =
+  (typeof CHALLENGE_ENTITY_ANALYSIS_COMMITMENTS_GROUPING_VALUES)[number]
+
+export const CHALLENGE_ENTITY_ANALYSIS_COMMITMENTS_DETAIL_LEVEL_VALUES = [
+  'chapter',
+  'detailed',
+] as const
+export type ChallengeEntityAnalysisCommitmentsDetailLevel =
+  (typeof CHALLENGE_ENTITY_ANALYSIS_COMMITMENTS_DETAIL_LEVEL_VALUES)[number]
+
+export const CHALLENGE_ENTITY_ANALYSIS_INS_SEARCH_KEYS = [
+  'insDataset',
+  'insSearch',
+  'insRoot',
+  'insTemporal',
+  'insExplorer',
+  'insSeries',
+  'insUnit',
+] as const
+
 export const ChallengeEntityAnalysisReportTypeSchema = z.enum([
   'PRINCIPAL_AGGREGATED',
   'DETAILED',
@@ -18,6 +51,12 @@ export const ChallengeEntityAnalysisPrimarySchema = z.enum(['fn', 'ec'])
 export const ChallengeEntityAnalysisNormalizationSchema = z.enum([
   'total',
   'per_capita',
+])
+
+const CurrencySchema = z.enum(['RON', 'EUR', 'USD'])
+const BooleanSearchParamSchema = z.union([
+  z.boolean(),
+  z.enum(['true', 'false']).transform((value) => value === 'true'),
 ])
 
 export const ChallengeEntityAnalysisRouteSearchSchema = z.object({
@@ -36,6 +75,18 @@ export const ChallengeEntityAnalysisRouteSearchSchema = z.object({
   evolution_account: ChallengeEntityAnalysisAccountCategorySchema.optional(),
   evolution_primary: ChallengeEntityAnalysisPrimarySchema.optional(),
   public_map: z.string().optional(),
+  view: z.string().optional(),
+  commitments_grouping: z.string().optional(),
+  commitments_detail_level: z.string().optional(),
+  currency: CurrencySchema.optional(),
+  inflation_adjusted: BooleanSearchParamSchema.optional(),
+  insDataset: z.string().optional(),
+  insSearch: z.string().optional(),
+  insRoot: z.coerce.string().optional(),
+  insTemporal: z.string().optional(),
+  insExplorer: z.string().optional(),
+  insSeries: z.string().optional(),
+  insUnit: z.string().optional(),
 })
 
 export type ChallengeEntityAnalysisRouteSearch = z.infer<
@@ -47,15 +98,25 @@ export type ChallengeEntityAnalysisUrlState = {
   readonly year: number
   readonly report_type: 'PRINCIPAL_AGGREGATED' | 'DETAILED'
   readonly normalization: 'total' | 'per_capita'
+  readonly view: ChallengeEntityAnalysisView
   readonly treemap_account: 'ch' | 'vn'
   readonly treemap_primary: 'fn' | 'ec'
   readonly treemap_path?: string
   readonly evolution_account: 'ch' | 'vn'
   readonly evolution_primary: 'fn' | 'ec'
   readonly public_map: ChallengeEntityMapPreviewKey
+  readonly commitments_grouping?: ChallengeEntityAnalysisCommitmentsGrouping
+  readonly commitments_detail_level?: ChallengeEntityAnalysisCommitmentsDetailLevel
 }
 
 const TREEMAP_PATH_CODE_PATTERN = /^\d+(?:\.\d+)*$/
+const CHALLENGE_ENTITY_VIEW_SET = new Set(CHALLENGE_ENTITY_ANALYSIS_VIEW_VALUES)
+const CHALLENGE_ENTITY_COMMITMENTS_GROUPING_SET = new Set(
+  CHALLENGE_ENTITY_ANALYSIS_COMMITMENTS_GROUPING_VALUES,
+)
+const CHALLENGE_ENTITY_COMMITMENTS_DETAIL_LEVEL_SET = new Set(
+  CHALLENGE_ENTITY_ANALYSIS_COMMITMENTS_DETAIL_LEVEL_VALUES,
+)
 
 function normalizePathCode(code: string): string {
   return code.trim()
@@ -63,6 +124,46 @@ function normalizePathCode(code: string): string {
 
 function isValidPathCode(code: string): boolean {
   return TREEMAP_PATH_CODE_PATTERN.test(code)
+}
+
+function normalizeChallengeEntityAnalysisView(
+  view: string | undefined,
+): ChallengeEntityAnalysisView {
+  if (view && CHALLENGE_ENTITY_VIEW_SET.has(view as ChallengeEntityAnalysisView)) {
+    return view as ChallengeEntityAnalysisView
+  }
+
+  return 'main-info'
+}
+
+function normalizeCommitmentsGrouping(
+  grouping: string | undefined,
+): ChallengeEntityAnalysisCommitmentsGrouping | undefined {
+  if (
+    grouping &&
+    CHALLENGE_ENTITY_COMMITMENTS_GROUPING_SET.has(
+      grouping as ChallengeEntityAnalysisCommitmentsGrouping,
+    )
+  ) {
+    return grouping as ChallengeEntityAnalysisCommitmentsGrouping
+  }
+
+  return undefined
+}
+
+function normalizeCommitmentsDetailLevel(
+  detailLevel: string | undefined,
+): ChallengeEntityAnalysisCommitmentsDetailLevel | undefined {
+  if (
+    detailLevel &&
+    CHALLENGE_ENTITY_COMMITMENTS_DETAIL_LEVEL_SET.has(
+      detailLevel as ChallengeEntityAnalysisCommitmentsDetailLevel,
+    )
+  ) {
+    return detailLevel as ChallengeEntityAnalysisCommitmentsDetailLevel
+  }
+
+  return undefined
 }
 
 export function decodeChallengeTreemapPath(
@@ -118,6 +219,7 @@ export function normalizeChallengeEntityAnalysisSearch(
     year: search?.year ?? DEFAULT_SELECTED_YEAR,
     report_type: search?.report_type ?? 'PRINCIPAL_AGGREGATED',
     normalization: search?.normalization ?? 'total',
+    view: normalizeChallengeEntityAnalysisView(search?.view),
     treemap_account: treemapAccountCategory,
     treemap_primary:
       treemapAccountCategory === 'vn'
@@ -132,6 +234,12 @@ export function normalizeChallengeEntityAnalysisSearch(
         ? 'fn'
         : (search?.evolution_primary ?? 'fn'),
     public_map: mapPreviewKey,
+    commitments_grouping: normalizeCommitmentsGrouping(
+      search?.commitments_grouping,
+    ),
+    commitments_detail_level: normalizeCommitmentsDetailLevel(
+      search?.commitments_detail_level,
+    ),
   }
 }
 
@@ -151,6 +259,10 @@ export function buildChallengeEntityAnalysisCanonicalSearchPatch(
 
   if (search?.normalization !== normalizedSearch.normalization) {
     patch.normalization = normalizedSearch.normalization
+  }
+
+  if (search?.view !== normalizedSearch.view) {
+    patch.view = normalizedSearch.view
   }
 
   if (search?.treemap_account !== normalizedSearch.treemap_account) {
@@ -178,6 +290,20 @@ export function buildChallengeEntityAnalysisCanonicalSearchPatch(
     normalizedSearch.public_map
   ) {
     patch.public_map = normalizedSearch.public_map
+  }
+
+  if (
+    (search?.commitments_grouping ?? undefined) !==
+    normalizedSearch.commitments_grouping
+  ) {
+    patch.commitments_grouping = normalizedSearch.commitments_grouping
+  }
+
+  if (
+    (search?.commitments_detail_level ?? undefined) !==
+    normalizedSearch.commitments_detail_level
+  ) {
+    patch.commitments_detail_level = normalizedSearch.commitments_detail_level
   }
 
   return patch

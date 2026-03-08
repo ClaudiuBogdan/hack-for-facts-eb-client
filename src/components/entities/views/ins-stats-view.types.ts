@@ -1,7 +1,7 @@
 import type { InsDataset } from '@/schemas/ins';
 
 export type TemporalSplit = 'all' | 'year' | 'quarter' | 'month';
-export type ExplorerMode = 'panel' | 'full';
+export type ExplorerMode = 'collapsed' | 'expanded';
 
 export type InsUrlState = {
   datasetCode: string | null;

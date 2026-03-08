@@ -14,9 +14,6 @@ export { CategoryChart } from './CategoryChart'
 export type { CategoryData } from './CategoryChart'
 export { CommitmentsTrends } from './commitments-trends'
 
-// Educational
-export { CommitmentInfoPanel } from './CommitmentInfoPanel'
-
 // Tables
 export { DetailTable } from './DetailTable'
 export { CommitmentsTable } from './CommitmentsTable'

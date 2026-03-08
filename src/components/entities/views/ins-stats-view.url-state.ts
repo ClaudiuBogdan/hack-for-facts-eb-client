@@ -111,7 +111,7 @@ export function parseInsUrlState(searchParams: URLSearchParams): InsUrlState {
       : 'all';
 
   const explorerRaw = searchParams.get(INS_URL_KEYS.explorer)?.trim() ?? '';
-  const explorerMode: ExplorerMode = explorerRaw === 'full' ? 'full' : 'panel';
+  const explorerMode: ExplorerMode = explorerRaw === 'expanded' ? 'expanded' : 'collapsed';
   const seriesRaw = searchParams.get(INS_URL_KEYS.series)?.trim() ?? '';
   const seriesSelection = parseSeriesSelection(seriesRaw);
   const unitRaw = searchParams.get(INS_URL_KEYS.unit)?.trim() ?? '';
@@ -166,7 +166,7 @@ export function writeInsUrlState(params: {
     searchParams.delete(INS_URL_KEYS.temporal);
   }
 
-  if (params.explorerMode !== 'panel') {
+  if (params.explorerMode !== 'collapsed') {
     searchParams.set(INS_URL_KEYS.explorer, params.explorerMode);
   } else {
     searchParams.delete(INS_URL_KEYS.explorer);

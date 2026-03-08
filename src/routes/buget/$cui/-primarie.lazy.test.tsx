@@ -48,15 +48,19 @@ vi.mock(
       entityCui,
       languageQuery,
       state,
+      commitmentsGrouping,
+      commitmentsDetailLevel,
       initialSettings,
       onStateChange,
+      onCommitmentsViewStateChange,
       onEntityResolved,
     }: any) => (
       <div data-testid="analysis-page">
         {entityCui}:{languageQuery ?? 'ro'}:{state.selectedYear}:
-        {state.reportType}:{state.treemapAccountCategory}:{state.treemapPrimary}:
+        {state.reportType}:{state.activeView}:{state.treemapAccountCategory}:{state.treemapPrimary}:
         {state.treemapPath.join('|')}:{state.evolutionAccountCategory}:
         {state.evolutionPrimary}:{state.mapPreviewKey}:
+        {commitmentsGrouping ?? 'none'}:{commitmentsDetailLevel ?? 'none'}:
         {initialSettings?.currency ?? 'none'}:
         {String(initialSettings?.inflationAdjusted)}
         <button type="button" onClick={() => onEntityResolved?.()}>
@@ -73,6 +77,22 @@ vi.mock(
           }
         >
           Change state
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            onStateChange?.({
+              activeView: 'contracts',
+            })
+          }
+        >
+          Change view
+        </button>
+        <button
+          type="button"
+          onClick={() => onCommitmentsViewStateChange?.('ec', 'detailed')}
+        >
+          Change commitments state
         </button>
       </div>
     ),
@@ -99,6 +119,7 @@ describe('PrimarieEntityRoutePage', () => {
     }
     navigateMock.mockReset()
     setSelectedEntityMock.mockReset()
+    window.history.replaceState({}, '', '/')
   })
 
   it('renders from the URL param even when campaign progress is unresolved', async () => {
@@ -117,13 +138,14 @@ describe('PrimarieEntityRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      `87654321:ro:2025:PRINCIPAL_AGGREGATED:ch:fn::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:RON:false`,
+      `87654321:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:fn::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:none:none:RON:false`,
     )
   })
 
   it('normalizes invalid URL combinations before rendering the stable state', async () => {
     mockedSearch = {
       lang: 'en',
+      view: 'not-a-view',
       year: 2024,
       report_type: 'DETAILED',
       treemap_account: 'vn',
@@ -132,6 +154,8 @@ describe('PrimarieEntityRoutePage', () => {
       evolution_account: 'vn',
       evolution_primary: 'ec',
       public_map: 'invalid-map',
+      commitments_grouping: 'invalid-grouping',
+      commitments_detail_level: 'invalid-detail-level',
     }
 
     const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
@@ -139,7 +163,7 @@ describe('PrimarieEntityRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      `12345678:en:2024:DETAILED:vn:fn:51|51.01:vn:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:RON:false`,
+      `12345678:en:2024:DETAILED:main-info:vn:fn:51|51.01:vn:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:none:none:RON:false`,
     )
 
     await waitFor(() => {
@@ -151,10 +175,13 @@ describe('PrimarieEntityRoutePage', () => {
 
     expect(canonicalizeCall.resetScroll).toBeUndefined()
     expect(canonicalSearch).toMatchObject({
+      view: 'main-info',
       treemap_primary: 'fn',
       evolution_primary: 'fn',
       public_map: DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
     })
+    expect(canonicalSearch).not.toHaveProperty('commitments_grouping')
+    expect(canonicalSearch).not.toHaveProperty('commitments_detail_level')
   })
 
   it('canonicalizes legacy public map ids to local preview keys', async () => {
@@ -167,7 +194,7 @@ describe('PrimarieEntityRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      '12345678:ro:2025:PRINCIPAL_AGGREGATED:ch:fn::ch:fn:local-taxes:RON:false',
+      '12345678:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:fn::ch:fn:local-taxes:none:none:RON:false',
     )
 
     await waitFor(() => {
@@ -179,6 +206,7 @@ describe('PrimarieEntityRoutePage', () => {
 
     expect(canonicalizeCall.resetScroll).toBeUndefined()
     expect(canonicalSearch).toMatchObject({
+      view: 'main-info',
       public_map: 'local-taxes',
     })
   })
@@ -218,6 +246,7 @@ describe('PrimarieEntityRoutePage', () => {
       lang: 'en',
       currency: 'EUR',
       inflation_adjusted: true,
+      view: 'main-info',
       report_type: 'PRINCIPAL_AGGREGATED',
       year: 2025,
       treemap_account: 'ch',
@@ -225,6 +254,8 @@ describe('PrimarieEntityRoutePage', () => {
       evolution_account: 'ch',
       evolution_primary: 'fn',
       public_map: DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
+      insDataset: 'POP107D',
+      insRoot: 'population',
     }
 
     const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
@@ -246,9 +277,70 @@ describe('PrimarieEntityRoutePage', () => {
       lang: 'en',
       currency: 'EUR',
       inflation_adjusted: true,
+      view: 'main-info',
       year: 2023,
       treemap_path: '51,51.01.03',
       public_map: 'local-taxes',
+      insDataset: 'POP107D',
+      insRoot: 'population',
+    })
+  })
+
+  it('pushes history and resets scroll when the active view changes', async () => {
+    mockedSearch = {
+      view: 'main-info',
+    }
+
+    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+
+    render(<PrimarieEntityRoutePage />)
+
+    navigateMock.mockClear()
+    fireEvent.click(screen.getByRole('button', { name: 'Change view' }))
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalled()
+    })
+
+    const updateCall = navigateMock.mock.calls[0]?.[0]
+    const nextSearch = updateCall.search(mockedSearch)
+
+    expect(updateCall.replace).toBe(false)
+    expect(updateCall.resetScroll).toBe(true)
+    expect(nextSearch).toMatchObject({
+      view: 'contracts',
+    })
+  })
+
+  it('writes commitments view state back into the URL search', async () => {
+    mockedSearch = {
+      view: 'commitments',
+      commitments_grouping: 'fn',
+      commitments_detail_level: 'chapter',
+    }
+
+    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+
+    render(<PrimarieEntityRoutePage />)
+
+    navigateMock.mockClear()
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Change commitments state' }),
+    )
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalled()
+    })
+
+    const updateCall = navigateMock.mock.calls[0]?.[0]
+    const nextSearch = updateCall.search(mockedSearch)
+
+    expect(updateCall.replace).toBe(true)
+    expect(updateCall.resetScroll).toBe(false)
+    expect(nextSearch).toMatchObject({
+      view: 'commitments',
+      commitments_grouping: 'ec',
+      commitments_detail_level: 'detailed',
     })
   })
 })

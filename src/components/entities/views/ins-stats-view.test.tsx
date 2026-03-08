@@ -353,16 +353,14 @@ describe('InsStatsView', () => {
     })
   })
 
-  it('toggles explorer between panel and full-width modes', () => {
+  it('toggles explorer collapse and expand', () => {
     renderInsStatsView()
 
-    const layout = screen.getByTestId('ins-explorer-layout')
-    expect(layout.className).toContain('xl:grid-cols-[420px_minmax(0,1fr)]')
+    expect(screen.queryByPlaceholderText('Search dataset code or name')).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: /Expand explorer to full width/i }))
+    fireEvent.click(screen.getByText('Dataset explorer'))
 
-    expect(layout.className).toContain('grid-cols-1')
-    expect(screen.getByRole('button', { name: /Collapse explorer to side panel/i })).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Search dataset code or name')).toBeInTheDocument()
   })
 
   it('keeps explorer panel clean without section chips and selected summary fields', () => {
@@ -376,13 +374,13 @@ describe('InsStatsView', () => {
     window.history.replaceState(
       {},
       '',
-      '/entities/4270740?view=ins-stats&foo=bar&insDataset=POP107D&insSearch=domiciliu&insRoot=1&insTemporal=month&insExplorer=full'
+      '/entities/4270740?view=ins-stats&foo=bar&insDataset=POP107D&insSearch=domiciliu&insRoot=1&insTemporal=month&insExplorer=expanded'
     )
 
     renderInsStatsView()
 
     expect(screen.getByPlaceholderText('Search dataset code or name')).toHaveValue('domiciliu')
-    expect(screen.getByTestId('ins-explorer-layout').className).toContain('grid-cols-1')
+    expect(screen.getByTestId('ins-explorer-layout')).toBeInTheDocument()
 
     await waitFor(() => {
       expect(mockUseInsDatasetCatalog).toHaveBeenCalledWith(
@@ -419,7 +417,7 @@ describe('InsStatsView', () => {
   })
 
   it('writes INS state into URL while preserving unrelated query params', async () => {
-    window.history.replaceState({}, '', '/entities/4270740?view=ins-stats&foo=bar')
+    window.history.replaceState({}, '', '/entities/4270740?view=ins-stats&foo=bar&insExplorer=expanded')
 
     renderInsStatsView()
 
@@ -491,6 +489,7 @@ describe('InsStatsView', () => {
       error: null,
     })
 
+    window.history.replaceState({}, '', '/entities/4270740?view=ins-stats&insExplorer=expanded')
     renderInsStatsView()
 
     fireEvent.change(screen.getByPlaceholderText('Search dataset code or name'), {

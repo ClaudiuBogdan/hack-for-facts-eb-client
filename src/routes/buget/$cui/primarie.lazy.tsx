@@ -14,6 +14,7 @@ import {
 import type { ChallengeEntityInitialSettings } from '@/features/challenges/components/analysis/challenge-entity-analysis-queries'
 import { useCampaignProgress } from '@/features/campaigns/buget/hooks/use-campaign-progress'
 import {
+  CHALLENGE_ENTITY_ANALYSIS_INS_SEARCH_KEYS,
   type ChallengeEntityAnalysisRouteSearch,
   type ChallengeEntityAnalysisUrlState,
   buildChallengeEntityAnalysisCanonicalSearchPatch,
@@ -25,11 +26,38 @@ export const Route = createLazyFileRoute('/buget/$cui/primarie')({
   component: PrimarieEntityRoutePage,
 })
 
+function mergeWindowManagedSearchState(
+  previousSearch: Record<string, unknown>,
+): Record<string, unknown> {
+  const nextSearch = { ...previousSearch }
+
+  if (typeof window === 'undefined') {
+    return nextSearch
+  }
+
+  const currentSearchParams = new URLSearchParams(window.location.search)
+
+  for (const searchKey of CHALLENGE_ENTITY_ANALYSIS_INS_SEARCH_KEYS) {
+    const searchValue = currentSearchParams.get(searchKey)
+
+    if (searchValue === null) {
+      continue
+    }
+
+    nextSearch[searchKey] = searchValue
+  }
+
+  return nextSearch
+}
+
 function applySearchPatch(
   previousSearch: Record<string, unknown>,
   patch: Partial<ChallengeEntityAnalysisRouteSearch>,
 ) {
-  const nextSearch = { ...previousSearch } as Record<string, unknown>
+  const nextSearch = mergeWindowManagedSearchState(previousSearch) as Record<
+    string,
+    unknown
+  >
 
   for (const [key, value] of Object.entries(patch)) {
     if (value === undefined) {
@@ -56,6 +84,7 @@ function toPageState(
     selectedYear: searchState.year,
     reportType: searchState.report_type,
     normalization: searchState.normalization,
+    activeView: searchState.view,
     treemapAccountCategory: searchState.treemap_account,
     treemapPrimary: searchState.treemap_primary,
     treemapPath: searchState.treemap_path?.split(',').filter(Boolean) ?? [],
@@ -145,7 +174,13 @@ export function PrimarieEntityRoutePage() {
   ])
 
   const updateSearch = useCallback(
-    (patch: Partial<ChallengeEntityAnalysisRouteSearch>) => {
+    (
+      patch: Partial<ChallengeEntityAnalysisRouteSearch>,
+      options?: {
+        readonly replace?: boolean
+        readonly resetScroll?: boolean
+      },
+    ) => {
       if (isSearchPatchEmpty(patch)) {
         return
       }
@@ -157,8 +192,8 @@ export function PrimarieEntityRoutePage() {
               previousSearch as Record<string, unknown>,
               patch,
             ),
-          replace: true,
-          resetScroll: false,
+          replace: options?.replace ?? true,
+          resetScroll: options?.resetScroll ?? false,
         })
       })
     },
@@ -179,6 +214,10 @@ export function PrimarieEntityRoutePage() {
 
       if (patch.normalization !== undefined) {
         searchPatch.normalization = patch.normalization
+      }
+
+      if (patch.activeView !== undefined) {
+        searchPatch.view = patch.activeView
       }
 
       if (patch.treemapAccountCategory !== undefined) {
@@ -215,9 +254,28 @@ export function PrimarieEntityRoutePage() {
           search as ChallengeEntityAnalysisRouteSearch,
           nextNormalizedState,
         ),
+        patch.activeView !== undefined
+          ? {
+              replace: false,
+              resetScroll: true,
+            }
+          : undefined,
       )
     },
     [search, updateSearch],
+  )
+
+  const handleCommitmentsViewStateChange = useCallback(
+    (
+      grouping: 'fn' | 'ec',
+      detailLevel: 'chapter' | 'detailed',
+    ) => {
+      updateSearch({
+        commitments_grouping: grouping,
+        commitments_detail_level: detailLevel,
+      })
+    },
+    [updateSearch],
   )
 
   return (
@@ -225,8 +283,11 @@ export function PrimarieEntityRoutePage() {
       entityCui={cui}
       languageQuery={normalizedSearch.lang}
       state={pageState}
+      commitmentsGrouping={normalizedSearch.commitments_grouping}
+      commitmentsDetailLevel={normalizedSearch.commitments_detail_level}
       initialSettings={loaderData?.initialSettings}
       onStateChange={handleStateChange}
+      onCommitmentsViewStateChange={handleCommitmentsViewStateChange}
       onEntityResolved={() => setIsEntityResolved(true)}
     />
   )

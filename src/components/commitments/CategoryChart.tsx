@@ -49,12 +49,12 @@ function CustomTooltip({ active, payload, currency }: CustomTooltipProps) {
   if (active && payload && payload.length) {
     const data = payload[0].payload
     return (
-      <div className="bg-white p-4 shadow-xl border border-slate-100 rounded-lg text-sm">
-        <p className="font-bold text-slate-800 mb-2">{data.name}</p>
+      <div className="bg-card p-4 shadow-xl border border-border rounded-lg text-sm">
+        <p className="font-bold text-card-foreground mb-2">{data.name}</p>
         <div className="space-y-1">
-          <p className="text-slate-500">
+          <p className="text-muted-foreground">
             {t`Budget credits`}:{' '}
-            <span className="font-semibold text-slate-700">
+            <span className="font-semibold text-foreground">
               {formatCurrency(data.budget, 'compact', currency)}
             </span>
           </p>
@@ -83,7 +83,7 @@ export function CategoryChart({ data, currency = 'RON', isLoading = false }: Pro
 
   if (isLoading) {
     return (
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-[500px]">
+      <div className="bg-card p-6 rounded-xl shadow-sm border border-border h-[380px]">
         <div className="flex justify-between items-center mb-6">
           <Skeleton className="h-6 w-48" />
           <div className="flex gap-4">
@@ -92,15 +92,15 @@ export function CategoryChart({ data, currency = 'RON', isLoading = false }: Pro
             <Skeleton className="h-4 w-20" />
           </div>
         </div>
-        <Skeleton className="h-[400px] w-full" />
+        <Skeleton className="h-[280px] w-full" />
       </div>
     )
   }
 
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-[500px] flex items-center justify-center">
-        <p className="text-slate-400">
+      <div className="bg-card p-6 rounded-xl shadow-sm border border-border h-[380px] flex items-center justify-center">
+        <p className="text-muted-foreground">
           <Trans>No category data available</Trans>
         </p>
       </div>
@@ -108,27 +108,27 @@ export function CategoryChart({ data, currency = 'RON', isLoading = false }: Pro
   }
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 h-[500px]">
+    <div className="bg-card p-6 rounded-xl shadow-sm border border-border h-[380px]">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-bold text-slate-800">
+        <h3 className="text-lg font-bold text-card-foreground">
           <Trans>Status by Budget Chapters</Trans>
         </h3>
         <div className="flex gap-4 text-xs font-medium">
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 bg-slate-200 rounded-sm" />
-            <span className="text-slate-500">
+            <span className="text-muted-foreground">
               <Trans>Budget credits</Trans>
             </span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 bg-blue-500 rounded-sm" />
-            <span className="text-slate-500">
+            <span className="text-muted-foreground">
               <Trans>Legal commitments</Trans>
             </span>
           </div>
           <div className="flex items-center gap-1">
             <div className="w-3 h-3 bg-emerald-400 rounded-sm" />
-            <span className="text-slate-500">
+            <span className="text-muted-foreground">
               <Trans>Payments</Trans>
             </span>
           </div>
@@ -139,7 +139,7 @@ export function CategoryChart({ data, currency = 'RON', isLoading = false }: Pro
         <BarChart
           data={sortedData}
           layout="vertical"
-          margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          margin={{ top: 5, right: 30, left: 5, bottom: 5 }}
           barGap={2}
         >
           <CartesianGrid
@@ -151,8 +151,9 @@ export function CategoryChart({ data, currency = 'RON', isLoading = false }: Pro
           <YAxis
             type="category"
             dataKey="name"
-            width={150}
+            width={100}
             tick={{ fontSize: 12, fill: '#64748b' }}
+            tickFormatter={(name: string) => name.length > 14 ? `${name.slice(0, 14)}…` : name}
           />
           <Tooltip
             content={<CustomTooltip currency={currency} />}

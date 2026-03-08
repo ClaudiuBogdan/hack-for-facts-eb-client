@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { useState } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
@@ -231,11 +231,55 @@ vi.mock(
   }),
 )
 
+vi.mock('@/components/entities/views/ContractsView', () => ({
+  ContractsView: (props: any) => (
+    <div data-testid="contracts-view">{props.entity?.cui}</div>
+  ),
+}))
+
+vi.mock('@/components/entities/views/Commitments', () => ({
+  CommitmentsView: (props: any) => (
+    <div data-testid="commitments-view">
+      {props.entity?.cui}:{props.currentYear}:{props.reportPeriod?.type}:
+      {props.commitmentsGrouping ?? 'none'}:{props.commitmentsDetailLevel ?? 'none'}:
+      {props.normalizationOptions?.normalization}:{props.normalizationOptions?.currency}:
+      {String(props.normalizationOptions?.inflation_adjusted)}
+      <button
+        type="button"
+        onClick={() => props.onCommitmentsGroupingChange?.('ec', 'detailed')}
+      >
+        Set commitments grouping
+      </button>
+    </div>
+  ),
+}))
+
+vi.mock('@/components/entities/views/ins-stats-view', () => ({
+  InsStatsView: (props: any) => (
+    <div data-testid="ins-view">
+      {!props.entity?.is_uat && props.entity?.entity_type !== 'admin_county_council'
+        ? 'unsupported'
+        : 'supported'}
+      :{props.entity?.cui}:{props.reportPeriod?.type}
+    </div>
+  ),
+}))
+
 vi.mock('./challenge-entity-analysis-header', () => ({
   ChallengeEntityAnalysisHeader: (props: any) => (
     <div data-testid="analysis-header">
       <div>{props.entity?.name}</div>
       <div>{props.selectedYear}</div>
+      <div>{props.activeView}</div>
+      {props.availableViews?.map((view: any) => (
+        <button
+          key={view.id}
+          type="button"
+          onClick={() => props.onViewChange?.(view.id)}
+        >
+          {view.label}
+        </button>
+      ))}
       {props.showInflationBadge ? (
         <div>
           {props.languageQuery === 'en'
@@ -243,11 +287,6 @@ vi.mock('./challenge-entity-analysis-header', () => ({
             : 'Valori ajustate cu inflația (2024)'}
         </div>
       ) : null}
-      <a href="/buget/cauta">
-        {props.languageQuery === 'en'
-          ? 'Change City Hall'
-          : 'Schimbă Primăria'}
-      </a>
     </div>
   ),
 }))
@@ -487,6 +526,7 @@ const DEFAULT_PAGE_STATE: ChallengeEntityAnalysisPageState = {
   selectedYear: 2025,
   reportType: 'PRINCIPAL_AGGREGATED',
   normalization: 'total',
+  activeView: 'main-info',
   treemapAccountCategory: 'ch',
   treemapPrimary: 'fn',
   treemapPath: [],
@@ -500,6 +540,8 @@ function renderAnalysisPage(
     readonly entityCui?: string
     readonly languageQuery?: 'ro' | 'en'
     readonly state?: Partial<ChallengeEntityAnalysisPageState>
+    readonly commitmentsGrouping?: 'fn' | 'ec'
+    readonly commitmentsDetailLevel?: 'chapter' | 'detailed'
   } = {},
 ) {
   function TestHarness() {
@@ -507,17 +549,29 @@ function renderAnalysisPage(
       ...DEFAULT_PAGE_STATE,
       ...props.state,
     })
+    const [commitmentsState, setCommitmentsState] = useState({
+      grouping: props.commitmentsGrouping,
+      detailLevel: props.commitmentsDetailLevel,
+    })
 
     return (
       <ChallengeEntityAnalysisPage
         entityCui={props.entityCui ?? '12345678'}
         languageQuery={props.languageQuery}
         state={state}
+        commitmentsGrouping={commitmentsState.grouping}
+        commitmentsDetailLevel={commitmentsState.detailLevel}
         onStateChange={(patch) =>
           setState((previousState) => ({
             ...previousState,
             ...patch,
           }))
+        }
+        onCommitmentsViewStateChange={(grouping, detailLevel) =>
+          setCommitmentsState({
+            grouping,
+            detailLevel,
+          })
         }
       />
     )
@@ -650,6 +704,7 @@ describe('ChallengeEntityAnalysisPage', () => {
       displayCurrency: 'RON',
       displayInflationAdjusted: false,
       confirmSettingsApplied: vi.fn(),
+      setSettings: vi.fn(),
     })
     useQueryClientMock.mockReturnValue({
       prefetchQuery: prefetchQueryMock,
@@ -713,9 +768,6 @@ describe('ChallengeEntityAnalysisPage', () => {
         name: 'Taxe și impozite locale',
       }),
     ).not.toBeInTheDocument()
-    expect(
-      screen.getByRole('link', { name: 'Schimbă Primăria' }),
-    ).toHaveAttribute('href', '/buget/cauta')
     expect(screen.getByText('Cum s-au cheltuit banii')).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Arată pe ce s-au cheltuit banii' }),
@@ -763,6 +815,80 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(
       screen.queryByText('Învățământ / Bunuri și servicii'),
     ).not.toBeInTheDocument()
+  })
+
+  it('renders the contracts view when it is the active campaign view', async () => {
+    renderAnalysisPage({
+      state: {
+        activeView: 'contracts',
+      },
+    })
+
+    expect(screen.getByTestId('analysis-header')).toHaveTextContent('contracts')
+    expect(await screen.findByTestId('contracts-view')).toHaveTextContent(
+      '12345678',
+    )
+    expect(
+      screen.queryByTestId('financial-summary'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('renders the commitments view with URL-backed grouping state', async () => {
+    renderAnalysisPage({
+      state: {
+        activeView: 'commitments',
+      },
+      commitmentsGrouping: 'fn',
+      commitmentsDetailLevel: 'chapter',
+    })
+
+    expect(await screen.findByTestId('commitments-view')).toHaveTextContent(
+      '12345678:2025:YEAR:fn:chapter:total:RON:false',
+    )
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Set commitments grouping' }),
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('commitments-view')).toHaveTextContent(
+        '12345678:2025:YEAR:ec:detailed:total:RON:false',
+      )
+    })
+  })
+
+  it('renders the INS view and keeps unsupported entities selectable', async () => {
+    renderAnalysisPage({
+      state: {
+        activeView: 'ins',
+      },
+    })
+
+    expect(await screen.findByTestId('ins-view')).toHaveTextContent(
+      'unsupported:12345678:YEAR',
+    )
+  })
+
+  it('preserves main info state when switching away and back through the entity menu', async () => {
+    renderAnalysisPage()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select 2024' }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('analysis-header')).toHaveTextContent('2024')
+    })
+
+    const header = screen.getByTestId('analysis-header')
+    fireEvent.click(within(header).getByRole('button', { name: 'Contracte' }))
+    expect(await screen.findByTestId('contracts-view')).toBeInTheDocument()
+
+    fireEvent.click(within(header).getByRole('button', { name: 'Informații Principale' }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('financial-trends')).toHaveTextContent(
+        '12345678:false:false:2024',
+      )
+    })
   })
 
   it('prefetches reports before the viewport and delays deferred sections until the render threshold', async () => {
@@ -1444,7 +1570,6 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByRole('link', { name: 'Change City Hall' })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: 'Read more' })).toBeInTheDocument()
       expect(
         screen.getByRole('button', { name: 'Show only city hall spending' }),

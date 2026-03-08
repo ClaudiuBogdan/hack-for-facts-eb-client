@@ -172,7 +172,7 @@ export function InsStatsView({
         search: '',
         rootCode: '',
         temporalSplit: 'all',
-        explorerMode: 'panel',
+        explorerMode: 'collapsed',
         seriesSelection: {},
         unitKey: null,
       };
@@ -189,7 +189,7 @@ export function InsStatsView({
   const [pendingExplorerFocusCode, setPendingExplorerFocusCode] = useState<string | null>(null);
   const [showAllRows, setShowAllRows] = useState(false);
   const [isDatasetMetaExpanded, setIsDatasetMetaExpanded] = useState(false);
-  const [isExplorerFullWidth, setIsExplorerFullWidth] = useState(initialUrlState.explorerMode === 'full');
+  const [isExplorerExpanded, setIsExplorerExpanded] = useState(initialUrlState.explorerMode === 'expanded');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(initialUrlState.search);
   const [selectedSeriesClassifications, setSelectedSeriesClassifications] = useState<Record<string, string[]>>(
     initialUrlState.seriesSelection
@@ -966,7 +966,7 @@ export function InsStatsView({
       search: debouncedSearchTerm.trim(),
       rootCode: selectedRootContextCode,
       temporalSplit,
-      explorerMode: isExplorerFullWidth ? 'full' : 'panel',
+      explorerMode: isExplorerExpanded ? 'expanded' : 'collapsed',
       seriesSelection: serializeSeriesSelection(urlSeriesSelection),
       unitKey: selectedUnitKey,
     });
@@ -979,13 +979,13 @@ export function InsStatsView({
       search: debouncedSearchTerm,
       rootCode: selectedRootContextCode,
       temporalSplit,
-      explorerMode: isExplorerFullWidth ? 'full' : 'panel',
+      explorerMode: isExplorerExpanded ? 'expanded' : 'collapsed',
       seriesSelection: urlSeriesSelection,
       unitKey: selectedUnitKey,
     });
   }, [
     debouncedSearchTerm,
-    isExplorerFullWidth,
+    isExplorerExpanded,
     selectedDatasetCode,
     selectedRootContextCode,
     selectedUnitKey,
@@ -1539,7 +1539,7 @@ export function InsStatsView({
   }
 
   return (
-    <div className="mx-auto max-w-[1450px] space-y-5">
+    <div className="space-y-5">
       <SummaryMetricsSection
         isLoading={selectedIndicatorsSnapshotQuery.isLoading || fallbackIndicatorsSnapshotQuery.isLoading}
         summaryCards={summaryCards}
@@ -1565,13 +1565,13 @@ export function InsStatsView({
 
       <div
         data-testid="ins-explorer-layout"
-        className={`grid gap-4 ${isExplorerFullWidth ? 'grid-cols-1' : 'xl:grid-cols-[420px_minmax(0,1fr)]'}`}
+        className="grid grid-cols-1 gap-4"
       >
         <DatasetExplorerSection
-          isExplorerFullWidth={isExplorerFullWidth}
+          isExplorerExpanded={isExplorerExpanded}
           searchTerm={searchTerm}
           onSearchTermChange={setSearchTerm}
-          onToggleExplorerWidth={() => setIsExplorerFullWidth((current) => !current)}
+          onToggleExpanded={() => setIsExplorerExpanded((current) => !current)}
           isLoading={datasetCatalogQuery.isLoading}
           groupedDatasets={groupedDatasets}
           openRootGroups={openRootGroups}

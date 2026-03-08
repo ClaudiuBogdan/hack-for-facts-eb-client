@@ -2,49 +2,22 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ChallengeEntityAnalysisHeader } from './challenge-entity-analysis-header'
 
-vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, ...props }: any) => <a {...props}>{children}</a>,
-}))
-
-vi.mock('@tanstack/react-query', () => ({
-  useQueryClient: () => ({}),
-}))
-
-vi.mock('@/hooks/filters/useFilterLabels', () => ({
-  useEntityTypeLabel: () => ({
-    map: (value: string) => {
-      if (value === 'admin_municipality') return 'Municipiu'
-      return value
-    },
-  }),
-}))
-
-vi.mock('@/lib/auth', () => ({
-  useAuth: () => ({ isSignedIn: false }),
-}))
-
-vi.mock('@/config/env', () => ({
-  getSiteUrl: () => 'http://localhost:3000',
-}))
-
-vi.mock('@/lib/api/shortLinks', () => ({
-  ensureShortRedirectUrl: vi.fn(),
-}))
-
-vi.mock('@/components/ui/select', () => ({
-  Select: ({ children }: any) => <div>{children}</div>,
-  SelectContent: ({ children }: any) => <div>{children}</div>,
-  SelectItem: ({ children }: any) => <div>{children}</div>,
-  SelectTrigger: ({ children, ...props }: any) => (
-    <button type="button" {...props}>
-      {children}
-    </button>
+vi.mock('@/components/ui/ResponsivePopover', () => ({
+  ResponsivePopover: ({
+    trigger,
+    content,
+    open,
+    onOpenChange,
+  }: any) => (
+    <div>
+      <div onClick={() => onOpenChange?.(!open)}>{trigger}</div>
+      {open ? <div data-testid="responsive-popover-content">{content}</div> : null}
+    </div>
   ),
 }))
 
 const entity = {
   name: 'Primăria Sibiu',
-  entity_type: 'admin_municipality',
   uat: {
     name: 'Sibiu',
     county_name: 'Județul Sibiu',
@@ -57,8 +30,16 @@ function renderHeader(languageQuery?: 'ro' | 'en') {
     <ChallengeEntityAnalysisHeader
       entity={entity}
       selectedYear={2025}
+      activeView="main-info"
+      availableViews={[
+        { id: 'main-info', label: languageQuery === 'en' ? 'Main Info' : 'Informații Principale' },
+        { id: 'contracts', label: languageQuery === 'en' ? 'Contracts' : 'Contracte' },
+        { id: 'commitments', label: languageQuery === 'en' ? 'Commitments' : 'Angajamente' },
+        { id: 'ins', label: 'INS' },
+      ]}
       availableYears={[2025, 2024, 2023]}
       onYearChange={vi.fn()}
+      onViewChange={vi.fn()}
       showInflationBadge
       languageQuery={languageQuery}
     />,
@@ -84,25 +65,13 @@ function setScrollPosition(nextY: number) {
   fireEvent.scroll(window)
 }
 
-function setMobileViewport(isMobile: boolean) {
-  Object.defineProperty(window, 'matchMedia', {
-    writable: true,
-    value: vi.fn().mockImplementation((query: string) => ({
-      matches: isMobile,
-      media: query,
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    })),
-  })
-}
-
 describe('ChallengeEntityAnalysisHeader', () => {
   beforeEach(() => {
-    setMobileViewport(false)
+    Object.defineProperty(window, 'scrollTo', {
+      configurable: true,
+      writable: true,
+      value: vi.fn(),
+    })
     Object.defineProperty(window, 'pageYOffset', {
       configurable: true,
       writable: true,
@@ -156,7 +125,12 @@ describe('ChallengeEntityAnalysisHeader', () => {
     })
 
     const compactHeader = screen.getByTestId('challenge-entity-compact-header')
-    expect(within(compactHeader).getByText('Primăria Sibiu')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(compactHeader).toHaveAttribute('aria-hidden', 'false')
+    })
+    expect(
+      within(compactHeader).getByRole('button', { name: 'Primăria Sibiu' }),
+    ).toBeInTheDocument()
     expect(within(compactHeader).getByText('Județul Sibiu')).toBeInTheDocument()
     expect(within(compactHeader).getByText('134.309 locuitori')).toBeInTheDocument()
     expect(within(compactHeader).getAllByText('2025')).not.toHaveLength(0)
@@ -217,20 +191,69 @@ describe('ChallengeEntityAnalysisHeader', () => {
     )
   })
 
-  it('uses english short-form entity type labels when the page is in english', () => {
-    renderHeader('en')
-
-    expect(screen.getByText('My City Hall')).toBeInTheDocument()
-    expect(screen.getByText('Municipality')).toBeInTheDocument()
-    expect(screen.getByText('134,309 inhabitants')).toBeInTheDocument()
-    expect(screen.getByText('Change City Hall')).toBeInTheDocument()
-  })
-
-  it('hides share and change city hall actions on mobile', () => {
-    setMobileViewport(true)
-
+  it('scrolls to the top when the compact header name is clicked', async () => {
     renderHeader()
 
+    setScrollPosition(340)
+
+    const compactHeader = await screen.findByTestId(
+      'challenge-entity-compact-header',
+    )
+    await waitFor(() => {
+      expect(compactHeader).toHaveAttribute('aria-hidden', 'false')
+    })
+
+    fireEvent.click(
+      within(compactHeader).getByRole('button', { name: 'Primăria Sibiu' }),
+    )
+
+    expect(window.scrollTo).toHaveBeenCalledWith({
+      top: 0,
+      behavior: 'smooth',
+    })
+  })
+
+  it('stops click propagation from the compact header', async () => {
+    const onParentClick = vi.fn()
+
+    render(
+      <div onClick={onParentClick}>
+        <ChallengeEntityAnalysisHeader
+          entity={entity}
+          selectedYear={2025}
+          activeView="main-info"
+          availableViews={[
+            { id: 'main-info', label: 'Informații Principale' },
+            { id: 'contracts', label: 'Contracte' },
+            { id: 'commitments', label: 'Angajamente' },
+            { id: 'ins', label: 'INS' },
+          ]}
+          availableYears={[2025, 2024, 2023]}
+          onYearChange={vi.fn()}
+          onViewChange={vi.fn()}
+          showInflationBadge
+        />
+      </div>,
+    )
+
+    setScrollPosition(340)
+
+    const compactHeader = await screen.findByTestId(
+      'challenge-entity-compact-header',
+    )
+    await waitFor(() => {
+      expect(compactHeader).toHaveAttribute('aria-hidden', 'false')
+    })
+    fireEvent.click(compactHeader)
+
+    expect(onParentClick).not.toHaveBeenCalled()
+  })
+
+  it('omits the legacy entity chrome while keeping the year selector', () => {
+    renderHeader()
+
+    expect(screen.queryByText('Primăria Mea')).not.toBeInTheDocument()
+    expect(screen.queryByText('Municipiu')).not.toBeInTheDocument()
     expect(
       screen.queryByRole('button', { name: 'Copiază link' }),
     ).not.toBeInTheDocument()
@@ -240,5 +263,159 @@ describe('ChallengeEntityAnalysisHeader', () => {
     expect(
       screen.getByRole('button', { name: 'Selectează anul' }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Alege vizualizarea entității' }),
+    ).toHaveTextContent('Informații Principale')
+  })
+
+  it('localizes the remaining header copy in english', () => {
+    renderHeader('en')
+
+    expect(screen.getByText('134,309 inhabitants')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Select year' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Choose entity view' }),
+    ).toHaveTextContent('Main Info')
+    expect(screen.queryByText('My City Hall')).not.toBeInTheDocument()
+    expect(screen.queryByText('Municipality')).not.toBeInTheDocument()
+    expect(screen.queryByText('Change City Hall')).not.toBeInTheDocument()
+  })
+
+  it('opens the entity menu and highlights the active view', () => {
+    renderHeader()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Alege vizualizarea entității' }),
+    )
+
+    const menu = screen.getByTestId('challenge-entity-view-menu')
+    expect(within(menu).getByText('Alege Vizualizarea')).toBeInTheDocument()
+    expect(
+      within(menu).getByRole('button', { name: 'Informații Principale' }),
+    ).toHaveAttribute('aria-pressed', 'true')
+    expect(
+      within(menu).getByRole('button', { name: 'Contracte' }),
+    ).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('calls onViewChange and closes the menu when a view is selected', () => {
+    const onViewChange = vi.fn()
+
+    render(
+      <ChallengeEntityAnalysisHeader
+        entity={entity}
+        selectedYear={2025}
+        activeView="main-info"
+        availableViews={[
+          { id: 'main-info', label: 'Informații Principale' },
+          { id: 'contracts', label: 'Contracte' },
+          { id: 'commitments', label: 'Angajamente' },
+          { id: 'ins', label: 'INS' },
+        ]}
+        availableYears={[2025, 2024, 2023]}
+        onYearChange={vi.fn()}
+        onViewChange={onViewChange}
+        showInflationBadge
+      />,
+    )
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Alege vizualizarea entității' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Contracte' }))
+
+    expect(onViewChange).toHaveBeenCalledWith('contracts')
+    expect(
+      screen.queryByTestId('challenge-entity-view-menu'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('opens the year menu and highlights the selected year', () => {
+    renderHeader()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Selectează anul' }))
+
+    const menu = screen.getByTestId('challenge-entity-year-menu')
+    expect(within(menu).getByText('Selectează Anul')).toBeInTheDocument()
+    expect(
+      within(menu).getByRole('button', { name: '2025' }),
+    ).toHaveAttribute('aria-pressed', 'true')
+    expect(
+      within(menu).getByRole('button', { name: '2024' }),
+    ).toHaveAttribute('aria-pressed', 'false')
+    expect(
+      within(menu).getByRole('button', { name: '2023' }),
+    ).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('calls onYearChange from year menu selection and closes menu', () => {
+    const onYearChange = vi.fn()
+
+    render(
+      <ChallengeEntityAnalysisHeader
+        entity={entity}
+        selectedYear={2025}
+        activeView="main-info"
+        availableViews={[
+          { id: 'main-info', label: 'Informații Principale' },
+        ]}
+        availableYears={[2025, 2024, 2023]}
+        onYearChange={onYearChange}
+        onViewChange={vi.fn()}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Selectează anul' }))
+    fireEvent.click(
+      within(screen.getByTestId('challenge-entity-year-menu')).getByRole(
+        'button',
+        { name: '2024' },
+      ),
+    )
+
+    expect(onYearChange).toHaveBeenCalledWith(2024)
+    expect(
+      screen.queryByTestId('challenge-entity-year-menu'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('shows year menu in compact header', async () => {
+    const onYearChange = vi.fn()
+
+    render(
+      <ChallengeEntityAnalysisHeader
+        entity={entity}
+        selectedYear={2024}
+        activeView="main-info"
+        availableViews={[
+          { id: 'main-info', label: 'Informații Principale' },
+        ]}
+        availableYears={[2025, 2024, 2023]}
+        onYearChange={onYearChange}
+        onViewChange={vi.fn()}
+      />,
+    )
+
+    setScrollPosition(340)
+
+    const compactHeader = await screen.findByTestId(
+      'challenge-entity-compact-header',
+    )
+    await waitFor(() => {
+      expect(compactHeader).toHaveAttribute('aria-hidden', 'false')
+    })
+
+    const yearButton = within(compactHeader).getByRole('button', { name: 'Selectează anul' })
+    expect(yearButton).toBeInTheDocument()
+
+    fireEvent.click(yearButton)
+
+    const yearMenus = screen.getAllByTestId('challenge-entity-year-menu')
+    const compactYearMenu = yearMenus[yearMenus.length - 1]
+    fireEvent.click(
+      within(compactYearMenu).getByRole('button', { name: '2023' }),
+    )
+
+    expect(onYearChange).toHaveBeenCalledWith(2023)
   })
 })

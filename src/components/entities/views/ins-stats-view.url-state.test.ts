@@ -49,7 +49,7 @@ describe('ins-stats-view url state helpers', () => {
       search: 'abc',
       rootCode: '',
       temporalSplit: 'all',
-      explorerMode: 'panel',
+      explorerMode: 'collapsed',
       seriesSelection: { SEX: ['TOTAL'] },
       unitKey: 'PERS',
     })
@@ -63,7 +63,7 @@ describe('ins-stats-view url state helpers', () => {
       search: 'domiciliu',
       rootCode: '1',
       temporalSplit: 'year',
-      explorerMode: 'full',
+      explorerMode: 'expanded',
       seriesSelection: { PROD: ['A'] },
       unitKey: 'PERS',
     })
@@ -74,7 +74,7 @@ describe('ins-stats-view url state helpers', () => {
     expect(params.get('insSearch')).toBe('domiciliu')
     expect(params.get('insRoot')).toBe('1')
     expect(params.get('insTemporal')).toBe('year')
-    expect(params.get('insExplorer')).toBe('full')
+    expect(params.get('insExplorer')).toBe('expanded')
     expect(params.get('insSeries')).toBe('PROD:A')
     expect(params.get('insUnit')).toBe('PERS')
   })

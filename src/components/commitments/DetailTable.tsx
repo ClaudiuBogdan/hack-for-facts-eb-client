@@ -21,8 +21,7 @@ import {
   getEconomicSubchapterName,
   getEconomicClassificationName,
 } from '@/lib/economic-classifications'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
 
 export type Grouping = 'fn' | 'ec'
 export type DetailLevel = 'chapter' | 'detailed'
@@ -298,8 +297,8 @@ function ExpandedSubRows({
   if (isLoading) {
     return (
       <tr>
-        <td colSpan={6} className="p-4 bg-slate-50/50">
-          <div className={`flex items-center gap-2 text-sm text-slate-500 ${INDENT_CLASS[indentLevel] ?? 'pl-8'}`}>
+        <td colSpan={6} className="p-4 bg-muted/50">
+          <div className={`flex items-center gap-2 text-sm text-muted-foreground ${INDENT_CLASS[indentLevel] ?? 'pl-8'}`}>
             <Loader2 size={14} className="animate-spin" />
             <Trans>Loading details...</Trans>
           </div>
@@ -324,8 +323,8 @@ function ExpandedSubRows({
   if (subRows.length === 0) {
     return (
       <tr>
-        <td colSpan={6} className="p-4 bg-slate-50/50">
-          <div className={`text-sm text-slate-400 ${INDENT_CLASS[indentLevel] ?? 'pl-8'}`}>
+        <td colSpan={6} className="p-4 bg-muted/50">
+          <div className={`text-sm text-muted-foreground/70 ${INDENT_CLASS[indentLevel] ?? 'pl-8'}`}>
             <Trans>No breakdown available</Trans>
           </div>
         </td>
@@ -346,19 +345,19 @@ function ExpandedSubRows({
         return (
           <Fragment key={`${parentCode}-${level}-${sub.id}`}>
             <tr
-              className={`bg-slate-50/50 border-b border-slate-100/70 ${isExpandable ? 'cursor-pointer hover:bg-slate-100/50' : ''}`}
+              className={`bg-muted/50 border-b border-border/70 ${isExpandable ? 'cursor-pointer hover:bg-muted' : ''}`}
               onClick={isExpandable ? () => toggleSubRow(sub.id) : undefined}
             >
-              <td className={`p-4 ${INDENT_CLASS[indentLevel] ?? 'pl-8'} text-slate-600 text-xs`}>
+              <td className={`p-4 ${INDENT_CLASS[indentLevel] ?? 'pl-8'} text-foreground text-xs`}>
                 <div className="flex items-center gap-1.5">
                   {isExpandable && (
                     isSubExpanded ? (
-                      <ChevronDown size={12} className="text-slate-400 shrink-0" />
+                      <ChevronDown size={12} className="text-muted-foreground shrink-0" />
                     ) : (
-                      <ChevronRight size={12} className="text-slate-400 shrink-0" />
+                      <ChevronRight size={12} className="text-muted-foreground shrink-0" />
                     )
                   )}
-                  <span className="text-slate-400 mr-1">{
+                  <span className="text-muted-foreground/70 mr-1">{
                     level === 'economic'
                       ? (grouping === 'fn' ? `ec:${sub.id}` : `fn:${sub.id}`)
                       : (grouping === 'fn' ? `fn:${sub.id}` : `ec:${sub.id}`)
@@ -366,30 +365,30 @@ function ExpandedSubRows({
                   {sub.name}
                 </div>
               </td>
-              <td className="p-4 text-right text-slate-500 text-xs">
+              <td className="p-4 text-right text-muted-foreground text-xs">
                 {formatCurrency(sub.budget, 'compact', currency)}
               </td>
-              <td className="p-4 text-right text-slate-600 text-xs">
+              <td className="p-4 text-right text-foreground text-xs">
                 {formatCurrency(sub.committed, 'compact', currency)}
               </td>
               <td className="p-4 text-right">
                 <span
                   className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${
                     executionPercent > 90
-                      ? 'bg-slate-100 text-slate-600'
-                      : 'bg-slate-50 text-slate-400'
+                      ? 'bg-muted text-foreground'
+                      : 'bg-muted/50 text-muted-foreground'
                   }`}
                 >
                   {executionPercent}%
                 </span>
               </td>
-              <td className="p-4 text-right text-slate-600 text-xs">
+              <td className="p-4 text-right text-foreground text-xs">
                 {formatCurrency(sub.paid, 'compact', currency)}
               </td>
-              <td className="p-4 text-right text-slate-600 text-xs">
+              <td className="p-4 text-right text-foreground text-xs">
                 <div className="flex items-center justify-end gap-1">
                   {unpaid > 0 && (
-                    <AlertCircle size={10} className="text-slate-300" />
+                    <AlertCircle size={10} className="text-muted-foreground/50" />
                   )}
                   {formatCurrency(unpaid, 'compact', currency)}
                 </div>
@@ -418,10 +417,10 @@ function SortIcon({ column, sortCol, sortDir }: {
   readonly sortDir: SortDir
 }) {
   if (sortCol !== column) {
-    return <ArrowUpDown size={12} className="text-slate-300 ml-1 inline-block" />
+    return <ArrowUpDown size={12} className="text-muted-foreground/50 ml-1 inline-block" />
   }
   return (
-    <span className="ml-1 text-slate-600 inline-block">
+    <span className="ml-1 text-foreground inline-block">
       {sortDir === 'asc' ? '\u25B2' : '\u25BC'}
     </span>
   )
@@ -504,8 +503,8 @@ export function DetailTable({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+      <div className="w-full min-w-0 rounded-[28px] border border-border/50 bg-card">
+        <div className="p-6 border-b border-border/50 flex justify-between items-center">
           <Skeleton className="h-6 w-48" />
           <Skeleton className="h-8 w-32" />
         </div>
@@ -520,13 +519,13 @@ export function DetailTable({
 
   if (!data || data.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-6 border-b border-slate-100">
-          <h3 className="text-lg font-bold text-slate-800">
+      <div className="w-full min-w-0 rounded-[28px] border border-border/50 bg-card">
+        <div className="p-6 border-b border-border/50">
+          <h3 className="text-lg font-bold text-card-foreground">
             <Trans>Table Detail</Trans>
           </h3>
         </div>
-        <div className="p-8 text-center text-slate-400">
+        <div className="p-8 text-center text-muted-foreground">
           <Trans>No data available</Trans>
         </div>
       </div>
@@ -536,88 +535,82 @@ export function DetailTable({
   const canExpand = !!filter
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
-        <h3 className="text-lg font-bold text-slate-800 shrink-0">
+    <div className="w-full min-w-0 rounded-[28px] border border-border/50 bg-card">
+      <div className="px-6 py-4 border-b border-border/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <h3 className="text-lg font-bold text-card-foreground shrink-0">
           <Trans>Table Detail</Trans>
         </h3>
-        <div className="flex items-center gap-5">
-          <div className="flex items-center gap-2">
-            <Label className="text-xs text-muted-foreground whitespace-nowrap"><Trans>Grouping</Trans></Label>
-            <ToggleGroup
-              type="single"
-              value={grouping}
-              onValueChange={(v: string) => { if (v) onGroupingChange?.(v as Grouping, detailLevel) }}
-              size="sm"
-            >
-              <ToggleGroupItem value="fn"><Trans>Functional</Trans></ToggleGroupItem>
-              <ToggleGroupItem value="ec"><Trans>Economic</Trans></ToggleGroupItem>
-            </ToggleGroup>
-          </div>
-          <div className="flex items-center gap-2">
-            <Label className="text-xs text-muted-foreground whitespace-nowrap"><Trans>Detail Level</Trans></Label>
-            <ToggleGroup
-              type="single"
-              value={detailLevel}
-              onValueChange={(v: string) => { if (v) onGroupingChange?.(grouping, v as DetailLevel) }}
-              size="sm"
-            >
-              <ToggleGroupItem value="chapter"><Trans>Main Chapters</Trans></ToggleGroupItem>
-              <ToggleGroupItem value="detailed"><Trans>Detailed Categories</Trans></ToggleGroupItem>
-            </ToggleGroup>
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+            onClick={() => onGroupingChange?.(grouping === 'fn' ? 'ec' : 'fn', detailLevel)}
+          >
+            {grouping === 'fn' ? <Trans>Switch to Economic</Trans> : <Trans>Switch to Functional</Trans>}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+            onClick={() => onGroupingChange?.(grouping, detailLevel === 'chapter' ? 'detailed' : 'chapter')}
+          >
+            {detailLevel === 'chapter' ? <Trans>Show Detailed</Trans> : <Trans>Show Chapters</Trans>}
+          </Button>
           {onDownload && (
-            <button
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
               onClick={onDownload}
-              className="text-sm text-blue-600 font-medium flex items-center gap-1 hover:text-blue-700 transition-colors ml-1"
             >
-              <Download size={14} />
+              <Download className="mr-1.5 h-4 w-4" />
               <Trans>Download Excel</Trans>
-            </button>
+            </Button>
           )}
         </div>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+      <div className="max-w-[calc(100vw-2rem)] overflow-x-auto sm:max-w-none">
+        <table className="w-full min-w-[640px] text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+            <tr className="bg-muted text-muted-foreground text-xs uppercase tracking-wider">
               <th
-                className="p-4 font-semibold border-b border-slate-200 cursor-pointer select-none hover:text-slate-700"
+                className="px-2 py-3 font-semibold border-b border-border cursor-pointer select-none hover:text-foreground"
                 onClick={() => toggleSort('name')}
               >
                 <Trans>Budget Chapter</Trans>
                 <SortIcon column="name" sortCol={sortCol} sortDir={sortDir} />
               </th>
               <th
-                className="p-4 font-semibold border-b border-slate-200 text-right cursor-pointer select-none hover:text-slate-700"
+                className="px-2 py-3 font-semibold border-b border-border text-right cursor-pointer select-none hover:text-foreground"
                 onClick={() => toggleSort('budget')}
               >
                 <Trans>Budget Credits</Trans>
                 <SortIcon column="budget" sortCol={sortCol} sortDir={sortDir} />
               </th>
               <th
-                className="p-4 font-semibold border-b border-slate-200 text-right cursor-pointer select-none hover:text-slate-700"
+                className="px-2 py-3 font-semibold border-b border-border text-right cursor-pointer select-none hover:text-foreground"
                 onClick={() => toggleSort('committed')}
               >
                 <Trans>Legal commitments</Trans>
                 <SortIcon column="committed" sortCol={sortCol} sortDir={sortDir} />
               </th>
               <th
-                className="p-4 font-semibold border-b border-slate-200 text-right cursor-pointer select-none hover:text-slate-700"
+                className="px-2 py-3 font-semibold border-b border-border text-right cursor-pointer select-none hover:text-foreground"
                 onClick={() => toggleSort('percent')}
               >
                 <Trans>Execution %</Trans>
                 <SortIcon column="percent" sortCol={sortCol} sortDir={sortDir} />
               </th>
               <th
-                className="p-4 font-semibold border-b border-slate-200 text-right cursor-pointer select-none hover:text-slate-700"
+                className="px-2 py-3 font-semibold border-b border-border text-right cursor-pointer select-none hover:text-foreground"
                 onClick={() => toggleSort('paid')}
               >
                 <Trans>Payments Made</Trans>
                 <SortIcon column="paid" sortCol={sortCol} sortDir={sortDir} />
               </th>
               <th
-                className="p-4 font-semibold border-b border-slate-200 text-right cursor-pointer select-none hover:text-slate-700"
+                className="px-2 py-3 font-semibold border-b border-border text-right cursor-pointer select-none hover:text-foreground"
                 onClick={() => toggleSort('unpaid')}
               >
                 <Trans>To Pay</Trans>
@@ -640,48 +633,48 @@ export function DetailTable({
                     className={`transition-colors ${
                       canExpand ? 'cursor-pointer' : ''
                     } ${
-                      isExpanded ? 'bg-slate-50' : 'hover:bg-slate-50'
+                      isExpanded ? 'bg-muted' : 'hover:bg-muted'
                     } ${
-                      idx !== sortedData.length - 1 || isExpanded ? 'border-b border-slate-100' : ''
+                      idx !== sortedData.length - 1 || isExpanded ? 'border-b border-border' : ''
                     }`}
                     onClick={canExpand ? () => toggleRow(item.id) : undefined}
                   >
-                    <td className="p-4 font-medium text-slate-800">
+                    <td className="px-2 py-3 font-medium text-card-foreground max-w-[180px] break-words">
                       <div className="flex items-center gap-2">
                         {canExpand && (
                           isExpanded ? (
-                            <ChevronDown size={16} className="text-slate-400 shrink-0" />
+                            <ChevronDown size={16} className="text-muted-foreground shrink-0" />
                           ) : (
-                            <ChevronRight size={16} className="text-slate-400 shrink-0" />
+                            <ChevronRight size={16} className="text-muted-foreground shrink-0" />
                           )
                         )}
                         {item.name}
                       </div>
                     </td>
-                    <td className="p-4 text-right text-slate-600">
+                    <td className="px-2 py-3 text-right text-muted-foreground whitespace-nowrap">
                       {formatCurrency(item.budget, 'compact', currency)}
                     </td>
-                    <td className="p-4 text-right text-slate-700">
+                    <td className="px-2 py-3 text-right text-foreground whitespace-nowrap">
                       {formatCurrency(item.committed, 'compact', currency)}
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="px-2 py-3 text-right whitespace-nowrap">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
                           executionPercent > 90
-                            ? 'bg-slate-100 text-slate-700'
-                            : 'bg-slate-50 text-slate-500'
+                            ? 'bg-muted text-foreground'
+                            : 'bg-muted/50 text-muted-foreground'
                         }`}
                       >
                         {executionPercent}%
                       </span>
                     </td>
-                    <td className="p-4 text-right text-slate-700">
+                    <td className="px-2 py-3 text-right text-foreground whitespace-nowrap">
                       {formatCurrency(item.paid, 'compact', currency)}
                     </td>
-                    <td className="p-4 text-right text-slate-700">
+                    <td className="px-2 py-3 text-right text-foreground whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1">
                         {unpaid > 0 && (
-                          <AlertCircle size={12} className="text-slate-400" />
+                          <AlertCircle size={12} className="text-muted-foreground/50" />
                         )}
                         {formatCurrency(unpaid, 'compact', currency)}
                       </div>
@@ -703,30 +696,30 @@ export function DetailTable({
           </tbody>
           <tfoot>
             <tr
-              className="bg-slate-50 border-t border-slate-200 text-sm"
+              className="bg-primary/10 border-t-2 border-border text-sm"
               data-testid="detail-table-total-row"
             >
-              <td className="p-4 font-semibold text-slate-700">
+              <td className="pl-6 pr-2 py-3 text-base font-black text-foreground rounded-bl-[28px]">
                 <Trans>Total</Trans>
               </td>
-              <td className="p-4 text-right font-semibold text-slate-700" data-testid="detail-table-total-budget">
+              <td className="px-2 py-3 text-right font-semibold text-foreground" data-testid="detail-table-total-budget">
                 {formatCurrency(totals.budget, 'compact', currency)}
               </td>
-              <td className="p-4 text-right font-semibold text-slate-700" data-testid="detail-table-total-committed">
+              <td className="px-2 py-3 text-right font-semibold text-foreground" data-testid="detail-table-total-committed">
                 {formatCurrency(totals.committed, 'compact', currency)}
               </td>
-              <td className="p-4 text-right" data-testid="detail-table-total-execution-percent">
-                <span className="px-2 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-700">
+              <td className="px-2 py-3 text-right" data-testid="detail-table-total-execution-percent">
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-background text-foreground">
                   {totalExecutionPercent}%
                 </span>
               </td>
-              <td className="p-4 text-right font-semibold text-slate-700" data-testid="detail-table-total-paid">
+              <td className="px-2 py-3 text-right font-semibold text-foreground" data-testid="detail-table-total-paid">
                 {formatCurrency(totals.paid, 'compact', currency)}
               </td>
-              <td className="p-4 text-right font-semibold text-slate-700" data-testid="detail-table-total-unpaid">
+              <td className="px-2 py-3 text-right font-semibold text-foreground rounded-br-[28px]" data-testid="detail-table-total-unpaid">
                 <div className="flex items-center justify-end gap-1">
                   {totalUnpaid > 0 && (
-                    <AlertCircle size={12} className="text-slate-400" />
+                    <AlertCircle size={12} className="text-muted-foreground/50" />
                   )}
                   {formatCurrency(totalUnpaid, 'compact', currency)}
                 </div>

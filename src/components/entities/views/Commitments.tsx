@@ -9,7 +9,7 @@
  * 5. Detailed Table
  */
 
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { EntityDetailsData } from '@/lib/api/entities'
 import {
   useCommitmentsSummary,
@@ -32,11 +32,12 @@ import {
   StatCard,
   CommitmentsTrends,
   CategoryChart,
-  CommitmentInfoPanel,
   DetailTable,
   type CategoryData,
 } from '@/components/commitments'
 import { EntityReportsSummary } from '@/components/entities/EntityReportsSummary'
+import { Button } from '@/components/ui/button'
+import { Users } from 'lucide-react'
 import { t } from '@lingui/core/macro'
 import { getClassificationName } from '@/lib/classifications'
 import {
@@ -62,6 +63,13 @@ type Props = {
   readonly onSelectPeriod?: (label: string) => void
   readonly selectedQuarter?: string
   readonly selectedMonth?: string
+  readonly onReportTypeToggle?: () => void
+  readonly onNormalizationToggle?: () => void
+  readonly reportTypeLabel?: string
+  readonly normalizationLabel?: string
+  readonly allowPerCapita?: boolean
+  readonly headerSlot?: ReactNode
+  readonly reportsSlot?: ReactNode
 }
 
 /**
@@ -123,6 +131,13 @@ export function CommitmentsView({
   onSelectPeriod,
   selectedQuarter,
   selectedMonth,
+  onReportTypeToggle,
+  onNormalizationToggle,
+  reportTypeLabel,
+  normalizationLabel,
+  allowPerCapita,
+  headerSlot,
+  reportsSlot,
 }: Props) {
   const cui = entity?.cui ?? ''
   const entityName = entity?.name ?? ''
@@ -382,15 +397,16 @@ export function CommitmentsView({
       : t`Annual budget unavailable`
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      {headerSlot}
+
       {/* Level 1: KPI Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <StatCard
           title={t`Total Allocated Budget`}
           value={totalBudget}
           subtitle={t`Final Budget Credits`}
           variant="budget"
-          icon="up"
           currency={normalized.currency}
           isLoading={isSummaryLoading}
         />
@@ -399,7 +415,6 @@ export function CommitmentsView({
           value={committed}
           subtitle={commitmentsSubtitle}
           variant="committed"
-          icon="scale"
           currency={normalized.currency}
           isLoading={isSummaryLoading}
         />
@@ -408,7 +423,6 @@ export function CommitmentsView({
           value={paid}
           subtitle={paymentsSubtitle}
           variant="paid"
-          icon="down"
           currency={normalized.currency}
           isLoading={isSummaryLoading}
         />
@@ -437,15 +451,41 @@ export function CommitmentsView({
 
       {/* Level 3: Financial Flow Visualization is temporarily hidden. */}
 
-      {/* Level 4: Category Breakdown + Info Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CategoryChart
-          data={categoryChartData}
-          currency={normalized.currency}
-          isLoading={isCategoryLoading}
-        />
-        <CommitmentInfoPanel />
-      </div>
+      {/* Level 4: Category Breakdown */}
+      <CategoryChart
+        data={categoryChartData}
+        currency={normalized.currency}
+        isLoading={isCategoryLoading}
+      />
+
+      {/* Report type & normalization toggle buttons (opt-in) */}
+      {(onReportTypeToggle || onNormalizationToggle) && (
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          {onReportTypeToggle && reportTypeLabel && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+              onClick={onReportTypeToggle}
+            >
+              {reportTypeLabel}
+            </Button>
+          )}
+          {onNormalizationToggle && normalizationLabel && allowPerCapita && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+              onClick={onNormalizationToggle}
+            >
+              <Users className="mr-1.5 h-4 w-4" aria-hidden="true" />
+              {normalizationLabel}
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Level 5: Detailed Table */}
       <DetailTable
@@ -458,15 +498,17 @@ export function CommitmentsView({
         onGroupingChange={onCommitmentsGroupingChange}
       />
 
-      <div className="mt-6">
-        <EntityReportsSummary
-          cui={cui}
-          reportPeriod={reportPeriod}
-          reportType={commitmentReportType ?? effectiveReportType}
-          mainCreditorCui={mainCreditorCui}
-          limit={12}
-        />
-      </div>
+      {reportsSlot ?? (
+        <div className="mt-6">
+          <EntityReportsSummary
+            cui={cui}
+            reportPeriod={reportPeriod}
+            reportType={commitmentReportType ?? effectiveReportType}
+            mainCreditorCui={mainCreditorCui}
+            limit={12}
+          />
+        </div>
+      )}
     </div>
   )
 }

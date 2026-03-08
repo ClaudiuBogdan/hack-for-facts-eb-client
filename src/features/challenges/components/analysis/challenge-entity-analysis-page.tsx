@@ -34,6 +34,7 @@ import { DEFAULT_SELECTED_YEAR, defaultYearRange } from '@/schemas/charts'
 import {
   type GqlReportType,
   toReportTypeValue,
+  toCommitmentReportType,
 } from '@/schemas/reporting'
 import type { ChallengeLocale } from '../../types'
 import type { PublicMapViewport } from '@/features/advanced-map-analytics/hooks/use-public-map-viewport'
@@ -41,7 +42,9 @@ import { areMapCentersEqual } from '@/features/advanced-map-analytics/map-viewpo
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics'
 import { ChallengeEntityAnalysisLoadingShell } from './challenge-entity-analysis-loading-shell'
 import { ChallengeEntityAnalysisExplainer } from './challenge-entity-analysis-explainer'
+import { ChallengeCommitmentsExplainer } from './challenge-commitments-explainer'
 import { ChallengeEntityFaqSection } from './challenge-entity-faq-section'
+import { ChallengeEntityViewNavigator } from './challenge-entity-view-navigator'
 import { ChallengeEntityAnalysisHeader } from './challenge-entity-analysis-header'
 import { ChallengeEntityAnomalySummary } from './challenge-entity-anomaly-summary'
 import {
@@ -51,6 +54,7 @@ import {
   type ChallengeEntityInitialSettings,
 } from './challenge-entity-analysis-queries'
 import { ChallengeEntityGroupedLineItems } from './challenge-entity-grouped-line-items'
+import type { ChallengeEntityViewOption } from './challenge-entity-view-menu'
 import {
   CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS,
   getChallengeEntityMapPreviewDefinition,
@@ -61,14 +65,25 @@ import {
   type ChallengeEntitySubordinateCardItem,
 } from './challenge-entity-subordinates-section'
 import { DeferredSectionGate } from './challenge-entity-deferred-section-gate'
+import type {
+  ChallengeEntityAnalysisCommitmentsDetailLevel,
+  ChallengeEntityAnalysisCommitmentsGrouping,
+  ChallengeEntityAnalysisView,
+} from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
 
 type ChallengeEntityAnalysisPageProps = {
   readonly entityCui: string
   readonly languageQuery?: ChallengeLocale
   readonly state: ChallengeEntityAnalysisPageState
+  readonly commitmentsGrouping?: ChallengeEntityAnalysisCommitmentsGrouping
+  readonly commitmentsDetailLevel?: ChallengeEntityAnalysisCommitmentsDetailLevel
   readonly initialSettings?: ChallengeEntityInitialSettings
   readonly onStateChange: (
     patch: Partial<ChallengeEntityAnalysisPageState>,
+  ) => void
+  readonly onCommitmentsViewStateChange?: (
+    grouping: ChallengeEntityAnalysisCommitmentsGrouping,
+    detailLevel: ChallengeEntityAnalysisCommitmentsDetailLevel,
   ) => void
   readonly onEntityResolved?: () => void
 }
@@ -82,6 +97,7 @@ export type ChallengeEntityAnalysisPageState = {
   readonly selectedYear: number
   readonly reportType: ChallengeEntityReportType
   readonly normalization: 'total' | 'per_capita'
+  readonly activeView: ChallengeEntityAnalysisView
   readonly treemapAccountCategory: ChallengeTreemapAccountCategory
   readonly treemapPrimary: 'fn' | 'ec'
   readonly treemapPath: readonly string[]
@@ -113,6 +129,18 @@ function loadChallengeEntityReportsSection() {
   return import('./challenge-entity-reports-section')
 }
 
+function loadContractsView() {
+  return import('@/components/entities/views/ContractsView')
+}
+
+function loadCommitmentsView() {
+  return import('@/components/entities/views/Commitments')
+}
+
+function loadInsStatsView() {
+  return import('@/components/entities/views/ins-stats-view')
+}
+
 const DeferredMapAnalyticsPublicPreviewCard = lazy(() =>
   loadMapAnalyticsPublicPreviewCard().then((module) => ({
     default: module.MapAnalyticsPublicPreviewCard,
@@ -128,7 +156,37 @@ const DeferredChallengeEntityReportsSection = lazy(() =>
     default: module.ChallengeEntityReportsSection,
   })),
 )
+const DeferredContractsView = lazy(() =>
+  loadContractsView().then((module) => ({
+    default: module.ContractsView,
+  })),
+)
+const DeferredCommitmentsView = lazy(() =>
+  loadCommitmentsView().then((module) => ({
+    default: module.CommitmentsView,
+  })),
+)
+const DeferredInsStatsView = lazy(() =>
+  loadInsStatsView().then((module) => ({
+    default: module.InsStatsView,
+  })),
+)
 const CHALLENGE_DETAILED_ANALYTICS_REPORT_TYPE = toReportTypeValue('DETAILED')
+
+const CHALLENGE_ENTITY_VIEW_LABELS = {
+  ro: {
+    'main-info': 'Informații Principale',
+    contracts: 'Contracte',
+    commitments: 'Angajamente',
+    ins: 'INS',
+  },
+  en: {
+    'main-info': 'Main Info',
+    contracts: 'Contracts',
+    commitments: 'Commitments',
+    ins: 'INS',
+  },
+} as const satisfies Record<'ro' | 'en', Record<ChallengeEntityAnalysisView, string>>
 
 const MAP_PREVIEW_LABELS = {
   ro: {
@@ -601,18 +659,32 @@ function DeferredSectionFallback(props: {
   )
 }
 
+function EntityViewContentFallback() {
+  return (
+    <Card className="rounded-[28px] border-border/50">
+      <CardContent className="flex min-h-[360px] items-center justify-center p-6">
+        <LoadingSpinner text={t`Loading view…`} />
+      </CardContent>
+    </Card>
+  )
+}
+
 export function ChallengeEntityAnalysisPage({
   entityCui,
   languageQuery,
   state,
+  commitmentsGrouping,
+  commitmentsDetailLevel,
   initialSettings,
   onStateChange,
+  onCommitmentsViewStateChange,
   onEntityResolved,
 }: ChallengeEntityAnalysisPageProps) {
   const {
     selectedYear,
     reportType: selectedReportType,
     normalization: normalizationMode,
+    activeView,
     treemapAccountCategory,
     treemapPrimary,
     treemapPath,
@@ -657,6 +729,7 @@ export function ChallengeEntityAnalysisPage({
     displayCurrency,
     displayInflationAdjusted,
     confirmSettingsApplied,
+    setSettings,
   } = useGlobalSettings(initialSettings ?? {
     currency: DEFAULT_CURRENCY,
     inflationAdjusted: DEFAULT_INFLATION_ADJUSTED,
@@ -1151,6 +1224,63 @@ export function ChallengeEntityAnalysisPage({
     })
   }
 
+  const handleNormalizationOptionsChange = useCallback(
+    (next: NormalizationOptions) => {
+      if (
+        (next.normalization === 'total' ||
+          next.normalization === 'per_capita') &&
+        next.normalization !== normalizationMode
+      ) {
+        onStateChange({
+          normalization: next.normalization,
+        })
+      }
+
+      const nextGlobalSettingsPatch: {
+        currency?: 'RON' | 'EUR' | 'USD'
+        inflationAdjusted?: boolean
+      } = {}
+
+      if (
+        next.currency !== undefined &&
+        next.currency !== displayCurrency
+      ) {
+        nextGlobalSettingsPatch.currency = next.currency
+      }
+
+      if (
+        next.inflation_adjusted !== undefined &&
+        next.inflation_adjusted !== displayInflationAdjusted
+      ) {
+        nextGlobalSettingsPatch.inflationAdjusted = next.inflation_adjusted
+      }
+
+      if (Object.keys(nextGlobalSettingsPatch).length > 0) {
+        setSettings(nextGlobalSettingsPatch)
+      }
+    },
+    [
+      displayCurrency,
+      displayInflationAdjusted,
+      normalizationMode,
+      onStateChange,
+      setSettings,
+    ],
+  )
+
+  const handleViewChange = useCallback(
+    (nextView: ChallengeEntityAnalysisView) => {
+      if (nextView === activeView) {
+        return
+      }
+
+      onStateChange({
+        activeView: nextView,
+      })
+    },
+    [activeView, onStateChange],
+  )
+
   const handleMapPreviewSelection = (nextMapPreviewKey: ChallengeEntityMapPreviewKey) => {
     if (nextMapPreviewKey === mapPreviewKey) {
       return
@@ -1171,6 +1301,27 @@ export function ChallengeEntityAnalysisPage({
         ? CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS
         : [selectedMapPreviewDefinition],
     [isMapPreviewSelectorExpanded, selectedMapPreviewDefinition],
+  )
+  const availableViews = useMemo<readonly ChallengeEntityViewOption[]>(
+    () => [
+      {
+        id: 'main-info',
+        label: CHALLENGE_ENTITY_VIEW_LABELS[locale]['main-info'],
+      },
+      {
+        id: 'contracts',
+        label: CHALLENGE_ENTITY_VIEW_LABELS[locale].contracts,
+      },
+      {
+        id: 'commitments',
+        label: CHALLENGE_ENTITY_VIEW_LABELS[locale].commitments,
+      },
+      {
+        id: 'ins',
+        label: CHALLENGE_ENTITY_VIEW_LABELS[locale].ins,
+      },
+    ],
+    [locale],
   )
 
   const handleRetry = () => {
@@ -1231,7 +1382,10 @@ export function ChallengeEntityAnalysisPage({
     )
   }
 
-  const pageCopy = MAP_PREVIEW_MISC_COPY[resolveChallengePageLocale(languageQuery)]
+  const entity = entityDetailsQuery.data
+
+  const pageCopy =
+    MAP_PREVIEW_MISC_COPY[resolveChallengePageLocale(languageQuery)]
   const treemapTitle =
     treemapAccountCategory === 'vn'
       ? pageCopy.revenueDistribution
@@ -1270,178 +1424,97 @@ export function ChallengeEntityAnalysisPage({
     subordinateRankingQuery.isLoading && !subordinateRankingQuery.data
   const isSubordinatesSectionError = subordinateRankingQuery.isError
 
-  return (
-    <div className="space-y-4 sm:space-y-6 pb-10">
-      <ChallengeEntityAnalysisHeader
-        entity={entityDetailsQuery.data}
-        selectedYear={selectedYear}
-        availableYears={CHALLENGE_AVAILABLE_YEARS}
-        onYearChange={handleYearChange}
-        showInflationBadge={displayInflationAdjusted}
-        languageQuery={languageQuery}
-      />
+  const renderActiveView = () => {
+    switch (activeView) {
+      case 'contracts':
+        return (
+          <Suspense fallback={<EntityViewContentFallback />}>
+            <DeferredContractsView entity={entity} />
+          </Suspense>
+        )
 
-      <ChallengeEntityAnalysisExplainer
-        locale={locale}
-        reportType={selectedReportType}
-        inflationAdjusted={displayInflationAdjusted}
-      />
-
-      <EntityFinancialSummary
-        totalIncome={entityDetailsQuery.data.totalIncome}
-        totalExpenses={entityDetailsQuery.data.totalExpenses}
-        budgetBalance={entityDetailsQuery.data.budgetBalance}
-        periodLabel={periodLabel}
-        normalizationOptions={displayNormalizationOptions}
-        trends={summaryTrends}
-        density="compact-desktop"
-      />
-
-      <EntityFinancialTrends
-        entityCui={entityCui}
-        incomeTrend={entityDetailsQuery.data.incomeTrend ?? null}
-        expenseTrend={entityDetailsQuery.data.expenseTrend ?? null}
-        balanceTrend={entityDetailsQuery.data.balanceTrend ?? null}
-        currentYear={selectedYear}
-        entityName={entityDetailsQuery.data.name}
-        normalizationOptions={displayNormalizationOptions}
-        onYearChange={handleYearChange}
-        showControls={false}
-        showChartEditorLink={false}
-      />
-
-      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-          onClick={handleReportTypeToggle}
-        >
-          {reportTypeCtaLabel}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-          onClick={handleNormalizationToggle}
-        >
-          <Users className="mr-1.5 h-4 w-4" aria-hidden="true" />
-          {normalizationCtaLabel}
-        </Button>
-      </div>
-
-      <div className="space-y-3">
-        {isPublicMapPreviewReady ? (
-          <Suspense fallback={<MapPreviewSectionFallback />}>
-            <DeferredMapAnalyticsPublicPreviewCard
-              mapKey={selectedMapPreviewDefinition.key}
-              mapDescription={selectedMapPreviewCopy.mapDescription}
-              mapStateDefinition={selectedMapPreviewStateDefinition}
-              selectedYearOverride={selectedYear}
-              reportTypeOverride={toReportTypeValue(selectedReportType)}
-              normalizationOverride={normalizationMode}
-              currencyOverride={currency}
-              inflationAdjustedOverride={inflationAdjusted}
-              mapNameOverride={localizedSelectedMapPreviewName}
-              mapZoomOverride={publicMapViewport.mapZoom}
-              mapCenterOverride={publicMapViewport.mapCenter}
-              onMapViewportChange={handlePublicMapViewportChange}
+      case 'commitments':
+        return (
+          <Suspense fallback={<EntityViewContentFallback />}>
+            <DeferredCommitmentsView
+              entity={entity}
+              currentYear={selectedYear}
+              reportPeriod={reportPeriod}
+              trendPeriod={CHALLENGE_TREND_PERIOD}
+              reportType={selectedReportType}
+              normalizationOptions={queryNormalizationOptions}
+              onNormalizationChange={handleNormalizationOptionsChange}
+              commitmentsGrouping={commitmentsGrouping}
+              commitmentsDetailLevel={commitmentsDetailLevel}
+              onCommitmentsGroupingChange={onCommitmentsViewStateChange}
+              onYearChange={handleYearChange}
+              onReportTypeToggle={handleReportTypeToggle}
+              onNormalizationToggle={handleNormalizationToggle}
+              reportTypeLabel={reportTypeCtaLabel}
+              normalizationLabel={normalizationCtaLabel}
+              allowPerCapita
+              headerSlot={
+                <ChallengeCommitmentsExplainer
+                  locale={locale}
+                  reportType={selectedReportType}
+                  inflationAdjusted={displayInflationAdjusted}
+                  isPerCapita={normalizationMode === 'per_capita'}
+                />
+              }
+              reportsSlot={
+                <DeferredChallengeEntityReportsSection
+                  locale={locale}
+                  entityCui={entityCui}
+                  selectedYear={selectedYear}
+                  reportType={toCommitmentReportType(selectedReportType) ?? selectedReportType}
+                />
+              }
             />
           </Suspense>
-        ) : (
-          <MapPreviewSectionFallback />
-        )}
+        )
 
-        <div
-          id="challenge-entity-map-preview-switcher"
-          className="flex flex-col gap-2 sm:flex-row sm:flex-wrap"
-        >
-          {visibleMapPreviewDefinitions.map((mapPreviewDefinition) => (
-            <Button
-              key={mapPreviewDefinition.key}
-              type="button"
-              variant={
-                mapPreviewDefinition.key === selectedMapPreviewDefinition.key
-                  ? 'default'
-                  : 'outline'
-              }
-              size="sm"
-              className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-              onClick={() =>
-                handleMapPreviewSelection(mapPreviewDefinition.key)
-              }
-            >
-              {getLocalizedMapPreviewLabel(
-                mapPreviewDefinition.key,
-                languageQuery,
-              )}
-            </Button>
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="rounded-full"
-            onClick={handleMapPreviewSelectorToggle}
-            aria-controls="challenge-entity-map-preview-switcher"
-            aria-expanded={isMapPreviewSelectorExpanded}
-            aria-label={
-              isMapPreviewSelectorExpanded
-                ? pageCopy.hideMapPreviewOptions
-                : pageCopy.showMapPreviewOptions
-            }
-          >
-            {isMapPreviewSelectorExpanded ? <Minus /> : <Plus />}
-          </Button>
-        </div>
-      </div>
+      case 'ins':
+        return (
+          <Suspense fallback={<EntityViewContentFallback />}>
+            <DeferredInsStatsView
+              entity={entity}
+              reportPeriod={reportPeriod}
+            />
+          </Suspense>
+        )
 
-      <div className="space-y-3">
-        <Card className="rounded-[28px] border-border/50">
-          <CardHeader>
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1">
-                <CardTitle className="text-xl font-black tracking-tight">
-                  {treemapTitle}
-                </CardTitle>
-                <p className="text-sm font-medium text-muted-foreground">
-                  {showsIncomeEconomicMessage
-                    ? pageCopy.revenueWithoutEconomicCode
-                    : treemapSubtitle}
-                </p>
-              </div>
-              {showsIncomeEconomicMessage ? null : (
-                <FilteredSpendingInfo
-                  excludedItemsSummary={excludedItemsSummary ?? undefined}
-                  unit={treemapUnit}
-                  amountFilter={amountFilter}
-                  triggerVariant="icon"
-                />
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="-mx-4 px-4 sm:mx-0 sm:px-0">
-              {showsIncomeEconomicMessage ? (
-                <div className="rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-6 py-12 text-center text-sm font-medium text-muted-foreground">
-                  {pageCopy.revenueWithoutEconomicCode}
-                </div>
-              ) : (
-                <BudgetTreemap
-                  data={treemapData}
-                  primary={activePrimary}
-                  onNodeClick={onNodeClick}
-                  onBreadcrumbClick={onBreadcrumbClick}
-                  path={breadcrumbs}
-                  normalization={displayNormalizationOptions.normalization}
-                  currency={displayNormalizationOptions.currency}
-                  excludedItemsSummary={excludedItemsSummary}
-                  amountFilter={amountFilter}
-                />
-              )}
-            </div>
+      case 'main-info':
+      default:
+        return (
+          <>
+            <ChallengeEntityAnalysisExplainer
+              locale={locale}
+              reportType={selectedReportType}
+              inflationAdjusted={displayInflationAdjusted}
+            />
+
+            <EntityFinancialSummary
+              totalIncome={entity.totalIncome}
+              totalExpenses={entity.totalExpenses}
+              budgetBalance={entity.budgetBalance}
+              periodLabel={periodLabel}
+              normalizationOptions={displayNormalizationOptions}
+              trends={summaryTrends}
+              density="compact-desktop"
+            />
+
+            <EntityFinancialTrends
+              entityCui={entityCui}
+              incomeTrend={entity.incomeTrend ?? null}
+              expenseTrend={entity.expenseTrend ?? null}
+              balanceTrend={entity.balanceTrend ?? null}
+              currentYear={selectedYear}
+              entityName={entity.name}
+              normalizationOptions={displayNormalizationOptions}
+              onYearChange={handleYearChange}
+              showControls={false}
+              showChartEditorLink={false}
+            />
 
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               <Button
@@ -1449,21 +1522,10 @@ export function ChallengeEntityAnalysisPage({
                 variant="outline"
                 size="sm"
                 className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-                onClick={handleTreemapAccountCategoryToggle}
+                onClick={handleReportTypeToggle}
               >
-                {treemapAccountCategoryCtaLabel}
+                {reportTypeCtaLabel}
               </Button>
-              {isIncomeTreemap ? null : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-                  onClick={handleTreemapPrimaryToggle}
-                >
-                  {treemapPrimaryCtaLabel}
-                </Button>
-              )}
               <Button
                 type="button"
                 variant="outline"
@@ -1474,109 +1536,280 @@ export function ChallengeEntityAnalysisPage({
                 <Users className="mr-1.5 h-4 w-4" aria-hidden="true" />
                 {normalizationCtaLabel}
               </Button>
-              <div className="hidden basis-full sm:block" />
-              {isIncomeTreemap ? null : showTreemapResetShortcut ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-                  onClick={handleResetTreemapToAllExpenses}
-                >
-                  {pageCopy.showAllSpending}
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-                  onClick={handleAdministrativeExpensesShortcut}
-                >
-                  {pageCopy.showAdministrativeSpending}
-                </Button>
-              )}
             </div>
 
-            <ChallengeEntityGroupedLineItems
-              accountTitle={groupedLineItemsAccountTitle}
-              lineItems={groupedLineItems}
-              accountCategory={treemapAccountCategory}
-              groupBy={treemapPrimary}
-              currentYear={selectedYear}
+            <div className="space-y-3">
+              {isPublicMapPreviewReady ? (
+                <Suspense fallback={<MapPreviewSectionFallback />}>
+                  <DeferredMapAnalyticsPublicPreviewCard
+                    mapKey={selectedMapPreviewDefinition.key}
+                    mapDescription={selectedMapPreviewCopy.mapDescription}
+                    mapStateDefinition={selectedMapPreviewStateDefinition}
+                    selectedYearOverride={selectedYear}
+                    reportTypeOverride={toReportTypeValue(selectedReportType)}
+                    normalizationOverride={normalizationMode}
+                    currencyOverride={currency}
+                    inflationAdjustedOverride={inflationAdjusted}
+                    mapNameOverride={localizedSelectedMapPreviewName}
+                    mapZoomOverride={publicMapViewport.mapZoom}
+                    mapCenterOverride={publicMapViewport.mapCenter}
+                    onMapViewportChange={handlePublicMapViewportChange}
+                  />
+                </Suspense>
+              ) : (
+                <MapPreviewSectionFallback />
+              )}
+
+              <div
+                id="challenge-entity-map-preview-switcher"
+                className="flex flex-col gap-2 sm:flex-row sm:flex-wrap"
+              >
+                {visibleMapPreviewDefinitions.map((mapPreviewDefinition) => (
+                  <Button
+                    key={mapPreviewDefinition.key}
+                    type="button"
+                    variant={
+                      mapPreviewDefinition.key === selectedMapPreviewDefinition.key
+                        ? 'default'
+                        : 'outline'
+                    }
+                    size="sm"
+                    className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                    onClick={() =>
+                      handleMapPreviewSelection(mapPreviewDefinition.key)
+                    }
+                  >
+                    {getLocalizedMapPreviewLabel(
+                      mapPreviewDefinition.key,
+                      languageQuery,
+                    )}
+                  </Button>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full"
+                  onClick={handleMapPreviewSelectorToggle}
+                  aria-controls="challenge-entity-map-preview-switcher"
+                  aria-expanded={isMapPreviewSelectorExpanded}
+                  aria-label={
+                    isMapPreviewSelectorExpanded
+                      ? pageCopy.hideMapPreviewOptions
+                      : pageCopy.showMapPreviewOptions
+                  }
+                >
+                  {isMapPreviewSelectorExpanded ? <Minus /> : <Plus />}
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <Card className="rounded-[28px] border-border/50">
+                <CardHeader>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-1">
+                      <CardTitle className="text-xl font-black tracking-tight">
+                        {treemapTitle}
+                      </CardTitle>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        {showsIncomeEconomicMessage
+                          ? pageCopy.revenueWithoutEconomicCode
+                          : treemapSubtitle}
+                      </p>
+                    </div>
+                    {showsIncomeEconomicMessage ? null : (
+                      <FilteredSpendingInfo
+                        excludedItemsSummary={excludedItemsSummary ?? undefined}
+                        unit={treemapUnit}
+                        amountFilter={amountFilter}
+                        triggerVariant="icon"
+                      />
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="-mx-4 px-4 sm:mx-0 sm:px-0">
+                    {showsIncomeEconomicMessage ? (
+                      <div className="rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-6 py-12 text-center text-sm font-medium text-muted-foreground">
+                        {pageCopy.revenueWithoutEconomicCode}
+                      </div>
+                    ) : (
+                      <BudgetTreemap
+                        data={treemapData}
+                        primary={activePrimary}
+                        onNodeClick={onNodeClick}
+                        onBreadcrumbClick={onBreadcrumbClick}
+                        path={breadcrumbs}
+                        normalization={displayNormalizationOptions.normalization}
+                        currency={displayNormalizationOptions.currency}
+                        excludedItemsSummary={excludedItemsSummary}
+                        amountFilter={amountFilter}
+                      />
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                      onClick={handleTreemapAccountCategoryToggle}
+                    >
+                      {treemapAccountCategoryCtaLabel}
+                    </Button>
+                    {isIncomeTreemap ? null : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                        onClick={handleTreemapPrimaryToggle}
+                      >
+                        {treemapPrimaryCtaLabel}
+                      </Button>
+                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                      onClick={handleNormalizationToggle}
+                    >
+                      <Users className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                      {normalizationCtaLabel}
+                    </Button>
+                    <div className="hidden basis-full sm:block" />
+                    {isIncomeTreemap ? null : showTreemapResetShortcut ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                        onClick={handleResetTreemapToAllExpenses}
+                      >
+                        {pageCopy.showAllSpending}
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                        onClick={handleAdministrativeExpensesShortcut}
+                      >
+                        {pageCopy.showAdministrativeSpending}
+                      </Button>
+                    )}
+                  </div>
+
+                  <ChallengeEntityGroupedLineItems
+                    accountTitle={groupedLineItemsAccountTitle}
+                    lineItems={groupedLineItems}
+                    accountCategory={treemapAccountCategory}
+                    groupBy={treemapPrimary}
+                    currentYear={selectedYear}
+                    normalizationOptions={displayNormalizationOptions}
+                    presetSearchTerm={groupedLineItemsPresetSearchTerm}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            <DeferredSectionGate
+              className="min-h-[520px] sm:min-h-[540px]"
+              fallback={
+                <DeferredSectionFallback
+                  titleWidthClassName="w-52"
+                  bodyHeightClassName="h-[360px]"
+                  showControls
+                />
+              }
+              onPrefetch={handleCategoryEvolutionPrefetch}
+            >
+              <DeferredChallengeEntityCategoryEvolution
+                locale={locale}
+                entityCui={entityCui}
+                lineItems={entityLineItemsQuery.data?.nodes ?? []}
+                currentYear={selectedYear}
+                reportType={selectedReportType}
+                trendPeriod={CHALLENGE_TREND_PERIOD}
+                queryNormalizationOptions={queryNormalizationOptions}
+                displayNormalizationOptions={displayNormalizationOptions}
+                onYearChange={handleYearChange}
+                accountCategory={evolutionAccountCategory}
+                primary={evolutionPrimary}
+                onStateChange={(patch) => onStateChange(patch)}
+              />
+            </DeferredSectionGate>
+
+            <ChallengeEntitySubordinatesSection
+              locale={locale}
+              items={subordinateCards}
+              totalResultsCount={totalSubordinateCount}
+              isLoading={isSubordinatesSectionLoading}
+              isError={isSubordinatesSectionError}
+              onRetry={handleSubordinatesRetry}
               normalizationOptions={displayNormalizationOptions}
-              presetSearchTerm={groupedLineItemsPresetSearchTerm}
+              showAllSearch={showAllSubordinatesSearch}
             />
-          </CardContent>
-        </Card>
-      </div>
 
-      <DeferredSectionGate
-        className="min-h-[520px] sm:min-h-[540px]"
-        fallback={
-          <DeferredSectionFallback
-            titleWidthClassName="w-52"
-            bodyHeightClassName="h-[360px]"
-            showControls
-          />
-        }
-        onPrefetch={handleCategoryEvolutionPrefetch}
-      >
-        <DeferredChallengeEntityCategoryEvolution
-          locale={locale}
-          entityCui={entityCui}
-          lineItems={entityLineItemsQuery.data?.nodes ?? []}
-          currentYear={selectedYear}
-          reportType={selectedReportType}
-          trendPeriod={CHALLENGE_TREND_PERIOD}
-          queryNormalizationOptions={queryNormalizationOptions}
-          displayNormalizationOptions={displayNormalizationOptions}
-          onYearChange={handleYearChange}
-          accountCategory={evolutionAccountCategory}
-          primary={evolutionPrimary}
-          onStateChange={(patch) => onStateChange(patch)}
-        />
-      </DeferredSectionGate>
+            <ChallengeEntityAnomalySummary
+              locale={locale}
+              lineItems={entityLineItemsQuery.data?.nodes ?? []}
+              normalizationOptions={displayNormalizationOptions}
+            />
 
-      <ChallengeEntitySubordinatesSection
-        locale={locale}
-        items={subordinateCards}
-        totalResultsCount={totalSubordinateCount}
-        isLoading={isSubordinatesSectionLoading}
-        isError={isSubordinatesSectionError}
-        onRetry={handleSubordinatesRetry}
-        normalizationOptions={displayNormalizationOptions}
-        showAllSearch={showAllSubordinatesSearch}
+            <DeferredSectionGate
+              className="min-h-[320px] sm:min-h-[360px]"
+              fallback={
+                <DeferredSectionFallback
+                  titleWidthClassName="w-44"
+                  bodyHeightClassName="h-[220px]"
+                />
+              }
+              onPrefetch={handleReportsSectionPrefetch}
+            >
+              <DeferredChallengeEntityReportsSection
+                locale={locale}
+                entityCui={entityCui}
+                selectedYear={selectedYear}
+                reportType={selectedReportType}
+              />
+            </DeferredSectionGate>
+
+            <ChallengeEntityViewNavigator
+              views={availableViews}
+              activeView={activeView}
+              onViewChange={handleViewChange}
+              locale={locale}
+            />
+
+            <ChallengeEntityFaqSection
+              locale={locale}
+              inflationAdjusted={displayInflationAdjusted}
+            />
+          </>
+        )
+    }
+  }
+
+  return (
+    <div className="space-y-4 sm:space-y-6 pb-10">
+      <ChallengeEntityAnalysisHeader
+        entity={entity}
+        selectedYear={selectedYear}
+        availableYears={CHALLENGE_AVAILABLE_YEARS}
+        onYearChange={handleYearChange}
+        activeView={activeView}
+        availableViews={availableViews}
+        onViewChange={handleViewChange}
+        showInflationBadge={displayInflationAdjusted}
+        languageQuery={languageQuery}
       />
 
-      <ChallengeEntityAnomalySummary
-        locale={locale}
-        lineItems={entityLineItemsQuery.data?.nodes ?? []}
-        normalizationOptions={displayNormalizationOptions}
-      />
-
-      <DeferredSectionGate
-        className="min-h-[320px] sm:min-h-[360px]"
-        fallback={
-          <DeferredSectionFallback
-            titleWidthClassName="w-44"
-            bodyHeightClassName="h-[220px]"
-          />
-        }
-        onPrefetch={handleReportsSectionPrefetch}
-      >
-        <DeferredChallengeEntityReportsSection
-          locale={locale}
-          entityCui={entityCui}
-          selectedYear={selectedYear}
-          reportType={selectedReportType}
-        />
-      </DeferredSectionGate>
-
-      <ChallengeEntityFaqSection
-        locale={locale}
-        inflationAdjusted={displayInflationAdjusted}
-      />
+      {renderActiveView()}
     </div>
   )
 }

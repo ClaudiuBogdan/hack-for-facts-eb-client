@@ -202,7 +202,7 @@ const CommitmentsTrendsComponent: React.FC<CommitmentsTrendsProps> = ({
       const prettyLabel =
         periodType === 'MONTH' ? monthNames[label ?? ''] ?? String(label) : String(label)
       return (
-        <div className="bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm p-3 border border-slate-300 dark:border-slate-700 rounded-lg shadow-lg">
+        <div className="bg-white/80 dark:bg-slate-800/90 backdrop-blur-sm p-3 border border-border rounded-lg shadow-lg">
           <p className="label font-bold mb-2">
             {heading}: {prettyLabel}
           </p>
@@ -353,7 +353,7 @@ const CommitmentsTrendsComponent: React.FC<CommitmentsTrendsProps> = ({
           <SafeResponsiveContainer width="100%" height={400}>
             <ComposedChart
               data={mergedData}
-              margin={{ top: 30, right: 40, left: unit.length * 5 + 30, bottom: 5 }}
+              margin={{ top: 30, right: 40, left: Math.min(unit.length * 5 + 20, 60), bottom: 5 }}
               onClick={handleChartClick}
               onMouseMove={handleChartHover}
               className="cursor-pointer"

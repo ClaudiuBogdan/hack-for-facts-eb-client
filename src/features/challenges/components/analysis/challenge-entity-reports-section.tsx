@@ -19,7 +19,7 @@ type ChallengeEntityReportsSectionProps = {
   readonly locale: ChallengeLocale
   readonly entityCui: string
   readonly selectedYear: number
-  readonly reportType: Extract<GqlReportType, 'PRINCIPAL_AGGREGATED' | 'DETAILED'>
+  readonly reportType: GqlReportType
 }
 
 const MAX_VISIBLE_REPORTS = 5

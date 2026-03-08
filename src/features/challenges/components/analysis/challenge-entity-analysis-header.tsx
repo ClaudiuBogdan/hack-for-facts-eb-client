@@ -1,69 +1,47 @@
-import { t } from '@lingui/core/macro'
-import { Link } from '@tanstack/react-router'
-import { useQueryClient } from '@tanstack/react-query'
-import { ArrowLeftRight, Building2, Check, Link2, MapPin, Users } from 'lucide-react'
+import type { MouseEvent } from 'react'
+import { Calendar, ChevronDown, MapPin, Users } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select'
-import { getSiteUrl } from '@/config/env'
-import { CAMPAIGN_BASE_PATH } from '@/features/campaigns/buget/constants'
-import { useEntityTypeLabel } from '@/hooks/filters/useFilterLabels'
-import { useIsMobile } from '@/hooks/use-mobile'
-import { ensureShortRedirectUrl } from '@/lib/api/shortLinks'
-import { useAuth } from '@/lib/auth'
+import { ResponsivePopover } from '@/components/ui/ResponsivePopover'
 import type { EntityDetailsData } from '@/lib/api/entities'
+import {
+  ChallengeEntityViewMenu,
+  type ChallengeEntityViewOption,
+  VIEW_ICONS,
+} from './challenge-entity-view-menu'
+import { ChallengeEntityYearMenu } from './challenge-entity-year-menu'
+import type { ChallengeEntityAnalysisView } from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
 import { cn } from '@/lib/utils'
 import type { ChallengeLocale } from '../../types'
 
 type ChallengeEntityAnalysisHeaderProps = {
-  readonly entity: Pick<EntityDetailsData, 'name' | 'entity_type' | 'uat'>
+  readonly entity: Pick<EntityDetailsData, 'name' | 'uat'>
   readonly selectedYear: number
   readonly availableYears: readonly number[]
   readonly onYearChange: (year: number) => void
+  readonly activeView: ChallengeEntityAnalysisView
+  readonly availableViews: readonly ChallengeEntityViewOption[]
+  readonly onViewChange: (view: ChallengeEntityAnalysisView) => void
   readonly showInflationBadge?: boolean
   readonly languageQuery?: ChallengeLocale
 }
 
-const LOCAL_GOVERNMENT_TYPE_LABELS = {
-  ro: {
-    admin_county_council: 'Județ',
-    admin_municipality: 'Municipiu',
-    admin_town_hall: 'Oraș',
-    admin_commune_hall: 'Comună',
-    admin_sector_hall: 'Sector',
-  },
-  en: {
-    admin_county_council: 'County',
-    admin_municipality: 'Municipality',
-    admin_town_hall: 'Town',
-    admin_commune_hall: 'Commune',
-    admin_sector_hall: 'Sector',
-  },
-} as const
 const COMPACT_HEADER_SHOW_THRESHOLD = 320
 
 const HEADER_COPY = {
   ro: {
     inhabitants: 'locuitori',
-    myCityHall: 'Primăria Mea',
-    period: 'Perioada',
+    yearMenuTitle: 'Selectează Anul',
     selectYear: 'Selectează anul',
-    copyLink: 'Copiază link',
-    changeCityHall: 'Schimbă Primăria',
+    viewMenuTitle: 'Alege Vizualizarea',
+    openViewMenu: 'Alege vizualizarea entității',
   },
   en: {
     inhabitants: 'inhabitants',
-    myCityHall: 'My City Hall',
-    period: 'Period',
+    yearMenuTitle: 'Select Year',
     selectYear: 'Select year',
-    copyLink: 'Copy link',
-    changeCityHall: 'Change City Hall',
+    viewMenuTitle: 'Choose View',
+    openViewMenu: 'Choose entity view',
   },
 } as const
 
@@ -86,33 +64,14 @@ export function ChallengeEntityAnalysisHeader({
   selectedYear,
   availableYears,
   onYearChange,
+  activeView,
+  availableViews,
+  onViewChange,
   showInflationBadge = false,
   languageQuery,
 }: ChallengeEntityAnalysisHeaderProps) {
   const locale = languageQuery === 'en' ? 'en' : 'ro'
   const copy = HEADER_COPY[locale]
-  const { isSignedIn } = useAuth()
-  const isMobile = useIsMobile()
-  const queryClient = useQueryClient()
-  const [shareCopied, setShareCopied] = useState(false)
-  const entityTypeLabel = useEntityTypeLabel()
-  const rawEntityCategory = entity.entity_type
-    ? entityTypeLabel.map(entity.entity_type)
-    : null
-  const localGovernmentTypeLabel = entity.entity_type
-    ? LOCAL_GOVERNMENT_TYPE_LABELS[locale][
-        entity.entity_type as keyof (typeof LOCAL_GOVERNMENT_TYPE_LABELS)['ro']
-      ]
-    : null
-  const entityCategory = entity.entity_type
-    ? localGovernmentTypeLabel ??
-      (rawEntityCategory && !rawEntityCategory.startsWith('id::')
-        ? normalizeDisplayText(
-            rawEntityCategory.replace(/^primărie\s+/i, ''),
-            languageQuery,
-          )
-        : null)
-    : null
   const countyNameRaw = entity.uat?.county_name?.trim() || null
   const countyName = countyNameRaw
     ? normalizeDisplayText(countyNameRaw, languageQuery)
@@ -124,7 +83,6 @@ export function ChallengeEntityAnalysisHeader({
           languageQuery === 'en' ? 'en-US' : 'ro-RO',
         ).format(entity.uat.population)
       : null
-  const linkSearch = languageQuery === 'en' ? { lang: 'en' as const } : {}
   const heroHeaderRef = useRef<HTMLElement | null>(null)
   const compactHeaderEnterFrameRef = useRef<number | null>(null)
   const compactHeaderScrollFrameRef = useRef<number | null>(null)
@@ -133,10 +91,18 @@ export function ChallengeEntityAnalysisHeader({
   const [shouldShowCompactHeader, setShouldShowCompactHeader] = useState(false)
   const [hasRenderedCompactHeader, setHasRenderedCompactHeader] = useState(false)
   const [isCompactHeaderVisible, setIsCompactHeaderVisible] = useState(false)
+  const [isViewMenuOpen, setIsViewMenuOpen] = useState(false)
+  const [isYearMenuOpen, setIsYearMenuOpen] = useState(false)
+  const [isCompactYearMenuOpen, setIsCompactYearMenuOpen] = useState(false)
   const [compactHeaderFrame, setCompactHeaderFrame] = useState<{
     readonly left: number
     readonly width: number
   } | null>(null)
+  const activeViewLabel =
+    availableViews.find((view) => view.id === activeView)?.label ??
+    availableViews[0]?.label ??
+    ''
+  const ActiveViewIcon = VIEW_ICONS[activeView]
 
   useEffect(() => {
     const syncCompactHeaderFrame = () => {
@@ -276,38 +242,44 @@ export function ChallengeEntityAnalysisHeader({
     }
   }, [])
 
-  const handleShare = async () => {
-    try {
-      const url = window.location.href
-      let linkToCopy = url
-      if (isSignedIn) {
-        try {
-          linkToCopy = await ensureShortRedirectUrl(
-            url,
-            getSiteUrl(),
-            queryClient,
-          )
-        } catch (e) {
-          console.error(
-            'Failed to generate short link, falling back to full URL',
-            e,
-          )
-        }
-      }
-      await navigator.clipboard.writeText(linkToCopy)
-      toast.success(t`Link copied to clipboard`)
-      setShareCopied(true)
-      setTimeout(() => setShareCopied(false), 2000)
-    } catch (err) {
-      console.error('Copy failed', err)
-      toast.error(t`Failed to copy link`)
-    }
-  }
-
   const inflationBadgeLabel =
     languageQuery === 'en'
       ? 'Inflation-adjusted values (2024)'
       : 'Valori ajustate cu inflația (2024)'
+
+  const stopCompactHeaderClickPropagation = (event: MouseEvent<HTMLElement>) => {
+    event.stopPropagation()
+  }
+
+  const handleCompactHeaderNameClick = (
+    event: MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.stopPropagation()
+
+    const prefersReducedMotion =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    window.scrollTo({
+      top: 0,
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+    })
+  }
+
+  const handleViewSelection = (view: ChallengeEntityAnalysisView) => {
+    setIsViewMenuOpen(false)
+    onViewChange(view)
+  }
+
+  const handleYearSelection = (year: number) => {
+    setIsYearMenuOpen(false)
+    onYearChange(year)
+  }
+
+  const handleCompactYearSelection = (year: number) => {
+    setIsCompactYearMenuOpen(false)
+    onYearChange(year)
+  }
 
   return (
     <>
@@ -315,9 +287,11 @@ export function ChallengeEntityAnalysisHeader({
         <div
           data-testid="challenge-entity-compact-header"
           aria-hidden={!isCompactHeaderVisible}
+          onClick={stopCompactHeaderClickPropagation}
           className={cn(
-            'pointer-events-none fixed top-0 z-40 overflow-hidden rounded-b-[28px] shadow-[0_16px_34px_-22px_rgba(15,23,42,0.32)] backdrop-blur-xl will-change-[translate,opacity]',
+            'fixed top-0 z-40 overflow-hidden rounded-b-[28px] shadow-[0_16px_34px_-22px_rgba(15,23,42,0.32)] backdrop-blur-xl will-change-[translate,opacity]',
             'transition-[opacity,translate] duration-[260ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:translate-y-0 motion-reduce:transition-opacity',
+            isCompactHeaderVisible ? 'pointer-events-auto' : 'pointer-events-none',
             isCompactHeaderVisible
               ? 'translate-y-0 opacity-100'
               : '-translate-y-5 opacity-0',
@@ -336,13 +310,40 @@ export function ChallengeEntityAnalysisHeader({
               <div className="flex flex-col gap-1">
                 <div className="flex min-w-0 items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="min-w-0 text-balance text-[1.65rem] font-black leading-[0.94] tracking-tight text-foreground sm:text-[2.8rem]">
+                    <button
+                      type="button"
+                      onClick={handleCompactHeaderNameClick}
+                      className="min-w-0 text-balance text-left text-[2.5rem] font-black leading-[0.94] tracking-tight text-foreground transition-colors hover:text-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 sm:text-[2.8rem]"
+                    >
                       {displayName}
-                    </p>
+                    </button>
                   </div>
-                  <span className="shrink-0 rounded-full border border-border/60 bg-background/80 px-3 py-1.5 text-[13px] font-black uppercase tracking-[0.16em] text-muted-foreground tabular-nums sm:text-sm">
-                    {selectedYear}
-                  </span>
+                  <ResponsivePopover
+                    open={isCompactYearMenuOpen}
+                    onOpenChange={setIsCompactYearMenuOpen}
+                    align="end"
+                    mobileSide="bottom"
+                    className="min-h-0 sm:w-auto sm:p-0"
+                    trigger={
+                      <button
+                        type="button"
+                        aria-label={copy.selectYear}
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border/60 bg-background/80 px-3 py-1.5 text-lg font-semibold text-foreground tabular-nums transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                      >
+                        <Calendar className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                        <span>{selectedYear}</span>
+                        <ChevronDown className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                      </button>
+                    }
+                    content={
+                      <ChallengeEntityYearMenu
+                        title={copy.yearMenuTitle}
+                        years={availableYears}
+                        selectedYear={selectedYear}
+                        onYearChange={handleCompactYearSelection}
+                      />
+                    }
+                  />
                 </div>
 
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
@@ -377,11 +378,8 @@ export function ChallengeEntityAnalysisHeader({
       >
         <div className="flex flex-col gap-4 sm:gap-6 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0 space-y-4">
-            <div className="space-y-2">
-              <p className="text-[11px] font-black uppercase tracking-[0.28em] text-muted-foreground">
-                {copy.myCityHall}
-              </p>
-              <h1 className="text-balance text-[1.85rem] font-black leading-[0.94] tracking-tight text-foreground sm:text-[2.55rem] md:text-[2.85rem] lg:text-5xl">
+            <div>
+              <h1 className="text-balance text-[3rem] font-black leading-[0.94] tracking-tight text-foreground md:text-[2.85rem] lg:text-5xl">
                 {displayName}
               </h1>
             </div>
@@ -390,12 +388,6 @@ export function ChallengeEntityAnalysisHeader({
               {showInflationBadge ? (
                 <Badge variant="secondary" className="gap-1.5 px-3 py-1">
                   {inflationBadgeLabel}
-                </Badge>
-              ) : null}
-              {entityCategory ? (
-                <Badge variant="secondary" className="gap-1.5 px-3 py-1">
-                  <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
-                  {entityCategory}
                 </Badge>
               ) : null}
               {countyName ? (
@@ -413,57 +405,60 @@ export function ChallengeEntityAnalysisHeader({
             </div>
           </div>
 
-          <div className="flex flex-col items-start gap-3 md:items-end">
-            <div className="rounded-2xl border border-border/60 bg-background/80 px-4 py-2">
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                {copy.period}
-              </p>
-              <Select
-                value={String(selectedYear)}
-                onValueChange={(value) => onYearChange(Number(value))}
-              >
-                <SelectTrigger
-                  aria-label={copy.selectYear}
-                  className="mt-1 h-auto w-auto min-w-[8.5rem] gap-2 border-0 bg-transparent p-0 text-left shadow-none focus:ring-2 focus:ring-primary/60"
-                >
-                  <span className="text-sm font-semibold text-foreground tabular-nums">
-                    {selectedYear}
-                  </span>
-                </SelectTrigger>
-                <SelectContent align="end">
-                  {availableYears.map((year) => (
-                    <SelectItem key={year} value={String(year)}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {!isMobile ? (
-              <div className="flex items-center gap-2">
+          <div className="flex shrink-0 flex-wrap items-center justify-start gap-2 md:flex-col md:items-end md:gap-3">
+            <ResponsivePopover
+              open={isViewMenuOpen}
+              onOpenChange={setIsViewMenuOpen}
+              align="end"
+              mobileSide="bottom"
+              className="min-h-0 sm:w-auto sm:p-0"
+              trigger={
                 <button
                   type="button"
-                  onClick={handleShare}
-                  aria-label={copy.copyLink}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-muted/40 text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                  aria-label={copy.openViewMenu}
+                  className="inline-flex min-w-[7.5rem] items-center gap-2 whitespace-nowrap rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                 >
-                  {shareCopied ? (
-                    <Check className="h-4 w-4" aria-hidden="true" />
-                  ) : (
-                    <Link2 className="h-4 w-4" aria-hidden="true" />
-                  )}
+                  <ActiveViewIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="min-w-0 flex-1 truncate">{activeViewLabel}</span>
+                  <ChevronDown className="h-4 w-4 shrink-0" aria-hidden="true" />
                 </button>
-                <Link
-                  to={`${CAMPAIGN_BASE_PATH}/cauta` as '/'}
-                  search={linkSearch}
-                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+              }
+              content={
+                <ChallengeEntityViewMenu
+                  title={copy.viewMenuTitle}
+                  views={availableViews}
+                  activeView={activeView}
+                  onViewChange={handleViewSelection}
+                />
+              }
+            />
+
+            <ResponsivePopover
+              open={isYearMenuOpen}
+              onOpenChange={setIsYearMenuOpen}
+              align="end"
+              mobileSide="bottom"
+              className="min-h-0 sm:w-auto sm:p-0"
+              trigger={
+                <button
+                  type="button"
+                  aria-label={copy.selectYear}
+                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-foreground tabular-nums transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                 >
-                  <ArrowLeftRight className="h-4 w-4" aria-hidden="true" />
-                  {copy.changeCityHall}
-                </Link>
-              </div>
-            ) : null}
+                  <Calendar className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>{selectedYear}</span>
+                  <ChevronDown className="h-4 w-4 shrink-0" aria-hidden="true" />
+                </button>
+              }
+              content={
+                <ChallengeEntityYearMenu
+                  title={copy.yearMenuTitle}
+                  years={availableYears}
+                  selectedYear={selectedYear}
+                  onYearChange={handleYearSelection}
+                />
+              }
+            />
           </div>
         </div>
       </section>
