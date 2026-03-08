@@ -1,4 +1,10 @@
-import { useState, memo, useCallback, useMemo } from 'react'
+import {
+  useState,
+  memo,
+  useCallback,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react'
 import { Info, ExternalLink } from 'lucide-react'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
@@ -19,6 +25,12 @@ import {
   SheetFooter,
 } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { ClassificationDescription } from '@/components/classification-explorer/ClassificationDescription'
 import type { ClassificationType } from '@/types/classification-explorer'
 import { Link } from '@tanstack/react-router'
@@ -26,7 +38,8 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 
 // Static classes extracted outside component to avoid recreation
-const BASE_CLASSES = 'inline-flex items-center justify-center rounded-full p-1 hover:scale-110 transition-scale duration-200 cursor-pointer'
+const BASE_CLASSES =
+  'inline-grid place-items-center rounded-full border-0 bg-transparent p-1 text-inherit transition-transform duration-200 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 touch-manipulation'
 const HOVER_CLASSES_VISIBLE = ''
 const HOVER_CLASSES_HIDDEN = 'hidden group-hover:inline-flex md:inline-flex md:opacity-0 md:group-hover:opacity-100'
 
@@ -37,7 +50,17 @@ type ClassificationInfoLinkProps = Readonly<{
   className?: string
   iconClassName?: string
   showOnHoverOnly?: boolean
+  disabled?: boolean
   onClick?: (e: React.MouseEvent) => void
+  menuActions?: readonly ClassificationInfoMenuAction[]
+  onOverlayOpenChange?: (open: boolean) => void
+  onTriggerInteraction?: () => void
+}>
+
+export type ClassificationInfoMenuAction = Readonly<{
+  key: string
+  label: ReactNode
+  onSelect: () => void
 }>
 
 // Helper to render navigation button - avoids nested ternaries
@@ -174,77 +197,183 @@ export const ClassificationInfoLink = memo(function ClassificationInfoLink({
   className = '',
   iconClassName = 'h-4 w-4 text-slate-600 dark:text-slate-300',
   showOnHoverOnly = true,
+  disabled = false,
   onClick,
+  menuActions,
+  onOverlayOpenChange,
+  onTriggerInteraction,
 }: ClassificationInfoLinkProps) {
-  const [open, setOpen] = useState(false)
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const isMobile = useIsMobile()
-
-  // Memoize computed values
-  const normalizedCode = useMemo(
-    () => (code ? code.replace(/(\.00)+$/, '') : undefined),
-    [code]
+  const normalizedCode = code ? code.replace(/(\.00)+$/, '') : undefined
+  const hasMenuActions = (menuActions?.length ?? 0) > 0
+  const mergedClassName = cn(
+    'ml-2',
+    BASE_CLASSES,
+    showOnHoverOnly ? HOVER_CLASSES_HIDDEN : HOVER_CLASSES_VISIBLE,
+    menuOpen && 'inline-grid opacity-100 md:inline-grid md:opacity-100',
+    className,
   )
+  const titleAttr =
+    title
+    ?? (normalizedCode
+      ? `Open ${type} classification ${normalizedCode}`
+      : `Open ${type} classifications`)
 
-  const mergedClassName = useMemo(() => {
-    const hoverClasses = showOnHoverOnly ? HOVER_CLASSES_HIDDEN : HOVER_CLASSES_VISIBLE
-    return cn('ml-2', BASE_CLASSES, hoverClasses, className)
-  }, [showOnHoverOnly, className])
+  const reportOverlayOpenChange = useCallback((nextMenuOpen: boolean, nextDetailsOpen: boolean) => {
+    onOverlayOpenChange?.(nextMenuOpen || nextDetailsOpen)
+  }, [onOverlayOpenChange])
 
-  const titleAttr = useMemo(
-    () => title ?? (normalizedCode ? `Open ${type} classification ${normalizedCode}` : `Open ${type} classifications`),
-    [title, normalizedCode, type]
-  )
+  const handleMenuOpenChange = useCallback((nextMenuOpen: boolean) => {
+    setMenuOpen(nextMenuOpen)
+    reportOverlayOpenChange(nextMenuOpen, detailsOpen)
+  }, [detailsOpen, reportOverlayOpenChange])
+
+  const handleDetailsOpenChange = useCallback((nextDetailsOpen: boolean) => {
+    setDetailsOpen(nextDetailsOpen)
+    reportOverlayOpenChange(menuOpen, nextDetailsOpen)
+  }, [menuOpen, reportOverlayOpenChange])
+
+  const stopEventPropagation = useCallback((event: React.SyntheticEvent) => {
+    event.stopPropagation()
+    const nativeEvent = event.nativeEvent as Event & {
+      stopImmediatePropagation?: () => void
+    }
+    nativeEvent.stopImmediatePropagation?.()
+    onTriggerInteraction?.()
+  }, [onTriggerInteraction])
 
   // Memoize event handlers
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation()
-    e.preventDefault()
-    onClick?.(e)
-    setOpen(true)
-  }, [onClick])
+  const handleTriggerClick = useCallback((e: React.MouseEvent) => {
+    stopEventPropagation(e)
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.stopPropagation()
+    if (disabled) {
       e.preventDefault()
-      setOpen(true)
+      return
     }
-  }, [])
+
+    onClick?.(e)
+
+    if (!hasMenuActions) {
+      handleDetailsOpenChange(true)
+    }
+  }, [disabled, handleDetailsOpenChange, hasMenuActions, onClick, stopEventPropagation])
+
+  const handleTriggerPointerDown = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    stopEventPropagation(event)
+  }, [stopEventPropagation])
+
+  const handleTriggerMouseDown = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    stopEventPropagation(event)
+  }, [stopEventPropagation])
 
   const handleClose = useCallback(() => {
-    setOpen(false)
-  }, [])
+    handleDetailsOpenChange(false)
+  }, [handleDetailsOpenChange])
+
+  const handleTriggerKeyDown = useCallback((event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return
+    }
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    if (disabled) {
+      return
+    }
+
+    if (hasMenuActions) {
+      handleMenuOpenChange(!menuOpen)
+      return
+    }
+
+    handleDetailsOpenChange(true)
+  }, [disabled, handleDetailsOpenChange, handleMenuOpenChange, hasMenuActions, menuOpen])
+
+  const handleOpenDetails = useCallback(() => {
+    setMenuOpen(false)
+    setDetailsOpen(true)
+    reportOverlayOpenChange(false, true)
+  }, [reportOverlayOpenChange])
 
   // Render trigger element (always rendered)
   const trigger = (
-    <span
+    <div
       role="button"
-      tabIndex={0}
-      onClick={handleClick}
-      onKeyDown={handleKeyDown}
+      tabIndex={disabled ? -1 : 0}
+      onClick={handleTriggerClick}
+      onPointerDown={handleTriggerPointerDown}
+      onMouseDown={handleTriggerMouseDown}
+      onKeyDown={handleTriggerKeyDown}
       className={mergedClassName}
       title={titleAttr}
+      aria-label={titleAttr}
+      aria-haspopup={hasMenuActions ? 'menu' : 'dialog'}
+      aria-expanded={hasMenuActions ? menuOpen : detailsOpen}
+      aria-disabled={disabled}
     >
-      <Info className={iconClassName} />
-    </span>
+      <Info className={iconClassName} aria-hidden="true" />
+    </div>
   )
 
-  // Only render Dialog/Sheet when open - this is the key optimization
-  if (isMobile) {
+  const detailsContent = isMobile ? (
+    <Sheet open={detailsOpen} onOpenChange={handleDetailsOpenChange}>
+      <SheetContent side="bottom" className="rounded-t-xl max-h-[85vh] overflow-y-auto">
+        <SheetContentInner
+          type={type}
+          normalizedCode={normalizedCode}
+          onClose={handleClose}
+        />
+      </SheetContent>
+    </Sheet>
+  ) : (
+    <Dialog open={detailsOpen} onOpenChange={handleDetailsOpenChange}>
+      <DialogContent
+        className="max-w-xl max-h-[85vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <DialogContentInner
+          type={type}
+          normalizedCode={normalizedCode}
+          onClose={handleClose}
+        />
+      </DialogContent>
+    </Dialog>
+  )
+
+  if (hasMenuActions) {
     return (
       <>
-        {trigger}
-        {open && (
-          <Sheet open={open} onOpenChange={setOpen}>
-            <SheetContent side="bottom" className="rounded-t-xl max-h-[85vh] overflow-y-auto">
-              <SheetContentInner
-                type={type}
-                normalizedCode={normalizedCode}
-                onClose={handleClose}
-              />
-            </SheetContent>
-          </Sheet>
-        )}
+        <DropdownMenu open={menuOpen} onOpenChange={handleMenuOpenChange}>
+          <DropdownMenuTrigger asChild>
+            {trigger}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {menuActions?.map((menuAction) => (
+              <DropdownMenuItem
+                key={menuAction.key}
+                onSelect={(event) => {
+                  event.preventDefault()
+                  menuAction.onSelect()
+                  handleMenuOpenChange(false)
+                }}
+              >
+                {menuAction.label}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuItem
+              onSelect={(event) => {
+                event.preventDefault()
+                handleOpenDetails()
+              }}
+            >
+              <Trans>Info</Trans>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {detailsOpen ? detailsContent : null}
       </>
     )
   }
@@ -252,20 +381,7 @@ export const ClassificationInfoLink = memo(function ClassificationInfoLink({
   return (
     <>
       {trigger}
-      {open && (
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogContent
-            className="max-w-xl max-h-[85vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <DialogContentInner
-              type={type}
-              normalizedCode={normalizedCode}
-              onClose={handleClose}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
+      {detailsOpen ? detailsContent : null}
     </>
   )
 })

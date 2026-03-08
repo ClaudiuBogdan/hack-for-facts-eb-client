@@ -117,6 +117,8 @@ interface MapAnalyticsWorkspaceProps {
   onApplyImportedConfig?: (config: ImportedMapConfig) => Promise<void> | void;
   onBeforeExportConfig?: () => Promise<void> | void;
   layout?: 'full' | 'preview';
+  previewContainerClassName?: string;
+  onEntityCuiSelect?: (entityCui: string) => void;
 }
 
 // NOTE: Do not use module-scope t`` — it freezes the translation at import time.
@@ -140,6 +142,8 @@ export function MapAnalyticsWorkspace({
   onApplyImportedConfig,
   onBeforeExportConfig,
   layout = 'full',
+  previewContainerClassName,
+  onEntityCuiSelect,
 }: Readonly<MapAnalyticsWorkspaceProps>) {
   const navigate = useNavigate();
   const [userCurrency] = useUserCurrency();
@@ -1545,12 +1549,17 @@ export function MapAnalyticsWorkspace({
         return;
       }
 
+      if (mode === 'public' && onEntityCuiSelect) {
+        onEntityCuiSelect(row.entityCui);
+        return;
+      }
+
       navigate({
         to: '/entities/$cui',
         params: { cui: row.entityCui },
       });
     },
-    [navigate]
+    [mode, navigate, onEntityCuiSelect]
   );
 
   const handleMapFeatureClick = useCallback(
@@ -1569,12 +1578,17 @@ export function MapAnalyticsWorkspace({
         return;
       }
 
+      if (onEntityCuiSelect) {
+        onEntityCuiSelect(entityCui);
+        return;
+      }
+
       navigate({
         to: '/entities/$cui',
         params: { cui: entityCui },
       });
     },
-    [mode, navigate, uatMetadataBySirutaCode]
+    [mode, navigate, onEntityCuiSelect, uatMetadataBySirutaCode]
   );
 
   useEffect(() => {
@@ -1703,7 +1717,12 @@ export function MapAnalyticsWorkspace({
 
   if (isPreviewLayout) {
     return (
-      <div className="relative isolate h-[420px] overflow-hidden sm:h-[460px]">
+      <div
+        className={cn(
+          'relative isolate h-[420px] overflow-hidden sm:h-[460px]',
+          previewContainerClassName,
+        )}
+      >
         {isMapLoading ? (
           <div className="flex h-full w-full items-center justify-center">
             <LoadingSpinner size="lg" text={t`Loading advanced map analytics...`} />

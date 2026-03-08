@@ -189,6 +189,23 @@ describe('ChallengeEntityGroupedLineItems', () => {
     )
   })
 
+  it('passes analytics requests through to the grouped items display', () => {
+    const onAnalyticsRequest = vi.fn()
+
+    render(
+      <ChallengeEntityGroupedLineItems
+        {...defaultProps}
+        onAnalyticsRequest={onAnalyticsRequest}
+      />,
+    )
+
+    expect(groupedItemsDisplayMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        onAnalyticsRequest,
+      }),
+    )
+  })
+
   it('uses economic groups when the subsection is in economic mode', () => {
     render(
       <ChallengeEntityGroupedLineItems

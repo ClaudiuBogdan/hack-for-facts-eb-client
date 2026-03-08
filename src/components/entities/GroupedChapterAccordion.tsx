@@ -6,7 +6,13 @@ import GroupedSubchapterAccordion from './GroupedSubchapterAccordion';
 import { highlightText } from './highlight-utils';
 import { formatNormalizedValue, formatNumber } from '@/lib/utils';
 import { ClassificationInfoLink } from '@/components/common/classification-info-link';
+import { t } from '@lingui/core/macro';
 import type { Currency, Normalization } from '@/schemas/charts';
+import { buildGroupedItemAnalyticsRequest } from './FinancialDataCard';
+import type {
+  GroupedItemAnalyticsSelection,
+  GroupedItemAnalyticsRequest,
+} from './FinancialDataCard';
 import {
   GROUPED_CHAPTER_LABEL_CLASS_NAME,
   GROUPED_CHAPTER_LABEL_ROW_CLASS_NAME,
@@ -25,12 +31,31 @@ interface GroupedChapterAccordionProps {
   normalization?: Normalization;
   currency?: Currency;
   codePrefixForSubchapters?: 'fn' | 'ec';
+  analyticsSelection?: GroupedItemAnalyticsSelection;
+  analyticsPathOrder?: readonly ('fn' | 'ec')[];
+  onAnalyticsRequest?: (request: GroupedItemAnalyticsRequest) => void;
 }
 
-const GroupedChapterAccordion: React.FC<GroupedChapterAccordionProps> = ({ ch, baseTotal, searchTerm, normalization, currency, codePrefixForSubchapters = 'fn' }) => {
+const GroupedChapterAccordion: React.FC<GroupedChapterAccordionProps> = ({
+  ch,
+  baseTotal,
+  searchTerm,
+  normalization,
+  currency,
+  codePrefixForSubchapters = 'fn',
+  analyticsSelection,
+  analyticsPathOrder = codePrefixForSubchapters === 'ec' ? ['ec', 'fn'] : ['fn', 'ec'],
+  onAnalyticsRequest,
+}) => {
   const normalizationFormatOptions = { normalization: normalization ?? 'total', currency } as const
   const chapterClassificationType =
     codePrefixForSubchapters === 'ec' ? 'economic' : 'functional'
+  const chapterSelection = analyticsSelection
+    ?? (
+      codePrefixForSubchapters === 'ec'
+        ? { economicCode: ch.prefix }
+        : { functionalCode: ch.prefix }
+    )
   // Merge subchapters and functionals and sort by total amount descending
   const mergedSortedItems = React.useMemo(() => {
     const subs = (ch.subchapters ?? []).map((s) => ({ kind: 'sub' as const, amount: s.totalAmount, data: s }));
@@ -52,6 +77,24 @@ const GroupedChapterAccordion: React.FC<GroupedChapterAccordionProps> = ({ ch, b
                 code={ch.prefix}
                 className={GROUPED_INFO_LINK_CLASS_NAME}
                 showOnHoverOnly={false}
+                menuActions={
+                  onAnalyticsRequest
+                    ? [
+                        {
+                          key: 'analytics',
+                          label: t`Analytics`,
+                          onSelect: () =>
+                            onAnalyticsRequest(
+                              buildGroupedItemAnalyticsRequest({
+                              subjectLabel: ch.description,
+                                selection: chapterSelection,
+                                pathOrder: analyticsPathOrder,
+                              }),
+                            ),
+                        },
+                      ]
+                    : undefined
+                }
               />
             </div>
           </div>
@@ -81,6 +124,19 @@ const GroupedChapterAccordion: React.FC<GroupedChapterAccordionProps> = ({ ch, b
                   normalization={normalization}
                   currency={currency}
                   codePrefix={codePrefixForSubchapters}
+                  analyticsSelection={
+                    codePrefixForSubchapters === 'ec'
+                      ? {
+                          ...chapterSelection,
+                          economicCode: (entry.data as GroupedSubchapter).code,
+                        }
+                      : {
+                          ...chapterSelection,
+                          functionalCode: (entry.data as GroupedSubchapter).code,
+                        }
+                  }
+                  analyticsPathOrder={analyticsPathOrder}
+                  onAnalyticsRequest={onAnalyticsRequest}
                 />
               ) : (
                 <GroupedFunctionalAccordion
@@ -90,6 +146,9 @@ const GroupedChapterAccordion: React.FC<GroupedChapterAccordionProps> = ({ ch, b
                   searchTerm={searchTerm}
                   normalization={normalization}
                   currency={currency}
+                  analyticsSelection={chapterSelection}
+                  analyticsPathOrder={analyticsPathOrder}
+                  onAnalyticsRequest={onAnalyticsRequest}
                 />
               )
             ))}

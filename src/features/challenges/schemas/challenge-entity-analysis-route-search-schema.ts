@@ -5,6 +5,16 @@ import {
   normalizeChallengeEntityMapPreviewKey,
   type ChallengeEntityMapPreviewKey,
 } from '@/features/challenges/components/analysis/challenge-entity-public-maps'
+import {
+  type BudgetItemAnalyticsTarget,
+} from '@/features/challenges/components/analysis/budget-item-analytics-target'
+import {
+  normalizeBudgetItemAnalyticsSearchState,
+  type BudgetItemAnalyticsSearchStateInput,
+  type BudgetItemAnalyticsSearchState,
+} from '@/features/challenges/components/analysis/budget-item-analytics-search-state'
+import { CommitmentsMetricEnum } from '@/schemas/charts'
+import { parseSearchParamJson } from '@/lib/router-search'
 
 export const CHALLENGE_ENTITY_ANALYSIS_VIEW_VALUES = [
   'main-info',
@@ -53,6 +63,30 @@ export const ChallengeEntityAnalysisNormalizationSchema = z.enum([
   'per_capita',
 ])
 
+const ChallengeEntityAnalyticsPathEntrySchema = z.object({
+  type: ChallengeEntityAnalysisPrimarySchema,
+  code: z.string(),
+})
+
+const ChallengeEntityAnalyticsTargetSchema = z.object({
+  subjectLabel: z.string().optional(),
+  path: z.array(ChallengeEntityAnalyticsPathEntrySchema),
+})
+
+const ChallengeEntityAnalyticsViewSchema = z.object({
+  tab: z.enum(['execution', 'commitments']).optional(),
+  timeframe: z.enum(['selected', 'all']).optional(),
+  commitmentsMetric: CommitmentsMetricEnum.optional(),
+})
+
+const ChallengeEntityAnalyticsSearchStateSchema = z.object({
+  target: ChallengeEntityAnalyticsTargetSchema,
+  view: ChallengeEntityAnalyticsViewSchema.optional(),
+})
+
+export type ChallengeEntityAnalyticsTarget = BudgetItemAnalyticsTarget
+export type ChallengeEntityAnalyticsSearchState = BudgetItemAnalyticsSearchState
+
 const CurrencySchema = z.enum(['RON', 'EUR', 'USD'])
 const BooleanSearchParamSchema = z.union([
   z.boolean(),
@@ -75,6 +109,9 @@ export const ChallengeEntityAnalysisRouteSearchSchema = z.object({
   evolution_account: ChallengeEntityAnalysisAccountCategorySchema.optional(),
   evolution_primary: ChallengeEntityAnalysisPrimarySchema.optional(),
   public_map: z.string().optional(),
+  analytics: z
+    .preprocess(parseSearchParamJson, ChallengeEntityAnalyticsSearchStateSchema)
+    .optional(),
   view: z.string().optional(),
   commitments_grouping: z.string().optional(),
   commitments_detail_level: z.string().optional(),
@@ -98,6 +135,7 @@ export type ChallengeEntityAnalysisUrlState = {
   readonly year: number
   readonly report_type: 'PRINCIPAL_AGGREGATED' | 'DETAILED'
   readonly normalization: 'total' | 'per_capita'
+  readonly analytics?: ChallengeEntityAnalyticsSearchState
   readonly view: ChallengeEntityAnalysisView
   readonly treemap_account: 'ch' | 'vn'
   readonly treemap_primary: 'fn' | 'ec'
@@ -120,6 +158,29 @@ const CHALLENGE_ENTITY_COMMITMENTS_DETAIL_LEVEL_SET = new Set(
 
 function normalizePathCode(code: string): string {
   return code.trim()
+}
+
+function serializeChallengeEntityAnalyticsSearchState(
+  searchState: ChallengeEntityAnalyticsSearchState | undefined,
+) {
+  return searchState ? JSON.stringify(searchState) : undefined
+}
+
+function serializeRawChallengeEntityAnalyticsSearchState(searchState: unknown) {
+  if (searchState === undefined) {
+    return undefined
+  }
+
+  const parsedSearchState = parseSearchParamJson(searchState)
+  if (
+    !parsedSearchState ||
+    typeof parsedSearchState !== 'object' ||
+    Array.isArray(parsedSearchState)
+  ) {
+    return '__invalid__'
+  }
+
+  return JSON.stringify(parsedSearchState)
 }
 
 function isValidPathCode(code: string): boolean {
@@ -207,6 +268,30 @@ export function encodeChallengeTreemapPath(
   return normalizedPath.join(',')
 }
 
+export function decodeChallengeEntityAnalyticsSearchState(
+  searchState: unknown,
+): ChallengeEntityAnalyticsSearchState | undefined {
+  const parsedSearchState = parseSearchParamJson(searchState)
+
+  if (
+    !parsedSearchState ||
+    typeof parsedSearchState !== 'object' ||
+    Array.isArray(parsedSearchState)
+  ) {
+    return undefined
+  }
+
+  return normalizeBudgetItemAnalyticsSearchState(
+    parsedSearchState as Partial<ChallengeEntityAnalyticsSearchState>,
+  )
+}
+
+export function encodeChallengeEntityAnalyticsSearchState(
+  searchState: BudgetItemAnalyticsSearchStateInput,
+): ChallengeEntityAnalyticsSearchState | undefined {
+  return normalizeBudgetItemAnalyticsSearchState(searchState)
+}
+
 export function normalizeChallengeEntityAnalysisSearch(
   search: ChallengeEntityAnalysisRouteSearch | undefined,
 ): ChallengeEntityAnalysisUrlState {
@@ -219,6 +304,7 @@ export function normalizeChallengeEntityAnalysisSearch(
     year: search?.year ?? DEFAULT_SELECTED_YEAR,
     report_type: search?.report_type ?? 'PRINCIPAL_AGGREGATED',
     normalization: search?.normalization ?? 'total',
+    analytics: encodeChallengeEntityAnalyticsSearchState(search?.analytics),
     view: normalizeChallengeEntityAnalysisView(search?.view),
     treemap_account: treemapAccountCategory,
     treemap_primary:
@@ -259,6 +345,13 @@ export function buildChallengeEntityAnalysisCanonicalSearchPatch(
 
   if (search?.normalization !== normalizedSearch.normalization) {
     patch.normalization = normalizedSearch.normalization
+  }
+
+  if (
+    serializeRawChallengeEntityAnalyticsSearchState(search?.analytics) !==
+    serializeChallengeEntityAnalyticsSearchState(normalizedSearch.analytics)
+  ) {
+    patch.analytics = normalizedSearch.analytics
   }
 
   if (search?.view !== normalizedSearch.view) {

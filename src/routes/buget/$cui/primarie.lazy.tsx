@@ -15,6 +15,7 @@ import type { ChallengeEntityInitialSettings } from '@/features/challenges/compo
 import { useCampaignProgress } from '@/features/campaigns/buget/hooks/use-campaign-progress'
 import {
   CHALLENGE_ENTITY_ANALYSIS_INS_SEARCH_KEYS,
+  encodeChallengeEntityAnalyticsSearchState,
   type ChallengeEntityAnalysisRouteSearch,
   type ChallengeEntityAnalysisUrlState,
   buildChallengeEntityAnalysisCanonicalSearchPatch,
@@ -285,9 +286,29 @@ export function PrimarieEntityRoutePage() {
       state={pageState}
       commitmentsGrouping={normalizedSearch.commitments_grouping}
       commitmentsDetailLevel={normalizedSearch.commitments_detail_level}
+      analyticsTarget={normalizedSearch.analytics}
       initialSettings={loaderData?.initialSettings}
       onStateChange={handleStateChange}
       onCommitmentsViewStateChange={handleCommitmentsViewStateChange}
+      onAnalyticsTargetChange={(target) =>
+        updateSearch({
+          analytics: encodeChallengeEntityAnalyticsSearchState(target),
+        })
+      }
+      onEntityCuiChange={(nextEntityCui) => {
+        startTransition(() => {
+          void navigate({
+            to: '/buget/$cui/primarie',
+            params: { cui: nextEntityCui },
+            search: (previousSearch) =>
+              mergeWindowManagedSearchState(
+                previousSearch as Record<string, unknown>,
+              ),
+            replace: false,
+            resetScroll: false,
+          })
+        })
+      }}
       onEntityResolved={() => setIsEntityResolved(true)}
     />
   )

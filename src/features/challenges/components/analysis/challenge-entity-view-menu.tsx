@@ -54,7 +54,7 @@ export function ChallengeEntityViewMenu({
                 'hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
                 isActive
                   ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground',
+                  : 'text-foreground',
               )}
               onClick={() => onViewChange(view.id)}
             >

@@ -1,6 +1,7 @@
 import { type FC, useCallback, useEffect, useMemo, useRef, useState, useDeferredValue, startTransition } from 'react'
 import { Treemap, Tooltip } from 'recharts'
 import { Trans } from '@lingui/react/macro'
+import { t } from '@lingui/core/macro'
 import { motion, useAnimationControls } from 'framer-motion'
 import { ArrowLeft, LineChart } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
@@ -16,6 +17,11 @@ import { useTreemapChartLink } from './useTreemapChartLink'
 import { buildTreemapChartLink } from '@/lib/chart-links'
 import { ClassificationInfoLink } from '@/components/common/classification-info-link'
 import type { TreemapAmountFilter } from './useTreemapAmountFilter'
+import {
+  normalizeBudgetItemAnalyticsPath,
+  type BudgetItemAnalyticsPathEntry,
+  type BudgetItemAnalyticsRequest,
+} from '@/features/challenges/components/analysis/budget-item-analytics-target'
 
 const COLORS = [
   '#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d',
@@ -77,6 +83,32 @@ const isSafariBrowser = () => {
 }
 
 type BreadcrumbEntry = { code: string; label: string; type?: 'fn' | 'ec' }
+const EMPTY_BREADCRUMB_PATH: BreadcrumbEntry[] = []
+
+export type BudgetTreemapAnalyticsRequest = BudgetItemAnalyticsRequest
+
+export function resolveBudgetTreemapAnalyticsRequest(params: {
+  path: BreadcrumbEntry[]
+  nodeCode: string
+  nodeName: string
+  primary: 'fn' | 'ec'
+}): BudgetTreemapAnalyticsRequest {
+  const pathEntries: BudgetItemAnalyticsPathEntry[] = [
+    ...params.path.map((pathItem) => ({
+      type: pathItem.type ?? params.primary,
+      code: pathItem.code,
+    })),
+    {
+      type: params.primary,
+      code: params.nodeCode,
+    },
+  ]
+
+  return {
+    ...(params.nodeName ? { subjectLabel: params.nodeName } : {}),
+    path: normalizeBudgetItemAnalyticsPath(pathEntries),
+  }
+}
 
 type Props = {
   data: TreemapInput[]
@@ -91,6 +123,7 @@ type Props = {
   excludedItemsSummary?: ExcludedItemsSummary
   chartFilterInput?: AnalyticsFilterType // Optional filter input for the chart link
   amountFilter?: TreemapAmountFilter
+  onAnalyticsRequest?: (request: BudgetTreemapAnalyticsRequest) => void
 }
 
 type BudgetTreemapViewProps = Props & {
@@ -104,6 +137,224 @@ type TreemapNodePayload = {
   layoutValue: number
   code: string
   fill: string
+}
+
+type TreemapInfoTriggerLayout = {
+  code: string
+  x: number
+  y: number
+  classificationType: 'functional' | 'economic'
+  analyticsRequest: BudgetTreemapAnalyticsRequest | null
+}
+
+type OpenInfoCodes = Record<string, boolean>
+type InfoTriggerLayoutsByCode = Record<string, TreemapInfoTriggerLayout>
+
+function updateInfoTriggerLayouts(
+  previousLayouts: InfoTriggerLayoutsByCode,
+  code: string,
+  layout: TreemapInfoTriggerLayout | null,
+): InfoTriggerLayoutsByCode {
+  if (layout === null) {
+    if (!(code in previousLayouts)) {
+      return previousLayouts
+    }
+
+    const nextLayouts = { ...previousLayouts }
+    delete nextLayouts[code]
+    return nextLayouts
+  }
+
+  const previousLayout = previousLayouts[code]
+  if (
+    previousLayout
+    && previousLayout.x === layout.x
+    && previousLayout.y === layout.y
+    && previousLayout.classificationType === layout.classificationType
+    && previousLayout.analyticsRequest === layout.analyticsRequest
+  ) {
+    return previousLayouts
+  }
+
+  return {
+    ...previousLayouts,
+    [code]: layout,
+  }
+}
+
+function updateOpenInfoCodes(
+  previousCodes: OpenInfoCodes,
+  code: string,
+  open: boolean,
+): OpenInfoCodes {
+  if (open === Boolean(previousCodes[code])) {
+    return previousCodes
+  }
+
+  if (open) {
+    return {
+      ...previousCodes,
+      [code]: true,
+    }
+  }
+
+  const nextCodes = { ...previousCodes }
+  delete nextCodes[code]
+  return nextCodes
+}
+
+function pruneInfoTriggerLayouts(
+  previousLayouts: InfoTriggerLayoutsByCode,
+  visibleCodes: ReadonlySet<string>,
+): InfoTriggerLayoutsByCode {
+  let didChange = false
+  const nextLayouts = Object.fromEntries(
+    Object.entries(previousLayouts).filter(([code]) => {
+      const shouldKeep = visibleCodes.has(code)
+      if (!shouldKeep) {
+        didChange = true
+      }
+      return shouldKeep
+    }),
+  )
+
+  return didChange ? nextLayouts : previousLayouts
+}
+
+function pruneOpenInfoCodes(
+  previousCodes: OpenInfoCodes,
+  visibleCodes: ReadonlySet<string>,
+): OpenInfoCodes {
+  let didChange = false
+  const nextCodes = Object.fromEntries(
+    Object.entries(previousCodes).filter(([code, isOpen]) => {
+      const shouldKeep = visibleCodes.has(code) && isOpen
+      if (!shouldKeep && isOpen) {
+        didChange = true
+      }
+      return shouldKeep
+    }),
+  )
+
+  return didChange ? nextCodes : previousCodes
+}
+
+function useTreemapInfoTriggers(filteredNodeCodes: ReadonlySet<string>) {
+  const [hoveredInfoCode, setHoveredInfoCode] = useState<string | null>(null)
+  const [openInfoCodes, setOpenInfoCodes] = useState<OpenInfoCodes>({})
+  const [infoTriggerLayouts, setInfoTriggerLayouts] = useState<InfoTriggerLayoutsByCode>({})
+
+  const handleInfoHoverChange = useCallback((code: string, hovered: boolean) => {
+    setHoveredInfoCode((previousCode) => {
+      if (hovered) {
+        return code
+      }
+
+      return previousCode === code ? null : previousCode
+    })
+  }, [])
+
+  const handleInfoTriggerLayoutChange = useCallback((
+    code: string,
+    layout: TreemapInfoTriggerLayout | null,
+  ) => {
+    setInfoTriggerLayouts((previousLayouts) => updateInfoTriggerLayouts(previousLayouts, code, layout))
+  }, [])
+
+  const handleInfoOverlayOpenChange = useCallback((code: string, open: boolean) => {
+    setOpenInfoCodes((previousCodes) => updateOpenInfoCodes(previousCodes, code, open))
+  }, [])
+
+  useEffect(() => {
+    setInfoTriggerLayouts((previousLayouts) => pruneInfoTriggerLayouts(previousLayouts, filteredNodeCodes))
+    setOpenInfoCodes((previousCodes) => pruneOpenInfoCodes(previousCodes, filteredNodeCodes))
+    setHoveredInfoCode((previousCode) => (
+      previousCode && filteredNodeCodes.has(previousCode) ? previousCode : null
+    ))
+  }, [filteredNodeCodes])
+
+  const visibleInfoTriggerLayouts = useMemo(
+    () => Object.values(infoTriggerLayouts),
+    [infoTriggerLayouts],
+  )
+
+  return {
+    hoveredInfoCode,
+    openInfoCodes,
+    visibleInfoTriggerLayouts,
+    handleInfoHoverChange,
+    handleInfoTriggerLayoutChange,
+    handleInfoOverlayOpenChange,
+  }
+}
+
+function TreemapInfoTriggersOverlay({
+  layouts,
+  hoveredInfoCode,
+  openInfoCodes,
+  onInfoHoverChange,
+  onInfoOverlayOpenChange,
+  onAnalyticsRequest,
+  onTriggerInteraction,
+}: Readonly<{
+  layouts: readonly TreemapInfoTriggerLayout[]
+  hoveredInfoCode: string | null
+  openInfoCodes: OpenInfoCodes
+  onInfoHoverChange: (code: string, hovered: boolean) => void
+  onInfoOverlayOpenChange: (code: string, open: boolean) => void
+  onAnalyticsRequest?: (request: BudgetTreemapAnalyticsRequest) => void
+  onTriggerInteraction: () => void
+}>) {
+  return (
+    <div className="pointer-events-none absolute inset-0 z-20">
+      {layouts.map((layout) => {
+        const isVisible =
+          hoveredInfoCode === layout.code || Boolean(openInfoCodes[layout.code])
+        const triggerClassName = [
+          'ml-0 h-6 w-6 bg-black/60 hover:bg-black/80',
+          isVisible ? 'opacity-100' : 'opacity-0',
+        ].join(' ')
+
+        return (
+          <div
+            key={layout.code}
+            className="absolute"
+            style={{
+              left: layout.x,
+              top: layout.y,
+              width: 32,
+              height: 32,
+              pointerEvents: isVisible ? 'auto' : 'none',
+            }}
+            onPointerEnter={() => onInfoHoverChange(layout.code, true)}
+            onPointerLeave={() => onInfoHoverChange(layout.code, false)}
+          >
+            <ClassificationInfoLink
+              type={layout.classificationType}
+              code={layout.code}
+              className={triggerClassName}
+              iconClassName="h-4 w-4 text-white"
+              showOnHoverOnly={false}
+              disabled={!isVisible}
+              onOverlayOpenChange={(open) => onInfoOverlayOpenChange(layout.code, open)}
+              onTriggerInteraction={onTriggerInteraction}
+              menuActions={
+                onAnalyticsRequest && layout.analyticsRequest
+                  ? [
+                      {
+                        key: 'analytics',
+                        label: t`Analytics`,
+                        onSelect: () => onAnalyticsRequest(layout.analyticsRequest!),
+                      },
+                    ]
+                  : undefined
+              }
+            />
+          </div>
+        )
+      })}
+    </div>
+  )
 }
 
 const CustomizedContent: FC<{
@@ -123,8 +374,14 @@ const CustomizedContent: FC<{
   signedValue?: number
   // Recharts passes the original datum under `payload`. We use its fill for stable coloring.
   payload?: TreemapNodePayload
+  path?: BreadcrumbEntry[]
+  onInfoHoverChange?: (code: string, hovered: boolean) => void
+  onInfoTriggerLayoutChange?: (
+    code: string,
+    layout: TreemapInfoTriggerLayout | null,
+  ) => void
 }> = (props) => {
-  const { name, value, depth, x = 0, y = 0, width = 0, height = 0, fill, root, unit, primary, allowScaleAnimation = true } = props
+  const { name, value, depth, x = 0, y = 0, width = 0, height = 0, fill, root, unit, primary, allowScaleAnimation = true, path = EMPTY_BREADCRUMB_PATH, onInfoHoverChange, onInfoTriggerLayoutChange } = props
   const hasAnimatedInRef = useRef(false)
   const [isHovered, setIsHovered] = useState(false)
   const code = props.code ?? props.payload?.code
@@ -208,6 +465,48 @@ const CustomizedContent: FC<{
   const defaultFill = typeof fill === 'string' && fill.length > 0
     ? fill
     : (typeof payloadFill === 'string' && payloadFill.length > 0 ? payloadFill : COLORS[0])
+  const analyticsRequest = useMemo(() => {
+    if (!code || !primary) {
+      return null
+    }
+
+    const request = resolveBudgetTreemapAnalyticsRequest({
+      path,
+      nodeCode: code,
+      nodeName: name,
+      primary,
+    })
+
+    return request.path.length > 0 ? request : null
+  }, [code, name, path, primary])
+  const shouldRenderInfoTrigger = Boolean(code && width > 40 && height > 40)
+
+  useEffect(() => {
+    if (!code) {
+      return
+    }
+
+    if (!shouldRenderInfoTrigger) {
+      onInfoTriggerLayoutChange?.(code, null)
+      return
+    }
+
+    onInfoTriggerLayoutChange?.(code, {
+      code,
+      x: x + 4,
+      y: y + 4,
+      classificationType: primary === 'fn' ? 'functional' : 'economic',
+      analyticsRequest,
+    })
+  }, [
+    analyticsRequest,
+    code,
+    onInfoTriggerLayoutChange,
+    primary,
+    shouldRenderInfoTrigger,
+    x,
+    y,
+  ])
 
   useEffect(() => {
     void bounceControls.start({
@@ -234,8 +533,18 @@ const CustomizedContent: FC<{
     <motion.g
       initial={hasAnimatedInRef.current ? undefined : { opacity: 0, scale: 0.94 }}
       animate={bounceControls}
-      onPointerEnter={() => setIsHovered(true)}
-      onPointerLeave={() => setIsHovered(false)}
+      onPointerEnter={() => {
+        setIsHovered(true)
+        if (code) {
+          onInfoHoverChange?.(code, true)
+        }
+      }}
+      onPointerLeave={() => {
+        setIsHovered(false)
+        if (code) {
+          onInfoHoverChange?.(code, false)
+        }
+      }}
       onClick={triggerBounce}
     >
       <motion.rect
@@ -381,27 +690,6 @@ const CustomizedContent: FC<{
           {`${percentage.toFixed(1)}%`}
         </motion.text>
       )}
-      {/* Classification info icon - shown on hover in top-left corner */}
-      {isHovered && code && width > 40 && height > 40 && (
-        <motion.foreignObject
-          x={x + 4}
-          y={y + 4}
-          width={32}
-          height={32}
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3 }}
-          style={{ overflow: 'visible' }}
-        >
-          <ClassificationInfoLink
-            type={primary === 'fn' ? 'functional' : 'economic'}
-            code={code}
-            className="ml-0 w-6 h-6 bg-black/60 hover:bg-black/80"
-            iconClassName="h-4 w-4 text-white"
-            showOnHoverOnly={false}
-          />
-        </motion.foreignObject>
-      )}
     </motion.g>
   )
 }
@@ -420,17 +708,19 @@ function BudgetTreemapView({
   primary,
   onNodeClick,
   onBreadcrumbClick,
-  path = [],
+  path = EMPTY_BREADCRUMB_PATH,
   onViewDetails,
   showViewDetails = false,
   normalization,
   chartFilterInput: filterInput,
   amountFilter,
+  onAnalyticsRequest,
   unit,
 }: BudgetTreemapViewProps) {
   const isMobile = useIsMobile()
   const navigate = useNavigate()
   const [allowScaleAnimation] = useState(() => !isSafariBrowser())
+  const ignoreNodeClickUntilRef = useRef(0)
 
   // Defer heavy-changing inputs to keep UI responsive while treemap layout catches up
   const deferredData = useDeferredValue(data)
@@ -532,8 +822,29 @@ function BudgetTreemapView({
     () => new Map(filteredData.map((node) => [node.code, node.signedValue])),
     [filteredData],
   )
+  const filteredNodeCodes = useMemo(
+    () => new Set(filteredData.map((node) => node.code)),
+    [filteredData],
+  )
+  const {
+    hoveredInfoCode,
+    openInfoCodes,
+    visibleInfoTriggerLayouts,
+    handleInfoHoverChange,
+    handleInfoTriggerLayoutChange,
+    handleInfoOverlayOpenChange,
+  } = useTreemapInfoTriggers(filteredNodeCodes)
+
+  const markIgnoreNextNodeClick = useCallback(() => {
+    ignoreNodeClickUntilRef.current = performance.now() + 300
+  }, [])
 
   const handleNodeClick = (event: unknown) => {
+    if (performance.now() < ignoreNodeClickUntilRef.current) {
+      ignoreNodeClickUntilRef.current = 0
+      return
+    }
+
     const target = event as { code?: string; payload?: { code?: string } }
     const code = target?.code ?? target?.payload?.code ?? null
     startTransition(() => {
@@ -557,9 +868,21 @@ function BudgetTreemapView({
         primary={primary}
         signedValue={signedValueFromPayload ?? signedValueFromMap}
         allowScaleAnimation={allowScaleAnimation}
+        path={path}
+        onInfoHoverChange={handleInfoHoverChange}
+        onInfoTriggerLayoutChange={handleInfoTriggerLayoutChange}
       />
     )
-  }, [rootValue, unit, primary, signedValueByCode, allowScaleAnimation])
+  }, [
+    allowScaleAnimation,
+    handleInfoHoverChange,
+    handleInfoTriggerLayoutChange,
+    path,
+    primary,
+    rootValue,
+    signedValueByCode,
+    unit,
+  ])
 
   const memoizedTooltip = useMemo(() => (
     <CustomTooltip
@@ -705,6 +1028,15 @@ function BudgetTreemapView({
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             )}
+            <TreemapInfoTriggersOverlay
+              layouts={visibleInfoTriggerLayouts}
+              hoveredInfoCode={hoveredInfoCode}
+              openInfoCodes={openInfoCodes}
+              onInfoHoverChange={handleInfoHoverChange}
+              onInfoOverlayOpenChange={handleInfoOverlayOpenChange}
+              onAnalyticsRequest={onAnalyticsRequest}
+              onTriggerInteraction={markIgnoreNextNodeClick}
+            />
             <SafeResponsiveContainer width="100%" height="100%">
               <Treemap
                 data={filteredData}

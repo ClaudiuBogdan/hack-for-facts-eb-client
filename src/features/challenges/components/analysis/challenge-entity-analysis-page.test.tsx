@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { useState } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
@@ -7,6 +7,7 @@ import {
 } from './challenge-entity-public-maps'
 import type { EntityDetailsData, ExecutionLineItem } from '@/lib/api/entities'
 import type { ChallengeEntityAnalysisPageState } from './challenge-entity-analysis-page'
+import type { BudgetItemAnalyticsSearchState } from './budget-item-analytics-search-state'
 
 const useEntityDetailsMock = vi.fn()
 const useEntityExecutionLineItemsMock = vi.fn()
@@ -23,6 +24,7 @@ const fetchEntityAnalyticsMock = vi.fn()
 const reportsConnectionQueryOptionsMock = vi.fn()
 const budgetTreemapMock = vi.fn()
 const challengeGroupedLineItemsMock = vi.fn()
+const budgetItemAnalyticsModalMock = vi.fn()
 const getEntityFeatureInfoMock = vi.fn()
 const mapAnalyticsPublicPreviewCardMock = vi.fn()
 const setPrimaryMock = vi.fn()
@@ -195,6 +197,22 @@ vi.mock('./challenge-entity-grouped-line-items', () => ({
     return (
       <div data-testid="challenge-grouped-line-items">
         {`Grouped:${props.accountTitle}:${props.accountCategory}:${props.groupBy}:${props.lineItems.length}`}
+      </div>
+    )
+  },
+}))
+
+vi.mock('./budget-item-analytics-modal', () => ({
+  BudgetItemAnalyticsModal: (props: any) => {
+    budgetItemAnalyticsModalMock(props)
+
+    if (!props.open || !props.analyticsProps) {
+      return null
+    }
+
+    return (
+      <div data-testid="budget-item-analytics-modal">
+        {props.analyticsProps.context.subjectLabel}
       </div>
     )
   },
@@ -542,6 +560,7 @@ function renderAnalysisPage(
     readonly state?: Partial<ChallengeEntityAnalysisPageState>
     readonly commitmentsGrouping?: 'fn' | 'ec'
     readonly commitmentsDetailLevel?: 'chapter' | 'detailed'
+    readonly analyticsTarget?: BudgetItemAnalyticsSearchState
   } = {},
 ) {
   function TestHarness() {
@@ -553,6 +572,9 @@ function renderAnalysisPage(
       grouping: props.commitmentsGrouping,
       detailLevel: props.commitmentsDetailLevel,
     })
+    const [analyticsTarget, setAnalyticsTarget] = useState(
+      props.analyticsTarget,
+    )
 
     return (
       <ChallengeEntityAnalysisPage
@@ -561,6 +583,7 @@ function renderAnalysisPage(
         state={state}
         commitmentsGrouping={commitmentsState.grouping}
         commitmentsDetailLevel={commitmentsState.detailLevel}
+        analyticsTarget={analyticsTarget}
         onStateChange={(patch) =>
           setState((previousState) => ({
             ...previousState,
@@ -572,6 +595,9 @@ function renderAnalysisPage(
             grouping,
             detailLevel,
           })
+        }
+        onAnalyticsTargetChange={(target) =>
+          setAnalyticsTarget(target ?? undefined)
         }
       />
     )
@@ -711,6 +737,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
     budgetTreemapMock.mockReset()
     challengeGroupedLineItemsMock.mockReset()
+    budgetItemAnalyticsModalMock.mockReset()
     mapAnalyticsPublicPreviewCardMock.mockReset()
     prefetchQueryMock.mockReset()
     fetchEntityAnalyticsMock.mockClear()
@@ -1183,6 +1210,321 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(
       screen.getAllByRole('button', { name: 'Arată total' }),
     ).toHaveLength(2)
+  })
+
+  it('builds analytics props from the current page state when a budget item requests analytics', async () => {
+    renderAnalysisPage({
+      languageQuery: 'en',
+    })
+
+    act(() => {
+      getLatestBudgetTreemapProps().onAnalyticsRequest({
+        subjectLabel: 'Education salaries',
+        path: [
+          { type: 'fn', code: '65.00' },
+          { type: 'ec', code: '10.01.00' },
+          { type: 'fn', code: '65.02' },
+        ],
+      })
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('budget-item-analytics-modal')).toHaveTextContent(
+        'Education salaries',
+      )
+    })
+
+    expect(getLatestBudgetItemAnalyticsModalProps()).toMatchObject({
+      open: true,
+      analyticsProps: {
+        context: {
+          entityCui: '12345678',
+          subjectLabel: 'Education salaries',
+          language: 'en',
+          functionalCode: '65.02',
+          economicCode: '10.01',
+          accountCategory: 'ch',
+          currentReportPeriod: {
+            type: 'YEAR',
+            selection: {
+              interval: {
+                start: '2025',
+                end: '2025',
+              },
+            },
+          },
+          reportType: 'PRINCIPAL_AGGREGATED',
+          normalization: 'total',
+          currency: 'RON',
+          inflationAdjusted: false,
+        },
+      },
+    })
+  })
+
+  it('clears the analytics target when the modal closes', async () => {
+    renderAnalysisPage({
+      analyticsTarget: {
+        target: {
+          subjectLabel: 'Education salaries',
+          path: [
+            { type: 'fn', code: '65.02' },
+            { type: 'ec', code: '10.01' },
+          ],
+        },
+        view: {
+          tab: 'execution',
+          timeframe: 'selected',
+          commitmentsMetric: 'CREDITE_ANGAJAMENT',
+        },
+      },
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('budget-item-analytics-modal')).toHaveTextContent(
+        'Education salaries',
+      )
+    })
+
+    act(() => {
+      getLatestBudgetItemAnalyticsModalProps().onOpenChange(false)
+    })
+
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId('budget-item-analytics-modal'),
+      ).not.toBeInTheDocument()
+    })
+  })
+
+  it('recomputes analytics props from the current year while the modal stays open', async () => {
+    renderAnalysisPage({
+      analyticsTarget: {
+        target: {
+          subjectLabel: 'Education salaries',
+          path: [
+            { type: 'fn', code: '65.02' },
+            { type: 'ec', code: '10.01' },
+          ],
+        },
+        view: {
+          tab: 'execution',
+          timeframe: 'selected',
+          commitmentsMetric: 'CREDITE_ANGAJAMENT',
+        },
+      },
+    })
+
+    await waitFor(() => {
+      expect(getLatestBudgetItemAnalyticsModalProps()).toMatchObject({
+        analyticsProps: {
+          context: {
+            currentReportPeriod: {
+              selection: {
+                interval: {
+                  start: '2025',
+                  end: '2025',
+                },
+              },
+            },
+          },
+        },
+      })
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select 2024' }))
+
+    await waitFor(() => {
+      expect(getLatestBudgetItemAnalyticsModalProps()).toMatchObject({
+        open: true,
+        analyticsProps: {
+          context: {
+            functionalCode: '65.02',
+            economicCode: '10.01',
+            currentReportPeriod: {
+              selection: {
+                interval: {
+                  start: '2024',
+                  end: '2024',
+                },
+              },
+            },
+          },
+        },
+      })
+    })
+  })
+
+  it('recomputes analytics props from the current report type while the modal stays open', async () => {
+    renderAnalysisPage({
+      analyticsTarget: {
+        target: {
+          subjectLabel: 'Education salaries',
+          path: [
+            { type: 'fn', code: '65.02' },
+            { type: 'ec', code: '10.01' },
+          ],
+        },
+        view: {
+          tab: 'execution',
+          timeframe: 'selected',
+          commitmentsMetric: 'CREDITE_ANGAJAMENT',
+        },
+      },
+    })
+
+    await waitFor(() => {
+      expect(getLatestBudgetItemAnalyticsModalProps()).toMatchObject({
+        analyticsProps: {
+          context: {
+            reportType: 'PRINCIPAL_AGGREGATED',
+          },
+        },
+      })
+    })
+
+    act(() => {
+      getLatestBudgetItemAnalyticsModalProps().analyticsProps.onReportTypeChange?.(
+        'DETAILED',
+      )
+    })
+
+    await waitFor(() => {
+      expect(getLatestBudgetItemAnalyticsModalProps()).toMatchObject({
+        open: true,
+        analyticsProps: {
+          context: {
+            reportType: 'DETAILED',
+          },
+        },
+      })
+    })
+  })
+
+  it('rebuilds the analytics target path when fn/ec selection is edited manually', async () => {
+    renderAnalysisPage({
+      analyticsTarget: {
+        target: {
+          subjectLabel: 'Education salaries',
+          path: [
+            { type: 'fn', code: '65.02' },
+            { type: 'ec', code: '10.01' },
+          ],
+        },
+        view: {
+          tab: 'execution',
+          timeframe: 'selected',
+          commitmentsMetric: 'CREDITE_ANGAJAMENT',
+        },
+      },
+    })
+
+    await waitFor(() => {
+      expect(getLatestBudgetItemAnalyticsModalProps()).toMatchObject({
+        analyticsProps: {
+          context: {
+            functionalCode: '65.02',
+            economicCode: '10.01',
+            subjectLabel: 'Education salaries',
+          },
+        },
+      })
+    })
+
+    act(() => {
+      getLatestBudgetItemAnalyticsModalProps().analyticsProps.onSelectionChange?.({
+        functionalCode: '70.50.00',
+        economicCode: '10.01',
+      })
+    })
+
+    await waitFor(() => {
+      expect(getLatestBudgetItemAnalyticsModalProps()).toMatchObject({
+        open: true,
+        analyticsProps: {
+          context: {
+            functionalCode: '70.50',
+            economicCode: '10.01',
+            subjectLabel: '',
+          },
+        },
+      })
+    })
+  })
+
+  it('keeps the analytics modal open when one edited fn/ec code is removed', async () => {
+    renderAnalysisPage({
+      analyticsTarget: {
+        target: {
+          subjectLabel: 'Education salaries',
+          path: [
+            { type: 'fn', code: '65.02' },
+            { type: 'ec', code: '10.01' },
+          ],
+        },
+        view: {
+          tab: 'execution',
+          timeframe: 'selected',
+          commitmentsMetric: 'CREDITE_ANGAJAMENT',
+        },
+      },
+    })
+
+    await waitFor(() => {
+      expect(getLatestBudgetItemAnalyticsModalProps()).toMatchObject({
+        open: true,
+      })
+    })
+
+    act(() => {
+      getLatestBudgetItemAnalyticsModalProps().analyticsProps.onSelectionChange?.({
+        functionalCode: '65.02',
+      })
+    })
+
+    await waitFor(() => {
+      expect(getLatestBudgetItemAnalyticsModalProps()).toMatchObject({
+        open: true,
+        analyticsProps: {
+          context: {
+            functionalCode: '65.02',
+            economicCode: undefined,
+            subjectLabel: '',
+          },
+        },
+      })
+    })
+  })
+
+  it('closes the analytics modal when the last fn/ec code is removed manually', async () => {
+    renderAnalysisPage({
+      analyticsTarget: {
+        target: {
+          path: [{ type: 'fn', code: '65.02' }],
+        },
+        view: {
+          tab: 'execution',
+          timeframe: 'selected',
+          commitmentsMetric: 'CREDITE_ANGAJAMENT',
+        },
+      },
+    })
+
+    await waitFor(() => {
+      expect(getLatestBudgetItemAnalyticsModalProps()).toMatchObject({
+        open: true,
+      })
+    })
+
+    act(() => {
+      getLatestBudgetItemAnalyticsModalProps().analyticsProps.onSelectionChange?.(null)
+    })
+
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId('budget-item-analytics-modal'),
+      ).not.toBeInTheDocument()
+    })
   })
 
   it('keeps only the first paragraph visible until the explainer is expanded', async () => {
@@ -1883,6 +2225,28 @@ function getLatestPublicPreviewCardProps(): Record<string, unknown> {
 
   if (!latestCall) {
     throw new Error('Missing public map preview props.')
+  }
+
+  return latestCall
+}
+
+function getLatestBudgetTreemapProps(): Record<string, any> {
+  const latestCallIndex = budgetTreemapMock.mock.calls.length - 1
+  const latestCall = budgetTreemapMock.mock.calls[latestCallIndex]?.[0]
+
+  if (!latestCall) {
+    throw new Error('Missing budget treemap props.')
+  }
+
+  return latestCall
+}
+
+function getLatestBudgetItemAnalyticsModalProps(): Record<string, any> {
+  const latestCallIndex = budgetItemAnalyticsModalMock.mock.calls.length - 1
+  const latestCall = budgetItemAnalyticsModalMock.mock.calls[latestCallIndex]?.[0]
+
+  if (!latestCall) {
+    throw new Error('Missing budget item analytics modal props.')
   }
 
   return latestCall

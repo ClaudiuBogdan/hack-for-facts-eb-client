@@ -17,6 +17,32 @@ import { TMonth, TQuarter } from '@/schemas/reporting';
 import { getYearLabel } from './utils';
 import { ClassificationInfoLink } from '@/components/common/classification-info-link';
 import type { Currency, Normalization } from '@/schemas/charts';
+import {
+  buildBudgetItemAnalyticsPath,
+  type BudgetItemAnalyticsRequest,
+  type BudgetItemAnalyticsSelection,
+} from '@/features/challenges/components/analysis/budget-item-analytics-target';
+
+export type GroupedItemAnalyticsSelection = BudgetItemAnalyticsSelection
+
+export type GroupedItemAnalyticsRequest = BudgetItemAnalyticsRequest
+
+export const FN_FIRST_ANALYTICS_PATH_ORDER = ['fn', 'ec'] as const
+export const EC_FIRST_ANALYTICS_PATH_ORDER = ['ec', 'fn'] as const
+
+export function buildGroupedItemAnalyticsRequest(params: {
+  readonly subjectLabel: string
+  readonly selection?: GroupedItemAnalyticsSelection
+  readonly pathOrder?: readonly ('fn' | 'ec')[]
+}): GroupedItemAnalyticsRequest {
+  return {
+    subjectLabel: params.subjectLabel,
+    path: buildBudgetItemAnalyticsPath(
+      params.selection ?? {},
+      params.pathOrder ?? FN_FIRST_ANALYTICS_PATH_ORDER,
+    ),
+  }
+}
 
 interface GroupedItemsDisplayProps {
   groups: GroupedChapter[];
@@ -30,10 +56,24 @@ interface GroupedItemsDisplayProps {
   normalization?: Normalization;
   currency?: Currency;
   subchapterCodePrefix?: 'fn' | 'ec';
+  onAnalyticsRequest?: (request: GroupedItemAnalyticsRequest) => void;
 }
 
 export const GroupedItemsDisplay: React.FC<GroupedItemsDisplayProps> = React.memo(
-  ({ groups, title, baseTotal, searchTerm, currentYear, showTotalValueHeader = false, month, quarter, normalization, currency, subchapterCodePrefix = 'fn' }) => {
+  ({
+    groups,
+    title,
+    baseTotal,
+    searchTerm,
+    currentYear,
+    showTotalValueHeader = false,
+    month,
+    quarter,
+    normalization,
+    currency,
+    subchapterCodePrefix = 'fn',
+    onAnalyticsRequest,
+  }) => {
 
     const dateLabel = getYearLabel(currentYear, month, quarter);
 
@@ -131,6 +171,17 @@ export const GroupedItemsDisplay: React.FC<GroupedItemsDisplayProps> = React.mem
             normalization={normalization}
             currency={currency}
             codePrefixForSubchapters={subchapterCodePrefix}
+            onAnalyticsRequest={onAnalyticsRequest}
+            analyticsSelection={
+              subchapterCodePrefix === 'ec'
+                ? { economicCode: ch.prefix }
+                : { functionalCode: ch.prefix }
+            }
+            analyticsPathOrder={
+              subchapterCodePrefix === 'ec'
+                ? EC_FIRST_ANALYTICS_PATH_ORDER
+                : FN_FIRST_ANALYTICS_PATH_ORDER
+            }
           />
         ))}
         <TotalValueComponent />

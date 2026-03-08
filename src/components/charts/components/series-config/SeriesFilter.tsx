@@ -71,6 +71,7 @@ import { useUserCurrency } from "@/lib/hooks/useUserCurrency";
 import { useUserInflationAdjusted } from "@/lib/hooks/useUserInflationAdjusted";
 import { isMetricAvailableForPeriod } from "@/schemas/commitments";
 import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES } from "@/lib/analytics-defaults";
+import { getCommitmentsMetricOptions } from "@/lib/commitments-metrics";
 
 type FilterSeries = SeriesConfiguration | CommitmentsSeriesConfiguration;
 type FilterSeriesType = FilterSeries["type"];
@@ -96,23 +97,6 @@ interface SeriesFilterInternalProps {
 type FilterValue = string | number | boolean | undefined;
 
 type CurrencyCode = "RON" | "EUR" | "USD";
-
-const COMMITMENTS_METRIC_OPTIONS: ReadonlyArray<{ value: CommitmentsMetric; label: string }> = [
-  { value: "CREDITE_ANGAJAMENT", label: t`Legal commitments` },
-  { value: "PLATI_TREZOR", label: t`Treasury payments` },
-  { value: "PLATI_NON_TREZOR", label: t`Non-treasury payments` },
-  { value: "RECEPTII_TOTALE", label: t`Total receipts` },
-  { value: "RECEPTII_NEPLATITE_CHANGE", label: t`Unpaid receipts change` },
-  { value: "LIMITA_CREDIT_ANGAJAMENT", label: t`Commitment authority limit` },
-  { value: "CREDITE_BUGETARE", label: t`Budget credits` },
-  { value: "CREDITE_ANGAJAMENT_INITIALE", label: t`Initial commitment credits` },
-  { value: "CREDITE_BUGETARE_INITIALE", label: t`Initial budget credits` },
-  { value: "CREDITE_ANGAJAMENT_DEFINITIVE", label: t`Final commitment credits` },
-  { value: "CREDITE_BUGETARE_DEFINITIVE", label: t`Final budget credits` },
-  { value: "CREDITE_ANGAJAMENT_DISPONIBILE", label: t`Available commitment credits` },
-  { value: "CREDITE_BUGETARE_DISPONIBILE", label: t`Available budget credits` },
-  { value: "RECEPTII_NEPLATITE", label: t`Unpaid receipts` },
-];
 
 const COMMITMENTS_REPORT_TYPE_OPTIONS: ReadonlyArray<{ value: CommitmentsReportType; label: string }> = [
   { value: "PRINCIPAL_AGGREGATED", label: t`Main aggregated` },
@@ -384,6 +368,10 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
   const commitmentsMetric: CommitmentsMetric = isCommitmentsSeries
     ? (series.metric ?? "CREDITE_ANGAJAMENT")
     : "CREDITE_ANGAJAMENT";
+  const commitmentsMetricOptions = useMemo(
+    () => getCommitmentsMetricOptions(),
+    [],
+  );
   const setCommitmentsMetric = (value: FilterValue) => {
     if (!isCommitmentsSeries || !value) return;
     const metric = String(value) as CommitmentsMetric;
@@ -393,7 +381,12 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
     });
   };
   const commitmentsMetricOption: OptionItem | null = isCommitmentsSeries
-    ? { id: commitmentsMetric, label: COMMITMENTS_METRIC_OPTIONS.find((option) => option.value === commitmentsMetric)?.label ?? commitmentsMetric }
+    ? {
+        id: commitmentsMetric,
+        label:
+          commitmentsMetricOptions.find((option) => option.value === commitmentsMetric)?.label ??
+          commitmentsMetric,
+      }
     : null;
 
   let normalization: "total" | "per_capita" | "percent_gdp" | undefined;
@@ -719,7 +712,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
                 if (value === undefined) return;
                 setCommitmentsMetric(value as any);
               }}
-              options={COMMITMENTS_METRIC_OPTIONS.map((option) => ({
+              options={commitmentsMetricOptions.map((option) => ({
                 value: option.value,
                 label: option.label,
               }))}

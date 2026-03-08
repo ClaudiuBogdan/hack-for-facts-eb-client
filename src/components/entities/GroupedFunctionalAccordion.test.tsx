@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import GroupedFunctionalAccordion from './GroupedFunctionalAccordion'
 
@@ -49,5 +49,49 @@ describe('GroupedFunctionalAccordion', () => {
         showOnHoverOnly: false,
       }),
     )
+  })
+
+  it('keeps the functional code and applies the deepest economic child code for analytics', () => {
+    const onAnalyticsRequest = vi.fn()
+
+    render(
+      <GroupedFunctionalAccordion
+        func={{
+          code: '65.02',
+          name: 'Învățământ',
+          totalAmount: 79_190_000,
+          economics: [
+            {
+              code: '10.01',
+              name: 'Cheltuieli de personal',
+              amount: 52_000_000,
+            },
+          ],
+        }}
+        baseTotal={100_000_000}
+        searchTerm=""
+        onAnalyticsRequest={onAnalyticsRequest}
+      />,
+    )
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /Învățământ/i }),
+    )
+
+    const economicInfoLinkProps = classificationInfoLinkMock.mock.calls
+      .map(([props]) => props)
+      .find((props) => props.code === '10.01')
+
+    expect(economicInfoLinkProps?.menuActions).toHaveLength(1)
+
+    economicInfoLinkProps?.menuActions?.[0]?.onSelect()
+
+    expect(onAnalyticsRequest).toHaveBeenCalledWith({
+      subjectLabel: 'Cheltuieli de personal',
+      path: [
+        { type: 'fn', code: '65.02' },
+        { type: 'ec', code: '10.01' },
+      ],
+    })
   })
 })

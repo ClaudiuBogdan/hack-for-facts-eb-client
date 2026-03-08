@@ -26,6 +26,8 @@ describe('GroupedChapterAccordion', () => {
   })
 
   it('uses the economic classification link for top-level chapters in economic mode', () => {
+    const onAnalyticsRequest = vi.fn()
+
     render(
       <Accordion type="multiple" value={['20']}>
         <GroupedChapterAccordion
@@ -39,11 +41,14 @@ describe('GroupedChapterAccordion', () => {
           baseTotal={120}
           searchTerm=""
           codePrefixForSubchapters="ec"
+          onAnalyticsRequest={onAnalyticsRequest}
         />
       </Accordion>,
     )
 
-    expect(classificationInfoLinkMock).toHaveBeenCalledWith(
+    const infoLinkProps = classificationInfoLinkMock.mock.calls[0]?.[0]
+
+    expect(infoLinkProps).toEqual(
       expect.objectContaining({
         type: 'economic',
         code: '20',
@@ -52,6 +57,14 @@ describe('GroupedChapterAccordion', () => {
         showOnHoverOnly: false,
       }),
     )
+    expect(infoLinkProps?.menuActions).toHaveLength(1)
+
+    infoLinkProps?.menuActions?.[0]?.onSelect()
+
+    expect(onAnalyticsRequest).toHaveBeenCalledWith({
+      subjectLabel: 'Bunuri și servicii',
+      path: [{ type: 'ec', code: '20' }],
+    })
   })
 
   it('keeps chapter text and value on the same row on mobile', () => {

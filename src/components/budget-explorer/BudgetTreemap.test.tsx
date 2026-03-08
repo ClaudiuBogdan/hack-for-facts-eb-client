@@ -9,7 +9,10 @@ import {
 } from 'react'
 import { within } from '@testing-library/react'
 import { render, screen, fireEvent } from '@/test/test-utils'
-import { BudgetTreemap } from './BudgetTreemap'
+import {
+  BudgetTreemap,
+  resolveBudgetTreemapAnalyticsRequest,
+} from './BudgetTreemap'
 import type { TreemapInput, ExcludedItemsSummary } from './budget-transform'
 import { formatValueWithUnit, getNormalizationUnit } from '@/lib/utils'
 
@@ -219,7 +222,51 @@ vi.mock('recharts', () => ({
 
 // Mock ClassificationInfoLink
 vi.mock('@/components/common/classification-info-link', () => ({
-  ClassificationInfoLink: () => null,
+  ClassificationInfoLink: ({
+    code,
+    className,
+    disabled,
+    menuActions,
+    onOverlayOpenChange,
+    onTriggerInteraction,
+  }: {
+    code?: string
+    className?: string
+    disabled?: boolean
+    menuActions?: Array<{
+      onSelect?: () => void
+    }>
+    onOverlayOpenChange?: (open: boolean) => void
+    onTriggerInteraction?: () => void
+  }) => (
+    <div data-testid={`classification-info-link-${code ?? 'unknown'}`}>
+      <button
+        type="button"
+        aria-label={`Open mock classification ${code ?? 'unknown'}`}
+        className={className}
+        disabled={disabled}
+        onClick={(event) => {
+          event.stopPropagation()
+          onTriggerInteraction?.()
+          onOverlayOpenChange?.(true)
+          menuActions?.[0]?.onSelect?.()
+        }}
+      >
+        Info
+      </button>
+      <button
+        type="button"
+        aria-label={`Close mock classification ${code ?? 'unknown'}`}
+        onClick={(event) => {
+          event.stopPropagation()
+          onTriggerInteraction?.()
+          onOverlayOpenChange?.(false)
+        }}
+      >
+        Close
+      </button>
+    </div>
+  ),
 }))
 
 // ============================================================================
@@ -290,6 +337,20 @@ function hasExactText(expectedText: string) {
     normalizeTextContent(element?.textContent ?? '') === normalizedExpectedText
 }
 
+function getRenderedTreemapContentNode(code: string) {
+  const renderedNode = screen.getByTestId(`treemap-node-${code}`).querySelector('g')
+
+  expect(renderedNode).not.toBeNull()
+
+  return renderedNode as SVGGElement
+}
+
+function getTreemapInfoTrigger(code: string) {
+  return screen.getByRole('button', {
+    name: `Open mock classification ${code}`,
+  })
+}
+
 // ============================================================================
 // UTILITY FUNCTION TESTS
 // ============================================================================
@@ -325,6 +386,29 @@ describe('BudgetTreemap Utility Functions', () => {
       // Re-render with economic primary
       rerender(<BudgetTreemap data={data} primary="ec" />)
       expect(screen.getByTestId('treemap')).toBeInTheDocument()
+    })
+  })
+
+  describe('Analytics payload resolution', () => {
+    it('keeps the deepest functional and economic codes from a mixed breadcrumb trail', () => {
+      expect(
+        resolveBudgetTreemapAnalyticsRequest({
+          path: [
+            { code: '65', label: 'Education', type: 'fn' },
+            { code: '10', label: 'Staff', type: 'ec' },
+            { code: '10.01', label: 'Salaries', type: 'ec' },
+          ],
+          nodeCode: '65.02',
+          nodeName: 'Primary education',
+          primary: 'fn',
+        }),
+      ).toEqual({
+        subjectLabel: 'Primary education',
+        path: [
+          { type: 'fn', code: '65.02' },
+          { type: 'ec', code: '10.01' },
+        ],
+      })
     })
   })
 })
@@ -410,6 +494,118 @@ describe('BudgetTreemap Component', () => {
         ),
       ).toBeInTheDocument()
       expect(screen.getAllByText(hasExactText(totalValue)).length).toBeGreaterThanOrEqual(1)
+    })
+
+    it('keeps the analytics trigger mounted and toggles it between hidden and enabled', () => {
+      render(
+        <BudgetTreemap
+          data={createMockTreemapData(1)}
+          primary="fn"
+          onAnalyticsRequest={vi.fn()}
+        />,
+      )
+
+      const renderedNode = getRenderedTreemapContentNode('1')
+      const infoTrigger = getTreemapInfoTrigger('1')
+
+      expect(infoTrigger).toBeDisabled()
+      expect(infoTrigger).toHaveClass('opacity-0')
+
+      fireEvent.pointerEnter(renderedNode)
+
+      expect(infoTrigger).not.toBeDisabled()
+      expect(infoTrigger).toHaveClass('opacity-100')
+
+      fireEvent.pointerLeave(renderedNode)
+
+      expect(infoTrigger).toBeDisabled()
+      expect(infoTrigger).toHaveClass('opacity-0')
+    })
+
+    it('keeps the analytics trigger enabled while the overlay is open', () => {
+      render(
+        <BudgetTreemap
+          data={createMockTreemapData(1)}
+          primary="fn"
+          onAnalyticsRequest={vi.fn()}
+        />,
+      )
+
+      const renderedNode = getRenderedTreemapContentNode('1')
+      const infoTrigger = getTreemapInfoTrigger('1')
+
+      fireEvent.pointerEnter(renderedNode)
+      fireEvent.click(infoTrigger)
+      fireEvent.pointerLeave(renderedNode)
+
+      expect(infoTrigger).not.toBeDisabled()
+      expect(infoTrigger).toHaveClass('opacity-100')
+
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Close mock classification 1' }),
+      )
+
+      expect(infoTrigger).toBeDisabled()
+      expect(infoTrigger).toHaveClass('opacity-0')
+    })
+
+    it('forwards analytics requests from the mounted treemap trigger', () => {
+      const onAnalyticsRequest = vi.fn()
+
+      render(
+        <BudgetTreemap
+          data={[
+            {
+              name: 'Primary education',
+              value: 1000000,
+              code: '65.02',
+              isLeaf: true,
+              children: [],
+            },
+          ]}
+          primary="fn"
+          path={[{ code: '65', label: 'Education', type: 'fn' }]}
+          onAnalyticsRequest={onAnalyticsRequest}
+        />,
+      )
+
+      fireEvent.pointerEnter(getRenderedTreemapContentNode('65.02'))
+      fireEvent.click(getTreemapInfoTrigger('65.02'))
+
+      expect(onAnalyticsRequest).toHaveBeenCalledWith({
+        subjectLabel: 'Primary education',
+        path: [{ type: 'fn', code: '65.02' }],
+      })
+    })
+
+    it('does not propagate info trigger clicks to the treemap node', () => {
+      const onAnalyticsRequest = vi.fn()
+      const onNodeClick = vi.fn()
+
+      render(
+        <BudgetTreemap
+          data={[
+            {
+              name: 'Primary education',
+              value: 1000000,
+              code: '65.02',
+              isLeaf: true,
+              children: [],
+            },
+          ]}
+          primary="fn"
+          path={[{ code: '65', label: 'Education', type: 'fn' }]}
+          onNodeClick={onNodeClick}
+          onAnalyticsRequest={onAnalyticsRequest}
+        />,
+      )
+
+      fireEvent.pointerEnter(getRenderedTreemapContentNode('65.02'))
+      fireEvent.click(getTreemapInfoTrigger('65.02'))
+      fireEvent.click(screen.getByTestId('treemap-node-65.02'))
+
+      expect(onAnalyticsRequest).toHaveBeenCalledTimes(1)
+      expect(onNodeClick).not.toHaveBeenCalled()
     })
   })
 

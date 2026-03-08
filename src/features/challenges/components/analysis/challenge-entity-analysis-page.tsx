@@ -54,6 +54,16 @@ import {
   type ChallengeEntityInitialSettings,
 } from './challenge-entity-analysis-queries'
 import { ChallengeEntityGroupedLineItems } from './challenge-entity-grouped-line-items'
+import type { BudgetItemAnalyticsProps } from './budget-item-analytics-context'
+import {
+  buildBudgetItemAnalyticsPath,
+  getBudgetItemAnalyticsSelection,
+  type BudgetItemAnalyticsRequest,
+} from './budget-item-analytics-target'
+import {
+  getDefaultBudgetItemAnalyticsViewState,
+  type BudgetItemAnalyticsSearchState,
+} from './budget-item-analytics-search-state'
 import type { ChallengeEntityViewOption } from './challenge-entity-view-menu'
 import {
   CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS,
@@ -77,6 +87,7 @@ type ChallengeEntityAnalysisPageProps = {
   readonly state: ChallengeEntityAnalysisPageState
   readonly commitmentsGrouping?: ChallengeEntityAnalysisCommitmentsGrouping
   readonly commitmentsDetailLevel?: ChallengeEntityAnalysisCommitmentsDetailLevel
+  readonly analyticsTarget?: BudgetItemAnalyticsSearchState
   readonly initialSettings?: ChallengeEntityInitialSettings
   readonly onStateChange: (
     patch: Partial<ChallengeEntityAnalysisPageState>,
@@ -85,6 +96,10 @@ type ChallengeEntityAnalysisPageProps = {
     grouping: ChallengeEntityAnalysisCommitmentsGrouping,
     detailLevel: ChallengeEntityAnalysisCommitmentsDetailLevel,
   ) => void
+  readonly onAnalyticsTargetChange?: (
+    target: BudgetItemAnalyticsSearchState | null,
+  ) => void
+  readonly onEntityCuiChange?: (entityCui: string) => void
   readonly onEntityResolved?: () => void
 }
 
@@ -129,6 +144,10 @@ function loadChallengeEntityReportsSection() {
   return import('./challenge-entity-reports-section')
 }
 
+function loadBudgetItemAnalyticsModal() {
+  return import('./budget-item-analytics-modal')
+}
+
 function loadContractsView() {
   return import('@/components/entities/views/ContractsView')
 }
@@ -154,6 +173,11 @@ const DeferredChallengeEntityCategoryEvolution = lazy(() =>
 const DeferredChallengeEntityReportsSection = lazy(() =>
   loadChallengeEntityReportsSection().then((module) => ({
     default: module.ChallengeEntityReportsSection,
+  })),
+)
+const DeferredBudgetItemAnalyticsModal = lazy(() =>
+  loadBudgetItemAnalyticsModal().then((module) => ({
+    default: module.BudgetItemAnalyticsModal,
   })),
 )
 const DeferredContractsView = lazy(() =>
@@ -675,9 +699,12 @@ export function ChallengeEntityAnalysisPage({
   state,
   commitmentsGrouping,
   commitmentsDetailLevel,
+  analyticsTarget,
   initialSettings,
   onStateChange,
   onCommitmentsViewStateChange,
+  onAnalyticsTargetChange,
+  onEntityCuiChange,
   onEntityResolved,
 }: ChallengeEntityAnalysisPageProps) {
   const {
@@ -1064,6 +1091,116 @@ export function ChallengeEntityAnalysisPage({
       reportPeriod,
     ],
   )
+  const analyticsView = analyticsTarget?.view ?? getDefaultBudgetItemAnalyticsViewState()
+  const selectedBudgetItemAnalyticsProps =
+    useMemo<BudgetItemAnalyticsProps | null>(() => {
+      if (!analyticsTarget) {
+        return null
+      }
+
+      const analyticsSelection = getBudgetItemAnalyticsSelection(
+        analyticsTarget.target.path,
+      )
+
+      return {
+        context: {
+          entityCui,
+          selectedYear,
+          accountCategory: treemapAccountCategory,
+          reportType: selectedReportType,
+          currentReportPeriod: reportPeriod,
+          historyReportPeriod: CHALLENGE_TREND_PERIOD,
+          normalization: normalizationMode,
+          currency,
+          inflationAdjusted,
+          subjectLabel: analyticsTarget.target.subjectLabel ?? '',
+          language: languageQuery,
+          functionalCode: analyticsSelection.functionalCode,
+          economicCode: analyticsSelection.economicCode,
+        },
+        analyticsView,
+        onAnalyticsViewChange: (patch) => {
+          if (!analyticsTarget) {
+            return
+          }
+
+          onAnalyticsTargetChange?.({
+            ...analyticsTarget,
+            view: {
+              ...analyticsView,
+              ...patch,
+            },
+          })
+        },
+        onSelectionChange: (selection) => {
+          const nextPath = buildBudgetItemAnalyticsPath(selection ?? {})
+
+          if (nextPath.length === 0) {
+            onAnalyticsTargetChange?.(null)
+            return
+          }
+
+          onAnalyticsTargetChange?.({
+            target: {
+              path: nextPath,
+            },
+            view: analyticsView,
+          })
+        },
+        onReportTypeChange: (nextReportType) => {
+          if (nextReportType !== selectedReportType) {
+            onStateChange({ reportType: nextReportType })
+          }
+        },
+        onNormalizationChange: (nextNormalization) => {
+          if (nextNormalization !== normalizationMode) {
+            onStateChange({ normalization: nextNormalization })
+          }
+        },
+        onInflationAdjustedChange: (nextInflationAdjusted) => {
+          if (nextInflationAdjusted !== displayInflationAdjusted) {
+            setSettings({ inflationAdjusted: nextInflationAdjusted })
+          }
+        },
+        onYearChange: handleYearChange,
+        onEntityCuiChange,
+      }
+    }, [
+      analyticsTarget,
+      analyticsView,
+      currency,
+      displayInflationAdjusted,
+      entityCui,
+      handleYearChange,
+      inflationAdjusted,
+      languageQuery,
+      normalizationMode,
+      onAnalyticsTargetChange,
+      onEntityCuiChange,
+      onStateChange,
+      reportPeriod,
+      selectedReportType,
+      selectedYear,
+      setSettings,
+      treemapAccountCategory,
+    ])
+  const isBudgetItemAnalyticsOpen = Boolean(selectedBudgetItemAnalyticsProps)
+
+  const handleBudgetItemAnalyticsRequest = useCallback(
+    (request: BudgetItemAnalyticsRequest) => {
+      onAnalyticsTargetChange?.({
+        target: request,
+        view: analyticsView,
+      })
+    },
+    [analyticsView, onAnalyticsTargetChange],
+  )
+
+  const handleBudgetItemAnalyticsOpenChange = useCallback((open: boolean) => {
+    if (!open) {
+      onAnalyticsTargetChange?.(null)
+    }
+  }, [onAnalyticsTargetChange])
 
   useEffect(() => {
     if (entityDetailsQuery.data && !entityDetailsQuery.isFetching) {
@@ -1162,7 +1299,7 @@ export function ChallengeEntityAnalysisPage({
     [],
   )
 
-  const handleYearChange = (nextYear: number) => {
+  function handleYearChange(nextYear: number) {
     if (!Number.isFinite(nextYear) || nextYear === selectedYear) {
       return
     }
@@ -1645,6 +1782,7 @@ export function ChallengeEntityAnalysisPage({
                         currency={displayNormalizationOptions.currency}
                         excludedItemsSummary={excludedItemsSummary}
                         amountFilter={amountFilter}
+                        onAnalyticsRequest={handleBudgetItemAnalyticsRequest}
                       />
                     )}
                   </div>
@@ -1712,6 +1850,7 @@ export function ChallengeEntityAnalysisPage({
                     currentYear={selectedYear}
                     normalizationOptions={displayNormalizationOptions}
                     presetSearchTerm={groupedLineItemsPresetSearchTerm}
+                    onAnalyticsRequest={handleBudgetItemAnalyticsRequest}
                   />
                 </CardContent>
               </Card>
@@ -1810,6 +1949,16 @@ export function ChallengeEntityAnalysisPage({
       />
 
       {renderActiveView()}
+
+      {isBudgetItemAnalyticsOpen && selectedBudgetItemAnalyticsProps ? (
+        <Suspense fallback={null}>
+          <DeferredBudgetItemAnalyticsModal
+            open={isBudgetItemAnalyticsOpen}
+            onOpenChange={handleBudgetItemAnalyticsOpenChange}
+            analyticsProps={selectedBudgetItemAnalyticsProps}
+          />
+        </Suspense>
+      ) : null}
     </div>
   )
 }

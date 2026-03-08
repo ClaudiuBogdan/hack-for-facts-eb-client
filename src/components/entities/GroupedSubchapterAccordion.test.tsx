@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import GroupedSubchapterAccordion from './GroupedSubchapterAccordion'
 
@@ -63,5 +63,99 @@ describe('GroupedSubchapterAccordion', () => {
         showOnHoverOnly: false,
       }),
     )
+  })
+
+  it('preserves the parent economic code when analytics targets a nested functional row', () => {
+    const onAnalyticsRequest = vi.fn()
+
+    render(
+      <GroupedSubchapterAccordion
+        sub={{
+          code: '10.01',
+          name: 'Cheltuieli de personal',
+          totalAmount: 72_355_864.29,
+          functionals: [
+            {
+              code: '65.02',
+              name: 'Învățământ',
+              totalAmount: 35_000_000,
+              economics: [],
+            },
+            {
+              code: '67.02',
+              name: 'Cultură',
+              totalAmount: 37_355_864.29,
+              economics: [],
+            },
+          ],
+        }}
+        baseTotal={100_000_000}
+        searchTerm=""
+        codePrefix="ec"
+        onAnalyticsRequest={onAnalyticsRequest}
+      />,
+    )
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /Cheltuieli de personal/i }),
+    )
+
+    const functionalInfoLinkProps = classificationInfoLinkMock.mock.calls
+      .map(([props]) => props)
+      .find((props) => props.code === '65.02')
+
+    expect(functionalInfoLinkProps?.menuActions).toHaveLength(1)
+
+    functionalInfoLinkProps?.menuActions?.[0]?.onSelect()
+
+    expect(onAnalyticsRequest).toHaveBeenCalledWith({
+      subjectLabel: 'Învățământ',
+      path: [
+        { type: 'ec', code: '10.01' },
+        { type: 'fn', code: '65.02' },
+      ],
+    })
+  })
+
+  it('preserves the parent economic code in the collapsed single-child analytics path', () => {
+    const onAnalyticsRequest = vi.fn()
+
+    render(
+      <GroupedSubchapterAccordion
+        sub={{
+          code: '10.01',
+          name: 'Cheltuieli de personal',
+          totalAmount: 52_000_000,
+          functionals: [
+            {
+              code: '65.02.00',
+              name: 'Învățământ',
+              totalAmount: 52_000_000,
+              economics: [],
+            },
+          ],
+        }}
+        baseTotal={100_000_000}
+        searchTerm=""
+        codePrefix="ec"
+        onAnalyticsRequest={onAnalyticsRequest}
+      />,
+    )
+
+    const collapsedInfoLinkProps = classificationInfoLinkMock.mock.calls
+      .map(([props]) => props)
+      .find((props) => props.code === '65.02.00')
+
+    expect(collapsedInfoLinkProps?.menuActions).toHaveLength(1)
+
+    collapsedInfoLinkProps?.menuActions?.[0]?.onSelect()
+
+    expect(onAnalyticsRequest).toHaveBeenCalledWith({
+      subjectLabel: 'Cheltuieli de personal',
+      path: [
+        { type: 'ec', code: '10.01' },
+        { type: 'fn', code: '65.02' },
+      ],
+    })
   })
 })

@@ -4,7 +4,13 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { GroupedSubchapter, GroupedFunctional } from '@/schemas/financial';
 import { highlightText } from './highlight-utils';
 import { formatNormalizedValue } from '@/lib/utils';
+import { t } from '@lingui/core/macro';
 import type { Currency, Normalization } from '@/schemas/charts';
+import type {
+    GroupedItemAnalyticsSelection,
+    GroupedItemAnalyticsRequest,
+} from './FinancialDataCard';
+import { buildGroupedItemAnalyticsRequest } from './FinancialDataCard';
 import {
     GROUPED_CODE_CLASS_NAME,
     GROUPED_INFO_LINK_CLASS_NAME,
@@ -25,10 +31,29 @@ interface GroupedSubchapterAccordionProps {
     normalization?: Normalization;
     currency?: Currency;
     codePrefix?: 'fn' | 'ec';
+    analyticsSelection?: GroupedItemAnalyticsSelection;
+    analyticsPathOrder?: readonly ('fn' | 'ec')[];
+    onAnalyticsRequest?: (request: GroupedItemAnalyticsRequest) => void;
 }
 
-const GroupedSubchapterAccordion: React.FC<GroupedSubchapterAccordionProps> = ({ sub, baseTotal, searchTerm, normalization, currency, codePrefix = 'fn' }) => {
+const GroupedSubchapterAccordion: React.FC<GroupedSubchapterAccordionProps> = ({
+    sub,
+    baseTotal,
+    searchTerm,
+    normalization,
+    currency,
+    codePrefix = 'fn',
+    analyticsSelection,
+    analyticsPathOrder = codePrefix === 'ec' ? ['ec', 'fn'] : ['fn', 'ec'],
+    onAnalyticsRequest,
+}) => {
     const normalizationFormatOptions = { normalization: normalization ?? 'total', currency } as const
+    const subchapterSelection = analyticsSelection
+        ?? (
+            codePrefix === 'ec'
+                ? { economicCode: sub.code }
+                : { functionalCode: sub.code }
+        )
     // Example:
     // fn:36.01 / ec:30.01 - Subchapter label
     // fn:36.01.00 - Venituri din aplicarea prescriptiei extinctive -> .00 child from the line items list
@@ -54,6 +79,33 @@ const GroupedSubchapterAccordion: React.FC<GroupedSubchapterAccordionProps> = ({
                                 code={fnCode}
                                 className={GROUPED_INFO_LINK_CLASS_NAME}
                                 showOnHoverOnly={false}
+                                menuActions={
+                                    onAnalyticsRequest
+                                        ? [
+                                            {
+                                                key: 'analytics',
+                                                label: t`Analytics`,
+                                                onSelect: () =>
+                                                    onAnalyticsRequest(
+                                                        buildGroupedItemAnalyticsRequest({
+                                                            subjectLabel: fnName,
+                                                            selection:
+                                                                codePrefix === 'ec'
+                                                                    ? {
+                                                                        ...subchapterSelection,
+                                                                        functionalCode: fnCode,
+                                                                    }
+                                                                    : {
+                                                                        ...subchapterSelection,
+                                                                        functionalCode: fnCode,
+                                                                    },
+                                                            pathOrder: analyticsPathOrder,
+                                                        }),
+                                                    ),
+                                            },
+                                        ]
+                                        : undefined
+                                }
                             />
                         </div>
                     </div>
@@ -83,6 +135,24 @@ const GroupedSubchapterAccordion: React.FC<GroupedSubchapterAccordionProps> = ({
                                     code={sub.code}
                                     className={GROUPED_INFO_LINK_CLASS_NAME}
                                     showOnHoverOnly={false}
+                                    menuActions={
+                                        onAnalyticsRequest
+                                            ? [
+                                                {
+                                                    key: 'analytics',
+                                                    label: t`Analytics`,
+                                                    onSelect: () =>
+                                                        onAnalyticsRequest(
+                                                            buildGroupedItemAnalyticsRequest({
+                                                                subjectLabel: sub.name,
+                                                                selection: subchapterSelection,
+                                                                pathOrder: analyticsPathOrder,
+                                                            }),
+                                                        ),
+                                                },
+                                            ]
+                                            : undefined
+                                    }
                                 />
                             </div>
                         </div>
@@ -112,6 +182,27 @@ const GroupedSubchapterAccordion: React.FC<GroupedSubchapterAccordionProps> = ({
                                                 code={func.code}
                                                 className={GROUPED_INFO_LINK_CLASS_NAME}
                                                 showOnHoverOnly={false}
+                                                menuActions={
+                                                    onAnalyticsRequest
+                                                        ? [
+                                                            {
+                                                                key: 'analytics',
+                                                                label: t`Analytics`,
+                                                                onSelect: () =>
+                                                                    onAnalyticsRequest(
+                                                                        buildGroupedItemAnalyticsRequest({
+                                                                            subjectLabel: func.name,
+                                                                            selection: {
+                                                                                ...subchapterSelection,
+                                                                                functionalCode: func.code,
+                                                                            },
+                                                                            pathOrder: analyticsPathOrder,
+                                                                        }),
+                                                                    ),
+                                                            },
+                                                        ]
+                                                        : undefined
+                                                }
                                             />
                                         </div>
                                     </div>

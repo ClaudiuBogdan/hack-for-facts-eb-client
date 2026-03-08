@@ -4,7 +4,13 @@ import { Accordion, AccordionItem, AccordionContent, AccordionTrigger } from '@/
 import { GroupedFunctional, GroupedEconomic } from '@/schemas/financial';
 import { highlightText } from './highlight-utils';
 import { formatNormalizedValue, formatNumber } from '@/lib/utils';
+import { t } from '@lingui/core/macro';
 import type { Currency, Normalization } from '@/schemas/charts';
+import type {
+  GroupedItemAnalyticsSelection,
+  GroupedItemAnalyticsRequest,
+} from './FinancialDataCard';
+import { buildGroupedItemAnalyticsRequest } from './FinancialDataCard';
 import {
   GROUPED_CODE_CLASS_NAME,
   GROUPED_INFO_LINK_CLASS_NAME,
@@ -24,10 +30,26 @@ interface GroupedFunctionalAccordionProps {
   searchTerm: string;
   normalization?: Normalization;
   currency?: Currency;
+  analyticsSelection?: GroupedItemAnalyticsSelection;
+  analyticsPathOrder?: readonly ('fn' | 'ec')[];
+  onAnalyticsRequest?: (request: GroupedItemAnalyticsRequest) => void;
 }
 
-const GroupedFunctionalAccordion: React.FC<GroupedFunctionalAccordionProps> = ({ func, baseTotal, searchTerm, normalization, currency }) => {
+const GroupedFunctionalAccordion: React.FC<GroupedFunctionalAccordionProps> = ({
+  func,
+  baseTotal,
+  searchTerm,
+  normalization,
+  currency,
+  analyticsSelection,
+  analyticsPathOrder = ['fn', 'ec'],
+  onAnalyticsRequest,
+}) => {
   const normalizationFormatOptions = { normalization: normalization ?? 'total', currency } as const
+  const functionalSelection = {
+    ...analyticsSelection,
+    functionalCode: func.code,
+  }
   if (func.economics.length === 0) {
     return (
       <div key={func.code} className="group border-b py-2 px-3 sm:px-4">
@@ -41,6 +63,24 @@ const GroupedFunctionalAccordion: React.FC<GroupedFunctionalAccordionProps> = ({
                 code={func.code}
                 className={GROUPED_INFO_LINK_CLASS_NAME}
                 showOnHoverOnly={false}
+                menuActions={
+                  onAnalyticsRequest
+                    ? [
+                        {
+                          key: 'analytics',
+                          label: t`Analytics`,
+                          onSelect: () =>
+                            onAnalyticsRequest(
+                              buildGroupedItemAnalyticsRequest({
+                                subjectLabel: func.name,
+                                selection: functionalSelection,
+                                pathOrder: analyticsPathOrder,
+                              }),
+                            ),
+                        },
+                      ]
+                    : undefined
+                }
               />
             </div>
           </div>
@@ -75,6 +115,24 @@ const GroupedFunctionalAccordion: React.FC<GroupedFunctionalAccordionProps> = ({
                   code={func.code}
                   className={GROUPED_INFO_LINK_CLASS_NAME}
                   showOnHoverOnly={false}
+                  menuActions={
+                    onAnalyticsRequest
+                      ? [
+                          {
+                            key: 'analytics',
+                            label: t`Analytics`,
+                            onSelect: () =>
+                              onAnalyticsRequest(
+                                buildGroupedItemAnalyticsRequest({
+                                  subjectLabel: func.name,
+                                  selection: functionalSelection,
+                                  pathOrder: analyticsPathOrder,
+                                }),
+                              ),
+                          },
+                        ]
+                      : undefined
+                  }
                 />
               </div>
             </div>
@@ -108,6 +166,27 @@ const GroupedFunctionalAccordion: React.FC<GroupedFunctionalAccordionProps> = ({
                         code={eco.code}
                         className={GROUPED_INFO_LINK_CLASS_NAME}
                         showOnHoverOnly={false}
+                        menuActions={
+                          onAnalyticsRequest
+                            ? [
+                                {
+                                  key: 'analytics',
+                                  label: t`Analytics`,
+                                  onSelect: () =>
+                                    onAnalyticsRequest(
+                                      buildGroupedItemAnalyticsRequest({
+                                        subjectLabel: eco.name,
+                                        selection: {
+                                          ...functionalSelection,
+                                          economicCode: eco.code,
+                                        },
+                                        pathOrder: analyticsPathOrder,
+                                      }),
+                                    ),
+                                },
+                              ]
+                            : undefined
+                        }
                       />
                     </div>
                   </div>

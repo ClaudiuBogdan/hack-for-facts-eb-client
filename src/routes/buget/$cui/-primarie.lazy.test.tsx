@@ -50,9 +50,11 @@ vi.mock(
       state,
       commitmentsGrouping,
       commitmentsDetailLevel,
+      analyticsTarget,
       initialSettings,
       onStateChange,
       onCommitmentsViewStateChange,
+      onAnalyticsTargetChange,
       onEntityResolved,
     }: any) => (
       <div data-testid="analysis-page">
@@ -60,6 +62,7 @@ vi.mock(
         {state.reportType}:{state.activeView}:{state.treemapAccountCategory}:{state.treemapPrimary}:
         {state.treemapPath.join('|')}:{state.evolutionAccountCategory}:
         {state.evolutionPrimary}:{state.mapPreviewKey}:
+        {JSON.stringify(analyticsTarget ?? null)}:
         {commitmentsGrouping ?? 'none'}:{commitmentsDetailLevel ?? 'none'}:
         {initialSettings?.currency ?? 'none'}:
         {String(initialSettings?.inflationAdjusted)}
@@ -93,6 +96,33 @@ vi.mock(
           onClick={() => onCommitmentsViewStateChange?.('ec', 'detailed')}
         >
           Change commitments state
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            onAnalyticsTargetChange?.({
+              target: {
+                subjectLabel: 'Education salaries',
+                path: [
+                  { type: 'fn', code: '65.00' },
+                  { type: 'ec', code: '10.01.00' },
+                ],
+              },
+              view: {
+                tab: 'execution',
+                timeframe: 'selected',
+                commitmentsMetric: 'CREDITE_ANGAJAMENT',
+              },
+            })
+          }
+        >
+          Open analytics
+        </button>
+        <button
+          type="button"
+          onClick={() => onAnalyticsTargetChange?.(null)}
+        >
+          Close analytics
         </button>
       </div>
     ),
@@ -138,7 +168,7 @@ describe('PrimarieEntityRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      `87654321:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:fn::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:none:none:RON:false`,
+      `87654321:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:fn::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:null:none:none:RON:false`,
     )
   })
 
@@ -156,6 +186,16 @@ describe('PrimarieEntityRoutePage', () => {
       public_map: 'invalid-map',
       commitments_grouping: 'invalid-grouping',
       commitments_detail_level: 'invalid-detail-level',
+      analytics: {
+        target: {
+          subjectLabel: 'Education salaries',
+          path: [
+            { type: 'fn', code: '65.00' },
+            { type: 'ec', code: '10.01.00' },
+            { type: 'fn', code: '65.02' },
+          ],
+        },
+      },
     }
 
     const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
@@ -163,7 +203,7 @@ describe('PrimarieEntityRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      `12345678:en:2024:DETAILED:main-info:vn:fn:51|51.01:vn:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:none:none:RON:false`,
+      `12345678:en:2024:DETAILED:main-info:vn:fn:51|51.01:vn:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:{"target":{"subjectLabel":"Education salaries","path":[{"type":"fn","code":"65.02"},{"type":"ec","code":"10.01"}]},"view":{"tab":"execution","timeframe":"selected","commitmentsMetric":"CREDITE_ANGAJAMENT"}}:none:none:RON:false`,
     )
 
     await waitFor(() => {
@@ -179,6 +219,20 @@ describe('PrimarieEntityRoutePage', () => {
       treemap_primary: 'fn',
       evolution_primary: 'fn',
       public_map: DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
+      analytics: {
+        target: {
+          subjectLabel: 'Education salaries',
+          path: [
+            { type: 'fn', code: '65.02' },
+            { type: 'ec', code: '10.01' },
+          ],
+        },
+        view: {
+          tab: 'execution',
+          timeframe: 'selected',
+          commitmentsMetric: 'CREDITE_ANGAJAMENT',
+        },
+      },
     })
     expect(canonicalSearch).not.toHaveProperty('commitments_grouping')
     expect(canonicalSearch).not.toHaveProperty('commitments_detail_level')
@@ -194,7 +248,7 @@ describe('PrimarieEntityRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      '12345678:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:fn::ch:fn:local-taxes:none:none:RON:false',
+      '12345678:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:fn::ch:fn:local-taxes:null:none:none:RON:false',
     )
 
     await waitFor(() => {
@@ -342,5 +396,80 @@ describe('PrimarieEntityRoutePage', () => {
       commitments_grouping: 'ec',
       commitments_detail_level: 'detailed',
     })
+  })
+
+  it('writes analytics target changes back into the URL search', async () => {
+    mockedSearch = {
+      view: 'main-info',
+    }
+
+    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+
+    render(<PrimarieEntityRoutePage />)
+
+    navigateMock.mockClear()
+    fireEvent.click(screen.getByRole('button', { name: 'Open analytics' }))
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalled()
+    })
+
+    const updateCall = navigateMock.mock.calls[0]?.[0]
+    const nextSearch = updateCall.search(mockedSearch)
+
+    expect(updateCall.replace).toBe(true)
+    expect(updateCall.resetScroll).toBe(false)
+    expect(nextSearch).toMatchObject({
+      view: 'main-info',
+      analytics: {
+        target: {
+          subjectLabel: 'Education salaries',
+          path: [
+            { type: 'fn', code: '65' },
+            { type: 'ec', code: '10.01' },
+          ],
+        },
+        view: {
+          tab: 'execution',
+          timeframe: 'selected',
+          commitmentsMetric: 'CREDITE_ANGAJAMENT',
+        },
+      },
+    })
+  })
+
+  it('removes the analytics target from the URL when the modal closes', async () => {
+    mockedSearch = {
+      analytics: {
+        target: {
+          subjectLabel: 'Education salaries',
+          path: [
+            { type: 'fn', code: '65.02' },
+            { type: 'ec', code: '10.01' },
+          ],
+        },
+        view: {
+          tab: 'execution',
+          timeframe: 'selected',
+          commitmentsMetric: 'CREDITE_ANGAJAMENT',
+        },
+      },
+    }
+
+    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+
+    render(<PrimarieEntityRoutePage />)
+
+    navigateMock.mockClear()
+    fireEvent.click(screen.getByRole('button', { name: 'Close analytics' }))
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalled()
+    })
+
+    const updateCall = navigateMock.mock.calls[0]?.[0]
+    const nextSearch = updateCall.search(mockedSearch)
+
+    expect(nextSearch).not.toHaveProperty('analytics')
   })
 })

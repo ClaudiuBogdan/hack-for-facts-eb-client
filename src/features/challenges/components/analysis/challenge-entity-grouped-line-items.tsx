@@ -1,5 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { GroupedItemsDisplay } from '@/components/entities/FinancialDataCard'
+import type { GroupedItemAnalyticsRequest } from '@/components/entities/FinancialDataCard'
 import { SearchToggleInput } from '@/components/entities/SearchToggleInput'
 import { useFinancialData } from '@/hooks/useFinancialData'
 import type { ExecutionLineItem } from '@/lib/api/entities'
@@ -16,6 +17,7 @@ type ChallengeGroupedLineItemsProps = {
     'normalization' | 'currency'
   >
   readonly presetSearchTerm?: string
+  readonly onAnalyticsRequest?: (request: GroupedItemAnalyticsRequest) => void
 }
 
 export function ChallengeEntityGroupedLineItems({
@@ -26,6 +28,7 @@ export function ChallengeEntityGroupedLineItems({
   currentYear,
   normalizationOptions,
   presetSearchTerm,
+  onAnalyticsRequest,
 }: ChallengeGroupedLineItemsProps) {
   const normalizedLineItems = useMemo(() => [...lineItems], [lineItems])
   const totalAmount = useMemo(
@@ -158,6 +161,7 @@ export function ChallengeEntityGroupedLineItems({
         normalization={normalizationOptions.normalization}
         currency={normalizationOptions.currency}
         subchapterCodePrefix={groupBy}
+        onAnalyticsRequest={onAnalyticsRequest}
       />
     </section>
   )
