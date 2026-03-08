@@ -108,7 +108,7 @@ export function CustomSeriesTooltip({
     const headerLabel = (mappedPayload[0] as DataPointPayload | undefined)?.originalLabel ?? label;
 
     return (
-        <div className="bg-background/50 backdrop-blur-sm border border-border rounded-lg shadow-lg p-4 important:z-50 select-none">
+        <div className="bg-background/50 backdrop-blur-sm border border-border rounded-lg shadow-lg p-4 important:z-50 select-none max-w-sm">
             <div className="font-semibold text-foreground mb-2 text-center border-b pb-1">
                 {isAggregated ? <Trans>Aggregated data</Trans> : <Trans>Year {headerLabel}</Trans>}
             </div>
@@ -130,7 +130,7 @@ export function CustomSeriesTooltip({
                                 style={{ backgroundColor: dataPoint.series?.config.color }}
                             />
                             <div className="flex flex-row justify-between gap-6 items-center w-full">
-                                <span className="font-medium text-sm text-foreground truncate">
+                                <span className="font-medium text-sm text-foreground break-words">
                                     {dataPoint.series?.label}
                                 </span>
                                 <div className="flex flex-col items-end">
