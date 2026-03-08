@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { t } from '@lingui/core/macro'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { ExternalLink, Plus, X } from 'lucide-react'
 import { getEntityFeatureInfo } from '@/components/entities/utils'
 import {
@@ -13,6 +13,7 @@ import { useGeoJsonData } from '@/hooks/useGeoJson'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { createMapCloneHandoff } from '@/features/advanced-map-analytics/store/map-clone-handoff'
 import { Input } from '@/components/ui/input'
 import {
   Popover,
@@ -30,6 +31,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MapAnalyticsWorkspace } from '@/features/advanced-map-analytics/components/map-analytics-workspace'
 import { useMapPreviewRuntimeState } from '@/features/advanced-map-analytics/hooks/use-map-preview-runtime-state'
+import { Analytics } from '@/lib/analytics'
 import { useEntityDetails } from '@/lib/hooks/useEntityDetails'
 import { getCommitmentsMetricOptions } from '@/lib/commitments-metrics'
 import { cn } from '@/lib/utils'
@@ -59,6 +61,7 @@ function buildAnalyticsCopy(language: BudgetItemAnalyticsResolvedViewState['lang
   return language === 'en'
     ? {
         openChartPage: 'Open on the charts page',
+        openMapPage: 'Open in map editor',
         addFunctionalLabel: 'Add fn',
         addEconomicLabel: 'Add ec',
         functionalFieldLabel: 'Functional prefix',
@@ -76,6 +79,7 @@ function buildAnalyticsCopy(language: BudgetItemAnalyticsResolvedViewState['lang
       }
     : {
         openChartPage: 'Deschide în pagina de grafice',
+        openMapPage: 'Deschide în editorul de hărți',
         addFunctionalLabel: 'Adaugă fn',
         addEconomicLabel: 'Adaugă ec',
         functionalFieldLabel: 'Prefix funcțional',
@@ -597,6 +601,8 @@ function AnalyticsChartSection({ context }: BudgetItemAnalyticsSectionProps) {
 }
 
 function MapSection({ context }: BudgetItemAnalyticsSectionProps) {
+  const copy = buildAnalyticsCopy(context.language)
+  const navigate = useNavigate()
   const mapSubjectLabel =
     context.seriesLabel.trim().length > 0
       ? context.seriesLabel
@@ -633,15 +639,44 @@ function MapSection({ context }: BudgetItemAnalyticsSectionProps) {
     mapZoomOverride: entityMapViewport?.mapZoom,
   })
 
+  function handleOpenMapPage() {
+    const cloneRef = createMapCloneHandoff({
+      mapState,
+      mapDescription: context.mapDescription,
+    })
+
+    Analytics.capture(Analytics.EVENTS.AdvancedMapAnalyticsCloneHandoffUsed, {
+      source: 'budget_item_analytics_modal',
+    })
+
+    navigate({
+      to: '/maps/editor/new',
+      search: { cloneRef },
+    })
+  }
+
   return (
     <Card className="flex min-h-[700px] flex-col overflow-hidden rounded-[24px] border-border/50">
-      <CardHeader className="space-y-1 border-b px-5 py-4">
-        <CardTitle className="text-lg font-black tracking-tight">
-          {context.mapTitle}
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          {mapSubjectLabel}
-        </p>
+      <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0 border-b px-5 py-4">
+        <div className="space-y-1">
+          <CardTitle className="text-lg font-black tracking-tight">
+            {context.mapTitle}
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            {mapSubjectLabel}
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 rounded-full"
+          onClick={handleOpenMapPage}
+          aria-label={copy.openMapPage}
+          title={copy.openMapPage}
+        >
+          <ExternalLink className="h-4 w-4" aria-hidden="true" />
+        </Button>
       </CardHeader>
       <CardContent className="flex-1 p-0">
         <div className="h-[620px] overflow-hidden xl:h-[700px]">

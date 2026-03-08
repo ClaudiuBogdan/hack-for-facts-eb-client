@@ -67,6 +67,7 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
   useMapEditorInitialState({
     mapId,
     mapQueryData: mapQuery.data,
+    isMapQueryFetching: mapQuery.isFetching,
     draftMapState: mapState,
     draftMapDescription: mapDescriptionDraft,
     draftUpdatedAt,

@@ -10,6 +10,7 @@ import type {
 } from '@/features/advanced-map-analytics/api/schemas';
 import {
   advancedMapAnalyticsKeys,
+  useCreateAdvancedMapAnalyticsMapMutation,
   useDeleteAdvancedMapAnalyticsMapMutation,
   useSaveAdvancedMapAnalyticsSnapshotMutation,
   useUpdateAdvancedMapAnalyticsMapMutation,
@@ -210,6 +211,37 @@ describe('use-advanced-map-analytics public cache key behavior', () => {
     const calls = invalidateQueriesSpy.mock.calls as Array<[args: { queryKey: readonly unknown[] }]>;
     expect(hasQueryKeyCall(calls, ['advanced-map-analytics', 'public'])).toBe(true);
     expect(hasQueryKeyCall(calls, advancedMapAnalyticsKeys.public('ama_map_1'))).toBe(false);
+  });
+
+  it('does not seed the owner-detail cache from create responses', async () => {
+    const queryClient = createQueryClient();
+    const wrapper = createWrapper(queryClient);
+    const removeQueriesSpy = vi.spyOn(queryClient, 'removeQueries');
+    const invalidateQueriesSpy = vi
+      .spyOn(queryClient, 'invalidateQueries')
+      .mockResolvedValue(undefined);
+
+    createAdvancedMapAnalyticsMapMock.mockResolvedValue(
+      createMapDetail({ id: 'ama_map_new' })
+    );
+
+    const { result } = renderHook(() => useCreateAdvancedMapAnalyticsMapMutation(), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({
+        mapState: AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Created map' }),
+      });
+    });
+
+    expect(queryClient.getQueryData(advancedMapAnalyticsKeys.map('ama_map_new'))).toBeUndefined();
+    expect(removeQueriesSpy).toHaveBeenCalledWith({
+      queryKey: advancedMapAnalyticsKeys.map('ama_map_new'),
+    });
+    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+      queryKey: advancedMapAnalyticsKeys.maps,
+    });
   });
 
   it('removes exact public map query key after delete when publicId is known', async () => {

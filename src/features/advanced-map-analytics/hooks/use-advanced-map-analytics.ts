@@ -160,7 +160,9 @@ export function useCreateAdvancedMapAnalyticsMapMutation() {
         config: input.mapState,
       }),
     onSuccess: async (createdMap) => {
-      queryClient.setQueryData(advancedMapAnalyticsKeys.map(createdMap.id), createdMap);
+      // Force the editor route to fetch canonical detail instead of hydrating
+      // from a create response that may be missing bundled data or latest snapshot state.
+      queryClient.removeQueries({ queryKey: advancedMapAnalyticsKeys.map(createdMap.id) });
       await queryClient.invalidateQueries({ queryKey: advancedMapAnalyticsKeys.maps });
     },
   });

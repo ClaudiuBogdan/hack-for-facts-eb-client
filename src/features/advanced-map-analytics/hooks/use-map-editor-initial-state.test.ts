@@ -71,6 +71,7 @@ describe('useMapEditorInitialState', () => {
       useMapEditorInitialState({
         mapId: 'map1',
         mapQueryData,
+        isMapQueryFetching: false,
         draftMapState: defaultDraftMapState,
         draftMapDescription: '',
         draftUpdatedAt: null,
@@ -133,6 +134,7 @@ describe('useMapEditorInitialState', () => {
       useMapEditorInitialState({
         mapId: 'map1',
         mapQueryData,
+        isMapQueryFetching: false,
         draftMapState: defaultDraftMapState,
         draftMapDescription: '',
         draftUpdatedAt: null,
@@ -191,6 +193,7 @@ describe('useMapEditorInitialState', () => {
       useMapEditorInitialState({
         mapId: 'map1',
         mapQueryData,
+        isMapQueryFetching: false,
         draftMapState: sessionDraftState,
         draftMapDescription: 'Session description',
         draftUpdatedAt: '2026-03-01T12:00:00.000Z',
@@ -248,14 +251,17 @@ describe('useMapEditorInitialState', () => {
         draftMapState,
         draftMapDescription,
         draftUpdatedAt,
+        isMapQueryFetching,
       }: {
         draftMapState: ReturnType<typeof AdvancedMapAnalyticsUrlStateSchema.parse>;
         draftMapDescription: string;
         draftUpdatedAt: string | null;
+        isMapQueryFetching: boolean;
       }) =>
         useMapEditorInitialState({
           mapId: 'map1',
           mapQueryData,
+          isMapQueryFetching,
           draftMapState,
           draftMapDescription,
           draftUpdatedAt,
@@ -267,7 +273,10 @@ describe('useMapEditorInitialState', () => {
           setIsInitialStateResolved,
         }),
       {
-        initialProps: initialDraftProps,
+        initialProps: {
+          ...initialDraftProps,
+          isMapQueryFetching: false,
+        },
       }
     );
 
@@ -275,6 +284,7 @@ describe('useMapEditorInitialState', () => {
       draftMapState: updatedDraftState,
       draftMapDescription: 'Updated draft description',
       draftUpdatedAt: '2026-03-01T12:00:00.000Z',
+      isMapQueryFetching: false,
     });
     firstResolutionDeferred.resolve(null);
 
@@ -298,6 +308,7 @@ describe('useMapEditorInitialState', () => {
       useMapEditorInitialState({
         mapId: 'map1',
         mapQueryData,
+        isMapQueryFetching: false,
         draftMapState: defaultDraftMapState,
         draftMapDescription: '',
         draftUpdatedAt: null,
@@ -325,6 +336,7 @@ describe('useMapEditorInitialState', () => {
         useMapEditorInitialState({
           mapId,
           mapQueryData,
+          isMapQueryFetching: false,
           draftMapState: defaultDraftMapState,
           draftMapDescription: '',
           draftUpdatedAt: null,
@@ -390,6 +402,7 @@ describe('useMapEditorInitialState', () => {
         useMapEditorInitialState({
           mapId,
           mapQueryData,
+          isMapQueryFetching: false,
           draftMapState: defaultDraftMapState,
           draftMapDescription: '',
           draftUpdatedAt: null,
@@ -473,6 +486,7 @@ describe('useMapEditorInitialState', () => {
       useMapEditorInitialState({
         mapId: 'map1',
         mapQueryData,
+        isMapQueryFetching: false,
         draftMapState: defaultDraftMapState,
         draftMapDescription: '',
         draftUpdatedAt: null,
@@ -491,5 +505,81 @@ describe('useMapEditorInitialState', () => {
       expect(setMapDescriptionDraft).toHaveBeenCalledWith('Server description');
       expect(setIsInitialStateResolved).toHaveBeenCalledWith(true);
     });
+  });
+
+  it('waits for a pending map refetch before resolving initial state', async () => {
+    const setMapState = vi.fn();
+    const setBaselineFromHash = vi.fn();
+    const setMapDescriptionDraft = vi.fn();
+    const setIsInitialStateResolved = vi.fn();
+    const cachedEmptyQueryData = createMapQueryData({
+      description: '',
+      lastSnapshot: {
+        snapshotId: 'snap_cached',
+        createdAt: '2026-03-01T10:00:00.000Z',
+        schemaVersion: 1,
+        stateAtSave: 'private',
+        title: 'Cached map',
+        description: null,
+        config: AdvancedMapAnalyticsUrlStateSchema.parse({}),
+      },
+    });
+    const freshQueryData = createMapQueryData({
+      description: 'Fresh description',
+      lastSnapshot: {
+        snapshotId: 'snap_fresh',
+        createdAt: '2026-03-01T10:01:00.000Z',
+        schemaVersion: 1,
+        stateAtSave: 'private',
+        title: 'Fresh map',
+        description: null,
+        config: AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Fresh map' }),
+      },
+    });
+
+    const { useMapEditorInitialState } = await import('./use-map-editor-initial-state');
+    const { rerender } = renderHook(
+      ({
+        mapQueryData,
+        isMapQueryFetching,
+      }: {
+        mapQueryData: AdvancedMapAnalyticsMapDetail;
+        isMapQueryFetching: boolean;
+      }) =>
+        useMapEditorInitialState({
+          mapId: 'map1',
+          mapQueryData,
+          isMapQueryFetching,
+          draftMapState: defaultDraftMapState,
+          draftMapDescription: '',
+          draftUpdatedAt: null,
+          isLoaded: true,
+          isSignedIn: true,
+          setMapState,
+          setBaselineFromHash,
+          setMapDescriptionDraft,
+          setIsInitialStateResolved,
+        }),
+      {
+        initialProps: {
+          mapQueryData: cachedEmptyQueryData,
+          isMapQueryFetching: true,
+        },
+      }
+    );
+
+    expect(setMapState).not.toHaveBeenCalled();
+
+    rerender({
+      mapQueryData: freshQueryData,
+      isMapQueryFetching: false,
+    });
+
+    await waitFor(() => {
+      expect(setMapState).toHaveBeenCalledWith(freshQueryData.lastSnapshot.config);
+      expect(setMapDescriptionDraft).toHaveBeenCalledWith('Fresh description');
+      expect(setIsInitialStateResolved).toHaveBeenCalledWith(true);
+    });
+    expect(setMapState).not.toHaveBeenCalledWith(cachedEmptyQueryData.lastSnapshot.config);
   });
 });

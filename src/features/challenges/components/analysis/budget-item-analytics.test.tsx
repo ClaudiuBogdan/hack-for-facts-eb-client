@@ -5,6 +5,9 @@ import { BudgetItemAnalytics } from './budget-item-analytics'
 import type { BudgetItemAnalyticsProps } from './budget-item-analytics-context'
 import { getDefaultBudgetItemAnalyticsViewState } from './budget-item-analytics-search-state'
 
+const navigateMock = vi.fn()
+const createMapCloneHandoffMock = vi.fn()
+const analyticsCaptureMock = vi.fn()
 const useChartDataMock = vi.fn()
 const convertToTimeSeriesDataMock = vi.fn()
 const convertToAggregatedDataMock = vi.fn()
@@ -34,6 +37,7 @@ vi.mock('@tanstack/react-router', () => ({
 
     return <a href={href}>{children}</a>
   },
+  useNavigate: () => navigateMock,
 }))
 
 vi.mock('@/components/charts/hooks/useChartData', () => ({
@@ -84,6 +88,21 @@ vi.mock('@/components/entities/utils', () => ({
   getEntityFeatureInfo: (...args: unknown[]) => getEntityFeatureInfoMock(...args),
 }))
 
+vi.mock('@/features/advanced-map-analytics/store/map-clone-handoff', () => ({
+  createMapCloneHandoff: (...args: unknown[]) =>
+    createMapCloneHandoffMock(...args),
+}))
+
+vi.mock('@/lib/analytics', () => ({
+  Analytics: {
+    capture: (...args: unknown[]) => analyticsCaptureMock(...args),
+    EVENTS: {
+      AdvancedMapAnalyticsCloneHandoffUsed:
+        'advanced_map_analytics_clone_handoff_used',
+    },
+  },
+}))
+
 vi.mock('./use-budget-item-analytics-title', () => ({
   useBudgetItemAnalyticsTitle: (...args: unknown[]) =>
     useBudgetItemAnalyticsTitleMock(...args),
@@ -127,22 +146,26 @@ describe('BudgetItemAnalytics', () => {
   const resolvedTitle =
     'Town Hall of Example · Education · Salary expenses in cash'
   const seriesLabel = 'Education · Salary expenses in cash'
+  const runtimeMapState = {
+    mapName: `Map (2025): ${seriesLabel}`,
+    activeView: 'map',
+    activeSeriesId: 'runtime-series-1',
+    activeBinPresetId: 'runtime-preset-1',
+    binsPresets: [],
+    series: [],
+    mapCenter: [45.12345, 24.98765] as [number, number],
+    mapZoom: 9.3,
+  }
 
   beforeEach(() => {
     vi.clearAllMocks()
+    createMapCloneHandoffMock.mockReturnValue('clone_ref_1')
     useBudgetItemAnalyticsTitleMock.mockReturnValue({
       resolvedTitle,
       seriesLabel,
     })
     useMapPreviewRuntimeStateMock.mockReturnValue({
-      mapState: {
-        mapName: `Map (2025): ${seriesLabel}`,
-        activeView: 'map',
-        activeSeriesId: 'series-1',
-        activeBinPresetId: 'preset-1',
-        binsPresets: [],
-        series: [],
-      },
+      mapState: runtimeMapState,
       setMapState: vi.fn(),
     })
     useChartDataMock.mockReturnValue({
@@ -475,5 +498,33 @@ describe('BudgetItemAnalytics', () => {
     expect(screen.getByText('Loading chart data…')).toBeInTheDocument()
     expect(screen.getByTestId('map-analytics-workspace')).toBeInTheDocument()
     expect(screen.queryByTestId('chart-renderer')).not.toBeInTheDocument()
+  })
+
+  it('opens the current map preview in the map editor', () => {
+    render(<BudgetItemAnalytics {...defaultAnalyticsProps} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open in map editor' }))
+
+    const handoffPayload = createMapCloneHandoffMock.mock.calls[0]?.[0] as
+      | {
+        mapState: unknown
+        mapDescription: string
+      }
+      | undefined
+
+    expect(handoffPayload?.mapState).toEqual(runtimeMapState)
+    expect(handoffPayload?.mapDescription).toContain(`**${seriesLabel}**`)
+    expect(handoffPayload?.mapDescription).toContain('fn:65')
+    expect(handoffPayload?.mapDescription).toContain('ec:10.01')
+    expect(analyticsCaptureMock).toHaveBeenCalledWith(
+      'advanced_map_analytics_clone_handoff_used',
+      {
+        source: 'budget_item_analytics_modal',
+      },
+    )
+    expect(navigateMock).toHaveBeenCalledWith({
+      to: '/maps/editor/new',
+      search: { cloneRef: 'clone_ref_1' },
+    })
   })
 })

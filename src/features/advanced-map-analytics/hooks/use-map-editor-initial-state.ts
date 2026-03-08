@@ -9,6 +9,7 @@ import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analyt
 interface UseMapEditorInitialStateInput {
   mapId: string;
   mapQueryData: AdvancedMapAnalyticsMapDetail | undefined;
+  isMapQueryFetching: boolean;
   draftMapState: AdvancedMapAnalyticsUrlState;
   draftMapDescription: string;
   draftUpdatedAt: string | null;
@@ -35,6 +36,7 @@ function toTimestampMs(value: string | null | undefined): number {
 export function useMapEditorInitialState({
   mapId,
   mapQueryData,
+  isMapQueryFetching,
   draftMapState,
   draftMapDescription,
   draftUpdatedAt,
@@ -55,6 +57,7 @@ export function useMapEditorInitialState({
   useEffect(() => {
     if (
       !mapQueryData ||
+      isMapQueryFetching ||
       !isLoaded ||
       !isSignedIn ||
       hasResolvedInitialStateRef.current
@@ -135,6 +138,7 @@ export function useMapEditorInitialState({
     draftMapDescription,
     draftMapState,
     draftUpdatedAt,
+    isMapQueryFetching,
     isLoaded,
     isSignedIn,
     mapId,
