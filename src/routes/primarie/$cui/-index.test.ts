@@ -84,7 +84,7 @@ vi.mock('@/lib/user-preferences', () => ({
   readClientInflationAdjustedPreference: readClientInflationAdjustedPreferenceMock,
 }))
 
-describe('primarie route loader', () => {
+describe('primarie index route loader', () => {
   beforeEach(() => {
     vi.resetModules()
     routeStub.mockClear()
@@ -147,7 +147,7 @@ describe('primarie route loader', () => {
       entity_type: 'admin_county_council',
     })
 
-    const { Route } = await import('./primarie')
+    const { Route } = await import('./index')
     const routeWithLoader = Route as unknown as {
       loader: (input: Record<string, unknown>) => Promise<unknown>
     }
@@ -250,7 +250,7 @@ describe('primarie route loader', () => {
       entity_type: 'admin_municipality',
     })
 
-    const { Route } = await import('./primarie')
+    const { Route } = await import('./index')
     const routeWithLoader = Route as unknown as {
       loader: (input: Record<string, unknown>) => Promise<unknown>
     }

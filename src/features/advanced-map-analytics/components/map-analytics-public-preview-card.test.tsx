@@ -177,6 +177,30 @@ describe('MapAnalyticsPublicPreviewCard', () => {
     });
   });
 
+  it('forwards entity selection callbacks to the preview workspace', async () => {
+    const mapStateDefinition = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Public map' });
+    const onEntityCuiSelect = vi.fn();
+
+    const { MapAnalyticsPublicPreviewCard } = await import('./map-analytics-public-preview-card');
+    render(
+      <MapAnalyticsPublicPreviewCard
+        mapKey="expenses"
+        mapDescription="# Public description"
+        mapStateDefinition={mapStateDefinition}
+        selectedYearOverride={2025}
+        onEntityCuiSelect={onEntityCuiSelect}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('map-analytics-workspace')).toBeInTheDocument();
+    });
+
+    expect(getLatestWorkspaceProps()).toMatchObject({
+      onEntityCuiSelect,
+    });
+  });
+
   it('applies viewport overrides to the preview state without bundled data', async () => {
     const mapStateDefinition = AdvancedMapAnalyticsUrlStateSchema.parse({
       mapName: 'Public map',
@@ -285,6 +309,7 @@ function getLatestWorkspaceProps(): {
     readOnly?: boolean;
   };
   mapDescription?: string;
+  onEntityCuiSelect?: (entityCui: string) => void;
   mapState: AdvancedMapAnalyticsUrlState;
   setMapState: (
     updater:
@@ -301,6 +326,7 @@ function getLatestWorkspaceProps(): {
           readOnly?: boolean;
         };
         mapDescription?: string;
+        onEntityCuiSelect?: (entityCui: string) => void;
         mapState: AdvancedMapAnalyticsUrlState;
         setMapState: (
           updater:

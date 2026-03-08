@@ -25,6 +25,7 @@ interface MapAnalyticsPublicPreviewCardProps {
   mapZoomOverride?: number;
   mapCenterOverride?: [number, number];
   onMapViewportChange?: (nextViewport: PublicMapViewport) => void;
+  onEntityCuiSelect?: (entityCui: string) => void;
 }
 
 export function MapAnalyticsPublicPreviewCard({
@@ -40,6 +41,7 @@ export function MapAnalyticsPublicPreviewCard({
   mapZoomOverride,
   mapCenterOverride,
   onMapViewportChange,
+  onEntityCuiSelect,
 }: Readonly<MapAnalyticsPublicPreviewCardProps>) {
   const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
   const {
@@ -92,6 +94,7 @@ export function MapAnalyticsPublicPreviewCard({
             mapDescription={mapDescription}
             capabilities={{ readOnly: true }}
             mobileControlsDefaultCollapsed={true}
+            onEntityCuiSelect={onEntityCuiSelect}
           />
         </CardContent>
       </Card>

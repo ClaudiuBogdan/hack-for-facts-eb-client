@@ -1,0 +1,192 @@
+{
+  "data": {
+    "entity": {
+      "cui": "4305857",
+      "name": "MUNICIPIUL CLUJ-NAPOCA",
+      "address": "Cluj, Municipiul Cluj-Napoca, STRADA MOTILOR, Numar 1-3, Bloc/Scara , Sector , Cod postal 40001",
+      "default_report_type": "PRINCIPAL_AGGREGATED",
+      "entity_type": "admin_municipality",
+      "is_uat": true,
+      "uat": {
+        "county_name": "CLUJ",
+        "county_code": "CJ",
+        "name": "MUNICIPIUL CLUJ-NAPOCA",
+        "siruta_code": "54975",
+        "population": 286598,
+        "county_entity": {
+          "cui": "4288110",
+          "name": "JUDETUL CLUJ"
+        }
+      },
+      "parents": [],
+      "totalIncome": 2113522844.1,
+      "totalExpenses": 1627387390.88,
+      "budgetBalance": 486135453.22,
+      "incomeTrend": {
+        "seriesId": "4305857_income_trend",
+        "xAxis": {
+          "name": "Year",
+          "type": "STRING",
+          "unit": ""
+        },
+        "yAxis": {
+          "name": "Amount",
+          "type": "FLOAT",
+          "unit": "RON"
+        },
+        "data": [
+          {
+            "x": "2016",
+            "y": 961391205.16
+          },
+          {
+            "x": "2017",
+            "y": 989952681.53
+          },
+          {
+            "x": "2018",
+            "y": 773313301.57
+          },
+          {
+            "x": "2019",
+            "y": 983875254.27
+          },
+          {
+            "x": "2020",
+            "y": 1164990750.78
+          },
+          {
+            "x": "2021",
+            "y": 1365752466.7
+          },
+          {
+            "x": "2022",
+            "y": 1435607759.33
+          },
+          {
+            "x": "2023",
+            "y": 1812905715.22
+          },
+          {
+            "x": "2024",
+            "y": 2100458265.43
+          },
+          {
+            "x": "2025",
+            "y": 2113522844.1
+          }
+        ]
+      },
+      "expenseTrend": {
+        "seriesId": "4305857_expenses_trend",
+        "xAxis": {
+          "name": "Year",
+          "type": "STRING",
+          "unit": ""
+        },
+        "yAxis": {
+          "name": "Amount",
+          "type": "FLOAT",
+          "unit": "RON"
+        },
+        "data": [
+          {
+            "x": "2016",
+            "y": 808659261.75
+          },
+          {
+            "x": "2017",
+            "y": 885363997.5
+          },
+          {
+            "x": "2018",
+            "y": 848191680.82
+          },
+          {
+            "x": "2019",
+            "y": 1126297040.57
+          },
+          {
+            "x": "2020",
+            "y": 1277046423.1
+          },
+          {
+            "x": "2021",
+            "y": 1349079696.77
+          },
+          {
+            "x": "2022",
+            "y": 1537567227.09
+          },
+          {
+            "x": "2023",
+            "y": 1469069553.2
+          },
+          {
+            "x": "2024",
+            "y": 3322835352.44
+          },
+          {
+            "x": "2025",
+            "y": 1627387390.88
+          }
+        ]
+      },
+      "balanceTrend": {
+        "seriesId": "4305857_balance_trend",
+        "xAxis": {
+          "name": "Year",
+          "type": "STRING",
+          "unit": ""
+        },
+        "yAxis": {
+          "name": "Amount",
+          "type": "FLOAT",
+          "unit": "RON"
+        },
+        "data": [
+          {
+            "x": "2016",
+            "y": 152731943.41
+          },
+          {
+            "x": "2017",
+            "y": 104588684.03
+          },
+          {
+            "x": "2018",
+            "y": -74878379.25
+          },
+          {
+            "x": "2019",
+            "y": -142421786.3
+          },
+          {
+            "x": "2020",
+            "y": -112055672.32
+          },
+          {
+            "x": "2021",
+            "y": 16672769.93
+          },
+          {
+            "x": "2022",
+            "y": -101959467.76
+          },
+          {
+            "x": "2023",
+            "y": 343836162.02
+          },
+          {
+            "x": "2024",
+            "y": -1222377087.01
+          },
+          {
+            "x": "2025",
+            "y": 486135453.22
+          }
+        ]
+      }
+    }
+  }
+}

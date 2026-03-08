@@ -1,15 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import {
-  CampaignCalendarRouteSearchSchema,
-  resolveCampaignCalendarLocale,
-} from '@/features/campaigns/buget/schemas/campaign-calendar-search-schema'
+  CampaignRouteSearchSchema,
+  resolveCampaignLocale,
+} from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
 import { buildCampaignRouteHead } from '@/features/campaigns/buget/seo/campaign-seo'
-import type { CampaignCalendarRouteSearch } from '@/features/campaigns/buget/types'
+import type { CampaignRouteSearch } from '@/features/campaigns/buget/types'
 
-export const Route = createFileRoute('/buget/$cui/calendar')({
+export const Route = createFileRoute('/primarie/$cui/buget/provocari/')({
   ssr: true,
-  validateSearch: CampaignCalendarRouteSearchSchema,
+  validateSearch: CampaignRouteSearchSchema,
   headers: () =>
     createPublicPageCacheHeaders({
       browserMaxAgeSeconds: 0,
@@ -17,9 +17,9 @@ export const Route = createFileRoute('/buget/$cui/calendar')({
       staleWhileRevalidateSeconds: 3600,
     }),
   head: ({ match }) => {
-    const locale = resolveCampaignCalendarLocale(match.search as CampaignCalendarRouteSearch)
+    const locale = resolveCampaignLocale(match.search as CampaignRouteSearch)
     return buildCampaignRouteHead({
-      pageKind: 'calendar',
+      pageKind: 'hub',
       locale,
       entityCui: match.params.cui,
     })

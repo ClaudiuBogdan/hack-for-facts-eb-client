@@ -54,7 +54,7 @@ describe('campaign-seo', () => {
       entityCui: '12345678',
     })
 
-    expect(metadata.canonicalUrl).toContain('/buget/12345678/provocari?lang=en')
+    expect(metadata.canonicalUrl).toContain('/primarie/12345678/buget?lang=en')
     expect(metadata.robots).toBe('noindex,follow')
   })
 
@@ -98,7 +98,7 @@ describe('campaign-seo', () => {
     })
 
     expect(metadata.robots).toBe('index,follow')
-    expect(metadata.canonicalUrl).toContain('/buget/4305857/calendar')
+    expect(metadata.canonicalUrl).toContain('/primarie/4305857/buget/calendar')
     expect(metadata.canonicalUrl).not.toContain('?lang=en')
   })
 

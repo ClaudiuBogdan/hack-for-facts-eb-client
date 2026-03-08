@@ -55,6 +55,7 @@ vi.mock(
       onStateChange,
       onCommitmentsViewStateChange,
       onAnalyticsTargetChange,
+      onEntityCuiChange,
       onEntityResolved,
     }: any) => (
       <div data-testid="analysis-page">
@@ -134,12 +135,18 @@ vi.mock(
         >
           Close analytics
         </button>
+        <button
+          type="button"
+          onClick={() => onEntityCuiChange?.('87654321')}
+        >
+          Select entity from map
+        </button>
       </div>
     ),
   }),
 )
 
-describe('PrimarieEntityRoutePage', () => {
+describe('PrimarieEntityIndexRoutePage', () => {
   beforeEach(() => {
     mockedParams = { cui: '12345678' }
     mockedSearch = {}
@@ -173,7 +180,7 @@ describe('PrimarieEntityRoutePage', () => {
     }
     mockedParams = { cui: '87654321' }
 
-    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+    const { PrimarieEntityRoutePage } = await import('./index.lazy')
 
     render(<PrimarieEntityRoutePage />)
 
@@ -208,7 +215,7 @@ describe('PrimarieEntityRoutePage', () => {
       },
     }
 
-    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+    const { PrimarieEntityRoutePage } = await import('./index.lazy')
 
     render(<PrimarieEntityRoutePage />)
 
@@ -253,7 +260,7 @@ describe('PrimarieEntityRoutePage', () => {
       public_map: 'gxnEfLoy3EqI',
     }
 
-    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+    const { PrimarieEntityRoutePage } = await import('./index.lazy')
 
     render(<PrimarieEntityRoutePage />)
 
@@ -278,7 +285,7 @@ describe('PrimarieEntityRoutePage', () => {
   it('syncs campaign progress to the URL entity after the entity resolves successfully', async () => {
     mockedParams = { cui: '87654321' }
 
-    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+    const { PrimarieEntityRoutePage } = await import('./index.lazy')
 
     render(<PrimarieEntityRoutePage />)
 
@@ -294,7 +301,7 @@ describe('PrimarieEntityRoutePage', () => {
   it('does not overwrite campaign progress when the entity never resolves', async () => {
     mockedParams = { cui: 'invalid-cui' }
 
-    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+    const { PrimarieEntityRoutePage } = await import('./index.lazy')
 
     render(<PrimarieEntityRoutePage />)
 
@@ -323,7 +330,7 @@ describe('PrimarieEntityRoutePage', () => {
       insRoot: 'population',
     }
 
-    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+    const { PrimarieEntityRoutePage } = await import('./index.lazy')
 
     render(<PrimarieEntityRoutePage />)
 
@@ -361,7 +368,7 @@ describe('PrimarieEntityRoutePage', () => {
       treemap_path: '51,51.01.03',
     }
 
-    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+    const { PrimarieEntityRoutePage } = await import('./index.lazy')
 
     render(<PrimarieEntityRoutePage />)
 
@@ -391,7 +398,7 @@ describe('PrimarieEntityRoutePage', () => {
       view: 'main-info',
     }
 
-    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+    const { PrimarieEntityRoutePage } = await import('./index.lazy')
 
     render(<PrimarieEntityRoutePage />)
 
@@ -419,7 +426,7 @@ describe('PrimarieEntityRoutePage', () => {
       commitments_detail_level: 'chapter',
     }
 
-    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+    const { PrimarieEntityRoutePage } = await import('./index.lazy')
 
     render(<PrimarieEntityRoutePage />)
 
@@ -449,7 +456,7 @@ describe('PrimarieEntityRoutePage', () => {
       view: 'main-info',
     }
 
-    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+    const { PrimarieEntityRoutePage } = await import('./index.lazy')
 
     render(<PrimarieEntityRoutePage />)
 
@@ -502,7 +509,7 @@ describe('PrimarieEntityRoutePage', () => {
       },
     }
 
-    const { PrimarieEntityRoutePage } = await import('./primarie.lazy')
+    const { PrimarieEntityRoutePage } = await import('./index.lazy')
 
     render(<PrimarieEntityRoutePage />)
 
@@ -517,5 +524,50 @@ describe('PrimarieEntityRoutePage', () => {
     const nextSearch = updateCall.search(mockedSearch)
 
     expect(nextSearch).not.toHaveProperty('analytics')
+  })
+
+  it('routes map-selected entities through the current primarie page and preserves search', async () => {
+    mockedSearch = {
+      lang: 'en',
+      view: 'main-info',
+      public_map: 'local-taxes',
+      insDataset: 'POP107D',
+      insRoot: 'population',
+    }
+    window.history.replaceState(
+      {},
+      '',
+      '/primarie/12345678?insDataset=POP107D&insRoot=population',
+    )
+
+    const { PrimarieEntityRoutePage } = await import('./index.lazy')
+
+    render(<PrimarieEntityRoutePage />)
+
+    navigateMock.mockClear()
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Select entity from map' }),
+    )
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalled()
+    })
+
+    const updateCall = navigateMock.mock.calls[0]?.[0]
+    const nextSearch = updateCall.search(mockedSearch)
+
+    expect(updateCall).toMatchObject({
+      to: '/primarie/$cui',
+      params: { cui: '87654321' },
+      replace: false,
+      resetScroll: false,
+    })
+    expect(nextSearch).toMatchObject({
+      lang: 'en',
+      view: 'main-info',
+      public_map: 'local-taxes',
+      insDataset: 'POP107D',
+      insRoot: 'population',
+    })
   })
 })

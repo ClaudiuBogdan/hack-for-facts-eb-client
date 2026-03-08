@@ -1745,6 +1745,7 @@ export function ChallengeEntityAnalysisPage({
                     mapZoomOverride={publicMapViewport.mapZoom}
                     mapCenterOverride={publicMapViewport.mapCenter}
                     onMapViewportChange={handlePublicMapViewportChange}
+                    onEntityCuiSelect={onEntityCuiChange}
                   />
                 </Suspense>
               ) : (

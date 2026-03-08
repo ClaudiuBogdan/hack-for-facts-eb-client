@@ -60,7 +60,7 @@ function resolveChallengeEntityInitialSettings(
   }
 }
 
-export const Route = createFileRoute('/buget/$cui/primarie')({
+export const Route = createFileRoute('/primarie/$cui/')({
   ssr: false,
   validateSearch: ChallengeEntityAnalysisRouteSearchSchema,
   headers: () =>

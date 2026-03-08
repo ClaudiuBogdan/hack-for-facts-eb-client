@@ -1,5 +1,9 @@
 import { getSiteUrl } from '@/config/env'
-import { buildCampaignCalendarPath, CAMPAIGN_BASE_PATH } from '../constants'
+import {
+  buildCampaignBudgetPath,
+  buildCampaignCalendarPath,
+  CAMPAIGN_BASE_PATH,
+} from '../constants'
 import {
   buildCampaignPrimariePath,
   buildCampaignProvocariModulePath,
@@ -121,7 +125,7 @@ function resolvePagePath(params: {
   }
   if (params.pageKind === 'hub') {
     return params.entityCui
-      ? buildCampaignProvocariPath(params.entityCui)
+      ? buildCampaignBudgetPath(params.entityCui)
       : `${CAMPAIGN_BASE_PATH}/cauta`
   }
   if (params.pageKind === 'primarie') {

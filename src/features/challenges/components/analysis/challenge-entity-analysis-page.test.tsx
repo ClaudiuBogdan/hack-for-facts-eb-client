@@ -226,6 +226,9 @@ vi.mock(
       const onMapViewportChange = props.onMapViewportChange as
         | ((viewport: { mapZoom: number; mapCenter: [number, number] }) => void)
         | undefined
+      const onEntityCuiSelect = props.onEntityCuiSelect as
+        | ((entityCui: string) => void)
+        | undefined
       return (
         <div data-testid="public-map-preview">
           {String(props.mapKey)}:{String(props.selectedYearOverride)}:
@@ -242,6 +245,12 @@ vi.mock(
             }
           >
             Pan preview map
+          </button>
+          <button
+            type="button"
+            onClick={() => onEntityCuiSelect?.('87654321')}
+          >
+            Select entity from preview map
           </button>
         </div>
       )
@@ -562,6 +571,7 @@ function renderAnalysisPage(
     readonly commitmentsGrouping?: 'fn' | 'ec'
     readonly commitmentsDetailLevel?: 'chapter' | 'detailed'
     readonly analyticsTarget?: BudgetItemAnalyticsSearchState
+    readonly onEntityCuiChange?: (entityCui: string) => void
   } = {},
 ) {
   function TestHarness() {
@@ -600,6 +610,7 @@ function renderAnalysisPage(
         onAnalyticsTargetChange={(target) =>
           setAnalyticsTarget(target ?? undefined)
         }
+        onEntityCuiChange={props.onEntityCuiChange}
       />
     )
   }
@@ -1211,6 +1222,20 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(
       screen.getAllByRole('button', { name: 'Arată total' }),
     ).toHaveLength(2)
+  })
+
+  it('passes entity selection through to the preview map card', () => {
+    const onEntityCuiChange = vi.fn()
+
+    renderAnalysisPage({
+      onEntityCuiChange,
+    })
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Select entity from preview map' }),
+    )
+
+    expect(onEntityCuiChange).toHaveBeenCalledWith('87654321')
   })
 
   it('builds analytics props from the current page state when a budget item requests analytics', async () => {

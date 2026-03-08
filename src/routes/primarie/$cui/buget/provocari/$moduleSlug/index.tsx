@@ -9,23 +9,15 @@ import type { CampaignRouteSearch } from '@/features/campaigns/buget/types'
 import { getChallengeModuleBySlug } from '@/features/challenges/utils/modules'
 
 export const Route = createFileRoute(
-  '/buget/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug',
+  '/primarie/$cui/buget/provocari/$moduleSlug/',
 )({
   ssr: true,
   validateSearch: CampaignRouteSearchSchema,
   loader: ({ params }) => {
     const module = getChallengeModuleBySlug(params.moduleSlug)
-    if (!module) throw notFound()
-
-    const challenge = module.challenges.find(
-      (candidateChallenge) => candidateChallenge.slug === params.challengeSlug,
-    )
-    if (!challenge) throw notFound()
-
-    const step = challenge.steps.find(
-      (candidateStep) => candidateStep.slug === params.stepSlug,
-    )
-    if (!step) throw notFound()
+    if (!module) {
+      throw notFound()
+    }
   },
   headers: () =>
     createPublicPageCacheHeaders({
@@ -40,8 +32,6 @@ export const Route = createFileRoute(
       locale,
       entityCui: match.params.cui,
       moduleSlug: match.params.moduleSlug,
-      challengeSlug: match.params.challengeSlug,
-      stepSlug: match.params.stepSlug,
     })
   },
 })

@@ -3,7 +3,7 @@ import { resolveCampaignLocale } from '@/features/campaigns/buget/schemas/campai
 import { ChallengeStepPlayer } from '@/features/challenges/components/player/ChallengeStepPlayer'
 
 export const Route = createLazyFileRoute(
-  '/buget/$cui/provocari/$moduleSlug/$challengeSlug/$stepSlug',
+  '/primarie/$cui/buget/provocari/$moduleSlug/$challengeSlug/$stepSlug',
 )({
   component: ChallengeStepPlayerRoute,
 })

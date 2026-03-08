@@ -68,7 +68,7 @@ describe('QuickResourcesPreview', () => {
     expect(screen.getByText('My city hall')).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: /My city hall/i }),
-    ).toHaveAttribute('href', '/buget/12345678/primarie')
+    ).toHaveAttribute('href', '/primarie/12345678')
     expect(
       screen.getByRole('link', { name: /My city hall/i }),
     ).toHaveAttribute('preload', 'intent')

@@ -2,7 +2,7 @@ import { createLazyFileRoute } from '@tanstack/react-router'
 import { BugetCalendarPage } from '@/features/campaigns/buget/components/calendar/buget-calendar-page'
 import { resolveCampaignCalendarLocale } from '@/features/campaigns/buget/schemas/campaign-calendar-search-schema'
 
-export const Route = createLazyFileRoute('/buget/$cui/calendar')({
+export const Route = createLazyFileRoute('/primarie/$cui/buget/calendar')({
   component: BugetCalendarRoutePage,
 })
 

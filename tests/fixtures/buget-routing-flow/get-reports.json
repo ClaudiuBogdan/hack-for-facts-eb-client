@@ -1,0 +1,203 @@
+{
+  "data": {
+    "reports": {
+      "nodes": [
+        {
+          "report_id": "a71675d877a823f1b65e884c15ec9a79099fe7ee35de59d43243227d6986f2f0",
+          "reporting_year": 2025,
+          "report_type": "PRINCIPAL_AGGREGATED",
+          "report_date": "1761868800000",
+          "download_links": [
+            "https://static.anaf.ro/rapfxb/LOT630/20251031_FXB-EXB-901_TREZ216_4305857_4305857_02_107439913.xlsx",
+            "https://static.anaf.ro/rapfxb/LOT630/20251031_FXB-EXB-901_TREZ216_4305857_4305857_02_107439914.pdf",
+            "https://static.anaf.ro/rapfxb/LOT630/20251031_FXB-EXB-901_TREZ216_4305857_4305857_02_107439912.xml"
+          ],
+          "main_creditor": {
+            "cui": "4305857",
+            "name": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "budgetSector": {
+            "sector_id": "2",
+            "sector_description": "Bugetul local   (administratie locala)"
+          }
+        },
+        {
+          "report_id": "67356295566200483d7498305eae487615b827a82109c9c4cad7720552258334",
+          "reporting_year": 2025,
+          "report_type": "PRINCIPAL_AGGREGATED",
+          "report_date": "1759190400000",
+          "download_links": [
+            "https://static.anaf.ro/rapfxb/LOT621/20250930_FXB-EXB-901_TREZ216_4305857_4305857_02_104668835.xlsx",
+            "https://static.anaf.ro/rapfxb/LOT621/20250930_FXB-EXB-901_TREZ216_4305857_4305857_02_104668836.pdf",
+            "https://static.anaf.ro/rapfxb/LOT621/20250930_FXB-EXB-901_TREZ216_4305857_4305857_02_104668834.xml"
+          ],
+          "main_creditor": {
+            "cui": "4305857",
+            "name": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "budgetSector": {
+            "sector_id": "2",
+            "sector_description": "Bugetul local   (administratie locala)"
+          }
+        },
+        {
+          "report_id": "d679469186203de49ab2d5421dbc6f5bf02d4411a3375a758f4e1d083c879af0",
+          "reporting_year": 2025,
+          "report_type": "PRINCIPAL_AGGREGATED",
+          "report_date": "1756598400000",
+          "download_links": [
+            "https://static.anaf.ro/rapfxb/LOT613/20250831_FXB-EXB-901_TREZ216_4305857_4305857_02_104080021.xlsx",
+            "https://static.anaf.ro/rapfxb/LOT613/20250831_FXB-EXB-901_TREZ216_4305857_4305857_02_104080022.pdf",
+            "https://static.anaf.ro/rapfxb/LOT613/20250831_FXB-EXB-901_TREZ216_4305857_4305857_02_104080020.xml"
+          ],
+          "main_creditor": {
+            "cui": "4305857",
+            "name": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "budgetSector": {
+            "sector_id": "2",
+            "sector_description": "Bugetul local   (administratie locala)"
+          }
+        },
+        {
+          "report_id": "a2e8349f5063d9eb579ae75577a4422b9cdf7e5eaa5cf17638cf734a23f49cbc",
+          "reporting_year": 2025,
+          "report_type": "PRINCIPAL_AGGREGATED",
+          "report_date": "1753920000000",
+          "download_links": [
+            "https://static.anaf.ro/rapfxb/LOT603/20250731_FXB-EXB-901_TREZ216_4305857_4305857_02_102249054.xlsx",
+            "https://static.anaf.ro/rapfxb/LOT603/20250731_FXB-EXB-901_TREZ216_4305857_4305857_02_102249055.pdf",
+            "https://static.anaf.ro/rapfxb/LOT603/20250731_FXB-EXB-901_TREZ216_4305857_4305857_02_102249053.xml"
+          ],
+          "main_creditor": {
+            "cui": "4305857",
+            "name": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "budgetSector": {
+            "sector_id": "2",
+            "sector_description": "Bugetul local   (administratie locala)"
+          }
+        },
+        {
+          "report_id": "0a2050adcabb7daf10d9a5a3cf2475d556947a7c5b039ecf76adb8a291dfc575",
+          "reporting_year": 2025,
+          "report_type": "PRINCIPAL_AGGREGATED",
+          "report_date": "1751241600000",
+          "download_links": [
+            "https://static.anaf.ro/rapfxb/LOT592/20250630_FXB-EXB-901_TREZ216_4305857_4305857_02_99531331.xlsx",
+            "https://static.anaf.ro/rapfxb/LOT592/20250630_FXB-EXB-901_TREZ216_4305857_4305857_02_99531332.pdf",
+            "https://static.anaf.ro/rapfxb/LOT592/20250630_FXB-EXB-901_TREZ216_4305857_4305857_02_99531330.xml"
+          ],
+          "main_creditor": {
+            "cui": "4305857",
+            "name": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "budgetSector": {
+            "sector_id": "2",
+            "sector_description": "Bugetul local   (administratie locala)"
+          }
+        },
+        {
+          "report_id": "d0c2556045697569efcc2836bfb922c511dca27a9b3363bac17caf3b48cb030c",
+          "reporting_year": 2025,
+          "report_type": "PRINCIPAL_AGGREGATED",
+          "report_date": "1748649600000",
+          "download_links": [
+            "https://static.anaf.ro/rapfxb/LOT583/20250531_FXB-EXB-901_TREZ216_4305857_4305857_02_98864979.xlsx",
+            "https://static.anaf.ro/rapfxb/LOT583/20250531_FXB-EXB-901_TREZ216_4305857_4305857_02_98864980.pdf",
+            "https://static.anaf.ro/rapfxb/LOT583/20250531_FXB-EXB-901_TREZ216_4305857_4305857_02_98864978.xml"
+          ],
+          "main_creditor": {
+            "cui": "4305857",
+            "name": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "budgetSector": {
+            "sector_id": "2",
+            "sector_description": "Bugetul local   (administratie locala)"
+          }
+        },
+        {
+          "report_id": "4313b76ccc29cf1f10132a139dfbd308e107b9d77961c1f963edaf9a3fddd6ca",
+          "reporting_year": 2025,
+          "report_type": "PRINCIPAL_AGGREGATED",
+          "report_date": "1745971200000",
+          "download_links": [
+            "https://static.anaf.ro/rapfxb/LOT577/20250430_FXB-EXB-901_TREZ216_4305857_4305857_02_96244285.xlsx",
+            "https://static.anaf.ro/rapfxb/LOT577/20250430_FXB-EXB-901_TREZ216_4305857_4305857_02_96244286.pdf",
+            "https://static.anaf.ro/rapfxb/LOT577/20250430_FXB-EXB-901_TREZ216_4305857_4305857_02_96244284.xml"
+          ],
+          "main_creditor": {
+            "cui": "4305857",
+            "name": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "budgetSector": {
+            "sector_id": "2",
+            "sector_description": "Bugetul local   (administratie locala)"
+          }
+        },
+        {
+          "report_id": "dd41ecdd35dc39f6509aca3ba2736636ffaa61fa76fc6ce14becc14deb134e9b",
+          "reporting_year": 2025,
+          "report_type": "PRINCIPAL_AGGREGATED",
+          "report_date": "1743379200000",
+          "download_links": [
+            "https://static.anaf.ro/rapfxb/LOT565/20250331_FXB-EXB-901_TREZ216_4305857_4305857_02_93322584.xlsx",
+            "https://static.anaf.ro/rapfxb/LOT565/20250331_FXB-EXB-901_TREZ216_4305857_4305857_02_93322585.pdf",
+            "https://static.anaf.ro/rapfxb/LOT565/20250331_FXB-EXB-901_TREZ216_4305857_4305857_02_93322583.xml"
+          ],
+          "main_creditor": {
+            "cui": "4305857",
+            "name": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "budgetSector": {
+            "sector_id": "2",
+            "sector_description": "Bugetul local   (administratie locala)"
+          }
+        },
+        {
+          "report_id": "97d7bc38b1ab0095c5bd0c259fac455e6e815b6fab4896c2a757112959956285",
+          "reporting_year": 2025,
+          "report_type": "PRINCIPAL_AGGREGATED",
+          "report_date": "1740700800000",
+          "download_links": [
+            "https://static.anaf.ro/rapfxb/LOT556/20250228_FXB-EXB-901_TREZ216_4305857_4305857_02_92767546.xlsx",
+            "https://static.anaf.ro/rapfxb/LOT556/20250228_FXB-EXB-901_TREZ216_4305857_4305857_02_92767547.pdf",
+            "https://static.anaf.ro/rapfxb/LOT556/20250228_FXB-EXB-901_TREZ216_4305857_4305857_02_92767545.xml"
+          ],
+          "main_creditor": {
+            "cui": "4305857",
+            "name": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "budgetSector": {
+            "sector_id": "2",
+            "sector_description": "Bugetul local   (administratie locala)"
+          }
+        },
+        {
+          "report_id": "72f9ae29f6d45de0778a566df6c2212e16d4ecdc8499bee82c61ba5486ed3cb5",
+          "reporting_year": 2025,
+          "report_type": "PRINCIPAL_AGGREGATED",
+          "report_date": "1738281600000",
+          "download_links": [
+            "https://static.anaf.ro/rapfxb/LOT546/20250131_FXB-EXB-901_TREZ216_4305857_4305857_02_88216955.xlsx",
+            "https://static.anaf.ro/rapfxb/LOT546/20250131_FXB-EXB-901_TREZ216_4305857_4305857_02_88216956.pdf",
+            "https://static.anaf.ro/rapfxb/LOT546/20250131_FXB-EXB-901_TREZ216_4305857_4305857_02_88216954.xml"
+          ],
+          "main_creditor": {
+            "cui": "4305857",
+            "name": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "budgetSector": {
+            "sector_id": "2",
+            "sector_description": "Bugetul local   (administratie locala)"
+          }
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 10,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

@@ -23,7 +23,7 @@ import {
   normalizeChallengeEntityAnalysisSearch,
 } from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
 
-export const Route = createLazyFileRoute('/buget/$cui/primarie')({
+export const Route = createLazyFileRoute('/primarie/$cui/')({
   component: PrimarieEntityRoutePage,
 })
 
@@ -105,7 +105,7 @@ export function PrimarieEntityRoutePage() {
     }
     | undefined
   const navigate = useNavigate({
-    from: '/buget/$cui/primarie',
+    from: '/primarie/$cui',
   })
   const {
     isReady,
@@ -305,7 +305,7 @@ export function PrimarieEntityRoutePage() {
       onEntityCuiChange={(nextEntityCui) => {
         startTransition(() => {
           void navigate({
-            to: '/buget/$cui/primarie',
+            to: '/primarie/$cui',
             params: { cui: nextEntityCui },
             search: (previousSearch) =>
               mergeWindowManagedSearchState(

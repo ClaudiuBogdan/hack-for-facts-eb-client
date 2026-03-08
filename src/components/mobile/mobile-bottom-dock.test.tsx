@@ -107,7 +107,7 @@ describe("MobileBottomDock", () => {
     Object.defineProperty(window, "location", {
       configurable: true,
       value: {
-        href: "https://transparenta.eu/buget/123/primarie",
+        href: "https://transparenta.eu/primarie/123",
       },
     });
     Object.defineProperty(navigator, "clipboard", {
@@ -174,7 +174,7 @@ describe("MobileBottomDock", () => {
 
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-        "https://transparenta.eu/buget/123/primarie"
+        "https://transparenta.eu/primarie/123"
       );
       expect(ensureShortRedirectUrlMock).not.toHaveBeenCalled();
       expect(toastSuccessMock).not.toHaveBeenCalled();
@@ -209,7 +209,7 @@ describe("MobileBottomDock", () => {
 
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-        "https://transparenta.eu/buget/123/primarie"
+        "https://transparenta.eu/primarie/123"
       );
       expect(toastSuccessMock).not.toHaveBeenCalled();
     });
