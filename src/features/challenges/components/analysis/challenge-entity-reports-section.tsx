@@ -211,7 +211,6 @@ export function ChallengeEntityReportsSection({
     offset: 0,
     enabled: entityCui.length > 0,
   })
-
   useEffect(() => {
     setIsExpanded(false)
   }, [entityCui, reportType, selectedYear])
@@ -254,7 +253,7 @@ export function ChallengeEntityReportsSection({
       </CardHeader>
 
       <CardContent className="space-y-5" aria-live="polite">
-        {reportsQuery.isLoading ? (
+        {reportsQuery.isLoading && !reportsQuery.data ? (
           <ChallengeEntityReportsSectionSkeleton />
         ) : reportsQuery.isError ? (
           <div className="rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-5 py-6">

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { queryOptions, useQuery } from '@tanstack/react-query';
 import type { Currency } from '@/schemas/charts';
 import type {
   AdvancedMapAnalyticsValueFilterRule,
@@ -98,41 +98,13 @@ export function useAdvancedMapAnalyticsSeriesData(
     [normalizedSeries]
   );
   const normalizedBaseSeries = remoteGroupedSeriesState.baseSeries;
-  const normalizedRemoteBaseSeries = remoteGroupedSeriesState.remoteBaseSeries;
-  const baseSeriesHash = remoteGroupedSeriesState.remoteBaseSeriesHash;
-  const useBundledGroupedSeriesData =
-    params.bundledGroupedSeriesData !== undefined &&
-    params.bundledRemoteBaseSeriesHash === baseSeriesHash;
 
   const groupedDataQuery = useQuery<GroupedSeriesDataResponse, Error>({
-    queryKey: ['advanced-map-analytics-series-data', baseSeriesHash],
-    initialData: useBundledGroupedSeriesData ? params.bundledGroupedSeriesData : undefined,
-    initialDataUpdatedAt: useBundledGroupedSeriesData ? Date.now() : undefined,
-    queryFn: async () => {
-      if (normalizedRemoteBaseSeries.length === 0) {
-        return {
-          manifest: {
-            generated_at: new Date().toISOString(),
-            format: 'wide_matrix_v1',
-            granularity: 'UAT',
-            series: [],
-          },
-          payload: {
-            mime: 'text/csv',
-            compression: 'none',
-            data: 'siruta_code',
-          },
-          warnings: [],
-        };
-      }
-
-      return fetchGroupedSeriesData({
-        granularity: 'UAT',
-        series: normalizedRemoteBaseSeries,
-      });
-    },
-    staleTime: convertDaysToMs(1),
-    gcTime: convertDaysToMs(3),
+    ...advancedMapAnalyticsSeriesDataQueryOptions({
+      series: normalizedSeries,
+      bundledGroupedSeriesData: params.bundledGroupedSeriesData,
+      bundledRemoteBaseSeriesHash: params.bundledRemoteBaseSeriesHash,
+    }),
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchOnMount: false,
@@ -286,6 +258,53 @@ export function useAdvancedMapAnalyticsSeriesData(
     isFetching: groupedDataQuery.isFetching,
     error: groupedDataQuery.error ?? null,
   };
+}
+
+export function advancedMapAnalyticsSeriesDataQueryOptions(params: {
+  series: MapSupportedSeries[];
+  bundledGroupedSeriesData?: GroupedSeriesDataResponse;
+  bundledRemoteBaseSeriesHash?: string;
+}) {
+  const normalizedSeries = params.series.map((series) =>
+    normalizeSeriesDefaults(series)
+  );
+  const remoteGroupedSeriesState = buildRemoteGroupedSeriesState(normalizedSeries);
+  const normalizedRemoteBaseSeries = remoteGroupedSeriesState.remoteBaseSeries;
+  const baseSeriesHash = remoteGroupedSeriesState.remoteBaseSeriesHash;
+  const useBundledGroupedSeriesData =
+    params.bundledGroupedSeriesData !== undefined &&
+    params.bundledRemoteBaseSeriesHash === baseSeriesHash;
+
+  return queryOptions<GroupedSeriesDataResponse, Error>({
+    queryKey: ['advanced-map-analytics-series-data', baseSeriesHash],
+    initialData: useBundledGroupedSeriesData ? params.bundledGroupedSeriesData : undefined,
+    initialDataUpdatedAt: useBundledGroupedSeriesData ? Date.now() : undefined,
+    queryFn: async () => {
+      if (normalizedRemoteBaseSeries.length === 0) {
+        return {
+          manifest: {
+            generated_at: new Date().toISOString(),
+            format: 'wide_matrix_v1',
+            granularity: 'UAT',
+            series: [],
+          },
+          payload: {
+            mime: 'text/csv',
+            compression: 'none',
+            data: 'siruta_code',
+          },
+          warnings: [],
+        };
+      }
+
+      return fetchGroupedSeriesData({
+        granularity: 'UAT',
+        series: normalizedRemoteBaseSeries,
+      });
+    },
+    staleTime: convertDaysToMs(1),
+    gcTime: convertDaysToMs(3),
+  });
 }
 
 function normalizeSeriesDefaults(

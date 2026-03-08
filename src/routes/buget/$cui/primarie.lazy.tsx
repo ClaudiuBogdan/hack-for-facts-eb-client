@@ -11,6 +11,7 @@ import {
   ChallengeEntityAnalysisPage,
   type ChallengeEntityAnalysisPageState,
 } from '@/features/challenges/components/analysis/challenge-entity-analysis-page'
+import type { ChallengeEntityInitialSettings } from '@/features/challenges/components/analysis/challenge-entity-analysis-queries'
 import { useCampaignProgress } from '@/features/campaigns/buget/hooks/use-campaign-progress'
 import {
   type ChallengeEntityAnalysisRouteSearch,
@@ -67,6 +68,11 @@ function toPageState(
 export function PrimarieEntityRoutePage() {
   const { cui } = Route.useParams()
   const search = Route.useSearch()
+  const loaderData = Route.useLoaderData() as
+    | {
+      initialSettings?: ChallengeEntityInitialSettings
+    }
+    | undefined
   const navigate = useNavigate({
     from: '/buget/$cui/primarie',
   })
@@ -220,6 +226,7 @@ export function PrimarieEntityRoutePage() {
       entityCui={cui}
       languageQuery={normalizedSearch.lang}
       state={pageState}
+      initialSettings={loaderData?.initialSettings}
       onStateChange={handleStateChange}
       onEntityResolved={() => setIsEntityResolved(true)}
     />

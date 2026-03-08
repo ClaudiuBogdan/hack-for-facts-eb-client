@@ -6,6 +6,19 @@ const navigateMock = vi.fn()
 const setSelectedEntityMock = vi.fn()
 let mockedParams = { cui: '12345678' }
 let mockedSearch: Record<string, unknown> = {}
+let mockedLoaderData:
+  | {
+    initialSettings?: {
+      currency: string
+      inflationAdjusted: boolean
+    }
+  }
+  | undefined = {
+    initialSettings: {
+      currency: 'RON',
+      inflationAdjusted: false,
+    },
+  }
 let campaignProgressState = {
   isReady: true,
   isInitialResolutionReady: true,
@@ -19,6 +32,7 @@ vi.mock('@tanstack/react-router', () => ({
   createLazyFileRoute: () => () => ({
     useParams: () => mockedParams,
     useSearch: () => mockedSearch,
+    useLoaderData: () => mockedLoaderData,
   }),
   useNavigate: () => navigateMock,
 }))
@@ -34,6 +48,7 @@ vi.mock(
       entityCui,
       languageQuery,
       state,
+      initialSettings,
       onStateChange,
       onEntityResolved,
     }: any) => (
@@ -41,7 +56,9 @@ vi.mock(
         {entityCui}:{languageQuery ?? 'ro'}:{state.selectedYear}:
         {state.reportType}:{state.treemapAccountCategory}:{state.treemapPrimary}:
         {state.treemapPath.join('|')}:{state.evolutionAccountCategory}:
-        {state.evolutionPrimary}:{state.mapPreviewKey}
+        {state.evolutionPrimary}:{state.mapPreviewKey}:
+        {initialSettings?.currency ?? 'none'}:
+        {String(initialSettings?.inflationAdjusted)}
         <button type="button" onClick={() => onEntityResolved?.()}>
           Resolve entity
         </button>
@@ -66,6 +83,12 @@ describe('PrimarieEntityRoutePage', () => {
   beforeEach(() => {
     mockedParams = { cui: '12345678' }
     mockedSearch = {}
+    mockedLoaderData = {
+      initialSettings: {
+        currency: 'RON',
+        inflationAdjusted: false,
+      },
+    }
     campaignProgressState = {
       isReady: true,
       isInitialResolutionReady: true,
@@ -94,7 +117,7 @@ describe('PrimarieEntityRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      `87654321:ro:2025:PRINCIPAL_AGGREGATED:ch:fn::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}`,
+      `87654321:ro:2025:PRINCIPAL_AGGREGATED:ch:fn::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:RON:false`,
     )
   })
 
@@ -116,7 +139,7 @@ describe('PrimarieEntityRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      `12345678:en:2024:DETAILED:vn:fn:51|51.01:vn:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}`,
+      `12345678:en:2024:DETAILED:vn:fn:51|51.01:vn:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:RON:false`,
     )
 
     await waitFor(() => {
@@ -143,7 +166,7 @@ describe('PrimarieEntityRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      '12345678:ro:2025:PRINCIPAL_AGGREGATED:ch:fn::ch:fn:local-taxes',
+      '12345678:ro:2025:PRINCIPAL_AGGREGATED:ch:fn::ch:fn:local-taxes:RON:false',
     )
 
     await waitFor(() => {

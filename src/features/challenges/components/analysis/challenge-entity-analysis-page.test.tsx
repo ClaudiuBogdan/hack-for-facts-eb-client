@@ -6,18 +6,21 @@ import {
   CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS,
 } from './challenge-entity-public-maps'
 import type { EntityDetailsData, ExecutionLineItem } from '@/lib/api/entities'
-import {
-  ChallengeEntityAnalysisPage,
-  type ChallengeEntityAnalysisPageState,
-} from './challenge-entity-analysis-page'
+import type { ChallengeEntityAnalysisPageState } from './challenge-entity-analysis-page'
 
 const useEntityDetailsMock = vi.fn()
 const useEntityExecutionLineItemsMock = vi.fn()
 const useReportsConnectionMock = vi.fn()
 const useTreemapDrilldownMock = vi.fn()
+const useTreemapChartLinkMock = vi.fn()
+const useChartDataMock = vi.fn()
+const convertToTimeSeriesDataMock = vi.fn()
+const buildTreemapChartStateMock = vi.fn()
 const useQueryMock = vi.fn()
+const useQueryClientMock = vi.fn()
 const useGlobalSettingsMock = vi.fn()
 const fetchEntityAnalyticsMock = vi.fn()
+const reportsConnectionQueryOptionsMock = vi.fn()
 const budgetTreemapMock = vi.fn()
 const challengeGroupedLineItemsMock = vi.fn()
 const getEntityFeatureInfoMock = vi.fn()
@@ -25,6 +28,11 @@ const mapAnalyticsPublicPreviewCardMock = vi.fn()
 const setPrimaryMock = vi.fn()
 const setPathMock = vi.fn()
 const resetTreemapMock = vi.fn()
+const prefetchQueryMock = vi.fn()
+const deferredSectionInViewState = {
+  prefetch: true,
+  render: true,
+}
 let mockGeoJsonData = {
   data: {
     type: 'FeatureCollection',
@@ -33,6 +41,8 @@ let mockGeoJsonData = {
   isLoading: false,
   error: null as Error | null,
 }
+let ChallengeEntityAnalysisPage:
+  typeof import('./challenge-entity-analysis-page').ChallengeEntityAnalysisPage
 
 function buildHref(to: unknown, params?: Record<string, string>) {
   if (typeof to !== 'string') return '#'
@@ -61,8 +71,25 @@ vi.mock('@tanstack/react-query', async () => {
   return {
     ...actual,
     useQuery: (...args: unknown[]) => useQueryMock(...args),
+    useQueryClient: () => useQueryClientMock(),
   }
 })
+
+vi.mock('react-intersection-observer', () => ({
+  useInView: ({
+    rootMargin,
+  }: {
+    rootMargin?: string
+  } = {}) => ({
+    ref: vi.fn(),
+    inView:
+      rootMargin === '0px 0px 1200px 0px'
+        ? deferredSectionInViewState.prefetch
+        : rootMargin === '0px 0px 500px 0px'
+          ? deferredSectionInViewState.render
+          : true,
+  }),
+}))
 
 vi.mock('@/hooks/filters/useFilterLabels', () => ({
   useEntityTypeLabel: () => ({
@@ -83,6 +110,8 @@ vi.mock('@/lib/hooks/useEntityDetails', () => ({
     useEntityExecutionLineItemsMock(...args),
   useReportsConnection: (...args: unknown[]) =>
     useReportsConnectionMock(...args),
+  reportsConnectionQueryOptions: (...args: unknown[]) =>
+    reportsConnectionQueryOptionsMock(...args),
 }))
 
 vi.mock('@/lib/hooks/useGlobalSettings', () => ({
@@ -104,6 +133,35 @@ vi.mock('@/components/entities/utils', () => ({
 vi.mock('@/components/budget-explorer/useTreemapDrilldown', () => ({
   useTreemapDrilldown: (...args: unknown[]) => useTreemapDrilldownMock(...args),
 }))
+
+vi.mock('@/components/budget-explorer/useTreemapChartLink', () => ({
+  useTreemapChartLink: (...args: unknown[]) => useTreemapChartLinkMock(...args),
+}))
+
+vi.mock('@/components/charts/hooks/useChartData', () => ({
+  useChartData: (...args: unknown[]) => useChartDataMock(...args),
+  convertToTimeSeriesData: (...args: unknown[]) =>
+    convertToTimeSeriesDataMock(...args),
+}))
+
+vi.mock('@/lib/chart-links', () => ({
+  buildTreemapChartState: (...args: unknown[]) =>
+    buildTreemapChartStateMock(...args),
+}))
+
+vi.mock(
+  '@/components/charts/components/chart-renderer/components/ChartRenderer',
+  () => ({
+    ChartRenderer: (props: any) => (
+      <div data-testid="category-evolution">
+        year:{String(props.xAxisMarker)}
+        <button type="button" onClick={() => props.onXAxisClick?.(2023)}>
+          Select 2023
+        </button>
+      </div>
+    ),
+  }),
+)
 
 vi.mock('@/components/entities/EntityFinancialSummary', () => ({
   EntityFinancialSummary: (props: any) => (
@@ -190,17 +248,6 @@ vi.mock('./challenge-entity-analysis-header', () => ({
           ? 'Change City Hall'
           : 'Schimbă Primăria'}
       </a>
-    </div>
-  ),
-}))
-
-vi.mock('./challenge-entity-category-evolution', () => ({
-  ChallengeEntityCategoryEvolution: (props: any) => (
-    <div data-testid="category-evolution">
-      {props.entityCui}:{props.currentYear}:{props.reportType}
-      <button type="button" onClick={() => props.onYearChange?.(2023)}>
-        Select 2023
-      </button>
     </div>
   ),
 }))
@@ -479,9 +526,27 @@ function renderAnalysisPage(
   return render(<TestHarness />)
 }
 
+function setDeferredSectionInViewState(nextState: {
+  readonly prefetch?: boolean
+  readonly render?: boolean
+}) {
+  if (nextState.prefetch !== undefined) {
+    deferredSectionInViewState.prefetch = nextState.prefetch
+  }
+
+  if (nextState.render !== undefined) {
+    deferredSectionInViewState.render = nextState.render
+  }
+}
+
 describe('ChallengeEntityAnalysisPage', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
+    deferredSectionInViewState.prefetch = true
+    deferredSectionInViewState.render = true
+    ;({ ChallengeEntityAnalysisPage } = await import(
+      './challenge-entity-analysis-page'
+    ))
 
     useEntityDetailsMock.mockImplementation(
       ({ reportType }: { reportType?: string }) => ({
@@ -516,12 +581,52 @@ describe('ChallengeEntityAnalysisPage', () => {
       reset: resetTreemapMock,
       setPrimary: setPrimaryMock,
     })
+    useTreemapChartLinkMock.mockReturnValue({
+      seriesConfigs: [
+        {
+          id: 'series-1',
+          type: 'line',
+        },
+      ],
+    })
+    buildTreemapChartStateMock.mockReturnValue({
+      chart: {
+        id: 'challenge-chart',
+        title: '',
+        config: {
+          chartType: 'line',
+        },
+        series: [],
+        annotations: [],
+      },
+      view: 'overview',
+    })
+    useChartDataMock.mockReturnValue({
+      dataSeriesMap: new Map([
+        [
+          'series-1',
+          {
+            seriesId: 'series-1',
+            data: [],
+          },
+        ],
+      ]),
+      isLoadingData: false,
+      dataError: null,
+    })
+    convertToTimeSeriesDataMock.mockReturnValue({
+      data: [],
+      unitMap: new Map(),
+    })
     useReportsConnectionMock.mockReturnValue({
       data: reportsConnection,
       isLoading: false,
       isError: false,
       refetch: vi.fn(),
     })
+    reportsConnectionQueryOptionsMock.mockImplementation((params: unknown) => ({
+      queryKey: ['reportsConnection', params],
+    }))
     fetchEntityAnalyticsMock.mockResolvedValue(
       createSubordinateRankingConnection(),
     )
@@ -546,9 +651,13 @@ describe('ChallengeEntityAnalysisPage', () => {
       displayInflationAdjusted: false,
       confirmSettingsApplied: vi.fn(),
     })
+    useQueryClientMock.mockReturnValue({
+      prefetchQuery: prefetchQueryMock,
+    })
     budgetTreemapMock.mockReset()
     challengeGroupedLineItemsMock.mockReset()
     mapAnalyticsPublicPreviewCardMock.mockReset()
+    prefetchQueryMock.mockReset()
     fetchEntityAnalyticsMock.mockClear()
     getEntityFeatureInfoMock.mockReset()
     setPrimaryMock.mockReset()
@@ -637,9 +746,9 @@ describe('ChallengeEntityAnalysisPage', () => {
         screen.getByTestId('challenge-grouped-line-items'),
       ) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
-    expect(screen.getByTestId('category-evolution')).toHaveTextContent(
-      '12345678:2025:PRINCIPAL_AGGREGATED',
-    )
+    await waitFor(() => {
+      expect(screen.getByTestId('category-evolution')).toHaveTextContent('year:2025')
+    })
     expect(screen.getByText('Instituții subordonate')).toBeInTheDocument()
     expect(screen.getByText('Liceul Teoretic Avram Iancu')).toBeInTheDocument()
     expect(screen.getByText('Semnale de Alarmă')).toBeInTheDocument()
@@ -654,6 +763,62 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(
       screen.queryByText('Învățământ / Bunuri și servicii'),
     ).not.toBeInTheDocument()
+  })
+
+  it('prefetches reports before the viewport and delays deferred sections until the render threshold', async () => {
+    setDeferredSectionInViewState({
+      prefetch: true,
+      render: false,
+    })
+
+    const { rerender } = render(
+      <ChallengeEntityAnalysisPage
+        entityCui="12345678"
+        state={DEFAULT_PAGE_STATE}
+        onStateChange={vi.fn()}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(prefetchQueryMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queryKey: [
+            'reportsConnection',
+            expect.objectContaining({
+              filter: expect.objectContaining({
+                entity_cui: '12345678',
+                reporting_year: 2025,
+                report_type: 'PRINCIPAL_AGGREGATED',
+              }),
+              limit: 24,
+              offset: 0,
+              enabled: true,
+            }),
+          ],
+        }),
+      )
+    })
+    expect(useReportsConnectionMock).not.toHaveBeenCalled()
+    expect(screen.queryByTestId('category-evolution')).not.toBeInTheDocument()
+    expect(screen.queryByText('Rapoarte financiare')).not.toBeInTheDocument()
+
+    setDeferredSectionInViewState({
+      render: true,
+    })
+
+    rerender(
+      <ChallengeEntityAnalysisPage
+        entityCui="12345678"
+        state={DEFAULT_PAGE_STATE}
+        onStateChange={vi.fn()}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('category-evolution')).toHaveTextContent('year:2025')
+    })
+    expect(useReportsConnectionMock).toHaveBeenCalled()
+    expect(screen.getByText('Rapoarte financiare')).toBeInTheDocument()
   })
 
   it('seeds the preview viewport from the entity-centered map position', async () => {
@@ -727,6 +892,11 @@ describe('ChallengeEntityAnalysisPage', () => {
   it('preserves the preview viewport when switching maps and changing the selected year', async () => {
     renderAnalysisPage()
 
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Pan preview map' }),
+      ).toBeInTheDocument()
+    })
     fireEvent.click(screen.getByRole('button', { name: 'Pan preview map' }))
 
     await waitFor(() => {
@@ -822,7 +992,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
   })
 
-  it('uses the global currency and inflation settings for fetches and shows the inflation badge', () => {
+  it('uses the global currency and inflation settings for fetches and shows the inflation badge', async () => {
     useGlobalSettingsMock.mockReturnValue({
       currency: 'EUR',
       inflationAdjusted: true,
@@ -846,12 +1016,14 @@ describe('ChallengeEntityAnalysisPage', () => {
         inflation_adjusted: true,
       }),
     )
-    expect(getLatestPublicPreviewCardProps()).toMatchObject({
-      reportTypeOverride: 'Executie bugetara agregata la nivel de ordonator principal',
-      normalizationOverride: 'total',
-      currencyOverride: 'EUR',
-      inflationAdjustedOverride: true,
-      mapNameOverride: 'Cheltuieli UAT (2025)',
+    await waitFor(() => {
+      expect(getLatestPublicPreviewCardProps()).toMatchObject({
+        reportTypeOverride: 'Executie bugetara agregata la nivel de ordonator principal',
+        normalizationOverride: 'total',
+        currencyOverride: 'EUR',
+        inflationAdjustedOverride: true,
+        mapNameOverride: 'Cheltuieli UAT (2025)',
+      })
     })
   })
 
@@ -1034,8 +1206,15 @@ describe('ChallengeEntityAnalysisPage', () => {
         reportType: 'DETAILED',
       }),
     )
-    expect(screen.getByTestId('category-evolution')).toHaveTextContent(
-      '12345678:2025:DETAILED',
+    await waitFor(() => {
+      expect(screen.getByTestId('category-evolution')).toHaveTextContent('year:2025')
+    })
+    expect(useTreemapChartLinkMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filterInput: expect.objectContaining({
+          report_type: 'Executie bugetara detaliata',
+        }),
+      }),
     )
     expect(useTreemapDrilldownMock).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -1263,7 +1442,7 @@ describe('ChallengeEntityAnalysisPage', () => {
       expect(
         screen.getAllByRole('button', { name: 'Show per capita' }),
       ).toHaveLength(2)
-      expect(screen.getByRole('button', { name: 'Show revenue' })).toBeInTheDocument()
+      expect(screen.getAllByRole('button', { name: 'Show revenue' })).toHaveLength(2)
       expect(
         screen.getByRole('button', { name: 'Show where the money was spent' }),
       ).toBeInTheDocument()
@@ -1436,12 +1615,15 @@ describe('ChallengeEntityAnalysisPage', () => {
   it('updates the selected year when the category evolution chart requests a different year', async () => {
     renderAnalysisPage()
 
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Select 2023' }),
+      ).toBeInTheDocument()
+    })
     fireEvent.click(screen.getByRole('button', { name: 'Select 2023' }))
 
     await waitFor(() => {
-      expect(screen.getByTestId('category-evolution')).toHaveTextContent(
-        '12345678:2023:PRINCIPAL_AGGREGATED',
-      )
+      expect(screen.getByTestId('category-evolution')).toHaveTextContent('year:2023')
     })
 
     expect(screen.getByTestId('financial-summary')).toHaveTextContent('2023')
@@ -1556,7 +1738,7 @@ describe('ChallengeEntityAnalysisPage', () => {
         'Nu am găsit cheltuieli raportate pentru instituțiile subordonate în perioada selectată.',
       ),
     ).toBeInTheDocument()
-    expect(screen.queryByText(/Top /)).not.toBeInTheDocument()
+    expect(screen.queryByText(/^Top \d+ din /)).not.toBeInTheDocument()
   })
 })
 

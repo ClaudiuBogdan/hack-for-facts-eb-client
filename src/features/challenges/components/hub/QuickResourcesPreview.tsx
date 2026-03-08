@@ -48,6 +48,7 @@ export function QuickResourcesPreview({
           <Link
             to={buildCampaignPrimariePath(entityCui) as '/'}
             search={linkSearch}
+            preload="intent"
             className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
           >
             <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">

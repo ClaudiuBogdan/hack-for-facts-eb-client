@@ -69,6 +69,9 @@ describe('QuickResourcesPreview', () => {
     expect(
       screen.getByRole('link', { name: /My city hall/i }),
     ).toHaveAttribute('href', '/buget/12345678/primarie')
+    expect(
+      screen.getByRole('link', { name: /My city hall/i }),
+    ).toHaveAttribute('preload', 'intent')
   })
 
   it('shows campaign resources without the entity shortcut when no entity is available', () => {

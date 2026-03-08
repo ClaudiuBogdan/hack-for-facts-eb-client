@@ -1,7 +1,7 @@
 import { t } from '@lingui/core/macro'
 import { AlertTriangle, Minus, Plus, RefreshCw, Users } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BudgetTreemap } from '@/components/budget-explorer/BudgetTreemap'
 import { FilteredSpendingInfo } from '@/components/budget-explorer/FilteredSpendingInfo'
 import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
@@ -9,9 +9,7 @@ import { useTreemapDrilldown } from '@/components/budget-explorer/useTreemapDril
 import { useTreemapAmountFilter } from '@/components/budget-explorer/useTreemapAmountFilter'
 import { getEntityFeatureInfo } from '@/components/entities/utils'
 import { EntityFinancialSummary, type EntityFinancialSummaryTrend } from '@/components/entities/EntityFinancialSummary'
-import { EntityFinancialSummarySkeleton } from '@/components/entities/EntityFinancialSummarySkeleton'
 import { EntityFinancialTrends } from '@/components/entities/EntityFinancialTrends'
-import { EntityFinancialTrendsSkeleton } from '@/components/entities/EntityFinancialTrendsSkeleton'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -23,36 +21,36 @@ import {
   DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES,
   DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES,
 } from '@/lib/analytics-defaults'
-import { fetchEntityAnalytics } from '@/lib/api/entity-analytics'
 import type { EntityDetailsData, ExecutionLineItem } from '@/lib/api/entities'
 import { DEFAULT_CURRENCY, DEFAULT_INFLATION_ADJUSTED } from '@/lib/globalSettings/params'
 import { useGlobalSettings } from '@/lib/hooks/useGlobalSettings'
 import {
   useEntityDetails,
   useEntityExecutionLineItems,
+  reportsConnectionQueryOptions,
 } from '@/lib/hooks/useEntityDetails'
 import type { NormalizationOptions } from '@/lib/normalization'
 import { DEFAULT_SELECTED_YEAR, defaultYearRange } from '@/schemas/charts'
 import {
-  type DateInput,
   type GqlReportType,
-  makeSingleTimePeriod,
-  makeTrendPeriod,
-  type ReportPeriodInput,
   toReportTypeValue,
 } from '@/schemas/reporting'
 import type { ChallengeLocale } from '../../types'
-import { MapAnalyticsPublicPreviewCard } from '@/features/advanced-map-analytics/components/map-analytics-public-preview-card'
 import type { PublicMapViewport } from '@/features/advanced-map-analytics/hooks/use-public-map-viewport'
 import { areMapCentersEqual } from '@/features/advanced-map-analytics/map-viewport-utils'
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics'
+import { ChallengeEntityAnalysisLoadingShell } from './challenge-entity-analysis-loading-shell'
 import { ChallengeEntityAnalysisExplainer } from './challenge-entity-analysis-explainer'
 import { ChallengeEntityFaqSection } from './challenge-entity-faq-section'
 import { ChallengeEntityAnalysisHeader } from './challenge-entity-analysis-header'
 import { ChallengeEntityAnomalySummary } from './challenge-entity-anomaly-summary'
-import { ChallengeEntityCategoryEvolution } from './challenge-entity-category-evolution'
+import {
+  CHALLENGE_TREND_PERIOD,
+  buildChallengeEntityAnalysisReportPeriod,
+  challengeEntitySubordinateRankingQueryOptions,
+  type ChallengeEntityInitialSettings,
+} from './challenge-entity-analysis-queries'
 import { ChallengeEntityGroupedLineItems } from './challenge-entity-grouped-line-items'
-import { ChallengeEntityReportsSection } from './challenge-entity-reports-section'
 import {
   CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS,
   getChallengeEntityMapPreviewDefinition,
@@ -62,11 +60,13 @@ import {
   ChallengeEntitySubordinatesSection,
   type ChallengeEntitySubordinateCardItem,
 } from './challenge-entity-subordinates-section'
+import { DeferredSectionGate } from './challenge-entity-deferred-section-gate'
 
 type ChallengeEntityAnalysisPageProps = {
   readonly entityCui: string
   readonly languageQuery?: ChallengeLocale
   readonly state: ChallengeEntityAnalysisPageState
+  readonly initialSettings?: ChallengeEntityInitialSettings
   readonly onStateChange: (
     patch: Partial<ChallengeEntityAnalysisPageState>,
   ) => void
@@ -90,20 +90,43 @@ export type ChallengeEntityAnalysisPageState = {
   readonly mapPreviewKey: ChallengeEntityMapPreviewKey
 }
 
-const CHALLENGE_TREND_PERIOD = makeTrendPeriod(
-  'YEAR',
-  DEFAULT_SELECTED_YEAR,
-  defaultYearRange.start,
-  DEFAULT_SELECTED_YEAR,
-) as ReportPeriodInput
-const CHALLENGE_DETAILED_ANALYTICS_REPORT_TYPE = toReportTypeValue('DETAILED')
-const MAX_VISIBLE_SUBORDINATE_CARDS = 5
 const CHALLENGE_ADMINISTRATIVE_EXPENSE_PATH = ['51', '51.01', '51.01.03'] as const
 const CHALLENGE_SHOW_PERIOD_GROWTH = false
 const CHALLENGE_AVAILABLE_YEARS = Array.from(
   { length: DEFAULT_SELECTED_YEAR - defaultYearRange.start + 1 },
   (_, index) => DEFAULT_SELECTED_YEAR - index,
 )
+
+function loadMapAnalyticsPublicPreviewCard() {
+  return import(
+    '@/features/advanced-map-analytics/components/map-analytics-public-preview-card'
+  )
+}
+
+function loadChallengeEntityCategoryEvolution() {
+  return import('./challenge-entity-category-evolution')
+}
+
+function loadChallengeEntityReportsSection() {
+  return import('./challenge-entity-reports-section')
+}
+
+const DeferredMapAnalyticsPublicPreviewCard = lazy(() =>
+  loadMapAnalyticsPublicPreviewCard().then((module) => ({
+    default: module.MapAnalyticsPublicPreviewCard,
+  })),
+)
+const DeferredChallengeEntityCategoryEvolution = lazy(() =>
+  loadChallengeEntityCategoryEvolution().then((module) => ({
+    default: module.ChallengeEntityCategoryEvolution,
+  })),
+)
+const DeferredChallengeEntityReportsSection = lazy(() =>
+  loadChallengeEntityReportsSection().then((module) => ({
+    default: module.ChallengeEntityReportsSection,
+  })),
+)
+const CHALLENGE_DETAILED_ANALYTICS_REPORT_TYPE = toReportTypeValue('DETAILED')
 
 const MAP_PREVIEW_LABELS = {
   ro: {
@@ -527,62 +550,44 @@ function clonePublicMapViewport(
   }
 }
 
-export function ChallengeEntityAnalysisLoadingShell() {
+function MapPreviewSectionFallback() {
   return (
-    <div className="space-y-6" aria-label={t`Loading…`}>
-      <section className="rounded-[32px] border border-border/50 bg-background px-6 py-7 shadow-sm sm:px-8">
-        <div className="space-y-4">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-10 w-2/3" />
-          <div className="flex flex-wrap gap-2">
-            <Skeleton className="h-8 w-28" />
-            <Skeleton className="h-8 w-32" />
-            <Skeleton className="h-8 w-36" />
-          </div>
+    <Card className="overflow-hidden rounded-[28px] border-border/50">
+      <CardContent className="flex h-[420px] items-center justify-center p-6 sm:h-[460px]">
+        <LoadingSpinner text={t`Loading map...`} />
+      </CardContent>
+    </Card>
+  )
+}
+
+function DeferredSectionFallback(props: {
+  readonly titleWidthClassName?: string
+  readonly bodyHeightClassName?: string
+  readonly showControls?: boolean
+}) {
+  const {
+    titleWidthClassName = 'w-40',
+    bodyHeightClassName = 'h-[320px]',
+    showControls = false,
+  } = props
+
+  return (
+    <div className="space-y-3">
+      <Card className="rounded-[28px] border-border/50">
+        <CardHeader>
+          <Skeleton className={`h-6 ${titleWidthClassName}`} />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className={`w-full ${bodyHeightClassName}`} />
+        </CardContent>
+      </Card>
+
+      {showControls ? (
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Skeleton className="h-10 w-36 rounded-full" />
+          <Skeleton className="h-10 w-44 rounded-full" />
         </div>
-      </section>
-
-      <Card className="rounded-[28px] border-border/50">
-        <CardContent className="space-y-3 px-6 py-6">
-          <Skeleton className="h-5 w-2/3" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-5/6" />
-        </CardContent>
-      </Card>
-
-      <EntityFinancialSummarySkeleton />
-      <EntityFinancialTrendsSkeleton />
-
-      <Card className="rounded-[28px] border-border/50">
-        <CardHeader>
-          <Skeleton className="h-6 w-48" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-[520px] w-full" />
-        </CardContent>
-      </Card>
-
-      <Card className="rounded-[28px] border-border/50">
-        <CardHeader>
-          <Skeleton className="h-6 w-56" />
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {Array.from({ length: 3 }, (_, index) => (
-              <Skeleton key={index} className="h-64 w-full rounded-[24px]" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="rounded-[28px] border-border/50">
-        <CardHeader>
-          <Skeleton className="h-6 w-40" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-28 w-full" />
-        </CardContent>
-      </Card>
+      ) : null}
     </div>
   )
 }
@@ -591,6 +596,7 @@ export function ChallengeEntityAnalysisPage({
   entityCui,
   languageQuery,
   state,
+  initialSettings,
   onStateChange,
   onEntityResolved,
 }: ChallengeEntityAnalysisPageProps) {
@@ -606,6 +612,7 @@ export function ChallengeEntityAnalysisPage({
     mapPreviewKey,
   } = state
   const locale = languageQuery === 'en' ? 'en' : 'ro'
+  const queryClient = useQueryClient()
   const entityTypeLabel = useEntityTypeLabel()
   const selectedMapPreviewDefinition = useMemo(
     () => getChallengeEntityMapPreviewDefinition(mapPreviewKey),
@@ -641,16 +648,12 @@ export function ChallengeEntityAnalysisPage({
     displayCurrency,
     displayInflationAdjusted,
     confirmSettingsApplied,
-  } = useGlobalSettings({
+  } = useGlobalSettings(initialSettings ?? {
     currency: DEFAULT_CURRENCY,
     inflationAdjusted: DEFAULT_INFLATION_ADJUSTED,
   })
   const reportPeriod = useMemo(
-    () =>
-      makeSingleTimePeriod(
-        'YEAR',
-        `${selectedYear}` as DateInput,
-      ) as ReportPeriodInput,
+    () => buildChallengeEntityAnalysisReportPeriod(selectedYear),
     [selectedYear],
   )
   const periodLabel = `${selectedYear}`
@@ -726,37 +729,15 @@ export function ChallengeEntityAnalysisPage({
   const entityGeoJsonData = entityGeoJsonQuery.data
 
   const subordinateRankingQuery = useQuery({
-    queryKey: [
-      'challenge-entity-subordinates',
+    ...challengeEntitySubordinateRankingQueryOptions({
       entityCui,
       reportPeriod,
-      currency,
-      inflationAdjusted,
-    ],
-    queryFn: () =>
-      fetchEntityAnalytics({
-        filter: {
-          account_category: 'ch',
-          main_creditor_cui: entityCui,
-          report_period: reportPeriod,
-          report_type: CHALLENGE_DETAILED_ANALYTICS_REPORT_TYPE,
-          normalization: 'total',
-          currency,
-          inflation_adjusted: inflationAdjusted,
-          show_period_growth: CHALLENGE_SHOW_PERIOD_GROWTH,
-          exclude: {
-            entity_cuis: [entityCui],
-          },
-        },
-        sort: {
-          by: 'total_amount',
-          order: 'desc',
-        },
-        limit: MAX_VISIBLE_SUBORDINATE_CARDS,
-        offset: 0,
-      }),
-    enabled: entityCui.length > 0,
-    staleTime: 1000 * 60 * 5,
+      normalizationOptions: {
+        currency,
+        inflation_adjusted: inflationAdjusted,
+      },
+    }),
+    placeholderData: (previousData) => previousData,
   })
 
   const isInitialLoading =
@@ -1176,6 +1157,26 @@ export function ChallengeEntityAnalysisPage({
     void subordinateRankingQuery.refetch()
   }
 
+  const handleCategoryEvolutionPrefetch = useCallback(() => {
+    void loadChallengeEntityCategoryEvolution()
+  }, [])
+
+  const handleReportsSectionPrefetch = useCallback(() => {
+    void loadChallengeEntityReportsSection()
+    void queryClient.prefetchQuery(
+      reportsConnectionQueryOptions({
+        filter: {
+          entity_cui: entityCui,
+          reporting_year: selectedYear,
+          report_type: selectedReportType,
+        },
+        limit: 24,
+        offset: 0,
+        enabled: entityCui.length > 0,
+      }),
+    )
+  }, [entityCui, queryClient, selectedReportType, selectedYear])
+
   if (isInitialLoading) {
     return <ChallengeEntityAnalysisLoadingShell />
   }
@@ -1308,26 +1309,24 @@ export function ChallengeEntityAnalysisPage({
 
       <div className="space-y-3">
         {isPublicMapPreviewReady ? (
-          <MapAnalyticsPublicPreviewCard
-            mapKey={selectedMapPreviewDefinition.key}
-            mapDescription={selectedMapPreviewCopy.mapDescription}
-            mapStateDefinition={selectedMapPreviewStateDefinition}
-            selectedYearOverride={selectedYear}
-            reportTypeOverride={toReportTypeValue(selectedReportType)}
-            normalizationOverride={normalizationMode}
-            currencyOverride={currency}
-            inflationAdjustedOverride={inflationAdjusted}
-            mapNameOverride={localizedSelectedMapPreviewName}
-            mapZoomOverride={publicMapViewport.mapZoom}
-            mapCenterOverride={publicMapViewport.mapCenter}
-            onMapViewportChange={handlePublicMapViewportChange}
-          />
+          <Suspense fallback={<MapPreviewSectionFallback />}>
+            <DeferredMapAnalyticsPublicPreviewCard
+              mapKey={selectedMapPreviewDefinition.key}
+              mapDescription={selectedMapPreviewCopy.mapDescription}
+              mapStateDefinition={selectedMapPreviewStateDefinition}
+              selectedYearOverride={selectedYear}
+              reportTypeOverride={toReportTypeValue(selectedReportType)}
+              normalizationOverride={normalizationMode}
+              currencyOverride={currency}
+              inflationAdjustedOverride={inflationAdjusted}
+              mapNameOverride={localizedSelectedMapPreviewName}
+              mapZoomOverride={publicMapViewport.mapZoom}
+              mapCenterOverride={publicMapViewport.mapCenter}
+              onMapViewportChange={handlePublicMapViewportChange}
+            />
+          </Suspense>
         ) : (
-          <Card className="overflow-hidden rounded-[28px] border-border/50">
-            <CardContent className="flex h-[420px] items-center justify-center p-6 sm:h-[460px]">
-              <LoadingSpinner text={t`Loading map...`} />
-            </CardContent>
-          </Card>
+          <MapPreviewSectionFallback />
         )}
 
         <div
@@ -1486,20 +1485,32 @@ export function ChallengeEntityAnalysisPage({
         </Card>
       </div>
 
-      <ChallengeEntityCategoryEvolution
-        locale={locale}
-        entityCui={entityCui}
-        lineItems={entityLineItemsQuery.data?.nodes ?? []}
-        currentYear={selectedYear}
-        reportType={selectedReportType}
-        trendPeriod={CHALLENGE_TREND_PERIOD}
-        queryNormalizationOptions={queryNormalizationOptions}
-        displayNormalizationOptions={displayNormalizationOptions}
-        onYearChange={handleYearChange}
-        accountCategory={evolutionAccountCategory}
-        primary={evolutionPrimary}
-        onStateChange={(patch) => onStateChange(patch)}
-      />
+      <DeferredSectionGate
+        className="min-h-[520px] sm:min-h-[540px]"
+        fallback={
+          <DeferredSectionFallback
+            titleWidthClassName="w-52"
+            bodyHeightClassName="h-[360px]"
+            showControls
+          />
+        }
+        onPrefetch={handleCategoryEvolutionPrefetch}
+      >
+        <DeferredChallengeEntityCategoryEvolution
+          locale={locale}
+          entityCui={entityCui}
+          lineItems={entityLineItemsQuery.data?.nodes ?? []}
+          currentYear={selectedYear}
+          reportType={selectedReportType}
+          trendPeriod={CHALLENGE_TREND_PERIOD}
+          queryNormalizationOptions={queryNormalizationOptions}
+          displayNormalizationOptions={displayNormalizationOptions}
+          onYearChange={handleYearChange}
+          accountCategory={evolutionAccountCategory}
+          primary={evolutionPrimary}
+          onStateChange={(patch) => onStateChange(patch)}
+        />
+      </DeferredSectionGate>
 
       <ChallengeEntitySubordinatesSection
         locale={locale}
@@ -1518,12 +1529,23 @@ export function ChallengeEntityAnalysisPage({
         normalizationOptions={displayNormalizationOptions}
       />
 
-      <ChallengeEntityReportsSection
-        locale={locale}
-        entityCui={entityCui}
-        selectedYear={selectedYear}
-        reportType={selectedReportType}
-      />
+      <DeferredSectionGate
+        className="min-h-[320px] sm:min-h-[360px]"
+        fallback={
+          <DeferredSectionFallback
+            titleWidthClassName="w-44"
+            bodyHeightClassName="h-[220px]"
+          />
+        }
+        onPrefetch={handleReportsSectionPrefetch}
+      >
+        <DeferredChallengeEntityReportsSection
+          locale={locale}
+          entityCui={entityCui}
+          selectedYear={selectedYear}
+          reportType={selectedReportType}
+        />
+      </DeferredSectionGate>
 
       <ChallengeEntityFaqSection
         locale={locale}

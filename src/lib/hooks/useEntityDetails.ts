@@ -60,12 +60,13 @@ export function useEntityExecutionLineItems(params: {
   enabled?: boolean;
   mainCreditorCui?: string;
 } & NormalizationOptions) {
-  const { cui, reportPeriod, reportType, enabled = true, mainCreditorCui, normalization, currency, inflation_adjusted } = params;
+  const queryOpts = entityExecutionLineItemsQueryOptions(params);
+  const { enabled = true } = params;
+
   return useQuery({
-    queryKey: ['entityLineItems', cui, normalization, currency, inflation_adjusted, reportPeriod, reportType, mainCreditorCui],
-    queryFn: () => getEntityExecutionLineItems({ cui, reportPeriod, reportType, mainCreditorCui, normalization, currency, inflation_adjusted }),
-    enabled: !!cui && enabled,
-    staleTime: 1000 * 60 * 5,
+    ...queryOpts,
+    enabled: queryOpts.enabled && enabled,
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -90,8 +91,37 @@ export function useEntityReports(params: { cui: string; limit?: number; offset?:
 }
 
 export function useReportsConnection(params: { filter: ReportsFilterInput; limit?: number; offset?: number; enabled?: boolean }) {
-  const { filter, limit = 10, offset = 0, enabled = true } = params;
+  const queryOpts = reportsConnectionQueryOptions(params);
+  const { enabled = true } = params;
+
   return useQuery<ReportConnection>({
+    ...queryOpts,
+    enabled: queryOpts.enabled && enabled,
+    placeholderData: (previousData) => previousData,
+  });
+}
+
+export function entityExecutionLineItemsQueryOptions(params: {
+  cui: string;
+  reportPeriod: ReportPeriodInput;
+  reportType?: GqlReportType;
+  enabled?: boolean;
+  mainCreditorCui?: string;
+} & NormalizationOptions) {
+  const { cui, reportPeriod, reportType, enabled = true, mainCreditorCui, normalization, currency, inflation_adjusted } = params;
+
+  return queryOptions({
+    queryKey: ['entityLineItems', cui, normalization, currency, inflation_adjusted, reportPeriod, reportType, mainCreditorCui],
+    queryFn: () => getEntityExecutionLineItems({ cui, reportPeriod, reportType, mainCreditorCui, normalization, currency, inflation_adjusted }),
+    enabled: !!cui && enabled,
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function reportsConnectionQueryOptions(params: { filter: ReportsFilterInput; limit?: number; offset?: number; enabled?: boolean }) {
+  const { filter, limit = 10, offset = 0, enabled = true } = params;
+
+  return queryOptions<ReportConnection>({
     queryKey: ['reportsConnection', filter, limit, offset],
     queryFn: () => getReportsConnection(filter, limit, offset),
     enabled,

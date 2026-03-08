@@ -36,7 +36,12 @@ export function geoJsonQueryOptions(mapViewType: MapViewType) {
     };
 }
 
-export const useGeoJsonData = (mapViewType: MapViewType) => {
+export const useGeoJsonData = (
+    mapViewType: MapViewType,
+    options?: {
+        enabled?: boolean;
+    }
+) => {
     return useQuery<GeoJsonObject, Error>({
         ...geoJsonQueryOptions(mapViewType),
         staleTime: ONE_HOUR_IN_MS,
@@ -45,6 +50,6 @@ export const useGeoJsonData = (mapViewType: MapViewType) => {
         refetchOnReconnect: false,
         refetchOnMount: false,
         // Relative asset URLs (e.g. /assets/geojson/*.json) are browser-only.
-        enabled: isBrowser && !!mapViewType,
+        enabled: isBrowser && !!mapViewType && (options?.enabled ?? true),
     });
 };

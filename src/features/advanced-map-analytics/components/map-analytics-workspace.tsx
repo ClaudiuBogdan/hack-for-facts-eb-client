@@ -815,7 +815,9 @@ export function MapAnalyticsWorkspace({
     error: geoJsonError,
   } = useGeoJsonData('UAT');
 
-  const { data: countyGeoJsonData } = useGeoJsonData('County');
+  const { data: countyGeoJsonData } = useGeoJsonData('County', {
+    enabled: mapState.showCountyBoundaries,
+  });
 
   const geoJsonFeatures = useMemo<UatFeature[]>(() => {
     if (!geoJsonData || !('features' in geoJsonData) || !Array.isArray(geoJsonData.features)) {
