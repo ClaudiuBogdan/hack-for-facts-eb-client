@@ -119,7 +119,6 @@ export function PrimarieEntityRoutePage() {
           canonicalPatch,
         ),
       replace: true,
-      resetScroll: false,
     })
   }, [navigate, normalizedSearch, search])
 

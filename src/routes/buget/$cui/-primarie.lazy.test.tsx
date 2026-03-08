@@ -149,6 +149,7 @@ describe('PrimarieEntityRoutePage', () => {
     const canonicalizeCall = navigateMock.mock.calls[0]?.[0]
     const canonicalSearch = canonicalizeCall.search(mockedSearch)
 
+    expect(canonicalizeCall.resetScroll).toBeUndefined()
     expect(canonicalSearch).toMatchObject({
       treemap_primary: 'fn',
       evolution_primary: 'fn',
@@ -176,6 +177,7 @@ describe('PrimarieEntityRoutePage', () => {
     const canonicalizeCall = navigateMock.mock.calls[0]?.[0]
     const canonicalSearch = canonicalizeCall.search(mockedSearch)
 
+    expect(canonicalizeCall.resetScroll).toBeUndefined()
     expect(canonicalSearch).toMatchObject({
       public_map: 'local-taxes',
     })
@@ -239,6 +241,7 @@ describe('PrimarieEntityRoutePage', () => {
     const updateCall = navigateMock.mock.calls[0]?.[0]
     const nextSearch = updateCall.search(mockedSearch)
 
+    expect(updateCall.resetScroll).toBe(false)
     expect(nextSearch).toMatchObject({
       lang: 'en',
       currency: 'EUR',
