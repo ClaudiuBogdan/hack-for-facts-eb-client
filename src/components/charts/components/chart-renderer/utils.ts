@@ -37,10 +37,14 @@ function parseCurrencyUnit(unit: string): { currency: SupportedCurrency; suffix:
     const supportedCurrencies: SupportedCurrency[] = ['RON', 'EUR', 'USD'];
     for (const currency of supportedCurrencies) {
         if (trimmedUnit === currency) return { currency, suffix: '' };
+        if (!trimmedUnit.startsWith(currency)) continue;
         // Match "RON/capita", "RON (real 2024)", "RON/pers." etc.
         const afterCurrency = trimmedUnit.slice(currency.length);
         if (afterCurrency.length > 0 && /^[/\s(]/.test(afterCurrency)) {
-            return { currency, suffix: afterCurrency.startsWith(' ') ? afterCurrency : ` ${afterCurrency}` };
+            return {
+                currency,
+                suffix: afterCurrency.startsWith('(') ? ` ${afterCurrency}` : afterCurrency,
+            };
         }
     }
 
@@ -76,4 +80,3 @@ export const yValueFormatter = (value: number, unit: string = '', notation: 'sta
     }
     return `${formatNumber(value, notation)} ${unit}`.trim();
 };
-
