@@ -402,6 +402,7 @@ const lineItems: ExecutionLineItem[] = [
   {
     line_item_id: 'expense-line',
     account_category: 'ch',
+    expense_type: 'functionare',
     funding_source_id: 1,
     anomaly: 'YTD_ANOMALY',
     functionalClassification: {
@@ -441,6 +442,7 @@ const detailedLineItems: ExecutionLineItem[] = [
   {
     line_item_id: 'detailed-expense-line',
     account_category: 'ch',
+    expense_type: 'functionare',
     funding_source_id: 1,
     anomaly: 'YTD_ANOMALY',
     functionalClassification: {
@@ -475,6 +477,48 @@ const detailedLineItems: ExecutionLineItem[] = [
     amount: 1200000,
   },
 ]
+
+function buildExpenseTypeLineItems(): ExecutionLineItem[] {
+  return [
+    {
+      line_item_id: 'expense-operations',
+      account_category: 'ch',
+      expense_type: 'functionare',
+      funding_source_id: 1,
+      functionalClassification: {
+        functional_code: '51.02',
+        functional_name: 'Autoritati executive',
+      },
+      economicClassification: {
+        economic_code: '10.01',
+        economic_name: 'Cheltuieli de personal',
+      },
+      ytd_amount: 650000,
+      quarterly_amount: 650000,
+      monthly_amount: 650000,
+      amount: 650000,
+    },
+    {
+      line_item_id: 'expense-development',
+      account_category: 'ch',
+      expense_type: 'dezvoltare',
+      funding_source_id: 1,
+      functionalClassification: {
+        functional_code: '70.50',
+        functional_name: 'Infrastructura',
+      },
+      economicClassification: {
+        economic_code: '71.01',
+        economic_name: 'Active fixe',
+      },
+      ytd_amount: 450000,
+      quarterly_amount: 450000,
+      monthly_amount: 450000,
+      amount: 450000,
+    },
+    lineItems[1]!,
+  ]
+}
 
 const subordinateRankingNodes = [
   {
@@ -807,17 +851,24 @@ describe('ChallengeEntityAnalysisPage', () => {
         name: 'Taxe și impozite locale',
       }),
     ).not.toBeInTheDocument()
-    expect(screen.getByText('Cum s-au cheltuit banii')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        /^Cum s-au cheltuit banii$/,
+      ),
+    ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Arată pe ce s-au cheltuit banii' }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('button', {
+      screen.queryByRole('button', {
         name: 'Arată cheltuieli administrative primărie',
       }),
-    ).toBeInTheDocument()
+    ).not.toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Arată venituri' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Arată opțiunile suplimentare' }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Spending Calculation' }),
@@ -827,7 +878,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     ).toBeInTheDocument()
     expect(
       screen.getAllByRole('button', { name: 'Arată per capita' }),
-    ).toHaveLength(2)
+    ).toHaveLength(1)
     expect(screen.getByTestId('budget-treemap')).toHaveTextContent('fn')
     expect(screen.getByTestId('challenge-grouped-line-items')).toHaveTextContent(
       'Grouped:Cheltuieli:ch:fn:chapter:1',
@@ -1221,6 +1272,14 @@ describe('ChallengeEntityAnalysisPage', () => {
 
     expect(
       screen.getAllByRole('button', { name: 'Arată total' }),
+    ).toHaveLength(1)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Arată opțiunile suplimentare' }),
+    )
+
+    expect(
+      screen.getAllByRole('button', { name: 'Arată total' }),
     ).toHaveLength(2)
   })
 
@@ -1427,6 +1486,78 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
   })
 
+  it('passes the selected expense type into analytics props and resets the treemap path from the modal callback', async () => {
+    useEntityExecutionLineItemsMock.mockReturnValue({
+      data: {
+        nodes: buildExpenseTypeLineItems(),
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+
+    renderAnalysisPage({
+      state: {
+        expenseType: 'functionare',
+        treemapPath: ['51', '51.01', '51.01.03'],
+      },
+      analyticsTarget: {
+        target: {
+          subjectLabel: 'Education salaries',
+          path: [
+            { type: 'fn', code: '65.02' },
+            { type: 'ec', code: '10.01' },
+          ],
+        },
+        view: {
+          tab: 'execution',
+          timeframe: 'selected',
+          commitmentsMetric: 'CREDITE_ANGAJAMENT',
+        },
+      },
+    })
+
+    await waitFor(() => {
+      expect(getLatestBudgetItemAnalyticsModalProps()).toMatchObject({
+        analyticsProps: {
+          context: {
+            expenseType: 'functionare',
+          },
+        },
+      })
+    })
+
+    act(() => {
+      getLatestBudgetItemAnalyticsModalProps().analyticsProps.onExpenseTypeChange?.(
+        'dezvoltare',
+      )
+    })
+
+    await waitFor(() => {
+      expect(getLatestBudgetItemAnalyticsModalProps()).toMatchObject({
+        analyticsProps: {
+          context: {
+            expenseType: 'dezvoltare',
+          },
+        },
+      })
+    })
+
+    expect(useTreemapDrilldownMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        initialPath: [],
+        nodes: [
+          expect.objectContaining({
+            fn_c: '70.50',
+            ec_c: '71.01',
+            amount: 450000,
+          }),
+        ],
+      }),
+    )
+  })
+
   it('rebuilds the analytics target path when fn/ec selection is edited manually', async () => {
     renderAnalysisPage({
       analyticsTarget: {
@@ -1597,6 +1728,10 @@ describe('ChallengeEntityAnalysisPage', () => {
 
   it('updates the treemap root depth and grouped list depth when the detail level changes', async () => {
     renderAnalysisPage()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Arată opțiunile suplimentare' }),
+    )
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Nivel de detaliu: Capitol' }),
@@ -1795,8 +1930,32 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
   })
 
-  it('applies the administrative expenses treemap shortcut', () => {
-    renderAnalysisPage()
+  it('applies the administrative expenses treemap shortcut and clears the expense filter', async () => {
+    useEntityExecutionLineItemsMock.mockReturnValue({
+      data: {
+        nodes: buildExpenseTypeLineItems(),
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+
+    renderAnalysisPage({
+      state: {
+        expenseType: 'dezvoltare',
+      },
+    })
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'Arată cheltuieli administrative primărie',
+      }),
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Arată opțiunile suplimentare' }),
+    )
 
     fireEvent.click(
       screen.getByRole('button', {
@@ -1804,14 +1963,234 @@ describe('ChallengeEntityAnalysisPage', () => {
       }),
     )
 
-    expect(useTreemapDrilldownMock).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        initialPrimary: 'fn',
-        initialPath: ['51', '51.01', '51.01.03'],
-      }),
-    )
+    await waitFor(() => {
+      expect(useTreemapDrilldownMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          initialPrimary: 'fn',
+          initialPath: ['51', '51.01', '51.01.03'],
+          nodes: [
+            expect.objectContaining({
+              fn_c: '51.02',
+              ec_c: '10.01',
+              amount: 650000,
+            }),
+            expect.objectContaining({
+              fn_c: '70.50',
+              ec_c: '71.01',
+              amount: 450000,
+            }),
+          ],
+        }),
+      )
+    })
+
     expect(getLatestGroupedLineItemsProps()).toMatchObject({
       presetSearchTerm: 'fn:51.01.03',
+      lineItems: [
+        expect.objectContaining({
+          line_item_id: 'expense-operations',
+          expense_type: 'functionare',
+        }),
+        expect.objectContaining({
+          line_item_id: 'expense-development',
+          expense_type: 'dezvoltare',
+        }),
+      ],
+    })
+  })
+
+  it('keeps treemap secondary controls collapsed by default and expands them with the plus button', () => {
+    renderAnalysisPage()
+
+    expect(
+      screen.queryByRole('button', { name: 'Tip cheltuială: Toate' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Arată toate cheltuielile' }),
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Arată opțiunile suplimentare' }),
+    )
+
+    expect(
+      screen.getByRole('button', { name: 'Tip cheltuială: Toate' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Resetează filtrele' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Arată cheltuieli administrative primărie' }),
+    ).toBeInTheDocument()
+  })
+
+  it('cycles the treemap expense type button through the available filters', async () => {
+    renderAnalysisPage()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Arată opțiunile suplimentare' }),
+    )
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Tip cheltuială: Toate' }),
+    )
+    expect(
+      screen.getByRole('button', { name: 'Tip cheltuială: Operațiuni' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Tip cheltuială: Operațiuni' }),
+    )
+    expect(
+      screen.getByRole('button', { name: 'Tip cheltuială: Dezvoltare' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Tip cheltuială: Dezvoltare' }),
+    )
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Tip cheltuială: Toate' }),
+      ).toBeInTheDocument()
+    })
+  })
+
+  it('resets the treemap filters to the default state', async () => {
+    renderAnalysisPage({
+      state: {
+        reportType: 'DETAILED',
+        normalization: 'per_capita',
+        treemapAccountCategory: 'vn',
+        expenseType: 'dezvoltare',
+        treemapPrimary: 'ec',
+        treemapDepth: 'paragraph',
+        treemapPath: ['70.50'],
+      },
+    })
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Arată opțiunile suplimentare' }),
+    )
+
+    const detailLevelButton = screen.getByRole('button', {
+      name: 'Nivel de detaliu: Paragraf',
+    })
+    const resetFiltersButton = screen.getByRole('button', {
+      name: 'Resetează filtrele',
+    })
+
+    expect(
+      detailLevelButton.compareDocumentPosition(resetFiltersButton) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+
+    fireEvent.click(
+      resetFiltersButton,
+    )
+
+    await waitFor(() => {
+      expect(useTreemapDrilldownMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          initialPrimary: 'fn',
+          initialPath: [],
+          rootDepth: 2,
+        }),
+      )
+    })
+
+    expect(
+      screen.getByText(
+        /^Cum s-au cheltuit banii$/,
+      ),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Arată Doar Cheltuieli Primăriei' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getAllByRole('button', { name: 'Arată per capita' }),
+    ).toHaveLength(2)
+    expect(
+      screen.getByRole('button', { name: 'Arată venituri' }),
+    ).toBeInTheDocument()
+  })
+
+  it('filters the treemap nodes by the selected expense type', async () => {
+    useEntityExecutionLineItemsMock.mockReturnValue({
+      data: {
+        nodes: [
+          {
+            line_item_id: 'expense-operations',
+            account_category: 'ch',
+            expense_type: 'functionare',
+            funding_source_id: 1,
+            functionalClassification: {
+              functional_code: '51.02',
+              functional_name: 'Autorități executive',
+            },
+            economicClassification: {
+              economic_code: '10.01',
+              economic_name: 'Cheltuieli de personal',
+            },
+            ytd_amount: 650000,
+            quarterly_amount: 650000,
+            monthly_amount: 650000,
+            amount: 650000,
+          },
+          {
+            line_item_id: 'expense-development',
+            account_category: 'ch',
+            expense_type: 'dezvoltare',
+            funding_source_id: 1,
+            functionalClassification: {
+              functional_code: '70.50',
+              functional_name: 'Infrastructură',
+            },
+            economicClassification: {
+              economic_code: '71.01',
+              economic_name: 'Active fixe',
+            },
+            ytd_amount: 450000,
+            quarterly_amount: 450000,
+            monthly_amount: 450000,
+            amount: 450000,
+          },
+          lineItems[1],
+        ],
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+
+    renderAnalysisPage({
+      state: {
+        expenseType: 'dezvoltare',
+      },
+    })
+
+    await waitFor(() => {
+      expect(useTreemapDrilldownMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          nodes: [
+            expect.objectContaining({
+              fn_c: '70.50',
+              ec_c: '71.01',
+              amount: 450000,
+            }),
+          ],
+        }),
+      )
+    })
+
+    expect(getLatestGroupedLineItemsProps()).toMatchObject({
+      lineItems: [
+        expect.objectContaining({
+          line_item_id: 'expense-development',
+          expense_type: 'dezvoltare',
+        }),
+      ],
     })
   })
 
@@ -1827,7 +2206,11 @@ describe('ChallengeEntityAnalysisPage', () => {
       expect(screen.getByText('Distribuția Veniturilor')).toBeInTheDocument()
     })
 
-    expect(screen.getByText('Cum sunt grupate veniturile')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        /^Cum sunt grupate veniturile$/,
+      ),
+    ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Arată cheltuieli' }),
     ).toBeInTheDocument()
@@ -1847,9 +2230,27 @@ describe('ChallengeEntityAnalysisPage', () => {
         ],
       }),
     )
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Arată opțiunile suplimentare' }),
+    )
+
+    expect(
+      screen.queryByRole('button', { name: 'Tip cheltuială: Toate' }),
+    ).not.toBeInTheDocument()
   })
 
-  it('shows a reset shortcut when the treemap is drilled into an expense path', () => {
+  it('shows a reset shortcut when the treemap is drilled into an expense path and clears the expense filter', async () => {
+    useEntityExecutionLineItemsMock.mockReturnValue({
+      data: {
+        nodes: buildExpenseTypeLineItems(),
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+
     useTreemapDrilldownMock.mockReturnValue({
       primary: 'fn',
       activePrimary: 'ec',
@@ -1869,8 +2270,29 @@ describe('ChallengeEntityAnalysisPage', () => {
 
     renderAnalysisPage({
       state: {
+        expenseType: 'dezvoltare',
         treemapPath: ['51', '51.01', '51.01.03'],
       },
+    })
+
+    expect(getLatestBudgetTreemapProps()).toMatchObject({
+      path: [
+        {
+          code: '51',
+          label: 'Autorități publice și acțiuni externe',
+          type: 'fn',
+        },
+        {
+          code: '51.01',
+          label: 'Autorități executive și legislative',
+          type: 'fn',
+        },
+        {
+          code: '51.01.03',
+          label: 'Autorități executive',
+          type: 'fn',
+        },
+      ],
     })
 
     expect(
@@ -1879,6 +2301,14 @@ describe('ChallengeEntityAnalysisPage', () => {
       }),
     ).not.toBeInTheDocument()
     expect(
+      screen.queryByRole('button', { name: 'Arată toate cheltuielile' }),
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Arată opțiunile suplimentare' }),
+    )
+
+    expect(
       screen.getByRole('button', { name: 'Arată toate cheltuielile' }),
     ).toBeInTheDocument()
 
@@ -1886,14 +2316,39 @@ describe('ChallengeEntityAnalysisPage', () => {
       screen.getByRole('button', { name: 'Arată toate cheltuielile' }),
     )
 
-    expect(useTreemapDrilldownMock).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        initialPrimary: 'ec',
-        initialPath: [],
-      }),
-    )
+    await waitFor(() => {
+      expect(useTreemapDrilldownMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          initialPrimary: 'ec',
+          initialPath: [],
+          nodes: [
+            expect.objectContaining({
+              fn_c: '51.02',
+              ec_c: '10.01',
+              amount: 650000,
+            }),
+            expect.objectContaining({
+              fn_c: '70.50',
+              ec_c: '71.01',
+              amount: 450000,
+            }),
+          ],
+        }),
+      )
+    })
+
     expect(getLatestGroupedLineItemsProps()).toMatchObject({
       presetSearchTerm: undefined,
+      lineItems: [
+        expect.objectContaining({
+          line_item_id: 'expense-operations',
+          expense_type: 'functionare',
+        }),
+        expect.objectContaining({
+          line_item_id: 'expense-development',
+          expense_type: 'dezvoltare',
+        }),
+      ],
     })
   })
 
@@ -1989,15 +2444,37 @@ describe('ChallengeEntityAnalysisPage', () => {
       ).toBeInTheDocument()
       expect(
         screen.getAllByRole('button', { name: 'Show per capita' }),
-      ).toHaveLength(2)
+      ).toHaveLength(1)
       expect(screen.getAllByRole('button', { name: 'Show revenue' })).toHaveLength(2)
       expect(
         screen.getByRole('button', { name: 'Show where the money was spent' }),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(
+          /^How the money was spent$/,
+        ),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'Show extra options' }),
       ).toBeInTheDocument()
       expect(getLatestPublicPreviewCardProps()).toMatchObject({
         mapNameOverride: 'Expenses by UAT (2025)',
       })
     })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show extra options' }))
+
+    expect(
+      screen.getByRole('button', { name: 'Show city hall administrative spending' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Reset filters' }),
+    ).not.toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: 'Show per capita' })).toHaveLength(2)
+    expect(screen.getAllByRole('button', { name: 'Show revenue' })).toHaveLength(2)
+    expect(
+      screen.getByRole('button', { name: 'Expense type: All' }),
+    ).toBeInTheDocument()
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Show map preview options' }),
@@ -2005,6 +2482,7 @@ describe('ChallengeEntityAnalysisPage', () => {
 
     expect(screen.getByRole('button', { name: 'Expenses' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Revenue' })).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: 'Show revenue' })).toHaveLength(2)
     expect(
       screen.getByRole('button', { name: 'Budget balance' }),
     ).toBeInTheDocument()

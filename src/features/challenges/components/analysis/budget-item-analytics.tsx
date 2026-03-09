@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { ExternalLink, Plus, X } from 'lucide-react'
+import { ExternalLink, Minus, Plus, X } from 'lucide-react'
 import { getEntityFeatureInfo } from '@/components/entities/utils'
 import {
   convertToAggregatedData,
@@ -13,6 +13,7 @@ import { useGeoJsonData } from '@/hooks/useGeoJson'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
 import { createMapCloneHandoff } from '@/features/advanced-map-analytics/store/map-clone-handoff'
 import { Input } from '@/components/ui/input'
 import {
@@ -35,6 +36,7 @@ import { Analytics } from '@/lib/analytics'
 import { useEntityDetails } from '@/lib/hooks/useEntityDetails'
 import { getCommitmentsMetricOptions } from '@/lib/commitments-metrics'
 import { cn } from '@/lib/utils'
+import { CHALLENGE_ENTITY_ANALYSIS_EXPENSE_TYPE_VALUES } from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
 import {
   buildBudgetItemAnalyticsFilters,
   getBudgetItemAnalyticsEmptyStateMessage,
@@ -52,10 +54,16 @@ import { useBudgetItemAnalyticsTitle } from './use-budget-item-analytics-title'
 
 const NOOP_ANNOTATION_HANDLER = () => {}
 type BudgetItemAnalyticsCodeType = 'fn' | 'ec'
+type BudgetItemAnalyticsExpenseType =
+  BudgetItemAnalyticsProps['context']['expenseType']
 type BudgetItemAnalyticsResolvedContext = BudgetItemAnalyticsResolvedViewState &
   BudgetItemAnalyticsFilters & {
     readonly analyticsProps: BudgetItemAnalyticsProps
   }
+const BUDGET_ITEM_ANALYTICS_EXPENSE_TYPE_ORDER = [
+  undefined,
+  ...CHALLENGE_ENTITY_ANALYSIS_EXPENSE_TYPE_VALUES,
+] as const satisfies readonly BudgetItemAnalyticsExpenseType[]
 
 function buildAnalyticsCopy(language: BudgetItemAnalyticsResolvedViewState['language']) {
   return language === 'en'
@@ -76,6 +84,13 @@ function buildAnalyticsCopy(language: BudgetItemAnalyticsResolvedViewState['lang
         inflationLabel: 'Inflation adjusted',
         timeframeLabel: 'Timeframe',
         selectedYearLabel: 'Selected year',
+        commitmentsMetricLabel: 'Metric',
+        expenseTypeLabel: 'Expense type',
+        allExpensesLabel: 'All',
+        operationsExpensesLabel: 'Operations',
+        developmentExpensesLabel: 'Development',
+        showExtraOptionsLabel: 'Show extra options',
+        hideExtraOptionsLabel: 'Hide extra options',
       }
     : {
         openChartPage: 'Deschide în pagina de grafice',
@@ -94,7 +109,41 @@ function buildAnalyticsCopy(language: BudgetItemAnalyticsResolvedViewState['lang
         inflationLabel: 'Ajustat cu inflația',
         timeframeLabel: 'Interval',
         selectedYearLabel: 'An selectat',
+        commitmentsMetricLabel: 'Metrică',
+        expenseTypeLabel: 'Tip cheltuială',
+        allExpensesLabel: 'Toate',
+        operationsExpensesLabel: 'Operațiuni',
+        developmentExpensesLabel: 'Dezvoltare',
+        showExtraOptionsLabel: 'Arată opțiunile suplimentare',
+        hideExtraOptionsLabel: 'Ascunde opțiunile suplimentare',
       }
+}
+
+function getBudgetItemAnalyticsExpenseTypeLabel(
+  copy: ReturnType<typeof buildAnalyticsCopy>,
+  expenseType: BudgetItemAnalyticsExpenseType,
+) {
+  if (expenseType === 'functionare') {
+    return copy.operationsExpensesLabel
+  }
+
+  if (expenseType === 'dezvoltare') {
+    return copy.developmentExpensesLabel
+  }
+
+  return copy.allExpensesLabel
+}
+
+function getNextBudgetItemAnalyticsExpenseType(
+  expenseType: BudgetItemAnalyticsExpenseType,
+): BudgetItemAnalyticsExpenseType {
+  const currentIndex = BUDGET_ITEM_ANALYTICS_EXPENSE_TYPE_ORDER.indexOf(expenseType)
+  const nextIndex =
+    currentIndex === -1
+      ? 0
+      : (currentIndex + 1) % BUDGET_ITEM_ANALYTICS_EXPENSE_TYPE_ORDER.length
+
+  return BUDGET_ITEM_ANALYTICS_EXPENSE_TYPE_ORDER[nextIndex]
 }
 
 type BudgetItemAnalyticsSectionProps = {
@@ -297,6 +346,9 @@ function AnalyticsControls({ context }: BudgetItemAnalyticsSectionProps) {
   const copy = buildAnalyticsCopy(context.language)
   const supportsCommitments =
     context.analyticsProps.context.accountCategory === 'ch'
+  const showsExpenseType =
+    context.activeTab === 'execution' &&
+    context.analyticsProps.context.accountCategory === 'ch'
   const selectedYearLabel = `${copy.selectedYearLabel}: ${context.analyticsProps.context.selectedYear}`
   const currentAllTimeframeLabel =
     context.activeTab === 'commitments'
@@ -306,6 +358,12 @@ function AnalyticsControls({ context }: BudgetItemAnalyticsSectionProps) {
     () => getCommitmentsMetricOptions('YEAR'),
     [],
   )
+  const expenseTypeButtonLabel = `${copy.expenseTypeLabel}: ${getBudgetItemAnalyticsExpenseTypeLabel(
+    copy,
+    context.analyticsProps.context.expenseType,
+  )}`
+  const [showExtraControls, setShowExtraControls] = useState(false)
+  const extraControlsId = useId()
 
   return (
     <div className="flex flex-col gap-4 border-b px-6 py-5">
@@ -330,72 +388,6 @@ function AnalyticsControls({ context }: BudgetItemAnalyticsSectionProps) {
       ) : null}
 
       <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
-        <div className="flex min-w-[260px] items-center justify-between gap-3 rounded-full border border-border/60 px-4 py-2">
-          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            {copy.reportTypeLabel}
-          </span>
-          <Select
-            value={context.analyticsProps.context.reportType}
-            onValueChange={(value) =>
-              context.analyticsProps.onReportTypeChange?.(
-                value as typeof context.analyticsProps.context.reportType,
-              )
-            }
-          >
-            <SelectTrigger
-              aria-label={copy.reportTypeLabel}
-              className="h-8 w-[210px] border-0 bg-transparent px-0 text-sm font-semibold shadow-none focus:ring-0"
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="DETAILED">
-                {copy.reportTypeDetailedLabel}
-              </SelectItem>
-              <SelectItem value="PRINCIPAL_AGGREGATED">
-                {copy.reportTypeAggregatedLabel}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex min-w-[180px] items-center justify-between gap-3 rounded-full border border-border/60 px-4 py-2">
-          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            {copy.normalizationLabel}
-          </span>
-          <Select
-            value={context.analyticsProps.context.normalization}
-            onValueChange={(value) =>
-              context.analyticsProps.onNormalizationChange?.(
-                value as 'total' | 'per_capita',
-              )
-            }
-          >
-            <SelectTrigger
-              aria-label={copy.normalizationLabel}
-              className="h-8 w-[140px] border-0 bg-transparent px-0 text-sm font-semibold shadow-none focus:ring-0"
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="total">Total</SelectItem>
-              <SelectItem value="per_capita">Per capita</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <label className="flex min-w-[220px] items-center justify-between gap-3 rounded-full border border-border/60 px-4 py-2">
-          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            {copy.inflationLabel}
-          </span>
-          <Switch
-            checked={context.analyticsProps.context.inflationAdjusted}
-            onCheckedChange={(checked) =>
-              context.analyticsProps.onInflationAdjustedChange?.(checked)
-            }
-          />
-        </label>
-
         <div className="flex min-w-[280px] items-center justify-between gap-3 rounded-full border border-border/60 px-4 py-2">
           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             {copy.timeframeLabel}
@@ -437,34 +429,143 @@ function AnalyticsControls({ context }: BudgetItemAnalyticsSectionProps) {
             </Button>
           </div>
         </div>
-
-        {supportsCommitments && context.activeTab === 'commitments' ? (
-          <div className="flex min-w-[240px] items-center justify-between gap-3 rounded-full border border-border/60 px-4 py-2">
-            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Metrică
-            </span>
-            <Select
-              value={context.analyticsProps.analyticsView.commitmentsMetric}
-              onValueChange={(value) =>
-                context.analyticsProps.onAnalyticsViewChange?.({
-                  commitmentsMetric: value as typeof context.analyticsProps.analyticsView.commitmentsMetric,
-                })
-              }
-            >
-              <SelectTrigger className="h-8 w-[220px] border-0 bg-transparent px-0 text-sm font-semibold shadow-none focus:ring-0">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {commitmentsMetricOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        ) : null}
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="w-full rounded-full sm:w-9"
+          onClick={() => setShowExtraControls((previousState) => !previousState)}
+          aria-controls={extraControlsId}
+          aria-expanded={showExtraControls}
+          aria-label={
+            showExtraControls
+              ? copy.hideExtraOptionsLabel
+              : copy.showExtraOptionsLabel
+          }
+        >
+          {showExtraControls ? <Minus /> : <Plus />}
+        </Button>
       </div>
+
+      <Collapsible open={showExtraControls} onOpenChange={setShowExtraControls}>
+        <CollapsibleContent id={extraControlsId} className="space-y-3">
+          <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
+            <div className="flex min-w-[260px] items-center justify-between gap-3 rounded-full border border-border/60 px-4 py-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                {copy.reportTypeLabel}
+              </span>
+              <Select
+                value={context.analyticsProps.context.reportType}
+                onValueChange={(value) =>
+                  context.analyticsProps.onReportTypeChange?.(
+                    value as typeof context.analyticsProps.context.reportType,
+                  )
+                }
+              >
+                <SelectTrigger
+                  aria-label={copy.reportTypeLabel}
+                  className="h-8 w-[210px] border-0 bg-transparent px-0 text-sm font-semibold shadow-none focus:ring-0"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="DETAILED">
+                    {copy.reportTypeDetailedLabel}
+                  </SelectItem>
+                  <SelectItem value="PRINCIPAL_AGGREGATED">
+                    {copy.reportTypeAggregatedLabel}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex min-w-[180px] items-center justify-between gap-3 rounded-full border border-border/60 px-4 py-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                {copy.normalizationLabel}
+              </span>
+              <Select
+                value={context.analyticsProps.context.normalization}
+                onValueChange={(value) =>
+                  context.analyticsProps.onNormalizationChange?.(
+                    value as 'total' | 'per_capita',
+                  )
+                }
+              >
+                <SelectTrigger
+                  aria-label={copy.normalizationLabel}
+                  className="h-8 w-[140px] border-0 bg-transparent px-0 text-sm font-semibold shadow-none focus:ring-0"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="total">Total</SelectItem>
+                  <SelectItem value="per_capita">Per capita</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <label className="flex min-w-[220px] items-center justify-between gap-3 rounded-full border border-border/60 px-4 py-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                {copy.inflationLabel}
+              </span>
+              <Switch
+                checked={context.analyticsProps.context.inflationAdjusted}
+                onCheckedChange={(checked) =>
+                  context.analyticsProps.onInflationAdjustedChange?.(checked)
+                }
+              />
+            </label>
+
+            {supportsCommitments && context.activeTab === 'commitments' ? (
+              <div className="flex min-w-[240px] items-center justify-between gap-3 rounded-full border border-border/60 px-4 py-2">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  {copy.commitmentsMetricLabel}
+                </span>
+                <Select
+                  value={context.analyticsProps.analyticsView.commitmentsMetric}
+                  onValueChange={(value) =>
+                    context.analyticsProps.onAnalyticsViewChange?.({
+                      commitmentsMetric: value as typeof context.analyticsProps.analyticsView.commitmentsMetric,
+                    })
+                  }
+                >
+                  <SelectTrigger
+                    aria-label={copy.commitmentsMetricLabel}
+                    className="h-8 w-[220px] border-0 bg-transparent px-0 text-sm font-semibold shadow-none focus:ring-0"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {commitmentsMetricOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
+
+            {showsExpenseType ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                onClick={() =>
+                  context.analyticsProps.onExpenseTypeChange?.(
+                    getNextBudgetItemAnalyticsExpenseType(
+                      context.analyticsProps.context.expenseType,
+                    ),
+                  )
+                }
+              >
+                {expenseTypeButtonLabel}
+              </Button>
+            ) : null}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   )
 }
@@ -748,6 +849,7 @@ export function BudgetItemAnalytics({
   onReportTypeChange,
   onNormalizationChange,
   onInflationAdjustedChange,
+  onExpenseTypeChange,
   onYearChange,
   onEntityCuiChange,
   className,
@@ -787,6 +889,7 @@ export function BudgetItemAnalytics({
         onReportTypeChange,
         onNormalizationChange,
         onInflationAdjustedChange,
+        onExpenseTypeChange,
         onYearChange,
         onEntityCuiChange,
         className,
@@ -799,6 +902,7 @@ export function BudgetItemAnalytics({
       filters,
       onAnalyticsViewChange,
       onEntityCuiChange,
+      onExpenseTypeChange,
       onInflationAdjustedChange,
       onNormalizationChange,
       onSelectionChange,

@@ -146,4 +146,32 @@ describe('challenge entity analytics search normalization', () => {
       treemap_depth: 'chapter',
     })
   })
+
+  it('normalizes valid expense types and drops invalid ones', () => {
+    expect(
+      normalizeChallengeEntityAnalysisSearch({
+        expense_type: 'functionare',
+      }).expense_type,
+    ).toBe('functionare')
+
+    expect(
+      normalizeChallengeEntityAnalysisSearch({
+        expense_type: 'invalid',
+      } as any).expense_type,
+    ).toBeUndefined()
+  })
+
+  it('canonicalizes expense_type in the route patch builder', () => {
+    const rawSearch = {
+      expense_type: 'invalid',
+    } as any
+
+    const normalizedSearch = normalizeChallengeEntityAnalysisSearch(rawSearch)
+
+    expect(
+      buildChallengeEntityAnalysisCanonicalSearchPatch(rawSearch, normalizedSearch),
+    ).toMatchObject({
+      expense_type: undefined,
+    })
+  })
 })

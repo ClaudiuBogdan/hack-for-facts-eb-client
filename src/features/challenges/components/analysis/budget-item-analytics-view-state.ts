@@ -308,6 +308,7 @@ function buildMapDescription(
   language: ChallengeLocale,
   normalizedFunctionalCode: string | undefined,
   normalizedEconomicCode: string | undefined,
+  expenseType: BudgetItemAnalyticsPageContext['expenseType'],
 ): string {
   const labels =
     language === 'en'
@@ -315,11 +316,21 @@ function buildMapDescription(
           forItem: 'Map preview for',
           fn: 'Functional code',
           ec: 'Economic code',
+          expenseType: 'Expense type',
+          expenseTypeValues: {
+            functionare: 'Operations',
+            dezvoltare: 'Development',
+          },
         }
       : {
           forItem: 'Hartă pentru',
           fn: 'Cod funcțional',
           ec: 'Cod economic',
+          expenseType: 'Tip cheltuială',
+          expenseTypeValues: {
+            functionare: 'Operațiuni',
+            dezvoltare: 'Dezvoltare',
+          },
         }
 
   const codeLines = [
@@ -328,6 +339,9 @@ function buildMapDescription(
       : null,
     normalizedEconomicCode
       ? `- ${labels.ec}: \`ec:${normalizedEconomicCode}\``
+      : null,
+    expenseType
+      ? `- ${labels.expenseType}: ${labels.expenseTypeValues[expenseType]}`
       : null,
   ].filter(Boolean)
 
@@ -413,6 +427,9 @@ export function buildBudgetItemAnalyticsViewState(
       input.analyticsView.timeframe,
       input.normalizedFunctionalCode ?? 'all-fn',
       input.normalizedEconomicCode ?? 'all-ec',
+      activeTab === 'execution' && input.context.accountCategory === 'ch'
+        ? (input.context.expenseType ?? 'all-expense-types')
+        : 'expense-type-ignored',
       input.analyticsView.commitmentsMetric,
     ].join(':'),
     mapDescription: buildMapDescription(
@@ -420,6 +437,9 @@ export function buildBudgetItemAnalyticsViewState(
       language,
       input.normalizedFunctionalCode,
       input.normalizedEconomicCode,
+      activeTab === 'execution' && input.context.accountCategory === 'ch'
+        ? input.context.expenseType
+        : undefined,
     ),
     activeTab,
   }

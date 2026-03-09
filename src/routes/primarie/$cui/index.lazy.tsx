@@ -87,6 +87,7 @@ function toPageState(
     normalization: searchState.normalization,
     activeView: searchState.view,
     treemapAccountCategory: searchState.treemap_account,
+    expenseType: searchState.expense_type,
     treemapPrimary: searchState.treemap_primary,
     treemapDepth: searchState.treemap_depth,
     treemapPath: searchState.treemap_path?.split(',').filter(Boolean) ?? [],
@@ -224,6 +225,10 @@ export function PrimarieEntityRoutePage() {
 
       if (patch.treemapAccountCategory !== undefined) {
         searchPatch.treemap_account = patch.treemapAccountCategory
+      }
+
+      if (Object.prototype.hasOwnProperty.call(patch, 'expenseType')) {
+        searchPatch.expense_type = patch.expenseType
       }
 
       if (patch.treemapPrimary !== undefined) {

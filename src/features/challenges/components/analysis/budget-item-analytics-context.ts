@@ -35,6 +35,7 @@ export type BudgetItemAnalyticsPageContext = {
   readonly entityCui: string
   readonly selectedYear: number
   readonly accountCategory: 'ch' | 'vn'
+  readonly expenseType?: 'functionare' | 'dezvoltare'
   readonly reportType: BudgetItemAnalyticsReportType
   readonly currentReportPeriod: ReportPeriodInput
   readonly historyReportPeriod?: ReportPeriodInput
@@ -62,6 +63,9 @@ export type BudgetItemAnalyticsProps = {
   readonly onReportTypeChange?: (next: BudgetItemAnalyticsReportType) => void
   readonly onNormalizationChange?: (next: 'total' | 'per_capita') => void
   readonly onInflationAdjustedChange?: (next: boolean) => void
+  readonly onExpenseTypeChange?: (
+    next?: 'functionare' | 'dezvoltare',
+  ) => void
   readonly onYearChange?: (year: number) => void
   readonly onEntityCuiChange?: (entityCui: string) => void
   readonly className?: string
@@ -151,6 +155,9 @@ function buildBaseExecutionFilter(
       : {}),
     ...(normalizedEconomicCode
       ? { economic_prefixes: [normalizedEconomicCode] }
+      : {}),
+    ...(context.accountCategory === 'ch' && context.expenseType
+      ? { expense_types: [context.expenseType] }
       : {}),
     exclude:
       context.accountCategory === 'ch'

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { fireEvent, render, screen } from '@/test/test-utils'
 import { describe, expect, it, beforeEach, vi } from 'vitest'
 import { makeSingleTimePeriod } from '@/schemas/reporting'
@@ -138,6 +139,7 @@ const defaultAnalyticsProps: BudgetItemAnalyticsProps = {
   onReportTypeChange: vi.fn(),
   onNormalizationChange: vi.fn(),
   onInflationAdjustedChange: vi.fn(),
+  onExpenseTypeChange: vi.fn(),
   onYearChange: vi.fn(),
   onEntityCuiChange: vi.fn(),
 }
@@ -235,10 +237,10 @@ describe('BudgetItemAnalytics', () => {
     expect(screen.getByText('Map (2025)')).toBeInTheDocument()
     expect(screen.getByText('Execution')).toBeInTheDocument()
     expect(screen.getByText('Commitments')).toBeInTheDocument()
-    expect(screen.getByText('Report type')).toBeInTheDocument()
-    expect(screen.getByText('Only city hall')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Selected year: 2025' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '2016-2025 total' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Show extra options' })).toBeInTheDocument()
+    expect(screen.queryByText('Report type')).not.toBeInTheDocument()
     expect(screen.getByTestId('chart-renderer')).toBeInTheDocument()
     expect(screen.getByTestId('map-analytics-workspace')).toBeInTheDocument()
     expect(chartRendererMock).toHaveBeenCalledWith(
@@ -249,7 +251,7 @@ describe('BudgetItemAnalytics', () => {
     )
     expect(useMapPreviewRuntimeStateMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        mapKey: 'budget-item-analytics:12345678:ch:execution:selected:65:10.01:CREDITE_ANGAJAMENT',
+        mapKey: 'budget-item-analytics:12345678:ch:execution:selected:65:10.01:all-expense-types:CREDITE_ANGAJAMENT',
         mapStateDefinition: expect.objectContaining({
           mapName: `Map (2025): ${seriesLabel}`,
           binsPresets: [
@@ -294,6 +296,76 @@ describe('BudgetItemAnalytics', () => {
     expect(defaultAnalyticsProps.onAnalyticsViewChange).toHaveBeenCalledWith({
       tab: 'commitments',
     })
+  })
+
+  it('keeps secondary controls collapsed by default and expands them with the plus button', () => {
+    render(<BudgetItemAnalytics {...defaultAnalyticsProps} />)
+
+    expect(screen.queryByText('Report type')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Expense type: All' }),
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show extra options' }))
+
+    expect(screen.getByText('Report type')).toBeInTheDocument()
+    expect(screen.getByText('Only city hall')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Expense type: All' }),
+    ).toBeInTheDocument()
+  })
+
+  it('updates the execution expense type from the analytics controls', () => {
+    const onExpenseTypeChange = vi.fn()
+
+    function TestHarness() {
+      const [expenseType, setExpenseType] = useState<
+        BudgetItemAnalyticsProps['context']['expenseType']
+      >(undefined)
+
+      return (
+        <BudgetItemAnalytics
+          {...defaultAnalyticsProps}
+          context={{
+            ...defaultAnalyticsProps.context,
+            expenseType,
+          }}
+          onExpenseTypeChange={(nextExpenseType) => {
+            onExpenseTypeChange(nextExpenseType)
+            setExpenseType(nextExpenseType)
+          }}
+        />
+      )
+    }
+
+    render(<TestHarness />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show extra options' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Expense type: All' }))
+
+    expect(
+      screen.getByRole('button', { name: 'Expense type: Operations' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Expense type: Operations' }),
+    )
+
+    expect(
+      screen.getByRole('button', { name: 'Expense type: Development' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Expense type: Development' }),
+    )
+
+    expect(
+      screen.getByRole('button', { name: 'Expense type: All' }),
+    ).toBeInTheDocument()
+
+    expect(onExpenseTypeChange).toHaveBeenNthCalledWith(1, 'functionare')
+    expect(onExpenseTypeChange).toHaveBeenNthCalledWith(2, 'dezvoltare')
+    expect(onExpenseTypeChange).toHaveBeenNthCalledWith(3, undefined)
   })
 
   it('commits a normalized manual fn prefix edit on Enter', () => {
@@ -414,6 +486,7 @@ describe('BudgetItemAnalytics', () => {
       />,
     )
 
+    fireEvent.click(screen.getByRole('button', { name: 'Show extra options' }))
     fireEvent.click(screen.getByRole('combobox', { name: 'Report type' }))
     fireEvent.click(screen.getByText('City hall + subordinates'))
 
@@ -433,8 +506,15 @@ describe('BudgetItemAnalytics', () => {
       />,
     )
 
-    expect(screen.getByText('Metrică')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '2019-2025 total' })).toBeInTheDocument()
+    expect(screen.queryByText('Metric')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show extra options' }))
+
+    expect(screen.getByText('Metric')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Expense type: All' }),
+    ).not.toBeInTheDocument()
   })
 
   it('hides the commitments tab for revenue analytics', () => {

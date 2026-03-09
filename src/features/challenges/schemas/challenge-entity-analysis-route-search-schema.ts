@@ -71,6 +71,13 @@ export const ChallengeEntityAnalysisNormalizationSchema = z.enum([
   'per_capita',
 ])
 
+export const CHALLENGE_ENTITY_ANALYSIS_EXPENSE_TYPE_VALUES = [
+  'functionare',
+  'dezvoltare',
+] as const
+export type ChallengeEntityAnalysisExpenseType =
+  (typeof CHALLENGE_ENTITY_ANALYSIS_EXPENSE_TYPE_VALUES)[number]
+
 const ChallengeEntityAnalyticsPathEntrySchema = z.object({
   type: ChallengeEntityAnalysisPrimarySchema,
   code: z.string(),
@@ -112,6 +119,7 @@ export const ChallengeEntityAnalysisRouteSearchSchema = z.object({
   report_type: ChallengeEntityAnalysisReportTypeSchema.optional(),
   normalization: ChallengeEntityAnalysisNormalizationSchema.optional(),
   treemap_account: ChallengeEntityAnalysisAccountCategorySchema.optional(),
+  expense_type: z.string().optional(),
   treemap_primary: ChallengeEntityAnalysisPrimarySchema.optional(),
   treemap_depth: z.string().optional(),
   treemap_path: z.string().optional(),
@@ -147,6 +155,7 @@ export type ChallengeEntityAnalysisUrlState = {
   readonly analytics?: ChallengeEntityAnalyticsSearchState
   readonly view: ChallengeEntityAnalysisView
   readonly treemap_account: 'ch' | 'vn'
+  readonly expense_type?: ChallengeEntityAnalysisExpenseType
   readonly treemap_primary: 'fn' | 'ec'
   readonly treemap_depth: ChallengeEntityAnalysisTreemapDepth
   readonly treemap_path?: string
@@ -167,6 +176,9 @@ const CHALLENGE_ENTITY_COMMITMENTS_DETAIL_LEVEL_SET = new Set(
 )
 const CHALLENGE_ENTITY_TREEMAP_DEPTH_SET = new Set(
   CHALLENGE_ENTITY_ANALYSIS_TREEMAP_DEPTH_VALUES,
+)
+const CHALLENGE_ENTITY_EXPENSE_TYPE_SET = new Set(
+  CHALLENGE_ENTITY_ANALYSIS_EXPENSE_TYPE_VALUES,
 )
 
 function normalizePathCode(code: string): string {
@@ -255,6 +267,21 @@ function normalizeTreemapDepth(
   return 'chapter'
 }
 
+function normalizeExpenseType(
+  expenseType: string | undefined,
+): ChallengeEntityAnalysisExpenseType | undefined {
+  if (
+    expenseType &&
+    CHALLENGE_ENTITY_EXPENSE_TYPE_SET.has(
+      expenseType as ChallengeEntityAnalysisExpenseType,
+    )
+  ) {
+    return expenseType as ChallengeEntityAnalysisExpenseType
+  }
+
+  return undefined
+}
+
 export function decodeChallengeTreemapPath(
   path: string | undefined,
 ): string[] {
@@ -335,6 +362,7 @@ export function normalizeChallengeEntityAnalysisSearch(
     analytics: encodeChallengeEntityAnalyticsSearchState(search?.analytics),
     view: normalizeChallengeEntityAnalysisView(search?.view),
     treemap_account: treemapAccountCategory,
+    expense_type: normalizeExpenseType(search?.expense_type),
     treemap_primary:
       treemapAccountCategory === 'vn'
         ? 'fn'
@@ -389,6 +417,10 @@ export function buildChallengeEntityAnalysisCanonicalSearchPatch(
 
   if (search?.treemap_account !== normalizedSearch.treemap_account) {
     patch.treemap_account = normalizedSearch.treemap_account
+  }
+
+  if ((search?.expense_type ?? undefined) !== normalizedSearch.expense_type) {
+    patch.expense_type = normalizedSearch.expense_type
   }
 
   if (search?.treemap_primary !== normalizedSearch.treemap_primary) {

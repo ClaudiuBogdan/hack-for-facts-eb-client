@@ -13,6 +13,7 @@ import { EntityFinancialTrends } from '@/components/entities/EntityFinancialTren
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useEntityTypeLabel } from '@/hooks/filters/useFilterLabels'
@@ -75,9 +76,11 @@ import {
   type ChallengeEntitySubordinateCardItem,
 } from './challenge-entity-subordinates-section'
 import { DeferredSectionGate } from './challenge-entity-deferred-section-gate'
-import type {
+import {
+  CHALLENGE_ENTITY_ANALYSIS_EXPENSE_TYPE_VALUES,
   ChallengeEntityAnalysisCommitmentsDetailLevel,
   ChallengeEntityAnalysisCommitmentsGrouping,
+  ChallengeEntityAnalysisExpenseType,
   ChallengeEntityAnalysisTreemapDepth,
   ChallengeEntityAnalysisView,
 } from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
@@ -115,6 +118,7 @@ export type ChallengeEntityAnalysisPageState = {
   readonly normalization: 'total' | 'per_capita'
   readonly activeView: ChallengeEntityAnalysisView
   readonly treemapAccountCategory: ChallengeTreemapAccountCategory
+  readonly expenseType?: ChallengeEntityAnalysisExpenseType
   readonly treemapPrimary: 'fn' | 'ec'
   readonly treemapDepth: ChallengeEntityAnalysisTreemapDepth
   readonly treemapPath: readonly string[]
@@ -131,6 +135,37 @@ const CHALLENGE_AVAILABLE_YEARS = Array.from(
   { length: DEFAULT_SELECTED_YEAR - defaultYearRange.start + 1 },
   (_, index) => DEFAULT_SELECTED_YEAR - index,
 )
+const CHALLENGE_ENTITY_EXPENSE_TYPE_ORDER = [
+  undefined,
+  ...CHALLENGE_ENTITY_ANALYSIS_EXPENSE_TYPE_VALUES,
+] as const satisfies readonly (ChallengeEntityAnalysisExpenseType | undefined)[]
+const DEFAULT_TREEMAP_FILTER_STATE = {
+  reportType: 'PRINCIPAL_AGGREGATED',
+  normalization: 'total',
+  treemapAccountCategory: 'ch',
+  expenseType: undefined,
+  treemapPrimary: 'fn',
+  treemapDepth: 'chapter',
+} as const satisfies Pick<
+  ChallengeEntityAnalysisPageState,
+  | 'reportType'
+  | 'normalization'
+  | 'treemapAccountCategory'
+  | 'expenseType'
+  | 'treemapPrimary'
+  | 'treemapDepth'
+>
+
+function matchesSelectedExpenseType(
+  lineItem: Pick<ExecutionLineItem, 'expense_type'>,
+  expenseType: ChallengeEntityAnalysisExpenseType | undefined,
+) {
+  if (!expenseType) {
+    return true
+  }
+
+  return lineItem.expense_type === expenseType
+}
 
 function loadMapAnalyticsPublicPreviewCard() {
   return import(
@@ -290,10 +325,21 @@ const MAP_PREVIEW_MISC_COPY = {
     revenueWithoutEconomicCode: 'Veniturile nu au cod economic.',
     showMapPreviewOptions: 'Arată opțiunile hărții',
     hideMapPreviewOptions: 'Ascunde opțiunile hărții',
+    showExtraOptions: 'Arată opțiunile suplimentare',
+    hideExtraOptions: 'Ascunde opțiunile suplimentare',
+    resetFilters: 'Resetează filtrele',
+    activeFiltersLabel: 'Filtre active',
+    selectedPathLabel: 'Selecție',
+    reportLabel: 'Raport',
+    normalizationFilterLabel: 'Normalizare',
+    expenseTypeLabel: 'Tip cheltuială',
     detailLevel: 'Nivel de detaliu',
     chapter: 'Capitol',
     subchapter: 'Subcapitol',
     paragraph: 'Paragraf',
+    allExpenses: 'Toate',
+    operationsExpenses: 'Operațiuni',
+    developmentExpenses: 'Dezvoltare',
     spendingDistribution: 'Distribuția Cheltuielilor',
     revenueDistribution: 'Distribuția Veniturilor',
     spendingGrouped: 'Cum s-au cheltuit banii',
@@ -315,10 +361,21 @@ const MAP_PREVIEW_MISC_COPY = {
     revenueWithoutEconomicCode: 'Revenue has no economic code.',
     showMapPreviewOptions: 'Show map preview options',
     hideMapPreviewOptions: 'Hide map preview options',
+    showExtraOptions: 'Show extra options',
+    hideExtraOptions: 'Hide extra options',
+    resetFilters: 'Reset filters',
+    activeFiltersLabel: 'Active filters',
+    selectedPathLabel: 'Selected path',
+    reportLabel: 'Report',
+    normalizationFilterLabel: 'Normalization',
+    expenseTypeLabel: 'Expense type',
     detailLevel: 'Detail level',
     chapter: 'Chapter',
     subchapter: 'Subchapter',
     paragraph: 'Paragraph',
+    allExpenses: 'All',
+    operationsExpenses: 'Operations',
+    developmentExpenses: 'Development',
     spendingDistribution: 'Spending breakdown',
     revenueDistribution: 'Revenue breakdown',
     spendingGrouped: 'How the money was spent',
@@ -536,18 +593,49 @@ function getTreemapSubtitle(
   locale: ChallengeLocale | undefined,
   accountCategory: ChallengeTreemapAccountCategory,
   activePrimary: 'fn' | 'ec',
+  reportType: ChallengeEntityReportType,
+  normalization: ChallengeEntityAnalysisPageState['normalization'],
+  expenseType: ChallengeEntityAnalysisExpenseType | undefined,
+  treemapDepth: ChallengeEntityAnalysisTreemapDepth,
 ) {
   const pageCopy = MAP_PREVIEW_MISC_COPY[resolveChallengePageLocale(locale)]
+  const baseDescription =
+    accountCategory === 'vn'
+      ? activePrimary === 'ec'
+        ? pageCopy.revenueSources
+        : pageCopy.revenueGrouped
+      : activePrimary === 'ec'
+        ? pageCopy.spendingUses
+        : pageCopy.spendingGrouped
+  const nonDefaultFilters: string[] = []
 
-  if (accountCategory === 'vn') {
-    return activePrimary === 'ec'
-      ? pageCopy.revenueSources
-      : pageCopy.revenueGrouped
+  if (reportType !== 'PRINCIPAL_AGGREGATED') {
+    const reportLabel =
+      locale === 'en' ? 'only city hall' : 'doar primăria'
+    nonDefaultFilters.push(`${pageCopy.reportLabel}: ${reportLabel}`)
   }
 
-  return activePrimary === 'ec'
-    ? pageCopy.spendingUses
-    : pageCopy.spendingGrouped
+  if (normalization !== 'total') {
+    nonDefaultFilters.push(
+      `${pageCopy.normalizationFilterLabel}: per capita`,
+    )
+  }
+
+  if (treemapDepth !== 'chapter') {
+    const depthLabel =
+      treemapDepth === 'subchapter' ? pageCopy.subchapter : pageCopy.paragraph
+    nonDefaultFilters.push(`${pageCopy.detailLevel}: ${depthLabel}`)
+  }
+
+  if (accountCategory === 'ch' && expenseType != null) {
+    nonDefaultFilters.push(
+      `${pageCopy.expenseTypeLabel}: ${getExpenseTypeLabel(locale, expenseType)}`,
+    )
+  }
+
+  const parts: string[] = [baseDescription, ...nonDefaultFilters]
+
+  return parts.join(' · ')
 }
 
 function getTreemapPrimaryCtaLabel(
@@ -596,6 +684,67 @@ function getNormalizationCtaLabel(
   return normalization === 'total'
     ? 'Arată per capita'
     : 'Arată total'
+}
+
+function getExpenseTypeLabel(
+  locale: ChallengeLocale | undefined,
+  expenseType: ChallengeEntityAnalysisExpenseType | undefined,
+) {
+  if (locale === 'en') {
+    switch (expenseType) {
+      case 'functionare':
+        return 'Operations'
+      case 'dezvoltare':
+        return 'Development'
+      default:
+        return 'All'
+    }
+  }
+
+  switch (expenseType) {
+    case 'functionare':
+      return 'Operațiuni'
+    case 'dezvoltare':
+      return 'Dezvoltare'
+    default:
+      return 'Toate'
+  }
+}
+
+function getNextExpenseType(
+  expenseType: ChallengeEntityAnalysisExpenseType | undefined,
+): ChallengeEntityAnalysisExpenseType | undefined {
+  const currentIndex = CHALLENGE_ENTITY_EXPENSE_TYPE_ORDER.indexOf(expenseType)
+  const nextIndex =
+    currentIndex === -1
+      ? 0
+      : (currentIndex + 1) % CHALLENGE_ENTITY_EXPENSE_TYPE_ORDER.length
+
+  return CHALLENGE_ENTITY_EXPENSE_TYPE_ORDER[nextIndex]
+}
+
+function hasNonDefaultTreemapFilters(
+  state: Pick<
+    ChallengeEntityAnalysisPageState,
+    | 'reportType'
+    | 'normalization'
+    | 'treemapAccountCategory'
+    | 'expenseType'
+    | 'treemapPrimary'
+    | 'treemapDepth'
+    | 'treemapPath'
+  >,
+) {
+  return (
+    state.reportType !== DEFAULT_TREEMAP_FILTER_STATE.reportType ||
+    state.normalization !== DEFAULT_TREEMAP_FILTER_STATE.normalization ||
+    state.treemapAccountCategory !==
+      DEFAULT_TREEMAP_FILTER_STATE.treemapAccountCategory ||
+    state.expenseType !== DEFAULT_TREEMAP_FILTER_STATE.expenseType ||
+    state.treemapPrimary !== DEFAULT_TREEMAP_FILTER_STATE.treemapPrimary ||
+    state.treemapDepth !== DEFAULT_TREEMAP_FILTER_STATE.treemapDepth ||
+    state.treemapPath.length > 0
+  )
 }
 
 function getNextTreemapDepth(
@@ -737,6 +886,7 @@ export function ChallengeEntityAnalysisPage({
     normalization: normalizationMode,
     activeView,
     treemapAccountCategory,
+    expenseType,
     treemapPrimary,
     treemapDepth,
     treemapPath,
@@ -765,6 +915,8 @@ export function ChallengeEntityAnalysisPage({
     [languageQuery, selectedMapPreviewDefinition],
   )
   const [isMapPreviewSelectorExpanded, setIsMapPreviewSelectorExpanded] =
+    useState(false)
+  const [isTreemapControlsExpanded, setIsTreemapControlsExpanded] =
     useState(false)
   const [publicMapViewport, setPublicMapViewport] =
     useState<PublicMapViewport>()
@@ -881,9 +1033,14 @@ export function ChallengeEntityAnalysisPage({
   const treemapLineItems = useMemo(
     () =>
       (entityLineItemsQuery.data?.nodes ?? []).filter(
-        (lineItem) => lineItem.account_category === treemapAccountCategory,
+        (lineItem) =>
+          lineItem.account_category === treemapAccountCategory &&
+          (
+            treemapAccountCategory !== 'ch' ||
+            matchesSelectedExpenseType(lineItem, expenseType)
+          ),
       ),
-    [entityLineItemsQuery.data?.nodes, treemapAccountCategory],
+    [entityLineItemsQuery.data?.nodes, expenseType, treemapAccountCategory],
   )
   const treemapExcludeEconomicCodes = useMemo(
     () =>
@@ -1137,6 +1294,7 @@ export function ChallengeEntityAnalysisPage({
           entityCui,
           selectedYear,
           accountCategory: treemapAccountCategory,
+          expenseType,
           reportType: selectedReportType,
           currentReportPeriod: reportPeriod,
           historyReportPeriod: CHALLENGE_TREND_PERIOD,
@@ -1192,6 +1350,14 @@ export function ChallengeEntityAnalysisPage({
             setSettings({ inflationAdjusted: nextInflationAdjusted })
           }
         },
+        onExpenseTypeChange: (nextExpenseType) => {
+          if (nextExpenseType !== expenseType) {
+            onStateChange({
+              expenseType: nextExpenseType,
+              treemapPath: [],
+            })
+          }
+        },
         onYearChange: handleYearChange,
         onEntityCuiChange,
       }
@@ -1200,6 +1366,7 @@ export function ChallengeEntityAnalysisPage({
       analyticsView,
       currency,
       displayInflationAdjusted,
+      expenseType,
       entityCui,
       handleYearChange,
       inflationAdjusted,
@@ -1374,9 +1541,27 @@ export function ChallengeEntityAnalysisPage({
     handleTreemapDepthChange(getNextTreemapDepth(treemapDepth))
   }
 
+  const handleExpenseTypeChange = (
+    nextExpenseType: ChallengeEntityAnalysisExpenseType | undefined,
+  ) => {
+    if (nextExpenseType === expenseType) {
+      return
+    }
+
+    onStateChange({
+      expenseType: nextExpenseType,
+      treemapPath: [],
+    })
+  }
+
+  const handleExpenseTypeToggle = () => {
+    handleExpenseTypeChange(getNextExpenseType(expenseType))
+  }
+
   const handleAdministrativeExpensesShortcut = () => {
     onStateChange({
       treemapAccountCategory: 'ch',
+      expenseType: undefined,
       treemapPrimary: 'fn',
       treemapPath: [...CHALLENGE_ADMINISTRATIVE_EXPENSE_PATH],
     })
@@ -1385,7 +1570,21 @@ export function ChallengeEntityAnalysisPage({
   const handleResetTreemapToAllExpenses = () => {
     onStateChange({
       treemapAccountCategory: 'ch',
+      expenseType: undefined,
       treemapPrimary: activePrimary,
+      treemapPath: [],
+    })
+  }
+
+  const handleResetTreemapFilters = () => {
+    onStateChange({
+      reportType: DEFAULT_TREEMAP_FILTER_STATE.reportType,
+      normalization: DEFAULT_TREEMAP_FILTER_STATE.normalization,
+      treemapAccountCategory:
+        DEFAULT_TREEMAP_FILTER_STATE.treemapAccountCategory,
+      expenseType: DEFAULT_TREEMAP_FILTER_STATE.expenseType,
+      treemapPrimary: DEFAULT_TREEMAP_FILTER_STATE.treemapPrimary,
+      treemapDepth: DEFAULT_TREEMAP_FILTER_STATE.treemapDepth,
       treemapPath: [],
     })
   }
@@ -1477,6 +1676,10 @@ export function ChallengeEntityAnalysisPage({
 
   const handleMapPreviewSelectorToggle = useCallback(() => {
     setIsMapPreviewSelectorExpanded((previousState) => !previousState)
+  }, [])
+
+  const handleTreemapControlsToggle = useCallback(() => {
+    setIsTreemapControlsExpanded((previousState) => !previousState)
   }, [])
 
   const visibleMapPreviewDefinitions = useMemo(
@@ -1580,6 +1783,10 @@ export function ChallengeEntityAnalysisPage({
     languageQuery,
     treemapAccountCategory,
     activePrimary,
+    selectedReportType,
+    normalizationMode,
+    expenseType,
+    treemapDepth,
   )
   const treemapPrimaryCtaLabel = getTreemapPrimaryCtaLabel(
     languageQuery,
@@ -1593,6 +1800,10 @@ export function ChallengeEntityAnalysisPage({
         ? pageCopy.subchapter
         : pageCopy.paragraph
   const treemapDepthCtaLabel = `${pageCopy.detailLevel}: ${treemapDepthLabel}`
+  const expenseTypeCtaLabel = `${pageCopy.expenseTypeLabel}: ${getExpenseTypeLabel(
+    languageQuery,
+    expenseType,
+  )}`
   const groupedLineItemsAccountTitle =
     treemapAccountCategory === 'vn'
       ? getLocalizedMapPreviewLabel('income', languageQuery)
@@ -1609,6 +1820,16 @@ export function ChallengeEntityAnalysisPage({
     languageQuery,
     normalizationMode,
   )
+  const showsResetTreemapFiltersButton = hasNonDefaultTreemapFilters({
+    reportType: selectedReportType,
+    normalization: normalizationMode,
+    treemapAccountCategory,
+    expenseType,
+    treemapPrimary,
+    treemapDepth,
+    treemapPath,
+  })
+  const treemapSecondaryControlsId = 'challenge-entity-treemap-secondary-controls'
   const showTreemapResetShortcut =
     treemapAccountCategory === 'ch' && breadcrumbs.length > 0
   const isSubordinatesSectionLoading =
@@ -1781,7 +2002,7 @@ export function ChallengeEntityAnalysisPage({
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="rounded-full"
+                  className="w-full rounded-full sm:w-9"
                   onClick={handleMapPreviewSelectorToggle}
                   aria-controls="challenge-entity-map-preview-switcher"
                   aria-expanded={isMapPreviewSelectorExpanded}
@@ -1842,68 +2063,119 @@ export function ChallengeEntityAnalysisPage({
                     )}
                   </div>
 
-                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-                      onClick={handleTreemapAccountCategoryToggle}
-                    >
-                      {treemapAccountCategoryCtaLabel}
-                    </Button>
-                    {isIncomeTreemap ? null : (
+                  <div className="space-y-2">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
                         className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-                        onClick={handleTreemapPrimaryToggle}
+                        onClick={handleTreemapAccountCategoryToggle}
                       >
-                        {treemapPrimaryCtaLabel}
+                        {treemapAccountCategoryCtaLabel}
                       </Button>
-                    )}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-                      onClick={handleNormalizationToggle}
-                    >
-                      <Users className="mr-1.5 h-4 w-4" aria-hidden="true" />
-                      {normalizationCtaLabel}
-                    </Button>
-                    <div className="hidden basis-full sm:block" />
-                    {isIncomeTreemap ? null : showTreemapResetShortcut ? (
+                      {isIncomeTreemap ? null : (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                          onClick={handleTreemapPrimaryToggle}
+                        >
+                          {treemapPrimaryCtaLabel}
+                        </Button>
+                      )}
                       <Button
                         type="button"
                         variant="outline"
-                        size="sm"
-                        className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-                        onClick={handleResetTreemapToAllExpenses}
+                        size="icon"
+                        className="w-full rounded-full sm:w-9"
+                        onClick={handleTreemapControlsToggle}
+                        aria-controls={treemapSecondaryControlsId}
+                        aria-expanded={isTreemapControlsExpanded}
+                        aria-label={
+                          isTreemapControlsExpanded
+                            ? pageCopy.hideExtraOptions
+                            : pageCopy.showExtraOptions
+                        }
                       >
-                        {pageCopy.showAllSpending}
+                        {isTreemapControlsExpanded ? <Minus /> : <Plus />}
                       </Button>
-                    ) : (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-                        onClick={handleAdministrativeExpensesShortcut}
-                      >
-                        {pageCopy.showAdministrativeSpending}
-                      </Button>
-                    )}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
-                      onClick={handleTreemapDepthToggle}
+                    </div>
+                    <Collapsible
+                      open={isTreemapControlsExpanded}
+                      onOpenChange={setIsTreemapControlsExpanded}
                     >
-                      {treemapDepthCtaLabel}
-                    </Button>
+                      <CollapsibleContent
+                        id={treemapSecondaryControlsId}
+                        className="space-y-2"
+                      >
+                        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                            onClick={handleNormalizationToggle}
+                          >
+                            <Users className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                            {normalizationCtaLabel}
+                          </Button>
+                          {isIncomeTreemap ? null : showTreemapResetShortcut ? (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                              onClick={handleResetTreemapToAllExpenses}
+                            >
+                              {pageCopy.showAllSpending}
+                            </Button>
+                          ) : (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                              onClick={handleAdministrativeExpensesShortcut}
+                            >
+                              {pageCopy.showAdministrativeSpending}
+                            </Button>
+                          )}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                            onClick={handleTreemapDepthToggle}
+                          >
+                            {treemapDepthCtaLabel}
+                          </Button>
+                          {isIncomeTreemap ? null : (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                              onClick={handleExpenseTypeToggle}
+                            >
+                              {expenseTypeCtaLabel}
+                            </Button>
+                          )}
+                          {showsResetTreemapFiltersButton ? (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-auto rounded-full px-4 py-2 text-sm font-semibold"
+                              onClick={handleResetTreemapFilters}
+                            >
+                              {pageCopy.resetFilters}
+                            </Button>
+                          ) : null}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
                   </div>
 
                   <ChallengeEntityGroupedLineItems

@@ -152,6 +152,21 @@ describe('buildBudgetItemAnalyticsFilters', () => {
       getBudgetItemAnalyticsAllTimeframePeriod('commitments'),
     )
   })
+
+  it('adds expense_types only to execution filters when an expense type is selected', () => {
+    const result = buildBudgetItemAnalyticsFilters(
+      {
+        ...defaultContext,
+        expenseType: 'dezvoltare',
+      },
+      getDefaultBudgetItemAnalyticsViewState(),
+    )
+
+    expect(result.executionChartFilter.expense_types).toEqual(['dezvoltare'])
+    expect(result.executionMapFilter.expense_types).toEqual(['dezvoltare'])
+    expect(result.commitmentsChartFilter).not.toHaveProperty('expense_types')
+    expect(result.commitmentsMapFilter).not.toHaveProperty('expense_types')
+  })
 })
 
 describe('buildBudgetItemAnalyticsViewState', () => {
@@ -222,5 +237,32 @@ describe('buildBudgetItemAnalyticsViewState', () => {
     expect(context.mapDescription).not.toContain('Town Hall of Example')
     expect(context.mapDescription).toContain('fn:65')
     expect(context.mapDescription).toContain('ec:10.01')
+  })
+
+  it('includes the selected execution expense type in the map key and description', () => {
+    const expenseContext: BudgetItemAnalyticsPageContext = {
+      ...defaultContext,
+      expenseType: 'functionare',
+    }
+    const filters = buildBudgetItemAnalyticsFilters(
+      expenseContext,
+      getDefaultBudgetItemAnalyticsViewState(),
+    )
+    const viewState = buildBudgetItemAnalyticsViewState({
+      resolvedTitle: 'Town Hall of Example · Education',
+      seriesLabel: 'Education',
+      language: expenseContext.language,
+      context: expenseContext,
+      analyticsView: getDefaultBudgetItemAnalyticsViewState(),
+      normalizedFunctionalCode: filters.normalizedFunctionalCode,
+      normalizedEconomicCode: filters.normalizedEconomicCode,
+      executionChartFilter: filters.executionChartFilter,
+      executionMapFilter: filters.executionMapFilter,
+      commitmentsChartFilter: filters.commitmentsChartFilter,
+      commitmentsMapFilter: filters.commitmentsMapFilter,
+    })
+
+    expect(viewState.mapKey).toContain('functionare')
+    expect(viewState.mapDescription).toContain('Expense type: Operations')
   })
 })

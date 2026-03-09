@@ -60,7 +60,7 @@ vi.mock(
     }: any) => (
       <div data-testid="analysis-page">
         {entityCui}:{languageQuery ?? 'ro'}:{state.selectedYear}:
-        {state.reportType}:{state.activeView}:{state.treemapAccountCategory}:{state.treemapPrimary}:
+        {state.reportType}:{state.activeView}:{state.treemapAccountCategory}:{state.expenseType ?? 'all'}:{state.treemapPrimary}:
         {state.treemapDepth}:{state.treemapPath.join('|')}:{state.evolutionAccountCategory}:
         {state.evolutionPrimary}:{state.mapPreviewKey}:
         {JSON.stringify(analyticsTarget ?? null)}:
@@ -101,6 +101,26 @@ vi.mock(
           }
         >
           Change treemap depth
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            onStateChange?.({
+              expenseType: 'dezvoltare',
+            })
+          }
+        >
+          Change expense type
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            onStateChange?.({
+              expenseType: undefined,
+            })
+          }
+        >
+          Clear expense type
         </button>
         <button
           type="button"
@@ -185,7 +205,7 @@ describe('PrimarieEntityIndexRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      `87654321:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:fn:chapter::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:null:none:none:RON:false`,
+      `87654321:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:all:fn:chapter::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:null:none:none:RON:false`,
     )
   })
 
@@ -220,7 +240,7 @@ describe('PrimarieEntityIndexRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      `12345678:en:2024:DETAILED:main-info:vn:fn:chapter:51|51.01:vn:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:{"target":{"subjectLabel":"Education salaries","path":[{"type":"fn","code":"65.02"},{"type":"ec","code":"10.01"}]},"view":{"tab":"execution","timeframe":"selected","commitmentsMetric":"CREDITE_ANGAJAMENT"}}:none:none:RON:false`,
+      `12345678:en:2024:DETAILED:main-info:vn:all:fn:chapter:51|51.01:vn:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:{"target":{"subjectLabel":"Education salaries","path":[{"type":"fn","code":"65.02"},{"type":"ec","code":"10.01"}]},"view":{"tab":"execution","timeframe":"selected","commitmentsMetric":"CREDITE_ANGAJAMENT"}}:none:none:RON:false`,
     )
 
     await waitFor(() => {
@@ -255,6 +275,46 @@ describe('PrimarieEntityIndexRoutePage', () => {
     expect(canonicalSearch).not.toHaveProperty('commitments_detail_level')
   })
 
+  it('hydrates expense_type from the URL and writes it back through state changes', async () => {
+    mockedSearch = {
+      expense_type: 'functionare',
+    }
+
+    const { PrimarieEntityRoutePage } = await import('./index.lazy')
+
+    render(<PrimarieEntityRoutePage />)
+
+    expect(screen.getByTestId('analysis-page')).toHaveTextContent(
+      `12345678:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:functionare:fn:chapter::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:null:none:none:RON:false`,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Change expense type' }))
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalled()
+    })
+
+    const setExpenseTypeCall =
+      navigateMock.mock.calls[navigateMock.mock.calls.length - 1]?.[0]
+    const setExpenseTypeSearch = setExpenseTypeCall.search(mockedSearch)
+
+    expect(setExpenseTypeSearch.expense_type).toBe('dezvoltare')
+
+    navigateMock.mockClear()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear expense type' }))
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalled()
+    })
+
+    const clearExpenseTypeCall =
+      navigateMock.mock.calls[navigateMock.mock.calls.length - 1]?.[0]
+    const clearExpenseTypeSearch = clearExpenseTypeCall.search(mockedSearch)
+
+    expect(clearExpenseTypeSearch).not.toHaveProperty('expense_type')
+  })
+
   it('canonicalizes legacy public map ids to local preview keys', async () => {
     mockedSearch = {
       public_map: 'gxnEfLoy3EqI',
@@ -265,7 +325,7 @@ describe('PrimarieEntityIndexRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      '12345678:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:fn:chapter::ch:fn:local-taxes:null:none:none:RON:false',
+      '12345678:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:all:fn:chapter::ch:fn:local-taxes:null:none:none:RON:false',
     )
 
     await waitFor(() => {
