@@ -73,13 +73,14 @@ import {
   parseMapConfigTransferInput,
   type ImportedMapConfig,
 } from '@/features/advanced-map-analytics/store/map-config-transfer';
+import { loadInteractiveMapModule } from '@/features/advanced-map-analytics/analytics-map-warmup';
 import type { MapEntitySelection } from '@/features/advanced-map-analytics/types/map-entity-selection';
 import { t } from '@lingui/core/macro';
 import { cn, getUserLocale } from '@/lib/utils';
 
 // Lazy load InteractiveMap to avoid Leaflet evaluation on the server.
 const InteractiveMap = lazy(() =>
-  import('@/components/maps/InteractiveMap').then((module) => ({ default: module.InteractiveMap }))
+  loadInteractiveMapModule().then((module) => ({ default: module.InteractiveMap }))
 );
 
 interface EditorState {

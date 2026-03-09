@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
+import { queryOptions, useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 import {
   createAdvancedMapAnalyticsMap,
@@ -138,12 +138,18 @@ export function useAdvancedMapAnalyticsSnapshotsQuery(
   });
 }
 
-export function useAdvancedMapAnalyticsPublicMapQuery(publicId: string, enabled = true) {
-  return useQuery<AdvancedMapAnalyticsMapDetail, AdvancedMapAnalyticsApiError>({
+export function advancedMapAnalyticsPublicMapQueryOptions(publicId: string) {
+  return queryOptions<AdvancedMapAnalyticsMapDetail, AdvancedMapAnalyticsApiError>({
     queryKey: advancedMapAnalyticsKeys.public(publicId),
     queryFn: async () => getPublicAdvancedMapAnalyticsMap(publicId),
-    enabled,
     staleTime: 60_000,
+  });
+}
+
+export function useAdvancedMapAnalyticsPublicMapQuery(publicId: string, enabled = true) {
+  return useQuery<AdvancedMapAnalyticsMapDetail, AdvancedMapAnalyticsApiError>({
+    ...advancedMapAnalyticsPublicMapQueryOptions(publicId),
+    enabled,
   });
 }
 

@@ -220,6 +220,7 @@ export function MapAnalyticsListPage() {
                   <Link
                     to="/maps/editor/$mapId"
                     params={{ mapId: map.id }}
+                    preload="intent"
                     search={(previousSearch) =>
                       stripMapEditorSearchParams(previousSearch as Record<string, unknown>)
                     }

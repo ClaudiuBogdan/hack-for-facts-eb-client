@@ -1,4 +1,4 @@
-// Copy docs-site/build into dist/docs for Vercel to serve under /docs
+// Copy docs-site/build into dist/docs so the app server can serve docs under /docs.
 import fs from 'fs'
 import path from 'path'
 
@@ -20,5 +20,4 @@ function copyDir(src, dest) {
 
 copyDir(docsBuild, distDocs)
 console.log('Docs copied to', distDocs)
-
 

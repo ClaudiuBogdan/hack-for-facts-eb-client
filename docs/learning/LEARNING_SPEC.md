@@ -381,7 +381,7 @@ Certificates in this context are "soft credentials" for educational encouragemen
 
 **Solution**: The `/certificates/:id` route requires special handling.
 
-*   **Option A (Recommended)**: Use a **Vercel Edge Function** or backend endpoint to serve `index.html` with dynamically injected `<meta og:...>` tags based on the `id` parameter. The React app then hydrates normally.
+*   **Option A (Recommended)**: Use an SSR/edge/backend endpoint to serve `index.html` with dynamically injected `<meta og:...>` tags based on the `id` parameter. The React app then hydrates normally.
 *   **Option B (Fallback)**: Accept static, generic OG tags if pure SPA hosting is required.
 
 ---

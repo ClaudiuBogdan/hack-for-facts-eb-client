@@ -2,7 +2,7 @@
 
 Client-side analytics is integrated using `posthog-js` with explicit user consent.
 
-Environment variables (set in Vercel or local `.env`):
+Environment variables (set in runtime env, Kubernetes secrets/config, or local `.env`):
 
 ```
 VITE_POSTHOG_ENABLED=true
@@ -17,7 +17,7 @@ Privacy: only custom events + manual `$pageview` are captured (no autocapture, n
 
 Client-side Sentry is integrated using `@sentry/react` with TanStack Router tracing and the user feedback widget.
 
-Environment variables (set in Vercel or local `.env`):
+Environment variables (set in runtime env, Kubernetes secrets/config, or local `.env`):
 
 ```
 VITE_SENTRY_ENABLED=true

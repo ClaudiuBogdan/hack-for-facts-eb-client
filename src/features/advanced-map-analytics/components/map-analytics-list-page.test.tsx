@@ -76,6 +76,7 @@ describe('MapAnalyticsListPage', () => {
 
     expect(openLinkProps).toBeDefined();
     expect(typeof openLinkProps?.search).toBe('function');
+    expect(openLinkProps?.preload).toBe('intent');
 
     const previousSearch = {
       currency: 'EUR',
