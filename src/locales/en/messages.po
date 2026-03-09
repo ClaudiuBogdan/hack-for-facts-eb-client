@@ -119,12 +119,12 @@ msgid "{0} series configured"
 msgstr "{0} series configured"
 
 #. placeholder {0}: normalizedPasteResult.seriesToInsert.length
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:441
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:443
 msgid "{0} series pasted"
 msgstr "{0} series pasted"
 
 #. placeholder {0}: normalizedPasteResult.skippedUnsupportedCount
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:446
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:448
 msgid "{0} unsupported series were skipped"
 msgstr "{0} unsupported series were skipped"
 
@@ -637,7 +637,7 @@ msgstr "Active data series"
 msgid "Active filters"
 msgstr "Active filters"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1030
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1032
 msgid "Active series"
 msgstr "Active series"
 
@@ -791,8 +791,8 @@ msgstr "Aggregated Value ({currencyCode}/capita)"
 msgid "Aggregated Value (% of GDP)"
 msgstr "Aggregated Value (% of GDP)"
 
-#: src/routes/map.lazy.tsx:287
-#: src/routes/map.lazy.tsx:330
+#: src/routes/map.lazy.tsx:328
+#: src/routes/map.lazy.tsx:371
 msgid "Aggregated Value Legend"
 msgstr "Aggregated Value Legend"
 
@@ -958,14 +958,8 @@ msgstr "Amount Per Capita"
 msgid "Amount Range"
 msgstr "Amount Range"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:346
-#: src/components/entities/GroupedChapterAccordion.tsx:85
-#: src/components/entities/GroupedFunctionalAccordion.tsx:71
-#: src/components/entities/GroupedFunctionalAccordion.tsx:123
-#: src/components/entities/GroupedFunctionalAccordion.tsx:174
-#: src/components/entities/GroupedSubchapterAccordion.tsx:90
-#: src/components/entities/GroupedSubchapterAccordion.tsx:144
-#: src/components/entities/GroupedSubchapterAccordion.tsx:191
+#: src/components/budget-explorer/BudgetTreemap.tsx:353
+#: src/components/entities/FinancialDataCard.tsx:80
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:108
 #: src/components/ui/FloatingQuickNav.tsx:249
 msgid "Analytics"
@@ -1061,7 +1055,7 @@ msgstr "Anyone with the public link will see this saved version."
 msgid "Apply"
 msgstr "Apply"
 
-#: src/routes/map.lazy.tsx:440
+#: src/routes/map.lazy.tsx:481
 msgid "Apply filters"
 msgstr "Apply filters"
 
@@ -1559,8 +1553,8 @@ msgstr "Challenge Question"
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:138
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:252
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:268
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:490
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:269
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:491
 msgid "Challenges"
 msgstr "Challenges"
 
@@ -1586,7 +1580,7 @@ msgstr "Chart Configuration"
 msgid "Chart Data Error"
 msgstr "Chart Data Error"
 
-#: src/routes/map.lazy.tsx:374
+#: src/routes/map.lazy.tsx:415
 msgid "Chart data is loading or not available."
 msgstr "Chart data is loading or not available."
 
@@ -1617,7 +1611,7 @@ msgstr "Chart view"
 #: src/components/ui/shortcuts.tsx:38
 #: src/hooks/useEntityViews.tsx:40
 #: src/routes/charts/index.lazy.tsx:170
-#: src/routes/index.tsx:89
+#: src/routes/index.tsx:90
 msgid "Charts"
 msgstr "Charts"
 
@@ -1727,11 +1721,11 @@ msgstr "Click the link below to explore all {type} classifications."
 msgid "Clipboard does not contain copied chart series."
 msgstr "Clipboard does not contain copied chart series."
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:288
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:289
 msgid "Clone"
 msgstr "Clone"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:260
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:261
 msgid "Clone from snapshot"
 msgstr "Clone from snapshot"
 
@@ -1739,7 +1733,7 @@ msgstr "Clone from snapshot"
 msgid "Clone latest"
 msgstr "Clone latest"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:239
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:240
 msgid "Clone latest snapshot"
 msgstr "Clone latest snapshot"
 
@@ -1755,11 +1749,11 @@ msgstr "Close"
 msgid "Close entity search dialog"
 msgstr "Close entity search dialog"
 
-#: src/routes/map.lazy.tsx:429
+#: src/routes/map.lazy.tsx:470
 msgid "Close filters"
 msgstr "Close filters"
 
-#: src/routes/map.lazy.tsx:321
+#: src/routes/map.lazy.tsx:362
 msgid "Close legend"
 msgstr "Close legend"
 
@@ -1965,7 +1959,7 @@ msgstr "Configure bins for this preset. Changes are local while this modal is op
 msgid "Configure Chart"
 msgstr "Configure Chart"
 
-#: src/routes/map.lazy.tsx:426
+#: src/routes/map.lazy.tsx:467
 msgid "Configure filters for the map view including period, account category, and normalization settings"
 msgstr "Configure filters for the map view including period, account category, and normalization settings"
 
@@ -2126,13 +2120,17 @@ msgstr "Copy Data"
 msgid "Copy error report to clipboard"
 msgstr "Copy error report to clipboard"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:382
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:384
 msgid "Copy failed"
 msgstr "Copy failed"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:443
 msgid "Copy link"
 msgstr "Copy link"
+
+#: src/components/entities/FinancialDataCard.tsx:88
+msgid "Copy prompt"
+msgstr "Copy prompt"
 
 #: src/components/charts/components/views/SeriesConfigView.tsx:374
 msgid "Copy series"
@@ -2165,11 +2163,11 @@ msgstr "Correct Choice"
 msgid "Correct!"
 msgstr "Correct!"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:410
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:412
 msgid "Could not copy map configuration"
 msgstr "Could not copy map configuration"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:390
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:392
 msgid "Could not copy series to clipboard"
 msgstr "Could not copy series to clipboard"
 
@@ -2260,7 +2258,7 @@ msgstr "Counties"
 #: src/components/maps/charts/UatDataCharts.tsx:102
 #: src/components/maps/HeatmapDataTable.tsx:185
 #: src/components/maps/HeatmapDataTable.tsx:483
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1385
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1387
 #: src/routes/entity-analytics.lazy.tsx:234
 msgid "County"
 msgstr "County"
@@ -2303,7 +2301,7 @@ msgstr "Coverage quality still depends on connection rates and settlement densit
 msgid "Create a chart for this entity to start tracking its financial evolution."
 msgstr "Create a chart for this entity to start tracking its financial evolution."
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:240
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:241
 msgid "Create a new map using the latest saved snapshot."
 msgstr "Create a new map using the latest saved snapshot."
 
@@ -2341,7 +2339,7 @@ msgstr "Create editable copy"
 msgid "Create empty map"
 msgstr "Create empty map"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:251
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:252
 msgid "Create from latest"
 msgstr "Create from latest"
 
@@ -2369,8 +2367,8 @@ msgstr "Creating map..."
 msgid "Creating…"
 msgstr "Creating…"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1394
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1464
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1396
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1466
 msgid "CUI"
 msgstr "CUI"
 
@@ -2475,7 +2473,7 @@ msgid "Data series (analytics)"
 msgstr "Data series (analytics)"
 
 #. placeholder {0}: draft.series.length + 1
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:232
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:234
 msgid "Data series {0}"
 msgstr "Data series {0}"
 
@@ -2507,7 +2505,7 @@ msgstr "Data sources and licensing"
 msgid "Data storage and retention"
 msgstr "Data storage and retention"
 
-#: src/routes/map.lazy.tsx:343
+#: src/routes/map.lazy.tsx:384
 msgid "Data Table View"
 msgstr "Data Table View"
 
@@ -3129,7 +3127,7 @@ msgstr "Enter series label..."
 #: src/components/filters/MapFilter.tsx:278
 #: src/components/filters/MapFilter.tsx:455
 #: src/hooks/useEntityViews.tsx:43
-#: src/routes/index.tsx:82
+#: src/routes/index.tsx:83
 msgid "Entities"
 msgstr "Entities"
 
@@ -3212,7 +3210,7 @@ msgstr "Error Loading Chart Data"
 msgid "Error loading data"
 msgstr "Error loading data"
 
-#: src/routes/map.lazy.tsx:253
+#: src/routes/map.lazy.tsx:294
 msgid "Error loading data:"
 msgstr "Error loading data:"
 
@@ -3460,19 +3458,19 @@ msgstr "Exploration Progress"
 msgid "Explore budget classifications to understand how public spending is organized and categorized"
 msgstr "Explore budget classifications to understand how public spending is organized and categorized"
 
-#: src/routes/map.lazy.tsx:456
+#: src/routes/map.lazy.tsx:497
 msgid "Explore choropleth maps of public spending by UAT/County with per-capita or total normalization."
 msgstr "Explore choropleth maps of public spending by UAT/County with per-capita or total normalization."
 
-#: src/routes/index.tsx:69
+#: src/routes/index.tsx:70
 msgid "Explore data through a map."
 msgstr "Explore data through a map."
 
-#: src/routes/index.tsx:90
+#: src/routes/index.tsx:91
 msgid "Explore data through charts."
 msgstr "Explore data through charts."
 
-#: src/routes/index.tsx:83
+#: src/routes/index.tsx:84
 msgid "Explore entities by aggregated values."
 msgstr "Explore entities by aggregated values."
 
@@ -3484,7 +3482,7 @@ msgstr "Explore Full Map"
 msgid "Explore more paths"
 msgstr "Explore more paths"
 
-#: src/routes/index.tsx:76
+#: src/routes/index.tsx:77
 msgid "Explore national budget."
 msgstr "Explore national budget."
 
@@ -3590,7 +3588,7 @@ msgstr "Failed to export configuration"
 msgid "Failed to import configuration file"
 msgstr "Failed to import configuration file"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:504
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:506
 msgid "Failed to import map configuration"
 msgstr "Failed to import map configuration"
 
@@ -3718,7 +3716,7 @@ msgstr "Filtered"
 #: src/components/entities/EntityReports.tsx:142
 #: src/components/filters/EntityAnalyticsFilter.tsx:422
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:96
-#: src/routes/map.lazy.tsx:424
+#: src/routes/map.lazy.tsx:465
 msgid "Filters"
 msgstr "Filters"
 
@@ -3969,8 +3967,8 @@ msgstr "General"
 msgid "Generate random color"
 msgstr "Generate random color"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1693
-#: src/routes/map.lazy.tsx:300
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1704
+#: src/routes/map.lazy.tsx:341
 msgid "geo-spatial.org"
 msgstr "geo-spatial.org"
 
@@ -3984,8 +3982,8 @@ msgstr "Geographical View"
 msgid "GeoJSON dataset"
 msgstr "GeoJSON dataset"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1685
-#: src/routes/map.lazy.tsx:292
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1696
+#: src/routes/map.lazy.tsx:333
 msgid "GeoJSON source:"
 msgstr "GeoJSON source:"
 
@@ -4029,7 +4027,7 @@ msgstr "Go to Entity Table"
 msgid "Go to homepage"
 msgstr "Go to homepage"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:1004
+#: src/components/budget-explorer/BudgetTreemap.tsx:1000
 msgid "Go to Main Categories"
 msgstr "Go to Main Categories"
 
@@ -4173,7 +4171,7 @@ msgstr "Hide advanced settings"
 msgid "Hide details"
 msgstr "Hide details"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1855
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1866
 msgid "Hide Map Controls"
 msgstr "Hide Map Controls"
 
@@ -4674,7 +4672,7 @@ msgid "Legal Commitments"
 msgstr "Legal Commitments"
 
 #: src/components/charts/components/chart-quick-config/ChartQuickConfig.tsx:160
-#: src/routes/map.lazy.tsx:316
+#: src/routes/map.lazy.tsx:357
 msgid "Legend"
 msgstr "Legend"
 
@@ -4795,8 +4793,8 @@ msgstr "Load snapshot"
 msgid "Loading Academy"
 msgstr "Loading Academy"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1728
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1898
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1739
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1909
 msgid "Loading advanced map analytics..."
 msgstr "Loading advanced map analytics..."
 
@@ -4804,7 +4802,7 @@ msgstr "Loading advanced map analytics..."
 msgid "Loading alert…"
 msgstr "Loading alert…"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2048
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2059
 msgid "Loading analytics data..."
 msgstr "Loading analytics data..."
 
@@ -4821,7 +4819,7 @@ msgstr "Loading chart configuration..."
 msgid "Loading chart data..."
 msgstr "Loading chart data..."
 
-#: src/features/challenges/components/analysis/budget-item-analytics.tsx:557
+#: src/features/challenges/components/analysis/budget-item-analytics.tsx:698
 msgid "Loading chart data…"
 msgstr "Loading chart data…"
 
@@ -4829,7 +4827,7 @@ msgstr "Loading chart data…"
 msgid "Loading comments..."
 msgstr "Loading comments..."
 
-#: src/routes/map.lazy.tsx:224
+#: src/routes/map.lazy.tsx:265
 msgid "Loading data..."
 msgstr "Loading data..."
 
@@ -4841,8 +4839,8 @@ msgstr "Loading dataset dimensions..."
 msgid "Loading details..."
 msgstr "Loading details..."
 
-#: src/routes/map.lazy.tsx:228
-#: src/routes/map.lazy.tsx:397
+#: src/routes/map.lazy.tsx:269
+#: src/routes/map.lazy.tsx:438
 msgid "Loading heatmap data..."
 msgstr "Loading heatmap data..."
 
@@ -4851,7 +4849,7 @@ msgstr "Loading heatmap data..."
 msgid "Loading interactive content..."
 msgstr "Loading interactive content..."
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:244
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:245
 msgid "Loading latest snapshot..."
 msgstr "Loading latest snapshot..."
 
@@ -4859,11 +4857,11 @@ msgstr "Loading latest snapshot..."
 msgid "Loading lesson content..."
 msgstr "Loading lesson content..."
 
-#: src/routes/map.lazy.tsx:226
+#: src/routes/map.lazy.tsx:267
 msgid "Loading map and heatmap data..."
 msgstr "Loading map and heatmap data..."
 
-#: src/routes/map.lazy.tsx:230
+#: src/routes/map.lazy.tsx:271
 msgid "Loading map data..."
 msgstr "Loading map data..."
 
@@ -4873,13 +4871,13 @@ msgstr "Loading map editor..."
 
 #: src/components/entities/views/MapView.tsx:183
 #: src/components/entities/views/MapView.tsx:184
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1743
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1750
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1913
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1920
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:672
-#: src/routes/map.lazy.tsx:262
-#: src/routes/map.lazy.tsx:263
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1754
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1761
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1924
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1931
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:830
+#: src/routes/map.lazy.tsx:303
+#: src/routes/map.lazy.tsx:304
 msgid "Loading map..."
 msgstr "Loading map..."
 
@@ -4895,16 +4893,16 @@ msgstr "Loading public map..."
 msgid "Loading reports…"
 msgstr "Loading reports…"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:265
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:266
 msgid "Loading snapshots..."
 msgstr "Loading snapshots..."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2014
-#: src/routes/map.lazy.tsx:357
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2025
+#: src/routes/map.lazy.tsx:398
 msgid "Loading table data..."
 msgstr "Loading table data..."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:714
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:872
 msgid "Loading view…"
 msgstr "Loading view…"
 
@@ -4926,7 +4924,7 @@ msgstr "Loading…"
 msgid "Local backup failed. Exporting configuration anyway."
 msgstr "Local backup failed. Exporting configuration anyway."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:271
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:272
 msgid "Local Budgets 2026"
 msgstr "Local Budgets 2026"
 
@@ -4934,7 +4932,7 @@ msgstr "Local Budgets 2026"
 msgid "Local snapshot restored"
 msgstr "Local snapshot restored"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1710
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1721
 msgid "Local snapshots"
 msgstr "Local snapshots"
 
@@ -4942,7 +4940,7 @@ msgstr "Local snapshots"
 msgid "Local Snapshots"
 msgstr "Local Snapshots"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1709
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1720
 msgid "Local snapshots ({localSnapshotCount})"
 msgstr "Local snapshots ({localSnapshotCount})"
 
@@ -4995,7 +4993,7 @@ msgstr "MAD robust z-score"
 msgid "Main aggregated"
 msgstr "Main aggregated"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:917
+#: src/components/budget-explorer/BudgetTreemap.tsx:913
 #: src/components/entities/LineItemsAnalytics.tsx:160
 msgid "Main Categories"
 msgstr "Main Categories"
@@ -5088,24 +5086,24 @@ msgstr "Manual"
 #: src/components/sidebar/nav-main.tsx:26
 #: src/components/ui/shortcuts.tsx:44
 #: src/hooks/useEntityViews.tsx:37
-#: src/routes/index.tsx:68
+#: src/routes/index.tsx:69
 msgid "Map"
 msgstr "Map"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:408
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:410
 msgid "Map configuration copied to clipboard"
 msgstr "Map configuration copied to clipboard"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:170
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:501
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:503
 msgid "Map configuration imported"
 msgstr "Map configuration imported"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:492
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:494
 msgid "Map configuration in clipboard is invalid"
 msgstr "Map configuration in clipboard is invalid"
 
-#: src/routes/map.lazy.tsx:255
+#: src/routes/map.lazy.tsx:296
 msgid "Map data not available."
 msgstr "Map data not available."
 
@@ -5129,8 +5127,8 @@ msgstr "Map editor"
 msgid "Map Filters"
 msgstr "Map Filters"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1736
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1906
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1747
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1917
 msgid "Map geometry is unavailable."
 msgstr "Map geometry is unavailable."
 
@@ -5480,8 +5478,8 @@ msgstr "My interactive budget map…"
 #: src/components/maps/utils.ts:104
 #: src/components/maps/utils.ts:128
 #: src/components/maps/utils.ts:157
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1394
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1464
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1396
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1466
 msgid "N/A"
 msgstr "N/A"
 
@@ -5493,7 +5491,7 @@ msgstr "Name"
 
 #: src/components/sidebar/nav-main.tsx:36
 #: src/routes/budget-explorer.lazy.tsx:571
-#: src/routes/index.tsx:75
+#: src/routes/index.tsx:76
 msgid "National Budget"
 msgstr "National Budget"
 
@@ -5611,9 +5609,9 @@ msgstr "No {0} found matching \"{searchTerm}\""
 msgid "No active notifications"
 msgstr "No active notifications"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1399
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1779
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1948
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1401
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1790
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1959
 msgid "No active series selected."
 msgstr "No active series selected."
 
@@ -5680,7 +5678,7 @@ msgstr "No classifications found"
 msgid "No commitment data available"
 msgstr "No commitment data available"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:423
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:425
 msgid "No compatible series found in clipboard"
 msgstr "No compatible series found in clipboard"
 
@@ -5713,15 +5711,15 @@ msgstr "No data available"
 msgid "No Data Available"
 msgstr "No Data Available"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2026
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2037
 msgid "No data available for table."
 msgstr "No data available for table."
 
-#: src/routes/map.lazy.tsx:280
+#: src/routes/map.lazy.tsx:321
 msgid "No data available for the map."
 msgstr "No data available for the map."
 
-#: src/routes/map.lazy.tsx:361
+#: src/routes/map.lazy.tsx:402
 msgid "No data available for the table."
 msgstr "No data available for the table."
 
@@ -5741,7 +5739,7 @@ msgstr "No data available to display financial evolution."
 msgid "No Data Found"
 msgstr "No Data Found"
 
-#: src/features/challenges/components/analysis/budget-item-analytics-context.ts:275
+#: src/features/challenges/components/analysis/budget-item-analytics-context.ts:283
 msgid "No data is available for this analytics view."
 msgstr "No data is available for this analytics view."
 
@@ -5757,7 +5755,7 @@ msgstr "No data series alerts"
 msgid "No data series yet."
 msgstr "No data series yet."
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:994
+#: src/components/budget-explorer/BudgetTreemap.tsx:990
 msgid "No data within the selected range."
 msgstr "No data within the selected range."
 
@@ -5790,7 +5788,7 @@ msgstr "No distinct outliers found in the current dataset."
 msgid "No distinct outliers found. Try adjusting filters."
 msgstr "No distinct outliers found. Try adjusting filters."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1467
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1469
 msgid "No enabled series"
 msgstr "No enabled series"
 
@@ -5800,7 +5798,7 @@ msgstr "No enabled series data available to display."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:538
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:576
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2022
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2033
 msgid "No enabled series."
 msgstr "No enabled series."
 
@@ -5954,7 +5952,7 @@ msgstr "Non-treasury payments"
 msgid "none"
 msgstr "none"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1532
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1534
 msgid "None"
 msgstr "None"
 
@@ -6044,8 +6042,8 @@ msgid "Notes"
 msgstr "Notes"
 
 #: src/components/charts/components/chart-config/SeriesToolbar.tsx:18
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:425
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:537
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:427
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:539
 msgid "Nothing to paste"
 msgstr "Nothing to paste"
 
@@ -6126,7 +6124,7 @@ msgid "Only you can access this saved version."
 msgstr "Only you can access this saved version."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:451
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:227
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:228
 #: src/features/learning/components/interactive/HandsOnExplorer.tsx:106
 msgid "Open"
 msgstr "Open"
@@ -6176,7 +6174,7 @@ msgstr "Open entity search dialog"
 msgid "Open feedback dialog"
 msgstr "Open feedback dialog"
 
-#: src/routes/map.lazy.tsx:417
+#: src/routes/map.lazy.tsx:458
 msgid "Open filters"
 msgstr "Open filters"
 
@@ -6212,11 +6210,11 @@ msgstr "Open in forum"
 msgid "Open in SICAP.ai"
 msgstr "Open in SICAP.ai"
 
-#: src/routes/map.lazy.tsx:309
+#: src/routes/map.lazy.tsx:350
 msgid "Open legend"
 msgstr "Open legend"
 
-#: src/features/advanced-map-analytics/components/map-analytics-public-preview-card.tsx:83
+#: src/features/advanced-map-analytics/components/map-analytics-public-preview-card.tsx:84
 msgid "Open map description"
 msgstr "Open map description"
 
@@ -6384,7 +6382,7 @@ msgstr "Paste config"
 msgid "Paste data from a spreadsheet. Each line should contain a year and a value, separated by a space or tab."
 msgstr "Paste data from a spreadsheet. Each line should contain a year and a value, separated by a space or tab."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:539
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:541
 msgid "Paste failed"
 msgstr "Paste failed"
 
@@ -6675,7 +6673,7 @@ msgid "Product"
 msgstr "Product"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:203
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:188
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:189
 msgid "Progress"
 msgstr "Progress"
 
@@ -6964,7 +6962,7 @@ msgstr "Required for core functionality like security and preferences. Always on
 msgid "Requires variation; rule is skipped if standard deviation is zero."
 msgstr "Requires variation; rule is skipped if standard deviation is zero."
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:1013
+#: src/components/budget-explorer/BudgetTreemap.tsx:1009
 #: src/components/budget-explorer/FilteredSpendingInfo.tsx:189
 msgid "Reset amount filter"
 msgstr "Reset amount filter"
@@ -7059,7 +7057,7 @@ msgstr "Review Path"
 msgid "Robust anomaly detection based on median absolute deviation (MAD), less sensitive to extreme outliers than z-score."
 msgstr "Robust anomaly detection based on median absolute deviation (MAD), less sensitive to extreme outliers than z-score."
 
-#: src/routes/map.lazy.tsx:455
+#: src/routes/map.lazy.tsx:496
 msgid "Romania spending heatmap - Transparenta.eu"
 msgstr "Romania spending heatmap - Transparenta.eu"
 
@@ -7127,7 +7125,7 @@ msgstr "Save cookie preferences"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:462
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:132
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1970
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1981
 msgid "Save snapshot"
 msgstr "Save snapshot"
 
@@ -7148,7 +7146,7 @@ msgid "Save your progress"
 msgstr "Save your progress"
 
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:129
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1970
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1981
 #: src/routes/alerts/$alertId/index.lazy.tsx:124
 msgid "Saving…"
 msgstr "Saving…"
@@ -7187,7 +7185,7 @@ msgstr "Search"
 msgid "Search {0}..."
 msgstr "Search {0}..."
 
-#: src/components/entities/FloatingEntitySearch.tsx:84
+#: src/components/entities/FloatingEntitySearch.tsx:89
 msgid "Search and select an entity to navigate to its page."
 msgstr "Search and select an entity to navigate to its page."
 
@@ -7246,7 +7244,7 @@ msgstr "Search Entities"
 msgid "Search entities (ex: Municipiul Arad)"
 msgstr "Search entities (ex: Municipiul Arad)"
 
-#: src/components/entities/EntitySearch/index.tsx:28
+#: src/components/entities/EntitySearch/index.tsx:29
 msgid "Search entities by name or CUI..."
 msgstr "Search entities by name or CUI..."
 
@@ -7259,8 +7257,8 @@ msgstr "Search entity name"
 msgid "Search entity types (ex: Hospital)"
 msgstr "Search entity types (ex: Hospital)"
 
-#: src/components/entities/FloatingEntitySearch.tsx:70
-#: src/components/entities/FloatingEntitySearch.tsx:82
+#: src/components/entities/FloatingEntitySearch.tsx:75
+#: src/components/entities/FloatingEntitySearch.tsx:87
 msgid "Search for another entity"
 msgstr "Search for another entity"
 
@@ -7349,11 +7347,11 @@ msgstr "Select a metric card or dataset from the list to load full history."
 msgid "Select a predefined dataset to track"
 msgstr "Select a predefined dataset to track"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:261
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:262
 msgid "Select a snapshot to clone into a new map."
 msgstr "Select a snapshot to clone into a new map."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:379
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:380
 msgid "Select a topic to begin"
 msgstr "Select a topic to begin"
 
@@ -7413,7 +7411,7 @@ msgstr "Select Series Type"
 msgid "Select specific years. If none selected, all years will be shown."
 msgstr "Select specific years. If none selected, all years will be shown."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:290
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:291
 msgid "Select topic"
 msgstr "Select topic"
 
@@ -7474,7 +7472,7 @@ msgstr "Series"
 msgid "Series Color"
 msgstr "Series Color"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:388
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:390
 msgid "Series copied to clipboard"
 msgstr "Series copied to clipboard"
 
@@ -7654,7 +7652,7 @@ msgstr "Show less"
 msgid "Show Less"
 msgstr "Show Less"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1855
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1866
 msgid "Show Map Controls"
 msgstr "Show Map Controls"
 
@@ -7975,7 +7973,7 @@ msgstr "Step Successfully Finished"
 msgid "Steps"
 msgstr "Steps"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1713
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1724
 msgid "Stored only in this browser on this device."
 msgstr "Stored only in this browser on this device."
 
@@ -8436,7 +8434,7 @@ msgstr "Top 15 Counties by Total Amount"
 msgid "Top 15 UATs by Total Amount"
 msgstr "Top 15 UATs by Total Amount"
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:285
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:286
 msgid "Topic"
 msgstr "Topic"
 
@@ -8444,7 +8442,7 @@ msgstr "Topic"
 msgid "total"
 msgstr "total"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:1071
+#: src/components/budget-explorer/BudgetTreemap.tsx:1067
 #: src/components/charts/components/series-config/SeriesFilter.tsx:409
 #: src/components/commitments/DetailTable.tsx:703
 #: src/components/common/NormalizationSelector.tsx:21
@@ -8504,7 +8502,7 @@ msgstr "Total receipts"
 msgid "Total Spending"
 msgstr "Total Spending"
 
-#: src/components/entities/FinancialDataCard.tsx:143
+#: src/components/entities/FinancialDataCard.tsx:194
 msgid "Total:"
 msgstr "Total:"
 
@@ -8554,13 +8552,13 @@ msgstr "Try a different search term or sorting."
 msgid "Try again"
 msgstr "Try again"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1562
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1774
 #: src/features/learning/components/assessment/Quiz.tsx:174
 #: src/routes/settings/notifications.tsx:160
 msgid "Try Again"
 msgstr "Try Again"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:483
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:549
 msgid "Try again in a few moments."
 msgstr "Try again in a few moments."
 
@@ -8590,7 +8588,7 @@ msgstr "Type your answer..."
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:76
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:328
 #: src/components/maps/charts/UatDataCharts.tsx:102
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1378
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1380
 #: src/lib/chart-filter-utils.ts:39
 msgid "UAT"
 msgstr "UAT"
@@ -8680,7 +8678,7 @@ msgstr "Unknown"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:850
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:894
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:1739
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1280
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1282
 msgid "Unknown county"
 msgstr "Unknown county"
 
@@ -8755,8 +8753,8 @@ msgid "Untitled Chart"
 msgstr "Untitled Chart"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:132
-#: src/features/advanced-map-analytics/components/map-analytics-public-preview-card.tsx:73
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1533
+#: src/features/advanced-map-analytics/components/map-analytics-public-preview-card.tsx:74
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1535
 msgid "Untitled map"
 msgstr "Untitled map"
 
@@ -8987,7 +8985,7 @@ msgstr "View all classifications"
 msgid "View all reports"
 msgstr "View all reports"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:1081
+#: src/components/budget-explorer/BudgetTreemap.tsx:1077
 msgid "View as Chart"
 msgstr "View as Chart"
 
@@ -8998,7 +8996,7 @@ msgstr "View as Chart"
 msgid "View Chart"
 msgstr "View Chart"
 
-#: src/components/budget-explorer/BudgetTreemap.tsx:985
+#: src/components/budget-explorer/BudgetTreemap.tsx:981
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:190
 #: src/features/learning/components/cards/LearningPathCard.tsx:75
 msgid "View Details"
@@ -9016,7 +9014,7 @@ msgstr "View in Entity Analytics"
 msgid "View map details and status."
 msgstr "View map details and status."
 
-#: src/routes/map.lazy.tsx:318
+#: src/routes/map.lazy.tsx:359
 msgid "View the color scale and values for the heatmap visualization"
 msgstr "View the color scale and values for the heatmap visualization"
 
@@ -9078,7 +9076,7 @@ msgstr "Way off!"
 msgid "We collect different types of information depending on how you use our Service:"
 msgstr "We collect different types of information depending on how you use our Service:"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1552
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1764
 msgid "We could not load the analysis."
 msgstr "We could not load the analysis."
 
