@@ -157,7 +157,13 @@ vi.mock(
         </button>
         <button
           type="button"
-          onClick={() => onEntityCuiChange?.('87654321')}
+          onClick={() =>
+            onEntityCuiChange?.({
+              entityCui: '87654321',
+              entityName: 'Cluj-Napoca',
+              countyName: 'Cluj',
+            })
+          }
         >
           Select entity from map
         </button>
@@ -610,12 +616,16 @@ describe('PrimarieEntityIndexRoutePage', () => {
     )
 
     expect(
-      screen.getByRole('heading', { name: 'Open this city hall?' }),
+      screen.getByRole('heading', {
+        name: 'Open the analysis for Cluj-Napoca?',
+      }),
     ).toBeInTheDocument()
+    expect(screen.getByText('City Hall Cluj-Napoca')).toBeInTheDocument()
+    expect(screen.getByText('County: Cluj')).toBeInTheDocument()
 
     expect(navigateMock).not.toHaveBeenCalled()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Open city hall' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Open analysis' }))
 
     await waitFor(() => {
       expect(navigateMock).toHaveBeenCalled()
@@ -650,14 +660,20 @@ describe('PrimarieEntityIndexRoutePage', () => {
     )
 
     expect(
-      screen.getByRole('heading', { name: 'Deschizi această primărie?' }),
+      screen.getByRole('heading', {
+        name: 'Deschizi analiza pentru Cluj-Napoca?',
+      }),
     ).toBeInTheDocument()
+    expect(screen.getByText('Primăria Cluj-Napoca')).toBeInTheDocument()
+    expect(screen.getByText('Județ: Cluj')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Anulează' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Rămâi aici' }))
 
     await waitFor(() => {
       expect(
-        screen.queryByRole('heading', { name: 'Deschizi această primărie?' }),
+        screen.queryByRole('heading', {
+          name: 'Deschizi analiza pentru Cluj-Napoca?',
+        }),
       ).not.toBeInTheDocument()
     })
 

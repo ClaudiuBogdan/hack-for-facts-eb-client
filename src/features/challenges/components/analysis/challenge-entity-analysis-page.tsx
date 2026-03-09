@@ -40,6 +40,7 @@ import {
 import type { ChallengeLocale } from '../../types'
 import type { PublicMapViewport } from '@/features/advanced-map-analytics/hooks/use-public-map-viewport'
 import { areMapCentersEqual } from '@/features/advanced-map-analytics/map-viewport-utils'
+import type { MapEntitySelection } from '@/features/advanced-map-analytics/types/map-entity-selection'
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics'
 import { ChallengeEntityAnalysisLoadingShell } from './challenge-entity-analysis-loading-shell'
 import { ChallengeEntityAnalysisExplainer } from './challenge-entity-analysis-explainer'
@@ -102,7 +103,7 @@ type ChallengeEntityAnalysisPageProps = {
   readonly onAnalyticsTargetChange?: (
     target: BudgetItemAnalyticsSearchState | null,
   ) => void
-  readonly onEntityCuiChange?: (entityCui: string) => void
+  readonly onEntityCuiChange?: (selection: MapEntitySelection) => void
   readonly onEntityResolved?: () => void
 }
 

@@ -16,11 +16,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import type { MapEntitySelection } from '@/features/advanced-map-analytics/types/map-entity-selection'
 import {
   ChallengeEntityAnalysisPage,
   type ChallengeEntityAnalysisPageState,
 } from '@/features/challenges/components/analysis/challenge-entity-analysis-page'
 import type { ChallengeEntityInitialSettings } from '@/features/challenges/components/analysis/challenge-entity-analysis-queries'
+import type { BudgetItemAnalyticsSearchState } from '@/features/challenges/components/analysis/budget-item-analytics-search-state'
 import { useCampaignProgress } from '@/features/campaigns/buget/hooks/use-campaign-progress'
 import {
   CHALLENGE_ENTITY_ANALYSIS_INS_SEARCH_KEYS,
@@ -106,8 +108,53 @@ function toPageState(
   }
 }
 
-type PendingMapEntitySelection = {
-  readonly entityCui: string
+function normalizeSelectionText(value: string | undefined): string | undefined {
+  const trimmedValue = value?.trim()
+  return trimmedValue ? trimmedValue : undefined
+}
+
+function formatCityHallLabel(entityName: string, language: 'ro' | 'en'): string {
+  const trimmedEntityName = entityName.trim()
+
+  if (!trimmedEntityName) {
+    return language === 'en' ? 'Selected city hall' : 'Primăria selectată'
+  }
+
+  const lowerEntityName = trimmedEntityName.toLowerCase()
+  const hasRomanianPrefix =
+    lowerEntityName.startsWith('primăria ') ||
+    lowerEntityName.startsWith('primaria ')
+  const hasEnglishPrefix = lowerEntityName.startsWith('city hall ')
+
+  if (language === 'en') {
+    if (hasEnglishPrefix) {
+      return trimmedEntityName
+    }
+
+    if (hasRomanianPrefix) {
+      const strippedEntityName = lowerEntityName.startsWith('primăria ')
+        ? trimmedEntityName.slice('primăria '.length)
+        : trimmedEntityName.slice('primaria '.length)
+
+      return `City Hall ${strippedEntityName}`
+    }
+
+    return `City Hall ${trimmedEntityName}`
+  }
+
+  if (lowerEntityName.startsWith('primăria ')) {
+    return trimmedEntityName
+  }
+
+  if (lowerEntityName.startsWith('primaria ')) {
+    return `Primăria ${trimmedEntityName.slice('primaria '.length)}`
+  }
+
+  if (hasEnglishPrefix) {
+    return `Primăria ${trimmedEntityName.slice('city hall '.length)}`
+  }
+
+  return `Primăria ${trimmedEntityName}`
 }
 
 export function PrimarieEntityRoutePage() {
@@ -129,7 +176,7 @@ export function PrimarieEntityRoutePage() {
   } = useCampaignProgress()
   const [isEntityResolved, setIsEntityResolved] = useState(false)
   const [pendingMapEntitySelection, setPendingMapEntitySelection] =
-    useState<PendingMapEntitySelection | null>(null)
+    useState<MapEntitySelection | null>(null)
   const [isConfirmingMapEntitySelection, setIsConfirmingMapEntitySelection] =
     useState(false)
   const syncedEntityCuiRef = useRef<string | null>(null)
@@ -341,18 +388,50 @@ export function PrimarieEntityRoutePage() {
     })
   }, [navigate, pendingMapEntitySelection])
 
+  const handleMapEntitySelection = useCallback(
+    (selection: MapEntitySelection) => {
+      setPendingMapEntitySelection(selection)
+    },
+    [],
+  )
+
+  const handleAnalyticsTargetChange = useCallback(
+    (target: BudgetItemAnalyticsSearchState | null) => {
+      updateSearch({
+        analytics: encodeChallengeEntityAnalyticsSearchState(target),
+      })
+    },
+    [updateSearch],
+  )
+
+  const handleEntityResolved = useCallback(() => {
+    setIsEntityResolved(true)
+  }, [])
+
+  const dialogLanguage = normalizedSearch.lang === 'en' ? 'en' : 'ro'
+  const selectedEntityName = normalizeSelectionText(
+    pendingMapEntitySelection?.entityName,
+  )
+  const selectedCountyName = normalizeSelectionText(
+    pendingMapEntitySelection?.countyName,
+  )
+  const selectedCityHallLabel = selectedEntityName
+    ? formatCityHallLabel(selectedEntityName, dialogLanguage)
+    : dialogLanguage === 'en'
+      ? 'Selected city hall'
+      : 'Primăria selectată'
   const confirmationTitle =
-    normalizedSearch.lang === 'en'
-      ? 'Open this city hall?'
-      : 'Deschizi această primărie?'
+    dialogLanguage === 'en'
+      ? 'Switch to a different city hall?'
+      : 'Schimbi primăria?'
   const confirmationDescription =
-    normalizedSearch.lang === 'en'
-      ? 'We will keep your current analysis filters and open the selected city hall from the map preview.'
-      : 'Păstrăm filtrele curente de analiză și deschidem primăria selectată din previzualizarea hărții.'
+    dialogLanguage === 'en'
+      ? 'Your current filters and view will be kept.'
+      : 'Filtrele și vizualizarea curentă rămân la fel.'
   const confirmationButtonLabel =
-    normalizedSearch.lang === 'en' ? 'Open city hall' : 'Deschide primăria'
+    dialogLanguage === 'en' ? 'Open analysis' : 'Deschide analiza'
   const cancelButtonLabel =
-    normalizedSearch.lang === 'en' ? 'Cancel' : 'Anulează'
+    dialogLanguage === 'en' ? 'Cancel' : 'Anulează'
 
   return (
     <>
@@ -366,15 +445,9 @@ export function PrimarieEntityRoutePage() {
         initialSettings={loaderData?.initialSettings}
         onStateChange={handleStateChange}
         onCommitmentsViewStateChange={handleCommitmentsViewStateChange}
-        onAnalyticsTargetChange={(target) =>
-          updateSearch({
-            analytics: encodeChallengeEntityAnalyticsSearchState(target),
-          })
-        }
-        onEntityCuiChange={(nextEntityCui) => {
-          setPendingMapEntitySelection({ entityCui: nextEntityCui })
-        }}
-        onEntityResolved={() => setIsEntityResolved(true)}
+        onAnalyticsTargetChange={handleAnalyticsTargetChange}
+        onEntityCuiChange={handleMapEntitySelection}
+        onEntityResolved={handleEntityResolved}
       />
 
       <Dialog
@@ -385,7 +458,7 @@ export function PrimarieEntityRoutePage() {
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{confirmationTitle}</DialogTitle>
             <DialogDescription>
@@ -394,12 +467,19 @@ export function PrimarieEntityRoutePage() {
           </DialogHeader>
 
           {pendingMapEntitySelection ? (
-            <div className="rounded-lg border border-border/60 bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-              CUI: {pendingMapEntitySelection.entityCui}
+            <div className="rounded-lg border border-border/60 bg-muted/40 px-4 py-3">
+              <p className="text-sm font-semibold text-foreground">
+                {selectedCityHallLabel}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {[selectedCountyName, `CUI ${pendingMapEntitySelection.entityCui}`]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </p>
             </div>
           ) : null}
 
-          <DialogFooter>
+          <DialogFooter className="sm:justify-between">
             <Button
               type="button"
               variant="outline"

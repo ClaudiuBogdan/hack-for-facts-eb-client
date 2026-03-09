@@ -73,6 +73,7 @@ import {
   parseMapConfigTransferInput,
   type ImportedMapConfig,
 } from '@/features/advanced-map-analytics/store/map-config-transfer';
+import type { MapEntitySelection } from '@/features/advanced-map-analytics/types/map-entity-selection';
 import { t } from '@lingui/core/macro';
 import { cn, getUserLocale } from '@/lib/utils';
 
@@ -118,7 +119,7 @@ interface MapAnalyticsWorkspaceProps {
   onBeforeExportConfig?: () => Promise<void> | void;
   layout?: 'full' | 'preview';
   previewContainerClassName?: string;
-  onEntityCuiSelect?: (entityCui: string) => void;
+  onEntityCuiSelect?: (selection: MapEntitySelection) => void;
 }
 
 // NOTE: Do not use module-scope t`` — it freezes the translation at import time.
@@ -1550,7 +1551,11 @@ export function MapAnalyticsWorkspace({
       }
 
       if (mode === 'public' && onEntityCuiSelect) {
-        onEntityCuiSelect(row.entityCui);
+        onEntityCuiSelect({
+          entityCui: row.entityCui,
+          entityName: row.uatName,
+          countyName: row.countyName,
+        });
         return;
       }
 
@@ -1570,8 +1575,9 @@ export function MapAnalyticsWorkspace({
 
       const directEntityCui = getEntityCuiFromUatProperties(properties);
       const sirutaCode = String(properties?.natcode ?? '').trim();
-      const metadataEntityCui =
-        sirutaCode.length > 0 ? uatMetadataBySirutaCode.get(sirutaCode)?.entityCui : undefined;
+      const metadata =
+        sirutaCode.length > 0 ? uatMetadataBySirutaCode.get(sirutaCode) : undefined;
+      const metadataEntityCui = metadata?.entityCui;
       const entityCui = directEntityCui ?? metadataEntityCui;
 
       if (!entityCui) {
@@ -1579,7 +1585,11 @@ export function MapAnalyticsWorkspace({
       }
 
       if (onEntityCuiSelect) {
-        onEntityCuiSelect(entityCui);
+        onEntityCuiSelect({
+          entityCui,
+          entityName: String(properties?.name ?? '').trim() || metadata?.uatName,
+          countyName: String(properties?.county ?? '').trim() || metadata?.countyName,
+        });
         return;
       }
 

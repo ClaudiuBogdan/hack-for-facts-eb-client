@@ -4,6 +4,7 @@ import {
   AdvancedMapAnalyticsUrlStateSchema,
   createDefaultAdvancedMapAnalyticsSeries,
 } from '@/schemas/advanced-map-analytics';
+import type { MapEntitySelection } from '@/features/advanced-map-analytics/types/map-entity-selection';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 
 const mapAnalyticsWorkspaceMock = vi.fn();
@@ -309,7 +310,7 @@ function getLatestWorkspaceProps(): {
     readOnly?: boolean;
   };
   mapDescription?: string;
-  onEntityCuiSelect?: (entityCui: string) => void;
+  onEntityCuiSelect?: (selection: MapEntitySelection) => void;
   mapState: AdvancedMapAnalyticsUrlState;
   setMapState: (
     updater:
@@ -326,7 +327,7 @@ function getLatestWorkspaceProps(): {
           readOnly?: boolean;
         };
         mapDescription?: string;
-        onEntityCuiSelect?: (entityCui: string) => void;
+        onEntityCuiSelect?: (selection: MapEntitySelection) => void;
         mapState: AdvancedMapAnalyticsUrlState;
         setMapState: (
           updater:

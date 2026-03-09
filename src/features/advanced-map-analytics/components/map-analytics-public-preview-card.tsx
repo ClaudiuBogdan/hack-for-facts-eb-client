@@ -8,6 +8,7 @@ import {
   useMapPreviewRuntimeState,
 } from '@/features/advanced-map-analytics/hooks/use-map-preview-runtime-state';
 import type { PublicMapViewport } from '@/features/advanced-map-analytics/hooks/use-public-map-viewport';
+import type { MapEntitySelection } from '@/features/advanced-map-analytics/types/map-entity-selection';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 import type { Currency, SeriesConfiguration } from '@/schemas/charts';
 import { t } from '@lingui/core/macro';
@@ -25,7 +26,7 @@ interface MapAnalyticsPublicPreviewCardProps {
   mapZoomOverride?: number;
   mapCenterOverride?: [number, number];
   onMapViewportChange?: (nextViewport: PublicMapViewport) => void;
-  onEntityCuiSelect?: (entityCui: string) => void;
+  onEntityCuiSelect?: (selection: MapEntitySelection) => void;
 }
 
 export function MapAnalyticsPublicPreviewCard({

@@ -1,4 +1,5 @@
 import { t } from '@lingui/core/macro'
+import type { MapEntitySelection } from '@/features/advanced-map-analytics/types/map-entity-selection'
 import type {
   AnalyticsFilterType,
   CommitmentsFilterType,
@@ -67,7 +68,7 @@ export type BudgetItemAnalyticsProps = {
     next?: 'functionare' | 'dezvoltare',
   ) => void
   readonly onYearChange?: (year: number) => void
-  readonly onEntityCuiChange?: (entityCui: string) => void
+  readonly onEntityCuiChange?: (selection: MapEntitySelection) => void
   readonly className?: string
 }
 

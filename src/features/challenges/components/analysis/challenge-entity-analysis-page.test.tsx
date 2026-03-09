@@ -5,6 +5,7 @@ import {
   DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
   CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS,
 } from './challenge-entity-public-maps'
+import type { MapEntitySelection } from '@/features/advanced-map-analytics/types/map-entity-selection'
 import type { EntityDetailsData, ExecutionLineItem } from '@/lib/api/entities'
 import type { ChallengeEntityAnalysisPageState } from './challenge-entity-analysis-page'
 import type { BudgetItemAnalyticsSearchState } from './budget-item-analytics-search-state'
@@ -227,7 +228,7 @@ vi.mock(
         | ((viewport: { mapZoom: number; mapCenter: [number, number] }) => void)
         | undefined
       const onEntityCuiSelect = props.onEntityCuiSelect as
-        | ((entityCui: string) => void)
+        | ((selection: MapEntitySelection) => void)
         | undefined
       return (
         <div data-testid="public-map-preview">
@@ -248,7 +249,13 @@ vi.mock(
           </button>
           <button
             type="button"
-            onClick={() => onEntityCuiSelect?.('87654321')}
+            onClick={() =>
+              onEntityCuiSelect?.({
+                entityCui: '87654321',
+                entityName: 'Cluj-Napoca',
+                countyName: 'Cluj',
+              })
+            }
           >
             Select entity from preview map
           </button>
@@ -615,7 +622,7 @@ function renderAnalysisPage(
     readonly commitmentsGrouping?: 'fn' | 'ec'
     readonly commitmentsDetailLevel?: 'chapter' | 'detailed'
     readonly analyticsTarget?: BudgetItemAnalyticsSearchState
-    readonly onEntityCuiChange?: (entityCui: string) => void
+    readonly onEntityCuiChange?: (selection: MapEntitySelection) => void
   } = {},
 ) {
   function TestHarness() {
@@ -1294,7 +1301,11 @@ describe('ChallengeEntityAnalysisPage', () => {
       screen.getByRole('button', { name: 'Select entity from preview map' }),
     )
 
-    expect(onEntityCuiChange).toHaveBeenCalledWith('87654321')
+    expect(onEntityCuiChange).toHaveBeenCalledWith({
+      entityCui: '87654321',
+      entityName: 'Cluj-Napoca',
+      countyName: 'Cluj',
+    })
   })
 
   it('builds analytics props from the current page state when a budget item requests analytics', async () => {
