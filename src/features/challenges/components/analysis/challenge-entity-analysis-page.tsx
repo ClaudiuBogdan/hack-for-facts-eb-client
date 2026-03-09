@@ -47,7 +47,6 @@ import { ChallengeCommitmentsExplainer } from './challenge-commitments-explainer
 import { ChallengeEntityFaqSection } from './challenge-entity-faq-section'
 import { ChallengeEntityViewNavigator } from './challenge-entity-view-navigator'
 import { ChallengeEntityAnalysisHeader } from './challenge-entity-analysis-header'
-import { ChallengeEntityAnomalySummary } from './challenge-entity-anomaly-summary'
 import {
   CHALLENGE_TREND_PERIOD,
   buildChallengeEntityAnalysisReportPeriod,
@@ -433,7 +432,7 @@ function localizeMapPreviewState(
   const localizedSeries = mapState.series.map((series) => {
     const localizedSeriesLabel =
       MAP_PREVIEW_SERIES_LABELS[pageLocale][
-        series.id as keyof typeof MAP_PREVIEW_SERIES_LABELS.ro
+      series.id as keyof typeof MAP_PREVIEW_SERIES_LABELS.ro
       ]
 
     if (
@@ -739,7 +738,7 @@ function hasNonDefaultTreemapFilters(
     state.reportType !== DEFAULT_TREEMAP_FILTER_STATE.reportType ||
     state.normalization !== DEFAULT_TREEMAP_FILTER_STATE.normalization ||
     state.treemapAccountCategory !==
-      DEFAULT_TREEMAP_FILTER_STATE.treemapAccountCategory ||
+    DEFAULT_TREEMAP_FILTER_STATE.treemapAccountCategory ||
     state.expenseType !== DEFAULT_TREEMAP_FILTER_STATE.expenseType ||
     state.treemapPrimary !== DEFAULT_TREEMAP_FILTER_STATE.treemapPrimary ||
     state.treemapDepth !== DEFAULT_TREEMAP_FILTER_STATE.treemapDepth ||
@@ -1757,7 +1756,7 @@ export function ChallengeEntityAnalysisPage({
           <p>
             {resolveErrorMessage(
               entityDetailsQuery.error ??
-                entityLineItemsQuery.error,
+              entityLineItemsQuery.error,
             )}
           </p>
           <Button type="button" variant="outline" onClick={handleRetry}>
@@ -2229,12 +2228,6 @@ export function ChallengeEntityAnalysisPage({
               onRetry={handleSubordinatesRetry}
               normalizationOptions={displayNormalizationOptions}
               showAllSearch={showAllSubordinatesSearch}
-            />
-
-            <ChallengeEntityAnomalySummary
-              locale={locale}
-              lineItems={entityLineItemsQuery.data?.nodes ?? []}
-              normalizationOptions={displayNormalizationOptions}
             />
 
             <DeferredSectionGate
