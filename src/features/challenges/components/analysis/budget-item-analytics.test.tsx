@@ -25,18 +25,19 @@ vi.mock('@tanstack/react-router', () => ({
     children,
     to,
     params,
+    ...props
   }: {
     children: React.ReactNode
     to: string
     params?: Record<string, string>
-  }) => {
+  } & Record<string, unknown>) => {
     const href = Object.entries(params ?? {}).reduce(
       (resolvedPath, [key, value]) =>
         resolvedPath.replace(`$${key}`, encodeURIComponent(value)),
       to,
     )
 
-    return <a href={href}>{children}</a>
+    return <a href={href} {...props}>{children}</a>
   },
   useNavigate: () => navigateMock,
 }))
@@ -233,6 +234,24 @@ describe('BudgetItemAnalytics', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('fn:65')).toBeInTheDocument()
     expect(screen.getByText('ec:10.01')).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'search fn' }),
+    ).toHaveAttribute('href', '/classifications/functional')
+    expect(
+      screen.getByRole('link', { name: 'search fn' }),
+    ).toHaveAttribute('target', '_blank')
+    expect(
+      screen.getByRole('link', { name: 'search fn' }),
+    ).toHaveAttribute('rel', 'noopener noreferrer')
+    expect(
+      screen.getByRole('link', { name: 'search ec' }),
+    ).toHaveAttribute('href', '/classifications/economic')
+    expect(
+      screen.getByRole('link', { name: 'search ec' }),
+    ).toHaveAttribute('target', '_blank')
+    expect(
+      screen.getByRole('link', { name: 'search ec' }),
+    ).toHaveAttribute('rel', 'noopener noreferrer')
     expect(screen.getByText('Budget execution evolution')).toBeInTheDocument()
     expect(screen.getByText('Map (2025)')).toBeInTheDocument()
     expect(screen.getByText('Execution')).toBeInTheDocument()
@@ -459,7 +478,7 @@ describe('BudgetItemAnalytics', () => {
     })
   })
 
-  it('clears analytics selection when the last active code is removed', () => {
+  it('keeps an empty analytics selection when the last active code is removed', () => {
     render(
       <BudgetItemAnalytics
         {...defaultAnalyticsProps}
@@ -472,7 +491,10 @@ describe('BudgetItemAnalytics', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Remove fn:65' }))
 
-    expect(defaultAnalyticsProps.onSelectionChange).toHaveBeenCalledWith(null)
+    expect(defaultAnalyticsProps.onSelectionChange).toHaveBeenCalledWith({
+      functionalCode: undefined,
+      economicCode: undefined,
+    })
   })
 
   it('updates the report type from the analytics controls', () => {

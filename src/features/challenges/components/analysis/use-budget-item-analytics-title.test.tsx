@@ -218,4 +218,17 @@ describe('useBudgetItemAnalyticsTitle', () => {
     )
     expect(result.current.seriesLabel).toBe('ec:10.99')
   })
+
+  it('falls back to the entity label when both analytics codes and subject label are empty', () => {
+    const { result } = renderHook(() =>
+      useBudgetItemAnalyticsTitle({
+        entityCui: '12345678',
+        subjectLabel: '',
+        language: 'en',
+      }),
+    )
+
+    expect(result.current.resolvedTitle).toBe('Town Hall of Example')
+    expect(result.current.seriesLabel).toBe('Town Hall of Example')
+  })
 })

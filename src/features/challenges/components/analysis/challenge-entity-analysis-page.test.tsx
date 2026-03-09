@@ -1664,7 +1664,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
   })
 
-  it('closes the analytics modal when the last fn/ec code is removed manually', async () => {
+  it('keeps the analytics modal open when all edited fn/ec codes are removed manually', async () => {
     renderAnalysisPage({
       analyticsTarget: {
         target: {
@@ -1685,13 +1685,20 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
 
     act(() => {
-      getLatestBudgetItemAnalyticsModalProps().analyticsProps.onSelectionChange?.(null)
+      getLatestBudgetItemAnalyticsModalProps().analyticsProps.onSelectionChange?.({})
     })
 
     await waitFor(() => {
-      expect(
-        screen.queryByTestId('budget-item-analytics-modal'),
-      ).not.toBeInTheDocument()
+      expect(getLatestBudgetItemAnalyticsModalProps()).toMatchObject({
+        open: true,
+        analyticsProps: {
+          context: {
+            functionalCode: undefined,
+            economicCode: undefined,
+            subjectLabel: '',
+          },
+        },
+      })
     })
   })
 

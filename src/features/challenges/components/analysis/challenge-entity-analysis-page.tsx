@@ -1321,12 +1321,12 @@ export function ChallengeEntityAnalysisPage({
           })
         },
         onSelectionChange: (selection) => {
-          const nextPath = buildBudgetItemAnalyticsPath(selection ?? {})
-
-          if (nextPath.length === 0) {
+          if (selection === null) {
             onAnalyticsTargetChange?.(null)
             return
           }
+
+          const nextPath = buildBudgetItemAnalyticsPath(selection)
 
           onAnalyticsTargetChange?.({
             target: {

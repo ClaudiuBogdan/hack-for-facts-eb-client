@@ -70,6 +70,8 @@ function buildAnalyticsCopy(language: BudgetItemAnalyticsResolvedViewState['lang
     ? {
         openChartPage: 'Open on the charts page',
         openMapPage: 'Open in map editor',
+        searchFunctionalLabel: 'search fn',
+        searchEconomicLabel: 'search ec',
         addFunctionalLabel: 'Add fn',
         addEconomicLabel: 'Add ec',
         functionalFieldLabel: 'Functional prefix',
@@ -95,6 +97,8 @@ function buildAnalyticsCopy(language: BudgetItemAnalyticsResolvedViewState['lang
     : {
         openChartPage: 'Deschide în pagina de grafice',
         openMapPage: 'Deschide în editorul de hărți',
+        searchFunctionalLabel: 'cauta fn',
+        searchEconomicLabel: 'cauta ec',
         addFunctionalLabel: 'Adaugă fn',
         addEconomicLabel: 'Adaugă ec',
         functionalFieldLabel: 'Prefix funcțional',
@@ -211,6 +215,42 @@ function getCodeEditorCopy(
     removeLabel: (code: string) =>
       language === 'en' ? `Remove ec:${code}` : `Elimină ec:${code}`,
   }
+}
+
+function ClassificationExplorerLink({
+  language,
+  type,
+}: {
+  readonly language: BudgetItemAnalyticsResolvedViewState['language']
+  readonly type: BudgetItemAnalyticsCodeType
+}) {
+  const copy = buildAnalyticsCopy(language)
+  const href =
+    type === 'fn'
+      ? '/classifications/functional'
+      : '/classifications/economic'
+  const label =
+    type === 'fn'
+      ? copy.searchFunctionalLabel
+      : copy.searchEconomicLabel
+
+  return (
+    <Button
+      asChild
+      variant="ghost"
+      className="h-auto rounded-full border border-border/60 bg-muted/60 px-3 py-1 text-xs font-semibold hover:bg-muted"
+    >
+      <Link
+        to={href}
+        title={label}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {label}
+        <ExternalLink className="ml-1.5 h-3.5 w-3.5" aria-hidden="true" />
+      </Link>
+    </Button>
+  )
 }
 
 type EditableAnalyticsCodeChipProps = {
@@ -815,16 +855,11 @@ function AnalyticsSelectionChips({ context }: BudgetItemAnalyticsSectionProps) {
         : { economicCode: nextValue }),
     }
 
-    if (!nextSelection.functionalCode && !nextSelection.economicCode) {
-      context.analyticsProps.onSelectionChange?.(null)
-      return
-    }
-
     context.analyticsProps.onSelectionChange?.(nextSelection)
   }
 
   return (
-    <div className="mt-4 flex flex-wrap gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <EditableAnalyticsCodeChip
         language={context.language}
         type="fn"
@@ -837,6 +872,19 @@ function AnalyticsSelectionChips({ context }: BudgetItemAnalyticsSectionProps) {
         value={context.normalizedEconomicCode}
         onChange={(nextValue) => handleCodeChange('ec', nextValue)}
       />
+    </div>
+  )
+}
+
+function AnalyticsSelectionLinks({
+  language,
+}: {
+  readonly language: BudgetItemAnalyticsResolvedViewState['language']
+}) {
+  return (
+    <div className="ml-auto flex items-center gap-2">
+      <ClassificationExplorerLink language={language} type="fn" />
+      <ClassificationExplorerLink language={language} type="ec" />
     </div>
   )
 }
@@ -924,7 +972,10 @@ export function BudgetItemAnalytics({
         <h2 className="mt-2 text-2xl font-black tracking-tight">
           {resolvedContext.subjectLabel}
         </h2>
-        <AnalyticsSelectionChips context={resolvedContext} />
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <AnalyticsSelectionChips context={resolvedContext} />
+          <AnalyticsSelectionLinks language={resolvedContext.language} />
+        </div>
       </div>
       <AnalyticsControls context={resolvedContext} />
       <div className="flex flex-col gap-5 px-6 py-5">

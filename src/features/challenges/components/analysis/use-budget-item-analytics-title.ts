@@ -70,16 +70,19 @@ export function useBudgetItemAnalyticsTitle(
     economicName ??
       (normalizedEconomicCode ? `ec:${normalizedEconomicCode}` : undefined),
   ].filter(Boolean)
+  const defaultFallbackLabel = input.language === 'en' ? 'Analytics' : 'Analiză'
+  const fallbackLabel =
+    input.subjectLabel || entityName || defaultFallbackLabel
   const seriesLabel =
     classificationLabels.length > 0
       ? classificationLabels.join(' · ')
-      : input.subjectLabel
+      : fallbackLabel
 
   return {
     resolvedTitle:
       classificationLabels.length > 0
         ? [entityName, seriesLabel].filter(Boolean).join(' · ')
-        : input.subjectLabel,
+        : fallbackLabel,
     seriesLabel,
   }
 }

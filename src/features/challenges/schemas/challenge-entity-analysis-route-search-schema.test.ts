@@ -64,6 +64,25 @@ describe('challenge entity analytics search normalization', () => {
     })
   })
 
+  it('preserves an explicitly empty analytics path so the modal can stay open without fn/ec filters', () => {
+    expect(
+      decodeChallengeEntityAnalyticsSearchState({
+        target: {
+          path: [],
+        },
+      }),
+    ).toEqual({
+      target: {
+        path: [],
+      },
+      view: {
+        tab: 'execution',
+        timeframe: 'selected',
+        commitmentsMetric: 'CREDITE_ANGAJAMENT',
+      },
+    })
+  })
+
   it('drops invalid analytics targets from the normalized search state', () => {
     expect(
       normalizeChallengeEntityAnalysisSearch({

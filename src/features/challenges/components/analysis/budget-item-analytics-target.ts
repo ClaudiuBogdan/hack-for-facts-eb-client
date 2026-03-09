@@ -101,8 +101,14 @@ export function normalizeBudgetItemAnalyticsTarget(
     return undefined
   }
 
-  const path = normalizeBudgetItemAnalyticsPath(target.path)
-  if (path.length === 0) {
+  if (!Array.isArray(target.path)) {
+    return undefined
+  }
+
+  const rawPath = target.path
+  const path = normalizeBudgetItemAnalyticsPath(rawPath)
+
+  if (rawPath.length > 0 && path.length === 0) {
     return undefined
   }
 

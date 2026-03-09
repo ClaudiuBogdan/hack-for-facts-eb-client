@@ -167,6 +167,26 @@ describe('buildBudgetItemAnalyticsFilters', () => {
     expect(result.commitmentsChartFilter).not.toHaveProperty('expense_types')
     expect(result.commitmentsMapFilter).not.toHaveProperty('expense_types')
   })
+
+  it('omits fn/ec prefixes when no analytics codes are selected', () => {
+    const result = buildBudgetItemAnalyticsFilters(
+      {
+        ...defaultContext,
+        functionalCode: undefined,
+        economicCode: undefined,
+      },
+      getDefaultBudgetItemAnalyticsViewState(),
+    )
+
+    expect(result.executionChartFilter).not.toHaveProperty('functional_prefixes')
+    expect(result.executionChartFilter).not.toHaveProperty('economic_prefixes')
+    expect(result.executionMapFilter).not.toHaveProperty('functional_prefixes')
+    expect(result.executionMapFilter).not.toHaveProperty('economic_prefixes')
+    expect(result.commitmentsChartFilter).not.toHaveProperty('functional_prefixes')
+    expect(result.commitmentsChartFilter).not.toHaveProperty('economic_prefixes')
+    expect(result.commitmentsMapFilter).not.toHaveProperty('functional_prefixes')
+    expect(result.commitmentsMapFilter).not.toHaveProperty('economic_prefixes')
+  })
 })
 
 describe('buildBudgetItemAnalyticsViewState', () => {
