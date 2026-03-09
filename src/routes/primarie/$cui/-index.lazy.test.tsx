@@ -609,6 +609,14 @@ describe('PrimarieEntityIndexRoutePage', () => {
       screen.getByRole('button', { name: 'Select entity from map' }),
     )
 
+    expect(
+      screen.getByRole('heading', { name: 'Open this city hall?' }),
+    ).toBeInTheDocument()
+
+    expect(navigateMock).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open city hall' }))
+
     await waitFor(() => {
       expect(navigateMock).toHaveBeenCalled()
     })
@@ -629,5 +637,30 @@ describe('PrimarieEntityIndexRoutePage', () => {
       insDataset: 'POP107D',
       insRoot: 'population',
     })
+  })
+
+  it('does not navigate when the map selection confirmation is cancelled', async () => {
+    const { PrimarieEntityRoutePage } = await import('./index.lazy')
+
+    render(<PrimarieEntityRoutePage />)
+
+    navigateMock.mockClear()
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Select entity from map' }),
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Deschizi această primărie?' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Anulează' }))
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('heading', { name: 'Deschizi această primărie?' }),
+      ).not.toBeInTheDocument()
+    })
+
+    expect(navigateMock).not.toHaveBeenCalled()
   })
 })

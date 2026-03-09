@@ -7,6 +7,15 @@ import {
   useState,
 } from 'react'
 import { createLazyFileRoute, useNavigate } from '@tanstack/react-router'
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import {
   ChallengeEntityAnalysisPage,
   type ChallengeEntityAnalysisPageState,
@@ -97,6 +106,10 @@ function toPageState(
   }
 }
 
+type PendingMapEntitySelection = {
+  readonly entityCui: string
+}
+
 export function PrimarieEntityRoutePage() {
   const { cui } = Route.useParams()
   const search = Route.useSearch()
@@ -115,6 +128,10 @@ export function PrimarieEntityRoutePage() {
     setSelectedEntity,
   } = useCampaignProgress()
   const [isEntityResolved, setIsEntityResolved] = useState(false)
+  const [pendingMapEntitySelection, setPendingMapEntitySelection] =
+    useState<PendingMapEntitySelection | null>(null)
+  const [isConfirmingMapEntitySelection, setIsConfirmingMapEntitySelection] =
+    useState(false)
   const syncedEntityCuiRef = useRef<string | null>(null)
 
   const normalizedSearch = useMemo(
@@ -132,6 +149,11 @@ export function PrimarieEntityRoutePage() {
   useEffect(() => {
     setIsEntityResolved(false)
     syncedEntityCuiRef.current = null
+  }, [cui])
+
+  useEffect(() => {
+    setPendingMapEntitySelection(null)
+    setIsConfirmingMapEntitySelection(false)
   }, [cui])
 
   useEffect(() => {
@@ -291,37 +313,113 @@ export function PrimarieEntityRoutePage() {
     [updateSearch],
   )
 
-  return (
-    <ChallengeEntityAnalysisPage
-      entityCui={cui}
-      languageQuery={normalizedSearch.lang}
-      state={pageState}
-      commitmentsGrouping={normalizedSearch.commitments_grouping}
-      commitmentsDetailLevel={normalizedSearch.commitments_detail_level}
-      analyticsTarget={normalizedSearch.analytics}
-      initialSettings={loaderData?.initialSettings}
-      onStateChange={handleStateChange}
-      onCommitmentsViewStateChange={handleCommitmentsViewStateChange}
-      onAnalyticsTargetChange={(target) =>
-        updateSearch({
-          analytics: encodeChallengeEntityAnalyticsSearchState(target),
-        })
-      }
-      onEntityCuiChange={(nextEntityCui) => {
-        startTransition(() => {
-          void navigate({
+  const handleConfirmMapEntitySelection = useCallback(() => {
+    if (!pendingMapEntitySelection) {
+      return
+    }
+
+    setIsConfirmingMapEntitySelection(true)
+
+    startTransition(() => {
+      void Promise.resolve()
+        .then(() =>
+          navigate({
             to: '/primarie/$cui',
-            params: { cui: nextEntityCui },
+            params: { cui: pendingMapEntitySelection.entityCui },
             search: (previousSearch) =>
               mergeWindowManagedSearchState(
                 previousSearch as Record<string, unknown>,
               ),
             replace: false,
             resetScroll: false,
-          })
+          }),
+        )
+        .finally(() => {
+        setPendingMapEntitySelection(null)
+        setIsConfirmingMapEntitySelection(false)
         })
-      }}
-      onEntityResolved={() => setIsEntityResolved(true)}
-    />
+    })
+  }, [navigate, pendingMapEntitySelection])
+
+  const confirmationTitle =
+    normalizedSearch.lang === 'en'
+      ? 'Open this city hall?'
+      : 'Deschizi această primărie?'
+  const confirmationDescription =
+    normalizedSearch.lang === 'en'
+      ? 'We will keep your current analysis filters and open the selected city hall from the map preview.'
+      : 'Păstrăm filtrele curente de analiză și deschidem primăria selectată din previzualizarea hărții.'
+  const confirmationButtonLabel =
+    normalizedSearch.lang === 'en' ? 'Open city hall' : 'Deschide primăria'
+  const cancelButtonLabel =
+    normalizedSearch.lang === 'en' ? 'Cancel' : 'Anulează'
+
+  return (
+    <>
+      <ChallengeEntityAnalysisPage
+        entityCui={cui}
+        languageQuery={normalizedSearch.lang}
+        state={pageState}
+        commitmentsGrouping={normalizedSearch.commitments_grouping}
+        commitmentsDetailLevel={normalizedSearch.commitments_detail_level}
+        analyticsTarget={normalizedSearch.analytics}
+        initialSettings={loaderData?.initialSettings}
+        onStateChange={handleStateChange}
+        onCommitmentsViewStateChange={handleCommitmentsViewStateChange}
+        onAnalyticsTargetChange={(target) =>
+          updateSearch({
+            analytics: encodeChallengeEntityAnalyticsSearchState(target),
+          })
+        }
+        onEntityCuiChange={(nextEntityCui) => {
+          setPendingMapEntitySelection({ entityCui: nextEntityCui })
+        }}
+        onEntityResolved={() => setIsEntityResolved(true)}
+      />
+
+      <Dialog
+        open={Boolean(pendingMapEntitySelection)}
+        onOpenChange={(isOpen) => {
+          if (!isOpen && !isConfirmingMapEntitySelection) {
+            setPendingMapEntitySelection(null)
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{confirmationTitle}</DialogTitle>
+            <DialogDescription>
+              {confirmationDescription}
+            </DialogDescription>
+          </DialogHeader>
+
+          {pendingMapEntitySelection ? (
+            <div className="rounded-lg border border-border/60 bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+              CUI: {pendingMapEntitySelection.entityCui}
+            </div>
+          ) : null}
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setPendingMapEntitySelection(null)}
+              disabled={isConfirmingMapEntitySelection}
+            >
+              {cancelButtonLabel}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleConfirmMapEntitySelection}
+              disabled={
+                !pendingMapEntitySelection || isConfirmingMapEntitySelection
+              }
+            >
+              {confirmationButtonLabel}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

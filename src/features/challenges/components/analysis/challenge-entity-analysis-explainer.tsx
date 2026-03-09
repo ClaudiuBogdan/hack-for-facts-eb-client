@@ -65,8 +65,13 @@ export function ChallengeEntityAnalysisExplainer({
     reportType === 'PRINCIPAL_AGGREGATED'
       ? copy.aggregatedSecondary
       : copy.detailedSecondary
+  const toggleExpanded = () => setIsExpanded((currentValue) => !currentValue)
+
   return (
-    <Card className="rounded-[28px] border-border/50 bg-muted/[0.18]">
+    <Card
+      className="cursor-pointer rounded-[28px] border-border/50 bg-muted/[0.18]"
+      onClick={toggleExpanded}
+    >
       <CardContent className="px-4 py-4 sm:px-6 sm:py-5 md:px-7">
         <div className="flex items-start gap-3 sm:gap-4">
           <Info
@@ -103,7 +108,10 @@ export function ChallengeEntityAnalysisExplainer({
                 type="button"
                 variant="link"
                 className="h-auto justify-start px-0 text-sm font-semibold"
-                onClick={() => setIsExpanded((currentValue) => !currentValue)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  toggleExpanded()
+                }}
               >
                 {isExpanded ? copy.showLess : copy.showMore}
               </Button>
