@@ -5,8 +5,14 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { BudgetTreemap } from '@/components/budget-explorer/BudgetTreemap'
 import { FilteredSpendingInfo } from '@/components/budget-explorer/FilteredSpendingInfo'
 import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
+import type { TreemapInput } from '@/components/budget-explorer/budget-transform'
 import { useTreemapDrilldown } from '@/components/budget-explorer/useTreemapDrilldown'
 import { useTreemapAmountFilter } from '@/components/budget-explorer/useTreemapAmountFilter'
+import {
+  filterTreemapNodesByAmountRange,
+  getTreemapValueBounds,
+  hasModifiedTreemapAmountRange,
+} from '@/components/budget-explorer/treemap-visible-nodes'
 import { getEntityFeatureInfo } from '@/components/entities/utils'
 import { EntityFinancialSummary, type EntityFinancialSummaryTrend } from '@/components/entities/EntityFinancialSummary'
 import { EntityFinancialTrends } from '@/components/entities/EntityFinancialTrends'
@@ -55,6 +61,9 @@ import {
   type ChallengeEntityInitialSettings,
 } from './challenge-entity-analysis-queries'
 import { ChallengeEntityGroupedLineItems } from './challenge-entity-grouped-line-items'
+import {
+  type ChallengeEntityMarkdownExportPageContext,
+} from './challenge-entity-markdown-export'
 import type { BudgetItemAnalyticsProps } from './budget-item-analytics-context'
 import {
   buildBudgetItemAnalyticsPath,
@@ -1770,9 +1779,9 @@ export function ChallengeEntityAnalysisPage({
   }
 
   const entity = entityDetailsQuery.data
+  const pageLocale = resolveChallengePageLocale(languageQuery)
 
-  const pageCopy =
-    MAP_PREVIEW_MISC_COPY[resolveChallengePageLocale(languageQuery)]
+  const pageCopy = MAP_PREVIEW_MISC_COPY[pageLocale]
   const treemapTitle =
     treemapAccountCategory === 'vn'
       ? pageCopy.revenueDistribution
@@ -1820,6 +1829,21 @@ export function ChallengeEntityAnalysisPage({
     languageQuery,
     normalizationMode,
   )
+  const treemapValueBounds = useMemo(
+    () => getTreemapValueBounds(treemapData),
+    [treemapData],
+  )
+  const hasModifiedTreemapRange = useMemo(
+    () => hasModifiedTreemapAmountRange(treemapData, amountFilter.range),
+    [amountFilter.range, treemapData],
+  )
+  const visibleTreemapNodes = useMemo<readonly TreemapInput[]>(
+    () =>
+      showsIncomeEconomicMessage
+        ? []
+        : filterTreemapNodesByAmountRange(treemapData, amountFilter.range),
+    [amountFilter.range, showsIncomeEconomicMessage, treemapData],
+  )
   const showsResetTreemapFiltersButton = hasNonDefaultTreemapFilters({
     reportType: selectedReportType,
     normalization: normalizationMode,
@@ -1832,6 +1856,89 @@ export function ChallengeEntityAnalysisPage({
   const treemapSecondaryControlsId = 'challenge-entity-treemap-secondary-controls'
   const showTreemapResetShortcut =
     treemapAccountCategory === 'ch' && breadcrumbs.length > 0
+  const markdownExportContext = useMemo<ChallengeEntityMarkdownExportPageContext>(
+    () => ({
+      locale: pageLocale,
+      entity: {
+        name: entity.name,
+        cui: entity.cui,
+        countyName: entity.uat?.county_name,
+        population: entity.uat?.population,
+      },
+      filters: {
+        year: selectedYear,
+        reportType: selectedReportType,
+        normalization: normalizationMode,
+        currency: displayCurrency,
+        inflationAdjusted: displayInflationAdjusted,
+        treemapAccountCategory,
+        budgetTotal:
+          treemapAccountCategory === 'vn'
+            ? Number(entity.totalIncome ?? 0)
+            : Number(entity.totalExpenses ?? 0),
+        expenseType,
+        treemapPrimary,
+        currentTreemapPrimary: activePrimary,
+        treemapDepth,
+        breadcrumbs,
+        ...(treemapExcludeEconomicCodes.length > 0
+          ? { excludedEconomicCodes: treemapExcludeEconomicCodes }
+          : {}),
+        ...(treemapExcludeFunctionalCodes.length > 0
+          ? { excludedFunctionalCodes: treemapExcludeFunctionalCodes }
+          : {}),
+        ...(hasModifiedTreemapRange
+          ? {
+              amountRange: {
+                minValue: treemapValueBounds.minValue,
+                maxValue: treemapValueBounds.maxValue,
+                selectedMin: amountFilter.range[0],
+                selectedMax: amountFilter.range[1],
+              },
+            }
+          : {}),
+      },
+      treemap: {
+        title: treemapTitle,
+        subtitle: treemapSubtitle,
+        visibleNodes: visibleTreemapNodes,
+        ...(showsIncomeEconomicMessage
+          ? { unavailableReason: pageCopy.revenueWithoutEconomicCode }
+          : {}),
+      },
+    }),
+    [
+      activePrimary,
+      amountFilter.range,
+      breadcrumbs,
+      displayCurrency,
+      displayInflationAdjusted,
+      entity.cui,
+      entity.name,
+      entity.uat?.county_name,
+      entity.uat?.population,
+      entity.totalExpenses,
+      entity.totalIncome,
+      expenseType,
+      hasModifiedTreemapRange,
+      normalizationMode,
+      pageCopy.revenueWithoutEconomicCode,
+      pageLocale,
+      selectedReportType,
+      selectedYear,
+      showsIncomeEconomicMessage,
+      treemapAccountCategory,
+      treemapDepth,
+      treemapExcludeEconomicCodes,
+      treemapExcludeFunctionalCodes,
+      treemapPrimary,
+      treemapSubtitle,
+      treemapTitle,
+      treemapValueBounds.maxValue,
+      treemapValueBounds.minValue,
+      visibleTreemapNodes,
+    ],
+  )
   const isSubordinatesSectionLoading =
     subordinateRankingQuery.isLoading && !subordinateRankingQuery.data
   const isSubordinatesSectionError = subordinateRankingQuery.isError
@@ -2188,6 +2295,7 @@ export function ChallengeEntityAnalysisPage({
                     normalizationOptions={displayNormalizationOptions}
                     presetSearchTerm={groupedLineItemsPresetSearchTerm}
                     onAnalyticsRequest={handleBudgetItemAnalyticsRequest}
+                    exportContext={markdownExportContext}
                   />
                 </CardContent>
               </Card>

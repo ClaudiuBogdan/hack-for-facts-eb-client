@@ -221,6 +221,8 @@ vi.mock('recharts', () => ({
 }))
 
 // Mock ClassificationInfoLink
+const classificationInfoLinkMock = vi.fn()
+
 vi.mock('@/components/common/classification-info-link', () => ({
   ClassificationInfoLink: ({
     code,
@@ -234,12 +236,23 @@ vi.mock('@/components/common/classification-info-link', () => ({
     className?: string
     disabled?: boolean
     menuActions?: Array<{
+      key?: string
       onSelect?: () => void
     }>
     onOverlayOpenChange?: (open: boolean) => void
     onTriggerInteraction?: () => void
-  }) => (
-    <div data-testid={`classification-info-link-${code ?? 'unknown'}`}>
+  }) => {
+    classificationInfoLinkMock({
+      code,
+      className,
+      disabled,
+      menuActions,
+      onOverlayOpenChange,
+      onTriggerInteraction,
+    })
+
+    return (
+      <div data-testid={`classification-info-link-${code ?? 'unknown'}`}>
       <button
         type="button"
         aria-label={`Open mock classification ${code ?? 'unknown'}`}
@@ -254,6 +267,20 @@ vi.mock('@/components/common/classification-info-link', () => ({
       >
         Info
       </button>
+      {menuActions?.map((menuAction, index) => (
+        <button
+          key={menuAction.key ?? index}
+          type="button"
+          aria-label={`Select mock classification ${code ?? 'unknown'} action ${index}`}
+          onClick={(event) => {
+            event.stopPropagation()
+            onTriggerInteraction?.()
+            menuAction.onSelect?.()
+          }}
+        >
+          {String(menuAction.key ?? index)}
+        </button>
+      ))}
       <button
         type="button"
         aria-label={`Close mock classification ${code ?? 'unknown'}`}
@@ -266,7 +293,8 @@ vi.mock('@/components/common/classification-info-link', () => ({
         Close
       </button>
     </div>
-  ),
+    )
+  },
 }))
 
 // ============================================================================
@@ -568,6 +596,12 @@ describe('BudgetTreemap Component', () => {
           onAnalyticsRequest={onAnalyticsRequest}
         />,
       )
+
+      const infoLinkProps = classificationInfoLinkMock.mock.calls
+        .map(([props]) => props)
+        .find((props) => props.code === '65.02')
+
+      expect(infoLinkProps?.menuActions).toHaveLength(1)
 
       fireEvent.pointerEnter(getRenderedTreemapContentNode('65.02'))
       fireEvent.click(getTreemapInfoTrigger('65.02'))

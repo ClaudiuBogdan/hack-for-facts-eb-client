@@ -67,6 +67,7 @@ describe('GroupedSubchapterAccordion', () => {
 
   it('preserves the parent economic code when analytics targets a nested functional row', () => {
     const onAnalyticsRequest = vi.fn()
+    const onCopyPromptRequest = vi.fn()
 
     render(
       <GroupedSubchapterAccordion
@@ -93,6 +94,7 @@ describe('GroupedSubchapterAccordion', () => {
         searchTerm=""
         codePrefix="ec"
         onAnalyticsRequest={onAnalyticsRequest}
+        onCopyPromptRequest={onCopyPromptRequest}
       />,
     )
 
@@ -104,9 +106,10 @@ describe('GroupedSubchapterAccordion', () => {
       .map(([props]) => props)
       .find((props) => props.code === '65.02')
 
-    expect(functionalInfoLinkProps?.menuActions).toHaveLength(1)
+    expect(functionalInfoLinkProps?.menuActions).toHaveLength(2)
 
     functionalInfoLinkProps?.menuActions?.[0]?.onSelect()
+    functionalInfoLinkProps?.menuActions?.[1]?.onSelect()
 
     expect(onAnalyticsRequest).toHaveBeenCalledWith({
       subjectLabel: 'Învățământ',
@@ -115,10 +118,19 @@ describe('GroupedSubchapterAccordion', () => {
         { type: 'fn', code: '65.02' },
       ],
     })
+    expect(onCopyPromptRequest).toHaveBeenCalledWith({
+      subjectLabel: 'Învățământ',
+      path: [
+        { type: 'ec', code: '10.01' },
+        { type: 'fn', code: '65.02' },
+      ],
+      displayedItem: { type: 'fn', code: '65.02' },
+    })
   })
 
   it('keeps the economic paragraph label paired with the economic code in collapsed rows', () => {
     const onAnalyticsRequest = vi.fn()
+    const onCopyPromptRequest = vi.fn()
 
     render(
       <GroupedSubchapterAccordion
@@ -139,6 +151,7 @@ describe('GroupedSubchapterAccordion', () => {
         searchTerm=""
         codePrefix="ec"
         onAnalyticsRequest={onAnalyticsRequest}
+        onCopyPromptRequest={onCopyPromptRequest}
       />,
     )
 
@@ -149,10 +162,11 @@ describe('GroupedSubchapterAccordion', () => {
       .map(([props]) => props)
       .find((props) => props.code === '10.01.01')
 
-    expect(collapsedInfoLinkProps?.menuActions).toHaveLength(1)
+    expect(collapsedInfoLinkProps?.menuActions).toHaveLength(2)
     expect(collapsedInfoLinkProps?.type).toBe('economic')
 
     collapsedInfoLinkProps?.menuActions?.[0]?.onSelect()
+    collapsedInfoLinkProps?.menuActions?.[1]?.onSelect()
 
     expect(onAnalyticsRequest).toHaveBeenCalledWith({
       subjectLabel: 'Salarii de bază',
@@ -160,6 +174,14 @@ describe('GroupedSubchapterAccordion', () => {
         { type: 'ec', code: '10.01.01' },
         { type: 'fn', code: '65.02' },
       ],
+    })
+    expect(onCopyPromptRequest).toHaveBeenCalledWith({
+      subjectLabel: 'Salarii de bază',
+      path: [
+        { type: 'ec', code: '10.01.01' },
+        { type: 'fn', code: '65.02' },
+      ],
+      displayedItem: { type: 'ec', code: '10.01.01' },
     })
   })
 })

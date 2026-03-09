@@ -4,13 +4,13 @@ import { Accordion, AccordionItem, AccordionContent, AccordionTrigger } from '@/
 import { GroupedFunctional, GroupedEconomic } from '@/schemas/financial';
 import { highlightText } from './highlight-utils';
 import { formatNormalizedValue, formatNumber } from '@/lib/utils';
-import { t } from '@lingui/core/macro';
 import type { Currency, Normalization } from '@/schemas/charts';
 import type {
   GroupedItemAnalyticsSelection,
   GroupedItemAnalyticsRequest,
+  GroupedItemCopyPromptRequest,
 } from './FinancialDataCard';
-import { buildGroupedItemAnalyticsRequest } from './FinancialDataCard';
+import { buildGroupedItemMenuActions } from './FinancialDataCard';
 import {
   GROUPED_CODE_CLASS_NAME,
   GROUPED_INFO_LINK_CLASS_NAME,
@@ -33,6 +33,7 @@ interface GroupedFunctionalAccordionProps {
   analyticsSelection?: GroupedItemAnalyticsSelection;
   analyticsPathOrder?: readonly ('fn' | 'ec')[];
   onAnalyticsRequest?: (request: GroupedItemAnalyticsRequest) => void;
+  onCopyPromptRequest?: (request: GroupedItemCopyPromptRequest) => void;
 }
 
 const GroupedFunctionalAccordion: React.FC<GroupedFunctionalAccordionProps> = ({
@@ -44,6 +45,7 @@ const GroupedFunctionalAccordion: React.FC<GroupedFunctionalAccordionProps> = ({
   analyticsSelection,
   analyticsPathOrder = ['fn', 'ec'],
   onAnalyticsRequest,
+  onCopyPromptRequest,
 }) => {
   const normalizationFormatOptions = { normalization: normalization ?? 'total', currency } as const
   const functionalSelection = {
@@ -60,27 +62,20 @@ const GroupedFunctionalAccordion: React.FC<GroupedFunctionalAccordionProps> = ({
               <span className={GROUPED_ITEM_LABEL_CLASS_NAME}>{highlightText(func.name, searchTerm)}</span>
               <ClassificationInfoLink
                 type="functional"
-                code={func.code}
-                className={GROUPED_INFO_LINK_CLASS_NAME}
-                showOnHoverOnly={false}
-                menuActions={
-                  onAnalyticsRequest
-                    ? [
-                        {
-                          key: 'analytics',
-                          label: t`Analytics`,
-                          onSelect: () =>
-                            onAnalyticsRequest(
-                              buildGroupedItemAnalyticsRequest({
-                                subjectLabel: func.name,
-                                selection: functionalSelection,
-                                pathOrder: analyticsPathOrder,
-                              }),
-                            ),
-                        },
-                      ]
-                    : undefined
-                }
+              code={func.code}
+              className={GROUPED_INFO_LINK_CLASS_NAME}
+              showOnHoverOnly={false}
+              menuActions={buildGroupedItemMenuActions({
+                subjectLabel: func.name,
+                selection: functionalSelection,
+                pathOrder: analyticsPathOrder,
+                displayedItem: {
+                  type: 'fn',
+                  code: func.code,
+                },
+                onAnalyticsRequest,
+                onCopyPromptRequest,
+              })}
               />
             </div>
           </div>
@@ -115,24 +110,17 @@ const GroupedFunctionalAccordion: React.FC<GroupedFunctionalAccordionProps> = ({
                   code={func.code}
                   className={GROUPED_INFO_LINK_CLASS_NAME}
                   showOnHoverOnly={false}
-                  menuActions={
-                    onAnalyticsRequest
-                      ? [
-                          {
-                            key: 'analytics',
-                            label: t`Analytics`,
-                            onSelect: () =>
-                              onAnalyticsRequest(
-                                buildGroupedItemAnalyticsRequest({
-                                  subjectLabel: func.name,
-                                  selection: functionalSelection,
-                                  pathOrder: analyticsPathOrder,
-                                }),
-                              ),
-                          },
-                        ]
-                      : undefined
-                  }
+                  menuActions={buildGroupedItemMenuActions({
+                    subjectLabel: func.name,
+                    selection: functionalSelection,
+                    pathOrder: analyticsPathOrder,
+                    displayedItem: {
+                      type: 'fn',
+                      code: func.code,
+                    },
+                    onAnalyticsRequest,
+                    onCopyPromptRequest,
+                  })}
                 />
               </div>
             </div>
@@ -166,27 +154,20 @@ const GroupedFunctionalAccordion: React.FC<GroupedFunctionalAccordionProps> = ({
                         code={eco.code}
                         className={GROUPED_INFO_LINK_CLASS_NAME}
                         showOnHoverOnly={false}
-                        menuActions={
-                          onAnalyticsRequest
-                            ? [
-                                {
-                                  key: 'analytics',
-                                  label: t`Analytics`,
-                                  onSelect: () =>
-                                    onAnalyticsRequest(
-                                      buildGroupedItemAnalyticsRequest({
-                                        subjectLabel: eco.name,
-                                        selection: {
-                                          ...functionalSelection,
-                                          economicCode: eco.code,
-                                        },
-                                        pathOrder: analyticsPathOrder,
-                                      }),
-                                    ),
-                                },
-                              ]
-                            : undefined
-                        }
+                        menuActions={buildGroupedItemMenuActions({
+                          subjectLabel: eco.name,
+                          selection: {
+                            ...functionalSelection,
+                            economicCode: eco.code,
+                          },
+                          pathOrder: analyticsPathOrder,
+                          displayedItem: {
+                            type: 'ec',
+                            code: eco.code,
+                          },
+                          onAnalyticsRequest,
+                          onCopyPromptRequest,
+                        })}
                       />
                     </div>
                   </div>

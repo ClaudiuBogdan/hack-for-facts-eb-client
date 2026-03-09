@@ -2,10 +2,18 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ExecutionLineItem } from '@/lib/api/entities'
 
-const { getEconomicClassificationNameMock } = vi.hoisted(() => ({
+const {
+  getEconomicClassificationNameMock,
+  toastSuccessMock,
+  toastErrorMock,
+  mockClipboardWriteText,
+} = vi.hoisted(() => ({
   getEconomicClassificationNameMock: vi.fn<
     (code: string) => string | undefined
   >(),
+  toastSuccessMock: vi.fn(),
+  toastErrorMock: vi.fn(),
+  mockClipboardWriteText: vi.fn(),
 }))
 
 vi.mock('@/lib/economic-classifications', async () => {
@@ -21,6 +29,13 @@ vi.mock('@/lib/economic-classifications', async () => {
       actual.getEconomicClassificationName(code),
   }
 })
+
+vi.mock('sonner', () => ({
+  toast: {
+    success: (...args: unknown[]) => toastSuccessMock(...args),
+    error: (...args: unknown[]) => toastErrorMock(...args),
+  },
+}))
 
 import { ChallengeEntityGroupedLineItems } from './challenge-entity-grouped-line-items'
 
@@ -184,12 +199,58 @@ const defaultProps = {
     normalization: 'total' as const,
     currency: 'RON' as const,
   },
+  exportContext: {
+    locale: 'ro' as const,
+    entity: {
+      name: 'Primăria Sibiu',
+      cui: '12345678',
+      countyName: 'Județul Sibiu',
+      population: 134309,
+    },
+    filters: {
+      year: 2025,
+      reportType: 'PRINCIPAL_AGGREGATED' as const,
+      normalization: 'total' as const,
+      currency: 'RON' as const,
+      inflationAdjusted: false,
+      treemapAccountCategory: 'ch' as const,
+      budgetTotal: 120,
+      treemapPrimary: 'fn' as const,
+      currentTreemapPrimary: 'fn' as const,
+      treemapDepth: 'chapter' as const,
+      breadcrumbs: [],
+      excludedEconomicCodes: ['51'],
+    },
+    treemap: {
+      title: 'Distribuția Cheltuielilor',
+      subtitle: 'Cum s-au cheltuit banii',
+      visibleNodes: [
+        {
+          code: '65',
+          name: 'Învățământ',
+          value: 120,
+          isLeaf: false,
+          children: [],
+        },
+      ],
+    },
+  },
 }
 
 describe('ChallengeEntityGroupedLineItems', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     getEconomicClassificationNameMock.mockReset()
+    toastSuccessMock.mockReset()
+    toastErrorMock.mockReset()
+    mockClipboardWriteText.mockReset()
+    mockClipboardWriteText.mockResolvedValue(undefined)
+    Object.defineProperty(window.navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: mockClipboardWriteText,
+      },
+    })
     useFinancialDataMock.mockReturnValue({
       expenseSearchTerm: '',
       onExpenseSearchChange: vi.fn(),
@@ -219,6 +280,12 @@ describe('ChallengeEntityGroupedLineItems', () => {
     expect(header).toContainElement(heading)
     expect(header).toContainElement(searchToggle)
     expect(screen.queryByText('Cum s-au cheltuit banii')).not.toBeInTheDocument()
+    expect(
+      screen.getByTestId('challenge-grouped-line-items-menu-trigger'),
+    ).toHaveClass(
+      'md:opacity-0',
+      'md:group-hover/challenge-grouped-header:opacity-100',
+    )
     expect(searchToggle).toHaveTextContent(
       'search::false:mod+j',
     )
@@ -258,17 +325,20 @@ describe('ChallengeEntityGroupedLineItems', () => {
 
   it('passes analytics requests through to the grouped items display', () => {
     const onAnalyticsRequest = vi.fn()
+    const onCopyPromptRequest = vi.fn()
 
     render(
       <ChallengeEntityGroupedLineItems
         {...defaultProps}
         onAnalyticsRequest={onAnalyticsRequest}
+        onCopyPromptRequest={onCopyPromptRequest}
       />,
     )
 
     expect(groupedItemsDisplayMock).toHaveBeenCalledWith(
       expect.objectContaining({
         onAnalyticsRequest,
+        onCopyPromptRequest: expect.any(Function),
       }),
     )
   })
@@ -478,6 +548,84 @@ describe('ChallengeEntityGroupedLineItems', () => {
     expect(screen.getByTestId('search-toggle-input')).toHaveTextContent(
       'search::true:mod+j',
     )
+  })
+
+  it('shows the section actions menu and opens analytics for the whole section', async () => {
+    const onAnalyticsRequest = vi.fn()
+
+    render(
+      <ChallengeEntityGroupedLineItems
+        {...defaultProps}
+        onAnalyticsRequest={onAnalyticsRequest}
+      />,
+    )
+
+    fireEvent.pointerDown(
+      screen.getByTestId('challenge-grouped-line-items-menu-trigger'),
+    )
+
+    const analyticsMenuItem = await screen.findByRole('menuitem', {
+      name: 'Analytics',
+    })
+
+    expect(
+      await screen.findByRole('menuitem', { name: 'Copiază promptul' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(analyticsMenuItem)
+
+    expect(onAnalyticsRequest).toHaveBeenCalledWith({
+      subjectLabel: 'Cheltuieli',
+      path: [],
+    })
+  })
+
+  it('copies the prompt-ready markdown for the current grouped view from the section menu', async () => {
+    render(<ChallengeEntityGroupedLineItems {...defaultProps} />)
+
+    fireEvent.pointerDown(
+      screen.getByTestId('challenge-grouped-line-items-menu-trigger'),
+    )
+
+    fireEvent.click(
+      await screen.findByRole('menuitem', { name: 'Copiază promptul' }),
+    )
+
+    await waitFor(() => {
+      expect(mockClipboardWriteText).toHaveBeenCalledTimes(1)
+    })
+
+    expect(mockClipboardWriteText).toHaveBeenCalledWith(
+      expect.stringContaining('# Analiza bugetului local'),
+    )
+    expect(mockClipboardWriteText).toHaveBeenCalledWith(
+      expect.stringContaining('Primăria Sibiu'),
+    )
+    expect(mockClipboardWriteText).toHaveBeenCalledWith(
+      expect.stringContaining('`FN:65` Învățământ'),
+    )
+    expect(toastSuccessMock).toHaveBeenCalledWith('Copiat în clipboard')
+    expect(toastErrorMock).not.toHaveBeenCalled()
+  })
+
+  it('shows an error toast when copying the markdown fails', async () => {
+    mockClipboardWriteText.mockRejectedValueOnce(new Error('clipboard blocked'))
+
+    render(<ChallengeEntityGroupedLineItems {...defaultProps} />)
+
+    fireEvent.pointerDown(
+      screen.getByTestId('challenge-grouped-line-items-menu-trigger'),
+    )
+
+    fireEvent.click(
+      await screen.findByRole('menuitem', { name: 'Copiază promptul' }),
+    )
+
+    await waitFor(() => {
+      expect(toastErrorMock).toHaveBeenCalledWith('Copiere eșuată')
+    })
+
+    expect(toastSuccessMock).not.toHaveBeenCalled()
   })
 })
 

@@ -18,6 +18,11 @@ import { buildTreemapChartLink } from '@/lib/chart-links'
 import { ClassificationInfoLink } from '@/components/common/classification-info-link'
 import type { TreemapAmountFilter } from './useTreemapAmountFilter'
 import {
+  filterTreemapNodesByAmountRange,
+  getTreemapValueBounds,
+  hasModifiedTreemapAmountRange,
+} from './treemap-visible-nodes'
+import {
   normalizeBudgetItemAnalyticsPath,
   type BudgetItemAnalyticsPathEntry,
   type BudgetItemAnalyticsRequest,
@@ -339,13 +344,17 @@ function TreemapInfoTriggersOverlay({
               onOverlayOpenChange={(open) => onInfoOverlayOpenChange(layout.code, open)}
               onTriggerInteraction={onTriggerInteraction}
               menuActions={
-                onAnalyticsRequest && layout.analyticsRequest
+                layout.analyticsRequest
                   ? [
-                      {
-                        key: 'analytics',
-                        label: t`Analytics`,
-                        onSelect: () => onAnalyticsRequest(layout.analyticsRequest!),
-                      },
+                      ...(onAnalyticsRequest
+                        ? [
+                            {
+                              key: 'analytics',
+                              label: t`Analytics`,
+                              onSelect: () => onAnalyticsRequest(layout.analyticsRequest!),
+                            },
+                          ]
+                        : []),
                     ]
                   : undefined
               }
@@ -775,37 +784,19 @@ function BudgetTreemapView({
     })
   }
 
-  // Calculate min/max among current nodes for the amount slider
-  const { minValue, maxValue } = useMemo(() => {
-    if (!payloadData.length) return { minValue: 0, maxValue: 0 }
-    let min = Number.POSITIVE_INFINITY
-    let max = 0
-    for (const item of payloadData) {
-      const v = Number.isFinite(item.value) ? item.value : 0
-      if (v < min) min = v
-      if (v > max) max = v
-    }
-    if (!Number.isFinite(min)) min = 0
-    return { minValue: min, maxValue: max }
-  }, [payloadData])
+  const { minValue, maxValue } = useMemo(
+    () => getTreemapValueBounds(payloadData),
+    [payloadData],
+  )
 
   const currentAmountRange = amountFilter?.range ?? ([minValue, maxValue] as [number, number])
   const deferredAmountRange = useDeferredValue(currentAmountRange)
 
-  // Apply range-based filtering to nodes
   const filteredData = useMemo(() => {
     if (!amountFilter) return payloadData
 
-    // Check if range has been reset to full span (not user-modified)
-    const isResetToFullSpan = currentAmountRange[0] === minValue && currentAmountRange[1] === maxValue
-    if (isResetToFullSpan) return payloadData
-
-    const [low, high] = deferredAmountRange
-    return payloadData.filter((n) => {
-      const v = Number.isFinite(n.value) ? n.value : 0
-      return v >= low && v <= high
-    })
-  }, [amountFilter, currentAmountRange, deferredAmountRange, payloadData, minValue, maxValue])
+    return filterTreemapNodesByAmountRange(payloadData, deferredAmountRange)
+  }, [amountFilter, deferredAmountRange, payloadData])
 
   const totalValue = useMemo(
     () => filteredData.reduce((acc, curr) => acc + (Number.isFinite(curr.value) ? curr.value : 0), 0),
@@ -895,8 +886,13 @@ function BudgetTreemapView({
 
   // On mobile, show only last 2 breadcrumb items
   const displayPath = isMobile && deferredPath.length > 2 ? deferredPath.slice(-2) : deferredPath
-  const hasModifiedAmountRange = !!amountFilter
-    && (currentAmountRange[0] > minValue || currentAmountRange[1] < maxValue)
+  const hasModifiedAmountRange = useMemo(
+    () =>
+      amountFilter
+        ? hasModifiedTreemapAmountRange(payloadData, currentAmountRange)
+        : false,
+    [amountFilter, currentAmountRange, payloadData],
+  )
 
   return (
     <div className="w-full space-y-0.75">

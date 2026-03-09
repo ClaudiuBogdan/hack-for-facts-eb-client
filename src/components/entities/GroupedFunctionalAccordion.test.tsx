@@ -53,6 +53,7 @@ describe('GroupedFunctionalAccordion', () => {
 
   it('keeps the functional code and applies the deepest economic child code for analytics', () => {
     const onAnalyticsRequest = vi.fn()
+    const onCopyPromptRequest = vi.fn()
 
     render(
       <GroupedFunctionalAccordion
@@ -71,6 +72,7 @@ describe('GroupedFunctionalAccordion', () => {
         baseTotal={100_000_000}
         searchTerm=""
         onAnalyticsRequest={onAnalyticsRequest}
+        onCopyPromptRequest={onCopyPromptRequest}
       />,
     )
 
@@ -82,9 +84,10 @@ describe('GroupedFunctionalAccordion', () => {
       .map(([props]) => props)
       .find((props) => props.code === '10.01')
 
-    expect(economicInfoLinkProps?.menuActions).toHaveLength(1)
+    expect(economicInfoLinkProps?.menuActions).toHaveLength(2)
 
     economicInfoLinkProps?.menuActions?.[0]?.onSelect()
+    economicInfoLinkProps?.menuActions?.[1]?.onSelect()
 
     expect(onAnalyticsRequest).toHaveBeenCalledWith({
       subjectLabel: 'Cheltuieli de personal',
@@ -92,6 +95,14 @@ describe('GroupedFunctionalAccordion', () => {
         { type: 'fn', code: '65.02' },
         { type: 'ec', code: '10.01' },
       ],
+    })
+    expect(onCopyPromptRequest).toHaveBeenCalledWith({
+      subjectLabel: 'Cheltuieli de personal',
+      path: [
+        { type: 'fn', code: '65.02' },
+        { type: 'ec', code: '10.01' },
+      ],
+      displayedItem: { type: 'ec', code: '10.01' },
     })
   })
 })

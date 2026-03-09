@@ -1816,6 +1816,75 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
   })
 
+  it('passes markdown export context with URL-backed treemap filters and visible treemap nodes', () => {
+    useTreemapDrilldownMock.mockReturnValue({
+      primary: 'fn',
+      activePrimary: 'ec',
+      treemapData: [
+        {
+          code: '10.01',
+          name: 'Cheltuieli de personal',
+          value: 650000,
+          isLeaf: true,
+          children: [],
+        },
+      ],
+      breadcrumbs: [
+        { code: '51', label: 'Autorități publice și acțiuni externe', type: 'fn' },
+        { code: '51.01', label: 'Autorități executive și legislative', type: 'fn' },
+        { code: '51.01.03', label: 'Autorități executive', type: 'fn' },
+      ],
+      excludedItemsSummary: null,
+      onNodeClick: vi.fn(),
+      onBreadcrumbClick: vi.fn(),
+      setPath: setPathMock,
+      reset: resetTreemapMock,
+      setPrimary: setPrimaryMock,
+    })
+
+    renderAnalysisPage({
+      state: {
+        treemapPrimary: 'fn',
+        treemapPath: ['51', '51.01', '51.01.03'],
+      },
+    })
+
+    expect(getLatestGroupedLineItemsProps().exportContext).toMatchObject({
+      locale: 'ro',
+      entity: {
+        name: 'Primăria Sibiu',
+        cui: '12345678',
+        countyName: 'Județul Sibiu',
+        population: 134309,
+      },
+      filters: {
+        year: 2025,
+        treemapPrimary: 'fn',
+        currentTreemapPrimary: 'ec',
+        treemapDepth: 'chapter',
+        treemapAccountCategory: 'ch',
+        budgetTotal: 145000000,
+        excludedEconomicCodes: ['51.01', '51.02'],
+        breadcrumbs: [
+          { code: '51', label: 'Autorități publice și acțiuni externe', type: 'fn' },
+          { code: '51.01', label: 'Autorități executive și legislative', type: 'fn' },
+          { code: '51.01.03', label: 'Autorități executive', type: 'fn' },
+        ],
+      },
+      treemap: {
+        title: 'Distribuția Cheltuielilor',
+        subtitle: 'Pe ce s-au cheltuit banii',
+        visibleNodes: [
+          {
+            code: '10.01',
+            name: 'Cheltuieli de personal',
+            value: 650000,
+          },
+        ],
+      },
+    })
+  })
+
   it('filters grouped subsection line items with the same default treemap exclusions', async () => {
     useEntityExecutionLineItemsMock.mockReturnValue({
       data: {

@@ -2,6 +2,7 @@ import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'rea
 
 import { getNormalizationUnit } from '@/lib/utils'
 import type { Currency, Normalization } from '@/schemas/charts'
+import { getTreemapValueBounds } from './treemap-visible-nodes'
 
 type TreemapValueNode = Readonly<{
   value: number
@@ -27,26 +28,10 @@ export function useTreemapAmountFilter({
 }: UseTreemapAmountFilterProps) {
   const deferredData = useDeferredValue(data)
 
-  const { minValue, maxValue } = useMemo(() => {
-    if (!deferredData.length) {
-      return { minValue: 0, maxValue: 0 }
-    }
-
-    let min = Number.POSITIVE_INFINITY
-    let max = 0
-
-    for (const item of deferredData) {
-      const value = Number.isFinite(item.value) ? item.value : 0
-      if (value < min) min = value
-      if (value > max) max = value
-    }
-
-    if (!Number.isFinite(min)) {
-      min = 0
-    }
-
-    return { minValue: min, maxValue: max }
-  }, [deferredData])
+  const { minValue, maxValue } = useMemo(
+    () => getTreemapValueBounds(deferredData),
+    [deferredData],
+  )
 
   const [range, setRange] = useState<[number, number]>([minValue, maxValue])
 

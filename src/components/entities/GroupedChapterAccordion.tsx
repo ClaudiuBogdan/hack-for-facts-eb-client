@@ -6,12 +6,12 @@ import GroupedSubchapterAccordion from './GroupedSubchapterAccordion';
 import { highlightText } from './highlight-utils';
 import { formatNormalizedValue, formatNumber } from '@/lib/utils';
 import { ClassificationInfoLink } from '@/components/common/classification-info-link';
-import { t } from '@lingui/core/macro';
 import type { Currency, Normalization } from '@/schemas/charts';
-import { buildGroupedItemAnalyticsRequest } from './FinancialDataCard';
+import { buildGroupedItemMenuActions } from './FinancialDataCard';
 import type {
   GroupedItemAnalyticsSelection,
   GroupedItemAnalyticsRequest,
+  GroupedItemCopyPromptRequest,
 } from './FinancialDataCard';
 import {
   GROUPED_CHAPTER_LABEL_CLASS_NAME,
@@ -34,6 +34,7 @@ interface GroupedChapterAccordionProps {
   analyticsSelection?: GroupedItemAnalyticsSelection;
   analyticsPathOrder?: readonly ('fn' | 'ec')[];
   onAnalyticsRequest?: (request: GroupedItemAnalyticsRequest) => void;
+  onCopyPromptRequest?: (request: GroupedItemCopyPromptRequest) => void;
 }
 
 const GroupedChapterAccordion: React.FC<GroupedChapterAccordionProps> = ({
@@ -46,6 +47,7 @@ const GroupedChapterAccordion: React.FC<GroupedChapterAccordionProps> = ({
   analyticsSelection,
   analyticsPathOrder = codePrefixForSubchapters === 'ec' ? ['ec', 'fn'] : ['fn', 'ec'],
   onAnalyticsRequest,
+  onCopyPromptRequest,
 }) => {
   const normalizationFormatOptions = { normalization: normalization ?? 'total', currency } as const
   const chapterClassificationType =
@@ -74,27 +76,20 @@ const GroupedChapterAccordion: React.FC<GroupedChapterAccordionProps> = ({
               </span>
               <ClassificationInfoLink
                 type={chapterClassificationType}
-                code={ch.prefix}
-                className={GROUPED_INFO_LINK_CLASS_NAME}
-                showOnHoverOnly={false}
-                menuActions={
-                  onAnalyticsRequest
-                    ? [
-                        {
-                          key: 'analytics',
-                          label: t`Analytics`,
-                          onSelect: () =>
-                            onAnalyticsRequest(
-                              buildGroupedItemAnalyticsRequest({
-                              subjectLabel: ch.description,
-                                selection: chapterSelection,
-                                pathOrder: analyticsPathOrder,
-                              }),
-                            ),
-                        },
-                      ]
-                    : undefined
-                }
+              code={ch.prefix}
+              className={GROUPED_INFO_LINK_CLASS_NAME}
+              showOnHoverOnly={false}
+              menuActions={buildGroupedItemMenuActions({
+                subjectLabel: ch.description,
+                selection: chapterSelection,
+                pathOrder: analyticsPathOrder,
+                displayedItem: {
+                  type: codePrefixForSubchapters === 'ec' ? 'ec' : 'fn',
+                  code: ch.prefix,
+                },
+                onAnalyticsRequest,
+                onCopyPromptRequest,
+              })}
               />
             </div>
           </div>
@@ -137,6 +132,7 @@ const GroupedChapterAccordion: React.FC<GroupedChapterAccordionProps> = ({
                   }
                   analyticsPathOrder={analyticsPathOrder}
                   onAnalyticsRequest={onAnalyticsRequest}
+                  onCopyPromptRequest={onCopyPromptRequest}
                 />
               ) : (
                 <GroupedFunctionalAccordion
@@ -149,6 +145,7 @@ const GroupedChapterAccordion: React.FC<GroupedChapterAccordionProps> = ({
                   analyticsSelection={chapterSelection}
                   analyticsPathOrder={analyticsPathOrder}
                   onAnalyticsRequest={onAnalyticsRequest}
+                  onCopyPromptRequest={onCopyPromptRequest}
                 />
               )
             ))}

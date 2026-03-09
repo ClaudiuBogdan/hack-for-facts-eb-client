@@ -1,12 +1,20 @@
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import {
   GroupedItemsDisplay,
   type GroupedItemAnalyticsRequest,
+  type GroupedItemCopyPromptRequest,
 } from '@/components/entities/FinancialDataCard'
 import GroupedFunctionalAccordion from '@/components/entities/GroupedFunctionalAccordion'
 import GroupedSubchapterAccordion from '@/components/entities/GroupedSubchapterAccordion'
 import { match } from '@/components/entities/highlight-utils'
 import { SearchToggleInput } from '@/components/entities/SearchToggleInput'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { useFinancialData } from '@/hooks/useFinancialData'
 import { getClassificationName } from '@/lib/classifications'
 import {
@@ -22,6 +30,15 @@ import type {
 } from '@/schemas/financial'
 import { formatNormalizedValue, formatNumber } from '@/lib/utils'
 import type { ChallengeEntityAnalysisTreemapDepth } from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
+import {
+  buildChallengeEntityAnalysisMarkdown,
+  buildChallengeEntityItemMarkdown,
+  getChallengeEntityMarkdownCopy,
+  type ChallengeEntityMarkdownExportContext,
+  type ChallengeEntityMarkdownExportPageContext,
+} from './challenge-entity-markdown-export'
+import { Info } from 'lucide-react'
+import { toast } from 'sonner'
 
 type ChallengeGroupedLineItemsProps = {
   readonly accountTitle: string
@@ -36,6 +53,8 @@ type ChallengeGroupedLineItemsProps = {
   >
   readonly presetSearchTerm?: string
   readonly onAnalyticsRequest?: (request: GroupedItemAnalyticsRequest) => void
+  readonly onCopyPromptRequest?: (request: GroupedItemCopyPromptRequest) => void
+  readonly exportContext: ChallengeEntityMarkdownExportPageContext
 }
 
 type FunctionalAccumulator = {
@@ -61,6 +80,7 @@ type GroupedLeafDisplayProps = {
     'normalization' | 'currency'
   >
   readonly onAnalyticsRequest?: (request: GroupedItemAnalyticsRequest) => void
+  readonly onCopyPromptRequest?: (request: GroupedItemCopyPromptRequest) => void
 } & (
   | {
       readonly itemType: 'functional'
@@ -466,6 +486,7 @@ function GroupedLeafDisplay({
   showTotalValueHeader,
   normalizationOptions,
   onAnalyticsRequest,
+  onCopyPromptRequest,
   ...displayProps
 }: GroupedLeafDisplayProps) {
   const normalizationFormatOptions = {
@@ -529,6 +550,7 @@ function GroupedLeafDisplay({
               normalization={normalizationOptions.normalization}
               currency={normalizationOptions.currency}
               onAnalyticsRequest={onAnalyticsRequest}
+              onCopyPromptRequest={onCopyPromptRequest}
             />
           ))
         : displayProps.items.map((subchapter) => (
@@ -546,6 +568,7 @@ function GroupedLeafDisplay({
                   : ['fn', 'ec']
               }
               onAnalyticsRequest={onAnalyticsRequest}
+              onCopyPromptRequest={onCopyPromptRequest}
             />
           ))}
       <TotalValueComponent />
@@ -563,7 +586,13 @@ export function ChallengeEntityGroupedLineItems({
   normalizationOptions,
   presetSearchTerm,
   onAnalyticsRequest,
+  onCopyPromptRequest,
+  exportContext,
 }: ChallengeGroupedLineItemsProps) {
+  const markdownCopy = useMemo(
+    () => getChallengeEntityMarkdownCopy(exportContext.locale),
+    [exportContext.locale],
+  )
   const normalizedLineItems = useMemo(() => [...lineItems], [lineItems])
   const totalAmount = useMemo(
     () =>
@@ -692,6 +721,122 @@ export function ChallengeEntityGroupedLineItems({
   }
 
   const searchFocusKey = accountCategory === 'vn' ? 'mod+l' : 'mod+j'
+  const visibleItemsForExport = useMemo<
+    ChallengeEntityMarkdownExportContext['grouped']['visibleItems']
+  >(() => {
+    if (depth === 'chapter') {
+      return {
+        kind: 'chapter',
+        groups: chapterGroupsToDisplay,
+      }
+    }
+
+    if (depth === 'paragraph' && groupBy === 'fn') {
+      return {
+        kind: 'functional',
+        groups: paragraphGroupsToDisplay,
+      }
+    }
+
+    return {
+      kind: 'subchapter',
+      groups: subchapterGroupsToDisplay,
+      codePrefix: groupBy,
+    }
+  }, [
+    chapterGroupsToDisplay,
+    depth,
+    groupBy,
+    paragraphGroupsToDisplay,
+    subchapterGroupsToDisplay,
+  ])
+  const markdownPrompt = useMemo(
+    () =>
+      buildChallengeEntityAnalysisMarkdown({
+        ...exportContext,
+        grouped: {
+          title: accountTitle,
+          groupBy,
+          depth,
+          baseTotal: baseTotalToDisplay,
+          visibleItems: visibleItemsForExport,
+        },
+        filters: {
+          ...exportContext.filters,
+          ...(currentSearchFilterTerm
+            ? { groupedSearchTerm: currentSearchFilterTerm }
+            : {}),
+        },
+      }),
+    [
+      accountTitle,
+      baseTotalToDisplay,
+      currentSearchFilterTerm,
+      depth,
+      exportContext,
+      groupBy,
+      visibleItemsForExport,
+    ],
+  )
+
+  const handleCopyMarkdown = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(markdownPrompt)
+      toast.success(markdownCopy.copiedToastLabel)
+    } catch (error) {
+      console.error('Failed to copy markdown prompt', error)
+      toast.error(markdownCopy.copyFailedToastLabel)
+    }
+  }, [markdownCopy.copiedToastLabel, markdownCopy.copyFailedToastLabel, markdownPrompt])
+
+  const handleSectionAnalytics = useCallback(() => {
+    onAnalyticsRequest?.({
+      subjectLabel: accountTitle,
+      path: [],
+    })
+  }, [accountTitle, onAnalyticsRequest])
+
+  const handleCopyItemPrompt = useCallback(
+    async (request: GroupedItemCopyPromptRequest) => {
+      const itemPrompt = buildChallengeEntityItemMarkdown({
+        pageContext: {
+          ...exportContext,
+          filters: {
+            ...exportContext.filters,
+            groupedSearchTerm: undefined,
+          },
+        },
+        groupedContext: {
+          title: accountTitle,
+          groupBy,
+          depth,
+          baseTotal: baseTotalToDisplay,
+        },
+        request,
+        lineItems: normalizedLineItems,
+      })
+
+      try {
+        await navigator.clipboard.writeText(itemPrompt)
+        toast.success(markdownCopy.copiedToastLabel)
+        onCopyPromptRequest?.(request)
+      } catch (error) {
+        console.error('Failed to copy item markdown prompt', error)
+        toast.error(markdownCopy.copyFailedToastLabel)
+      }
+    },
+    [
+      accountTitle,
+      baseTotalToDisplay,
+      depth,
+      exportContext,
+      groupBy,
+      markdownCopy.copiedToastLabel,
+      markdownCopy.copyFailedToastLabel,
+      normalizedLineItems,
+      onCopyPromptRequest,
+    ],
+  )
 
   return (
     <section
@@ -699,11 +844,46 @@ export function ChallengeEntityGroupedLineItems({
       data-testid="challenge-grouped-line-items"
     >
       <div
-        className="flex items-center justify-between gap-3"
+        className="group/challenge-grouped-header flex items-center justify-between gap-3"
         data-testid="challenge-grouped-line-items-header"
       >
-        <div className="min-w-0 pr-2">
+        <div className="flex min-w-0 items-center gap-2 pr-2">
           <h4 className="text-xl font-black tracking-tight">{accountTitle}</h4>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 rounded-full text-muted-foreground opacity-100 transition-opacity hover:text-foreground md:opacity-0 md:group-hover/challenge-grouped-header:opacity-100 md:group-focus-within/challenge-grouped-header:opacity-100"
+                aria-label={markdownCopy.sectionMenuLabel}
+                title={markdownCopy.sectionMenuLabel}
+                data-testid="challenge-grouped-line-items-menu-trigger"
+              >
+                <Info className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {onAnalyticsRequest ? (
+                <DropdownMenuItem
+                  onSelect={(event) => {
+                    event.preventDefault()
+                    handleSectionAnalytics()
+                  }}
+                >
+                  {markdownCopy.analyticsMenuLabel}
+                </DropdownMenuItem>
+              ) : null}
+              <DropdownMenuItem
+                onSelect={(event) => {
+                  event.preventDefault()
+                  void handleCopyMarkdown()
+                }}
+              >
+                {markdownCopy.copyPromptMenuLabel}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <div className="ml-auto flex-shrink-0">
           <SearchToggleInput
@@ -729,6 +909,7 @@ export function ChallengeEntityGroupedLineItems({
           currency={normalizationOptions.currency}
           subchapterCodePrefix={groupBy}
           onAnalyticsRequest={onAnalyticsRequest}
+          onCopyPromptRequest={handleCopyItemPrompt}
         />
       ) : depth === 'paragraph' && groupBy === 'fn' ? (
         <GroupedLeafDisplay
@@ -741,6 +922,7 @@ export function ChallengeEntityGroupedLineItems({
           showTotalValueHeader={currentSearchActive}
           normalizationOptions={normalizationOptions}
           onAnalyticsRequest={onAnalyticsRequest}
+          onCopyPromptRequest={handleCopyItemPrompt}
         />
       ) : (
         <GroupedLeafDisplay
@@ -754,6 +936,7 @@ export function ChallengeEntityGroupedLineItems({
           showTotalValueHeader={currentSearchActive}
           normalizationOptions={normalizationOptions}
           onAnalyticsRequest={onAnalyticsRequest}
+          onCopyPromptRequest={handleCopyItemPrompt}
         />
       )}
     </section>
