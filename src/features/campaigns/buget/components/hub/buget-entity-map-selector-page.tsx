@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
@@ -21,7 +22,12 @@ import {
 import { useCampaignProgress } from '../../hooks/use-campaign-progress'
 import { useUatCuiMap } from '../../hooks/use-uat-cui-map'
 import type { CampaignLocale } from '../../types'
-import { buildCampaignProvocariPath } from '@/features/challenges/constants'
+import {
+  buildCampaignPrimariePath,
+  buildCampaignProvocariPath,
+} from '@/features/challenges/constants'
+import { entityRoutingSummaryQueryOptions } from '@/lib/hooks/useEntityDetails'
+import { isNonCountyUatEntity } from '@/lib/entity-navigation'
 
 const BugetEntityMapSelectorMap = lazy(() =>
   import('./buget-entity-map-selector-map').then((module) => ({
@@ -80,9 +86,11 @@ export function BugetEntityMapSelectorPage({
   locale,
   languageQuery,
 }: BugetEntityMapSelectorPageProps) {
+  const queryClient = useQueryClient()
   const navigate = useNavigate({ from: '/primarie/harta/' })
   const { setSelectedEntity } = useCampaignProgress()
   const [pendingUatSelection, setPendingUatSelection] = useState<PendingUatSelection | null>(null)
+  const [isResolvingSelection, setIsResolvingSelection] = useState(false)
   const {
     data: uatGeoJson,
     isLoading: isLoadingUatGeoJson,
@@ -100,7 +108,7 @@ export function BugetEntityMapSelectorPage({
   }, [])
 
   const handleConfirmUatSelection = useCallback(
-    (selection: PendingUatSelection) => {
+    async (selection: PendingUatSelection) => {
       const { natcode, name } = selection
       const entityCui = uatCuiMap?.natcodeToCuiMap.get(natcode)
       if (!entityCui) {
@@ -120,14 +128,40 @@ export function BugetEntityMapSelectorPage({
       })
 
       setSelectedEntity({ entityCui })
-      void navigate({
-        to: buildCampaignProvocariPath(entityCui) as '/',
-        search: getProvocariSearch(languageQuery),
-        replace: true,
-      })
-      setPendingUatSelection(null)
+      setIsResolvingSelection(true)
+
+      try {
+        const entitySummary = await queryClient.fetchQuery(
+          entityRoutingSummaryQueryOptions({ cui: entityCui }),
+        )
+        const to =
+          entitySummary &&
+          isNonCountyUatEntity({
+            cui: entityCui,
+            entityType: entitySummary.entity_type,
+            isUat: entitySummary.is_uat,
+          })
+            ? buildCampaignPrimariePath(entityCui)
+            : buildCampaignProvocariPath(entityCui)
+
+        await navigate({
+          to: to as '/',
+          search: getProvocariSearch(languageQuery),
+          replace: true,
+        })
+        setPendingUatSelection(null)
+      } catch {
+        await navigate({
+          to: buildCampaignProvocariPath(entityCui) as '/',
+          search: getProvocariSearch(languageQuery),
+          replace: true,
+        })
+        setPendingUatSelection(null)
+      } finally {
+        setIsResolvingSelection(false)
+      }
     },
-    [languageQuery, locale, navigate, setSelectedEntity, uatCuiMap],
+    [languageQuery, locale, navigate, queryClient, setSelectedEntity, uatCuiMap],
   )
 
   const requestUatSelectionConfirmation = useCallback(
@@ -221,7 +255,7 @@ export function BugetEntityMapSelectorPage({
       <Dialog
         open={Boolean(pendingUatSelection)}
         onOpenChange={(isOpen) => {
-          if (!isOpen) {
+          if (!isOpen && !isResolvingSelection) {
             setPendingUatSelection(null)
           }
         }}
@@ -239,6 +273,7 @@ export function BugetEntityMapSelectorPage({
             <Button
               type="button"
               variant="outline"
+              disabled={isResolvingSelection}
               onClick={() => {
                 setPendingUatSelection(null)
               }}
@@ -247,9 +282,10 @@ export function BugetEntityMapSelectorPage({
             </Button>
             <Button
               type="button"
+              disabled={isResolvingSelection}
               onClick={() => {
                 if (!pendingUatSelection) return
-                handleConfirmUatSelection(pendingUatSelection)
+                void handleConfirmUatSelection(pendingUatSelection)
               }}
             >
               {confirmButtonLabel}

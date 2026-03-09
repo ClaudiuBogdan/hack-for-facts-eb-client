@@ -20,6 +20,7 @@ import {
   getEntityDetails,
   getEntityRelationships,
   getEntityReports,
+  getEntityRoutingSummary,
   getReportsConnection,
   getEntityExecutionLineItems,
   searchEntities,
@@ -121,6 +122,35 @@ describe('entities api', () => {
       const result = await getEntityRelationships('123456')
 
       expect(result).toEqual({ children: [], parents: [] })
+    })
+  })
+
+  describe('getEntityRoutingSummary', () => {
+    it('should return routing summary', async () => {
+      const mockResponse = {
+        entity: {
+          cui: '123456',
+          entity_type: 'admin_municipality',
+        },
+      }
+
+      vi.mocked(graphqlRequest).mockResolvedValue(mockResponse)
+
+      const result = await getEntityRoutingSummary('123456')
+
+      expect(graphqlRequest).toHaveBeenCalledWith(
+        expect.stringContaining('query GetEntityRoutingSummary'),
+        { cui: '123456' },
+      )
+      expect(result).toEqual(mockResponse.entity)
+    })
+
+    it('should return null when entity is missing', async () => {
+      vi.mocked(graphqlRequest).mockResolvedValue({ entity: null })
+
+      const result = await getEntityRoutingSummary('123456')
+
+      expect(result).toBeNull()
     })
   })
 

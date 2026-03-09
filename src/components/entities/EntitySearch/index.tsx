@@ -8,12 +8,13 @@ import { EntitySearchNode } from "@/schemas/entities";
 import { useHotkeys } from "react-hotkeys-hook";
 import { t } from "@lingui/core/macro";
 import { useGuardedBlur } from "@/lib/hooks/useGuardedBlur";
+import type { EntitySelectionBehavior } from "@/lib/entity-navigation";
 
 interface EntitySearchInputProps {
     className?: string;
     placeholder?: string;
     onSelect?: (entity: EntitySearchNode) => void;
-    selectionBehavior?: 'navigate-to-entity' | 'callback-only';
+    selectionBehavior?: EntitySelectionBehavior;
     entitySearchFilter?: {
         isUat?: boolean;
         excludeCounty?: boolean;
@@ -135,6 +136,7 @@ export function EntitySearchInput({
                                     id={`${searchId}-result-${index}`}
                                     entity={entity}
                                     isActive={activeIndex === index}
+                                    selectionBehavior={selectionBehavior}
                                     onClick={(e) => {
                                         // Allow browser default for new-tab/window gestures
                                         if (e.metaKey || e.ctrlKey) {

@@ -1,6 +1,7 @@
 import { HeatmapUATDataPoint, HeatmapCountyDataPoint } from "@/schemas/heatmap";
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import React, { useState, lazy, Suspense } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { getPercentileValues, createHeatmapStyleFunction } from "@/components/maps/utils";
 import type { LeafletMouseEvent } from "leaflet";
 import { UatProperties } from "@/components/maps/interfaces";
@@ -40,12 +41,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useUserCurrency } from "@/lib/hooks/useUserCurrency";
 import { useUserInflationAdjusted } from "@/lib/hooks/useUserInflationAdjusted";
 import type { AnalyticsFilterType, Currency, Normalization } from "@/schemas/charts";
+import { buildEntityDetailsPath, buildPreferredEntityPath } from "@/lib/entity-navigation";
+import { entityRoutingSummaryQueryOptions } from "@/lib/hooks/useEntityDetails";
 
 export const Route = createLazyFileRoute("/map")({
   component: MapPage,
 });
 
 function MapPage() {
+  const queryClient = useQueryClient();
   const navigate = useNavigate({ from: '/map' });
   const { mapState, setFilters } = useMapFilter();
   const [userCurrency, setUserCurrency] = useUserCurrency();
@@ -135,11 +139,11 @@ function MapPage() {
     error: heatmapError,
   } = useHeatmapData(effectiveFilters, mapState.mapViewType);
 
-  const handleFeatureClick = (properties: UatProperties, _event?: LeafletMouseEvent) => {
+  const handleFeatureClick = async (properties: UatProperties, _event?: LeafletMouseEvent) => {
     // The entity map support only a limited set of filters, so we need to pass them as a search param.
     // If we set all the filters, the data doesn't make sense for the entity page, as the filters are not visible.
     const { report_period: period, account_category, normalization } = effectiveFilters;
-    const searchParams = {
+    const entityPageSearchParams = {
       mapFilters: {
         account_category,
         normalization,
@@ -147,20 +151,57 @@ function MapPage() {
       },
     };
 
+    let selectedEntityCui: string | undefined;
+
     if (mapState.mapViewType === 'UAT') {
-      const uatCui = (heatmapData as HeatmapUATDataPoint[])?.find(
+      selectedEntityCui = (heatmapData as HeatmapUATDataPoint[])?.find(
         (data) => data.siruta_code === properties.natcode
       )?.uat_code;
-      if (uatCui) {
-        navigate({ to: `/entities/${uatCui}`, search: { ...searchParams } });
+
+      if (!selectedEntityCui) {
+        return;
       }
-    } else {
-      const countyCui = (heatmapData as HeatmapCountyDataPoint[])?.find(
-        (data) => data.county_code === properties.mnemonic
-      )?.county_entity?.cui;
-      if (countyCui) {
-        navigate({ to: `/entities/${countyCui}`, search: { ...searchParams } });
-      }
+
+      await navigate({
+        to: buildPreferredEntityPath({
+          cui: selectedEntityCui,
+          isUat: true,
+        }) as '/',
+      });
+      return;
+    }
+
+    selectedEntityCui = (heatmapData as HeatmapCountyDataPoint[])?.find(
+      (data) => data.county_code === properties.mnemonic
+    )?.county_entity?.cui;
+
+    if (!selectedEntityCui) {
+      return;
+    }
+
+    try {
+      const entitySummary = await queryClient.fetchQuery(
+        entityRoutingSummaryQueryOptions({ cui: selectedEntityCui }),
+      );
+      const preferredPath = buildPreferredEntityPath({
+        cui: selectedEntityCui,
+        entityType: entitySummary?.entity_type,
+        isUat: entitySummary?.is_uat,
+      });
+      const shouldNavigateToEntityPage =
+        preferredPath === buildEntityDetailsPath(selectedEntityCui);
+
+      await navigate({
+        to: preferredPath as '/',
+        ...(shouldNavigateToEntityPage
+          ? { search: { ...entityPageSearchParams } }
+          : {}),
+      });
+    } catch {
+      await navigate({
+        to: buildEntityDetailsPath(selectedEntityCui) as '/',
+        search: { ...entityPageSearchParams },
+      });
     }
   };
 

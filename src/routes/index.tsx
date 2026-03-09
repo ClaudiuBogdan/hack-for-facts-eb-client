@@ -56,6 +56,7 @@ function Index() {
           <div className="w-full max-w-2xl -mt-10 lg:max-w-3xl space-y-6">
             <EntitySearchInput
               placeholder={t`Enter entity name or CUI...`}
+              selectionBehavior="navigate-to-preferred-entity"
               autoFocus={!isMobile}
               scrollToTopOnFocus={isMobile}
             />

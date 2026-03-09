@@ -100,6 +100,12 @@ export type EntityShareSnapshotData = Pick<
   | "budgetBalance"
 >;
 
+export interface EntityRoutingSummary {
+  cui: string;
+  entity_type?: string | null;
+  is_uat?: boolean | null;
+}
+
 // --- Reports types (connection for pagination) ---
 export interface ReportNode {
   report_id: string;
@@ -210,6 +216,16 @@ const GET_ENTITY_SHARE_SNAPSHOT_QUERY = `
   }
 `;
 
+const GET_ENTITY_ROUTING_SUMMARY_QUERY = `
+  query GetEntityRoutingSummary($cui: ID!) {
+    entity(cui: $cui) {
+      cui
+      entity_type
+      is_uat
+    }
+  }
+`;
+
 export async function getEntityDetails(params: {
   cui: string
   reportPeriod: ReportPeriodInput
@@ -308,6 +324,34 @@ export async function getEntityShareSnapshot(params: {
       cui,
     })
     throw error
+  }
+}
+
+export async function getEntityRoutingSummary(
+  cui: string,
+): Promise<EntityRoutingSummary | null> {
+  logger.info(`Fetching entity routing summary for CUI: ${cui}`);
+
+  try {
+    const response = await graphqlRequest<{
+      entity: EntityRoutingSummary | null;
+    }>(GET_ENTITY_ROUTING_SUMMARY_QUERY, { cui });
+
+    if (!response || !response.entity) {
+      logger.warn("Received null or undefined response for entity routing summary", {
+        response,
+        cui,
+      });
+      return null;
+    }
+
+    return response.entity;
+  } catch (error) {
+    logger.error(`Error fetching entity routing summary for CUI: ${cui}`, {
+      error,
+      cui,
+    });
+    throw error;
   }
 }
 
@@ -530,6 +574,7 @@ const ENTITY_SEARCH_QUERY = `
         name
         cui
         entity_type
+        is_uat
         uat {
           county_name
           name

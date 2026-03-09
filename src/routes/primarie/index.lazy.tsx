@@ -5,7 +5,6 @@ import { CampaignPageFrame } from '@/features/campaigns/buget/components/layout/
 import { useCampaignProgress } from '@/features/campaigns/buget/hooks/use-campaign-progress'
 import { resolveCampaignLocale } from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
 import type { CampaignLocale } from '@/features/campaigns/buget/types'
-import { buildCampaignProvocariPath } from '@/features/challenges/constants'
 
 export const Route = createLazyFileRoute('/primarie/')({
   component: PrimarieSelectorRoutePage,
@@ -31,7 +30,8 @@ function PrimarieSelectorRouteContent({
     (entity: { cui: string }) => {
       setSelectedEntity({ entityCui: entity.cui })
       void navigate({
-        to: buildCampaignProvocariPath(entity.cui) as '/',
+        to: '/primarie/$cui',
+        params: { cui: entity.cui },
         search: getProvocariSearch(languageQuery),
         replace: true,
         resetScroll: false,

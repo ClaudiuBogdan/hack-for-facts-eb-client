@@ -1,5 +1,15 @@
 import { useQuery, queryOptions } from '@tanstack/react-query';
-import { getEntityDetails, getEntityExecutionLineItems, getEntityRelationships, getEntityReports, getReportsConnection, ReportsFilterInput, ReportConnection, EntityDetailsData } from '@/lib/api/entities';
+import {
+  getEntityDetails,
+  getEntityExecutionLineItems,
+  getEntityRelationships,
+  getEntityReports,
+  getEntityRoutingSummary,
+  getReportsConnection,
+  ReportsFilterInput,
+  ReportConnection,
+  EntityDetailsData,
+} from '@/lib/api/entities';
 import type { NormalizationOptions } from '@/lib/normalization';
 import { ReportPeriodInput, GqlReportType } from '@/schemas/reporting';
 import { generateHash } from '../utils';
@@ -125,6 +135,20 @@ export function reportsConnectionQueryOptions(params: { filter: ReportsFilterInp
     queryKey: ['reportsConnection', filter, limit, offset],
     queryFn: () => getReportsConnection(filter, limit, offset),
     enabled,
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function entityRoutingSummaryQueryOptions(params: {
+  cui: string;
+  enabled?: boolean;
+}) {
+  const { cui, enabled = true } = params;
+
+  return queryOptions({
+    queryKey: ['entityRoutingSummary', cui],
+    queryFn: () => getEntityRoutingSummary(cui),
+    enabled: !!cui && enabled,
     staleTime: 1000 * 60 * 5,
   });
 }

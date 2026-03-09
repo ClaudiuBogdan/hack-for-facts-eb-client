@@ -5,12 +5,16 @@ import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
 import { searchEntities } from "@/lib/api/entities";
 import { EntitySearchNode } from "@/schemas/entities";
 import { Analytics } from "@/lib/analytics";
+import {
+    buildEntitySelectionPath,
+    type EntitySelectionBehavior,
+} from "@/lib/entity-navigation";
 
 interface UseEntitySearchProps {
     debounceMs?: number;
     onSelect?: (entity: EntitySearchNode) => void;
     openNotificationModal?: boolean;
-    selectionBehavior?: 'navigate-to-entity' | 'callback-only';
+    selectionBehavior?: EntitySelectionBehavior;
     entitySearchFilter?: {
         isUat?: boolean;
         excludeCounty?: boolean;
@@ -30,18 +34,24 @@ export function useEntitySearch({
     const [activeIndex, setActiveIndex] = useState(-1);
 
     const debouncedSearchTerm = useDebouncedValue(searchTerm, debounceMs);
+    const normalizedSearchTerm = useMemo(
+        () => debouncedSearchTerm.trim(),
+        [debouncedSearchTerm],
+    );
 
     // Track meaningful searches (>= 3 chars) after debounce
-    const lastSearchPayload = useMemo(() => ({ q: debouncedSearchTerm?.trim() ?? "" }), [debouncedSearchTerm]);
+    const lastSearchPayload = useMemo(() => ({ q: normalizedSearchTerm }), [normalizedSearchTerm]);
 
     const {
         data: results = [],
         isLoading,
         isError,
     } = useQuery<EntitySearchNode[], Error>({
-        queryKey: ["entitySearch", debouncedSearchTerm, entitySearchFilter?.isUat, entitySearchFilter?.excludeCounty],
-        queryFn: () => searchEntities(debouncedSearchTerm, 8, entitySearchFilter),
-        enabled: !!debouncedSearchTerm && debouncedSearchTerm.trim().length > 2,
+        queryKey: ["entitySearch", normalizedSearchTerm, entitySearchFilter?.isUat, entitySearchFilter?.excludeCounty],
+        queryFn: () => searchEntities(normalizedSearchTerm, 8, entitySearchFilter),
+        enabled: normalizedSearchTerm.length > 2,
+        staleTime: 1000 * 60 * 5,
+        gcTime: 1000 * 60 * 30,
     });
 
     useEffect(() => {
@@ -76,14 +86,18 @@ export function useEntitySearch({
             Analytics.capture(Analytics.EVENTS.EntitySearchSelected, {
                 cui: selectedEntity.cui,
             });
-            const shouldNavigateToEntity =
-                selectionBehavior === 'navigate-to-entity' && !options?.skipNavigate;
+            const shouldNavigate =
+                selectionBehavior !== 'callback-only' && !options?.skipNavigate;
 
             // Navigate programmatically unless explicitly skipped (e.g., Cmd/Ctrl+Click opens new tab)
-            if (shouldNavigateToEntity) {
+            if (shouldNavigate) {
+                const destination = buildEntitySelectionPath({
+                    cui: selectedEntity.cui,
+                    entityType: selectedEntity.entity_type,
+                    isUat: selectedEntity.is_uat,
+                }, selectionBehavior);
                 navigate({
-                    to: "/entities/$cui",
-                    params: { cui: selectedEntity.cui },
+                    to: destination as '/',
                     search: (prev) => ({
                         ...prev,
                         ...(openNotificationModal && { notificationModal: 'open' as const })

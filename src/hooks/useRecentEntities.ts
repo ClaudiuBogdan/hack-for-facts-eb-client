@@ -17,8 +17,12 @@ export function useRecentEntities(entity?: EntityDetailsData | null): RecentEnti
     setRecentEntities(prev => {
       const existing = prev.find(e => e.cui === entity.cui);
       if (existing) {
-        // Move to the top
-        return [existing, ...prev.filter(e => e.cui !== entity.cui)];
+        const mergedEntity: EntitySearchNode = {
+          ...existing,
+          ...entity,
+          uat: entity.uat ?? existing.uat,
+        }
+        return [mergedEntity, ...prev.filter(e => e.cui !== entity.cui)];
       }
       // Add to the top and truncate
       return [entity, ...prev].slice(0, MAX_RECENT_ENTITIES);
@@ -32,6 +36,8 @@ export function useRecentEntities(entity?: EntityDetailsData | null): RecentEnti
       addRecentEntity({
         cui: entity.cui,
         name: entity.name,
+        entity_type: entity.entity_type,
+        is_uat: entity.is_uat,
         uat: entity.uat,
       });
     }

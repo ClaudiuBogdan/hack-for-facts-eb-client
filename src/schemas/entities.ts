@@ -2,6 +2,7 @@ export interface EntitySearchNode {
   cui: string;
   name: string;
   entity_type?: string | null;
+  is_uat?: boolean | null;
   uat?: {
     county_name?: string | null;
     name?: string | null;

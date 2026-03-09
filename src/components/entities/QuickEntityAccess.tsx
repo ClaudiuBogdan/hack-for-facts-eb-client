@@ -3,6 +3,7 @@ import { PREDEFINED_ENTITIES } from '@/lib/constants/predefined-entities';
 import { Badge } from '@/components/ui/badge';
 import { Link } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
+import { buildPreferredEntityPath } from '@/lib/entity-navigation';
 
 const MAX_SUGGESTIONS = 5;
 
@@ -26,7 +27,14 @@ export function QuickEntityAccess() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.05 }}
           >
-            <Link to="/entities/$cui" params={{ cui: entity.cui }} preload="intent">
+            <Link
+              to={buildPreferredEntityPath({
+                cui: entity.cui,
+                entityType: entity.entity_type,
+                isUat: entity.is_uat,
+              }) as '/'}
+              preload="intent"
+            >
               <Badge
                 variant="outline"
                 className="bg-white dark:bg-slate-800 px-3 py-2 sm:px-4 sm:py-2 border-1 border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition duration-200 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer group"

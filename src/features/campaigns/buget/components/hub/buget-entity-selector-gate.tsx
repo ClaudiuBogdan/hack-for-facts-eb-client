@@ -48,6 +48,7 @@ export function BugetEntitySelectorGate({
         cui: entity.cui,
         name: entity.name,
         entity_type: entity.entityType,
+        is_uat: true,
       })
       Analytics.capture(Analytics.EVENTS.CampaignEntitySelectedFromSearch, {
         source: 'search',
