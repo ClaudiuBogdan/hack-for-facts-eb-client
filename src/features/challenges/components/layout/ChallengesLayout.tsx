@@ -40,6 +40,7 @@ import {
   buildCampaignProvocariModulePath,
   buildCampaignProvocariPath,
   buildCampaignProvocariStepPath,
+  CHALLENGE_SELECTED_ENTITY_PICKER_PATH,
   resolveCampaignEntityCuiFromPathname,
 } from '../../constants'
 import type { ChallengeDefinition, ChallengeLocale } from '../../types'
@@ -109,7 +110,7 @@ function ChallengeNav({
   const isThisChallenge = challenge.slug === currentChallengeSlug
   const hubPath = entityCui
     ? buildCampaignProvocariPath(entityCui)
-    : '/buget/cauta'
+    : CHALLENGE_SELECTED_ENTITY_PICKER_PATH
   const fallbackPath = entityCui
     ? buildCampaignProvocariModulePath(entityCui, moduleSlug)
     : hubPath
@@ -252,7 +253,7 @@ function ChallengesSidebar({
   }
   const hubPath = entityCui
     ? buildCampaignProvocariPath(entityCui)
-    : '/buget/cauta'
+    : CHALLENGE_SELECTED_ENTITY_PICKER_PATH
 
   return (
     <div className="flex h-full flex-col bg-background border-r border-border/50">

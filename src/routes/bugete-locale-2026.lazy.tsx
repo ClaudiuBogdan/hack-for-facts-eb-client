@@ -2,11 +2,11 @@ import { createLazyFileRoute } from '@tanstack/react-router'
 import { BugetLandingPage } from '@/features/campaigns/buget/components/landing/buget-landing-page'
 import { resolveCampaignLocale } from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
 
-export const Route = createLazyFileRoute('/buget/')({
-  component: BugetLandingRoutePage,
+export const Route = createLazyFileRoute('/bugete-locale-2026')({
+  component: BugeteLocaleLandingRoutePage,
 })
 
-function BugetLandingRoutePage() {
+function BugeteLocaleLandingRoutePage() {
   const search = Route.useSearch()
   const locale = resolveCampaignLocale(search)
 

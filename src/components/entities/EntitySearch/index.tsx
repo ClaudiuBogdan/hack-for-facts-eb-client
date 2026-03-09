@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Search, X, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -59,6 +59,14 @@ export function EntitySearchInput({
 
     const showDropdown = isDropdownOpen && debouncedSearchTerm.trim().length > 2;
     const activeDescendantId = activeIndex > -1 ? `${searchId}-result-${activeIndex}` : undefined;
+
+    useEffect(() => {
+        if (!autoFocus) {
+            return;
+        }
+
+        inputRef.current?.focus();
+    }, [autoFocus]);
 
     return (
         <div

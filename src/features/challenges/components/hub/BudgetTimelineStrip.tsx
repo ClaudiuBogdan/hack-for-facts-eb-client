@@ -3,10 +3,10 @@ import { t } from '@lingui/core/macro'
 import { ArrowRight } from 'lucide-react'
 import {
   buildCampaignCalendarPath,
-  CAMPAIGN_BASE_PATH,
 } from '@/features/campaigns/buget/constants'
 import { useCampaignTimeline } from '@/features/campaigns/buget/hooks/use-campaign-timeline'
 import { getCampaignText } from '@/features/campaigns/buget/hooks/use-campaign-content'
+import { CHALLENGE_SELECTED_ENTITY_PICKER_PATH } from '../../constants'
 import type { ChallengeLocale } from '../../types'
 
 type BudgetTimelineStripProps = {
@@ -25,7 +25,7 @@ export function BudgetTimelineStrip({ locale, entityCui }: BudgetTimelineStripPr
   if (locale === 'en') linkSearch.lang = 'en'
   const calendarPath = entityCui
     ? buildCampaignCalendarPath(entityCui)
-    : `${CAMPAIGN_BASE_PATH}/cauta`
+    : CHALLENGE_SELECTED_ENTITY_PICKER_PATH
 
   return (
     <Link

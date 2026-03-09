@@ -2,6 +2,8 @@ import { expect } from '@playwright/test'
 import { test } from '../utils/integration-base'
 
 test.describe('Buget Routing', () => {
+  test.describe.configure({ mode: 'serial' })
+
   test.beforeEach(async ({ mockApi }) => {
     await mockApi.mockGraphQL('GetEntityDetails', 'entity-details')
     await mockApi.mockGraphQL('GetEntityLineItems', 'entity-line-items')
@@ -10,13 +12,37 @@ test.describe('Buget Routing', () => {
     await mockApi.mockGraphQL('GetReports', 'get-reports')
   })
 
-  test('renders the new campaign landing route', async ({ page }) => {
-    await page.goto('/buget')
+  test('renders the landing route at /bugete-locale-2026', async ({ page }) => {
+    await page.goto('/bugete-locale-2026')
 
     await expect(
       page.getByRole('heading', {
         level: 1,
         name: 'Provocarea civică Bugete Locale 2026',
+      }),
+    ).toBeVisible({ timeout: 10000 })
+  })
+
+  test('renders the canonical selector route at /primarie', async ({ page }) => {
+    await page.goto('/primarie')
+
+    await expect(page).toHaveURL(/\/primarie(?:\?.*)?$/)
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: /Alege mai întâi primăria ta|Find your city hall first/i,
+      }),
+    ).toBeVisible({ timeout: 10000 })
+  })
+
+  test('renders the canonical map selector route at /primarie/harta', async ({ page }) => {
+    await page.goto('/primarie/harta')
+
+    await expect(page).toHaveURL(/\/primarie\/harta(?:\?.*)?$/)
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: /Alege primăria direct de pe hartă|Pick your city hall directly from the map/i,
       }),
     ).toBeVisible({ timeout: 10000 })
   })
@@ -82,6 +108,42 @@ test.describe('Buget Routing', () => {
     ).toBeVisible({ timeout: 20000 })
   })
 
+  test('shows not found for the removed /buget root', async ({ page }) => {
+    await page.goto('/buget')
+
+    await expect(page).toHaveURL(/\/buget$/)
+    await expect(
+      page.getByText(/Not Found|Pagina nu a fost găsită|Page not found/i),
+    ).toBeVisible({ timeout: 10000 })
+  })
+
+  test('shows not found for removed /buget/cauta routes', async ({ page }) => {
+    await page.goto('/buget/cauta')
+
+    await expect(page).toHaveURL(/\/buget\/cauta$/)
+    await expect(
+      page.getByText(/Not Found|Pagina nu a fost găsită|Page not found/i),
+    ).toBeVisible({ timeout: 10000 })
+  })
+
+  test('shows not found for removed /buget/cauta/harta routes', async ({ page }) => {
+    await page.goto('/buget/cauta/harta')
+
+    await expect(page).toHaveURL(/\/buget\/cauta\/harta$/)
+    await expect(
+      page.getByText(/Not Found|Pagina nu a fost găsită|Page not found/i),
+    ).toBeVisible({ timeout: 10000 })
+  })
+
+  test('shows not found for removed /buget/forum routes', async ({ page }) => {
+    await page.goto('/buget/forum')
+
+    await expect(page).toHaveURL(/\/buget\/forum$/)
+    await expect(
+      page.getByText(/Not Found|Pagina nu a fost găsită|Page not found/i),
+    ).toBeVisible({ timeout: 10000 })
+  })
+
   test('shows not found for removed entity route roots under /buget', async ({ page }) => {
     await page.goto('/buget/4305857')
 
@@ -113,15 +175,6 @@ test.describe('Buget Routing', () => {
     await page.goto('/buget-primarie')
 
     await expect(page).toHaveURL(/\/buget-primarie$/)
-    await expect(
-      page.getByText(/Not Found|Pagina nu a fost găsită|Page not found/i),
-    ).toBeVisible({ timeout: 10000 })
-  })
-
-  test('shows not found for the removed bugete-locale-2026 path', async ({ page }) => {
-    await page.goto('/bugete-locale-2026')
-
-    await expect(page).toHaveURL(/\/bugete-locale-2026$/)
     await expect(
       page.getByText(/Not Found|Pagina nu a fost găsită|Page not found/i),
     ).toBeVisible({ timeout: 10000 })

@@ -15,7 +15,9 @@ import { ClientOnly } from '@/components/ssr/ClientOnly'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
 import { Analytics } from '@/lib/analytics'
-import { CAMPAIGN_BASE_PATH } from '../../constants'
+import {
+  CAMPAIGN_ENTITY_SELECTOR_PATH,
+} from '../../constants'
 import { useCampaignProgress } from '../../hooks/use-campaign-progress'
 import { useUatCuiMap } from '../../hooks/use-uat-cui-map'
 import type { CampaignLocale } from '../../types'
@@ -78,7 +80,7 @@ export function BugetEntityMapSelectorPage({
   locale,
   languageQuery,
 }: BugetEntityMapSelectorPageProps) {
-  const navigate = useNavigate({ from: '/buget/cauta/harta/' })
+  const navigate = useNavigate({ from: '/primarie/harta/' })
   const { setSelectedEntity } = useCampaignProgress()
   const [pendingUatSelection, setPendingUatSelection] = useState<PendingUatSelection | null>(null)
   const {
@@ -144,8 +146,8 @@ export function BugetEntityMapSelectorPage({
       : 'Alege primăria direct de pe hartă'
   const description =
     locale === 'en'
-      ? 'Click the UAT area you are interested in. County borders are highlighted for orientation.'
-      : 'Dă click pe UAT-ul care te interesează. Granițele județelor sunt evidențiate pentru orientare.'
+      ? 'Click the UAT area you are interested in. You can zoom in and move the map using the +/- buttons from the top left corner.'
+      : 'Dă click pe UAT-ul care te interesează. Poți mări și muta harta folosind butoanele +/- din colțul din stânga sus.'
   const backLabel =
     locale === 'en'
       ? 'Back to search'
@@ -165,18 +167,24 @@ export function BugetEntityMapSelectorPage({
   const isLoading = isLoadingUatGeoJson || isLoadingCountyGeoJson || isLoadingUatCuiMap
   const error = uatGeoJsonError || countyGeoJsonError || uatCuiMapError
 
+  const mapPlaceholder = (
+    <div className="flex h-[calc(100svh-10rem)] sm:h-[70vh] items-center justify-center">
+      <LoadingSpinner size="lg" text={locale === 'en' ? 'Loading map...' : 'Se încarcă harta...'} />
+    </div>
+  )
+
   return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <div>
+    <section className="mx-auto max-w-5xl space-y-4 px-4 py-4 sm:px-6 sm:py-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-3xl">
             {title}
           </h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300 sm:text-base">{description}</p>
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{description}</p>
         </div>
-        <Button asChild variant="outline" className="shrink-0">
+        <Button asChild variant="outline" className="shrink-0 self-start">
           <Link
-            to={`${CAMPAIGN_BASE_PATH}/cauta` as '/'}
+            to={CAMPAIGN_ENTITY_SELECTOR_PATH as '/'}
             search={languageQuery === 'en' ? { lang: 'en' } : {}}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -185,15 +193,11 @@ export function BugetEntityMapSelectorPage({
         </Button>
       </div>
 
-      <div className="rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 sm:p-4">
-        {isLoading ? (
-          <div className="flex h-[70vh] items-center justify-center">
-            <LoadingSpinner size="lg" text={locale === 'en' ? 'Loading map...' : 'Se încarcă harta...'} />
-          </div>
-        ) : null}
+      <div>
+        {isLoading ? mapPlaceholder : null}
 
         {error ? (
-          <div className="flex h-[70vh] items-center justify-center text-sm text-red-600 dark:text-red-400">
+          <div className="flex h-[calc(100svh-10rem)] sm:h-[70vh] items-center justify-center text-sm text-red-600 dark:text-red-400">
             {locale === 'en'
               ? 'Failed to load the selector map. Please refresh the page.'
               : 'Nu am putut încărca harta de selecție. Reîncarcă pagina.'}
@@ -201,20 +205,8 @@ export function BugetEntityMapSelectorPage({
         ) : null}
 
         {!isLoading && !error && uatGeoJson && countyGeoJson ? (
-          <ClientOnly
-            fallback={
-              <div className="flex h-[70vh] items-center justify-center">
-                <LoadingSpinner size="lg" text={locale === 'en' ? 'Loading map...' : 'Se încarcă harta...'} />
-              </div>
-            }
-          >
-            <Suspense
-              fallback={
-                <div className="flex h-[70vh] items-center justify-center">
-                  <LoadingSpinner size="lg" text={locale === 'en' ? 'Loading map...' : 'Se încarcă harta...'} />
-                </div>
-              }
-            >
+          <ClientOnly fallback={mapPlaceholder}>
+            <Suspense fallback={mapPlaceholder}>
               <BugetEntityMapSelectorMap
                 uatGeoJson={uatGeoJson}
                 countyGeoJson={countyGeoJson}

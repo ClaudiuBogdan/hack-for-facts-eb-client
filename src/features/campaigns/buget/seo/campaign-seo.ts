@@ -2,7 +2,9 @@ import { getSiteUrl } from '@/config/env'
 import {
   buildCampaignBudgetPath,
   buildCampaignCalendarPath,
-  CAMPAIGN_BASE_PATH,
+  CAMPAIGN_ENTITY_SELECTOR_MAP_PATH,
+  CAMPAIGN_ENTITY_SELECTOR_PATH,
+  CAMPAIGN_LANDING_PATH,
 } from '../constants'
 import {
   buildCampaignPrimariePath,
@@ -115,23 +117,23 @@ function resolvePagePath(params: {
   readonly challengeSlug?: string
   readonly stepSlug?: string
 }): string {
-  if (params.pageKind === 'landing') return CAMPAIGN_BASE_PATH
-  if (params.pageKind === 'principal-selector') return `${CAMPAIGN_BASE_PATH}/cauta`
-  if (params.pageKind === 'principal-map') return `${CAMPAIGN_BASE_PATH}/cauta/harta`
+  if (params.pageKind === 'landing') return CAMPAIGN_LANDING_PATH
+  if (params.pageKind === 'principal-selector') return CAMPAIGN_ENTITY_SELECTOR_PATH
+  if (params.pageKind === 'principal-map') return CAMPAIGN_ENTITY_SELECTOR_MAP_PATH
   if (params.pageKind === 'calendar') {
     return params.entityCui
       ? buildCampaignCalendarPath(params.entityCui)
-      : `${CAMPAIGN_BASE_PATH}/cauta`
+      : CAMPAIGN_ENTITY_SELECTOR_PATH
   }
   if (params.pageKind === 'hub') {
     return params.entityCui
       ? buildCampaignBudgetPath(params.entityCui)
-      : `${CAMPAIGN_BASE_PATH}/cauta`
+      : CAMPAIGN_ENTITY_SELECTOR_PATH
   }
   if (params.pageKind === 'primarie') {
     return params.entityCui
       ? buildCampaignPrimariePath(params.entityCui)
-      : `${CAMPAIGN_BASE_PATH}/cauta`
+      : CAMPAIGN_ENTITY_SELECTOR_PATH
   }
   if (params.pageKind === 'challenges') {
     if (params.entityCui && params.moduleSlug && params.challengeSlug && params.stepSlug) {
@@ -149,7 +151,7 @@ function resolvePagePath(params: {
 
     return params.entityCui
       ? buildCampaignProvocariPath(params.entityCui)
-      : `${CAMPAIGN_BASE_PATH}/cauta`
+      : CAMPAIGN_ENTITY_SELECTOR_PATH
   }
 
   if (params.entityCui && params.moduleSlug && params.challengeSlug && params.stepSlug) {
@@ -163,7 +165,7 @@ function resolvePagePath(params: {
 
   return params.entityCui
     ? buildCampaignProvocariPath(params.entityCui)
-    : `${CAMPAIGN_BASE_PATH}/cauta`
+    : CAMPAIGN_ENTITY_SELECTOR_PATH
 }
 
 function buildUrl(params: {

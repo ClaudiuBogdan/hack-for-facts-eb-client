@@ -1,6 +1,7 @@
 import {
   buildCampaignBudgetPath,
-  CAMPAIGN_BASE_PATH,
+  CAMPAIGN_ENTITY_SELECTOR_MAP_PATH,
+  CAMPAIGN_ENTITY_SELECTOR_PATH,
   CAMPAIGN_ENTITY_BASE_PATH,
 } from '@/features/campaigns/buget/constants'
 import type { ChallengeLocale } from './types'
@@ -11,7 +12,10 @@ export const CAMPAIGN_PROVOCARI_MODULE_ROUTE =
 export const CAMPAIGN_PROVOCARI_STEP_ROUTE =
   `${CAMPAIGN_PROVOCARI_MODULE_ROUTE}/$challengeSlug/$stepSlug`
 export const CAMPAIGN_PRIMARIE_ROUTE = `${CAMPAIGN_ENTITY_BASE_PATH}/$cui`
-export const CHALLENGE_SELECTED_ENTITY_PICKER_PATH = `${CAMPAIGN_BASE_PATH}/cauta`
+export const CHALLENGE_SELECTED_ENTITY_PICKER_PATH =
+  CAMPAIGN_ENTITY_SELECTOR_PATH
+export const CHALLENGE_SELECTED_ENTITY_MAP_PATH =
+  CAMPAIGN_ENTITY_SELECTOR_MAP_PATH
 export const CHALLENGE_SELECTED_ENTITY_ANALYSIS_ROUTE = CAMPAIGN_PRIMARIE_ROUTE
 
 export const CHALLENGES_DEFAULT_LOCALE: ChallengeLocale = 'ro'
@@ -49,5 +53,11 @@ export function resolveCampaignEntityCuiFromPathname(
 ): string | undefined {
   const parts = pathname.split('/').filter(Boolean)
   const entityIndex = parts.indexOf('primarie')
-  return entityIndex >= 0 ? parts[entityIndex + 1] : undefined
+  const entityCui = entityIndex >= 0 ? parts[entityIndex + 1] : undefined
+
+  if (!entityCui || entityCui === 'harta') {
+    return undefined
+  }
+
+  return entityCui
 }

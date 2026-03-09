@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
@@ -20,8 +20,13 @@ interface FloatingEntitySearchProps {
 
 export function FloatingEntitySearch({ className, externalOpen, showButton, onOpenChange, openNotificationModal = false }: FloatingEntitySearchProps) {
     const [internalOpen, setInternalOpen] = useState(false);
+    const [hasMounted, setHasMounted] = useState(false);
     const isMobile = useIsMobile();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        setHasMounted(true);
+    }, []);
 
     // Use external state if provided, otherwise use internal state
     const isOpen = externalOpen ?? internalOpen;
@@ -85,7 +90,7 @@ export function FloatingEntitySearch({ className, externalOpen, showButton, onOp
                     </DialogDescription>
                     <EntitySearchInput
                         onSelect={handleSelect}
-                        autoFocus={true}
+                        autoFocus={hasMounted && !isMobile}
                         scrollToTopOnFocus={true}
                     />
                 </DialogContent>

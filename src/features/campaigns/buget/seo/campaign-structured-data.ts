@@ -6,6 +6,10 @@ import type {
 } from '../types'
 import { getCampaignText } from '../hooks/use-campaign-content'
 import { buildCampaignProvocariPath } from '@/features/challenges/constants'
+import {
+  CAMPAIGN_ENTITY_SELECTOR_PATH,
+  CAMPAIGN_LANDING_PATH,
+} from '../constants'
 
 function getLanguageTag(locale: CampaignLocale): string {
   return locale === 'en' ? 'en-US' : 'ro-RO'
@@ -19,11 +23,11 @@ function buildCampaignEntity(params: {
   return {
     '@context': 'https://schema.org',
     '@type': 'CreativeWork',
-    '@id': `${params.siteUrl}/buget#campaign`,
+    '@id': `${params.siteUrl}${CAMPAIGN_LANDING_PATH}#campaign`,
     additionalType: 'https://schema.org/Campaign',
     name: getCampaignText(params.campaign.title, params.locale),
     description: getCampaignText(params.campaign.description, params.locale),
-    url: `${params.siteUrl}/buget`,
+    url: `${params.siteUrl}${CAMPAIGN_LANDING_PATH}`,
     inLanguage: getLanguageTag(params.locale),
     publisher: {
       '@type': 'Organization',
@@ -47,7 +51,7 @@ function buildChallengeEntity(params: {
     '@type': 'LearningResource',
     '@id': `${params.canonicalUrl}#challenge`,
     isPartOf: {
-      '@id': `${params.siteUrl}/buget#campaign`,
+      '@id': `${params.siteUrl}${CAMPAIGN_LANDING_PATH}#campaign`,
     },
     name: getCampaignText(params.challenge.title, params.locale),
     description: getCampaignText(params.challenge.summary, params.locale),
@@ -68,7 +72,7 @@ function buildChallengeBreadcrumbList(params: {
   const langSuffix = params.locale === 'en' ? '?lang=en' : ''
   const provocariUrl = params.entityCui
     ? `${params.siteUrl}${buildCampaignProvocariPath(params.entityCui)}${langSuffix}`
-    : `${params.siteUrl}/buget/cauta${langSuffix}`
+    : `${params.siteUrl}${CAMPAIGN_ENTITY_SELECTOR_PATH}${langSuffix}`
 
   return {
     '@context': 'https://schema.org',
@@ -78,7 +82,7 @@ function buildChallengeBreadcrumbList(params: {
         '@type': 'ListItem',
         position: 1,
         name: params.locale === 'en' ? 'Campaign' : 'Campanie',
-        item: `${params.siteUrl}/buget${langSuffix}`,
+        item: `${params.siteUrl}${CAMPAIGN_LANDING_PATH}${langSuffix}`,
       },
       {
         '@type': 'ListItem',

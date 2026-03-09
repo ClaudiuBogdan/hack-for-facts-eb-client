@@ -8,6 +8,8 @@ import {
   buildCampaignProvocariModulePath,
   buildCampaignProvocariPath,
   buildCampaignProvocariStepPath,
+  CHALLENGE_SELECTED_ENTITY_MAP_PATH,
+  CHALLENGE_SELECTED_ENTITY_PICKER_PATH,
   resolveCampaignEntityCuiFromPathname,
 } from './constants'
 
@@ -38,6 +40,8 @@ describe('challenge route builders', () => {
     expect(
       buildCampaignPrimariePath('12345678'),
     ).toBe('/primarie/12345678')
+    expect(CHALLENGE_SELECTED_ENTITY_PICKER_PATH).toBe('/primarie')
+    expect(CHALLENGE_SELECTED_ENTITY_MAP_PATH).toBe('/primarie/harta')
   })
 })
 
@@ -55,10 +59,13 @@ describe('resolveCampaignEntityCuiFromPathname', () => {
 
   it('ignores routes without an entity segment', () => {
     expect(
-      resolveCampaignEntityCuiFromPathname('/buget/cauta'),
+      resolveCampaignEntityCuiFromPathname('/primarie'),
     ).toBeUndefined()
     expect(
-      resolveCampaignEntityCuiFromPathname('/buget/forum'),
+      resolveCampaignEntityCuiFromPathname('/primarie/harta'),
+    ).toBeUndefined()
+    expect(
+      resolveCampaignEntityCuiFromPathname('/bugete-locale-2026'),
     ).toBeUndefined()
   })
 })

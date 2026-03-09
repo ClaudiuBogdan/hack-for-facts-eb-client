@@ -7,7 +7,7 @@ import {
 import { buildCampaignRouteHead } from '@/features/campaigns/buget/seo/campaign-seo'
 import type { CampaignRouteSearch } from '@/features/campaigns/buget/types'
 
-export const Route = createFileRoute('/buget/')({
+export const Route = createFileRoute('/primarie/harta/')({
   ssr: true,
   validateSearch: CampaignRouteSearchSchema,
   headers: () =>
@@ -19,7 +19,7 @@ export const Route = createFileRoute('/buget/')({
   head: ({ match }) => {
     const locale = resolveCampaignLocale(match.search as CampaignRouteSearch)
     return buildCampaignRouteHead({
-      pageKind: 'landing',
+      pageKind: 'principal-map',
       locale,
     })
   },

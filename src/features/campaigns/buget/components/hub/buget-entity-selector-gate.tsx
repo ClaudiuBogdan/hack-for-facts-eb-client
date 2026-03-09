@@ -1,11 +1,14 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { MapPinned } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EntitySearchInput } from '@/components/entities/EntitySearch'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { Analytics } from '@/lib/analytics'
 import { useRecentEntities } from '@/hooks/useRecentEntities'
-import { CAMPAIGN_BASE_PATH } from '../../constants'
+import {
+  CAMPAIGN_ENTITY_SELECTOR_MAP_PATH,
+} from '../../constants'
 import type { CampaignLocale } from '../../types'
 import { RecentUatBadges } from './recent-uat-badges'
 
@@ -27,10 +30,16 @@ export function BugetEntitySelectorGate({
   languageQuery,
   onEntitySelected,
 }: BugetEntitySelectorGateProps) {
+  const isMobile = useIsMobile()
+  const [hasMounted, setHasMounted] = useState(false)
   const { addRecentEntity } = useRecentEntities()
 
   useEffect(() => {
     Analytics.capture(Analytics.EVENTS.CampaignEntitySelectorOpened)
+  }, [])
+
+  useEffect(() => {
+    setHasMounted(true)
   }, [])
 
   const handleSelect = useCallback(
@@ -76,52 +85,55 @@ export function BugetEntitySelectorGate({
       : 'Caută primăria după nume sau CUI...'
 
   return (
-    <section className="mx-auto w-full max-w-4xl rounded-[40px] border border-border/50 bg-gradient-to-br from-background via-background to-primary/[0.03] p-6 shadow-xl shadow-primary/5 sm:p-10 md:p-12 lg:max-w-3xl lg:min-h-[760px]">
-      <div className="space-y-2 text-center">
-        <h1 className="text-balance text-4xl font-black leading-tight tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl md:text-6xl">
-          {title}
-        </h1>
-        <p className="mx-auto max-w-2xl text-base leading-relaxed text-zinc-600 dark:text-zinc-300 sm:text-lg">
-          {description}
-        </p>
-      </div>
+    <section className="flex min-h-[calc(100svh-8rem)] flex-col items-center px-4 pt-12 sm:px-6 sm:pt-[15vh]">
+      <div className="w-full max-w-lg space-y-8">
+        <div className="space-y-3 text-center">
+          <h1 className="text-balance text-4xl font-black leading-tight tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
+            {title}
+          </h1>
+          <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400 sm:text-base">
+            {description}
+          </p>
+        </div>
 
-      <div className="mt-8 lg:mt-12">
-        <EntitySearchInput
-          placeholder={searchPlaceholder}
-          selectionBehavior="callback-only"
-          entitySearchFilter={{ isUat: true, excludeCounty: true }}
-          onSelect={(entity) =>
-            handleSelect({
-              cui: entity.cui,
-              name: entity.name,
-              entityType: entity.entity_type,
-              countyName: entity.uat?.county_name,
-            })
-          }
-        />
+        <div className="space-y-4">
+          <EntitySearchInput
+            placeholder={searchPlaceholder}
+            selectionBehavior="callback-only"
+            entitySearchFilter={{ isUat: true, excludeCounty: true }}
+            autoFocus={hasMounted && !isMobile}
+            onSelect={(entity) =>
+              handleSelect({
+                cui: entity.cui,
+                name: entity.name,
+                entityType: entity.entity_type,
+                countyName: entity.uat?.county_name,
+              })
+            }
+          />
 
-        <RecentUatBadges locale={locale} onSelect={handleBadgeSelect} />
-      </div>
+          <RecentUatBadges locale={locale} onSelect={handleBadgeSelect} />
+        </div>
 
-      <div className="mt-10 flex items-center gap-4 sm:gap-6">
-        <div className="h-px flex-1 bg-border/70" />
-        <p className="shrink-0 text-sm font-bold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
-          {separatorLabel}
-        </p>
-        <div className="h-px flex-1 bg-border/70" />
-      </div>
+        <div className="flex items-center gap-4">
+          <div className="h-px flex-1 bg-border/70" />
+          <p className="shrink-0 text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
+            {separatorLabel}
+          </p>
+          <div className="h-px flex-1 bg-border/70" />
+        </div>
 
-      <div className="mt-10 flex justify-center">
-        <Button asChild variant="outline" className="h-12 rounded-xl px-6 text-sm font-semibold sm:text-base">
-          <Link
-            to={`${CAMPAIGN_BASE_PATH}/cauta/harta` as '/'}
-            search={languageQuery === 'en' ? { lang: 'en' } : {}}
-          >
-            <MapPinned className="mr-2 h-4 w-4" />
-            {mapLabel}
-          </Link>
-        </Button>
+        <div className="flex justify-center">
+          <Button asChild variant="outline" className="h-11 rounded-xl px-5 text-sm font-semibold">
+            <Link
+              to={CAMPAIGN_ENTITY_SELECTOR_MAP_PATH as '/'}
+              search={languageQuery === 'en' ? { lang: 'en' } : {}}
+            >
+              <MapPinned className="mr-2 h-4 w-4" />
+              {mapLabel}
+            </Link>
+          </Button>
+        </div>
       </div>
     </section>
   )
