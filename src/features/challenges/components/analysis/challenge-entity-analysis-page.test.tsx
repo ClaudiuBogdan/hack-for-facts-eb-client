@@ -900,15 +900,9 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
     expect(screen.getByText('Instituții subordonate')).toBeInTheDocument()
     expect(screen.getByText('Liceul Teoretic Avram Iancu')).toBeInTheDocument()
-    expect(screen.getByText('Semnale de Alarmă')).toBeInTheDocument()
-    expect(screen.getByText(/YTD anomaly/)).toBeInTheDocument()
-    expect(screen.getByText(/Missing/)).toBeInTheDocument()
     expect(screen.getByTestId('analysis-faq')).toHaveTextContent(
       'Întrebări frecvente:false',
     )
-    expect(
-      screen.getByRole('button', { name: 'Arată Detaliile' }),
-    ).toBeInTheDocument()
     expect(
       screen.queryByText('Învățământ / Bunuri și servicii'),
     ).not.toBeInTheDocument()
@@ -1199,20 +1193,16 @@ describe('ChallengeEntityAnalysisPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('keeps the anomaly details collapsed by default and expands on demand', async () => {
+  it('does not render anomaly details in the current analysis layout', async () => {
     renderAnalysisPage()
 
     expect(
       screen.queryByText('Învățământ / Bunuri și servicii'),
     ).not.toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Arată Detaliile' }))
-
-    await waitFor(() => {
-      expect(
-        screen.getByText('Învățământ / Bunuri și servicii'),
-      ).toBeInTheDocument()
-    })
+    expect(screen.queryByText('Semnale de Alarmă')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Arată Detaliile' }),
+    ).not.toBeInTheDocument()
   })
 
   it('uses the global currency and inflation settings for fetches and shows the inflation badge', async () => {

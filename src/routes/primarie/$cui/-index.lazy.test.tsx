@@ -617,11 +617,11 @@ describe('PrimarieEntityIndexRoutePage', () => {
 
     expect(
       screen.getByRole('heading', {
-        name: 'Open the analysis for Cluj-Napoca?',
+        name: 'Switch to a different city hall?',
       }),
     ).toBeInTheDocument()
     expect(screen.getByText('City Hall Cluj-Napoca')).toBeInTheDocument()
-    expect(screen.getByText('County: Cluj')).toBeInTheDocument()
+    expect(screen.getByText('Cluj · CUI 87654321')).toBeInTheDocument()
 
     expect(navigateMock).not.toHaveBeenCalled()
 
@@ -661,18 +661,18 @@ describe('PrimarieEntityIndexRoutePage', () => {
 
     expect(
       screen.getByRole('heading', {
-        name: 'Deschizi analiza pentru Cluj-Napoca?',
+        name: 'Schimbi primăria?',
       }),
     ).toBeInTheDocument()
     expect(screen.getByText('Primăria Cluj-Napoca')).toBeInTheDocument()
-    expect(screen.getByText('Județ: Cluj')).toBeInTheDocument()
+    expect(screen.getByText('Cluj · CUI 87654321')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Rămâi aici' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Anulează' }))
 
     await waitFor(() => {
       expect(
         screen.queryByRole('heading', {
-          name: 'Deschizi analiza pentru Cluj-Napoca?',
+          name: 'Schimbi primăria?',
         }),
       ).not.toBeInTheDocument()
     })
