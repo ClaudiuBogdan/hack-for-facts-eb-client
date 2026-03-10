@@ -7,7 +7,28 @@ const classificationInfoLinkMock = vi.fn()
 vi.mock('@/components/common/classification-info-link', () => ({
   ClassificationInfoLink: (props: any) => {
     classificationInfoLinkMock(props)
-    return <span data-testid={`classification-${props.type}`} />
+    return (
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label={`info-${props.type}-${props.code ?? 'unknown'}`}
+        data-testid={`classification-${props.type}`}
+        onClick={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+        }}
+        onKeyDown={(event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') {
+            return
+          }
+
+          event.preventDefault()
+          event.stopPropagation()
+        }}
+      >
+        Info
+      </div>
+    )
   },
 }))
 
@@ -183,5 +204,89 @@ describe('GroupedSubchapterAccordion', () => {
       ],
       displayedItem: { type: 'ec', code: '10.01.01' },
     })
+  })
+
+  it('does not expand the subchapter when the info trigger is clicked', () => {
+    render(
+      <GroupedSubchapterAccordion
+        sub={{
+          code: '10.01',
+          name: 'Cheltuieli de personal',
+          totalAmount: 72_355_864.29,
+          functionals: [
+            {
+              code: '65.02',
+              name: 'Învățământ',
+              totalAmount: 35_000_000,
+              economics: [],
+            },
+          ],
+        }}
+        baseTotal={100_000_000}
+        searchTerm=""
+        codePrefix="ec"
+      />,
+    )
+
+    const accordionTrigger = screen.getByRole('button', {
+      name: /Cheltuieli de personal/i,
+    })
+
+    expect(accordionTrigger).toHaveAttribute('aria-expanded', 'false')
+
+    fireEvent.click(screen.getByLabelText('info-economic-10.01'))
+
+    expect(accordionTrigger).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('forces matching subchapters open during search and restores the manual state after clearing it', () => {
+    const props = {
+      sub: {
+        code: '10.01',
+        name: 'Cheltuieli de personal',
+        totalAmount: 72_355_864.29,
+        functionals: [
+          {
+            code: '65.02',
+            name: 'Învățământ',
+            totalAmount: 35_000_000,
+            economics: [],
+          },
+        ],
+      },
+      baseTotal: 100_000_000,
+      codePrefix: 'ec' as const,
+    }
+
+    const { rerender } = render(
+      <GroupedSubchapterAccordion
+        {...props}
+        searchTerm=""
+      />,
+    )
+
+    const accordionTrigger = screen.getByRole('button', {
+      name: /Cheltuieli de personal/i,
+    })
+
+    expect(accordionTrigger).toHaveAttribute('aria-expanded', 'false')
+
+    rerender(
+      <GroupedSubchapterAccordion
+        {...props}
+        searchTerm="Învățământ"
+      />,
+    )
+
+    expect(accordionTrigger).toHaveAttribute('aria-expanded', 'true')
+
+    rerender(
+      <GroupedSubchapterAccordion
+        {...props}
+        searchTerm=""
+      />,
+    )
+
+    expect(accordionTrigger).toHaveAttribute('aria-expanded', 'false')
   })
 })

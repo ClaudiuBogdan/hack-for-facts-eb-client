@@ -412,4 +412,5 @@ describe('ClassificationInfoLink', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText('Classification description')).toBeInTheDocument()
   })
+
 })

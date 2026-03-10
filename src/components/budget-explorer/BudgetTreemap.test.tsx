@@ -230,7 +230,6 @@ vi.mock('@/components/common/classification-info-link', () => ({
     disabled,
     menuActions,
     onOverlayOpenChange,
-    onTriggerInteraction,
   }: {
     code?: string
     className?: string
@@ -240,7 +239,6 @@ vi.mock('@/components/common/classification-info-link', () => ({
       onSelect?: () => void
     }>
     onOverlayOpenChange?: (open: boolean) => void
-    onTriggerInteraction?: () => void
   }) => {
     classificationInfoLinkMock({
       code,
@@ -248,7 +246,6 @@ vi.mock('@/components/common/classification-info-link', () => ({
       disabled,
       menuActions,
       onOverlayOpenChange,
-      onTriggerInteraction,
     })
 
     return (
@@ -260,7 +257,6 @@ vi.mock('@/components/common/classification-info-link', () => ({
         disabled={disabled}
         onClick={(event) => {
           event.stopPropagation()
-          onTriggerInteraction?.()
           onOverlayOpenChange?.(true)
           menuActions?.[0]?.onSelect?.()
         }}
@@ -274,7 +270,6 @@ vi.mock('@/components/common/classification-info-link', () => ({
           aria-label={`Select mock classification ${code ?? 'unknown'} action ${index}`}
           onClick={(event) => {
             event.stopPropagation()
-            onTriggerInteraction?.()
             menuAction.onSelect?.()
           }}
         >
@@ -286,7 +281,6 @@ vi.mock('@/components/common/classification-info-link', () => ({
         aria-label={`Close mock classification ${code ?? 'unknown'}`}
         onClick={(event) => {
           event.stopPropagation()
-          onTriggerInteraction?.()
           onOverlayOpenChange?.(false)
         }}
       >

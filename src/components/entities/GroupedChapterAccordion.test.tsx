@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Accordion } from '@/components/ui/accordion'
 import GroupedChapterAccordion from './GroupedChapterAccordion'
@@ -9,7 +9,28 @@ const groupedSubchapterAccordionMock = vi.fn()
 vi.mock('@/components/common/classification-info-link', () => ({
   ClassificationInfoLink: (props: any) => {
     classificationInfoLinkMock(props)
-    return <span data-testid={`classification-${props.type}`} />
+    return (
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label={`info-${props.type}-${props.code ?? 'unknown'}`}
+        data-testid={`classification-${props.type}`}
+        onClick={(event) => {
+          event.preventDefault()
+          event.stopPropagation()
+        }}
+        onKeyDown={(event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') {
+            return
+          }
+
+          event.preventDefault()
+          event.stopPropagation()
+        }}
+      >
+        Info
+      </div>
+    )
   },
 }))
 
@@ -139,5 +160,60 @@ describe('GroupedChapterAccordion', () => {
       'grid-cols-[minmax(0,1fr)_auto]',
     )
     expect(valueBlock).not.toHaveClass('w-full')
+  })
+
+  it('does not expand the chapter when the info trigger is clicked', () => {
+    render(
+      <Accordion type="multiple">
+        <GroupedChapterAccordion
+          ch={{
+            prefix: '20',
+            description: 'Bunuri și servicii',
+            totalAmount: 120,
+            functionals: [],
+            subchapters: [],
+          }}
+          baseTotal={120}
+          searchTerm=""
+          codePrefixForSubchapters="ec"
+        />
+      </Accordion>,
+    )
+
+    const chapterTrigger = screen.getByRole('button', {
+      name: /Bunuri și servicii/i,
+    })
+
+    expect(chapterTrigger).toHaveAttribute('aria-expanded', 'false')
+
+    fireEvent.click(screen.getByLabelText('info-economic-20'))
+
+    expect(chapterTrigger).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('expands the chapter when the chapter trigger is clicked directly', () => {
+    render(
+      <Accordion type="multiple">
+        <GroupedChapterAccordion
+          ch={{
+            prefix: '20',
+            description: 'Bunuri și servicii',
+            totalAmount: 120,
+            functionals: [],
+            subchapters: [],
+          }}
+          baseTotal={120}
+          searchTerm=""
+        />
+      </Accordion>,
+    )
+
+    const chapterTrigger = screen.getByRole('button', {
+      name: /Bunuri și servicii/i,
+    })
+
+    fireEvent.click(chapterTrigger)
+
+    expect(chapterTrigger).toHaveAttribute('aria-expanded', 'true')
   })
 })

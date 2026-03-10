@@ -56,6 +56,16 @@ const GroupedSubchapterAccordion: React.FC<GroupedSubchapterAccordionProps> = ({
                 ? { economicCode: sub.code }
                 : { functionalCode: sub.code }
         )
+    const isSearchActive = searchTerm.trim().length > 0
+    const [isManuallyOpen, setIsManuallyOpen] = React.useState(false)
+    const accordionValue = isSearchActive || isManuallyOpen ? sub.code : ''
+    const handleAccordionValueChange = React.useCallback((nextValue: string) => {
+        if (isSearchActive) {
+            return
+        }
+
+        setIsManuallyOpen(nextValue === sub.code)
+    }, [isSearchActive, sub.code])
     // Example:
     // fn:36.01 / ec:30.01 - Subchapter label
     // fn:36.01.00 - Venituri din aplicarea prescriptiei extinctive -> .00 child from the line items list
@@ -117,7 +127,8 @@ const GroupedSubchapterAccordion: React.FC<GroupedSubchapterAccordionProps> = ({
         <Accordion
             type="single"
             collapsible
-            {...(searchTerm ? { defaultValue: sub.code } : {})}
+            value={accordionValue}
+            onValueChange={handleAccordionValueChange}
         >
             <AccordionItem value={sub.code}>
                 <AccordionTrigger className="group items-start gap-3 py-2 px-3 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 sm:px-4 [&[data-state=open]]:bg-slate-100 dark:[&[data-state=open]]:bg-slate-700 [&>svg]:mt-0.5">

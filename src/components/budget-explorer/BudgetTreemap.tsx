@@ -308,7 +308,7 @@ function TreemapInfoTriggersOverlay({
   onInfoHoverChange: (code: string, hovered: boolean) => void
   onInfoOverlayOpenChange: (code: string, open: boolean) => void
   onAnalyticsRequest?: (request: BudgetTreemapAnalyticsRequest) => void
-  onTriggerInteraction: () => void
+  onTriggerInteraction?: () => void
 }>) {
   return (
     <div className="pointer-events-none absolute inset-0 z-20">
@@ -333,6 +333,7 @@ function TreemapInfoTriggersOverlay({
             }}
             onPointerEnter={() => onInfoHoverChange(layout.code, true)}
             onPointerLeave={() => onInfoHoverChange(layout.code, false)}
+            onClickCapture={() => onTriggerInteraction?.()}
           >
             <ClassificationInfoLink
               type={layout.classificationType}
@@ -342,7 +343,6 @@ function TreemapInfoTriggersOverlay({
               showOnHoverOnly={false}
               disabled={!isVisible}
               onOverlayOpenChange={(open) => onInfoOverlayOpenChange(layout.code, open)}
-              onTriggerInteraction={onTriggerInteraction}
               menuActions={
                 layout.analyticsRequest
                   ? [

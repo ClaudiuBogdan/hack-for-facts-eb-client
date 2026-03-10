@@ -54,7 +54,6 @@ type ClassificationInfoLinkProps = Readonly<{
   onClick?: (e: React.MouseEvent) => void
   menuActions?: readonly ClassificationInfoMenuAction[]
   onOverlayOpenChange?: (open: boolean) => void
-  onTriggerInteraction?: () => void
 }>
 
 export type ClassificationInfoMenuAction = Readonly<{
@@ -201,7 +200,6 @@ export const ClassificationInfoLink = memo(function ClassificationInfoLink({
   onClick,
   menuActions,
   onOverlayOpenChange,
-  onTriggerInteraction,
 }: ClassificationInfoLinkProps) {
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -241,8 +239,7 @@ export const ClassificationInfoLink = memo(function ClassificationInfoLink({
       stopImmediatePropagation?: () => void
     }
     nativeEvent.stopImmediatePropagation?.()
-    onTriggerInteraction?.()
-  }, [onTriggerInteraction])
+  }, [])
 
   // Memoize event handlers
   const handleTriggerClick = useCallback((e: React.MouseEvent) => {
@@ -278,11 +275,13 @@ export const ClassificationInfoLink = memo(function ClassificationInfoLink({
     }
 
     event.preventDefault()
-    event.stopPropagation()
 
     if (disabled) {
+      event.stopPropagation()
       return
     }
+
+    stopEventPropagation(event)
 
     if (hasMenuActions) {
       handleMenuOpenChange(!menuOpen)
@@ -290,7 +289,14 @@ export const ClassificationInfoLink = memo(function ClassificationInfoLink({
     }
 
     handleDetailsOpenChange(true)
-  }, [disabled, handleDetailsOpenChange, handleMenuOpenChange, hasMenuActions, menuOpen])
+  }, [
+    disabled,
+    handleDetailsOpenChange,
+    handleMenuOpenChange,
+    hasMenuActions,
+    menuOpen,
+    stopEventPropagation,
+  ])
 
   const handleOpenDetails = useCallback(() => {
     setMenuOpen(false)
