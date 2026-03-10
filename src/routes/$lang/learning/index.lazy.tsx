@@ -45,7 +45,14 @@ function LearningHubPage() {
   const locale = lang as 'ro' | 'en'
   const paths = getLearningPaths()
   const navigate = useNavigate()
-  const { isReady, progress, resetOnboarding, clearProgress, setActivePathId } = useLearningProgress()
+  const {
+    isReady,
+    isSyncedWithAuthState,
+    progress,
+    resetOnboarding,
+    clearProgress,
+    setActivePathId,
+  } = useLearningProgress()
   const [isRestartDialogOpen, setIsRestartDialogOpen] = useState(false)
   const [isWipeDialogOpen, setIsWipeDialogOpen] = useState(false)
   const [isOtherPathsOpen, setIsOtherPathsOpen] = useState(false)
@@ -149,7 +156,7 @@ function LearningHubPage() {
   }, [paths, activePath?.id, progress])
 
   // Show loading while auth/progress is loading
-  if (!isReady) {
+  if (!isReady || !isSyncedWithAuthState) {
     return <LearningHubLoading />
   }
 

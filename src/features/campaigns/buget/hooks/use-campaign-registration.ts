@@ -70,7 +70,8 @@ export function useCampaignRegistration(): CampaignRegistrationState {
 
   useEffect(() => {
     if (!isLoaded) {
-      setIsReady(false)
+      setRegistration(EMPTY_REGISTRATION_SNAPSHOT)
+      setIsReady(true)
       return
     }
 

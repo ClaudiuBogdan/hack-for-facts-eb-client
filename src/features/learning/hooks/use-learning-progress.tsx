@@ -83,6 +83,7 @@ type SaveOnboardingInput = {
 
 type LearningProgressContextValue = {
   readonly isReady: boolean
+  readonly isSyncedWithAuthState: boolean
   readonly auth: LearningAuthState
   readonly progress: LearningGuestProgress
   readonly getContentProgress: (contentId: string) => LearningContentProgress | undefined
@@ -189,6 +190,7 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
 
   const [progress, setProgress] = useState<LearningGuestProgress>(() => getEmptyLearningGuestProgress())
   const [isReady, setIsReady] = useState(false)
+  const [isSyncedWithAuthState, setIsSyncedWithAuthState] = useState(false)
 
   const eventsRef = useRef<LearningProgressEvent[]>([])
   const syncStateRef = useRef<LearningProgressSyncState>(getEmptySyncState())
@@ -351,7 +353,7 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       }
       return fetchLearningProgress({ since: syncStateRef.current.lastSyncedCursor })
     },
-    enabled: auth.isAuthenticated && isReady,
+    enabled: auth.isAuthenticated && isSyncedWithAuthState,
     staleTime: 0,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
@@ -365,10 +367,10 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
   }, [auth.isAuthenticated, auth.userId, progressQuery])
 
   useEffect(() => {
-    if (!isReady || !auth.isAuthenticated || !progressQuery.data) return
+    if (!isSyncedWithAuthState || !auth.isAuthenticated || !progressQuery.data) return
     const keys = getStorageKeys()
     applyRemoteProgress(progressQuery.data, keys)
-  }, [applyRemoteProgress, auth.isAuthenticated, getStorageKeys, isReady, progressQuery.data])
+  }, [applyRemoteProgress, auth.isAuthenticated, getStorageKeys, isSyncedWithAuthState, progressQuery.data])
 
   useEffect(() => {
     if (!progressQuery.error) return
@@ -527,7 +529,12 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
 
   useEffect(() => {
     if (!isLoaded) {
-      setIsReady(false)
+      // Load guest progress immediately so UI renders without waiting for auth
+      const guestEvents = loadEventsForKey(GUEST_EVENTS_KEY)
+      eventsRef.current = guestEvents
+      recomputeSnapshot(guestEvents, null)
+      setIsReady(true)
+      setIsSyncedWithAuthState(false)
       return
     }
 
@@ -537,6 +544,7 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       eventsRef.current = loadEventsForKey(keys.eventsKey)
       recomputeSnapshot(eventsRef.current, keys.snapshotKey)
       setIsReady(true)
+      setIsSyncedWithAuthState(true)
       return
     }
 
@@ -613,9 +621,11 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
 
       isBootstrappingRef.current = false
       setIsReady(true)
+      setIsSyncedWithAuthState(true)
       queueSync()
     }
 
+    setIsSyncedWithAuthState(false)
     void bootstrap()
   }, [
     auth.isAuthenticated,
@@ -802,6 +812,7 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
   const value = useMemo<LearningProgressContextValue>(
     () => ({
       isReady,
+      isSyncedWithAuthState,
       auth,
       progress,
       getContentProgress,
@@ -815,6 +826,7 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     }),
     [
       isReady,
+      isSyncedWithAuthState,
       auth,
       progress,
       getContentProgress,

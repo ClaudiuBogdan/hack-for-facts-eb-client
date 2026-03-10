@@ -18,7 +18,12 @@ type UseAutoOnboardingParams = {
  * Users who have already completed onboarding are not affected.
  */
 export function useAutoOnboarding({ pathId }: UseAutoOnboardingParams): void {
-  const { isReady, progress, saveOnboarding } = useLearningProgress()
+  const {
+    isReady,
+    isSyncedWithAuthState,
+    progress,
+    saveOnboarding,
+  } = useLearningProgress()
 
   // Track which pathId we've already processed to avoid duplicate saves
   // when dependencies change but the path remains the same
@@ -30,6 +35,7 @@ export function useAutoOnboarding({ pathId }: UseAutoOnboardingParams): void {
   useEffect(() => {
     // Wait until progress state is ready
     if (!isReady) return
+    if (!isSyncedWithAuthState) return
 
     // Skip if onboarding is already completed
     if (progress.onboarding.completedAt) return
@@ -53,5 +59,5 @@ export function useAutoOnboarding({ pathId }: UseAutoOnboardingParams): void {
     void saveOnboarding({ pathId }).finally(() => {
       isSavingRef.current = false
     })
-  }, [isReady, pathId, progress.onboarding.completedAt, saveOnboarding])
+  }, [isReady, isSyncedWithAuthState, pathId, progress.onboarding.completedAt, saveOnboarding])
 }

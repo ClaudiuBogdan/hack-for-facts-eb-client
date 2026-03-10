@@ -70,11 +70,6 @@ export function NavUser(_props: NavUserProps) {
     }
   };
 
-  // When auth is disabled or not loaded yet, show a minimal placeholder
-  if (!isLoaded) {
-    return null;
-  }
-
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -146,7 +141,7 @@ export function NavUser(_props: NavUserProps) {
             <DropdownMenuSeparator />
             <ThemeSwitcher />
             <DropdownMenuSeparator />
-            {isSignedIn ? (
+            {isLoaded && isSignedIn ? (
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
@@ -166,4 +161,3 @@ export function NavUser(_props: NavUserProps) {
     </SidebarMenu>
   );
 }
-

@@ -28,7 +28,16 @@ export function useChallengeAccess(): ChallengeAccessState {
     }
   }
 
-  if (!isAuthLoaded || (isSignedIn && !isRegistrationReady)) {
+  if (!isAuthLoaded) {
+    return {
+      accessCardVariant: 'loading',
+      isAccessGranted: false,
+      isSubmitting,
+      register,
+    }
+  }
+
+  if (isSignedIn && !isRegistrationReady) {
     return {
       accessCardVariant: 'loading',
       isAccessGranted: false,

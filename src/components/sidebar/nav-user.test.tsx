@@ -146,7 +146,7 @@ describe('NavUser', () => {
   })
 
   describe('loading state', () => {
-    it('returns null when auth not loaded', () => {
+    it('renders the guest slot while auth is loading', () => {
       mockAuthState.mockReturnValue({
         user: null,
         isSignedIn: false,
@@ -154,8 +154,10 @@ describe('NavUser', () => {
         signOut: mockSignOut,
       })
 
-      const { container } = render(<NavUser />)
-      expect(container.firstChild).toBeNull()
+      render(<NavUser />)
+
+      expect(screen.getAllByText('Guest').length).toBeGreaterThan(0)
+      expect(screen.getByTestId('icon-login')).toBeInTheDocument()
     })
   })
 

@@ -9,10 +9,10 @@ export const Route = createLazyFileRoute('/$lang/learning/onboarding')({
 
 function OnboardingPage() {
   const { lang } = Route.useParams()
-  const { isReady, progress } = useLearningProgress()
+  const { isReady, isSyncedWithAuthState, progress } = useLearningProgress()
 
   // Show loading while checking status
-  if (!isReady) {
+  if (!isReady || !isSyncedWithAuthState) {
     return <LearningHubLoading />
   }
 
