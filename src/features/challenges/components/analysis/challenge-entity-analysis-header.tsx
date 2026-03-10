@@ -80,8 +80,8 @@ export function ChallengeEntityAnalysisHeader({
   const population =
     typeof entity.uat?.population === 'number'
       ? new Intl.NumberFormat(
-          languageQuery === 'en' ? 'en-US' : 'ro-RO',
-        ).format(entity.uat.population)
+        languageQuery === 'en' ? 'en-US' : 'ro-RO',
+      ).format(entity.uat.population)
       : null
   const heroHeaderRef = useRef<HTMLElement | null>(null)
   const compactHeaderEnterFrameRef = useRef<number | null>(null)
@@ -299,9 +299,9 @@ export function ChallengeEntityAnalysisHeader({
           style={
             compactHeaderFrame
               ? {
-                  left: compactHeaderFrame.left,
-                  width: compactHeaderFrame.width,
-                }
+                left: compactHeaderFrame.left,
+                width: compactHeaderFrame.width,
+              }
               : undefined
           }
         >
@@ -323,16 +323,16 @@ export function ChallengeEntityAnalysisHeader({
                     onOpenChange={setIsCompactYearMenuOpen}
                     align="end"
                     mobileSide="bottom"
-                    className="min-h-0 sm:w-auto sm:p-0"
+                    className="min-h-0 max-h-[70vh] sm:w-auto sm:p-0"
                     trigger={
                       <button
                         type="button"
                         aria-label={copy.selectYear}
-                        className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border/60 bg-background/80 px-3 py-1.5 text-lg font-semibold text-foreground tabular-nums transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                        className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-full border border-border/60 bg-background/80 px-2.5 py-1 text-sm font-semibold text-foreground tabular-nums transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                       >
-                        <Calendar className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                        <Calendar className="h-3 w-3 shrink-0" aria-hidden="true" />
                         <span>{selectedYear}</span>
-                        <ChevronDown className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                        <ChevronDown className="h-3 w-3 shrink-0" aria-hidden="true" />
                       </button>
                     }
                     content={
@@ -411,7 +411,7 @@ export function ChallengeEntityAnalysisHeader({
               onOpenChange={setIsViewMenuOpen}
               align="end"
               mobileSide="bottom"
-              className="min-h-0 sm:w-auto sm:p-0"
+              className="min-h-0 max-h-[70vh] sm:w-auto sm:p-0"
               trigger={
                 <button
                   type="button"
@@ -438,7 +438,7 @@ export function ChallengeEntityAnalysisHeader({
               onOpenChange={setIsYearMenuOpen}
               align="end"
               mobileSide="bottom"
-              className="min-h-0 sm:w-auto sm:p-0"
+              className="min-h-0 max-h-[70vh] sm:w-auto sm:p-0"
               trigger={
                 <button
                   type="button"

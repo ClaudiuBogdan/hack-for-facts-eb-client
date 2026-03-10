@@ -31,15 +31,16 @@ export function ResponsivePopover({ trigger, content, className, align = 'end', 
                 </SheetDescription>
                 <SheetContent
                     side={mobileSide}
+                    onOverlayClick={() => onOpenChange?.(false)}
                     className={cn(
                         'p-4 min-h-[65vh] max-h-[90vh] overflow-y-auto',
                         mobileSide === 'bottom'
                             ? 'rounded-t-3xl'
                             : mobileSide === 'top'
-                            ? 'rounded-b-3xl'
-                            : mobileSide === 'left'
-                            ? 'rounded-r-3xl'
-                            : 'rounded-l-3xl',
+                                ? 'rounded-b-3xl'
+                                : mobileSide === 'left'
+                                    ? 'rounded-r-3xl'
+                                    : 'rounded-l-3xl',
                         className,
                     )}
                 >
