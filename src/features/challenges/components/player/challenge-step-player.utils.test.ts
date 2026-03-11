@@ -84,7 +84,7 @@ describe('challenge-step-player.utils', () => {
         },
         isLastSection: true,
         isAccessGranted: true,
-        canSubmitQuiz: false,
+        isQuizPending: false,
         quizState: {
           isAnswered: true,
           isCorrect: true,
@@ -97,6 +97,37 @@ describe('challenge-step-player.utils', () => {
       primaryAction: 'advance',
       primaryDisabled: false,
       showSkip: false,
+    })
+  })
+
+  it('derives disabled footer state for unanswered quiz sections', () => {
+    expect(
+      resolveSectionFooterState({
+        interactive: {
+          kind: 'quiz',
+          id: 'quiz-1',
+          question: 'Question?',
+          options: [
+            { id: 'a', text: 'Wrong', isCorrect: false },
+            { id: 'b', text: 'Right', isCorrect: true },
+          ],
+          explanation: 'Exactly right.',
+        },
+        isLastSection: false,
+        isAccessGranted: true,
+        isQuizPending: false,
+        quizState: {
+          isAnswered: false,
+          isCorrect: false,
+        },
+      }),
+    ).toEqual({
+      tone: 'neutral',
+      message: 'Tap an answer to continue.',
+      primaryLabel: 'Choose an answer',
+      primaryAction: 'check',
+      primaryDisabled: true,
+      showSkip: true,
     })
   })
 })

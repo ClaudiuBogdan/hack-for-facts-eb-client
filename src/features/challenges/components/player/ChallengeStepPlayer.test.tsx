@@ -622,8 +622,8 @@ describe('ChallengeStepPlayer', () => {
         sections: [
           {
             id: 'quiz',
-            title: 'Quiz',
-            bodySource: 'Quiz copy',
+            title: '',
+            bodySource: '<Quiz />',
             interactive: {
               kind: 'quiz',
               id: 'quiz-1',
@@ -634,7 +634,21 @@ describe('ChallengeStepPlayer', () => {
               ],
               explanation: 'Use the definition from above.',
             },
-            Component: () => <p>Quiz copy</p>,
+            Component: ({ components }: any) => {
+              const QuizComponent = components.Quiz
+
+              return (
+                <QuizComponent
+                  id="quiz-1"
+                  question="Question?"
+                  options={[
+                    { id: 'a', text: 'Wrong', isCorrect: false },
+                    { id: 'b', text: 'Right', isCorrect: true },
+                  ]}
+                  explanation="Use the definition from above."
+                />
+              )
+            },
           },
         ],
       },
@@ -652,12 +666,168 @@ describe('ChallengeStepPlayer', () => {
       />,
     )
 
-    expect(screen.getByText('Quiz copy')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Question?' })).toBeInTheDocument()
+    expect(screen.queryByText('Section Check')).not.toBeInTheDocument()
     expect(screen.getByText('Use the definition from above.')).toBeInTheDocument()
     expect(screen.getByTestId('sectioned-footer-note-separator')).toBeInTheDocument()
     expect(screen.getByTestId('sectioned-footer-actions')).toHaveClass('pt-2')
     expect(screen.getByRole('button', { name: /Try again/i })).toBeEnabled()
     expect(screen.queryByRole('button', { name: /Finish/i })).not.toBeInTheDocument()
+  })
+
+  it('uses the quiz question as the progress label for titleless quiz sections', () => {
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'details',
+            title: 'Details',
+            bodySource: 'Details copy',
+            interactive: null,
+            Component: () => <p>Details copy</p>,
+          },
+          {
+            id: 'quiz-1',
+            title: '',
+            bodySource: '<Quiz />',
+            interactive: {
+              kind: 'quiz',
+              id: 'quiz-1',
+              question: 'Question?',
+              options: [
+                { id: 'a', text: 'Wrong', isCorrect: false },
+                { id: 'b', text: 'Right', isCorrect: true },
+              ],
+              explanation: 'Use the definition from above.',
+            },
+            Component: ({ components }: any) => {
+              const QuizComponent = components.Quiz
+
+              return (
+                <QuizComponent
+                  id="quiz-1"
+                  question="Question?"
+                  options={[
+                    { id: 'a', text: 'Wrong', isCorrect: false },
+                    { id: 'b', text: 'Right', isCorrect: true },
+                  ]}
+                  explanation="Use the definition from above."
+                />
+              )
+            },
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeSectionId="quiz-1"
+      />,
+    )
+
+    expect(screen.getByTestId('section-progress-quiz-1')).toHaveAttribute(
+      'aria-label',
+      'Section 2: Question?',
+    )
+    expect(screen.queryByRole('heading', { name: 'Quiz' })).not.toBeInTheDocument()
+  })
+
+  it('submits a section quiz on the first answer click', async () => {
+    const answerMock = vi.fn().mockResolvedValue(undefined)
+
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseQuizInteraction.mockReturnValue({
+      selectedOptionId: null,
+      isAnswered: false,
+      score: 0,
+      isCorrect: false,
+      answer: answerMock,
+      reset: vi.fn(),
+    })
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'quiz',
+            title: 'Quiz',
+            bodySource: 'Quiz body',
+            interactive: {
+              kind: 'quiz',
+              id: 'quiz-1',
+              question: 'Question?',
+              options: [
+                { id: 'a', text: 'Wrong', isCorrect: false },
+                { id: 'b', text: 'Right', isCorrect: true },
+              ],
+              explanation: 'Use the definition from above.',
+            },
+            Component: ({ components }: any) => {
+              const QuizComponent = components.Quiz
+
+              return (
+                <QuizComponent
+                  id="quiz-1"
+                  question="Question?"
+                  options={[
+                    { id: 'a', text: 'Wrong', isCorrect: false },
+                    { id: 'b', text: 'Right', isCorrect: true },
+                  ]}
+                  explanation="Use the definition from above."
+                />
+              )
+            },
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: /Choose an answer/i })).toBeDisabled()
+
+    fireEvent.click(screen.getByRole('button', { name: /Right/i }))
+
+    await waitFor(() => {
+      expect(answerMock).toHaveBeenCalledWith('b')
+    })
   })
 
   it('resets the section scroll position when the active section changes', () => {

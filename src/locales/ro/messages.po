@@ -1616,13 +1616,20 @@ msgid "Charts"
 msgstr "Grafice"
 
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:148
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:160
 msgid "Check"
 msgstr "Verifică"
 
 #: src/components/charts/components/chart-view/ChartDisplayArea.tsx:137
 msgid "Check your series filters and try again."
 msgstr "Verificați filtrele seriei și încercați din nou."
+
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:160
+msgid "Checking your answer..."
+msgstr "Se verifică răspunsul tău..."
+
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:161
+msgid "Checking..."
+msgstr "Se verifică..."
 
 #: src/routes/privacy.lazy.tsx:143
 msgid "Children's privacy"
@@ -1632,13 +1639,13 @@ msgstr "Confidențialitatea minorilor"
 msgid "Choose a disabled view to enable it in this map."
 msgstr "Alege o vizualizare dezactivată pentru a o activa pe această hartă."
 
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:171
+msgid "Choose an answer"
+msgstr "Alege un răspuns"
+
 #: src/routes/cookies.lazy.tsx:104
 msgid "Choose between essential-only or all cookies, then fine-tune options below."
 msgstr "Alegeți între cookie-uri doar esențiale sau toate cookie-urile, apoi ajustați opțiunile de mai jos."
-
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:159
-msgid "Choose one answer to continue."
-msgstr "Alege un răspuns pentru a continua."
 
 #: src/components/alerts/components/ConditionsList.tsx:87
 msgid "Choose operator"
@@ -1906,10 +1913,6 @@ msgstr "Comparați cu rata mortalității și migrația pentru a înțelege dac�
 msgid "Complete path"
 msgstr "Finalizează parcursul"
 
-#: src/features/learning/components/player/MarkComplete.tsx:106
-#~ msgid "Complete this lesson"
-#~ msgstr "Finalizează această lecție"
-
 #: src/features/learning/components/interactive/FlashCardDeck.tsx:270
 msgid "Complete!"
 msgstr "Complet!"
@@ -2052,10 +2055,6 @@ msgstr "Continuă"
 msgid "Continue editing"
 msgstr "Continuă editarea"
 
-#: src/features/learning/components/player/MarkComplete.tsx:71
-#~ msgid "Continue to the next chapter to complete the module."
-#~ msgstr "Continuă la următorul capitol pentru a finaliza modulul."
-
 #: src/features/learning/components/player/MarkComplete.tsx:69
 msgid "Continue to the next step to complete the module."
 msgstr "Continuă la pasul următor pentru a finaliza modulul."
@@ -2153,7 +2152,7 @@ msgstr "Copiază seria de date"
 msgid "Copy Series"
 msgstr "Copiază seria"
 
-#: src/components/mobile/mobile-bottom-dock.tsx:197
+#: src/components/mobile/mobile-bottom-dock.tsx:200
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:200
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:201
 msgid "Copy share link"
@@ -2168,7 +2167,7 @@ msgstr "Copiază linkul de partajare"
 msgid "Copy Support Email"
 msgstr "Copiază Emailul de Suport"
 
-#: src/features/learning/components/assessment/Quiz.tsx:158
+#: src/features/learning/components/assessment/Quiz.tsx:157
 msgid "Correct Choice"
 msgstr "Alegere corectă"
 
@@ -2176,7 +2175,7 @@ msgstr "Alegere corectă"
 msgid "Correct!"
 msgstr "Corect!"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:170
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:181
 msgid "Correct."
 msgstr "Corect."
 
@@ -3564,7 +3563,7 @@ msgstr "Copierea configurației a eșuat"
 msgid "Failed to copy email address."
 msgstr "Copierea adresei de email a eșuat."
 
-#: src/components/mobile/mobile-bottom-dock.tsx:139
+#: src/components/mobile/mobile-bottom-dock.tsx:142
 #: src/components/ui/FloatingQuickNav.tsx:83
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:80
 msgid "Failed to copy link"
@@ -3800,7 +3799,7 @@ msgstr "Găsește resurse, raportează probleme sau ia legătura cu noi."
 
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:142
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:137
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:171
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:182
 msgid "Finish"
 msgstr "Finalizează"
 
@@ -4158,8 +4157,8 @@ msgid ""
 "Page: {0}"
 msgstr "Pagina: {0}"
 
-#: src/components/mobile/mobile-bottom-dock.tsx:182
-#: src/components/mobile/mobile-bottom-dock.tsx:189
+#: src/components/mobile/mobile-bottom-dock.tsx:185
+#: src/components/mobile/mobile-bottom-dock.tsx:192
 msgid "Help"
 msgstr "Ajutor"
 
@@ -4720,10 +4719,6 @@ msgstr "Mai mic decât"
 msgid "Lesson completed!"
 msgstr "Lecție finalizată!"
 
-#: src/features/learning/components/player/MarkComplete.tsx:66
-#~ msgid "Lesson Completed!"
-#~ msgstr "Lecție finalizată!"
-
 #: src/features/learning/components/player/LessonPlayer.tsx:451
 msgid "Lesson not found"
 msgstr "Lecția nu a fost găsită"
@@ -5232,10 +5227,6 @@ msgstr "Markdown"
 msgid "Master the app with these powerful keyboard shortcuts"
 msgstr "Stăpânește aplicația cu aceste comenzi rapide puternice de la tastatură"
 
-#: src/features/learning/components/player/MarkComplete.tsx:70
-#~ msgid "Mastering the budget one step at a time. Your progress is recorded."
-#~ msgstr "Stăpânești bugetul pas cu pas. Progresul tău este înregistrat."
-
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:467
 msgid "Max"
 msgstr "Maxim"
@@ -5279,8 +5270,8 @@ msgstr "Comparare mediană"
 msgid "Medium opportunity"
 msgstr "Oportunitate medie"
 
-#: src/components/mobile/mobile-bottom-dock.tsx:229
-#: src/components/mobile/mobile-bottom-dock.tsx:237
+#: src/components/mobile/mobile-bottom-dock.tsx:232
+#: src/components/mobile/mobile-bottom-dock.tsx:240
 msgid "Menu"
 msgstr "Meniu"
 
@@ -5356,10 +5347,6 @@ msgstr "Lipsește ID-ul parcursului"
 msgid "Missing title"
 msgstr "Titlu lipsă"
 
-#: src/features/learning/components/player/MarkComplete.tsx:91
-#~ msgid "Mission End"
-#~ msgstr "Sfârșitul misiunii"
-
 #: src/components/entities/views/ins-stats-view.tsx:1244
 msgid "Mixed"
 msgstr "Mixt"
@@ -5369,7 +5356,7 @@ msgstr "Mixt"
 msgid "Mnemonic:"
 msgstr "Mnemonic:"
 
-#: src/components/mobile/mobile-bottom-dock.tsx:172
+#: src/components/mobile/mobile-bottom-dock.tsx:175
 msgid "Mobile quick actions"
 msgstr "Acțiuni rapide mobile"
 
@@ -5626,7 +5613,7 @@ msgstr "Buletine informative și notificări"
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:536
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:125
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:137
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:171
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:182
 #: src/features/learning/components/player/LessonPlayer.tsx:620
 msgid "Next"
 msgstr "Următorul"
@@ -6057,7 +6044,7 @@ msgstr "Nu este egal cu"
 msgid "Not found"
 msgstr "Nu a fost găsit"
 
-#: src/features/learning/components/assessment/Quiz.tsx:158
+#: src/features/learning/components/assessment/Quiz.tsx:157
 msgid "Not Quite"
 msgstr "Nu chiar"
 
@@ -6726,10 +6713,6 @@ msgstr "Produs"
 msgid "Progress"
 msgstr "Progres"
 
-#: src/features/learning/components/player/MarkComplete.tsx:64
-#~ msgid "Progress Saved"
-#~ msgstr "Progres salvat"
-
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:142
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:408
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:495
@@ -6786,10 +6769,6 @@ msgstr "Acțiuni rapide"
 msgid "Quick Configuration"
 msgstr "Configurare rapidă"
 
-#: src/features/learning/components/assessment/Quiz.tsx:67
-msgid "Quick Quiz"
-msgstr "Test rapid"
-
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:62
 msgid "Quick settings"
 msgstr "Setări rapide"
@@ -6798,7 +6777,7 @@ msgstr "Setări rapide"
 msgid "Quickly adjust chart settings"
 msgstr "Ajustați rapid setările graficului"
 
-#: src/features/challenges/components/player/sectioned-step-interactives.tsx:33
+#: src/features/challenges/components/player/sectioned-step-interactives.tsx:35
 #: src/features/learning/components/assessment/Quiz.tsx:53
 msgid "Quiz configuration error"
 msgstr "Eroare de configurare a chestionarului"
@@ -6837,10 +6816,6 @@ msgstr "Gata de creare"
 #: src/routes/$lang/learning/index.lazy.tsx:185
 msgid "Ready to learn?"
 msgstr "Ești gata să înveți?"
-
-#: src/features/learning/components/player/MarkComplete.tsx:92
-#~ msgid "Ready to level up?"
-#~ msgstr "Gata să treci la nivelul următor?"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:425
 #: src/components/charts/components/series-config/SeriesFilter.tsx:771
@@ -7195,10 +7170,6 @@ msgstr "Salvează versiuni ale hărții tale pentru a urmări schimbările în t
 msgid "Save your progress"
 msgstr "Salvează-ți progresul"
 
-#: src/features/learning/components/player/MarkComplete.tsx:92
-#~ msgid "Save your progress and continue to the next step."
-#~ msgstr "Salvează progresul și continuă la pasul următor."
-
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:129
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1981
 #: src/routes/alerts/$alertId/index.lazy.tsx:124
@@ -7225,12 +7196,8 @@ msgstr "SDG 2020"
 msgid "SDG 2030"
 msgstr "SDG 2030"
 
-#: src/features/learning/components/player/MarkComplete.tsx:94
-#~ msgid "Seal your progress and move closer to becoming a budget expert."
-#~ msgstr "Consolidează-ți progresul și apropie-te de a deveni un expert în buget."
-
-#: src/components/mobile/mobile-bottom-dock.tsx:215
-#: src/components/mobile/mobile-bottom-dock.tsx:223
+#: src/components/mobile/mobile-bottom-dock.tsx:218
+#: src/components/mobile/mobile-bottom-dock.tsx:226
 msgid "Search"
 msgstr "Căutare"
 
@@ -7373,11 +7340,11 @@ msgstr "Agregat secundar"
 msgid "Secondary creditor aggregated"
 msgstr "Creditor secundar agregat"
 
-#: src/features/challenges/components/player/sectioned-step-interactives.tsx:43
-msgid "Section Check"
-msgstr "Verificare secțiune"
+#: src/features/challenges/components/player/sectioned-step-interactives.tsx:45
+#~ msgid "Section Check"
+#~ msgstr "Verificare secțiune"
 
-#: src/features/challenges/components/player/sectioned-step-header.tsx:91
+#: src/features/challenges/components/player/sectioned-step-header.tsx:93
 msgid "Section View"
 msgstr "Vedere pe secțiuni"
 
@@ -7610,7 +7577,7 @@ msgstr "Lungimea rețelei de canalizare (GOS110A)"
 msgid "Sewer network length per 1,000 inhabitants approximates sanitation infrastructure intensity."
 msgstr "Lungimea rețelei de canalizare la 1.000 de locuitori aproximează intensitatea infrastructurii de salubritate."
 
-#: src/components/mobile/mobile-bottom-dock.tsx:209
+#: src/components/mobile/mobile-bottom-dock.tsx:212
 #: src/routes/alerts/$alertId/index.lazy.tsx:246
 #: src/routes/alerts/new.lazy.tsx:207
 msgid "Share"
@@ -7843,7 +7810,7 @@ msgstr "Autentifică-te pentru a-ți urmări progresul de învățare."
 msgid "SIRUTA"
 msgstr "SIRUTA"
 
-#: src/features/challenges/components/player/sectioned-step-footer.tsx:54
+#: src/features/challenges/components/player/sectioned-step-footer.tsx:57
 msgid "Skip"
 msgstr "Sari peste"
 
@@ -8042,13 +8009,9 @@ msgstr "Pas finalizat"
 msgid "Step not found"
 msgstr "Pasul nu a fost găsit"
 
-#: src/features/challenges/components/player/sectioned-step-header.tsx:106
+#: src/features/challenges/components/player/sectioned-step-header.tsx:108
 msgid "Step sections"
 msgstr "Secțiunile pasului"
-
-#: src/features/learning/components/player/MarkComplete.tsx:66
-#~ msgid "Step Successfully Finished"
-#~ msgstr "Pas finalizat cu succes"
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:156
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:309
@@ -8159,6 +8122,10 @@ msgstr "Vizualizare tabel"
 #: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:328
 msgid "Tap"
 msgstr "Apasă"
+
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:170
+msgid "Tap an answer to continue."
+msgstr "Apasă pe un răspuns pentru a continua."
 
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:59
 msgid "Taxes"
@@ -8640,8 +8607,8 @@ msgid "Try a different search term or sorting."
 msgstr "Încercați un alt termen de căutare sau o altă sortare."
 
 #: src/features/challenges/components/analysis/challenge-entity-subordinates-section.tsx:189
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:181
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:191
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:192
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:202
 #: src/features/learning/components/interactive/HandsOnExplorer.tsx:218
 #: src/routes/alerts/$alertId/index.lazy.tsx:192
 #: src/routes/unsubscribe.$token.tsx:77
@@ -8649,7 +8616,7 @@ msgid "Try again"
 msgstr "Încearcă din nou"
 
 #: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1774
-#: src/features/learning/components/assessment/Quiz.tsx:174
+#: src/features/learning/components/assessment/Quiz.tsx:173
 #: src/routes/settings/notifications.tsx:160
 msgid "Try Again"
 msgstr "Încercați din nou"
@@ -8666,8 +8633,8 @@ msgstr "Încearcă Alt An"
 msgid "Try guessing again"
 msgstr "Încearcă să ghicești din nou"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:180
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:190
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:191
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:201
 msgid "Try once more before moving on."
 msgstr "Mai încearcă o dată înainte de a continua."
 

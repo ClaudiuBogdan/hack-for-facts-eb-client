@@ -1616,13 +1616,20 @@ msgid "Charts"
 msgstr "Charts"
 
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:148
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:160
 msgid "Check"
 msgstr "Check"
 
 #: src/components/charts/components/chart-view/ChartDisplayArea.tsx:137
 msgid "Check your series filters and try again."
 msgstr "Check your series filters and try again."
+
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:160
+msgid "Checking your answer..."
+msgstr "Checking your answer..."
+
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:161
+msgid "Checking..."
+msgstr "Checking..."
 
 #: src/routes/privacy.lazy.tsx:143
 msgid "Children's privacy"
@@ -1632,13 +1639,13 @@ msgstr "Children's privacy"
 msgid "Choose a disabled view to enable it in this map."
 msgstr "Choose a disabled view to enable it in this map."
 
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:171
+msgid "Choose an answer"
+msgstr "Choose an answer"
+
 #: src/routes/cookies.lazy.tsx:104
 msgid "Choose between essential-only or all cookies, then fine-tune options below."
 msgstr "Choose between essential-only or all cookies, then fine-tune options below."
-
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:159
-msgid "Choose one answer to continue."
-msgstr "Choose one answer to continue."
 
 #: src/components/alerts/components/ConditionsList.tsx:87
 msgid "Choose operator"
@@ -1906,10 +1913,6 @@ msgstr "Compare with death rate and migration to understand if growth is structu
 msgid "Complete path"
 msgstr "Complete path"
 
-#: src/features/learning/components/player/MarkComplete.tsx:106
-#~ msgid "Complete this lesson"
-#~ msgstr "Complete this lesson"
-
 #: src/features/learning/components/interactive/FlashCardDeck.tsx:270
 msgid "Complete!"
 msgstr "Complete!"
@@ -2052,10 +2055,6 @@ msgstr "Continue"
 msgid "Continue editing"
 msgstr "Continue editing"
 
-#: src/features/learning/components/player/MarkComplete.tsx:71
-#~ msgid "Continue to the next chapter to complete the module."
-#~ msgstr "Continue to the next chapter to complete the module."
-
 #: src/features/learning/components/player/MarkComplete.tsx:69
 msgid "Continue to the next step to complete the module."
 msgstr "Continue to the next step to complete the module."
@@ -2153,7 +2152,7 @@ msgstr "Copy series"
 msgid "Copy Series"
 msgstr "Copy Series"
 
-#: src/components/mobile/mobile-bottom-dock.tsx:197
+#: src/components/mobile/mobile-bottom-dock.tsx:200
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:200
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:201
 msgid "Copy share link"
@@ -2168,7 +2167,7 @@ msgstr "Copy Share Link"
 msgid "Copy Support Email"
 msgstr "Copy Support Email"
 
-#: src/features/learning/components/assessment/Quiz.tsx:158
+#: src/features/learning/components/assessment/Quiz.tsx:157
 msgid "Correct Choice"
 msgstr "Correct Choice"
 
@@ -2176,7 +2175,7 @@ msgstr "Correct Choice"
 msgid "Correct!"
 msgstr "Correct!"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:170
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:181
 msgid "Correct."
 msgstr "Correct."
 
@@ -3564,7 +3563,7 @@ msgstr "Failed to copy configuration"
 msgid "Failed to copy email address."
 msgstr "Failed to copy email address."
 
-#: src/components/mobile/mobile-bottom-dock.tsx:139
+#: src/components/mobile/mobile-bottom-dock.tsx:142
 #: src/components/ui/FloatingQuickNav.tsx:83
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:80
 msgid "Failed to copy link"
@@ -3800,7 +3799,7 @@ msgstr "Find resources, report issues, or get in touch."
 
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:142
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:137
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:171
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:182
 msgid "Finish"
 msgstr "Finish"
 
@@ -4163,8 +4162,8 @@ msgstr ""
 "\n"
 "Page: {0}"
 
-#: src/components/mobile/mobile-bottom-dock.tsx:182
-#: src/components/mobile/mobile-bottom-dock.tsx:189
+#: src/components/mobile/mobile-bottom-dock.tsx:185
+#: src/components/mobile/mobile-bottom-dock.tsx:192
 msgid "Help"
 msgstr "Help"
 
@@ -4725,10 +4724,6 @@ msgstr "Less than"
 msgid "Lesson completed!"
 msgstr "Lesson completed!"
 
-#: src/features/learning/components/player/MarkComplete.tsx:66
-#~ msgid "Lesson Completed!"
-#~ msgstr "Lesson Completed!"
-
 #: src/features/learning/components/player/LessonPlayer.tsx:451
 msgid "Lesson not found"
 msgstr "Lesson not found"
@@ -5237,10 +5232,6 @@ msgstr "Markdown"
 msgid "Master the app with these powerful keyboard shortcuts"
 msgstr "Master the app with these powerful keyboard shortcuts"
 
-#: src/features/learning/components/player/MarkComplete.tsx:70
-#~ msgid "Mastering the budget one step at a time. Your progress is recorded."
-#~ msgstr "Mastering the budget one step at a time. Your progress is recorded."
-
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:467
 msgid "Max"
 msgstr "Max"
@@ -5284,8 +5275,8 @@ msgstr "Median compare"
 msgid "Medium opportunity"
 msgstr "Medium opportunity"
 
-#: src/components/mobile/mobile-bottom-dock.tsx:229
-#: src/components/mobile/mobile-bottom-dock.tsx:237
+#: src/components/mobile/mobile-bottom-dock.tsx:232
+#: src/components/mobile/mobile-bottom-dock.tsx:240
 msgid "Menu"
 msgstr "Menu"
 
@@ -5361,10 +5352,6 @@ msgstr "Missing path id"
 msgid "Missing title"
 msgstr "Missing title"
 
-#: src/features/learning/components/player/MarkComplete.tsx:91
-#~ msgid "Mission End"
-#~ msgstr "Mission End"
-
 #: src/components/entities/views/ins-stats-view.tsx:1244
 msgid "Mixed"
 msgstr "Mixed"
@@ -5374,7 +5361,7 @@ msgstr "Mixed"
 msgid "Mnemonic:"
 msgstr "Mnemonic:"
 
-#: src/components/mobile/mobile-bottom-dock.tsx:172
+#: src/components/mobile/mobile-bottom-dock.tsx:175
 msgid "Mobile quick actions"
 msgstr "Mobile quick actions"
 
@@ -5631,7 +5618,7 @@ msgstr "Newsletters and notifications"
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:536
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:125
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:137
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:171
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:182
 #: src/features/learning/components/player/LessonPlayer.tsx:620
 msgid "Next"
 msgstr "Next"
@@ -6062,7 +6049,7 @@ msgstr "Not equal to"
 msgid "Not found"
 msgstr "Not found"
 
-#: src/features/learning/components/assessment/Quiz.tsx:158
+#: src/features/learning/components/assessment/Quiz.tsx:157
 msgid "Not Quite"
 msgstr "Not Quite"
 
@@ -6731,10 +6718,6 @@ msgstr "Product"
 msgid "Progress"
 msgstr "Progress"
 
-#: src/features/learning/components/player/MarkComplete.tsx:64
-#~ msgid "Progress Saved"
-#~ msgstr "Progress Saved"
-
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:142
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:408
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:495
@@ -6791,10 +6774,6 @@ msgstr "Quick actions"
 msgid "Quick Configuration"
 msgstr "Quick Configuration"
 
-#: src/features/learning/components/assessment/Quiz.tsx:67
-msgid "Quick Quiz"
-msgstr "Quick Quiz"
-
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:62
 msgid "Quick settings"
 msgstr "Quick settings"
@@ -6803,7 +6782,7 @@ msgstr "Quick settings"
 msgid "Quickly adjust chart settings"
 msgstr "Quickly adjust chart settings"
 
-#: src/features/challenges/components/player/sectioned-step-interactives.tsx:33
+#: src/features/challenges/components/player/sectioned-step-interactives.tsx:35
 #: src/features/learning/components/assessment/Quiz.tsx:53
 msgid "Quiz configuration error"
 msgstr "Quiz configuration error"
@@ -6842,10 +6821,6 @@ msgstr "Ready to create"
 #: src/routes/$lang/learning/index.lazy.tsx:185
 msgid "Ready to learn?"
 msgstr "Ready to learn?"
-
-#: src/features/learning/components/player/MarkComplete.tsx:92
-#~ msgid "Ready to level up?"
-#~ msgstr "Ready to level up?"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:425
 #: src/components/charts/components/series-config/SeriesFilter.tsx:771
@@ -7200,10 +7175,6 @@ msgstr "Save versions of your map to track changes over time."
 msgid "Save your progress"
 msgstr "Save your progress"
 
-#: src/features/learning/components/player/MarkComplete.tsx:92
-#~ msgid "Save your progress and continue to the next step."
-#~ msgstr "Save your progress and continue to the next step."
-
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:129
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1981
 #: src/routes/alerts/$alertId/index.lazy.tsx:124
@@ -7230,12 +7201,8 @@ msgstr "SDG 2020"
 msgid "SDG 2030"
 msgstr "SDG 2030"
 
-#: src/features/learning/components/player/MarkComplete.tsx:94
-#~ msgid "Seal your progress and move closer to becoming a budget expert."
-#~ msgstr "Seal your progress and move closer to becoming a budget expert."
-
-#: src/components/mobile/mobile-bottom-dock.tsx:215
-#: src/components/mobile/mobile-bottom-dock.tsx:223
+#: src/components/mobile/mobile-bottom-dock.tsx:218
+#: src/components/mobile/mobile-bottom-dock.tsx:226
 msgid "Search"
 msgstr "Search"
 
@@ -7378,11 +7345,11 @@ msgstr "Secondary Aggregated"
 msgid "Secondary creditor aggregated"
 msgstr "Secondary creditor aggregated"
 
-#: src/features/challenges/components/player/sectioned-step-interactives.tsx:43
-msgid "Section Check"
-msgstr "Section Check"
+#: src/features/challenges/components/player/sectioned-step-interactives.tsx:45
+#~ msgid "Section Check"
+#~ msgstr "Section Check"
 
-#: src/features/challenges/components/player/sectioned-step-header.tsx:91
+#: src/features/challenges/components/player/sectioned-step-header.tsx:93
 msgid "Section View"
 msgstr "Section View"
 
@@ -7615,7 +7582,7 @@ msgstr "Sewer network length (GOS110A)"
 msgid "Sewer network length per 1,000 inhabitants approximates sanitation infrastructure intensity."
 msgstr "Sewer network length per 1,000 inhabitants approximates sanitation infrastructure intensity."
 
-#: src/components/mobile/mobile-bottom-dock.tsx:209
+#: src/components/mobile/mobile-bottom-dock.tsx:212
 #: src/routes/alerts/$alertId/index.lazy.tsx:246
 #: src/routes/alerts/new.lazy.tsx:207
 msgid "Share"
@@ -7848,7 +7815,7 @@ msgstr "Sign in to track your learning journey."
 msgid "SIRUTA"
 msgstr "SIRUTA"
 
-#: src/features/challenges/components/player/sectioned-step-footer.tsx:54
+#: src/features/challenges/components/player/sectioned-step-footer.tsx:57
 msgid "Skip"
 msgstr "Skip"
 
@@ -8047,13 +8014,9 @@ msgstr "Step completed"
 msgid "Step not found"
 msgstr "Step not found"
 
-#: src/features/challenges/components/player/sectioned-step-header.tsx:106
+#: src/features/challenges/components/player/sectioned-step-header.tsx:108
 msgid "Step sections"
 msgstr "Step sections"
-
-#: src/features/learning/components/player/MarkComplete.tsx:66
-#~ msgid "Step Successfully Finished"
-#~ msgstr "Step Successfully Finished"
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:156
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:309
@@ -8164,6 +8127,10 @@ msgstr "Table view"
 #: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:328
 msgid "Tap"
 msgstr "Tap"
+
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:170
+msgid "Tap an answer to continue."
+msgstr "Tap an answer to continue."
 
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:59
 msgid "Taxes"
@@ -8645,8 +8612,8 @@ msgid "Try a different search term or sorting."
 msgstr "Try a different search term or sorting."
 
 #: src/features/challenges/components/analysis/challenge-entity-subordinates-section.tsx:189
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:181
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:191
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:192
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:202
 #: src/features/learning/components/interactive/HandsOnExplorer.tsx:218
 #: src/routes/alerts/$alertId/index.lazy.tsx:192
 #: src/routes/unsubscribe.$token.tsx:77
@@ -8654,7 +8621,7 @@ msgid "Try again"
 msgstr "Try again"
 
 #: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1774
-#: src/features/learning/components/assessment/Quiz.tsx:174
+#: src/features/learning/components/assessment/Quiz.tsx:173
 #: src/routes/settings/notifications.tsx:160
 msgid "Try Again"
 msgstr "Try Again"
@@ -8671,8 +8638,8 @@ msgstr "Try Another Year"
 msgid "Try guessing again"
 msgstr "Try guessing again"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:180
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:190
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:191
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:201
 msgid "Try once more before moving on."
 msgstr "Try once more before moving on."
 

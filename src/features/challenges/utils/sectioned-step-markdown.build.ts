@@ -113,6 +113,14 @@ function isSupportedInteractiveNode(node: RootContent): node is MdxJsxNode {
   return node.name === 'Quiz'
 }
 
+function isIgnoredSectionNode(node: RootContent): node is MdxJsxNode {
+  if (node.type !== 'mdxJsxFlowElement' && node.type !== 'mdxJsxTextElement') {
+    return false
+  }
+
+  return node.name === 'MarkComplete'
+}
+
 function evaluateExpression(value: string): unknown {
   try {
     return Function(`"use strict"; return (${value})`)()
@@ -203,36 +211,27 @@ function stringifyNodes(nodes: readonly RootContent[]): string {
     .trim()
 }
 
-function createBuildSection(
-  section: ParsedChallengeSection,
-  seenIds: Map<string, number>,
-): BuildChallengeStepSection | null {
-  let interactive: ChallengeStepSectionInteractive | null = null
-  const nodes: RootContent[] = []
-
-  for (const node of section.nodes) {
-    if (isSupportedInteractiveNode(node)) {
-      if (!interactive) {
-        interactive = extractInteractive(node)
-        nodes.push(node)
-      } else if (IS_DEV_ENVIRONMENT) {
-        console.warn(
-          `[Challenges] Ignoring extra interactive "${node.name}" in section "${section.title}".`,
-        )
-      }
-      continue
-    }
-
-    nodes.push(node)
-  }
-
+function createBuildSection(params: {
+  readonly title: string
+  readonly nodes: readonly RootContent[]
+  readonly interactive: ChallengeStepSectionInteractive | null
+  readonly section: ParsedChallengeSection
+  readonly seenIds: Map<string, number>
+  readonly baseIdOverride?: string
+}): BuildChallengeStepSection | null {
+  const { nodes, interactive, section, seenIds, baseIdOverride } = params
   const bodySource = stringifyNodes(nodes)
   if (!bodySource) {
     return null
   }
 
-  const safeTitle = normalizeInlineText(section.title) || 'Intro'
-  const baseId = section.isIntro ? 'intro' : slugifySectionId(safeTitle)
+  const normalizedTitle = normalizeInlineText(params.title)
+  const safeTitle = normalizedTitle
+  const baseId =
+    baseIdOverride ??
+    (section.isIntro
+      ? 'intro'
+      : slugifySectionId(normalizedTitle || 'section'))
 
   return {
     id: dedupeSectionId(baseId, seenIds),
@@ -240,6 +239,70 @@ function createBuildSection(
     bodySource,
     interactive,
   }
+}
+
+function createBuildSections(
+  section: ParsedChallengeSection,
+  seenIds: Map<string, number>,
+): readonly BuildChallengeStepSection[] {
+  const builtSections: BuildChallengeStepSection[] = []
+  let bufferedNodes: RootContent[] = []
+
+  const flushContentSection = () => {
+    const contentSection = createBuildSection({
+      title: section.title,
+      nodes: bufferedNodes,
+      interactive: null,
+      section,
+      seenIds,
+    })
+
+    if (contentSection) {
+      builtSections.push(contentSection)
+    }
+
+    bufferedNodes = []
+  }
+
+  for (const node of section.nodes) {
+    if (isIgnoredSectionNode(node)) {
+      continue
+    }
+
+    if (!isSupportedInteractiveNode(node)) {
+      bufferedNodes.push(node)
+      continue
+    }
+
+    const interactive = extractInteractive(node)
+    if (!interactive) {
+      bufferedNodes.push(node)
+      continue
+    }
+
+    flushContentSection()
+
+    const quizSection = createBuildSection({
+      title: '',
+      nodes: [node],
+      interactive,
+      section,
+      seenIds,
+      baseIdOverride: slugifySectionId(interactive.id),
+    })
+
+    if (quizSection) {
+      builtSections.push(quizSection)
+    } else if (IS_DEV_ENVIRONMENT) {
+      console.warn(
+        `[Challenges] Failed to build quiz section for "${interactive.id}" in section "${section.title}".`,
+      )
+    }
+  }
+
+  flushContentSection()
+
+  return builtSections
 }
 
 function splitIntoSections(params: {
@@ -394,10 +457,7 @@ export function parseSectionedChallengeStep(params: {
   })
   const seenIds = new Map<string, number>()
   const sections = rawSections
-    .map((section) => createBuildSection(section, seenIds))
-    .filter(
-      (section): section is BuildChallengeStepSection => section !== null,
-    )
+    .flatMap((section) => createBuildSections(section, seenIds))
 
   return {
     frontmatter,

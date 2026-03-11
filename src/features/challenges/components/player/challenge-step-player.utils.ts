@@ -124,7 +124,7 @@ export function resolveSectionFooterState(params: {
   readonly interactive: ChallengeStepSectionInteractive | null
   readonly isLastSection: boolean
   readonly isAccessGranted: boolean
-  readonly canSubmitQuiz: boolean
+  readonly isQuizPending: boolean
   readonly quizState: SectionQuizStateSnapshot
 }): SectionFooterState {
   if (!params.interactive) {
@@ -154,12 +154,23 @@ export function resolveSectionFooterState(params: {
 
   if (params.interactive.kind === 'quiz') {
     if (!params.quizState.isAnswered) {
+      if (params.isQuizPending) {
+        return {
+          tone: 'neutral',
+          message: t`Checking your answer...`,
+          primaryLabel: t`Checking...`,
+          primaryAction: 'check',
+          primaryDisabled: true,
+          showSkip: false,
+        }
+      }
+
       return {
         tone: 'neutral',
-        message: t`Choose one answer to continue.`,
-        primaryLabel: t`Check`,
+        message: t`Tap an answer to continue.`,
+        primaryLabel: t`Choose an answer`,
         primaryAction: 'check',
-        primaryDisabled: !params.canSubmitQuiz,
+        primaryDisabled: true,
         showSkip: !params.isLastSection,
       }
     }

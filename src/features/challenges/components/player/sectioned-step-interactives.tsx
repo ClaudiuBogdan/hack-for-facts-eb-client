@@ -9,6 +9,7 @@ type ChallengeSectionedQuizProps = ChallengeQuizMdxProps & {
   readonly selectedOptionId: string | null
   readonly onSelect: (optionId: string) => void
   readonly isAnswered: boolean
+  readonly isPending: boolean
   readonly isAccessGranted: boolean
   readonly accessReplacement: ReactNode
 }
@@ -19,6 +20,7 @@ export function ChallengeSectionedQuiz({
   selectedOptionId,
   onSelect,
   isAnswered,
+  isPending,
   isAccessGranted,
   accessReplacement,
 }: ChallengeSectionedQuizProps) {
@@ -39,9 +41,6 @@ export function ChallengeSectionedQuiz({
   return (
     <div className="not-prose my-8 space-y-5">
       <div className="space-y-2 text-center">
-        <div className="text-[10px] font-black uppercase tracking-[0.24em] text-muted-foreground">
-          {t`Section Check`}
-        </div>
         <h3 className="text-xl font-black tracking-tight text-foreground md:text-2xl">
           {question}
         </h3>
@@ -59,7 +58,7 @@ export function ChallengeSectionedQuiz({
               key={option.id}
               type="button"
               onClick={() => onSelect(option.id)}
-              disabled={isAnswered}
+              disabled={isAnswered || isPending}
               className={cn(
                 'flex w-full items-center gap-4 rounded-3xl border-2 p-4 text-left transition-all md:p-5',
                 !isAnswered &&
@@ -72,6 +71,7 @@ export function ChallengeSectionedQuiz({
                 showAsIncorrect &&
                   'border-rose-300 bg-rose-500 text-white shadow-lg shadow-rose-500/20',
                 isDimmed && 'opacity-40',
+                isPending && 'cursor-wait opacity-70',
               )}
             >
               <div

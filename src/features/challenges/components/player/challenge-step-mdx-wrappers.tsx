@@ -48,6 +48,7 @@ type UseSectionedStepMdxComponentsParams = {
   readonly pendingQuizOptionId: string | null
   readonly onPendingQuizOptionChange: (optionId: string) => void
   readonly isQuizAnswered: boolean
+  readonly isQuizPending: boolean
 }
 
 export function ChallengeInteractionAccessReplacement({
@@ -180,6 +181,7 @@ export function useSectionedStepMdxComponents({
   pendingQuizOptionId,
   onPendingQuizOptionChange,
   isQuizAnswered,
+  isQuizPending,
 }: UseSectionedStepMdxComponentsParams): ReturnType<typeof buildChallengeMdxComponents> {
   return useMemo(
     () =>
@@ -190,6 +192,7 @@ export function useSectionedStepMdxComponents({
             selectedOptionId={pendingQuizOptionId}
             onSelect={onPendingQuizOptionChange}
             isAnswered={isQuizAnswered}
+            isPending={isQuizPending}
             isAccessGranted={isAccessGranted}
             accessReplacement={accessReplacement}
           />
@@ -200,6 +203,7 @@ export function useSectionedStepMdxComponents({
       accessReplacement,
       isAccessGranted,
       isQuizAnswered,
+      isQuizPending,
       onPendingQuizOptionChange,
       pendingQuizOptionId,
     ],

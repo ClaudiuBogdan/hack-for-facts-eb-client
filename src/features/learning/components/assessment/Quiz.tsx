@@ -57,20 +57,19 @@ export function Quiz({ id, question, options, explanation, contentId }: QuizProp
   }
 
   return (
-    <Card className="my-8 w-full max-w-3xl mx-auto rounded-[2.5rem] bg-zinc-50 dark:bg-zinc-900/50 border-none shadow-sm relative overflow-hidden">
-      <CardContent className="p-6 md:p-10 relative z-10">
+    <Card className="my-4 w-full max-w-3xl mx-auto rounded-[2.5rem] bg-zinc-50 dark:bg-zinc-900/50 border-none shadow-sm relative overflow-hidden">
+      <CardContent className="pt-0 px-5 pb-8 md:pt-5 md:px-8 md:pb-8 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500 mb-2">{t`Quick Quiz`}</div>
-          <h3 className="text-xl md:text-2xl font-black leading-tight tracking-tight text-zinc-900 dark:text-zinc-100 mb-10">
+          <h3 className="text-xl md:text-2xl font-black leading-tight tracking-tight text-zinc-900 dark:text-zinc-100 mb-6">
             {question}
           </h3>
         </motion.div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <AnimatePresence>
             {validOptions.map((option, index) => {
               const isSelected = selectedOptionId === option.id
@@ -96,7 +95,7 @@ export function Quiz({ id, question, options, explanation, contentId }: QuizProp
                     'relative group w-full text-left p-4 rounded-2xl border-2 transition-all duration-200 outline-none',
                     'flex items-center justify-between',
                     // Default clean state
-                    !isAnswered && !isSelected && 'bg-white/60 dark:bg-zinc-800/50 border-white dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700 shadow-sm',
+                    !isAnswered && !isSelected && 'bg-white/60 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 hover:bg-white dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600 shadow-sm',
                     // Selected state (pre-reveal)
                     !isAnswered && isSelected && 'bg-white dark:bg-zinc-800 border-zinc-900 dark:border-zinc-100 shadow-md ring-4 ring-zinc-900/5 dark:ring-zinc-100/5',
                     // Success State
@@ -144,7 +143,7 @@ export function Quiz({ id, question, options, explanation, contentId }: QuizProp
               className="overflow-hidden"
             >
               <div className={cn(
-                "mt-10 rounded-3xl p-6 md:p-10 border-2",
+                "mt-6 rounded-3xl p-5 md:p-8 border-2",
                 isCorrect
                   ? "bg-emerald-50/50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 shadow-sm"
                   : "bg-rose-50/50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800 shadow-sm"

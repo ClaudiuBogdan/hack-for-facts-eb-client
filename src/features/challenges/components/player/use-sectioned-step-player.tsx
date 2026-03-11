@@ -93,6 +93,7 @@ export function useSectionedStepPlayer({
   const scrollAreaRef = useRef<HTMLDivElement | null>(null)
   const [fallbackSectionId, setFallbackSectionId] = useState<string | undefined>(undefined)
   const [pendingQuizOptionId, setPendingQuizOptionId] = useState<string | null>(null)
+  const [isSubmittingQuizAnswer, setIsSubmittingQuizAnswer] = useState(false)
   const { markComplete } = useLessonCompletion({ contentId: stepId, contentVersion: 'v1' })
   const resolvedSectionId = currentSearchSectionId ?? fallbackSectionId
 
@@ -143,6 +144,10 @@ export function useSectionedStepPlayer({
   }, [currentSection?.id, quizState.selectedOptionId])
 
   useEffect(() => {
+    setIsSubmittingQuizAnswer(false)
+  }, [currentSection?.id])
+
+  useEffect(() => {
     if (!currentSection?.id) return
     if (!scrollAreaRef.current) return
     scrollAreaRef.current.scrollTop = 0
@@ -164,12 +169,25 @@ export function useSectionedStepPlayer({
     accessReplacement,
     isAccessGranted,
     pendingQuizOptionId,
-    onPendingQuizOptionChange: setPendingQuizOptionId,
-    isQuizAnswered: quizState.isAnswered,
-  })
+    onPendingQuizOptionChange: (optionId) => {
+      void (async () => {
+        if (!quizInteractive || quizState.isAnswered || isSubmittingQuizAnswer || !isAccessGranted) {
+          return
+        }
 
-  const canSubmitQuiz =
-    quizInteractive !== null && !quizState.isAnswered && pendingQuizOptionId !== null
+        setPendingQuizOptionId(optionId)
+        setIsSubmittingQuizAnswer(true)
+
+        try {
+          await quizState.answer(optionId)
+        } finally {
+          setIsSubmittingQuizAnswer(false)
+        }
+      })()
+    },
+    isQuizAnswered: quizState.isAnswered,
+    isQuizPending: isSubmittingQuizAnswer,
+  })
 
   const footerState = useMemo(
     () =>
@@ -177,16 +195,16 @@ export function useSectionedStepPlayer({
         interactive: currentInteractive,
         isLastSection,
         isAccessGranted,
-        canSubmitQuiz,
+        isQuizPending: isSubmittingQuizAnswer,
         quizState: {
           isAnswered: quizState.isAnswered,
           isCorrect: quizState.isCorrect,
         },
       }),
     [
-      canSubmitQuiz,
       currentInteractive,
       isAccessGranted,
+      isSubmittingQuizAnswer,
       isLastSection,
       quizState.isAnswered,
       quizState.isCorrect,
@@ -305,7 +323,12 @@ export function useSectionedStepPlayer({
     currentSectionComponent: currentSection?.Component ?? null,
     currentSectionIndex,
     headerTitle:
-      currentSection && currentSection.title !== stepTitle ? currentSection.title : null,
+      currentSection &&
+      !currentSection.interactive &&
+      currentSection.title.trim().length > 0 &&
+      currentSection.title !== stepTitle
+        ? currentSection.title
+        : null,
     hasPreviousSection: previousSection !== null,
     hasNextSection: nextSection !== null,
     backTarget,

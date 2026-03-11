@@ -39,6 +39,8 @@ export function SectionedStepHeader({
   const ToggleIcon = nextViewMode === 'article' ? FileText : Rows3
   const toggleLabel =
     nextViewMode === 'article' ? t`Switch to article view` : t`Switch to section view`
+  const getSectionLabel = (section: ChallengeStepSection) =>
+    section.title || section.interactive?.question || stepTitle
 
   return (
     <div className="flex-none border-b border-border/60 bg-background/95 px-4 py-4 backdrop-blur sm:px-6 lg:px-10">
@@ -112,7 +114,7 @@ export function SectionedStepHeader({
                       type="button"
                       data-testid={`section-progress-${section.id}`}
                       aria-current={index === currentSectionIndex ? 'step' : undefined}
-                      aria-label={`Section ${index + 1}: ${section.title || stepTitle}`}
+                      aria-label={`Section ${index + 1}: ${getSectionLabel(section)}`}
                       onClick={() => onProgressSectionSelect(section.id)}
                       className="group flex-1 rounded-full p-1 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
@@ -129,7 +131,7 @@ export function SectionedStepHeader({
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="bottom">
-                    {section.title || stepTitle}
+                    {getSectionLabel(section)}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

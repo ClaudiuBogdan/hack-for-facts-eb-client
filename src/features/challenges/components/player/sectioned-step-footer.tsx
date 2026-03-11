@@ -27,9 +27,9 @@ export function SectionedStepFooter({
               className={cn(
                 'rounded-2xl px-4 py-3 text-sm font-medium',
                 footerState.tone === 'success' &&
-                  'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+                'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
                 footerState.tone === 'error' &&
-                  'bg-rose-500/10 text-rose-700 dark:text-rose-300',
+                'bg-rose-500/10 text-rose-700 dark:text-rose-300',
                 footerState.tone === 'neutral' && 'bg-muted text-muted-foreground',
               )}
             >
@@ -52,7 +52,7 @@ export function SectionedStepFooter({
               type="button"
               variant="ghost"
               onClick={onSkip}
-              className="rounded-full px-5"
+              className="rounded-full px-5 select-none"
             >
               {t`Skip`}
             </Button>
@@ -65,7 +65,7 @@ export function SectionedStepFooter({
             onClick={onPrimaryAction}
             disabled={footerState.primaryDisabled}
             className={cn(
-              'h-14 min-w-[12rem] rounded-full px-8 text-base font-bold shadow-lg',
+              'h-14 min-w-[12rem] rounded-full px-8 text-base font-bold shadow-lg select-none',
               footerState.tone === 'success' && 'bg-emerald-600 hover:bg-emerald-700',
               footerState.tone === 'error' && 'bg-rose-600 hover:bg-rose-700',
             )}
