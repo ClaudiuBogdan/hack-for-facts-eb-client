@@ -582,31 +582,31 @@ export function LessonPlayer({ locale, pathId, moduleId, lessonId }: LessonPlaye
       ) : null}
 
       {/* Navigation footer */}
-      <nav className="flex items-center justify-between gap-3 pt-8 mt-8 border-t">
+      <nav className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-8 mt-8 border-t">
         {prev ? (
           <Link
             to={`/${locale}/learning/${pathId}/${findModuleForLesson(prev.id)}/${prev.id}` as '/'}
             resetScroll={true}
-            className="group flex items-center gap-3 flex-1 min-w-0 max-w-[48%] p-3 rounded-xl border border-border/60 hover:border-border hover:bg-muted/30 transition-all"
+            className="group flex items-center gap-3 flex-1 min-w-0 sm:max-w-[48%] p-4 rounded-2xl border border-border/60 hover:border-border hover:bg-muted/30 transition-all"
           >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted group-hover:bg-muted/80 transition-colors">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted group-hover:bg-muted/80 transition-colors">
               <ArrowLeft className="h-4 w-4 text-muted-foreground" />
             </div>
             <div className="flex flex-col min-w-0 overflow-hidden">
               <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">{t`Previous`}</span>
-              <span className="truncate text-sm font-medium text-foreground">{getTranslatedText(prev.title, locale)}</span>
+              <span className="truncate text-sm font-semibold text-foreground">{getTranslatedText(prev.title, locale)}</span>
             </div>
           </Link>
         ) : (
           <Link
             to={`/${locale}/learning/${pathId}` as '/'}
             resetScroll={true}
-            className="group flex items-center gap-3 p-3 rounded-xl border border-border/60 hover:border-border hover:bg-muted/30 transition-all"
+            className="group flex items-center gap-3 p-4 rounded-2xl border border-border/60 hover:border-border hover:bg-muted/30 transition-all"
           >
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted group-hover:bg-muted/80 transition-colors">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted group-hover:bg-muted/80 transition-colors">
               <ArrowLeft className="h-4 w-4 text-muted-foreground" />
             </div>
-            <span className="text-sm font-medium text-muted-foreground">{t`Back to path`}</span>
+            <span className="text-sm font-semibold text-muted-foreground">{t`Back to path`}</span>
           </Link>
         )}
 
@@ -614,13 +614,13 @@ export function LessonPlayer({ locale, pathId, moduleId, lessonId }: LessonPlaye
           <Link
             to={`/${locale}/learning/${pathId}/${findModuleForLesson(next.id)}/${next.id}` as '/'}
             resetScroll={true}
-            className="group flex items-center justify-end gap-3 flex-1 min-w-0 max-w-[48%] p-3 rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-all"
+            className="group flex items-center justify-end gap-3 flex-1 min-w-0 sm:max-w-[48%] p-4 rounded-2xl bg-foreground text-background hover:bg-foreground/90 transition-all"
           >
             <div className="flex flex-col items-end min-w-0 overflow-hidden">
               <span className="text-[10px] font-medium opacity-70 uppercase tracking-wide shrink-0">{t`Next`}</span>
-              <span className="truncate text-sm font-medium w-full text-right">{getTranslatedText(next.title, locale)}</span>
+              <span className="truncate text-sm font-semibold w-full text-right">{getTranslatedText(next.title, locale)}</span>
             </div>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-background/10">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-background/10">
               <ArrowRight className="h-4 w-4" />
             </div>
           </Link>
@@ -628,10 +628,10 @@ export function LessonPlayer({ locale, pathId, moduleId, lessonId }: LessonPlaye
           <Link
             to={`/${locale}/learning` as '/'}
             resetScroll={true}
-            className="group flex items-center gap-3 p-3 rounded-xl bg-primary/10 text-primary hover:bg-primary/15 transition-all"
+            className="group flex items-center gap-3 p-4 rounded-2xl bg-primary/10 text-primary hover:bg-primary/15 transition-all"
           >
-            <span className="text-sm font-medium">{t`Complete path`}</span>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+            <span className="text-sm font-semibold">{t`Complete path`}</span>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
               <CheckCircle2 className="h-4 w-4" />
             </div>
           </Link>

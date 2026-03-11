@@ -1504,8 +1504,8 @@ msgstr "Calculele presupun un coș de bunuri esențiale de 40% (TVA 11%) și bun
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:123
 #: src/features/notifications/components/alerts/AlertCard.tsx:122
 #: src/features/notifications/components/NotificationCard.tsx:124
-#: src/routes/$lang/learning/index.lazy.tsx:308
-#: src/routes/$lang/learning/index.lazy.tsx:330
+#: src/routes/$lang/learning/index.lazy.tsx:315
+#: src/routes/$lang/learning/index.lazy.tsx:337
 #: src/routes/alerts/$alertId/index.lazy.tsx:317
 #: src/routes/unsubscribe.$token.tsx:113
 msgid "Cancel"
@@ -1635,8 +1635,8 @@ msgstr "Alegeți între cookie-uri doar esențiale sau toate cookie-urile, apoi 
 msgid "Choose operator"
 msgstr "Alegeți operatorul"
 
-#: src/components/common/classification-info-link.tsx:129
-#: src/components/common/classification-info-link.tsx:174
+#: src/components/common/classification-info-link.tsx:128
+#: src/components/common/classification-info-link.tsx:173
 msgid "classification"
 msgstr "clasificare"
 
@@ -1644,8 +1644,8 @@ msgstr "clasificare"
 msgid "Classification"
 msgstr "Clasificare"
 
-#: src/components/common/classification-info-link.tsx:120
-#: src/components/common/classification-info-link.tsx:165
+#: src/components/common/classification-info-link.tsx:119
+#: src/components/common/classification-info-link.tsx:164
 msgid "Classification Details"
 msgstr "Detalii clasificare"
 
@@ -1712,8 +1712,8 @@ msgstr "Șterge căutarea"
 msgid "Click a phase to explore details"
 msgstr "Apasă pe o fază pentru a explora detaliile"
 
-#: src/components/common/classification-info-link.tsx:137
-#: src/components/common/classification-info-link.tsx:182
+#: src/components/common/classification-info-link.tsx:136
+#: src/components/common/classification-info-link.tsx:181
 msgid "Click the link below to explore all {type} classifications."
 msgstr "Faceți clic pe linkul de mai jos pentru a explora toate clasificările {type}."
 
@@ -1897,9 +1897,9 @@ msgstr "Comparați cu rata mortalității și migrația pentru a înțelege dac�
 msgid "Complete path"
 msgstr "Finalizează parcursul"
 
-#: src/features/learning/components/player/MarkComplete.tsx:111
-msgid "Complete this lesson"
-msgstr "Finalizează această lecție"
+#: src/features/learning/components/player/MarkComplete.tsx:106
+#~ msgid "Complete this lesson"
+#~ msgstr "Finalizează această lecție"
 
 #: src/features/learning/components/interactive/FlashCardDeck.tsx:270
 msgid "Complete!"
@@ -1999,7 +1999,7 @@ msgid "Confirm unsubscribe"
 msgstr "Confirmare dezabonare"
 
 #: src/features/challenges/components/hub/ChallengesHubPage.tsx:142
-#: src/routes/$lang/learning/index.lazy.tsx:238
+#: src/routes/$lang/learning/index.lazy.tsx:245
 msgid "Congratulations!"
 msgstr "Felicitări!"
 
@@ -2044,8 +2044,12 @@ msgid "Continue editing"
 msgstr "Continuă editarea"
 
 #: src/features/learning/components/player/MarkComplete.tsx:71
-msgid "Continue to the next chapter to complete the module."
-msgstr "Continuă la următorul capitol pentru a finaliza modulul."
+#~ msgid "Continue to the next chapter to complete the module."
+#~ msgstr "Continuă la următorul capitol pentru a finaliza modulul."
+
+#: src/features/learning/components/player/MarkComplete.tsx:69
+msgid "Continue to the next step to complete the module."
+msgstr "Continuă la pasul următor pentru a finaliza modulul."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:349
 msgid "continuous"
@@ -2897,8 +2901,8 @@ msgstr "Ec"
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:103
 #: src/components/classification-explorer/ClassificationExplorer.tsx:195
 #: src/components/classification-explorer/ClassificationExplorer.tsx:196
-#: src/components/common/classification-info-link.tsx:113
-#: src/components/common/classification-info-link.tsx:158
+#: src/components/common/classification-info-link.tsx:112
+#: src/components/common/classification-info-link.tsx:157
 #: src/components/entities/views/Overview.tsx:313
 #: src/components/entities/views/TrendsView.tsx:230
 #: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:131
@@ -3478,7 +3482,7 @@ msgstr "Explorați entitățile după valorile cumulate."
 msgid "Explore Full Map"
 msgstr "Explorează harta completă"
 
-#: src/routes/$lang/learning/index.lazy.tsx:256
+#: src/routes/$lang/learning/index.lazy.tsx:263
 msgid "Explore more paths"
 msgstr "Explorează mai multe parcursuri"
 
@@ -3857,8 +3861,8 @@ msgstr "Observațiile istorice complete au depășit limita de paginare pentru a
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:96
 #: src/components/classification-explorer/ClassificationExplorer.tsx:192
 #: src/components/classification-explorer/ClassificationExplorer.tsx:193
-#: src/components/common/classification-info-link.tsx:113
-#: src/components/common/classification-info-link.tsx:158
+#: src/components/common/classification-info-link.tsx:112
+#: src/components/common/classification-info-link.tsx:157
 #: src/components/entities/views/Overview.tsx:312
 #: src/components/entities/views/TrendsView.tsx:229
 #: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:124
@@ -4340,7 +4344,7 @@ msgstr "Ajustare la inflație"
 msgid "Inflation adjustment is ignored for % of GDP."
 msgstr "Ajustarea la inflație este ignorată pentru % din PIB."
 
-#: src/components/common/classification-info-link.tsx:372
+#: src/components/common/classification-info-link.tsx:378
 msgid "Info"
 msgstr "Info"
 
@@ -4689,9 +4693,13 @@ msgstr "mai mic decât"
 msgid "Less than"
 msgstr "Mai mic decât"
 
-#: src/features/learning/components/player/MarkComplete.tsx:66
-msgid "Lesson Completed!"
+#: src/features/learning/components/player/MarkComplete.tsx:64
+msgid "Lesson completed!"
 msgstr "Lecție finalizată!"
+
+#: src/features/learning/components/player/MarkComplete.tsx:66
+#~ msgid "Lesson Completed!"
+#~ msgstr "Lecție finalizată!"
 
 #: src/features/learning/components/player/LessonPlayer.tsx:451
 msgid "Lesson not found"
@@ -5177,9 +5185,21 @@ msgstr "Hărți"
 msgid "March"
 msgstr "Martie"
 
+#: src/features/learning/components/player/MarkComplete.tsx:106
+msgid "Mark as complete"
+msgstr "Finalizează"
+
 #: src/routes/charts/index.lazy.tsx:280
 msgid "Mark charts as favorites to quickly find them here."
 msgstr "Marcați graficele ca favorite pentru a le găsi rapid aici."
+
+#: src/features/learning/components/player/MarkComplete.tsx:88
+msgid "Mark this step as complete"
+msgstr "Marchează acest pas ca finalizat"
+
+#: src/features/learning/components/player/MarkComplete.tsx:90
+msgid "Mark this step as done to save your progress."
+msgstr "Completează acest pas pentru a salva progresul."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:50
 msgid "Markdown"
@@ -5190,8 +5210,8 @@ msgid "Master the app with these powerful keyboard shortcuts"
 msgstr "Stăpânește aplicația cu aceste comenzi rapide puternice de la tastatură"
 
 #: src/features/learning/components/player/MarkComplete.tsx:70
-msgid "Mastering the budget one step at a time. Your progress is recorded."
-msgstr "Stăpânești bugetul pas cu pas. Progresul tău este înregistrat."
+#~ msgid "Mastering the budget one step at a time. Your progress is recorded."
+#~ msgstr "Stăpânești bugetul pas cu pas. Progresul tău este înregistrat."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:467
 msgid "Max"
@@ -5288,7 +5308,7 @@ msgstr "Salariu minim"
 msgid "Missing"
 msgstr "Lipsă"
 
-#: src/features/learning/hooks/use-learning-progress.tsx:656
+#: src/features/learning/hooks/use-learning-progress.tsx:666
 msgid "Missing content id"
 msgstr "Lipsește ID-ul conținutului"
 
@@ -5302,7 +5322,7 @@ msgstr "Descriere lipsă"
 msgid "Missing Items"
 msgstr "Elemente lipsă"
 
-#: src/features/learning/hooks/use-learning-progress.tsx:699
+#: src/features/learning/hooks/use-learning-progress.tsx:709
 msgid "Missing path id"
 msgstr "Lipsește ID-ul parcursului"
 
@@ -5314,8 +5334,8 @@ msgid "Missing title"
 msgstr "Titlu lipsă"
 
 #: src/features/learning/components/player/MarkComplete.tsx:91
-msgid "Mission End"
-msgstr "Sfârșitul misiunii"
+#~ msgid "Mission End"
+#~ msgstr "Sfârșitul misiunii"
 
 #: src/components/entities/views/ins-stats-view.tsx:1244
 msgid "Mixed"
@@ -6673,8 +6693,8 @@ msgid "Progress"
 msgstr "Progres"
 
 #: src/features/learning/components/player/MarkComplete.tsx:64
-msgid "Progress Saved"
-msgstr "Progres salvat"
+#~ msgid "Progress Saved"
+#~ msgstr "Progres salvat"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:142
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:408
@@ -6779,13 +6799,13 @@ msgstr "Ești gata să începi?"
 msgid "Ready to create"
 msgstr "Gata de creare"
 
-#: src/routes/$lang/learning/index.lazy.tsx:178
+#: src/routes/$lang/learning/index.lazy.tsx:185
 msgid "Ready to learn?"
 msgstr "Ești gata să înveți?"
 
 #: src/features/learning/components/player/MarkComplete.tsx:92
-msgid "Ready to level up?"
-msgstr "Gata să treci la nivelul următor?"
+#~ msgid "Ready to level up?"
+#~ msgstr "Gata să treci la nivelul următor?"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:425
 #: src/components/charts/components/series-config/SeriesFilter.tsx:771
@@ -6822,7 +6842,7 @@ msgstr "Recepții vs angajamente"
 msgid "Recipient"
 msgstr "Destinatar"
 
-#: src/features/learning/components/player/MarkComplete.tsx:106
+#: src/features/learning/components/player/MarkComplete.tsx:101
 msgid "Recording..."
 msgstr "Se înregistrează..."
 
@@ -6978,15 +6998,15 @@ msgstr "Resetează la valoarea implicită"
 msgid "Resources"
 msgstr "Resurse"
 
-#: src/routes/$lang/learning/index.lazy.tsx:313
+#: src/routes/$lang/learning/index.lazy.tsx:320
 msgid "Restart"
 msgstr "Repornește"
 
-#: src/routes/$lang/learning/index.lazy.tsx:199
+#: src/routes/$lang/learning/index.lazy.tsx:206
 msgid "Restart Onboarding"
 msgstr "Repornește procesul de inițiere"
 
-#: src/routes/$lang/learning/index.lazy.tsx:302
+#: src/routes/$lang/learning/index.lazy.tsx:309
 msgid "Restart Onboarding?"
 msgstr "Repornești procesul de inițiere?"
 
@@ -7044,7 +7064,7 @@ msgid "Review and manage alerts created from your custom data series."
 msgstr "Examinați și gestionați alertele create din seriile de date personalizate."
 
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:125
-#: src/routes/$lang/learning/index.lazy.tsx:241
+#: src/routes/$lang/learning/index.lazy.tsx:248
 msgid "Review Path"
 msgstr "Revizuiește parcursul"
 
@@ -7140,6 +7160,10 @@ msgstr "Salvează versiuni ale hărții tale pentru a urmări schimbările în t
 msgid "Save your progress"
 msgstr "Salvează-ți progresul"
 
+#: src/features/learning/components/player/MarkComplete.tsx:92
+#~ msgid "Save your progress and continue to the next step."
+#~ msgstr "Salvează progresul și continuă la pasul următor."
+
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:129
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1981
 #: src/routes/alerts/$alertId/index.lazy.tsx:124
@@ -7167,8 +7191,8 @@ msgid "SDG 2030"
 msgstr "SDG 2030"
 
 #: src/features/learning/components/player/MarkComplete.tsx:94
-msgid "Seal your progress and move closer to becoming a budget expert."
-msgstr "Consolidează-ți progresul și apropie-te de a deveni un expert în buget."
+#~ msgid "Seal your progress and move closer to becoming a budget expert."
+#~ msgstr "Consolidează-ți progresul și apropie-te de a deveni un expert în buget."
 
 #: src/components/mobile/mobile-bottom-dock.tsx:215
 #: src/components/mobile/mobile-bottom-dock.tsx:223
@@ -7908,7 +7932,7 @@ msgstr "Începe din nou"
 msgid "Start Path"
 msgstr "Începe parcursul"
 
-#: src/routes/$lang/learning/index.lazy.tsx:183
+#: src/routes/$lang/learning/index.lazy.tsx:190
 msgid "Start your first lesson and track your progress."
 msgstr "Începe prima lecție și urmărește-ți progresul."
 
@@ -7955,13 +7979,17 @@ msgstr "Situația pe Capitole Bugetare"
 msgid "Stay here"
 msgstr "Rămâi aici"
 
+#: src/features/learning/components/player/MarkComplete.tsx:64
+msgid "Step completed"
+msgstr "Pas finalizat"
+
 #: src/features/challenges/components/player/ChallengeStepPlayer.tsx:216
 msgid "Step not found"
 msgstr "Pasul nu a fost găsit"
 
 #: src/features/learning/components/player/MarkComplete.tsx:66
-msgid "Step Successfully Finished"
-msgstr "Pas finalizat cu succes"
+#~ msgid "Step Successfully Finished"
+#~ msgstr "Pas finalizat cu succes"
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:156
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:309
@@ -8296,7 +8324,7 @@ msgstr "Această valoare va fi utilizată pentru fiecare an din intervalul grafi
 msgid "This verification is a proof of concept using local storage."
 msgstr "Această verificare este un proof-of-concept care utilizează stocarea locală."
 
-#: src/routes/$lang/learning/index.lazy.tsx:326
+#: src/routes/$lang/learning/index.lazy.tsx:333
 msgid "This will permanently delete all your learning progress, including completed lessons, quiz scores, and onboarding preferences. This action cannot be undone."
 msgstr "Această acțiune va șterge permanent tot progresul tău de învățare, inclusiv lecțiile finalizate, scorurile la chestionare și preferințele de inițiere. Această acțiune este ireversibilă."
 
@@ -8309,7 +8337,7 @@ msgstr "Această acțiune va șterge definitiv harta și toate cele {0} versiuni
 msgid "This will remove all local snapshots for this map from this browser only."
 msgstr "Aceasta va elimina toate instantaneele locale pentru această hartă doar din acest browser."
 
-#: src/routes/$lang/learning/index.lazy.tsx:304
+#: src/routes/$lang/learning/index.lazy.tsx:311
 msgid "This will reset your onboarding preferences and show the welcome flow again. Your lesson progress will be preserved."
 msgstr "Această acțiune îți va reseta preferințele de inițiere și va afișa din nou fluxul de bun venit. Progresul lecțiilor tale va fi păstrat."
 
@@ -8972,7 +9000,7 @@ msgstr "Vezi tot"
 msgid "View all alerts"
 msgstr "Vezi toate alertele"
 
-#: src/components/common/classification-info-link.tsx:96
+#: src/components/common/classification-info-link.tsx:95
 msgid "View all classifications"
 msgstr "Vizualizați toate clasificările"
 
@@ -8997,7 +9025,7 @@ msgstr "Vezi graficul"
 msgid "View Details"
 msgstr "Vezi detalii"
 
-#: src/components/common/classification-info-link.tsx:83
+#: src/components/common/classification-info-link.tsx:82
 msgid "View full details"
 msgstr "Vizualizați detaliile complete"
 
@@ -9127,7 +9155,7 @@ msgid "Weather, heating systems, and local industry can materially affect year-t
 msgstr "Vremea, sistemele de încălzire și industria locală pot afecta semnificativ variațiile de la an la an."
 
 #: src/features/challenges/components/hub/ChallengesHubPage.tsx:96
-#: src/routes/$lang/learning/index.lazy.tsx:178
+#: src/routes/$lang/learning/index.lazy.tsx:185
 msgid "Welcome back."
 msgstr "Bine ai revenit."
 
@@ -9171,12 +9199,12 @@ msgstr "De ce contează"
 msgid "Why this matters"
 msgstr "De ce este important"
 
-#: src/routes/$lang/learning/index.lazy.tsx:207
-#: src/routes/$lang/learning/index.lazy.tsx:335
+#: src/routes/$lang/learning/index.lazy.tsx:214
+#: src/routes/$lang/learning/index.lazy.tsx:342
 msgid "Wipe All Data"
 msgstr "Șterge toate datele"
 
-#: src/routes/$lang/learning/index.lazy.tsx:324
+#: src/routes/$lang/learning/index.lazy.tsx:331
 msgid "Wipe All Data?"
 msgstr "Ștergi toate datele?"
 
@@ -9307,7 +9335,7 @@ msgid "You will no longer receive notifications via email."
 msgstr "Nu veți mai primi notificări prin e-mail."
 
 #: src/features/challenges/components/hub/ChallengesHubPage.tsx:103
-#: src/routes/$lang/learning/index.lazy.tsx:182
+#: src/routes/$lang/learning/index.lazy.tsx:189
 msgid "You're doing great. Keep up the momentum."
 msgstr "Te descurci de minune. Menține ritmul."
 
@@ -9315,7 +9343,7 @@ msgstr "Te descurci de minune. Menține ritmul."
 msgid "You've completed all challenges!"
 msgstr "Ai finalizat toate provocările!"
 
-#: src/routes/$lang/learning/index.lazy.tsx:239
+#: src/routes/$lang/learning/index.lazy.tsx:246
 msgid "You've completed this learning path."
 msgstr "Ai finalizat acest parcurs de învățare."
 
@@ -9378,6 +9406,10 @@ msgstr "Parcursul tău este pregătit"
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:288
 msgid "YOUR PREDICTION"
 msgstr "PREDICȚIA TA"
+
+#: src/features/learning/components/player/MarkComplete.tsx:68
+msgid "Your progress has been saved. You can continue to the next step."
+msgstr "Progresul tău a fost salvat. Poți continua la pasul următor."
 
 #: src/routes/privacy.lazy.tsx:110
 msgid "Your rights under GDPR"

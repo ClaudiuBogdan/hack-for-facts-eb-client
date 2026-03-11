@@ -1504,8 +1504,8 @@ msgstr "Calculations assume a basket of 40% essential goods (11% VAT) and 60% ge
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:123
 #: src/features/notifications/components/alerts/AlertCard.tsx:122
 #: src/features/notifications/components/NotificationCard.tsx:124
-#: src/routes/$lang/learning/index.lazy.tsx:308
-#: src/routes/$lang/learning/index.lazy.tsx:330
+#: src/routes/$lang/learning/index.lazy.tsx:315
+#: src/routes/$lang/learning/index.lazy.tsx:337
 #: src/routes/alerts/$alertId/index.lazy.tsx:317
 #: src/routes/unsubscribe.$token.tsx:113
 msgid "Cancel"
@@ -1635,8 +1635,8 @@ msgstr "Choose between essential-only or all cookies, then fine-tune options bel
 msgid "Choose operator"
 msgstr "Choose operator"
 
-#: src/components/common/classification-info-link.tsx:129
-#: src/components/common/classification-info-link.tsx:174
+#: src/components/common/classification-info-link.tsx:128
+#: src/components/common/classification-info-link.tsx:173
 msgid "classification"
 msgstr "classification"
 
@@ -1644,8 +1644,8 @@ msgstr "classification"
 msgid "Classification"
 msgstr "Classification"
 
-#: src/components/common/classification-info-link.tsx:120
-#: src/components/common/classification-info-link.tsx:165
+#: src/components/common/classification-info-link.tsx:119
+#: src/components/common/classification-info-link.tsx:164
 msgid "Classification Details"
 msgstr "Classification Details"
 
@@ -1712,8 +1712,8 @@ msgstr "Clear search"
 msgid "Click a phase to explore details"
 msgstr "Click a phase to explore details"
 
-#: src/components/common/classification-info-link.tsx:137
-#: src/components/common/classification-info-link.tsx:182
+#: src/components/common/classification-info-link.tsx:136
+#: src/components/common/classification-info-link.tsx:181
 msgid "Click the link below to explore all {type} classifications."
 msgstr "Click the link below to explore all {type} classifications."
 
@@ -1897,9 +1897,9 @@ msgstr "Compare with death rate and migration to understand if growth is structu
 msgid "Complete path"
 msgstr "Complete path"
 
-#: src/features/learning/components/player/MarkComplete.tsx:111
-msgid "Complete this lesson"
-msgstr "Complete this lesson"
+#: src/features/learning/components/player/MarkComplete.tsx:106
+#~ msgid "Complete this lesson"
+#~ msgstr "Complete this lesson"
 
 #: src/features/learning/components/interactive/FlashCardDeck.tsx:270
 msgid "Complete!"
@@ -1999,7 +1999,7 @@ msgid "Confirm unsubscribe"
 msgstr "Confirm unsubscribe"
 
 #: src/features/challenges/components/hub/ChallengesHubPage.tsx:142
-#: src/routes/$lang/learning/index.lazy.tsx:238
+#: src/routes/$lang/learning/index.lazy.tsx:245
 msgid "Congratulations!"
 msgstr "Congratulations!"
 
@@ -2044,8 +2044,12 @@ msgid "Continue editing"
 msgstr "Continue editing"
 
 #: src/features/learning/components/player/MarkComplete.tsx:71
-msgid "Continue to the next chapter to complete the module."
-msgstr "Continue to the next chapter to complete the module."
+#~ msgid "Continue to the next chapter to complete the module."
+#~ msgstr "Continue to the next chapter to complete the module."
+
+#: src/features/learning/components/player/MarkComplete.tsx:69
+msgid "Continue to the next step to complete the module."
+msgstr "Continue to the next step to complete the module."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:349
 msgid "continuous"
@@ -2897,8 +2901,8 @@ msgstr "Ec"
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:103
 #: src/components/classification-explorer/ClassificationExplorer.tsx:195
 #: src/components/classification-explorer/ClassificationExplorer.tsx:196
-#: src/components/common/classification-info-link.tsx:113
-#: src/components/common/classification-info-link.tsx:158
+#: src/components/common/classification-info-link.tsx:112
+#: src/components/common/classification-info-link.tsx:157
 #: src/components/entities/views/Overview.tsx:313
 #: src/components/entities/views/TrendsView.tsx:230
 #: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:131
@@ -3478,7 +3482,7 @@ msgstr "Explore entities by aggregated values."
 msgid "Explore Full Map"
 msgstr "Explore Full Map"
 
-#: src/routes/$lang/learning/index.lazy.tsx:256
+#: src/routes/$lang/learning/index.lazy.tsx:263
 msgid "Explore more paths"
 msgstr "Explore more paths"
 
@@ -3857,8 +3861,8 @@ msgstr "Full historical observations exceeded the page cap for this view. Showin
 #: src/components/budget-explorer/BudgetExplorerHeader.tsx:96
 #: src/components/classification-explorer/ClassificationExplorer.tsx:192
 #: src/components/classification-explorer/ClassificationExplorer.tsx:193
-#: src/components/common/classification-info-link.tsx:113
-#: src/components/common/classification-info-link.tsx:158
+#: src/components/common/classification-info-link.tsx:112
+#: src/components/common/classification-info-link.tsx:157
 #: src/components/entities/views/Overview.tsx:312
 #: src/components/entities/views/TrendsView.tsx:229
 #: src/components/entity-analytics/EntityAnalyticsTreemap.tsx:124
@@ -4345,7 +4349,7 @@ msgstr "Inflation Adjustment"
 msgid "Inflation adjustment is ignored for % of GDP."
 msgstr "Inflation adjustment is ignored for % of GDP."
 
-#: src/components/common/classification-info-link.tsx:372
+#: src/components/common/classification-info-link.tsx:378
 msgid "Info"
 msgstr "Info"
 
@@ -4694,9 +4698,13 @@ msgstr "less than"
 msgid "Less than"
 msgstr "Less than"
 
+#: src/features/learning/components/player/MarkComplete.tsx:64
+msgid "Lesson completed!"
+msgstr "Lesson completed!"
+
 #: src/features/learning/components/player/MarkComplete.tsx:66
-msgid "Lesson Completed!"
-msgstr "Lesson Completed!"
+#~ msgid "Lesson Completed!"
+#~ msgstr "Lesson Completed!"
 
 #: src/features/learning/components/player/LessonPlayer.tsx:451
 msgid "Lesson not found"
@@ -5182,9 +5190,21 @@ msgstr "Maps"
 msgid "March"
 msgstr "March"
 
+#: src/features/learning/components/player/MarkComplete.tsx:106
+msgid "Mark as complete"
+msgstr "Mark as complete"
+
 #: src/routes/charts/index.lazy.tsx:280
 msgid "Mark charts as favorites to quickly find them here."
 msgstr "Mark charts as favorites to quickly find them here."
+
+#: src/features/learning/components/player/MarkComplete.tsx:88
+msgid "Mark this step as complete"
+msgstr "Mark this step as complete"
+
+#: src/features/learning/components/player/MarkComplete.tsx:90
+msgid "Mark this step as done to save your progress."
+msgstr "Mark this step as done to save your progress."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:50
 msgid "Markdown"
@@ -5195,8 +5215,8 @@ msgid "Master the app with these powerful keyboard shortcuts"
 msgstr "Master the app with these powerful keyboard shortcuts"
 
 #: src/features/learning/components/player/MarkComplete.tsx:70
-msgid "Mastering the budget one step at a time. Your progress is recorded."
-msgstr "Mastering the budget one step at a time. Your progress is recorded."
+#~ msgid "Mastering the budget one step at a time. Your progress is recorded."
+#~ msgstr "Mastering the budget one step at a time. Your progress is recorded."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:467
 msgid "Max"
@@ -5293,7 +5313,7 @@ msgstr "Minimum Pay"
 msgid "Missing"
 msgstr "Missing"
 
-#: src/features/learning/hooks/use-learning-progress.tsx:656
+#: src/features/learning/hooks/use-learning-progress.tsx:666
 msgid "Missing content id"
 msgstr "Missing content id"
 
@@ -5307,7 +5327,7 @@ msgstr "Missing description"
 msgid "Missing Items"
 msgstr "Missing Items"
 
-#: src/features/learning/hooks/use-learning-progress.tsx:699
+#: src/features/learning/hooks/use-learning-progress.tsx:709
 msgid "Missing path id"
 msgstr "Missing path id"
 
@@ -5319,8 +5339,8 @@ msgid "Missing title"
 msgstr "Missing title"
 
 #: src/features/learning/components/player/MarkComplete.tsx:91
-msgid "Mission End"
-msgstr "Mission End"
+#~ msgid "Mission End"
+#~ msgstr "Mission End"
 
 #: src/components/entities/views/ins-stats-view.tsx:1244
 msgid "Mixed"
@@ -6678,8 +6698,8 @@ msgid "Progress"
 msgstr "Progress"
 
 #: src/features/learning/components/player/MarkComplete.tsx:64
-msgid "Progress Saved"
-msgstr "Progress Saved"
+#~ msgid "Progress Saved"
+#~ msgstr "Progress Saved"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:142
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:408
@@ -6784,13 +6804,13 @@ msgstr "Ready to Begin?"
 msgid "Ready to create"
 msgstr "Ready to create"
 
-#: src/routes/$lang/learning/index.lazy.tsx:178
+#: src/routes/$lang/learning/index.lazy.tsx:185
 msgid "Ready to learn?"
 msgstr "Ready to learn?"
 
 #: src/features/learning/components/player/MarkComplete.tsx:92
-msgid "Ready to level up?"
-msgstr "Ready to level up?"
+#~ msgid "Ready to level up?"
+#~ msgstr "Ready to level up?"
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:425
 #: src/components/charts/components/series-config/SeriesFilter.tsx:771
@@ -6827,7 +6847,7 @@ msgstr "Receipts vs commitments"
 msgid "Recipient"
 msgstr "Recipient"
 
-#: src/features/learning/components/player/MarkComplete.tsx:106
+#: src/features/learning/components/player/MarkComplete.tsx:101
 msgid "Recording..."
 msgstr "Recording..."
 
@@ -6983,15 +7003,15 @@ msgstr "Reset to default"
 msgid "Resources"
 msgstr "Resources"
 
-#: src/routes/$lang/learning/index.lazy.tsx:313
+#: src/routes/$lang/learning/index.lazy.tsx:320
 msgid "Restart"
 msgstr "Restart"
 
-#: src/routes/$lang/learning/index.lazy.tsx:199
+#: src/routes/$lang/learning/index.lazy.tsx:206
 msgid "Restart Onboarding"
 msgstr "Restart Onboarding"
 
-#: src/routes/$lang/learning/index.lazy.tsx:302
+#: src/routes/$lang/learning/index.lazy.tsx:309
 msgid "Restart Onboarding?"
 msgstr "Restart Onboarding?"
 
@@ -7049,7 +7069,7 @@ msgid "Review and manage alerts created from your custom data series."
 msgstr "Review and manage alerts created from your custom data series."
 
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:125
-#: src/routes/$lang/learning/index.lazy.tsx:241
+#: src/routes/$lang/learning/index.lazy.tsx:248
 msgid "Review Path"
 msgstr "Review Path"
 
@@ -7145,6 +7165,10 @@ msgstr "Save versions of your map to track changes over time."
 msgid "Save your progress"
 msgstr "Save your progress"
 
+#: src/features/learning/components/player/MarkComplete.tsx:92
+#~ msgid "Save your progress and continue to the next step."
+#~ msgstr "Save your progress and continue to the next step."
+
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:129
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1981
 #: src/routes/alerts/$alertId/index.lazy.tsx:124
@@ -7172,8 +7196,8 @@ msgid "SDG 2030"
 msgstr "SDG 2030"
 
 #: src/features/learning/components/player/MarkComplete.tsx:94
-msgid "Seal your progress and move closer to becoming a budget expert."
-msgstr "Seal your progress and move closer to becoming a budget expert."
+#~ msgid "Seal your progress and move closer to becoming a budget expert."
+#~ msgstr "Seal your progress and move closer to becoming a budget expert."
 
 #: src/components/mobile/mobile-bottom-dock.tsx:215
 #: src/components/mobile/mobile-bottom-dock.tsx:223
@@ -7913,7 +7937,7 @@ msgstr "Start Over"
 msgid "Start Path"
 msgstr "Start Path"
 
-#: src/routes/$lang/learning/index.lazy.tsx:183
+#: src/routes/$lang/learning/index.lazy.tsx:190
 msgid "Start your first lesson and track your progress."
 msgstr "Start your first lesson and track your progress."
 
@@ -7960,13 +7984,17 @@ msgstr "Status by Budget Chapters"
 msgid "Stay here"
 msgstr "Stay here"
 
+#: src/features/learning/components/player/MarkComplete.tsx:64
+msgid "Step completed"
+msgstr "Step completed"
+
 #: src/features/challenges/components/player/ChallengeStepPlayer.tsx:216
 msgid "Step not found"
 msgstr "Step not found"
 
 #: src/features/learning/components/player/MarkComplete.tsx:66
-msgid "Step Successfully Finished"
-msgstr "Step Successfully Finished"
+#~ msgid "Step Successfully Finished"
+#~ msgstr "Step Successfully Finished"
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:156
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:309
@@ -8301,7 +8329,7 @@ msgstr "This value will be used for every year in the chart's range."
 msgid "This verification is a proof of concept using local storage."
 msgstr "This verification is a proof of concept using local storage."
 
-#: src/routes/$lang/learning/index.lazy.tsx:326
+#: src/routes/$lang/learning/index.lazy.tsx:333
 msgid "This will permanently delete all your learning progress, including completed lessons, quiz scores, and onboarding preferences. This action cannot be undone."
 msgstr "This will permanently delete all your learning progress, including completed lessons, quiz scores, and onboarding preferences. This action cannot be undone."
 
@@ -8314,7 +8342,7 @@ msgstr "This will permanently delete the map and all {0} saved versions. This ca
 msgid "This will remove all local snapshots for this map from this browser only."
 msgstr "This will remove all local snapshots for this map from this browser only."
 
-#: src/routes/$lang/learning/index.lazy.tsx:304
+#: src/routes/$lang/learning/index.lazy.tsx:311
 msgid "This will reset your onboarding preferences and show the welcome flow again. Your lesson progress will be preserved."
 msgstr "This will reset your onboarding preferences and show the welcome flow again. Your lesson progress will be preserved."
 
@@ -8977,7 +9005,7 @@ msgstr "View all"
 msgid "View all alerts"
 msgstr "View all alerts"
 
-#: src/components/common/classification-info-link.tsx:96
+#: src/components/common/classification-info-link.tsx:95
 msgid "View all classifications"
 msgstr "View all classifications"
 
@@ -9002,7 +9030,7 @@ msgstr "View Chart"
 msgid "View Details"
 msgstr "View Details"
 
-#: src/components/common/classification-info-link.tsx:83
+#: src/components/common/classification-info-link.tsx:82
 msgid "View full details"
 msgstr "View full details"
 
@@ -9132,7 +9160,7 @@ msgid "Weather, heating systems, and local industry can materially affect year-t
 msgstr "Weather, heating systems, and local industry can materially affect year-to-year variation."
 
 #: src/features/challenges/components/hub/ChallengesHubPage.tsx:96
-#: src/routes/$lang/learning/index.lazy.tsx:178
+#: src/routes/$lang/learning/index.lazy.tsx:185
 msgid "Welcome back."
 msgstr "Welcome back."
 
@@ -9176,12 +9204,12 @@ msgstr "Why it matters"
 msgid "Why this matters"
 msgstr "Why this matters"
 
-#: src/routes/$lang/learning/index.lazy.tsx:207
-#: src/routes/$lang/learning/index.lazy.tsx:335
+#: src/routes/$lang/learning/index.lazy.tsx:214
+#: src/routes/$lang/learning/index.lazy.tsx:342
 msgid "Wipe All Data"
 msgstr "Wipe All Data"
 
-#: src/routes/$lang/learning/index.lazy.tsx:324
+#: src/routes/$lang/learning/index.lazy.tsx:331
 msgid "Wipe All Data?"
 msgstr "Wipe All Data?"
 
@@ -9312,7 +9340,7 @@ msgid "You will no longer receive notifications via email."
 msgstr "You will no longer receive notifications via email."
 
 #: src/features/challenges/components/hub/ChallengesHubPage.tsx:103
-#: src/routes/$lang/learning/index.lazy.tsx:182
+#: src/routes/$lang/learning/index.lazy.tsx:189
 msgid "You're doing great. Keep up the momentum."
 msgstr "You're doing great. Keep up the momentum."
 
@@ -9320,7 +9348,7 @@ msgstr "You're doing great. Keep up the momentum."
 msgid "You've completed all challenges!"
 msgstr "You've completed all challenges!"
 
-#: src/routes/$lang/learning/index.lazy.tsx:239
+#: src/routes/$lang/learning/index.lazy.tsx:246
 msgid "You've completed this learning path."
 msgstr "You've completed this learning path."
 
@@ -9383,6 +9411,10 @@ msgstr "Your path is ready"
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:288
 msgid "YOUR PREDICTION"
 msgstr "YOUR PREDICTION"
+
+#: src/features/learning/components/player/MarkComplete.tsx:68
+msgid "Your progress has been saved. You can continue to the next step."
+msgstr "Your progress has been saved. You can continue to the next step."
 
 #: src/routes/privacy.lazy.tsx:110
 msgid "Your rights under GDPR"
