@@ -6,6 +6,7 @@ import {
 } from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
 import { buildCampaignRouteHead } from '@/features/campaigns/buget/seo/campaign-seo'
 import type { CampaignRouteSearch } from '@/features/campaigns/buget/types'
+import { buildChallengeStepRouteLoaderData } from '@/features/challenges/utils/challenge-step-route-search'
 import { getChallengeModuleBySlug } from '@/features/challenges/utils/modules'
 
 export const Route = createFileRoute(
@@ -13,7 +14,12 @@ export const Route = createFileRoute(
 )({
   ssr: true,
   validateSearch: CampaignRouteSearchSchema,
-  loader: ({ params }) => {
+  loaderDeps: ({ search }) =>
+    buildChallengeStepRouteLoaderData({
+      section: search.section,
+      view: search.view,
+    }),
+  loader: ({ params, deps }) => {
     const module = getChallengeModuleBySlug(params.moduleSlug)
     if (!module) throw notFound()
 
@@ -26,6 +32,8 @@ export const Route = createFileRoute(
       (candidateStep) => candidateStep.slug === params.stepSlug,
     )
     if (!step) throw notFound()
+
+    return deps
   },
   headers: () =>
     createPublicPageCacheHeaders({

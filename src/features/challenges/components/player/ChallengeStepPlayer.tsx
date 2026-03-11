@@ -1,44 +1,28 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useEffect, useMemo, type ComponentType } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2 } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import { BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
-import {
-  prefetchChallengeStepContent,
-  useChallengeStepContent,
-} from '../../hooks/use-challenge-step-content'
+import { Card, CardContent } from '@/components/ui/card'
+import { prefetchChallengeStepContent, useChallengeStepContent } from '../../hooks/use-challenge-step-content'
+import { useChallengeAccess } from '../../hooks/use-challenge-access'
+import type { ChallengeLocale, ChallengeStepDefinition } from '../../types'
+import { buildCampaignProvocariPath } from '../../constants'
 import {
   findChallengeSlugForStep,
   getAdjacentSteps,
   getChallengeModuleBySlug,
   getTranslatedText,
 } from '../../utils/modules'
-import {
-  buildCampaignProvocariModulePath,
-  buildCampaignProvocariPath,
-  buildCampaignProvocariStepPath,
-} from '../../constants'
-import type { ChallengeLocale } from '../../types'
-import { useChallengeAccess } from '../../hooks/use-challenge-access'
-import { Quiz } from '@/features/learning/components/assessment/Quiz'
-import { MarkComplete } from '@/features/learning/components/player/MarkComplete'
-import {
-  LessonChallengesProvider,
-  useRegisterLessonChallenge,
-} from '@/features/learning/components/player/lesson-challenges-context'
-import { LessonSkeleton } from '@/features/learning/components/loading/LessonSkeleton'
-import { scoreSingleChoice } from '@/features/learning/utils/scoring'
-import { QUIZ_PASS_SCORE } from '@/features/learning/utils/interactions'
-import { useLearningProgress } from '@/features/learning/hooks/use-learning-progress'
-import {
-  buildChallengeMdxComponents,
-  type ChallengeMarkCompleteMdxProps,
-  type ChallengeQuizMdxProps,
-} from './challenge-mdx-components'
-import { ChallengeHubAccessCard } from '../hub/challenge-hub-access-card'
-import type { ChallengeAccessCardVariant } from '../../hooks/use-challenge-access'
+import { ChallengeStepArticleLayout } from './challenge-step-article-layout'
+import { useChallengeStepMdxComponents } from './challenge-step-mdx-wrappers'
+import type { ChallengeStepViewMode, MdxContentProps } from './challenge-step-player.shared'
+import { resolveChallengeStepViewMode } from './challenge-step-player.utils'
+import { SectionedStepFooter } from './sectioned-step-footer'
+import { SectionedStepHeader } from './sectioned-step-header'
+import { SectionedStepViewport } from './sectioned-step-viewport'
+import { useSectionedStepPlayer } from './use-sectioned-step-player'
+import type { ChallengeStepSection } from '../../utils/sectioned-step-markdown'
 
 type ChallengeStepPlayerProps = {
   readonly entityCui: string
@@ -46,71 +30,167 @@ type ChallengeStepPlayerProps = {
   readonly moduleSlug: string
   readonly challengeSlug: string
   readonly stepSlug: string
+  readonly activeSectionId?: string
+  readonly activeViewMode?: ChallengeStepViewMode
+  readonly onSectionChange?: (
+    sectionId: string,
+    options?: { readonly replace?: boolean },
+  ) => void
+  readonly onViewModeChange?: (
+    viewMode: ChallengeStepViewMode,
+    options?: { readonly replace?: boolean },
+  ) => void
 }
 
-type StepQuizWrapperProps = ChallengeQuizMdxProps & {
+type ChallengeSectionedStepRendererProps = {
+  readonly entityCui: string
+  readonly locale: ChallengeLocale
+  readonly moduleSlug: string
+  readonly currentSearchSectionId?: string
+  readonly currentViewMode: ChallengeStepViewMode
+  readonly onSectionChange?: (
+    sectionId: string,
+    options?: { readonly replace?: boolean },
+  ) => void
+  readonly onViewModeChange?: (
+    viewMode: ChallengeStepViewMode,
+    options?: { readonly replace?: boolean },
+  ) => void
   readonly stepId: string
-  readonly locale: ChallengeLocale
-  readonly accessCardVariant: ChallengeAccessCardVariant | null
-  readonly isAccessGranted: boolean
-  readonly isSubmitting: boolean
-  readonly onRegister: () => Promise<void>
+  readonly stepTitle: string
+  readonly stepCompletionMode: ChallengeStepDefinition['completionMode']
+  readonly fullArticleComponent: ComponentType<MdxContentProps>
+  readonly articleMdxComponents: ReturnType<typeof useChallengeStepMdxComponents>['sectionedArticleMdxComponents']
+  readonly articleExtraContent: ReturnType<typeof useChallengeStepMdxComponents>['syntheticMarkComplete']
+  readonly prev: ChallengeStepDefinition | null
+  readonly sections: readonly ChallengeStepSection[]
+  readonly next: ChallengeStepDefinition | null
+  readonly findChallengeSlugForAdjacentStep: (stepId: string) => string
+  readonly accessCardVariant: ReturnType<typeof useChallengeAccess>['accessCardVariant']
+  readonly isAccessGranted: ReturnType<typeof useChallengeAccess>['isAccessGranted']
+  readonly isSubmitting: ReturnType<typeof useChallengeAccess>['isSubmitting']
+  readonly onRegister: ReturnType<typeof useChallengeAccess>['register']
 }
 
-type ChallengeInteractionAccessReplacementProps = {
-  readonly locale: ChallengeLocale
-  readonly accessCardVariant: ChallengeAccessCardVariant | null
-  readonly isSubmitting: boolean
-  readonly onRegister: () => Promise<void>
-}
-
-function ChallengeInteractionAccessReplacement({
+function ChallengeSectionedStepRenderer({
+  entityCui,
   locale,
-  accessCardVariant,
-  isSubmitting,
-  onRegister,
-}: ChallengeInteractionAccessReplacementProps) {
-  return (
-    <div className="not-prose my-8">
-      <ChallengeHubAccessCard
-        locale={locale}
-        variant={accessCardVariant ?? 'loading'}
-        isSubmitting={isSubmitting}
-        onRegister={onRegister}
-      />
-    </div>
-  )
-}
-
-function StepQuizWrapper({
+  moduleSlug,
+  currentSearchSectionId,
+  currentViewMode,
+  onSectionChange,
+  onViewModeChange,
   stepId,
-  locale,
+  stepTitle,
+  stepCompletionMode,
+  fullArticleComponent,
+  articleMdxComponents,
+  articleExtraContent,
+  prev,
+  sections,
+  next,
+  findChallengeSlugForAdjacentStep,
   accessCardVariant,
   isAccessGranted,
   isSubmitting,
   onRegister,
-  ...props
-}: StepQuizWrapperProps) {
-  const { progress } = useLearningProgress()
-  const interaction = progress.content[stepId]?.interactions?.[props.id]
-  const selectedOptionId = interaction?.kind === 'quiz' ? interaction.selectedOptionId : null
-  const score = scoreSingleChoice(props.options, selectedOptionId)
-  const isCompleted = score >= QUIZ_PASS_SCORE
+}: ChallengeSectionedStepRendererProps) {
+  const sectionedPlayer = useSectionedStepPlayer({
+    entityCui,
+    locale,
+    moduleSlug,
+    currentSearchSectionId,
+    currentViewMode,
+    onSectionChange,
+    stepId,
+    stepTitle,
+    prev,
+    sections,
+    next,
+    findChallengeSlugForAdjacentStep,
+    accessCardVariant,
+    isAccessGranted,
+    isSubmitting,
+    onRegister,
+  })
 
-  useRegisterLessonChallenge({ id: `quiz:${props.id}`, isCompleted })
-
-  if (!isAccessGranted) {
+  if (!sectionedPlayer.currentSection || !sectionedPlayer.currentSectionComponent) {
     return (
-      <ChallengeInteractionAccessReplacement
-        locale={locale}
-        accessCardVariant={accessCardVariant}
-        isSubmitting={isSubmitting}
-        onRegister={onRegister}
-      />
+      <Card className="border-destructive/50 bg-destructive/5">
+        <CardContent className="p-6 text-center">
+          <p className="text-sm text-destructive">{t`This sectioned step has no sections to render.`}</p>
+        </CardContent>
+      </Card>
     )
   }
 
-  return <Quiz {...props} contentId={stepId} />
+  if (currentViewMode === 'article') {
+    return (
+      <div className="-mx-4 -my-5 bg-background sm:-mx-6 sm:-my-8 lg:-mx-10 lg:-my-10">
+        <SectionedStepHeader
+          backTarget={sectionedPlayer.backTarget}
+          currentViewMode={currentViewMode}
+          currentSectionIndex={sectionedPlayer.currentSectionIndex}
+          onProgressSectionSelect={sectionedPlayer.handleProgressSectionSelect}
+          onViewModeChange={onViewModeChange}
+          sections={sections}
+          stepTitle={stepTitle}
+        />
+
+        <div className="mx-auto max-w-3xl px-4 py-5 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
+          <ChallengeStepArticleLayout
+            entityCui={entityCui}
+            locale={locale}
+            moduleSlug={moduleSlug}
+            prev={prev}
+            next={next}
+            findChallengeSlugForAdjacentStep={findChallengeSlugForAdjacentStep}
+            getTranslatedText={getTranslatedText}
+            Component={fullArticleComponent}
+            mdxComponents={articleMdxComponents}
+            isLoading={false}
+            error={null}
+            extraContent={stepCompletionMode === 'mark_complete' ? articleExtraContent : undefined}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className="-mx-4 -my-5 flex h-[100svh] max-h-[100svh] flex-col overflow-hidden bg-background sm:-mx-6 sm:-my-8 lg:-mx-10 lg:-my-10"
+      style={{ minHeight: '100dvh', height: '100dvh', maxHeight: '100dvh' }}
+    >
+      <SectionedStepHeader
+        backTarget={sectionedPlayer.backTarget}
+        currentViewMode={currentViewMode}
+        currentSectionIndex={sectionedPlayer.currentSectionIndex}
+        onProgressSectionSelect={sectionedPlayer.handleProgressSectionSelect}
+        onViewModeChange={onViewModeChange}
+        sections={sections}
+        stepTitle={stepTitle}
+      />
+
+      <SectionedStepViewport
+        stepTitle={stepTitle}
+        headerTitle={sectionedPlayer.headerTitle}
+        hasPreviousSection={sectionedPlayer.hasPreviousSection}
+        hasNextSection={sectionedPlayer.hasNextSection}
+        onGoToPreviousSection={sectionedPlayer.handleGoToPreviousSection}
+        onGoToNextSection={sectionedPlayer.handleGoToNextSection}
+        CurrentSectionComponent={sectionedPlayer.currentSectionComponent}
+        mdxComponents={sectionedPlayer.sectionedMdxComponents}
+        scrollAreaRef={sectionedPlayer.scrollAreaRef}
+      />
+
+      <SectionedStepFooter
+        footerState={sectionedPlayer.footerState}
+        onSkip={sectionedPlayer.handleSkip}
+        onPrimaryAction={sectionedPlayer.handlePrimaryAction}
+      />
+    </div>
+  )
 }
 
 export function ChallengeStepPlayer({
@@ -119,10 +199,14 @@ export function ChallengeStepPlayer({
   moduleSlug,
   challengeSlug,
   stepSlug,
+  activeSectionId,
+  activeViewMode,
+  onSectionChange,
+  onViewModeChange,
 }: ChallengeStepPlayerProps) {
   const module = getChallengeModuleBySlug(moduleSlug)
-  const challenge = module?.challenges.find((c) => c.slug === challengeSlug) ?? null
-  const step = challenge?.steps.find((s) => s.slug === stepSlug) ?? null
+  const challenge = module?.challenges.find((candidate) => candidate.slug === challengeSlug) ?? null
+  const step = challenge?.steps.find((candidate) => candidate.slug === stepSlug) ?? null
   const {
     accessCardVariant,
     isAccessGranted,
@@ -130,7 +214,7 @@ export function ChallengeStepPlayer({
     register,
   } = useChallengeAccess()
 
-  const { Component, isLoading, error } = useChallengeStepContent({
+  const { content, isLoading, error } = useChallengeStepContent({
     contentDir: step?.contentDir ?? 'missing',
     locale,
   })
@@ -143,78 +227,49 @@ export function ChallengeStepPlayer({
     [module, step?.id],
   )
 
-  const prevContentDir = prev?.contentDir ?? ''
-  const nextContentDir = next?.contentDir ?? ''
-
   useEffect(() => {
-    if (prevContentDir) {
-      void prefetchChallengeStepContent({ contentDir: prevContentDir, locale })
+    if (prev?.contentDir) {
+      void prefetchChallengeStepContent({ contentDir: prev.contentDir, locale })
     }
-    if (nextContentDir) {
-      void prefetchChallengeStepContent({ contentDir: nextContentDir, locale })
+    if (next?.contentDir) {
+      void prefetchChallengeStepContent({ contentDir: next.contentDir, locale })
     }
-  }, [locale, nextContentDir, prevContentDir])
+  }, [locale, next?.contentDir, prev?.contentDir])
 
   const stepId = step?.id ?? ''
+  const {
+    articleMdxComponents,
+    sectionedArticleMdxComponents,
+    syntheticMarkComplete,
+  } = useChallengeStepMdxComponents({
+    stepId,
+    locale,
+    accessCardVariant,
+    isAccessGranted,
+    isSubmitting,
+    onRegister: register,
+  })
 
-  const QuizWrapper = useCallback(
-    (props: ChallengeQuizMdxProps) => (
-      <StepQuizWrapper
-        {...props}
-        stepId={stepId}
-        locale={locale}
-        accessCardVariant={accessCardVariant}
-        isAccessGranted={isAccessGranted}
-        isSubmitting={isSubmitting}
-        onRegister={register}
-      />
-    ),
-    [
-      accessCardVariant,
-      isAccessGranted,
-      isSubmitting,
-      locale,
-      register,
-      stepId,
-    ],
-  )
+  const findChallengeSlugForAdjacentStep = (adjacentStepId: string) =>
+    module ? findChallengeSlugForStep(module, adjacentStepId) ?? challengeSlug : challengeSlug
 
-  const MarkCompleteWrapper = useCallback(
-    (props: ChallengeMarkCompleteMdxProps) => {
-      if (!isAccessGranted) {
-        return (
-          <ChallengeInteractionAccessReplacement
-            locale={locale}
-            accessCardVariant={accessCardVariant}
-            isSubmitting={isSubmitting}
-            onRegister={register}
-          />
-        )
-      }
+  const resolvedSectionedViewMode = resolveChallengeStepViewMode(activeViewMode)
 
-      return <MarkComplete {...props} contentId={stepId} />
-    },
-    [accessCardVariant, isAccessGranted, isSubmitting, locale, register, stepId],
-  )
-
-  const mdxComponents = useMemo(
-    () =>
-      buildChallengeMdxComponents({
-        QuizComponent: QuizWrapper,
-        MarkCompleteComponent: MarkCompleteWrapper,
-      }),
-    [QuizWrapper, MarkCompleteWrapper],
-  )
+  useEffect(() => {
+    if (content?.kind !== 'sectioned') return
+    if (activeViewMode === resolvedSectionedViewMode) return
+    onViewModeChange?.(resolvedSectionedViewMode, { replace: true })
+  }, [activeViewMode, content?.kind, onViewModeChange, resolvedSectionedViewMode])
 
   if (!module || !challenge || !step) {
     return (
       <Card className="border-dashed">
         <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
             <BookOpen className="h-8 w-8 text-muted-foreground" />
           </div>
           <h2 className="text-lg font-semibold">{t`Step not found`}</h2>
-          <p className="text-sm text-muted-foreground mt-1 max-w-sm">
+          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
             {t`The step you're looking for doesn't exist or may have been moved.`}
           </p>
           <Button asChild className="mt-4">
@@ -227,130 +282,47 @@ export function ChallengeStepPlayer({
     )
   }
 
-  const findChallengeSlugForAdjacentStep = (adjacentStepId: string) => {
-    return findChallengeSlugForStep(module, adjacentStepId) ?? challengeSlug
+  if (content?.kind === 'sectioned') {
+    return (
+      <ChallengeSectionedStepRenderer
+        entityCui={entityCui}
+        locale={locale}
+        moduleSlug={moduleSlug}
+        currentSearchSectionId={activeSectionId}
+        currentViewMode={resolvedSectionedViewMode}
+        onSectionChange={onSectionChange}
+        onViewModeChange={onViewModeChange}
+        stepId={stepId}
+        stepTitle={getTranslatedText(step.title, locale)}
+        stepCompletionMode={step.completionMode}
+        fullArticleComponent={content.Component}
+        articleMdxComponents={sectionedArticleMdxComponents}
+        articleExtraContent={syntheticMarkComplete}
+        prev={prev}
+        sections={content.sections}
+        next={next}
+        findChallengeSlugForAdjacentStep={findChallengeSlugForAdjacentStep}
+        accessCardVariant={accessCardVariant}
+        isAccessGranted={isAccessGranted}
+        isSubmitting={isSubmitting}
+        onRegister={register}
+      />
+    )
   }
 
   return (
-    <div className="animate-in fade-in duration-300">
-      {/* Step content */}
-      <div
-        className={cn(
-          'prose prose-slate dark:prose-invert max-w-none',
-          'prose-headings:scroll-mt-20 prose-headings:font-black prose-headings:tracking-tight prose-headings:leading-tight',
-          'prose-h1:text-4xl prose-h1:md:text-6xl prose-h1:tracking-tighter',
-          'prose-h2:text-2xl prose-h2:md:text-3xl',
-          'prose-h3:text-xl prose-h3:md:text-2xl',
-          'prose-p:leading-relaxed',
-          '[&_blockquote]:relative [&_blockquote]:my-10 [&_blockquote]:not-italic',
-          '[&_blockquote]:rounded-r-2xl [&_blockquote]:rounded-l-none',
-          '[&_blockquote]:border [&_blockquote]:border-l-0 [&_blockquote]:border-amber-200/60',
-          'dark:[&_blockquote]:border-amber-500/20',
-          '[&_blockquote]:bg-linear-to-br [&_blockquote]:from-amber-50 [&_blockquote]:via-orange-50/50 [&_blockquote]:to-yellow-50/30',
-          'dark:[&_blockquote]:from-amber-950/40 dark:[&_blockquote]:via-orange-950/20 dark:[&_blockquote]:to-yellow-950/10',
-          '[&_blockquote]:pl-6 [&_blockquote]:pr-6 [&_blockquote]:py-5 [&_blockquote]:md:pl-8 [&_blockquote]:md:pr-8 [&_blockquote]:md:py-6',
-          '[&_blockquote]:shadow-sm [&_blockquote]:shadow-amber-100/50',
-          'dark:[&_blockquote]:shadow-amber-900/10',
-          '[&_blockquote]:before:absolute [&_blockquote]:before:left-0 [&_blockquote]:before:top-0 [&_blockquote]:before:bottom-0',
-          '[&_blockquote]:before:w-1',
-          '[&_blockquote]:before:bg-linear-to-b [&_blockquote]:before:from-amber-400 [&_blockquote]:before:via-orange-500 [&_blockquote]:before:to-amber-500',
-          'dark:[&_blockquote]:before:from-amber-400 dark:[&_blockquote]:before:via-orange-400 dark:[&_blockquote]:before:to-amber-500',
-          'prose-a:text-primary prose-a:no-underline hover:prose-a:underline',
-          'prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-normal prose-code:before:content-none prose-code:after:content-none',
-          'prose-img:rounded-xl prose-img:shadow-md',
-        )}
-      >
-        {isLoading && <LessonSkeleton />}
-        {error && (
-          <Card className="border-destructive/50 bg-destructive/5">
-            <CardContent className="p-6 text-center">
-              <p className="text-sm text-destructive">{error}</p>
-            </CardContent>
-          </Card>
-        )}
-        {Component ? (
-          <LessonChallengesProvider>
-            <Component components={mdxComponents} />
-          </LessonChallengesProvider>
-        ) : null}
-      </div>
-
-      {/* Navigation footer */}
-      <nav className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-8 mt-8 border-t">
-        {prev ? (
-          <Link
-            to={buildCampaignProvocariStepPath(
-              entityCui,
-              moduleSlug,
-              findChallengeSlugForAdjacentStep(prev.id),
-              prev.slug,
-            ) as '/'}
-            resetScroll={true}
-            className="group flex items-center gap-3 flex-1 min-w-0 sm:max-w-[48%] p-4 rounded-2xl border border-border/60 hover:border-border hover:bg-muted/30 transition-all"
-          >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted group-hover:bg-muted/80 transition-colors">
-              <ArrowLeft className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="flex flex-col min-w-0 overflow-hidden">
-              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                {t`Previous`}
-              </span>
-              <span className="truncate text-sm font-semibold text-foreground">
-                {getTranslatedText(prev.title, locale)}
-              </span>
-            </div>
-          </Link>
-        ) : (
-          <Link
-            to={buildCampaignProvocariModulePath(entityCui, moduleSlug) as '/'}
-            resetScroll={true}
-            className="group flex items-center gap-3 p-4 rounded-2xl border border-border/60 hover:border-border hover:bg-muted/30 transition-all"
-          >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted group-hover:bg-muted/80 transition-colors">
-              <ArrowLeft className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <span className="text-sm font-semibold text-muted-foreground">
-              {t`Back to overview`}
-            </span>
-          </Link>
-        )}
-
-        {next ? (
-          <Link
-            to={buildCampaignProvocariStepPath(
-              entityCui,
-              moduleSlug,
-              findChallengeSlugForAdjacentStep(next.id),
-              next.slug,
-            ) as '/'}
-            resetScroll={true}
-            className="group flex items-center justify-end gap-3 flex-1 min-w-0 sm:max-w-[48%] p-4 rounded-2xl bg-foreground text-background hover:bg-foreground/90 transition-all"
-          >
-            <div className="flex flex-col items-end min-w-0 overflow-hidden">
-              <span className="text-[10px] font-medium opacity-70 uppercase tracking-wide shrink-0">
-                {t`Next`}
-              </span>
-              <span className="truncate text-sm font-semibold w-full text-right">
-                {getTranslatedText(next.title, locale)}
-              </span>
-            </div>
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-background/10">
-              <ArrowRight className="h-4 w-4" />
-            </div>
-          </Link>
-        ) : (
-          <Link
-            to={buildCampaignProvocariPath(entityCui) as '/'}
-            resetScroll={true}
-            className="group flex items-center gap-3 p-4 rounded-2xl bg-primary/10 text-primary hover:bg-primary/15 transition-all"
-          >
-            <span className="text-sm font-semibold">🎉 {t`Finish`}</span>
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-              <CheckCircle2 className="h-4 w-4" />
-            </div>
-          </Link>
-        )}
-      </nav>
-    </div>
+    <ChallengeStepArticleLayout
+      entityCui={entityCui}
+      locale={locale}
+      moduleSlug={moduleSlug}
+      prev={prev}
+      next={next}
+      findChallengeSlugForAdjacentStep={findChallengeSlugForAdjacentStep}
+      getTranslatedText={getTranslatedText}
+      Component={content?.Component ?? null}
+      mdxComponents={articleMdxComponents}
+      isLoading={isLoading}
+      error={error}
+    />
   )
 }

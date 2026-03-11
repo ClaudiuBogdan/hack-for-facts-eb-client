@@ -1,4 +1,4 @@
-import type { TranslatedString } from '@/features/learning/types'
+import type { TranslatedString } from '../learning/types'
 
 export type { TranslatedString }
 
@@ -7,6 +7,18 @@ export type ChallengeLocale = 'en' | 'ro'
 export type ChallengeModuleDifficulty = 'beginner' | 'intermediate' | 'advanced'
 
 export type ChallengeStepCompletionMode = 'quiz' | 'mark_complete'
+
+export type ChallengeStepType = 'article' | 'sectioned'
+
+export type ChallengeStepFrontmatter = Readonly<Record<string, unknown>> & {
+  readonly stepType?: ChallengeStepType
+  readonly title?: string
+}
+
+export type ChallengeStepSectionMeta = {
+  readonly id: string
+  readonly title: string
+}
 
 export type ChallengeStepDefinition = {
   readonly id: string

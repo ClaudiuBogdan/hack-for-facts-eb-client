@@ -1,16 +1,21 @@
 import type { ReactNode } from 'react'
-import { render, screen } from '@/test/test-utils'
+import { fireEvent, render, screen, waitFor } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ChallengeStepPlayer } from './ChallengeStepPlayer'
 
 const mockUseChallengeAccess = vi.fn()
+const mockUseChallengeStepContent = vi.fn()
+const mockUseQuizInteraction = vi.fn()
+const markCompleteMock = vi.fn()
+const navigateMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, resetScroll: _resetScroll, ...props }: any) => (
+  Link: ({ children, to, resetScroll: _resetScroll, search: _search, ...props }: any) => (
     <a href={typeof to === 'string' ? to : '#'} {...props}>
       {children}
     </a>
   ),
+  useNavigate: () => navigateMock,
 }))
 
 vi.mock('@/lib/auth', () => ({
@@ -23,30 +28,7 @@ vi.mock('../../hooks/use-challenge-access', () => ({
 
 vi.mock('../../hooks/use-challenge-step-content', () => ({
   prefetchChallengeStepContent: vi.fn(),
-  useChallengeStepContent: () => ({
-    Component: ({ components }: any) => {
-      const QuizComponent = components.Quiz
-      const MarkCompleteComponent = components.MarkComplete
-
-      return (
-        <div>
-          <p>Step body copy</p>
-          <QuizComponent
-            id="quiz-1"
-            question="Question?"
-            options={[
-              { id: 'a', text: 'Answer A', isCorrect: true },
-              { id: 'b', text: 'Answer B', isCorrect: false },
-            ]}
-            explanation="Because"
-          />
-          <MarkCompleteComponent label="Done with step" />
-        </div>
-      )
-    },
-    isLoading: false,
-    error: null,
-  }),
+  useChallengeStepContent: () => mockUseChallengeStepContent(),
 }))
 
 const moduleDefinition = {
@@ -67,6 +49,8 @@ const moduleDefinition = {
           title: { ro: 'Test step', en: 'Test step' },
           contentDir: 'test-step',
           durationMinutes: 5,
+          completionMode: 'mark_complete',
+          prerequisites: [],
         },
       ],
     },
@@ -105,6 +89,15 @@ vi.mock('@/features/learning/hooks/use-learning-progress', () => ({
   }),
 }))
 
+vi.mock('@/features/learning/hooks/use-learning-interactions', () => ({
+  useLessonCompletion: () => ({
+    status: 'not_started',
+    isCompleted: false,
+    markComplete: markCompleteMock,
+  }),
+  useQuizInteraction: () => mockUseQuizInteraction(),
+}))
+
 vi.mock('@/features/learning/utils/scoring', () => ({
   scoreSingleChoice: () => 0,
 }))
@@ -121,9 +114,51 @@ describe('ChallengeStepPlayer', () => {
       isSubmitting: false,
       register: vi.fn(),
     })
+
+    mockUseQuizInteraction.mockReturnValue({
+      selectedOptionId: null,
+      isAnswered: false,
+      score: 0,
+      isCorrect: false,
+      answer: vi.fn(),
+      reset: vi.fn(),
+    })
+
+    markCompleteMock.mockReset()
+    navigateMock.mockReset()
   })
 
-  it('keeps lesson content visible while replacing interactive elements', () => {
+  it('keeps article content visible while replacing interactive elements', () => {
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'article',
+        Component: ({ components }: any) => {
+          const QuizComponent = components.Quiz
+          const MarkCompleteComponent = components.MarkComplete
+
+          return (
+            <div>
+              <p>Step body copy</p>
+              <QuizComponent
+                id="quiz-1"
+                question="Question?"
+                options={[
+                  { id: 'a', text: 'Answer A', isCorrect: true },
+                  { id: 'b', text: 'Answer B', isCorrect: false },
+                ]}
+                explanation="Because"
+              />
+              <MarkCompleteComponent label="Done with step" />
+            </div>
+          )
+        },
+        frontmatter: {},
+        sections: [],
+      },
+      isLoading: false,
+      error: null,
+    })
+
     render(
       <ChallengeStepPlayer
         entityCui="12345678"
@@ -137,8 +172,548 @@ describe('ChallengeStepPlayer', () => {
     expect(screen.getByText('Step body copy')).toBeInTheDocument()
     expect(screen.queryByText('Quiz interactive')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Done with step/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Switch to (article|section) view/i })).not.toBeInTheDocument()
     expect(
       screen.getAllByRole('heading', { name: /Conectează-te ca să participi la provocări/i }),
     ).toHaveLength(2)
+  })
+
+  it('enables next immediately for a non-interactive section', () => {
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'intro',
+            title: 'Intro',
+            bodySource: 'Intro copy',
+            interactive: null,
+            Component: () => <p>Intro copy</p>,
+          },
+          {
+            id: 'details',
+            title: 'Details',
+            bodySource: 'Details copy',
+            interactive: null,
+            Component: () => <p>Details copy</p>,
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+      />,
+    )
+
+    expect(screen.getByText('Intro copy')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Switch to article view/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Next$/i })).toBeEnabled()
+    expect(screen.getByRole('button', { name: /^Skip$/i })).toBeEnabled()
+  })
+
+  it('normalizes the sectioned view mode to section when missing from the url', async () => {
+    const onViewModeChange = vi.fn()
+
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => <p>Full article copy</p>,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'intro',
+            title: 'Intro',
+            bodySource: 'Intro copy',
+            interactive: null,
+            Component: () => <p>Intro copy</p>,
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        onViewModeChange={onViewModeChange}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(onViewModeChange).toHaveBeenCalledWith('section', { replace: true })
+    })
+  })
+
+  it('normalizes the active section to the first section when missing from the url', async () => {
+    const onSectionChange = vi.fn()
+
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'intro',
+            title: 'Intro',
+            bodySource: 'Intro copy',
+            interactive: null,
+            Component: () => <p>Intro copy</p>,
+          },
+          {
+            id: 'details',
+            title: 'Details',
+            bodySource: 'Details copy',
+            interactive: null,
+            Component: () => <p>Details copy</p>,
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        onSectionChange={onSectionChange}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(onSectionChange).toHaveBeenCalledWith('intro', { replace: true })
+    })
+  })
+
+  it('keeps a valid resolved section without normalizing back to the first section', async () => {
+    const onSectionChange = vi.fn()
+
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'intro',
+            title: 'Intro',
+            bodySource: 'Intro copy',
+            interactive: null,
+            Component: () => <p>Intro copy</p>,
+          },
+          {
+            id: 'details',
+            title: 'Details',
+            bodySource: 'Details copy',
+            interactive: null,
+            Component: () => <p>Details copy</p>,
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeSectionId="details"
+        onSectionChange={onSectionChange}
+      />,
+    )
+
+    expect(screen.getByText('Details copy')).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(onSectionChange).not.toHaveBeenCalled()
+    })
+  })
+
+  it('lets the progress segments navigate across sections without re-triggering the current one', () => {
+    const onSectionChange = vi.fn()
+    const onViewModeChange = vi.fn()
+
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'intro',
+            title: 'Intro',
+            bodySource: 'Intro copy',
+            interactive: null,
+            Component: () => <p>Intro copy</p>,
+          },
+          {
+            id: 'details',
+            title: 'Details',
+            bodySource: 'Details copy',
+            interactive: null,
+            Component: () => <p>Details copy</p>,
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeSectionId="intro"
+        activeViewMode="section"
+        onSectionChange={onSectionChange}
+        onViewModeChange={onViewModeChange}
+      />,
+    )
+
+    const introProgressItem = screen.getByTestId('section-progress-intro')
+    const detailsProgressItem = screen.getByTestId('section-progress-details')
+
+    expect(introProgressItem).toHaveAttribute('aria-current', 'step')
+
+    fireEvent.click(detailsProgressItem)
+
+    expect(onSectionChange).toHaveBeenCalledWith('details', undefined)
+
+    onSectionChange.mockClear()
+
+    fireEvent.click(introProgressItem)
+
+    expect(onSectionChange).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: /Switch to article view/i }))
+
+    expect(onViewModeChange).toHaveBeenCalledWith('article', undefined)
+  })
+
+  it('shows desktop title navigation controls for adjacent sections', () => {
+    const onSectionChange = vi.fn()
+
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'intro',
+            title: 'Intro',
+            bodySource: 'Intro copy',
+            interactive: null,
+            Component: () => <p>Intro copy</p>,
+          },
+          {
+            id: 'details',
+            title: 'Details',
+            bodySource: 'Details copy',
+            interactive: null,
+            Component: () => <p>Details copy</p>,
+          },
+          {
+            id: 'summary',
+            title: 'Summary',
+            bodySource: 'Summary copy',
+            interactive: null,
+            Component: () => <p>Summary copy</p>,
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeSectionId="details"
+        activeViewMode="section"
+        onSectionChange={onSectionChange}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /Go to previous section/i }))
+    expect(onSectionChange).toHaveBeenCalledWith('intro', undefined)
+
+    onSectionChange.mockClear()
+
+    fireEvent.click(screen.getByRole('button', { name: /Go to next section/i }))
+    expect(onSectionChange).toHaveBeenCalledWith('summary', undefined)
+  })
+
+  it('renders sectioned article mode with inline interactives and a synthetic completion CTA', () => {
+    const onViewModeChange = vi.fn()
+
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: ({ components }: any) => {
+          const QuizComponent = components.Quiz
+          const MarkCompleteComponent = components.MarkComplete
+
+          return (
+            <div>
+              <p>Full article copy</p>
+              <QuizComponent
+                id="quiz-1"
+                question="Question?"
+                options={[
+                  { id: 'a', text: 'Answer A', isCorrect: true },
+                  { id: 'b', text: 'Answer B', isCorrect: false },
+                ]}
+                explanation="Because"
+              />
+              <MarkCompleteComponent label="Inline authored complete" />
+            </div>
+          )
+        },
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'intro',
+            title: 'Intro',
+            bodySource: 'Intro copy',
+            interactive: null,
+            Component: () => <p>Intro copy</p>,
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeSectionId="intro"
+        activeViewMode="article"
+        onViewModeChange={onViewModeChange}
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: /Switch to section view/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Switch to section view/i })).toHaveTextContent(
+      'Section View',
+    )
+    expect(screen.queryByTestId('section-progress-intro')).not.toBeInTheDocument()
+    expect(screen.getByText('Full article copy')).toBeInTheDocument()
+    expect(screen.getByText('Quiz interactive')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Inline authored complete/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Mark complete/i })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Switch to section view/i }))
+
+    expect(onViewModeChange).toHaveBeenCalledWith('section', undefined)
+  })
+
+  it('shows quiz feedback from the current section state', () => {
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseQuizInteraction.mockReturnValue({
+      selectedOptionId: 'a',
+      isAnswered: true,
+      score: 0,
+      isCorrect: false,
+      answer: vi.fn(),
+      reset: vi.fn(),
+    })
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'quiz',
+            title: 'Quiz',
+            bodySource: 'Quiz copy',
+            interactive: {
+              kind: 'quiz',
+              id: 'quiz-1',
+              question: 'Question?',
+              options: [
+                { id: 'a', text: 'Wrong', isCorrect: false },
+                { id: 'b', text: 'Right', isCorrect: true },
+              ],
+              explanation: 'Use the definition from above.',
+            },
+            Component: () => <p>Quiz copy</p>,
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+      />,
+    )
+
+    expect(screen.getByText('Quiz copy')).toBeInTheDocument()
+    expect(screen.getByText('Use the definition from above.')).toBeInTheDocument()
+    expect(screen.getByTestId('sectioned-footer-note-separator')).toBeInTheDocument()
+    expect(screen.getByTestId('sectioned-footer-actions')).toHaveClass('pt-2')
+    expect(screen.getByRole('button', { name: /Try again/i })).toBeEnabled()
+    expect(screen.queryByRole('button', { name: /Finish/i })).not.toBeInTheDocument()
+  })
+
+  it('resets the section scroll position when the active section changes', () => {
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'intro',
+            title: 'Intro',
+            bodySource: 'Intro copy',
+            interactive: null,
+            Component: () => <p>Intro copy</p>,
+          },
+          {
+            id: 'details',
+            title: 'Details',
+            bodySource: 'Details copy',
+            interactive: null,
+            Component: () => <p>Details copy</p>,
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    const { rerender } = render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeSectionId="intro"
+      />,
+    )
+
+    const scrollArea = screen.getByTestId('sectioned-step-scroll-area')
+    scrollArea.scrollTop = 120
+
+    rerender(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeSectionId="details"
+      />,
+    )
+
+    expect(scrollArea.scrollTop).toBe(0)
   })
 })

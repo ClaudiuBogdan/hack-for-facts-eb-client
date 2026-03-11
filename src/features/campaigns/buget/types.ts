@@ -4,6 +4,8 @@ export type CampaignLocale = 'ro' | 'en'
 
 export type CampaignRouteSearch = {
   readonly lang?: CampaignLocale
+  readonly section?: string
+  readonly view?: 'section' | 'article'
 }
 
 export type CampaignCalendarRouteSearch = CampaignRouteSearch

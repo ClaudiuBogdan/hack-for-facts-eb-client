@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "postinstall": "HOME=$PWD yarn --cwd docs-site install --frozen-lockfile",
-    "dev": "NODE_OPTIONS=--max-http-header-size=64384 vite",
+    "dev": "vite",
     "dev:lint": "concurrently \"vite\" \"tsc -w\" \"eslint ./src\"",
     "build": "tsc -b && vite build && yarn i18n:compile && yarn docs:build && node scripts/postbuild-docs.js",
     "build:app": "tsc -b && vite build && yarn i18n:compile",

@@ -15,6 +15,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { lingui } from "@lingui/vite-plugin";
 import { nitro } from "nitro/vite";
 import fs from "fs";
+import { transformSectionedChallengeStepSource } from "./src/features/challenges/utils/sectioned-step-markdown";
 
 const getHttpsConfig = () => {
   if (String(process.env.HTTPS_ENABLED) !== "true") {
@@ -53,6 +54,27 @@ const esmExtensionFixesPlugin = () => ({
     );
     if (updated === code) return null;
     return { code: updated, map: null };
+  },
+});
+
+const challengeStepSectionsPlugin = () => ({
+  name: "challenge-step-sections",
+  enforce: "pre" as const,
+  transform(code: string, id: string) {
+    const normalizedId = id.replace(/\\/g, "/");
+    if (!normalizedId.match(/\/src\/content\/challenges\/steps\/.+\/index\.(en|ro)\.mdx$/)) {
+      return null;
+    }
+
+    const transformed = transformSectionedChallengeStepSource(code);
+    if (!transformed.didTransform) {
+      return null;
+    }
+
+    return {
+      code: transformed.source,
+      map: null,
+    };
   },
 });
 
@@ -148,6 +170,7 @@ export default defineConfig(({ mode }) => {
         },
       },
       esmExtensionFixesPlugin(),
+      challengeStepSectionsPlugin(),
       lingui(),
       tanstackStart(),
       nitro({

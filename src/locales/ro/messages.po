@@ -1196,7 +1196,7 @@ msgstr "Înapoi la alertă"
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:101
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:172
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:222
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:277
 msgid "Back to Challenges"
 msgstr "Înapoi la provocări"
 
@@ -1220,7 +1220,7 @@ msgstr "Înapoi la învățare"
 msgid "Back to Learning Hub"
 msgstr "Înapoi la Hub-ul de învățare"
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:313
+#: src/features/challenges/components/player/challenge-step-article-layout.tsx:106
 msgid "Back to overview"
 msgstr "Înapoi la prezentare"
 
@@ -1615,6 +1615,11 @@ msgstr "Vizualizare grafică"
 msgid "Charts"
 msgstr "Grafice"
 
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:148
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:160
+msgid "Check"
+msgstr "Verifică"
+
 #: src/components/charts/components/chart-view/ChartDisplayArea.tsx:137
 msgid "Check your series filters and try again."
 msgstr "Verificați filtrele seriei și încercați din nou."
@@ -1630,6 +1635,10 @@ msgstr "Alege o vizualizare dezactivată pentru a o activa pe această hartă."
 #: src/routes/cookies.lazy.tsx:104
 msgid "Choose between essential-only or all cookies, then fine-tune options below."
 msgstr "Alegeți între cookie-uri doar esențiale sau toate cookie-urile, apoi ajustați opțiunile de mai jos."
+
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:159
+msgid "Choose one answer to continue."
+msgstr "Alege un răspuns pentru a continua."
 
 #: src/components/alerts/components/ConditionsList.tsx:87
 msgid "Choose operator"
@@ -2166,6 +2175,10 @@ msgstr "Alegere corectă"
 #: src/features/learning/components/interactive/HandsOnExplorer.tsx:199
 msgid "Correct!"
 msgstr "Corect!"
+
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:170
+msgid "Correct."
+msgstr "Corect."
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:412
 msgid "Could not copy map configuration"
@@ -3785,7 +3798,9 @@ msgstr "Găsește entitate de monitorizat"
 msgid "Find resources, report issues, or get in touch."
 msgstr "Găsește resurse, raportează probleme sau ia legătura cu noi."
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:347
+#: src/features/challenges/components/player/challenge-step-article-layout.tsx:142
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:137
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:171
 msgid "Finish"
 msgstr "Finalizează"
 
@@ -4043,6 +4058,14 @@ msgstr "Mergi la lista principală"
 #: src/components/ui/shortcuts.tsx:22
 msgid "Go to Map"
 msgstr "Vezi harta"
+
+#: src/features/challenges/components/player/sectioned-step-viewport.tsx:69
+msgid "Go to next section"
+msgstr "Mergi la secțiunea următoare"
+
+#: src/features/challenges/components/player/sectioned-step-viewport.tsx:47
+msgid "Go to previous section"
+msgstr "Mergi la secțiunea anterioară"
 
 #: src/features/learning/components/interactive/ExecutionRateChart.tsx:239
 msgid "Good"
@@ -5601,7 +5624,9 @@ msgstr "Buletine informative și notificări"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:202
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:536
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:331
+#: src/features/challenges/components/player/challenge-step-article-layout.tsx:125
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:137
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:171
 #: src/features/learning/components/player/LessonPlayer.tsx:620
 msgid "Next"
 msgstr "Următorul"
@@ -6348,6 +6373,7 @@ msgstr "Valori extreme"
 msgid "Outliers series"
 msgstr "Serie de valori extreme"
 
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:119
 #: src/hooks/useEntityViews.tsx:14
 msgid "Overview"
 msgstr "Prezentare generală"
@@ -6650,10 +6676,18 @@ msgstr "Previzualizare a graficului și setărilor alertei."
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:191
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:524
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:296
+#: src/features/challenges/components/player/challenge-step-article-layout.tsx:88
 #: src/features/learning/components/player/LessonPlayer.tsx:596
 msgid "Previous"
 msgstr "Anterior"
+
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:99
+msgid "Previous section"
+msgstr "Secțiunea anterioară"
+
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:112
+msgid "Previous step"
+msgstr "Pasul anterior"
 
 #: src/components/theme/inflation-toggle.tsx:54
 msgid "Prices"
@@ -6764,6 +6798,7 @@ msgstr "Setări rapide"
 msgid "Quickly adjust chart settings"
 msgstr "Ajustați rapid setările graficului"
 
+#: src/features/challenges/components/player/sectioned-step-interactives.tsx:33
 #: src/features/learning/components/assessment/Quiz.tsx:53
 msgid "Quiz configuration error"
 msgstr "Eroare de configurare a chestionarului"
@@ -7338,6 +7373,14 @@ msgstr "Agregat secundar"
 msgid "Secondary creditor aggregated"
 msgstr "Creditor secundar agregat"
 
+#: src/features/challenges/components/player/sectioned-step-interactives.tsx:43
+msgid "Section Check"
+msgstr "Verificare secțiune"
+
+#: src/features/challenges/components/player/sectioned-step-header.tsx:91
+msgid "Section View"
+msgstr "Vedere pe secțiuni"
+
 #: src/routes/terms.lazy.tsx:60
 msgid "Security monitoring and logs"
 msgstr "Monitorizare și jurnale de securitate"
@@ -7766,6 +7809,10 @@ msgstr "Autentificare"
 msgid "Sign in required"
 msgstr "Autentificare necesară"
 
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:147
+msgid "Sign in to answer this section and save your progress."
+msgstr "Conectează-te pentru a răspunde la această secțiune și a-ți salva progresul."
+
 #: src/routes/alerts/$alertId/index.lazy.tsx:157
 #: src/routes/alerts/new.lazy.tsx:146
 msgid "Sign in to create and manage alerts for your entities."
@@ -7783,6 +7830,10 @@ msgstr "Autentificați-vă pentru a primi actualizări despre <0>{entityName}</0
 msgid "Sign in to receive updates about the entities you care about."
 msgstr "Autentificați-vă pentru a primi actualizări despre entitățile care vă interesează."
 
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:135
+msgid "Sign in to save this step as completed."
+msgstr "Conectează-te pentru a salva acest pas ca finalizat."
+
 #: src/features/learning/components/layout/LoginBanner.tsx:22
 msgid "Sign in to track your learning journey."
 msgstr "Autentifică-te pentru a-ți urmări progresul de învățare."
@@ -7791,6 +7842,10 @@ msgstr "Autentifică-te pentru a-ți urmări progresul de învățare."
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:48
 msgid "SIRUTA"
 msgstr "SIRUTA"
+
+#: src/features/challenges/components/player/sectioned-step-footer.tsx:54
+msgid "Skip"
+msgstr "Sari peste"
 
 #: src/features/learning/components/interactive/GuidedPlatformTour.tsx:345
 msgid "Skip tour"
@@ -7983,9 +8038,13 @@ msgstr "Rămâi aici"
 msgid "Step completed"
 msgstr "Pas finalizat"
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:216
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:271
 msgid "Step not found"
 msgstr "Pasul nu a fost găsit"
+
+#: src/features/challenges/components/player/sectioned-step-header.tsx:106
+msgid "Step sections"
+msgstr "Secțiunile pasului"
 
 #: src/features/learning/components/player/MarkComplete.tsx:66
 #~ msgid "Step Successfully Finished"
@@ -8045,6 +8104,10 @@ msgstr "Schimbă primăria"
 msgid "Switch gradient colors"
 msgstr "Inversează culorile gradientului"
 
+#: src/features/challenges/components/player/sectioned-step-header.tsx:41
+msgid "Switch to article view"
+msgstr "Comută la vizualizarea articolului"
+
 #: src/components/commitments/DetailTable.tsx:550
 msgid "Switch to Economic"
 msgstr "Comută la economic"
@@ -8052,6 +8115,10 @@ msgstr "Comută la economic"
 #: src/components/commitments/DetailTable.tsx:550
 msgid "Switch to Functional"
 msgstr "Comută la funcțional"
+
+#: src/features/challenges/components/player/sectioned-step-header.tsx:41
+msgid "Switch to section view"
+msgstr "Comută la vizualizarea pe secțiuni"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:631
 msgid "Switching to gradient mode will overwrite current bin colors using the selected gradient anchors."
@@ -8220,7 +8287,7 @@ msgstr "The shared map configuration is invalid or unreadable. You can still cre
 msgid "The state total claim is <0>{0}</0>."
 msgstr "Totalul reținut de stat este <0>{0}</0>."
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:218
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:273
 msgid "The step you're looking for doesn't exist or may have been moved."
 msgstr "Pasul pe care îl cauți nu există sau este posibil să fi fost mutat."
 
@@ -8307,6 +8374,10 @@ msgstr "Acesta nu este o rată a ocupării pe grupe de vârstă; este un indicat
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:69
 msgid "This name appears as the map title for viewers."
 msgstr "Acest nume apare ca titlu al hărții pentru vizitatori."
+
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:121
+msgid "This sectioned step has no sections to render."
+msgstr "Acest pas pe secțiuni nu are secțiuni de afișat."
 
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:110
 msgid "This snapshot will be visible on the public map URL."
@@ -8569,6 +8640,8 @@ msgid "Try a different search term or sorting."
 msgstr "Încercați un alt termen de căutare sau o altă sortare."
 
 #: src/features/challenges/components/analysis/challenge-entity-subordinates-section.tsx:189
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:181
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:191
 #: src/features/learning/components/interactive/HandsOnExplorer.tsx:218
 #: src/routes/alerts/$alertId/index.lazy.tsx:192
 #: src/routes/unsubscribe.$token.tsx:77
@@ -8592,6 +8665,11 @@ msgstr "Încearcă Alt An"
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:340
 msgid "Try guessing again"
 msgstr "Încearcă să ghicești din nou"
+
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:180
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:190
+msgid "Try once more before moving on."
+msgstr "Mai încearcă o dată înainte de a continua."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:49
 #: src/components/maps/utils.ts:31

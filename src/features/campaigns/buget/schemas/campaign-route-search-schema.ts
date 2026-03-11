@@ -3,6 +3,8 @@ import type { CampaignLocale, CampaignRouteSearch } from '../types'
 
 export const CampaignRouteSearchSchema = z.object({
   lang: z.enum(['ro', 'en']).optional(),
+  section: z.string().trim().min(1).optional(),
+  view: z.enum(['section', 'article']).optional(),
 })
 
 export function resolveCampaignLocale(search: CampaignRouteSearch | undefined): CampaignLocale {
