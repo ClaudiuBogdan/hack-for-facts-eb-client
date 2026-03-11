@@ -4,11 +4,23 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MobileBottomDock } from "./mobile-bottom-dock";
 
 const mockIsMobile = vi.fn(() => true);
+const mockUseLocation = vi.fn(() => ({ pathname: "/primarie/123" }));
 const ensureShortRedirectUrlMock = vi.fn();
 const mockSetOpenMobile = vi.fn();
 const toastSuccessMock = vi.fn();
 const toastErrorMock = vi.fn();
 const mockUseAuth = vi.fn(() => ({ isSignedIn: false }));
+
+vi.mock("@tanstack/react-router", async () => {
+  const actual = await vi.importActual<typeof import("@tanstack/react-router")>(
+    "@tanstack/react-router"
+  );
+
+  return {
+    ...actual,
+    useLocation: () => mockUseLocation(),
+  };
+});
 
 vi.mock("@/hooks/use-mobile", () => ({
   useIsMobile: () => mockIsMobile(),
@@ -81,6 +93,7 @@ describe("MobileBottomDock", () => {
     toastSuccessMock.mockReset();
     toastErrorMock.mockReset();
     mockIsMobile.mockReturnValue(true);
+    mockUseLocation.mockReturnValue({ pathname: "/primarie/123" });
     mockUseAuth.mockReturnValue({ isSignedIn: false });
     ensureShortRedirectUrlMock.mockResolvedValue(
       "https://transparenta.eu/share/abc123"
@@ -140,6 +153,27 @@ describe("MobileBottomDock", () => {
     render(<MobileBottomDock />);
 
     expect(screen.queryByTestId("mobile-bottom-dock")).not.toBeInTheDocument();
+  });
+
+  it("does not render on hidden challenge detail routes", () => {
+    mockUseLocation.mockReturnValue({
+      pathname:
+        "/primarie/4365107/buget/provocari/budget-basics/understand-budget/01-what-is-the-local-budget",
+    });
+
+    render(<MobileBottomDock />);
+
+    expect(screen.queryByTestId("mobile-bottom-dock")).not.toBeInTheDocument();
+  });
+
+  it("still renders on the provocari hub route", () => {
+    mockUseLocation.mockReturnValue({
+      pathname: "/primarie/4365107/buget/provocari",
+    });
+
+    render(<MobileBottomDock />);
+
+    expect(screen.getByTestId("mobile-bottom-dock")).toBeInTheDocument();
   });
 
   it("opens the search dialog when the search action is pressed", () => {

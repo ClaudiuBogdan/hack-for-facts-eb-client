@@ -226,6 +226,11 @@ describe('ChallengeStepPlayer', () => {
     expect(screen.getByRole('button', { name: /Switch to article view/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^Next$/i })).toBeEnabled()
     expect(screen.getByRole('button', { name: /^Skip$/i })).toBeEnabled()
+    expect(screen.getByTestId('challenge-sectioned-step-layout')).toHaveClass(
+      'min-h-screen',
+      'min-h-[100svh]',
+    )
+    expect(screen.getByTestId('sectioned-step-footer')).toHaveClass('sticky', 'bottom-0')
   })
 
   it('normalizes the sectioned view mode to section when missing from the url', async () => {

@@ -29,14 +29,14 @@ export function SectionedStepViewport({
   scrollAreaRef,
 }: SectionedStepViewportProps) {
   return (
-    <div className="flex-1 overflow-hidden">
+    <div className="flex-1 overflow-visible lg:overflow-hidden">
       <div className="mx-auto flex h-full max-w-2xl flex-col px-4 sm:px-6 lg:px-0">
         <div
           ref={scrollAreaRef}
           data-testid="sectioned-step-scroll-area"
-          className="flex-1 overflow-y-auto"
+          className="flex-1 overflow-visible lg:overflow-y-auto"
         >
-          <div className="space-y-6 py-8 pb-12">
+          <div className="space-y-6 py-8 pb-32 lg:pb-12">
             <div className="group/title relative mx-auto w-full max-w-2xl">
               {hasPreviousSection ? (
                 <Button

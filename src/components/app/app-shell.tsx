@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from "react";
-import { Outlet, useRouter } from "@tanstack/react-router";
+import { Outlet, useLocation, useRouter } from "@tanstack/react-router";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import { PostHogProvider } from "posthog-js/react";
 import posthog from "posthog-js";
@@ -21,7 +21,9 @@ import { ChatFab } from "@/components/footer/ChatFab";
 import { FeedbackFab } from "@/components/feedback/FeedbackFab";
 import { CookieConsentBanner } from "@/components/privacy/CookieConsentBanner";
 import { MobileBottomDock } from "@/components/mobile/mobile-bottom-dock";
+import { shouldHideMobileBottomDock } from "@/components/mobile/mobile-bottom-dock-visibility";
 import { Analytics } from "@/lib/analytics";
+import { cn } from "@/lib/utils";
 
 const isBrowser = typeof window !== 'undefined';
 
@@ -33,7 +35,9 @@ type AppShellProps = {
 
 export function AppShell({ queryClient, ssrTheme }: AppShellProps) {
   const router = useRouter();
+  const location = useLocation();
   const hasSentryConsent = useSentryConsent();
+  const hideMobileBottomDock = shouldHideMobileBottomDock(location.pathname);
 
   useEffect(() => {
     const userLocale = getUserLocale();
@@ -94,9 +98,14 @@ export function AppShell({ queryClient, ssrTheme }: AppShellProps) {
                       <SidebarInset>
                         <main
                           role="main"
-                          className="flex-1 pb-[calc(env(safe-area-inset-bottom)+4.5rem)] md:pb-0"
+                          className={cn(
+                            "flex min-h-0 flex-1 flex-col md:pb-0",
+                            hideMobileBottomDock
+                              ? "pb-0"
+                              : "pb-[calc(env(safe-area-inset-bottom)+4.5rem)]"
+                          )}
                         >
-                          <div>
+                          <div className="flex min-h-full flex-1 flex-col">
                             <AnalyticsPageviewBridge />
                             <Outlet />
                             <Toaster />

@@ -159,8 +159,8 @@ function ChallengeSectionedStepRenderer({
 
   return (
     <div
-      className="-mx-4 -my-5 flex h-[100svh] max-h-[100svh] flex-col overflow-hidden bg-background sm:-mx-6 sm:-my-8 lg:-mx-10 lg:-my-10"
-      style={{ minHeight: '100dvh', height: '100dvh', maxHeight: '100dvh' }}
+      data-testid="challenge-sectioned-step-layout"
+      className="-mx-4 -my-5 flex min-h-screen min-h-[100svh] supports-[min-height:100dvh]:min-h-[100dvh] flex-col bg-background sm:-mx-6 sm:-my-8 lg:-mx-10 lg:-my-10 lg:h-[100dvh] lg:max-h-[100dvh] lg:min-h-[100dvh] lg:overflow-hidden"
     >
       <SectionedStepHeader
         backTarget={sectionedPlayer.backTarget}

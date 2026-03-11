@@ -16,7 +16,10 @@ export function SectionedStepFooter({
   onPrimaryAction,
 }: SectionedStepFooterProps) {
   return (
-    <div className="flex-none border-t border-border/70 bg-background/95 backdrop-blur">
+    <div
+      data-testid="sectioned-step-footer"
+      className="sticky bottom-0 z-10 flex-none border-t border-border/70 bg-background/95 backdrop-blur"
+    >
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-5 px-4 py-4 sm:px-6 lg:px-0">
         {footerState.message ? (
           <div className="space-y-4">

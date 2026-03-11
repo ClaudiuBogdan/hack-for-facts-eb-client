@@ -1,5 +1,6 @@
 import { t } from "@lingui/core/macro";
 import { useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "@tanstack/react-router";
 import { Check, Link2, MenuIcon, MessageSquare, Search } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ import { useAuth } from "@/lib/auth";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { shouldHideMobileBottomDock } from "./mobile-bottom-dock-visibility";
 
 const MOBILE_DOCK_HIDE_THRESHOLD = 80;
 const MOBILE_DOCK_TOP_VISIBILITY_THRESHOLD = 16;
@@ -21,8 +23,9 @@ const MOBILE_DOCK_BUTTON_CLASS_NAME =
 
 export function MobileBottomDock() {
   const isMobile = useIsMobile();
+  const location = useLocation();
 
-  if (!isMobile) {
+  if (!isMobile || shouldHideMobileBottomDock(location.pathname)) {
     return null;
   }
 

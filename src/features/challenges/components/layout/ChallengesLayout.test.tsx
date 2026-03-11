@@ -215,4 +215,18 @@ describe('ChallengesLayout', () => {
 
     expect(screen.getByText('content')).toBeInTheDocument()
   })
+
+  it('keeps the main content column at full viewport height', () => {
+    render(
+      <ChallengesLayout>
+        <div>content</div>
+      </ChallengesLayout>,
+    )
+
+    expect(screen.getByTestId('challenges-main-content')).toHaveClass(
+      'min-h-full',
+      'flex-1',
+      'flex-col',
+    )
+  })
 })

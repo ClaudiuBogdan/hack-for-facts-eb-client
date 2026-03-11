@@ -474,7 +474,7 @@ function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
   ])
 
   return (
-    <div className="flex min-h-full w-full">
+    <div className="flex min-h-screen min-h-[100svh] supports-[min-height:100dvh]:min-h-[100dvh] w-full">
       {/* Mobile Sidebar Trigger */}
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
@@ -508,8 +508,11 @@ function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1">
-        <div className="mx-auto max-w-3xl px-4 py-5 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
+      <div className="flex min-h-screen min-h-[100svh] supports-[min-height:100dvh]:min-h-[100dvh] flex-1 flex-col">
+        <div
+          data-testid="challenges-main-content"
+          className="mx-auto flex min-h-full w-full max-w-3xl flex-1 flex-col px-4 py-5 sm:px-6 sm:py-8 lg:px-10 lg:py-10"
+        >
           {children ?? <Outlet />}
         </div>
       </div>
