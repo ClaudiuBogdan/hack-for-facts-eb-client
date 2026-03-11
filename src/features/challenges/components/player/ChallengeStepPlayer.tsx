@@ -1,4 +1,4 @@
-import { useEffect, useMemo, type ComponentType } from 'react'
+import { Suspense, useEffect, useMemo, type ComponentType } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { BookOpen } from 'lucide-react'
@@ -64,6 +64,33 @@ type ChallengeSectionedStepRendererProps = {
   readonly articleExtraContent: ReturnType<typeof useChallengeStepMdxComponents>['syntheticMarkComplete']
   readonly prev: ChallengeStepDefinition | null
   readonly sections: readonly ChallengeStepSection[]
+  readonly next: ChallengeStepDefinition | null
+  readonly findChallengeSlugForAdjacentStep: (stepId: string) => string
+  readonly accessCardVariant: ReturnType<typeof useChallengeAccess>['accessCardVariant']
+  readonly isAccessGranted: ReturnType<typeof useChallengeAccess>['isAccessGranted']
+  readonly isSubmitting: ReturnType<typeof useChallengeAccess>['isSubmitting']
+  readonly onRegister: ReturnType<typeof useChallengeAccess>['register']
+}
+
+type ChallengeStepContentRendererProps = {
+  readonly entityCui: string
+  readonly locale: ChallengeLocale
+  readonly moduleSlug: string
+  readonly contentDir: string
+  readonly stepId: string
+  readonly stepTitle: string
+  readonly stepCompletionMode: ChallengeStepDefinition['completionMode']
+  readonly activeSectionId?: string
+  readonly activeViewMode?: ChallengeStepViewMode
+  readonly onSectionChange?: (
+    sectionId: string,
+    options?: { readonly replace?: boolean },
+  ) => void
+  readonly onViewModeChange?: (
+    viewMode: ChallengeStepViewMode,
+    options?: { readonly replace?: boolean },
+  ) => void
+  readonly prev: ChallengeStepDefinition | null
   readonly next: ChallengeStepDefinition | null
   readonly findChallengeSlugForAdjacentStep: (stepId: string) => string
   readonly accessCardVariant: ReturnType<typeof useChallengeAccess>['accessCardVariant']
@@ -193,6 +220,97 @@ function ChallengeSectionedStepRenderer({
   )
 }
 
+function ChallengeStepContentRenderer({
+  entityCui,
+  locale,
+  moduleSlug,
+  contentDir,
+  stepId,
+  stepTitle,
+  stepCompletionMode,
+  activeSectionId,
+  activeViewMode,
+  onSectionChange,
+  onViewModeChange,
+  prev,
+  next,
+  findChallengeSlugForAdjacentStep,
+  accessCardVariant,
+  isAccessGranted,
+  isSubmitting,
+  onRegister,
+}: ChallengeStepContentRendererProps) {
+  const { content, isLoading, error } = useChallengeStepContent({
+    contentDir,
+    locale,
+  })
+
+  const {
+    articleMdxComponents,
+    sectionedArticleMdxComponents,
+    syntheticMarkComplete,
+  } = useChallengeStepMdxComponents({
+    stepId,
+    locale,
+    accessCardVariant,
+    isAccessGranted,
+    isSubmitting,
+    onRegister,
+  })
+
+  const resolvedSectionedViewMode = resolveChallengeStepViewMode(activeViewMode)
+
+  useEffect(() => {
+    if (content?.kind !== 'sectioned') return
+    if (activeViewMode === resolvedSectionedViewMode) return
+    onViewModeChange?.(resolvedSectionedViewMode, { replace: true })
+  }, [activeViewMode, content?.kind, onViewModeChange, resolvedSectionedViewMode])
+
+  if (content?.kind === 'sectioned') {
+    return (
+      <ChallengeSectionedStepRenderer
+        entityCui={entityCui}
+        locale={locale}
+        moduleSlug={moduleSlug}
+        currentSearchSectionId={activeSectionId}
+        currentViewMode={resolvedSectionedViewMode}
+        onSectionChange={onSectionChange}
+        onViewModeChange={onViewModeChange}
+        stepId={stepId}
+        stepTitle={stepTitle}
+        stepCompletionMode={stepCompletionMode}
+        fullArticleComponent={content.Component}
+        articleMdxComponents={sectionedArticleMdxComponents}
+        articleExtraContent={syntheticMarkComplete}
+        prev={prev}
+        sections={content.sections}
+        next={next}
+        findChallengeSlugForAdjacentStep={findChallengeSlugForAdjacentStep}
+        accessCardVariant={accessCardVariant}
+        isAccessGranted={isAccessGranted}
+        isSubmitting={isSubmitting}
+        onRegister={onRegister}
+      />
+    )
+  }
+
+  return (
+    <ChallengeStepArticleLayout
+      entityCui={entityCui}
+      locale={locale}
+      moduleSlug={moduleSlug}
+      prev={prev}
+      next={next}
+      findChallengeSlugForAdjacentStep={findChallengeSlugForAdjacentStep}
+      getTranslatedText={getTranslatedText}
+      Component={content?.Component ?? null}
+      mdxComponents={articleMdxComponents}
+      isLoading={isLoading}
+      error={error}
+    />
+  )
+}
+
 export function ChallengeStepPlayer({
   entityCui,
   locale,
@@ -214,11 +332,6 @@ export function ChallengeStepPlayer({
     register,
   } = useChallengeAccess()
 
-  const { content, isLoading, error } = useChallengeStepContent({
-    contentDir: step?.contentDir ?? 'missing',
-    locale,
-  })
-
   const { prev, next } = useMemo(
     () =>
       module
@@ -236,30 +349,8 @@ export function ChallengeStepPlayer({
     }
   }, [locale, next?.contentDir, prev?.contentDir])
 
-  const stepId = step?.id ?? ''
-  const {
-    articleMdxComponents,
-    sectionedArticleMdxComponents,
-    syntheticMarkComplete,
-  } = useChallengeStepMdxComponents({
-    stepId,
-    locale,
-    accessCardVariant,
-    isAccessGranted,
-    isSubmitting,
-    onRegister: register,
-  })
-
   const findChallengeSlugForAdjacentStep = (adjacentStepId: string) =>
     module ? findChallengeSlugForStep(module, adjacentStepId) ?? challengeSlug : challengeSlug
-
-  const resolvedSectionedViewMode = resolveChallengeStepViewMode(activeViewMode)
-
-  useEffect(() => {
-    if (content?.kind !== 'sectioned') return
-    if (activeViewMode === resolvedSectionedViewMode) return
-    onViewModeChange?.(resolvedSectionedViewMode, { replace: true })
-  }, [activeViewMode, content?.kind, onViewModeChange, resolvedSectionedViewMode])
 
   if (!module || !challenge || !step) {
     return (
@@ -282,24 +373,37 @@ export function ChallengeStepPlayer({
     )
   }
 
-  if (content?.kind === 'sectioned') {
-    return (
-      <ChallengeSectionedStepRenderer
+  return (
+    <Suspense
+      fallback={
+        <ChallengeStepArticleLayout
+          entityCui={entityCui}
+          locale={locale}
+          moduleSlug={moduleSlug}
+          prev={prev}
+          next={next}
+          findChallengeSlugForAdjacentStep={findChallengeSlugForAdjacentStep}
+          getTranslatedText={getTranslatedText}
+          Component={null}
+          mdxComponents={undefined}
+          isLoading={true}
+          error={null}
+        />
+      }
+    >
+      <ChallengeStepContentRenderer
         entityCui={entityCui}
         locale={locale}
         moduleSlug={moduleSlug}
-        currentSearchSectionId={activeSectionId}
-        currentViewMode={resolvedSectionedViewMode}
-        onSectionChange={onSectionChange}
-        onViewModeChange={onViewModeChange}
-        stepId={stepId}
+        contentDir={step.contentDir}
+        stepId={step.id}
         stepTitle={getTranslatedText(step.title, locale)}
         stepCompletionMode={step.completionMode}
-        fullArticleComponent={content.Component}
-        articleMdxComponents={sectionedArticleMdxComponents}
-        articleExtraContent={syntheticMarkComplete}
+        activeSectionId={activeSectionId}
+        activeViewMode={activeViewMode}
+        onSectionChange={onSectionChange}
+        onViewModeChange={onViewModeChange}
         prev={prev}
-        sections={content.sections}
         next={next}
         findChallengeSlugForAdjacentStep={findChallengeSlugForAdjacentStep}
         accessCardVariant={accessCardVariant}
@@ -307,22 +411,6 @@ export function ChallengeStepPlayer({
         isSubmitting={isSubmitting}
         onRegister={register}
       />
-    )
-  }
-
-  return (
-    <ChallengeStepArticleLayout
-      entityCui={entityCui}
-      locale={locale}
-      moduleSlug={moduleSlug}
-      prev={prev}
-      next={next}
-      findChallengeSlugForAdjacentStep={findChallengeSlugForAdjacentStep}
-      getTranslatedText={getTranslatedText}
-      Component={content?.Component ?? null}
-      mdxComponents={articleMdxComponents}
-      isLoading={isLoading}
-      error={error}
-    />
+    </Suspense>
   )
 }

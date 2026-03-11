@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, lazy, Suspense, type ComponentType } from 'react'
+import type { MDXComponents } from 'mdx/types'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2 } from 'lucide-react'
@@ -82,6 +83,12 @@ type LessonSalaryTaxCalculatorWrapperProps = SalaryTaxCalculatorMdxProps & {
 
 type LessonBudgetAllocatorWrapperProps = BudgetAllocatorGameMdxProps & {
   readonly lessonId: string
+}
+
+type LessonContentRendererProps = {
+  readonly contentDir: string
+  readonly locale: LearningLocale
+  readonly mdxComponents: MDXComponents
 }
 
 function createLazyComponent<Props = Record<string, unknown>>(
@@ -318,16 +325,40 @@ function LessonBudgetAllocatorWrapper({ lessonId, id, ...props }: LessonBudgetAl
   return <BudgetAllocatorGame {...props} contentId={lessonId} interactionId={interactionId} />
 }
 
+function LessonContentRenderer({
+  contentDir,
+  locale,
+  mdxComponents,
+}: LessonContentRendererProps) {
+  const { Component, isLoading, error } = useModuleContent({
+    contentDir,
+    locale,
+  })
+
+  return (
+    <>
+      {isLoading && <LessonSkeleton />}
+      {error && (
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardContent className="p-6 text-center">
+            <p className="text-sm text-destructive">{error}</p>
+          </CardContent>
+        </Card>
+      )}
+      {Component ? (
+        <LessonChallengesProvider>
+          <Component components={mdxComponents} />
+        </LessonChallengesProvider>
+      ) : null}
+    </>
+  )
+}
+
 export function LessonPlayer({ locale, pathId, moduleId, lessonId }: LessonPlayerProps) {
   const discourseBaseUrl = env.VITE_DISCOURSE_BASE_URL
   const path = getLearningPathById(pathId)
   const module = path?.modules.find((m) => m.id === moduleId) ?? null
   const lesson = module?.lessons.find((l) => l.id === lessonId) ?? null
-
-  const { Component, isLoading, error } = useModuleContent({
-    contentDir: lesson?.contentDir ?? 'missing',
-    locale,
-  })
 
   const { prev, next } = useMemo(
     () => (path ? getAdjacentLessons({ path, lessonId }) : { prev: null, next: null }),
@@ -557,19 +588,13 @@ export function LessonPlayer({ locale, pathId, moduleId, lessonId }: LessonPlaye
           '[&_td]:text-zinc-600 dark:[&_td]:text-zinc-300'
         )}
       >
-        {isLoading && <LessonSkeleton />}
-        {error && (
-          <Card className="border-destructive/50 bg-destructive/5">
-            <CardContent className="p-6 text-center">
-              <p className="text-sm text-destructive">{error}</p>
-            </CardContent>
-          </Card>
-        )}
-        {Component ? (
-          <LessonChallengesProvider>
-            <Component components={mdxComponents} />
-          </LessonChallengesProvider>
-        ) : null}
+        <Suspense fallback={<LessonSkeleton />}>
+          <LessonContentRenderer
+            contentDir={lesson.contentDir}
+            locale={locale}
+            mdxComponents={mdxComponents}
+          />
+        </Suspense>
       </div>
 
       {discourseBaseUrl && lesson.discourseTopicId ? (

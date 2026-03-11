@@ -1,5 +1,9 @@
 import type { ComponentType } from 'react'
 import type { MDXComponents } from 'mdx/types'
+import {
+  createModuleLoaderCache,
+  type ModuleLoader,
+} from '@/lib/module-loader-cache'
 import type {
   ChallengeLocale,
   ChallengeStepFrontmatter,
@@ -17,9 +21,23 @@ export type ChallengeStepMdxModule = {
   readonly challengeSections?: readonly ChallengeStepSection[]
 }
 
-type MdxLocaleComponents = Partial<Record<ChallengeLocale, ChallengeStepMdxModule>>
+export type ChallengeStepMdxModuleLoader =
+  ModuleLoader<ChallengeStepMdxModule>
 
-export type ChallengeStepContentIndex = Record<string, MdxLocaleComponents>
+type ChallengeStepLocaleLoaders = Partial<
+  Record<ChallengeLocale, ChallengeStepMdxModuleLoader>
+>
+
+type ChallengeStepModuleReference = {
+  readonly cacheKey: string
+  readonly loader: ChallengeStepMdxModuleLoader
+  readonly resolvedLocale: ChallengeLocale
+}
+
+export type ChallengeStepContentIndex = Record<
+  string,
+  ChallengeStepLocaleLoaders
+>
 
 export type ChallengeStepContentDescriptor = {
   readonly kind: ChallengeStepType
@@ -37,111 +55,366 @@ export type ChallengeStepContentResolveResult = {
 const DEFAULT_LOCALE: ChallengeLocale = 'en'
 
 export function createChallengeStepContentIndex(
-  modules: Record<string, ChallengeStepMdxModule>,
+  moduleLoaders: Record<string, ChallengeStepMdxModuleLoader>,
 ): ChallengeStepContentIndex {
-  return Object.entries(modules).reduce(
-    (acc, [path, module]) => {
-      const match = path.match(/\/steps\/(.+)\/index\.(en|ro)\.mdx$/)
-      if (!match) {
+  return Object.entries(moduleLoaders).reduce(
+    (contentIndex, [filePath, loader]) => {
+      const matchedContentFile = filePath.match(
+        /\/steps\/(.+)\/index\.(en|ro)\.mdx$/,
+      )
+      if (!matchedContentFile) {
         if (import.meta.env.DEV) {
-          console.warn(`[Challenges] Ignoring MDX file with unexpected path: ${path}`)
+          console.warn(
+            `[Challenges] Ignoring MDX file with unexpected path: ${filePath}`,
+          )
         }
-        return acc
+        return contentIndex
       }
 
-      const contentDir = match[1]
-      const locale = match[2] as ChallengeLocale
-      const localeComponents = acc[contentDir] ?? {}
-      localeComponents[locale] = module
-      acc[contentDir] = localeComponents
-      return acc
+      const contentDirectory = matchedContentFile[1]
+      const locale = matchedContentFile[2] as ChallengeLocale
+      const localeLoaders = contentIndex[contentDirectory] ?? {}
+      localeLoaders[locale] = loader
+      contentIndex[contentDirectory] = localeLoaders
+      return contentIndex
     },
     {} as ChallengeStepContentIndex,
   )
+}
+
+function getAvailableLocales(
+  contentDirectory: string,
+  contentIndex: ChallengeStepContentIndex,
+): string {
+  const localeLoaders = contentIndex[contentDirectory]
+  if (!localeLoaders) {
+    return 'none'
+  }
+
+  const locales = Object.keys(localeLoaders)
+  return locales.length > 0 ? locales.join(', ') : 'none'
+}
+
+function createMissingContentError(
+  contentDirectory: string,
+  locale: ChallengeLocale,
+  contentIndex: ChallengeStepContentIndex,
+): Error {
+  return new Error(
+    `Missing step content: ${contentDirectory} (${locale}). Available locales: ${getAvailableLocales(
+      contentDirectory,
+      contentIndex,
+    )}`,
+  )
+}
+
+function createMissingSectionsError(
+  contentDirectory: string,
+  locale: ChallengeLocale,
+): Error {
+  return new Error(
+    `Missing sectioned step content export: ${contentDirectory} (${locale}).`,
+  )
+}
+
+function createChallengeStepContentDescriptor(params: {
+  readonly contentDir: string
+  readonly resolvedLocale: ChallengeLocale
+  readonly module: ChallengeStepMdxModule
+}): ChallengeStepContentDescriptor {
+  const frontmatter = params.module.frontmatter ?? {}
+  const kind: ChallengeStepType =
+    frontmatter.stepType === 'sectioned' ||
+    Boolean(params.module.challengeSections?.length)
+      ? 'sectioned'
+      : 'article'
+
+  if (kind === 'sectioned' && !params.module.challengeSections) {
+    throw createMissingSectionsError(
+      params.contentDir,
+      params.resolvedLocale,
+    )
+  }
+
+  return {
+    kind,
+    Component: params.module.default,
+    frontmatter,
+    sections:
+      kind === 'sectioned'
+        ? (params.module.challengeSections ?? [])
+        : [],
+  }
 }
 
 export function resolveChallengeStepModule(params: {
   readonly contentDir: string
   readonly locale: ChallengeLocale
   readonly contentIndex: ChallengeStepContentIndex
-}): {
-  readonly module: ChallengeStepMdxModule
-  readonly resolvedLocale: ChallengeLocale
-} | null {
-  const localeComponents = params.contentIndex[params.contentDir]
-  if (!localeComponents) return null
-
-  const requestedComponent = localeComponents[params.locale]
-  if (requestedComponent) {
-    return { module: requestedComponent, resolvedLocale: params.locale }
+}): ChallengeStepModuleReference | null {
+  const localeLoaders = params.contentIndex[params.contentDir]
+  if (!localeLoaders) {
+    return null
   }
 
-  const fallbackComponent = localeComponents[DEFAULT_LOCALE]
-  if (fallbackComponent) {
-    return { module: fallbackComponent, resolvedLocale: DEFAULT_LOCALE }
+  const requestedLoader = localeLoaders[params.locale]
+  if (requestedLoader) {
+    return {
+      cacheKey: `${params.contentDir}:${params.locale}`,
+      loader: requestedLoader,
+      resolvedLocale: params.locale,
+    }
   }
 
-  return null
+  const fallbackLoader = localeLoaders[DEFAULT_LOCALE]
+  if (!fallbackLoader) {
+    return null
+  }
+
+  return {
+    cacheKey: `${params.contentDir}:${DEFAULT_LOCALE}`,
+    loader: fallbackLoader,
+    resolvedLocale: DEFAULT_LOCALE,
+  }
 }
 
-function getAvailableLocales(
-  contentDir: string,
+export function createChallengeStepContentResource(
   contentIndex: ChallengeStepContentIndex,
-): string {
-  const localeComponents = contentIndex[contentDir]
-  if (!localeComponents) return 'none'
-  const locales = Object.keys(localeComponents)
-  return locales.length ? locales.join(', ') : 'none'
+) {
+  const moduleCache = createModuleLoaderCache<ChallengeStepMdxModule>()
+
+  const preloadModule = async (params: {
+    readonly contentDir: string
+    readonly locale: ChallengeLocale
+  }): Promise<{
+    readonly module: ChallengeStepMdxModule
+    readonly resolvedLocale: ChallengeLocale
+  }> => {
+    const moduleReference = resolveChallengeStepModule({
+      contentDir: params.contentDir,
+      locale: params.locale,
+      contentIndex,
+    })
+    if (!moduleReference) {
+      throw createMissingContentError(
+        params.contentDir,
+        params.locale,
+        contentIndex,
+      )
+    }
+
+    return {
+      module: await moduleCache.preload(
+        moduleReference.cacheKey,
+        moduleReference.loader,
+      ),
+      resolvedLocale: moduleReference.resolvedLocale,
+    }
+  }
+
+  const readModule = (params: {
+    readonly contentDir: string
+    readonly locale: ChallengeLocale
+  }): {
+    readonly module: ChallengeStepMdxModule
+    readonly resolvedLocale: ChallengeLocale
+  } => {
+    const moduleReference = resolveChallengeStepModule({
+      contentDir: params.contentDir,
+      locale: params.locale,
+      contentIndex,
+    })
+    if (!moduleReference) {
+      throw createMissingContentError(
+        params.contentDir,
+        params.locale,
+        contentIndex,
+      )
+    }
+
+    return {
+      module: moduleCache.read(
+        moduleReference.cacheKey,
+        moduleReference.loader,
+      ),
+      resolvedLocale: moduleReference.resolvedLocale,
+    }
+  }
+
+  const peekModule = (params: {
+    readonly contentDir: string
+    readonly locale: ChallengeLocale
+  }): {
+    readonly module: ChallengeStepMdxModule
+    readonly resolvedLocale: ChallengeLocale
+  } | null => {
+    const moduleReference = resolveChallengeStepModule({
+      contentDir: params.contentDir,
+      locale: params.locale,
+      contentIndex,
+    })
+    if (!moduleReference) {
+      return null
+    }
+
+    const resolvedModule = moduleCache.peek(moduleReference.cacheKey)
+    if (!resolvedModule) {
+      return null
+    }
+
+    return {
+      module: resolvedModule,
+      resolvedLocale: moduleReference.resolvedLocale,
+    }
+  }
+
+  const preloadContent = async (params: {
+    readonly contentDir: string
+    readonly locale: ChallengeLocale
+  }): Promise<ChallengeStepContentDescriptor> => {
+    const resolvedModule = await preloadModule(params)
+    return createChallengeStepContentDescriptor({
+      contentDir: params.contentDir,
+      resolvedLocale: resolvedModule.resolvedLocale,
+      module: resolvedModule.module,
+    })
+  }
+
+  const readContent = (params: {
+    readonly contentDir: string
+    readonly locale: ChallengeLocale
+  }): ChallengeStepContentDescriptor => {
+    const resolvedModule = readModule(params)
+    return createChallengeStepContentDescriptor({
+      contentDir: params.contentDir,
+      resolvedLocale: resolvedModule.resolvedLocale,
+      module: resolvedModule.module,
+    })
+  }
+
+  const peekContent = (params: {
+    readonly contentDir: string
+    readonly locale: ChallengeLocale
+  }): ChallengeStepContentDescriptor | null => {
+    const resolvedModule = peekModule(params)
+    if (!resolvedModule) {
+      return null
+    }
+
+    return createChallengeStepContentDescriptor({
+      contentDir: params.contentDir,
+      resolvedLocale: resolvedModule.resolvedLocale,
+      module: resolvedModule.module,
+    })
+  }
+
+  return {
+    preloadModule,
+    readModule,
+    peekModule,
+    preloadContent,
+    readContent,
+    peekContent,
+    clear(): void {
+      moduleCache.clear()
+    },
+  }
+}
+
+const challengeStepModuleLoaders = import.meta.glob<ChallengeStepMdxModule>(
+  '/src/content/challenges/steps/**/index.*.mdx',
+)
+
+const challengeStepContentIndex = createChallengeStepContentIndex(
+  challengeStepModuleLoaders,
+)
+
+const challengeStepContentResource = createChallengeStepContentResource(
+  challengeStepContentIndex,
+)
+
+export function preloadChallengeStepContent(params: {
+  readonly contentDir: string
+  readonly locale: ChallengeLocale
+}): Promise<void> {
+  return challengeStepContentResource.preloadModule(params).then(
+    () => undefined,
+  )
+}
+
+export function readChallengeStepContent(params: {
+  readonly contentDir: string
+  readonly locale: ChallengeLocale
+}): ChallengeStepContentDescriptor {
+  return challengeStepContentResource.readContent(params)
+}
+
+export function peekChallengeStepContent(params: {
+  readonly contentDir: string
+  readonly locale: ChallengeLocale
+}): ChallengeStepContentDescriptor | null {
+  return challengeStepContentResource.peekContent(params)
+}
+
+export function getChallengeStepContentErrorMessage(params: {
+  readonly contentDir: string
+  readonly locale: ChallengeLocale
+}): string | null {
+  if (!params.contentDir) {
+    return 'Missing step content directory.'
+  }
+
+  const moduleReference = resolveChallengeStepModule({
+    contentDir: params.contentDir,
+    locale: params.locale,
+    contentIndex: challengeStepContentIndex,
+  })
+  if (moduleReference) {
+    return null
+  }
+
+  return createMissingContentError(
+    params.contentDir,
+    params.locale,
+    challengeStepContentIndex,
+  ).message
 }
 
 export function resolveChallengeStepContent(params: {
   readonly contentDir: string
   readonly locale: ChallengeLocale
-  readonly contentIndex: ChallengeStepContentIndex
 }): ChallengeStepContentResolveResult {
-  if (!params.contentDir) {
-    return { content: null, isLoading: false, error: 'Missing step content directory.' }
-  }
-
-  const resolved = resolveChallengeStepModule({
-    contentDir: params.contentDir,
-    locale: params.locale,
-    contentIndex: params.contentIndex,
-  })
-  if (!resolved) {
+  const errorMessage = getChallengeStepContentErrorMessage(params)
+  if (errorMessage) {
     return {
       content: null,
       isLoading: false,
-      error: `Missing step content: ${params.contentDir} (${params.locale}). Available locales: ${getAvailableLocales(params.contentDir, params.contentIndex)}`,
+      error: errorMessage,
     }
   }
 
-  const frontmatter = resolved.module.frontmatter ?? {}
-  const kind: ChallengeStepType =
-    frontmatter.stepType === 'sectioned' || resolved.module.challengeSections?.length
-      ? 'sectioned'
-      : 'article'
-  const sections =
-    kind === 'sectioned'
-      ? resolved.module.challengeSections ?? null
-      : []
+  try {
+    return {
+      content: readChallengeStepContent(params),
+      isLoading: false,
+      error: null,
+    }
+  } catch (error) {
+    if (error instanceof Promise) {
+      throw error
+    }
 
-  if (kind === 'sectioned' && sections === null) {
     return {
       content: null,
       isLoading: false,
-      error: `Missing sectioned step content export: ${params.contentDir} (${resolved.resolvedLocale}).`,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Unable to load step content.',
     }
   }
+}
 
-  return {
-    content: {
-      kind,
-      Component: resolved.module.default,
-      frontmatter,
-      sections: sections ?? [],
-    },
-    isLoading: false,
-    error: null,
-  }
+export function clearChallengeStepContentResourceCacheForTests(): void {
+  challengeStepContentResource.clear()
 }

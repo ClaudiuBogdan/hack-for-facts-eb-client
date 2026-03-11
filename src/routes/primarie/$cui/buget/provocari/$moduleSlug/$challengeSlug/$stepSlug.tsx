@@ -6,6 +6,7 @@ import {
 } from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
 import { buildCampaignRouteHead } from '@/features/campaigns/buget/seo/campaign-seo'
 import type { CampaignRouteSearch } from '@/features/campaigns/buget/types'
+import { preloadChallengeStepContent } from '@/features/challenges/utils/challenge-step-content-resolver'
 import { buildChallengeStepRouteLoaderData } from '@/features/challenges/utils/challenge-step-route-search'
 import { getChallengeModuleBySlug } from '@/features/challenges/utils/modules'
 
@@ -19,7 +20,7 @@ export const Route = createFileRoute(
       section: search.section,
       view: search.view,
     }),
-  loader: ({ params, deps }) => {
+  loader: async ({ params, deps, location }) => {
     const module = getChallengeModuleBySlug(params.moduleSlug)
     if (!module) throw notFound()
 
@@ -32,6 +33,11 @@ export const Route = createFileRoute(
       (candidateStep) => candidateStep.slug === params.stepSlug,
     )
     if (!step) throw notFound()
+
+    await preloadChallengeStepContent({
+      contentDir: step.contentDir,
+      locale: resolveCampaignLocale(location.search as CampaignRouteSearch),
+    })
 
     return deps
   },

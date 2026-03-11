@@ -112,6 +112,69 @@ const challengeStepSectionsPlugin = () => ({
 
 const challengeStepSectionSources = new Map<string, string>();
 
+const getContentLocale = (id: string) => {
+  if (id.includes('.en.mdx')) {
+    return 'en';
+  }
+  if (id.includes('.ro.mdx')) {
+    return 'ro';
+  }
+  return null;
+};
+
+const getContentManualChunk = (id: string) => {
+  const normalizedId = id.replace(/\\/g, '/');
+  const locale = getContentLocale(normalizedId);
+  if (!locale) {
+    return undefined;
+  }
+
+  if (normalizedId.includes('/src/content/learning/modules/')) {
+    return `learning-content-${locale}`;
+  }
+
+  if (normalizedId.includes('/src/content/challenges/steps/')) {
+    return `challenge-step-content-${locale}`;
+  }
+
+  return undefined;
+};
+
+const getClientManualChunk = (id: string) => {
+  const contentChunk = getContentManualChunk(id);
+  if (contentChunk) {
+    return contentChunk;
+  }
+
+  if (id.includes('/node_modules/recharts/')) {
+    return 'recharts';
+  }
+  if (id.includes('/node_modules/leaflet/') || id.includes('/node_modules/react-leaflet/')) {
+    return 'leaflet';
+  }
+  if (id.includes('/node_modules/@clerk/clerk-react/')) {
+    return 'clerk';
+  }
+  if (id.includes('/node_modules/framer-motion/') || id.includes('/node_modules/motion/')) {
+    return 'motion';
+  }
+  if (id.includes('/node_modules/@sentry/react/')) {
+    return 'sentry';
+  }
+  if (id.includes('/node_modules/posthog-js/')) {
+    return 'posthog';
+  }
+  if (
+    id.includes('/node_modules/@tanstack/react-query/') ||
+    id.includes('/node_modules/@tanstack/react-table/') ||
+    id.includes('/node_modules/@tanstack/react-virtual/')
+  ) {
+    return 'tanstack';
+  }
+
+  return undefined;
+};
+
 
 export default defineConfig(({ mode }) => {
   // Proxy best practices: https://vite.dev/config/server-options
@@ -269,6 +332,13 @@ export default defineConfig(({ mode }) => {
       // Using 'hidden' avoids adding sourceMappingURL references to the bundled files
       sourcemap: 'hidden',
       chunkSizeWarningLimit: 1500,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            return getContentManualChunk(id);
+          },
+        },
+      },
     },
     // SSR configuration - bundle packages that have import issues when externalized
     ssr: {
@@ -294,14 +364,8 @@ export default defineConfig(({ mode }) => {
         build: {
           rollupOptions: {
             output: {
-              manualChunks: {
-                recharts: ['recharts'],
-                leaflet: ['leaflet', 'react-leaflet'],
-                clerk: ['@clerk/clerk-react'],
-                motion: ['framer-motion', 'motion'],
-                sentry: ['@sentry/react'],
-                posthog: ['posthog-js'],
-                tanstack: ['@tanstack/react-query', '@tanstack/react-table', '@tanstack/react-virtual'],
+              manualChunks(id) {
+                return getClientManualChunk(id);
               },
             },
           },
