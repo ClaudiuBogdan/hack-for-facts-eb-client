@@ -1,0 +1,129 @@
+{
+  "id": "budget-basics",
+  "slug": "budget-basics",
+  "difficulty": "beginner",
+  "title": {
+    "en": "Budget Basics",
+    "ro": "Bazele bugetului local"
+  },
+  "description": {
+    "en": "Learn the core budget concepts before you explore real local budget data.",
+    "ro": "Învață conceptele de bază înainte să explorezi date reale despre bugetul local."
+  },
+  "challenges": [
+    {
+      "id": "understand-budget",
+      "slug": "understand-budget",
+      "title": {
+        "en": "Understand the Budget",
+        "ro": "Înțelege bugetul"
+      },
+      "description": {
+        "en": "See what a local budget is and how the same project changes across draft, approval, execution, and rectification.",
+        "ro": "Vezi ce este bugetul local și cum se schimbă același proiect între proiect, aprobare, execuție și rectificare."
+      },
+      "steps": [
+        {
+          "id": "ch-budget-basics-01-local-budget",
+          "slug": "01-what-is-the-local-budget",
+          "title": {
+            "en": "What Is the Local Budget?",
+            "ro": "Ce este bugetul local?"
+          },
+          "durationMinutes": 6,
+          "contentDir": "budget-basics/01-what-is-the-local-budget",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-budget-basics-02-document-states",
+          "slug": "02-draft-approved-execution-rectification",
+          "title": {
+            "en": "Draft, Approved, Execution, Rectification",
+            "ro": "Proiect, aprobat, execuție, rectificare"
+          },
+          "durationMinutes": 5,
+          "contentDir": "budget-basics/02-draft-approved-execution-rectification",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        }
+      ]
+    },
+    {
+      "id": "understand-process",
+      "slug": "understand-process",
+      "title": {
+        "en": "Understand the Process",
+        "ro": "Înțelege procesul"
+      },
+      "description": {
+        "en": "Map the actors involved and learn how to read one useful budget line.",
+        "ro": "Mapează actorii implicați și învață să citești o linie bugetară utilă."
+      },
+      "steps": [
+        {
+          "id": "ch-budget-basics-03-actors-and-timing",
+          "slug": "03-who-decides-and-when",
+          "title": {
+            "en": "Who Decides and When?",
+            "ro": "Cine decide și când?"
+          },
+          "durationMinutes": 6,
+          "contentDir": "budget-basics/03-who-decides-and-when",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-budget-basics-04-budget-line",
+          "slug": "04-how-to-read-a-budget-line",
+          "title": {
+            "en": "How to Read One Budget Line",
+            "ro": "Cum citești o linie bugetară"
+          },
+          "durationMinutes": 5,
+          "contentDir": "budget-basics/04-how-to-read-a-budget-line",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        }
+      ]
+    },
+    {
+      "id": "decode-the-numbers",
+      "slug": "decode-the-numbers",
+      "title": {
+        "en": "Decode the Numbers",
+        "ro": "Decodifică numerele"
+      },
+      "description": {
+        "en": "Use the two classification lenses and distinguish routine spending from development spending.",
+        "ro": "Folosește cele două lentile de clasificare și diferențiază cheltuielile curente de cele de dezvoltare."
+      },
+      "steps": [
+        {
+          "id": "ch-budget-basics-05-functional-vs-economic",
+          "slug": "05-functional-vs-economic",
+          "title": {
+            "en": "Functional vs Economic",
+            "ro": "Funcțional vs economic"
+          },
+          "durationMinutes": 6,
+          "contentDir": "budget-basics/05-functional-vs-economic",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-budget-basics-06-functioning-vs-development",
+          "slug": "06-functioning-vs-development",
+          "title": {
+            "en": "Functioning vs Development",
+            "ro": "Funcționare vs dezvoltare"
+          },
+          "durationMinutes": 6,
+          "contentDir": "budget-basics/06-functioning-vs-development",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        }
+      ]
+    }
+  ]
+}
