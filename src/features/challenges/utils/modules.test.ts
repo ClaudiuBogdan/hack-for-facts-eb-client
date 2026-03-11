@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   getAdjacentSteps,
   getChallengeModuleStats,
+  resolveActiveChallengeModule,
 } from './modules'
 import type { ChallengeModuleDefinition } from '../types'
 
@@ -85,6 +86,48 @@ const testModule: ChallengeModuleDefinition = {
   ],
 }
 
+const secondTestModule: ChallengeModuleDefinition = {
+  id: 'module-b',
+  slug: 'module-b',
+  difficulty: 'intermediate',
+  title: {
+    en: 'Module B',
+    ro: 'Modul B',
+  },
+  description: {
+    en: 'Second module',
+    ro: 'Al doilea modul',
+  },
+  challenges: [
+    {
+      id: 'challenge-c',
+      slug: 'challenge-c',
+      title: {
+        en: 'Challenge C',
+        ro: 'Provocare C',
+      },
+      description: {
+        en: 'Third challenge',
+        ro: 'A treia provocare',
+      },
+      steps: [
+        {
+          id: 'ch-module-b-01',
+          slug: '01-kickoff',
+          title: {
+            en: 'Step 1',
+            ro: 'Pasul 1',
+          },
+          durationMinutes: 7,
+          contentDir: 'module-b/01-kickoff',
+          completionMode: 'mark_complete',
+          prerequisites: [],
+        },
+      ],
+    },
+  ],
+}
+
 describe('challenges modules utils', () => {
   describe('getAdjacentSteps', () => {
     it('returns only next step for first step', () => {
@@ -146,6 +189,79 @@ describe('challenges modules utils', () => {
       expect(result.completionPercentage).toBe(100)
       expect(result.nextStep).toBeNull()
       expect(result.nextChallengeSlug).toBeNull()
+    })
+  })
+
+  describe('resolveActiveChallengeModule', () => {
+    const modules = [testModule, secondTestModule] as const
+
+    it('prefers the route module slug when present', () => {
+      const result = resolveActiveChallengeModule({
+        modules,
+        routeModuleSlug: 'module-b',
+        storedActiveModuleSlug: 'module-a',
+        getStepStatus: () => 'completed',
+      })
+
+      expect(result?.slug).toBe('module-b')
+    })
+
+    it('keeps the stored active module when it is still incomplete', () => {
+      const result = resolveActiveChallengeModule({
+        modules,
+        routeModuleSlug: null,
+        storedActiveModuleSlug: 'module-b',
+        getStepStatus: () => 'not_started',
+      })
+
+      expect(result?.slug).toBe('module-b')
+    })
+
+    it('advances to the next incomplete module when the stored one is complete', () => {
+      const statuses = {
+        'ch-module-a-01': 'completed',
+        'ch-module-a-02': 'completed',
+        'ch-module-a-03': 'completed',
+        'ch-module-b-01': 'not_started',
+      } as const
+
+      const result = resolveActiveChallengeModule({
+        modules,
+        routeModuleSlug: null,
+        storedActiveModuleSlug: 'module-a',
+        getStepStatus: (stepId) => statuses[stepId as keyof typeof statuses],
+      })
+
+      expect(result?.slug).toBe('module-b')
+    })
+
+    it('falls back to the first incomplete module when no stored module is available', () => {
+      const statuses = {
+        'ch-module-a-01': 'completed',
+        'ch-module-a-02': 'completed',
+        'ch-module-a-03': 'completed',
+        'ch-module-b-01': 'not_started',
+      } as const
+
+      const result = resolveActiveChallengeModule({
+        modules,
+        routeModuleSlug: null,
+        storedActiveModuleSlug: null,
+        getStepStatus: (stepId) => statuses[stepId as keyof typeof statuses],
+      })
+
+      expect(result?.slug).toBe('module-b')
+    })
+
+    it('falls back to the last module when all modules are complete', () => {
+      const result = resolveActiveChallengeModule({
+        modules,
+        routeModuleSlug: null,
+        storedActiveModuleSlug: null,
+        getStepStatus: () => 'completed',
+      })
+
+      expect(result?.slug).toBe('module-b')
     })
   })
 })

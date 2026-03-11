@@ -25,6 +25,7 @@ type CampaignProgressContextValue = {
   readonly getChallengeStatus: (challengeSlug: string) => CampaignChallengeStatus
   readonly setChallengeStatus: (challengeSlug: string, status: CampaignChallengeStatus) => void
   readonly setSelectedEntity: (input: { entityCui: string }) => void
+  readonly setActiveChallengeModule: (input: { moduleSlug: string | null }) => void
   readonly markChallengeInProgress: (challengeSlug: string) => void
   readonly completeOnboarding: (input: { locality: string }) => void
   readonly resetProgress: () => void
@@ -81,6 +82,9 @@ function mergeCampaignProgressSnapshots(
     selectedEntityCui: preferLocalValues
       ? localSnapshot.selectedEntityCui ?? remoteSnapshot.selectedEntityCui
       : remoteSnapshot.selectedEntityCui ?? localSnapshot.selectedEntityCui,
+    activeChallengeModuleSlug: preferLocalValues
+      ? localSnapshot.activeChallengeModuleSlug ?? remoteSnapshot.activeChallengeModuleSlug
+      : remoteSnapshot.activeChallengeModuleSlug ?? localSnapshot.activeChallengeModuleSlug,
     challenges: mergedChallenges,
     lastUpdated: localSnapshot.lastUpdated > remoteSnapshot.lastUpdated
       ? localSnapshot.lastUpdated
@@ -118,7 +122,6 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     }
 
     setIsReady(true)
-    setIsInitialResolutionReady(true)
   }, [])
 
   useEffect(() => {
@@ -220,12 +223,33 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     }
   }, [isLoaded, isSignedIn, syncSnapshot])
 
+  const setActiveChallengeModule = useCallback((input: { moduleSlug: string | null }) => {
+    const normalizedModuleSlug = input.moduleSlug?.trim() || null
+    if (progressRef.current.activeChallengeModuleSlug === normalizedModuleSlug) {
+      return
+    }
+
+    const nextSnapshot: CampaignProgressSnapshot = {
+      ...progressRef.current,
+      activeChallengeModuleSlug: normalizedModuleSlug,
+      lastUpdated: new Date().toISOString(),
+    }
+
+    progressRef.current = nextSnapshot
+    setProgress(nextSnapshot)
+
+    if (isLoaded && isSignedIn) {
+      void syncSnapshot()
+    }
+  }, [isLoaded, isSignedIn, syncSnapshot])
+
   useEffect(() => {
     if (!isReady) return
 
     let isActive = true
 
     if (!isLoaded) {
+      setIsInitialResolutionReady(true)
       return () => {
         isActive = false
       }
@@ -238,6 +262,10 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
           setIsInitialResolutionReady(true)
         }
         return
+      }
+
+      if (isActive) {
+        setIsInitialResolutionReady(false)
       }
 
       try {
@@ -266,6 +294,7 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     getChallengeStatus,
     setChallengeStatus,
     setSelectedEntity,
+    setActiveChallengeModule,
     markChallengeInProgress,
     completeOnboarding,
     resetProgress,
@@ -280,6 +309,7 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     getChallengeStatus,
     setChallengeStatus,
     setSelectedEntity,
+    setActiveChallengeModule,
     markChallengeInProgress,
     completeOnboarding,
     resetProgress,

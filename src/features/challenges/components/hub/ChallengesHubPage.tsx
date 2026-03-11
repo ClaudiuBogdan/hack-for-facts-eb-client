@@ -1,17 +1,15 @@
-import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { useMemo } from 'react'
-import { Trophy } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { useChallengeAccess } from '../../hooks/use-challenge-access'
 import { useChallengeProgress } from '../../hooks/use-challenge-progress'
+import { useCampaignProgress } from '@/features/campaigns/buget/hooks/use-campaign-progress'
 import {
   getAllSteps,
   getChallengeModules,
   getChallengeModuleStats,
+  resolveActiveChallengeModule,
 } from '../../utils/modules'
 import {
-  buildCampaignProvocariModulePath,
   buildCampaignProvocariStepPath,
 } from '../../constants'
 import type { ChallengeLocale, ChallengeModuleDefinition } from '../../types'
@@ -43,6 +41,7 @@ export function ChallengesHubPage({
     isSubmitting,
     register,
   } = useChallengeAccess()
+  const { progress: campaignProgress } = useCampaignProgress()
   const { getStepStatus, isStepCompleted } = useChallengeProgress()
 
   // Compute stats for all modules
@@ -83,14 +82,21 @@ export function ChallengesHubPage({
     })
   }, [entityCui, modules, getStepStatus, isStepCompleted])
 
-  // First incomplete module is "active"; if all complete, show the last one
+  const activeModule = useMemo(
+    () =>
+      resolveActiveChallengeModule({
+        modules,
+        storedActiveModuleSlug: campaignProgress.activeChallengeModuleSlug,
+        getStepStatus,
+      }),
+    [campaignProgress.activeChallengeModuleSlug, getStepStatus, modules],
+  )
+
   const activeModuleData =
-    modulesWithStats.find((m) => m.stats.percentage < 100) ??
-    modulesWithStats[modulesWithStats.length - 1] ??
+    modulesWithStats.find((entry) => entry.module.id === activeModule?.id) ??
     null
   const fallbackModuleData = modulesWithStats[0] ?? null
   const otherModulesData = modulesWithStats.filter((m) => m !== activeModuleData)
-
   const greeting =
     (activeModuleData?.stats.completedCount ?? 0) > 0
       ? t`Welcome back.`
@@ -119,7 +125,7 @@ export function ChallengesHubPage({
 
     if (!fallbackModuleData) return null
 
-    if (activeModuleData && activeModuleData.stats.percentage < 100) {
+    if (activeModuleData) {
       return (
         <ChallengeModuleCard
           entityCui={entityCui}
@@ -136,29 +142,7 @@ export function ChallengesHubPage({
       return null
     }
 
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-center bg-muted/20 rounded-[40px] border-2 border-dashed border-muted">
-        <Trophy className="h-16 w-16 text-primary/40 mb-6" />
-        <h3 className="text-2xl font-black tracking-tight mb-2">{t`Congratulations!`}</h3>
-        <p className="text-muted-foreground font-medium mb-8">
-          {t`You've completed all challenges!`}
-        </p>
-        <Button
-          asChild
-          variant="outline"
-          className="rounded-2xl px-8 h-12 font-bold"
-        >
-          <Link
-            to={buildCampaignProvocariModulePath(
-              entityCui,
-              activeModuleData.module.slug,
-            ) as '/'}
-          >
-            {t`Review`}
-          </Link>
-        </Button>
-      </div>
-    )
+    return null
   })()
 
   return (

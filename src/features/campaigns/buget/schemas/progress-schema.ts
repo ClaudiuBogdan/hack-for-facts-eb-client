@@ -28,6 +28,7 @@ export const CampaignProgressSnapshotSchema = z.object({
   onboardingCompletedAt: z.string().min(1).nullable(),
   selectedLocality: z.string().min(1).nullable(),
   selectedEntityCui: z.string().min(1).nullable().optional().default(null),
+  activeChallengeModuleSlug: z.string().min(1).nullable().optional().default(null),
   challenges: z.record(z.string(), CampaignChallengeProgressSchema),
   lastUpdated: z.string().min(1),
 })
@@ -40,6 +41,7 @@ export function getEmptyCampaignProgressSnapshot(): CampaignProgressSnapshot {
     onboardingCompletedAt: null,
     selectedLocality: null,
     selectedEntityCui: null,
+    activeChallengeModuleSlug: null,
     challenges: {},
     lastUpdated: now,
   }

@@ -34,6 +34,7 @@ import {
   getChallengeModuleBySlug,
   getChallengeModules,
   getChallengeModuleStats,
+  resolveActiveChallengeModule,
   getTranslatedText,
 } from '../../utils/modules'
 import {
@@ -58,6 +59,18 @@ function parseChallengesRoute(pathname: string): {
   const stepSlug = provocariIndex >= 0 ? (parts[provocariIndex + 3] ?? null) : null
 
   return { moduleSlug, challengeSlug, stepSlug }
+}
+
+function isChallengesExperiencePath(pathname: string): boolean {
+  const parts = pathname.split('/').filter(Boolean)
+  const budgetIndex = parts.indexOf('buget')
+
+  if (budgetIndex < 0) {
+    return false
+  }
+
+  const nextSegment = parts[budgetIndex + 1]
+  return nextSegment === undefined || nextSegment === 'provocari'
 }
 
 function StepStatusIcon({
@@ -205,10 +218,12 @@ function ChallengesSidebar({
   pathname,
   entityCui,
   locale,
+  storedActiveModuleSlug,
 }: {
   readonly pathname: string
   readonly entityCui?: string
   readonly locale: ChallengeLocale
+  readonly storedActiveModuleSlug: string | null
 }) {
   const { isStepCompleted, getStepStatus } = useChallengeProgress()
   const { moduleSlug, challengeSlug, stepSlug } = parseChallengesRoute(pathname)
@@ -217,9 +232,13 @@ function ChallengesSidebar({
 
   const modules = useMemo(() => getChallengeModules(), [])
   const activeModule = useMemo(() => {
-    if (moduleSlug) return getChallengeModuleBySlug(moduleSlug)
-    return modules[0] ?? null
-  }, [moduleSlug, modules])
+    return resolveActiveChallengeModule({
+      modules,
+      routeModuleSlug: moduleSlug,
+      storedActiveModuleSlug,
+      getStepStatus,
+    })
+  }, [getStepStatus, moduleSlug, modules, storedActiveModuleSlug])
 
   useEffect(() => {
     if (!challengeSlug) return
@@ -401,6 +420,14 @@ export function ChallengesLayout({ children }: ChallengesLayoutProps) {
 function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
   const location = useLocation()
   const [isOpen, setIsOpen] = useState(false)
+  const isChallengeRoute = useMemo(
+    () => isChallengesExperiencePath(location.pathname),
+    [location.pathname],
+  )
+  const { moduleSlug } = useMemo(
+    () => parseChallengesRoute(location.pathname),
+    [location.pathname],
+  )
 
   // Swipe from left edge to open sidebar
   const touchStartRef = useRef<{ x: number; y: number } | null>(null)
@@ -439,14 +466,30 @@ function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
   }, [handleTouchStart, handleTouchEnd])
 
   const locale = resolveCampaignLocale(location.search as CampaignRouteSearch | undefined)
+  const { getStepStatus } = useChallengeProgress()
+  const modules = useMemo(() => getChallengeModules(), [])
   const {
     isReady,
     isInitialResolutionReady,
     progress,
     setSelectedEntity,
+    setActiveChallengeModule,
   } = useCampaignProgress()
   const syncedEntityCuiRef = useRef<string | null>(null)
   const pathnameEntityCui = resolveCampaignEntityCuiFromPathname(location.pathname)
+  const routeModule = useMemo(
+    () => (moduleSlug ? getChallengeModuleBySlug(moduleSlug) : null),
+    [moduleSlug],
+  )
+  const resolvedHubActiveModule = useMemo(
+    () =>
+      resolveActiveChallengeModule({
+        modules,
+        storedActiveModuleSlug: progress.activeChallengeModuleSlug,
+        getStepStatus,
+      }),
+    [getStepStatus, modules, progress.activeChallengeModuleSlug],
+  )
   const currentEntityCui =
     pathnameEntityCui ??
     progress.selectedEntityCui ??
@@ -473,6 +516,34 @@ function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
     setSelectedEntity,
   ])
 
+  useEffect(() => {
+    if (!isChallengeRoute || !isReady || !isInitialResolutionReady) {
+      return
+    }
+
+    const desiredActiveModuleSlug =
+      routeModule?.slug ??
+      resolvedHubActiveModule?.slug ??
+      null
+
+    if (
+      desiredActiveModuleSlug === null ||
+      desiredActiveModuleSlug === progress.activeChallengeModuleSlug
+    ) {
+      return
+    }
+
+    setActiveChallengeModule({ moduleSlug: desiredActiveModuleSlug })
+  }, [
+    isChallengeRoute,
+    isInitialResolutionReady,
+    isReady,
+    progress.activeChallengeModuleSlug,
+    resolvedHubActiveModule,
+    routeModule,
+    setActiveChallengeModule,
+  ])
+
   return (
     <div className="flex min-h-screen min-h-[100svh] supports-[min-height:100dvh]:min-h-[100dvh] w-full">
       {/* Mobile Sidebar Trigger */}
@@ -494,6 +565,7 @@ function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
             pathname={location.pathname}
             entityCui={currentEntityCui}
             locale={locale}
+            storedActiveModuleSlug={progress.activeChallengeModuleSlug}
           />
         </SheetContent>
       </Sheet>
@@ -504,6 +576,7 @@ function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
           pathname={location.pathname}
           entityCui={currentEntityCui}
           locale={locale}
+          storedActiveModuleSlug={progress.activeChallengeModuleSlug}
         />
       </aside>
 

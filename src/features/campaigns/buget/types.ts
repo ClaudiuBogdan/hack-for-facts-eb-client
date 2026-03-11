@@ -157,6 +157,7 @@ export type CampaignProgressSnapshot = {
   readonly onboardingCompletedAt: string | null
   readonly selectedLocality: string | null
   readonly selectedEntityCui: string | null
+  readonly activeChallengeModuleSlug: string | null
   readonly challenges: Readonly<Record<string, CampaignChallengeProgress>>
   readonly lastUpdated: string
 }

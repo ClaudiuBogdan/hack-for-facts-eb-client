@@ -11,8 +11,11 @@ const mockLocation = {
 let mockCampaignProgressReady = true
 let mockCampaignInitialResolutionReady = true
 let mockChallengeProgressReady = true
+let challengeStepStatuses: Record<string, 'completed' | 'not_started'> = {}
 
 const setSelectedEntityMock = vi.fn()
+const setActiveChallengeModuleMock = vi.fn()
+let activeChallengeModuleSlug: string | null = null
 
 function buildHref(
   to: unknown,
@@ -103,16 +106,18 @@ vi.mock('@/features/campaigns/buget/hooks/use-campaign-progress', () => ({
     isInitialResolutionReady: mockCampaignInitialResolutionReady,
     progress: {
       selectedEntityCui: '12345678',
+      activeChallengeModuleSlug,
     },
     setSelectedEntity: setSelectedEntityMock,
+    setActiveChallengeModule: setActiveChallengeModuleMock,
   }),
 }))
 
 vi.mock('../../hooks/use-challenge-progress', () => ({
   useChallengeProgress: () => ({
     isReady: mockChallengeProgressReady,
-    isStepCompleted: () => false,
-    getStepStatus: () => 'not_started',
+    isStepCompleted: (stepId: string) => challengeStepStatuses[stepId] === 'completed',
+    getStepStatus: (stepId: string) => challengeStepStatuses[stepId] ?? 'not_started',
   }),
 }))
 
@@ -137,12 +142,73 @@ const moduleDefinition = {
   ],
 }
 
+const secondModuleDefinition = {
+  id: 'module-2',
+  slug: 'second-module',
+  title: { ro: 'Second module', en: 'Second module' },
+  description: { ro: 'Second description', en: 'Second description' },
+  challenges: [
+    {
+      id: 'challenge-2',
+      slug: 'second-challenge',
+      title: { ro: 'Second challenge', en: 'Second challenge' },
+      steps: [
+        {
+          id: 'step-2',
+          slug: 'second-step',
+          title: { ro: 'Second step', en: 'Second step' },
+        },
+      ],
+    },
+  ],
+}
+
 vi.mock('../../utils/modules', () => ({
-  getChallengeModules: () => [moduleDefinition],
-  getChallengeModuleBySlug: () => moduleDefinition,
+  getChallengeModules: () => [moduleDefinition, secondModuleDefinition],
+  getChallengeModuleBySlug: (slug: string) =>
+    [moduleDefinition, secondModuleDefinition].find((module) => module.slug === slug) ?? null,
   getChallengeModuleStats: () => ({
     completionPercentage: 0,
   }),
+  resolveActiveChallengeModule: ({
+    modules,
+    routeModuleSlug,
+    storedActiveModuleSlug,
+  }: {
+    modules: readonly typeof moduleDefinition[]
+    routeModuleSlug?: string | null
+    storedActiveModuleSlug?: string | null
+  }) => {
+    const isIncomplete = (module: typeof moduleDefinition) =>
+      module.challenges.some((challenge) =>
+        challenge.steps.some((step) => challengeStepStatuses[step.id] !== 'completed'),
+      )
+
+    const routeModule =
+      modules.find((module) => module.slug === routeModuleSlug) ?? null
+    if (routeModule) {
+      return routeModule
+    }
+
+    const storedModuleIndex = storedActiveModuleSlug
+      ? modules.findIndex((module) => module.slug === storedActiveModuleSlug)
+      : -1
+
+    if (storedModuleIndex >= 0) {
+      const storedModule = modules[storedModuleIndex]
+      if (isIncomplete(storedModule)) {
+        return storedModule
+      }
+
+      return (
+        modules.slice(storedModuleIndex + 1).find(isIncomplete) ??
+        modules.slice(0, storedModuleIndex).find(isIncomplete) ??
+        storedModule
+      )
+    }
+
+    return modules.find(isIncomplete) ?? modules[modules.length - 1] ?? null
+  },
   getTranslatedText: (value: { ro: string; en: string }) => value.ro,
 }))
 
@@ -154,7 +220,10 @@ describe('ChallengesLayout', () => {
     mockCampaignProgressReady = true
     mockCampaignInitialResolutionReady = true
     mockChallengeProgressReady = true
+    challengeStepStatuses = {}
+    activeChallengeModuleSlug = null
     setSelectedEntityMock.mockClear()
+    setActiveChallengeModuleMock.mockClear()
   })
 
   it('syncs the pathname CUI back into campaign progress', async () => {
@@ -169,6 +238,75 @@ describe('ChallengesLayout', () => {
         entityCui: '87654321',
       })
     })
+  })
+
+  it('uses the stored active challenge module on hub routes without a module slug', async () => {
+    mockLocation.pathname = '/primarie/87654321/buget/provocari'
+    activeChallengeModuleSlug = 'second-module'
+
+    render(
+      <ChallengesLayout>
+        <div>content</div>
+      </ChallengesLayout>,
+    )
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Second module').length).toBeGreaterThan(0)
+    })
+  })
+
+  it('persists the route module slug when visiting a challenge route', async () => {
+    mockLocation.pathname =
+      '/primarie/87654321/buget/provocari/second-module/second-challenge/second-step'
+
+    render(
+      <ChallengesLayout>
+        <div>content</div>
+      </ChallengesLayout>,
+    )
+
+    await waitFor(() => {
+      expect(setActiveChallengeModuleMock).toHaveBeenCalledWith({
+        moduleSlug: 'second-module',
+      })
+    })
+  })
+
+  it('advances the stored active module on hub routes when it has been completed', async () => {
+    mockLocation.pathname = '/primarie/87654321/buget/provocari'
+    activeChallengeModuleSlug = 'test-module'
+    challengeStepStatuses = {
+      'step-1': 'completed',
+      'step-2': 'not_started',
+    }
+
+    render(
+      <ChallengesLayout>
+        <div>content</div>
+      </ChallengesLayout>,
+    )
+
+    await waitFor(() => {
+      expect(setActiveChallengeModuleMock).toHaveBeenCalledWith({
+        moduleSlug: 'second-module',
+      })
+    })
+  })
+
+  it('does not persist an active challenge module on non-challenge routes', async () => {
+    mockLocation.pathname = '/primarie/87654321/buget/calendar'
+
+    render(
+      <ChallengesLayout>
+        <div>content</div>
+      </ChallengesLayout>,
+    )
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Test module').length).toBeGreaterThan(0)
+    })
+
+    expect(setActiveChallengeModuleMock).not.toHaveBeenCalled()
   })
 
   it('keeps sidebar step links on the current challenge route', async () => {

@@ -87,6 +87,60 @@ export function getChallengeModuleStats(params: {
   }
 }
 
+export function resolveActiveChallengeModule(params: {
+  readonly modules: readonly ChallengeModuleDefinition[]
+  readonly routeModuleSlug?: string | null
+  readonly storedActiveModuleSlug?: string | null
+  readonly getStepStatus: (stepId: string) => LearningContentStatus | undefined
+}): ChallengeModuleDefinition | null {
+  const isModuleIncomplete = (module: ChallengeModuleDefinition) => {
+    const stats = getChallengeModuleStats({
+      module,
+      getStepStatus: params.getStepStatus,
+    })
+    return stats.completionPercentage < 100
+  }
+
+  const routeModule = params.routeModuleSlug
+    ? params.modules.find((module) => module.slug === params.routeModuleSlug) ?? null
+    : null
+  if (routeModule) {
+    return routeModule
+  }
+
+  const storedModuleIndex = params.storedActiveModuleSlug
+    ? params.modules.findIndex((module) => module.slug === params.storedActiveModuleSlug)
+    : -1
+
+  if (storedModuleIndex >= 0) {
+    const storedModule = params.modules[storedModuleIndex]
+
+    if (isModuleIncomplete(storedModule)) {
+      return storedModule
+    }
+
+    const nextIncompleteModule =
+      params.modules.slice(storedModuleIndex + 1).find(isModuleIncomplete) ??
+      params.modules.slice(0, storedModuleIndex).find(isModuleIncomplete) ??
+      null
+
+    if (nextIncompleteModule) {
+      return nextIncompleteModule
+    }
+
+    return storedModule
+  }
+
+  const firstIncompleteModule =
+    params.modules.find(isModuleIncomplete) ?? null
+
+  if (firstIncompleteModule) {
+    return firstIncompleteModule
+  }
+
+  return params.modules[params.modules.length - 1] ?? null
+}
+
 export function findChallengeSlugForStep(
   module: ChallengeModuleDefinition,
   stepId: string,

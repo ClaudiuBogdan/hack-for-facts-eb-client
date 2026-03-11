@@ -31,7 +31,8 @@ let registrationState: MockRegistrationState = {
   register: registerMock,
 }
 
-let allStepsCompleted = false
+let stepStatuses: Record<string, 'completed' | 'not_started'> = {}
+let activeChallengeModuleSlug: string | null = null
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to, search, ...props }: any) => {
@@ -56,16 +57,32 @@ vi.mock('@/features/campaigns/buget/hooks/use-campaign-registration', () => ({
   useCampaignRegistration: () => registrationState,
 }))
 
+vi.mock('@/features/campaigns/buget/hooks/use-campaign-progress', () => ({
+  useCampaignProgress: () => ({
+    progress: {
+      activeChallengeModuleSlug,
+    },
+  }),
+}))
+
 vi.mock('../../hooks/use-challenge-progress', () => ({
   useChallengeProgress: () => ({
-    getStepStatus: () => (allStepsCompleted ? 'completed' : 'not_started'),
-    isStepCompleted: () => allStepsCompleted,
+    getStepStatus: (stepId: string) => stepStatuses[stepId] ?? 'not_started',
+    isStepCompleted: (stepId: string) => stepStatuses[stepId] === 'completed',
   }),
 }))
 
 vi.mock('../cards/ChallengeModuleCard', () => ({
-  ChallengeModuleCard: ({ variant }: { variant: 'active' | 'other' }) => (
-    <div data-testid={`module-card-${variant}`}>{variant}</div>
+  ChallengeModuleCard: ({
+    variant,
+    module,
+  }: {
+    variant: 'active' | 'other'
+    module: { slug: string }
+  }) => (
+    <div data-testid={`module-card-${variant}`}>
+      {variant}:{module.slug}
+    </div>
   ),
 }))
 
@@ -95,7 +112,8 @@ describe('ChallengesHubPage', () => {
       isSubmitting: false,
       register: registerMock,
     }
-    allStepsCompleted = false
+    stepStatuses = {}
+    activeChallengeModuleSlug = null
   })
 
   it('shows the auth hero for signed-out users while keeping the rest of the hub visible', () => {
@@ -162,6 +180,27 @@ describe('ChallengesHubPage', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('uses the stored active module slug for the hero when available', () => {
+    authState = {
+      isEnabled: true,
+      isLoaded: true,
+      isSignedIn: true,
+    }
+    registrationState = {
+      isReady: true,
+      isRegistered: true,
+      isSubmitting: false,
+      register: registerMock,
+    }
+    activeChallengeModuleSlug = 'compare-budgets'
+
+    render(<ChallengesHubPage entityCui="12345678" locale="ro" />)
+
+    expect(screen.getByTestId('module-card-active')).toHaveTextContent(
+      'active:compare-budgets',
+    )
+  })
+
   it('bypasses auth gating when authentication is disabled', () => {
     authState = {
       isEnabled: false,
@@ -189,11 +228,69 @@ describe('ChallengesHubPage', () => {
       isSubmitting: false,
       register: registerMock,
     }
-    allStepsCompleted = true
+    stepStatuses = {
+      'ch-budget-basics-01-local-budget': 'completed',
+      'ch-budget-basics-02-document-states': 'completed',
+      'ch-budget-basics-03-actors-and-timing': 'completed',
+      'ch-budget-basics-04-budget-line': 'completed',
+      'ch-budget-basics-05-functional-vs-economic': 'completed',
+      'ch-budget-basics-06-functioning-vs-development': 'completed',
+      'ch-compare-01-select-years': 'completed',
+      'ch-compare-02-spot-changes': 'completed',
+      'ch-compare-03-inflation': 'completed',
+      'ch-compare-04-find-peers': 'completed',
+      'ch-compare-05-per-capita': 'completed',
+      'ch-compare-06-draw-conclusions': 'completed',
+      'ch-anomaly-01-common-red-flags': 'completed',
+      'ch-anomaly-02-election-spending': 'completed',
+      'ch-anomaly-03-hidden-costs': 'completed',
+      'ch-anomaly-04-pick-anomaly': 'completed',
+      'ch-anomaly-05-gather-evidence': 'completed',
+      'ch-anomaly-06-write-report': 'completed',
+      'ch-explore-01-find-budget': 'completed',
+      'ch-explore-02-budget-overview': 'completed',
+      'ch-explore-03-revenue-sources': 'completed',
+      'ch-explore-04-functional-class': 'completed',
+      'ch-explore-05-economic-class': 'completed',
+      'ch-explore-06-treemap-basics': 'completed',
+      'ch-explore-07-drill-down': 'completed',
+    }
 
     render(<ChallengesHubPage entityCui="12345678" locale="ro" />)
 
-    expect(screen.getByText('Congratulations!')).toBeInTheDocument()
-    expect(screen.queryByTestId('module-card-active')).not.toBeInTheDocument()
+    expect(screen.getByTestId('module-card-active')).toHaveTextContent(
+      'active:explore-budgets',
+    )
+    expect(screen.queryByText('Congratulations!')).not.toBeInTheDocument()
+  })
+
+  it('shows the active module card when the stored module is complete but others are not', () => {
+    authState = {
+      isEnabled: true,
+      isLoaded: true,
+      isSignedIn: true,
+    }
+    registrationState = {
+      isReady: true,
+      isRegistered: true,
+      isSubmitting: false,
+      register: registerMock,
+    }
+    activeChallengeModuleSlug = 'budget-basics'
+    stepStatuses = {
+      'ch-budget-basics-01-local-budget': 'completed',
+      'ch-budget-basics-02-document-states': 'completed',
+      'ch-budget-basics-03-actors-and-timing': 'completed',
+      'ch-budget-basics-04-budget-line': 'completed',
+      'ch-budget-basics-05-functional-vs-economic': 'completed',
+      'ch-budget-basics-06-functioning-vs-development': 'completed',
+    }
+
+    render(<ChallengesHubPage entityCui="12345678" locale="ro" />)
+
+    expect(screen.getByTestId('module-card-active')).toHaveTextContent(
+      'active:compare-budgets',
+    )
+    expect(screen.queryByText('Congratulations!')).not.toBeInTheDocument()
   })
 })
