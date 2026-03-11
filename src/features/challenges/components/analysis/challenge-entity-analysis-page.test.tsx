@@ -5,6 +5,10 @@ import {
   DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
   CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS,
 } from './challenge-entity-public-maps'
+import {
+  DEFAULT_PREFETCH_MARGIN,
+  DEFAULT_RENDER_MARGIN,
+} from './challenge-entity-deferred-section-gate'
 import type { MapEntitySelection } from '@/features/advanced-map-analytics/types/map-entity-selection'
 import type { EntityDetailsData, ExecutionLineItem } from '@/lib/api/entities'
 import type { ChallengeEntityAnalysisPageState } from './challenge-entity-analysis-page'
@@ -86,9 +90,9 @@ vi.mock('react-intersection-observer', () => ({
   } = {}) => ({
     ref: vi.fn(),
     inView:
-      rootMargin === '0px 0px 1200px 0px'
+      rootMargin === DEFAULT_PREFETCH_MARGIN
         ? deferredSectionInViewState.prefetch
-        : rootMargin === '0px 0px 500px 0px'
+        : rootMargin === DEFAULT_RENDER_MARGIN
           ? deferredSectionInViewState.render
           : true,
   }),

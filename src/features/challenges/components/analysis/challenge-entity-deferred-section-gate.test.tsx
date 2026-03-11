@@ -1,6 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { DeferredSectionGate } from './challenge-entity-deferred-section-gate'
+import {
+  DEFAULT_PREFETCH_MARGIN,
+  DEFAULT_RENDER_MARGIN,
+  DeferredSectionGate,
+} from './challenge-entity-deferred-section-gate'
 
 const deferredSectionInViewState = {
   prefetch: false,
@@ -15,9 +19,9 @@ vi.mock('react-intersection-observer', () => ({
   } = {}) => ({
     ref: vi.fn(),
     inView:
-      rootMargin === '0px 0px 1200px 0px'
+      rootMargin === DEFAULT_PREFETCH_MARGIN
         ? deferredSectionInViewState.prefetch
-        : rootMargin === '0px 0px 500px 0px'
+        : rootMargin === DEFAULT_RENDER_MARGIN
           ? deferredSectionInViewState.render
           : false,
   }),
