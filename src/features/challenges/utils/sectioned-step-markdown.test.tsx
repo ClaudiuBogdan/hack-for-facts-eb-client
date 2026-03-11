@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
+  buildChallengeStepSectionRequestId,
   parseSectionedChallengeStep,
   transformSectionedChallengeStepSource,
-} from './sectioned-step-markdown'
+} from './sectioned-step-markdown.build'
 
 describe('parseSectionedChallengeStep', () => {
   it('splits sectioned content by top-level h2 headings and preserves intro content', () => {
@@ -88,7 +89,10 @@ stepType: sectioned
   })
 
   it('injects a challengeSections export for sectioned steps', () => {
-    const transformed = transformSectionedChallengeStepSource(`---
+    const filePath = '/src/content/challenges/steps/test-step/index.en.mdx'
+    const transformed = transformSectionedChallengeStepSource({
+      filePath,
+      source: `---
 title: Exported step
 stepType: sectioned
 ---
@@ -100,13 +104,17 @@ Intro paragraph.
 ## First section
 
 Body.
-`)
+`,
+    })
 
     expect(transformed.didTransform).toBe(true)
     expect(transformed.sections).toHaveLength(2)
+    expect(transformed.source).toContain(
+      `import ChallengeStepSection0 from "${buildChallengeStepSectionRequestId(filePath, 0)}"`,
+    )
     expect(transformed.source).toContain('export const challengeSections =')
     expect(transformed.source).toContain('stepType: sectioned')
-    expect(transformed.source).toContain('"id": "intro"')
-    expect(transformed.source).toContain('"title": "First section"')
+    expect(transformed.source).toContain('Component: ChallengeStepSection0')
+    expect(transformed.source).not.toContain('"bodySource"')
   })
 })

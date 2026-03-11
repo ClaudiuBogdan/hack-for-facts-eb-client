@@ -15,7 +15,12 @@ import tailwindcss from "@tailwindcss/vite";
 import { lingui } from "@lingui/vite-plugin";
 import { nitro } from "nitro/vite";
 import fs from "fs";
-import { transformSectionedChallengeStepSource } from "./src/features/challenges/utils/sectioned-step-markdown";
+import {
+  buildChallengeStepSectionRequestId,
+  isChallengeStepMdxFile,
+  parseChallengeStepSectionRequestId,
+  transformSectionedChallengeStepSource,
+} from "./src/features/challenges/utils/sectioned-step-markdown.build";
 
 const getHttpsConfig = () => {
   if (String(process.env.HTTPS_ENABLED) !== "true") {
@@ -60,16 +65,43 @@ const esmExtensionFixesPlugin = () => ({
 const challengeStepSectionsPlugin = () => ({
   name: "challenge-step-sections",
   enforce: "pre" as const,
-  transform(code: string, id: string) {
-    const normalizedId = id.replace(/\\/g, "/");
-    if (!normalizedId.match(/\/src\/content\/challenges\/steps\/.+\/index\.(en|ro)\.mdx$/)) {
+  load(id: string) {
+    const sectionRequest = parseChallengeStepSectionRequestId(id);
+    if (!sectionRequest) {
       return null;
     }
 
-    const transformed = transformSectionedChallengeStepSource(code);
+    return challengeStepSectionSources.get(
+      buildChallengeStepSectionRequestId(
+        sectionRequest.filePath,
+        sectionRequest.sectionIndex,
+      ),
+    ) ?? null;
+  },
+  transform(code: string, id: string) {
+    if (parseChallengeStepSectionRequestId(id)) {
+      return null;
+    }
+
+    const normalizedId = id.replace(/\\/g, "/");
+    if (!isChallengeStepMdxFile(normalizedId)) {
+      return null;
+    }
+
+    const transformed = transformSectionedChallengeStepSource({
+      source: code,
+      filePath: normalizedId,
+    });
     if (!transformed.didTransform) {
       return null;
     }
+
+    transformed.sections.forEach((section, sectionIndex) => {
+      challengeStepSectionSources.set(
+        buildChallengeStepSectionRequestId(normalizedId, sectionIndex),
+        section.bodySource,
+      );
+    });
 
     return {
       code: transformed.source,
@@ -77,6 +109,8 @@ const challengeStepSectionsPlugin = () => ({
     };
   },
 });
+
+const challengeStepSectionSources = new Map<string, string>();
 
 
 export default defineConfig(({ mode }) => {
