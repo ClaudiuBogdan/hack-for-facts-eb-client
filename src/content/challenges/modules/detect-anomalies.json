@@ -1,6 +1,7 @@
 {
   "id": "detect-anomalies",
   "slug": "detect-anomalies",
+  "order": 4,
   "difficulty": "advanced",
   "title": {
     "en": "Detect Budget Anomalies",

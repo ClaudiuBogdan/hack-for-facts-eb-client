@@ -15,7 +15,13 @@ const moduleFiles: Record<string, RawModule> = import.meta.glob(
 export function getChallengeModules(): readonly ChallengeModuleDefinition[] {
   return Object.values(moduleFiles)
     .map((m) => ChallengeModuleDefinitionSchema.parse(m.default))
-    .sort((a, b) => a.id.localeCompare(b.id))
+    .sort((leftModule, rightModule) => {
+      if (leftModule.order !== rightModule.order) {
+        return leftModule.order - rightModule.order
+      }
+
+      return leftModule.id.localeCompare(rightModule.id)
+    })
 }
 
 export function getChallengeModuleBySlug(

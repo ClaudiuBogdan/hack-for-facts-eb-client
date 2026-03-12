@@ -77,6 +77,33 @@ export function capitalize(str: string) {
   return str.toLocaleLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
+function createSeededRandomGenerator(seed: number): () => number {
+  let currentSeed = Math.abs(Math.trunc(seed)) || 1;
+
+  return () => {
+    currentSeed = (currentSeed * 1664525 + 1013904223) % 4294967296;
+    return currentSeed / 4294967296;
+  };
+}
+
+export function shuffleArray<T>(items: readonly T[], seed?: number): T[] {
+  const shuffledItems = [...items];
+  const random =
+    typeof seed === 'number' && Number.isFinite(seed)
+      ? createSeededRandomGenerator(seed)
+      : Math.random;
+
+  for (let index = shuffledItems.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [shuffledItems[index], shuffledItems[swapIndex]] = [
+      shuffledItems[swapIndex],
+      shuffledItems[index],
+    ];
+  }
+
+  return shuffledItems;
+}
+
 export function convertDaysToMs(days: number): number {
   return days * 24 * 60 * 60 * 1000;
 }

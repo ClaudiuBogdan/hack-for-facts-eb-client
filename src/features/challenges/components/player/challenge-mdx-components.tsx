@@ -76,6 +76,24 @@ const QuickLinks = createLazyComponent(() =>
   })),
 )
 
+const BudgetCodeAnchors = createLazyComponent(() =>
+  import('@/features/challenges/components/interactive/BudgetCodeAnchors').then((module) => ({
+    default: module.BudgetCodeAnchors,
+  })),
+)
+
+const BudgetCodeAnatomy = createLazyComponent(() =>
+  import('@/features/challenges/components/interactive/BudgetCodeAnatomy').then((module) => ({
+    default: module.BudgetCodeAnatomy,
+  })),
+)
+
+const BudgetChapterHierarchy = createLazyComponent(() =>
+  import('@/features/challenges/components/interactive/BudgetChapterHierarchy').then((module) => ({
+    default: module.BudgetChapterHierarchy,
+  })),
+)
+
 export function buildChallengeMdxComponents(
   params: BuildChallengeMdxComponentsParams,
 ): MDXComponents {
@@ -87,6 +105,9 @@ export function buildChallengeMdxComponents(
     ExpandableHint,
     Sources,
     QuickLinks,
+    BudgetCodeAnchors,
+    BudgetCodeAnatomy,
+    BudgetChapterHierarchy,
     ...(params.customComponents ?? {}),
   }
 }

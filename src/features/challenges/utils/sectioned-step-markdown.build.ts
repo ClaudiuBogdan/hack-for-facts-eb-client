@@ -7,6 +7,7 @@ import remarkStringify from 'remark-stringify'
 import { unified } from 'unified'
 import type {
   ChallengeStepFrontmatter,
+  ChallengeStepLessonChallengeDescriptor,
   ChallengeStepSectionMeta,
 } from '../types'
 import type { ChallengeStepSectionInteractive } from './sectioned-step-markdown'
@@ -113,6 +114,29 @@ function isSupportedInteractiveNode(node: RootContent): node is MdxJsxNode {
   return node.name === 'Quiz'
 }
 
+const DYNAMIC_QUIZ_STAGES = new Set(['expenses-quiz', 'income-quiz', 'county-quiz'])
+
+function hasDynamicQuizStageNode(nodes: readonly RootContent[]): boolean {
+  return nodes.some((node) => {
+    if (node.type !== 'mdxJsxFlowElement' && node.type !== 'mdxJsxTextElement') {
+      return false
+    }
+
+    const jsxNode = node as MdxJsxNode
+    if (jsxNode.name !== 'LessonBudgetContextFlow') return false
+
+    const stageAttr = (jsxNode.attributes ?? []).find(
+      (a) => a.type === 'mdxJsxAttribute' && a.name === 'stage',
+    )
+
+    return (
+      stageAttr !== undefined &&
+      typeof stageAttr.value === 'string' &&
+      DYNAMIC_QUIZ_STAGES.has(stageAttr.value)
+    )
+  })
+}
+
 function isIgnoredSectionNode(node: RootContent): node is MdxJsxNode {
   if (node.type !== 'mdxJsxFlowElement' && node.type !== 'mdxJsxTextElement') {
     return false
@@ -202,6 +226,150 @@ function extractInteractive(node: MdxJsxNode): ChallengeStepSectionInteractive |
   return null
 }
 
+function buildLessonChallengeDescriptorKey(
+  descriptor: ChallengeStepLessonChallengeDescriptor,
+): string {
+  return descriptor.kind === 'fixed'
+    ? `fixed:${descriptor.id}`
+    : `step:${descriptor.prefix}`
+}
+
+function dedupeLessonChallengeDescriptors(
+  descriptors: readonly ChallengeStepLessonChallengeDescriptor[],
+): readonly ChallengeStepLessonChallengeDescriptor[] {
+  const seenDescriptorKeys = new Set<string>()
+
+  return descriptors.filter((descriptor) => {
+    const descriptorKey = buildLessonChallengeDescriptorKey(descriptor)
+    if (seenDescriptorKeys.has(descriptorKey)) {
+      return false
+    }
+
+    seenDescriptorKeys.add(descriptorKey)
+    return true
+  })
+}
+
+function extractLessonChallengeDescriptors(
+  nodes: readonly RootContent[],
+): readonly ChallengeStepLessonChallengeDescriptor[] {
+  const descriptors: ChallengeStepLessonChallengeDescriptor[] = []
+
+  for (const node of nodes) {
+    if (node.type !== 'mdxJsxFlowElement' && node.type !== 'mdxJsxTextElement') {
+      continue
+    }
+
+    const jsxNode = node as MdxJsxNode
+    const props = getAttributeMap(jsxNode)
+
+    if (jsxNode.name === 'Quiz') {
+      const quizId = typeof props.id === 'string' ? props.id.trim() : ''
+      if (quizId.length > 0) {
+        descriptors.push({
+          kind: 'fixed',
+          id: `quiz:${quizId}`,
+        })
+      }
+      continue
+    }
+
+    if (jsxNode.name === 'LessonEntitySnapshot') {
+      descriptors.push({
+        kind: 'step',
+        prefix: 'lesson-entity-snapshot',
+      })
+      continue
+    }
+
+    if (jsxNode.name === 'LessonBudgetEstimate') {
+      const metric =
+        props.metric === 'expenses' ? 'expenses' : 'income'
+      descriptors.push({
+        kind: 'fixed',
+        id: `quiz:lesson-budget-estimate-${metric}`,
+      })
+      continue
+    }
+
+    if (jsxNode.name === 'LessonGroupedExplorer') {
+      descriptors.push({
+        kind: 'fixed',
+        id: 'quiz:lesson-grouped-explorer',
+      })
+      continue
+    }
+
+    if (jsxNode.name === 'LessonClassificationCrosswalk') {
+      descriptors.push({
+        kind: 'fixed',
+        id: 'quiz:lesson-classification-crosswalk',
+      })
+      continue
+    }
+
+    if (jsxNode.name === 'LessonExecutionTableExcerpt') {
+      descriptors.push({
+        kind: 'step',
+        prefix: 'lesson-execution-table-excerpt',
+      })
+      continue
+    }
+
+    if (jsxNode.name === 'LessonAggregateDetailedCompare') {
+      descriptors.push({
+        kind: 'step',
+        prefix: 'lesson-aggregate-detailed-compare',
+      })
+      continue
+    }
+
+    if (jsxNode.name === 'LessonAggregateDetailedQuiz') {
+      descriptors.push({
+        kind: 'fixed',
+        id: 'quiz:lesson-aggregate-detailed-interpretation',
+      })
+      continue
+    }
+
+    if (jsxNode.name === 'LessonEntityDataQuiz') {
+      const variant =
+        typeof props.variant === 'string' && props.variant.trim().length > 0
+          ? props.variant.trim()
+          : 'top-income'
+      descriptors.push({
+        kind: 'fixed',
+        id: `quiz:lesson-entity-quiz-${variant}`,
+      })
+      continue
+    }
+
+    if (jsxNode.name === 'LessonBudgetContextFlow') {
+      const stage =
+        typeof props.stage === 'string' ? props.stage.trim() : ''
+
+      if (stage === 'expenses-quiz') {
+        descriptors.push({
+          kind: 'fixed',
+          id: 'quiz:lesson-budget-context-expenses',
+        })
+      } else if (stage === 'income-quiz') {
+        descriptors.push({
+          kind: 'fixed',
+          id: 'quiz:lesson-budget-context-income',
+        })
+      } else if (stage === 'county-quiz') {
+        descriptors.push({
+          kind: 'fixed',
+          id: 'quiz:lesson-budget-context-county-top',
+        })
+      }
+    }
+  }
+
+  return dedupeLessonChallengeDescriptors(descriptors)
+}
+
 function stringifyNodes(nodes: readonly RootContent[]): string {
   return stringifyProcessor
     .stringify({
@@ -227,6 +395,7 @@ function createBuildSection(params: {
 
   const normalizedTitle = normalizeInlineText(params.title)
   const safeTitle = normalizedTitle
+  const lessonChallengeDescriptors = extractLessonChallengeDescriptors(nodes)
   const baseId =
     baseIdOverride ??
     (section.isIntro
@@ -236,6 +405,10 @@ function createBuildSection(params: {
   return {
     id: dedupeSectionId(baseId, seenIds),
     title: safeTitle,
+    ...(hasDynamicQuizStageNode(nodes) ? { hideSectionTitle: true } : {}),
+    ...(lessonChallengeDescriptors.length > 0
+      ? { lessonChallengeDescriptors }
+      : {}),
     bodySource,
     interactive,
   }
@@ -390,8 +563,8 @@ function formatSectionExportEntry(
 ): string {
   return `  {
     id: ${JSON.stringify(section.id)},
-    title: ${JSON.stringify(section.title)},
-    interactive: ${JSON.stringify(section.interactive)},
+    title: ${JSON.stringify(section.title)},${section.hideSectionTitle ? `\n    hideSectionTitle: true,` : ''}
+    ${section.lessonChallengeDescriptors ? `lessonChallengeDescriptors: ${JSON.stringify(section.lessonChallengeDescriptors)},\n    ` : ''}interactive: ${JSON.stringify(section.interactive)},
     Component: ${getSectionComponentImportName(sectionIndex)},
   }`
 }

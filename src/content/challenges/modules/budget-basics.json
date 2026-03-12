@@ -1,6 +1,7 @@
 {
   "id": "budget-basics",
   "slug": "budget-basics",
+  "order": 1,
   "difficulty": "beginner",
   "title": {
     "en": "Budget Basics",

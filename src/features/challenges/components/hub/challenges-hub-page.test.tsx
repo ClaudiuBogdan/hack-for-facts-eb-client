@@ -235,6 +235,12 @@ describe('ChallengesHubPage', () => {
       'ch-budget-basics-04-budget-line': 'completed',
       'ch-budget-basics-05-functional-vs-economic': 'completed',
       'ch-budget-basics-06-functioning-vs-development': 'completed',
+      'ch-read-local-execution-01-why-execution-matters': 'completed',
+      'ch-read-local-execution-02-total-budget-context': 'completed',
+      'ch-read-local-execution-03-follow-money': 'completed',
+      'ch-read-local-execution-04-functional-economic': 'completed',
+      'ch-read-local-execution-05-read-execution-table': 'completed',
+      'ch-read-local-execution-06-main-creditor-questions': 'completed',
       'ch-compare-01-select-years': 'completed',
       'ch-compare-02-spot-changes': 'completed',
       'ch-compare-03-inflation': 'completed',
@@ -247,19 +253,12 @@ describe('ChallengesHubPage', () => {
       'ch-anomaly-04-pick-anomaly': 'completed',
       'ch-anomaly-05-gather-evidence': 'completed',
       'ch-anomaly-06-write-report': 'completed',
-      'ch-explore-01-find-budget': 'completed',
-      'ch-explore-02-budget-overview': 'completed',
-      'ch-explore-03-revenue-sources': 'completed',
-      'ch-explore-04-functional-class': 'completed',
-      'ch-explore-05-economic-class': 'completed',
-      'ch-explore-06-treemap-basics': 'completed',
-      'ch-explore-07-drill-down': 'completed',
     }
 
     render(<ChallengesHubPage entityCui="12345678" locale="ro" />)
 
     expect(screen.getByTestId('module-card-active')).toHaveTextContent(
-      'active:explore-budgets',
+      'active:detect-anomalies',
     )
     expect(screen.queryByText('Congratulations!')).not.toBeInTheDocument()
   })
@@ -289,7 +288,7 @@ describe('ChallengesHubPage', () => {
     render(<ChallengesHubPage entityCui="12345678" locale="ro" />)
 
     expect(screen.getByTestId('module-card-active')).toHaveTextContent(
-      'active:compare-budgets',
+      'active:read-local-execution',
     )
     expect(screen.queryByText('Congratulations!')).not.toBeInTheDocument()
   })

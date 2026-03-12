@@ -5,6 +5,7 @@ function createValidModule() {
   return {
     id: 'explore-budgets',
     slug: 'explore-budgets',
+    order: 2,
     difficulty: 'beginner',
     title: {
       en: 'Explore budgets',
@@ -48,6 +49,19 @@ function createValidModule() {
 describe('challenge-definitions schema', () => {
   it('accepts valid challenge module definitions', () => {
     expect(() => ChallengeModuleDefinitionSchema.parse(createValidModule())).not.toThrow()
+  })
+
+  it('rejects missing or invalid order values', () => {
+    const invalidModule = {
+      ...createValidModule(),
+      order: 0,
+    }
+
+    const result = ChallengeModuleDefinitionSchema.safeParse(invalidModule)
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues.some((issue) => issue.path.join('.') === 'order')).toBe(true)
+    }
   })
 
   it('rejects step ids that do not use ch- prefix', () => {

@@ -1,0 +1,57 @@
+---
+title: "Cum cobori de la total la capitole"
+stepType: "sectioned"
+---
+# Cum cobori de la total la capitole
+
+## De la sumă mare la structură
+
+Bugetul și execuția folosesc o logică în cascadă. Vezi întâi totalul, apoi capitolele mari, apoi subcapitolele, apoi linii tot mai detaliate.
+
+Asta înseamnă că o sumă se poate repeta în mai multe locuri fără să fie o dublare reală. De cele mai multe ori, repetarea arată trecerea de la imaginea de ansamblu la detaliu.
+
+<BudgetCodeAnatomy />
+
+## Cum se ramifica codurile de capitol
+
+Un cod de capitol cu doua cifre, cum este **65** (Invatamant), nu este o singura linie. El se imparte in subcapitole (65.03, 65.04...) si apoi in paragrafe (65.03.01, 65.03.02...). Fiecare nivel adauga precizie: capitolul este tema, subcapitolul restrange zona, iar paragraful identifica programul sau activitatea exacta.
+
+Arborele arata aceasta ramificare pentru Invatamant. Orice capitol de cheltuieli sau venituri dintr-un buget local urmeaza acelasi tipar.
+
+<BudgetChapterHierarchy />
+
+## Venituri: distributia nationala a UAT-urilor
+
+Acest tabel arata cum se impart principalele capitole de venituri la nivelul tuturor administratiilor locale din Romania. Foloseste-l ca sa intelegi ponderea tipica a fiecarei surse de venit inainte sa compari cu entitatea selectata.
+
+<BudgetCodeAnchors group="income-functional" section={0} part="national" />
+
+## UAT-ul tau: venituri
+
+Aceasta este structura live a veniturilor pentru primaria selectata. Compar-o cu distributia nationala ca sa vezi unde se situeaza localitatea ta.
+
+<BudgetCodeAnchors group="income-functional" section={0} part="grouped" />
+
+## Cheltuieli pe domenii: distributia nationala
+
+Aceeasi logica se aplica cheltuielilor. Acest tabel arata cum se distribuie capitolele functionale de cheltuieli la nivelul tuturor UAT-urilor. Cele mai mari domenii sunt de obicei sanatatea, transportul, asistenta sociala si invatamantul.
+
+<BudgetCodeAnchors group="income-functional" section={1} part="national" />
+
+## UAT-ul tau: cheltuieli grupate pe capitole functionale
+
+Aceasta este gruparea live a cheltuielilor functionale pentru primaria selectata. Vezi care domenii ocupa cea mai mare pondere fata de imaginea nationala.
+
+<BudgetCodeAnchors group="income-functional" section={1} part="grouped" />
+
+## Test: capitolul de venituri dominant
+
+Deschide pagina de analiza a entitatii si gaseste capitolul de venituri cu cea mai mare valoare executata. Foloseste linkul de mai jos pentru a verifica datele, apoi raspunde la intrebare.
+
+<LessonEntityDataQuiz variant="top-income" />
+
+## Test: domeniul de cheltuieli dominant
+
+Acum priveste partea de cheltuieli. Care domeniu functional ocupa cea mai mare pondere din bugetul executat? Verifica pe pagina entitatii inainte sa raspunzi.
+
+<LessonEntityDataQuiz variant="top-expense" />

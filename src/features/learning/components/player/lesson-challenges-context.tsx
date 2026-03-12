@@ -43,6 +43,7 @@ export function useLessonChallenges() {
 
   if (!context) {
     return {
+      challenges: {} as LessonChallengesState,
       hasChallenges: false,
       totalChallenges: 0,
       completedChallenges: 0,
@@ -55,6 +56,7 @@ export function useLessonChallenges() {
   const hasChallenges = totalChallenges > 0
 
   return {
+    challenges: context.challenges,
     hasChallenges,
     totalChallenges,
     completedChallenges,

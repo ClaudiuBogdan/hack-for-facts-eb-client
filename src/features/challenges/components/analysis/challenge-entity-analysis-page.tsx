@@ -34,6 +34,7 @@ import { useGlobalSettings } from '@/lib/hooks/useGlobalSettings'
 import {
   useEntityDetails,
   useEntityExecutionLineItems,
+  useEntityRelationships,
   reportsConnectionQueryOptions,
 } from '@/lib/hooks/useEntityDetails'
 import type { NormalizationOptions } from '@/lib/normalization'
@@ -1034,6 +1035,9 @@ export function ChallengeEntityAnalysisPage({
     }),
     placeholderData: (previousData) => previousData,
   })
+  const entityRelationshipsQuery = useEntityRelationships({
+    cui: entityCui,
+  })
 
   const isInitialLoading =
     (entityDetailsQuery.isLoading && !entityDetailsQuery.data) ||
@@ -1141,6 +1145,8 @@ export function ChallengeEntityAnalysisPage({
   )
   const totalSubordinateCount =
     subordinateRankingQuery.data?.pageInfo?.totalCount ?? 0
+  const hasLinkedSubordinates =
+    (entityRelationshipsQuery.data?.children?.length ?? 0) > 0
 
   const summaryTrends = useMemo(
     () => ({
@@ -1727,6 +1733,7 @@ export function ChallengeEntityAnalysisPage({
 
   const handleSubordinatesRetry = () => {
     void subordinateRankingQuery.refetch()
+    void entityRelationshipsQuery.refetch()
   }
 
   const handleCategoryEvolutionPrefetch = useCallback(() => {
@@ -1939,9 +1946,23 @@ export function ChallengeEntityAnalysisPage({
       visibleTreemapNodes,
     ],
   )
+  const hasVisibleSubordinateCards = subordinateCards.length > 0
   const isSubordinatesSectionLoading =
-    subordinateRankingQuery.isLoading && !subordinateRankingQuery.data
-  const isSubordinatesSectionError = subordinateRankingQuery.isError
+    (
+      subordinateRankingQuery.isLoading &&
+      !subordinateRankingQuery.data
+    ) ||
+    (
+      !hasVisibleSubordinateCards &&
+      entityRelationshipsQuery.isLoading &&
+      !entityRelationshipsQuery.data
+    )
+  const isSubordinatesSectionError =
+    subordinateRankingQuery.isError ||
+    (
+      !hasVisibleSubordinateCards &&
+      entityRelationshipsQuery.isError
+    )
 
   const renderActiveView = () => {
     switch (activeView) {
@@ -2337,6 +2358,7 @@ export function ChallengeEntityAnalysisPage({
               onRetry={handleSubordinatesRetry}
               normalizationOptions={displayNormalizationOptions}
               showAllSearch={showAllSubordinatesSearch}
+              emptyStateKind={hasLinkedSubordinates ? 'spending' : 'children'}
             />
 
             <DeferredSectionGate

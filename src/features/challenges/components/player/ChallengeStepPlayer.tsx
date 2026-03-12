@@ -4,6 +4,7 @@ import { t } from '@lingui/core/macro'
 import { BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { LessonChallengesProvider } from '@/features/learning/components/player/lesson-challenges-context'
 import { prefetchChallengeStepContent, useChallengeStepContent } from '../../hooks/use-challenge-step-content'
 import { useChallengeAccess } from '../../hooks/use-challenge-access'
 import type { ChallengeLocale, ChallengeStepDefinition } from '../../types'
@@ -18,6 +19,7 @@ import { ChallengeStepArticleLayout } from './challenge-step-article-layout'
 import { useChallengeStepMdxComponents } from './challenge-step-mdx-wrappers'
 import type { ChallengeStepViewMode, MdxContentProps } from './challenge-step-player.shared'
 import { resolveChallengeStepViewMode } from './challenge-step-player.utils'
+import { SectionDynamicInteractiveProvider } from './section-dynamic-interactive-context'
 import { SectionedStepFooter } from './sectioned-step-footer'
 import { SectionedStepHeader } from './sectioned-step-header'
 import { SectionedStepViewport } from './sectioned-step-viewport'
@@ -122,6 +124,58 @@ function ChallengeSectionedStepRenderer({
   isSubmitting,
   onRegister,
 }: ChallengeSectionedStepRendererProps) {
+  return (
+    <LessonChallengesProvider>
+      <ChallengeSectionedStepRendererBody
+        entityCui={entityCui}
+        locale={locale}
+        moduleSlug={moduleSlug}
+        currentSearchSectionId={currentSearchSectionId}
+        currentViewMode={currentViewMode}
+        onSectionChange={onSectionChange}
+        onViewModeChange={onViewModeChange}
+        stepId={stepId}
+        stepTitle={stepTitle}
+        stepCompletionMode={stepCompletionMode}
+        fullArticleComponent={fullArticleComponent}
+        articleMdxComponents={articleMdxComponents}
+        articleExtraContent={articleExtraContent}
+        prev={prev}
+        sections={sections}
+        next={next}
+        findChallengeSlugForAdjacentStep={findChallengeSlugForAdjacentStep}
+        accessCardVariant={accessCardVariant}
+        isAccessGranted={isAccessGranted}
+        isSubmitting={isSubmitting}
+        onRegister={onRegister}
+      />
+    </LessonChallengesProvider>
+  )
+}
+
+function ChallengeSectionedStepRendererBody({
+  entityCui,
+  locale,
+  moduleSlug,
+  currentSearchSectionId,
+  currentViewMode,
+  onSectionChange,
+  onViewModeChange,
+  stepId,
+  stepTitle,
+  stepCompletionMode,
+  fullArticleComponent,
+  articleMdxComponents,
+  articleExtraContent,
+  prev,
+  sections,
+  next,
+  findChallengeSlugForAdjacentStep,
+  accessCardVariant,
+  isAccessGranted,
+  isSubmitting,
+  onRegister,
+}: ChallengeSectionedStepRendererProps) {
   const sectionedPlayer = useSectionedStepPlayer({
     entityCui,
     locale,
@@ -199,17 +253,22 @@ function ChallengeSectionedStepRenderer({
         stepTitle={stepTitle}
       />
 
-      <SectionedStepViewport
-        stepTitle={stepTitle}
-        headerTitle={sectionedPlayer.headerTitle}
-        hasPreviousSection={sectionedPlayer.hasPreviousSection}
-        hasNextSection={sectionedPlayer.hasNextSection}
-        onGoToPreviousSection={sectionedPlayer.handleGoToPreviousSection}
-        onGoToNextSection={sectionedPlayer.handleGoToNextSection}
-        CurrentSectionComponent={sectionedPlayer.currentSectionComponent}
-        mdxComponents={sectionedPlayer.sectionedMdxComponents}
-        scrollAreaRef={sectionedPlayer.scrollAreaRef}
-      />
+      <SectionDynamicInteractiveProvider
+        activeSectionId={sectionedPlayer.currentSectionId}
+        setInteractiveState={sectionedPlayer.setDynamicInteractiveState}
+      >
+        <SectionedStepViewport
+          stepTitle={stepTitle}
+          headerTitle={sectionedPlayer.headerTitle}
+          hasPreviousSection={sectionedPlayer.hasPreviousSection}
+          hasNextSection={sectionedPlayer.hasNextSection}
+          onGoToPreviousSection={sectionedPlayer.handleGoToPreviousSection}
+          onGoToNextSection={sectionedPlayer.handleGoToNextSection}
+          CurrentSectionComponent={sectionedPlayer.currentSectionComponent}
+          mdxComponents={sectionedPlayer.sectionedMdxComponents}
+          scrollAreaRef={sectionedPlayer.scrollAreaRef}
+        />
+      </SectionDynamicInteractiveProvider>
 
       <SectionedStepFooter
         footerState={sectionedPlayer.footerState}
@@ -250,6 +309,7 @@ function ChallengeStepContentRenderer({
     sectionedArticleMdxComponents,
     syntheticMarkComplete,
   } = useChallengeStepMdxComponents({
+    entityCui,
     stepId,
     locale,
     accessCardVariant,

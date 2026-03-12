@@ -12,11 +12,16 @@ import {
   useLessonCompletion,
   useQuizInteraction,
 } from '@/features/learning/hooks/use-learning-interactions'
+import { useLessonChallenges } from '@/features/learning/components/player/lesson-challenges-context'
 import type { ChallengeLocale, ChallengeStepDefinition } from '../../types'
 import type { ChallengeAccessCardVariant } from '../../hooks/use-challenge-access'
-import type { ChallengeStepSection } from '../../utils/sectioned-step-markdown'
+import {
+  resolveChallengeStepLessonChallengeIds,
+  type ChallengeStepSection,
+} from '../../utils/sectioned-step-markdown'
 import { buildCampaignProvocariPath } from '../../constants'
 import { ChallengeInteractionAccessReplacement, useSectionedStepMdxComponents } from './challenge-step-mdx-wrappers'
+import type { RegisteredDynamicSectionInteractiveState } from './section-dynamic-interactive-context'
 import type {
   ChallengeStepViewMode,
   MdxContentProps,
@@ -25,11 +30,15 @@ import type {
 } from './challenge-step-player.shared'
 import {
   EMPTY_QUIZ_OPTIONS,
+  applySectionedStepProgressGate,
   buildAdjacentStepHref,
   clearChallengeStepSearch,
   resolveSectionedBackTarget,
   resolveSectionFooterState,
+  type SectionLessonChallengeProgress,
 } from './challenge-step-player.utils'
+
+const EMPTY_LESSON_CHALLENGE_IDS: readonly string[] = []
 
 type UseSectionedStepPlayerParams = {
   readonly entityCui: string
@@ -55,6 +64,7 @@ type UseSectionedStepPlayerParams = {
 
 type UseSectionedStepPlayerResult = {
   readonly currentSection: ChallengeStepSection | null
+  readonly currentSectionId: string | null
   readonly currentSectionComponent: ComponentType<MdxContentProps> | null
   readonly currentSectionIndex: number
   readonly headerTitle: string | null
@@ -69,6 +79,9 @@ type UseSectionedStepPlayerResult = {
   readonly handleGoToNextSection: () => void
   readonly handleSkip: () => void
   readonly handlePrimaryAction: () => void
+  readonly setDynamicInteractiveState: (
+    state: RegisteredDynamicSectionInteractiveState | null,
+  ) => void
 }
 
 export function useSectionedStepPlayer({
@@ -94,7 +107,15 @@ export function useSectionedStepPlayer({
   const [fallbackSectionId, setFallbackSectionId] = useState<string | undefined>(undefined)
   const [pendingQuizOptionId, setPendingQuizOptionId] = useState<string | null>(null)
   const [isSubmittingQuizAnswer, setIsSubmittingQuizAnswer] = useState(false)
+  const [dynamicInteractiveState, setDynamicInteractiveStateState] =
+    useState<RegisteredDynamicSectionInteractiveState | null>(null)
+  const [visitedSectionIds, setVisitedSectionIds] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  )
+  const [sectionChallengeProgressById, setSectionChallengeProgressById] =
+    useState<Record<string, SectionLessonChallengeProgress>>({})
   const { markComplete } = useLessonCompletion({ contentId: stepId, contentVersion: 'v1' })
+  const { challenges: currentLessonChallenges } = useLessonChallenges()
   const resolvedSectionId = currentSearchSectionId ?? fallbackSectionId
 
   const currentSectionIndex = useMemo(() => {
@@ -109,6 +130,74 @@ export function useSectionedStepPlayer({
   const previousSection = currentSectionIndex > 0 ? sections[currentSectionIndex - 1] : null
   const nextSection = currentSectionIndex < sections.length - 1 ? sections[currentSectionIndex + 1] : null
   const quizInteractive = currentInteractive?.kind === 'quiz' ? currentInteractive : null
+  const trackedLessonChallengeIdsBySectionId = useMemo(
+    () =>
+      sections.reduce<Record<string, readonly string[]>>((trackedIds, section) => {
+        const resolvedLessonChallengeIds =
+          resolveChallengeStepLessonChallengeIds({
+            descriptors: section.lessonChallengeDescriptors,
+            stepId,
+          })
+        const inlineQuizChallengeId =
+          section.interactive?.kind === 'quiz'
+            ? `quiz:${section.interactive.id}`
+            : null
+        const isPureInlineQuizSection =
+          inlineQuizChallengeId !== null &&
+          resolvedLessonChallengeIds.length === 1 &&
+          resolvedLessonChallengeIds[0] === inlineQuizChallengeId
+
+        trackedIds[section.id] = isPureInlineQuizSection
+          ? EMPTY_LESSON_CHALLENGE_IDS
+          : resolvedLessonChallengeIds
+
+        return trackedIds
+      }, {}),
+    [sections, stepId],
+  )
+  const currentSectionLessonChallengeIds = currentSection?.id
+    ? trackedLessonChallengeIdsBySectionId[currentSection.id] ??
+      EMPTY_LESSON_CHALLENGE_IDS
+    : EMPTY_LESSON_CHALLENGE_IDS
+  const currentSectionHasLessonChallenges =
+    currentSectionLessonChallengeIds.length > 0
+  const currentSectionAllLessonChallengesCompleted =
+    currentSectionLessonChallengeIds.every(
+      (challengeId) => currentLessonChallenges[challengeId] === true,
+    )
+  const requiredVisitedSectionIds = useMemo(
+    () =>
+      sections
+        .filter(
+          (section) =>
+            (trackedLessonChallengeIdsBySectionId[section.id]?.length ?? 0) > 0,
+        )
+        .map((section) => section.id),
+    [sections, trackedLessonChallengeIdsBySectionId],
+  )
+  const hasVisitedAllTrackedSections = useMemo(
+    () =>
+      requiredVisitedSectionIds.every((sectionId) =>
+        visitedSectionIds.has(sectionId),
+      ),
+    [requiredVisitedSectionIds, visitedSectionIds],
+  )
+  const hasTrackedLessonChallenges = useMemo(
+    () =>
+      Object.values(sectionChallengeProgressById).some(
+        (sectionProgress) => sectionProgress.hasChallenges,
+      ),
+    [sectionChallengeProgressById],
+  )
+  const allTrackedLessonChallengesCompleted = useMemo(
+    () =>
+      Object.values(sectionChallengeProgressById).every(
+        (sectionProgress) =>
+          !sectionProgress.hasChallenges ||
+          sectionProgress.allChallengesCompleted,
+      ),
+    [sectionChallengeProgressById],
+  )
 
   const changeSection = useCallback(
     (sectionId: string, options?: { readonly replace?: boolean }) => {
@@ -124,7 +213,59 @@ export function useSectionedStepPlayer({
 
   useEffect(() => {
     setFallbackSectionId(undefined)
+    setVisitedSectionIds(new Set())
+    setSectionChallengeProgressById({})
   }, [stepId])
+
+  useEffect(() => {
+    setDynamicInteractiveStateState(null)
+  }, [currentSection?.id])
+
+  useEffect(() => {
+    if (!currentSection?.id) return
+
+    setVisitedSectionIds((currentIds) => {
+      if (currentIds.has(currentSection.id)) {
+        return currentIds
+      }
+
+      const nextIds = new Set(currentIds)
+      nextIds.add(currentSection.id)
+      return nextIds
+    })
+  }, [currentSection?.id])
+
+  useEffect(() => {
+    if (!currentSection?.id) return
+
+    setSectionChallengeProgressById((currentProgress) => {
+      const nextProgress = {
+        hasChallenges: currentSectionHasLessonChallenges,
+        allChallengesCompleted:
+          !currentSectionHasLessonChallenges ||
+          currentSectionAllLessonChallengesCompleted,
+      } as const satisfies SectionLessonChallengeProgress
+      const previousProgress = currentProgress[currentSection.id]
+
+      if (
+        previousProgress &&
+        previousProgress.hasChallenges === nextProgress.hasChallenges &&
+        previousProgress.allChallengesCompleted ===
+          nextProgress.allChallengesCompleted
+      ) {
+        return currentProgress
+      }
+
+      return {
+        ...currentProgress,
+        [currentSection.id]: nextProgress,
+      }
+    })
+  }, [
+    currentSection?.id,
+    currentSectionAllLessonChallengesCompleted,
+    currentSectionHasLessonChallenges,
+  ])
 
   useEffect(() => {
     if (!currentSection) return
@@ -166,6 +307,9 @@ export function useSectionedStepPlayer({
   )
 
   const sectionedMdxComponents = useSectionedStepMdxComponents({
+    entityCui,
+    stepId,
+    locale,
     accessReplacement,
     isAccessGranted,
     pendingQuizOptionId,
@@ -189,25 +333,63 @@ export function useSectionedStepPlayer({
     isQuizPending: isSubmittingQuizAnswer,
   })
 
-  const footerState = useMemo(
-    () =>
-      resolveSectionFooterState({
-        interactive: currentInteractive,
-        isLastSection,
-        isAccessGranted,
-        isQuizPending: isSubmittingQuizAnswer,
-        quizState: {
+  const effectiveInteractive =
+    currentInteractive ??
+    (dynamicInteractiveState?.sectionId === currentSection?.id
+      ? dynamicInteractiveState.interactive
+      : null)
+  const effectiveQuizState =
+    currentInteractive?.kind === 'quiz'
+      ? {
           isAnswered: quizState.isAnswered,
           isCorrect: quizState.isCorrect,
-        },
+        }
+      : dynamicInteractiveState?.sectionId === currentSection?.id
+        ? {
+            isAnswered: dynamicInteractiveState.isAnswered,
+            isCorrect: dynamicInteractiveState.isCorrect,
+          }
+        : {
+            isAnswered: false,
+            isCorrect: false,
+          }
+  const effectiveIsQuizPending =
+    currentInteractive?.kind === 'quiz'
+      ? isSubmittingQuizAnswer
+      : dynamicInteractiveState?.sectionId === currentSection?.id
+        ? dynamicInteractiveState.isPending
+        : false
+
+  const footerState = useMemo(
+    () =>
+      applySectionedStepProgressGate({
+        baseFooterState: resolveSectionFooterState({
+          interactive: effectiveInteractive,
+          isLastSection,
+          isAccessGranted,
+          hasLessonChallenges: currentSectionHasLessonChallenges,
+          allLessonChallengesCompleted:
+            currentSectionAllLessonChallengesCompleted,
+          isQuizPending: effectiveIsQuizPending,
+          quizState: effectiveQuizState,
+        }),
+        isLastSection,
+        isAccessGranted,
+        requiredVisitedSectionIds,
+        visitedSectionIds,
+        sectionChallengeProgressById,
       }),
     [
-      currentInteractive,
+      currentSectionAllLessonChallengesCompleted,
+      currentSectionHasLessonChallenges,
+      effectiveInteractive,
+      effectiveIsQuizPending,
+      effectiveQuizState,
       isAccessGranted,
-      isSubmittingQuizAnswer,
       isLastSection,
-      quizState.isAnswered,
-      quizState.isCorrect,
+      requiredVisitedSectionIds,
+      sectionChallengeProgressById,
+      visitedSectionIds,
     ],
   )
 
@@ -215,8 +397,13 @@ export function useSectionedStepPlayer({
     if (quizInteractive) {
       await quizState.reset()
       setPendingQuizOptionId(null)
+      return
     }
-  }, [quizInteractive, quizState])
+
+    if (dynamicInteractiveState?.sectionId === currentSection?.id) {
+      await dynamicInteractiveState.reset()
+    }
+  }, [currentSection?.id, dynamicInteractiveState, quizInteractive, quizState])
 
   const handleCheck = useCallback(async () => {
     if (quizInteractive && pendingQuizOptionId) {
@@ -231,6 +418,10 @@ export function useSectionedStepPlayer({
     }
 
     if (!isAccessGranted) return
+    if (!hasVisitedAllTrackedSections) return
+    if (hasTrackedLessonChallenges && !allTrackedLessonChallengesCompleted) {
+      return
+    }
 
     await markComplete()
 
@@ -252,6 +443,9 @@ export function useSectionedStepPlayer({
     changeSection,
     entityCui,
     findChallengeSlugForAdjacentStep,
+    allTrackedLessonChallengesCompleted,
+    hasTrackedLessonChallenges,
+    hasVisitedAllTrackedSections,
     isAccessGranted,
     isLastSection,
     markComplete,
@@ -318,12 +512,42 @@ export function useSectionedStepPlayer({
     ],
   )
 
+  const setDynamicInteractiveState = useCallback(
+    (nextState: RegisteredDynamicSectionInteractiveState | null) => {
+      setDynamicInteractiveStateState((currentState) => {
+        if (currentState === nextState) {
+          return currentState
+        }
+
+        if (currentState === null || nextState === null) {
+          return nextState
+        }
+
+        const isSameInteractive =
+          currentState.sectionId === nextState.sectionId &&
+          currentState.isAnswered === nextState.isAnswered &&
+          currentState.isCorrect === nextState.isCorrect &&
+          currentState.isPending === nextState.isPending &&
+          currentState.reset === nextState.reset &&
+          currentState.interactive.id === nextState.interactive.id &&
+          currentState.interactive.question === nextState.interactive.question &&
+          currentState.interactive.explanation === nextState.interactive.explanation &&
+          currentState.interactive.options === nextState.interactive.options
+
+        return isSameInteractive ? currentState : nextState
+      })
+    },
+    [],
+  )
+
   return {
     currentSection,
+    currentSectionId: currentSection?.id ?? null,
     currentSectionComponent: currentSection?.Component ?? null,
     currentSectionIndex,
     headerTitle:
       currentSection &&
+      !currentSection.hideSectionTitle &&
       !currentSection.interactive &&
       currentSection.title.trim().length > 0 &&
       currentSection.title !== stepTitle
@@ -340,5 +564,6 @@ export function useSectionedStepPlayer({
     handleGoToNextSection,
     handleSkip,
     handlePrimaryAction,
+    setDynamicInteractiveState,
   }
 }

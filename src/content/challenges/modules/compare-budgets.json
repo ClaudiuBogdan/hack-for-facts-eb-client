@@ -1,6 +1,7 @@
 {
   "id": "compare-budgets",
   "slug": "compare-budgets",
+  "order": 3,
   "difficulty": "intermediate",
   "title": {
     "en": "Compare Budgets",

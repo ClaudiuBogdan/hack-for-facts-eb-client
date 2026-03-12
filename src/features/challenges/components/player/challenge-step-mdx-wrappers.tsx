@@ -5,6 +5,7 @@ import { useLearningProgress } from '@/features/learning/hooks/use-learning-prog
 import { Quiz } from '@/features/learning/components/assessment/Quiz'
 import { MarkComplete } from '@/features/learning/components/player/MarkComplete'
 import { useRegisterLessonChallenge } from '@/features/learning/components/player/lesson-challenges-context'
+import { buildChallengeLessonMdxComponents } from '@/features/challenges/components/interactive/challenge-lesson-mdx-components'
 import { ChallengeHubAccessCard } from '../hub/challenge-hub-access-card'
 import type { ChallengeLocale } from '../../types'
 import type { ChallengeAccessCardVariant } from '../../hooks/use-challenge-access'
@@ -13,9 +14,7 @@ import {
   type ChallengeMarkCompleteMdxProps,
   type ChallengeQuizMdxProps,
 } from './challenge-mdx-components'
-import {
-  ChallengeSectionedQuiz,
-} from './sectioned-step-interactives'
+import { ChallengeSectionedQuiz } from './sectioned-step-interactives'
 
 type ChallengeInteractionAccessReplacementProps = {
   readonly locale: ChallengeLocale
@@ -34,6 +33,7 @@ type StepQuizWrapperProps = ChallengeQuizMdxProps & {
 }
 
 type UseChallengeStepMdxComponentsParams = {
+  readonly entityCui: string
   readonly stepId: string
   readonly locale: ChallengeLocale
   readonly accessCardVariant: ChallengeAccessCardVariant | null
@@ -43,6 +43,9 @@ type UseChallengeStepMdxComponentsParams = {
 }
 
 type UseSectionedStepMdxComponentsParams = {
+  readonly entityCui: string
+  readonly stepId: string
+  readonly locale: ChallengeLocale
   readonly accessReplacement: ReactNode
   readonly isAccessGranted: boolean
   readonly pendingQuizOptionId: string | null
@@ -80,7 +83,8 @@ function StepQuizWrapper({
 }: StepQuizWrapperProps) {
   const { progress } = useLearningProgress()
   const interaction = progress.content[stepId]?.interactions?.[props.id]
-  const selectedOptionId = interaction?.kind === 'quiz' ? interaction.selectedOptionId : null
+  const selectedOptionId =
+    interaction?.kind === 'quiz' ? interaction.selectedOptionId : null
   const score = scoreSingleChoice(props.options, selectedOptionId)
   const isCompleted = score >= QUIZ_PASS_SCORE
 
@@ -101,6 +105,7 @@ function StepQuizWrapper({
 }
 
 export function useChallengeStepMdxComponents({
+  entityCui,
   stepId,
   locale,
   accessCardVariant,
@@ -145,13 +150,38 @@ export function useChallengeStepMdxComponents({
     [accessCardVariant, isAccessGranted, isSubmitting, locale, onRegister, stepId],
   )
 
+  const accessReplacement = useMemo(
+    () => (
+      <ChallengeInteractionAccessReplacement
+        locale={locale}
+        accessCardVariant={accessCardVariant}
+        isSubmitting={isSubmitting}
+        onRegister={onRegister}
+      />
+    ),
+    [accessCardVariant, isSubmitting, locale, onRegister],
+  )
+
+  const lessonCustomComponents = useMemo(
+    () =>
+      buildChallengeLessonMdxComponents({
+        entityCui,
+        stepId,
+        locale,
+        isAccessGranted,
+        accessReplacement,
+      }),
+    [accessReplacement, entityCui, isAccessGranted, locale, stepId],
+  )
+
   const articleMdxComponents = useMemo(
     () =>
       buildChallengeMdxComponents({
         QuizComponent: QuizWrapper,
         MarkCompleteComponent: MarkCompleteWrapper,
+        customComponents: lessonCustomComponents,
       }),
-    [MarkCompleteWrapper, QuizWrapper],
+    [MarkCompleteWrapper, QuizWrapper, lessonCustomComponents],
   )
 
   const sectionedArticleMdxComponents = useMemo(
@@ -159,8 +189,9 @@ export function useChallengeStepMdxComponents({
       buildChallengeMdxComponents({
         QuizComponent: QuizWrapper,
         MarkCompleteComponent: () => null,
+        customComponents: lessonCustomComponents,
       }),
-    [QuizWrapper],
+    [QuizWrapper, lessonCustomComponents],
   )
 
   const syntheticMarkComplete = useMemo(
@@ -176,6 +207,9 @@ export function useChallengeStepMdxComponents({
 }
 
 export function useSectionedStepMdxComponents({
+  entityCui,
+  stepId,
+  locale,
   accessReplacement,
   isAccessGranted,
   pendingQuizOptionId,
@@ -183,6 +217,18 @@ export function useSectionedStepMdxComponents({
   isQuizAnswered,
   isQuizPending,
 }: UseSectionedStepMdxComponentsParams): ReturnType<typeof buildChallengeMdxComponents> {
+  const lessonCustomComponents = useMemo(
+    () =>
+      buildChallengeLessonMdxComponents({
+        entityCui,
+        stepId,
+        locale,
+        isAccessGranted,
+        accessReplacement,
+      }),
+    [accessReplacement, entityCui, isAccessGranted, locale, stepId],
+  )
+
   return useMemo(
     () =>
       buildChallengeMdxComponents({
@@ -198,12 +244,14 @@ export function useSectionedStepMdxComponents({
           />
         ),
         MarkCompleteComponent: () => null,
+        customComponents: lessonCustomComponents,
       }),
     [
       accessReplacement,
       isAccessGranted,
       isQuizAnswered,
       isQuizPending,
+      lessonCustomComponents,
       onPendingQuizOptionChange,
       pendingQuizOptionId,
     ],

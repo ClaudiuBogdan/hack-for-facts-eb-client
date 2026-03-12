@@ -40,6 +40,7 @@ describe('challenge-step-content-resolver', () => {
             {
               id: 'intro',
               title: 'Intro',
+              bodySource: 'Intro copy',
               interactive: null,
               Component: IntroSectionComponent,
             },
@@ -85,6 +86,7 @@ describe('challenge-step-content-resolver', () => {
             {
               id: 'intro',
               title: 'Intro',
+              bodySource: 'Intro copy',
               interactive: null,
               Component: FallbackSectionComponent,
             },

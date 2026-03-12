@@ -9,6 +9,7 @@ import type { ChallengeModuleDefinition } from '../types'
 const testModule: ChallengeModuleDefinition = {
   id: 'module-a',
   slug: 'module-a',
+  order: 1,
   difficulty: 'beginner',
   title: {
     en: 'Module A',
@@ -89,6 +90,7 @@ const testModule: ChallengeModuleDefinition = {
 const secondTestModule: ChallengeModuleDefinition = {
   id: 'module-b',
   slug: 'module-b',
+  order: 2,
   difficulty: 'intermediate',
   title: {
     en: 'Module B',

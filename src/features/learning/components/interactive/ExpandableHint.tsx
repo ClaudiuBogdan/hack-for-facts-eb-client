@@ -16,6 +16,8 @@ type ExpandableHintProps = {
    * @default "Details"
    */
   readonly label?: string
+  /** @default false */
+  readonly defaultOpen?: boolean
   readonly children: React.ReactNode
 }
 
@@ -49,9 +51,10 @@ type ExpandableHintProps = {
 export function ExpandableHint({
   trigger,
   label = 'Details',
+  defaultOpen = false,
   children,
 }: ExpandableHintProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(defaultOpen)
 
   const displayText = trigger ?? label
   const isTriggerMode = Boolean(trigger)
@@ -80,9 +83,9 @@ export function ExpandableHint({
           isOpen && "bg-zinc-50/80 dark:bg-zinc-900/80"
         )}
       >
-        <div className="flex items-start gap-4">
+        <div className="flex items-center gap-4">
           <div className={cn(
-            "shrink-0 mt-0.5 p-2 rounded-lg transition-colors",
+            "shrink-0 p-2 rounded-lg transition-colors",
             getIconBgClass()
           )}>
             {isTriggerMode ? <Lightbulb className="w-4 h-4" /> : <Info className="w-4 h-4" />}
@@ -127,7 +130,7 @@ export function ExpandableHint({
                 : "bg-zinc-50/50 dark:bg-zinc-900/30"
             )}>
               <div className={cn(
-                "pl-[3.25rem] prose prose-zinc dark:prose-invert max-w-none",
+                "md:pl-3 prose prose-zinc dark:prose-invert max-w-none",
                 isTriggerMode 
                   ? "prose-p:text-zinc-700 dark:prose-p:text-zinc-300 prose-p:leading-relaxed" 
                   : "prose-p:text-zinc-600 dark:prose-p:text-zinc-400 prose-p:text-sm prose-p:font-mono"

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  applySectionedStepProgressGate,
   clearChallengeStepSearch,
   resolveChallengeStepViewMode,
   resolveSectionedBackTarget,
@@ -129,5 +130,119 @@ describe('challenge-step-player.utils', () => {
       primaryDisabled: true,
       showSkip: true,
     })
+  })
+
+  it('blocks finishing when lesson challenges are incomplete on the last section', () => {
+    expect(
+      resolveSectionFooterState({
+        interactive: null,
+        isLastSection: true,
+        isAccessGranted: true,
+        hasLessonChallenges: true,
+        allLessonChallengesCompleted: false,
+        isQuizPending: false,
+        quizState: {
+          isAnswered: false,
+          isCorrect: false,
+        },
+      }),
+    ).toEqual({
+      tone: 'neutral',
+      message: 'Complete the activity in this step before finishing.',
+      primaryLabel: 'Complete the activity',
+      primaryAction: 'advance',
+      primaryDisabled: true,
+      showSkip: false,
+    })
+  })
+
+  it('blocks finishing until every section was visited', () => {
+    expect(
+      applySectionedStepProgressGate({
+        baseFooterState: {
+          tone: 'success',
+          message: 'Done.',
+          primaryLabel: 'Finish',
+          primaryAction: 'advance',
+          primaryDisabled: false,
+          showSkip: false,
+        },
+        isLastSection: true,
+        isAccessGranted: true,
+        requiredVisitedSectionIds: ['compare'],
+        visitedSectionIds: new Set(['intro', 'summary']),
+        sectionChallengeProgressById: {},
+      }),
+    ).toEqual({
+      tone: 'neutral',
+      message: 'Review the earlier activity in this step before finishing.',
+      primaryLabel: 'Review activity',
+      primaryAction: 'advance',
+      primaryDisabled: true,
+      showSkip: false,
+    })
+  })
+
+  it('blocks finishing when an earlier challenge section was not completed', () => {
+    expect(
+      applySectionedStepProgressGate({
+        baseFooterState: {
+          tone: 'success',
+          message: 'Done.',
+          primaryLabel: 'Finish',
+          primaryAction: 'advance',
+          primaryDisabled: false,
+          showSkip: false,
+        },
+        isLastSection: true,
+        isAccessGranted: true,
+        requiredVisitedSectionIds: ['quiz', 'summary'],
+        visitedSectionIds: new Set(['intro', 'quiz', 'summary']),
+        sectionChallengeProgressById: {
+          quiz: {
+            hasChallenges: true,
+            allChallengesCompleted: false,
+          },
+        },
+      }),
+    ).toEqual({
+      tone: 'neutral',
+      message: 'Complete the activity in this step before finishing.',
+      primaryLabel: 'Complete the activity',
+      primaryAction: 'advance',
+      primaryDisabled: true,
+      showSkip: false,
+    })
+  })
+
+  it('does not block finishing for legacy inline-quiz sections', () => {
+    const baseFooterState = {
+      tone: 'success' as const,
+      message: 'Done.',
+      primaryLabel: 'Finish',
+      primaryAction: 'advance' as const,
+      primaryDisabled: false,
+      showSkip: false,
+    }
+
+    expect(
+      applySectionedStepProgressGate({
+        baseFooterState,
+        isLastSection: true,
+        isAccessGranted: true,
+        requiredVisitedSectionIds: [],
+        visitedSectionIds: new Set(['intro', 'quiz']),
+        sectionChallengeProgressById: {
+          intro: {
+            hasChallenges: false,
+            allChallengesCompleted: true,
+          },
+          quiz: {
+            hasChallenges: false,
+            allChallengesCompleted: true,
+          },
+        },
+      }),
+    ).toEqual(baseFooterState)
   })
 })

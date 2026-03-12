@@ -1,0 +1,130 @@
+{
+  "id": "read-local-execution",
+  "slug": "read-local-execution",
+  "order": 2,
+  "difficulty": "beginner",
+  "title": {
+    "en": "Read Local Budget Execution",
+    "ro": "Citește execuția locală"
+  },
+  "description": {
+    "en": "Use your city hall's 2025 execution data to understand the numbers and ask better questions about the 2026 budget.",
+    "ro": "Folosește execuția din 2025 a primăriei tale ca să înțelegi cifrele și să pui întrebări mai bune despre bugetul pe 2026."
+  },
+  "challenges": [
+    {
+      "id": "from-total-to-context",
+      "slug": "from-total-to-context",
+      "title": {
+        "en": "From Totals to Context",
+        "ro": "De la total la context"
+      },
+      "description": {
+        "en": "Start from the big totals, then put them into context with per-capita and year-over-year reading.",
+        "ro": "Pornește de la totalurile mari, apoi pune-le în context prin per capita și comparația între ani."
+      },
+      "steps": [
+        {
+          "id": "ch-read-local-execution-01-why-execution-matters",
+          "slug": "01-why-2025-execution-matters",
+          "title": {
+            "en": "Why 2025 Execution Matters",
+            "ro": "De ce contează execuția din 2025"
+          },
+          "durationMinutes": 6,
+          "contentDir": "read-local-execution/01-why-2025-execution-matters",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-read-local-execution-02-total-budget-context",
+          "slug": "02-total-budget-in-context",
+          "title": {
+            "en": "Your Budget in Context",
+            "ro": "Cât de mare este bugetul primăriei tale"
+          },
+          "durationMinutes": 7,
+          "contentDir": "read-local-execution/02-total-budget-in-context",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        }
+      ]
+    },
+    {
+      "id": "decode-budget-structure",
+      "slug": "decode-budget-structure",
+      "title": {
+        "en": "Decode the Budget Structure",
+        "ro": "Cum sunt structurați banii"
+      },
+      "description": {
+        "en": "Learn the stable code vocabulary behind revenue and spending before you go back to the entity's real data.",
+        "ro": "Învață vocabularul stabil al codurilor pentru venituri și cheltuieli înainte să revii la datele reale ale primăriei."
+      },
+      "steps": [
+        {
+          "id": "ch-read-local-execution-03-follow-money",
+          "slug": "03-follow-money-from-total-to-income-and-spending",
+          "title": {
+            "en": "From Total to Chapters",
+            "ro": "Cum cobori de la total la capitole"
+          },
+          "durationMinutes": 8,
+          "contentDir": "read-local-execution/03-follow-money-from-total-to-income-and-spending",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-read-local-execution-04-functional-economic",
+          "slug": "04-functional-and-economic-lenses",
+          "title": {
+            "en": "Functional and Economic Lenses",
+            "ro": "Funcțional și economic: cele două lentile"
+          },
+          "durationMinutes": 8,
+          "contentDir": "read-local-execution/04-functional-and-economic-lenses",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        }
+      ]
+    },
+    {
+      "id": "from-platform-to-document",
+      "slug": "from-platform-to-document",
+      "title": {
+        "en": "From Platform to Document",
+        "ro": "Din platformă în document"
+      },
+      "description": {
+        "en": "Connect what you see on the platform to the official report and finish with better 2026 civic questions.",
+        "ro": "Leagă ce vezi în platformă de raportul oficial și încheie cu întrebări civice mai bune pentru 2026."
+      },
+      "steps": [
+        {
+          "id": "ch-read-local-execution-05-read-execution-table",
+          "slug": "05-read-the-real-execution-table",
+          "title": {
+            "en": "Read the Official Execution Table",
+            "ro": "Cum citești tabelul real de execuție"
+          },
+          "durationMinutes": 8,
+          "contentDir": "read-local-execution/05-read-the-real-execution-table",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-read-local-execution-06-main-creditor-questions",
+          "slug": "06-main-creditor-and-2026-questions",
+          "title": {
+            "en": "Main Creditor and Better 2026 Questions",
+            "ro": "Primăria ca ordonator principal și ce întrebi pentru 2026"
+          },
+          "durationMinutes": 7,
+          "contentDir": "read-local-execution/06-main-creditor-and-2026-questions",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        }
+      ]
+    }
+  ]
+}

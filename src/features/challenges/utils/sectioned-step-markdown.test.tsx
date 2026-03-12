@@ -233,6 +233,114 @@ stepType: sectioned
     expect(parsed.sections[1]?.bodySource).toContain('id="quiz-2"')
   })
 
+  it('sets hideSectionTitle for sections containing a LessonBudgetContextFlow quiz stage', () => {
+    const parsed = parseSectionedChallengeStep({
+      source: `---
+title: Budget context
+stepType: sectioned
+---
+
+# Budget context
+
+## Estimate total expenses
+
+<LessonBudgetContextFlow stage="expenses-quiz" />
+
+## Per capita overview
+
+<LessonBudgetContextFlow stage="per-capita" />
+
+## Regular section
+
+Some regular content.
+`,
+    })
+
+    expect(parsed.sections).toHaveLength(3)
+    expect(parsed.sections[0]?.title).toBe('Estimate total expenses')
+    expect(parsed.sections[0]?.hideSectionTitle).toBe(true)
+    expect(parsed.sections[1]?.title).toBe('Per capita overview')
+    expect(parsed.sections[1]?.hideSectionTitle).toBeUndefined()
+    expect(parsed.sections[2]?.title).toBe('Regular section')
+    expect(parsed.sections[2]?.hideSectionTitle).toBeUndefined()
+  })
+
+  it('extracts lesson challenge descriptors for lesson widgets', () => {
+    const parsed = parseSectionedChallengeStep({
+      source: `---
+title: Lesson widgets
+stepType: sectioned
+---
+
+# Lesson widgets
+
+## Compare views
+
+<LessonAggregateDetailedCompare />
+
+## Answer the follow-up
+
+<LessonAggregateDetailedQuiz />
+`,
+    })
+
+    expect(parsed.sections[0]?.lessonChallengeDescriptors).toEqual([
+      {
+        kind: 'step',
+        prefix: 'lesson-aggregate-detailed-compare',
+      },
+    ])
+    expect(parsed.sections[1]?.lessonChallengeDescriptors).toEqual([
+      {
+        kind: 'fixed',
+        id: 'quiz:lesson-aggregate-detailed-interpretation',
+      },
+    ])
+  })
+
+  it('includes hideSectionTitle in the transformed export for dynamic quiz sections', () => {
+    const filePath = '/src/content/challenges/steps/test-step/index.en.mdx'
+    const transformed = transformSectionedChallengeStepSource({
+      filePath,
+      source: `---
+title: Budget context
+stepType: sectioned
+---
+
+# Budget context
+
+## Estimate expenses
+
+<LessonBudgetContextFlow stage="expenses-quiz" />
+`,
+    })
+
+    expect(transformed.didTransform).toBe(true)
+    expect(transformed.source).toContain('hideSectionTitle: true')
+  })
+
+  it('includes lesson challenge descriptors in the transformed export', () => {
+    const filePath = '/src/content/challenges/steps/test-step/index.en.mdx'
+    const transformed = transformSectionedChallengeStepSource({
+      filePath,
+      source: `---
+title: Lesson widgets
+stepType: sectioned
+---
+
+# Lesson widgets
+
+## Compare views
+
+<LessonAggregateDetailedCompare />
+`,
+    })
+
+    expect(transformed.didTransform).toBe(true)
+    expect(transformed.source).toContain('lessonChallengeDescriptors')
+    expect(transformed.source).toContain('lesson-aggregate-detailed-compare')
+  })
+
   it('injects a challengeSections export for sectioned steps', () => {
     const filePath = '/src/content/challenges/steps/test-step/index.en.mdx'
     const transformed = transformSectionedChallengeStepSource({

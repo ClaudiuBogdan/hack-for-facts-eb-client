@@ -124,16 +124,41 @@ export function resolveSectionFooterState(params: {
   readonly interactive: ChallengeStepSectionInteractive | null
   readonly isLastSection: boolean
   readonly isAccessGranted: boolean
+  readonly hasLessonChallenges?: boolean
+  readonly allLessonChallengesCompleted?: boolean
   readonly isQuizPending: boolean
   readonly quizState: SectionQuizStateSnapshot
 }): SectionFooterState {
   if (!params.interactive) {
+    if (params.isLastSection && !params.isAccessGranted) {
+      return {
+        tone: 'neutral',
+        message: t`Sign in to save this step as completed.`,
+        primaryLabel: t`Finish`,
+        primaryAction: 'advance',
+        primaryDisabled: true,
+        showSkip: false,
+      }
+    }
+
+    if (
+      params.isLastSection &&
+      params.hasLessonChallenges &&
+      !params.allLessonChallengesCompleted
+    ) {
+      return {
+        tone: 'neutral',
+        message: t`Complete the activity in this step before finishing.`,
+        primaryLabel: t`Complete the activity`,
+        primaryAction: 'advance',
+        primaryDisabled: true,
+        showSkip: false,
+      }
+    }
+
     return {
       tone: 'neutral',
-      message:
-        params.isLastSection && !params.isAccessGranted
-          ? t`Sign in to save this step as completed.`
-          : null,
+      message: null,
       primaryLabel: params.isLastSection ? t`Finish` : t`Next`,
       primaryAction: 'advance',
       primaryDisabled: params.isLastSection && !params.isAccessGranted,
@@ -204,6 +229,67 @@ export function resolveSectionFooterState(params: {
     primaryDisabled: false,
     showSkip: !params.isLastSection,
   }
+}
+
+export type SectionLessonChallengeProgress = {
+  readonly hasChallenges: boolean
+  readonly allChallengesCompleted: boolean
+}
+
+export function applySectionedStepProgressGate(params: {
+  readonly baseFooterState: SectionFooterState
+  readonly isLastSection: boolean
+  readonly isAccessGranted: boolean
+  readonly requiredVisitedSectionIds: readonly string[]
+  readonly visitedSectionIds: ReadonlySet<string>
+  readonly sectionChallengeProgressById: Readonly<
+    Record<string, SectionLessonChallengeProgress>
+  >
+}): SectionFooterState {
+  if (
+    !params.isLastSection ||
+    !params.isAccessGranted ||
+    params.baseFooterState.primaryAction !== 'advance'
+  ) {
+    return params.baseFooterState
+  }
+
+  const hasVisitedAllRequiredSections = params.requiredVisitedSectionIds.every((sectionId) =>
+    params.visitedSectionIds.has(sectionId),
+  )
+
+  if (!hasVisitedAllRequiredSections) {
+    return {
+      tone: 'neutral',
+      message: t`Review the earlier activity in this step before finishing.`,
+      primaryLabel: t`Review activity`,
+      primaryAction: 'advance',
+      primaryDisabled: true,
+      showSkip: false,
+    }
+  }
+
+  const sectionProgress = Object.values(params.sectionChallengeProgressById)
+  const hasTrackedChallenges = sectionProgress.some(
+    (progress) => progress.hasChallenges,
+  )
+  const allTrackedChallengesCompleted = sectionProgress.every(
+    (progress) =>
+      !progress.hasChallenges || progress.allChallengesCompleted,
+  )
+
+  if (hasTrackedChallenges && !allTrackedChallengesCompleted) {
+    return {
+      tone: 'neutral',
+      message: t`Complete the activity in this step before finishing.`,
+      primaryLabel: t`Complete the activity`,
+      primaryAction: 'advance',
+      primaryDisabled: true,
+      showSkip: false,
+    }
+  }
+
+  return params.baseFooterState
 }
 
 export function buildModuleFinishHref(entityCui: string) {

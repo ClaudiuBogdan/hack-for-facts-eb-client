@@ -25,7 +25,9 @@ type ChallengeEntitySubordinatesSectionProps = {
   readonly isError: boolean
   readonly onRetry: () => void
   readonly normalizationOptions: NormalizationOptions
-  readonly showAllSearch: Record<string, unknown>
+  readonly showAllSearch?: Record<string, unknown>
+  readonly description?: string
+  readonly emptyStateKind?: 'children' | 'spending'
 }
 
 const SUBORDINATES_COPY = {
@@ -142,12 +144,18 @@ export function ChallengeEntitySubordinatesSection({
   onRetry,
   normalizationOptions,
   showAllSearch,
+  description,
+  emptyStateKind = 'spending',
 }: ChallengeEntitySubordinatesSectionProps) {
   const copy = SUBORDINATES_COPY[locale]
   const summaryCountLabel =
     totalResultsCount > 0 && items.length > 0
       ? copy.formatSummaryCount(items.length, totalResultsCount)
       : null
+  const emptyStateMessage =
+    emptyStateKind === 'children'
+      ? copy.emptyChildren
+      : copy.emptySpending
 
   return (
     <Card className="rounded-[28px] border-border/50">
@@ -163,7 +171,7 @@ export function ChallengeEntitySubordinatesSection({
           ) : null}
         </div>
         <CardDescription className="max-w-3xl text-sm leading-6">
-          {copy.description}
+          {description ?? copy.description}
         </CardDescription>
       </CardHeader>
 
@@ -191,7 +199,7 @@ export function ChallengeEntitySubordinatesSection({
           </div>
         ) : items.length === 0 ? (
           <div className="rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-5 py-6 text-sm text-muted-foreground">
-            {copy.emptySpending}
+            {emptyStateMessage}
           </div>
         ) : (
           <>
@@ -207,11 +215,13 @@ export function ChallengeEntitySubordinatesSection({
               ))}
             </div>
 
-            <Button asChild variant="outline" className="rounded-full">
-              <Link to="/entity-analytics" search={showAllSearch as any}>
-                {copy.showAll}
-              </Link>
-            </Button>
+            {showAllSearch ? (
+              <Button asChild variant="outline" className="rounded-full">
+                <Link to="/entity-analytics" search={showAllSearch as any}>
+                  {copy.showAll}
+                </Link>
+              </Button>
+            ) : null}
           </>
         )}
       </CardContent>

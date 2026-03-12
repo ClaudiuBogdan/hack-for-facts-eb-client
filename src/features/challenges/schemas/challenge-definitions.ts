@@ -65,6 +65,7 @@ export const ChallengeDefinitionSchema = z.object({
 export const ChallengeModuleDefinitionSchema = z.object({
   id: z.string().min(1),
   slug: z.string().min(1),
+  order: z.number().int().positive(),
   difficulty: ChallengeModuleDifficultySchema,
   title: TranslatedStringSchema,
   description: TranslatedStringSchema,

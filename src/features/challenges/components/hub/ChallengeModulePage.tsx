@@ -10,8 +10,6 @@ import {
   Play,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { useChallengeAccess } from '../../hooks/use-challenge-access'
 import { useChallengeProgress } from '../../hooks/use-challenge-progress'
@@ -247,164 +245,165 @@ export function ChallengeModulePage({
         </div>
       </div>
 
-      {/* Content Section */}
+      {/* Content Section - Timeline */}
       <div className="space-y-8">
         <h2 className="text-2xl font-black tracking-tight">{t`Challenges`}</h2>
 
-        <div className="grid gap-6">
-          {module.challenges.length === 0 ? (
-            <Card className="border-dashed">
-              <CardContent className="py-10 text-center text-muted-foreground">
-                {t`No challenges available yet.`}
-              </CardContent>
-            </Card>
-          ) : (
-            module.challenges.map((challenge, challengeIndex) => {
+        {module.challenges.length === 0 ? (
+          <div className="rounded-2xl border border-dashed py-10 text-center text-muted-foreground">
+            {t`No challenges available yet.`}
+          </div>
+        ) : (
+          <div className="space-y-0">
+            {module.challenges.map((challenge, challengeIndex) => {
               const completedSteps = challenge.steps.filter((step) =>
                 isStepCompleted(step.id),
               ).length
               const totalSteps = challenge.steps.length
               const isChallengeComplete = completedSteps === totalSteps
+              const isChallengeActive =
+                !isChallengeComplete &&
+                stats.nextStep !== null &&
+                challenge.steps.some((s) => s.id === stats.nextStep?.id)
+              const isLastChallenge =
+                challengeIndex === module.challenges.length - 1
 
               return (
-                <Card
-                  key={challenge.id}
-                  className="relative overflow-hidden border-none transition-all duration-300 shadow-lg shadow-primary/5 bg-card"
-                >
-                  {/* Challenge Header */}
-                  <div
-                    className={cn(
-                      'p-5 md:p-6 flex items-start gap-5 transition-colors',
-                      isChallengeComplete ? 'bg-green-500/5' : 'bg-muted/30',
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        'flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-lg font-bold transition-all shadow-sm',
-                        isChallengeComplete
-                          ? 'bg-green-500 text-white shadow-green-500/20'
-                          : 'bg-primary text-primary-foreground shadow-primary/20',
-                      )}
-                    >
-                      {isChallengeComplete ? (
-                        <CheckCircle2 className="h-6 w-6" />
-                      ) : (
-                        challengeIndex + 1
-                      )}
+                <div key={challenge.id} className="flex gap-3 md:gap-6">
+                  {/* Timeline column: node + connector */}
+                  <div className="flex w-10 md:w-12 shrink-0 flex-col items-center">
+                    {/* Milestone node */}
+                    <div className="relative flex shrink-0 items-center justify-center">
+                      <div
+                        className={cn(
+                          'relative z-10 flex h-10 w-10 md:h-12 md:w-12 items-center justify-center rounded-full text-sm font-bold transition-all',
+                          isChallengeComplete
+                            ? 'bg-green-500 text-white shadow-md'
+                            : isChallengeActive
+                              ? 'bg-primary text-primary-foreground shadow-lg'
+                              : 'border-2 border-muted-foreground/30 bg-background text-muted-foreground',
+                        )}
+                      >
+                        {isChallengeComplete ? (
+                          <CheckCircle2 className="h-5 w-5" />
+                        ) : (
+                          challengeIndex + 1
+                        )}
+                      </div>
                     </div>
 
-                    <div className="flex-1 space-y-1.5 pt-0.5">
-                      <div className="flex flex-wrap items-center justify-between gap-4">
-                        <h3 className="text-lg font-black tracking-tight leading-tight">
-                          {getTranslatedText(challenge.title, locale)}
-                        </h3>
-                        <Badge
-                          variant="secondary"
-                          className={cn(
-                            'rounded-md px-2 py-0.5 text-xs font-bold transition-colors',
-                            isChallengeComplete &&
-                              'bg-green-500/10 text-green-700 hover:bg-green-500/20',
-                          )}
-                        >
-                          {completedSteps}/{totalSteps} {t`Steps`}
-                        </Badge>
-                      </div>
-                      <p className="text-muted-foreground text-sm font-medium leading-relaxed">
-                        {getTranslatedText(challenge.description, locale)}
-                      </p>
-                    </div>
+                    {/* Connector line */}
+                    {!isLastChallenge && (
+                      <div
+                        className={cn(
+                          'w-0.5 flex-1',
+                          isChallengeComplete
+                            ? 'bg-green-500'
+                            : isChallengeActive
+                              ? 'bg-gradient-to-b from-primary to-muted-foreground/20'
+                              : 'bg-muted-foreground/20',
+                        )}
+                      />
+                    )}
                   </div>
 
-                  {/* Steps List */}
-                  <CardContent className="p-0 bg-card">
-                    <div className="divide-y divide-border/40">
+                  {/* Content column */}
+                  <div className={cn('min-w-0 flex-1 pb-8', isLastChallenge && 'pb-0')}>
+                    {/* Challenge header */}
+                    <div className="pt-1.5 md:pt-2">
+                      <h3 className="text-base md:text-lg font-black tracking-tight leading-tight">
+                        {getTranslatedText(challenge.title, locale)}
+                      </h3>
+                    </div>
+                    <p className="text-muted-foreground text-xs md:text-sm font-medium leading-relaxed mt-1">
+                      {getTranslatedText(challenge.description, locale)}
+                    </p>
+
+                    {/* Step list */}
+                    <div className="mt-2 md:mt-3 space-y-0.5">
                       {challenge.steps.map((step, stepIndex) => {
                         const completed = isStepCompleted(step.id)
                         const isNextUp =
                           !completed &&
                           stepIndex ===
-                            challenge.steps.findIndex((challengeStep) =>
-                              !isStepCompleted(challengeStep.id),
+                            challenge.steps.findIndex(
+                              (challengeStep) =>
+                                !isStepCompleted(challengeStep.id),
                             )
 
                         return (
                           <Link
                             key={step.id}
-                            to={buildCampaignProvocariStepPath(
-                              entityCui,
-                              module.slug,
-                              challenge.slug,
-                              step.slug,
-                            ) as '/'}
-                            className={cn(
-                              'group flex items-center gap-5 p-5 md:p-6 transition-all duration-200',
-                              'hover:bg-muted/40',
-                              isNextUp && 'bg-primary/[0.03]',
-                            )}
+                            to={
+                              buildCampaignProvocariStepPath(
+                                entityCui,
+                                module.slug,
+                                challenge.slug,
+                                step.slug,
+                              ) as '/'
+                            }
+                            className="group flex items-center gap-2 md:gap-3 rounded-xl py-2 md:py-2.5 pr-2 md:pr-3 transition-colors hover:bg-muted/50"
                           >
-                            <div className="flex w-12 shrink-0 justify-center">
-                              <div
-                                className={cn(
-                                  'flex h-8 w-8 items-center justify-center rounded-full border-[1.5px] transition-all',
-                                  completed
-                                    ? 'border-green-500 bg-green-500 text-white'
-                                    : isNextUp
-                                      ? 'border-primary bg-primary text-primary-foreground shadow-md shadow-primary/20'
-                                      : 'border-muted-foreground/30 text-muted-foreground',
-                                )}
-                              >
-                                {completed ? (
-                                  <CheckCircle2 className="h-4 w-4" />
-                                ) : isNextUp ? (
-                                  <Play className="h-3 w-3 fill-current ml-0.5" />
-                                ) : (
-                                  <span className="text-[10px] font-bold">
-                                    {stepIndex + 1}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="flex-1 min-w-0">
-                              <div
-                                className={cn(
-                                  'font-bold text-base transition-colors',
-                                  completed
-                                    ? 'text-muted-foreground line-through decoration-border/50'
-                                    : 'text-foreground',
-                                  isNextUp && 'text-primary',
-                                )}
-                              >
-                                {getTranslatedText(step.title, locale)}
-                              </div>
-                              <div className="flex items-center gap-3 mt-1 text-xs font-medium text-muted-foreground">
-                                <span className="flex items-center gap-1">
-                                  <Clock className="h-3 w-3" />
-                                  {step.durationMinutes} {t`min`}
-                                </span>
-                              </div>
-                            </div>
-
+                            {/* Step dot */}
                             <div
                               className={cn(
-                                'h-8 w-8 rounded-full flex items-center justify-center transition-all',
-                                isNextUp
-                                  ? 'bg-primary text-primary-foreground scale-100 opacity-100 shadow-md shadow-primary/20'
-                                  : 'bg-muted text-muted-foreground scale-75 opacity-0 group-hover:opacity-100 group-hover:scale-100',
+                                'flex h-5 w-5 md:h-6 md:w-6 shrink-0 items-center justify-center rounded-full transition-all',
+                                completed
+                                  ? 'bg-green-500 text-white'
+                                  : isNextUp
+                                    ? 'bg-primary text-primary-foreground shadow-sm'
+                                    : 'border-[1.5px] border-muted-foreground/30 text-muted-foreground',
                               )}
                             >
-                              <ArrowRight className="h-4 w-4" />
+                              {completed ? (
+                                <CheckCircle2 className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                              ) : isNextUp ? (
+                                <Play className="h-2 w-2 md:h-2.5 md:w-2.5 fill-current" />
+                              ) : (
+                                <span className="text-[8px] md:text-[9px] font-bold">
+                                  {stepIndex + 1}
+                                </span>
+                              )}
                             </div>
+
+                            {/* Step title */}
+                            <span
+                              className={cn(
+                                'min-w-0 flex-1 text-base font-semibold transition-colors',
+                                completed
+                                  ? 'text-foreground'
+                                  : isNextUp
+                                    ? 'text-primary'
+                                    : 'text-foreground',
+                              )}
+                            >
+                              {getTranslatedText(step.title, locale)}
+                            </span>
+
+                            {/* Duration */}
+                            <span className="hidden sm:inline text-xs font-medium text-muted-foreground tabular-nums shrink-0">
+                              {step.durationMinutes} {t`min`}
+                            </span>
+
+                            {/* Arrow */}
+                            <ArrowRight
+                              className={cn(
+                                'h-4 w-4 shrink-0 transition-opacity',
+                                isNextUp
+                                  ? 'text-primary opacity-100'
+                                  : 'text-muted-foreground opacity-0 group-hover:opacity-100',
+                              )}
+                            />
                           </Link>
                         )
                       })}
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               )
-            })
-          )}
-        </div>
+            })}
+          </div>
+        )}
       </div>
     </div>
   )

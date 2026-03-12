@@ -75,6 +75,13 @@ vi.mock('@/features/learning/components/player/MarkComplete', () => ({
 vi.mock('@/features/learning/components/player/lesson-challenges-context', () => ({
   LessonChallengesProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
   useRegisterLessonChallenge: vi.fn(),
+  useLessonChallenges: () => ({
+    challenges: {},
+    hasChallenges: false,
+    totalChallenges: 0,
+    completedChallenges: 0,
+    allChallengesCompleted: false,
+  }),
 }))
 
 vi.mock('@/features/learning/components/loading/LessonSkeleton', () => ({
@@ -748,6 +755,59 @@ describe('ChallengeStepPlayer', () => {
       'Section 2: Question?',
     )
     expect(screen.queryByRole('heading', { name: 'Quiz' })).not.toBeInTheDocument()
+  })
+
+  it('hides the section title for dynamic quiz sections and keeps only the quiz question', () => {
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'dynamic-quiz',
+            title: 'Exercițiul 1: estimează cheltuielile totale',
+            hideSectionTitle: true,
+            bodySource: '<LessonBudgetContextFlow stage="expenses-quiz" />',
+            interactive: null,
+            Component: () => (
+              <h3>Care crezi că a fost totalul cheltuielilor?</h3>
+            ),
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeSectionId="dynamic-quiz"
+      />,
+    )
+
+    expect(
+      screen.getByRole('heading', {
+        name: 'Care crezi că a fost totalul cheltuielilor?',
+      }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', {
+        name: 'Exercițiul 1: estimează cheltuielile totale',
+      }),
+    ).not.toBeInTheDocument()
   })
 
   it('submits a section quiz on the first answer click', async () => {
