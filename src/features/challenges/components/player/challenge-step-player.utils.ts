@@ -17,13 +17,7 @@ import type {
 
 export const EMPTY_QUIZ_OPTIONS: readonly QuizOption[] = []
 
-export const CHALLENGE_ARTICLE_PROSE_CLASS_NAME = cn(
-  'prose prose-slate dark:prose-invert max-w-none',
-  'prose-headings:scroll-mt-20 prose-headings:font-black prose-headings:tracking-tight prose-headings:leading-tight',
-  'prose-h1:text-4xl prose-h1:md:text-6xl prose-h1:tracking-tighter',
-  'prose-h2:text-2xl prose-h2:md:text-3xl',
-  'prose-h3:text-xl prose-h3:md:text-2xl',
-  'prose-p:leading-relaxed',
+const CHALLENGE_PROSE_BLOCKQUOTE_CLASS_NAME = cn(
   '[&_blockquote]:relative [&_blockquote]:my-10 [&_blockquote]:not-italic',
   '[&_blockquote]:rounded-r-2xl [&_blockquote]:rounded-l-none',
   '[&_blockquote]:border [&_blockquote]:border-l-0 [&_blockquote]:border-amber-200/60',
@@ -37,6 +31,26 @@ export const CHALLENGE_ARTICLE_PROSE_CLASS_NAME = cn(
   '[&_blockquote]:before:w-1',
   '[&_blockquote]:before:bg-linear-to-b [&_blockquote]:before:from-amber-400 [&_blockquote]:before:via-orange-500 [&_blockquote]:before:to-amber-500',
   'dark:[&_blockquote]:before:from-amber-400 dark:[&_blockquote]:before:via-orange-400 dark:[&_blockquote]:before:to-amber-500',
+  '[&_blockquote]:after:absolute [&_blockquote]:after:right-6 [&_blockquote]:after:top-4',
+  '[&_blockquote]:after:text-6xl [&_blockquote]:after:font-serif [&_blockquote]:after:leading-none',
+  '[&_blockquote]:after:text-amber-200/60 dark:[&_blockquote]:after:text-amber-700/30',
+  '[&_blockquote_p]:relative [&_blockquote_p]:z-10',
+  '[&_blockquote_p]:text-base [&_blockquote_p]:md:text-lg [&_blockquote_p]:font-medium [&_blockquote_p]:leading-relaxed',
+  '[&_blockquote_p]:text-amber-950/80 dark:[&_blockquote_p]:text-amber-100/90',
+  '[&_blockquote_p:first-child]:mt-0 [&_blockquote_p:last-child]:mb-0',
+  '[&_blockquote_p:first-of-type]:before:content-none [&_blockquote_p:last-of-type]:after:content-none',
+  '[&_blockquote_strong]:font-black [&_blockquote_strong]:text-amber-700 dark:[&_blockquote_strong]:text-amber-400',
+  '[&_blockquote_strong]:tracking-tight',
+)
+
+export const CHALLENGE_ARTICLE_PROSE_CLASS_NAME = cn(
+  'prose prose-slate dark:prose-invert max-w-none',
+  'prose-headings:scroll-mt-20 prose-headings:font-black prose-headings:tracking-tight prose-headings:leading-tight',
+  'prose-h1:text-4xl prose-h1:md:text-6xl prose-h1:tracking-tighter',
+  'prose-h2:text-2xl prose-h2:md:text-3xl',
+  'prose-h3:text-xl prose-h3:md:text-2xl',
+  'prose-p:leading-relaxed',
+  CHALLENGE_PROSE_BLOCKQUOTE_CLASS_NAME,
   'prose-a:text-primary prose-a:no-underline hover:prose-a:underline',
   'prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-normal prose-code:before:content-none prose-code:after:content-none',
   'prose-img:rounded-xl prose-img:shadow-md',
@@ -49,6 +63,7 @@ export const SECTIONED_STEP_PROSE_CLASS_NAME = cn(
   'prose-h2:text-2xl prose-h2:md:text-3xl',
   'prose-h3:text-xl prose-h3:md:text-2xl',
   'prose-p:leading-relaxed',
+  CHALLENGE_PROSE_BLOCKQUOTE_CLASS_NAME,
   'prose-a:text-primary prose-a:no-underline hover:prose-a:underline',
   'prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-normal prose-code:before:content-none prose-code:after:content-none',
   'prose-img:rounded-xl prose-img:shadow-md',
