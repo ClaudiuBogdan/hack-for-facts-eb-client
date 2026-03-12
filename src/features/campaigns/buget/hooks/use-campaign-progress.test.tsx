@@ -136,10 +136,10 @@ describe('use-campaign-progress', () => {
     })
 
     act(() => {
-      result.current.setActiveChallengeModule({ moduleSlug: 'compare-budgets' })
+      result.current.setActiveChallengeModule({ moduleSlug: 'read-local-execution' })
     })
 
-    expect(result.current.progress.activeChallengeModuleSlug).toBe('compare-budgets')
+    expect(result.current.progress.activeChallengeModuleSlug).toBe('read-local-execution')
 
     const rawSnapshot = window.localStorage.getItem(CAMPAIGN_PROGRESS_STORAGE_KEY)
     expect(rawSnapshot).toBeTruthy()
@@ -147,7 +147,7 @@ describe('use-campaign-progress', () => {
     const parsedSnapshot = JSON.parse(rawSnapshot ?? '{}') as {
       activeChallengeModuleSlug?: string | null
     }
-    expect(parsedSnapshot.activeChallengeModuleSlug).toBe('compare-budgets')
+    expect(parsedSnapshot.activeChallengeModuleSlug).toBe('read-local-execution')
   })
 
   it('keeps the newer local active challenge module when sync resolves older remote data', async () => {
@@ -161,7 +161,7 @@ describe('use-campaign-progress', () => {
       CAMPAIGN_PROGRESS_STORAGE_KEY,
       JSON.stringify(
         createSnapshot({
-          activeChallengeModuleSlug: 'compare-budgets',
+          activeChallengeModuleSlug: 'read-local-execution',
           lastUpdated: '2026-01-02T00:00:00.000Z',
         }),
       ),
@@ -181,11 +181,11 @@ describe('use-campaign-progress', () => {
       expect(result.current.isInitialResolutionReady).toBe(true)
     })
 
-    expect(result.current.progress.activeChallengeModuleSlug).toBe('compare-budgets')
+    expect(result.current.progress.activeChallengeModuleSlug).toBe('read-local-execution')
     expect(syncCampaignProgressMock).toHaveBeenCalledWith(
       expect.objectContaining({
         snapshot: expect.objectContaining({
-          activeChallengeModuleSlug: 'compare-budgets',
+          activeChallengeModuleSlug: 'read-local-execution',
         }),
       }),
     )
@@ -222,7 +222,7 @@ describe('use-campaign-progress', () => {
 
     resolveFetchCampaignProgress({
       snapshot: createSnapshot({
-        activeChallengeModuleSlug: 'compare-budgets',
+        activeChallengeModuleSlug: 'read-local-execution',
       }),
       cursor: undefined,
     })

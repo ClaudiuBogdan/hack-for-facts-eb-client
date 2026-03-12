@@ -192,12 +192,12 @@ describe('ChallengesHubPage', () => {
       isSubmitting: false,
       register: registerMock,
     }
-    activeChallengeModuleSlug = 'compare-budgets'
+    activeChallengeModuleSlug = 'read-local-execution'
 
     render(<ChallengesHubPage entityCui="12345678" locale="ro" />)
 
     expect(screen.getByTestId('module-card-active')).toHaveTextContent(
-      'active:compare-budgets',
+      'active:read-local-execution',
     )
   })
 
@@ -241,24 +241,12 @@ describe('ChallengesHubPage', () => {
       'ch-read-local-execution-04-functional-economic': 'completed',
       'ch-read-local-execution-05-read-execution-table': 'completed',
       'ch-read-local-execution-06-main-creditor-questions': 'completed',
-      'ch-compare-01-select-years': 'completed',
-      'ch-compare-02-spot-changes': 'completed',
-      'ch-compare-03-inflation': 'completed',
-      'ch-compare-04-find-peers': 'completed',
-      'ch-compare-05-per-capita': 'completed',
-      'ch-compare-06-draw-conclusions': 'completed',
-      'ch-anomaly-01-common-red-flags': 'completed',
-      'ch-anomaly-02-election-spending': 'completed',
-      'ch-anomaly-03-hidden-costs': 'completed',
-      'ch-anomaly-04-pick-anomaly': 'completed',
-      'ch-anomaly-05-gather-evidence': 'completed',
-      'ch-anomaly-06-write-report': 'completed',
     }
 
     render(<ChallengesHubPage entityCui="12345678" locale="ro" />)
 
     expect(screen.getByTestId('module-card-active')).toHaveTextContent(
-      'active:detect-anomalies',
+      'active:read-local-execution',
     )
     expect(screen.queryByText('Congratulations!')).not.toBeInTheDocument()
   })
