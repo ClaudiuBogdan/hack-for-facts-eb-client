@@ -33,7 +33,9 @@ import {
   applySectionedStepProgressGate,
   buildAdjacentStepHref,
   clearChallengeStepSearch,
+  mergeCurrentSectionIntoStepProgress,
   resolveSectionedBackTarget,
+  resolveSectionedStepCompletionState,
   resolveSectionFooterState,
   type SectionLessonChallengeProgress,
 } from './challenge-step-player.utils'
@@ -175,28 +177,36 @@ export function useSectionedStepPlayer({
         .map((section) => section.id),
     [sections, trackedLessonChallengeIdsBySectionId],
   )
-  const hasVisitedAllTrackedSections = useMemo(
+  const effectiveStepProgress = useMemo(
     () =>
-      requiredVisitedSectionIds.every((sectionId) =>
-        visitedSectionIds.has(sectionId),
-      ),
-    [requiredVisitedSectionIds, visitedSectionIds],
+      mergeCurrentSectionIntoStepProgress({
+        currentSectionId: currentSection?.id ?? null,
+        currentSectionHasLessonChallenges,
+        currentSectionAllLessonChallengesCompleted,
+        visitedSectionIds,
+        sectionChallengeProgressById,
+      }),
+    [
+      currentSection?.id,
+      currentSectionAllLessonChallengesCompleted,
+      currentSectionHasLessonChallenges,
+      sectionChallengeProgressById,
+      visitedSectionIds,
+    ],
   )
-  const hasTrackedLessonChallenges = useMemo(
+  const sectionedStepCompletionState = useMemo(
     () =>
-      Object.values(sectionChallengeProgressById).some(
-        (sectionProgress) => sectionProgress.hasChallenges,
-      ),
-    [sectionChallengeProgressById],
-  )
-  const allTrackedLessonChallengesCompleted = useMemo(
-    () =>
-      Object.values(sectionChallengeProgressById).every(
-        (sectionProgress) =>
-          !sectionProgress.hasChallenges ||
-          sectionProgress.allChallengesCompleted,
-      ),
-    [sectionChallengeProgressById],
+      resolveSectionedStepCompletionState({
+        requiredVisitedSectionIds,
+        visitedSectionIds: effectiveStepProgress.visitedSectionIds,
+        sectionChallengeProgressById:
+          effectiveStepProgress.sectionChallengeProgressById,
+      }),
+    [
+      effectiveStepProgress.sectionChallengeProgressById,
+      effectiveStepProgress.visitedSectionIds,
+      requiredVisitedSectionIds,
+    ],
   )
 
   const changeSection = useCallback(
@@ -376,20 +386,21 @@ export function useSectionedStepPlayer({
         isLastSection,
         isAccessGranted,
         requiredVisitedSectionIds,
-        visitedSectionIds,
-        sectionChallengeProgressById,
+        visitedSectionIds: effectiveStepProgress.visitedSectionIds,
+        sectionChallengeProgressById:
+          effectiveStepProgress.sectionChallengeProgressById,
       }),
     [
       currentSectionAllLessonChallengesCompleted,
       currentSectionHasLessonChallenges,
+      effectiveStepProgress.sectionChallengeProgressById,
+      effectiveStepProgress.visitedSectionIds,
       effectiveInteractive,
       effectiveIsQuizPending,
       effectiveQuizState,
       isAccessGranted,
       isLastSection,
       requiredVisitedSectionIds,
-      sectionChallengeProgressById,
-      visitedSectionIds,
     ],
   )
 
@@ -418,12 +429,10 @@ export function useSectionedStepPlayer({
     }
 
     if (!isAccessGranted) return
-    if (!hasVisitedAllTrackedSections) return
-    if (hasTrackedLessonChallenges && !allTrackedLessonChallengesCompleted) {
-      return
-    }
 
-    await markComplete()
+    if (sectionedStepCompletionState.canMarkStepComplete) {
+      await markComplete()
+    }
 
     const destination = next
       ? buildAdjacentStepHref({
@@ -443,9 +452,6 @@ export function useSectionedStepPlayer({
     changeSection,
     entityCui,
     findChallengeSlugForAdjacentStep,
-    allTrackedLessonChallengesCompleted,
-    hasTrackedLessonChallenges,
-    hasVisitedAllTrackedSections,
     isAccessGranted,
     isLastSection,
     markComplete,
@@ -453,6 +459,7 @@ export function useSectionedStepPlayer({
     navigate,
     next,
     nextSection,
+    sectionedStepCompletionState.canMarkStepComplete,
   ])
 
   const handleSkip = useCallback(() => {

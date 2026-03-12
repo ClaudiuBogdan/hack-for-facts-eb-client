@@ -6,6 +6,7 @@ import { ChallengeStepPlayer } from './ChallengeStepPlayer'
 const mockUseChallengeAccess = vi.fn()
 const mockUseChallengeStepContent = vi.fn()
 const mockUseQuizInteraction = vi.fn()
+const mockUseLessonChallenges = vi.fn()
 const markCompleteMock = vi.fn()
 const navigateMock = vi.fn()
 
@@ -75,13 +76,7 @@ vi.mock('@/features/learning/components/player/MarkComplete', () => ({
 vi.mock('@/features/learning/components/player/lesson-challenges-context', () => ({
   LessonChallengesProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
   useRegisterLessonChallenge: vi.fn(),
-  useLessonChallenges: () => ({
-    challenges: {},
-    hasChallenges: false,
-    totalChallenges: 0,
-    completedChallenges: 0,
-    allChallengesCompleted: false,
-  }),
+  useLessonChallenges: () => mockUseLessonChallenges(),
 }))
 
 vi.mock('@/features/learning/components/loading/LessonSkeleton', () => ({
@@ -133,6 +128,13 @@ describe('ChallengeStepPlayer', () => {
 
     markCompleteMock.mockReset()
     navigateMock.mockReset()
+    mockUseLessonChallenges.mockReturnValue({
+      challenges: {},
+      hasChallenges: false,
+      totalChallenges: 0,
+      completedChallenges: 0,
+      allChallengesCompleted: false,
+    })
   })
 
   it('keeps article content visible while replacing interactive elements', () => {
@@ -680,6 +682,263 @@ describe('ChallengeStepPlayer', () => {
     expect(screen.getByTestId('sectioned-footer-actions')).toHaveClass('pt-2')
     expect(screen.getByRole('button', { name: /Try again/i })).toBeEnabled()
     expect(screen.queryByRole('button', { name: /Finish/i })).not.toBeInTheDocument()
+  })
+
+  it('keeps the quiz success footer when earlier tracked activities are incomplete', async () => {
+    const compareChallengeId = 'lesson-aggregate-detailed-compare:step-1'
+    const finalChallengeId = 'quiz:lesson-aggregate-detailed-interpretation'
+
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseQuizInteraction.mockReturnValue({
+      selectedOptionId: 'b',
+      isAnswered: true,
+      score: 1,
+      isCorrect: true,
+      answer: vi.fn(),
+      reset: vi.fn(),
+    })
+
+    mockUseLessonChallenges.mockImplementation(() => ({
+      challenges: {
+        [finalChallengeId]: true,
+      },
+      hasChallenges: true,
+      totalChallenges: 1,
+      completedChallenges: 1,
+      allChallengesCompleted: true,
+    }))
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'compare',
+            title: 'Compare',
+            bodySource: '<LessonAggregateDetailedCompare />',
+            lessonChallengeDescriptors: [
+              { kind: 'step', prefix: 'lesson-aggregate-detailed-compare' },
+            ],
+            interactive: null,
+            Component: () => <p>Compare copy</p>,
+          },
+          {
+            id: 'final-quiz',
+            title: '',
+            bodySource: '<LessonAggregateDetailedQuiz />',
+            lessonChallengeDescriptors: [
+              { kind: 'fixed', id: finalChallengeId },
+            ],
+            interactive: {
+              kind: 'quiz',
+              id: 'lesson-aggregate-detailed-interpretation',
+              question: 'Final question?',
+              options: [
+                { id: 'a', text: 'Wrong', isCorrect: false },
+                { id: 'b', text: 'Right', isCorrect: true },
+              ],
+              explanation: 'Correct answer.',
+            },
+            Component: ({ components }: any) => {
+              const QuizComponent = components.Quiz
+
+              return (
+                <QuizComponent
+                  id="lesson-aggregate-detailed-interpretation"
+                  question="Final question?"
+                  options={[
+                    { id: 'a', text: 'Wrong', isCorrect: false },
+                    { id: 'b', text: 'Right', isCorrect: true },
+                  ]}
+                  explanation="Correct answer."
+                />
+              )
+            },
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    const { rerender } = render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeSectionId="compare"
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Compare copy')).toBeInTheDocument()
+    })
+
+    mockUseLessonChallenges.mockImplementation(() => ({
+      challenges: {
+        [compareChallengeId]: false,
+        [finalChallengeId]: true,
+      },
+      hasChallenges: true,
+      totalChallenges: 2,
+      completedChallenges: 1,
+      allChallengesCompleted: false,
+    }))
+
+    rerender(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeSectionId="final-quiz"
+      />,
+    )
+
+    expect(
+      screen.queryByText('You can continue, but this step will not be marked complete yet.'),
+    ).not.toBeInTheDocument()
+    expect(screen.getByText('Correct answer.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Finish$/i })).toBeEnabled()
+
+    fireEvent.click(screen.getByRole('button', { name: /^Finish$/i }))
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalled()
+    })
+
+    expect(markCompleteMock).not.toHaveBeenCalled()
+  })
+
+  it('marks complete before navigating when tracked activities are done', async () => {
+    const compareChallengeId = 'lesson-aggregate-detailed-compare:step-1'
+    const finalChallengeId = 'quiz:lesson-aggregate-detailed-interpretation'
+
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseQuizInteraction.mockReturnValue({
+      selectedOptionId: 'b',
+      isAnswered: true,
+      score: 1,
+      isCorrect: true,
+      answer: vi.fn(),
+      reset: vi.fn(),
+    })
+
+    mockUseLessonChallenges.mockImplementation(() => ({
+      challenges: {
+        [compareChallengeId]: true,
+        [finalChallengeId]: true,
+      },
+      hasChallenges: true,
+      totalChallenges: 2,
+      completedChallenges: 2,
+      allChallengesCompleted: true,
+    }))
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'compare',
+            title: 'Compare',
+            bodySource: '<LessonAggregateDetailedCompare />',
+            lessonChallengeDescriptors: [
+              { kind: 'step', prefix: 'lesson-aggregate-detailed-compare' },
+            ],
+            interactive: null,
+            Component: () => <p>Compare copy</p>,
+          },
+          {
+            id: 'final-quiz',
+            title: '',
+            bodySource: '<LessonAggregateDetailedQuiz />',
+            lessonChallengeDescriptors: [
+              { kind: 'fixed', id: finalChallengeId },
+            ],
+            interactive: {
+              kind: 'quiz',
+              id: 'lesson-aggregate-detailed-interpretation',
+              question: 'Final question?',
+              options: [
+                { id: 'a', text: 'Wrong', isCorrect: false },
+                { id: 'b', text: 'Right', isCorrect: true },
+              ],
+              explanation: 'Correct answer.',
+            },
+            Component: ({ components }: any) => {
+              const QuizComponent = components.Quiz
+
+              return (
+                <QuizComponent
+                  id="lesson-aggregate-detailed-interpretation"
+                  question="Final question?"
+                  options={[
+                    { id: 'a', text: 'Wrong', isCorrect: false },
+                    { id: 'b', text: 'Right', isCorrect: true },
+                  ]}
+                  explanation="Correct answer."
+                />
+              )
+            },
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    const { rerender } = render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeSectionId="compare"
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Compare copy')).toBeInTheDocument()
+    })
+
+    rerender(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeSectionId="final-quiz"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /^Finish$/i }))
+
+    await waitFor(() => {
+      expect(markCompleteMock).toHaveBeenCalled()
+      expect(navigateMock).toHaveBeenCalled()
+    })
   })
 
   it('uses the quiz question as the progress label for titleless quiz sections', () => {

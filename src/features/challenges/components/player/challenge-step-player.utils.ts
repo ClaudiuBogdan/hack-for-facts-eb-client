@@ -156,21 +156,6 @@ export function resolveSectionFooterState(params: {
       }
     }
 
-    if (
-      params.isLastSection &&
-      params.hasLessonChallenges &&
-      !params.allLessonChallengesCompleted
-    ) {
-      return {
-        tone: 'neutral',
-        message: t`Complete the activity in this step before finishing.`,
-        primaryLabel: t`Complete the activity`,
-        primaryAction: 'advance',
-        primaryDisabled: true,
-        showSkip: false,
-      }
-    }
-
     return {
       tone: 'neutral',
       message: null,
@@ -251,6 +236,98 @@ export type SectionLessonChallengeProgress = {
   readonly allChallengesCompleted: boolean
 }
 
+export function mergeCurrentSectionIntoStepProgress(params: {
+  readonly currentSectionId: string | null
+  readonly currentSectionHasLessonChallenges: boolean
+  readonly currentSectionAllLessonChallengesCompleted: boolean
+  readonly visitedSectionIds: ReadonlySet<string>
+  readonly sectionChallengeProgressById: Readonly<
+    Record<string, SectionLessonChallengeProgress>
+  >
+}): {
+  readonly visitedSectionIds: ReadonlySet<string>
+  readonly sectionChallengeProgressById: Readonly<
+    Record<string, SectionLessonChallengeProgress>
+  >
+} {
+  const nextVisitedSectionIds =
+    !params.currentSectionId || params.visitedSectionIds.has(params.currentSectionId)
+      ? params.visitedSectionIds
+      : new Set([
+          ...params.visitedSectionIds,
+          params.currentSectionId,
+        ])
+
+  if (!params.currentSectionId) {
+    return {
+      visitedSectionIds: nextVisitedSectionIds,
+      sectionChallengeProgressById: params.sectionChallengeProgressById,
+    }
+  }
+
+  const currentSectionProgress = {
+    hasChallenges: params.currentSectionHasLessonChallenges,
+    allChallengesCompleted:
+      !params.currentSectionHasLessonChallenges ||
+      params.currentSectionAllLessonChallengesCompleted,
+  } as const satisfies SectionLessonChallengeProgress
+  const previousSectionProgress =
+    params.sectionChallengeProgressById[params.currentSectionId]
+
+  if (
+    previousSectionProgress &&
+    previousSectionProgress.hasChallenges ===
+      currentSectionProgress.hasChallenges &&
+    previousSectionProgress.allChallengesCompleted ===
+      currentSectionProgress.allChallengesCompleted
+  ) {
+    return {
+      visitedSectionIds: nextVisitedSectionIds,
+      sectionChallengeProgressById: params.sectionChallengeProgressById,
+    }
+  }
+
+  return {
+    visitedSectionIds: nextVisitedSectionIds,
+    sectionChallengeProgressById: {
+      ...params.sectionChallengeProgressById,
+      [params.currentSectionId]: currentSectionProgress,
+    },
+  }
+}
+
+export function resolveSectionedStepCompletionState(params: {
+  readonly requiredVisitedSectionIds: readonly string[]
+  readonly visitedSectionIds: ReadonlySet<string>
+  readonly sectionChallengeProgressById: Readonly<
+    Record<string, SectionLessonChallengeProgress>
+  >
+}) {
+  const hasVisitedAllRequiredSections = params.requiredVisitedSectionIds.every(
+    (sectionId) => params.visitedSectionIds.has(sectionId),
+  )
+  const sectionProgress = Object.values(params.sectionChallengeProgressById)
+  const hasTrackedChallenges = sectionProgress.some(
+    (progress) => progress.hasChallenges,
+  )
+  const allTrackedChallengesCompleted = sectionProgress.every(
+    (progress) =>
+      !progress.hasChallenges || progress.allChallengesCompleted,
+  )
+
+  return {
+    hasVisitedAllRequiredSections,
+    hasTrackedChallenges,
+    allTrackedChallengesCompleted,
+    canMarkStepComplete:
+      hasVisitedAllRequiredSections &&
+      (
+        !hasTrackedChallenges ||
+        allTrackedChallengesCompleted
+      ),
+  } as const
+}
+
 export function applySectionedStepProgressGate(params: {
   readonly baseFooterState: SectionFooterState
   readonly isLastSection: boolean
@@ -269,37 +346,38 @@ export function applySectionedStepProgressGate(params: {
     return params.baseFooterState
   }
 
-  const hasVisitedAllRequiredSections = params.requiredVisitedSectionIds.every((sectionId) =>
-    params.visitedSectionIds.has(sectionId),
-  )
+  const completionState = resolveSectionedStepCompletionState({
+    requiredVisitedSectionIds: params.requiredVisitedSectionIds,
+    visitedSectionIds: params.visitedSectionIds,
+    sectionChallengeProgressById: params.sectionChallengeProgressById,
+  })
+  const shouldPreserveCurrentSectionSuccess =
+    params.baseFooterState.tone === 'success' &&
+    params.baseFooterState.primaryAction === 'advance'
 
-  if (!hasVisitedAllRequiredSections) {
+  if (
+    !shouldPreserveCurrentSectionSuccess &&
+    !completionState.hasVisitedAllRequiredSections
+  ) {
     return {
+      ...params.baseFooterState,
       tone: 'neutral',
-      message: t`Review the earlier activity in this step before finishing.`,
-      primaryLabel: t`Review activity`,
-      primaryAction: 'advance',
-      primaryDisabled: true,
+      message: t`You can continue, but this step will not be marked complete yet.`,
+      primaryDisabled: false,
       showSkip: false,
     }
   }
 
-  const sectionProgress = Object.values(params.sectionChallengeProgressById)
-  const hasTrackedChallenges = sectionProgress.some(
-    (progress) => progress.hasChallenges,
-  )
-  const allTrackedChallengesCompleted = sectionProgress.every(
-    (progress) =>
-      !progress.hasChallenges || progress.allChallengesCompleted,
-  )
-
-  if (hasTrackedChallenges && !allTrackedChallengesCompleted) {
+  if (
+    !shouldPreserveCurrentSectionSuccess &&
+    completionState.hasTrackedChallenges &&
+    !completionState.allTrackedChallengesCompleted
+  ) {
     return {
+      ...params.baseFooterState,
       tone: 'neutral',
-      message: t`Complete the activity in this step before finishing.`,
-      primaryLabel: t`Complete the activity`,
-      primaryAction: 'advance',
-      primaryDisabled: true,
+      message: t`You can continue, but this step will not be marked complete yet.`,
+      primaryDisabled: false,
       showSkip: false,
     }
   }
