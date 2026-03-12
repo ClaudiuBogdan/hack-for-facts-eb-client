@@ -6,6 +6,7 @@ import { AuthSignInButton } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import { CAMPAIGN_TERMS_PATH } from '@/features/campaigns/buget/constants'
 import type { ChallengeLocale } from '../../types'
 
 type ChallengeHubAccessCardProps = {
@@ -13,11 +14,6 @@ type ChallengeHubAccessCardProps = {
   readonly variant: 'loading' | 'auth' | 'register'
   readonly isSubmitting?: boolean
   readonly onRegister?: () => Promise<void>
-}
-
-function buildTermsSearch(locale: ChallengeLocale): Record<string, string> | undefined {
-  if (locale !== 'en') return undefined
-  return { lang: 'en' }
 }
 
 const ACCESS_CARD_COPY = {
@@ -147,8 +143,7 @@ export function ChallengeHubAccessCard({
             >
               {copy.termsPrefix}
               <Link
-                to="/terms"
-                search={buildTermsSearch(locale)}
+                to={CAMPAIGN_TERMS_PATH}
                 className="font-semibold underline underline-offset-4 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
               >
                 {copy.termsLinkLabel}

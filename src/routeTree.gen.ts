@@ -28,6 +28,7 @@ import { Route as SettingsNotificationsRouteImport } from './routes/settings/not
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
 import { Route as ChartsNewRouteImport } from './routes/charts/new'
 import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
+import { Route as BugeteLocale2026TermeniSiConditiiRouteImport } from './routes/bugete-locale-2026.termeni-si-conditii'
 import { Route as AlertsNewRouteImport } from './routes/alerts/new'
 import { Route as PrimarieCuiRouteRouteImport } from './routes/primarie/$cui/route'
 import { Route as ChartsChartIdRouteRouteImport } from './routes/charts/$chartId/route'
@@ -175,6 +176,16 @@ const CertificatesIdRoute = CertificatesIdRouteImport.update({
   path: '/certificates/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BugeteLocale2026TermeniSiConditiiRoute =
+  BugeteLocale2026TermeniSiConditiiRouteImport.update({
+    id: '/termeni-si-conditii',
+    path: '/termeni-si-conditii',
+    getParentRoute: () => BugeteLocale2026Route,
+  } as any).lazy(() =>
+    import('./routes/bugete-locale-2026.termeni-si-conditii.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const AlertsNewRoute = AlertsNewRouteImport.update({
   id: '/alerts/new',
   path: '/alerts/new',
@@ -398,7 +409,7 @@ const PrimarieCuiBugetProvocariModuleSlugChallengeSlugStepSlugRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/budget-explorer': typeof BudgetExplorerRoute
-  '/bugete-locale-2026': typeof BugeteLocale2026Route
+  '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
   '/cookie-policy': typeof CookiePolicyRoute
   '/cookies': typeof CookiesRoute
   '/entity-analytics': typeof EntityAnalyticsRoute
@@ -411,6 +422,7 @@ export interface FileRoutesByFullPath {
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/primarie/$cui': typeof PrimarieCuiRouteRouteWithChildren
   '/alerts/new': typeof AlertsNewRoute
+  '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
@@ -449,7 +461,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/budget-explorer': typeof BudgetExplorerRoute
-  '/bugete-locale-2026': typeof BugeteLocale2026Route
+  '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
   '/cookie-policy': typeof CookiePolicyRoute
   '/cookies': typeof CookiesRoute
   '/entity-analytics': typeof EntityAnalyticsRoute
@@ -458,6 +470,7 @@ export interface FileRoutesByTo {
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
   '/alerts/new': typeof AlertsNewRoute
+  '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
@@ -496,7 +509,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/budget-explorer': typeof BudgetExplorerRoute
-  '/bugete-locale-2026': typeof BugeteLocale2026Route
+  '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
   '/cookie-policy': typeof CookiePolicyRoute
   '/cookies': typeof CookiesRoute
   '/entity-analytics': typeof EntityAnalyticsRoute
@@ -509,6 +522,7 @@ export interface FileRoutesById {
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/primarie/$cui': typeof PrimarieCuiRouteRouteWithChildren
   '/alerts/new': typeof AlertsNewRoute
+  '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
@@ -562,6 +576,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId'
     | '/primarie/$cui'
     | '/alerts/new'
+    | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
@@ -609,6 +624,7 @@ export interface FileRouteTypes {
     | '/test-error'
     | '/terms'
     | '/alerts/new'
+    | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
@@ -659,6 +675,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId'
     | '/primarie/$cui'
     | '/alerts/new'
+    | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
@@ -698,7 +715,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BudgetExplorerRoute: typeof BudgetExplorerRoute
-  BugeteLocale2026Route: typeof BugeteLocale2026Route
+  BugeteLocale2026Route: typeof BugeteLocale2026RouteWithChildren
   CookiePolicyRoute: typeof CookiePolicyRoute
   CookiesRoute: typeof CookiesRoute
   EntityAnalyticsRoute: typeof EntityAnalyticsRoute
@@ -873,6 +890,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/certificates/$id'
       preLoaderRoute: typeof CertificatesIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/bugete-locale-2026/termeni-si-conditii': {
+      id: '/bugete-locale-2026/termeni-si-conditii'
+      path: '/termeni-si-conditii'
+      fullPath: '/bugete-locale-2026/termeni-si-conditii'
+      preLoaderRoute: typeof BugeteLocale2026TermeniSiConditiiRouteImport
+      parentRoute: typeof BugeteLocale2026Route
     }
     '/alerts/new': {
       id: '/alerts/new'
@@ -1080,6 +1104,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface BugeteLocale2026RouteChildren {
+  BugeteLocale2026TermeniSiConditiiRoute: typeof BugeteLocale2026TermeniSiConditiiRoute
+}
+
+const BugeteLocale2026RouteChildren: BugeteLocale2026RouteChildren = {
+  BugeteLocale2026TermeniSiConditiiRoute:
+    BugeteLocale2026TermeniSiConditiiRoute,
+}
+
+const BugeteLocale2026RouteWithChildren =
+  BugeteLocale2026Route._addFileChildren(BugeteLocale2026RouteChildren)
+
 interface LangLearningRouteRouteChildren {
   LangLearningOnboardingRoute: typeof LangLearningOnboardingRoute
   LangLearningIndexRoute: typeof LangLearningIndexRoute
@@ -1175,7 +1211,7 @@ const EntitiesCuiRouteWithChildren = EntitiesCuiRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BudgetExplorerRoute: BudgetExplorerRoute,
-  BugeteLocale2026Route: BugeteLocale2026Route,
+  BugeteLocale2026Route: BugeteLocale2026RouteWithChildren,
   CookiePolicyRoute: CookiePolicyRoute,
   CookiesRoute: CookiesRoute,
   EntityAnalyticsRoute: EntityAnalyticsRoute,

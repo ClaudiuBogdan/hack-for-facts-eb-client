@@ -149,7 +149,7 @@ describe('ChallengesHubPage', () => {
     expect(registerButton).toBeDisabled()
     expect(screen.getByRole('link', { name: /termenii campaniei/i })).toHaveAttribute(
       'href',
-      '/terms',
+      '/bugete-locale-2026/termeni-si-conditii',
     )
 
     fireEvent.click(screen.getByRole('checkbox'))

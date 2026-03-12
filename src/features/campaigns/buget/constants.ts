@@ -1,6 +1,7 @@
 export const CAMPAIGN_ID = 'buget'
 export const CAMPAIGN_SLUG = 'buget'
 export const CAMPAIGN_LANDING_PATH = '/bugete-locale-2026'
+export const CAMPAIGN_TERMS_PATH = '/bugete-locale-2026/termeni-si-conditii'
 export const CAMPAIGN_ENTITY_BASE_PATH = '/primarie'
 export const CAMPAIGN_ENTITY_SELECTOR_PATH = CAMPAIGN_ENTITY_BASE_PATH
 export const CAMPAIGN_ENTITY_SELECTOR_MAP_PATH =
