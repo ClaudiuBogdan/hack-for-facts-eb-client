@@ -23,6 +23,20 @@ test.describe('Entity Exploration Flow', () => {
 
     // Mock reports
     await mockApi.mockGraphQL('GetReports', 'get-reports')
+
+    // Mock preferred UAT route data used by /primarie/$cui
+    await mockApi.mockGraphQL(
+      'EntityAnalytics',
+      'challenge-entity-subordinates',
+    )
+    await mockApi.mockGraphQL(
+      'GetEntityRelationships',
+      'challenge-entity-relationships',
+    )
+    await mockApi.mockGraphQL(
+      'GetExecutionLineItemsAnalytics',
+      'challenge-category-evolution',
+    )
   })
 
   test('user can search for an entity and view its details', async ({ page, mockApi }) => {
@@ -55,12 +69,12 @@ test.describe('Entity Exploration Flow', () => {
     // Click on the first result
     await page.getByText(/Cluj-Napoca/i).first().click()
 
-    // Verify navigation to entity page (URL contains entity ID)
-    await page.waitForURL(/\/entities\/\d+/)
+    // Preferred navigation for UATs now lands on the campaign analysis route.
+    await page.waitForURL(/\/primarie\/\d+/)
 
-    // Verify budget distribution heading appears (entity page loaded)
+    // Verify the budget analysis page loaded.
     await expect(
-      page.getByRole('heading', { name: /distribuția.*bugetului/i })
+      page.getByText(/distribuția cheltuielilor/i).first()
     ).toBeVisible({ timeout: 10000 })
   })
 

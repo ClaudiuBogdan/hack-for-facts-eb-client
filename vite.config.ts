@@ -181,6 +181,11 @@ export default defineConfig(({ mode }) => {
   // Cookie handling: https://github.com/sagemathinc/http-proxy-3
   // Origin header security: https://github.com/vitejs/vite/issues/17562
   const env = loadEnv(mode, process.cwd(), "");
+  const isSentryUploadEnabled =
+    mode === "production" &&
+    Boolean(process.env.SENTRY_ORG) &&
+    Boolean(process.env.SENTRY_PROJECT) &&
+    Boolean(process.env.SENTRY_AUTH_TOKEN);
   const apiProxyTarget = env.VITE_API_PROXY_TARGET || env.VITE_API_URL;
 
   // Keep-alive agent for connection reuse (better performance)
@@ -294,11 +299,7 @@ export default defineConfig(({ mode }) => {
         org: process.env.SENTRY_ORG,
         project: process.env.SENTRY_PROJECT,
         authToken: process.env.SENTRY_AUTH_TOKEN,
-        disable:
-          mode !== "production" ||
-          !process.env.SENTRY_ORG ||
-          !process.env.SENTRY_PROJECT ||
-          !process.env.SENTRY_AUTH_TOKEN,
+        disable: !isSentryUploadEnabled,
         telemetry: false,
         sourcemaps: {
           // TanStack Start + Nitro outputs assets under .output.
@@ -328,9 +329,8 @@ export default defineConfig(({ mode }) => {
       proxy,
     },
     build: {
-      // Generate sourcemaps in production so Sentry can upload and map stack traces
-      // Using 'hidden' avoids adding sourceMappingURL references to the bundled files
-      sourcemap: 'hidden',
+      // Hidden sourcemaps are only needed for Sentry upload builds.
+      sourcemap: isSentryUploadEnabled ? 'hidden' : false,
       chunkSizeWarningLimit: 1500,
       rollupOptions: {
         output: {

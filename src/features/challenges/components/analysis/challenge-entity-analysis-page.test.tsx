@@ -15,6 +15,7 @@ import type { ChallengeEntityAnalysisPageState } from './challenge-entity-analys
 import type { BudgetItemAnalyticsSearchState } from './budget-item-analytics-search-state'
 
 const useEntityDetailsMock = vi.fn()
+const useEntityRelationshipsMock = vi.fn()
 const useEntityExecutionLineItemsMock = vi.fn()
 const useReportsConnectionMock = vi.fn()
 const useTreemapDrilldownMock = vi.fn()
@@ -113,6 +114,8 @@ vi.mock('@/hooks/filters/useFilterLabels', () => ({
 
 vi.mock('@/lib/hooks/useEntityDetails', () => ({
   useEntityDetails: (...args: unknown[]) => useEntityDetailsMock(...args),
+  useEntityRelationships: (...args: unknown[]) =>
+    useEntityRelationshipsMock(...args),
   useEntityExecutionLineItems: (...args: unknown[]) =>
     useEntityExecutionLineItemsMock(...args),
   useReportsConnection: (...args: unknown[]) =>
@@ -716,6 +719,16 @@ describe('ChallengeEntityAnalysisPage', () => {
         refetch: vi.fn(),
       }),
     )
+    useEntityRelationshipsMock.mockReturnValue({
+      data: {
+        children: [],
+        parents: [],
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
     useTreemapDrilldownMock.mockReturnValue({
       primary: 'fn',
       activePrimary: 'fn',
@@ -2836,6 +2849,21 @@ describe('ChallengeEntityAnalysisPage', () => {
         error: null,
         refetch: vi.fn(),
       }
+    })
+    useEntityRelationshipsMock.mockReturnValue({
+      data: {
+        children: [
+          {
+            cui: '11111111',
+            name: 'Școala Gimnazială Nr. 1',
+          },
+        ],
+        parents: [],
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
     })
 
     renderAnalysisPage()

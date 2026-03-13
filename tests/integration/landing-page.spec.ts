@@ -118,9 +118,9 @@ test.describe('Landing Page', () => {
     await expect(entityLink).toBeVisible({ timeout: 5000 })
     await entityLink.click()
 
-    // Verify navigation
-    await page.waitForURL(/\/entities\/4305857/)
-    expect(page.url()).toContain('/entities/4305857')
+    // Quick access uses the preferred route for non-county UATs.
+    await page.waitForURL(/\/primarie\/4305857/)
+    expect(page.url()).toContain('/primarie/4305857')
   })
 
   test('footer contains expected links', async ({ page }) => {

@@ -1,0 +1,37 @@
+{
+  "data": {
+    "entityAnalytics": {
+      "nodes": [
+        {
+          "entity_cui": "12345678",
+          "entity_name": "DIRECȚIA DE ASISTENȚĂ SOCIALĂ CLUJ-NAPOCA",
+          "entity_type": "public_institution",
+          "uat_id": "54975",
+          "county_code": "CJ",
+          "county_name": "Cluj",
+          "population": 286598,
+          "amount": 185000000,
+          "total_amount": 185000000,
+          "per_capita_amount": 645.51
+        },
+        {
+          "entity_cui": "87654321",
+          "entity_name": "LICEUL TEORETIC NICOLAE BĂLCESCU",
+          "entity_type": "school",
+          "uat_id": "54975",
+          "county_code": "CJ",
+          "county_name": "Cluj",
+          "population": 286598,
+          "amount": 92000000,
+          "total_amount": 92000000,
+          "per_capita_amount": 321.01
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 2,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

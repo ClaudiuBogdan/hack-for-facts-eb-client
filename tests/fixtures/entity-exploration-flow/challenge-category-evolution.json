@@ -1,0 +1,60 @@
+{
+  "data": {
+    "executionAnalytics": [
+      {
+        "seriesId": "19b42528",
+        "xAxis": {
+          "name": "Year",
+          "type": "STRING",
+          "unit": ""
+        },
+        "yAxis": {
+          "name": "Amount",
+          "type": "FLOAT",
+          "unit": "RON"
+        },
+        "data": [
+          {
+            "x": "2023",
+            "y": 610000000
+          },
+          {
+            "x": "2024",
+            "y": 655000000
+          },
+          {
+            "x": "2025",
+            "y": 702000000
+          }
+        ]
+      },
+      {
+        "seriesId": "1d20b9a8",
+        "xAxis": {
+          "name": "Year",
+          "type": "STRING",
+          "unit": ""
+        },
+        "yAxis": {
+          "name": "Amount",
+          "type": "FLOAT",
+          "unit": "RON"
+        },
+        "data": [
+          {
+            "x": "2023",
+            "y": 140000000
+          },
+          {
+            "x": "2024",
+            "y": 152000000
+          },
+          {
+            "x": "2025",
+            "y": 168000000
+          }
+        ]
+      }
+    ]
+  }
+}

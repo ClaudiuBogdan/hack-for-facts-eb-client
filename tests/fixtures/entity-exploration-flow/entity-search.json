@@ -5,6 +5,8 @@
         {
           "name": "MUNICIPIUL CLUJ-NAPOCA",
           "cui": "4305857",
+          "entity_type": "admin_municipality",
+          "is_uat": true,
           "uat": {
             "county_name": "Cluj",
             "name": "Cluj-Napoca"
@@ -13,6 +15,8 @@
         {
           "name": "MUNICIPIUL BUCURESTI",
           "cui": "4267117",
+          "entity_type": "admin_county_council",
+          "is_uat": true,
           "uat": {
             "county_name": "Bucuresti",
             "name": "Bucuresti"
@@ -21,6 +25,8 @@
         {
           "name": "MUNICIPIUL TIMISOARA",
           "cui": "14756536",
+          "entity_type": "admin_municipality",
+          "is_uat": true,
           "uat": {
             "county_name": "Timis",
             "name": "Timisoara"
