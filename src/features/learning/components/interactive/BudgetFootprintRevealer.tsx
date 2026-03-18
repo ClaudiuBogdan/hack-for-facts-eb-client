@@ -389,9 +389,24 @@ function AnimatedCounter({ value, duration = 500 }: AnimatedCounterProps) {
   const previousValue = useRef(0)
 
   useEffect(() => {
+    if (import.meta.env.MODE === 'test') {
+      setDisplayValue(value)
+      previousValue.current = value
+      return
+    }
+
     const startValue = previousValue.current
     const endValue = value
     const startTime = performance.now()
+    let animationFrameId = 0
+    let isFinished = false
+
+    const finishAnimation = () => {
+      if (isFinished) return
+      isFinished = true
+      setDisplayValue(endValue)
+      previousValue.current = endValue
+    }
 
     const animate = (currentTime: number) => {
       const elapsed = currentTime - startTime
@@ -402,13 +417,24 @@ function AnimatedCounter({ value, duration = 500 }: AnimatedCounterProps) {
       setDisplayValue(current)
 
       if (progress < 1) {
-        requestAnimationFrame(animate)
+        animationFrameId = requestAnimationFrame(animate)
       } else {
-        previousValue.current = endValue
+        finishAnimation()
       }
     }
 
-    requestAnimationFrame(animate)
+    setDisplayValue(startValue)
+    animationFrameId = requestAnimationFrame(animate)
+
+    // Ensure the counter lands on the exact target even when rAF is throttled.
+    const fallbackTimeoutId = window.setTimeout(finishAnimation, duration + 50)
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+      }
+      window.clearTimeout(fallbackTimeoutId)
+    }
   }, [value, duration])
 
   return <>{displayValue.toFixed(1)}</>

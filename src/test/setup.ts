@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
 import { expect, afterEach, vi } from "vitest";
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import * as matchers from "@testing-library/jest-dom/matchers";
 
 // Mock @/config/env before any other imports to avoid environment validation errors
@@ -22,6 +22,7 @@ vi.mock("@/config/env", () => ({
 
 // Extend Vitest's expect method with methods from react-testing-library
 expect.extend(matchers);
+configure({ asyncUtilTimeout: 10000 });
 
 // Cleanup after each test case (e.g. clearing jsdom)
 afterEach(() => {

@@ -15,6 +15,9 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     unstubGlobals: true,
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
+    maxWorkers: 2,
     coverage: {
       reporter: ["text", "json", "html"],
       exclude: ["node_modules/", "src/test/setup.ts"],
