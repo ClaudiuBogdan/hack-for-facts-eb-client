@@ -39,6 +39,7 @@ import {
   reportsConnectionQueryOptions,
 } from '@/lib/hooks/useEntityDetails'
 import type { NormalizationOptions } from '@/lib/normalization'
+import { getReportDateRange } from '@/lib/period-utils'
 import { DEFAULT_SELECTED_YEAR, defaultYearRange } from '@/schemas/charts'
 import {
   type GqlReportType,
@@ -1825,12 +1826,10 @@ export function ChallengeEntityAnalysisPage({
   }, [])
 
   const handleReportsSectionPrefetch = useCallback(() => {
-    const selectedPeriodAnchor =
-      reportPeriod.selection.interval?.start ?? reportPeriod.selection.dates?.[0]
-    const selectedReportingYear =
-      typeof selectedPeriodAnchor === 'string'
-        ? Number(selectedPeriodAnchor.slice(0, 4))
-        : undefined
+    const {
+      start: reportDateStart,
+      end: reportDateEnd,
+    } = getReportDateRange(reportPeriod)
 
     void loadChallengeEntityReportsSection()
     void queryClient.prefetchQuery(
@@ -1838,16 +1837,8 @@ export function ChallengeEntityAnalysisPage({
         filter: {
           entity_cui: entityCui,
           report_type: selectedReportType,
-          ...(reportPeriod.type === 'YEAR'
-            ? {
-                reporting_year: selectedReportingYear,
-              }
-            : {
-                reporting_period:
-                  typeof selectedPeriodAnchor === 'string'
-                    ? selectedPeriodAnchor
-                    : undefined,
-              }),
+          report_date_start: reportDateStart || undefined,
+          report_date_end: reportDateEnd || undefined,
           main_creditor_cui: mainCreditorCui,
         },
         limit: 24,

@@ -126,6 +126,21 @@ function createQuarterReportPeriod(
   }
 }
 
+function createMonthReportPeriod(
+  year: number,
+  month: '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08' | '09' | '10' | '11' | '12',
+): ReportPeriodInput {
+  return {
+    type: 'MONTH',
+    selection: {
+      interval: {
+        start: `${year}-${month}` as PeriodDate,
+        end: `${year}-${month}` as PeriodDate,
+      },
+    },
+  }
+}
+
 function renderReportsSection(
   props: Partial<ComponentProps<typeof ChallengeEntityReportsSection>> = {},
 ) {
@@ -228,7 +243,8 @@ describe('ChallengeEntityReportsSection', () => {
     expect(useReportsConnectionMock).toHaveBeenLastCalledWith(
       expect.objectContaining({
         filter: expect.objectContaining({
-          reporting_year: 2024,
+          report_date_start: '2024-01-01',
+          report_date_end: '2024-12-31',
           report_type: 'PRINCIPAL_AGGREGATED',
         }),
       }),
@@ -282,7 +298,8 @@ describe('ChallengeEntityReportsSection', () => {
     expect(useReportsConnectionMock).toHaveBeenLastCalledWith(
       expect.objectContaining({
         filter: expect.objectContaining({
-          reporting_year: 2025,
+          report_date_start: '2025-01-01',
+          report_date_end: '2025-12-31',
           report_type: 'DETAILED',
         }),
       }),
@@ -372,7 +389,7 @@ describe('ChallengeEntityReportsSection', () => {
     ).toHaveAttribute('href', 'https://example.com/report-1.xml')
   })
 
-  it('uses the reporting period for quarterly filters and shows the selected period label', () => {
+  it('uses report publication date ranges for quarterly filters and shows the selected period label', () => {
     renderReportsSection({
       reportPeriod: createQuarterReportPeriod(2025, 'Q2'),
     })
@@ -380,12 +397,29 @@ describe('ChallengeEntityReportsSection', () => {
     expect(useReportsConnectionMock).toHaveBeenLastCalledWith(
       expect.objectContaining({
         filter: expect.objectContaining({
-          reporting_period: '2025-Q2',
+          report_date_start: '2025-04-01',
+          report_date_end: '2025-06-30',
           report_type: 'PRINCIPAL_AGGREGATED',
         }),
       }),
     )
     expect(screen.getByText(/Perioadă selectată 2025-Q2/i)).toBeInTheDocument()
+  })
+
+  it('uses report publication date ranges for monthly filters', () => {
+    renderReportsSection({
+      reportPeriod: createMonthReportPeriod(2025, '03'),
+    })
+
+    expect(useReportsConnectionMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filter: expect.objectContaining({
+          report_date_start: '2025-03-01',
+          report_date_end: '2025-03-31',
+          report_type: 'PRINCIPAL_AGGREGATED',
+        }),
+      }),
+    )
   })
 
   it('passes the main creditor filter when present', () => {

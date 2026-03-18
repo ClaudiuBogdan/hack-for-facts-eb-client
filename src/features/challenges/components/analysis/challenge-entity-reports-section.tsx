@@ -12,6 +12,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { usePeriodLabel } from '@/hooks/use-period-label'
 import { useReportsConnection } from '@/lib/hooks/useEntityDetails'
+import { getReportDateRange } from '@/lib/period-utils'
 import { toReportTypeValue, type GqlReportType, type ReportPeriodInput } from '@/schemas/reporting'
 import type { ReportNode } from '@/lib/api/entities'
 import type { ChallengeLocale } from '../../types'
@@ -207,26 +208,16 @@ export function ChallengeEntityReportsSection({
   const periodLabel =
     usePeriodLabel(reportPeriod) ||
     String(reportPeriod.selection.interval?.start ?? '')
-  const selectedPeriodAnchor =
-    reportPeriod.selection.interval?.start ?? reportPeriod.selection.dates?.[0]
-  const selectedReportingYear =
-    typeof selectedPeriodAnchor === 'string'
-      ? Number(selectedPeriodAnchor.slice(0, 4))
-      : undefined
+  const { start: reportDateStart, end: reportDateEnd } = useMemo(
+    () => getReportDateRange(reportPeriod),
+    [reportPeriod],
+  )
   const reportsQuery = useReportsConnection({
     filter: {
       entity_cui: entityCui,
       report_type: reportType,
-      ...(reportPeriod.type === 'YEAR'
-        ? {
-            reporting_year: selectedReportingYear,
-          }
-        : {
-            reporting_period:
-              typeof selectedPeriodAnchor === 'string'
-                ? selectedPeriodAnchor
-                : undefined,
-          }),
+      report_date_start: reportDateStart || undefined,
+      report_date_end: reportDateEnd || undefined,
       main_creditor_cui: mainCreditorCui,
     },
     limit: REPORT_FETCH_LIMIT,

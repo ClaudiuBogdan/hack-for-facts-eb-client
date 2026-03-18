@@ -1051,7 +1051,8 @@ describe('ChallengeEntityAnalysisPage', () => {
             expect.objectContaining({
               filter: expect.objectContaining({
                 entity_cui: '12345678',
-                reporting_year: 2025,
+                report_date_start: '2025-01-01',
+                report_date_end: '2025-12-31',
                 report_type: 'PRINCIPAL_AGGREGATED',
               }),
               limit: 24,
@@ -1083,6 +1084,46 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
     expect(useReportsConnectionMock).toHaveBeenCalled()
     expect(screen.getByText('Rapoarte financiare')).toBeInTheDocument()
+  })
+
+  it('prefetches reports with monthly report publication date ranges', async () => {
+    setDeferredSectionInViewState({
+      prefetch: true,
+      render: false,
+    })
+
+    render(
+      <ChallengeEntityAnalysisPage
+        entityCui="12345678"
+        state={{
+          ...DEFAULT_PAGE_STATE,
+          periodType: 'MONTH',
+          month: '03',
+        }}
+        onStateChange={vi.fn()}
+      />,
+    )
+
+    await waitFor(() => {
+      expect(prefetchQueryMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queryKey: [
+            'reportsConnection',
+            expect.objectContaining({
+              filter: expect.objectContaining({
+                entity_cui: '12345678',
+                report_date_start: '2025-03-01',
+                report_date_end: '2025-03-31',
+                report_type: 'PRINCIPAL_AGGREGATED',
+              }),
+              limit: 24,
+              offset: 0,
+              enabled: true,
+            }),
+          ],
+        }),
+      )
+    })
   })
 
   it('seeds the preview viewport from the entity-centered map position', async () => {

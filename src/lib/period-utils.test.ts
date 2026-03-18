@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getPeriodTags } from './period-utils'
+import { getPeriodTags, getReportDateRange, toReportDateBoundary } from './period-utils'
 import type { ReportPeriodInput } from '@/schemas/reporting'
 
 describe('period-utils', () => {
@@ -199,6 +199,66 @@ describe('period-utils', () => {
 
         const result = getPeriodTags(period)
         expect(result).toEqual([])
+      })
+    })
+  })
+
+  describe('toReportDateBoundary', () => {
+    it('converts year anchors to inclusive year boundaries', () => {
+      expect(toReportDateBoundary('2024', true)).toBe('2024-01-01')
+      expect(toReportDateBoundary('2024', false)).toBe('2024-12-31')
+    })
+
+    it('converts month anchors to inclusive month boundaries', () => {
+      expect(toReportDateBoundary('2024-03', true)).toBe('2024-03-01')
+      expect(toReportDateBoundary('2024-03', false)).toBe('2024-03-31')
+      expect(toReportDateBoundary('2024-02', false)).toBe('2024-02-29')
+    })
+
+    it('converts quarter anchors to inclusive quarter boundaries', () => {
+      expect(toReportDateBoundary('2024-Q2', true)).toBe('2024-04-01')
+      expect(toReportDateBoundary('2024-Q2', false)).toBe('2024-06-30')
+    })
+  })
+
+  describe('getReportDateRange', () => {
+    it('builds a report date range for yearly intervals', () => {
+      expect(getReportDateRange({
+        type: 'YEAR',
+        selection: { interval: { start: '2024', end: '2024' } },
+      })).toEqual({
+        start: '2024-01-01',
+        end: '2024-12-31',
+      })
+    })
+
+    it('builds a report date range for monthly intervals', () => {
+      expect(getReportDateRange({
+        type: 'MONTH',
+        selection: { interval: { start: '2024-03', end: '2024-03' } },
+      })).toEqual({
+        start: '2024-03-01',
+        end: '2024-03-31',
+      })
+    })
+
+    it('builds a report date range for quarterly intervals', () => {
+      expect(getReportDateRange({
+        type: 'QUARTER',
+        selection: { interval: { start: '2024-Q2', end: '2024-Q2' } },
+      })).toEqual({
+        start: '2024-04-01',
+        end: '2024-06-30',
+      })
+    })
+
+    it('uses the earliest and latest selected dates for date selections', () => {
+      expect(getReportDateRange({
+        type: 'MONTH',
+        selection: { dates: ['2024-06', '2024-03', '2024-05'] },
+      })).toEqual({
+        start: '2024-03-01',
+        end: '2024-06-30',
       })
     })
   })
