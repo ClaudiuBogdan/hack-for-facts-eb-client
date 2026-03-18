@@ -1338,6 +1338,25 @@ export function ChallengeEntityAnalysisPage({
       reportPeriod,
     ],
   )
+  const handleSelectedPeriodChange = useCallback(
+    (nextPeriodLabel: string) => {
+      if (periodType === 'MONTH') {
+        const nextMonth = nextPeriodLabel as TMonth
+        if (nextMonth !== month) {
+          onStateChange({ month: nextMonth })
+        }
+        return
+      }
+
+      if (periodType === 'QUARTER') {
+        const nextQuarter = nextPeriodLabel as TQuarter
+        if (nextQuarter !== quarter) {
+          onStateChange({ quarter: nextQuarter })
+        }
+      }
+    },
+    [month, onStateChange, periodType, quarter],
+  )
   const analyticsView = analyticsTarget?.view ?? getDefaultBudgetItemAnalyticsViewState()
   const selectedBudgetItemAnalyticsProps =
     useMemo<BudgetItemAnalyticsProps | null>(() => {
@@ -1419,6 +1438,7 @@ export function ChallengeEntityAnalysisPage({
           }
         },
         onYearChange: handleYearChange,
+        onPeriodChange: handleSelectedPeriodChange,
         onEntityCuiChange,
       }
     }, [
@@ -1428,6 +1448,7 @@ export function ChallengeEntityAnalysisPage({
       displayInflationAdjusted,
       expenseType,
       entityCui,
+      handleSelectedPeriodChange,
       handleYearChange,
       inflationAdjusted,
       languageQuery,
@@ -1564,26 +1585,6 @@ export function ChallengeEntityAnalysisPage({
 
     onStateChange({ selectedYear: nextYear })
   }
-
-  const handleSelectedPeriodChange = useCallback(
-    (nextPeriodLabel: string) => {
-      if (periodType === 'MONTH') {
-        const nextMonth = nextPeriodLabel as TMonth
-        if (nextMonth !== month) {
-          onStateChange({ month: nextMonth })
-        }
-        return
-      }
-
-      if (periodType === 'QUARTER') {
-        const nextQuarter = nextPeriodLabel as TQuarter
-        if (nextQuarter !== quarter) {
-          onStateChange({ quarter: nextQuarter })
-        }
-      }
-    },
-    [month, onStateChange, periodType, quarter],
-  )
 
   const handleReportControlsChange = useCallback(
     (patch: {

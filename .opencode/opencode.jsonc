@@ -1,7 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  // Theme
-  "theme": "opencode",
   // Auto-update OpenCode
   "autoupdate": true,
   // ============================================================================

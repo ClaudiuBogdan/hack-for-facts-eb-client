@@ -17,6 +17,7 @@ import type { ReportPeriodInput, GqlReportType } from '@/schemas/reporting'
 import {
   makeTrendPeriod,
   toReportTypeValue,
+  type ReportPeriodType,
 } from '@/schemas/reporting'
 import type { ChallengeLocale } from '../../types'
 import {
@@ -68,6 +69,7 @@ export type BudgetItemAnalyticsProps = {
     next?: 'functionare' | 'dezvoltare',
   ) => void
   readonly onYearChange?: (year: number) => void
+  readonly onPeriodChange?: (label: string) => void
   readonly onEntityCuiChange?: (selection: MapEntitySelection) => void
   readonly className?: string
 }
@@ -89,13 +91,102 @@ const BUDGET_ITEM_ANALYTICS_CONTROL_END_YEAR = 2025
 
 export { normalizeBudgetItemAnalyticsCode }
 
-function buildControlAllTimeframeLabel(startYear: number): string {
-  return `${startYear}-${BUDGET_ITEM_ANALYTICS_CONTROL_END_YEAR} total`
+function getReportPeriodAnchor(
+  reportPeriod:
+    | ReportPeriodInput
+    | AnalyticsFilterType['report_period']
+    | CommitmentsFilterType['report_period']
+    | undefined,
+): string | undefined {
+  if (!reportPeriod) {
+    return undefined
+  }
+
+  if ('interval' in reportPeriod.selection && reportPeriod.selection.interval) {
+    const { start, end } = reportPeriod.selection.interval
+    if (start === end) {
+      return String(start)
+    }
+
+    return `${start} - ${end}`
+  }
+
+  const selectedDates = reportPeriod.selection.dates ?? []
+  if (selectedDates.length === 1) {
+    return String(selectedDates[0])
+  }
+
+  if (selectedDates.length > 1) {
+    return selectedDates.map(String).join(', ')
+  }
+
+  return undefined
+}
+
+export function formatBudgetItemAnalyticsPeriodLabel(
+  reportPeriod:
+    | ReportPeriodInput
+    | AnalyticsFilterType['report_period']
+    | CommitmentsFilterType['report_period']
+    | undefined,
+): string | undefined {
+  if (!reportPeriod) {
+    return undefined
+  }
+
+  return getReportPeriodAnchor(reportPeriod)
+}
+
+function buildControlAllTimeframeLabel(
+  startYear: number,
+  periodType: ReportPeriodType,
+  language: ChallengeLocale | undefined,
+): string {
+  const baseLabel = `${startYear}-${BUDGET_ITEM_ANALYTICS_CONTROL_END_YEAR}`
+  const suffix =
+    language === 'en'
+      ? periodType === 'MONTH'
+        ? 'monthly'
+        : periodType === 'QUARTER'
+          ? 'quarterly'
+          : 'yearly'
+      : periodType === 'MONTH'
+        ? 'lunar'
+        : periodType === 'QUARTER'
+          ? 'trimestrial'
+          : 'anual'
+
+  return `${baseLabel} ${suffix}`
 }
 
 function buildAllTimeframePeriod(
   startYear: number,
+  periodType: ReportPeriodType,
 ): ReportPeriodInput {
+  if (periodType === 'QUARTER') {
+    return {
+      type: 'QUARTER',
+      selection: {
+        interval: {
+          start: `${startYear}-Q1`,
+          end: `${BUDGET_ITEM_ANALYTICS_CONTROL_END_YEAR}-Q4`,
+        },
+      },
+    } as ReportPeriodInput
+  }
+
+  if (periodType === 'MONTH') {
+    return {
+      type: 'MONTH',
+      selection: {
+        interval: {
+          start: `${startYear}-01`,
+          end: `${BUDGET_ITEM_ANALYTICS_CONTROL_END_YEAR}-12`,
+        },
+      },
+    } as ReportPeriodInput
+  }
+
   return makeTrendPeriod(
     'YEAR',
     BUDGET_ITEM_ANALYTICS_CONTROL_END_YEAR,
@@ -218,9 +309,11 @@ export function buildBudgetItemAnalyticsFilters(
   )
   const executionAllTimeframePeriod = buildAllTimeframePeriod(
     defaultExecutionPeriodStartYear,
+    context.currentReportPeriod.type,
   )
   const commitmentsAllTimeframePeriod = buildAllTimeframePeriod(
     defaultCommitmentsPeriodStartYear,
+    context.currentReportPeriod.type,
   )
   const executionChartPeriod = buildExecutionReportPeriod(
     context,
@@ -272,9 +365,13 @@ export function buildBudgetItemAnalyticsFilters(
     commitmentsAllTimeframePeriod,
     executionAllTimeframeLabel: buildControlAllTimeframeLabel(
       defaultExecutionPeriodStartYear,
+      context.currentReportPeriod.type,
+      context.language,
     ),
     commitmentsAllTimeframeLabel: buildControlAllTimeframeLabel(
       defaultCommitmentsPeriodStartYear,
+      context.currentReportPeriod.type,
+      context.language,
     ),
   }
 }
@@ -285,10 +382,12 @@ export function getBudgetItemAnalyticsEmptyStateMessage() {
 
 export function getBudgetItemAnalyticsAllTimeframePeriod(
   tab: 'execution' | 'commitments',
+  periodType: ReportPeriodType = 'YEAR',
 ) {
   return buildAllTimeframePeriod(
     tab === 'commitments'
       ? defaultCommitmentsPeriodStartYear
       : defaultExecutionPeriodStartYear,
+    periodType,
   )
 }

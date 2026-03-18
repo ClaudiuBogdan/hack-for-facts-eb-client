@@ -17,6 +17,9 @@ import type { ChallengeLocale } from '../../types'
 import type {
   BudgetItemAnalyticsPageContext,
 } from './budget-item-analytics-context'
+import {
+  formatBudgetItemAnalyticsPeriodLabel,
+} from './budget-item-analytics-context'
 import type {
   BudgetItemAnalyticsTab,
   BudgetItemAnalyticsViewState,
@@ -79,23 +82,6 @@ function getLocalizedCopy(language: ChallengeLocale) {
         populationLabel: 'Populație',
         populationUnit: 'loc.',
       }
-}
-
-function formatPeriodLabel(
-  reportPeriod:
-    | AnalyticsFilterType['report_period']
-    | CommitmentsFilterType['report_period']
-    | undefined,
-): string | undefined {
-  const interval = reportPeriod?.selection?.interval
-  const start = interval?.start ? String(interval.start).slice(0, 4) : ''
-  const end = interval?.end ? String(interval.end).slice(0, 4) : ''
-
-  if (start && end) {
-    return start === end ? start : `${start}-${end}`
-  }
-
-  return undefined
 }
 
 function getMapSubjectLabel(
@@ -190,8 +176,7 @@ function buildChartSearch(
       title: input.resolvedTitle,
       config: {
         ...baseChartSearch.chart.config,
-        chartType:
-          input.analyticsView.timeframe === 'all' ? 'bar-aggr' : 'line',
+        chartType: 'line',
         showLegend: true,
         showTooltip: true,
         showGridLines: true,
@@ -213,7 +198,7 @@ function buildMapStateDefinition(
     input.seriesLabel,
     input.resolvedTitle,
   )
-  const mapPeriodLabel = formatPeriodLabel(
+  const mapPeriodLabel = formatBudgetItemAnalyticsPeriodLabel(
     isCommitmentsTab
       ? input.commitmentsMapFilter.report_period
       : input.executionMapFilter.report_period,
@@ -306,6 +291,7 @@ function buildMapStateDefinition(
 function buildMapDescription(
   subjectLabel: string,
   language: ChallengeLocale,
+  periodLabel: string | undefined,
   normalizedFunctionalCode: string | undefined,
   normalizedEconomicCode: string | undefined,
   expenseType: BudgetItemAnalyticsPageContext['expenseType'],
@@ -314,6 +300,7 @@ function buildMapDescription(
     language === 'en'
       ? {
           forItem: 'Map preview for',
+          period: 'Period',
           fn: 'Functional code',
           ec: 'Economic code',
           expenseType: 'Expense type',
@@ -324,6 +311,7 @@ function buildMapDescription(
         }
       : {
           forItem: 'Hartă pentru',
+          period: 'Perioadă',
           fn: 'Cod funcțional',
           ec: 'Cod economic',
           expenseType: 'Tip cheltuială',
@@ -334,6 +322,7 @@ function buildMapDescription(
         }
 
   const codeLines = [
+    periodLabel ? `- ${labels.period}: ${periodLabel}` : null,
     normalizedFunctionalCode
       ? `- ${labels.fn}: \`fn:${normalizedFunctionalCode}\``
       : null,
@@ -390,7 +379,7 @@ export function getBudgetItemAnalyticsMapCardTitle(
   language: ChallengeLocale | undefined,
 ): string {
   const copy = getLocalizedCopy(resolveLocale(language))
-  const mapPeriodLabel = formatPeriodLabel(reportPeriod)
+  const mapPeriodLabel = formatBudgetItemAnalyticsPeriodLabel(reportPeriod)
 
   return mapPeriodLabel
     ? `${copy.mapNamePrefix} (${mapPeriodLabel})`
@@ -413,10 +402,10 @@ export function buildBudgetItemAnalyticsViewState(
 
   return {
     title: getLocalizedCopy(language).title,
-    subjectLabel: input.resolvedTitle,
-    seriesLabel: input.seriesLabel,
-    language,
-    mapTitle: getBudgetItemAnalyticsMapCardTitle(mapReportPeriod, language),
+      subjectLabel: input.resolvedTitle,
+      seriesLabel: input.seriesLabel,
+      language,
+      mapTitle: getBudgetItemAnalyticsMapCardTitle(mapReportPeriod, language),
     chartSearch: buildChartSearch(input, activeTab),
     mapStateDefinition: buildMapStateDefinition(input, language, activeTab),
     mapKey: [
@@ -435,6 +424,7 @@ export function buildBudgetItemAnalyticsViewState(
     mapDescription: buildMapDescription(
       mapSubjectLabel,
       language,
+      formatBudgetItemAnalyticsPeriodLabel(mapReportPeriod),
       input.normalizedFunctionalCode,
       input.normalizedEconomicCode,
       activeTab === 'execution' && input.context.accountCategory === 'ch'

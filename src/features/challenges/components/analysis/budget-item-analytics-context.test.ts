@@ -115,13 +115,13 @@ describe('buildBudgetItemAnalyticsFilters', () => {
       getBudgetItemAnalyticsAllTimeframePeriod('execution'),
     )
     expect(result.commitmentsChartFilter.report_period).toEqual(
-      getBudgetItemAnalyticsAllTimeframePeriod('commitments'),
+      getBudgetItemAnalyticsAllTimeframePeriod('commitments', 'YEAR'),
     )
     expect(result.commitmentsMapFilter.report_period).toEqual(
-      getBudgetItemAnalyticsAllTimeframePeriod('commitments'),
+      getBudgetItemAnalyticsAllTimeframePeriod('commitments', 'YEAR'),
     )
-    expect(result.executionAllTimeframeLabel).toBe('2016-2025 total')
-    expect(result.commitmentsAllTimeframeLabel).toBe('2019-2025 total')
+    expect(result.executionAllTimeframeLabel).toBe('2016-2025 yearly')
+    expect(result.commitmentsAllTimeframeLabel).toBe('2019-2025 yearly')
   })
 
   it('keeps the all-timeframe period pinned to the hardcoded 2025 end year', () => {
@@ -146,11 +146,111 @@ describe('buildBudgetItemAnalyticsFilters', () => {
     )
 
     expect(result.executionMapFilter.report_period).toEqual(
-      getBudgetItemAnalyticsAllTimeframePeriod('execution'),
+      getBudgetItemAnalyticsAllTimeframePeriod('execution', 'YEAR'),
     )
     expect(result.commitmentsMapFilter.report_period).toEqual(
-      getBudgetItemAnalyticsAllTimeframePeriod('commitments'),
+      getBudgetItemAnalyticsAllTimeframePeriod('commitments', 'YEAR'),
     )
+  })
+
+  it('builds quarterly all-timeframe periods and labels when the selected period is quarterly', () => {
+    const quarterlyContext: BudgetItemAnalyticsPageContext = {
+      ...defaultContext,
+      currentReportPeriod: {
+        type: 'QUARTER',
+        selection: {
+          interval: {
+            start: '2025-Q3',
+            end: '2025-Q3',
+          },
+        },
+      },
+      historyReportPeriod: {
+        type: 'QUARTER',
+        selection: {
+          interval: {
+            start: '2025-Q1',
+            end: '2025-Q4',
+          },
+        },
+      },
+    }
+
+    const result = buildBudgetItemAnalyticsFilters(quarterlyContext, {
+      ...getDefaultBudgetItemAnalyticsViewState(),
+      timeframe: 'all',
+    })
+
+    expect(result.executionChartFilter.report_period).toEqual({
+      type: 'QUARTER',
+      selection: {
+        interval: {
+          start: '2016-Q1',
+          end: '2025-Q4',
+        },
+      },
+    })
+    expect(result.commitmentsChartFilter.report_period).toEqual({
+      type: 'QUARTER',
+      selection: {
+        interval: {
+          start: '2019-Q1',
+          end: '2025-Q4',
+        },
+      },
+    })
+    expect(result.executionAllTimeframeLabel).toBe('2016-2025 quarterly')
+    expect(result.commitmentsAllTimeframeLabel).toBe('2019-2025 quarterly')
+  })
+
+  it('builds monthly all-timeframe periods and labels when the selected period is monthly', () => {
+    const monthlyContext: BudgetItemAnalyticsPageContext = {
+      ...defaultContext,
+      currentReportPeriod: {
+        type: 'MONTH',
+        selection: {
+          interval: {
+            start: '2025-11',
+            end: '2025-11',
+          },
+        },
+      },
+      historyReportPeriod: {
+        type: 'MONTH',
+        selection: {
+          interval: {
+            start: '2025-01',
+            end: '2025-12',
+          },
+        },
+      },
+    }
+
+    const result = buildBudgetItemAnalyticsFilters(monthlyContext, {
+      ...getDefaultBudgetItemAnalyticsViewState(),
+      timeframe: 'all',
+    })
+
+    expect(result.executionMapFilter.report_period).toEqual({
+      type: 'MONTH',
+      selection: {
+        interval: {
+          start: '2016-01',
+          end: '2025-12',
+        },
+      },
+    })
+    expect(result.commitmentsMapFilter.report_period).toEqual({
+      type: 'MONTH',
+      selection: {
+        interval: {
+          start: '2019-01',
+          end: '2025-12',
+        },
+      },
+    })
+    expect(result.executionAllTimeframeLabel).toBe('2016-2025 monthly')
+    expect(result.commitmentsAllTimeframeLabel).toBe('2019-2025 monthly')
   })
 
   it('adds expense_types only to execution filters when an expense type is selected', () => {
@@ -254,9 +354,56 @@ describe('buildBudgetItemAnalyticsViewState', () => {
     ])
     expect(context.subjectLabel).toBe(resolvedTitle)
     expect(context.mapDescription).toContain(`**${seriesLabel}**`)
+    expect(context.mapDescription).toContain('Period: 2025')
     expect(context.mapDescription).not.toContain('Town Hall of Example')
     expect(context.mapDescription).toContain('fn:65')
     expect(context.mapDescription).toContain('ec:10.01')
+  })
+
+  it('preserves quarter labels in map titles and descriptions', () => {
+    const quarterlyContext: BudgetItemAnalyticsPageContext = {
+      ...defaultContext,
+      currentReportPeriod: {
+        type: 'QUARTER',
+        selection: {
+          interval: {
+            start: '2025-Q3',
+            end: '2025-Q3',
+          },
+        },
+      },
+      historyReportPeriod: {
+        type: 'QUARTER',
+        selection: {
+          interval: {
+            start: '2025-Q1',
+            end: '2025-Q4',
+          },
+        },
+      },
+    }
+    const filters = buildBudgetItemAnalyticsFilters(
+      quarterlyContext,
+      getDefaultBudgetItemAnalyticsViewState(),
+    )
+
+    const viewState = buildBudgetItemAnalyticsViewState({
+      resolvedTitle: 'Town Hall of Example · Subsidies',
+      seriesLabel: 'Subsidies',
+      language: quarterlyContext.language,
+      context: quarterlyContext,
+      analyticsView: getDefaultBudgetItemAnalyticsViewState(),
+      normalizedFunctionalCode: filters.normalizedFunctionalCode,
+      normalizedEconomicCode: filters.normalizedEconomicCode,
+      executionChartFilter: filters.executionChartFilter,
+      executionMapFilter: filters.executionMapFilter,
+      commitmentsChartFilter: filters.commitmentsChartFilter,
+      commitmentsMapFilter: filters.commitmentsMapFilter,
+    })
+
+    expect(viewState.mapTitle).toBe('Map (2025-Q3)')
+    expect(viewState.mapStateDefinition.mapName).toBe('Map (2025-Q3): Subsidies')
+    expect(viewState.mapDescription).toContain('Period: 2025-Q3')
   })
 
   it('includes the selected execution expense type in the map key and description', () => {

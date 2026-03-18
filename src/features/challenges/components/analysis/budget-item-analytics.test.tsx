@@ -142,6 +142,7 @@ const defaultAnalyticsProps: BudgetItemAnalyticsProps = {
   onInflationAdjustedChange: vi.fn(),
   onExpenseTypeChange: vi.fn(),
   onYearChange: vi.fn(),
+  onPeriodChange: vi.fn(),
   onEntityCuiChange: vi.fn(),
 }
 
@@ -256,8 +257,8 @@ describe('BudgetItemAnalytics', () => {
     expect(screen.getByText('Map (2025)')).toBeInTheDocument()
     expect(screen.getByText('Execution')).toBeInTheDocument()
     expect(screen.getByText('Commitments')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Selected year: 2025' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '2016-2025 total' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Selected period: 2025' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '2016-2025 yearly' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Show extra options' })).toBeInTheDocument()
     expect(screen.queryByText('Report type')).not.toBeInTheDocument()
     expect(screen.getByTestId('chart-renderer')).toBeInTheDocument()
@@ -528,7 +529,7 @@ describe('BudgetItemAnalytics', () => {
       />,
     )
 
-    expect(screen.getByRole('button', { name: '2019-2025 total' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '2019-2025 yearly' })).toBeInTheDocument()
     expect(screen.queryByText('Metric')).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Show extra options' }))
@@ -568,7 +569,7 @@ describe('BudgetItemAnalytics', () => {
     )
   })
 
-  it('uses aggregated chart rendering and disables year selection in all timeframe mode', () => {
+  it('uses time-series rendering and disables period selection in all timeframe mode', () => {
     render(
       <BudgetItemAnalytics
         {...defaultAnalyticsProps}
@@ -581,11 +582,98 @@ describe('BudgetItemAnalytics', () => {
 
     expect(chartRendererMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        aggregatedData: [{ year: '2016-2026', value: 10 }],
+        aggregatedData: [],
+        timeSeriesData: [{ year: 2024 }],
         xAxisMarker: undefined,
       }),
     )
-    expect(convertToAggregatedDataMock).toHaveBeenCalled()
+    expect(convertToAggregatedDataMock).not.toHaveBeenCalled()
+  })
+
+  it('shows quarter labels and forwards quarter selection when the current period is quarterly', () => {
+    render(
+      <BudgetItemAnalytics
+        {...defaultAnalyticsProps}
+        context={{
+          ...defaultAnalyticsProps.context,
+          currentReportPeriod: {
+            type: 'QUARTER',
+            selection: {
+              interval: {
+                start: '2025-Q3',
+                end: '2025-Q3',
+              },
+            },
+          },
+          historyReportPeriod: {
+            type: 'QUARTER',
+            selection: {
+              interval: {
+                start: '2025-Q1',
+                end: '2025-Q4',
+              },
+            },
+          },
+        }}
+      />,
+    )
+
+    expect(screen.getByText('Map (2025-Q3)')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Selected period: 2025-Q3' }),
+    ).toBeInTheDocument()
+
+    const latestQuarterChartCall =
+      chartRendererMock.mock.calls[chartRendererMock.mock.calls.length - 1]
+    const onXAxisClick = latestQuarterChartCall?.[0]?.onXAxisClick as
+      | ((value: string) => void)
+      | undefined
+    onXAxisClick?.('2025-Q2')
+
+    expect(defaultAnalyticsProps.onPeriodChange).toHaveBeenCalledWith('Q2')
+  })
+
+  it('shows month labels and forwards month selection when the current period is monthly', () => {
+    render(
+      <BudgetItemAnalytics
+        {...defaultAnalyticsProps}
+        context={{
+          ...defaultAnalyticsProps.context,
+          currentReportPeriod: {
+            type: 'MONTH',
+            selection: {
+              interval: {
+                start: '2025-11',
+                end: '2025-11',
+              },
+            },
+          },
+          historyReportPeriod: {
+            type: 'MONTH',
+            selection: {
+              interval: {
+                start: '2025-01',
+                end: '2025-12',
+              },
+            },
+          },
+        }}
+      />,
+    )
+
+    expect(screen.getByText('Map (2025-11)')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Selected period: 2025-11' }),
+    ).toBeInTheDocument()
+
+    const latestMonthChartCall =
+      chartRendererMock.mock.calls[chartRendererMock.mock.calls.length - 1]
+    const onXAxisClick = latestMonthChartCall?.[0]?.onXAxisClick as
+      | ((value: string) => void)
+      | undefined
+    onXAxisClick?.('2025-03')
+
+    expect(defaultAnalyticsProps.onPeriodChange).toHaveBeenCalledWith('03')
   })
 
   it('shows the chart loading state without blocking the map section', () => {

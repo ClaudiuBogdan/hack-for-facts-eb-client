@@ -39,6 +39,7 @@ import { cn } from '@/lib/utils'
 import { CHALLENGE_ENTITY_ANALYSIS_EXPENSE_TYPE_VALUES } from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
 import {
   buildBudgetItemAnalyticsFilters,
+  formatBudgetItemAnalyticsPeriodLabel,
   getBudgetItemAnalyticsEmptyStateMessage,
   normalizeBudgetItemAnalyticsCode,
   type BudgetItemAnalyticsFilters,
@@ -85,7 +86,7 @@ function buildAnalyticsCopy(language: BudgetItemAnalyticsResolvedViewState['lang
         normalizationLabel: 'Normalization',
         inflationLabel: 'Inflation adjusted',
         timeframeLabel: 'Timeframe',
-        selectedYearLabel: 'Selected year',
+        selectedPeriodLabel: 'Selected period',
         commitmentsMetricLabel: 'Metric',
         expenseTypeLabel: 'Expense type',
         allExpensesLabel: 'All',
@@ -112,7 +113,7 @@ function buildAnalyticsCopy(language: BudgetItemAnalyticsResolvedViewState['lang
         normalizationLabel: 'Normalizare',
         inflationLabel: 'Ajustat cu inflația',
         timeframeLabel: 'Interval',
-        selectedYearLabel: 'An selectat',
+        selectedPeriodLabel: 'Perioadă selectată',
         commitmentsMetricLabel: 'Metrică',
         expenseTypeLabel: 'Tip cheltuială',
         allExpensesLabel: 'Toate',
@@ -389,7 +390,13 @@ function AnalyticsControls({ context }: BudgetItemAnalyticsSectionProps) {
   const showsExpenseType =
     context.activeTab === 'execution' &&
     context.analyticsProps.context.accountCategory === 'ch'
-  const selectedYearLabel = `${copy.selectedYearLabel}: ${context.analyticsProps.context.selectedYear}`
+  const selectedPeriodLabel = `${
+    copy.selectedPeriodLabel
+  }: ${
+    formatBudgetItemAnalyticsPeriodLabel(
+      context.analyticsProps.context.currentReportPeriod,
+    ) ?? context.analyticsProps.context.selectedYear
+  }`
   const currentAllTimeframeLabel =
     context.activeTab === 'commitments'
       ? context.commitmentsAllTimeframeLabel
@@ -448,7 +455,7 @@ function AnalyticsControls({ context }: BudgetItemAnalyticsSectionProps) {
                 })
               }
             >
-              {selectedYearLabel}
+              {selectedPeriodLabel}
             </Button>
             <Button
               type="button"
@@ -668,6 +675,14 @@ function AnalyticsChartSection({ context }: BudgetItemAnalyticsSectionProps) {
         )?.label
       : undefined,
   )
+  const currentPeriodType =
+    context.analyticsProps.context.currentReportPeriod.type
+  const selectedPeriodMarker =
+    currentPeriodType === 'YEAR'
+      ? context.analyticsProps.context.selectedYear
+      : formatBudgetItemAnalyticsPeriodLabel(
+          context.analyticsProps.context.currentReportPeriod,
+        )
 
   return (
     <Card className="flex min-h-[620px] flex-col overflow-hidden rounded-[24px] border-border/50">
@@ -717,7 +732,7 @@ function AnalyticsChartSection({ context }: BudgetItemAnalyticsSectionProps) {
               isPreview
               xAxisMarker={
                 context.analyticsProps.analyticsView.timeframe === 'selected'
-                  ? context.analyticsProps.context.selectedYear
+                  ? selectedPeriodMarker
                   : undefined
               }
               onXAxisClick={(value) => {
@@ -725,12 +740,32 @@ function AnalyticsChartSection({ context }: BudgetItemAnalyticsSectionProps) {
                   return
                 }
 
-                const nextYear = Number(String(value).slice(0, 4))
-                if (!Number.isFinite(nextYear)) {
+                const rawValue = String(value)
+
+                if (currentPeriodType === 'MONTH') {
+                  const monthMatch =
+                    rawValue.match(/^\d{4}-(0[1-9]|1[0-2])$/) ??
+                    rawValue.match(/^(0[1-9]|1[0-2])$/)
+                  if (monthMatch) {
+                    context.analyticsProps.onPeriodChange?.(monthMatch[1])
+                  }
                   return
                 }
 
-                context.analyticsProps.onYearChange?.(nextYear)
+                if (currentPeriodType === 'QUARTER') {
+                  const quarterMatch =
+                    rawValue.match(/^\d{4}-(Q[1-4])$/) ??
+                    rawValue.match(/^(Q[1-4])$/)
+                  if (quarterMatch) {
+                    context.analyticsProps.onPeriodChange?.(quarterMatch[1])
+                  }
+                  return
+                }
+
+                const nextYear = Number(rawValue.slice(0, 4))
+                if (Number.isFinite(nextYear)) {
+                  context.analyticsProps.onYearChange?.(nextYear)
+                }
               }}
               onAnnotationPositionChange={NOOP_ANNOTATION_HANDLER}
             />
@@ -748,6 +783,10 @@ function MapSection({ context }: BudgetItemAnalyticsSectionProps) {
     context.seriesLabel.trim().length > 0
       ? context.seriesLabel
       : context.subjectLabel
+  const activeMapReportPeriod =
+    context.activeTab === 'commitments'
+      ? context.commitmentsMapFilter.report_period
+      : context.executionMapFilter.report_period
   const entityDetailsQuery = useEntityDetails({
     cui: context.analyticsProps.context.entityCui,
     reportPeriod: context.analyticsProps.context.currentReportPeriod,
@@ -776,6 +815,7 @@ function MapSection({ context }: BudgetItemAnalyticsSectionProps) {
     mapKey: context.mapKey,
     mapStateDefinition: context.mapStateDefinition,
     forceMapActiveView: true,
+    reportPeriodOverride: activeMapReportPeriod,
     mapCenterOverride: entityMapViewport?.mapCenter,
     mapZoomOverride: entityMapViewport?.mapZoom,
   })
@@ -899,6 +939,7 @@ export function BudgetItemAnalytics({
   onInflationAdjustedChange,
   onExpenseTypeChange,
   onYearChange,
+  onPeriodChange,
   onEntityCuiChange,
   className,
 }: Readonly<BudgetItemAnalyticsProps>) {
@@ -939,6 +980,7 @@ export function BudgetItemAnalytics({
         onInflationAdjustedChange,
         onExpenseTypeChange,
         onYearChange,
+        onPeriodChange,
         onEntityCuiChange,
         className,
       },
@@ -953,6 +995,7 @@ export function BudgetItemAnalytics({
       onExpenseTypeChange,
       onInflationAdjustedChange,
       onNormalizationChange,
+      onPeriodChange,
       onSelectionChange,
       onReportTypeChange,
       onYearChange,

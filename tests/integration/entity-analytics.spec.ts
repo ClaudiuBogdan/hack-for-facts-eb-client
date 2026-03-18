@@ -29,6 +29,10 @@ test.describe('Entity Analytics Page', () => {
     await expect(
       page.getByRole('heading', { name: /entity.*analytics|analiza.*entităților/i, level: 1 })
     ).toBeVisible({ timeout: 10000 })
+    // Wait for the lower filter sections to mount before individual tests assert on them.
+    await expect(
+      page.getByRole('button', { name: /prefix.*economic|economic.*prefix/i }).first()
+    ).toBeVisible({ timeout: 15000 })
   })
 
   test('displays page heading and description', async ({ page }) => {
