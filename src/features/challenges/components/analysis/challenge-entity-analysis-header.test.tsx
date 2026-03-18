@@ -16,7 +16,19 @@ vi.mock('@/components/ui/ResponsivePopover', () => ({
   ),
 }))
 
+vi.mock('@/features/notifications/components/EntityNotificationBell', () => ({
+  EntityNotificationBell: ({ triggerClassName }: { readonly triggerClassName?: string }) => (
+    <button
+      type="button"
+      aria-label="Manage notifications"
+      data-testid="entity-notification-bell"
+      className={triggerClassName}
+    />
+  ),
+}))
+
 const entity = {
+  cui: '4305857',
   name: 'Primăria Sibiu',
   uat: {
     name: 'Sibiu',
@@ -99,6 +111,7 @@ describe('ChallengeEntityAnalysisHeader', () => {
     expect(
       screen.queryByTestId('challenge-entity-compact-header'),
     ).not.toBeInTheDocument()
+    expect(screen.getByTestId('entity-notification-bell')).toBeInTheDocument()
   })
 
   it('keeps the compact header hidden below the show threshold', async () => {
@@ -134,6 +147,24 @@ describe('ChallengeEntityAnalysisHeader', () => {
     expect(within(compactHeader).getByText('Județul Sibiu')).toBeInTheDocument()
     expect(within(compactHeader).getByText('134.309 locuitori')).toBeInTheDocument()
     expect(within(compactHeader).getAllByText('2025')).not.toHaveLength(0)
+  })
+
+  it('renders the notification bell in the hero header only', async () => {
+    renderHeader()
+
+    expect(screen.getByTestId('entity-notification-bell')).toBeInTheDocument()
+
+    setScrollPosition(340)
+
+    const compactHeader = await screen.findByTestId(
+      'challenge-entity-compact-header',
+    )
+    await waitFor(() => {
+      expect(compactHeader).toHaveAttribute('aria-hidden', 'false')
+    })
+
+    expect(within(compactHeader).queryByTestId('entity-notification-bell')).not.toBeInTheDocument()
+    expect(screen.getAllByTestId('entity-notification-bell')).toHaveLength(1)
   })
 
   it('hides the compact header again when scrolling up', async () => {

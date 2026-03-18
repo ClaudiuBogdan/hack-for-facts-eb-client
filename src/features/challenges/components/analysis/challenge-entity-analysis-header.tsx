@@ -3,6 +3,7 @@ import { Calendar, ChevronDown, MapPin, Users } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { ResponsivePopover } from '@/components/ui/ResponsivePopover'
+import { EntityNotificationBell } from '@/features/notifications/components/EntityNotificationBell'
 import type { EntityDetailsData } from '@/lib/api/entities'
 import {
   ChallengeEntityViewMenu,
@@ -15,7 +16,7 @@ import { cn } from '@/lib/utils'
 import type { ChallengeLocale } from '../../types'
 
 type ChallengeEntityAnalysisHeaderProps = {
-  readonly entity: Pick<EntityDetailsData, 'name' | 'uat'>
+  readonly entity: Pick<EntityDetailsData, 'name' | 'cui' | 'uat'>
   readonly selectedYear: number
   readonly availableYears: readonly number[]
   readonly onYearChange: (year: number) => void
@@ -44,6 +45,11 @@ const HEADER_COPY = {
     openViewMenu: 'Choose entity view',
   },
 } as const
+
+const NOTIFICATION_TRIGGER_BASE =
+  '!shrink-0 !rounded-full !border !border-border/60 !bg-muted/40 !text-foreground !shadow-2xs hover:!bg-muted/70 hover:!text-muted-foreground focus-visible:!outline-none focus-visible:!ring-2 focus-visible:!ring-primary/60'
+
+const HERO_NOTIFICATION_TRIGGER = `!h-9 !w-9 ${NOTIFICATION_TRIGGER_BASE}`
 
 function normalizeDisplayText(
   value: string,
@@ -376,14 +382,12 @@ export function ChallengeEntityAnalysisHeader({
         ref={heroHeaderRef}
         className="rounded-[32px] border border-border/50 bg-linear-to-br from-background via-background to-primary/[0.04] px-5 py-5 shadow-sm sm:px-6 sm:py-7 md:px-8"
       >
-        <div className="flex flex-col gap-4 sm:gap-6 md:flex-row md:items-start md:justify-between">
-          <div className="min-w-0 space-y-4">
-            <div>
-              <h1 className="text-balance text-[3rem] font-black leading-[0.94] tracking-tight text-foreground md:text-[2.85rem] lg:text-5xl">
-                {displayName}
-              </h1>
-            </div>
+        <div className="space-y-4 sm:space-y-5">
+          <h1 className="text-balance text-[3rem] font-black leading-[0.94] tracking-tight text-foreground md:text-[2.85rem] lg:text-5xl">
+            {displayName}
+          </h1>
 
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               {showInflationBadge ? (
                 <Badge variant="secondary" className="gap-1.5 px-3 py-1">
@@ -403,62 +407,66 @@ export function ChallengeEntityAnalysisHeader({
                 </Badge>
               ) : null}
             </div>
-          </div>
 
-          <div className="flex shrink-0 flex-wrap items-center justify-start gap-2 md:flex-col md:items-end md:gap-3">
-            <ResponsivePopover
-              open={isViewMenuOpen}
-              onOpenChange={setIsViewMenuOpen}
-              align="end"
-              mobileSide="bottom"
-              className="min-h-0 max-h-[70vh] sm:w-auto sm:p-0"
-              trigger={
-                <button
-                  type="button"
-                  aria-label={copy.openViewMenu}
-                  className="inline-flex min-w-[7.5rem] items-center gap-2 whitespace-nowrap rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                >
-                  <ActiveViewIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span className="min-w-0 flex-1 truncate">{activeViewLabel}</span>
-                  <ChevronDown className="h-4 w-4 shrink-0" aria-hidden="true" />
-                </button>
-              }
-              content={
-                <ChallengeEntityViewMenu
-                  title={copy.viewMenuTitle}
-                  views={availableViews}
-                  activeView={activeView}
-                  onViewChange={handleViewSelection}
-                />
-              }
-            />
-
-            <ResponsivePopover
-              open={isYearMenuOpen}
-              onOpenChange={setIsYearMenuOpen}
-              align="end"
-              mobileSide="bottom"
-              className="min-h-0 max-h-[70vh] sm:w-auto sm:p-0"
-              trigger={
-                <button
-                  type="button"
-                  aria-label={copy.selectYear}
-                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-foreground tabular-nums transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                >
-                  <Calendar className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span>{selectedYear}</span>
-                  <ChevronDown className="h-4 w-4 shrink-0" aria-hidden="true" />
-                </button>
-              }
-              content={
-                <ChallengeEntityYearMenu
-                  title={copy.yearMenuTitle}
-                  years={availableYears}
-                  selectedYear={selectedYear}
-                  onYearChange={handleYearSelection}
-                />
-              }
-            />
+            <div className="flex items-center gap-2">
+              <ResponsivePopover
+                open={isViewMenuOpen}
+                onOpenChange={setIsViewMenuOpen}
+                align="end"
+                mobileSide="bottom"
+                className="min-h-0 max-h-[70vh] sm:w-auto sm:p-0"
+                trigger={
+                  <button
+                    type="button"
+                    aria-label={copy.openViewMenu}
+                    className="inline-flex min-w-[7.5rem] items-center gap-2 whitespace-nowrap rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                  >
+                    <ActiveViewIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span className="min-w-0 flex-1 truncate">{activeViewLabel}</span>
+                    <ChevronDown className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  </button>
+                }
+                content={
+                  <ChallengeEntityViewMenu
+                    title={copy.viewMenuTitle}
+                    views={availableViews}
+                    activeView={activeView}
+                    onViewChange={handleViewSelection}
+                  />
+                }
+              />
+              <ResponsivePopover
+                open={isYearMenuOpen}
+                onOpenChange={setIsYearMenuOpen}
+                align="end"
+                mobileSide="bottom"
+                className="min-h-0 max-h-[70vh] sm:w-auto sm:p-0"
+                trigger={
+                  <button
+                    type="button"
+                    aria-label={copy.selectYear}
+                    className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-foreground tabular-nums transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                  >
+                    <Calendar className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span>{selectedYear}</span>
+                    <ChevronDown className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  </button>
+                }
+                content={
+                  <ChallengeEntityYearMenu
+                    title={copy.yearMenuTitle}
+                    years={availableYears}
+                    selectedYear={selectedYear}
+                    onYearChange={handleYearSelection}
+                  />
+                }
+              />
+              <EntityNotificationBell
+                cui={entity.cui}
+                entityName={entity.name}
+                triggerClassName={HERO_NOTIFICATION_TRIGGER}
+              />
+            </div>
           </div>
         </div>
       </section>

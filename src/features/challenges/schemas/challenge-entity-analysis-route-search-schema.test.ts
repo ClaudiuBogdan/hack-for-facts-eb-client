@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildChallengeEntityAnalysisCanonicalSearchPatch,
+  ChallengeEntityAnalysisRouteSearchSchema,
   decodeChallengeEntityAnalyticsSearchState,
   normalizeChallengeEntityAnalysisSearch,
 } from './challenge-entity-analysis-route-search-schema'
@@ -191,6 +192,16 @@ describe('challenge entity analytics search normalization', () => {
       buildChallengeEntityAnalysisCanonicalSearchPatch(rawSearch, normalizedSearch),
     ).toMatchObject({
       expense_type: undefined,
+    })
+  })
+
+  it('accepts the notification modal flag in the route search schema', () => {
+    expect(
+      ChallengeEntityAnalysisRouteSearchSchema.parse({
+        notificationModal: 'open',
+      }),
+    ).toMatchObject({
+      notificationModal: 'open',
     })
   })
 })

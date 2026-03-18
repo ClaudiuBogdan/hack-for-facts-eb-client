@@ -126,6 +126,7 @@ export const ChallengeEntityAnalysisRouteSearchSchema = z.object({
   evolution_account: ChallengeEntityAnalysisAccountCategorySchema.optional(),
   evolution_primary: ChallengeEntityAnalysisPrimarySchema.optional(),
   public_map: z.string().optional(),
+  notificationModal: z.enum(['open']).optional(),
   analytics: z
     .preprocess(parseSearchParamJson, ChallengeEntityAnalyticsSearchStateSchema)
     .optional(),

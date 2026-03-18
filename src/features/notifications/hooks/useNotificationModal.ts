@@ -1,27 +1,33 @@
-import { useNavigate, useSearch } from '@tanstack/react-router'
 import { useCallback } from 'react'
+import { useRouter } from '@tanstack/react-router'
 
 export function useNotificationModal() {
-  const navigate = useNavigate({ from: '/entities/$cui' })
-  const search = useSearch({ from: '/entities/$cui' })
+  const router = useRouter()
 
-  const isOpen = search.notificationModal === 'open'
+  const isOpen =
+    (router.state.location.search as Record<string, unknown>).notificationModal === 'open'
 
   const setOpen = useCallback(
     (newOpen: boolean) => {
-      navigate({
-        search: prev => {
+      void router.navigate({
+        search: (prev: any) => {
+          const nextSearch = {
+            ...(prev as Record<string, unknown>),
+          } as Record<string, unknown>
+
           if (newOpen) {
-            return { ...prev, notificationModal: 'open' as const }
+            nextSearch.notificationModal = 'open'
+            return nextSearch
           }
-          const { notificationModal, ...rest } = prev
-          return rest
+
+          delete nextSearch.notificationModal
+          return nextSearch
         },
         replace: true,
         resetScroll: false,
-      })
+      } as any)
     },
-    [navigate]
+    [router]
   )
 
   const openModal = useCallback(() => setOpen(true), [setOpen])

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ResponsivePopover } from '@/components/ui/ResponsivePopover';
 import { Separator } from '@/components/ui/separator';
 import { useAuth, AuthSignInButton } from '@/lib/auth';
+import { cn } from '@/lib/utils';
 import { useEntityNotifications } from '../hooks/useEntityNotifications';
 import { NotificationQuickMenu } from './NotificationQuickMenu';
 import { t } from '@lingui/core/macro';
@@ -12,14 +13,19 @@ import { useNotificationModal } from '../hooks/useNotificationModal';
 interface Props {
   cui: string;
   entityName: string;
+  triggerClassName?: string;
 }
 
-export function EntityNotificationBell({ cui, entityName }: Props) {
+export function EntityNotificationBell({ cui, entityName, triggerClassName }: Props) {
   const { isSignedIn, isLoaded } = useAuth();
   const { data: notifications, isLoading } = useEntityNotifications(cui);
   const { isOpen, setOpen } = useNotificationModal();
 
   const hasActive = notifications?.some(n => n.isActive) ?? false;
+  const triggerButtonClassName = cn(
+    'relative transition-all duration-300',
+    triggerClassName,
+  );
 
   if (!isLoaded) {
     return null;
@@ -35,7 +41,7 @@ export function EntityNotificationBell({ cui, entityName }: Props) {
             variant="ghost"
             size="icon"
             aria-label={t`Sign in to get notifications`}
-            className="relative"
+            className={triggerButtonClassName}
           >
             <Bell className="h-5 w-5" />
           </Button>
@@ -101,10 +107,12 @@ export function EntityNotificationBell({ cui, entityName }: Props) {
           variant="ghost"
           size="icon"
           aria-label={t`Manage notifications`}
-          className={`relative transition-all duration-300 ${hasActive
-            ? 'bg-gradient-to-br from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 shadow-lg border border-amber-500/20'
-            : ''
-            }`}
+          className={cn(
+            triggerButtonClassName,
+            hasActive
+              ? 'bg-gradient-to-br from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 !shadow-lg !border !border-amber-500/20'
+              : '',
+          )}
           disabled={isLoading}
         >
           {isLoading ? (
