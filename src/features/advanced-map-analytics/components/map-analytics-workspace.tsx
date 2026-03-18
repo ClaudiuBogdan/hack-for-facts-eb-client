@@ -1780,6 +1780,7 @@ export function MapAnalyticsWorkspace({
                   onViewChange={handleMapViewChange}
                   getTooltipContent={getTooltipContent}
                   mobilePanMode="pinch-zoom-until-unlocked"
+                  preferCanvasRenderer={false}
                 />
               </Suspense>
             </ClientOnly>

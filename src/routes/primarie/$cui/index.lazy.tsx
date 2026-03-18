@@ -93,8 +93,12 @@ function toPageState(
   searchState: ChallengeEntityAnalysisUrlState,
 ): ChallengeEntityAnalysisPageState {
   return {
+    periodType: searchState.period,
     selectedYear: searchState.year,
+    quarter: searchState.quarter,
+    month: searchState.month,
     reportType: searchState.report_type,
+    mainCreditorCui: searchState.main_creditor_cui,
     normalization: searchState.normalization,
     activeView: searchState.view,
     treemapAccountCategory: searchState.treemap_account,
@@ -280,8 +284,24 @@ export function PrimarieEntityRoutePage() {
         searchPatch.year = patch.selectedYear
       }
 
+      if (patch.periodType !== undefined) {
+        searchPatch.period = patch.periodType
+      }
+
+      if (patch.month !== undefined) {
+        searchPatch.month = patch.month
+      }
+
+      if (patch.quarter !== undefined) {
+        searchPatch.quarter = patch.quarter
+      }
+
       if (patch.reportType !== undefined) {
         searchPatch.report_type = patch.reportType
+      }
+
+      if (Object.prototype.hasOwnProperty.call(patch, 'mainCreditorCui')) {
+        searchPatch.main_creditor_cui = patch.mainCreditorCui
       }
 
       if (patch.normalization !== undefined) {

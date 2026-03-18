@@ -66,15 +66,16 @@ describe('challenge-entity-public-maps', () => {
   it('builds runtime copy that reflects the active report type', () => {
     const expensesDefinition = getChallengeEntityMapPreviewDefinition('expenses')
     const previewCopy = expensesDefinition.buildPreviewCopy({
-      selectedYear: 2024,
+      selectedPeriodLabel: '2024-Q2',
       normalization: 'per_capita',
       currency: 'EUR',
       inflationAdjusted: true,
       reportType: 'DETAILED',
     })
 
-    expect(previewCopy.mapName).toBe('Cheltuieli UAT (2024)')
+    expect(previewCopy.mapName).toBe('Cheltuieli UAT (2024-Q2)')
     expect(previewCopy.mapDescription).toContain('Execuție bugetară detaliată')
+    expect(previewCopy.mapDescription).toContain('perioada **2024-Q2**')
     expect(previewCopy.mapDescription).toContain('Normalizare: **per capita**')
     expect(previewCopy.mapDescription).toContain('Monedă: **EUR**')
     expect(previewCopy.mapDescription).toContain('**Populație**')

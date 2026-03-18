@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
-import type { Currency, SeriesConfiguration } from '@/schemas/charts';
+import type {
+  Currency,
+  ReportPeriodInputZ,
+  SeriesConfiguration,
+} from '@/schemas/charts';
 import { applyMapRuntimeConfig } from '@/features/advanced-map-analytics/map-runtime-config';
 import { areMapCentersEqual } from '@/features/advanced-map-analytics/map-viewport-utils';
 import {
@@ -47,6 +51,7 @@ interface UseMapPreviewRuntimeStateInput {
   mapZoomOverride?: number;
   mapCenterOverride?: [number, number];
   onMapViewportChange?: (nextViewport: PublicMapViewport) => void;
+  reportPeriodOverride?: ReportPeriodInputZ;
   selectedYearOverride?: number;
   reportTypeOverride?: SeriesConfiguration['filter']['report_type'];
   normalizationOverride?: 'total' | 'per_capita';
@@ -67,6 +72,7 @@ export function useMapPreviewRuntimeState({
   mapZoomOverride,
   mapCenterOverride,
   onMapViewportChange,
+  reportPeriodOverride,
   selectedYearOverride,
   reportTypeOverride,
   normalizationOverride,
@@ -78,6 +84,7 @@ export function useMapPreviewRuntimeState({
   const runtimeMapConfig = useMemo(
     () =>
       applyMapRuntimeConfig(mapStateDefinition, {
+        reportPeriodOverride,
         selectedYearOverride,
         reportTypeOverride,
         normalizationOverride,
@@ -93,6 +100,7 @@ export function useMapPreviewRuntimeState({
       mapNameOverride,
       mapStateDefinition,
       normalizationOverride,
+      reportPeriodOverride,
       reportTypeOverride,
       selectedYearOverride,
     ]

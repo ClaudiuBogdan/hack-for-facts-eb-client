@@ -22,7 +22,7 @@ import { Link } from '@tanstack/react-router'
 import { ExternalLink } from 'lucide-react'
 import { useMemo } from 'react'
 import type { Chart } from '@/schemas/charts'
-import type { ReportPeriodInput } from '@/schemas/reporting'
+import type { ReportPeriodInput, ReportPeriodType, TMonth, TQuarter } from '@/schemas/reporting'
 import { toReportTypeValue, type GqlReportType } from '@/schemas/reporting'
 import type { ChallengeLocale } from '../../types'
 import type {
@@ -36,10 +36,14 @@ type ChallengeCategoryEvolutionProps = {
   readonly lineItems: ExecutionLineItem[]
   readonly currentYear: number
   readonly reportType: Extract<GqlReportType, 'PRINCIPAL_AGGREGATED' | 'DETAILED'>
+  readonly periodType: ReportPeriodType
   readonly trendPeriod: ReportPeriodInput
   readonly queryNormalizationOptions: NormalizationOptions
   readonly displayNormalizationOptions: NormalizationOptions
   readonly onYearChange: (year: number) => void
+  readonly onSelectPeriod?: (label: string) => void
+  readonly selectedQuarter?: TQuarter
+  readonly selectedMonth?: TMonth
   readonly accountCategory: ChallengeTreemapAccountCategory
   readonly primary: 'fn' | 'ec'
   readonly onStateChange: (
@@ -163,10 +167,14 @@ export function ChallengeEntityCategoryEvolution({
   lineItems,
   currentYear,
   reportType,
+  periodType,
   trendPeriod,
   queryNormalizationOptions,
   displayNormalizationOptions,
   onYearChange,
+  onSelectPeriod,
+  selectedQuarter,
+  selectedMonth,
   accountCategory,
   primary,
   onStateChange,
@@ -333,13 +341,40 @@ export function ChallengeEntityCategoryEvolution({
   }
 
   const handleXAxisClick = (value: number | string) => {
-    const nextYear = Number(String(value).slice(0, 4))
-    if (!Number.isFinite(nextYear)) {
+    const rawValue = String(value)
+
+    if (periodType === 'MONTH') {
+      const monthMatch =
+        rawValue.match(/^\d{4}-(0[1-9]|1[0-2])$/) ??
+        rawValue.match(/^(0[1-9]|1[0-2])$/)
+      if (monthMatch) {
+        onSelectPeriod?.(monthMatch[1])
+      }
       return
     }
 
-    onYearChange(nextYear)
+    if (periodType === 'QUARTER') {
+      const quarterMatch =
+        rawValue.match(/^\d{4}-(Q[1-4])$/) ??
+        rawValue.match(/^(Q[1-4])$/)
+      if (quarterMatch) {
+        onSelectPeriod?.(quarterMatch[1])
+      }
+      return
+    }
+
+    const nextYear = Number(rawValue.slice(0, 4))
+    if (Number.isFinite(nextYear)) {
+      onYearChange(nextYear)
+    }
   }
+
+  const xAxisMarker =
+    periodType === 'MONTH' && selectedMonth
+      ? `${currentYear}-${selectedMonth}`
+      : periodType === 'QUARTER' && selectedQuarter
+        ? `${currentYear}-${selectedQuarter}`
+        : currentYear
 
   return (
     <div className="space-y-3">
@@ -406,7 +441,7 @@ export function ChallengeEntityCategoryEvolution({
                 unitMap={unitMap}
                 height={360}
                 isPreview
-                xAxisMarker={currentYear}
+                xAxisMarker={xAxisMarker}
                 onXAxisClick={handleXAxisClick}
                 onAnnotationPositionChange={NOOP_ANNOTATION_HANDLER}
               />

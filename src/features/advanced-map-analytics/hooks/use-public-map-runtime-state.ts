@@ -4,6 +4,7 @@ import {
   AdvancedMapAnalyticsUrlStateSchema,
   type AdvancedMapAnalyticsUrlState,
 } from '@/schemas/advanced-map-analytics';
+import type { ReportPeriodInputZ } from '@/schemas/charts';
 import { useAdvancedMapAnalyticsPublicMapQuery } from '@/features/advanced-map-analytics/hooks/use-advanced-map-analytics';
 import { applyMapRuntimeConfig } from '@/features/advanced-map-analytics/map-runtime-config';
 import {
@@ -18,6 +19,7 @@ interface UsePublicMapRuntimeStateInput {
   mapZoomOverride?: number;
   mapCenterOverride?: [number, number];
   onMapViewportChange?: (nextViewport: PublicMapViewport) => void;
+  reportPeriodOverride?: ReportPeriodInputZ;
   selectedYearOverride?: number;
   forceMapActiveView?: boolean;
 }
@@ -36,6 +38,7 @@ export function usePublicMapRuntimeState({
   mapZoomOverride,
   mapCenterOverride,
   onMapViewportChange,
+  reportPeriodOverride,
   selectedYearOverride,
   forceMapActiveView = false,
 }: Readonly<UsePublicMapRuntimeStateInput>): UsePublicMapRuntimeStateResult {
@@ -50,10 +53,11 @@ export function usePublicMapRuntimeState({
     }
 
     return applyMapRuntimeConfig(publicMapQuery.data.lastSnapshot.config, {
+      reportPeriodOverride,
       selectedYearOverride,
       forceMapActiveView,
     });
-  }, [forceMapActiveView, publicMapQuery.data, selectedYearOverride]);
+  }, [forceMapActiveView, publicMapQuery.data, reportPeriodOverride, selectedYearOverride]);
 
   useEffect(() => {
     if (!runtimeSnapshotConfig) {

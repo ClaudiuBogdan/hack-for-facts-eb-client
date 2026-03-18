@@ -5,6 +5,7 @@ const entityDetailsQueryOptionsMock = vi.fn()
 const entityExecutionLineItemsQueryOptionsMock = vi.fn()
 const reportsConnectionQueryOptionsMock = vi.fn()
 const buildChallengeEntityAnalysisReportPeriodMock = vi.fn()
+const buildChallengeEntityAnalysisTrendPeriodMock = vi.fn()
 const challengeEntitySubordinateRankingQueryOptionsMock = vi.fn()
 const getChallengeEntityMapPreviewDefinitionMock = vi.fn()
 const applyMapRuntimeConfigMock = vi.fn()
@@ -39,9 +40,10 @@ vi.mock(
 vi.mock(
   '@/features/challenges/components/analysis/challenge-entity-analysis-queries',
   () => ({
-    CHALLENGE_TREND_PERIOD: { type: 'challenge-trend-period' },
     buildChallengeEntityAnalysisReportPeriod:
       buildChallengeEntityAnalysisReportPeriodMock,
+    buildChallengeEntityAnalysisTrendPeriod:
+      buildChallengeEntityAnalysisTrendPeriodMock,
     challengeEntitySubordinateRankingQueryOptions:
       challengeEntitySubordinateRankingQueryOptionsMock,
   }),
@@ -92,6 +94,7 @@ describe('primarie index route loader', () => {
     entityExecutionLineItemsQueryOptionsMock.mockReset()
     reportsConnectionQueryOptionsMock.mockReset()
     buildChallengeEntityAnalysisReportPeriodMock.mockReset()
+    buildChallengeEntityAnalysisTrendPeriodMock.mockReset()
     challengeEntitySubordinateRankingQueryOptionsMock.mockReset()
     getChallengeEntityMapPreviewDefinitionMock.mockReset()
     applyMapRuntimeConfigMock.mockReset()
@@ -100,9 +103,13 @@ describe('primarie index route loader', () => {
     readClientCurrencyPreferenceMock.mockReset()
     readClientInflationAdjustedPreferenceMock.mockReset()
 
-    buildChallengeEntityAnalysisReportPeriodMock.mockImplementation((year) => ({
+    buildChallengeEntityAnalysisReportPeriodMock.mockImplementation((input) => ({
       type: 'report-period',
-      year,
+      input,
+    }))
+    buildChallengeEntityAnalysisTrendPeriodMock.mockImplementation((input) => ({
+      type: 'trend-period',
+      input,
     }))
     entityDetailsQueryOptionsMock.mockImplementation((input) => ({
       queryKey: ['entity-details', input],
@@ -187,7 +194,18 @@ describe('primarie index route loader', () => {
     })
 
     expect(buildChallengeEntityAnalysisReportPeriodMock).toHaveBeenCalledWith(
-      2024,
+      {
+        periodType: 'YEAR',
+        selectedYear: 2024,
+        month: '01',
+        quarter: 'Q1',
+      },
+    )
+    expect(buildChallengeEntityAnalysisTrendPeriodMock).toHaveBeenCalledWith(
+      {
+        periodType: 'YEAR',
+        selectedYear: 2024,
+      },
     )
     expect(entityDetailsQueryOptionsMock).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -196,7 +214,13 @@ describe('primarie index route loader', () => {
         normalization: 'per_capita',
         currency: 'EUR',
         inflation_adjusted: true,
-        trendPeriod: { type: 'challenge-trend-period' },
+        trendPeriod: {
+          type: 'trend-period',
+          input: {
+            periodType: 'YEAR',
+            selectedYear: 2024,
+          },
+        },
       }),
     )
     expect(entityExecutionLineItemsQueryOptionsMock).toHaveBeenCalledWith(

@@ -138,6 +138,21 @@ vi.mock('@/hooks/useGeoJson', () => ({
 
 vi.mock('@/components/entities/utils', () => ({
   getEntityFeatureInfo: (...args: unknown[]) => getEntityFeatureInfoMock(...args),
+  getYearLabel: (
+    year: number,
+    month?: string,
+    quarter?: string,
+  ) => {
+    if (month) {
+      return `${year}-${month}`
+    }
+
+    if (quarter) {
+      return `${year}-${quarter}`
+    }
+
+    return `${year}`
+  },
 }))
 
 vi.mock('@/components/budget-explorer/useTreemapDrilldown', () => ({
@@ -168,6 +183,12 @@ vi.mock(
         <button type="button" onClick={() => props.onXAxisClick?.(2023)}>
           Select 2023
         </button>
+        <button type="button" onClick={() => props.onXAxisClick?.('2025-Q2')}>
+          Select Q2 2025
+        </button>
+        <button type="button" onClick={() => props.onXAxisClick?.('2025-03')}>
+          Select 2025-03
+        </button>
       </div>
     ),
   }),
@@ -176,7 +197,7 @@ vi.mock(
 vi.mock('@/components/entities/EntityFinancialSummary', () => ({
   EntityFinancialSummary: (props: any) => (
     <div data-testid="financial-summary">
-      {props.periodLabel}:{props.totalIncome}:{props.totalExpenses}:{props.budgetBalance}
+      {props.periodLabel}:{props.trendLabel ?? 'YoY'}:{props.totalIncome}:{props.totalExpenses}:{props.budgetBalance}
     </div>
   ),
 }))
@@ -184,9 +205,15 @@ vi.mock('@/components/entities/EntityFinancialSummary', () => ({
 vi.mock('@/components/entities/EntityFinancialTrends', () => ({
   EntityFinancialTrends: (props: any) => (
     <div data-testid="financial-trends">
-      {props.entityCui}:{String(props.showControls)}:{String(props.showChartEditorLink)}:{props.currentYear}
+      {props.entityCui}:{String(props.showControls)}:{String(props.showChartEditorLink)}:{props.currentYear}:{props.periodType ?? 'YEAR'}:{props.selectedQuarter ?? 'none'}:{props.selectedMonth ?? 'none'}
       <button type="button" onClick={() => props.onYearChange?.(2024)}>
         Select 2024
+      </button>
+      <button type="button" onClick={() => props.onSelectPeriod?.('Q2')}>
+        Select quarter Q2
+      </button>
+      <button type="button" onClick={() => props.onSelectPeriod?.('03')}>
+        Select month 03
       </button>
     </div>
   ),
@@ -310,7 +337,7 @@ vi.mock('./challenge-entity-analysis-header', () => ({
   ChallengeEntityAnalysisHeader: (props: any) => (
     <div data-testid="analysis-header">
       <div>{props.entity?.name}</div>
-      <div>{props.selectedYear}</div>
+      <div>{props.reportControlsLabel}</div>
       <div>{props.activeView}</div>
       {props.availableViews?.map((view: any) => (
         <button
@@ -608,7 +635,10 @@ function createSubordinateRankingConnection(
 }
 
 const DEFAULT_PAGE_STATE: ChallengeEntityAnalysisPageState = {
+  periodType: 'YEAR',
   selectedYear: 2025,
+  quarter: 'Q1',
+  month: '01',
   reportType: 'PRINCIPAL_AGGREGATED',
   normalization: 'total',
   activeView: 'main-info',
@@ -853,7 +883,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     ).toBeInTheDocument()
     expect(screen.getByTestId('financial-summary')).toBeInTheDocument()
     expect(screen.getByTestId('financial-trends')).toHaveTextContent(
-      '12345678:false:false:2025',
+      '12345678:false:false:2025:YEAR:Q1:01',
     )
     await waitFor(() => {
       expect(screen.getByText('Rapoarte financiare')).toBeInTheDocument()
@@ -990,11 +1020,11 @@ describe('ChallengeEntityAnalysisPage', () => {
     fireEvent.click(within(header).getByRole('button', { name: 'Contracte' }))
     expect(await screen.findByTestId('contracts-view')).toBeInTheDocument()
 
-    fireEvent.click(within(header).getByRole('button', { name: 'Informații Principale' }))
+    fireEvent.click(within(header).getByRole('button', { name: 'Execuții Bugetare' }))
 
     await waitFor(() => {
       expect(screen.getByTestId('financial-trends')).toHaveTextContent(
-        '12345678:false:false:2024',
+        '12345678:false:false:2024:YEAR:Q1:01',
       )
     })
   })
@@ -1961,7 +1991,7 @@ describe('ChallengeEntityAnalysisPage', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('financial-summary')).toHaveTextContent(
-        '2025:90000000:87000000:3000000',
+        '2025:YoY:90000000:87000000:3000000',
       )
     })
     expect(useEntityDetailsMock).toHaveBeenLastCalledWith(
@@ -2499,6 +2529,10 @@ describe('ChallengeEntityAnalysisPage', () => {
     )
     expect(entityLink).toHaveAttribute(
       'data-search',
+      expect.stringContaining('"period":"YEAR"'),
+    )
+    expect(entityLink).toHaveAttribute(
+      'data-search',
       expect.stringContaining('"lang":"en"'),
     )
 
@@ -2700,7 +2734,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
 
     expect(screen.getByTestId('financial-trends')).toHaveTextContent(
-      '12345678:false:false:2024',
+      '12345678:false:false:2024:YEAR:Q1:01',
     )
     expect(useEntityDetailsMock).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -2725,6 +2759,162 @@ describe('ChallengeEntityAnalysisPage', () => {
             interval: {
               start: '2024',
               end: '2024',
+            },
+          },
+        },
+      }),
+    )
+  })
+
+  it('builds monthly report and trend periods from the page state', () => {
+    renderAnalysisPage({
+      state: {
+        periodType: 'MONTH',
+        month: '03',
+      },
+    })
+
+    expect(useEntityDetailsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        reportPeriod: {
+          type: 'MONTH',
+          selection: {
+            interval: {
+              start: '2025-03',
+              end: '2025-03',
+            },
+          },
+        },
+        trendPeriod: {
+          type: 'MONTH',
+          selection: {
+            interval: {
+              start: '2025-01',
+              end: '2025-12',
+            },
+          },
+        },
+      }),
+    )
+    expect(getLatestPublicPreviewCardProps()).toMatchObject({
+      reportPeriodOverride: {
+        type: 'MONTH',
+        selection: {
+          interval: {
+            start: '2025-03',
+            end: '2025-03',
+          },
+        },
+      },
+      mapNameOverride: 'Cheltuieli UAT (2025-03)',
+    })
+    expect(screen.getByTestId('financial-summary')).toHaveTextContent('2025-03:MoM')
+  })
+
+  it('changes the selected month when the trends chart requests a different month', async () => {
+    renderAnalysisPage({
+      state: {
+        periodType: 'MONTH',
+        month: '01',
+      },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select month 03' }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('financial-summary')).toHaveTextContent('2025-03')
+    })
+    expect(screen.getByTestId('financial-summary')).toHaveTextContent('MoM')
+
+    expect(useEntityDetailsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        reportPeriod: {
+          type: 'MONTH',
+          selection: {
+            interval: {
+              start: '2025-03',
+              end: '2025-03',
+            },
+          },
+        },
+      }),
+    )
+  })
+
+  it('preserves the selected quarter when charts request a different year', async () => {
+    renderAnalysisPage({
+      state: {
+        periodType: 'QUARTER',
+        quarter: 'Q3',
+      },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select 2024' }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('analysis-header')).toHaveTextContent('2024-Q3')
+    })
+
+    expect(useEntityDetailsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        reportPeriod: {
+          type: 'QUARTER',
+          selection: {
+            interval: {
+              start: '2024-Q3',
+              end: '2024-Q3',
+            },
+          },
+        },
+        trendPeriod: {
+          type: 'QUARTER',
+          selection: {
+            interval: {
+              start: '2024-Q1',
+              end: '2024-Q4',
+            },
+          },
+        },
+      }),
+    )
+    expect(getLatestPublicPreviewCardProps()).toMatchObject({
+      reportPeriodOverride: {
+        type: 'QUARTER',
+        selection: {
+          interval: {
+            start: '2024-Q3',
+            end: '2024-Q3',
+          },
+        },
+      },
+      mapNameOverride: 'Cheltuieli UAT (2024-Q3)',
+    })
+    expect(screen.getByTestId('financial-summary')).toHaveTextContent('2024-Q3:QoQ')
+  })
+
+  it('changes the selected quarter when the trends chart requests a different quarter', async () => {
+    renderAnalysisPage({
+      state: {
+        periodType: 'QUARTER',
+        quarter: 'Q1',
+      },
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select quarter Q2' }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('financial-summary')).toHaveTextContent('2025-Q2')
+    })
+    expect(screen.getByTestId('financial-summary')).toHaveTextContent('QoQ')
+
+    expect(useEntityDetailsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        reportPeriod: {
+          type: 'QUARTER',
+          selection: {
+            interval: {
+              start: '2025-Q2',
+              end: '2025-Q2',
             },
           },
         },
@@ -2760,6 +2950,50 @@ describe('ChallengeEntityAnalysisPage', () => {
         },
       }),
     )
+  })
+
+  it('changes the selected quarter when the spending and income chart requests a different quarter', async () => {
+    renderAnalysisPage({
+      state: {
+        periodType: 'QUARTER',
+        quarter: 'Q1',
+      },
+    })
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Select Q2 2025' }),
+      ).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select Q2 2025' }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('financial-summary')).toHaveTextContent('2025-Q2')
+    })
+    expect(screen.getByTestId('financial-summary')).toHaveTextContent('QoQ')
+  })
+
+  it('changes the selected month when the spending and income chart requests a different month', async () => {
+    renderAnalysisPage({
+      state: {
+        periodType: 'MONTH',
+        month: '01',
+      },
+    })
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Select 2025-03' }),
+      ).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select 2025-03' }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('financial-summary')).toHaveTextContent('2025-03')
+    })
+    expect(screen.getByTestId('financial-summary')).toHaveTextContent('MoM')
   })
 
   it('recomputes the preview viewport when the entity changes', async () => {

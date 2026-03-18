@@ -107,6 +107,15 @@ describe('MapAnalyticsPublicPreviewCard', () => {
         mapKey="expenses"
         mapDescription="# Public description"
         mapStateDefinition={mapStateDefinition}
+        reportPeriodOverride={{
+          type: 'QUARTER',
+          selection: {
+            interval: {
+              start: '2025-Q2',
+              end: '2025-Q2',
+            },
+          },
+        }}
         selectedYearOverride={2023}
         reportTypeOverride="Executie bugetara detaliata"
         normalizationOverride="per_capita"
@@ -128,11 +137,11 @@ describe('MapAnalyticsPublicPreviewCard', () => {
 
     expect(screen.getByText('Cheltuieli UAT (2023)')).toBeInTheDocument();
     expect(series.filter.report_period).toEqual({
-      type: 'YEAR',
+      type: 'QUARTER',
       selection: {
         interval: {
-          start: '2023',
-          end: '2023',
+          start: '2025-Q2',
+          end: '2025-Q2',
         },
       },
     });

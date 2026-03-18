@@ -43,6 +43,12 @@ vi.mock('@/components/charts/components/chart-renderer/components/ChartRenderer'
       <button type="button" onClick={() => props.onXAxisClick?.('2021')}>
         Pick 2021
       </button>
+      <button type="button" onClick={() => props.onXAxisClick?.('2021-Q2')}>
+        Pick 2021-Q2
+      </button>
+      <button type="button" onClick={() => props.onXAxisClick?.('2021-03')}>
+        Pick 2021-03
+      </button>
     </div>
   ),
 }))
@@ -266,6 +272,9 @@ function renderCategoryEvolution(
   props: {
     readonly reportType?: 'PRINCIPAL_AGGREGATED' | 'DETAILED'
     readonly currentYear?: number
+    readonly periodType?: 'YEAR' | 'QUARTER' | 'MONTH'
+    readonly selectedQuarter?: 'Q1' | 'Q2' | 'Q3' | 'Q4'
+    readonly selectedMonth?: '01' | '02' | '03' | '04' | '05' | '06' | '07' | '08' | '09' | '10' | '11' | '12'
     readonly currency?: 'RON' | 'EUR' | 'USD'
     readonly inflationAdjusted?: boolean
     readonly state?: Partial<
@@ -275,6 +284,7 @@ function renderCategoryEvolution(
       >
     >
     readonly onYearChange?: (year: number) => void
+    readonly onSelectPeriod?: (label: string) => void
   } = {},
 ) {
   function TestHarness() {
@@ -290,12 +300,23 @@ function renderCategoryEvolution(
         lineItems={lineItems}
         currentYear={props.currentYear ?? 2025}
         reportType={props.reportType ?? 'PRINCIPAL_AGGREGATED'}
+        periodType={props.periodType ?? 'YEAR'}
         trendPeriod={{
-          type: 'YEAR',
+          type: props.periodType ?? 'YEAR',
           selection: {
             interval: {
-              start: '2000',
-              end: '2025',
+              start:
+                props.periodType === 'QUARTER'
+                  ? '2025-Q1'
+                  : props.periodType === 'MONTH'
+                    ? '2025-01'
+                    : '2000',
+              end:
+                props.periodType === 'QUARTER'
+                  ? '2025-Q4'
+                  : props.periodType === 'MONTH'
+                    ? '2025-12'
+                    : '2025',
             },
           },
         }}
@@ -320,6 +341,9 @@ function renderCategoryEvolution(
           }))
         }
         onYearChange={props.onYearChange ?? vi.fn()}
+        onSelectPeriod={props.onSelectPeriod}
+        selectedQuarter={props.selectedQuarter}
+        selectedMonth={props.selectedMonth}
       />
     )
   }
@@ -452,5 +476,39 @@ describe('ChallengeEntityCategoryEvolution', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Pick 2021' }))
 
     expect(onYearChange).toHaveBeenCalledWith(2021)
+  })
+
+  it('changes the shared quarter when the user clicks a quarter in the chart', () => {
+    const onSelectPeriod = vi.fn()
+
+    renderCategoryEvolution({
+      periodType: 'QUARTER',
+      selectedQuarter: 'Q3',
+      onSelectPeriod,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Pick 2021-Q2' }))
+
+    expect(onSelectPeriod).toHaveBeenCalledWith('Q2')
+    expect(screen.getByTestId('category-evolution-chart')).toHaveTextContent(
+      '2025-Q3:5',
+    )
+  })
+
+  it('changes the shared month when the user clicks a month in the chart', () => {
+    const onSelectPeriod = vi.fn()
+
+    renderCategoryEvolution({
+      periodType: 'MONTH',
+      selectedMonth: '04',
+      onSelectPeriod,
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Pick 2021-03' }))
+
+    expect(onSelectPeriod).toHaveBeenCalledWith('03')
+    expect(screen.getByTestId('category-evolution-chart')).toHaveTextContent(
+      '2025-04:5',
+    )
   })
 })

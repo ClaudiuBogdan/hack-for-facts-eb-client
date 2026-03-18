@@ -24,6 +24,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useEntityTypeLabel } from '@/hooks/filters/useFilterLabels'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
+import { usePeriodLabel } from '@/hooks/use-period-label'
 import {
   DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES,
   DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES,
@@ -41,6 +42,10 @@ import type { NormalizationOptions } from '@/lib/normalization'
 import { DEFAULT_SELECTED_YEAR, defaultYearRange } from '@/schemas/charts'
 import {
   type GqlReportType,
+  type ReportPeriodInput,
+  type ReportPeriodType,
+  type TMonth,
+  type TQuarter,
   toReportTypeValue,
   toCommitmentReportType,
 } from '@/schemas/reporting'
@@ -56,11 +61,15 @@ import { ChallengeEntityFaqSection } from './challenge-entity-faq-section'
 import { ChallengeEntityViewNavigator } from './challenge-entity-view-navigator'
 import { ChallengeEntityAnalysisHeader } from './challenge-entity-analysis-header'
 import {
-  CHALLENGE_TREND_PERIOD,
   buildChallengeEntityAnalysisReportPeriod,
+  buildChallengeEntityAnalysisTrendPeriod,
   challengeEntitySubordinateRankingQueryOptions,
   type ChallengeEntityInitialSettings,
 } from './challenge-entity-analysis-queries'
+import {
+  ChallengeEntityReportControls,
+  type ChallengeEntityMainCreditorOption,
+} from './challenge-entity-report-controls'
 import { ChallengeEntityGroupedLineItems } from './challenge-entity-grouped-line-items'
 import {
   type ChallengeEntityMarkdownExportPageContext,
@@ -123,8 +132,12 @@ export type ChallengeEntityReportType = Extract<
   'PRINCIPAL_AGGREGATED' | 'DETAILED'
 >
 export type ChallengeEntityAnalysisPageState = {
+  readonly periodType: ReportPeriodType
   readonly selectedYear: number
+  readonly quarter: TQuarter
+  readonly month: TMonth
   readonly reportType: ChallengeEntityReportType
+  readonly mainCreditorCui?: string
   readonly normalization: 'total' | 'per_capita'
   readonly activeView: ChallengeEntityAnalysisView
   readonly treemapAccountCategory: ChallengeTreemapAccountCategory
@@ -242,17 +255,15 @@ const DeferredInsStatsView = lazy(() =>
     default: module.InsStatsView,
   })),
 )
-const CHALLENGE_DETAILED_ANALYTICS_REPORT_TYPE = toReportTypeValue('DETAILED')
-
 const CHALLENGE_ENTITY_VIEW_LABELS = {
   ro: {
-    'main-info': 'Informații Principale',
+    'main-info': 'Execuții Bugetare',
     contracts: 'Contracte',
     commitments: 'Angajamente',
     ins: 'INS',
   },
   en: {
-    'main-info': 'Main Info',
+    'main-info': 'Budget Execution',
     contracts: 'Contracts',
     commitments: 'Commitments',
     ins: 'INS',
@@ -418,9 +429,9 @@ function getLocalizedMapPreviewBaseName(
 function formatLocalizedMapPreviewName(
   previewKey: ChallengeEntityMapPreviewKey,
   locale: ChallengeLocale | undefined,
-  selectedYear: number,
+  selectedPeriodLabel: string,
 ): string {
-  return `${getLocalizedMapPreviewBaseName(previewKey, locale)} (${selectedYear})`
+  return `${getLocalizedMapPreviewBaseName(previewKey, locale)} (${selectedPeriodLabel})`
 }
 
 function localizeMapPreviewState(
@@ -524,11 +535,18 @@ function localizeMapPreviewState(
 
 function toTrendValues(
   series: EntityDetailsData['incomeTrend'],
-  selectedYear: number,
+  reportPeriod: ReportPeriodInput,
 ): EntityFinancialSummaryTrend | undefined {
   const points = series?.data ?? []
+  const selectedAnchor =
+    reportPeriod.selection.interval?.start ?? reportPeriod.selection.dates?.[0]
+
+  if (!selectedAnchor) {
+    return undefined
+  }
+
   const selectedPointIndex = points.findIndex(
-    (point) => Number(String(point.x).slice(0, 4)) === selectedYear,
+    (point) => String(point.x) === String(selectedAnchor),
   )
 
   if (selectedPointIndex < 1) return undefined
@@ -891,8 +909,12 @@ export function ChallengeEntityAnalysisPage({
   onEntityResolved,
 }: ChallengeEntityAnalysisPageProps) {
   const {
+    periodType,
     selectedYear,
+    quarter,
+    month,
     reportType: selectedReportType,
+    mainCreditorCui,
     normalization: normalizationMode,
     activeView,
     treemapAccountCategory,
@@ -949,10 +971,24 @@ export function ChallengeEntityAnalysisPage({
     inflationAdjusted: DEFAULT_INFLATION_ADJUSTED,
   })
   const reportPeriod = useMemo(
-    () => buildChallengeEntityAnalysisReportPeriod(selectedYear),
-    [selectedYear],
+    () =>
+      buildChallengeEntityAnalysisReportPeriod({
+        periodType,
+        selectedYear,
+        quarter,
+        month,
+      }),
+    [month, periodType, quarter, selectedYear],
   )
-  const periodLabel = `${selectedYear}`
+  const trendPeriod = useMemo(
+    () =>
+      buildChallengeEntityAnalysisTrendPeriod({
+        periodType,
+        selectedYear,
+      }),
+    [periodType, selectedYear],
+  )
+  const periodLabel = usePeriodLabel(reportPeriod) || String(selectedYear)
   const queryNormalizationOptions = useMemo<NormalizationOptions>(
     () => ({
       normalization: normalizationMode,
@@ -974,7 +1010,7 @@ export function ChallengeEntityAnalysisPage({
   const selectedMapPreviewCopy = useMemo(
     () =>
       selectedMapPreviewDefinition.buildPreviewCopy({
-        selectedYear,
+        selectedPeriodLabel: periodLabel,
         normalization: normalizationMode,
         currency,
         inflationAdjusted,
@@ -984,9 +1020,9 @@ export function ChallengeEntityAnalysisPage({
       currency,
       inflationAdjusted,
       normalizationMode,
+      periodLabel,
       selectedReportType,
       selectedMapPreviewDefinition,
-      selectedYear,
     ],
   )
   const localizedSelectedMapPreviewName = useMemo(
@@ -994,21 +1030,23 @@ export function ChallengeEntityAnalysisPage({
       formatLocalizedMapPreviewName(
         selectedMapPreviewDefinition.key,
         languageQuery,
-        selectedYear,
+        periodLabel,
       ),
-    [languageQuery, selectedMapPreviewDefinition.key, selectedYear],
+    [languageQuery, periodLabel, selectedMapPreviewDefinition.key],
   )
   const entityDetailsQuery = useEntityDetails({
     cui: entityCui,
     reportPeriod,
     reportType: selectedReportType,
-    trendPeriod: CHALLENGE_TREND_PERIOD,
+    trendPeriod,
+    mainCreditorCui,
     ...queryNormalizationOptions,
   })
   const entityLineItemsQuery = useEntityExecutionLineItems({
     cui: entityCui,
     reportPeriod,
     reportType: selectedReportType,
+    mainCreditorCui,
     ...queryNormalizationOptions,
   })
   const entityMapViewType = useMemo<'UAT' | 'County'>(() => {
@@ -1026,7 +1064,7 @@ export function ChallengeEntityAnalysisPage({
 
   const subordinateRankingQuery = useQuery({
     ...challengeEntitySubordinateRankingQueryOptions({
-      entityCui,
+      entityCui: mainCreditorCui ?? entityCui,
       reportPeriod,
       normalizationOptions: {
         currency,
@@ -1150,21 +1188,21 @@ export function ChallengeEntityAnalysisPage({
 
   const summaryTrends = useMemo(
     () => ({
-      income: toTrendValues(entityDetailsQuery.data?.incomeTrend, selectedYear),
+      income: toTrendValues(entityDetailsQuery.data?.incomeTrend, reportPeriod),
       expenses: toTrendValues(
         entityDetailsQuery.data?.expenseTrend,
-        selectedYear,
+        reportPeriod,
       ),
       balance: toTrendValues(
         entityDetailsQuery.data?.balanceTrend,
-        selectedYear,
+        reportPeriod,
       ),
     }),
     [
+      reportPeriod,
       entityDetailsQuery.data?.balanceTrend,
       entityDetailsQuery.data?.expenseTrend,
       entityDetailsQuery.data?.incomeTrend,
-      selectedYear,
     ],
   )
 
@@ -1195,9 +1233,11 @@ export function ChallengeEntityAnalysisPage({
           totalSpending,
           entitySearch: {
             year: selectedYear,
-            period: 'YEAR',
+            period: periodType,
+            ...(periodType === 'QUARTER' ? { quarter } : {}),
+            ...(periodType === 'MONTH' ? { month } : {}),
             report_type: 'DETAILED',
-            main_creditor_cui: entityCui,
+            main_creditor_cui: mainCreditorCui ?? entityCui,
             normalization: normalizationMode,
             currency: displayCurrency,
             inflation_adjusted: displayInflationAdjusted,
@@ -1211,8 +1251,12 @@ export function ChallengeEntityAnalysisPage({
       entityCui,
       entityTypeLabel,
       languageQuery,
+      mainCreditorCui,
+      month,
       normalizationMode,
       parentPopulation,
+      periodType,
+      quarter,
       selectedYear,
       visibleSubordinateRankings,
     ],
@@ -1272,9 +1316,9 @@ export function ChallengeEntityAnalysisPage({
       sortOrder: 'desc',
       filter: {
         account_category: 'ch',
-        main_creditor_cui: entityCui,
+        main_creditor_cui: mainCreditorCui ?? entityCui,
         report_period: reportPeriod,
-        report_type: CHALLENGE_DETAILED_ANALYTICS_REPORT_TYPE,
+        report_type: toReportTypeValue('DETAILED'),
         normalization: normalizationMode,
         currency: displayCurrency,
         inflation_adjusted: displayInflationAdjusted,
@@ -1289,6 +1333,7 @@ export function ChallengeEntityAnalysisPage({
       displayInflationAdjusted,
       entityCui,
       languageQuery,
+      mainCreditorCui,
       normalizationMode,
       reportPeriod,
     ],
@@ -1312,7 +1357,7 @@ export function ChallengeEntityAnalysisPage({
           expenseType,
           reportType: selectedReportType,
           currentReportPeriod: reportPeriod,
-          historyReportPeriod: CHALLENGE_TREND_PERIOD,
+          historyReportPeriod: trendPeriod,
           normalization: normalizationMode,
           currency,
           inflationAdjusted,
@@ -1395,6 +1440,7 @@ export function ChallengeEntityAnalysisPage({
       selectedYear,
       setSettings,
       treemapAccountCategory,
+      trendPeriod,
     ])
   const isBudgetItemAnalyticsOpen = Boolean(selectedBudgetItemAnalyticsProps)
 
@@ -1518,6 +1564,43 @@ export function ChallengeEntityAnalysisPage({
 
     onStateChange({ selectedYear: nextYear })
   }
+
+  const handleSelectedPeriodChange = useCallback(
+    (nextPeriodLabel: string) => {
+      if (periodType === 'MONTH') {
+        const nextMonth = nextPeriodLabel as TMonth
+        if (nextMonth !== month) {
+          onStateChange({ month: nextMonth })
+        }
+        return
+      }
+
+      if (periodType === 'QUARTER') {
+        const nextQuarter = nextPeriodLabel as TQuarter
+        if (nextQuarter !== quarter) {
+          onStateChange({ quarter: nextQuarter })
+        }
+      }
+    },
+    [month, onStateChange, periodType, quarter],
+  )
+
+  const handleReportControlsChange = useCallback(
+    (patch: {
+      readonly periodType?: ReportPeriodType
+      readonly selectedYear?: number
+      readonly quarter?: TQuarter
+      readonly month?: TMonth
+      readonly reportType?: ChallengeEntityReportType
+      readonly mainCreditorCui?: string
+    }) => {
+      onStateChange({
+        ...patch,
+        ...(patch.reportType !== undefined ? { treemapPath: [] } : {}),
+      })
+    },
+    [onStateChange],
+  )
 
   const handleTreemapAccountCategoryToggle = () => {
     const nextAccountCategory = treemapAccountCategory === 'ch' ? 'vn' : 'ch'
@@ -1741,20 +1824,37 @@ export function ChallengeEntityAnalysisPage({
   }, [])
 
   const handleReportsSectionPrefetch = useCallback(() => {
+    const selectedPeriodAnchor =
+      reportPeriod.selection.interval?.start ?? reportPeriod.selection.dates?.[0]
+    const selectedReportingYear =
+      typeof selectedPeriodAnchor === 'string'
+        ? Number(selectedPeriodAnchor.slice(0, 4))
+        : undefined
+
     void loadChallengeEntityReportsSection()
     void queryClient.prefetchQuery(
       reportsConnectionQueryOptions({
         filter: {
           entity_cui: entityCui,
-          reporting_year: selectedYear,
           report_type: selectedReportType,
+          ...(reportPeriod.type === 'YEAR'
+            ? {
+                reporting_year: selectedReportingYear,
+              }
+            : {
+                reporting_period:
+                  typeof selectedPeriodAnchor === 'string'
+                    ? selectedPeriodAnchor
+                    : undefined,
+              }),
+          main_creditor_cui: mainCreditorCui,
         },
         limit: 24,
         offset: 0,
         enabled: entityCui.length > 0,
       }),
     )
-  }, [entityCui, queryClient, selectedReportType, selectedYear])
+  }, [entityCui, mainCreditorCui, queryClient, reportPeriod, selectedReportType])
 
   if (isInitialLoading) {
     return <ChallengeEntityAnalysisLoadingShell />
@@ -1786,6 +1886,20 @@ export function ChallengeEntityAnalysisPage({
   }
 
   const entity = entityDetailsQuery.data
+  const allowPerCapita = Boolean(
+    entity.is_uat || entity.entity_type === 'admin_county_council',
+  )
+  const showReportTypeControl = true
+  const mainCreditorOptions = useMemo<readonly ChallengeEntityMainCreditorOption[]>(
+    () =>
+      (entity.parents ?? [])
+        .filter((parentEntity) => parentEntity.cui !== entity.cui)
+        .map((parentEntity) => ({
+          id: parentEntity.cui,
+          label: parentEntity.name,
+        })),
+    [entity.cui, entity.parents],
+  )
   const pageLocale = resolveChallengePageLocale(languageQuery)
 
   const pageCopy = MAP_PREVIEW_MISC_COPY[pageLocale]
@@ -1947,6 +2061,12 @@ export function ChallengeEntityAnalysisPage({
     ],
   )
   const hasVisibleSubordinateCards = subordinateCards.length > 0
+  const summaryTrendLabel =
+    periodType === 'QUARTER'
+      ? 'QoQ'
+      : periodType === 'MONTH'
+        ? 'MoM'
+        : undefined
   const isSubordinatesSectionLoading =
     (
       subordinateRankingQuery.isLoading &&
@@ -1980,7 +2100,7 @@ export function ChallengeEntityAnalysisPage({
               entity={entity}
               currentYear={selectedYear}
               reportPeriod={reportPeriod}
-              trendPeriod={CHALLENGE_TREND_PERIOD}
+              trendPeriod={trendPeriod}
               reportType={selectedReportType}
               normalizationOptions={queryNormalizationOptions}
               onNormalizationChange={handleNormalizationOptionsChange}
@@ -1988,11 +2108,14 @@ export function ChallengeEntityAnalysisPage({
               commitmentsDetailLevel={commitmentsDetailLevel}
               onCommitmentsGroupingChange={onCommitmentsViewStateChange}
               onYearChange={handleYearChange}
+              onSelectPeriod={handleSelectedPeriodChange}
+              selectedQuarter={quarter}
+              selectedMonth={month}
               onReportTypeToggle={handleReportTypeToggle}
               onNormalizationToggle={handleNormalizationToggle}
               reportTypeLabel={reportTypeCtaLabel}
               normalizationLabel={normalizationCtaLabel}
-              allowPerCapita
+              allowPerCapita={allowPerCapita}
               headerSlot={
                 <ChallengeCommitmentsExplainer
                   locale={locale}
@@ -2005,8 +2128,9 @@ export function ChallengeEntityAnalysisPage({
                 <DeferredChallengeEntityReportsSection
                   locale={locale}
                   entityCui={entityCui}
-                  selectedYear={selectedYear}
+                  reportPeriod={reportPeriod}
                   reportType={toCommitmentReportType(selectedReportType) ?? selectedReportType}
+                  mainCreditorCui={mainCreditorCui}
                 />
               }
             />
@@ -2040,6 +2164,7 @@ export function ChallengeEntityAnalysisPage({
               periodLabel={periodLabel}
               normalizationOptions={displayNormalizationOptions}
               trends={summaryTrends}
+              trendLabel={summaryTrendLabel}
               density="compact-desktop"
             />
 
@@ -2052,6 +2177,10 @@ export function ChallengeEntityAnalysisPage({
               entityName={entity.name}
               normalizationOptions={displayNormalizationOptions}
               onYearChange={handleYearChange}
+              onSelectPeriod={handleSelectedPeriodChange}
+              periodType={periodType}
+              selectedQuarter={quarter}
+              selectedMonth={month}
               showControls={false}
               showChartEditorLink={false}
             />
@@ -2085,6 +2214,7 @@ export function ChallengeEntityAnalysisPage({
                     mapKey={selectedMapPreviewDefinition.key}
                     mapDescription={selectedMapPreviewCopy.mapDescription}
                     mapStateDefinition={selectedMapPreviewStateDefinition}
+                    reportPeriodOverride={reportPeriod}
                     selectedYearOverride={selectedYear}
                     reportTypeOverride={toReportTypeValue(selectedReportType)}
                     normalizationOverride={normalizationMode}
@@ -2339,10 +2469,14 @@ export function ChallengeEntityAnalysisPage({
                 lineItems={entityLineItemsQuery.data?.nodes ?? []}
                 currentYear={selectedYear}
                 reportType={selectedReportType}
-                trendPeriod={CHALLENGE_TREND_PERIOD}
+                periodType={periodType}
+                trendPeriod={trendPeriod}
                 queryNormalizationOptions={queryNormalizationOptions}
                 displayNormalizationOptions={displayNormalizationOptions}
                 onYearChange={handleYearChange}
+                onSelectPeriod={handleSelectedPeriodChange}
+                selectedQuarter={quarter}
+                selectedMonth={month}
                 accountCategory={evolutionAccountCategory}
                 primary={evolutionPrimary}
                 onStateChange={(patch) => onStateChange(patch)}
@@ -2362,7 +2496,6 @@ export function ChallengeEntityAnalysisPage({
             />
 
             <DeferredSectionGate
-              className="min-h-[320px] sm:min-h-[360px]"
               fallback={
                 <DeferredSectionFallback
                   titleWidthClassName="w-44"
@@ -2374,8 +2507,9 @@ export function ChallengeEntityAnalysisPage({
               <DeferredChallengeEntityReportsSection
                 locale={locale}
                 entityCui={entityCui}
-                selectedYear={selectedYear}
+                reportPeriod={reportPeriod}
                 reportType={selectedReportType}
+                mainCreditorCui={mainCreditorCui}
               />
             </DeferredSectionGate>
 
@@ -2399,9 +2533,22 @@ export function ChallengeEntityAnalysisPage({
     <div className="space-y-4 sm:space-y-6 pb-10">
       <ChallengeEntityAnalysisHeader
         entity={entity}
-        selectedYear={selectedYear}
-        availableYears={CHALLENGE_AVAILABLE_YEARS}
-        onYearChange={handleYearChange}
+        reportControlsLabel={periodLabel}
+        renderReportControls={() => (
+          <ChallengeEntityReportControls
+            locale={languageQuery}
+            periodType={periodType}
+            selectedYear={selectedYear}
+            quarter={quarter}
+            month={month}
+            availableYears={CHALLENGE_AVAILABLE_YEARS}
+            reportType={selectedReportType}
+            showReportTypeControl={showReportTypeControl}
+            mainCreditorOptions={mainCreditorOptions}
+            mainCreditorCui={mainCreditorCui}
+            onChange={handleReportControlsChange}
+          />
+        )}
         activeView={activeView}
         availableViews={availableViews}
         onViewChange={handleViewChange}

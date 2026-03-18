@@ -204,4 +204,82 @@ describe('challenge entity analytics search normalization', () => {
       notificationModal: 'open',
     })
   })
+
+  it('defaults period, month, and quarter when they are missing', () => {
+    expect(normalizeChallengeEntityAnalysisSearch(undefined)).toMatchObject({
+      period: 'YEAR',
+      year: 2025,
+      month: '01',
+      quarter: 'Q1',
+    })
+  })
+
+  it('normalizes invalid period anchors and clears stale month and quarter values in the canonical patch', () => {
+    const rawSearch = {
+      period: 'invalid',
+      month: '99',
+      quarter: 'Q9',
+    } as any
+
+    const normalizedSearch = normalizeChallengeEntityAnalysisSearch(rawSearch)
+
+    expect(normalizedSearch).toMatchObject({
+      period: 'YEAR',
+      month: '01',
+      quarter: 'Q1',
+    })
+    expect(
+      buildChallengeEntityAnalysisCanonicalSearchPatch(rawSearch, normalizedSearch),
+    ).toMatchObject({
+      period: 'YEAR',
+      month: undefined,
+      quarter: undefined,
+    })
+  })
+
+  it('removes stale quarter state when switching to month mode', () => {
+    const rawSearch = {
+      period: 'MONTH',
+      month: '03',
+      quarter: 'Q4',
+    } as any
+
+    const normalizedSearch = normalizeChallengeEntityAnalysisSearch(rawSearch)
+
+    expect(
+      buildChallengeEntityAnalysisCanonicalSearchPatch(rawSearch, normalizedSearch),
+    ).toMatchObject({
+      quarter: undefined,
+    })
+  })
+
+  it('trims and canonicalizes the main creditor filter', () => {
+    const rawSearch = {
+      main_creditor_cui: '  4305857  ',
+    } as any
+
+    const normalizedSearch = normalizeChallengeEntityAnalysisSearch(rawSearch)
+
+    expect(normalizedSearch.main_creditor_cui).toBe('4305857')
+    expect(
+      buildChallengeEntityAnalysisCanonicalSearchPatch(rawSearch, normalizedSearch),
+    ).toMatchObject({
+      main_creditor_cui: '4305857',
+    })
+  })
+
+  it('drops an empty main creditor filter in the canonical patch', () => {
+    const rawSearch = {
+      main_creditor_cui: '   ',
+    } as any
+
+    const normalizedSearch = normalizeChallengeEntityAnalysisSearch(rawSearch)
+
+    expect(normalizedSearch.main_creditor_cui).toBeUndefined()
+    expect(
+      buildChallengeEntityAnalysisCanonicalSearchPatch(rawSearch, normalizedSearch),
+    ).toMatchObject({
+      main_creditor_cui: undefined,
+    })
+  })
 })

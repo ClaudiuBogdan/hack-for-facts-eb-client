@@ -8,8 +8,8 @@ import {
   ChallengeEntityAnalysisLoadingShell,
 } from '@/features/challenges/components/analysis/challenge-entity-analysis-loading-shell'
 import {
-  CHALLENGE_TREND_PERIOD,
   buildChallengeEntityAnalysisReportPeriod,
+  buildChallengeEntityAnalysisTrendPeriod,
   challengeEntitySubordinateRankingQueryOptions,
   type ChallengeEntityInitialSettings,
 } from '@/features/challenges/components/analysis/challenge-entity-analysis-queries'
@@ -82,9 +82,16 @@ export const Route = createFileRoute('/primarie/$cui/')({
     const search = location.search as PrimarieSearchWithGlobalSettings | undefined
     const normalizedSearch = normalizeChallengeEntityAnalysisSearch(search)
     const initialSettings = resolveChallengeEntityInitialSettings(search)
-    const reportPeriod = buildChallengeEntityAnalysisReportPeriod(
-      normalizedSearch.year,
-    )
+    const reportPeriod = buildChallengeEntityAnalysisReportPeriod({
+      periodType: normalizedSearch.period,
+      selectedYear: normalizedSearch.year,
+      month: normalizedSearch.month,
+      quarter: normalizedSearch.quarter,
+    })
+    const trendPeriod = buildChallengeEntityAnalysisTrendPeriod({
+      periodType: normalizedSearch.period,
+      selectedYear: normalizedSearch.year,
+    })
     const queryNormalizationOptions = {
       normalization: normalizedSearch.normalization,
       show_period_growth: false,
@@ -96,13 +103,15 @@ export const Route = createFileRoute('/primarie/$cui/')({
       cui: params.cui,
       reportPeriod,
       reportType: normalizedSearch.report_type,
-      trendPeriod: CHALLENGE_TREND_PERIOD,
+      trendPeriod,
+      mainCreditorCui: normalizedSearch.main_creditor_cui,
       ...queryNormalizationOptions,
     })
     const entityLineItemsOptions = entityExecutionLineItemsQueryOptions({
       cui: params.cui,
       reportPeriod,
       reportType: normalizedSearch.report_type,
+      mainCreditorCui: normalizedSearch.main_creditor_cui,
       ...queryNormalizationOptions,
     })
 
@@ -122,6 +131,7 @@ export const Route = createFileRoute('/primarie/$cui/')({
     const runtimeMapState = applyMapRuntimeConfig(
       selectedMapPreviewDefinition.mapState,
       {
+        reportPeriodOverride: reportPeriod,
         selectedYearOverride: normalizedSearch.year,
         reportTypeOverride: toReportTypeValue(normalizedSearch.report_type),
         normalizationOverride: normalizedSearch.normalization,
@@ -133,7 +143,7 @@ export const Route = createFileRoute('/primarie/$cui/')({
 
     void queryClient.prefetchQuery(
       challengeEntitySubordinateRankingQueryOptions({
-        entityCui: params.cui,
+        entityCui: normalizedSearch.main_creditor_cui ?? params.cui,
         reportPeriod,
         normalizationOptions: {
           currency: initialSettings.currency,

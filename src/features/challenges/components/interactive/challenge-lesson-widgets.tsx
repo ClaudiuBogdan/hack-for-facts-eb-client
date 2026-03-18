@@ -884,7 +884,7 @@ export function LessonBudgetEstimate({
   const growthPercent = formatDelta(previousValue, actualValue)
   const perCapitaValue = selectLessonMetricValue(metric, perCapitaEntity)
   const previewCopy = mapPreviewDefinition.buildPreviewCopy({
-    selectedYear: CHALLENGE_LESSON_YEAR,
+    selectedPeriodLabel: String(CHALLENGE_LESSON_YEAR),
     normalization: 'per_capita',
     currency: CHALLENGE_LESSON_DEFAULT_CURRENCY,
     inflationAdjusted: false,

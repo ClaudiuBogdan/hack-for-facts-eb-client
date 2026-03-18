@@ -40,7 +40,7 @@ export type ChallengeEntityMapPreviewKey =
   | 'local-taxes'
 
 export type ChallengeEntityMapPreviewRuntimeContext = {
-  readonly selectedYear: number
+  readonly selectedPeriodLabel: string
   readonly normalization: 'total' | 'per_capita'
   readonly currency: Currency
   readonly inflationAdjusted: boolean
@@ -216,9 +216,9 @@ function createMapPreviewState({
 
 function buildMapTitle(
   baseTitle: string,
-  selectedYear: number,
+  selectedPeriodLabel: string,
 ) {
-  return `${baseTitle} (${selectedYear})`
+  return `${baseTitle} (${selectedPeriodLabel})`
 }
 
 function getNormalizationLabel(normalization: 'total' | 'per_capita') {
@@ -256,7 +256,7 @@ function buildPreviewConfigSection({
   reportType,
 }: Omit<
   ChallengeEntityMapPreviewRuntimeContext,
-  'selectedYear'
+  'selectedPeriodLabel'
 >) {
   return `### Config activă
 
@@ -300,14 +300,14 @@ export const CHALLENGE_ENTITY_MAP_PREVIEW_DEFINITIONS = [
     ],
     fallbackViewport: expensesViewport,
     buildPreviewCopy: ({
-      selectedYear,
+      selectedPeriodLabel,
       normalization,
       currency,
       inflationAdjusted,
       reportType,
     }) => ({
-      mapName: buildMapTitle('Cheltuieli UAT', selectedYear),
-      mapDescription: `Harta prezintă **cheltuielile UAT** din România pentru anul **${selectedYear}**.
+      mapName: buildMapTitle('Cheltuieli UAT', selectedPeriodLabel),
+      mapDescription: `Harta prezintă **cheltuielile UAT** din România pentru perioada **${selectedPeriodLabel}**.
 
 ${buildPreviewConfigSection({
   normalization,
@@ -371,14 +371,14 @@ ${buildPreviewConfigSection({
     aliases: ['income-total-per-capita', 'FWlNQTf8I_DC'],
     fallbackViewport: incomeViewport,
     buildPreviewCopy: ({
-      selectedYear,
+      selectedPeriodLabel,
       normalization,
       currency,
       inflationAdjusted,
       reportType,
     }) => ({
-      mapName: buildMapTitle('Venituri UAT', selectedYear),
-      mapDescription: `Harta prezintă **veniturile UAT** din România pentru anul **${selectedYear}**.
+      mapName: buildMapTitle('Venituri UAT', selectedPeriodLabel),
+      mapDescription: `Harta prezintă **veniturile UAT** din România pentru perioada **${selectedPeriodLabel}**.
 
 ${buildPreviewConfigSection({
   normalization,
@@ -438,14 +438,14 @@ ${buildPreviewConfigSection({
     aliases: ['budget-balance', 'M7PyWc0ic4hV'],
     fallbackViewport: balanceViewport,
     buildPreviewCopy: ({
-      selectedYear,
+      selectedPeriodLabel,
       normalization,
       currency,
       inflationAdjusted,
       reportType,
     }) => ({
-      mapName: buildMapTitle('Balanță bugetară UAT', selectedYear),
-      mapDescription: `Harta prezintă **balanța bugetară a UAT-urilor** din România pentru anul **${selectedYear}**.
+      mapName: buildMapTitle('Balanță bugetară UAT', selectedPeriodLabel),
+      mapDescription: `Harta prezintă **balanța bugetară a UAT-urilor** din România pentru perioada **${selectedPeriodLabel}**.
 
 > **Balanță bugetară** = Venituri totale − Cheltuieli totale
 
@@ -537,14 +537,14 @@ ${buildPreviewConfigSection({
     ],
     fallbackViewport: localTaxesViewport,
     buildPreviewCopy: ({
-      selectedYear,
+      selectedPeriodLabel,
       normalization,
       currency,
       inflationAdjusted,
       reportType,
     }) => ({
-      mapName: buildMapTitle('Taxe și impozite locale UAT', selectedYear),
-      mapDescription: `Harta prezintă **taxele și impozitele locale** colectate de UAT-urile din România pentru anul **${selectedYear}**.
+      mapName: buildMapTitle('Taxe și impozite locale UAT', selectedPeriodLabel),
+      mapDescription: `Harta prezintă **taxele și impozitele locale** colectate de UAT-urile din România pentru perioada **${selectedPeriodLabel}**.
 
 > **Taxe și impozite locale** = Impozite și taxe pe proprietate (fn:07) + Taxe pe utilizarea bunurilor (fn:16)
 

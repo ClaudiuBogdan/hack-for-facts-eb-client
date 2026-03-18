@@ -100,6 +100,62 @@ describe('applyMapRuntimeConfig', () => {
     });
   });
 
+  it('overrides compatible series with the provided report period', () => {
+    const baseSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    if (baseSeries.type !== 'line-items-aggregated-yearly') {
+      throw new Error('Expected execution series');
+    }
+
+    const mapState = AdvancedMapAnalyticsUrlStateSchema.parse({
+      mapName: 'Preview map',
+      series: [
+        {
+          ...baseSeries,
+          filter: {
+            ...baseSeries.filter,
+            report_period: {
+              type: 'YEAR',
+              selection: {
+                interval: {
+                  start: '2025',
+                  end: '2025',
+                },
+              },
+            },
+          },
+        },
+      ],
+    });
+
+    const nextState = applyMapRuntimeConfig(mapState, {
+      reportPeriodOverride: {
+        type: 'QUARTER',
+        selection: {
+          interval: {
+            start: '2025-Q2',
+            end: '2025-Q2',
+          },
+        },
+      },
+      selectedYearOverride: 2023,
+    });
+
+    const series = nextState.series[0];
+    if (!series || series.type !== 'line-items-aggregated-yearly') {
+      throw new Error('Expected execution series');
+    }
+
+    expect(series.filter.report_period).toEqual({
+      type: 'QUARTER',
+      selection: {
+        interval: {
+          start: '2025-Q2',
+          end: '2025-Q2',
+        },
+      },
+    });
+  });
+
   it('forces the map view when requested', () => {
     const mapState = AdvancedMapAnalyticsUrlStateSchema.parse({
       mapName: 'Preview map',

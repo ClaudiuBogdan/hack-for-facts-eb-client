@@ -18,6 +18,7 @@ interface EntityFinancialSummaryCardProps {
   currency: 'RON' | 'EUR' | 'USD';
   isPerCapita?: boolean;
   trend?: EntityFinancialSummaryTrend;
+  trendLabel?: string;
   density?: EntityFinancialSummaryDensity;
   metricKind: EntityFinancialSummaryMetricKind;
 }
@@ -66,10 +67,12 @@ function resolveTrendIndicator(
 
 function TrendBadge({
   trend,
+  trendLabel,
   metricKind,
   className,
 }: {
   readonly trend?: EntityFinancialSummaryTrend
+  readonly trendLabel?: string
   readonly metricKind: EntityFinancialSummaryMetricKind
   readonly className?: string
 }) {
@@ -108,7 +111,7 @@ function TrendBadge({
     <Badge variant="outline" className={cn(badgeClassName, className)}>
       <Icon className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
       {prefix}
-      {formatNumber(indicator.percentage, 'standard')}% {t`YoY`}
+      {formatNumber(indicator.percentage, 'standard')}% {trendLabel ?? t`YoY`}
     </Badge>
   );
 }
@@ -160,7 +163,7 @@ function splitCompactCurrencyValue(
   }
 }
 
-export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProps> = ({ title, value, icon: Icon, color, periodLabel, currency, format, isPerCapita = false, trend, density = 'default', metricKind }) => {
+export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProps> = ({ title, value, icon: Icon, color, periodLabel, currency, format, isPerCapita = false, trend, trendLabel, density = 'default', metricKind }) => {
   const displayValueCompact = formatDisplayValue(value, 'compact', format, currency);
   const displayValueStandard = formatDisplayValue(value, 'standard', format, currency);
   const iconColor = iconColorMap[color] ?? 'text-slate-500 dark:text-slate-400';
@@ -176,7 +179,7 @@ export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProp
   return (
     <Card
       className={cn(
-        'flex flex-col items-center justify-center border-border/60 shadow-sm transition-shadow duration-200 hover:shadow-md',
+        'flex flex-col items-center justify-center rounded-[28px] border-border/50 shadow-sm transition-shadow duration-200 hover:shadow-md',
         isCompactDesktop && 'items-stretch justify-start lg:h-full',
       )}
     >
@@ -265,6 +268,7 @@ export const EntityFinancialSummaryCard: React.FC<EntityFinancialSummaryCardProp
         >
           <TrendBadge
             trend={trend}
+            trendLabel={trendLabel}
             metricKind={metricKind}
             className={isCompactDesktop ? 'text-[9px] px-1 py-0 sm:text-xs sm:px-2 sm:py-0.5' : undefined}
           />
@@ -286,11 +290,12 @@ interface EntityFinancialSummaryProps {
     readonly expenses?: EntityFinancialSummaryTrend;
     readonly balance?: EntityFinancialSummaryTrend;
   };
+  trendLabel?: string;
   density?: EntityFinancialSummaryDensity;
 }
 
 export const EntityFinancialSummary: React.FC<EntityFinancialSummaryProps> = (
-  { totalIncome, totalExpenses, budgetBalance, periodLabel, isLoading, normalizationOptions, trends, density = 'default' }
+  { totalIncome, totalExpenses, budgetBalance, periodLabel, isLoading, normalizationOptions, trends, trendLabel, density = 'default' }
 ) => {
   if (isLoading) {
     return <EntityFinancialSummarySkeleton />;
@@ -307,9 +312,9 @@ export const EntityFinancialSummary: React.FC<EntityFinancialSummaryProps> = (
         density === 'compact-desktop' && 'grid-cols-3 gap-1.5 sm:gap-3 lg:mb-5 lg:gap-4',
       )}
     >
-      <EntityFinancialSummaryCard title={t`Total Income`} value={totalIncome} icon={TrendingUp} color="green" periodLabel={periodLabel} currency={normalized.currency} format={format} isPerCapita={isPerCapita} trend={trends?.income} density={density} metricKind="income" />
-      <EntityFinancialSummaryCard title={t`Total Expenses`} value={totalExpenses} icon={TrendingDown} color="red" periodLabel={periodLabel} currency={normalized.currency} format={format} isPerCapita={isPerCapita} trend={trends?.expenses} density={density} metricKind="expenses" />
-      <EntityFinancialSummaryCard title={t`Income - Expenses`} value={budgetBalance} icon={Scale} color="blue" periodLabel={periodLabel} currency={normalized.currency} format={format} isPerCapita={isPerCapita} trend={trends?.balance} density={density} metricKind="balance" />
+      <EntityFinancialSummaryCard title={t`Total Income`} value={totalIncome} icon={TrendingUp} color="green" periodLabel={periodLabel} currency={normalized.currency} format={format} isPerCapita={isPerCapita} trend={trends?.income} trendLabel={trendLabel} density={density} metricKind="income" />
+      <EntityFinancialSummaryCard title={t`Total Expenses`} value={totalExpenses} icon={TrendingDown} color="red" periodLabel={periodLabel} currency={normalized.currency} format={format} isPerCapita={isPerCapita} trend={trends?.expenses} trendLabel={trendLabel} density={density} metricKind="expenses" />
+      <EntityFinancialSummaryCard title={t`Income - Expenses`} value={budgetBalance} icon={Scale} color="blue" periodLabel={periodLabel} currency={normalized.currency} format={format} isPerCapita={isPerCapita} trend={trends?.balance} trendLabel={trendLabel} density={density} metricKind="balance" />
     </section>
   );
 }; 

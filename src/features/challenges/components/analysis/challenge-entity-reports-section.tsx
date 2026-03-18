@@ -10,16 +10,18 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { usePeriodLabel } from '@/hooks/use-period-label'
 import { useReportsConnection } from '@/lib/hooks/useEntityDetails'
-import { toReportTypeValue, type GqlReportType } from '@/schemas/reporting'
+import { toReportTypeValue, type GqlReportType, type ReportPeriodInput } from '@/schemas/reporting'
 import type { ReportNode } from '@/lib/api/entities'
 import type { ChallengeLocale } from '../../types'
 
 type ChallengeEntityReportsSectionProps = {
   readonly locale: ChallengeLocale
   readonly entityCui: string
-  readonly selectedYear: number
+  readonly reportPeriod: ReportPeriodInput
   readonly reportType: GqlReportType
+  readonly mainCreditorCui?: string
 }
 
 const MAX_VISIBLE_REPORTS = 5
@@ -33,9 +35,9 @@ const DOWNLOAD_TYPE_ORDER: Record<string, number> = {
 const REPORTS_COPY = {
   ro: {
     title: 'Rapoarte financiare',
-    selectedYear: 'An selectat',
-    empty: (year: number) =>
-      `Nu am găsit rapoarte publicate pentru ${year} în modul selectat.`,
+    selectedPeriod: 'Perioadă selectată',
+    empty: (periodLabel: string) =>
+      `Nu am găsit rapoarte publicate pentru ${periodLabel} în modul selectat.`,
     error: 'Nu am putut încărca rapoartele pentru această perioadă.',
     retry: 'Încearcă din nou',
     showLess: 'Arată mai puține',
@@ -49,9 +51,9 @@ const REPORTS_COPY = {
   },
   en: {
     title: 'Financial Reports',
-    selectedYear: 'Selected year',
-    empty: (year: number) =>
-      `No reports were published for ${year} in the selected mode.`,
+    selectedPeriod: 'Selected period',
+    empty: (periodLabel: string) =>
+      `No reports were published for ${periodLabel} in the selected mode.`,
     error: 'We could not load the reports for this period.',
     retry: 'Try again',
     showLess: 'Show fewer',
@@ -196,24 +198,46 @@ function ChallengeEntityReportsRow({
 export function ChallengeEntityReportsSection({
   locale,
   entityCui,
-  selectedYear,
+  reportPeriod,
   reportType,
+  mainCreditorCui,
 }: ChallengeEntityReportsSectionProps) {
   const copy = REPORTS_COPY[locale]
   const [isExpanded, setIsExpanded] = useState(false)
+  const periodLabel =
+    usePeriodLabel(reportPeriod) ||
+    String(reportPeriod.selection.interval?.start ?? '')
+  const selectedPeriodAnchor =
+    reportPeriod.selection.interval?.start ?? reportPeriod.selection.dates?.[0]
+  const selectedReportingYear =
+    typeof selectedPeriodAnchor === 'string'
+      ? Number(selectedPeriodAnchor.slice(0, 4))
+      : undefined
   const reportsQuery = useReportsConnection({
     filter: {
       entity_cui: entityCui,
-      reporting_year: selectedYear,
       report_type: reportType,
+      ...(reportPeriod.type === 'YEAR'
+        ? {
+            reporting_year: selectedReportingYear,
+          }
+        : {
+            reporting_period:
+              typeof selectedPeriodAnchor === 'string'
+                ? selectedPeriodAnchor
+                : undefined,
+          }),
+      main_creditor_cui: mainCreditorCui,
     },
     limit: REPORT_FETCH_LIMIT,
     offset: 0,
     enabled: entityCui.length > 0,
   })
+  const reportPeriodType = reportPeriod.type
+  const reportPeriodSelectionKey = JSON.stringify(reportPeriod.selection)
   useEffect(() => {
     setIsExpanded(false)
-  }, [entityCui, reportType, selectedYear])
+  }, [entityCui, mainCreditorCui, reportPeriodType, reportPeriodSelectionKey, reportType])
 
   const sortedReports = useMemo(
     () =>
@@ -239,7 +263,7 @@ export function ChallengeEntityReportsSection({
             {copy.title}
           </CardTitle>
           <Badge variant="secondary" className="px-3 py-1 font-medium tabular-nums">
-            {copy.selectedYear} {selectedYear}
+            {copy.selectedPeriod} {periodLabel}
           </Badge>
           <Badge variant="outline" className="px-3 py-1 font-medium tabular-nums">
             {copy.totalCount(totalCount)}
@@ -275,7 +299,7 @@ export function ChallengeEntityReportsSection({
           </div>
         ) : visibleReports.length === 0 ? (
           <div className="rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-5 py-6 text-sm text-muted-foreground">
-            {copy.empty(selectedYear)}
+            {copy.empty(periodLabel)}
           </div>
         ) : (
           <>

@@ -14,6 +14,18 @@ type YearOverrideCompatibleSeries =
   | SeriesConfiguration
   | CommitmentsSeriesConfiguration;
 
+function areReportPeriodsEqual(
+  left: ReportPeriodInputZ | undefined,
+  right: ReportPeriodInputZ | undefined,
+): boolean {
+  if (left === right) return true;
+  if (left === undefined || right === undefined) return false;
+  return (
+    left.type === right.type &&
+    JSON.stringify(left.selection) === JSON.stringify(right.selection)
+  );
+}
+
 function overrideSingleYearReportPeriod(
   reportPeriod: ReportPeriodInputZ | undefined,
   selectedYearOverride: number | undefined,
@@ -69,16 +81,19 @@ function overrideSingleYearReportPeriod(
   return reportPeriod;
 }
 
-function overrideSeriesYear<T extends YearOverrideCompatibleSeries>(
+function overrideSeriesReportPeriod<T extends YearOverrideCompatibleSeries>(
   series: T,
+  reportPeriodOverride: ReportPeriodInputZ | undefined,
   selectedYearOverride: number | undefined,
 ): T {
-  const nextReportPeriod = overrideSingleYearReportPeriod(
-    series.filter.report_period,
-    selectedYearOverride,
-  );
+  const nextReportPeriod =
+    reportPeriodOverride ??
+    overrideSingleYearReportPeriod(
+      series.filter.report_period,
+      selectedYearOverride,
+    );
 
-  if (nextReportPeriod === series.filter.report_period) {
+  if (areReportPeriodsEqual(nextReportPeriod, series.filter.report_period)) {
     return series;
   }
 
@@ -173,18 +188,30 @@ function overrideExecutionSeriesReportType(
 
 function applyRuntimeYearOverride(
   series: MapSupportedSeries,
+  reportPeriodOverride: ReportPeriodInputZ | undefined,
   selectedYearOverride: number | undefined,
 ): MapSupportedSeries {
-  if (selectedYearOverride === undefined) {
+  if (
+    reportPeriodOverride === undefined &&
+    selectedYearOverride === undefined
+  ) {
     return series;
   }
 
   if (series.type === 'line-items-aggregated-yearly') {
-    return overrideSeriesYear(series, selectedYearOverride);
+    return overrideSeriesReportPeriod(
+      series,
+      reportPeriodOverride,
+      selectedYearOverride,
+    );
   }
 
   if (series.type === 'commitments-analytics') {
-    return overrideSeriesYear(series, selectedYearOverride);
+    return overrideSeriesReportPeriod(
+      series,
+      reportPeriodOverride,
+      selectedYearOverride,
+    );
   }
 
   return series;
@@ -252,6 +279,7 @@ function applyRuntimeInflationAdjustedOverride(
 export function applyMapRuntimeConfig(
   mapConfig: AdvancedMapAnalyticsUrlState,
   {
+    reportPeriodOverride,
     selectedYearOverride,
     reportTypeOverride,
     normalizationOverride,
@@ -260,6 +288,7 @@ export function applyMapRuntimeConfig(
     mapNameOverride,
     forceMapActiveView = false,
   }: {
+    reportPeriodOverride?: ReportPeriodInputZ;
     selectedYearOverride?: number;
     reportTypeOverride?: SeriesConfiguration['filter']['report_type'];
     normalizationOverride?: 'total' | 'per_capita';
@@ -275,7 +304,11 @@ export function applyMapRuntimeConfig(
       applyRuntimeCurrencyOverride(
         applyRuntimeNormalizationOverride(
           applyRuntimeReportTypeOverride(
-            applyRuntimeYearOverride(series, selectedYearOverride),
+            applyRuntimeYearOverride(
+              series,
+              reportPeriodOverride,
+              selectedYearOverride,
+            ),
             reportTypeOverride,
           ),
           normalizationOverride,

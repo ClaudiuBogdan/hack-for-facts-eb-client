@@ -72,7 +72,7 @@ export function ChallengeCommitmentsExplainer({
     .join(' ')
 
   return (
-    <Card className="rounded-[28px] border-border/50 bg-muted/[0.18]">
+    <Card className="rounded-[28px] border-border/50">
       <CardContent className="px-4 py-4 sm:px-6 sm:py-5 md:px-7">
         <div className="flex items-start gap-3 sm:gap-4">
           <Info

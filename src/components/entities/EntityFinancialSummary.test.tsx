@@ -66,6 +66,28 @@ describe('EntityFinancialSummary', () => {
     expect(screen.getByText('+30% YoY').closest('.text-rose-700')).toBeTruthy()
   })
 
+  it('renders a custom comparison label for non-year periods', () => {
+    render(
+      <EntityFinancialSummary
+        totalIncome={120}
+        totalExpenses={90}
+        budgetBalance={30}
+        periodLabel="2025-Q2"
+        normalizationOptions={normalizationOptions}
+        trendLabel="QoQ"
+        trends={{
+          income: {
+            previousValue: 100,
+            currentValue: 120,
+          },
+        }}
+      />,
+    )
+
+    expect(screen.getByText('+20% QoQ')).toBeInTheDocument()
+    expect(screen.queryByText('+20% YoY')).not.toBeInTheDocument()
+  })
+
   it('hides invalid trend badges when previous values are missing or zero', () => {
     render(
       <EntityFinancialSummary

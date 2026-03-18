@@ -6,11 +6,13 @@ import type { Currency } from '@/schemas/charts'
 import { DEFAULT_SELECTED_YEAR, defaultYearRange } from '@/schemas/charts'
 import type { NormalizationOptions } from '@/lib/normalization'
 import {
-  makeSingleTimePeriod,
+  getInitialFilterState,
   makeTrendPeriod,
   toReportTypeValue,
-  type DateInput,
   type ReportPeriodInput,
+  type ReportPeriodType,
+  type TMonth,
+  type TQuarter,
 } from '@/schemas/reporting'
 
 export type ChallengeEntityInitialSettings = {
@@ -18,23 +20,36 @@ export type ChallengeEntityInitialSettings = {
   inflationAdjusted: boolean
 }
 
-export const CHALLENGE_TREND_PERIOD = makeTrendPeriod(
-  'YEAR',
-  DEFAULT_SELECTED_YEAR,
-  defaultYearRange.start,
-  DEFAULT_SELECTED_YEAR,
-) as ReportPeriodInput
+export type ChallengeEntityAnalysisPeriodSelection = {
+  readonly periodType: ReportPeriodType
+  readonly selectedYear: number
+  readonly month: TMonth
+  readonly quarter: TQuarter
+}
 
 const CHALLENGE_DETAILED_ANALYTICS_REPORT_TYPE = toReportTypeValue('DETAILED')
 const CHALLENGE_SHOW_PERIOD_GROWTH = false
 const MAX_VISIBLE_SUBORDINATE_CARDS = 5
 
 export function buildChallengeEntityAnalysisReportPeriod(
-  selectedYear: number,
+  params: ChallengeEntityAnalysisPeriodSelection,
 ): ReportPeriodInput {
-  return makeSingleTimePeriod(
-    'YEAR',
-    `${selectedYear}` as DateInput,
+  return getInitialFilterState(
+    params.periodType,
+    params.selectedYear,
+    params.month,
+    params.quarter,
+  ) as ReportPeriodInput
+}
+
+export function buildChallengeEntityAnalysisTrendPeriod(
+  params: Pick<ChallengeEntityAnalysisPeriodSelection, 'periodType' | 'selectedYear'>,
+): ReportPeriodInput {
+  return makeTrendPeriod(
+    params.periodType,
+    params.selectedYear,
+    defaultYearRange.start,
+    DEFAULT_SELECTED_YEAR,
   ) as ReportPeriodInput
 }
 

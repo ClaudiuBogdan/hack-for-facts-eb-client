@@ -37,20 +37,26 @@ const entity = {
   },
 }
 
-function renderHeader(languageQuery?: 'ro' | 'en') {
+function renderHeader(
+  languageQuery?: 'ro' | 'en',
+  reportControlsLabel = '2025',
+) {
   return render(
     <ChallengeEntityAnalysisHeader
       entity={entity}
-      selectedYear={2025}
+      reportControlsLabel={reportControlsLabel}
+      renderReportControls={() => (
+        <div data-testid="challenge-entity-report-controls">
+          {languageQuery === 'en' ? 'Report controls' : 'Filtre raportare'}
+        </div>
+      )}
       activeView="main-info"
       availableViews={[
-        { id: 'main-info', label: languageQuery === 'en' ? 'Main Info' : 'Informații Principale' },
+        { id: 'main-info', label: languageQuery === 'en' ? 'Budget Execution' : 'Execuții Bugetare' },
         { id: 'contracts', label: languageQuery === 'en' ? 'Contracts' : 'Contracte' },
         { id: 'commitments', label: languageQuery === 'en' ? 'Commitments' : 'Angajamente' },
         { id: 'ins', label: 'INS' },
       ]}
-      availableYears={[2025, 2024, 2023]}
-      onYearChange={vi.fn()}
       onViewChange={vi.fn()}
       showInflationBadge
       languageQuery={languageQuery}
@@ -251,16 +257,17 @@ describe('ChallengeEntityAnalysisHeader', () => {
       <div onClick={onParentClick}>
         <ChallengeEntityAnalysisHeader
           entity={entity}
-          selectedYear={2025}
+          reportControlsLabel="2025"
+          renderReportControls={() => (
+            <div data-testid="challenge-entity-report-controls">Filtre raportare</div>
+          )}
           activeView="main-info"
           availableViews={[
-            { id: 'main-info', label: 'Informații Principale' },
+            { id: 'main-info', label: 'Execuții Bugetare' },
             { id: 'contracts', label: 'Contracte' },
             { id: 'commitments', label: 'Angajamente' },
             { id: 'ins', label: 'INS' },
           ]}
-          availableYears={[2025, 2024, 2023]}
-          onYearChange={vi.fn()}
           onViewChange={vi.fn()}
           showInflationBadge
         />
@@ -280,7 +287,7 @@ describe('ChallengeEntityAnalysisHeader', () => {
     expect(onParentClick).not.toHaveBeenCalled()
   })
 
-  it('omits the legacy entity chrome while keeping the year selector', () => {
+  it('omits the legacy entity chrome while keeping the report controls trigger', () => {
     renderHeader()
 
     expect(screen.queryByText('Primăria Mea')).not.toBeInTheDocument()
@@ -292,21 +299,21 @@ describe('ChallengeEntityAnalysisHeader', () => {
       screen.queryByRole('link', { name: 'Schimbă Primăria' }),
     ).not.toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Selectează anul' }),
+      screen.getByRole('button', { name: 'Deschide filtrele de raportare' }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Alege vizualizarea entității' }),
-    ).toHaveTextContent('Informații Principale')
+    ).toHaveTextContent('Execuții Bugetare')
   })
 
   it('localizes the remaining header copy in english', () => {
     renderHeader('en')
 
     expect(screen.getByText('134,309 inhabitants')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Select year' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Open reporting filters' })).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: 'Choose entity view' }),
-    ).toHaveTextContent('Main Info')
+    ).toHaveTextContent('Budget Execution')
     expect(screen.queryByText('My City Hall')).not.toBeInTheDocument()
     expect(screen.queryByText('Municipality')).not.toBeInTheDocument()
     expect(screen.queryByText('Change City Hall')).not.toBeInTheDocument()
@@ -322,7 +329,7 @@ describe('ChallengeEntityAnalysisHeader', () => {
     const menu = screen.getByTestId('challenge-entity-view-menu')
     expect(within(menu).getByText('Alege Vizualizarea')).toBeInTheDocument()
     expect(
-      within(menu).getByRole('button', { name: 'Informații Principale' }),
+      within(menu).getByRole('button', { name: 'Execuții Bugetare' }),
     ).toHaveAttribute('aria-pressed', 'true')
     expect(
       within(menu).getByRole('button', { name: 'Contracte' }),
@@ -335,16 +342,17 @@ describe('ChallengeEntityAnalysisHeader', () => {
     render(
       <ChallengeEntityAnalysisHeader
         entity={entity}
-        selectedYear={2025}
+        reportControlsLabel="2025"
+        renderReportControls={() => (
+          <div data-testid="challenge-entity-report-controls">Filtre raportare</div>
+        )}
         activeView="main-info"
         availableViews={[
-          { id: 'main-info', label: 'Informații Principale' },
+          { id: 'main-info', label: 'Execuții Bugetare' },
           { id: 'contracts', label: 'Contracte' },
           { id: 'commitments', label: 'Angajamente' },
           { id: 'ins', label: 'INS' },
         ]}
-        availableYears={[2025, 2024, 2023]}
-        onYearChange={vi.fn()}
         onViewChange={onViewChange}
         showInflationBadge
       />,
@@ -361,68 +369,51 @@ describe('ChallengeEntityAnalysisHeader', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('opens the year menu and highlights the selected year', () => {
+  it('opens the report controls popover from the hero header', () => {
     renderHeader()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Selectează anul' }))
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Deschide filtrele de raportare' }),
+    )
 
-    const menu = screen.getByTestId('challenge-entity-year-menu')
-    expect(within(menu).getByText('Selectează Anul')).toBeInTheDocument()
     expect(
-      within(menu).getByRole('button', { name: '2025' }),
-    ).toHaveAttribute('aria-pressed', 'true')
-    expect(
-      within(menu).getByRole('button', { name: '2024' }),
-    ).toHaveAttribute('aria-pressed', 'false')
-    expect(
-      within(menu).getByRole('button', { name: '2023' }),
-    ).toHaveAttribute('aria-pressed', 'false')
+      screen.getByTestId('challenge-entity-report-controls'),
+    ).toHaveTextContent('Filtre raportare')
   })
 
-  it('calls onYearChange from year menu selection and closes menu', () => {
-    const onYearChange = vi.fn()
-
+  it('renders the current period label in the trigger', () => {
     render(
       <ChallengeEntityAnalysisHeader
         entity={entity}
-        selectedYear={2025}
+        reportControlsLabel="2025-Q2"
+        renderReportControls={() => (
+          <div data-testid="challenge-entity-report-controls">Filtre raportare</div>
+        )}
         activeView="main-info"
         availableViews={[
-          { id: 'main-info', label: 'Informații Principale' },
+          { id: 'main-info', label: 'Execuții Bugetare' },
         ]}
-        availableYears={[2025, 2024, 2023]}
-        onYearChange={onYearChange}
         onViewChange={vi.fn()}
       />,
     )
 
-    fireEvent.click(screen.getByRole('button', { name: 'Selectează anul' }))
-    fireEvent.click(
-      within(screen.getByTestId('challenge-entity-year-menu')).getByRole(
-        'button',
-        { name: '2024' },
-      ),
-    )
-
-    expect(onYearChange).toHaveBeenCalledWith(2024)
     expect(
-      screen.queryByTestId('challenge-entity-year-menu'),
-    ).not.toBeInTheDocument()
+      screen.getByRole('button', { name: 'Deschide filtrele de raportare' }),
+    ).toHaveTextContent('2025-Q2')
   })
 
-  it('shows year menu in compact header', async () => {
-    const onYearChange = vi.fn()
-
+  it('shows report controls in the compact header', async () => {
     render(
       <ChallengeEntityAnalysisHeader
         entity={entity}
-        selectedYear={2024}
+        reportControlsLabel="2024"
+        renderReportControls={() => (
+          <div data-testid="challenge-entity-report-controls">Filtre raportare</div>
+        )}
         activeView="main-info"
         availableViews={[
-          { id: 'main-info', label: 'Informații Principale' },
+          { id: 'main-info', label: 'Execuții Bugetare' },
         ]}
-        availableYears={[2025, 2024, 2023]}
-        onYearChange={onYearChange}
         onViewChange={vi.fn()}
       />,
     )
@@ -436,17 +427,14 @@ describe('ChallengeEntityAnalysisHeader', () => {
       expect(compactHeader).toHaveAttribute('aria-hidden', 'false')
     })
 
-    const yearButton = within(compactHeader).getByRole('button', { name: 'Selectează anul' })
-    expect(yearButton).toBeInTheDocument()
-
-    fireEvent.click(yearButton)
-
-    const yearMenus = screen.getAllByTestId('challenge-entity-year-menu')
-    const compactYearMenu = yearMenus[yearMenus.length - 1]
     fireEvent.click(
-      within(compactYearMenu).getByRole('button', { name: '2023' }),
+      within(compactHeader).getByRole('button', {
+        name: 'Deschide filtrele de raportare',
+      }),
     )
 
-    expect(onYearChange).toHaveBeenCalledWith(2023)
+    expect(
+      screen.getAllByTestId('challenge-entity-report-controls'),
+    ).not.toHaveLength(0)
   })
 })

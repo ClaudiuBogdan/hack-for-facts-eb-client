@@ -10,13 +10,18 @@ import {
 import type { PublicMapViewport } from '@/features/advanced-map-analytics/hooks/use-public-map-viewport';
 import type { MapEntitySelection } from '@/features/advanced-map-analytics/types/map-entity-selection';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
-import type { Currency, SeriesConfiguration } from '@/schemas/charts';
+import type {
+  Currency,
+  ReportPeriodInputZ,
+  SeriesConfiguration,
+} from '@/schemas/charts';
 import { t } from '@lingui/core/macro';
 
 interface MapAnalyticsPublicPreviewCardProps {
   mapKey: string;
   mapDescription: string;
   mapStateDefinition: AdvancedMapAnalyticsUrlState;
+  reportPeriodOverride?: ReportPeriodInputZ;
   selectedYearOverride?: number;
   reportTypeOverride?: SeriesConfiguration['filter']['report_type'];
   normalizationOverride?: 'total' | 'per_capita';
@@ -33,6 +38,7 @@ export function MapAnalyticsPublicPreviewCard({
   mapKey,
   mapDescription,
   mapStateDefinition,
+  reportPeriodOverride,
   selectedYearOverride,
   reportTypeOverride,
   normalizationOverride,
@@ -51,6 +57,7 @@ export function MapAnalyticsPublicPreviewCard({
   } = useMapPreviewRuntimeState({
     mapKey,
     mapStateDefinition,
+    reportPeriodOverride,
     selectedYearOverride,
     reportTypeOverride,
     normalizationOverride,

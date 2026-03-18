@@ -15,6 +15,7 @@ import {
 } from '@/features/challenges/components/analysis/budget-item-analytics-search-state'
 import { CommitmentsMetricEnum } from '@/schemas/charts'
 import { parseSearchParamJson } from '@/lib/router-search'
+import type { ReportPeriodType, TMonth, TQuarter } from '@/schemas/reporting'
 
 export const CHALLENGE_ENTITY_ANALYSIS_VIEW_VALUES = [
   'main-info',
@@ -48,6 +49,36 @@ export const CHALLENGE_ENTITY_ANALYSIS_INS_SEARCH_KEYS = [
   'insSeries',
   'insUnit',
 ] as const
+
+export const CHALLENGE_ENTITY_ANALYSIS_PERIOD_VALUES = [
+  'YEAR',
+  'QUARTER',
+  'MONTH',
+] as const
+export type ChallengeEntityAnalysisPeriodType =
+  (typeof CHALLENGE_ENTITY_ANALYSIS_PERIOD_VALUES)[number]
+
+export const CHALLENGE_ENTITY_ANALYSIS_QUARTER_VALUES = [
+  'Q1',
+  'Q2',
+  'Q3',
+  'Q4',
+] as const satisfies readonly TQuarter[]
+
+export const CHALLENGE_ENTITY_ANALYSIS_MONTH_VALUES = [
+  '01',
+  '02',
+  '03',
+  '04',
+  '05',
+  '06',
+  '07',
+  '08',
+  '09',
+  '10',
+  '11',
+  '12',
+] as const satisfies readonly TMonth[]
 
 export const ChallengeEntityAnalysisReportTypeSchema = z.enum([
   'PRINCIPAL_AGGREGATED',
@@ -110,13 +141,17 @@ const BooleanSearchParamSchema = z.union([
 
 export const ChallengeEntityAnalysisRouteSearchSchema = z.object({
   lang: z.enum(['ro', 'en']).optional(),
+  period: z.string().optional(),
   year: z.coerce
     .number()
     .int()
     .min(defaultYearRange.start)
     .max(DEFAULT_SELECTED_YEAR)
     .optional(),
+  month: z.string().optional(),
+  quarter: z.string().optional(),
   report_type: ChallengeEntityAnalysisReportTypeSchema.optional(),
+  main_creditor_cui: z.string().optional(),
   normalization: ChallengeEntityAnalysisNormalizationSchema.optional(),
   treemap_account: ChallengeEntityAnalysisAccountCategorySchema.optional(),
   expense_type: z.string().optional(),
@@ -150,8 +185,12 @@ export type ChallengeEntityAnalysisRouteSearch = z.infer<
 
 export type ChallengeEntityAnalysisUrlState = {
   readonly lang?: 'ro' | 'en'
+  readonly period: ChallengeEntityAnalysisPeriodType
   readonly year: number
+  readonly month: TMonth
+  readonly quarter: TQuarter
   readonly report_type: 'PRINCIPAL_AGGREGATED' | 'DETAILED'
+  readonly main_creditor_cui?: string
   readonly normalization: 'total' | 'per_capita'
   readonly analytics?: ChallengeEntityAnalyticsSearchState
   readonly view: ChallengeEntityAnalysisView
@@ -175,11 +214,18 @@ const CHALLENGE_ENTITY_COMMITMENTS_GROUPING_SET = new Set(
 const CHALLENGE_ENTITY_COMMITMENTS_DETAIL_LEVEL_SET = new Set(
   CHALLENGE_ENTITY_ANALYSIS_COMMITMENTS_DETAIL_LEVEL_VALUES,
 )
+const CHALLENGE_ENTITY_PERIOD_SET = new Set(
+  CHALLENGE_ENTITY_ANALYSIS_PERIOD_VALUES,
+)
 const CHALLENGE_ENTITY_TREEMAP_DEPTH_SET = new Set(
   CHALLENGE_ENTITY_ANALYSIS_TREEMAP_DEPTH_VALUES,
 )
 const CHALLENGE_ENTITY_EXPENSE_TYPE_SET = new Set(
   CHALLENGE_ENTITY_ANALYSIS_EXPENSE_TYPE_VALUES,
+)
+const CHALLENGE_ENTITY_MONTH_SET = new Set(CHALLENGE_ENTITY_ANALYSIS_MONTH_VALUES)
+const CHALLENGE_ENTITY_QUARTER_SET = new Set(
+  CHALLENGE_ENTITY_ANALYSIS_QUARTER_VALUES,
 )
 
 function normalizePathCode(code: string): string {
@@ -221,6 +267,43 @@ function normalizeChallengeEntityAnalysisView(
   }
 
   return 'main-info'
+}
+
+function normalizePeriod(
+  period: string | undefined,
+): ReportPeriodType {
+  if (period && CHALLENGE_ENTITY_PERIOD_SET.has(period as ReportPeriodType)) {
+    return period as ReportPeriodType
+  }
+
+  return 'YEAR'
+}
+
+function normalizeMonth(
+  month: string | undefined,
+): TMonth {
+  if (month && CHALLENGE_ENTITY_MONTH_SET.has(month as TMonth)) {
+    return month as TMonth
+  }
+
+  return '01'
+}
+
+function normalizeQuarter(
+  quarter: string | undefined,
+): TQuarter {
+  if (quarter && CHALLENGE_ENTITY_QUARTER_SET.has(quarter as TQuarter)) {
+    return quarter as TQuarter
+  }
+
+  return 'Q1'
+}
+
+function normalizeMainCreditorCui(
+  mainCreditorCui: string | undefined,
+): string | undefined {
+  const trimmedValue = mainCreditorCui?.trim()
+  return trimmedValue ? trimmedValue : undefined
 }
 
 function normalizeCommitmentsGrouping(
@@ -351,14 +434,21 @@ export function encodeChallengeEntityAnalyticsSearchState(
 export function normalizeChallengeEntityAnalysisSearch(
   search: ChallengeEntityAnalysisRouteSearch | undefined,
 ): ChallengeEntityAnalysisUrlState {
+  const period = normalizePeriod(search?.period)
   const treemapAccountCategory = search?.treemap_account ?? 'ch'
   const evolutionAccountCategory = search?.evolution_account ?? 'ch'
   const mapPreviewKey = normalizeChallengeEntityMapPreviewKey(search?.public_map)
+  const normalizedMonth = normalizeMonth(search?.month)
+  const normalizedQuarter = normalizeQuarter(search?.quarter)
 
   return {
     lang: search?.lang,
+    period,
     year: search?.year ?? DEFAULT_SELECTED_YEAR,
+    month: normalizedMonth,
+    quarter: normalizedQuarter,
     report_type: search?.report_type ?? 'PRINCIPAL_AGGREGATED',
+    main_creditor_cui: normalizeMainCreditorCui(search?.main_creditor_cui),
     normalization: search?.normalization ?? 'total',
     analytics: encodeChallengeEntityAnalyticsSearchState(search?.analytics),
     view: normalizeChallengeEntityAnalysisView(search?.view),
@@ -393,12 +483,36 @@ export function buildChallengeEntityAnalysisCanonicalSearchPatch(
 ): Partial<ChallengeEntityAnalysisRouteSearch> {
   const patch: Partial<ChallengeEntityAnalysisRouteSearch> = {}
 
+  if (search?.period !== normalizedSearch.period) {
+    patch.period = normalizedSearch.period
+  }
+
   if (search?.year !== normalizedSearch.year) {
     patch.year = normalizedSearch.year
   }
 
+  const canonicalMonth =
+    normalizedSearch.period === 'MONTH' ? normalizedSearch.month : undefined
+  const canonicalQuarter =
+    normalizedSearch.period === 'QUARTER' ? normalizedSearch.quarter : undefined
+
+  if ((search?.month ?? undefined) !== canonicalMonth) {
+    patch.month = canonicalMonth
+  }
+
+  if ((search?.quarter ?? undefined) !== canonicalQuarter) {
+    patch.quarter = canonicalQuarter
+  }
+
   if (search?.report_type !== normalizedSearch.report_type) {
     patch.report_type = normalizedSearch.report_type
+  }
+
+  if (
+    (search?.main_creditor_cui ?? undefined) !==
+    normalizedSearch.main_creditor_cui
+  ) {
+    patch.main_creditor_cui = normalizedSearch.main_creditor_cui
   }
 
   if (search?.normalization !== normalizedSearch.normalization) {

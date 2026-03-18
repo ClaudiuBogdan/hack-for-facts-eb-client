@@ -1,4 +1,4 @@
-import type { MouseEvent } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 import { Calendar, ChevronDown, MapPin, Users } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
@@ -10,16 +10,14 @@ import {
   type ChallengeEntityViewOption,
   VIEW_ICONS,
 } from './challenge-entity-view-menu'
-import { ChallengeEntityYearMenu } from './challenge-entity-year-menu'
 import type { ChallengeEntityAnalysisView } from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
 import { cn } from '@/lib/utils'
 import type { ChallengeLocale } from '../../types'
 
 type ChallengeEntityAnalysisHeaderProps = {
   readonly entity: Pick<EntityDetailsData, 'name' | 'cui' | 'uat'>
-  readonly selectedYear: number
-  readonly availableYears: readonly number[]
-  readonly onYearChange: (year: number) => void
+  readonly reportControlsLabel: string
+  readonly renderReportControls: () => ReactNode
   readonly activeView: ChallengeEntityAnalysisView
   readonly availableViews: readonly ChallengeEntityViewOption[]
   readonly onViewChange: (view: ChallengeEntityAnalysisView) => void
@@ -32,15 +30,13 @@ const COMPACT_HEADER_SHOW_THRESHOLD = 320
 const HEADER_COPY = {
   ro: {
     inhabitants: 'locuitori',
-    yearMenuTitle: 'Selectează Anul',
-    selectYear: 'Selectează anul',
+    openReportControls: 'Deschide filtrele de raportare',
     viewMenuTitle: 'Alege Vizualizarea',
     openViewMenu: 'Alege vizualizarea entității',
   },
   en: {
     inhabitants: 'inhabitants',
-    yearMenuTitle: 'Select Year',
-    selectYear: 'Select year',
+    openReportControls: 'Open reporting filters',
     viewMenuTitle: 'Choose View',
     openViewMenu: 'Choose entity view',
   },
@@ -67,9 +63,8 @@ function normalizeDisplayText(
 
 export function ChallengeEntityAnalysisHeader({
   entity,
-  selectedYear,
-  availableYears,
-  onYearChange,
+  reportControlsLabel,
+  renderReportControls,
   activeView,
   availableViews,
   onViewChange,
@@ -277,16 +272,6 @@ export function ChallengeEntityAnalysisHeader({
     onViewChange(view)
   }
 
-  const handleYearSelection = (year: number) => {
-    setIsYearMenuOpen(false)
-    onYearChange(year)
-  }
-
-  const handleCompactYearSelection = (year: number) => {
-    setIsCompactYearMenuOpen(false)
-    onYearChange(year)
-  }
-
   return (
     <>
       {hasRenderedCompactHeader ? (
@@ -333,22 +318,15 @@ export function ChallengeEntityAnalysisHeader({
                     trigger={
                       <button
                         type="button"
-                        aria-label={copy.selectYear}
+                        aria-label={copy.openReportControls}
                         className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-full border border-border/60 bg-background/80 px-2.5 py-1 text-sm font-semibold text-foreground tabular-nums transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                       >
                         <Calendar className="h-3 w-3 shrink-0" aria-hidden="true" />
-                        <span>{selectedYear}</span>
+                        <span>{reportControlsLabel}</span>
                         <ChevronDown className="h-3 w-3 shrink-0" aria-hidden="true" />
                       </button>
                     }
-                    content={
-                      <ChallengeEntityYearMenu
-                        title={copy.yearMenuTitle}
-                        years={availableYears}
-                        selectedYear={selectedYear}
-                        onYearChange={handleCompactYearSelection}
-                      />
-                    }
+                    content={isCompactYearMenuOpen ? renderReportControls() : null}
                   />
                 </div>
 
@@ -387,86 +365,77 @@ export function ChallengeEntityAnalysisHeader({
             {displayName}
           </h1>
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              {showInflationBadge ? (
-                <Badge variant="secondary" className="gap-1.5 px-3 py-1">
-                  {inflationBadgeLabel}
-                </Badge>
-              ) : null}
-              {countyName ? (
-                <Badge variant="outline" className="gap-1.5 px-3 py-1">
-                  <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
-                  {countyName}
-                </Badge>
-              ) : null}
-              {population ? (
-                <Badge variant="outline" className="gap-1.5 px-3 py-1">
-                  <Users className="h-3.5 w-3.5" aria-hidden="true" />
-                  {population} {copy.inhabitants}
-                </Badge>
-              ) : null}
-            </div>
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            {showInflationBadge ? (
+              <Badge variant="secondary" className="gap-1.5 px-3 py-1">
+                {inflationBadgeLabel}
+              </Badge>
+            ) : null}
+            {countyName ? (
+              <Badge variant="outline" className="gap-1.5 px-3 py-1">
+                <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                {countyName}
+              </Badge>
+            ) : null}
+            {population ? (
+              <Badge variant="outline" className="gap-1.5 px-3 py-1">
+                <Users className="h-3.5 w-3.5" aria-hidden="true" />
+                {population} {copy.inhabitants}
+              </Badge>
+            ) : null}
+          </div>
 
-            <div className="flex items-center gap-2">
-              <ResponsivePopover
-                open={isViewMenuOpen}
-                onOpenChange={setIsViewMenuOpen}
-                align="end"
-                mobileSide="bottom"
-                className="min-h-0 max-h-[70vh] sm:w-auto sm:p-0"
-                trigger={
-                  <button
-                    type="button"
-                    aria-label={copy.openViewMenu}
-                    className="inline-flex min-w-[7.5rem] items-center gap-2 whitespace-nowrap rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                  >
-                    <ActiveViewIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    <span className="min-w-0 flex-1 truncate">{activeViewLabel}</span>
-                    <ChevronDown className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  </button>
-                }
-                content={
-                  <ChallengeEntityViewMenu
-                    title={copy.viewMenuTitle}
-                    views={availableViews}
-                    activeView={activeView}
-                    onViewChange={handleViewSelection}
-                  />
-                }
-              />
-              <ResponsivePopover
-                open={isYearMenuOpen}
-                onOpenChange={setIsYearMenuOpen}
-                align="end"
-                mobileSide="bottom"
-                className="min-h-0 max-h-[70vh] sm:w-auto sm:p-0"
-                trigger={
-                  <button
-                    type="button"
-                    aria-label={copy.selectYear}
-                    className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-foreground tabular-nums transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                  >
-                    <Calendar className="h-4 w-4 shrink-0" aria-hidden="true" />
-                    <span>{selectedYear}</span>
-                    <ChevronDown className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  </button>
-                }
-                content={
-                  <ChallengeEntityYearMenu
-                    title={copy.yearMenuTitle}
-                    years={availableYears}
-                    selectedYear={selectedYear}
-                    onYearChange={handleYearSelection}
-                  />
-                }
-              />
-              <EntityNotificationBell
-                cui={entity.cui}
-                entityName={entity.name}
-                triggerClassName={HERO_NOTIFICATION_TRIGGER}
-              />
-            </div>
+          <div className="flex items-center gap-2">
+            <ResponsivePopover
+              open={isViewMenuOpen}
+              onOpenChange={setIsViewMenuOpen}
+              align="start"
+              mobileSide="bottom"
+              className="min-h-0 max-h-[70vh] sm:w-auto sm:p-0"
+              trigger={
+                <button
+                  type="button"
+                  aria-label={copy.openViewMenu}
+                  className="inline-flex items-center justify-start gap-2 rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                >
+                  <ActiveViewIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="whitespace-nowrap">{activeViewLabel}</span>
+                  <ChevronDown className="h-4 w-4 shrink-0" aria-hidden="true" />
+                </button>
+              }
+              content={
+                <ChallengeEntityViewMenu
+                  title={copy.viewMenuTitle}
+                  views={availableViews}
+                  activeView={activeView}
+                  onViewChange={handleViewSelection}
+                />
+              }
+            />
+            <ResponsivePopover
+              open={isYearMenuOpen}
+              onOpenChange={setIsYearMenuOpen}
+              align="start"
+              mobileSide="bottom"
+              className="min-h-0 max-h-[70vh] sm:w-auto sm:p-0"
+              trigger={
+                <button
+                  type="button"
+                  aria-label={copy.openReportControls}
+                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-foreground tabular-nums transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                >
+                  <Calendar className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span>{reportControlsLabel}</span>
+                  <ChevronDown className="h-4 w-4 shrink-0" aria-hidden="true" />
+                </button>
+              }
+              content={isYearMenuOpen ? renderReportControls() : null}
+            />
+            <EntityNotificationBell
+              cui={entity.cui}
+              entityName={entity.name}
+              triggerClassName={HERO_NOTIFICATION_TRIGGER}
+            />
           </div>
         </div>
       </section>

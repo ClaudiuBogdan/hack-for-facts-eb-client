@@ -8,7 +8,7 @@ import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES } from '@/lib/analytics-defau
 import { fetchAggregatedLineItems } from '@/lib/api/entity-analytics'
 import {
   buildChallengeEntityAnalysisReportPeriod,
-  CHALLENGE_TREND_PERIOD,
+  buildChallengeEntityAnalysisTrendPeriod,
   challengeEntitySubordinateRankingQueryOptions,
 } from '@/features/challenges/components/analysis/challenge-entity-analysis-queries'
 import {
@@ -26,7 +26,17 @@ import type { ChallengeLocale } from '../types'
 
 export const CHALLENGE_LESSON_YEAR = 2025
 export const CHALLENGE_LESSON_REPORT_PERIOD =
-  buildChallengeEntityAnalysisReportPeriod(CHALLENGE_LESSON_YEAR)
+  buildChallengeEntityAnalysisReportPeriod({
+    periodType: 'YEAR',
+    selectedYear: CHALLENGE_LESSON_YEAR,
+    month: '01',
+    quarter: 'Q1',
+  })
+export const CHALLENGE_LESSON_TREND_PERIOD =
+  buildChallengeEntityAnalysisTrendPeriod({
+    periodType: 'YEAR',
+    selectedYear: CHALLENGE_LESSON_YEAR,
+  })
 export const CHALLENGE_LESSON_DEFAULT_CURRENCY: Currency = 'RON'
 export const CHALLENGE_LESSON_DEFAULT_REPORT_TYPE: Extract<
   GqlReportType,
@@ -99,7 +109,7 @@ export function useChallengeLessonEntitySummary(params: {
   return useEntityDetails({
     cui: params.entityCui,
     reportPeriod: CHALLENGE_LESSON_REPORT_PERIOD,
-    trendPeriod: CHALLENGE_TREND_PERIOD,
+    trendPeriod: CHALLENGE_LESSON_TREND_PERIOD,
     reportType: params.reportType ?? CHALLENGE_LESSON_DEFAULT_REPORT_TYPE,
     ...normalizationOptions,
   })
@@ -161,7 +171,7 @@ export function useChallengeLessonEntityBundle(entityCui: string) {
   return {
     selectedYear: CHALLENGE_LESSON_YEAR,
     reportPeriod: CHALLENGE_LESSON_REPORT_PERIOD,
-    trendPeriod: CHALLENGE_TREND_PERIOD,
+    trendPeriod: CHALLENGE_LESSON_TREND_PERIOD,
     aggregatedTotalSummaryQuery: totalSummaryQuery,
     aggregatedPerCapitaSummaryQuery: perCapitaSummaryQuery,
     aggregatedLineItemsQuery: lineItemsQuery,

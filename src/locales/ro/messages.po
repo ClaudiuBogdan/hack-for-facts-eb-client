@@ -858,7 +858,7 @@ msgstr "Serie de date alertă"
 msgid "Alert type"
 msgstr "Tip alertă"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:68
+#: src/features/notifications/components/EntityNotificationBell.tsx:74
 msgid "Alerts when important changes occur"
 msgstr "Alerte când apar modificări importante"
 
@@ -1914,12 +1914,12 @@ msgid "Complete path"
 msgstr "Finalizează parcursul"
 
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:373
-msgid "Complete the activity"
-msgstr "Finalizează activitatea"
+#~ msgid "Complete the activity"
+#~ msgstr "Finalizează activitatea"
 
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:372
-msgid "Complete the activity in this step before finishing."
-msgstr "Finalizează activitatea din acest pas înainte de a finaliza."
+#~ msgid "Complete the activity in this step before finishing."
+#~ msgstr "Finalizează activitatea din acest pas înainte de a finaliza."
 
 #: src/features/learning/components/interactive/FlashCardDeck.tsx:270
 msgid "Complete!"
@@ -2909,7 +2909,7 @@ msgstr "ex. Alertă creștere cheltuieli"
 msgid "e.g., RON, %, Units..."
 msgstr "ex: RON, %, Unități..."
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:71
+#: src/features/notifications/components/EntityNotificationBell.tsx:77
 msgid "Easily manage your subscriptions"
 msgstr "Gestionați-vă cu ușurință abonamentele"
 
@@ -4200,7 +4200,7 @@ msgstr "Ascunde setările avansate"
 msgid "Hide details"
 msgstr "Ascunde detaliile"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1866
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1867
 msgid "Hide Map Controls"
 msgstr "Ascunde controalele hărții"
 
@@ -4823,7 +4823,7 @@ msgid "Loading Academy"
 msgstr "Se încarcă Academia"
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1739
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1909
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1910
 msgid "Loading advanced map analytics..."
 msgstr "Se încarcă analiza avansată a hărții..."
 
@@ -4831,7 +4831,7 @@ msgstr "Se încarcă analiza avansată a hărții..."
 msgid "Loading alert…"
 msgstr "Se încarcă alerta..."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2059
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2060
 msgid "Loading analytics data..."
 msgstr "Se încarcă datele analitice..."
 
@@ -4902,9 +4902,9 @@ msgstr "Se încarcă editorul de hărți..."
 #: src/components/entities/views/MapView.tsx:184
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1754
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1761
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1924
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1931
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:831
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1925
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1932
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:849
 #: src/routes/map.lazy.tsx:303
 #: src/routes/map.lazy.tsx:304
 msgid "Loading map..."
@@ -4926,12 +4926,12 @@ msgstr "Se încarcă rapoartele..."
 msgid "Loading snapshots..."
 msgstr "Se încarcă instantaneele..."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2025
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2026
 #: src/routes/map.lazy.tsx:398
 msgid "Loading table data..."
 msgstr "Se încarcă datele tabelului..."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:873
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:891
 msgid "Loading view…"
 msgstr "Se încarcă vizualizarea…"
 
@@ -5077,7 +5077,7 @@ msgstr "Faci publică"
 msgid "Manage all notifications"
 msgstr "Gestionează toate notificările"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:103
+#: src/features/notifications/components/EntityNotificationBell.tsx:109
 #: src/routes/unsubscribe.$token.tsx:43
 msgid "Manage notifications"
 msgstr "Gestionare notificări"
@@ -5157,11 +5157,11 @@ msgid "Map Filters"
 msgstr "Filtre hartă"
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1747
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1917
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1918
 msgid "Map geometry is unavailable."
 msgstr "Geometria hărții nu este disponibilă."
 
-#: src/components/maps/InteractiveMap.tsx:309
+#: src/components/maps/InteractiveMap.tsx:314
 msgid "Map geometry not available."
 msgstr "Map geometry not available."
 
@@ -5413,7 +5413,7 @@ msgstr "Venit brut lunar"
 msgid "Monthly monitoring"
 msgstr "Monitorizare lunară"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:65
+#: src/features/notifications/components/EntityNotificationBell.tsx:71
 msgid "Monthly, quarterly, and annual reports"
 msgstr "Rapoarte lunare, trimestriale și anuale"
 
@@ -5645,8 +5645,8 @@ msgid "No active notifications"
 msgstr "Nicio notificare activă"
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1401
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1790
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1959
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1791
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1960
 msgid "No active series selected."
 msgstr "Nicio serie activă selectată."
 
@@ -5746,7 +5746,7 @@ msgstr "Nu există date disponibile"
 msgid "No Data Available"
 msgstr "Nu există date disponibile"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2037
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2038
 msgid "No data available for table."
 msgstr "Nu sunt date disponibile pentru tabel."
 
@@ -5833,7 +5833,7 @@ msgstr "Nu există date disponibile în seriile activate pentru a fi afișate."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:538
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:576
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2033
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2034
 msgid "No enabled series."
 msgstr "Nicio serie activată."
 
@@ -6249,7 +6249,7 @@ msgstr "Deschide în SICAP.ai"
 msgid "Open legend"
 msgstr "Open legend"
 
-#: src/features/advanced-map-analytics/components/map-analytics-public-preview-card.tsx:84
+#: src/features/advanced-map-analytics/components/map-analytics-public-preview-card.tsx:91
 msgid "Open map description"
 msgstr "Deschide descrierea hărții"
 
@@ -7077,8 +7077,8 @@ msgid "Review"
 msgstr "Recapitulare"
 
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:359
-msgid "Review activity"
-msgstr "Revizuiește activitatea"
+#~ msgid "Review activity"
+#~ msgstr "Revizuiește activitatea"
 
 #: src/features/notifications/components/NotificationList.tsx:150
 msgid "Review and manage alerts created from your custom data series."
@@ -7090,8 +7090,8 @@ msgid "Review Path"
 msgstr "Revizuiește parcursul"
 
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:358
-msgid "Review the earlier activity in this step before finishing."
-msgstr "Revizuiește activitatea anterioară din acest pas înainte de a finaliza."
+#~ msgid "Review the earlier activity in this step before finishing."
+#~ msgstr "Revizuiește activitatea anterioară din acest pas înainte de a finaliza."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:153
 msgid "Robust anomaly detection based on median absolute deviation (MAD), less sensitive to extreme outliers than z-score."
@@ -7165,7 +7165,7 @@ msgstr "Salvează preferințele cookie"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:462
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:132
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1981
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1982
 msgid "Save snapshot"
 msgstr "Salvează instantaneul"
 
@@ -7186,7 +7186,7 @@ msgid "Save your progress"
 msgstr "Salvează-ți progresul"
 
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:129
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1981
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1982
 #: src/routes/alerts/$alertId/index.lazy.tsx:124
 msgid "Saving…"
 msgstr "Se salvează..."
@@ -7692,7 +7692,7 @@ msgstr "Afișează puțin"
 msgid "Show Less"
 msgstr "Afișează puțin"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1866
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1867
 msgid "Show Map Controls"
 msgstr "Afișează controalele hărții"
 
@@ -7713,11 +7713,11 @@ msgstr "Afișează creșterea de la o perioadă la alta"
 msgid "Show Relative Values (%)"
 msgstr "Afișează valori relative (%)"
 
-#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:182
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:190
 msgid "Show revenue"
 msgstr "Arată venituri"
 
-#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:182
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:190
 msgid "Show spending"
 msgstr "Arată cheltuieli"
 
@@ -7725,11 +7725,11 @@ msgstr "Arată cheltuieli"
 msgid "Show Tooltip"
 msgstr "Afișează indiciu"
 
-#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:142
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:146
 msgid "Show top economic categories"
 msgstr "Arată top categorii economice"
 
-#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:141
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:145
 msgid "Show top functional categories"
 msgstr "Arată top categorii funcționale"
 
@@ -7769,7 +7769,7 @@ msgstr "Conectează-te"
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:206
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:129
 #: src/features/learning/components/layout/LoginBanner.tsx:28
-#: src/features/notifications/components/EntityNotificationBell.tsx:82
+#: src/features/notifications/components/EntityNotificationBell.tsx:88
 #: src/routes/alerts/$alertId/index.lazy.tsx:163
 #: src/routes/alerts/new.lazy.tsx:152
 #: src/routes/maps/editor/new.lazy.tsx:265
@@ -7779,7 +7779,7 @@ msgstr "Autentificare"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:201
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:124
-#: src/features/notifications/components/EntityNotificationBell.tsx:48
+#: src/features/notifications/components/EntityNotificationBell.tsx:54
 #: src/routes/alerts/$alertId/index.lazy.tsx:149
 #: src/routes/alerts/new.lazy.tsx:138
 #: src/routes/maps/editor/new.lazy.tsx:260
@@ -7796,11 +7796,11 @@ msgstr "Conectează-te pentru a răspunde la această secțiune și a-ți salva 
 msgid "Sign in to create and manage alerts for your entities."
 msgstr "Autentificați-vă pentru a crea și gestiona alerte pentru entitățile dvs."
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:37
+#: src/features/notifications/components/EntityNotificationBell.tsx:43
 msgid "Sign in to get notifications"
 msgstr "Autentificați-vă pentru a primi notificări"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:59
+#: src/features/notifications/components/EntityNotificationBell.tsx:65
 msgid "Sign in to receive updates about <0>{entityName}</0>:"
 msgstr "Autentificați-vă pentru a primi actualizări despre <0>{entityName}</0>:"
 
@@ -8625,13 +8625,13 @@ msgstr "Încercați un alt termen de căutare sau o altă sortare."
 msgid "Try again"
 msgstr "Încearcă din nou"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1781
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1883
 #: src/features/learning/components/assessment/Quiz.tsx:173
 #: src/routes/settings/notifications.tsx:160
 msgid "Try Again"
 msgstr "Încercați din nou"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:550
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:568
 msgid "Try again in a few moments."
 msgstr "Încearcă din nou peste câteva momente."
 
@@ -8831,7 +8831,7 @@ msgid "Untitled Chart"
 msgstr "Grafic fără titlu"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:132
-#: src/features/advanced-map-analytics/components/map-analytics-public-preview-card.tsx:74
+#: src/features/advanced-map-analytics/components/map-analytics-public-preview-card.tsx:81
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1535
 msgid "Untitled map"
 msgstr "Hartă fără titlu"
@@ -9154,7 +9154,7 @@ msgstr "Departe!"
 msgid "We collect different types of information depending on how you use our Service:"
 msgstr "Colectăm diferite tipuri de informații în funcție de modul în care utilizați Serviciul nostru:"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1771
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1873
 msgid "We could not load the analysis."
 msgstr "Nu am putut încărca analiza."
 
@@ -9332,6 +9332,11 @@ msgstr "Sunteți autentificat. Cookie-urile de autentificare (Clerk) sunt esenț
 msgid "You are viewing a shared map. Only the owner can edit the name."
 msgstr "Vizualizezi o hartă partajată. Doar proprietarul poate edita numele."
 
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:365
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:379
+msgid "You can continue, but this step will not be marked complete yet."
+msgstr "Poți continua, dar acest pas nu va fi marcat ca finalizat încă."
+
 #: src/components/filters/economic-classification-filter/EconomicClassificationList.tsx:70
 msgid "You can search by: name (ex: Agriculture) • code (ex: 43.00, 43.00.10) • explicit prefix: ec:43.00"
 msgstr "Poți căuta după: nume (ex: Agricultură) • cod (ex: 43.00, 43.00.10) • prefix explicit: ec:43.00"
@@ -9381,7 +9386,7 @@ msgstr "Trebuie să fiți autentificat pentru a edita alerte"
 msgid "You need to be signed in to manage notifications"
 msgstr "Trebuie să fiți autentificat pentru a gestiona notificările"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:51
+#: src/features/notifications/components/EntityNotificationBell.tsx:57
 msgid "You need to be signed in to subscribe to notifications"
 msgstr "Trebuie să fiți autentificat pentru a vă abona la notificări"
 

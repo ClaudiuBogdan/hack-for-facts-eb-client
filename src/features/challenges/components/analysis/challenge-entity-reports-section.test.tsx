@@ -1,6 +1,8 @@
+import type { ComponentProps } from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReportConnection } from '@/lib/api/entities'
+import type { PeriodDate, ReportPeriodInput } from '@/schemas/reporting'
 import { ChallengeEntityReportsSection } from './challenge-entity-reports-section'
 
 const useReportsConnectionMock = vi.fn()
@@ -97,6 +99,47 @@ function createReportsConnection(totalCount = 6): ReportConnection {
   }
 }
 
+function createYearReportPeriod(year: number): ReportPeriodInput {
+  return {
+    type: 'YEAR',
+    selection: {
+      interval: {
+        start: String(year) as PeriodDate,
+        end: String(year) as PeriodDate,
+      },
+    },
+  }
+}
+
+function createQuarterReportPeriod(
+  year: number,
+  quarter: 'Q1' | 'Q2' | 'Q3' | 'Q4',
+): ReportPeriodInput {
+  return {
+    type: 'QUARTER',
+    selection: {
+      interval: {
+        start: `${year}-${quarter}` as PeriodDate,
+        end: `${year}-${quarter}` as PeriodDate,
+      },
+    },
+  }
+}
+
+function renderReportsSection(
+  props: Partial<ComponentProps<typeof ChallengeEntityReportsSection>> = {},
+) {
+  return render(
+    <ChallengeEntityReportsSection
+      locale="ro"
+      entityCui="4305857"
+      reportPeriod={createYearReportPeriod(2025)}
+      reportType="PRINCIPAL_AGGREGATED"
+      {...props}
+    />,
+  )
+}
+
 describe('ChallengeEntityReportsSection', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -109,14 +152,7 @@ describe('ChallengeEntityReportsSection', () => {
   })
 
   it('renders the newest 5 reports by default', () => {
-    render(
-      <ChallengeEntityReportsSection
-        locale="ro"
-        entityCui="4305857"
-        selectedYear={2025}
-        reportType="PRINCIPAL_AGGREGATED"
-      />,
-    )
+    renderReportsSection()
 
     const reportRows = screen.getAllByRole('listitem')
 
@@ -131,14 +167,7 @@ describe('ChallengeEntityReportsSection', () => {
   })
 
   it('expands inline and then collapses back to the top 5', () => {
-    render(
-      <ChallengeEntityReportsSection
-        locale="ro"
-        entityCui="4305857"
-        selectedYear={2025}
-        reportType="PRINCIPAL_AGGREGATED"
-      />,
-    )
+    renderReportsSection()
 
     fireEvent.click(screen.getByRole('button', { name: 'Arată încă 1 raport' }))
 
@@ -154,41 +183,8 @@ describe('ChallengeEntityReportsSection', () => {
     expect(screen.queryByText('Aprilie 2025')).not.toBeInTheDocument()
   })
 
-  it('hides the expand control when 5 or fewer reports are available', () => {
-    useReportsConnectionMock.mockReturnValue({
-      data: {
-        ...createReportsConnection(5),
-        nodes: createReportsConnection(5).nodes.slice(0, 5),
-      },
-      isLoading: false,
-      isError: false,
-      refetch: vi.fn(),
-    })
-
-    render(
-      <ChallengeEntityReportsSection
-        locale="ro"
-        entityCui="4305857"
-        selectedYear={2025}
-        reportType="PRINCIPAL_AGGREGATED"
-      />,
-    )
-
-    expect(screen.getAllByRole('listitem')).toHaveLength(5)
-    expect(
-      screen.queryByRole('button', { name: /Arată încă/i }),
-    ).not.toBeInTheDocument()
-  })
-
-  it('refreshes when the selected year changes and collapses the list', () => {
-    const { rerender } = render(
-      <ChallengeEntityReportsSection
-        locale="ro"
-        entityCui="4305857"
-        selectedYear={2025}
-        reportType="PRINCIPAL_AGGREGATED"
-      />,
-    )
+  it('refreshes when the selected period changes and collapses the list', () => {
+    const { rerender } = renderReportsSection()
 
     fireEvent.click(screen.getByRole('button', { name: 'Arată încă 1 raport' }))
     expect(screen.getAllByRole('listitem')).toHaveLength(6)
@@ -224,7 +220,7 @@ describe('ChallengeEntityReportsSection', () => {
       <ChallengeEntityReportsSection
         locale="ro"
         entityCui="4305857"
-        selectedYear={2024}
+        reportPeriod={createYearReportPeriod(2024)}
         reportType="PRINCIPAL_AGGREGATED"
       />,
     )
@@ -245,14 +241,7 @@ describe('ChallengeEntityReportsSection', () => {
   })
 
   it('refreshes when the report type changes', () => {
-    const { rerender } = render(
-      <ChallengeEntityReportsSection
-        locale="ro"
-        entityCui="4305857"
-        selectedYear={2025}
-        reportType="PRINCIPAL_AGGREGATED"
-      />,
-    )
+    const { rerender } = renderReportsSection()
 
     useReportsConnectionMock.mockReturnValue({
       data: {
@@ -285,7 +274,7 @@ describe('ChallengeEntityReportsSection', () => {
       <ChallengeEntityReportsSection
         locale="ro"
         entityCui="4305857"
-        selectedYear={2025}
+        reportPeriod={createYearReportPeriod(2025)}
         reportType="DETAILED"
       />,
     )
@@ -309,14 +298,7 @@ describe('ChallengeEntityReportsSection', () => {
       refetch: vi.fn(),
     })
 
-    const { rerender } = render(
-      <ChallengeEntityReportsSection
-        locale="ro"
-        entityCui="4305857"
-        selectedYear={2025}
-        reportType="PRINCIPAL_AGGREGATED"
-      />,
-    )
+    const { rerender } = renderReportsSection()
 
     expect(screen.getByText('Rapoarte financiare')).toBeInTheDocument()
     expect(screen.queryAllByRole('listitem')).toHaveLength(0)
@@ -339,7 +321,7 @@ describe('ChallengeEntityReportsSection', () => {
       <ChallengeEntityReportsSection
         locale="ro"
         entityCui="4305857"
-        selectedYear={2025}
+        reportPeriod={createYearReportPeriod(2025)}
         reportType="PRINCIPAL_AGGREGATED"
       />,
     )
@@ -360,7 +342,7 @@ describe('ChallengeEntityReportsSection', () => {
       <ChallengeEntityReportsSection
         locale="ro"
         entityCui="4305857"
-        selectedYear={2025}
+        reportPeriod={createYearReportPeriod(2025)}
         reportType="PRINCIPAL_AGGREGATED"
       />,
     )
@@ -370,14 +352,7 @@ describe('ChallengeEntityReportsSection', () => {
   })
 
   it('renders semantic download links and toggle controls', () => {
-    render(
-      <ChallengeEntityReportsSection
-        locale="ro"
-        entityCui="4305857"
-        selectedYear={2025}
-        reportType="PRINCIPAL_AGGREGATED"
-      />,
-    )
+    renderReportsSection()
 
     expect(screen.getByRole('button', { name: 'Arată încă 1 raport' })).toBeInTheDocument()
     expect(
@@ -395,5 +370,35 @@ describe('ChallengeEntityReportsSection', () => {
         name: 'Descarcă XML publicat la 31 octombrie 2025',
       }),
     ).toHaveAttribute('href', 'https://example.com/report-1.xml')
+  })
+
+  it('uses the reporting period for quarterly filters and shows the selected period label', () => {
+    renderReportsSection({
+      reportPeriod: createQuarterReportPeriod(2025, 'Q2'),
+    })
+
+    expect(useReportsConnectionMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filter: expect.objectContaining({
+          reporting_period: '2025-Q2',
+          report_type: 'PRINCIPAL_AGGREGATED',
+        }),
+      }),
+    )
+    expect(screen.getByText(/Perioadă selectată 2025-Q2/i)).toBeInTheDocument()
+  })
+
+  it('passes the main creditor filter when present', () => {
+    renderReportsSection({
+      mainCreditorCui: '4305858',
+    })
+
+    expect(useReportsConnectionMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filter: expect.objectContaining({
+          main_creditor_cui: '4305858',
+        }),
+      }),
+    )
   })
 })

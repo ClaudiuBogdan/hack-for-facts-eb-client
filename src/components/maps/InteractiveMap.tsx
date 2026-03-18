@@ -111,8 +111,10 @@ type TooltipContentBuilder = (context: {
 type TooltipLayer = Layer & {
   getTooltip: () => L.Tooltip | undefined;
   bindTooltip: (content: string) => Layer;
+  unbindTooltip: () => Layer;
   setTooltipContent: (content: string) => Layer;
   openTooltip: () => Layer;
+  closeTooltip: () => Layer;
 };
 
 const COUNTY_BOUNDARY_STYLE: PathOptions = {
@@ -145,6 +147,7 @@ interface InteractiveMapProps {
   onViewChange?: (center: [number, number], zoom: number) => void;
   getTooltipContent?: TooltipContentBuilder;
   mobilePanMode?: 'default' | 'pinch-zoom-until-unlocked';
+  preferCanvasRenderer?: boolean;
 }
 
 export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
@@ -170,11 +173,17 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   onViewChange,
   getTooltipContent,
   mobilePanMode = 'default',
+  preferCanvasRenderer,
 }) => {
   const geoJsonLayerRef = useRef<L.GeoJSON | null>(null);
   const featureLayerRecordsRef = useRef<FeatureLayerRecord[]>([]);
+  const activeTooltipLayerRef = useRef<TooltipLayer | null>(null);
+  const shouldSuppressTooltipRef = useRef(false);
   const latestFeatureStyleRef = useRef<FeatureStyleResolver>(() => DEFAULT_FEATURE_STYLE);
-  const useCanvasRenderer = useMemo(() => shouldUseCanvasRenderer(), []);
+  const useCanvasRenderer = useMemo(
+    () => preferCanvasRenderer ?? shouldUseCanvasRenderer(),
+    [preferCanvasRenderer],
+  );
   const isMobile = useIsMobile();
   const latestTooltipContentBuilderRef = useRef<TooltipContentBuilder | undefined>(getTooltipContent);
   const latestInteractionContextRef = useRef<FeatureInteractionContext>({
@@ -238,9 +247,29 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       : createTooltipContent(properties, heatmapData, mapViewType, filters);
   }, []);
 
+  const unbindFeatureTooltip = useCallback((layer: Layer) => {
+    const tooltipLayer = layer as TooltipLayer;
+    if (!tooltipLayer.getTooltip()) {
+      return;
+    }
+
+    tooltipLayer.unbindTooltip();
+
+    if (activeTooltipLayerRef.current === tooltipLayer) {
+      activeTooltipLayerRef.current = null;
+    }
+  }, []);
+
   const applyTooltipForFeature = useCallback((layer: Layer, properties: UatProperties) => {
     const tooltipLayer = layer as TooltipLayer;
     const tooltipHtml = buildTooltipHtml(properties);
+
+    if (
+      activeTooltipLayerRef.current &&
+      activeTooltipLayerRef.current !== tooltipLayer
+    ) {
+      activeTooltipLayerRef.current.unbindTooltip();
+    }
 
     if (!tooltipLayer.getTooltip()) {
       tooltipLayer.bindTooltip(tooltipHtml);
@@ -249,19 +278,22 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
     }
 
     tooltipLayer.openTooltip();
+    activeTooltipLayerRef.current = tooltipLayer;
   }, [buildTooltipHtml]);
 
-  // Keep already-bound tooltips in sync when data, filters or custom tooltip builder change.
-  useEffect(() => {
-    for (const { layer, properties } of featureLayerRecordsRef.current) {
-      const tooltipLayer = layer as TooltipLayer;
-      if (!tooltipLayer.getTooltip()) {
-        continue;
-      }
-
-      tooltipLayer.setTooltipContent(buildTooltipHtml(properties));
+  const handleMapInteractionStart = useCallback(() => {
+    shouldSuppressTooltipRef.current = true;
+    if (activeTooltipLayerRef.current) {
+      activeTooltipLayerRef.current.unbindTooltip();
+      activeTooltipLayerRef.current = null;
     }
-  }, [buildTooltipHtml, filters, getTooltipContent, heatmapData, mapViewType]);
+  }, []);
+
+  const handleMapInteractionEnd = useCallback(() => {
+    window.requestAnimationFrame(() => {
+      shouldSuppressTooltipRef.current = false;
+    });
+  }, []);
 
   const onEachFeature = useCallback(
     (feature: Feature<Geometry, unknown>, layer: Layer) => {
@@ -284,10 +316,15 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       // Lazy tooltip creation: create it only on mouseover for better initial performance.
       layer.on({
         mouseover: (e) => {
+          if (shouldSuppressTooltipRef.current) {
+            return;
+          }
+
           highlightFeature(e.target);
           applyTooltipForFeature(layer, uatProps);
         },
         mouseout: (e) => {
+          unbindFeatureTooltip(layer);
           // Use latest style function to avoid stale styling after data/normalization changes
           const nextStyle = latestFeatureStyleRef.current(feature);
           (e.target as L.Path).setStyle(nextStyle);
@@ -302,7 +339,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
         },
       });
     },
-    [applyTooltipForFeature, highlightFeature]
+    [applyTooltipForFeature, unbindFeatureTooltip, highlightFeature]
   );
 
   if (!geoJsonData) {
@@ -335,6 +372,10 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
         />
       )}
       <MapUpdater center={center} zoom={zoom} />
+      <MapTooltipDismiss
+        onInteractionStart={handleMapInteractionStart}
+        onInteractionEnd={handleMapInteractionEnd}
+      />
       <MapViewChangeListener onViewChange={onViewChange} />
       {geoJsonData.type === 'FeatureCollection' && (
         <>
@@ -584,6 +625,21 @@ const MapViewChangeListener: React.FC<{ onViewChange?: (center: [number, number]
   useMapEvents({
     moveend: (event) => notifyViewChange(event.target as L.Map),
     zoomend: (event) => notifyViewChange(event.target as L.Map),
+  });
+
+  return null;
+};
+
+const MapTooltipDismiss: React.FC<{
+  onInteractionStart: () => void
+  onInteractionEnd: () => void
+}> = ({
+  onInteractionStart,
+  onInteractionEnd,
+}) => {
+  useMapEvents({
+    movestart: () => onInteractionStart(),
+    moveend: () => onInteractionEnd(),
   });
 
   return null;

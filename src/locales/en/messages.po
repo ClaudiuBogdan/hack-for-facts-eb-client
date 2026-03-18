@@ -858,7 +858,7 @@ msgstr "Alert series"
 msgid "Alert type"
 msgstr "Alert type"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:68
+#: src/features/notifications/components/EntityNotificationBell.tsx:74
 msgid "Alerts when important changes occur"
 msgstr "Alerts when important changes occur"
 
@@ -1914,12 +1914,12 @@ msgid "Complete path"
 msgstr "Complete path"
 
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:373
-msgid "Complete the activity"
-msgstr "Complete the activity"
+#~ msgid "Complete the activity"
+#~ msgstr "Complete the activity"
 
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:372
-msgid "Complete the activity in this step before finishing."
-msgstr "Complete the activity in this step before finishing."
+#~ msgid "Complete the activity in this step before finishing."
+#~ msgstr "Complete the activity in this step before finishing."
 
 #: src/features/learning/components/interactive/FlashCardDeck.tsx:270
 msgid "Complete!"
@@ -2909,7 +2909,7 @@ msgstr "e.g. Expense growth alert"
 msgid "e.g., RON, %, Units..."
 msgstr "e.g., RON, %, Units..."
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:71
+#: src/features/notifications/components/EntityNotificationBell.tsx:77
 msgid "Easily manage your subscriptions"
 msgstr "Easily manage your subscriptions"
 
@@ -4205,7 +4205,7 @@ msgstr "Hide advanced settings"
 msgid "Hide details"
 msgstr "Hide details"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1866
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1867
 msgid "Hide Map Controls"
 msgstr "Hide Map Controls"
 
@@ -4828,7 +4828,7 @@ msgid "Loading Academy"
 msgstr "Loading Academy"
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1739
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1909
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1910
 msgid "Loading advanced map analytics..."
 msgstr "Loading advanced map analytics..."
 
@@ -4836,7 +4836,7 @@ msgstr "Loading advanced map analytics..."
 msgid "Loading alert…"
 msgstr "Loading alert…"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2059
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2060
 msgid "Loading analytics data..."
 msgstr "Loading analytics data..."
 
@@ -4907,9 +4907,9 @@ msgstr "Loading map editor..."
 #: src/components/entities/views/MapView.tsx:184
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1754
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1761
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1924
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1931
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:831
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1925
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1932
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:849
 #: src/routes/map.lazy.tsx:303
 #: src/routes/map.lazy.tsx:304
 msgid "Loading map..."
@@ -4931,12 +4931,12 @@ msgstr "Loading reports…"
 msgid "Loading snapshots..."
 msgstr "Loading snapshots..."
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2025
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2026
 #: src/routes/map.lazy.tsx:398
 msgid "Loading table data..."
 msgstr "Loading table data..."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:873
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:891
 msgid "Loading view…"
 msgstr "Loading view…"
 
@@ -5082,7 +5082,7 @@ msgstr "Make public"
 msgid "Manage all notifications"
 msgstr "Manage all notifications"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:103
+#: src/features/notifications/components/EntityNotificationBell.tsx:109
 #: src/routes/unsubscribe.$token.tsx:43
 msgid "Manage notifications"
 msgstr "Manage notifications"
@@ -5162,11 +5162,11 @@ msgid "Map Filters"
 msgstr "Map Filters"
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1747
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1917
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1918
 msgid "Map geometry is unavailable."
 msgstr "Map geometry is unavailable."
 
-#: src/components/maps/InteractiveMap.tsx:309
+#: src/components/maps/InteractiveMap.tsx:314
 msgid "Map geometry not available."
 msgstr "Map geometry not available."
 
@@ -5418,7 +5418,7 @@ msgstr "Monthly Gross Income"
 msgid "Monthly monitoring"
 msgstr "Monthly monitoring"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:65
+#: src/features/notifications/components/EntityNotificationBell.tsx:71
 msgid "Monthly, quarterly, and annual reports"
 msgstr "Monthly, quarterly, and annual reports"
 
@@ -5650,8 +5650,8 @@ msgid "No active notifications"
 msgstr "No active notifications"
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1401
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1790
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1959
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1791
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1960
 msgid "No active series selected."
 msgstr "No active series selected."
 
@@ -5751,7 +5751,7 @@ msgstr "No data available"
 msgid "No Data Available"
 msgstr "No Data Available"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2037
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2038
 msgid "No data available for table."
 msgstr "No data available for table."
 
@@ -5838,7 +5838,7 @@ msgstr "No enabled series data available to display."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:538
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:576
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2033
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2034
 msgid "No enabled series."
 msgstr "No enabled series."
 
@@ -6254,7 +6254,7 @@ msgstr "Open in SICAP.ai"
 msgid "Open legend"
 msgstr "Open legend"
 
-#: src/features/advanced-map-analytics/components/map-analytics-public-preview-card.tsx:84
+#: src/features/advanced-map-analytics/components/map-analytics-public-preview-card.tsx:91
 msgid "Open map description"
 msgstr "Open map description"
 
@@ -7082,8 +7082,8 @@ msgid "Review"
 msgstr "Review"
 
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:359
-msgid "Review activity"
-msgstr "Review activity"
+#~ msgid "Review activity"
+#~ msgstr "Review activity"
 
 #: src/features/notifications/components/NotificationList.tsx:150
 msgid "Review and manage alerts created from your custom data series."
@@ -7095,8 +7095,8 @@ msgid "Review Path"
 msgstr "Review Path"
 
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:358
-msgid "Review the earlier activity in this step before finishing."
-msgstr "Review the earlier activity in this step before finishing."
+#~ msgid "Review the earlier activity in this step before finishing."
+#~ msgstr "Review the earlier activity in this step before finishing."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:153
 msgid "Robust anomaly detection based on median absolute deviation (MAD), less sensitive to extreme outliers than z-score."
@@ -7170,7 +7170,7 @@ msgstr "Save cookie preferences"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:462
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:132
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1981
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1982
 msgid "Save snapshot"
 msgstr "Save snapshot"
 
@@ -7191,7 +7191,7 @@ msgid "Save your progress"
 msgstr "Save your progress"
 
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:129
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1981
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1982
 #: src/routes/alerts/$alertId/index.lazy.tsx:124
 msgid "Saving…"
 msgstr "Saving…"
@@ -7697,7 +7697,7 @@ msgstr "Show less"
 msgid "Show Less"
 msgstr "Show Less"
 
-#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1866
+#: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1867
 msgid "Show Map Controls"
 msgstr "Show Map Controls"
 
@@ -7718,11 +7718,11 @@ msgstr "Show period-over-period growth"
 msgid "Show Relative Values (%)"
 msgstr "Show Relative Values (%)"
 
-#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:182
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:190
 msgid "Show revenue"
 msgstr "Show revenue"
 
-#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:182
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:190
 msgid "Show spending"
 msgstr "Show spending"
 
@@ -7730,11 +7730,11 @@ msgstr "Show spending"
 msgid "Show Tooltip"
 msgstr "Show Tooltip"
 
-#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:142
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:146
 msgid "Show top economic categories"
 msgstr "Show top economic categories"
 
-#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:141
+#: src/features/challenges/components/analysis/challenge-entity-category-evolution.tsx:145
 msgid "Show top functional categories"
 msgstr "Show top functional categories"
 
@@ -7774,7 +7774,7 @@ msgstr "Sign in"
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:206
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:129
 #: src/features/learning/components/layout/LoginBanner.tsx:28
-#: src/features/notifications/components/EntityNotificationBell.tsx:82
+#: src/features/notifications/components/EntityNotificationBell.tsx:88
 #: src/routes/alerts/$alertId/index.lazy.tsx:163
 #: src/routes/alerts/new.lazy.tsx:152
 #: src/routes/maps/editor/new.lazy.tsx:265
@@ -7784,7 +7784,7 @@ msgstr "Sign In"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:201
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:124
-#: src/features/notifications/components/EntityNotificationBell.tsx:48
+#: src/features/notifications/components/EntityNotificationBell.tsx:54
 #: src/routes/alerts/$alertId/index.lazy.tsx:149
 #: src/routes/alerts/new.lazy.tsx:138
 #: src/routes/maps/editor/new.lazy.tsx:260
@@ -7801,11 +7801,11 @@ msgstr "Sign in to answer this section and save your progress."
 msgid "Sign in to create and manage alerts for your entities."
 msgstr "Sign in to create and manage alerts for your entities."
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:37
+#: src/features/notifications/components/EntityNotificationBell.tsx:43
 msgid "Sign in to get notifications"
 msgstr "Sign in to get notifications"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:59
+#: src/features/notifications/components/EntityNotificationBell.tsx:65
 msgid "Sign in to receive updates about <0>{entityName}</0>:"
 msgstr "Sign in to receive updates about <0>{entityName}</0>:"
 
@@ -8630,13 +8630,13 @@ msgstr "Try a different search term or sorting."
 msgid "Try again"
 msgstr "Try again"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1781
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1883
 #: src/features/learning/components/assessment/Quiz.tsx:173
 #: src/routes/settings/notifications.tsx:160
 msgid "Try Again"
 msgstr "Try Again"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:550
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:568
 msgid "Try again in a few moments."
 msgstr "Try again in a few moments."
 
@@ -8836,7 +8836,7 @@ msgid "Untitled Chart"
 msgstr "Untitled Chart"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:132
-#: src/features/advanced-map-analytics/components/map-analytics-public-preview-card.tsx:74
+#: src/features/advanced-map-analytics/components/map-analytics-public-preview-card.tsx:81
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1535
 msgid "Untitled map"
 msgstr "Untitled map"
@@ -9159,7 +9159,7 @@ msgstr "Way off!"
 msgid "We collect different types of information depending on how you use our Service:"
 msgstr "We collect different types of information depending on how you use our Service:"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1771
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1873
 msgid "We could not load the analysis."
 msgstr "We could not load the analysis."
 
@@ -9337,6 +9337,11 @@ msgstr "You are signed in. Authentication cookies (Clerk) are essential and requ
 msgid "You are viewing a shared map. Only the owner can edit the name."
 msgstr "You are viewing a shared map. Only the owner can edit the name."
 
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:365
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:379
+msgid "You can continue, but this step will not be marked complete yet."
+msgstr "You can continue, but this step will not be marked complete yet."
+
 #: src/components/filters/economic-classification-filter/EconomicClassificationList.tsx:70
 msgid "You can search by: name (ex: Agriculture) • code (ex: 43.00, 43.00.10) • explicit prefix: ec:43.00"
 msgstr "You can search by: name (ex: Agriculture) • code (ex: 43.00, 43.00.10) • explicit prefix: ec:43.00"
@@ -9386,7 +9391,7 @@ msgstr "You need to be signed in to edit alerts"
 msgid "You need to be signed in to manage notifications"
 msgstr "You need to be signed in to manage notifications"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:51
+#: src/features/notifications/components/EntityNotificationBell.tsx:57
 msgid "You need to be signed in to subscribe to notifications"
 msgstr "You need to be signed in to subscribe to notifications"
 
