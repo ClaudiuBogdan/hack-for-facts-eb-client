@@ -518,12 +518,13 @@ const CustomizedContent: FC<{
   ])
 
   useEffect(() => {
+    if (!allowScaleAnimation) return
     void bounceControls.start({
       opacity: 1,
       scale: 1,
       transition: { type: 'spring', damping: 30, stiffness: 220, mass: 0.9 },
     })
-  }, [bounceControls])
+  }, [allowScaleAnimation, bounceControls])
 
   const triggerBounce = () => {
     void bounceControls.start({
@@ -536,7 +537,107 @@ const CustomizedContent: FC<{
     })
   }
 
-  // Determine classification type for navigation
+  // Safari: render static SVG to avoid foreignObject + animation bugs in WebKit
+  if (!allowScaleAnimation) {
+    const valueY = (() => {
+      const textHeight = canShowTwoLines ? nameLineHeight * 2 : nameFontSize * 1.3
+      const vHeight = valueFontSize + 8
+      const pHeight = canShowPercentage ? percentageFontSize + 8 : 0
+      const totalH = textHeight + vHeight + pHeight
+      const nameY = y + (height - totalH) / 2
+      return nameY + textHeight + 8
+    })()
+
+    const percentageY = (() => {
+      const textHeight = canShowTwoLines ? nameLineHeight * 2 : nameFontSize * 1.3
+      const vHeight = valueFontSize + 8
+      const pHeight = percentageFontSize + 8
+      const totalH = textHeight + vHeight + pHeight
+      const nameY = y + (height - totalH) / 2
+      return nameY + textHeight + vHeight + 8
+    })()
+
+    return (
+      <g
+        onPointerEnter={() => {
+          setIsHovered(true)
+          if (code) onInfoHoverChange?.(code, true)
+        }}
+        onPointerLeave={() => {
+          setIsHovered(false)
+          if (code) onInfoHoverChange?.(code, false)
+        }}
+      >
+        <rect
+          x={x}
+          y={y}
+          width={width}
+          height={height}
+          fill={isHovered ? adjustColorBrightness(defaultFill, 12) : defaultFill}
+          stroke="#fff"
+          strokeWidth={2 / (depth + 1e-5)}
+          strokeOpacity={0.5}
+          cursor="pointer"
+        />
+        {canShowName && (
+          <foreignObject
+            x={x + 4}
+            y={labelYPosition}
+            width={labelWidth}
+            height={labelHeight}
+            style={{ overflow: 'hidden', pointerEvents: 'none' }}
+          >
+            <div
+              style={{
+                color: baseColor,
+                fontSize: `${nameFontSize}px`,
+                fontWeight: 500,
+                lineHeight: `${nameLineHeight}px`,
+                textAlign: 'center',
+                overflow: 'hidden',
+                display: '-webkit-box',
+                WebkitLineClamp: canShowTwoLines ? 2 : 1,
+                WebkitBoxOrient: 'vertical',
+                wordBreak: 'break-word',
+                userSelect: 'none',
+                pointerEvents: 'none',
+              }}
+            >
+              {name}
+            </div>
+          </foreignObject>
+        )}
+        {canShowValue && (
+          <text
+            x={x + width / 2}
+            y={valueY}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill={baseColor}
+            fontSize={valueFontSize}
+            fillOpacity={0.9}
+            style={{ pointerEvents: 'none', userSelect: 'none' }}
+          >
+            {displayValue}
+          </text>
+        )}
+        {canShowPercentage && (
+          <text
+            x={x + width / 2}
+            y={percentageY}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill={baseColor}
+            fontSize={percentageFontSize}
+            fillOpacity={0.85}
+            style={{ pointerEvents: 'none', userSelect: 'none' }}
+          >
+            {`${percentage.toFixed(1)}%`}
+          </text>
+        )}
+      </g>
+    )
+  }
 
   return (
     <motion.g
@@ -1053,7 +1154,7 @@ function BudgetTreemapView({
                       visibility: 'visible',
                       pointerEvents: 'none',
                       transition: 'transform 180ms ease-in-out',
-                      willChange: 'transform',
+                      ...(allowScaleAnimation ? { willChange: 'transform' } : {}),
                     }}
                     content={memoizedTooltip}
                   />
