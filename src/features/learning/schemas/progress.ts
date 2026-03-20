@@ -2,69 +2,22 @@ import { z } from 'zod'
 import {
   LEARNING_PROGRESS_SCHEMA_VERSION,
   LEARNING_CERTIFICATES_SCHEMA_VERSION,
+  type LearningProgressRemoteSnapshot,
   type LearningCertificatesState,
   type LearningGuestProgress,
 } from '../types'
+import { getEmptyUnifiedInteractiveState } from '../utils/interactive-state'
+import {
+  InteractiveAuditEventSchema,
+  InteractiveStateRecordSchema,
+} from './interactive-record'
 
 export const LearningContentStatusSchema = z.enum(['not_started', 'in_progress', 'completed', 'passed'])
 
-const LearningQuizInteractionSchema = z.object({
-  kind: z.literal('quiz'),
-  selectedOptionId: z.string().nullable(),
+const UnifiedInteractiveStateSchema = z.object({
+  recordsByKey: z.record(z.string(), InteractiveStateRecordSchema),
+  eventLogByRecordKey: z.record(z.string(), z.array(InteractiveAuditEventSchema)),
 })
-
-const LearningPredictionRevealSchema = z.object({
-  guess: z.number().min(0).max(100),
-  actualRate: z.number().min(0).max(100),
-  revealedAt: z.string().datetime(),
-})
-
-const LearningPredictionInteractionSchema = z.object({
-  kind: z.literal('prediction'),
-  reveals: z.record(z.string(), LearningPredictionRevealSchema),
-})
-
-const LearningSalaryCalculatorStepSchema = z.enum(['INPUT', 'GUESS', 'REVEAL'])
-
-const LearningSalaryCalculatorInteractionSchema = z.object({
-  kind: z.literal('salary-calculator'),
-  gross: z.number().min(0),
-  userGuess: z.number().min(0),
-  step: LearningSalaryCalculatorStepSchema,
-  completedAt: z.string().datetime().optional(),
-})
-
-const LearningBudgetAllocatorStepSchema = z.enum(['ALLOCATE', 'COMPARE'])
-
-const LearningBudgetAllocatorInteractionSchema = z.object({
-  kind: z.literal('budget-allocator'),
-  allocations: z.record(z.string(), z.number()),
-  step: LearningBudgetAllocatorStepSchema,
-  completedAt: z.string().datetime().optional(),
-})
-
-/**
- * CRITICAL: All interaction types MUST be registered in this discriminated union.
- *
- * This schema validates stored progress snapshots. If a new interaction type is added
- * but not registered here, the entire progress object will fail validation and be
- * replaced with an empty state - losing all user progress.
- *
- * See also: progress-events.ts LearningInteractionStateSchema (same requirement)
- *
- * Checklist when adding a new interaction:
- * 1. Add TypeScript types to types.ts
- * 2. Create resolver in hooks/interactions/
- * 3. Register resolver import in hooks/interactions/index.ts
- * 4. Add schema to progress-events.ts
- * 5. ADD SCHEMA HERE - Easy to forget!
- */
-const LearningInteractionStateSchema = z.discriminatedUnion('kind', [
-  LearningQuizInteractionSchema,
-  LearningPredictionInteractionSchema,
-  LearningSalaryCalculatorInteractionSchema,
-  LearningBudgetAllocatorInteractionSchema,
-])
 
 export const LearningContentProgressSchema = z.object({
   contentId: z.string().min(1),
@@ -73,7 +26,6 @@ export const LearningContentProgressSchema = z.object({
   lastAttemptAt: z.string().datetime(),
   completedAt: z.string().datetime().optional(),
   contentVersion: z.string().min(1),
-  interactions: z.record(z.string(), LearningInteractionStateSchema).optional(),
 })
 
 export const LearningOnboardingStateSchema = z.object({
@@ -93,8 +45,15 @@ const LearningGuestProgressSchema = z.object({
   onboarding: LearningOnboardingStateSchema,
   activePathId: z.string().nullable(),
   content: z.record(z.string(), LearningContentProgressSchema),
+  interactiveState: UnifiedInteractiveStateSchema,
   streak: LearningStreakStateSchema,
   lastUpdated: z.string().datetime(),
+})
+
+const LearningProgressRemoteSnapshotSchema = z.object({
+  version: z.literal(LEARNING_PROGRESS_SCHEMA_VERSION),
+  recordsByKey: z.record(z.string(), InteractiveStateRecordSchema),
+  lastUpdated: z.string().datetime().nullable(),
 })
 
 export function getEmptyLearningGuestProgress(): LearningGuestProgress {
@@ -103,6 +62,7 @@ export function getEmptyLearningGuestProgress(): LearningGuestProgress {
     onboarding: { pathId: null, relatedPaths: [], completedAt: null },
     activePathId: null,
     content: {},
+    interactiveState: getEmptyUnifiedInteractiveState(),
     streak: { currentStreak: 0, longestStreak: 0, lastActivityDate: null },
     lastUpdated: new Date().toISOString(),
   }
@@ -110,8 +70,22 @@ export function getEmptyLearningGuestProgress(): LearningGuestProgress {
 
 export function parseLearningGuestProgress(raw: unknown): LearningGuestProgress {
   const parsed = LearningGuestProgressSchema.safeParse(normalizeLearningGuestProgress(raw))
-  if (parsed.success) return parsed.data
+  if (parsed.success) return parsed.data as LearningGuestProgress
   return getEmptyLearningGuestProgress()
+}
+
+export function getEmptyLearningProgressRemoteSnapshot(): LearningProgressRemoteSnapshot {
+  return {
+    version: LEARNING_PROGRESS_SCHEMA_VERSION,
+    recordsByKey: {},
+    lastUpdated: null,
+  }
+}
+
+export function parseLearningProgressRemoteSnapshot(raw: unknown): LearningProgressRemoteSnapshot {
+  const parsed = LearningProgressRemoteSnapshotSchema.safeParse(raw)
+  if (parsed.success) return parsed.data
+  return getEmptyLearningProgressRemoteSnapshot()
 }
 
 function normalizeLearningGuestProgress(raw: unknown): unknown {
@@ -135,35 +109,6 @@ function normalizeLearningGuestProgress(raw: unknown): unknown {
   if (!draft.streak || typeof draft.streak !== 'object') {
     draft.streak = { currentStreak: 0, longestStreak: 0, lastActivityDate: null }
   }
-
-  const content = (draft as { content?: Record<string, unknown> }).content
-
-  if (!content || typeof content !== 'object') return draft
-
-  const nextContent: Record<string, unknown> = { ...content }
-
-  for (const [contentId, entry] of Object.entries(nextContent)) {
-    if (!entry || typeof entry !== 'object') continue
-    const record = entry as Record<string, unknown>
-    const quizAnswers = record.quizAnswers
-    if (!quizAnswers || typeof quizAnswers !== 'object') continue
-    if (record.interactions && typeof record.interactions === 'object') continue
-
-    const nextInteractions: Record<string, { readonly kind: 'quiz'; readonly selectedOptionId: string | null }> = {}
-
-    for (const [quizId, selectedOptionId] of Object.entries(quizAnswers as Record<string, unknown>)) {
-      if (typeof selectedOptionId === 'string' || selectedOptionId === null) {
-        nextInteractions[quizId] = { kind: 'quiz', selectedOptionId: selectedOptionId as string | null }
-      }
-    }
-
-    if (Object.keys(nextInteractions).length) {
-      record.interactions = nextInteractions
-      nextContent[contentId] = record
-    }
-  }
-
-  draft.content = nextContent
   return draft
 }
 

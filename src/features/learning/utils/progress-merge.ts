@@ -1,113 +1,104 @@
-import type { LearningContentProgress, LearningContentStatus, LearningGuestProgress, LearningInteractionState, LearningStreakState } from '../types'
+import type {
+  InteractiveAuditEvent,
+  InteractiveStateRecord,
+  LearningGuestProgress,
+  UnifiedInteractiveState,
+} from '../types'
+import { projectLearningGuestProgress } from './progress-projection'
+import { isoToTime, maxIsoRequired } from './date-utils'
 
-const STATUS_RANK: Record<LearningContentStatus, number> = {
-  not_started: 0,
-  in_progress: 1,
-  completed: 2,
-  passed: 3,
-}
+function mergeInteractiveRecords(
+  localRecords: UnifiedInteractiveState['recordsByKey'],
+  remoteRecords: UnifiedInteractiveState['recordsByKey'],
+): UnifiedInteractiveState['recordsByKey'] {
+  const mergedKeys = new Set([
+    ...Object.keys(localRecords),
+    ...Object.keys(remoteRecords),
+  ])
+  const mergedRecords: Record<string, InteractiveStateRecord> = {}
 
-function isoToTime(value: string): number {
-  const parsed = Date.parse(value)
-  return Number.isFinite(parsed) ? parsed : 0
-}
+  for (const key of mergedKeys) {
+    const localRecord = localRecords[key]
+    const remoteRecord = remoteRecords[key]
 
-function maxIso(a: string, b: string): string {
-  return isoToTime(a) >= isoToTime(b) ? a : b
-}
+    if (localRecord && remoteRecord) {
+      mergedRecords[key] =
+        isoToTime(localRecord.updatedAt) >= isoToTime(remoteRecord.updatedAt)
+          ? localRecord
+          : remoteRecord
+      continue
+    }
 
-function mergeInteractions(
-  a: LearningContentProgress['interactions'],
-  b: LearningContentProgress['interactions'],
-  preferA: boolean,
-): LearningContentProgress['interactions'] {
-  if (!a && !b) return undefined
-  const base = preferA ? (b ?? {}) : (a ?? {})
-  const override = preferA ? (a ?? {}) : (b ?? {})
-  const merged: Record<string, LearningInteractionState> = { ...base, ...override }
-  return Object.keys(merged).length ? merged : undefined
-}
+    if (localRecord) {
+      mergedRecords[key] = localRecord
+      continue
+    }
 
-export function mergeContentProgress(a: LearningContentProgress, b: LearningContentProgress): LearningContentProgress {
-  const aRank = STATUS_RANK[a.status]
-  const bRank = STATUS_RANK[b.status]
-
-  const status = aRank >= bRank ? a.status : b.status
-  const score = Math.max(a.score ?? 0, b.score ?? 0)
-  const lastAttemptAt = maxIso(a.lastAttemptAt, b.lastAttemptAt)
-  const completedAt = a.completedAt && b.completedAt ? maxIso(a.completedAt, b.completedAt) : a.completedAt ?? b.completedAt
-
-  const preferA = isoToTime(a.lastAttemptAt) >= isoToTime(b.lastAttemptAt)
-  const contentVersion = preferA ? a.contentVersion : b.contentVersion
-  const interactions = mergeInteractions(a.interactions, b.interactions, preferA)
-
-  return {
-    contentId: a.contentId,
-    status,
-    score: score > 0 ? score : undefined,
-    lastAttemptAt,
-    completedAt,
-    contentVersion,
-    interactions,
-  }
-}
-
-function mergeStreakState(local: LearningStreakState, remote: LearningStreakState): LearningStreakState {
-  // Pick the more recent activity date
-  const localTime = local.lastActivityDate ? isoToTime(local.lastActivityDate + 'T00:00:00') : 0
-  const remoteTime = remote.lastActivityDate ? isoToTime(remote.lastActivityDate + 'T00:00:00') : 0
-
-  if (localTime > remoteTime) {
-    return {
-      currentStreak: local.currentStreak,
-      longestStreak: Math.max(local.longestStreak, remote.longestStreak),
-      lastActivityDate: local.lastActivityDate,
+    if (remoteRecord) {
+      mergedRecords[key] = remoteRecord
     }
   }
 
-  if (remoteTime > localTime) {
-    return {
-      currentStreak: remote.currentStreak,
-      longestStreak: Math.max(local.longestStreak, remote.longestStreak),
-      lastActivityDate: remote.lastActivityDate,
+  return mergedRecords
+}
+
+function mergeAuditEvents(
+  localEvents: readonly InteractiveAuditEvent[] | undefined,
+  remoteEvents: readonly InteractiveAuditEvent[] | undefined,
+): readonly InteractiveAuditEvent[] {
+  if (!localEvents && !remoteEvents) {
+    return []
+  }
+
+  const mergedById = new Map<string, InteractiveAuditEvent>()
+  for (const event of [...(localEvents ?? []), ...(remoteEvents ?? [])]) {
+    if (!mergedById.has(event.id)) {
+      mergedById.set(event.id, event)
     }
   }
 
-  // Same date or both null - pick higher current streak, keep max longest
+  return Array.from(mergedById.values()).sort((leftEvent, rightEvent) => {
+    const timeDiff = isoToTime(leftEvent.at) - isoToTime(rightEvent.at)
+    if (timeDiff !== 0) {
+      return timeDiff
+    }
+
+    return leftEvent.id.localeCompare(rightEvent.id)
+  })
+}
+
+function mergeInteractiveState(
+  localState: UnifiedInteractiveState,
+  remoteState: UnifiedInteractiveState,
+): UnifiedInteractiveState {
+  const recordKeys = new Set([
+    ...Object.keys(localState.eventLogByRecordKey),
+    ...Object.keys(remoteState.eventLogByRecordKey),
+  ])
+  const mergedEventLogByRecordKey: Record<string, readonly InteractiveAuditEvent[]> = {}
+
+  for (const recordKey of recordKeys) {
+    const mergedEvents = mergeAuditEvents(
+      localState.eventLogByRecordKey[recordKey],
+      remoteState.eventLogByRecordKey[recordKey],
+    )
+    if (mergedEvents.length > 0) {
+      mergedEventLogByRecordKey[recordKey] = mergedEvents
+    }
+  }
+
   return {
-    currentStreak: Math.max(local.currentStreak, remote.currentStreak),
-    longestStreak: Math.max(local.longestStreak, remote.longestStreak),
-    lastActivityDate: local.lastActivityDate,
+    recordsByKey: mergeInteractiveRecords(
+      localState.recordsByKey,
+      remoteState.recordsByKey,
+    ),
+    eventLogByRecordKey: mergedEventLogByRecordKey,
   }
 }
 
 export function mergeLearningGuestProgress(local: LearningGuestProgress, remote: LearningGuestProgress): LearningGuestProgress {
-  const contentIds = new Set<string>([...Object.keys(local.content), ...Object.keys(remote.content)])
-
-  const mergedContent: Record<string, LearningContentProgress> = {}
-
-  for (const contentId of contentIds) {
-    const a = local.content[contentId]
-    const b = remote.content[contentId]
-
-    if (a && b) {
-      mergedContent[contentId] = mergeContentProgress(a, b)
-    } else if (a) {
-      mergedContent[contentId] = a
-    } else if (b) {
-      mergedContent[contentId] = b
-    }
-  }
-
-  const newerLocal = isoToTime(local.lastUpdated) >= isoToTime(remote.lastUpdated)
-  const activePathId = newerLocal ? (local.activePathId ?? remote.activePathId) : (remote.activePathId ?? local.activePathId)
-
-  return {
-    version: remote.version,
-    onboarding: remote.onboarding.completedAt ? remote.onboarding : local.onboarding,
-    activePathId,
-    content: mergedContent,
-    streak: mergeStreakState(local.streak, remote.streak),
-    lastUpdated: maxIso(local.lastUpdated, remote.lastUpdated),
-  }
+  return projectLearningGuestProgress({
+    interactiveState: mergeInteractiveState(local.interactiveState, remote.interactiveState),
+    lastUpdated: maxIsoRequired(local.lastUpdated, remote.lastUpdated),
+  })
 }

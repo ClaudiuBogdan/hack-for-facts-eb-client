@@ -155,6 +155,7 @@ export type CampaignProgressSnapshot = {
   readonly version: typeof CAMPAIGN_PROGRESS_SCHEMA_VERSION
   readonly campaignId: string
   readonly onboardingCompletedAt: string | null
+  readonly acceptedTermsAt: string | null
   readonly selectedLocality: string | null
   readonly selectedEntityCui: string | null
   readonly activeChallengeModuleSlug: string | null

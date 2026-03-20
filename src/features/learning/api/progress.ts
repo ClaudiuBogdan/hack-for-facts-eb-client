@@ -1,8 +1,8 @@
 import { getAuthToken } from '@/lib/auth'
 import { getApiBaseUrl } from '@/config/env'
-import { parseLearningGuestProgress } from '../schemas/progress'
+import { parseLearningProgressRemoteSnapshot } from '../schemas/progress'
 import { parseLearningProgressEvents } from '../schemas/progress-events'
-import type { LearningGuestProgress, LearningProgressEvent } from '../types'
+import type { LearningProgressEvent, LearningProgressRemoteSnapshot } from '../types'
 
 const getApiUrl = () => getApiBaseUrl()
 
@@ -13,9 +13,9 @@ type ApiResponse<T> = {
 }
 
 type LearningProgressResponse = {
-  snapshot: LearningGuestProgress
+  snapshot: LearningProgressRemoteSnapshot
   events: LearningProgressEvent[]
-  cursor?: string
+  cursor: string
 }
 
 export async function fetchLearningProgress(params: { since?: string | null } = {}): Promise<LearningProgressResponse> {
@@ -40,7 +40,7 @@ export async function fetchLearningProgress(params: { since?: string | null } = 
   }
 
   return {
-    snapshot: parseLearningGuestProgress(result.data.snapshot),
+    snapshot: parseLearningProgressRemoteSnapshot(result.data.snapshot),
     events: parseLearningProgressEvents(result.data.events),
     cursor: result.data.cursor,
   }

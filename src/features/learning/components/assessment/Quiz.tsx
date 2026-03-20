@@ -19,9 +19,19 @@ export type QuizProps = {
   readonly options: readonly QuizOption[]
   readonly explanation: string
   readonly contentId: string
+  readonly scopePolicy?: 'global' | 'entity'
+  readonly entityCui?: string
 }
 
-export function Quiz({ id, question, options, explanation, contentId }: QuizProps) {
+export function Quiz({
+  id,
+  question,
+  options,
+  explanation,
+  contentId,
+  scopePolicy = 'global',
+  entityCui,
+}: QuizProps) {
   const validOptions = useMemo(() => (Array.isArray(options) ? options : []), [options])
 
   const { selectedOptionId, isAnswered, isCorrect, answer, reset } = useQuizInteraction({
@@ -29,6 +39,8 @@ export function Quiz({ id, question, options, explanation, contentId }: QuizProp
     quizId: id,
     options: validOptions,
     contentVersion: 'v1',
+    scopePolicy,
+    entityCui,
   })
 
   // Local state for "shaking" effect or temporary error states could go here

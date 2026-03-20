@@ -45,9 +45,7 @@ import type {
   LearningSalaryCalculatorInteractionState,
   LearningSalaryCalculatorStep,
 } from '../../types'
-
-// Import resolver to ensure registration
-import './salary-calculator-resolver'
+import { getInteractiveRecord, getJsonValue } from '../../utils/interactive-state'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -82,10 +80,24 @@ function resolveSalaryCalculatorState(params: {
   readonly contentId: string
   readonly calculatorId: string
 }): { readonly savedState: LearningSalaryCalculatorInteractionState | null } {
-  const interaction = params.progress.content[params.contentId]?.interactions?.[params.calculatorId]
-
-  if (interaction?.kind === 'salary-calculator') {
-    return { savedState: interaction }
+  const record = getInteractiveRecord(
+    params.progress.interactiveState,
+    {
+      id: params.calculatorId,
+      scopePolicy: 'global',
+    },
+  )
+  const value = getJsonValue<Record<string, unknown>>(record)
+  if (value) {
+    return {
+      savedState: {
+        kind: 'salary-calculator',
+        gross: typeof value.gross === 'number' ? value.gross : 0,
+        userGuess: typeof value.userGuess === 'number' ? value.userGuess : 0,
+        step: value.step === 'INPUT' || value.step === 'GUESS' || value.step === 'REVEAL' ? value.step : 'INPUT',
+        completedAt: record?.submittedAt ?? undefined,
+      },
+    }
   }
 
   return { savedState: null }

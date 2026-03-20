@@ -288,6 +288,8 @@ export function useSectionedStepPlayer({
     quizId: quizInteractive?.id ?? '__inactive-quiz__',
     options: quizInteractive?.options ?? EMPTY_QUIZ_OPTIONS,
     contentVersion: 'v1',
+    scopePolicy: quizInteractive?.scopePolicy ?? 'global',
+    entityCui: quizInteractive?.scopePolicy === 'entity' ? entityCui : undefined,
   })
 
   useEffect(() => {

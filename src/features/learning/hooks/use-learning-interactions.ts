@@ -11,6 +11,7 @@ export {
   useQuizInteraction,
   usePredictionInteraction,
   useLessonCompletion,
+  useCustomInteraction,
   useSalaryCalculatorInteraction,
   type QuizInteractionContext,
   type UseQuizInteractionInput,
@@ -18,6 +19,8 @@ export {
   type UsePredictionInteractionInput,
   type LessonCompletionContext,
   type UseLessonCompletionInput,
+  type CustomInteractionContext,
+  type UseCustomInteractionInput,
   type SalaryCalculatorInteractionContext,
   type UseSalaryCalculatorInteractionInput,
 } from './interactions'

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRightLeft, Building2, Info, Layers3, Users, Wallet } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -16,9 +16,12 @@ import {
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { EntityFinancialSummary } from '@/components/entities/EntityFinancialSummary'
 import { Quiz, type QuizOption } from '@/features/learning/components/assessment/Quiz'
-import { useQuizInteraction } from '@/features/learning/hooks/use-learning-interactions'
-import { useLearningProgress } from '@/features/learning/hooks/use-learning-progress'
+import {
+  useCustomInteraction,
+  useQuizInteraction,
+} from '@/features/learning/hooks/use-learning-interactions'
 import { useRegisterLessonChallenge } from '@/features/learning/components/player/lesson-challenges-context'
+import { useDebouncedCallback } from '@/lib/hooks/useDebouncedCallback'
 import type { ChallengeLocale } from '@/features/challenges/types'
 import {
   CHALLENGE_LESSON_DEFAULT_CURRENCY,
@@ -40,8 +43,6 @@ import {
   buildLessonSingleCorrectQuizOptions,
 } from './challenge-lesson-widgets.utils'
 import { ChallengeDynamicQuiz } from '@/features/challenges/components/player/challenge-dynamic-quiz'
-import { scoreSingleChoice } from '@/features/learning/utils/scoring'
-import { QUIZ_PASS_SCORE } from '@/features/learning/utils/interactions'
 import { cn, formatCurrency, formatNumber } from '@/lib/utils'
 import { useFinancialData } from '@/hooks/useFinancialData'
 import { useEntityTypeLabel } from '@/hooks/filters/useFilterLabels'
@@ -54,6 +55,7 @@ import {
   ChallengeEntitySubordinatesSection,
   type ChallengeEntitySubordinateCardItem,
 } from '@/features/challenges/components/analysis/challenge-entity-subordinates-section'
+import { buildChallengeInteractionId } from '@/features/challenges/utils/interaction-ids'
 import { toReportTypeValue } from '@/schemas/reporting'
 
 type LessonWidgetBaseProps = {
@@ -350,36 +352,43 @@ function LessonUnavailableState({
 
 function DynamicLessonQuiz({
   stepId,
+  entityCui,
   quizId,
   question,
   options,
   explanation,
 }: {
   readonly stepId: string
+  readonly entityCui: string
   readonly quizId: string
   readonly question: string
   readonly options: readonly QuizOption[]
   readonly explanation: string
 }) {
-  const { progress } = useLearningProgress()
-  const interaction = progress.content[stepId]?.interactions?.[quizId]
-  const selectedOptionId =
-    interaction?.kind === 'quiz' ? interaction.selectedOptionId : null
-  const score = scoreSingleChoice(options, selectedOptionId)
-  const isCompleted = score >= QUIZ_PASS_SCORE
+  const scopedQuizId = buildChallengeInteractionId(stepId, quizId)
+  const { isCorrect } = useQuizInteraction({
+    contentId: stepId,
+    quizId: scopedQuizId,
+    options,
+    contentVersion: 'v1',
+    scopePolicy: 'entity',
+    entityCui,
+  })
 
   useRegisterLessonChallenge({
-    id: `quiz:${quizId}`,
-    isCompleted,
+    id: `quiz:${scopedQuizId}`,
+    isCompleted: isCorrect,
   })
 
   return (
     <Quiz
-      id={quizId}
+      id={scopedQuizId}
       question={question}
       options={options}
       explanation={explanation}
       contentId={stepId}
+      scopePolicy="entity"
+      entityCui={entityCui}
     />
   )
 }
@@ -678,14 +687,37 @@ export function LessonEntitySnapshot({
   const copy = WIDGET_COPY[locale]
   const { aggregatedTotalSummaryQuery, selectedYear } =
     useChallengeLessonEntityBundle(entityCui)
+  const snapshotInteraction = useCustomInteraction<{
+    checkedItems: boolean[]
+  }>({
+    lessonId: stepId,
+    interactionId: `lesson-entity-snapshot:${stepId}`,
+    scopePolicy: 'entity',
+    entityCui,
+  })
   const [checkedItems, setCheckedItems] = useState<boolean[]>(
     copy.snapshotChecks.map(() => false),
   )
+  const snapshotRestoreSignatureRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    const nextCheckedItems = snapshotInteraction.savedValue?.checkedItems
+    const normalizedCheckedItems =
+      Array.isArray(nextCheckedItems) && nextCheckedItems.length === copy.snapshotChecks.length
+        ? nextCheckedItems.map((value) => value === true)
+        : copy.snapshotChecks.map(() => false)
+    const nextSignature = `${entityCui}:${stepId}:${normalizedCheckedItems.map((value) => (value ? '1' : '0')).join('')}`
+
+    if (snapshotRestoreSignatureRef.current === nextSignature) return
+
+    snapshotRestoreSignatureRef.current = nextSignature
+    setCheckedItems(normalizedCheckedItems)
+  }, [copy.snapshotChecks, copy.snapshotChecks.length, entityCui, snapshotInteraction.savedValue?.checkedItems, stepId])
 
   const allChecked = checkedItems.every(Boolean)
   useRegisterLessonChallenge({
     id: `lesson-entity-snapshot:${stepId}`,
-    isCompleted: allChecked,
+    isCompleted: snapshotInteraction.isCompleted || allChecked,
   })
 
   if (aggregatedTotalSummaryQuery.isLoading) {
@@ -776,11 +808,20 @@ export function LessonEntitySnapshot({
             <Checkbox
               checked={checkedItems[index]}
               onCheckedChange={(checked) => {
-                setCheckedItems((current) =>
-                  current.map((value, currentIndex) =>
+                setCheckedItems((current) => {
+                  const nextCheckedItems = current.map((value, currentIndex) =>
                     currentIndex === index ? checked === true : value,
-                  ),
-                )
+                  )
+
+                  const nextValue = { checkedItems: nextCheckedItems }
+                  if (nextCheckedItems.every(Boolean)) {
+                    void snapshotInteraction.complete(nextValue)
+                  } else {
+                    void snapshotInteraction.saveDraft(nextValue)
+                  }
+
+                  return nextCheckedItems
+                })
               }}
             />
             <span className="text-sm font-medium leading-6 text-foreground">
@@ -790,7 +831,7 @@ export function LessonEntitySnapshot({
         ))}
       </div>
 
-      {allChecked ? (
+      {snapshotInteraction.isCompleted || allChecked ? (
         <div className="rounded-[24px] border border-emerald-300 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-800">
           {copy.lessonReady}
         </div>
@@ -839,6 +880,8 @@ export function LessonBudgetEstimate({
     quizId,
     options,
     contentVersion: 'v1',
+    scopePolicy: 'entity',
+    entityCui,
   })
 
   const mapPreviewDefinition = useMemo(
@@ -906,6 +949,7 @@ export function LessonBudgetEstimate({
     >
       <DynamicLessonQuiz
         stepId={stepId}
+        entityCui={entityCui}
         quizId={quizId}
         question={
           metric === 'income'
@@ -1083,6 +1127,7 @@ export function LessonGroupedExplorer({
 
       <DynamicLessonQuiz
         stepId={stepId}
+        entityCui={entityCui}
         quizId="lesson-grouped-explorer"
         question={quizQuestion}
         options={quizOptions}
@@ -1233,6 +1278,7 @@ export function LessonClassificationCrosswalk({
 
       <DynamicLessonQuiz
         stepId={stepId}
+        entityCui={entityCui}
         quizId="lesson-classification-crosswalk"
         question={copy.crosswalkQuizQuestion}
         options={economicQuizOptions}
@@ -1264,14 +1310,64 @@ export function LessonExecutionTableExcerpt({
       }),
     [aggregatedTotalSummaryQuery.data?.totalExpenses, financialData.filteredExpenseGroups],
   )
+  const executionTableInteraction = useCustomInteraction<{
+    selectedRowId: string | null
+    rowExplanation: string
+  }>({
+    lessonId: stepId,
+    interactionId: `lesson-execution-table-excerpt:${stepId}`,
+    scopePolicy: 'entity',
+    entityCui,
+  })
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const [rowExplanation, setRowExplanation] = useState('')
+  const executionTableRestoreSignatureRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    const restoredSelectedRowId =
+      typeof executionTableInteraction.savedValue?.selectedRowId === 'string'
+        ? executionTableInteraction.savedValue.selectedRowId
+        : null
+    const restoredRowExplanation =
+      typeof executionTableInteraction.savedValue?.rowExplanation === 'string'
+        ? executionTableInteraction.savedValue.rowExplanation
+        : ''
+    const nextSignature = `${entityCui}:${stepId}:${restoredSelectedRowId ?? ''}:${restoredRowExplanation}`
+
+    if (executionTableRestoreSignatureRef.current === nextSignature) return
+
+    executionTableRestoreSignatureRef.current = nextSignature
+    setSelectedRowId(restoredSelectedRowId)
+    setRowExplanation(restoredRowExplanation)
+  }, [
+    entityCui,
+    executionTableInteraction.savedValue?.rowExplanation,
+    executionTableInteraction.savedValue?.selectedRowId,
+    stepId,
+  ])
+
+  const debouncedPersistExecution = useDebouncedCallback(
+    (nextValue: { selectedRowId: string | null; rowExplanation: string }, isComplete: boolean) => {
+      if (isComplete) {
+        void executionTableInteraction.complete(nextValue)
+      } else {
+        void executionTableInteraction.saveDraft(nextValue)
+      }
+    },
+    500,
+  )
+
+  useEffect(() => {
+    return () => {
+      debouncedPersistExecution.flush()
+    }
+  }, [debouncedPersistExecution])
 
   const selectedRow = rows.find((row) => row.id === selectedRowId) ?? null
   const isCompleted = Boolean(selectedRow) && rowExplanation.trim().length >= 30
   useRegisterLessonChallenge({
     id: `lesson-execution-table-excerpt:${stepId}`,
-    isCompleted,
+    isCompleted: executionTableInteraction.isCompleted || isCompleted,
   })
 
   if (aggregatedLineItemsQuery.isLoading || aggregatedTotalSummaryQuery.isLoading) {
@@ -1313,7 +1409,19 @@ export function LessonExecutionTableExcerpt({
                   key={row.id}
                   data-state={isSelected ? 'selected' : undefined}
                   className={`cursor-pointer transition-colors hover:bg-muted/50 ${isSelected ? 'border-l-2 border-l-primary bg-muted/30' : ''}`}
-                  onClick={() => setSelectedRowId(row.id)}
+                  onClick={() => {
+                    debouncedPersistExecution.cancel()
+                    setSelectedRowId(row.id)
+                    const nextValue = {
+                      selectedRowId: row.id,
+                      rowExplanation,
+                    }
+                    if (rowExplanation.trim().length >= 30) {
+                      void executionTableInteraction.complete(nextValue)
+                    } else {
+                      void executionTableInteraction.saveDraft(nextValue)
+                    }
+                  }}
                 >
                   <TableCell className="font-medium">
                     <span
@@ -1359,7 +1467,21 @@ export function LessonExecutionTableExcerpt({
             id="lesson-execution-row-explanation"
             aria-label={copy.explanationPrompt}
             value={rowExplanation}
-            onChange={(event) => setRowExplanation(event.target.value)}
+            onChange={(event) => {
+              const nextRowExplanation = event.target.value
+              setRowExplanation(nextRowExplanation)
+              const nextValue = {
+                selectedRowId,
+                rowExplanation: nextRowExplanation,
+              }
+              debouncedPersistExecution(
+                nextValue,
+                Boolean(selectedRowId) && nextRowExplanation.trim().length >= 30,
+              )
+            }}
+            onBlur={() => {
+              debouncedPersistExecution.flush()
+            }}
             placeholder={copy.explanationPlaceholder}
             rows={3}
           />
@@ -1370,7 +1492,7 @@ export function LessonExecutionTableExcerpt({
           ) : null}
         </div>
 
-        {isCompleted ? (
+        {executionTableInteraction.isCompleted || isCompleted ? (
           <p className="text-sm font-semibold text-emerald-700">
             {copy.documentReady}
           </p>
@@ -1400,14 +1522,55 @@ export function LessonAggregateDetailedCompare({
   const subordinateInsights = useChallengeLessonSubordinateInsights({
     entityCui,
   })
+  const aggregateDetailedInteraction = useCustomInteraction<{
+    activeReportType: 'PRINCIPAL_AGGREGATED' | 'DETAILED'
+    hasViewedDetailed: boolean
+  }>({
+    lessonId: stepId,
+    interactionId: `lesson-aggregate-detailed-compare:${stepId}`,
+    scopePolicy: 'entity',
+    entityCui,
+  })
   const [activeReportType, setActiveReportType] = useState<'PRINCIPAL_AGGREGATED' | 'DETAILED'>('PRINCIPAL_AGGREGATED')
   const [hasViewedDetailed, setHasViewedDetailed] = useState(false)
+  const aggregateDetailedRestoreSignatureRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    const savedReportType = aggregateDetailedInteraction.savedValue?.activeReportType
+    const nextHasViewedDetailed = aggregateDetailedInteraction.savedValue?.hasViewedDetailed === true
+    const nextSignature = `${entityCui}:${stepId}:${savedReportType ?? 'PRINCIPAL_AGGREGATED'}:${nextHasViewedDetailed ? '1' : '0'}`
+
+    if (aggregateDetailedRestoreSignatureRef.current === nextSignature) return
+
+    aggregateDetailedRestoreSignatureRef.current = nextSignature
+    if (savedReportType === 'PRINCIPAL_AGGREGATED' || savedReportType === 'DETAILED') {
+      setActiveReportType(savedReportType)
+    } else {
+      setActiveReportType('PRINCIPAL_AGGREGATED')
+    }
+    setHasViewedDetailed(nextHasViewedDetailed)
+  }, [
+    entityCui,
+    aggregateDetailedInteraction.savedValue?.activeReportType,
+    aggregateDetailedInteraction.savedValue?.hasViewedDetailed,
+    stepId,
+  ])
   const handleReportTypeChange = (
     nextValue: 'PRINCIPAL_AGGREGATED' | 'DETAILED',
   ) => {
     setActiveReportType(nextValue)
+    const nextHasViewedDetailed = hasViewedDetailed || nextValue === 'DETAILED'
     if (nextValue === 'DETAILED') {
       setHasViewedDetailed(true)
+    }
+    const nextInteractionValue = {
+      activeReportType: nextValue,
+      hasViewedDetailed: nextHasViewedDetailed,
+    }
+    if (nextHasViewedDetailed) {
+      void aggregateDetailedInteraction.complete(nextInteractionValue)
+    } else {
+      void aggregateDetailedInteraction.saveDraft(nextInteractionValue)
     }
   }
   const subordinateCards = useMemo<ChallengeEntitySubordinateCardItem[]>(
@@ -1443,7 +1606,7 @@ export function LessonAggregateDetailedCompare({
   const isCompleted = bothViewsSeen
   useRegisterLessonChallenge({
     id: `lesson-aggregate-detailed-compare:${stepId}`,
-    isCompleted,
+    isCompleted: aggregateDetailedInteraction.isCompleted || isCompleted,
   })
 
   const summaryLoading =
@@ -1741,6 +1904,8 @@ export function LessonAggregateDetailedQuiz({
         question={quizContent.secondQuizQuestion}
         options={quizContent.secondQuizOptions}
         explanation={quizContent.secondQuizExplanation}
+        scopePolicy="entity"
+        entityCui={entityCui}
       />
     </div>
   )

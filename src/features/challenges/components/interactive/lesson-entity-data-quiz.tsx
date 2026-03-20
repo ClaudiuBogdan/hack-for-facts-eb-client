@@ -7,6 +7,7 @@ import {
   useChallengeLessonEntityBundle,
 } from '@/features/challenges/hooks/use-challenge-lesson-entity-data'
 import { buildCampaignPrimariePath } from '@/features/challenges/constants'
+import { buildChallengeInteractionId } from '@/features/challenges/utils/interaction-ids'
 import { ChallengeDynamicQuiz } from '@/features/challenges/components/player/challenge-dynamic-quiz'
 import type { ChallengeLocale } from '@/features/challenges/types'
 import { buildEntityDataQuizOptions, buildSubItemQuizOptions } from './lesson-entity-data-quiz.utils'
@@ -155,6 +156,8 @@ export function LessonEntityDataQuiz({
     )
   }
 
+  const quizId = buildChallengeInteractionId(stepId, `lesson-entity-quiz-${variant}`)
+
   return (
     <div className="not-prose my-6 space-y-5">
       <a
@@ -170,10 +173,12 @@ export function LessonEntityDataQuiz({
 
       <ChallengeDynamicQuiz
         contentId={stepId}
-        quizId={`lesson-entity-quiz-${variant}`}
+        quizId={quizId}
         question={variantCopy.question(CHALLENGE_LESSON_YEAR)}
         options={quizOptions}
         explanation={explanation}
+        scopePolicy="entity"
+        entityCui={entityCui}
       />
     </div>
   )

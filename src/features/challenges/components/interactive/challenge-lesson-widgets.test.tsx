@@ -1,13 +1,27 @@
-import { fireEvent, render, screen } from '@/test/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { act, fireEvent, render, screen } from '@/test/test-utils'
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 import {
+  LessonExecutionTableExcerpt,
   LessonAggregateDetailedCompare,
   LessonAggregateDetailedQuiz,
 } from './challenge-lesson-widgets'
 
 const useChallengeLessonEntitySummaryMock = vi.fn()
+const useChallengeLessonEntityBundleMock = vi.fn()
 const useChallengeLessonSubordinateInsightsMock = vi.fn()
 const useRegisterLessonChallengeMock = vi.fn()
+const buildLessonExecutionTableExcerptMock = vi.fn()
+const customSaveDraftMock = vi.fn(async () => undefined)
+const customCompleteMock = vi.fn(async () => undefined)
+const customInteractionStateByKey = new Map<string, { savedValue: Record<string, unknown> | null; isCompleted?: boolean }>()
+
+function buildCustomInteractionKey(params: {
+  lessonId: string
+  interactionId: string
+  entityCui?: string
+}) {
+  return `${params.lessonId}:${params.interactionId}:${params.entityCui ?? ''}`
+}
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to: _to, params: _params, search: _search, ...props }: any) => (
@@ -47,7 +61,38 @@ vi.mock('@/features/learning/hooks/use-learning-progress', () => ({
   useLearningProgress: () => ({
     progress: {
       content: {},
+      interactiveState: {
+        recordsByKey: {},
+        eventLogByRecordKey: {},
+      },
     },
+    getInteractiveRecord: () => null,
+    saveInteractiveDraft: vi.fn(async () => null),
+    resolveInteractive: vi.fn(async () => null),
+    resetInteractive: vi.fn(async () => null),
+  }),
+}))
+
+vi.mock('@/features/learning/hooks/use-learning-interactions', () => ({
+  useCustomInteraction: (params: { lessonId: string; interactionId: string; entityCui?: string }) => {
+    const state = customInteractionStateByKey.get(buildCustomInteractionKey(params))
+    return {
+      record: null,
+      savedValue: state?.savedValue ?? null,
+      phase: state?.isCompleted ? 'resolved' : 'idle',
+      isCompleted: state?.isCompleted ?? false,
+      saveDraft: customSaveDraftMock,
+      complete: customCompleteMock,
+      reset: vi.fn(async () => undefined),
+    }
+  },
+  useQuizInteraction: () => ({
+    selectedOptionId: null,
+    isCorrect: false,
+    isAnswered: false,
+    isPending: false,
+    submitAnswer: vi.fn(async () => undefined),
+    reset: vi.fn(async () => undefined),
   }),
 }))
 
@@ -81,6 +126,8 @@ vi.mock(
 
     return {
       ...actual,
+      useChallengeLessonEntityBundle: (...args: unknown[]) =>
+        useChallengeLessonEntityBundleMock(...args),
       useChallengeLessonEntitySummary: (...args: unknown[]) =>
         useChallengeLessonEntitySummaryMock(...args),
       useChallengeLessonSubordinateInsights: (...args: unknown[]) =>
@@ -88,6 +135,24 @@ vi.mock(
     }
   },
 )
+
+vi.mock('./challenge-lesson-widgets.utils', async () => {
+  const actual = await vi.importActual<typeof import('./challenge-lesson-widgets.utils')>(
+    './challenge-lesson-widgets.utils',
+  )
+
+  return {
+    ...actual,
+    buildLessonExecutionTableExcerpt: (...args: unknown[]) =>
+      buildLessonExecutionTableExcerptMock(...args),
+  }
+})
+
+vi.mock('@/hooks/useFinancialData', () => ({
+  useFinancialData: () => ({
+    filteredExpenseGroups: [],
+  }),
+}))
 
 function buildSummaryQuery(params: {
   readonly income: number
@@ -171,6 +236,9 @@ function buildSubordinateInsights(params?: {
 describe('LessonAggregateDetailedCompare', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    customInteractionStateByKey.clear()
+    customSaveDraftMock.mockClear()
+    customCompleteMock.mockClear()
 
     const aggregatedSummary = buildSummaryQuery({
       income: 1_800_000,
@@ -187,9 +255,42 @@ describe('LessonAggregateDetailedCompare', () => {
       ({ reportType }: { readonly reportType?: string }) =>
         reportType === 'DETAILED' ? detailedSummary : aggregatedSummary,
     )
+    useChallengeLessonEntityBundleMock.mockReturnValue({
+      aggregatedLineItemsQuery: {
+        data: { nodes: [] },
+        isLoading: false,
+      },
+      aggregatedTotalSummaryQuery: {
+        data: { totalExpenses: 1_500_000 },
+        isLoading: false,
+      },
+      selectedYear: 2025,
+    })
+    buildLessonExecutionTableExcerptMock.mockReturnValue([
+      {
+        id: 'row-a',
+        indicator: 'Capital spending',
+        functionalCode: '54.02',
+        economicCode: '71.01',
+        amount: 120,
+        level: 0,
+      },
+      {
+        id: 'row-b',
+        indicator: 'Maintenance',
+        functionalCode: '54.02',
+        economicCode: '20.30',
+        amount: 60,
+        level: 0,
+      },
+    ])
     useChallengeLessonSubordinateInsightsMock.mockReturnValue(
       buildSubordinateInsights(),
     )
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it('shows the populated subordinate case with the real-structure explanation', () => {
@@ -303,6 +404,99 @@ describe('LessonAggregateDetailedCompare', () => {
     expect(
       screen.queryByTestId('lesson-quiz'),
     ).not.toBeInTheDocument()
+  })
+
+  it('restores aggregate/detailed state per entity when the selected entity changes', async () => {
+    customInteractionStateByKey.set(
+      buildCustomInteractionKey({
+        lessonId: 'lesson-step-06',
+        interactionId: 'lesson-aggregate-detailed-compare:lesson-step-06',
+        entityCui: '12345678',
+      }),
+      {
+        savedValue: {
+          activeReportType: 'DETAILED',
+          hasViewedDetailed: true,
+        },
+      },
+    )
+    customInteractionStateByKey.set(
+      buildCustomInteractionKey({
+        lessonId: 'lesson-step-06',
+        interactionId: 'lesson-aggregate-detailed-compare:lesson-step-06',
+        entityCui: '87654321',
+      }),
+      {
+        savedValue: null,
+      },
+    )
+
+    const { rerender } = render(
+      <LessonAggregateDetailedCompare
+        entityCui="12345678"
+        stepId="lesson-step-06"
+        locale="ro"
+      />,
+    )
+
+    expect(
+      screen.getByText(/Ce a raportat direct primăria, separat de instituțiile care țin de același ordonator/i),
+    ).toBeInTheDocument()
+
+    rerender(
+      <LessonAggregateDetailedCompare
+        entityCui="87654321"
+        stepId="lesson-step-06"
+        locale="ro"
+      />,
+    )
+
+    await act(async () => {})
+
+    expect(
+      screen.getByText(/Cât a administrat întreaga structură bugetară a ordonatorului principal/i),
+    ).toBeInTheDocument()
+  })
+
+  it('cancels stale debounced execution writes when row selection changes and flushes on blur', async () => {
+    vi.useFakeTimers()
+
+    render(
+      <LessonExecutionTableExcerpt
+        entityCui="12345678"
+        stepId="lesson-step-07"
+        locale="ro"
+      />,
+    )
+
+    const bodyRows = screen.getAllByRole('row').slice(1)
+    fireEvent.click(bodyRows[0]!)
+
+    const textarea = screen.getByLabelText(/Explică pe scurt ce arată acest rând/i)
+    fireEvent.change(textarea, { target: { value: 'Explicație scurtă' } })
+
+    fireEvent.click(bodyRows[1]!)
+
+    await act(async () => {
+      vi.advanceTimersByTime(500)
+    })
+
+    expect(customSaveDraftMock).toHaveBeenCalledWith({
+      selectedRowId: 'row-b',
+      rowExplanation: 'Explicație scurtă',
+    })
+    expect(customSaveDraftMock).not.toHaveBeenCalledWith({
+      selectedRowId: 'row-a',
+      rowExplanation: 'Explicație scurtă',
+    })
+
+    fireEvent.change(textarea, { target: { value: 'Aceasta este o explicație completă și suficient de lungă pentru salvare.' } })
+    fireEvent.blur(textarea)
+
+    expect(customCompleteMock).toHaveBeenCalledWith({
+      selectedRowId: 'row-b',
+      rowExplanation: 'Aceasta este o explicație completă și suficient de lungă pentru salvare.',
+    })
   })
 })
 

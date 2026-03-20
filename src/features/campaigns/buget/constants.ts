@@ -10,7 +10,6 @@ export const CAMPAIGN_BUDGET_ROUTE = `${CAMPAIGN_ENTITY_BASE_PATH}/$cui/buget`
 export const CAMPAIGN_CALENDAR_ROUTE = `${CAMPAIGN_BUDGET_ROUTE}/calendar`
 
 export const CAMPAIGN_PROGRESS_STORAGE_KEY = `campaign_progress_snapshot:${CAMPAIGN_ID}`
-export const CAMPAIGN_REGISTRATION_STORAGE_KEY_PREFIX = 'campaign_registration'
 
 export const CAMPAIGN_DEFAULT_LOCALE = 'ro' as const
 

@@ -46,9 +46,7 @@ import type {
   LearningBudgetCycleInteractionState,
   LearningGuestProgress,
 } from '../../types'
-
-// Import resolver to ensure registration
-import './budget-cycle-resolver'
+import { getInteractiveRecord, getJsonValue } from '../../utils/interactive-state'
 
 // Total number of budget phases
 const TOTAL_PHASES = 6
@@ -90,10 +88,29 @@ function resolveBudgetCycleState(params: {
   readonly contentId: string
   readonly interactionId: string
 }): { readonly savedState: LearningBudgetCycleInteractionState | null } {
-  const interaction = params.progress.content[params.contentId]?.interactions?.[params.interactionId]
-
-  if (interaction?.kind === 'budget-cycle') {
-    return { savedState: interaction }
+  const record = getInteractiveRecord(
+    params.progress.interactiveState,
+    {
+      id: params.interactionId,
+      scopePolicy: 'global',
+    },
+  )
+  const value = getJsonValue<Record<string, unknown>>(record)
+  if (value) {
+    const exploredPhases = Array.isArray(value.exploredPhases)
+      ? value.exploredPhases.filter((phaseId): phaseId is BudgetPhaseId => typeof phaseId === 'string')
+      : []
+    return {
+      savedState: {
+        kind: 'budget-cycle',
+        exploredPhases,
+        lastExploredPhase:
+          typeof value.lastExploredPhase === 'string'
+            ? (value.lastExploredPhase as BudgetPhaseId)
+            : null,
+        completedAt: record?.submittedAt ?? undefined,
+      },
+    }
   }
 
   return { savedState: null }

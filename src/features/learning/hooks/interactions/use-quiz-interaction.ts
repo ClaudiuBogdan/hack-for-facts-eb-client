@@ -34,10 +34,12 @@ import { useCallback, useMemo } from 'react'
 import { useLearningProgress } from '../use-learning-progress'
 import { scoreSingleChoice, type SingleChoiceOption } from '../../utils/scoring'
 import { QUIZ_PASS_SCORE } from '../../utils/interactions'
-import type { LearningGuestProgress } from '../../types'
-
-// Import resolver to ensure registration
-import './quiz-resolver'
+import type { InteractiveDefinition, LearningGuestProgress } from '../../types'
+import {
+  getChoiceSelection,
+  getInteractionOutcome,
+  getInteractiveRecord,
+} from '../../utils/interactive-state'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -69,6 +71,10 @@ export type UseQuizInteractionInput = {
   readonly passScore?: number
   /** Content version for tracking changes */
   readonly contentVersion?: string
+  /** Whether the quiz state is global or entity-scoped */
+  readonly scopePolicy?: InteractiveDefinition['scopePolicy']
+  /** Entity CUI used for entity-scoped quizzes */
+  readonly entityCui?: string
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -80,9 +86,18 @@ function resolveQuizState(params: {
   readonly contentId: string
   readonly quizId: string
   readonly options: readonly SingleChoiceOption[]
+  readonly scopePolicy: InteractiveDefinition['scopePolicy']
+  readonly entityCui?: string
 }): { readonly selectedOptionId: string | null } {
-  const interaction = params.progress.content[params.contentId]?.interactions?.[params.quizId]
-  const selectedOptionId = interaction?.kind === 'quiz' ? interaction.selectedOptionId : null
+  const record = getInteractiveRecord(
+    params.progress.interactiveState,
+    {
+      id: params.quizId,
+      scopePolicy: params.scopePolicy,
+    },
+    params.entityCui,
+  )
+  const selectedOptionId = getChoiceSelection(record)
 
   if (!selectedOptionId) {
     return { selectedOptionId: null }
@@ -98,8 +113,13 @@ function resolveQuizState(params: {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export function useQuizInteraction(params: UseQuizInteractionInput): QuizInteractionContext {
-  const { progress, dispatchInteractionAction } = useLearningProgress()
+  const {
+    progress,
+    resolveInteractive,
+    resetInteractive,
+  } = useLearningProgress()
   const passScore = params.passScore ?? QUIZ_PASS_SCORE
+  const scopePolicy = params.scopePolicy ?? 'global'
 
   const { selectedOptionId } = useMemo(
     () =>
@@ -108,8 +128,10 @@ export function useQuizInteraction(params: UseQuizInteractionInput): QuizInterac
         contentId: params.contentId,
         quizId: params.quizId,
         options: params.options,
+        scopePolicy,
+        entityCui: params.entityCui,
       }),
-    [progress, params.contentId, params.quizId, params.options]
+    [progress, params.contentId, params.entityCui, params.options, params.quizId, scopePolicy]
   )
 
   const score = useMemo(
@@ -117,7 +139,6 @@ export function useQuizInteraction(params: UseQuizInteractionInput): QuizInterac
     [params.options, selectedOptionId]
   )
 
-  const isCorrect = score >= passScore
   const isAnswered = selectedOptionId !== null
 
   const answer = useCallback(
@@ -126,31 +147,65 @@ export function useQuizInteraction(params: UseQuizInteractionInput): QuizInterac
       if (!isValidOption) return
 
       const nextScore = scoreSingleChoice(params.options, optionId)
-      await dispatchInteractionAction({
-        type: 'quiz.answer',
-        contentId: params.contentId,
-        interactionId: params.quizId,
-        selectedOptionId: optionId,
+      await resolveInteractive({
+        definition: {
+          id: params.quizId,
+          lessonId: params.contentId,
+          kind: 'quiz',
+          scopePolicy,
+          completionRule: { type: 'outcome', outcome: 'correct' },
+        },
+        entityCui: params.entityCui,
+        value: {
+          kind: 'choice',
+          choice: { selectedId: optionId },
+        },
+        outcome: nextScore >= passScore ? 'correct' : 'incorrect',
         score: nextScore,
-        contentVersion: params.contentVersion,
+        content: {
+          contentId: params.contentId,
+          status: 'in_progress',
+          score: nextScore,
+          contentVersion: params.contentVersion,
+        },
       })
     },
-    [dispatchInteractionAction, params.contentId, params.contentVersion, params.options, params.quizId]
+    [
+      params.contentId,
+      params.contentVersion,
+      params.entityCui,
+      params.options,
+      params.quizId,
+      passScore,
+      scopePolicy,
+      resolveInteractive,
+    ]
   )
 
   const reset = useCallback(async () => {
-    await dispatchInteractionAction({
-      type: 'quiz.reset',
-      contentId: params.contentId,
-      interactionId: params.quizId,
+    await resetInteractive({
+      definition: {
+        id: params.quizId,
+        lessonId: params.contentId,
+        kind: 'quiz',
+        scopePolicy,
+        completionRule: { type: 'outcome', outcome: 'correct' },
+      },
+      entityCui: params.entityCui,
     })
-  }, [dispatchInteractionAction, params.contentId, params.quizId])
+  }, [params.contentId, params.entityCui, params.quizId, resetInteractive, scopePolicy])
+
+  const record = getInteractiveRecord(
+    progress.interactiveState,
+    { id: params.quizId, scopePolicy },
+    params.entityCui,
+  )
 
   return {
     selectedOptionId,
     isAnswered,
     score,
-    isCorrect,
+    isCorrect: getInteractionOutcome(record) === 'correct',
     answer,
     reset,
   }

@@ -40,9 +40,7 @@
 import { useCallback, useMemo } from 'react'
 import { useLearningProgress } from '../use-learning-progress'
 import type { LearningGuestProgress, LearningPredictionReveal } from '../../types'
-
-// Import resolver to ensure registration
-import './prediction-resolver'
+import { getInteractiveRecord, getJsonValue } from '../../utils/interactive-state'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -79,10 +77,29 @@ function resolvePredictionState(params: {
   readonly contentId: string
   readonly predictionId: string
 }): { readonly reveals: Readonly<Record<string, LearningPredictionReveal>> } {
-  const interaction = params.progress.content[params.contentId]?.interactions?.[params.predictionId]
-
-  if (interaction?.kind === 'prediction') {
-    return { reveals: interaction.reveals }
+  const record = getInteractiveRecord(
+    params.progress.interactiveState,
+    {
+      id: params.predictionId,
+      scopePolicy: 'global',
+    },
+  )
+  const jsonValue = getJsonValue<Record<string, unknown>>(record)
+  const reveals = jsonValue?.reveals
+  if (reveals && typeof reveals === 'object') {
+    const validated: Record<string, LearningPredictionReveal> = {}
+    for (const [key, entry] of Object.entries(reveals as Record<string, unknown>)) {
+      if (
+        entry &&
+        typeof entry === 'object' &&
+        'guess' in entry && typeof (entry as Record<string, unknown>).guess === 'number' &&
+        'actualRate' in entry && typeof (entry as Record<string, unknown>).actualRate === 'number' &&
+        'revealedAt' in entry && typeof (entry as Record<string, unknown>).revealedAt === 'string'
+      ) {
+        validated[key] = entry as LearningPredictionReveal
+      }
+    }
+    return { reveals: validated }
   }
 
   return { reveals: {} }

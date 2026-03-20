@@ -148,7 +148,23 @@ Recommended precedence rules:
      - Merge guest progress into server progress.
      - Only clear guest localStorage after the server confirms persistence.
 
-### D. The Module Player (`ModulePlayer.tsx`)
+### D. Record Identity and Validation Constraints (Decision)
+
+Two implementation constraints are easy to miss and must be treated as hard rules:
+
+1. **Interactive record identity is `interactionId + scope`**
+   - `lessonId` is payload metadata and does not participate in storage identity.
+   - Runtime-generated interactions must therefore be globally unique before scope is applied.
+   - For challenge/runtime interactions, the recommended pattern is to namespace ids by `stepId`.
+   - `entityCui` only separates records across entities; it does not prevent collisions between two different step interactions inside the same entity.
+
+2. **Nested wire-schema unions must be safe under Fastify/AJV validation**
+   - The learning-progress API validates request bodies through Fastify/AJV.
+   - Inner `Type.Union([...])` branches that each use `additionalProperties: false` can be unsafe under `removeAdditional` behavior.
+   - In practice, valid payloads can fail if AJV strips branch-specific fields like `entityCui`, `json`, `phase`, or `result` while testing the wrong branch first.
+   - Keep outer request objects strict, but design nested union branches so validation does not mutate otherwise valid payloads during branch selection.
+
+### E. The Module Player (`ModulePlayer.tsx`)
 
 A wrapper component that:
 
@@ -162,7 +178,7 @@ Important UX decision:
   - “Continue” / “Mark section complete”, or
   - Completion tied to the module quiz / checkpoint.
 
-### E. Quiz Component (`Quiz.tsx`)
+### F. Quiz Component (`Quiz.tsx`)
 
 A controlled component that takes a `questions` array prop.
 
@@ -172,7 +188,7 @@ Rules:
 - Provide immediate feedback client-side.
 - Track attempts and allow retry mechanisms (as specified by module design).
 
-### F. Certification: Trust Boundary (Decision)
+### G. Certification: Trust Boundary (Decision)
 
 Certificates must not rely on client-submitted scores as authoritative truth.
 

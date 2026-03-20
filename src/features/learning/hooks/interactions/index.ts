@@ -8,16 +8,6 @@
  * See README.md for documentation on adding new interaction types.
  */
 
-// Resolver infrastructure
-export {
-  registerInteractionResolver,
-  resolveInteractionAction,
-  hasResolver,
-  type SaveContentProgressInput,
-  type InteractionResolverContext,
-  type InteractionResolver,
-} from './interaction-resolver'
-
 // Quiz interaction
 export { useQuizInteraction, type QuizInteractionContext, type UseQuizInteractionInput } from './use-quiz-interaction'
 
@@ -49,5 +39,8 @@ export {
   type UseBudgetCycleInteractionInput,
 } from './use-budget-cycle-interaction'
 
-// Register resolvers (side-effects)
-import './budget-cycle-resolver'
+export {
+  useCustomInteraction,
+  type CustomInteractionContext,
+  type UseCustomInteractionInput,
+} from './use-custom-interaction'

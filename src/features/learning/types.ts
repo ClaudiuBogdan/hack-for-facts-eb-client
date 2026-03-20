@@ -40,6 +40,98 @@ export type LearningPathDefinition = {
 
 export type LearningContentStatus = 'not_started' | 'in_progress' | 'completed' | 'passed'
 
+export type LessonId = string
+
+export type InteractionScope =
+  | { readonly type: 'global' }
+  | { readonly type: 'entity'; readonly entityCui: string }
+
+export type InteractionValue =
+  | { readonly kind: 'choice'; readonly choice: { readonly selectedId: string | null } }
+  | { readonly kind: 'text'; readonly text: { readonly value: string } }
+  | { readonly kind: 'url'; readonly url: { readonly value: string } }
+  | { readonly kind: 'number'; readonly number: { readonly value: number | null } }
+  | { readonly kind: 'json'; readonly json: { readonly value: Readonly<Record<string, unknown>> } }
+
+export type InteractionPhase =
+  | 'idle'
+  | 'draft'
+  | 'pending'
+  | 'resolved'
+  | 'error'
+
+export type InteractionOutcome = 'correct' | 'incorrect' | null
+
+export type InteractionResult = {
+  readonly outcome: InteractionOutcome
+  readonly score?: number | null
+  readonly feedbackText?: string | null
+  readonly response?: Readonly<Record<string, unknown>> | null
+  readonly evaluatedAt?: string | null
+}
+
+export type InteractiveDefinitionKind =
+  | 'quiz'
+  | 'url'
+  | 'text-input'
+  | 'custom'
+
+export type InteractionCompletionRule =
+  | { readonly type: 'outcome'; readonly outcome: Exclude<InteractionOutcome, null> }
+  | { readonly type: 'resolved' }
+  | { readonly type: 'score-threshold'; readonly minScore: number }
+  | { readonly type: 'component-flag'; readonly flag: string }
+
+export type InteractiveDefinition = {
+  readonly id: string
+  readonly lessonId: LessonId
+  readonly kind: InteractiveDefinitionKind
+  readonly scopePolicy: 'global' | 'entity'
+  readonly completionRule: InteractionCompletionRule
+}
+
+export type InteractiveStateRecord = {
+  readonly key: string
+  readonly interactionId: string
+  readonly lessonId: LessonId
+  readonly kind: InteractiveDefinitionKind
+  readonly scope: InteractionScope
+  readonly completionRule: InteractionCompletionRule
+  readonly phase: InteractionPhase
+  readonly value: InteractionValue | null
+  readonly result: InteractionResult | null
+  readonly updatedAt: string
+  readonly submittedAt?: string | null
+}
+
+export type InteractiveAuditEvent =
+  | {
+      readonly id: string
+      readonly recordKey: string
+      readonly lessonId: LessonId
+      readonly interactionId: string
+      readonly type: 'submitted'
+      readonly at: string
+      readonly actor: 'user'
+      readonly value: InteractionValue
+    }
+  | {
+      readonly id: string
+      readonly recordKey: string
+      readonly lessonId: LessonId
+      readonly interactionId: string
+      readonly type: 'evaluated'
+      readonly at: string
+      readonly actor: 'system'
+      readonly phase: 'resolved' | 'error'
+      readonly result: InteractionResult
+    }
+
+export type UnifiedInteractiveState = {
+  readonly recordsByKey: Readonly<Record<string, InteractiveStateRecord>>
+  readonly eventLogByRecordKey: Readonly<Record<string, readonly InteractiveAuditEvent[]>>
+}
+
 export type LearningQuizInteractionState = {
   readonly kind: 'quiz'
   readonly selectedOptionId: string | null
@@ -232,14 +324,10 @@ export type LearningContentProgress = {
   readonly lastAttemptAt: string
   readonly completedAt?: string
   readonly contentVersion: string
-  readonly interactions?: Readonly<Record<string, LearningInteractionState>>
 }
 
 export type LearningProgressEventType =
-  | 'content.progressed'
-  | 'onboarding.completed'
-  | 'onboarding.reset'
-  | 'activePath.set'
+  | 'interactive.updated'
   | 'progress.reset'
 
 export type LearningProgressEventBase = {
@@ -249,34 +337,12 @@ export type LearningProgressEventBase = {
   readonly type: LearningProgressEventType
 }
 
-export type LearningContentProgressPayload = {
-  readonly contentId: string
-  readonly status: LearningContentStatus
-  readonly score?: number
-  readonly contentVersion?: string
-  readonly interaction?: {
-    readonly interactionId: string
-    readonly state: LearningInteractionState | null
+export type LearningInteractiveUpdatedEvent = LearningProgressEventBase & {
+  readonly type: 'interactive.updated'
+  readonly payload: {
+    readonly record: InteractiveStateRecord
+    readonly auditEvents?: readonly InteractiveAuditEvent[]
   }
-}
-
-export type LearningContentProgressedEvent = LearningProgressEventBase & {
-  readonly type: 'content.progressed'
-  readonly payload: LearningContentProgressPayload
-}
-
-export type LearningOnboardingCompletedEvent = LearningProgressEventBase & {
-  readonly type: 'onboarding.completed'
-  readonly payload: { readonly pathId: string; readonly relatedPaths: readonly string[] }
-}
-
-export type LearningOnboardingResetEvent = LearningProgressEventBase & {
-  readonly type: 'onboarding.reset'
-}
-
-export type LearningActivePathSetEvent = LearningProgressEventBase & {
-  readonly type: 'activePath.set'
-  readonly payload: { readonly pathId: string | null }
 }
 
 export type LearningProgressResetEvent = LearningProgressEventBase & {
@@ -284,11 +350,14 @@ export type LearningProgressResetEvent = LearningProgressEventBase & {
 }
 
 export type LearningProgressEvent =
-  | LearningContentProgressedEvent
-  | LearningOnboardingCompletedEvent
-  | LearningOnboardingResetEvent
-  | LearningActivePathSetEvent
+  | LearningInteractiveUpdatedEvent
   | LearningProgressResetEvent
+
+export type LearningProgressRemoteSnapshot = {
+  readonly version: typeof LEARNING_PROGRESS_SCHEMA_VERSION
+  readonly recordsByKey: Readonly<Record<string, InteractiveStateRecord>>
+  readonly lastUpdated: string | null
+}
 
 export const LEARNING_PROGRESS_SCHEMA_VERSION = 1 as const
 
@@ -309,6 +378,7 @@ export type LearningGuestProgress = {
   readonly onboarding: LearningOnboardingState
   readonly activePathId: string | null
   readonly content: Readonly<Record<string, LearningContentProgress>>
+  readonly interactiveState: UnifiedInteractiveState
   readonly streak: LearningStreakState
   readonly lastUpdated: string
 }

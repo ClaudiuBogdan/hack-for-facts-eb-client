@@ -21,6 +21,7 @@ import {
 } from '@/features/challenges/hooks/use-challenge-lesson-entity-data'
 import type { ChallengeLocale } from '@/features/challenges/types'
 import { ChallengeDynamicQuiz } from '@/features/challenges/components/player/challenge-dynamic-quiz'
+import { buildChallengeInteractionId } from '@/features/challenges/utils/interaction-ids'
 import { formatCurrency, formatNumber } from '@/lib/utils'
 import { getRemoteGroupedSeriesHash } from '@/lib/map-series/grouped-series-request'
 import { buildLessonEstimateOptions } from './challenge-lesson-widgets.utils'
@@ -403,9 +404,9 @@ export function LessonBudgetContextFlow({
   const incomePerCapita = selectLessonMetricValue('income', perCapitaEntity)
   const shouldLoadCountyContext = activeSlideIndex >= 3 && Boolean(countyCode)
 
-  const expenseQuizId = 'lesson-budget-context-expenses'
-  const incomeQuizId = 'lesson-budget-context-income'
-  const countyQuizId = 'lesson-budget-context-county-top'
+  const expenseQuizId = buildChallengeInteractionId(stepId, 'lesson-budget-context-expenses')
+  const incomeQuizId = buildChallengeInteractionId(stepId, 'lesson-budget-context-income')
+  const countyQuizId = buildChallengeInteractionId(stepId, 'lesson-budget-context-county-top')
 
   const expenseOptions = useMemo(
     () =>
@@ -433,12 +434,16 @@ export function LessonBudgetContextFlow({
     quizId: expenseQuizId,
     options: expenseOptions,
     contentVersion: 'v1',
+    scopePolicy: 'entity',
+    entityCui,
   })
   const incomeQuizState = useQuizInteraction({
     contentId: stepId,
     quizId: incomeQuizId,
     options: incomeOptions,
     contentVersion: 'v1',
+    scopePolicy: 'entity',
+    entityCui,
   })
 
   const countySeries = useMemo(
@@ -545,6 +550,8 @@ export function LessonBudgetContextFlow({
     quizId: countyQuizId,
     options: countyQuizOptions,
     contentVersion: 'v1',
+    scopePolicy: 'entity',
+    entityCui,
   })
 
   const [mapState, setMapState] = useState(() =>
@@ -641,6 +648,8 @@ export function LessonBudgetContextFlow({
             question={copy.totalExpensesQuestion(entityName)}
             options={expenseOptions}
             explanation={copy.totalExpensesExplanation(entityName)}
+            scopePolicy="entity"
+            entityCui={entityCui}
           />
         ),
       }
@@ -658,6 +667,8 @@ export function LessonBudgetContextFlow({
             question={copy.totalIncomeQuestion(entityName)}
             options={incomeOptions}
             explanation={copy.totalIncomeExplanation(entityName)}
+            scopePolicy="entity"
+            entityCui={entityCui}
           />
         ),
       }
@@ -805,6 +816,8 @@ export function LessonBudgetContextFlow({
                   : null,
               ),
             )}
+            scopePolicy="entity"
+            entityCui={entityCui}
           />
         ),
       }

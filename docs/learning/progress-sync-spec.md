@@ -1,414 +1,311 @@
-# Learning Progress Sync Specification
+# Unified Progress Records Specification
 
 Status: Draft
-Last Updated: 2025-02-14
+Last Updated: 2026-03-20
+Author: Codex
 
 ## 1. Summary
 
-Progress is event-sourced. Each user action emits an immutable event, stored locally and synced to the API. The UI reads a full progress snapshot derived from the event log; the snapshot is cached for fast reads but is always recomputed on page load.
+The client-side progress system is built around generic interactive records and client-owned projections.
 
-## 2. Context (Current Progress Behavior)
+- The transport layer syncs only `interactive.updated` and `progress.reset`.
+- The server returns a generic remote snapshot shaped as `{ version, recordsByKey, lastUpdated }`.
+- `LearningGuestProgress` is a projected client view, not the wire snapshot.
+- Reserved records under stable `system:*` keys carry onboarding, active path, streak, lesson summary, and campaign-specific state without introducing server-specific event types or tables.
+- Local persistence stores a projected snapshot cache, a pending outbound event queue, and sync metadata.
 
-- Progress is stored locally as `LearningGuestProgress` and validated via `src/features/learning/schemas/progress.ts`.
-- Guests use `localStorage` key `learning_progress`.
-- Authenticated users currently use `localStorage` key `learning_progress:{userId}` (no API yet).
-- `useLearningProgress` writes optimistic updates locally and emits a `learning-progress-update` event.
-- `mergeLearningGuestProgress` performs a deterministic union merge on login.
+This file is the canonical client-side specification for unified progress sync and projection.
 
-## 3. Key Decisions and Rationale
+## 2. Core Model
 
-- **Global unique IDs for content and interactions**: ensures reused items share progress across modules and locales; enforced by `learning:validate` in CI.
-- **Event-sourced sync**: immutable events are easy to sync and replay; only new events are sent to the API.
-- **Snapshot derived on load**: local snapshot is a cache; the event log is the source of truth.
-- **Keep localStorage for now**: minimal change in storage layer; revisit IndexedDB if quota becomes a blocker.
-- **Trust client updates**: the server stores events as provided; client is responsible for deterministic reduction.
-- **Conflict rule**: reduce events in order of `occurredAt` and apply status precedence + `lastAttemptAt` logic to avoid regressions.
+### 2.1 Transport Events
 
-## 4. Data Model
-
-### 4.1 Unique IDs and Validation
-
-Progress items and interactions must be globally unique across all paths, modules, and locales.
-
-- `contentId` is the unique ID for a progress item.
-- `interactionId` is unique within the entire learning system (not just within a lesson).
-- `learning:validate` runs in CI and fails on duplicate IDs.
-
-Reused items are referenced by the same `contentId` so completion state is shared.
-
-### 4.2 Event Log
-
-Events are immutable and append-only. Each event represents a user action that modifies progress.
+There are only two synced event types:
 
 ```ts
-type LearningProgressEventBase = {
-  eventId: string
-  occurredAt: string
-  clientId: string
-  type: LearningProgressEventType
-}
-
-type LearningProgressEventType =
-  | 'content.progressed'
-  | 'onboarding.completed'
-  | 'onboarding.reset'
-  | 'activePath.set'
-  | 'progress.reset'
-  | 'progress.reset'
-
-The server must store and return onboarding events alongside content progress events so the client can reconstruct onboarding state.
-The `progress.reset` event clears the derived snapshot without deleting any historical events.
-
-type ContentProgressPayload = {
-  contentId: string
-  status: LearningContentStatus
-  score?: number
-  contentVersion?: string
-  interaction?: {
-    interactionId: string
-    state: LearningInteractionState | null
-  }
-}
-
-type ContentProgressedEvent = LearningProgressEventBase & {
-  type: 'content.progressed'
-  payload: ContentProgressPayload
-}
-
-type OnboardingCompletedEvent = LearningProgressEventBase & {
-  type: 'onboarding.completed'
-  payload: { pathId: string }
-}
-
-type OnboardingResetEvent = LearningProgressEventBase & {
-  type: 'onboarding.reset'
-}
-
-type ActivePathSetEvent = LearningProgressEventBase & {
-  type: 'activePath.set'
-  payload: { pathId: string | null }
-}
-
 type LearningProgressEvent =
-  | ContentProgressedEvent
-  | OnboardingCompletedEvent
-  | OnboardingResetEvent
-  | ActivePathSetEvent
-  | ProgressResetEvent
-```
-
-### 4.3 Snapshot (Derived State)
-
-The canonical UI state remains a full snapshot:
-
-```ts
-type LearningProgressSnapshot = LearningGuestProgress
-```
-
-The snapshot is recomputed by reducing the sorted event log:
-
-- Sort by `occurredAt`, tie-break by `eventId`.
-- Apply each event using existing progress rules (`upsertContentProgress`, status precedence, score max).
-- Update streak when content transitions to `completed` or `passed` using the existing streak calculator.
-- `lastUpdated` is the max `occurredAt` in the log.
-
-### 4.4 Storage Keys
-
-- Guest events: `learning_progress_events`
-- Guest snapshot cache: `learning_progress_snapshot`
-- Auth events: `learning_progress_events:{userId}`
-- Auth snapshot cache: `learning_progress_snapshot:{userId}`
-- Auth sync metadata: `learning_progress_sync:{userId}`
-
-### 4.5 Sync Metadata (Client-Only)
-
-Sync status is stored separately and is never sent to the API.
-
-```ts
-type LearningSyncStatus = 'synced' | 'local' | 'syncing' | 'error'
-
-type LearningProgressSyncEntry = {
-  status: LearningSyncStatus
-  lastAttemptAt: string | null
-  lastSyncedAt: string | null
-  retryCount: number
-  errorMessage?: string
-}
-
-type LearningProgressSyncState = {
-  version: 1
-  events: Record<string, LearningProgressSyncEntry>
-  lastSuccessfulSyncAt: string | null
-  lastSyncedCursor: string | null
-}
-```
-
-## 5. API Contract (REST)
-
-Base URL: `${VITE_API_URL}/api/v1/learning`
-
-### 5.1 Fetch progress snapshot and remote events
-
-```
-GET /progress?since=<cursor>
-Authorization: Bearer <token>
-
-Response:
-{
-  ok: true,
-  data: {
-    snapshot: LearningProgressSnapshot,
-    events: LearningProgressEvent[],
-    cursor: string
-  }
-}
-```
-
-Notes:
-
-- `cursor` is the server’s latest event position.
-- If `since` is omitted, `events` may be empty and `snapshot` is still returned to validate full progress on load.
-- The client stores `cursor` and uses it to pull only new events after each sync.
-- The server must always return the authoritative `events` array; snapshots are optional and should never be the only source of truth.
-
-### 5.2 Upsert events (single endpoint)
-
-```
-PUT /progress
-Authorization: Bearer <token>
-Body:
-{
-  clientUpdatedAt: string,
-  events: LearningProgressEvent[]
-}
-
-Response:
-{
-  ok: true
-}
-```
-
-**Server behavior:**
-
-- Store events by `eventId` and ignore duplicates (idempotent).
-- Do not mutate event payloads; trust client updates.
-- Snapshot can be derived server-side for `GET /progress`.
-
-#### API Interface (Example for Backend)
-
-```ts
-export type LearningProgressEventType =
-  | 'content.progressed'
-  | 'onboarding.completed'
-  | 'onboarding.reset'
-  | 'activePath.set'
-
-export type LearningProgressEventBase = {
-  eventId: string
-  occurredAt: string
-  clientId: string
-  type: LearningProgressEventType
-}
-
-export type LearningContentProgressPayload = {
-  contentId: string
-  status: 'not_started' | 'in_progress' | 'completed' | 'passed'
-  score?: number
-  contentVersion?: string
-  interaction?: {
-    interactionId: string
-    state: { kind: 'quiz'; selectedOptionId: string | null } | null
-  }
-}
-
-export type LearningProgressEvent =
-  | (LearningProgressEventBase & {
-      type: 'content.progressed'
-      payload: LearningContentProgressPayload
-    })
-  | (LearningProgressEventBase & {
-      type: 'onboarding.completed'
-      payload: { pathId: string }
-    })
-  | (LearningProgressEventBase & {
-      type: 'onboarding.reset'
-    })
-  | (LearningProgressEventBase & {
-      type: 'activePath.set'
-      payload: { pathId: string | null }
-    })
-  | (LearningProgressEventBase & {
-      type: 'progress.reset'
-    })
-
-export type SyncProgressEventsRequest = {
-  clientUpdatedAt: string
-  events: LearningProgressEvent[]
-}
-
-export type SyncProgressEventsResponse = {
-  ok: true
-}
-```
-
-Example payload:
-
-```json
-{
-  "clientUpdatedAt": "2025-12-22T20:36:50.595Z",
-  "events": [
-    {
-      "eventId": "event-1",
-      "occurredAt": "2025-12-22T20:36:50.595Z",
-      "clientId": "client-123",
-      "type": "content.progressed",
-      "payload": {
-        "contentId": "promises-vs-reality",
-        "status": "passed",
-        "score": 100,
-        "contentVersion": "v1",
-        "interaction": {
-          "interactionId": "pattern-recognition-quiz",
-          "state": { "kind": "quiz", "selectedOptionId": "c" }
-        }
+  | {
+      eventId: string
+      occurredAt: string
+      clientId: string
+      type: 'interactive.updated'
+      payload: {
+        record: InteractiveStateRecord
+        auditEvents?: readonly InteractiveAuditEvent[]
       }
     }
-  ]
+  | {
+      eventId: string
+      occurredAt: string
+      clientId: string
+      type: 'progress.reset'
+    }
+```
+
+Rules:
+
+- `interactive.updated` is the single transport for both user-facing interactions and reserved/system state.
+- `progress.reset` clears the entire learning-progress domain and pending event queue.
+- The client no longer syncs `content.progressed`, `onboarding.completed`, `onboarding.reset`, or `activePath.set`.
+- Meaning is encoded by `record.key`, `record.interactionId`, `record.value`, and projection logic, not by adding more transport event types.
+
+### 2.2 Interactive Records
+
+`InteractiveStateRecord` is the shared storage envelope:
+
+```ts
+type InteractiveStateRecord = {
+  key: string
+  interactionId: string
+  lessonId: string
+  kind: 'quiz' | 'url' | 'text-input' | 'custom'
+  scope: { type: 'global' } | { type: 'entity'; entityCui: string }
+  completionRule:
+    | { type: 'outcome'; outcome: 'correct' | 'incorrect' }
+    | { type: 'resolved' }
+    | { type: 'score-threshold'; minScore: number }
+    | { type: 'component-flag'; flag: string }
+  phase: 'idle' | 'draft' | 'pending' | 'resolved' | 'error'
+  value: InteractionValue | null
+  result: InteractionResult | null
+  updatedAt: string
+  submittedAt?: string | null
 }
 ```
 
-## 6. Sync Lifecycle
+Rules:
 
-### 6.1 Bootstrapping (Authenticated)
+- `InteractiveStateRecord` is the only persistent record envelope shared across learning and challenge progress.
+- The client treats `updatedAt` as the record freshness field.
+- `kind: 'custom'` with `value.kind: 'json'` is the standard shape for reserved/system records.
+- Audit history is stored separately as `InteractiveAuditEvent[]`, keyed by `recordKey`.
 
-1. Read guest events and snapshot cache.
-2. Read local auth event log and snapshot cache.
-3. Enter bootstrap mode and queue local updates triggered during bootstrap.
-4. Fetch remote snapshot/events from `GET /progress`.
-5. Merge event logs by `eventId` and recompute the snapshot.
-6. Replay queued updates on top of the merged snapshot.
-7. Persist merged event log and snapshot cache.
-8. Clear guest storage only after remote sync succeeds.
-9. Push any local events via `PUT /progress`.
-10. Store the returned `cursor` to enable incremental pulls.
+### 2.3 Remote Snapshot vs Projected Snapshot
 
-### 6.1.1 Logout and Re-Onboarding
-
-- Logging out switches the UI to the guest event log and snapshot cache.
-- Authenticated events are preserved under `learning_progress_events:{userId}` and are not modified while logged out.
-- If a user completes onboarding as a guest after logout, a new `onboarding.completed` event is created in the guest log.
-- When they log back in, guest events are merged with auth events; the latest onboarding event (by `occurredAt`) determines the snapshot state.
-- Previous onboarding events remain in the event log and are not deleted.
-
-### 6.2 Local Updates (Optimistic)
-
-When a user action updates progress:
-
-- Create a new event with `eventId`, `occurredAt`, and `clientId`.
-- Append the event to the local event log.
-- Mark the event as `local` in sync metadata.
-- Apply the event to the in-memory snapshot and persist the snapshot cache.
-- Schedule a background sync (debounced).
-
-### 6.2.1 Cross-Tab Sync
-
-Listen for `storage` events and recompute local state when another tab updates the log:
+The server snapshot is intentionally generic:
 
 ```ts
-window.addEventListener('storage', (event) => {
-  if (event.key?.startsWith('learning_progress_events')) {
-    recomputeSnapshotFromEvents()
-  }
-})
+type LearningProgressRemoteSnapshot = {
+  version: 1
+  recordsByKey: Record<string, InteractiveStateRecord>
+  lastUpdated: string | null
+}
 ```
 
-### 6.3 Background Sync Worker (Events Only)
+The client projects that into:
 
-Trigger conditions:
+```ts
+type LearningGuestProgress = {
+  version: 1
+  onboarding: LearningOnboardingState
+  activePathId: string | null
+  content: Record<string, LearningContentProgress>
+  interactiveState: UnifiedInteractiveState
+  streak: LearningStreakState
+  lastUpdated: string
+}
+```
 
-- After any local update (debounced, e.g. 1-2s).
-- On `visibilitychange` to `visible`.
-- On `online` event after offline.
-- On explicit manual `sync()` call.
+Rules:
 
-Sync steps:
+- The remote snapshot is authoritative wire state.
+- The projected snapshot is a client convenience model used by UI hooks and screens.
+- The client must never assume the server understands the projected fields.
 
-1. Snapshot `syncStartedAt = nowIso()`.
-2. Mark unsynced events as `syncing`.
-3. Send unsynced events via `PUT /progress`.
-4. Pull remote events via `GET /progress?since=<cursor>` and merge them into the local log.
-5. On success:
-   - Mark synced events as `synced`.
-   - Set `lastSyncedAt` for those events.
-6. On failure:
-   - Mark events as `error`.
-   - Increment `retryCount`.
-   - Retry with exponential backoff and limits:
-     - `const MAX_RETRIES = 4`
-     - `const RETRY_DELAYS = [1000, 5000, 15000, 60000]`
+## 3. Reserved Record Keys
 
-### 6.4 Conflict Resolution
+Reserved keys are stable client conventions. The server stores them opaquely and does not understand their semantics.
 
-- Merge event logs by `eventId` (set union).
-- Reduce events in `occurredAt` order with status precedence to prevent regressions.
-- Local snapshot is the source of truth for UI.
+### 3.1 Learning Reserved Keys
 
-## 7. Error Handling and Offline
+- `system:learning-onboarding`
+- `system:learning-active-path`
+- `system:learning-streak`
+- `system:lesson-progress:<contentId>`
 
-- If offline (`navigator.onLine === false`), keep events local and set status to `local`.
-- When back online, the sync worker runs automatically.
-- A permanent error (4xx) should:
-  - Log a warning.
-  - Keep events in `error` until a manual retry or sign-out.
+Projection targets:
 
-### 7.1 localStorage Quota Handling
+- `system:learning-onboarding` → `progress.onboarding`
+- `system:learning-active-path` → `progress.activePathId`
+- `system:learning-streak` → `progress.streak`
+- `system:lesson-progress:<contentId>` → `progress.content[contentId]`
 
-Wrap `localStorage` writes in try/catch and handle `QuotaExceededError` gracefully:
+Payload conventions:
 
-- Keep in-memory progress state so the UI does not crash.
-- Surface a warning (console or toast) and mark events as `error` until storage clears.
-- Avoid deleting historical events from local storage.
+- `system:learning-onboarding`
+  - `{ pathId: string | null, relatedPaths: string[], completedAt: string | null }`
+- `system:learning-active-path`
+  - `{ pathId: string | null }`
+- `system:learning-streak`
+  - `{ currentStreak: number, longestStreak: number, lastActivityDate: string | null }`
+- `system:lesson-progress:<contentId>`
+  - `{ status, score, lastAttemptAt, completedAt, contentVersion }`
 
-## 8. Testing Plan
+### 3.2 Campaign Reserved Keys
 
-### 8.1 Unit Tests (Vitest)
+The unified record model also supports campaign-owned keys. These remain client conventions, not backend semantics:
 
-- `progress-event-reducer.test.ts`
-  - Reduces event logs deterministically with status precedence.
-  - Handles interaction removal (`state: null`) for quiz reset.
-  - Produces stable `lastAttemptAt` and `completedAt` when events are ordered by `occurredAt`.
-- `progress-sync-state.test.ts`
-  - `markLocal` sets event status to `local`.
-  - `startSync` moves eligible events to `syncing`.
-  - `finishSyncSuccess` marks events as `synced`.
-  - `finishSyncFailure` increments `retryCount`.
-- `learning-validate.test.ts`
-  - Enforce unique `contentId` and `interactionId` across all learning content.
+- `system:campaign:buget:onboarding`
+- `system:campaign:buget:accepted-terms`
+- `system:campaign:buget:selected-entity`
+- `system:campaign:buget:active-module`
+- `system:campaign:buget:challenge:<slug>`
 
-### 8.2 Integration Tests (Vitest + Testing Library)
+These keys are projected by campaign-specific client logic and are not interpreted by the learning-progress backend.
 
-- `use-learning-progress.test.tsx`
-  - Authenticated updates create events and update snapshot immediately.
-  - Successful API sync marks events `synced` and clears guest storage.
-  - Failed API sync marks events `error` and retries on next trigger.
-  - Cross-tab `storage` event triggers recompute and refreshes UI state.
-  - Bootstrap queue replays local updates made during initial fetch.
+## 4. Projection Rules
 
-### 8.3 E2E Tests (Playwright)
+### 4.1 Learning Projection
 
-- **Auth Sync Flow**
-  - Complete lesson as guest.
-  - Login.
-  - Verify local progress is visible immediately.
-  - Verify event sync requests are sent and stored remotely.
-- **Offline Progress**
-  - Set browser offline.
-  - Complete a lesson.
-  - Verify progress shows locally and events are `local`.
-  - Set online and verify sync completes.
+Learning projection is implemented by:
 
-## 9. Non-Goals
+- `src/features/learning/utils/progress-projection.ts`
+- `src/features/learning/utils/progress-event-reducer.ts`
+- `src/features/learning/utils/progress-merge.ts`
 
-- Replacing guest local-only behavior.
-- Server-side re-scoring of quiz answers.
-- UI redesign for sync indicators.
+Projection behavior:
+
+- `interactiveState` includes all records and audit logs, including reserved records.
+- `progress.onboarding` is reconstructed from `system:learning-onboarding`.
+- `progress.activePathId` is reconstructed from `system:learning-active-path`.
+- `progress.streak` is reconstructed from `system:learning-streak`.
+- `progress.content` is reconstructed only from `system:lesson-progress:<contentId>` records.
+- `progress.lastUpdated` is the max of the projected snapshot timestamp and all record `updatedAt` values.
+
+### 4.2 Merge Behavior
+
+Remote and local state merge by record freshness and audit-event identity:
+
+- records merge by `record.updatedAt`
+- newer records replace older ones
+- older remote records never downgrade newer local records
+- audit events merge by audit-event `id`
+- projected app state is always rebuilt from the merged `interactiveState`
+
+## 5. Local Storage and Sync
+
+### 5.1 Client Storage
+
+Learning storage keys:
+
+- guest pending events: `learning_progress_events`
+- guest snapshot: `learning_progress_snapshot`
+- auth pending events: `learning_progress_events:{userId}`
+- auth snapshot: `learning_progress_snapshot:{userId}`
+- auth sync metadata: `learning_progress_sync:{userId}`
+
+Rules:
+
+- local snapshots are caches of projected state
+- local events are only the pending outbound queue
+- sync metadata tracks cursor and retry state
+- the client does not persist a canonical full local event history anymore
+
+### 5.2 Bootstrap
+
+Cold bootstrap behavior:
+
+1. load local projected snapshot
+2. load pending outbound events
+3. fetch remote generic snapshot without `since`
+4. treat the remote generic snapshot as authoritative
+5. replay pending local events on top of the projected remote state
+6. persist the merged projected snapshot locally
+7. store the returned server cursor even if `events` is empty
+
+If a local snapshot exists and pending events are newer, the client replays those pending events on top of the snapshot instead of rebuilding from the pending queue alone.
+
+### 5.3 Incremental Sync
+
+Incremental sync behavior:
+
+1. send only pending outbound events
+2. on success, remove or mark those events as synced in local storage
+3. refetch remote deltas with `since=lastSyncedCursor`
+4. apply remote `interactive.updated` events directly to the projected snapshot
+
+Rules:
+
+- remote deltas are applied by `record.updatedAt`, not arrival order
+- unseen audit events are merged by audit-event `id`
+- `updatedAt` controls freshness
+- the server cursor remains an opaque ordering token and is not used as a freshness signal on the client
+
+## 6. Validation Rules
+
+### 6.1 Runtime Interaction Identity
+
+Progress storage identity is:
+
+- `interactionId`
+- plus `scope`
+
+It is not:
+
+- `lessonId`
+- or `lessonId + interactionId`
+
+Implications:
+
+- runtime-generated interaction ids must be globally unique before scope is applied
+- challenge runtime ids should be namespaced by `stepId`
+- entity-scoped interactions still need unique base ids; `entityCui` only separates records across entities, not across lessons or steps inside the same entity
+
+### 6.2 Server Schema Design for Union Shapes
+
+The learning-progress REST request schemas are validated by Fastify/AJV, which may validate with `removeAdditional` semantics.
+
+Important rule:
+
+- do not rely on `Type.Union([...])` branches that each use `additionalProperties: false` for inner discriminated objects such as:
+  - `scope`
+  - `value`
+  - `completionRule`
+  - audit-event variants
+
+Why:
+
+- AJV can evaluate the wrong union branch first
+- branch-level strictness can strip valid fields like `entityCui`, `json`, `phase`, or `result`
+- the same payload can then fail later branches with misleading errors such as “missing entityCui” or “type must be equal to constant”
+
+Safe pattern:
+
+- keep outer request/record objects strict where useful
+- make inner union branches tolerant enough to survive branch evaluation
+- prefer discriminators/orderings that do not mutate valid payloads during failed branch checks
+
+This is a server validation concern, not a progress model concern, but it directly affects whether valid `interactive.updated` payloads can be synced.
+
+## 7. Known Limitation
+
+Fresh-device cold bootstrap cannot reconstruct historical audit logs unless the server snapshot includes them.
+
+Current implication:
+
+- interactive record state can be restored from `recordsByKey`
+- audit history only survives across devices if it arrives through remote deltas or is embedded in the server snapshot
+- this is an accepted limitation of the current transport model
+
+## 8. Operational Guidance
+
+When adding a new unified-progress concern:
+
+1. decide whether it is a normal interaction record or a reserved/system record
+2. if it is reserved/system state, define a stable `system:*` key constant
+3. define the JSON payload schema in client code
+4. add projection logic from `recordsByKey` into the relevant client snapshot
+5. add tests for bootstrap, merge precedence, and sync behavior
+6. update this spec with the new reserved key and payload meaning
+7. if a new wire schema adds nested unions, verify it under the same Fastify/AJV validation behavior used in production
+
+## References
+
+- `src/features/learning/types.ts`
+- `src/features/learning/api/progress.ts`
+- `src/features/learning/hooks/use-learning-progress.tsx`
+- `src/features/learning/utils/progress-projection.ts`
+- `src/features/learning/utils/progress-event-reducer.ts`
+- `src/features/learning/utils/progress-merge.ts`
+- `src/features/campaigns/buget/utils/progress-records.ts`
+- `src/features/campaigns/buget/hooks/use-campaign-progress.tsx`

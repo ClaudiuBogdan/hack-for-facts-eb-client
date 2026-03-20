@@ -53,6 +53,7 @@ const createProgress = (
       },
     ]),
   ),
+  interactiveState: { recordsByKey: {}, eventLogByRecordKey: {} },
   streak: { currentStreak: 0, longestStreak: 0, lastActivityDate: null },
   lastUpdated: '2024-01-01T00:00:00Z',
 })

@@ -1,12 +1,17 @@
 import type { ReactNode } from 'react'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { InteractiveStateRecord, LearningProgressEvent } from '@/features/learning/types'
 import {
   CAMPAIGN_ID,
   CAMPAIGN_PROGRESS_STORAGE_KEY,
   CAMPAIGN_PROGRESS_SCHEMA_VERSION,
 } from '../constants'
 import { CampaignProgressProvider, useCampaignProgress } from './use-campaign-progress'
+import {
+  CAMPAIGN_ACTIVE_MODULE_RECORD_KEY,
+  buildCampaignProgressRecords,
+} from '../utils/progress-records'
 import type { CampaignProgressSnapshot } from '../types'
 
 let authState = {
@@ -17,7 +22,9 @@ let authState = {
 
 const fetchCampaignProgressMock = vi.fn(async (_params?: unknown) => ({
   snapshot: createSnapshot(),
-  cursor: undefined,
+  recordsByKey: buildCampaignProgressRecords(createSnapshot()),
+  events: [] as LearningProgressEvent[],
+  cursor: '0',
 }))
 const syncCampaignProgressMock = vi.fn(async (_params?: unknown) => {})
 
@@ -37,12 +44,31 @@ function createSnapshot(
     version: CAMPAIGN_PROGRESS_SCHEMA_VERSION,
     campaignId: CAMPAIGN_ID,
     onboardingCompletedAt: null,
+    acceptedTermsAt: null,
     selectedLocality: null,
     selectedEntityCui: null,
     activeChallengeModuleSlug: null,
     challenges: {},
     lastUpdated: '2026-01-01T00:00:00.000Z',
     ...overrides,
+  }
+}
+
+function createRemoteResponse(
+  snapshotOverrides: Partial<CampaignProgressSnapshot> = {},
+  overrides: {
+    readonly recordsByKey?: Readonly<Record<string, InteractiveStateRecord>>
+    readonly events?: LearningProgressEvent[]
+    readonly cursor?: string
+  } = {},
+) {
+  const snapshot = createSnapshot(snapshotOverrides)
+
+  return {
+    snapshot,
+    recordsByKey: overrides.recordsByKey ?? buildCampaignProgressRecords(snapshot),
+    events: overrides.events ?? [],
+    cursor: overrides.cursor ?? '0',
   }
 }
 
@@ -60,10 +86,7 @@ describe('use-campaign-progress', () => {
     }
     fetchCampaignProgressMock.mockClear()
     syncCampaignProgressMock.mockClear()
-    fetchCampaignProgressMock.mockResolvedValue({
-      snapshot: createSnapshot(),
-      cursor: undefined,
-    })
+    fetchCampaignProgressMock.mockResolvedValue(createRemoteResponse())
   })
 
   it('stores campaign progress without mutating learning storage keys', async () => {
@@ -168,11 +191,10 @@ describe('use-campaign-progress', () => {
     )
 
     fetchCampaignProgressMock.mockResolvedValue({
-      snapshot: createSnapshot({
+      ...createRemoteResponse({
         activeChallengeModuleSlug: 'budget-basics',
         lastUpdated: '2026-01-01T00:00:00.000Z',
       }),
-      cursor: undefined,
     })
 
     const { result } = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
@@ -181,12 +203,27 @@ describe('use-campaign-progress', () => {
       expect(result.current.isInitialResolutionReady).toBe(true)
     })
 
+    await act(async () => {
+      await result.current.sync()
+    })
+
     expect(result.current.progress.activeChallengeModuleSlug).toBe('read-local-execution')
     expect(syncCampaignProgressMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        snapshot: expect.objectContaining({
-          activeChallengeModuleSlug: 'read-local-execution',
-        }),
+        events: expect.arrayContaining([
+          expect.objectContaining({
+            type: 'interactive.updated',
+            payload: expect.objectContaining({
+              record: expect.objectContaining({
+                key: CAMPAIGN_ACTIVE_MODULE_RECORD_KEY,
+                value: {
+                  kind: 'json',
+                  json: { value: { moduleSlug: 'read-local-execution' } },
+                },
+              }),
+            }),
+          }),
+        ]),
       }),
     )
   })
@@ -200,13 +237,15 @@ describe('use-campaign-progress', () => {
 
     let resolveFetchCampaignProgress!: (value: {
       snapshot: CampaignProgressSnapshot
-      cursor: undefined
+      recordsByKey: Readonly<Record<string, InteractiveStateRecord>>
+      events: readonly LearningProgressEvent[]
+      cursor: string
     }) => void
 
     fetchCampaignProgressMock.mockImplementation(
       () =>
         new Promise((resolve) => {
-          resolveFetchCampaignProgress = resolve
+          resolveFetchCampaignProgress = resolve as typeof resolveFetchCampaignProgress
         }),
     )
 
@@ -220,12 +259,9 @@ describe('use-campaign-progress', () => {
 
     expect(resolveFetchCampaignProgress).toBeTypeOf('function')
 
-    resolveFetchCampaignProgress({
-      snapshot: createSnapshot({
-        activeChallengeModuleSlug: 'read-local-execution',
-      }),
-      cursor: undefined,
-    })
+    resolveFetchCampaignProgress(createRemoteResponse({
+      activeChallengeModuleSlug: 'read-local-execution',
+    }))
 
     await waitFor(() => {
       expect(result.current.isInitialResolutionReady).toBe(true)
@@ -246,5 +282,90 @@ describe('use-campaign-progress', () => {
     })
 
     expect(result.current.isInitialResolutionReady).toBe(true)
+  })
+
+  it('completes initial resolution when the remote learning-progress fetch fails', async () => {
+    authState = {
+      isLoaded: true,
+      isSignedIn: true,
+      user: { id: 'user-1' },
+    }
+
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    fetchCampaignProgressMock.mockRejectedValue(new Error('NotFoundError'))
+
+    const { result } = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true)
+    })
+
+    await waitFor(() => {
+      expect(result.current.isInitialResolutionReady).toBe(true)
+    })
+
+    expect(result.current.remoteSelectedEntityCui).toBeNull()
+    expect(consoleWarnSpy).toHaveBeenCalled()
+
+    consoleWarnSpy.mockRestore()
+  })
+
+  it('resets campaign progress without emitting a global progress.reset event', async () => {
+    authState = {
+      isLoaded: true,
+      isSignedIn: true,
+      user: { id: 'user-1' },
+    }
+
+    window.localStorage.setItem(
+      CAMPAIGN_PROGRESS_STORAGE_KEY,
+      JSON.stringify(
+        createSnapshot({
+          selectedEntityCui: '12345678',
+          activeChallengeModuleSlug: 'read-local-execution',
+          challenges: {
+            'challenge-1': {
+              status: 'completed',
+              attempts: 2,
+              updatedAt: '2026-01-02T00:00:00.000Z',
+            },
+          },
+          lastUpdated: '2026-01-02T00:00:00.000Z',
+        }),
+      ),
+    )
+
+    fetchCampaignProgressMock.mockResolvedValue(createRemoteResponse())
+
+    const { result } = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isInitialResolutionReady).toBe(true)
+    })
+
+    act(() => {
+      result.current.resetProgress()
+    })
+
+    await act(async () => {
+      await result.current.sync()
+    })
+
+    expect(result.current.progress.selectedEntityCui).toBeNull()
+    expect(result.current.progress.activeChallengeModuleSlug).toBeNull()
+    expect(result.current.progress.challenges).toEqual({})
+    expect(syncCampaignProgressMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        events: expect.arrayContaining([
+          expect.objectContaining({ type: 'interactive.updated' }),
+        ]),
+      }),
+    )
+    expect(
+      syncCampaignProgressMock.mock.calls.flatMap(([params]) => {
+        const value = params as { events?: readonly LearningProgressEvent[] }
+        return (value.events ?? []).map((event) => event.type)
+      }),
+    ).not.toContain('progress.reset')
   })
 })

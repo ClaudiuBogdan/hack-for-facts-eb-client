@@ -11,10 +11,14 @@ import { env } from '@/config/env'
 import { cn } from '@/lib/utils'
 import { prefetchModuleContent, useModuleContent } from '../../hooks/use-module-content'
 import { useLearningProgress } from '../../hooks/use-learning-progress'
+import {
+  usePredictionInteraction,
+  useQuizInteraction,
+  useSalaryCalculatorInteraction,
+} from '../../hooks/use-learning-interactions'
 import type { LearningLocale } from '../../types'
+import { doesInteractionSatisfyCompletionRule } from '../../utils/interactive-state'
 import { getAdjacentLessons, getLearningPathById, getTranslatedText } from '../../utils/paths'
-import { scoreSingleChoice } from '../../utils/scoring'
-import { QUIZ_PASS_SCORE } from '../../utils/interactions'
 import { Quiz, type QuizOption } from '../assessment/Quiz'
 import { MarkComplete } from './MarkComplete'
 import { LessonChallengesProvider, useRegisterLessonChallenge } from './lesson-challenges-context'
@@ -281,22 +285,26 @@ const LessonDiscussion = createLazyComponent<LessonDiscussionProps>(() =>
 )
 
 function LessonQuizWrapper({ lessonId, ...props }: LessonQuizWrapperProps) {
-  const { progress } = useLearningProgress()
-  const interaction = progress.content[lessonId]?.interactions?.[props.id]
-  const selectedOptionId = interaction?.kind === 'quiz' ? interaction.selectedOptionId : null
-  const score = scoreSingleChoice(props.options, selectedOptionId)
-  const isCompleted = score >= QUIZ_PASS_SCORE
+  const { isCorrect } = useQuizInteraction({
+    contentId: lessonId,
+    quizId: props.id,
+    options: props.options,
+    contentVersion: 'v1',
+  })
 
-  useRegisterLessonChallenge({ id: `quiz:${props.id}`, isCompleted })
+  useRegisterLessonChallenge({ id: `quiz:${props.id}`, isCompleted: isCorrect })
 
   return <Quiz {...props} contentId={lessonId} />
 }
 
 function LessonPromiseTrackerWrapper({ lessonId, locale, id }: LessonPromiseTrackerWrapperProps) {
-  const { progress } = useLearningProgress()
   const predictionId = id ?? 'promise-tracker'
-  const interaction = progress.content[lessonId]?.interactions?.[predictionId]
-  const hasReveal = interaction?.kind === 'prediction' && Object.keys(interaction.reveals ?? {}).length > 0
+  const { reveals } = usePredictionInteraction({
+    contentId: lessonId,
+    predictionId,
+    contentVersion: 'v1',
+  })
+  const hasReveal = Object.keys(reveals).length > 0
 
   useRegisterLessonChallenge({ id: `prediction:${predictionId}`, isCompleted: hasReveal })
 
@@ -304,10 +312,12 @@ function LessonPromiseTrackerWrapper({ lessonId, locale, id }: LessonPromiseTrac
 }
 
 function LessonSalaryTaxCalculatorWrapper({ lessonId, id }: LessonSalaryTaxCalculatorWrapperProps) {
-  const { progress } = useLearningProgress()
   const calculatorId = id ?? 'salary-tax-calculator'
-  const interaction = progress.content[lessonId]?.interactions?.[calculatorId]
-  const isCompleted = interaction?.kind === 'salary-calculator' && interaction.step === 'REVEAL'
+  const { isCompleted } = useSalaryCalculatorInteraction({
+    contentId: lessonId,
+    calculatorId,
+    contentVersion: 'v1',
+  })
 
   useRegisterLessonChallenge({ id: `salary:${calculatorId}`, isCompleted })
 
@@ -315,10 +325,10 @@ function LessonSalaryTaxCalculatorWrapper({ lessonId, id }: LessonSalaryTaxCalcu
 }
 
 function LessonBudgetAllocatorWrapper({ lessonId, id, ...props }: LessonBudgetAllocatorWrapperProps) {
-  const { progress } = useLearningProgress()
   const interactionId = id ?? 'budget-allocator'
-  const interaction = progress.content[lessonId]?.interactions?.[interactionId]
-  const isCompleted = interaction?.kind === 'budget-allocator' && interaction.step === 'COMPARE'
+  const { getInteractiveRecord } = useLearningProgress()
+  const interaction = getInteractiveRecord({ id: interactionId, scopePolicy: 'global' })
+  const isCompleted = doesInteractionSatisfyCompletionRule(interaction)
 
   useRegisterLessonChallenge({ id: `budget:${interactionId}`, isCompleted })
 

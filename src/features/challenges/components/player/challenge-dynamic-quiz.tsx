@@ -16,6 +16,8 @@ type ChallengeDynamicQuizProps = {
   readonly question: string
   readonly options: readonly DynamicQuizOption[]
   readonly explanation: string
+  readonly scopePolicy?: 'global' | 'entity'
+  readonly entityCui?: string
 }
 
 export function ChallengeDynamicQuiz({
@@ -24,6 +26,8 @@ export function ChallengeDynamicQuiz({
   question,
   options,
   explanation,
+  scopePolicy = 'global',
+  entityCui,
 }: ChallengeDynamicQuizProps) {
   const [isPending, setIsPending] = useState(false)
   const bridge = useSectionDynamicInteractiveBridge()
@@ -34,6 +38,8 @@ export function ChallengeDynamicQuiz({
     quizId,
     options,
     contentVersion: 'v1',
+    scopePolicy,
+    entityCui,
   })
 
   useRegisterLessonChallenge({

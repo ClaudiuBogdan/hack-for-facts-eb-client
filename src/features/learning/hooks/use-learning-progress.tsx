@@ -3,23 +3,43 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { t } from '@lingui/core/macro'
 import { useAuth } from '@/lib/auth'
 import { fetchLearningProgress, syncLearningProgressEvents } from '../api/progress'
-import { getEmptyLearningGuestProgress } from '../schemas/progress'
+import { getEmptyLearningGuestProgress, parseLearningGuestProgress } from '../schemas/progress'
 import { parseLearningProgressEvents } from '../schemas/progress-events'
 import { applyLearningProgressEvent, reduceLearningProgressEvents } from '../utils/progress-event-reducer'
-import { resolveInteractionAction, type SaveContentProgressInput } from './interactions/interaction-resolver'
+import {
+  createInteractiveStateRecord,
+  getInteractiveAuditLog,
+  getInteractiveRecord,
+  resolveInteractionScope,
+} from '../utils/interactive-state'
+import {
+  createLearningActivePathRecord,
+  createLearningOnboardingRecord,
+  createLearningStreakRecord,
+  createLessonProgressRecord,
+  projectLearningGuestProgress,
+  SYSTEM_LEARNING_ACTIVE_PATH_RECORD_KEY,
+  SYSTEM_LEARNING_ONBOARDING_RECORD_KEY,
+  SYSTEM_LEARNING_STREAK_RECORD_KEY,
+  SYSTEM_LESSON_PROGRESS_RECORD_PREFIX,
+  toDateString,
+  upsertProjectedContentProgress,
+} from '../utils/progress-projection'
+import { mergeLearningGuestProgress } from '../utils/progress-merge'
+import { calculateStreakUpdate } from '../utils/streak'
 import type {
+  InteractiveAuditEvent,
+  InteractiveDefinition,
+  InteractiveStateRecord,
+  InteractionOutcome,
+  InteractionValue,
   LearningAuthState,
   LearningContentProgress,
   LearningGuestProgress,
   LearningInteractionAction,
   LearningProgressEvent,
+  LearningProgressRemoteSnapshot,
 } from '../types'
-
-// Import resolvers to register them
-import './interactions/quiz-resolver'
-import './interactions/prediction-resolver'
-import './interactions/salary-calculator-resolver'
-import './interactions/budget-allocator-resolver'
 
 const GUEST_EVENTS_KEY = 'learning_progress_events'
 const GUEST_SNAPSHOT_KEY = 'learning_progress_snapshot'
@@ -71,6 +91,15 @@ function nowIso(): string {
   return new Date().toISOString()
 }
 
+function getNextTimestamp(previousTimestamp?: string | null): string {
+  const currentTime = Date.now()
+  const previousTime = previousTimestamp ? Date.parse(previousTimestamp) : 0
+  const nextTime = Number.isFinite(previousTime)
+    ? Math.max(currentTime, previousTime + 1)
+    : currentTime
+  return new Date(nextTime).toISOString()
+}
+
 function clampScore(value: number | undefined): number | undefined {
   if (typeof value !== 'number' || Number.isNaN(value)) return undefined
   return Math.max(0, Math.min(100, value))
@@ -81,13 +110,71 @@ type SaveOnboardingInput = {
   readonly relatedPaths?: readonly string[]
 }
 
+type SaveContentProgressInput = {
+  readonly contentId: string
+  readonly status: LearningContentProgress['status']
+  readonly score?: number
+  readonly contentVersion?: string
+}
+
+type SaveInteractiveDraftInput = {
+  readonly definition: InteractiveDefinition
+  readonly value: InteractionValue
+  readonly entityCui?: string | null
+  readonly content?: SaveContentProgressInput
+}
+
+type SubmitInteractiveInput = {
+  readonly definition: InteractiveDefinition
+  readonly entityCui?: string | null
+  readonly value?: InteractionValue
+  readonly content?: SaveContentProgressInput
+}
+
+type ResolveInteractiveInput = {
+  readonly definition: InteractiveDefinition
+  readonly entityCui?: string | null
+  readonly value?: InteractionValue
+  readonly phase?: 'resolved' | 'error'
+  readonly outcome?: InteractionOutcome
+  readonly score?: number | null
+  readonly feedbackText?: string | null
+  readonly response?: Readonly<Record<string, unknown>> | null
+  readonly content?: SaveContentProgressInput
+}
+
+type ApplyInteractiveEvaluationInput = {
+  readonly recordKey: string
+  readonly phase?: 'resolved' | 'error'
+  readonly outcome?: InteractionOutcome
+  readonly score?: number | null
+  readonly feedbackText?: string | null
+  readonly response?: Readonly<Record<string, unknown>> | null
+  readonly content?: SaveContentProgressInput
+}
+
+type ResetInteractiveInput = {
+  readonly definition: InteractiveDefinition
+  readonly entityCui?: string | null
+}
+
 type LearningProgressContextValue = {
   readonly isReady: boolean
   readonly isSyncedWithAuthState: boolean
   readonly auth: LearningAuthState
   readonly progress: LearningGuestProgress
   readonly getContentProgress: (contentId: string) => LearningContentProgress | undefined
+  readonly getInteractiveRecord: (
+    definition: Pick<InteractiveDefinition, 'id' | 'scopePolicy'>,
+    entityCui?: string | null,
+  ) => InteractiveStateRecord | null
+  readonly getInteractiveAuditLog: (recordKey: string) => readonly InteractiveAuditEvent[]
   readonly saveContentProgress: (input: SaveContentProgressInput) => Promise<void>
+  readonly saveInteractiveDraft: (input: SaveInteractiveDraftInput) => Promise<InteractiveStateRecord | null>
+  readonly submitInteractive: (input: SubmitInteractiveInput) => Promise<InteractiveStateRecord | null>
+  readonly resolveInteractive: (input: ResolveInteractiveInput) => Promise<InteractiveStateRecord | null>
+  readonly applyInteractiveEvaluation: (input: ApplyInteractiveEvaluationInput) => Promise<InteractiveStateRecord | null>
+  readonly resetInteractive: (input: ResetInteractiveInput) => Promise<InteractiveStateRecord | null>
   readonly dispatchInteractionAction: (action: LearningInteractionAction) => Promise<void>
   readonly saveOnboarding: (input: SaveOnboardingInput) => Promise<void>
   readonly setActivePathId: (pathId: string | null) => Promise<void>
@@ -147,6 +234,16 @@ function mergeEventLogs(...logs: LearningProgressEvent[][]): LearningProgressEve
   return Array.from(byId.values())
 }
 
+function projectRemoteSnapshot(snapshot: LearningProgressRemoteSnapshot): LearningGuestProgress {
+  return projectLearningGuestProgress({
+    interactiveState: {
+      recordsByKey: snapshot.recordsByKey,
+      eventLogByRecordKey: {},
+    },
+    lastUpdated: snapshot.lastUpdated,
+  })
+}
+
 function createEventId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return crypto.randomUUID()
@@ -191,6 +288,9 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
   const [progress, setProgress] = useState<LearningGuestProgress>(() => getEmptyLearningGuestProgress())
   const [isReady, setIsReady] = useState(false)
   const [isSyncedWithAuthState, setIsSyncedWithAuthState] = useState(false)
+
+  const progressRef = useRef(progress)
+  progressRef.current = progress
 
   const eventsRef = useRef<LearningProgressEvent[]>([])
   const syncStateRef = useRef<LearningProgressSyncState>(getEmptySyncState())
@@ -246,6 +346,15 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     return parseLearningProgressEvents(rawEvents)
   }, [])
 
+  const loadSnapshotForKey = useCallback((snapshotKey: string): LearningGuestProgress | null => {
+    const rawSnapshot = readJsonFromStorage(snapshotKey)
+    if (!rawSnapshot) {
+      return null
+    }
+
+    return parseLearningGuestProgress(rawSnapshot)
+  }, [])
+
   const saveSnapshotForKey = useCallback(
     (snapshotKey: string, snapshot: LearningGuestProgress): void => {
       safeWriteToStorage(snapshotKey, snapshot)
@@ -272,6 +381,20 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     [],
   )
 
+  const removeSyncEntries = useCallback((eventIds: readonly string[]) => {
+    if (eventIds.length === 0) return
+
+    const nextEvents = { ...syncStateRef.current.events }
+    for (const eventId of eventIds) {
+      delete nextEvents[eventId]
+    }
+
+    syncStateRef.current = {
+      ...syncStateRef.current,
+      events: nextEvents,
+    }
+  }, [])
+
   const persistSyncState = useCallback(
     (syncKey: string | null) => {
       if (!syncKey) return
@@ -280,13 +403,23 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     [safeWriteToStorage],
   )
 
-  const recomputeSnapshot = useCallback(
-    (events: LearningProgressEvent[], snapshotKey: string | null) => {
-      const nextSnapshot = reduceLearningProgressEvents(events)
+  const applyEventsToSnapshot = useCallback(
+    (
+      baseSnapshot: LearningGuestProgress,
+      events: readonly LearningProgressEvent[],
+      snapshotKey: string | null,
+    ) => {
+      const nextSnapshot = events.reduce(
+        (currentSnapshot, event) => applyLearningProgressEvent(currentSnapshot, event),
+        baseSnapshot,
+      )
+
       if (snapshotKey) {
         saveSnapshotForKey(snapshotKey, nextSnapshot)
       }
+
       setProgress(nextSnapshot)
+      return nextSnapshot
     },
     [saveSnapshotForKey],
   )
@@ -310,39 +443,44 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     const keys = getStorageKeys()
     const events = loadEventsForKey(keys.eventsKey)
     eventsRef.current = events
-    recomputeSnapshot(events, keys.snapshotKey)
-  }, [getStorageKeys, loadEventsForKey, recomputeSnapshot])
+    const storedSnapshot = loadSnapshotForKey(keys.snapshotKey)
+
+    if (storedSnapshot) {
+      if (events.length > 0) {
+        applyEventsToSnapshot(storedSnapshot, events, keys.snapshotKey)
+        return
+      }
+
+      setProgress(storedSnapshot)
+      return
+    }
+
+    const nextSnapshot = reduceLearningProgressEvents(events)
+    saveSnapshotForKey(keys.snapshotKey, nextSnapshot)
+    setProgress(nextSnapshot)
+  }, [applyEventsToSnapshot, getStorageKeys, loadEventsForKey, loadSnapshotForKey, saveSnapshotForKey])
 
   const applyRemoteProgress = useCallback(
     (remote: RemoteLearningProgress, keys: { eventsKey: string; snapshotKey: string; syncKey: string | null }) => {
-      if (remote.cursor) {
-        syncStateRef.current = {
-          ...syncStateRef.current,
-          lastSyncedCursor: remote.cursor,
-        }
+      syncStateRef.current = {
+        ...syncStateRef.current,
+        lastSyncedCursor: remote.cursor ?? syncStateRef.current.lastSyncedCursor,
       }
 
       if (remote.events.length > 0) {
-        const merged = mergeEventLogs(eventsRef.current, remote.events)
-        if (merged.length !== eventsRef.current.length) {
-          eventsRef.current = merged
-          safeWriteToStorage(keys.eventsKey, merged)
-          recomputeSnapshot(merged, keys.snapshotKey)
-        }
-
-        const syncedAt = nowIso()
-        for (const event of remote.events) {
-          updateSyncEntry(event.eventId, (entry) => ({
-            ...entry,
-            status: 'synced',
-            lastSyncedAt: entry.lastSyncedAt ?? syncedAt,
-          }))
-        }
+        setProgress((current) => {
+          const nextSnapshot = remote.events.reduce(
+            (currentSnapshot, event) => applyLearningProgressEvent(currentSnapshot, event),
+            current,
+          )
+          saveSnapshotForKey(keys.snapshotKey, nextSnapshot)
+          return nextSnapshot
+        })
       }
 
       persistSyncState(keys.syncKey)
     },
-    [persistSyncState, recomputeSnapshot, safeWriteToStorage, updateSyncEntry],
+    [persistSyncState, saveSnapshotForKey],
   )
 
   const progressQuery = useQuery({
@@ -438,13 +576,10 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
 
     try {
       await syncLearningProgressEvents({ events: pendingEvents, clientUpdatedAt: attemptAt })
-      for (const event of pendingEvents) {
-        updateSyncEntry(event.eventId, (entry) => ({
-          ...entry,
-          status: 'synced',
-          lastSyncedAt: attemptAt,
-        }))
-      }
+      const syncedEventIds = new Set(pendingEvents.map((event) => event.eventId))
+      eventsRef.current = eventsRef.current.filter((event) => !syncedEventIds.has(event.eventId))
+      safeWriteToStorage(getAuthEventsKey(auth.userId), eventsRef.current)
+      removeSyncEntries([...syncedEventIds])
       syncStateRef.current = {
         ...syncStateRef.current,
         lastSuccessfulSyncAt: attemptAt,
@@ -483,8 +618,10 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     auth.isAuthenticated,
     auth.userId,
     persistSyncState,
+    removeSyncEntries,
     refetchRemoteProgress,
     recomputeFromStorage,
+    safeWriteToStorage,
     scheduleRetry,
     updateSyncEntry,
   ])
@@ -500,39 +637,69 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     }
   }, [])
 
-  const appendEvent = useCallback(
-    (event: LearningProgressEvent, storageKeys: { eventsKey: string; snapshotKey: string; syncKey: string | null }) => {
-      const nextEvents = [...eventsRef.current, event]
+  const appendEvents = useCallback(
+    (
+      events: readonly LearningProgressEvent[],
+      storageKeys: { eventsKey: string; snapshotKey: string; syncKey: string | null },
+      options?: { readonly replacePending?: boolean },
+    ) => {
+      if (events.length === 0) {
+        return
+      }
+
+      const nextEvents = options?.replacePending
+        ? [...events]
+        : [...eventsRef.current, ...events]
       eventsRef.current = nextEvents
       const eventsWritten = safeWriteToStorage(storageKeys.eventsKey, nextEvents)
 
-      updateSyncEntry(event.eventId, (entry) => ({
-        ...entry,
-        status: eventsWritten ? 'local' : 'error',
-        retryCount: entry.retryCount ?? 0,
-        errorMessage: eventsWritten ? entry.errorMessage : 'localStorage quota exceeded',
-      }))
+      for (const event of events) {
+        updateSyncEntry(event.eventId, (entry) => ({
+          ...entry,
+          status: eventsWritten ? 'local' : 'error',
+          retryCount: entry.retryCount ?? 0,
+          errorMessage: eventsWritten ? undefined : 'localStorage quota exceeded',
+        }))
+      }
+
+      if (options?.replacePending) {
+        const preservedEventIds = new Set(events.map((event) => event.eventId))
+        removeSyncEntries(
+          Object.keys(syncStateRef.current.events).filter((eventId) => !preservedEventIds.has(eventId)),
+        )
+      }
+
       if (storageKeys.syncKey) {
         persistSyncState(storageKeys.syncKey)
       }
 
       setProgress((current) => {
-        const nextSnapshot = applyLearningProgressEvent(current, event)
+        const baseSnapshot = options?.replacePending ? getEmptyLearningGuestProgress() : current
+        const nextSnapshot = events.reduce(
+          (currentSnapshot, event) => applyLearningProgressEvent(currentSnapshot, event),
+          baseSnapshot,
+        )
         saveSnapshotForKey(storageKeys.snapshotKey, nextSnapshot)
         return nextSnapshot
       })
 
       queueSync()
     },
-    [persistSyncState, queueSync, safeWriteToStorage, saveSnapshotForKey, updateSyncEntry],
+    [persistSyncState, queueSync, removeSyncEntries, safeWriteToStorage, saveSnapshotForKey, updateSyncEntry],
   )
 
   useEffect(() => {
     if (!isLoaded) {
-      // Load guest progress immediately so UI renders without waiting for auth
       const guestEvents = loadEventsForKey(GUEST_EVENTS_KEY)
       eventsRef.current = guestEvents
-      recomputeSnapshot(guestEvents, null)
+      const guestSnapshot = loadSnapshotForKey(GUEST_SNAPSHOT_KEY)
+      if (guestSnapshot) {
+        setProgress(guestSnapshot)
+      } else {
+        const nextSnapshot = reduceLearningProgressEvents(guestEvents)
+        saveSnapshotForKey(GUEST_SNAPSHOT_KEY, nextSnapshot)
+        setProgress(nextSnapshot)
+      }
       setIsReady(true)
       setIsSyncedWithAuthState(false)
       return
@@ -542,7 +709,14 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
 
     if (!auth.isAuthenticated || !auth.userId) {
       eventsRef.current = loadEventsForKey(keys.eventsKey)
-      recomputeSnapshot(eventsRef.current, keys.snapshotKey)
+      const localSnapshot = loadSnapshotForKey(keys.snapshotKey)
+      if (localSnapshot) {
+        setProgress(localSnapshot)
+      } else {
+        const nextSnapshot = reduceLearningProgressEvents(eventsRef.current)
+        saveSnapshotForKey(keys.snapshotKey, nextSnapshot)
+        setProgress(nextSnapshot)
+      }
       setIsReady(true)
       setIsSyncedWithAuthState(true)
       return
@@ -554,59 +728,49 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
 
       const guestEvents = loadEventsForKey(GUEST_EVENTS_KEY)
       const localEvents = loadEventsForKey(keys.eventsKey)
+      const guestSnapshot = loadSnapshotForKey(GUEST_SNAPSHOT_KEY)
+      const localSnapshot = loadSnapshotForKey(keys.snapshotKey)
       const localSync = parseSyncState(readJsonFromStorage(keys.syncKey ?? ''))
       syncStateRef.current = localSync
 
-      let remoteEvents: LearningProgressEvent[] = []
-      let remoteSnapshot = null as LearningGuestProgress | null
+      let remoteSnapshot = projectRemoteSnapshot({
+        version: 1,
+        recordsByKey: {},
+        lastUpdated: null,
+      })
       let remoteCursor: string | null = null
       try {
         const remote = await fetchLearningProgress()
         queryClient.setQueryData(progressQueryKey, remote)
-        remoteEvents = remote.events
-        remoteSnapshot = remote.snapshot
+        remoteSnapshot = projectRemoteSnapshot(remote.snapshot)
         remoteCursor = remote.cursor ?? null
       } catch (error) {
         console.warn('Failed to fetch remote learning progress:', error)
       }
 
-      if (remoteEvents.length === 0 && remoteSnapshot) {
-        const hasRemoteData =
-          Object.keys(remoteSnapshot.content).length > 0 ||
-          remoteSnapshot.onboarding.completedAt !== null ||
-          remoteSnapshot.onboarding.pathId !== null ||
-          remoteSnapshot.activePathId !== null
-        if (hasRemoteData) {
-          console.warn('Remote progress snapshot has data but events array is empty. Server must return events.')
-        }
-      }
-
-      const remoteEventIds = new Set(remoteEvents.map((event) => event.eventId))
-      const mergedEvents = mergeEventLogs(guestEvents, localEvents, remoteEvents)
-      let nextSnapshot = reduceLearningProgressEvents(mergedEvents)
+      const mergedPendingEvents = mergeEventLogs(guestEvents, localEvents)
+      let nextSnapshot = mergeLearningGuestProgress(
+        mergeLearningGuestProgress(
+          guestSnapshot ?? getEmptyLearningGuestProgress(),
+          localSnapshot ?? getEmptyLearningGuestProgress(),
+        ),
+        remoteSnapshot,
+      )
 
       if (queuedEventsRef.current.length > 0) {
-        for (const queuedEvent of queuedEventsRef.current) {
-          nextSnapshot = applyLearningProgressEvent(nextSnapshot, queuedEvent)
-        }
-        mergedEvents.push(...queuedEventsRef.current)
+        mergedPendingEvents.push(...queuedEventsRef.current)
         queuedEventsRef.current = []
       }
 
-      eventsRef.current = mergedEvents
+      if (mergedPendingEvents.length > 0) {
+        nextSnapshot = applyEventsToSnapshot(nextSnapshot, mergedPendingEvents, null)
+      }
+
+      eventsRef.current = mergedPendingEvents
+      safeWriteToStorage(keys.eventsKey, mergedPendingEvents)
       saveSnapshotForKey(keys.snapshotKey, nextSnapshot)
-      safeWriteToStorage(keys.eventsKey, mergedEvents)
       setProgress(nextSnapshot)
 
-      for (const event of mergedEvents) {
-        if (remoteEventIds.has(event.eventId)) {
-          updateSyncEntry(event.eventId, (entry) => ({
-            ...entry,
-            status: 'synced',
-            lastSyncedAt: entry.lastSyncedAt ?? nowIso(),
-          }))
-        }
-      }
       if (remoteCursor) {
         syncStateRef.current = {
           ...syncStateRef.current,
@@ -637,17 +801,22 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     progressQueryKey,
     queryClient,
     queueSync,
-    recomputeSnapshot,
+    applyEventsToSnapshot,
     saveSnapshotForKey,
     safeWriteToStorage,
     updateSyncEntry,
+    loadSnapshotForKey,
   ])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
     let storageDebounceTimeout: number | null = null
     const handler = (event: StorageEvent) => {
-      if (event.key?.startsWith('learning_progress_events')) {
+      if (
+        event.key?.startsWith('learning_progress_events') ||
+        event.key?.startsWith('learning_progress_snapshot') ||
+        event.key?.startsWith('learning_progress_sync')
+      ) {
         if (storageDebounceTimeout) window.clearTimeout(storageDebounceTimeout)
         storageDebounceTimeout = window.setTimeout(() => {
           recomputeFromStorage()
@@ -661,86 +830,775 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     }
   }, [recomputeFromStorage])
 
+  const createInteractiveUpdatedEvent = useCallback(
+    (payload: {
+      readonly record: InteractiveStateRecord
+      readonly auditEvents?: readonly InteractiveAuditEvent[]
+    }): LearningProgressEvent => {
+      return {
+        eventId: createEventId(),
+        occurredAt: payload.record.updatedAt,
+        clientId: getClientId(),
+        type: 'interactive.updated',
+        payload,
+      }
+    },
+    [getClientId],
+  )
+
+  const buildContentProjectionEvents = useCallback(
+    (input: SaveContentProgressInput, occurredAt: string): LearningProgressEvent[] => {
+      const currentProgress = progressRef.current
+      const existingContent = currentProgress.content[input.contentId]
+      const existingLessonProgressRecord =
+        currentProgress.interactiveState.recordsByKey[
+          `${SYSTEM_LESSON_PROGRESS_RECORD_PREFIX}${input.contentId}`
+        ]
+      const nextContent = upsertProjectedContentProgress({
+        existing: existingContent,
+        now: occurredAt,
+        contentId: input.contentId,
+        status: input.status,
+        score: clampScore(input.score),
+        contentVersion: input.contentVersion,
+      })
+
+      const nextEvents: LearningProgressEvent[] = [
+        createInteractiveUpdatedEvent({
+          record: createLessonProgressRecord({
+            progress: nextContent,
+            updatedAt: getNextTimestamp(existingLessonProgressRecord?.updatedAt ?? occurredAt),
+          }),
+        }),
+      ]
+
+      const wasCompleted =
+        existingContent?.status === 'completed' || existingContent?.status === 'passed'
+      const isCompleted =
+        nextContent.status === 'completed' || nextContent.status === 'passed'
+
+      if (!wasCompleted && isCompleted) {
+        const existingStreakRecord =
+          currentProgress.interactiveState.recordsByKey[SYSTEM_LEARNING_STREAK_RECORD_KEY]
+        nextEvents.push(
+          createInteractiveUpdatedEvent({
+            record: createLearningStreakRecord({
+              streak: calculateStreakUpdate(currentProgress.streak, toDateString(occurredAt)),
+              updatedAt: getNextTimestamp(existingStreakRecord?.updatedAt ?? occurredAt),
+            }),
+          }),
+        )
+      }
+
+      return nextEvents
+    },
+    [createInteractiveUpdatedEvent],
+  )
+
   const saveContentProgress = useCallback(
     async (input: SaveContentProgressInput) => {
       if (!input.contentId.trim()) throw new Error(t`Missing content id`)
-
-      const event: LearningProgressEvent = {
-        eventId: createEventId(),
-        occurredAt: nowIso(),
-        clientId: getClientId(),
-        type: 'content.progressed',
-        payload: {
-          contentId: input.contentId,
-          status: input.status,
-          score: clampScore(input.score),
-          contentVersion: input.contentVersion,
-          interaction: input.interaction,
-        },
-      }
+      const occurredAt = nowIso()
+      const events = buildContentProjectionEvents(input, occurredAt)
 
       if (isBootstrappingRef.current) {
-        queuedEventsRef.current.push(event)
-        setProgress((current) => applyLearningProgressEvent(current, event))
-        updateSyncEntry(event.eventId, (entry) => ({
-          ...entry,
-          status: 'local',
-        }))
+        queuedEventsRef.current.push(...events)
+        setProgress((current) => events.reduce(
+          (currentSnapshot, event) => applyLearningProgressEvent(currentSnapshot, event),
+          current,
+        ))
+        for (const event of events) {
+          updateSyncEntry(event.eventId, (entry) => ({
+            ...entry,
+            status: 'local',
+          }))
+        }
         return
       }
 
       const keys = getStorageKeys()
-      appendEvent(event, { eventsKey: keys.eventsKey, snapshotKey: keys.snapshotKey, syncKey: keys.syncKey })
+      appendEvents(events, { eventsKey: keys.eventsKey, snapshotKey: keys.snapshotKey, syncKey: keys.syncKey })
     },
-    [appendEvent, getClientId, getStorageKeys, updateSyncEntry],
+    [appendEvents, buildContentProjectionEvents, getStorageKeys, updateSyncEntry],
+  )
+
+  const appendInteractiveUpdateEvent = useCallback(
+    async (payload: {
+      readonly record: InteractiveStateRecord
+      readonly auditEvents?: readonly InteractiveAuditEvent[]
+      readonly content?: SaveContentProgressInput
+    }) => {
+      const nextEvents: LearningProgressEvent[] = [
+        createInteractiveUpdatedEvent({
+          record: payload.record,
+          auditEvents: payload.auditEvents,
+        }),
+        ...(payload.content ? buildContentProjectionEvents(payload.content, payload.record.updatedAt) : []),
+      ]
+
+      if (isBootstrappingRef.current) {
+        queuedEventsRef.current.push(...nextEvents)
+        setProgress((current) => nextEvents.reduce(
+          (currentSnapshot, event) => applyLearningProgressEvent(currentSnapshot, event),
+          current,
+        ))
+        for (const event of nextEvents) {
+          updateSyncEntry(event.eventId, (entry) => ({
+            ...entry,
+            status: 'local',
+          }))
+        }
+        return
+      }
+
+      const keys = getStorageKeys()
+      appendEvents(nextEvents, {
+        eventsKey: keys.eventsKey,
+        snapshotKey: keys.snapshotKey,
+        syncKey: keys.syncKey,
+      })
+    },
+    [appendEvents, buildContentProjectionEvents, createInteractiveUpdatedEvent, getStorageKeys, updateSyncEntry],
+  )
+
+  const getInteractiveRecordForDefinition = useCallback(
+    (
+      definition: Pick<InteractiveDefinition, 'id' | 'scopePolicy'>,
+      entityCui?: string | null,
+    ) => getInteractiveRecord(progress.interactiveState, definition, entityCui),
+    [progress.interactiveState],
+  )
+
+  const getInteractiveAuditLogForRecord = useCallback(
+    (recordKey: string) => getInteractiveAuditLog(progress.interactiveState, recordKey),
+    [progress.interactiveState],
+  )
+
+  const saveInteractiveDraft = useCallback(
+    async (input: SaveInteractiveDraftInput): Promise<InteractiveStateRecord | null> => {
+      const scope = resolveInteractionScope(input.definition, input.entityCui)
+      if (!scope) {
+        return null
+      }
+
+      const existingRecord = getInteractiveRecordForDefinition(
+        input.definition,
+        input.entityCui,
+      )
+
+      const nextRecord = createInteractiveStateRecord({
+        definition: input.definition,
+        scope,
+        phase: 'draft',
+        value: input.value,
+        result: null,
+        updatedAt: getNextTimestamp(existingRecord?.updatedAt),
+        submittedAt: null,
+      })
+
+      await appendInteractiveUpdateEvent({
+        record: nextRecord,
+        content: input.content,
+      })
+      return nextRecord
+    },
+    [appendInteractiveUpdateEvent, getInteractiveRecordForDefinition],
+  )
+
+  const submitInteractive = useCallback(
+    async (input: SubmitInteractiveInput): Promise<InteractiveStateRecord | null> => {
+      const scope = resolveInteractionScope(input.definition, input.entityCui)
+      if (!scope) {
+        return null
+      }
+
+      const existingRecord = getInteractiveRecordForDefinition(
+        input.definition,
+        input.entityCui,
+      )
+      const nextValue = input.value ?? existingRecord?.value ?? null
+      if (!nextValue) {
+        return null
+      }
+
+      const submittedAt = getNextTimestamp(existingRecord?.updatedAt)
+      const nextRecord = createInteractiveStateRecord({
+        definition: input.definition,
+        scope,
+        phase: 'pending',
+        value: nextValue,
+        result: null,
+        updatedAt: submittedAt,
+        submittedAt,
+      })
+
+      const auditEvent: InteractiveAuditEvent = {
+        id: createEventId(),
+        recordKey: nextRecord.key,
+        lessonId: nextRecord.lessonId,
+        interactionId: nextRecord.interactionId,
+        type: 'submitted',
+        at: submittedAt,
+        actor: 'user',
+        value: nextValue,
+      }
+
+      await appendInteractiveUpdateEvent({
+        record: nextRecord,
+        auditEvents: [auditEvent],
+        content: input.content,
+      })
+
+      return nextRecord
+    },
+    [appendInteractiveUpdateEvent, getInteractiveRecordForDefinition],
+  )
+
+  const resolveInteractive = useCallback(
+    async (input: ResolveInteractiveInput): Promise<InteractiveStateRecord | null> => {
+      const scope = resolveInteractionScope(input.definition, input.entityCui)
+      if (!scope) {
+        return null
+      }
+
+      const existingRecord = getInteractiveRecordForDefinition(
+        input.definition,
+        input.entityCui,
+      )
+      const nextValue = input.value ?? existingRecord?.value ?? null
+      if (!nextValue) {
+        return null
+      }
+
+      const updatedAt = getNextTimestamp(existingRecord?.updatedAt)
+      const phase = input.phase ?? 'resolved'
+      const result = {
+        outcome: input.outcome ?? null,
+        score: input.score ?? null,
+        feedbackText: input.feedbackText ?? null,
+        response: input.response ?? null,
+        evaluatedAt: updatedAt,
+      } as const
+
+      const nextRecord = createInteractiveStateRecord({
+        definition: input.definition,
+        scope,
+        phase,
+        value: nextValue,
+        result,
+        updatedAt,
+        submittedAt: updatedAt,
+      })
+
+      const auditEvents: InteractiveAuditEvent[] = [
+        {
+          id: createEventId(),
+          recordKey: nextRecord.key,
+          lessonId: nextRecord.lessonId,
+          interactionId: nextRecord.interactionId,
+          type: 'submitted',
+          at: updatedAt,
+          actor: 'user',
+          value: nextValue,
+        },
+        {
+          id: createEventId(),
+          recordKey: nextRecord.key,
+          lessonId: nextRecord.lessonId,
+          interactionId: nextRecord.interactionId,
+          type: 'evaluated',
+          at: updatedAt,
+          actor: 'system',
+          phase,
+          result,
+        },
+      ]
+
+      await appendInteractiveUpdateEvent({
+        record: nextRecord,
+        auditEvents,
+        content: input.content,
+      })
+
+      return nextRecord
+    },
+    [appendInteractiveUpdateEvent, getInteractiveRecordForDefinition],
+  )
+
+  const applyInteractiveEvaluation = useCallback(
+    async (input: ApplyInteractiveEvaluationInput): Promise<InteractiveStateRecord | null> => {
+      const existingRecord = progress.interactiveState.recordsByKey[input.recordKey]
+      if (!existingRecord) {
+        return null
+      }
+
+      const evaluatedAt = getNextTimestamp(existingRecord.updatedAt)
+      const phase = input.phase ?? 'resolved'
+      const result = {
+        outcome: input.outcome ?? null,
+        score: input.score ?? existingRecord.result?.score ?? null,
+        feedbackText: input.feedbackText ?? null,
+        response: input.response ?? null,
+        evaluatedAt,
+      } as const
+      const nextRecord: InteractiveStateRecord = {
+        ...existingRecord,
+        phase,
+        result,
+        updatedAt: evaluatedAt,
+      }
+
+      const auditEvent: InteractiveAuditEvent = {
+        id: createEventId(),
+        recordKey: nextRecord.key,
+        lessonId: nextRecord.lessonId,
+        interactionId: nextRecord.interactionId,
+        type: 'evaluated',
+        at: evaluatedAt,
+        actor: 'system',
+        phase,
+        result,
+      }
+
+      await appendInteractiveUpdateEvent({
+        record: nextRecord,
+        auditEvents: [auditEvent],
+        content: input.content,
+      })
+
+      return nextRecord
+    },
+    [appendInteractiveUpdateEvent, progress.interactiveState.recordsByKey],
+  )
+
+  const resetInteractive = useCallback(
+    async (input: ResetInteractiveInput): Promise<InteractiveStateRecord | null> => {
+      const scope = resolveInteractionScope(input.definition, input.entityCui)
+      if (!scope) {
+        return null
+      }
+
+      const nextRecord = createInteractiveStateRecord({
+        definition: input.definition,
+        scope,
+        phase: 'idle',
+        value: null,
+        result: null,
+        updatedAt: getNextTimestamp(
+          getInteractiveRecordForDefinition(input.definition, input.entityCui)?.updatedAt,
+        ),
+        submittedAt: null,
+      })
+
+      await appendInteractiveUpdateEvent({ record: nextRecord })
+      return nextRecord
+    },
+    [appendInteractiveUpdateEvent, getInteractiveRecordForDefinition],
   )
 
   const dispatchInteractionAction = useCallback(
     async (action: LearningInteractionAction) => {
-      const context = { progress, nowIso }
-      const resolved = resolveInteractionAction(action, context)
-      await saveContentProgress(resolved)
+      switch (action.type) {
+        case 'quiz.answer': {
+          await resolveInteractive({
+            definition: {
+              id: action.interactionId,
+              lessonId: action.contentId,
+              kind: 'quiz',
+              scopePolicy: 'global',
+              completionRule: { type: 'outcome', outcome: 'correct' },
+            },
+            value: {
+              kind: 'choice',
+              choice: { selectedId: action.selectedOptionId },
+            },
+            outcome: action.score >= 70 ? 'correct' : 'incorrect',
+            score: clampScore(action.score) ?? null,
+            content: {
+              contentId: action.contentId,
+              status: 'in_progress',
+              score: clampScore(action.score),
+              contentVersion: action.contentVersion,
+            },
+          })
+          return
+        }
+        case 'quiz.reset': {
+          await resetInteractive({
+            definition: {
+              id: action.interactionId,
+              lessonId: action.contentId,
+              kind: 'quiz',
+              scopePolicy: 'global',
+              completionRule: { type: 'outcome', outcome: 'correct' },
+            },
+          })
+          return
+        }
+        case 'prediction.reveal': {
+          const definition: InteractiveDefinition = {
+            id: action.interactionId,
+            lessonId: action.contentId,
+            kind: 'custom',
+            scopePolicy: 'global',
+            completionRule: { type: 'resolved' },
+          }
+          const existingRecord = getInteractiveRecordForDefinition(definition)
+          const existingValue = existingRecord?.value?.kind === 'json'
+            ? (existingRecord.value.json.value as Record<string, unknown>)
+            : {}
+          const existingReveals =
+            typeof existingValue.reveals === 'object' && existingValue.reveals !== null
+              ? (existingValue.reveals as Record<string, unknown>)
+              : {}
+          await resolveInteractive({
+            definition,
+            value: {
+              kind: 'json',
+              json: {
+                value: {
+                  reveals: {
+                    ...existingReveals,
+                    [action.year]: {
+                      guess: action.guess,
+                      actualRate: action.actualRate,
+                      revealedAt: nowIso(),
+                    },
+                  },
+                },
+              },
+            },
+            outcome: null,
+            content: {
+              contentId: action.contentId,
+              status: 'in_progress',
+              contentVersion: action.contentVersion,
+            },
+          })
+          return
+        }
+        case 'prediction.reset': {
+          await resetInteractive({
+            definition: {
+              id: action.interactionId,
+              lessonId: action.contentId,
+              kind: 'custom',
+              scopePolicy: 'global',
+              completionRule: { type: 'resolved' },
+            },
+          })
+          return
+        }
+        case 'salaryCalculator.save': {
+          const definition: InteractiveDefinition = {
+            id: action.interactionId,
+            lessonId: action.contentId,
+            kind: 'custom',
+            scopePolicy: 'global',
+            completionRule: { type: 'resolved' },
+          }
+          const nextValue: InteractionValue = {
+            kind: 'json',
+            json: {
+              value: {
+                gross: action.gross,
+                userGuess: action.userGuess,
+                step: action.step,
+              },
+            },
+          }
+
+          if (action.step === 'REVEAL') {
+            await resolveInteractive({
+              definition,
+              value: nextValue,
+              outcome: null,
+              content: {
+                contentId: action.contentId,
+                status: 'in_progress',
+                contentVersion: action.contentVersion,
+              },
+            })
+          } else {
+            await saveInteractiveDraft({
+              definition,
+              value: nextValue,
+              content: {
+                contentId: action.contentId,
+                status: 'in_progress',
+                contentVersion: action.contentVersion,
+              },
+            })
+          }
+          return
+        }
+        case 'salaryCalculator.reset': {
+          await resetInteractive({
+            definition: {
+              id: action.interactionId,
+              lessonId: action.contentId,
+              kind: 'custom',
+              scopePolicy: 'global',
+              completionRule: { type: 'resolved' },
+            },
+          })
+          return
+        }
+        case 'budgetAllocator.submit': {
+          await resolveInteractive({
+            definition: {
+              id: action.interactionId,
+              lessonId: action.contentId,
+              kind: 'custom',
+              scopePolicy: 'global',
+              completionRule: { type: 'resolved' },
+            },
+            value: {
+              kind: 'json',
+              json: {
+                value: {
+                  allocations: action.allocations,
+                  step: 'COMPARE',
+                },
+              },
+            },
+            outcome: null,
+            score: 100,
+            content: {
+              contentId: action.contentId,
+              status: 'completed',
+              score: 100,
+              contentVersion: action.contentVersion,
+            },
+          })
+          return
+        }
+        case 'budgetAllocator.reset': {
+          await resetInteractive({
+            definition: {
+              id: action.interactionId,
+              lessonId: action.contentId,
+              kind: 'custom',
+              scopePolicy: 'global',
+              completionRule: { type: 'resolved' },
+            },
+          })
+          return
+        }
+        case 'budgetCycle.explore': {
+          const definition: InteractiveDefinition = {
+            id: action.interactionId,
+            lessonId: action.contentId,
+            kind: 'custom',
+            scopePolicy: 'global',
+            completionRule: { type: 'resolved' },
+          }
+          const existingRecord = getInteractiveRecordForDefinition(definition)
+          const existingValue = existingRecord?.value?.kind === 'json'
+            ? (existingRecord.value.json.value as Record<string, unknown>)
+            : {}
+          const existingExploredPhases = Array.isArray(existingValue.exploredPhases)
+            ? existingValue.exploredPhases.filter((phaseId): phaseId is string => typeof phaseId === 'string')
+            : []
+          const exploredPhases = existingExploredPhases.includes(action.phaseId)
+            ? existingExploredPhases
+            : [...existingExploredPhases, action.phaseId]
+          const allPhasesExplored = exploredPhases.length === 6
+          const nextValue: InteractionValue = {
+            kind: 'json',
+            json: {
+              value: {
+                exploredPhases,
+                lastExploredPhase: action.phaseId,
+              },
+            },
+          }
+
+          if (allPhasesExplored) {
+            await resolveInteractive({
+              definition,
+              value: nextValue,
+              outcome: null,
+              score: Math.round((exploredPhases.length / 6) * 100),
+              content: {
+                contentId: action.contentId,
+                status: 'completed',
+                score: Math.round((exploredPhases.length / 6) * 100),
+                contentVersion: action.contentVersion,
+              },
+            })
+          } else {
+            await saveInteractiveDraft({
+              definition,
+              value: nextValue,
+              content: {
+                contentId: action.contentId,
+                status: 'in_progress',
+                score: Math.round((exploredPhases.length / 6) * 100),
+                contentVersion: action.contentVersion,
+              },
+            })
+          }
+          return
+        }
+        case 'budgetCycle.reset': {
+          await resetInteractive({
+            definition: {
+              id: action.interactionId,
+              lessonId: action.contentId,
+              kind: 'custom',
+              scopePolicy: 'global',
+              completionRule: { type: 'resolved' },
+            },
+          })
+          return
+        }
+        case 'uatFinder.select': {
+          await saveInteractiveDraft({
+            definition: {
+              id: action.interactionId,
+              lessonId: action.contentId,
+              kind: 'custom',
+              scopePolicy: 'global',
+              completionRule: { type: 'resolved' },
+            },
+            value: {
+              kind: 'json',
+              json: {
+                value: {
+                  step: 'SELECTED',
+                  selectedCui: action.cui,
+                  selectedName: action.name,
+                  exploredAction: null,
+                },
+              },
+            },
+            content: {
+              contentId: action.contentId,
+              status: 'in_progress',
+              contentVersion: action.contentVersion,
+            },
+          })
+          return
+        }
+        case 'uatFinder.explore': {
+          const definition: InteractiveDefinition = {
+            id: action.interactionId,
+            lessonId: action.contentId,
+            kind: 'custom',
+            scopePolicy: 'global',
+            completionRule: { type: 'resolved' },
+          }
+          const existingRecord = getInteractiveRecordForDefinition(definition)
+          const existingValue = existingRecord?.value?.kind === 'json'
+            ? (existingRecord.value.json.value as Record<string, unknown>)
+            : {}
+          await resolveInteractive({
+            definition,
+            value: {
+              kind: 'json',
+              json: {
+                value: {
+                  step: 'EXPLORED',
+                  selectedCui: action.cui,
+                  selectedName:
+                    typeof existingValue.selectedName === 'string'
+                      ? existingValue.selectedName
+                      : null,
+                  exploredAction: action.action,
+                },
+              },
+            },
+            outcome: null,
+            content: {
+              contentId: action.contentId,
+              status: 'in_progress',
+              contentVersion: action.contentVersion,
+            },
+          })
+          return
+        }
+        case 'uatFinder.reset': {
+          await resetInteractive({
+            definition: {
+              id: action.interactionId,
+              lessonId: action.contentId,
+              kind: 'custom',
+              scopePolicy: 'global',
+              completionRule: { type: 'resolved' },
+            },
+          })
+          return
+        }
+        default: {
+          const _exhaustive: never = action
+          throw new Error(`Unhandled interaction action type: ${(_exhaustive as LearningInteractionAction).type}`)
+        }
+      }
     },
-    [progress, saveContentProgress],
+    [
+      getInteractiveRecordForDefinition,
+      resetInteractive,
+      resolveInteractive,
+      saveInteractiveDraft,
+    ],
   )
 
   const saveOnboarding = useCallback(
     async (input: SaveOnboardingInput) => {
       if (!input.pathId.trim()) throw new Error(t`Missing path id`)
-
-      const event: LearningProgressEvent = {
-        eventId: createEventId(),
-        occurredAt: nowIso(),
-        clientId: getClientId(),
-        type: 'onboarding.completed',
-        payload: { pathId: input.pathId, relatedPaths: input.relatedPaths ?? [] },
-      }
+      const occurredAt = nowIso()
+      const currentRecords = progressRef.current.interactiveState.recordsByKey
+      const existingOnboardingRecord = currentRecords[SYSTEM_LEARNING_ONBOARDING_RECORD_KEY]
+      const existingActivePathRecord = currentRecords[SYSTEM_LEARNING_ACTIVE_PATH_RECORD_KEY]
+      const events: LearningProgressEvent[] = [
+        createInteractiveUpdatedEvent({
+          record: createLearningOnboardingRecord({
+            pathId: input.pathId,
+            relatedPaths: input.relatedPaths ?? [],
+            completedAt: occurredAt,
+            updatedAt: getNextTimestamp(existingOnboardingRecord?.updatedAt ?? occurredAt),
+          }),
+        }),
+        createInteractiveUpdatedEvent({
+          record: createLearningActivePathRecord({
+            pathId: input.pathId,
+            updatedAt: getNextTimestamp(existingActivePathRecord?.updatedAt ?? occurredAt),
+          }),
+        }),
+      ]
 
       const keys = getStorageKeys()
       if (isBootstrappingRef.current) {
-        queuedEventsRef.current.push(event)
-        setProgress((current) => applyLearningProgressEvent(current, event))
-        updateSyncEntry(event.eventId, (entry) => ({
-          ...entry,
-          status: 'local',
-        }))
+        queuedEventsRef.current.push(...events)
+        setProgress((current) => events.reduce(
+          (currentSnapshot, event) => applyLearningProgressEvent(currentSnapshot, event),
+          current,
+        ))
+        for (const event of events) {
+          updateSyncEntry(event.eventId, (entry) => ({
+            ...entry,
+            status: 'local',
+          }))
+        }
         return
       }
 
-      appendEvent(event, { eventsKey: keys.eventsKey, snapshotKey: keys.snapshotKey, syncKey: keys.syncKey })
+      appendEvents(events, { eventsKey: keys.eventsKey, snapshotKey: keys.snapshotKey, syncKey: keys.syncKey })
     },
-    [appendEvent, getClientId, getStorageKeys, updateSyncEntry],
+    [appendEvents, createInteractiveUpdatedEvent, getStorageKeys, updateSyncEntry],
   )
 
   const setActivePathId = useCallback(
     async (pathId: string | null) => {
-      const event: LearningProgressEvent = {
-        eventId: createEventId(),
-        occurredAt: nowIso(),
-        clientId: getClientId(),
-        type: 'activePath.set',
-        payload: { pathId },
-      }
+      const event = createInteractiveUpdatedEvent({
+        record: createLearningActivePathRecord({
+          pathId,
+          updatedAt: getNextTimestamp(
+            progressRef.current.interactiveState.recordsByKey[SYSTEM_LEARNING_ACTIVE_PATH_RECORD_KEY]?.updatedAt,
+          ),
+        }),
+      })
 
       const keys = getStorageKeys()
       if (isBootstrappingRef.current) {
@@ -753,32 +1611,51 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
         return
       }
 
-      appendEvent(event, { eventsKey: keys.eventsKey, snapshotKey: keys.snapshotKey, syncKey: keys.syncKey })
+      appendEvents([event], { eventsKey: keys.eventsKey, snapshotKey: keys.snapshotKey, syncKey: keys.syncKey })
     },
-    [appendEvent, getClientId, getStorageKeys, updateSyncEntry],
+    [appendEvents, createInteractiveUpdatedEvent, getStorageKeys, updateSyncEntry],
   )
 
   const resetOnboarding = useCallback(async () => {
-    const event: LearningProgressEvent = {
-      eventId: createEventId(),
-      occurredAt: nowIso(),
-      clientId: getClientId(),
-      type: 'onboarding.reset',
-    }
+    const occurredAt = nowIso()
+    const currentRecords = progressRef.current.interactiveState.recordsByKey
+    const existingOnboardingRecord = currentRecords[SYSTEM_LEARNING_ONBOARDING_RECORD_KEY]
+    const existingActivePathRecord = currentRecords[SYSTEM_LEARNING_ACTIVE_PATH_RECORD_KEY]
+    const events: LearningProgressEvent[] = [
+      createInteractiveUpdatedEvent({
+        record: createLearningOnboardingRecord({
+          pathId: null,
+          relatedPaths: [],
+          completedAt: null,
+          updatedAt: getNextTimestamp(existingOnboardingRecord?.updatedAt ?? occurredAt),
+        }),
+      }),
+      createInteractiveUpdatedEvent({
+        record: createLearningActivePathRecord({
+          pathId: null,
+          updatedAt: getNextTimestamp(existingActivePathRecord?.updatedAt ?? occurredAt),
+        }),
+      }),
+    ]
 
     const keys = getStorageKeys()
     if (isBootstrappingRef.current) {
-      queuedEventsRef.current.push(event)
-      setProgress((current) => applyLearningProgressEvent(current, event))
-      updateSyncEntry(event.eventId, (entry) => ({
-        ...entry,
-        status: 'local',
-      }))
+      queuedEventsRef.current.push(...events)
+      setProgress((current) => events.reduce(
+        (currentSnapshot, event) => applyLearningProgressEvent(currentSnapshot, event),
+        current,
+      ))
+      for (const event of events) {
+        updateSyncEntry(event.eventId, (entry) => ({
+          ...entry,
+          status: 'local',
+        }))
+      }
       return
     }
 
-    appendEvent(event, { eventsKey: keys.eventsKey, snapshotKey: keys.snapshotKey, syncKey: keys.syncKey })
-  }, [appendEvent, getClientId, getStorageKeys, updateSyncEntry])
+    appendEvents(events, { eventsKey: keys.eventsKey, snapshotKey: keys.snapshotKey, syncKey: keys.syncKey })
+  }, [appendEvents, createInteractiveUpdatedEvent, getStorageKeys, updateSyncEntry])
 
   const getContentProgress = useCallback(
     (contentId: string) => {
@@ -797,7 +1674,8 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
 
     const keys = getStorageKeys()
     if (isBootstrappingRef.current) {
-      queuedEventsRef.current.push(event)
+      queuedEventsRef.current = [event]
+      removeSyncEntries(Object.keys(syncStateRef.current.events))
       setProgress((current) => applyLearningProgressEvent(current, event))
       updateSyncEntry(event.eventId, (entry) => ({
         ...entry,
@@ -806,8 +1684,12 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       return
     }
 
-    appendEvent(event, { eventsKey: keys.eventsKey, snapshotKey: keys.snapshotKey, syncKey: keys.syncKey })
-  }, [appendEvent, getClientId, getStorageKeys, updateSyncEntry])
+    appendEvents(
+      [event],
+      { eventsKey: keys.eventsKey, snapshotKey: keys.snapshotKey, syncKey: keys.syncKey },
+      { replacePending: true },
+    )
+  }, [appendEvents, getClientId, getStorageKeys, removeSyncEntries, updateSyncEntry])
 
   const value = useMemo<LearningProgressContextValue>(
     () => ({
@@ -816,7 +1698,14 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       auth,
       progress,
       getContentProgress,
+      getInteractiveRecord: getInteractiveRecordForDefinition,
+      getInteractiveAuditLog: getInteractiveAuditLogForRecord,
       saveContentProgress,
+      saveInteractiveDraft,
+      submitInteractive,
+      resolveInteractive,
+      applyInteractiveEvaluation,
+      resetInteractive,
       dispatchInteractionAction,
       saveOnboarding,
       setActivePathId,
@@ -830,7 +1719,14 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       auth,
       progress,
       getContentProgress,
+      getInteractiveRecordForDefinition,
+      getInteractiveAuditLogForRecord,
       saveContentProgress,
+      saveInteractiveDraft,
+      submitInteractive,
+      resolveInteractive,
+      applyInteractiveEvaluation,
+      resetInteractive,
       dispatchInteractionAction,
       saveOnboarding,
       setActivePathId,

@@ -208,6 +208,8 @@ function extractInteractive(node: MdxJsxNode): ChallengeStepSectionInteractive |
     const question = typeof props.question === 'string' ? props.question : ''
     const explanation =
       typeof props.explanation === 'string' ? props.explanation : ''
+    const scopePolicy =
+      props.scopePolicy === 'entity' ? 'entity' : 'global'
     const options = normalizeQuizOptions(props.options)
 
     if (!id || !question || options.length === 0) {
@@ -220,6 +222,7 @@ function extractInteractive(node: MdxJsxNode): ChallengeStepSectionInteractive |
       question,
       options,
       explanation,
+      scopePolicy,
     }
   }
 

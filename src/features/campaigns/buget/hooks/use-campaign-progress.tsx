@@ -1,19 +1,28 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { parseLearningProgressEvents } from '@/features/learning/schemas/progress-events'
+import type { InteractiveStateRecord, LearningProgressEvent } from '@/features/learning/types'
 import { useAuth } from '@/lib/auth'
-import {
-  CAMPAIGN_ID,
-  CAMPAIGN_PROGRESS_STORAGE_KEY,
-} from '../constants'
-import {
-  createChallengeProgress,
-  getEmptyCampaignProgressSnapshot,
-  parseCampaignProgressSnapshot,
-} from '../schemas/progress-schema'
+import { CAMPAIGN_ID, CAMPAIGN_PROGRESS_STORAGE_KEY } from '../constants'
 import { fetchCampaignProgress, syncCampaignProgress } from '../api/campaign-progress'
-import type {
-  CampaignChallengeStatus,
-  CampaignProgressSnapshot,
-} from '../types'
+import { getEmptyCampaignProgressSnapshot, parseCampaignProgressSnapshot } from '../schemas/progress-schema'
+import {
+  CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY,
+  CAMPAIGN_ACTIVE_MODULE_RECORD_KEY,
+  CAMPAIGN_ONBOARDING_RECORD_KEY,
+  CAMPAIGN_SELECTED_ENTITY_RECORD_KEY,
+  applyCampaignProgressEventsToRecords,
+  createCampaignAcceptedTermsRecord,
+  buildCampaignProgressRecords,
+  createCampaignActiveModuleRecord,
+  createCampaignChallengeRecord,
+  createCampaignOnboardingRecord,
+  createCampaignSelectedEntityRecord,
+  diffCampaignProgressRecords,
+  filterCampaignProgressEvents,
+  mergeCampaignProgressRecords,
+  projectCampaignProgressFromRecords,
+} from '../utils/progress-records'
+import type { CampaignChallengeStatus, CampaignProgressSnapshot } from '../types'
 
 type CampaignProgressContextValue = {
   readonly isReady: boolean
@@ -28,68 +37,188 @@ type CampaignProgressContextValue = {
   readonly setActiveChallengeModule: (input: { moduleSlug: string | null }) => void
   readonly markChallengeInProgress: (challengeSlug: string) => void
   readonly completeOnboarding: (input: { locality: string }) => void
+  readonly acceptChallengeTerms: (input?: { acceptedTermsAt?: string }) => void
+  readonly resetAcceptedChallengeTerms: () => void
   readonly resetProgress: () => void
   readonly sync: () => Promise<void>
 }
 
+type CampaignProgressSyncState = {
+  version: 1
+  lastSuccessfulSyncAt: string | null
+  lastSyncedCursor: string | null
+}
+
+const CAMPAIGN_PROGRESS_EVENTS_STORAGE_KEY = `campaign_progress_events:${CAMPAIGN_ID}`
+const CAMPAIGN_PROGRESS_SYNC_STORAGE_KEY = `campaign_progress_sync:${CAMPAIGN_ID}`
+const CAMPAIGN_PROGRESS_CLIENT_ID_STORAGE_KEY = `campaign_progress_client_id:${CAMPAIGN_ID}`
+const SYNC_DEBOUNCE_MS = 1200
+
 const CampaignProgressContext = createContext<CampaignProgressContextValue | null>(null)
 
-function readSnapshotFromStorage(): CampaignProgressSnapshot | null {
-  if (typeof window === 'undefined') return null
+function getAuthSnapshotKey(userId: string): string {
+  return `${CAMPAIGN_PROGRESS_STORAGE_KEY}:${userId}`
+}
 
-  const raw = window.localStorage.getItem(CAMPAIGN_PROGRESS_STORAGE_KEY)
+function getAuthEventsKey(userId: string): string {
+  return `${CAMPAIGN_PROGRESS_EVENTS_STORAGE_KEY}:${userId}`
+}
+
+function getAuthSyncKey(userId: string): string {
+  return `${CAMPAIGN_PROGRESS_SYNC_STORAGE_KEY}:${userId}`
+}
+
+function getEmptySyncState(): CampaignProgressSyncState {
+  return {
+    version: 1,
+    lastSuccessfulSyncAt: null,
+    lastSyncedCursor: null,
+  }
+}
+
+function parseSyncState(raw: unknown): CampaignProgressSyncState {
+  if (!raw || typeof raw !== 'object') {
+    return getEmptySyncState()
+  }
+
+  const record = raw as Partial<CampaignProgressSyncState>
+  return {
+    version: 1,
+    lastSuccessfulSyncAt: typeof record.lastSuccessfulSyncAt === 'string' ? record.lastSuccessfulSyncAt : null,
+    lastSyncedCursor: typeof record.lastSyncedCursor === 'string' ? record.lastSyncedCursor : null,
+  }
+}
+
+function readJsonFromStorage(key: string): unknown {
+  if (typeof window === 'undefined') return null
+  const raw = window.localStorage.getItem(key)
   if (!raw) return null
 
   try {
-    const parsed = JSON.parse(raw) as unknown
-    return parseCampaignProgressSnapshot(parsed)
+    return JSON.parse(raw) as unknown
   } catch {
     return null
   }
 }
 
-function writeSnapshotToStorage(snapshot: CampaignProgressSnapshot): void {
+function writeJsonToStorage(key: string, value: unknown): void {
   if (typeof window === 'undefined') return
-  window.localStorage.setItem(CAMPAIGN_PROGRESS_STORAGE_KEY, JSON.stringify(snapshot))
+
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value))
+  } catch (error) {
+    console.warn('Failed to persist campaign progress to localStorage.', error)
+  }
 }
 
-function mergeCampaignProgressSnapshots(
-  localSnapshot: CampaignProgressSnapshot,
-  remoteSnapshot: CampaignProgressSnapshot,
-): CampaignProgressSnapshot {
-  const preferLocalValues = localSnapshot.lastUpdated > remoteSnapshot.lastUpdated
-  const mergedChallenges = { ...localSnapshot.challenges }
+function removeFromStorage(key: string): void {
+  if (typeof window === 'undefined') return
+  window.localStorage.removeItem(key)
+}
 
-  for (const [challengeSlug, remoteChallengeProgress] of Object.entries(remoteSnapshot.challenges)) {
-    const localChallengeProgress = mergedChallenges[challengeSlug]
+function loadSnapshotForKey(snapshotKey: string): CampaignProgressSnapshot | null {
+  const rawSnapshot = readJsonFromStorage(snapshotKey)
+  if (!rawSnapshot) {
+    return null
+  }
 
-    if (!localChallengeProgress || remoteChallengeProgress.updatedAt > localChallengeProgress.updatedAt) {
-      mergedChallenges[challengeSlug] = remoteChallengeProgress
+  try {
+    return parseCampaignProgressSnapshot(rawSnapshot)
+  } catch {
+    return null
+  }
+}
+
+function loadEventsForKey(eventsKey: string): LearningProgressEvent[] {
+  return filterCampaignProgressEvents(parseLearningProgressEvents(readJsonFromStorage(eventsKey)))
+}
+
+function nowIso(): string {
+  return new Date().toISOString()
+}
+
+function getNextTimestamp(previousTimestamp?: string | null): string {
+  const currentTime = Date.now()
+  const previousTime = previousTimestamp ? Date.parse(previousTimestamp) : 0
+  const nextTime = Number.isFinite(previousTime)
+    ? Math.max(currentTime, previousTime + 1)
+    : currentTime
+  return new Date(nextTime).toISOString()
+}
+
+function createEventId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID()
+  }
+
+  return `campaign-event-${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
+
+function mergeEventLogs(...logs: readonly (readonly LearningProgressEvent[])[]): LearningProgressEvent[] {
+  const eventsById = new Map<string, LearningProgressEvent>()
+
+  for (const log of logs) {
+    for (const event of log) {
+      if (!eventsById.has(event.eventId)) {
+        eventsById.set(event.eventId, event)
+      }
     }
   }
 
-  return {
-    ...localSnapshot,
-    campaignId: remoteSnapshot.campaignId,
-    onboardingCompletedAt:
-      remoteSnapshot.onboardingCompletedAt &&
-      (!localSnapshot.onboardingCompletedAt || remoteSnapshot.onboardingCompletedAt > localSnapshot.onboardingCompletedAt)
-        ? remoteSnapshot.onboardingCompletedAt
-        : localSnapshot.onboardingCompletedAt,
-    selectedLocality: preferLocalValues
-      ? localSnapshot.selectedLocality ?? remoteSnapshot.selectedLocality
-      : remoteSnapshot.selectedLocality ?? localSnapshot.selectedLocality,
-    selectedEntityCui: preferLocalValues
-      ? localSnapshot.selectedEntityCui ?? remoteSnapshot.selectedEntityCui
-      : remoteSnapshot.selectedEntityCui ?? localSnapshot.selectedEntityCui,
-    activeChallengeModuleSlug: preferLocalValues
-      ? localSnapshot.activeChallengeModuleSlug ?? remoteSnapshot.activeChallengeModuleSlug
-      : remoteSnapshot.activeChallengeModuleSlug ?? localSnapshot.activeChallengeModuleSlug,
-    challenges: mergedChallenges,
-    lastUpdated: localSnapshot.lastUpdated > remoteSnapshot.lastUpdated
-      ? localSnapshot.lastUpdated
-      : remoteSnapshot.lastUpdated,
+  return Array.from(eventsById.values()).sort((leftEvent, rightEvent) => {
+    if (leftEvent.occurredAt !== rightEvent.occurredAt) {
+      return leftEvent.occurredAt.localeCompare(rightEvent.occurredAt)
+    }
+
+    return leftEvent.eventId.localeCompare(rightEvent.eventId)
+  })
+}
+
+function hasProgressData(snapshot: CampaignProgressSnapshot | null): boolean {
+  if (!snapshot) {
+    return false
   }
+
+  return snapshot.onboardingCompletedAt !== null
+    || snapshot.acceptedTermsAt !== null
+    || snapshot.selectedLocality !== null
+    || snapshot.selectedEntityCui !== null
+    || snapshot.activeChallengeModuleSlug !== null
+    || Object.keys(snapshot.challenges).length > 0
+}
+
+function getRecordUpdatedAt(snapshot: CampaignProgressSnapshot, recordKey: string): string | null {
+  if (recordKey === CAMPAIGN_ONBOARDING_RECORD_KEY) {
+    return snapshot.onboardingCompletedAt ?? snapshot.lastUpdated
+  }
+
+  if (recordKey === CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY) {
+    return snapshot.acceptedTermsAt ?? snapshot.lastUpdated
+  }
+
+  if (recordKey === CAMPAIGN_SELECTED_ENTITY_RECORD_KEY || recordKey === CAMPAIGN_ACTIVE_MODULE_RECORD_KEY) {
+    return snapshot.lastUpdated
+  }
+
+  const challengePrefix = `system:campaign:${CAMPAIGN_ID}:challenge:`
+  if (recordKey.startsWith(challengePrefix)) {
+    const challengeSlug = recordKey.slice(challengePrefix.length)
+    return snapshot.challenges[challengeSlug]?.updatedAt ?? snapshot.lastUpdated
+  }
+
+  return snapshot.lastUpdated
+}
+
+function applyEventsToSnapshot(
+  baseSnapshot: CampaignProgressSnapshot,
+  events: readonly LearningProgressEvent[],
+): CampaignProgressSnapshot {
+  const nextRecords = applyCampaignProgressEventsToRecords(
+    buildCampaignProgressRecords(baseSnapshot),
+    events,
+  )
+
+  return projectCampaignProgressFromRecords(nextRecords, baseSnapshot.lastUpdated)
 }
 
 export function CampaignProgressProvider({ children }: { readonly children: React.ReactNode }) {
@@ -103,58 +232,431 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
   const [remoteSelectedEntityCui, setRemoteSelectedEntityCui] = useState<string | null>(null)
 
   const progressRef = useRef(progress)
+  progressRef.current = progress
 
-  useEffect(() => {
-    progressRef.current = progress
-  }, [progress])
+  const eventsRef = useRef<LearningProgressEvent[]>([])
+  const syncStateRef = useRef<CampaignProgressSyncState>(getEmptySyncState())
+  const clientIdRef = useRef<string | null>(null)
+  const syncTimeoutRef = useRef<number | null>(null)
+  const syncInFlightRef = useRef(false)
+  const syncNowRef = useRef<() => Promise<void>>(async () => {})
+  const isBootstrappingRef = useRef(false)
+  const queuedEventsRef = useRef<LearningProgressEvent[]>([])
 
-  useEffect(() => {
-    const storedSnapshot = readSnapshotFromStorage()
-
-    if (storedSnapshot && storedSnapshot.campaignId === CAMPAIGN_ID) {
-      setProgress(storedSnapshot)
-      setLocalSelectedEntityCui(storedSnapshot.selectedEntityCui)
-    } else {
-      const emptySnapshot = getEmptyCampaignProgressSnapshot()
-      setProgress(emptySnapshot)
-      writeSnapshotToStorage(emptySnapshot)
-      setLocalSelectedEntityCui(emptySnapshot.selectedEntityCui)
+  const getStorageKeys = useCallback(() => {
+    if (isSignedIn && user?.id) {
+      return {
+        snapshotKey: getAuthSnapshotKey(user.id),
+        eventsKey: getAuthEventsKey(user.id),
+        syncKey: getAuthSyncKey(user.id),
+      }
     }
 
-    setIsReady(true)
+    return {
+      snapshotKey: CAMPAIGN_PROGRESS_STORAGE_KEY,
+      eventsKey: CAMPAIGN_PROGRESS_EVENTS_STORAGE_KEY,
+      syncKey: null,
+    }
+  }, [isSignedIn, user?.id])
+
+  const getClientId = useCallback((): string => {
+    if (clientIdRef.current) {
+      return clientIdRef.current
+    }
+
+    const storedClientId = readJsonFromStorage(CAMPAIGN_PROGRESS_CLIENT_ID_STORAGE_KEY)
+    if (typeof storedClientId === 'string' && storedClientId.trim().length > 0) {
+      clientIdRef.current = storedClientId
+      return storedClientId
+    }
+
+    const generatedClientId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `campaign-client-${Date.now()}-${Math.random().toString(16).slice(2)}`
+
+    clientIdRef.current = generatedClientId
+    writeJsonToStorage(CAMPAIGN_PROGRESS_CLIENT_ID_STORAGE_KEY, generatedClientId)
+    return generatedClientId
+  }, [])
+
+  const createInteractiveUpdatedEvent = useCallback((record: InteractiveStateRecord): LearningProgressEvent => {
+    return {
+      eventId: createEventId(),
+      clientId: getClientId(),
+      occurredAt: record.updatedAt,
+      type: 'interactive.updated',
+      payload: {
+        record,
+      },
+    }
+  }, [getClientId])
+
+  const persistSnapshot = useCallback((snapshotKey: string, snapshot: CampaignProgressSnapshot): void => {
+    writeJsonToStorage(snapshotKey, snapshot)
+  }, [])
+
+  const persistEvents = useCallback((eventsKey: string, events: readonly LearningProgressEvent[]): void => {
+    writeJsonToStorage(eventsKey, events)
+  }, [])
+
+  const persistSyncState = useCallback((syncKey: string | null): void => {
+    if (!syncKey) return
+    writeJsonToStorage(syncKey, syncStateRef.current)
+  }, [])
+
+  const recomputeFromStorage = useCallback(() => {
+    const keys = getStorageKeys()
+    const storedSnapshot = loadSnapshotForKey(keys.snapshotKey) ?? getEmptyCampaignProgressSnapshot()
+    const storedEvents = loadEventsForKey(keys.eventsKey)
+    const nextSnapshot = storedEvents.length > 0
+      ? applyEventsToSnapshot(storedSnapshot, storedEvents)
+      : storedSnapshot
+
+    eventsRef.current = storedEvents
+    setProgress(nextSnapshot)
+    setLocalSelectedEntityCui(nextSnapshot.selectedEntityCui)
+  }, [getStorageKeys])
+
+  const queueSync = useCallback(() => {
+    if (!isSignedIn || !user?.id) {
+      return
+    }
+
+    if (syncTimeoutRef.current) {
+      window.clearTimeout(syncTimeoutRef.current)
+    }
+
+    syncTimeoutRef.current = window.setTimeout(() => {
+      void syncNowRef.current()
+    }, SYNC_DEBOUNCE_MS)
+  }, [isSignedIn, user?.id])
+
+  const appendEvents = useCallback((events: readonly LearningProgressEvent[]) => {
+    if (events.length === 0) {
+      return
+    }
+
+    if (isBootstrappingRef.current) {
+      queuedEventsRef.current = mergeEventLogs(queuedEventsRef.current, events)
+      setProgress((current) => applyEventsToSnapshot(current, events))
+      return
+    }
+
+    const keys = getStorageKeys()
+    const nextEvents = mergeEventLogs(eventsRef.current, events)
+    const nextSnapshot = applyEventsToSnapshot(progressRef.current, events)
+
+    eventsRef.current = nextEvents
+    persistEvents(keys.eventsKey, nextEvents)
+    persistSnapshot(keys.snapshotKey, nextSnapshot)
+    setProgress(nextSnapshot)
+    setLocalSelectedEntityCui(nextSnapshot.selectedEntityCui)
+
+    queueSync()
+  }, [getStorageKeys, persistEvents, persistSnapshot, queueSync])
+
+  const refreshRemoteProgress = useCallback(async () => {
+    if (!isSignedIn || !user?.id) {
+      return
+    }
+
+    const keys = getStorageKeys()
+    const since = syncStateRef.current.lastSyncedCursor
+
+    try {
+      const remote = await fetchCampaignProgress(since ? { since } : {})
+      setRemoteSelectedEntityCui(remote.snapshot.selectedEntityCui)
+      const nextSnapshot = since
+        ? applyEventsToSnapshot(progressRef.current, remote.events)
+        : projectCampaignProgressFromRecords(
+            mergeCampaignProgressRecords(
+              buildCampaignProgressRecords(progressRef.current),
+              remote.recordsByKey,
+            ),
+            progressRef.current.lastUpdated,
+          )
+
+      persistSnapshot(keys.snapshotKey, nextSnapshot)
+      setProgress(nextSnapshot)
+      setLocalSelectedEntityCui(nextSnapshot.selectedEntityCui)
+
+      syncStateRef.current = {
+        ...syncStateRef.current,
+        lastSyncedCursor: remote.cursor,
+      }
+      persistSyncState(keys.syncKey)
+    } catch (error) {
+      console.warn('Failed to pull remote campaign progress:', error)
+    }
+  }, [getStorageKeys, isSignedIn, persistSnapshot, persistSyncState, user?.id])
+
+  const syncNow = useCallback(async () => {
+    if (!isSignedIn || !user?.id) {
+      return
+    }
+
+    if (isBootstrappingRef.current || syncInFlightRef.current) {
+      return
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      return
+    }
+
+    const keys = getStorageKeys()
+    const pendingEvents = eventsRef.current
+
+    syncInFlightRef.current = true
+    setIsSyncing(true)
+
+    try {
+      if (pendingEvents.length > 0) {
+        const clientUpdatedAt = pendingEvents[pendingEvents.length - 1]?.occurredAt ?? progressRef.current.lastUpdated
+        await syncCampaignProgress({
+          events: pendingEvents,
+          clientUpdatedAt,
+        })
+
+        eventsRef.current = []
+        persistEvents(keys.eventsKey, [])
+        syncStateRef.current = {
+          ...syncStateRef.current,
+          lastSuccessfulSyncAt: nowIso(),
+        }
+        persistSyncState(keys.syncKey)
+      }
+
+      await refreshRemoteProgress()
+    } catch (error) {
+      console.warn('Failed to sync campaign progress:', error)
+    } finally {
+      syncInFlightRef.current = false
+      setIsSyncing(false)
+    }
+  }, [getStorageKeys, isSignedIn, persistEvents, persistSyncState, refreshRemoteProgress, user?.id])
+
+  const sync = useCallback(async () => {
+    await syncNow()
+  }, [syncNow])
+
+  useEffect(() => {
+    syncNowRef.current = syncNow
+  }, [syncNow])
+
+  useEffect(() => {
+    return () => {
+      if (syncTimeoutRef.current) {
+        window.clearTimeout(syncTimeoutRef.current)
+      }
+    }
   }, [])
 
   useEffect(() => {
-    if (!isReady) return
-    writeSnapshotToStorage(progress)
-  }, [progress, isReady])
+    let isActive = true
+
+    const loadLocalProgress = () => {
+      const keys = getStorageKeys()
+      const storedSnapshot = loadSnapshotForKey(keys.snapshotKey) ?? getEmptyCampaignProgressSnapshot()
+      const storedEvents = loadEventsForKey(keys.eventsKey)
+      const nextSnapshot = storedEvents.length > 0
+        ? applyEventsToSnapshot(storedSnapshot, storedEvents)
+        : storedSnapshot
+
+      eventsRef.current = storedEvents
+      if (isActive) {
+        setProgress(nextSnapshot)
+        setLocalSelectedEntityCui(nextSnapshot.selectedEntityCui)
+        setIsReady(true)
+      }
+      return nextSnapshot
+    }
+
+    if (!isLoaded) {
+      loadLocalProgress()
+      if (isActive) {
+        setRemoteSelectedEntityCui(null)
+        setIsInitialResolutionReady(true)
+      }
+      return
+    }
+
+    if (!isSignedIn || !user?.id) {
+      loadLocalProgress()
+      if (isActive) {
+        setRemoteSelectedEntityCui(null)
+        setIsInitialResolutionReady(true)
+      }
+      return
+    }
+
+    const cachedSnapshot = loadSnapshotForKey(getAuthSnapshotKey(user.id))
+      ?? loadSnapshotForKey(CAMPAIGN_PROGRESS_STORAGE_KEY)
+      ?? getEmptyCampaignProgressSnapshot()
+    const cachedEvents = mergeEventLogs(
+      loadEventsForKey(getAuthEventsKey(user.id)),
+      loadEventsForKey(CAMPAIGN_PROGRESS_EVENTS_STORAGE_KEY),
+    )
+    const initialSnapshot = cachedEvents.length > 0
+      ? applyEventsToSnapshot(cachedSnapshot, cachedEvents)
+      : cachedSnapshot
+    eventsRef.current = cachedEvents
+    if (isActive) {
+      setProgress(initialSnapshot)
+      setLocalSelectedEntityCui(initialSnapshot.selectedEntityCui)
+      setIsReady(true)
+      setIsInitialResolutionReady(false)
+    }
+
+    const bootstrap = async () => {
+      isBootstrappingRef.current = true
+
+      const guestSnapshot = loadSnapshotForKey(CAMPAIGN_PROGRESS_STORAGE_KEY)
+      const guestEvents = loadEventsForKey(CAMPAIGN_PROGRESS_EVENTS_STORAGE_KEY)
+      const authSnapshot = loadSnapshotForKey(getAuthSnapshotKey(user.id))
+      const authEvents = loadEventsForKey(getAuthEventsKey(user.id))
+      syncStateRef.current = parseSyncState(readJsonFromStorage(getAuthSyncKey(user.id)))
+
+      let remoteRecords: Readonly<Record<string, InteractiveStateRecord>> = {}
+      let remoteSnapshot = getEmptyCampaignProgressSnapshot()
+      let remoteCursor: string | null = syncStateRef.current.lastSyncedCursor
+
+      try {
+        const remote = await fetchCampaignProgress({})
+        remoteRecords = remote.recordsByKey
+        remoteSnapshot = remote.snapshot
+        remoteCursor = remote.cursor
+        if (isActive) {
+          setRemoteSelectedEntityCui(remote.snapshot.selectedEntityCui)
+        }
+      } catch (error) {
+        console.warn('Failed to fetch remote campaign progress:', error)
+        if (isActive) {
+          setRemoteSelectedEntityCui(null)
+        }
+      }
+
+      const pendingEvents = mergeEventLogs(
+        guestEvents,
+        authEvents,
+        queuedEventsRef.current,
+      )
+      queuedEventsRef.current = []
+
+      const localRecords = mergeCampaignProgressRecords(
+        buildCampaignProgressRecords(guestSnapshot ?? getEmptyCampaignProgressSnapshot()),
+        buildCampaignProgressRecords(authSnapshot ?? getEmptyCampaignProgressSnapshot()),
+      )
+      const mergedRecords = mergeCampaignProgressRecords(localRecords, remoteRecords)
+      const nextRecords = applyCampaignProgressEventsToRecords(mergedRecords, pendingEvents)
+      const pendingRecordKeys = new Set(
+        filterCampaignProgressEvents(pendingEvents).map((event) => event.payload.record.key),
+      )
+      const migrationEvents = diffCampaignProgressRecords(nextRecords, remoteRecords)
+        .filter((record) => !pendingRecordKeys.has(record.key))
+        .map((record) => createInteractiveUpdatedEvent(record))
+      const nextEvents = mergeEventLogs(pendingEvents, migrationEvents)
+      const nextSnapshot = projectCampaignProgressFromRecords(nextRecords, remoteSnapshot.lastUpdated)
+
+      eventsRef.current = nextEvents
+      persistEvents(getAuthEventsKey(user.id), nextEvents)
+      persistSnapshot(getAuthSnapshotKey(user.id), nextSnapshot)
+      if (isActive) {
+        setProgress(nextSnapshot)
+        setLocalSelectedEntityCui(nextSnapshot.selectedEntityCui)
+        setIsReady(true)
+      }
+
+      syncStateRef.current = {
+        ...syncStateRef.current,
+        lastSyncedCursor: remoteCursor,
+      }
+      persistSyncState(getAuthSyncKey(user.id))
+
+      if (hasProgressData(guestSnapshot) || guestEvents.length > 0) {
+        removeFromStorage(CAMPAIGN_PROGRESS_STORAGE_KEY)
+        removeFromStorage(CAMPAIGN_PROGRESS_EVENTS_STORAGE_KEY)
+      }
+
+      isBootstrappingRef.current = false
+      if (isActive) {
+        setIsInitialResolutionReady(true)
+      }
+
+      if (nextEvents.length > 0) {
+        queueSync()
+      }
+    }
+
+    void bootstrap().finally(() => {
+      isBootstrappingRef.current = false
+      if (isActive) {
+        setIsReady(true)
+        setIsInitialResolutionReady(true)
+      }
+    })
+
+    return () => {
+      isActive = false
+    }
+  }, [
+    createInteractiveUpdatedEvent,
+    getStorageKeys,
+    isLoaded,
+    isSignedIn,
+    persistEvents,
+    persistSnapshot,
+    persistSyncState,
+    queueSync,
+    user?.id,
+  ])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    let storageDebounceTimeout: number | null = null
+
+    const handleStorage = (event: StorageEvent) => {
+      if (!event.key?.startsWith('campaign_progress_')) {
+        return
+      }
+
+      if (storageDebounceTimeout) {
+        window.clearTimeout(storageDebounceTimeout)
+      }
+
+      storageDebounceTimeout = window.setTimeout(() => {
+        recomputeFromStorage()
+      }, 100)
+    }
+
+    window.addEventListener('storage', handleStorage)
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      if (storageDebounceTimeout) {
+        window.clearTimeout(storageDebounceTimeout)
+      }
+    }
+  }, [recomputeFromStorage])
 
   const getChallengeStatus = useCallback((challengeSlug: string): CampaignChallengeStatus => {
     return progressRef.current.challenges[challengeSlug]?.status ?? 'not_started'
   }, [])
 
   const setChallengeStatus = useCallback((challengeSlug: string, status: CampaignChallengeStatus) => {
-    setProgress((current) => {
-      const previousChallengeProgress = current.challenges[challengeSlug]
-      const shouldIncreaseAttempts =
-        previousChallengeProgress?.status !== status &&
-        (status === 'in_progress' || status === 'pending_review' || status === 'completed')
+    const previousChallengeProgress = progressRef.current.challenges[challengeSlug]
+    const shouldIncreaseAttempts =
+      previousChallengeProgress?.status !== status
+      && (status === 'in_progress' || status === 'pending_review' || status === 'completed')
+    const nextAttempts = (previousChallengeProgress?.attempts ?? 0) + (shouldIncreaseAttempts ? 1 : 0)
+    const nextUpdatedAt = getNextTimestamp(previousChallengeProgress?.updatedAt ?? progressRef.current.lastUpdated)
 
-      const nextChallengeProgress = createChallengeProgress(
-        status,
-        (previousChallengeProgress?.attempts ?? 0) + (shouldIncreaseAttempts ? 1 : 0),
-      )
-
-      return {
-        ...current,
-        challenges: {
-          ...current.challenges,
-          [challengeSlug]: nextChallengeProgress,
-        },
-        lastUpdated: new Date().toISOString(),
-      }
-    })
-  }, [])
+    appendEvents([createInteractiveUpdatedEvent(createCampaignChallengeRecord({
+      challengeSlug,
+      status,
+      attempts: nextAttempts,
+      updatedAt: nextUpdatedAt,
+    }))])
+  }, [appendEvents, createInteractiveUpdatedEvent])
 
   const markChallengeInProgress = useCallback((challengeSlug: string) => {
     const existingStatus = getChallengeStatus(challengeSlug)
@@ -166,123 +668,96 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
   }, [getChallengeStatus, setChallengeStatus])
 
   const completeOnboarding = useCallback((input: { locality: string }) => {
-    setProgress((current) => ({
-      ...current,
-      onboardingCompletedAt: new Date().toISOString(),
-      selectedLocality: input.locality,
-      lastUpdated: new Date().toISOString(),
-    }))
-  }, [])
-
-  const resetProgress = useCallback(() => {
-    const emptySnapshot = getEmptyCampaignProgressSnapshot()
-    setProgress(emptySnapshot)
-  }, [])
-
-  const syncSnapshot = useCallback(async () => {
-    if (!isSignedIn || !user?.id) return
-
-    setIsSyncing(true)
-
-    try {
-      const remote = await fetchCampaignProgress({ campaignId: CAMPAIGN_ID })
-      setRemoteSelectedEntityCui(remote.snapshot.selectedEntityCui)
-      const mergedSnapshot = mergeCampaignProgressSnapshots(progressRef.current, remote.snapshot)
-      setProgress(mergedSnapshot)
-
-      await syncCampaignProgress({
-        campaignId: CAMPAIGN_ID,
-        snapshot: mergedSnapshot,
-        clientUpdatedAt: mergedSnapshot.lastUpdated,
-      })
-    } finally {
-      setIsSyncing(false)
-    }
-  }, [isSignedIn, user?.id])
-
-  const sync = useCallback(async () => {
-    await syncSnapshot()
-  }, [syncSnapshot])
-
-  const setSelectedEntity = useCallback((input: { entityCui: string }) => {
-    const normalizedEntityCui = input.entityCui.trim()
-    if (!normalizedEntityCui) return
-
-    const nextSnapshot: CampaignProgressSnapshot = {
-      ...progressRef.current,
-      selectedEntityCui: normalizedEntityCui,
-      lastUpdated: new Date().toISOString(),
-    }
-
-    setLocalSelectedEntityCui(normalizedEntityCui)
-    progressRef.current = nextSnapshot
-    setProgress(nextSnapshot)
-
-    if (isLoaded && isSignedIn) {
-      void syncSnapshot()
-    }
-  }, [isLoaded, isSignedIn, syncSnapshot])
-
-  const setActiveChallengeModule = useCallback((input: { moduleSlug: string | null }) => {
-    const normalizedModuleSlug = input.moduleSlug?.trim() || null
-    if (progressRef.current.activeChallengeModuleSlug === normalizedModuleSlug) {
+    const normalizedLocality = input.locality.trim()
+    if (!normalizedLocality) {
       return
     }
 
-    const nextSnapshot: CampaignProgressSnapshot = {
-      ...progressRef.current,
-      activeChallengeModuleSlug: normalizedModuleSlug,
-      lastUpdated: new Date().toISOString(),
+    const updatedAt = getNextTimestamp(getRecordUpdatedAt(progressRef.current, CAMPAIGN_ONBOARDING_RECORD_KEY))
+    appendEvents([createInteractiveUpdatedEvent(createCampaignOnboardingRecord({
+      completedAt: updatedAt,
+      locality: normalizedLocality,
+      updatedAt,
+    }))])
+  }, [appendEvents, createInteractiveUpdatedEvent])
+
+  const acceptChallengeTerms = useCallback((input?: { acceptedTermsAt?: string }) => {
+    const acceptedTermsAt = input?.acceptedTermsAt ?? nowIso()
+    const updatedAt = getNextTimestamp(
+      getRecordUpdatedAt(progressRef.current, CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY) ?? acceptedTermsAt,
+    )
+
+    appendEvents([createInteractiveUpdatedEvent(createCampaignAcceptedTermsRecord({
+      acceptedTermsAt,
+      updatedAt,
+    }))])
+  }, [appendEvents, createInteractiveUpdatedEvent])
+
+  const resetAcceptedChallengeTerms = useCallback(() => {
+    appendEvents([createInteractiveUpdatedEvent(createCampaignAcceptedTermsRecord({
+      acceptedTermsAt: null,
+      updatedAt: getNextTimestamp(getRecordUpdatedAt(progressRef.current, CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY)),
+    }))])
+  }, [appendEvents, createInteractiveUpdatedEvent])
+
+  const resetProgress = useCallback(() => {
+    const currentProgress = progressRef.current
+    const nextEvents: LearningProgressEvent[] = [
+      createInteractiveUpdatedEvent(createCampaignOnboardingRecord({
+        completedAt: null,
+        locality: null,
+        updatedAt: getNextTimestamp(getRecordUpdatedAt(currentProgress, CAMPAIGN_ONBOARDING_RECORD_KEY)),
+      })),
+      createInteractiveUpdatedEvent(createCampaignSelectedEntityRecord({
+        entityCui: null,
+        updatedAt: getNextTimestamp(getRecordUpdatedAt(currentProgress, CAMPAIGN_SELECTED_ENTITY_RECORD_KEY)),
+      })),
+      createInteractiveUpdatedEvent(createCampaignActiveModuleRecord({
+        moduleSlug: null,
+        updatedAt: getNextTimestamp(getRecordUpdatedAt(currentProgress, CAMPAIGN_ACTIVE_MODULE_RECORD_KEY)),
+      })),
+      ...Object.entries(currentProgress.challenges).map(([challengeSlug, challengeProgress]) => {
+        return createInteractiveUpdatedEvent(createCampaignChallengeRecord({
+          challengeSlug,
+          status: 'not_started',
+          attempts: 0,
+          updatedAt: getNextTimestamp(challengeProgress.updatedAt),
+        }))
+      }),
+    ]
+
+    setLocalSelectedEntityCui(null)
+    appendEvents(nextEvents)
+  }, [appendEvents, createInteractiveUpdatedEvent])
+
+  const setSelectedEntity = useCallback((input: { entityCui: string }) => {
+    const normalizedEntityCui = input.entityCui.trim()
+    if (!normalizedEntityCui || normalizedEntityCui === progressRef.current.selectedEntityCui) {
+      return
     }
 
-    progressRef.current = nextSnapshot
-    setProgress(nextSnapshot)
+    const updatedAt = getNextTimestamp(getRecordUpdatedAt(progressRef.current, CAMPAIGN_SELECTED_ENTITY_RECORD_KEY))
+    const nextEvent = createInteractiveUpdatedEvent(createCampaignSelectedEntityRecord({
+      entityCui: normalizedEntityCui,
+      updatedAt,
+    }))
 
-    if (isLoaded && isSignedIn) {
-      void syncSnapshot()
-    }
-  }, [isLoaded, isSignedIn, syncSnapshot])
+    setLocalSelectedEntityCui(normalizedEntityCui)
+    appendEvents([nextEvent])
+  }, [appendEvents, createInteractiveUpdatedEvent])
 
-  useEffect(() => {
-    if (!isReady) return
-
-    let isActive = true
-
-    if (!isLoaded) {
-      setIsInitialResolutionReady(true)
-      return () => {
-        isActive = false
-      }
+  const setActiveChallengeModule = useCallback((input: { moduleSlug: string | null }) => {
+    const normalizedModuleSlug = input.moduleSlug?.trim() || null
+    if (normalizedModuleSlug === progressRef.current.activeChallengeModuleSlug) {
+      return
     }
 
-    const resolveInitialState = async () => {
-      if (!isSignedIn) {
-        if (isActive) {
-          setRemoteSelectedEntityCui(null)
-          setIsInitialResolutionReady(true)
-        }
-        return
-      }
-
-      if (isActive) {
-        setIsInitialResolutionReady(false)
-      }
-
-      try {
-        await sync()
-      } finally {
-        if (isActive) {
-          setIsInitialResolutionReady(true)
-        }
-      }
-    }
-
-    void resolveInitialState()
-
-    return () => {
-      isActive = false
-    }
-  }, [isReady, isLoaded, isSignedIn, sync])
+    const updatedAt = getNextTimestamp(getRecordUpdatedAt(progressRef.current, CAMPAIGN_ACTIVE_MODULE_RECORD_KEY))
+    appendEvents([createInteractiveUpdatedEvent(createCampaignActiveModuleRecord({
+      moduleSlug: normalizedModuleSlug,
+      updatedAt,
+    }))])
+  }, [appendEvents, createInteractiveUpdatedEvent])
 
   const value = useMemo<CampaignProgressContextValue>(() => ({
     isReady,
@@ -297,22 +772,26 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     setActiveChallengeModule,
     markChallengeInProgress,
     completeOnboarding,
+    acceptChallengeTerms,
+    resetAcceptedChallengeTerms,
     resetProgress,
     sync,
   }), [
-    isReady,
-    isInitialResolutionReady,
-    isSyncing,
-    progress,
-    localSelectedEntityCui,
-    remoteSelectedEntityCui,
+    acceptChallengeTerms,
+    completeOnboarding,
     getChallengeStatus,
+    isInitialResolutionReady,
+    isReady,
+    isSyncing,
+    localSelectedEntityCui,
+    markChallengeInProgress,
+    progress,
+    remoteSelectedEntityCui,
+    resetProgress,
+    resetAcceptedChallengeTerms,
+    setActiveChallengeModule,
     setChallengeStatus,
     setSelectedEntity,
-    setActiveChallengeModule,
-    markChallengeInProgress,
-    completeOnboarding,
-    resetProgress,
     sync,
   ])
 

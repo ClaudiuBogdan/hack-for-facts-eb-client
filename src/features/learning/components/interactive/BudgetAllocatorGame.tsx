@@ -27,6 +27,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { cn } from '@/lib/utils'
+import { getJsonValue } from '../../utils/interactive-state'
 import {
   COLOR_VARIANTS,
   type ColorVariant,
@@ -747,14 +748,37 @@ export function BudgetAllocatorGame({
 }: Readonly<BudgetAllocatorGameProps>) {
   const containerRef = useRef<HTMLDivElement>(null)
   const hasRestoredRef = useRef(false)
-  const { progress, dispatchInteractionAction } = useLearningProgress()
+  const { dispatchInteractionAction, getInteractiveRecord } = useLearningProgress()
 
   // Derive saved state reactively from progress (follows SalaryTaxCalculator pattern)
   const savedState = useMemo(() => {
     if (!contentId) return null
-    const interaction = progress.content[contentId]?.interactions?.[interactionId ?? 'budget-allocator']
-    return interaction?.kind === 'budget-allocator' ? interaction : null
-  }, [progress, contentId, interactionId])
+    const record = getInteractiveRecord({
+      id: interactionId ?? 'budget-allocator',
+      scopePolicy: 'global',
+    })
+    const value = getJsonValue<Record<string, unknown>>(record)
+    if (!value) {
+      return null
+    }
+
+    const rawAllocations = value.allocations && typeof value.allocations === 'object'
+      ? value.allocations as Record<string, unknown>
+      : {}
+    const validatedAllocations: Record<string, number> = {}
+    for (const [key, val] of Object.entries(rawAllocations)) {
+      if (typeof val === 'number' && Number.isFinite(val)) {
+        validatedAllocations[key] = val
+      }
+    }
+
+    return {
+      kind: 'budget-allocator' as const,
+      allocations: validatedAllocations,
+      step: (value.step === 'COMPARE' ? 'COMPARE' : 'ALLOCATE') as GameStep,
+      completedAt: record?.submittedAt ?? undefined,
+    }
+  }, [contentId, getInteractiveRecord, interactionId])
 
   const [step, setStep] = useState<GameStep>('HOOK')
   const [allocations, setAllocations] = useState<Record<string, number>>(() =>

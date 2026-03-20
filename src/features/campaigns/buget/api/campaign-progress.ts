@@ -1,25 +1,34 @@
 import { getApiBaseUrl } from '@/config/env'
 import { getAuthToken } from '@/lib/auth'
-import { parseCampaignProgressSnapshot } from '../schemas/progress-schema'
+import { parseLearningProgressEvents } from '@/features/learning/schemas/progress-events'
+import { parseLearningProgressRemoteSnapshot } from '@/features/learning/schemas/progress'
+import type { InteractiveStateRecord, LearningProgressEvent } from '@/features/learning/types'
+import {
+  filterCampaignProgressEvents,
+  filterCampaignProgressRecords,
+  projectCampaignProgressFromRemoteSnapshot,
+} from '../utils/progress-records'
 import type { CampaignProgressSnapshot } from '../types'
 
 type CampaignProgressResponse = {
   readonly snapshot: CampaignProgressSnapshot
-  readonly cursor?: string
+  readonly recordsByKey: Readonly<Record<string, InteractiveStateRecord>>
+  readonly events: readonly Extract<LearningProgressEvent, { readonly type: 'interactive.updated' }>[]
+  readonly cursor: string
 }
 
 type ApiResponse<T> = {
   readonly ok: boolean
   readonly data?: T
   readonly error?: string
+  readonly message?: string
 }
 
 export async function fetchCampaignProgress(params: {
-  campaignId: string
   since?: string | null
 }): Promise<CampaignProgressResponse> {
   const query = params.since ? `?since=${encodeURIComponent(params.since)}` : ''
-  const endpoint = `${getApiBaseUrl()}/api/v1/campaigns/${encodeURIComponent(params.campaignId)}/progress${query}`
+  const endpoint = `${getApiBaseUrl()}/api/v1/learning/progress${query}`
   const token = await getAuthToken()
 
   const response = await fetch(endpoint, {
@@ -31,27 +40,40 @@ export async function fetchCampaignProgress(params: {
   if (!response.ok) {
     const errorPayload: ApiResponse<never> = await response
       .json()
-      .catch(() => ({ ok: false, error: response.statusText }))
-    throw new Error(errorPayload.error || `Failed to fetch campaign progress: ${response.statusText}`)
+      .catch(() => ({ ok: false, error: response.statusText, message: response.statusText }))
+    throw new Error(
+      errorPayload.error
+      || errorPayload.message
+      || `Failed to fetch campaign progress: ${response.statusText}`,
+    )
   }
 
-  const payload: ApiResponse<CampaignProgressResponse> = await response.json()
+  const payload: ApiResponse<{
+    snapshot: unknown
+    events: unknown
+    cursor: string
+  }> = await response.json()
   if (!payload.data) {
     throw new Error('Campaign progress response did not include data.')
   }
 
+  const remoteSnapshot = parseLearningProgressRemoteSnapshot(payload.data.snapshot)
+  const recordsByKey = filterCampaignProgressRecords(remoteSnapshot.recordsByKey)
+  const events = filterCampaignProgressEvents(parseLearningProgressEvents(payload.data.events))
+
   return {
-    snapshot: parseCampaignProgressSnapshot(payload.data.snapshot),
+    snapshot: projectCampaignProgressFromRemoteSnapshot(remoteSnapshot),
+    recordsByKey,
+    events,
     cursor: payload.data.cursor,
   }
 }
 
 export async function syncCampaignProgress(params: {
-  campaignId: string
-  snapshot: CampaignProgressSnapshot
+  events: readonly LearningProgressEvent[]
   clientUpdatedAt: string
 }): Promise<void> {
-  const endpoint = `${getApiBaseUrl()}/api/v1/campaigns/${encodeURIComponent(params.campaignId)}/progress`
+  const endpoint = `${getApiBaseUrl()}/api/v1/learning/progress`
   const token = await getAuthToken()
 
   const response = await fetch(endpoint, {
@@ -62,14 +84,18 @@ export async function syncCampaignProgress(params: {
     },
     body: JSON.stringify({
       clientUpdatedAt: params.clientUpdatedAt,
-      snapshot: params.snapshot,
+      events: params.events,
     }),
   })
 
   if (!response.ok) {
     const errorPayload: ApiResponse<never> = await response
       .json()
-      .catch(() => ({ ok: false, error: response.statusText }))
-    throw new Error(errorPayload.error || `Failed to sync campaign progress: ${response.statusText}`)
+      .catch(() => ({ ok: false, error: response.statusText, message: response.statusText }))
+    throw new Error(
+      errorPayload.error
+      || errorPayload.message
+      || `Failed to sync campaign progress: ${response.statusText}`,
+    )
   }
 }

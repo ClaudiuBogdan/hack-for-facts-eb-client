@@ -5,7 +5,7 @@ import { renderHook, waitFor } from '@/test/test-utils'
 import { AuthProvider } from '@/lib/auth'
 import { LearningProgressProvider } from './use-learning-progress'
 import { useAutoOnboarding } from './use-auto-onboarding'
-import type { LearningGuestProgress, LearningProgressEvent } from '../types'
+import type { LearningGuestProgress } from '../types'
 
 vi.mock('@lingui/core/macro', () => ({
   t: (strings: TemplateStringsArray) => strings[0],
@@ -37,31 +37,16 @@ function buildProgress(overrides: Partial<LearningGuestProgress> = {}): Learning
     onboarding: { pathId: null, relatedPaths: [], completedAt: null },
     activePathId: null,
     content: {},
+    interactiveState: { recordsByKey: {}, eventLogByRecordKey: {} },
     streak: { currentStreak: 0, longestStreak: 0, lastActivityDate: null },
     lastUpdated: now,
     ...overrides,
   }
 }
 
-function buildEventsFromProgress(progress: LearningGuestProgress): LearningProgressEvent[] {
-  const events: LearningProgressEvent[] = []
-
-  if (progress.onboarding.completedAt && progress.onboarding.pathId) {
-    events.push({
-      eventId: 'event-onboarding',
-      clientId: 'test-client',
-      occurredAt: progress.onboarding.completedAt,
-      type: 'onboarding.completed',
-      payload: { pathId: progress.onboarding.pathId, relatedPaths: progress.onboarding.relatedPaths ?? [] },
-    })
-  }
-
-  return events
-}
-
 function seedProgress(progress: LearningGuestProgress) {
-  const events = buildEventsFromProgress(progress)
-  window.localStorage.setItem(EVENTS_KEY, JSON.stringify(events))
+  window.localStorage.setItem(EVENTS_KEY, JSON.stringify([]))
+  window.localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(progress))
 }
 
 function readProgress(): LearningGuestProgress {

@@ -10,6 +10,7 @@ export type ChallengeQuizMdxProps = {
   readonly question: string
   readonly options: readonly QuizOption[]
   readonly explanation: string
+  readonly scopePolicy?: 'global' | 'entity'
 }
 
 export type ChallengeMarkCompleteMdxProps = {

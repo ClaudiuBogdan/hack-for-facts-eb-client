@@ -1,5 +1,10 @@
 import { useEffect, useRef, useCallback } from 'react';
 
+type DebouncedCallback<TArgs extends unknown[]> = ((...args: TArgs) => void) & {
+    cancel: () => void;
+    flush: () => void;
+};
+
 /**
  * Creates a debounced callback that delays invoking `callback` until after `delay`
  * milliseconds have passed since the last time the debounced function was invoked.
@@ -14,9 +19,10 @@ import { useEffect, useRef, useCallback } from 'react';
 export function useDebouncedCallback<TArgs extends unknown[]>(
     callback: (...args: TArgs) => void,
     delay: number
-): (...args: TArgs) => void {
+): DebouncedCallback<TArgs> {
     const callbackRef = useRef(callback);
     const timeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const lastArgsRef = useRef<TArgs | null>(null);
 
     // Keeps the callback reference up to date.
     useEffect(() => {
@@ -32,13 +38,45 @@ export function useDebouncedCallback<TArgs extends unknown[]>(
         };
     }, []);
 
-    return useCallback((...args: TArgs) => {
+    const cancel = useCallback(() => {
+        if (timeoutIdRef.current) {
+            clearTimeout(timeoutIdRef.current);
+            timeoutIdRef.current = null;
+        }
+        lastArgsRef.current = null;
+    }, []);
+
+    const flush = useCallback(() => {
+        if (!lastArgsRef.current) {
+            return;
+        }
+
+        if (timeoutIdRef.current) {
+            clearTimeout(timeoutIdRef.current);
+            timeoutIdRef.current = null;
+        }
+
+        const args = lastArgsRef.current;
+        lastArgsRef.current = null;
+        callbackRef.current(...args);
+    }, []);
+
+    const debouncedCallback = useCallback((...args: TArgs) => {
+        lastArgsRef.current = args;
+
         if (timeoutIdRef.current) {
             clearTimeout(timeoutIdRef.current);
         }
 
         timeoutIdRef.current = setTimeout(() => {
-            callbackRef.current(...args);
+            timeoutIdRef.current = null;
+            const pendingArgs = lastArgsRef.current;
+            lastArgsRef.current = null;
+            if (pendingArgs) {
+                callbackRef.current(...pendingArgs);
+            }
         }, delay);
     }, [delay]);
+
+    return Object.assign(debouncedCallback, { cancel, flush });
 }

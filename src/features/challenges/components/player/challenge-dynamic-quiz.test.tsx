@@ -66,4 +66,26 @@ describe('ChallengeDynamicQuiz', () => {
 
     expect(answerMock).toHaveBeenCalledWith('a')
   })
+
+  it('passes through step-namespaced quiz ids unchanged', () => {
+    render(
+      <SectionDynamicInteractiveProvider
+        activeSectionId="exercise-1"
+        setInteractiveState={vi.fn()}
+      >
+        <ChallengeDynamicQuiz
+          contentId="lesson-step"
+          quizId="lesson-step:dynamic-quiz"
+          question="Care este totalul?"
+          explanation="Acesta este răspunsul corect."
+          options={[
+            { id: 'a', text: '100', isCorrect: true },
+            { id: 'b', text: '200', isCorrect: false },
+          ]}
+        />
+      </SectionDynamicInteractiveProvider>,
+    )
+
+    expect(screen.getByRole('button', { name: /100/i })).toBeInTheDocument()
+  })
 })

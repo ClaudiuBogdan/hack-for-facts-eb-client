@@ -6,14 +6,15 @@ This module provides hooks for managing interactive learning components with per
 
 ```
 interactions/
-├── README.md                      # This file
-├── index.ts                       # Public exports
-├── interaction-resolver.ts        # Registry pattern for action resolvers
-├── quiz-resolver.ts               # Quiz action handlers
-├── prediction-resolver.ts         # Prediction action handlers
-├── use-quiz-interaction.ts        # Quiz UI hook
-├── use-prediction-interaction.ts  # Prediction UI hook
-└── use-lesson-completion.ts       # Lesson completion UI hook
+├── README.md                             # This file
+├── index.ts                              # Public exports
+├── use-quiz-interaction.ts               # Quiz UI hook
+├── use-prediction-interaction.ts         # Prediction UI hook
+├── use-lesson-completion.ts              # Lesson completion UI hook
+├── use-salary-calculator-interaction.ts  # Salary calculator UI hook
+├── use-budget-cycle-interaction.ts       # Budget cycle UI hook
+├── use-uat-finder-interaction.ts         # UAT finder UI hook
+├── use-custom-interaction.ts             # Generic JSON-value interaction hook
 ```
 
 ## Usage
@@ -37,7 +38,6 @@ function Quiz({ contentId, quizId, options }: Props) {
           key={option.id}
           onClick={() => answer(option.id)}
           disabled={isAnswered}
-          className={selectedOptionId === option.id ? 'selected' : ''}
         >
           {option.text}
         </button>
@@ -50,283 +50,114 @@ function Quiz({ contentId, quizId, options }: Props) {
 }
 ```
 
-### Prediction Interaction
+### Custom Interaction (Generic)
+
+`useCustomInteraction` provides a generic hook for any JSON-value interaction. Use it when no specialized hook exists.
 
 ```tsx
-import { usePredictionInteraction } from '@/features/learning/hooks/interactions'
+import { useCustomInteraction } from '@/features/learning/hooks/interactions'
 
-function PredictionGame({ contentId, predictionId }: Props) {
-  const { reveals, isYearRevealed, reveal, reset } = usePredictionInteraction({
-    contentId,
-    predictionId,
-  })
+type SnapshotValue = { selectedItems: string[]; notes: string }
 
-  const [guess, setGuess] = useState(50)
-  const actualRate = 60 // From your data
+function SnapshotWidget({ lessonId, interactionId }: Props) {
+  const { savedValue, isCompleted, saveDraft, complete } =
+    useCustomInteraction<SnapshotValue>({
+      lessonId,
+      interactionId,
+      completionRule: { type: 'component-flag', flag: 'isFinished' },
+    })
 
-  if (isYearRevealed('2024')) {
-    return (
-      <div>
-        <p>Your guess: {reveals['2024'].guess}%</p>
-        <p>Actual: {reveals['2024'].actualRate}%</p>
-        <button onClick={reset}>Reset</button>
-      </div>
-    )
-  }
-
-  return (
-    <div>
-      <Slider value={guess} onChange={setGuess} />
-      <button onClick={() => reveal('2024', guess, actualRate)}>
-        Reveal Answer
-      </button>
-    </div>
-  )
-}
-```
-
-### Lesson Completion
-
-```tsx
-import { useLessonCompletion } from '@/features/learning/hooks/interactions'
-
-function MarkComplete({ contentId }: Props) {
-  const { isCompleted, markComplete } = useLessonCompletion({ contentId })
-
-  if (isCompleted) {
-    return <span>✓ Completed</span>
-  }
-
-  return <button onClick={markComplete}>Mark Complete</button>
+  // saveDraft(value) persists without marking resolved
+  // complete(value) persists and marks resolved
 }
 ```
 
 ## Adding a New Interaction Type
 
-Follow these steps to add a new interaction type (e.g., "flashcard"):
+For simple interactions that store JSON state, use `useCustomInteraction` directly. For interactions with specialized behavior, create a new hook:
 
 ### 1. Define Types (`types.ts`)
 
-Add the interaction state and action types:
+Add action types to the `LearningInteractionAction` union if the interaction uses `dispatchInteractionAction`. Interactions using the primitive API directly do not need action types.
 
-```ts
-// Interaction state (stored in progress)
-export type LearningFlashcardInteractionState = {
-  readonly kind: 'flashcard'
-  readonly flippedCards: readonly string[]
-}
-
-// Update the union
-export type LearningInteractionState =
-  | LearningQuizInteractionState
-  | LearningPredictionInteractionState
-  | LearningFlashcardInteractionState
-
-// Action types
-export type LearningFlashcardFlipAction = {
-  readonly type: 'flashcard.flip'
-  readonly contentId: string
-  readonly interactionId: string
-  readonly cardId: string
-  readonly contentVersion?: string
-}
-
-export type LearningFlashcardResetAction = {
-  readonly type: 'flashcard.reset'
-  readonly contentId: string
-  readonly interactionId: string
-}
-
-// Update the union
-export type LearningInteractionAction =
-  | LearningQuizAnswerAction
-  | LearningQuizResetAction
-  | LearningPredictionRevealAction
-  | LearningPredictionResetAction
-  | LearningFlashcardFlipAction
-  | LearningFlashcardResetAction
-```
-
-### 2. Add Schema (`schemas/progress-events.ts`)
-
-Add Zod validation for the new state:
-
-```ts
-const LearningFlashcardInteractionSchema = z.object({
-  kind: z.literal('flashcard'),
-  flippedCards: z.array(z.string()),
-})
-
-// Update the union
-const LearningInteractionStateSchema = z.discriminatedUnion('kind', [
-  LearningQuizInteractionSchema,
-  LearningPredictionInteractionSchema,
-  LearningFlashcardInteractionSchema,
-])
-```
-
-### 3. Create Resolver (`interactions/flashcard-resolver.ts`)
-
-```ts
-import type { LearningFlashcardFlipAction, LearningFlashcardResetAction } from '../../types'
-import {
-  registerInteractionResolver,
-  type InteractionResolverContext,
-  type SaveContentProgressInput,
-} from './interaction-resolver'
-
-function resolveFlashcardFlip(
-  action: LearningFlashcardFlipAction,
-  context: InteractionResolverContext
-): SaveContentProgressInput {
-  const existing = context.progress.content[action.contentId]?.interactions?.[action.interactionId]
-  const existingCards = existing?.kind === 'flashcard' ? existing.flippedCards : []
-
-  const newCards = existingCards.includes(action.cardId)
-    ? existingCards
-    : [...existingCards, action.cardId]
-
-  return {
-    contentId: action.contentId,
-    status: 'in_progress',
-    contentVersion: action.contentVersion,
-    interaction: {
-      interactionId: action.interactionId,
-      state: {
-        kind: 'flashcard',
-        flippedCards: newCards,
-      },
-    },
-  }
-}
-
-function resolveFlashcardReset(
-  action: LearningFlashcardResetAction,
-  _context: InteractionResolverContext
-): SaveContentProgressInput {
-  return {
-    contentId: action.contentId,
-    status: 'in_progress',
-    interaction: {
-      interactionId: action.interactionId,
-      state: null,
-    },
-  }
-}
-
-// Register the resolvers
-registerInteractionResolver('flashcard.flip', resolveFlashcardFlip)
-registerInteractionResolver('flashcard.reset', resolveFlashcardReset)
-```
-
-### 4. Create UI Hook (`interactions/use-flashcard-interaction.ts`)
+### 2. Create UI Hook (`interactions/use-my-interaction.ts`)
 
 ```ts
 import { useCallback, useMemo } from 'react'
 import { useLearningProgress } from '../use-learning-progress'
-import type { LearningGuestProgress } from '../../types'
+import type { InteractiveDefinition } from '../../types'
+import { getJsonValue } from '../../utils/interactive-state'
 
-// Import resolver to ensure registration
-import './flashcard-resolver'
+export function useMyInteraction(params: { lessonId: string; interactionId: string }) {
+  const { getInteractiveRecord, saveInteractiveDraft, resolveInteractive, resetInteractive } =
+    useLearningProgress()
 
-export type FlashcardInteractionContext = {
-  readonly flippedCards: readonly string[]
-  readonly isFlipped: (cardId: string) => boolean
-  readonly flip: (cardId: string) => Promise<void>
-  readonly reset: () => Promise<void>
-}
+  const definition = useMemo<InteractiveDefinition>(() => ({
+    id: params.interactionId,
+    lessonId: params.lessonId,
+    kind: 'custom',
+    scopePolicy: 'global',
+    completionRule: { type: 'resolved' },
+  }), [params.interactionId, params.lessonId])
 
-export type UseFlashcardInteractionInput = {
-  readonly contentId: string
-  readonly flashcardId: string
-  readonly contentVersion?: string
-}
+  const record = getInteractiveRecord(definition)
+  const value = getJsonValue(record)
 
-export function useFlashcardInteraction(
-  params: UseFlashcardInteractionInput
-): FlashcardInteractionContext {
-  const { progress, dispatchInteractionAction } = useLearningProgress()
-
-  const flippedCards = useMemo(() => {
-    const interaction = progress.content[params.contentId]?.interactions?.[params.flashcardId]
-    return interaction?.kind === 'flashcard' ? interaction.flippedCards : []
-  }, [progress, params.contentId, params.flashcardId])
-
-  const isFlipped = useCallback(
-    (cardId: string) => flippedCards.includes(cardId),
-    [flippedCards]
-  )
-
-  const flip = useCallback(
-    async (cardId: string) => {
-      await dispatchInteractionAction({
-        type: 'flashcard.flip',
-        contentId: params.contentId,
-        interactionId: params.flashcardId,
-        cardId,
-        contentVersion: params.contentVersion,
-      })
-    },
-    [dispatchInteractionAction, params]
-  )
-
-  const reset = useCallback(async () => {
-    await dispatchInteractionAction({
-      type: 'flashcard.reset',
-      contentId: params.contentId,
-      interactionId: params.flashcardId,
+  const save = useCallback(async (data: Record<string, unknown>) => {
+    await resolveInteractive({
+      definition,
+      value: { kind: 'json', json: { value: data } },
+      outcome: null,
     })
-  }, [dispatchInteractionAction, params])
+  }, [definition, resolveInteractive])
 
-  return { flippedCards, isFlipped, flip, reset }
+  return { value, save }
 }
 ```
 
-### 5. Export from Index (`interactions/index.ts`)
+### 3. Export from Index (`interactions/index.ts`)
 
 ```ts
-export {
-  useFlashcardInteraction,
-  type FlashcardInteractionContext,
-  type UseFlashcardInteractionInput,
-} from './use-flashcard-interaction'
+export { useMyInteraction } from './use-my-interaction'
 ```
 
 ## How It Works
 
+### Primitive API
+
+The progress hook (`useLearningProgress`) exposes these primitives:
+
+- `getInteractiveRecord(definition, entityCui?)` - read current record state
+- `saveInteractiveDraft({ definition, value, entityCui? })` - save without resolving
+- `resolveInteractive({ definition, value, outcome, entityCui? })` - save and mark resolved
+- `resetInteractive({ definition, entityCui? })` - reset to idle
+- `applyInteractiveEvaluation({ definition, result, entityCui? })` - apply evaluation result
+
+Each primitive creates an `interactive.updated` event that is stored locally and synced to the API.
+
 ### Event Flow
 
-1. **User action** (e.g., clicks "Reveal") → UI hook calls `dispatchInteractionAction()`
-2. **Action resolved** → `resolveInteractionAction()` finds registered resolver
-3. **Progress input created** → Resolver returns `SaveContentProgressInput`
-4. **Event created** → `saveContentProgress()` creates a `content.progressed` event
-5. **Local update** → Event stored in localStorage, snapshot updated
-6. **Sync queued** → Background sync sends event to API (if authenticated)
+1. **User action** (e.g., clicks "Reveal") -> UI hook calls a primitive (e.g., `resolveInteractive`)
+2. **Record created** -> `InteractiveStateRecord` built from definition + scope + value
+3. **Event emitted** -> `interactive.updated` event with the record payload
+4. **Local update** -> Event stored in localStorage, snapshot re-projected
+5. **Sync queued** -> Background debounced sync sends events to API (if authenticated)
 
 ### State Persistence
 
-- **Guests**: `localStorage` key `learning_progress_events`
-- **Authenticated**: Synced to API, cached in `learning_progress_events:{userId}`
+- **Guests**: `localStorage` key with pending events queue
+- **Authenticated**: Synced to API, cached locally with cursor tracking
 - **Cross-tab**: `storage` event listener keeps tabs in sync
 - **Offline**: Events queued locally, synced when back online
 
-### Resolver Registry
+### Record Identity
 
-The registry pattern allows interaction types to be added without modifying the core progress hook:
-
-```ts
-// Resolvers register themselves at module load time
-registerInteractionResolver('quiz.answer', resolveQuizAnswer)
-registerInteractionResolver('quiz.reset', resolveQuizReset)
-
-// Core hook calls the registry
-const resolved = resolveInteractionAction(action, context)
-```
+Record identity is `interactionId + scope`, not `lessonId`. The `lessonId` is payload metadata only. Entity-scoped interactions with the same base ID but different `entityCui` produce separate records.
 
 ## Best Practices
 
-1. **Keep resolvers pure** - They should only transform action → progress input
-2. **Validate in hooks** - UI hooks should validate inputs before dispatching
-3. **Import resolvers** - Import the resolver file in your hook to ensure registration
-4. **Use readonly types** - All state should be immutable
-5. **Handle missing state** - Always provide defaults for undefined state
+1. **Prefer `useCustomInteraction`** for new interaction types unless specialized behavior is needed
+2. **Validate in hooks** - UI hooks should validate inputs before calling primitives
+3. **Use readonly types** - All state should be immutable
+4. **Handle missing state** - Always provide defaults for undefined state
+5. **Unique interaction IDs** - Runtime IDs must be globally unique before scope is applied

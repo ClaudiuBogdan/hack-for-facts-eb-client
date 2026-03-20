@@ -1,9 +1,15 @@
+import type { ReactNode } from 'react'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { InteractiveStateRecord, LearningProgressEvent } from '@/features/learning/types'
 import {
   CAMPAIGN_ID,
-  CAMPAIGN_REGISTRATION_STORAGE_KEY_PREFIX,
+  CAMPAIGN_PROGRESS_SCHEMA_VERSION,
+  CAMPAIGN_PROGRESS_STORAGE_KEY,
 } from '../constants'
+import type { CampaignProgressSnapshot } from '../types'
+import { buildCampaignProgressRecords } from '../utils/progress-records'
+import { CampaignProgressProvider } from './use-campaign-progress'
 import { useCampaignRegistration } from './use-campaign-registration'
 
 type MockAuthState = {
@@ -20,12 +26,68 @@ let authState: MockAuthState = {
   user: null,
 }
 
+const fetchCampaignProgressMock = vi.fn(async (_params?: unknown) => ({
+  snapshot: createSnapshot(),
+  recordsByKey: buildCampaignProgressRecords(createSnapshot()),
+  events: [] as LearningProgressEvent[],
+  cursor: '0',
+}))
+const syncCampaignProgressMock = vi.fn(async (_params?: unknown) => {})
+
 vi.mock('@/lib/auth', () => ({
   useAuth: () => authState,
 }))
 
-function getRegistrationStorageKey(userId: string): string {
-  return `${CAMPAIGN_REGISTRATION_STORAGE_KEY_PREFIX}:${CAMPAIGN_ID}:${userId}`
+vi.mock('../api/campaign-progress', () => ({
+  fetchCampaignProgress: (params: unknown) => fetchCampaignProgressMock(params),
+  syncCampaignProgress: (params: unknown) => syncCampaignProgressMock(params),
+}))
+
+function createSnapshot(
+  overrides: Partial<CampaignProgressSnapshot> = {},
+): CampaignProgressSnapshot {
+  return {
+    version: CAMPAIGN_PROGRESS_SCHEMA_VERSION,
+    campaignId: CAMPAIGN_ID,
+    onboardingCompletedAt: null,
+    acceptedTermsAt: null,
+    selectedLocality: null,
+    selectedEntityCui: null,
+    activeChallengeModuleSlug: null,
+    challenges: {},
+    lastUpdated: '2026-01-01T00:00:00.000Z',
+    ...overrides,
+  }
+}
+
+function createRemoteResponse(
+  snapshotOverrides: Partial<CampaignProgressSnapshot> = {},
+  overrides: {
+    readonly recordsByKey?: Readonly<Record<string, InteractiveStateRecord>>
+    readonly events?: LearningProgressEvent[]
+    readonly cursor?: string
+  } = {},
+) {
+  const snapshot = createSnapshot(snapshotOverrides)
+
+  return {
+    snapshot,
+    recordsByKey: overrides.recordsByKey ?? buildCampaignProgressRecords(snapshot),
+    events: overrides.events ?? [],
+    cursor: overrides.cursor ?? '0',
+  }
+}
+
+function getAuthSnapshotStorageKey(userId: string): string {
+  return `${CAMPAIGN_PROGRESS_STORAGE_KEY}:${userId}`
+}
+
+function getAuthEventsStorageKey(userId: string): string {
+  return `campaign_progress_events:${CAMPAIGN_ID}:${userId}`
+}
+
+function Wrapper({ children }: { readonly children: ReactNode }) {
+  return <CampaignProgressProvider>{children}</CampaignProgressProvider>
 }
 
 describe('useCampaignRegistration', () => {
@@ -37,11 +99,13 @@ describe('useCampaignRegistration', () => {
       isSignedIn: false,
       user: null,
     }
-    vi.useRealTimers()
+    fetchCampaignProgressMock.mockClear()
+    syncCampaignProgressMock.mockClear()
+    fetchCampaignProgressMock.mockResolvedValue(createRemoteResponse())
   })
 
-  it('reports ready for signed-out users without registering them', async () => {
-    const { result } = renderHook(() => useCampaignRegistration())
+  it('reports ready for signed-out users without accepting terms', async () => {
+    const { result } = renderHook(() => useCampaignRegistration(), { wrapper: Wrapper })
 
     await waitFor(() => {
       expect(result.current.isReady).toBe(true)
@@ -50,8 +114,7 @@ describe('useCampaignRegistration', () => {
     expect(result.current.isRegistered).toBe(false)
   })
 
-  it('persists registration for the current signed-in user', async () => {
-    vi.useFakeTimers()
+  it('persists accepted terms in unified campaign progress for the current signed-in user', async () => {
     authState = {
       isEnabled: true,
       isLoaded: true,
@@ -59,28 +122,25 @@ describe('useCampaignRegistration', () => {
       user: { id: 'user-1' },
     }
 
-    const { result, rerender } = renderHook(() => useCampaignRegistration())
+    const { result, rerender } = renderHook(() => useCampaignRegistration(), { wrapper: Wrapper })
 
-    await act(async () => {
-      // Flush mount effects before driving the fake timer registration flow.
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true)
     })
-    expect(result.current.isReady).toBe(true)
 
     expect(result.current.isRegistered).toBe(false)
 
     await act(async () => {
-      const registrationPromise = result.current.register()
-      await vi.advanceTimersByTimeAsync(700)
-      await registrationPromise
+      await result.current.register()
     })
 
     expect(result.current.isRegistered).toBe(true)
+    expect(result.current.registeredAt).toEqual(expect.any(String))
 
-    const storedValue = window.localStorage.getItem(getRegistrationStorageKey('user-1'))
-    expect(storedValue).toBeTruthy()
-    expect(JSON.parse(storedValue ?? '{}')).toEqual(
+    const storedSnapshot = window.localStorage.getItem(getAuthSnapshotStorageKey('user-1'))
+    expect(storedSnapshot).toBeTruthy()
+    expect(JSON.parse(storedSnapshot ?? '{}')).toEqual(
       expect.objectContaining({
-        registeredAt: expect.any(String),
         acceptedTermsAt: expect.any(String),
       }),
     )
@@ -89,8 +149,7 @@ describe('useCampaignRegistration', () => {
     expect(result.current.isRegistered).toBe(true)
   })
 
-  it('isolates registration state per signed-in user', async () => {
-    vi.useFakeTimers()
+  it('does not create accepted terms on passive signed-in load', async () => {
     authState = {
       isEnabled: true,
       isLoaded: true,
@@ -98,35 +157,21 @@ describe('useCampaignRegistration', () => {
       user: { id: 'user-1' },
     }
 
-    const { result, rerender } = renderHook(() => useCampaignRegistration())
+    const { result } = renderHook(() => useCampaignRegistration(), { wrapper: Wrapper })
 
-    await act(async () => {
-      // Flush mount effects before driving the fake timer registration flow.
-    })
-    expect(result.current.isReady).toBe(true)
-
-    await act(async () => {
-      const registrationPromise = result.current.register()
-      await vi.advanceTimersByTimeAsync(700)
-      await registrationPromise
-    })
-
-    expect(result.current.isRegistered).toBe(true)
-
-    authState = {
-      isEnabled: true,
-      isLoaded: true,
-      isSignedIn: true,
-      user: { id: 'user-2' },
-    }
-
-    await act(async () => {
-      rerender()
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true)
     })
 
     expect(result.current.isRegistered).toBe(false)
-    expect(
-      window.localStorage.getItem(getRegistrationStorageKey('user-2')),
-    ).toBeNull()
+
+    const storedSnapshot = window.localStorage.getItem(getAuthSnapshotStorageKey('user-1'))
+    expect(storedSnapshot).toBeTruthy()
+    expect(JSON.parse(storedSnapshot ?? '{}')).toEqual(
+      expect.objectContaining({
+        acceptedTermsAt: null,
+      }),
+    )
+    expect(window.localStorage.getItem(getAuthEventsStorageKey('user-1'))).toBe(JSON.stringify([]))
   })
 })

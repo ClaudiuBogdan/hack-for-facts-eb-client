@@ -49,9 +49,7 @@ import type {
   LearningUATFinderInteractionState,
   LearningUATFinderExploredAction,
 } from '../../types'
-
-// Import resolver to ensure registration
-import './uat-finder-resolver'
+import { getInteractiveRecord, getJsonValue } from '../../utils/interactive-state'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -90,10 +88,31 @@ function resolveUATFinderState(params: {
   readonly contentId: string
   readonly finderId: string
 }): { readonly savedState: LearningUATFinderInteractionState | null } {
-  const interaction = params.progress.content[params.contentId]?.interactions?.[params.finderId]
-
-  if (interaction?.kind === 'uat-finder') {
-    return { savedState: interaction }
+  const record = getInteractiveRecord(
+    params.progress.interactiveState,
+    {
+      id: params.finderId,
+      scopePolicy: 'global',
+    },
+  )
+  const value = getJsonValue<Record<string, unknown>>(record)
+  if (value) {
+    return {
+      savedState: {
+        kind: 'uat-finder',
+        step:
+          value.step === 'IDLE' || value.step === 'SELECTED' || value.step === 'EXPLORED' ? value.step : 'IDLE',
+        selectedCui:
+          typeof value.selectedCui === 'string' ? value.selectedCui : null,
+        selectedName:
+          typeof value.selectedName === 'string' ? value.selectedName : null,
+        exploredAction:
+          value.exploredAction === 'view_budget' || value.exploredAction === 'compare' || value.exploredAction === 'map'
+            ? value.exploredAction
+            : null,
+        completedAt: record?.submittedAt ?? undefined,
+      },
+    }
   }
 
   return { savedState: null }

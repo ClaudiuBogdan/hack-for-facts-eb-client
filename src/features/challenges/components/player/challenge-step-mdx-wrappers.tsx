@@ -1,7 +1,5 @@
 import { useCallback, useMemo, type ReactNode } from 'react'
-import { scoreSingleChoice } from '@/features/learning/utils/scoring'
-import { QUIZ_PASS_SCORE } from '@/features/learning/utils/interactions'
-import { useLearningProgress } from '@/features/learning/hooks/use-learning-progress'
+import { useQuizInteraction } from '@/features/learning/hooks/use-learning-interactions'
 import { Quiz } from '@/features/learning/components/assessment/Quiz'
 import { MarkComplete } from '@/features/learning/components/player/MarkComplete'
 import { useRegisterLessonChallenge } from '@/features/learning/components/player/lesson-challenges-context'
@@ -25,6 +23,7 @@ type ChallengeInteractionAccessReplacementProps = {
 
 type StepQuizWrapperProps = ChallengeQuizMdxProps & {
   readonly stepId: string
+  readonly entityCui: string
   readonly locale: ChallengeLocale
   readonly accessCardVariant: ChallengeAccessCardVariant | null
   readonly isAccessGranted: boolean
@@ -74,6 +73,7 @@ export function ChallengeInteractionAccessReplacement({
 
 function StepQuizWrapper({
   stepId,
+  entityCui,
   locale,
   accessCardVariant,
   isAccessGranted,
@@ -81,14 +81,16 @@ function StepQuizWrapper({
   onRegister,
   ...props
 }: StepQuizWrapperProps) {
-  const { progress } = useLearningProgress()
-  const interaction = progress.content[stepId]?.interactions?.[props.id]
-  const selectedOptionId =
-    interaction?.kind === 'quiz' ? interaction.selectedOptionId : null
-  const score = scoreSingleChoice(props.options, selectedOptionId)
-  const isCompleted = score >= QUIZ_PASS_SCORE
+  const { isCorrect } = useQuizInteraction({
+    contentId: stepId,
+    quizId: props.id,
+    options: props.options,
+    contentVersion: 'v1',
+    scopePolicy: props.scopePolicy ?? 'global',
+    entityCui: props.scopePolicy === 'entity' ? entityCui : undefined,
+  })
 
-  useRegisterLessonChallenge({ id: `quiz:${props.id}`, isCompleted })
+  useRegisterLessonChallenge({ id: `quiz:${props.id}`, isCompleted: isCorrect })
 
   if (!isAccessGranted) {
     return (
@@ -101,7 +103,13 @@ function StepQuizWrapper({
     )
   }
 
-  return <Quiz {...props} contentId={stepId} />
+  return (
+    <Quiz
+      {...props}
+      contentId={stepId}
+      entityCui={props.scopePolicy === 'entity' ? entityCui : undefined}
+    />
+  )
 }
 
 export function useChallengeStepMdxComponents({
@@ -122,6 +130,7 @@ export function useChallengeStepMdxComponents({
       <StepQuizWrapper
         {...props}
         stepId={stepId}
+        entityCui={entityCui}
         locale={locale}
         accessCardVariant={accessCardVariant}
         isAccessGranted={isAccessGranted}

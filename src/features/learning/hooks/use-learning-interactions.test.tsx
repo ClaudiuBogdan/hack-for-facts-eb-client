@@ -10,8 +10,13 @@ import {
   useQuizInteraction,
   useSalaryCalculatorInteraction,
 } from './use-learning-interactions'
-import type { LearningGuestProgress } from '../types'
-import type { LearningProgressEvent } from '../types'
+import {
+  createLearningActivePathRecord,
+  createLearningOnboardingRecord,
+  createLearningStreakRecord,
+  createLessonProgressRecord,
+} from '../utils/progress-projection'
+import type { InteractiveStateRecord, LearningGuestProgress, LearningProgressEvent } from '../types'
 
 vi.mock('@lingui/core/macro', () => ({
   t: (strings: TemplateStringsArray) => strings[0],
@@ -34,54 +39,9 @@ const wrapper = ({ children }: { readonly children: ReactNode }) => (
   </QueryClientProvider>
 )
 
-function buildEventsFromProgress(progress: LearningGuestProgress): LearningProgressEvent[] {
-  const events: LearningProgressEvent[] = []
-  let counter = 0
-
-  for (const content of Object.values(progress.content)) {
-    if (!content) continue
-    const interactions = Object.entries(content.interactions ?? {})
-    if (interactions.length > 0) {
-      for (const [interactionId, state] of interactions) {
-        events.push({
-          eventId: `event-${content.contentId}-${counter++}`,
-          clientId: 'test-client',
-          occurredAt: content.lastAttemptAt,
-          type: 'content.progressed',
-          payload: {
-            contentId: content.contentId,
-            status: content.status,
-            score: content.score,
-            contentVersion: content.contentVersion,
-            interaction: {
-              interactionId,
-              state,
-            },
-          },
-        })
-      }
-    } else {
-      events.push({
-        eventId: `event-${content.contentId}-${counter++}`,
-        clientId: 'test-client',
-        occurredAt: content.lastAttemptAt,
-        type: 'content.progressed',
-        payload: {
-          contentId: content.contentId,
-          status: content.status,
-          score: content.score,
-          contentVersion: content.contentVersion,
-        },
-      })
-    }
-  }
-
-  return events
-}
-
 function seedProgress(progress: LearningGuestProgress) {
-  const events = buildEventsFromProgress(progress)
-  window.localStorage.setItem(EVENTS_KEY, JSON.stringify(events))
+  window.localStorage.setItem(EVENTS_KEY, JSON.stringify([]))
+  window.localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(progress))
 }
 
 function readProgress(): LearningGuestProgress {
@@ -94,14 +54,88 @@ function readProgress(): LearningGuestProgress {
 
 function buildProgress(overrides: Partial<LearningGuestProgress> = {}): LearningGuestProgress {
   const now = new Date().toISOString()
-  return {
+  const progress: LearningGuestProgress = {
     version: 1,
     onboarding: { pathId: null, relatedPaths: [], completedAt: null },
     activePathId: null,
     content: {},
+    interactiveState: { recordsByKey: {}, eventLogByRecordKey: {} },
     streak: { currentStreak: 0, longestStreak: 0, lastActivityDate: null },
     lastUpdated: now,
     ...overrides,
+  }
+
+  const projectedSystemRecords: Record<string, InteractiveStateRecord> = {}
+
+  if (progress.onboarding.pathId !== null || progress.onboarding.completedAt !== null) {
+    const onboardingUpdatedAt = progress.onboarding.completedAt ?? progress.lastUpdated
+    projectedSystemRecords['system:learning-onboarding'] = createLearningOnboardingRecord({
+      pathId: progress.onboarding.pathId,
+      relatedPaths: progress.onboarding.relatedPaths,
+      completedAt: progress.onboarding.completedAt,
+      updatedAt: onboardingUpdatedAt,
+    })
+  }
+
+  if (progress.activePathId !== null) {
+    projectedSystemRecords['system:learning-active-path'] = createLearningActivePathRecord({
+      pathId: progress.activePathId,
+      updatedAt: progress.lastUpdated,
+    })
+  }
+
+  if (
+    progress.streak.currentStreak > 0 ||
+    progress.streak.longestStreak > 0 ||
+    progress.streak.lastActivityDate !== null
+  ) {
+    projectedSystemRecords['system:learning-streak'] = createLearningStreakRecord({
+      streak: progress.streak,
+      updatedAt: progress.lastUpdated,
+    })
+  }
+
+  for (const lessonProgress of Object.values(progress.content)) {
+    if (!lessonProgress) continue
+    projectedSystemRecords[`system:lesson-progress:${lessonProgress.contentId}`] =
+      createLessonProgressRecord({
+        progress: lessonProgress,
+        updatedAt: lessonProgress.lastAttemptAt,
+      })
+  }
+
+  return {
+    ...progress,
+    interactiveState: {
+      recordsByKey: {
+        ...projectedSystemRecords,
+        ...progress.interactiveState.recordsByKey,
+      },
+      eventLogByRecordKey: progress.interactiveState.eventLogByRecordKey,
+    },
+  }
+}
+
+function createInteractiveRecord(
+  overrides: Partial<InteractiveStateRecord> & {
+    readonly key: string
+    readonly interactionId: string
+    readonly lessonId: string
+    readonly kind: InteractiveStateRecord['kind']
+  },
+): InteractiveStateRecord {
+  return {
+    key: overrides.key,
+    interactionId: overrides.interactionId,
+    lessonId: overrides.lessonId,
+    kind: overrides.kind,
+    scope: overrides.scope ?? { type: 'global' },
+    completionRule: overrides.completionRule ?? { type: 'resolved' },
+    phase: overrides.phase ?? 'resolved',
+    value: overrides.value ?? null,
+    result: overrides.result ?? null,
+    updatedAt: overrides.updatedAt ?? new Date().toISOString(),
+    submittedAt: overrides.submittedAt ?? null,
   }
 }
 
@@ -125,10 +159,30 @@ describe('use-learning-interactions', () => {
             status: 'in_progress',
             lastAttemptAt: now,
             contentVersion: 'v1',
-            interactions: {
-              'quiz-1': { kind: 'quiz', selectedOptionId: 'b' },
-            },
           },
+        },
+        interactiveState: {
+          recordsByKey: {
+            'quiz-1::global': createInteractiveRecord({
+              key: 'quiz-1::global',
+              interactionId: 'quiz-1',
+              lessonId: 'lesson-1',
+              kind: 'quiz',
+              completionRule: { type: 'outcome', outcome: 'correct' },
+              value: {
+                kind: 'choice',
+                choice: { selectedId: 'b' },
+              },
+              result: {
+                outcome: 'correct',
+                score: 100,
+                evaluatedAt: now,
+              },
+              updatedAt: now,
+              submittedAt: now,
+            }),
+          },
+          eventLogByRecordKey: {},
         },
       }),
     )
@@ -151,6 +205,92 @@ describe('use-learning-interactions', () => {
     expect(result.current.isCorrect).toBe(true)
   })
 
+  it('replays pending events on top of the stored snapshot during storage refresh', async () => {
+    const initialSnapshot = buildProgress({
+      lastUpdated: '2024-01-01T10:00:00.000Z',
+      content: {
+        'lesson-1': {
+          contentId: 'lesson-1',
+          status: 'completed',
+          score: 90,
+          lastAttemptAt: '2024-01-01T10:00:00.000Z',
+          completedAt: '2024-01-01T10:00:00.000Z',
+          contentVersion: 'v1',
+        },
+      },
+      interactiveState: {
+        recordsByKey: {
+          'quiz-1::global': createInteractiveRecord({
+            key: 'quiz-1::global',
+            interactionId: 'quiz-1',
+            lessonId: 'lesson-1',
+            kind: 'quiz',
+            updatedAt: '2024-01-01T10:00:00.000Z',
+            phase: 'resolved',
+            completionRule: { type: 'outcome', outcome: 'correct' },
+            value: { kind: 'choice', choice: { selectedId: 'a' } },
+            result: {
+              outcome: 'correct',
+              score: 90,
+              evaluatedAt: '2024-01-01T10:00:00.000Z',
+            },
+          }),
+        },
+        eventLogByRecordKey: {},
+      },
+    })
+    seedProgress(initialSnapshot)
+
+    renderHook(
+      () => useQuizInteraction({
+        contentId: 'lesson-1',
+        quizId: 'quiz-1',
+        options: [
+          { id: 'a', isCorrect: true },
+          { id: 'b', isCorrect: false },
+        ],
+      }),
+      { wrapper },
+    )
+
+    const pendingRecord = createInteractiveRecord({
+      key: 'quiz-2::global',
+      interactionId: 'quiz-2',
+      lessonId: 'lesson-2',
+      kind: 'quiz',
+      updatedAt: '2024-01-02T10:00:00.000Z',
+      phase: 'resolved',
+      completionRule: { type: 'outcome', outcome: 'correct' },
+      value: { kind: 'choice', choice: { selectedId: 'c' } },
+      result: {
+        outcome: 'correct',
+        score: 100,
+        evaluatedAt: '2024-01-02T10:00:00.000Z',
+      },
+    })
+    const pendingEvent: LearningProgressEvent = {
+      eventId: 'pending-quiz-2',
+      clientId: 'test-client',
+      occurredAt: '2024-01-02T10:00:00.000Z',
+      type: 'interactive.updated',
+      payload: {
+        record: pendingRecord,
+      },
+    }
+
+    await act(async () => {
+      window.localStorage.setItem(EVENTS_KEY, JSON.stringify([pendingEvent]))
+      window.dispatchEvent(new StorageEvent('storage', { key: EVENTS_KEY }))
+    })
+
+    await waitFor(() => {
+      const stored = readProgress()
+      expect(stored.content['lesson-1']?.status).toBe('completed')
+      expect(stored.interactiveState.recordsByKey['quiz-1::global']?.interactionId).toBe('quiz-1')
+      expect(stored.interactiveState.recordsByKey['quiz-2::global']).toEqual(pendingRecord)
+    })
+  })
+
   it('ignores invalid persisted selections', async () => {
     const now = new Date().toISOString()
     seedProgress(
@@ -162,10 +302,30 @@ describe('use-learning-interactions', () => {
             status: 'in_progress',
             lastAttemptAt: now,
             contentVersion: 'v1',
-            interactions: {
-              'quiz-1': { kind: 'quiz', selectedOptionId: 'z' },
-            },
           },
+        },
+        interactiveState: {
+          recordsByKey: {
+            'quiz-1::global': createInteractiveRecord({
+              key: 'quiz-1::global',
+              interactionId: 'quiz-1',
+              lessonId: 'lesson-1',
+              kind: 'quiz',
+              completionRule: { type: 'outcome', outcome: 'correct' },
+              value: {
+                kind: 'choice',
+                choice: { selectedId: 'z' },
+              },
+              result: {
+                outcome: 'incorrect',
+                score: 0,
+                evaluatedAt: now,
+              },
+              updatedAt: now,
+              submittedAt: now,
+            }),
+          },
+          eventLogByRecordKey: {},
         },
       }),
     )
@@ -207,9 +367,63 @@ describe('use-learning-interactions', () => {
       const lesson = stored.content['lesson-1']
       expect(lesson.status).toBe('in_progress')
       expect(lesson.score).toBe(100)
-      expect(lesson.interactions?.['quiz-1']).toEqual({ kind: 'quiz', selectedOptionId: 'b' })
+      expect(stored.interactiveState.recordsByKey['quiz-1::global']?.value).toEqual({
+        kind: 'choice',
+        choice: { selectedId: 'b' },
+      })
+      expect(stored.interactiveState.recordsByKey['quiz-1::global']?.result?.outcome).toBe('correct')
       expect(lesson.completedAt).toBeUndefined()
     })
+  })
+
+  it('keeps entity-scoped quiz progress separate per entity for the same interaction id', async () => {
+    const options = [
+      { id: 'a', isCorrect: false },
+      { id: 'b', isCorrect: true },
+    ]
+
+    const firstEntity = renderHook(
+      () => useQuizInteraction({
+        contentId: 'lesson-1',
+        quizId: 'runtime-quiz',
+        options,
+        contentVersion: 'v1',
+        scopePolicy: 'entity',
+        entityCui: '12345678',
+      }),
+      { wrapper },
+    )
+
+    await act(async () => {
+      await firstEntity.result.current.answer('b')
+    })
+
+    await waitFor(() => {
+      expect(firstEntity.result.current.selectedOptionId).toBe('b')
+    })
+
+    const secondEntity = renderHook(
+      () => useQuizInteraction({
+        contentId: 'lesson-1',
+        quizId: 'runtime-quiz',
+        options,
+        contentVersion: 'v1',
+        scopePolicy: 'entity',
+        entityCui: '87654321',
+      }),
+      { wrapper },
+    )
+
+    await waitFor(() => {
+      expect(secondEntity.result.current.selectedOptionId).toBeNull()
+    })
+
+    const stored = readProgress()
+    expect(stored.interactiveState.recordsByKey['runtime-quiz::entity:12345678']?.value).toEqual({
+      kind: 'choice',
+      choice: { selectedId: 'b' },
+    })
+    expect(stored.interactiveState.recordsByKey['runtime-quiz::entity:87654321']).toBeUndefined()
   })
 
   it('clears quiz interaction without downgrading status', async () => {
@@ -225,10 +439,30 @@ describe('use-learning-interactions', () => {
             lastAttemptAt: now,
             completedAt: now,
             contentVersion: 'v1',
-            interactions: {
-              'quiz-1': { kind: 'quiz', selectedOptionId: 'b' },
-            },
           },
+        },
+        interactiveState: {
+          recordsByKey: {
+            'quiz-1::global': createInteractiveRecord({
+              key: 'quiz-1::global',
+              interactionId: 'quiz-1',
+              lessonId: 'lesson-1',
+              kind: 'quiz',
+              completionRule: { type: 'outcome', outcome: 'correct' },
+              value: {
+                kind: 'choice',
+                choice: { selectedId: 'b' },
+              },
+              result: {
+                outcome: 'correct',
+                score: 100,
+                evaluatedAt: now,
+              },
+              updatedAt: now,
+              submittedAt: now,
+            }),
+          },
+          eventLogByRecordKey: {},
         },
       }),
     )
@@ -251,7 +485,8 @@ describe('use-learning-interactions', () => {
       const stored = readProgress()
       const lesson = stored.content['lesson-1']
       expect(lesson.status).toBe('passed')
-      expect(lesson.interactions).toBeUndefined()
+      expect(stored.interactiveState.recordsByKey['quiz-1::global']?.phase).toBe('idle')
+      expect(stored.interactiveState.recordsByKey['quiz-1::global']?.value).toBeNull()
     })
   })
 
@@ -297,19 +532,35 @@ describe('use-learning-interactions', () => {
               status: 'in_progress',
               lastAttemptAt: now,
               contentVersion: 'v1',
-              interactions: {
-                'prediction-1': {
-                  kind: 'prediction',
-                  reveals: {
-                    '2024': {
-                      guess: 75,
-                      actualRate: 60,
-                      revealedAt: now,
+            },
+          },
+          interactiveState: {
+            recordsByKey: {
+              'prediction-1::global': createInteractiveRecord({
+                key: 'prediction-1::global',
+                interactionId: 'prediction-1',
+                lessonId: 'lesson-1',
+                kind: 'custom',
+                value: {
+                  kind: 'json',
+                  json: {
+                    value: {
+                      reveals: {
+                        '2024': {
+                          guess: 75,
+                          actualRate: 60,
+                          revealedAt: now,
+                        },
+                      },
                     },
                   },
                 },
-              },
+                result: { outcome: null, evaluatedAt: now },
+                updatedAt: now,
+                submittedAt: now,
+              }),
             },
+            eventLogByRecordKey: {},
           },
         }),
       )
@@ -339,13 +590,20 @@ describe('use-learning-interactions', () => {
 
       await waitFor(() => {
         const stored = readProgress()
-        const lesson = stored.content['lesson-1']
-        const interaction = lesson?.interactions?.['prediction-1']
-        expect(interaction?.kind).toBe('prediction')
-        if (interaction?.kind === 'prediction') {
-          expect(interaction.reveals['2024'].guess).toBe(70)
-          expect(interaction.reveals['2024'].actualRate).toBe(60)
-        }
+        expect(stored.interactiveState.recordsByKey['prediction-1::global']?.phase).toBe('resolved')
+        expect(stored.interactiveState.recordsByKey['prediction-1::global']?.value).toEqual({
+          kind: 'json',
+          json: {
+            value: {
+              reveals: {
+                '2024': expect.objectContaining({
+                  guess: 70,
+                  actualRate: 60,
+                }),
+              },
+            },
+          },
+        })
       })
     })
 
@@ -387,17 +645,33 @@ describe('use-learning-interactions', () => {
               status: 'in_progress',
               lastAttemptAt: now,
               contentVersion: 'v1',
-              interactions: {
-                'prediction-1': {
-                  kind: 'prediction',
-                  reveals: {
-                    '2022': { guess: 50, actualRate: 58, revealedAt: now },
-                    '2023': { guess: 65, actualRate: 60, revealedAt: now },
-                    '2024': { guess: 75, actualRate: 60, revealedAt: now },
+            },
+          },
+          interactiveState: {
+            recordsByKey: {
+              'prediction-1::global': createInteractiveRecord({
+                key: 'prediction-1::global',
+                interactionId: 'prediction-1',
+                lessonId: 'lesson-1',
+                kind: 'custom',
+                value: {
+                  kind: 'json',
+                  json: {
+                    value: {
+                      reveals: {
+                        '2022': { guess: 50, actualRate: 58, revealedAt: now },
+                        '2023': { guess: 65, actualRate: 60, revealedAt: now },
+                        '2024': { guess: 75, actualRate: 60, revealedAt: now },
+                      },
+                    },
                   },
                 },
-              },
+                result: { outcome: null, evaluatedAt: now },
+                updatedAt: now,
+                submittedAt: now,
+              }),
             },
+            eventLogByRecordKey: {},
           },
         }),
       )
@@ -446,15 +720,31 @@ describe('use-learning-interactions', () => {
               status: 'in_progress',
               lastAttemptAt: now,
               contentVersion: 'v1',
-              interactions: {
-                'prediction-1': {
-                  kind: 'prediction',
-                  reveals: {
-                    '2024': { guess: 75, actualRate: 60, revealedAt: now },
+            },
+          },
+          interactiveState: {
+            recordsByKey: {
+              'prediction-1::global': createInteractiveRecord({
+                key: 'prediction-1::global',
+                interactionId: 'prediction-1',
+                lessonId: 'lesson-1',
+                kind: 'custom',
+                value: {
+                  kind: 'json',
+                  json: {
+                    value: {
+                      reveals: {
+                        '2024': { guess: 75, actualRate: 60, revealedAt: now },
+                      },
+                    },
                   },
                 },
-              },
+                result: { outcome: null, evaluatedAt: now },
+                updatedAt: now,
+                submittedAt: now,
+              }),
             },
+            eventLogByRecordKey: {},
           },
         }),
       )
@@ -498,15 +788,31 @@ describe('use-learning-interactions', () => {
               status: 'in_progress',
               lastAttemptAt: now,
               contentVersion: 'v1',
-              interactions: {
-                'calculator-1': {
-                  kind: 'salary-calculator',
-                  gross: 5000,
-                  userGuess: 3500,
-                  step: 'GUESS',
-                },
-              },
             },
+          },
+          interactiveState: {
+            recordsByKey: {
+              'calculator-1::global': createInteractiveRecord({
+                key: 'calculator-1::global',
+                interactionId: 'calculator-1',
+                lessonId: 'lesson-1',
+                kind: 'custom',
+                value: {
+                  kind: 'json',
+                  json: {
+                    value: {
+                      gross: 5000,
+                      userGuess: 3500,
+                      step: 'GUESS',
+                    },
+                  },
+                },
+                phase: 'draft',
+                result: null,
+                updatedAt: now,
+              }),
+            },
+            eventLogByRecordKey: {},
           },
         }),
       )
@@ -538,14 +844,17 @@ describe('use-learning-interactions', () => {
 
       await waitFor(() => {
         const stored = readProgress()
-        const lesson = stored.content['lesson-1']
-        const interaction = lesson?.interactions?.['calculator-1']
-        expect(interaction?.kind).toBe('salary-calculator')
-        if (interaction?.kind === 'salary-calculator') {
-          expect(interaction.gross).toBe(5000)
-          expect(interaction.userGuess).toBe(3500)
-          expect(interaction.step).toBe('GUESS')
-        }
+        expect(stored.interactiveState.recordsByKey['calculator-1::global']?.phase).toBe('draft')
+        expect(stored.interactiveState.recordsByKey['calculator-1::global']?.value).toEqual({
+          kind: 'json',
+          json: {
+            value: {
+              gross: 5000,
+              userGuess: 3500,
+              step: 'GUESS',
+            },
+          },
+        })
       })
     })
 
@@ -584,15 +893,18 @@ describe('use-learning-interactions', () => {
 
       await waitFor(() => {
         const stored = readProgress()
-        const lesson = stored.content['lesson-1']
-        const interaction = lesson?.interactions?.['calculator-1']
-        expect(interaction?.kind).toBe('salary-calculator')
-        if (interaction?.kind === 'salary-calculator') {
-          expect(interaction.gross).toBe(5000)
-          expect(interaction.userGuess).toBe(3700)
-          expect(interaction.step).toBe('REVEAL')
-          expect(interaction.completedAt).toBeDefined()
-        }
+        expect(stored.interactiveState.recordsByKey['calculator-1::global']?.phase).toBe('resolved')
+        expect(stored.interactiveState.recordsByKey['calculator-1::global']?.value).toEqual({
+          kind: 'json',
+          json: {
+            value: {
+              gross: 5000,
+              userGuess: 3700,
+              step: 'REVEAL',
+            },
+          },
+        })
+        expect(stored.interactiveState.recordsByKey['calculator-1::global']?.submittedAt).toBeTruthy()
       })
     })
 
@@ -607,16 +919,31 @@ describe('use-learning-interactions', () => {
               status: 'completed',
               lastAttemptAt: now,
               contentVersion: 'v1',
-              interactions: {
-                'calculator-1': {
-                  kind: 'salary-calculator',
-                  gross: 5000,
-                  userGuess: 3500,
-                  step: 'REVEAL',
-                  completedAt: now,
-                },
-              },
             },
+          },
+          interactiveState: {
+            recordsByKey: {
+              'calculator-1::global': createInteractiveRecord({
+                key: 'calculator-1::global',
+                interactionId: 'calculator-1',
+                lessonId: 'lesson-1',
+                kind: 'custom',
+                value: {
+                  kind: 'json',
+                  json: {
+                    value: {
+                      gross: 5000,
+                      userGuess: 3500,
+                      step: 'REVEAL',
+                    },
+                  },
+                },
+                result: { outcome: null, evaluatedAt: now },
+                updatedAt: now,
+                submittedAt: now,
+              }),
+            },
+            eventLogByRecordKey: {},
           },
         }),
       )
@@ -652,16 +979,31 @@ describe('use-learning-interactions', () => {
               status: 'completed',
               lastAttemptAt: now,
               contentVersion: 'v1',
-              interactions: {
-                'calculator-1': {
-                  kind: 'salary-calculator',
-                  gross: 5000,
-                  userGuess: 3500,
-                  step: 'REVEAL',
-                  completedAt: now,
-                },
-              },
             },
+          },
+          interactiveState: {
+            recordsByKey: {
+              'calculator-1::global': createInteractiveRecord({
+                key: 'calculator-1::global',
+                interactionId: 'calculator-1',
+                lessonId: 'lesson-1',
+                kind: 'custom',
+                value: {
+                  kind: 'json',
+                  json: {
+                    value: {
+                      gross: 5000,
+                      userGuess: 3500,
+                      step: 'REVEAL',
+                    },
+                  },
+                },
+                result: { outcome: null, evaluatedAt: now },
+                updatedAt: now,
+                submittedAt: now,
+              }),
+            },
+            eventLogByRecordKey: {},
           },
         }),
       )
