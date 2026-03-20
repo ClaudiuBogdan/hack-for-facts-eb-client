@@ -2,6 +2,7 @@ import type { PropsWithChildren } from 'react'
 import { render, screen, waitFor } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ChallengesLayout } from './ChallengesLayout'
+import { ChallengeStepPendingShell } from '../player/challenge-step-pending-shell'
 
 const mockLocation = {
   pathname: '/primarie/87654321/buget/provocari/test-module/test-challenge/test-step',
@@ -326,8 +327,20 @@ describe('ChallengesLayout', () => {
           'href',
           '/primarie/87654321/buget/provocari/test-module/test-challenge/test-step',
         )
+        expect(stepLink).toHaveAttribute('preload', 'intent')
       }
     })
+  })
+
+  it('keeps the sidebar visible while the step outlet is pending', () => {
+    render(
+      <ChallengesLayout>
+        <ChallengeStepPendingShell />
+      </ChallengesLayout>,
+    )
+
+    expect(screen.getByTestId('challenge-step-pending-shell')).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: /Test step/i }).length).toBeGreaterThan(0)
   })
 
   it('keeps rendering the layout while progress is still resolving', () => {

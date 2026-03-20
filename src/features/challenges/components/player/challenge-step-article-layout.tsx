@@ -76,6 +76,7 @@ export function ChallengeStepArticleLayout({
               step: prev,
               findChallengeSlugForAdjacentStep,
             }) as '/'}
+            preload="render"
             search={(previousSearch) => clearChallengeStepSearch(previousSearch)}
             resetScroll={true}
             className="group flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-border/60 p-4 transition-all hover:border-border hover:bg-muted/30 sm:max-w-[48%]"
@@ -116,6 +117,7 @@ export function ChallengeStepArticleLayout({
               step: next,
               findChallengeSlugForAdjacentStep,
             }) as '/'}
+            preload="render"
             search={(previousSearch) => clearChallengeStepSearch(previousSearch)}
             resetScroll={true}
             className="group flex min-w-0 flex-1 items-center justify-end gap-3 rounded-2xl border border-border/60 bg-foreground p-4 text-background transition-all hover:opacity-95 sm:max-w-[48%]"

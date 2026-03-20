@@ -170,6 +170,7 @@ function ChallengeNav({
                       ) as '/')
                     : (fallbackPath as '/')
                 }
+                preload="intent"
                 className={cn(
                   'group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] transition-all duration-200 min-w-0 overflow-hidden',
                   isActive

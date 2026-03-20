@@ -1,12 +1,14 @@
 import { createLazyFileRoute, useNavigate } from '@tanstack/react-router'
 import { resolveCampaignLocale } from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
 import { ChallengeStepPlayer } from '@/features/challenges/components/player/ChallengeStepPlayer'
+import { ChallengeStepPendingShell } from '@/features/challenges/components/player/challenge-step-pending-shell'
 import { resolveChallengeStepRouteSearch } from '@/features/challenges/utils/challenge-step-route-search'
 
 export const Route = createLazyFileRoute(
   '/primarie/$cui/buget/provocari/$moduleSlug/$challengeSlug/$stepSlug',
 )({
   component: ChallengeStepPlayerRoute,
+  pendingComponent: ChallengeStepPendingShell,
 })
 
 function ChallengeStepPlayerRoute() {

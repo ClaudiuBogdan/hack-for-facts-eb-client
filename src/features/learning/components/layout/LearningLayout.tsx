@@ -8,7 +8,7 @@ import {
   Library,
   Layers,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -94,6 +94,7 @@ function ModuleNav({ module, pathId, locale, currentLessonId, lessonProgress, ac
               key={lesson.id}
               ref={isActive ? activeLessonRef : undefined}
               to={`/${locale}/learning/${pathId}/${module.id}/${lesson.id}` as '/'}
+              preload="intent"
               className={cn(
                 'group flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] transition-all duration-200 min-w-0 overflow-hidden',
                 isActive
@@ -266,15 +267,19 @@ function LearningSidebar({ pathname }: { readonly pathname: string }) {
   )
 }
 
-export function LearningLayout() {
+type LearningLayoutProps = {
+  readonly children?: ReactNode
+}
+
+export function LearningLayout({ children }: LearningLayoutProps) {
   return (
     <LearningProgressProvider>
-      <LearningLayoutInner />
+      <LearningLayoutInner>{children}</LearningLayoutInner>
     </LearningProgressProvider>
   )
 }
 
-function LearningLayoutInner() {
+function LearningLayoutInner({ children }: LearningLayoutProps) {
   const location = useLocation()
   const [isOpen, setIsOpen] = useState(false)
   const isOnboardingRoute = location.pathname.includes('/learning/onboarding')
@@ -310,7 +315,7 @@ function LearningLayoutInner() {
       <div className="flex-1">
         <LoginBanner />
         <div className="mx-auto max-w-3xl px-6 py-8 lg:px-10 lg:py-10">
-          <Outlet />
+          {children ?? <Outlet />}
         </div>
       </div>
     </div>

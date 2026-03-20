@@ -7,6 +7,7 @@ const mockUseChallengeAccess = vi.fn()
 const mockUseChallengeStepContent = vi.fn()
 const mockUseQuizInteraction = vi.fn()
 const mockUseLessonChallenges = vi.fn()
+const mockGetAdjacentSteps = vi.fn()
 const markCompleteMock = vi.fn()
 const navigateMock = vi.fn()
 
@@ -60,7 +61,7 @@ const moduleDefinition = {
 
 vi.mock('../../utils/modules', () => ({
   findChallengeSlugForStep: () => 'test-challenge',
-  getAdjacentSteps: () => ({ prev: null, next: null }),
+  getAdjacentSteps: (...args: unknown[]) => mockGetAdjacentSteps(...args),
   getChallengeModuleBySlug: () => moduleDefinition,
   getTranslatedText: (value: { ro: string; en: string }) => value.ro,
 }))
@@ -110,6 +111,8 @@ vi.mock('@/features/learning/utils/interactions', () => ({
 
 describe('ChallengeStepPlayer', () => {
   beforeEach(() => {
+    mockGetAdjacentSteps.mockReset()
+    mockGetAdjacentSteps.mockReturnValue({ prev: null, next: null })
     mockUseChallengeAccess.mockReturnValue({
       accessCardVariant: 'auth',
       isAccessGranted: false,
@@ -185,6 +188,60 @@ describe('ChallengeStepPlayer', () => {
     expect(
       screen.getAllByRole('heading', { name: /Conectează-te ca să participi la provocări/i }),
     ).toHaveLength(2)
+  })
+
+  it('adds render preloading to adjacent article step links', () => {
+    mockGetAdjacentSteps.mockReturnValue({
+      prev: {
+        id: 'step-0',
+        slug: 'prev-step',
+        title: { ro: 'Previous step title', en: 'Previous step title' },
+        contentDir: 'prev-step',
+        durationMinutes: 5,
+        completionMode: 'mark_complete',
+        prerequisites: [],
+      },
+      next: {
+        id: 'step-2',
+        slug: 'next-step',
+        title: { ro: 'Next step title', en: 'Next step title' },
+        contentDir: 'next-step',
+        durationMinutes: 5,
+        completionMode: 'mark_complete',
+        prerequisites: [],
+      },
+    })
+
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'article',
+        Component: () => <p>Step body copy</p>,
+        frontmatter: {},
+        sections: [],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+      />,
+    )
+
+    expect(screen.getByText('Previous step title').closest('a')).toHaveAttribute('preload', 'render')
+    expect(screen.getByText('Next step title').closest('a')).toHaveAttribute('preload', 'render')
   })
 
   it('enables next immediately for a non-interactive section', () => {

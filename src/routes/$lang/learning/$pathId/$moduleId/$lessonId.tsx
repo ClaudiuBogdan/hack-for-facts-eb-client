@@ -5,6 +5,8 @@ import { getLearningPathById } from '@/features/learning/utils/paths'
 
 export const Route = createFileRoute('/$lang/learning/$pathId/$moduleId/$lessonId')({
   ssr: true,
+  pendingMs: 0,
+  pendingMinMs: 250,
   loader: async ({ params }) => {
     const learningPath = getLearningPathById(params.pathId)
     if (!learningPath) {

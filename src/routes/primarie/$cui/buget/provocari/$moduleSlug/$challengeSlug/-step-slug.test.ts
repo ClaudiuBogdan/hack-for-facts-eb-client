@@ -65,6 +65,8 @@ describe('challenge step route loader', () => {
     const { Route } = await import('./$stepSlug')
     const routeWithLoader = Route as unknown as {
       loader: (input: Record<string, unknown>) => Promise<Record<string, unknown>>
+      pendingMs: number
+      pendingMinMs: number
     }
 
     await expect(
@@ -94,12 +96,16 @@ describe('challenge step route loader', () => {
       contentDir: 'budget-basics/step-a',
       locale: 'ro',
     })
+    expect(routeWithLoader.pendingMs).toBe(0)
+    expect(routeWithLoader.pendingMinMs).toBe(250)
   })
 
   it('throws notFound when the module, challenge, or step is missing', async () => {
     const { Route } = await import('./$stepSlug')
     const routeWithLoader = Route as unknown as {
       loader: (input: Record<string, unknown>) => Promise<Record<string, unknown>>
+      pendingMs: number
+      pendingMinMs: number
     }
 
     getChallengeModuleBySlugMock.mockReturnValue(null)

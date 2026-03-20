@@ -46,6 +46,8 @@ describe('learning lesson route loader', () => {
     const { Route } = await import('./$lessonId')
     const routeWithLoader = Route as unknown as {
       loader: (input: Record<string, unknown>) => Promise<null>
+      pendingMs: number
+      pendingMinMs: number
     }
 
     await expect(
@@ -64,12 +66,16 @@ describe('learning lesson route loader', () => {
       contentDir: 'citizen-foundations/lesson-a',
       locale: 'ro',
     })
+    expect(routeWithLoader.pendingMs).toBe(0)
+    expect(routeWithLoader.pendingMinMs).toBe(250)
   })
 
   it('throws notFound when the path, module, or lesson is missing', async () => {
     const { Route } = await import('./$lessonId')
     const routeWithLoader = Route as unknown as {
       loader: (input: Record<string, unknown>) => Promise<null>
+      pendingMs: number
+      pendingMinMs: number
     }
 
     getLearningPathByIdMock.mockReturnValue(null)

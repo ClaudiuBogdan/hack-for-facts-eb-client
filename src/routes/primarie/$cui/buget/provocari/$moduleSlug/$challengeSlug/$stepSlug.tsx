@@ -14,6 +14,8 @@ export const Route = createFileRoute(
   '/primarie/$cui/buget/provocari/$moduleSlug/$challengeSlug/$stepSlug',
 )({
   ssr: true,
+  pendingMs: 0,
+  pendingMinMs: 250,
   validateSearch: CampaignRouteSearchSchema,
   loaderDeps: ({ search }) =>
     buildChallengeStepRouteLoaderData({
