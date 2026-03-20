@@ -17,7 +17,7 @@ jobs:
   typecheck:
     name: Type Check
     if: github.event_name != 'push' || github.ref != 'refs/heads/main'
-    runs-on: ubuntu-phoenix
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -41,7 +41,7 @@ jobs:
   unit-tests:
     name: Unit Tests
     if: github.event_name != 'push' || github.ref != 'refs/heads/main'
-    runs-on: ubuntu-phoenix
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -110,7 +110,7 @@ jobs:
   build:
     name: Build
     if: github.event_name != 'push' || github.ref != 'refs/heads/main'
-    runs-on: ubuntu-phoenix
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -140,7 +140,7 @@ jobs:
   validate-learning-content:
     name: Validate Learning Content
     if: github.event_name != 'push' || github.ref != 'refs/heads/main'
-    runs-on: ubuntu-phoenix
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
