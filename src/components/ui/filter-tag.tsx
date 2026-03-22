@@ -23,6 +23,7 @@ export function FilterTag({
       <button
         type="button"
         onClick={onRemove}
+        aria-label={`Remove ${label} filter`}
         className="ml-1 rounded-full p-0.5 hover:bg-muted hover:text-foreground"
       >
         <X className="h-3 w-3" />

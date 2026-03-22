@@ -23,10 +23,12 @@ export async function fetchLearningProgress(params: { since?: string | null } = 
   const endpoint = `${getApiUrl()}/api/v1/learning/progress${query}`
   const token = await getAuthToken()
 
+  const headers: Record<string, string> = {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+
   const response = await fetch(endpoint, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers,
   })
 
   if (!response.ok) {
@@ -53,12 +55,14 @@ export async function syncLearningProgressEvents(params: {
   const endpoint = `${getApiUrl()}/api/v1/learning/progress`
   const token = await getAuthToken()
 
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+
   const response = await fetch(endpoint, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
+    headers,
     body: JSON.stringify({
       clientUpdatedAt: params.clientUpdatedAt,
       events: params.events,

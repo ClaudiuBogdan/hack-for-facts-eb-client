@@ -691,5 +691,36 @@ describe('chartsStore', () => {
       const savedCharts = JSON.parse(mockStorage['saved-charts'])
       expect(savedCharts[0].categories).toContain('existing-id')
     })
+
+    it('returns an error and rolls back categories when chart persistence fails', () => {
+      const existingCategory = createMockCategory('existing-category', 'Existing Category')
+      mockStorage['chart-categories'] = JSON.stringify([existingCategory])
+
+      vi.mocked(localStorage.setItem).mockImplementation((key: string, value: string) => {
+        if (key === 'saved-charts') {
+          throw new DOMException('Quota exceeded', 'QuotaExceededError')
+        }
+
+        mockStorage[key] = value
+      })
+
+      const backup: ChartsBackupFile = {
+        type: 'charts-backup',
+        version: 1,
+        charts: [createMockStoredChart('new-chart', { categories: ['new-category'] })],
+        categories: [createMockCategory('new-category', 'New Category')],
+      }
+
+      const store = getChartsStore()
+      const result = store.importBackup(backup, 'skip')
+
+      expect(result.ok).toBe(false)
+      if (!result.ok) {
+        expect(result.error).toBe('Failed to persist imported charts')
+      }
+
+      expect(mockStorage['saved-charts']).toBeUndefined()
+      expect(JSON.parse(mockStorage['chart-categories'])).toEqual([existingCategory])
+    })
   })
 })

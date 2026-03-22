@@ -273,3 +273,15 @@ export function getSignClass(value: number | null | undefined): string {
   if (value > 0) return 'text-green-600';
   return 'text-muted-foreground';
 }
+
+/**
+ * Extracts a prefix of a budget code at a given segment depth.
+ * Codes like "01.02.03" are split by dots, then rejoined with the specified number of segments.
+ *
+ * @param code - The full budget code (e.g., "01.02.03")
+ * @param segmentCount - Number of segments to include (e.g., 1 returns "01", 2 returns "01.02", 3 returns "01.02.03")
+ */
+export function getCodeAtDepth(code: string, segmentCount: number): string {
+  const parts = code.replace(/[^0-9.]/g, '').split('.').filter(Boolean)
+  return parts.slice(0, segmentCount).join('.')
+}

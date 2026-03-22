@@ -28,6 +28,7 @@ import type { NormalizationOptions } from '@/lib/normalization'
 import { normalizeNormalizationOptions } from '@/lib/normalization'
 import type { ReportPeriodInput, ReportPeriodType, GqlReportType, PeriodDate } from '@/schemas/reporting'
 import { getQuarterForMonth, toCommitmentReportType } from '@/schemas/reporting'
+import { getCodeAtDepth } from '@/lib/utils'
 import {
   StatCard,
   CommitmentsTrends,
@@ -284,26 +285,20 @@ export function CommitmentsView({
   // must sum amounts per group code before joining across metrics.
   // Grouping dimension (fn/ec) and detail level (chapter/detailed) are controlled
   // by the DetailTable toggle controls.
-  const getCodeAtDepth = (code: string, depth: 2 | 4): string => {
-    const parts = code.replace(/[^0-9.]/g, '').split('.')
-    if (depth === 2) return parts[0] ?? ''
-    return parts.slice(0, 2).join('.')
-  }
-
   const categoryData = useMemo<CategoryData[]>(() => {
     if (!budgetAgg || !committedAgg || !paidTreasuryAgg) return []
 
     const isFn = grouping === 'fn'
-    const depth: 2 | 4 = detailLevel === 'chapter' ? 2 : 4
+    const segmentCount = detailLevel === 'chapter' ? 1 : 2
 
     const getGroupCode = (n: { functional_code: string; economic_code: string | null }) => {
       const raw = isFn ? n.functional_code : (n.economic_code ?? '')
-      return getCodeAtDepth(raw, depth)
+      return getCodeAtDepth(raw, segmentCount)
     }
 
     const resolveName = (code: string) => {
       if (isFn) return getClassificationName(code)
-      if (depth === 2) return getEconomicChapterName(code)
+      if (segmentCount === 1) return getEconomicChapterName(code)
       return getEconomicSubchapterName(code)
     }
 

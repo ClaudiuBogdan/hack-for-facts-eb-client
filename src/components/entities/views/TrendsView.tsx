@@ -62,7 +62,7 @@ interface BaseTrendsViewProps {
 
 const TOP_CATEGORIES_COUNT = 10;
 
-export const TrendsView: React.FC<BaseTrendsViewProps> = ({ entity, type, currentYear, onYearClick, onSelectPeriod, initialIncomeSearch, initialExpenseSearch, onSearchChange, isLoading, normalizationOptions, onNormalizationChange, reportPeriod, trendPeriod, reportType, years = [], lineItemsTab = 'functional', onLineItemsTabChange, selectedFundingKey = '', selectedExpenseTypeKey = '', onSelectedFundingKeyChange, onSelectedExpenseTypeKeyChange, treemapPrimary, onTreemapPrimaryChange, treemapPath, onTreemapPathChange, transferFilter = 'no-transfers', onTransferFilterChange, advancedFilter, onAdvancedFilterChange }) => {
+const TrendsViewComponent: React.FC<BaseTrendsViewProps> = ({ entity, type, currentYear, onYearClick, onSelectPeriod, initialIncomeSearch, initialExpenseSearch, onSearchChange, isLoading, normalizationOptions, onNormalizationChange, reportPeriod, trendPeriod, reportType, years = [], lineItemsTab = 'functional', onLineItemsTabChange, selectedFundingKey = '', selectedExpenseTypeKey = '', onSelectedFundingKeyChange, onSelectedExpenseTypeKeyChange, treemapPrimary, onTreemapPrimaryChange, treemapPath, onTreemapPathChange, transferFilter = 'no-transfers', onTransferFilterChange, advancedFilter, onAdvancedFilterChange }) => {
   const { cui } = useParams({ from: '/entities/$cui' });
   const isMobile = useIsMobile();
   const chapterMap = useMemo(() => getChapterMap(), []);
@@ -103,6 +103,7 @@ export const TrendsView: React.FC<BaseTrendsViewProps> = ({ entity, type, curren
 
   const trendChart = useMemo<Chart | null>(() => {
     if (!entity) return null;
+    const timestamp = new Date().toISOString();
     const entityName = entityNameRaw.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     const title = type === 'income' ? t`Top ${TOP_CATEGORIES_COUNT} Income Categories for ${entityName}` : t`Top ${TOP_CATEGORIES_COUNT} Spending Categories for ${entityName}`;
     const defaultExclude = accountCategory === 'ch'
@@ -128,8 +129,8 @@ export const TrendsView: React.FC<BaseTrendsViewProps> = ({ entity, type, curren
       enabled: true,
       config: { color: getSeriesColor(index), showDataLabels: false },
       unit: getNormalizationUnit({ normalization: normalized.normalization, currency: normalized.currency, show_period_growth: normalized.show_period_growth }),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: timestamp,
+      updatedAt: timestamp,
     }));
 
     return {
@@ -144,6 +145,8 @@ export const TrendsView: React.FC<BaseTrendsViewProps> = ({ entity, type, curren
         editAnnotations: false,
       },
       series,
+      createdAt: timestamp,
+      updatedAt: timestamp,
     } as Chart;
   }, [topFunctionalGroups, cui, type, chapterMap, entity, entityNameRaw, normalized, trendPeriod, reportType]);
 
@@ -296,3 +299,5 @@ export const TrendsView: React.FC<BaseTrendsViewProps> = ({ entity, type, curren
     </div>
   );
 };
+
+export const TrendsView = React.memo(TrendsViewComponent);

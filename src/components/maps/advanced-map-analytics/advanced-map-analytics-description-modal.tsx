@@ -7,6 +7,13 @@ import { modalSizes } from '@/components/ui/modal-sizes';
 import { Textarea } from '@/components/ui/textarea';
 import { t } from '@lingui/core/macro';
 
+const DISALLOWED_ELEMENTS = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'button'];
+
+const isSafeExternalHref = (href: string | undefined): boolean => {
+  if (!href) return false;
+  return href.startsWith('http://') || href.startsWith('https://');
+};
+
 interface AdvancedMapAnalyticsDescriptionModalBaseProps {
   open: boolean;
   description: string;
@@ -63,7 +70,24 @@ export function AdvancedMapAnalyticsDescriptionModal(
               <div className="max-h-[60vh] overflow-y-auto rounded-md border bg-muted/20 p-3">
                 {hasDescription ? (
                   <div className="prose prose-sm max-w-none break-words dark:prose-invert">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{description}</ReactMarkdown>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      disallowedElements={DISALLOWED_ELEMENTS}
+                      components={{
+                        a: ({ href, children }) => {
+                          if (!isSafeExternalHref(href)) {
+                            return <span>{children}</span>;
+                          }
+                          return (
+                            <a href={href} target="_blank" rel="noopener noreferrer">
+                              {children}
+                            </a>
+                          );
+                        },
+                      }}
+                    >
+                      {description}
+                    </ReactMarkdown>
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">{t`No description provided.`}</p>
@@ -73,7 +97,24 @@ export function AdvancedMapAnalyticsDescriptionModal(
           </div>
         ) : hasDescription ? (
           <div className="prose prose-sm max-h-[60vh] max-w-none overflow-y-auto break-words dark:prose-invert">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{description}</ReactMarkdown>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              disallowedElements={DISALLOWED_ELEMENTS}
+              components={{
+                a: ({ href, children }) => {
+                  if (!isSafeExternalHref(href)) {
+                    return <span>{children}</span>;
+                  }
+                  return (
+                    <a href={href} target="_blank" rel="noopener noreferrer">
+                      {children}
+                    </a>
+                  );
+                },
+              }}
+            >
+              {description}
+            </ReactMarkdown>
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">{t`No description provided.`}</p>

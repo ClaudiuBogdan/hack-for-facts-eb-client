@@ -117,19 +117,18 @@ export function prepareFilterForServer(filter: AnalyticsFilterType, fallback?: {
     'item_max_amount',
   ])
 
-  const serverFilter: any = {}
+  const serverFilter: Partial<AnalyticsFilterType> = {}
 
   for (const [k, v] of Object.entries(normalized)) {
-    if (allowedKeys.has(k)) serverFilter[k] = v
+    if (allowedKeys.has(k)) (serverFilter as Record<string, unknown>)[k] = v
   }
   // Pass through nested exclude filters if present
   if (normalized.exclude) {
     serverFilter.exclude = normalized.exclude
   }
   if (serverFilter.report_type) {
-    // Map human-readable report type to GraphQL enum variant
     try {
-      serverFilter.report_type = toReportGqlType(String(serverFilter.report_type))
+      (serverFilter as Record<string, unknown>).report_type = toReportGqlType(String(serverFilter.report_type))
     } catch {
       // leave as-is if mapping fails
     }

@@ -7,6 +7,43 @@ const isBrowser = typeof window !== 'undefined';
 const chartsKey = 'saved-charts';
 const categoriesKey = 'chart-categories';
 
+const isQuotaExceededError = (error: unknown): boolean => {
+    if (error instanceof DOMException) {
+        return error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED';
+    }
+    return false;
+};
+
+const safeSetItem = (key: string, value: string): boolean => {
+    if (!isBrowser) return false;
+    try {
+        localStorage.setItem(key, value);
+        return true;
+    } catch (error) {
+        if (isQuotaExceededError(error)) {
+            console.warn(`localStorage quota exceeded for key ${key}. Data not persisted.`);
+        } else {
+            console.error(`Failed to save to localStorage for key ${key}:`, error);
+        }
+        return false;
+    }
+};
+
+const restoreStoredItem = (key: string, previousValue: string | null): void => {
+    if (!isBrowser) return;
+
+    try {
+        if (previousValue === null) {
+            localStorage.removeItem(key);
+            return;
+        }
+
+        localStorage.setItem(key, previousValue);
+    } catch (error) {
+        console.error(`Failed to restore localStorage for key ${key}:`, error);
+    }
+};
+
 const storedChartSchema = ChartSchema.and(z.object({
     favorite: z.boolean().optional().default(false),
     deleted: z.boolean().optional().default(false),
@@ -81,9 +118,6 @@ export const getChartsStore = () => {
             } catch (error) {
                 console.error("Failed to parse charts from localStorage", error);
             }
-            if (sort) {
-                chartsRawParsed.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
-            }
             return chartsRawParsed;
         }
 
@@ -99,6 +133,10 @@ export const getChartsStore = () => {
                 }
             })
             .filter((chart): chart is StoredChart => chart !== null);
+
+        if (sort) {
+            validCharts.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+        }
 
         if (!filterDeleted) {
             return validCharts;
@@ -128,9 +166,9 @@ export const getChartsStore = () => {
         return [];
     };
 
-    const saveCategories = (categories: readonly ChartCategory[]) => {
-        if (!isBrowser) return;
-        localStorage.setItem(categoriesKey, JSON.stringify(categories));
+    const saveCategories = (categories: readonly ChartCategory[]): boolean => {
+        if (!isBrowser) return false;
+        return safeSetItem(categoriesKey, JSON.stringify(categories));
     };
 
     const createCategory = (name: string): ChartCategory => {
@@ -174,7 +212,7 @@ export const getChartsStore = () => {
             ...c,
             categories: (c.categories ?? []).filter((catId) => catId !== id),
         }));
-        localStorage.setItem(chartsKey, JSON.stringify(updatedCharts));
+        safeSetItem(chartsKey, JSON.stringify(updatedCharts));
     };
 
     const deleteChart = (chartId: string) => {
@@ -187,7 +225,7 @@ export const getChartsStore = () => {
             }
             return c;
         });
-        localStorage.setItem(chartsKey, JSON.stringify(newCharts));
+        safeSetItem(chartsKey, JSON.stringify(newCharts));
         Analytics.capture(Analytics.EVENTS.ChartDeleted, { chart_id: chartId });
     }
 
@@ -205,7 +243,7 @@ export const getChartsStore = () => {
             return;
         }
 
-        localStorage.setItem(chartsKey, JSON.stringify([
+        safeSetItem(chartsKey, JSON.stringify([
             chart,
             ...savedCharts,
         ]));
@@ -217,9 +255,10 @@ export const getChartsStore = () => {
 
         const savedCharts = loadSavedCharts();
         const chartIndex = savedCharts.findIndex((c: Chart) => c.id === chart.id);
+        if (chartIndex === -1) return;
         const oldChart = savedCharts[chartIndex];
         const newChart = { ...oldChart, ...chart };
-        localStorage.setItem(chartsKey, JSON.stringify([
+        safeSetItem(chartsKey, JSON.stringify([
             newChart,
             ...savedCharts.filter((c: Chart) => c.id !== chart.id),
         ]));
@@ -345,8 +384,12 @@ export const getChartsStore = () => {
 
         const nextCategories = [...currentCategories, ...categoriesToAdd]
             .sort((a, b) => a.name.localeCompare(b.name));
+        const previousCategoriesRaw = localStorage.getItem(categoriesKey);
         if (categoriesToAdd.length > 0) {
-            saveCategories(nextCategories);
+            const categoriesPersisted = saveCategories(nextCategories);
+            if (!categoriesPersisted) {
+                return { ok: false, error: 'Failed to persist imported categories' };
+            }
         }
 
         // Prepare charts
@@ -413,7 +456,13 @@ export const getChartsStore = () => {
         }
 
         // Persist
-        localStorage.setItem(chartsKey, JSON.stringify(nextCharts));
+        const chartsPersisted = safeSetItem(chartsKey, JSON.stringify(nextCharts));
+        if (!chartsPersisted) {
+            if (categoriesToAdd.length > 0) {
+                restoreStoredItem(categoriesKey, previousCategoriesRaw);
+            }
+            return { ok: false, error: 'Failed to persist imported charts' };
+        }
 
         return { ok: true, result: { added, replaced, duplicated, skipped } };
     };

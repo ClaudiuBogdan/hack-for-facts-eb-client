@@ -82,10 +82,14 @@ export const SearchToggleInput: React.FC<SearchToggleInputProps> = ({
             className="h-9 flex-1 text-sm"
             autoFocus
           />
-          <X
-            className="h-4 w-4 cursor-pointer text-muted-foreground flex-shrink-0"
+          <button
+            type="button"
             onClick={() => handleClear()}
-          />
+            aria-label="Clear search"
+            className="flex items-center justify-center"
+          >
+            <X className="h-4 w-4 cursor-pointer text-muted-foreground flex-shrink-0" />
+          </button>
         </motion.div>
       ) : (
         <motion.button

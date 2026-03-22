@@ -16,6 +16,11 @@ import { getInitialFilterState, GqlReportTypeEnum, toExecutionReportType, type G
 import { normalizeLocale } from '@/lib/i18n'
 import type { EntitySeoSnapshot, EntityShareFilterContext, ShareLocale } from '@/features/entities/seo/entity-share-seo'
 
+const redactCui = (cui: string | undefined | null): string => {
+  if (!cui || cui.length < 4) return '***'
+  return `${cui.slice(0, 2)}***${cui.slice(-2)}`
+}
+
 const IMAGE_WIDTH = 1200
 const IMAGE_HEIGHT = 630
 const SHARE_GENERATE_WORKER_KIND = 'entity-share-generate'
@@ -376,8 +381,8 @@ async function processShareRenderTask(task: ShareRenderQueueTask): Promise<void>
       : new Error(String(error))
     task.reject(normalizedError)
     console.error('[entity-share-image] Background share image render failed', {
-      cui: task.cui,
-      error,
+      cui: redactCui(task.cui),
+      error: error instanceof Error ? error.message : String(error),
     })
   }
 }
@@ -433,7 +438,7 @@ function enqueueShareRenderTask(task: Omit<ShareRenderQueueTask, 'resolve' | 're
     rejectTask(queueError)
     console.error('[entity-share-image] Share image queue is full, dropping task', {
       queueSize: shareRenderQueue.length,
-      cui: task.cui,
+      cui: redactCui(task.cui),
     })
     return trackedTaskPromise
   }
@@ -1108,8 +1113,8 @@ async function fetchEntityForShareSnapshot(
     }
   } catch (error) {
     console.error('[entity-share-image] Failed to fetch entity details', {
-      cui,
-      error,
+      cui: redactCui(cui),
+      error: error instanceof Error ? error.message : String(error),
     })
     return {
       entity: null,
@@ -1196,8 +1201,8 @@ export async function handleEntityShareImageRequest(params: {
     })
   } catch (error) {
     console.error('[entity-share-image] Failed to generate share image', {
-      cui,
-      error,
+      cui: redactCui(cui),
+      error: error instanceof Error ? error.message : String(error),
     })
 
     const fallbackSnapshot: EntitySeoSnapshot = {
@@ -1220,8 +1225,8 @@ export async function handleEntityShareImageRequest(params: {
       })
     } catch (fallbackError) {
       console.error('[entity-share-image] Failed to render fallback share image', {
-        cui,
-        fallbackError,
+        cui: redactCui(cui),
+        fallbackError: fallbackError instanceof Error ? fallbackError.message : String(fallbackError),
       })
 
       return new Response('Unable to generate share image', {

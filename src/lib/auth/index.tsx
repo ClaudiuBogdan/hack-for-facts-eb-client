@@ -1,4 +1,4 @@
-import { PropsWithChildren, createContext, useContext, useMemo, type ComponentProps } from 'react'
+import React, { PropsWithChildren, createContext, useContext, useMemo, type ComponentProps } from 'react'
 import {
   ClerkProvider,
   SignIn as ClerkSignIn,
@@ -10,6 +10,9 @@ import {
 } from '@clerk/clerk-react'
 import type { LoadedClerk } from '@clerk/shared/types'
 import { env } from '@/config/env'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('auth')
 
 declare global {
   interface Window {
@@ -39,6 +42,12 @@ function ClerkAuthBridge({ children }: PropsWithChildren) {
   const { isLoaded, isSignedIn, signOut } = useClerkAuth()
   const { user } = useClerkUser()
 
+  React.useEffect(() => {
+    if (isLoaded) {
+      markClerkReady()
+    }
+  }, [isLoaded])
+
   const value = useMemo<AuthContextValue>(() => {
     const mappedUser: AuthUser | null = user
       ? {
@@ -57,7 +66,7 @@ function ClerkAuthBridge({ children }: PropsWithChildren) {
         try {
           await signOut()
         } catch (error) {
-          console.error('Failed to sign out:', error)
+          logger.error('Failed to sign out', { error: error instanceof Error ? error.message : String(error) })
         }
       },
     }
@@ -179,17 +188,53 @@ export function AuthSignOutButton({ children = 'Sign out' }: PropsWithChildren) 
 
 export const authKey = env.VITE_CLERK_PUBLISHABLE_KEY
 
+let clerkReadyPromise: Promise<void> | null = null
+let clerkReady = false
+
+export function markClerkReady() {
+  clerkReady = true
+}
+
+export function waitForClerk(): Promise<void> {
+  if (typeof window === 'undefined') {
+    return Promise.resolve()
+  }
+  if (!authKey || clerkReady) {
+    return Promise.resolve()
+  }
+  if (clerkReadyPromise === null) {
+    clerkReadyPromise = new Promise((resolve) => {
+      if (!authKey || clerkReady || window.Clerk?.session) {
+        clerkReadyPromise = null
+        resolve()
+        return
+      }
+      const checkInterval = setInterval(() => {
+        if (!authKey || clerkReady || window.Clerk?.session) {
+          clearInterval(checkInterval)
+          clerkReadyPromise = null
+          resolve()
+        }
+      }, 50)
+      setTimeout(() => {
+        clearInterval(checkInterval)
+        clerkReadyPromise = null
+        resolve()
+      }, 10000)
+    })
+  }
+  return clerkReadyPromise
+}
+
 // Safe function for non-React modules to fetch a fresh auth token
-// TODO: fix this. The window.Clerk is undefined until provider is mounted. Due to prefetch, the token is not sent when loading the page. 
-// Find a better strategy, like waiting for the provider to be mounted or using the session cookie when using same api/client domain.
-// For protected routes, we should prevent page load or prefetching until the user is authenticated.
 export async function getAuthToken(): Promise<string | null> {
   if (typeof window === 'undefined') return null
   try {
+    await waitForClerk()
     const token = await window.Clerk?.session?.getToken()
     return token ?? null
   } catch (error) {
-    console.error('Failed to get auth token:', error)
+    logger.error('Failed to get auth token', { error: error instanceof Error ? error.message : String(error) })
     return null
   }
 }

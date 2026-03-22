@@ -94,9 +94,12 @@ const CHART_TOOLTIP_STYLE: CSSProperties = {
   boxShadow: '0 14px 34px hsl(205 84% 18% / 0.12)',
 };
 
+const DISALLOWED_ELEMENTS = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'button'];
+
 function MarkdownDescriptionBase({ content }: { content: string }) {
   return (
     <ReactMarkdown
+      disallowedElements={DISALLOWED_ELEMENTS}
       components={{
         p: ({ children }) => (
           <p className="mb-2 text-sm leading-6 tracking-[0.005em] text-foreground/80 last:mb-0">{children}</p>

@@ -36,7 +36,7 @@ export function getConsent(): ConsentPreferences {
       version: 1,
       essential: true,
       analytics: Boolean(parsed.analytics),
-      sentry: Boolean((parsed as any).sentry),
+      sentry: Boolean(parsed.sentry),
       updatedAt: parsed.updatedAt ?? new Date().toISOString(),
     }
   } catch {

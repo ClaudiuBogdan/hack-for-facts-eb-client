@@ -179,6 +179,8 @@ function EntityAnalyticsPage() {
         rows: all.length,
         filter_hash: filterHash,
       })
+    } catch (error) {
+      console.error('Failed to export CSV:', error)
     } finally {
       setExporting(false)
     }
@@ -292,8 +294,8 @@ function EntityAnalyticsPage() {
               data={aggregatedData}
               isLoading={isLoadingAggregated}
               error={errorAggregated as Error | null}
-                  transferFilter={transferFilter}
-                  onTransferFilterChange={setTransferFilter}
+              transferFilter={transferFilter}
+              onTransferFilterChange={setTransferFilter}
             />
           </div>
         )}

@@ -5,6 +5,13 @@ const isBrowser = typeof window !== 'undefined';
 
 const alertsKey = 'saved-alerts';
 
+const isQuotaExceededError = (error: unknown): boolean => {
+  if (error instanceof DOMException) {
+    return error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED';
+  }
+  return false;
+};
+
 const storedAlertSchema = AlertSchema.extend({
   deleted: z.boolean().optional().default(false),
 });
@@ -50,7 +57,15 @@ export const getAlertsStore = () => {
 
   const persistAlerts = (alerts: readonly StoredAlert[]) => {
     if (!isBrowser) return;
-    localStorage.setItem(alertsKey, JSON.stringify(alerts));
+    try {
+      localStorage.setItem(alertsKey, JSON.stringify(alerts));
+    } catch (error) {
+      if (isQuotaExceededError(error)) {
+        console.warn('localStorage quota exceeded. Alerts will not be persisted.');
+      } else {
+        console.error('Failed to persist alerts:', error);
+      }
+    }
   };
 
   const upsertAlert = (alert: Alert) => {

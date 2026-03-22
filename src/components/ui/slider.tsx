@@ -5,8 +5,10 @@ import { cn } from "@/lib/utils"
 
 const Slider = React.forwardRef<
   React.ElementRef<typeof SliderPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root>
->(({ className, defaultValue, value, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<typeof SliderPrimitive.Root> & {
+    'aria-label'?: string;
+  }
+>(({ className, defaultValue, value, 'aria-label': ariaLabel, ...props }, ref) => {
   const hasMultipleValues =
     (Array.isArray(defaultValue) && defaultValue.length > 1) ||
     (Array.isArray(value) && value.length > 1);
@@ -14,6 +16,7 @@ const Slider = React.forwardRef<
   return (
     <SliderPrimitive.Root
       ref={ref}
+      aria-label={ariaLabel}
       className={cn(
         "relative flex w-full touch-none select-none items-center",
         className

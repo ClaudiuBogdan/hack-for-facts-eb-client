@@ -11,7 +11,7 @@ import { EntityReportsSummary } from "../EntityReportsSummary";
 import { entityDetailsQueryOptions } from '@/lib/hooks/useEntityDetails';
 import { getInitialFilterState, makeTrendPeriod } from '@/schemas/reporting';
 import { useDebouncedCallback } from "@/lib/hooks/useDebouncedCallback";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
@@ -76,7 +76,33 @@ interface OverviewProps {
     onAdvancedFilterChange?: (filter: string | undefined) => void;
 }
 
-export const Overview = ({
+function areOverviewPropsEqual(prev: OverviewProps, next: OverviewProps): boolean {
+    return (
+        prev.cui === next.cui &&
+        prev.entity === next.entity &&
+        prev.isLoading === next.isLoading &&
+        prev.selectedYear === next.selectedYear &&
+        prev.years.length === next.years.length &&
+        prev.years.every((v, i) => v === next.years[i]) &&
+        prev.normalizationOptions.normalization === next.normalizationOptions.normalization &&
+        prev.normalizationOptions.currency === next.normalizationOptions.currency &&
+        prev.normalizationOptions.inflation_adjusted === next.normalizationOptions.inflation_adjusted &&
+        prev.normalizationOptions.show_period_growth === next.normalizationOptions.show_period_growth &&
+        prev.periodType === next.periodType &&
+        prev.reportPeriod?.type === next.reportPeriod?.type &&
+        JSON.stringify(prev.reportPeriod?.selection) === JSON.stringify(next.reportPeriod?.selection) &&
+        prev.reportType === next.reportType &&
+        prev.mainCreditorCui === next.mainCreditorCui &&
+        JSON.stringify(prev.search) === JSON.stringify(next.search) &&
+        prev.treemapPrimary === next.treemapPrimary &&
+        prev.accountCategory === next.accountCategory &&
+        prev.treemapPath === next.treemapPath &&
+        prev.transferFilter === next.transferFilter &&
+        prev.advancedFilter === next.advancedFilter
+    )
+}
+
+const OverviewComponent = ({
     cui,
     entity,
     isLoading,
@@ -148,11 +174,11 @@ export const Overview = ({
     const handleYearChange = (year: number) => {
         onYearChange(year);
     }
-    const handlePrefetchYear = (year: number) => {
+    const handlePrefetchYear = useCallback((year: number) => {
         const nextReport = getInitialFilterState(periodType ?? 'YEAR', year, search.month as TMonth ?? '01', search.quarter as TQuarter ?? 'Q1');
         const nextTrend = makeTrendPeriod(periodType ?? 'YEAR', year, years[years.length - 1], years[0]);
         debouncedPrefetch({ reportPeriod: nextReport, trendPeriod: nextTrend, reportType });
-    }
+    }, [periodType, search.month, search.quarter, years, debouncedPrefetch, reportType]);
     const handleSearchChange = (type: 'expense' | 'income', term: string) => {
         onSearchChange(type, term);
     }
@@ -171,7 +197,7 @@ export const Overview = ({
             const nextTrend = makeTrendPeriod(currentPeriod, year, years[years.length - 1], years[0])
             debouncedPrefetch({ reportPeriod: nextReport, trendPeriod: nextTrend, reportType })
         }
-    }, [periodType, selectedYear, search.month, search.quarter, years, years.length, years[years.length - 1], years[0], debouncedPrefetch, reportType, handlePrefetchYear])
+    }, [periodType, selectedYear, search.month, search.quarter, years, debouncedPrefetch, reportType, handlePrefetchYear])
 
     const [accountCategory, setAccountCategory] = useState<'ch' | 'vn'>(accountCategoryProp ?? 'ch')
 
@@ -401,3 +427,5 @@ export const Overview = ({
         </div>
     )
 }
+
+export const Overview = React.memo(OverviewComponent, areOverviewPropsEqual);

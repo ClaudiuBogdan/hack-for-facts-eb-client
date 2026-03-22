@@ -42,7 +42,7 @@ export interface EntityLineItemsTabsProps {
   onAdvancedFilterChange?: (filter: string | undefined) => void;
 }
 
-export const EntityLineItemsTabs: React.FC<EntityLineItemsTabsProps> = ({
+const EntityLineItemsTabsComponent: React.FC<EntityLineItemsTabsProps> = ({
   lineItems,
   fundingSources = [],
   currentYear,
@@ -334,3 +334,5 @@ export const EntityLineItemsTabs: React.FC<EntityLineItemsTabsProps> = ({
     </section>
   );
 };
+
+export const EntityLineItemsTabs = React.memo(EntityLineItemsTabsComponent);

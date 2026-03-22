@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { t } from '@lingui/core/macro';
 import {
   deleteNotification,
   getUserNotifications,
@@ -88,8 +89,9 @@ export function useAlertDetail(alertId: string, options?: { enabled?: boolean })
       const notifications = await getUserNotifications();
       const target = notifications.find((n) => {
         if (n.notificationType !== 'alert_series_analytics' && n.notificationType !== 'alert_series_static') return false;
-        const cfg = (n.config ?? {}) as Alert;
-        return cfg.id === alertId || String(n.id) === alertId;
+        const cfg = n.config ?? {};
+        const configId = typeof cfg === 'object' && cfg !== null && 'id' in cfg ? (cfg as { id?: unknown }).id : undefined;
+        return configId === alertId || String(n.id) === alertId;
       });
       if (!target) {
         throw new Error('Alert not found');
@@ -110,8 +112,9 @@ export function useSaveAlertMutation() {
       const notifications = await getUserNotifications();
       const existing = notifications.find((n) => {
         if (n.notificationType !== 'alert_series_analytics' && n.notificationType !== 'alert_series_static') return false;
-        const cfg = (n.config ?? {}) as Alert;
-        return (cfg.id && cfg.id === alert.id) || String(n.id) === alert.id;
+        const cfg = n.config ?? {};
+        const configId = typeof cfg === 'object' && cfg !== null && 'id' in cfg ? (cfg as { id?: unknown }).id : undefined;
+        return (configId && configId === alert.id) || String(n.id) === alert.id;
       });
 
       // Deactivate
@@ -137,10 +140,10 @@ export function useSaveAlertMutation() {
         queryClient.setQueryData(alertsKeys.detail(savedAlert.id), savedAlert);
       }
       queryClient.invalidateQueries({ queryKey: alertsKeys.all });
-      toast.success('Alert saved successfully');
+      toast.success(t`Alert saved successfully`);
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to save alert');
+      toast.error(error.message || t`Failed to save alert`);
     },
   });
 }
@@ -152,8 +155,9 @@ export function useDeleteAlertMutation() {
       const notifications = await getUserNotifications();
       const target = notifications.find((n) => {
         if (n.notificationType !== 'alert_series_analytics' && n.notificationType !== 'alert_series_static') return false;
-        const cfg = (n.config ?? {}) as Alert;
-        return cfg.id === alertId || String(n.id) === alertId;
+        const cfg = n.config ?? {};
+        const configId = typeof cfg === 'object' && cfg !== null && 'id' in cfg ? (cfg as { id?: unknown }).id : undefined;
+        return configId === alertId || String(n.id) === alertId;
       });
       if (!target) {
         throw new Error('Alert not found');
@@ -164,8 +168,8 @@ export function useDeleteAlertMutation() {
     onSuccess: (_, alertId) => {
       queryClient.invalidateQueries({ queryKey: alertsKeys.all });
       queryClient.removeQueries({ queryKey: alertsKeys.detail(alertId) });
-      toast.success('Alert deleted');
+      toast.success(t`Alert deleted`);
     },
-    onError: (error: Error) => toast.error(error.message || 'Failed to delete alert'),
+    onError: (error: Error) => toast.error(error.message || t`Failed to delete alert`),
   });
 }

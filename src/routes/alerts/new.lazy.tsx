@@ -22,10 +22,15 @@ export const Route = createLazyFileRoute('/alerts/new')({
   component: RouteComponent,
 });
 
+interface AlertSearch {
+  alert?: Partial<Alert>;
+  copyFrom?: string;
+}
+
 function RouteComponent() {
-  const rawSearch = Route.useSearch() as any;
-  const urlAlert = rawSearch?.alert as Partial<Alert> | undefined;
-  const copyFrom = rawSearch?.copyFrom as string | undefined;
+  const rawSearch = Route.useSearch() as AlertSearch;
+  const urlAlert = rawSearch?.alert;
+  const copyFrom = rawSearch?.copyFrom;
   const navigate = useNavigate({ from: '/alerts/new' });
   const { isSignedIn, isLoaded } = useAuth();
   const store = useAlertDraftStore();

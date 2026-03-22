@@ -16,11 +16,11 @@ export async function getUserNotifications(): Promise<Notification[]> {
   const endpoint = `${getApiUrl()}/api/v1/notifications`;
   const token = await getAuthToken();
 
-  const response = await fetch(endpoint, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const headers: Record<string, string> = {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  const response = await fetch(endpoint, { headers });
 
   if (!response.ok) {
     const error: ApiResponse<never> = await response.json().catch(() => ({ ok: false, error: response.statusText }));
@@ -36,11 +36,11 @@ export async function getEntityNotifications(cui: string): Promise<Notification[
   const endpoint = `${getApiUrl()}/api/v1/notifications/entity/${cui}`;
   const token = await getAuthToken();
 
-  const response = await fetch(endpoint, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  const headers: Record<string, string> = {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  const response = await fetch(endpoint, { headers });
 
   if (!response.ok) {
     const error: ApiResponse<never> = await response.json().catch(() => ({ ok: false, error: response.statusText }));
@@ -60,12 +60,14 @@ export async function createNotification(data: {
   const token = await getAuthToken();
   const endpoint = `${getApiUrl()}/api/v1/notifications`;
 
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
   const response = await fetch(endpoint, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
+    headers,
     body: JSON.stringify({
       notificationType: data.notificationType,
       entityCui: data.entityCui,
@@ -94,7 +96,6 @@ export async function unsubscribeNotification(id: number): Promise<Notification>
 // Unsubscribe via token (public, no auth) - used from email links
 export async function unsubscribeViaToken(token: string): Promise<{
   success: boolean;
-  notification: Notification;
 }> {
   const endpoint = `${getApiUrl()}/api/v1/notifications/unsubscribe/${token}`;
 
@@ -111,7 +112,6 @@ export async function unsubscribeViaToken(token: string): Promise<{
 
   return {
     success: result.ok,
-    notification: {} as Notification,
   };
 }
 
@@ -120,11 +120,13 @@ export async function deleteNotification(id: number): Promise<void> {
   const endpoint = `${getApiUrl()}/api/v1/notifications/${id}`;
   const token = await getAuthToken();
 
+  const headers: Record<string, string> = {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
   const response = await fetch(endpoint, {
     method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers,
   });
 
   if (!response.ok) {
@@ -143,12 +145,14 @@ export async function updateNotification(id: number, updates: { isActive?: boole
   const endpoint = `${getApiUrl()}/api/v1/notifications/${id}`;
   const token = await getAuthToken();
 
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
   const response = await fetch(endpoint, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
+    headers,
     body: JSON.stringify(updates),
   });
 

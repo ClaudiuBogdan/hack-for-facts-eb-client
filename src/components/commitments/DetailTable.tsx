@@ -9,7 +9,7 @@
 
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { AlertCircle, ArrowUpDown, ChevronRight, ChevronDown, Download, Loader2 } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, getCodeAtDepth } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Trans } from '@lingui/react/macro'
 import { useCommitmentsAggregated } from '@/hooks/useCommitmentsData'
@@ -55,13 +55,6 @@ const NEXT_LEVEL: Record<DrillLevel, DrillLevel | null> = {
 
 type SortColumn = 'name' | 'budget' | 'committed' | 'percent' | 'paid' | 'unpaid'
 type SortDir = 'asc' | 'desc'
-
-function getCodeAtDepth(code: string, depth: 2 | 4 | 6): string {
-  const parts = code.replace(/[^0-9.]/g, '').split('.')
-  if (depth === 2) return parts[0] ?? ''
-  if (depth === 4) return parts.slice(0, 2).join('.')
-  return parts.slice(0, 3).join('.')
-}
 
 const INDENT_CLASS: Record<number, string> = {
   1: 'pl-12',
@@ -210,7 +203,7 @@ function ExpandedSubRows({
     }
 
     // Intermediate levels: drill into the same dimension hierarchy
-    const depth = level === 'subchapter' ? 4 : 6
+    const segmentCount = level === 'subchapter' ? 2 : 3
     const parentNorm = parentCode.replace(/[^0-9.]/g, '')
 
     if (grouping === 'fn') {
@@ -218,7 +211,7 @@ function ExpandedSubRows({
       const sumByFunctionalAtDepth = (nodes: typeof budgetData.nodes) => {
         const map = new Map<string, { name: string; amount: number }>()
         for (const n of nodes) {
-          const groupCode = getCodeAtDepth(n.functional_code, depth as 4 | 6)
+          const groupCode = getCodeAtDepth(n.functional_code, segmentCount)
           if (!groupCode.startsWith(parentNorm) || groupCode === parentNorm) continue
           const existing = map.get(groupCode)
           if (existing) {
@@ -249,13 +242,13 @@ function ExpandedSubRows({
         const map = new Map<string, { name: string; amount: number }>()
         for (const n of nodes) {
           const rawCode = n.economic_code ?? ''
-          const groupCode = getCodeAtDepth(rawCode, depth as 4 | 6)
+          const groupCode = getCodeAtDepth(rawCode, segmentCount)
           if (!groupCode.startsWith(parentNorm) || groupCode === parentNorm) continue
           const existing = map.get(groupCode)
           if (existing) {
             existing.amount += n.amount
           } else {
-            const name = (depth === 4
+            const name = (segmentCount === 2
               ? getEconomicSubchapterName(groupCode)
               : getEconomicClassificationName(groupCode))
               ?? n.economic_name ?? groupCode

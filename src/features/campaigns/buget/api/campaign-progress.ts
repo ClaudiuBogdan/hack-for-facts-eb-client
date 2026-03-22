@@ -33,7 +33,7 @@ export async function fetchCampaignProgress(params: {
 
   const response = await fetch(endpoint, {
     headers: {
-      Authorization: token ? `Bearer ${token}` : '',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   })
 
@@ -80,7 +80,7 @@ export async function syncCampaignProgress(params: {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: token ? `Bearer ${token}` : '',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify({
       clientUpdatedAt: params.clientUpdatedAt,

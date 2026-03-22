@@ -1,5 +1,5 @@
 import { ChartSchema, CustomSeriesValueConfigurationSchema } from '@/schemas/charts';
-import type { Chart, ChartConfig } from '@/schemas/charts';
+import type { Chart, ChartConfig, AnalyticsFilterType } from '@/schemas/charts';
 import type { ChartUrlState } from '@/components/charts/page-schema';
 import { createEmptyAlert, type Alert } from '@/schemas/alerts';
 import { t } from '@lingui/core/macro';
@@ -99,7 +99,7 @@ export function buildAlertPreviewChartLink(alert: Alert) {
   };
 }
 
-export function buildAlertFromFilter(filter: any, options?: { chartId?: string; chartTitle?: string; label?: string }): Alert {
+export function buildAlertFromFilter(filter: AnalyticsFilterType, options?: { chartId?: string; chartTitle?: string; label?: string }): Alert {
   const alertId = crypto.randomUUID();
   const base = createEmptyAlert({
     id: alertId,

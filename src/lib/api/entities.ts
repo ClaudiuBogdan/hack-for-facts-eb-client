@@ -34,6 +34,8 @@ export interface ExecutionLineItem {
   amount: number;
 }
 
+type RawExecutionLineItem = Pick<ExecutionLineItem, 'line_item_id' | 'account_category' | 'funding_source_id' | 'expense_type' | 'anomaly' | 'functionalClassification' | 'economicClassification' | 'ytd_amount' | 'quarterly_amount' | 'monthly_amount'>;
+
 export interface EntityDetailsData {
   cui: string;
   name: string;
@@ -554,9 +556,9 @@ export async function getEntityExecutionLineItems(
   }>(GET_ENTITY_LINE_ITEMS_QUERY, { cui, reportPeriod, reportType, normalization, currency, inflation_adjusted, mainCreditorCui });
 
   const periodType = reportPeriod.type;
-  const mapWithAmount = (n: any): ExecutionLineItem => {
+  const mapWithAmount = (n: RawExecutionLineItem): ExecutionLineItem => {
     const amount = periodType === 'YEAR' ? Number(n?.ytd_amount ?? 0) : periodType === 'QUARTER' ? Number(n?.quarterly_amount ?? 0) : Number(n?.monthly_amount ?? 0);
-    return { ...n, amount } as ExecutionLineItem;
+    return { ...n, amount };
   };
 
   const mergedNodes: ExecutionLineItem[] = [
