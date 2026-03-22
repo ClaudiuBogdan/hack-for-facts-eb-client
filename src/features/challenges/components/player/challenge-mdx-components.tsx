@@ -95,6 +95,54 @@ const BudgetChapterHierarchy = createLazyComponent(() =>
   })),
 )
 
+const BudgetStatusReport = createLazyComponent(() =>
+  import('@/features/campaigns/buget/components/interactive/BudgetStatusReport').then((module) => ({
+    default: module.BudgetStatusReport,
+  })),
+)
+
+const DebateRequestForm = createLazyComponent(() =>
+  import('@/features/campaigns/buget/components/interactive/DebateRequestForm').then((module) => ({
+    default: module.DebateRequestForm,
+  })),
+)
+
+const ParticipationReport = createLazyComponent(() =>
+  import('@/features/campaigns/buget/components/interactive/ParticipationReport').then((module) => ({
+    default: module.ParticipationReport,
+  })),
+)
+
+const ContestationBuilder = createLazyComponent(() =>
+  import('@/features/campaigns/buget/components/interactive/ContestationBuilder').then((module) => ({
+    default: module.ContestationBuilder,
+  })),
+)
+
+const BudgetPublicationDate = createLazyComponent(() =>
+  import('@/features/campaigns/buget/components/interactive/BudgetPublicationDate').then((module) => ({
+    default: module.BudgetPublicationDate,
+  })),
+)
+
+const PrimarieWebsiteLink = createLazyComponent(() =>
+  import('@/features/campaigns/buget/components/interactive/PrimarieWebsiteLink').then((module) => ({
+    default: module.PrimarieWebsiteLink,
+  })),
+)
+
+const BudgetDocumentLink = createLazyComponent(() =>
+  import('@/features/campaigns/buget/components/interactive/BudgetDocumentLink').then((module) => ({
+    default: module.BudgetDocumentLink,
+  })),
+)
+
+const PrimarieContactInfo = createLazyComponent(() =>
+  import('@/features/campaigns/buget/components/interactive/PrimarieContactInfo').then((module) => ({
+    default: module.PrimarieContactInfo,
+  })),
+)
+
 export function buildChallengeMdxComponents(
   params: BuildChallengeMdxComponentsParams,
 ): MDXComponents {
@@ -109,6 +157,14 @@ export function buildChallengeMdxComponents(
     BudgetCodeAnchors,
     BudgetCodeAnatomy,
     BudgetChapterHierarchy,
+    BudgetStatusReport,
+    DebateRequestForm,
+    ParticipationReport,
+    ContestationBuilder,
+    BudgetPublicationDate,
+    PrimarieWebsiteLink,
+    BudgetDocumentLink,
+    PrimarieContactInfo,
     ...(params.customComponents ?? {}),
   }
 }

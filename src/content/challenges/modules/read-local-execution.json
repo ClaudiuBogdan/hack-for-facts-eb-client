@@ -1,7 +1,7 @@
 {
   "id": "read-local-execution",
   "slug": "read-local-execution",
-  "order": 2,
+  "order": 3,
   "difficulty": "beginner",
   "title": {
     "en": "Read Local Budget Execution",

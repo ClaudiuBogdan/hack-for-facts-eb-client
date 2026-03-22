@@ -8,8 +8,9 @@ describe('challenge module content', () => {
   it('orders the civic challenge modules explicitly', () => {
     const modules = getChallengeModules()
 
-    expect(modules[0]?.slug).toBe('budget-basics')
-    expect(modules[1]?.slug).toBe('read-local-execution')
+    expect(modules[0]?.slug).toBe('civic-campaign')
+    expect(modules[1]?.slug).toBe('budget-basics')
+    expect(modules[2]?.slug).toBe('read-local-execution')
   })
 
   it('keeps step 1 non-interactive and step 2 as the first live reveal', () => {

@@ -1,11 +1,14 @@
+import { useMemo } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { ArrowRight } from 'lucide-react'
 import {
   buildCampaignCalendarPath,
 } from '@/features/campaigns/buget/constants'
+import { useCustomInteraction } from '@/features/learning/hooks/interactions/use-custom-interaction'
 import { useCampaignTimeline } from '@/features/campaigns/buget/hooks/use-campaign-timeline'
-import { getCampaignText } from '@/features/campaigns/buget/hooks/use-campaign-content'
+import { getCampaignText, getCampaignUatOverrideForCui } from '@/features/campaigns/buget/hooks/use-campaign-content'
+import type { BudgetPublicationDateValue } from '@/features/campaigns/buget/components/interactive/types'
 import { CHALLENGE_SELECTED_ENTITY_PICKER_PATH } from '../../constants'
 import type { ChallengeLocale } from '../../types'
 
@@ -15,7 +18,30 @@ type BudgetTimelineStripProps = {
 }
 
 export function BudgetTimelineStrip({ locale, entityCui }: BudgetTimelineStripProps) {
-  const timeline = useCampaignTimeline()
+  const adminOverride = useMemo(
+    () => entityCui ? getCampaignUatOverrideForCui(entityCui) : undefined,
+    [entityCui],
+  )
+
+  const userPublicationDate = useCustomInteraction<BudgetPublicationDateValue>({
+    lessonId: 'ce-buget-are-primaria-ta-pentru-2026',
+    interactionId: 'campaign:budget-publication-date',
+    scopePolicy: 'entity',
+    entityCui,
+    kind: 'custom',
+    completionRule: { type: 'resolved' },
+  })
+
+  const mergedOverride = useMemo(() => {
+    const base = adminOverride ?? {}
+    // Only use user-submitted date if admin hasn't set one for this entry
+    if (!base['publicare-proiect-buget-local'] && userPublicationDate.savedValue?.publicationDate) {
+      return { ...base, 'publicare-proiect-buget-local': userPublicationDate.savedValue.publicationDate }
+    }
+    return Object.keys(base).length > 0 ? base : undefined
+  }, [adminOverride, userPublicationDate.savedValue?.publicationDate])
+
+  const timeline = useCampaignTimeline(mergedOverride)
   const { entries } = timeline
 
   // Count completed milestones for the progress line

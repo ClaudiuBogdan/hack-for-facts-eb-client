@@ -1,0 +1,130 @@
+{
+  "id": "civic-campaign",
+  "slug": "civic-campaign",
+  "order": 1,
+  "difficulty": "intermediate",
+  "title": {
+    "en": "Civic Campaign",
+    "ro": "Campania civică"
+  },
+  "description": {
+    "en": "Take civic action on the 2026 local budget: monitor its status, request a public debate, participate, and formulate a contestation.",
+    "ro": "Acționează civic pe bugetul local 2026: monitorizează statusul, solicită o dezbatere publică, participă și formulează o contestație."
+  },
+  "challenges": [
+    {
+      "id": "civic-intro",
+      "slug": "civic-intro",
+      "title": {
+        "en": "Introduction and Orientation",
+        "ro": "Introducere și orientare"
+      },
+      "description": {
+        "en": "Understand the civic challenge, the budget calendar, and your rights as a citizen.",
+        "ro": "Înțelege provocarea civică, calendarul bugetar și drepturile tale ca cetățean."
+      },
+      "steps": [
+        {
+          "id": "ch-civic-01-about-this-challenge",
+          "slug": "01-about-this-challenge",
+          "title": {
+            "en": "About This Challenge",
+            "ro": "Despre această provocare"
+          },
+          "durationMinutes": 5,
+          "contentDir": "civic-campaign/01-about-this-challenge",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-civic-02-budget-calendar-and-rights",
+          "slug": "02-budget-calendar-and-rights",
+          "title": {
+            "en": "Budget Calendar and Your Rights",
+            "ro": "Calendarul bugetar și drepturile tale"
+          },
+          "durationMinutes": 6,
+          "contentDir": "civic-campaign/02-budget-calendar-and-rights",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        }
+      ]
+    },
+    {
+      "id": "civic-monitor-and-request",
+      "slug": "civic-monitor-and-request",
+      "title": {
+        "en": "Monitor and Request",
+        "ro": "Monitorizează și solicită"
+      },
+      "description": {
+        "en": "Check if the 2026 budget has been published and request a public debate.",
+        "ro": "Verifică dacă bugetul pe 2026 a fost publicat și solicită o dezbatere publică."
+      },
+      "steps": [
+        {
+          "id": "ch-civic-03-budget-status-2026",
+          "slug": "03-budget-status-2026",
+          "title": {
+            "en": "2026 Budget Status",
+            "ro": "Statusul bugetului pe 2026"
+          },
+          "durationMinutes": 7,
+          "contentDir": "civic-campaign/03-budget-status-2026",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-civic-04-debate-request",
+          "slug": "04-debate-request",
+          "title": {
+            "en": "Public Debate Request",
+            "ro": "Cererea de dezbatere publică"
+          },
+          "durationMinutes": 10,
+          "contentDir": "civic-campaign/04-debate-request",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        }
+      ]
+    },
+    {
+      "id": "civic-participate-and-act",
+      "slug": "civic-participate-and-act",
+      "title": {
+        "en": "Participate and Act",
+        "ro": "Participă și acționează"
+      },
+      "description": {
+        "en": "Document your participation in the budget debate and formulate a contestation.",
+        "ro": "Documentează participarea la dezbatere și formulează o contestație pe buget."
+      },
+      "steps": [
+        {
+          "id": "ch-civic-05-participation-report",
+          "slug": "05-participation-report",
+          "title": {
+            "en": "Participation Report",
+            "ro": "Raport de participare"
+          },
+          "durationMinutes": 8,
+          "contentDir": "civic-campaign/05-participation-report",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        },
+        {
+          "id": "ch-civic-06-contestation",
+          "slug": "06-contestation",
+          "title": {
+            "en": "Budget Contestation",
+            "ro": "Contestația bugetului local"
+          },
+          "durationMinutes": 12,
+          "contentDir": "civic-campaign/06-contestation",
+          "completionMode": "mark_complete",
+          "prerequisites": []
+        }
+      ]
+    }
+  ]
+}

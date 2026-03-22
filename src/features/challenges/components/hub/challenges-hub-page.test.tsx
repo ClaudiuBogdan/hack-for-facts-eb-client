@@ -229,6 +229,12 @@ describe('ChallengesHubPage', () => {
       register: registerMock,
     }
     stepStatuses = {
+      'ch-civic-01-about-this-challenge': 'completed',
+      'ch-civic-02-budget-calendar-and-rights': 'completed',
+      'ch-civic-03-budget-status-2026': 'completed',
+      'ch-civic-04-debate-request': 'completed',
+      'ch-civic-05-participation-report': 'completed',
+      'ch-civic-06-contestation': 'completed',
       'ch-budget-basics-01-local-budget': 'completed',
       'ch-budget-basics-02-document-states': 'completed',
       'ch-budget-basics-03-actors-and-timing': 'completed',

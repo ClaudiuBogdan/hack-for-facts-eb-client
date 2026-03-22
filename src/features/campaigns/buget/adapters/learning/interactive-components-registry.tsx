@@ -1,6 +1,7 @@
 import { lazy, Suspense, type ComponentType, type ReactNode } from 'react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ClientOnly } from '@/components/ssr/ClientOnly'
+import type { CampaignInteractiveElementProps } from '../../components/interactive/types'
 
 type LazyWrapperProps = Record<string, unknown>
 
@@ -52,7 +53,63 @@ const CampaignQuickLinks = createLazyInteractiveComponent<QuickLinksProps>(() =>
   })),
 )
 
+const CampaignBudgetStatusReport = createLazyInteractiveComponent<CampaignInteractiveElementProps>(() =>
+  import('../../components/interactive/BudgetStatusReport').then((module) => ({
+    default: module.BudgetStatusReport,
+  })),
+)
+
+const CampaignDebateRequestForm = createLazyInteractiveComponent<CampaignInteractiveElementProps>(() =>
+  import('../../components/interactive/DebateRequestForm').then((module) => ({
+    default: module.DebateRequestForm,
+  })),
+)
+
+const CampaignParticipationReport = createLazyInteractiveComponent<CampaignInteractiveElementProps>(() =>
+  import('../../components/interactive/ParticipationReport').then((module) => ({
+    default: module.ParticipationReport,
+  })),
+)
+
+const CampaignContestationBuilder = createLazyInteractiveComponent<CampaignInteractiveElementProps>(() =>
+  import('../../components/interactive/ContestationBuilder').then((module) => ({
+    default: module.ContestationBuilder,
+  })),
+)
+
+const CampaignBudgetPublicationDate = createLazyInteractiveComponent<CampaignInteractiveElementProps>(() =>
+  import('../../components/interactive/BudgetPublicationDate').then((module) => ({
+    default: module.BudgetPublicationDate,
+  })),
+)
+
+const CampaignPrimarieWebsiteLink = createLazyInteractiveComponent<CampaignInteractiveElementProps>(() =>
+  import('../../components/interactive/PrimarieWebsiteLink').then((module) => ({
+    default: module.PrimarieWebsiteLink,
+  })),
+)
+
+const CampaignBudgetDocumentLink = createLazyInteractiveComponent<CampaignInteractiveElementProps>(() =>
+  import('../../components/interactive/BudgetDocumentLink').then((module) => ({
+    default: module.BudgetDocumentLink,
+  })),
+)
+
+const CampaignPrimarieContactInfo = createLazyInteractiveComponent<CampaignInteractiveElementProps>(() =>
+  import('../../components/interactive/PrimarieContactInfo').then((module) => ({
+    default: module.PrimarieContactInfo,
+  })),
+)
+
 export const campaignInteractiveComponents = {
   Sources: CampaignSources,
   QuickLinks: CampaignQuickLinks,
+  BudgetStatusReport: CampaignBudgetStatusReport,
+  DebateRequestForm: CampaignDebateRequestForm,
+  ParticipationReport: CampaignParticipationReport,
+  ContestationBuilder: CampaignContestationBuilder,
+  BudgetPublicationDate: CampaignBudgetPublicationDate,
+  PrimarieWebsiteLink: CampaignPrimarieWebsiteLink,
+  BudgetDocumentLink: CampaignBudgetDocumentLink,
+  PrimarieContactInfo: CampaignPrimarieContactInfo,
 }

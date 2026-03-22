@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
   BookOpen,
@@ -18,10 +18,12 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { Button } from '@/components/ui/button'
+import { useCustomInteraction } from '@/features/learning/hooks/interactions/use-custom-interaction'
 import { useCampaignTimeline } from '../../hooks/use-campaign-timeline'
 import { getCampaignText, getCampaignUatOverrideForCui } from '../../hooks/use-campaign-content'
 import { buildCampaignProvocariPath } from '@/features/challenges/constants'
 import type { CampaignLocale, CampaignTimelineEntry } from '../../types'
+import type { BudgetPublicationDateValue } from '../interactive/types'
 
 type BugetCalendarPageProps = {
   readonly locale: CampaignLocale
@@ -156,9 +158,28 @@ function formatMilestoneDate(dateStr: string, locale: CampaignLocale): string {
 const ICON_SIZE_PX = 30
 
 export function BugetCalendarPage({ locale, entityCui }: BugetCalendarPageProps) {
-  const uatOverride = getCampaignUatOverrideForCui(entityCui)
-  const isPersonalized = Boolean(uatOverride)
-  const timeline = useCampaignTimeline(uatOverride)
+  const adminOverride = useMemo(() => getCampaignUatOverrideForCui(entityCui), [entityCui])
+
+  const userPublicationDate = useCustomInteraction<BudgetPublicationDateValue>({
+    lessonId: 'ce-buget-are-primaria-ta-pentru-2026',
+    interactionId: 'campaign:budget-publication-date',
+    scopePolicy: 'entity',
+    entityCui,
+    kind: 'custom',
+    completionRule: { type: 'resolved' },
+  })
+
+  const mergedOverride = useMemo(() => {
+    const base = adminOverride ?? {}
+    // Only use user-submitted date if admin hasn't set one for this entry
+    if (!base['publicare-proiect-buget-local'] && userPublicationDate.savedValue?.publicationDate) {
+      return { ...base, 'publicare-proiect-buget-local': userPublicationDate.savedValue.publicationDate }
+    }
+    return Object.keys(base).length > 0 ? base : undefined
+  }, [adminOverride, userPublicationDate.savedValue?.publicationDate])
+
+  const isPersonalized = Boolean(mergedOverride)
+  const timeline = useCampaignTimeline(mergedOverride)
   const backLinkSearch: Record<string, string> = {}
   if (locale === 'en') backLinkSearch.lang = 'en'
   const { entries } = timeline
