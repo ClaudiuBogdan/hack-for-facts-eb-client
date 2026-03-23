@@ -1,0 +1,182 @@
+[
+  {
+    "code": "10",
+    "label": "Cheltuieli de personal",
+    "realizari_2024": 89308048,
+    "executie_preliminata_2025": 89746742,
+    "propuneri_2026": 89760739,
+    "estimari_2027": 92967913,
+    "estimari_2028": 95888160,
+    "estimari_2029": 95907095
+  },
+  {
+    "code": "57",
+    "label": "Asistenta sociala",
+    "realizari_2024": 72422587,
+    "executie_preliminata_2025": 75078334,
+    "propuneri_2026": 74648888,
+    "estimari_2027": 78558959,
+    "estimari_2028": 81072642,
+    "estimari_2029": 82554790
+  },
+  {
+    "code": "56",
+    "label": "Proiecte FEN postaderare",
+    "realizari_2024": 33584118,
+    "executie_preliminata_2025": 49518117,
+    "propuneri_2026": 72548019,
+    "estimari_2027": 87472074,
+    "estimari_2028": 78293479,
+    "estimari_2029": 52122243
+  },
+  {
+    "code": "51",
+    "label": "Transferuri intre unitati",
+    "realizari_2024": 76625549,
+    "executie_preliminata_2025": 93225686,
+    "propuneri_2026": 71077675,
+    "estimari_2027": 75888649,
+    "estimari_2028": 77888857,
+    "estimari_2029": 83638793
+  },
+  {
+    "code": "30",
+    "label": "Dobanzi",
+    "realizari_2024": 34794368,
+    "executie_preliminata_2025": 48842074,
+    "propuneri_2026": 58832170,
+    "estimari_2027": 64369383,
+    "estimari_2028": 62149310,
+    "estimari_2029": 61583952
+  },
+  {
+    "code": "60",
+    "label": "Proiecte asistenta financiara",
+    "realizari_2024": 9775149,
+    "executie_preliminata_2025": 27530218,
+    "propuneri_2026": 45622131,
+    "estimari_2027": 183150,
+    "estimari_2028": 121235,
+    "estimari_2029": 0
+  },
+  {
+    "code": "55",
+    "label": "Alte transferuri",
+    "realizari_2024": 27855124,
+    "executie_preliminata_2025": 31096564,
+    "propuneri_2026": 32974697,
+    "estimari_2027": 32083450,
+    "estimari_2028": 32130200,
+    "estimari_2029": 33218385
+  },
+  {
+    "code": "71",
+    "label": "Active nefinanciare",
+    "realizari_2024": 15689254,
+    "executie_preliminata_2025": 16403921,
+    "propuneri_2026": 21962184,
+    "estimari_2027": 31032580,
+    "estimari_2028": 38832041,
+    "estimari_2029": 45830839
+  },
+  {
+    "code": "61",
+    "label": "Proiecte FEN 2021-2027",
+    "realizari_2024": 13861062,
+    "executie_preliminata_2025": 14404872,
+    "propuneri_2026": 17316785,
+    "estimari_2027": 1254507,
+    "estimari_2028": 992548,
+    "estimari_2029": 0
+  },
+  {
+    "code": "20",
+    "label": "Bunuri si servicii",
+    "realizari_2024": 14171208,
+    "executie_preliminata_2025": 13843992,
+    "propuneri_2026": 14254364,
+    "estimari_2027": 14455466,
+    "estimari_2028": 14859952,
+    "estimari_2029": 14860917
+  },
+  {
+    "code": "59",
+    "label": "Alte cheltuieli",
+    "realizari_2024": 13818450,
+    "executie_preliminata_2025": 13074795,
+    "propuneri_2026": 12666591,
+    "estimari_2027": 13464909,
+    "estimari_2028": 13955403,
+    "estimari_2029": 13905403
+  },
+  {
+    "code": "40",
+    "label": "Subventii",
+    "realizari_2024": 10989872,
+    "executie_preliminata_2025": 6970246,
+    "propuneri_2026": 8381562,
+    "estimari_2027": 6404832,
+    "estimari_2028": 6609788,
+    "estimari_2029": 6609788
+  },
+  {
+    "code": "65",
+    "label": "Cheltuieli judiciare",
+    "realizari_2024": 1229395,
+    "executie_preliminata_2025": 1711909,
+    "propuneri_2026": 2294278,
+    "estimari_2027": 1780924,
+    "estimari_2028": 1583880,
+    "estimari_2029": 1583880
+  },
+  {
+    "code": "58",
+    "label": "Proiecte FEN 2020",
+    "realizari_2024": 16673094,
+    "executie_preliminata_2025": 13416436,
+    "propuneri_2026": 2122243,
+    "estimari_2027": 291279,
+    "estimari_2028": 226472,
+    "estimari_2029": 206908
+  },
+  {
+    "code": "80",
+    "label": "Imprumuturi",
+    "realizari_2024": 2,
+    "executie_preliminata_2025": 390000,
+    "propuneri_2026": 1251000,
+    "estimari_2027": 251000,
+    "estimari_2028": 251000,
+    "estimari_2029": 251000
+  },
+  {
+    "code": "81",
+    "label": "Rambursari de credite",
+    "realizari_2024": 2579432,
+    "executie_preliminata_2025": 1080200,
+    "propuneri_2026": 1035868,
+    "estimari_2027": 794764,
+    "estimari_2028": 695397,
+    "estimari_2029": 597821
+  },
+  {
+    "code": "72",
+    "label": "Active financiare",
+    "realizari_2024": 977592,
+    "executie_preliminata_2025": 5175114,
+    "propuneri_2026": 564068,
+    "estimari_2027": 159750,
+    "estimari_2028": 164862,
+    "estimari_2029": 164862
+  },
+  {
+    "code": "50",
+    "label": "Fonduri de rezerva",
+    "realizari_2024": 0,
+    "executie_preliminata_2025": 0,
+    "propuneri_2026": 100000,
+    "estimari_2027": 532500,
+    "estimari_2028": 549540,
+    "estimari_2029": 549540
+  }
+]

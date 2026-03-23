@@ -1,0 +1,2753 @@
+[
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "economic_code": "30",
+    "economic_label": "Dobanzi",
+    "propuneri_2026": 58824484
+  },
+  {
+    "entity": "ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+    "entity_label": "Ministerul Muncii",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 55800000
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "entity_label": "Ministerul Educatiei",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 34500000
+  },
+  {
+    "entity": "ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+    "entity_label": "Ministerul Muncii",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 32619238
+  },
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 24580304
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "entity_label": "Ministerul Apararii Nationale",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 19749322
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 19600000
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 19600000
+  },
+  {
+    "entity": "ministerul-agriculturii-dezvoltarii-rurale",
+    "entity_label": "Ministerul Agriculturii",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 19566275
+  },
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 15546559
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "entity_label": "Ministerul Apararii Nationale",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 12235470
+  },
+  {
+    "entity": "ministerul-dezvoltarii-lucrarilorpublice-adm",
+    "entity_label": "Ministerul Dezvoltarii",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 9452770
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 9450000
+  },
+  {
+    "entity": "ministerul-dezvoltarii-lucrarilorpublice-adm",
+    "entity_label": "Ministerul Dezvoltarii",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 8300000
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "entity_label": "Ministerul Educatiei",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 7020000
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "entity_label": "Ministerul Apararii Nationale",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 6529044
+  },
+  {
+    "entity": "ministerul-sanatatii",
+    "entity_label": "Ministerul Sanatatii",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 6320000
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "entity_label": "Ministerul Educatiei",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 6103485
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 5943890
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "entity_label": "Ministerul Educatiei",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 5700000
+  },
+  {
+    "entity": "ministerul-sanatatii",
+    "entity_label": "Ministerul Sanatatii",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 5699000
+  },
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 5616029
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "economic_code": "61",
+    "economic_label": "Proiecte FEN 2021-2027",
+    "propuneri_2026": 5000000
+  },
+  {
+    "entity": "inalta-curte-de-casatie-si-justitie",
+    "entity_label": "Inalta Curte",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 4940000
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 4902000
+  },
+  {
+    "entity": "ministerul-investitiilor-proiectelor-europene",
+    "entity_label": "Min. Investitiilor si Proiectelor Europene",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 4700000
+  },
+  {
+    "entity": "ministerul-investitiilor-proiectelor-europene",
+    "entity_label": "Min. Investitiilor si Proiectelor Europene",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 4517508
+  },
+  {
+    "entity": "ministerul-sanatatii",
+    "entity_label": "Ministerul Sanatatii",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 4500000
+  },
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "economic_code": "61",
+    "economic_label": "Proiecte FEN 2021-2027",
+    "propuneri_2026": 3986978
+  },
+  {
+    "entity": "ministerul-finantelor",
+    "entity_label": "Ministerul Finantelor",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 3900000
+  },
+  {
+    "entity": "ministerul-finantelor",
+    "entity_label": "Ministerul Finantelor",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 3663308
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "economic_code": "40",
+    "economic_label": "Subventii",
+    "propuneri_2026": 3503667
+  },
+  {
+    "entity": "ministerul-agriculturii-dezvoltarii-rurale",
+    "entity_label": "Ministerul Agriculturii",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 3440951
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "entity_label": "Ministerul Apararii Nationale",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 3140899
+  },
+  {
+    "entity": "ministerul-justitiei",
+    "entity_label": "Ministerul Justitiei",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 2800000
+  },
+  {
+    "entity": "ss-culte",
+    "entity_label": "Secretariatul de Stat pentru Culte",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 2668241
+  },
+  {
+    "entity": "ministerul-finantelor",
+    "entity_label": "Ministerul Finantelor",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 2650577
+  },
+  {
+    "entity": "ministerul-dezvoltarii-lucrarilorpublice-adm",
+    "entity_label": "Ministerul Dezvoltarii",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 2500000
+  },
+  {
+    "entity": "ministerul-investitiilor-proiectelor-europene",
+    "entity_label": "Min. Investitiilor si Proiectelor Europene",
+    "economic_code": "61",
+    "economic_label": "Proiecte FEN 2021-2027",
+    "propuneri_2026": 2500000
+  },
+  {
+    "entity": "ministerul-sanatatii",
+    "entity_label": "Ministerul Sanatatii",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 2500000
+  },
+  {
+    "entity": "sri",
+    "entity_label": "SRI",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 2470000
+  },
+  {
+    "entity": "ministerul-public",
+    "entity_label": "Ministerul Public",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 2257512
+  },
+  {
+    "entity": "ministerul-agriculturii-dezvoltarii-rurale",
+    "entity_label": "Ministerul Agriculturii",
+    "economic_code": "40",
+    "economic_label": "Subventii",
+    "propuneri_2026": 2200000
+  },
+  {
+    "entity": "ministerul-energiei",
+    "entity_label": "Ministerul Energiei",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 2070203
+  },
+  {
+    "entity": "ministerul-energiei",
+    "entity_label": "Ministerul Energiei",
+    "economic_code": "40",
+    "economic_label": "Subventii",
+    "propuneri_2026": 2000000
+  },
+  {
+    "entity": "ministerul-sanatatii",
+    "entity_label": "Ministerul Sanatatii",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 2000000
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 1887154
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "entity_label": "Ministerul Apararii Nationale",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 1819591
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "entity_label": "Ministerul Educatiei",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 1750000
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 1700000
+  },
+  {
+    "entity": "ministerul-dezvoltarii-lucrarilorpublice-adm",
+    "entity_label": "Ministerul Dezvoltarii",
+    "economic_code": "61",
+    "economic_label": "Proiecte FEN 2021-2027",
+    "propuneri_2026": 1500000
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 1381919
+  },
+  {
+    "entity": "ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+    "entity_label": "Ministerul Muncii",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 1330042
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 1302683
+  },
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "economic_code": "80",
+    "economic_label": "Imprumuturi",
+    "propuneri_2026": 1250000
+  },
+  {
+    "entity": "sri",
+    "entity_label": "SRI",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 1230000
+  },
+  {
+    "entity": "ansanitara-veterinara-siguranta-alimentelor",
+    "entity_label": "ANSVSA",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 1219000
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 1200000
+  },
+  {
+    "entity": "ministerul-culturii",
+    "entity_label": "Ministerul Culturii",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 1000000
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 1000000
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "economic_code": "61",
+    "economic_label": "Proiecte FEN 2021-2027",
+    "propuneri_2026": 1000000
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "economic_code": "65",
+    "economic_label": "Cheltuieli judiciare",
+    "propuneri_2026": 1000000
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 928347
+  },
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "economic_code": "81",
+    "economic_label": "Rambursari de credite",
+    "propuneri_2026": 901765
+  },
+  {
+    "entity": "ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+    "entity_label": "Ministerul Muncii",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 834044
+  },
+  {
+    "entity": "ministerul-agriculturii-dezvoltarii-rurale",
+    "entity_label": "Ministerul Agriculturii",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 826000
+  },
+  {
+    "entity": "ministerul-energiei",
+    "entity_label": "Ministerul Energiei",
+    "economic_code": "61",
+    "economic_label": "Proiecte FEN 2021-2027",
+    "propuneri_2026": 816840
+  },
+  {
+    "entity": "ministerul-sanatatii",
+    "entity_label": "Ministerul Sanatatii",
+    "economic_code": "61",
+    "economic_label": "Proiecte FEN 2021-2027",
+    "propuneri_2026": 800000
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 800000
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "entity_label": "Ministerul Apararii Nationale",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 719899
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "entity_label": "Ministerul Educatiei",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 710000
+  },
+  {
+    "entity": "sts",
+    "entity_label": "STS",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 700000
+  },
+  {
+    "entity": "ministerul-investitiilor-proiectelor-europene",
+    "entity_label": "Min. Investitiilor si Proiectelor Europene",
+    "economic_code": "58",
+    "economic_label": "Proiecte FEN 2020",
+    "propuneri_2026": 698815
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 667083
+  },
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "economic_code": "58",
+    "economic_label": "Proiecte FEN 2020",
+    "propuneri_2026": 624000
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 600310
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 600000
+  },
+  {
+    "entity": "ministerul-afacerilor-externe",
+    "entity_label": "Ministerul Afacerilor Externe",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 580000
+  },
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 577680
+  },
+  {
+    "entity": "ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+    "entity_label": "Ministerul Muncii",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 570000
+  },
+  {
+    "entity": "ministerul-afacerilor-externe",
+    "entity_label": "Ministerul Afacerilor Externe",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 526000
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "entity_label": "Ministerul Educatiei",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 516423
+  },
+  {
+    "entity": "ministerul-justitiei",
+    "entity_label": "Ministerul Justitiei",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 515000
+  },
+  {
+    "entity": "ministerul-finantelor",
+    "entity_label": "Ministerul Finantelor",
+    "economic_code": "61",
+    "economic_label": "Proiecte FEN 2021-2027",
+    "propuneri_2026": 511000
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 507182
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "entity_label": "Ministerul Educatiei",
+    "economic_code": "61",
+    "economic_label": "Proiecte FEN 2021-2027",
+    "propuneri_2026": 500000
+  },
+  {
+    "entity": "ministerul-energiei",
+    "entity_label": "Ministerul Energiei",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 500000
+  },
+  {
+    "entity": "societatea-romana-televiziune",
+    "entity_label": "TVR",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 500000
+  },
+  {
+    "entity": "sie",
+    "entity_label": "SIE",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 493000
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "economic_code": "61",
+    "economic_label": "Proiecte FEN 2021-2027",
+    "propuneri_2026": 487610
+  },
+  {
+    "entity": "ministerul-finantelor",
+    "entity_label": "Ministerul Finantelor",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 486439
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 480000
+  },
+  {
+    "entity": "societatea-romana-radiodifuziune",
+    "entity_label": "SRR",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 470000
+  },
+  {
+    "entity": "sri",
+    "entity_label": "SRI",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 456808
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 450000
+  },
+  {
+    "entity": "ministerul-sanatatii",
+    "entity_label": "Ministerul Sanatatii",
+    "economic_code": "65",
+    "economic_label": "Cheltuieli judiciare",
+    "propuneri_2026": 400000
+  },
+  {
+    "entity": "ministerul-justitiei",
+    "entity_label": "Ministerul Justitiei",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 395000
+  },
+  {
+    "entity": "ministerul-finantelor",
+    "entity_label": "Ministerul Finantelor",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 385962
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 380000
+  },
+  {
+    "entity": "camera-deputatilor",
+    "entity_label": "Camera Deputatilor",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 377750
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "economic_code": "65",
+    "economic_label": "Cheltuieli judiciare",
+    "propuneri_2026": 370000
+  },
+  {
+    "entity": "curtea-conturi",
+    "entity_label": "Curtea de Conturi",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 367000
+  },
+  {
+    "entity": "spp",
+    "entity_label": "SPP",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 356150
+  },
+  {
+    "entity": "ministerul-public",
+    "entity_label": "Ministerul Public",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 352301
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 347000
+  },
+  {
+    "entity": "ministerul-afacerilor-externe",
+    "entity_label": "Ministerul Afacerilor Externe",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 340000
+  },
+  {
+    "entity": "ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+    "entity_label": "Ministerul Muncii",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 335000
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 335000
+  },
+  {
+    "entity": "academia-romana",
+    "entity_label": "Academia Romana",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 325000
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 315296
+  },
+  {
+    "entity": "ministerul-justitiei",
+    "entity_label": "Ministerul Justitiei",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 307943
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "economic_code": "72",
+    "economic_label": "Active financiare",
+    "propuneri_2026": 300000
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 300000
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "economic_code": "58",
+    "economic_label": "Proiecte FEN 2020",
+    "propuneri_2026": 300000
+  },
+  {
+    "entity": "sts",
+    "entity_label": "STS",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 297504
+  },
+  {
+    "entity": "sri",
+    "entity_label": "SRI",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 290000
+  },
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "economic_code": "40",
+    "economic_label": "Subventii",
+    "propuneri_2026": 285668
+  },
+  {
+    "entity": "ministerul-dezvoltarii-lucrarilorpublice-adm",
+    "entity_label": "Ministerul Dezvoltarii",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 283888
+  },
+  {
+    "entity": "ministerul-finantelor",
+    "entity_label": "Ministerul Finantelor",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 282500
+  },
+  {
+    "entity": "sri",
+    "entity_label": "SRI",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 282303
+  },
+  {
+    "entity": "sts",
+    "entity_label": "STS",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 253183
+  },
+  {
+    "entity": "sri",
+    "entity_label": "SRI",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 250000
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 231000
+  },
+  {
+    "entity": "ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+    "entity_label": "Ministerul Muncii",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 225000
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "entity_label": "Ministerul Educatiei",
+    "economic_code": "58",
+    "economic_label": "Proiecte FEN 2020",
+    "propuneri_2026": 222604
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "economic_code": "40",
+    "economic_label": "Subventii",
+    "propuneri_2026": 221822
+  },
+  {
+    "entity": "autoritatea-electorala-permanenta",
+    "entity_label": "Autoritatea Electorala Permanenta",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 220000
+  },
+  {
+    "entity": "sri",
+    "entity_label": "SRI",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 200000
+  },
+  {
+    "entity": "consiliul-superior-magistraturii",
+    "entity_label": "CSM",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 188000
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 188000
+  },
+  {
+    "entity": "ministerul-dezvoltarii-lucrarilorpublice-adm",
+    "entity_label": "Ministerul Dezvoltarii",
+    "economic_code": "65",
+    "economic_label": "Cheltuieli judiciare",
+    "propuneri_2026": 187278
+  },
+  {
+    "entity": "ansanitara-veterinara-siguranta-alimentelor",
+    "entity_label": "ANSVSA",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 176483
+  },
+  {
+    "entity": "senatul-romaniei",
+    "entity_label": "Senatul Romaniei",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 175725
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 175000
+  },
+  {
+    "entity": "ministerul-public",
+    "entity_label": "Ministerul Public",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 163000
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "entity_label": "Ministerul Educatiei",
+    "economic_code": "65",
+    "economic_label": "Cheltuieli judiciare",
+    "propuneri_2026": 160000
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "economic_code": "61",
+    "economic_label": "Proiecte FEN 2021-2027",
+    "propuneri_2026": 157155
+  },
+  {
+    "entity": "sie",
+    "entity_label": "SIE",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 155000
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 153000
+  },
+  {
+    "entity": "ministerul-dezvoltarii-lucrarilorpublice-adm",
+    "entity_label": "Ministerul Dezvoltarii",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 150000
+  },
+  {
+    "entity": "ministerul-finantelor",
+    "entity_label": "Ministerul Finantelor",
+    "economic_code": "72",
+    "economic_label": "Active financiare",
+    "propuneri_2026": 150000
+  },
+  {
+    "entity": "ministerul-investitiilor-proiectelor-europene",
+    "entity_label": "Min. Investitiilor si Proiectelor Europene",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 150000
+  },
+  {
+    "entity": "sie",
+    "entity_label": "SIE",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 150000
+  },
+  {
+    "entity": "sts",
+    "entity_label": "STS",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 143000
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 136742
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "economic_code": "81",
+    "economic_label": "Rambursari de credite",
+    "propuneri_2026": 131423
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "entity_label": "Ministerul Educatiei",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 130000
+  },
+  {
+    "entity": "anrsps",
+    "entity_label": "ANRSPS",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 125000
+  },
+  {
+    "entity": "curtea-conturi",
+    "entity_label": "Curtea de Conturi",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 120000
+  },
+  {
+    "entity": "sts",
+    "entity_label": "STS",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 120000
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "economic_code": "72",
+    "economic_label": "Active financiare",
+    "propuneri_2026": 114068
+  },
+  {
+    "entity": "ministerul-agriculturii-dezvoltarii-rurale",
+    "entity_label": "Ministerul Agriculturii",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 110000
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "economic_code": "40",
+    "economic_label": "Subventii",
+    "propuneri_2026": 110000
+  },
+  {
+    "entity": "ministerul-dezvoltarii-lucrarilorpublice-adm",
+    "entity_label": "Ministerul Dezvoltarii",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 107000
+  },
+  {
+    "entity": "ministerul-agriculturii-dezvoltarii-rurale",
+    "entity_label": "Ministerul Agriculturii",
+    "economic_code": "58",
+    "economic_label": "Proiecte FEN 2020",
+    "propuneri_2026": 105766
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "economic_code": "65",
+    "economic_label": "Cheltuieli judiciare",
+    "propuneri_2026": 102000
+  },
+  {
+    "entity": "ministerul-agriculturii-dezvoltarii-rurale",
+    "entity_label": "Ministerul Agriculturii",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 100000
+  },
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "economic_code": "50",
+    "economic_label": "Fonduri de rezerva",
+    "propuneri_2026": 100000
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 95000
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "economic_code": "58",
+    "economic_label": "Proiecte FEN 2020",
+    "propuneri_2026": 85747
+  },
+  {
+    "entity": "camera-deputatilor",
+    "entity_label": "Camera Deputatilor",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 82000
+  },
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 73275
+  },
+  {
+    "entity": "academia-romana",
+    "entity_label": "Academia Romana",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 70780
+  },
+  {
+    "entity": "ministerul-afacerilor-externe",
+    "entity_label": "Ministerul Afacerilor Externe",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 70000
+  },
+  {
+    "entity": "ministerul-agriculturii-dezvoltarii-rurale",
+    "entity_label": "Ministerul Agriculturii",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 70000
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "entity_label": "Ministerul Educatiei",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 70000
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 65000
+  },
+  {
+    "entity": "ministerul-culturii",
+    "entity_label": "Ministerul Culturii",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 64297
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 62244
+  },
+  {
+    "entity": "ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+    "entity_label": "Ministerul Muncii",
+    "economic_code": "40",
+    "economic_label": "Subventii",
+    "propuneri_2026": 60000
+  },
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 59000
+  },
+  {
+    "entity": "consiliul-superior-magistraturii",
+    "entity_label": "CSM",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 58400
+  },
+  {
+    "entity": "ministerul-culturii",
+    "entity_label": "Ministerul Culturii",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 58000
+  },
+  {
+    "entity": "autoritatea-electorala-permanenta",
+    "entity_label": "Autoritatea Electorala Permanenta",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 57300
+  },
+  {
+    "entity": "consiliul-concurentei",
+    "entity_label": "Consiliul Concurentei",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 57000
+  },
+  {
+    "entity": "ministerul-culturii",
+    "entity_label": "Ministerul Culturii",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 51991
+  },
+  {
+    "entity": "ministerul-culturii",
+    "entity_label": "Ministerul Culturii",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 51000
+  },
+  {
+    "entity": "ministerul-justitiei",
+    "entity_label": "Ministerul Justitiei",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 50000
+  },
+  {
+    "entity": "academia-romana",
+    "entity_label": "Academia Romana",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 49640
+  },
+  {
+    "entity": "ministerul-afacerilor-externe",
+    "entity_label": "Ministerul Afacerilor Externe",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 49043
+  },
+  {
+    "entity": "ministerul-agriculturii-dezvoltarii-rurale",
+    "entity_label": "Ministerul Agriculturii",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 48900
+  },
+  {
+    "entity": "camera-deputatilor",
+    "entity_label": "Camera Deputatilor",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 48000
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 48000
+  },
+  {
+    "entity": "ministerul-public",
+    "entity_label": "Ministerul Public",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 47003
+  },
+  {
+    "entity": "ministerul-justitiei",
+    "entity_label": "Ministerul Justitiei",
+    "economic_code": "58",
+    "economic_label": "Proiecte FEN 2020",
+    "propuneri_2026": 46000
+  },
+  {
+    "entity": "academia-romana",
+    "entity_label": "Academia Romana",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 45000
+  },
+  {
+    "entity": "administratia-prezidentiala",
+    "entity_label": "Administratia Prezidentiala",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 45000
+  },
+  {
+    "entity": "ministerul-energiei",
+    "entity_label": "Ministerul Energiei",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 45000
+  },
+  {
+    "entity": "ministerul-justitiei",
+    "entity_label": "Ministerul Justitiei",
+    "economic_code": "65",
+    "economic_label": "Cheltuieli judiciare",
+    "propuneri_2026": 45000
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 45000
+  },
+  {
+    "entity": "academia-romana",
+    "entity_label": "Academia Romana",
+    "economic_code": "61",
+    "economic_label": "Proiecte FEN 2021-2027",
+    "propuneri_2026": 42202
+  },
+  {
+    "entity": "administratia-prezidentiala",
+    "entity_label": "Administratia Prezidentiala",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 40423
+  },
+  {
+    "entity": "anrsps",
+    "entity_label": "ANRSPS",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 40000
+  },
+  {
+    "entity": "camera-deputatilor",
+    "entity_label": "Camera Deputatilor",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 40000
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "entity_label": "Ministerul Apararii Nationale",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 38599
+  },
+  {
+    "entity": "curtea-constitutionala",
+    "entity_label": "Curtea Constitutionala",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 37708
+  },
+  {
+    "entity": "ansanitara-veterinara-siguranta-alimentelor",
+    "entity_label": "ANSVSA",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 37000
+  },
+  {
+    "entity": "ministerul-public",
+    "entity_label": "Ministerul Public",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 35925
+  },
+  {
+    "entity": "curtea-conturi",
+    "entity_label": "Curtea de Conturi",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 35000
+  },
+  {
+    "entity": "ministerul-agriculturii-dezvoltarii-rurale",
+    "entity_label": "Ministerul Agriculturii",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 34742
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 33690
+  },
+  {
+    "entity": "curtea-conturi",
+    "entity_label": "Curtea de Conturi",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 33000
+  },
+  {
+    "entity": "spp",
+    "entity_label": "SPP",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 32500
+  },
+  {
+    "entity": "senatul-romaniei",
+    "entity_label": "Senatul Romaniei",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 31000
+  },
+  {
+    "entity": "ministerul-culturii",
+    "entity_label": "Ministerul Culturii",
+    "economic_code": "65",
+    "economic_label": "Cheltuieli judiciare",
+    "propuneri_2026": 30000
+  },
+  {
+    "entity": "ministerul-investitiilor-proiectelor-europene",
+    "entity_label": "Min. Investitiilor si Proiectelor Europene",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 30000
+  },
+  {
+    "entity": "consiliul-concurentei",
+    "entity_label": "Consiliul Concurentei",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 28816
+  },
+  {
+    "entity": "consiliul-national-audiovizualului",
+    "entity_label": "CNA",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 28800
+  },
+  {
+    "entity": "inalta-curte-de-casatie-si-justitie",
+    "entity_label": "Inalta Curte",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 28328
+  },
+  {
+    "entity": "ministerul-culturii",
+    "entity_label": "Ministerul Culturii",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 26740
+  },
+  {
+    "entity": "consiliul-national-studierea-arhivelor-securitatii",
+    "entity_label": "CNSAS",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 26000
+  },
+  {
+    "entity": "ministerul-sanatatii",
+    "entity_label": "Ministerul Sanatatii",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 26000
+  },
+  {
+    "entity": "consiliul-national-combaterea-discriminarii",
+    "entity_label": "CNCD",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 25050
+  },
+  {
+    "entity": "anrsps",
+    "entity_label": "ANRSPS",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 25000
+  },
+  {
+    "entity": "agentia-nationala-presaagerpres",
+    "entity_label": "AGERPRES",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 25000
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "economic_code": "58",
+    "economic_label": "Proiecte FEN 2020",
+    "propuneri_2026": 25000
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 25000
+  },
+  {
+    "entity": "ministerul-investitiilor-proiectelor-europene",
+    "entity_label": "Min. Investitiilor si Proiectelor Europene",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 23275
+  },
+  {
+    "entity": "agentia-nationala-integritate",
+    "entity_label": "Agentia Nationala de Integritate",
+    "economic_code": "60",
+    "economic_label": "Proiecte asistenta financiara",
+    "propuneri_2026": 23099
+  },
+  {
+    "entity": "academia-romana",
+    "entity_label": "Academia Romana",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 23000
+  },
+  {
+    "entity": "inalta-curte-de-casatie-si-justitie",
+    "entity_label": "Inalta Curte",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 21739
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 21000
+  },
+  {
+    "entity": "senatul-romaniei",
+    "entity_label": "Senatul Romaniei",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 21000
+  },
+  {
+    "entity": "ministerul-afacerilor-externe",
+    "entity_label": "Ministerul Afacerilor Externe",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 20500
+  },
+  {
+    "entity": "anrp",
+    "entity_label": "ANRP",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 20200
+  },
+  {
+    "entity": "ministerul-sanatatii",
+    "entity_label": "Ministerul Sanatatii",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 20000
+  },
+  {
+    "entity": "avocatul-poporului",
+    "entity_label": "Avocatul Poporului",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 19300
+  },
+  {
+    "entity": "autoritatea-administrarea-activelor-statului",
+    "entity_label": "AAAS",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 18700
+  },
+  {
+    "entity": "ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+    "entity_label": "Ministerul Muncii",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 18500
+  },
+  {
+    "entity": "institutul-cultural-roman",
+    "entity_label": "Institutul Cultural Roman",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 18000
+  },
+  {
+    "entity": "ministerul-public",
+    "entity_label": "Ministerul Public",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 18000
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 15265
+  },
+  {
+    "entity": "ministerul-culturii",
+    "entity_label": "Ministerul Culturii",
+    "economic_code": "61",
+    "economic_label": "Proiecte FEN 2021-2027",
+    "propuneri_2026": 15000
+  },
+  {
+    "entity": "spp",
+    "entity_label": "SPP",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 15000
+  },
+  {
+    "entity": "senatul-romaniei",
+    "entity_label": "Senatul Romaniei",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 15000
+  },
+  {
+    "entity": "agentia-nationala-integritate",
+    "entity_label": "Agentia Nationala de Integritate",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 14700
+  },
+  {
+    "entity": "consiliul-national-audiovizualului",
+    "entity_label": "CNA",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 14700
+  },
+  {
+    "entity": "consiliul-superior-magistraturii",
+    "entity_label": "CSM",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 14500
+  },
+  {
+    "entity": "institutul-cultural-roman",
+    "entity_label": "Institutul Cultural Roman",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 13900
+  },
+  {
+    "entity": "consiliul-legislativ",
+    "entity_label": "Consiliul Legislativ",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 13823
+  },
+  {
+    "entity": "consiliul-national-solutionare-contestatiilor",
+    "entity_label": "CNSC",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 13300
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 13174
+  },
+  {
+    "entity": "ministerul-sanatatii",
+    "entity_label": "Ministerul Sanatatii",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 12251
+  },
+  {
+    "entity": "autoritatea-electorala-permanenta",
+    "entity_label": "Autoritatea Electorala Permanenta",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 12000
+  },
+  {
+    "entity": "consiliul-concurentei",
+    "entity_label": "Consiliul Concurentei",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 12000
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 12000
+  },
+  {
+    "entity": "oficiul-registrului-national-informatiilor-secrete-de-stat",
+    "entity_label": "ORNISS",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 11203
+  },
+  {
+    "entity": "administratia-prezidentiala",
+    "entity_label": "Administratia Prezidentiala",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 10992
+  },
+  {
+    "entity": "consiliul-economic-social",
+    "entity_label": "Consiliul Economic si Social",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 10698
+  },
+  {
+    "entity": "ministerul-energiei",
+    "entity_label": "Ministerul Energiei",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 10000
+  },
+  {
+    "entity": "ministerul-energiei",
+    "entity_label": "Ministerul Energiei",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 9481
+  },
+  {
+    "entity": "anrp",
+    "entity_label": "ANRP",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 8900
+  },
+  {
+    "entity": "consiliul-national-combaterea-discriminarii",
+    "entity_label": "CNCD",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 8800
+  },
+  {
+    "entity": "ministerul-justitiei",
+    "entity_label": "Ministerul Justitiei",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 8745
+  },
+  {
+    "entity": "ministerul-justitiei",
+    "entity_label": "Ministerul Justitiei",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 7892
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 7832
+  },
+  {
+    "entity": "ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+    "entity_label": "Ministerul Muncii",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 7785
+  },
+  {
+    "entity": "consiliul-superior-magistraturii",
+    "entity_label": "CSM",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 7648
+  },
+  {
+    "entity": "ministerul-dezvoltarii-lucrarilorpublice-adm",
+    "entity_label": "Ministerul Dezvoltarii",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 7500
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "economic_code": "30",
+    "economic_label": "Dobanzi",
+    "propuneri_2026": 7333
+  },
+  {
+    "entity": "academia-oamenilor-de-stiinta-din-romania",
+    "entity_label": "Academia Oamenilor de Stiinta",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 6421
+  },
+  {
+    "entity": "agentia-nationala-integritate",
+    "entity_label": "Agentia Nationala de Integritate",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 6300
+  },
+  {
+    "entity": "senatul-romaniei",
+    "entity_label": "Senatul Romaniei",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 5901
+  },
+  {
+    "entity": "curtea-constitutionala",
+    "entity_label": "Curtea Constitutionala",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 5806
+  },
+  {
+    "entity": "sts",
+    "entity_label": "STS",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 5678
+  },
+  {
+    "entity": "ss-culte",
+    "entity_label": "Secretariatul de Stat pentru Culte",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 5500
+  },
+  {
+    "entity": "ministerul-justitiei",
+    "entity_label": "Ministerul Justitiei",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 5226
+  },
+  {
+    "entity": "autoritatea-administrarea-activelor-statului",
+    "entity_label": "AAAS",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 5200
+  },
+  {
+    "entity": "administratia-prezidentiala",
+    "entity_label": "Administratia Prezidentiala",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 5000
+  },
+  {
+    "entity": "anspdcp",
+    "entity_label": "ANSPDCP",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 4900
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "economic_code": "58",
+    "economic_label": "Proiecte FEN 2020",
+    "propuneri_2026": 4657
+  },
+  {
+    "entity": "consiliul-national-solutionare-contestatiilor",
+    "entity_label": "CNSC",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 4609
+  },
+  {
+    "entity": "avocatul-poporului",
+    "entity_label": "Avocatul Poporului",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 4600
+  },
+  {
+    "entity": "sie",
+    "entity_label": "SIE",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 4520
+  },
+  {
+    "entity": "ansanitara-veterinara-siguranta-alimentelor",
+    "entity_label": "ANSVSA",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 4500
+  },
+  {
+    "entity": "ministerul-finantelor",
+    "entity_label": "Ministerul Finantelor",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 4307
+  },
+  {
+    "entity": "ministerul-dezvoltarii-lucrarilorpublice-adm",
+    "entity_label": "Ministerul Dezvoltarii",
+    "economic_code": "58",
+    "economic_label": "Proiecte FEN 2020",
+    "propuneri_2026": 4050
+  },
+  {
+    "entity": "consiliul-national-solutionare-contestatiilor",
+    "entity_label": "CNSC",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 4000
+  },
+  {
+    "entity": "ministerul-investitiilor-proiectelor-europene",
+    "entity_label": "Min. Investitiilor si Proiectelor Europene",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 3769
+  },
+  {
+    "entity": "consiliul-national-audiovizualului",
+    "entity_label": "CNA",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 3750
+  },
+  {
+    "entity": "ministerul-finantelor",
+    "entity_label": "Ministerul Finantelor",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 3718
+  },
+  {
+    "entity": "oficiul-registrului-national-informatiilor-secrete-de-stat",
+    "entity_label": "ORNISS",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 3675
+  },
+  {
+    "entity": "academia-romana",
+    "entity_label": "Academia Romana",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 3600
+  },
+  {
+    "entity": "ministerul-afacerilor-externe",
+    "entity_label": "Ministerul Afacerilor Externe",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 3600
+  },
+  {
+    "entity": "ministerul-investitiilor-proiectelor-europene",
+    "entity_label": "Min. Investitiilor si Proiectelor Europene",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 3500
+  },
+  {
+    "entity": "consiliul-economic-social",
+    "entity_label": "Consiliul Economic si Social",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 3300
+  },
+  {
+    "entity": "consiliul-monitorizare-implementare-conventie",
+    "entity_label": "Consiliul de Monitorizare",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 3200
+  },
+  {
+    "entity": "institutul-cultural-roman",
+    "entity_label": "Institutul Cultural Roman",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 3199
+  },
+  {
+    "entity": "academia-oamenilor-de-stiinta-din-romania",
+    "entity_label": "Academia Oamenilor de Stiinta",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 3100
+  },
+  {
+    "entity": "sri",
+    "entity_label": "SRI",
+    "economic_code": "58",
+    "economic_label": "Proiecte FEN 2020",
+    "propuneri_2026": 2929
+  },
+  {
+    "entity": "ministerul-dezvoltarii-lucrarilorpublice-adm",
+    "entity_label": "Ministerul Dezvoltarii",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 2900
+  },
+  {
+    "entity": "senatul-romaniei",
+    "entity_label": "Senatul Romaniei",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 2800
+  },
+  {
+    "entity": "curtea-conturi",
+    "entity_label": "Curtea de Conturi",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 2758
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "economic_code": "81",
+    "economic_label": "Rambursari de credite",
+    "propuneri_2026": 2680
+  },
+  {
+    "entity": "sts",
+    "entity_label": "STS",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 2624
+  },
+  {
+    "entity": "agentia-nationala-presaagerpres",
+    "entity_label": "AGERPRES",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 2350
+  },
+  {
+    "entity": "ss-culte",
+    "entity_label": "Secretariatul de Stat pentru Culte",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 2170
+  },
+  {
+    "entity": "inalta-curte-de-casatie-si-justitie",
+    "entity_label": "Inalta Curte",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 2142
+  },
+  {
+    "entity": "camera-deputatilor",
+    "entity_label": "Camera Deputatilor",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 2136
+  },
+  {
+    "entity": "ssprdecembrie1989",
+    "entity_label": "Secretariatul de Stat pentru Revolutionari",
+    "economic_code": "10",
+    "economic_label": "Cheltuieli de personal",
+    "propuneri_2026": 2100
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 1993
+  },
+  {
+    "entity": "spp",
+    "entity_label": "SPP",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 1600
+  },
+  {
+    "entity": "anrp",
+    "entity_label": "ANRP",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 1500
+  },
+  {
+    "entity": "consiliul-national-combaterea-discriminarii",
+    "entity_label": "CNCD",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 1500
+  },
+  {
+    "entity": "administratia-prezidentiala",
+    "entity_label": "Administratia Prezidentiala",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 1455
+  },
+  {
+    "entity": "consiliul-national-studierea-arhivelor-securitatii",
+    "entity_label": "CNSAS",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 1450
+  },
+  {
+    "entity": "ssprdecembrie1989",
+    "entity_label": "Secretariatul de Stat pentru Revolutionari",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 1450
+  },
+  {
+    "entity": "consiliul-monitorizare-implementare-conventie",
+    "entity_label": "Consiliul de Monitorizare",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 1350
+  },
+  {
+    "entity": "senatul-romaniei",
+    "entity_label": "Senatul Romaniei",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 1339
+  },
+  {
+    "entity": "ss-culte",
+    "entity_label": "Secretariatul de Stat pentru Culte",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 1300
+  },
+  {
+    "entity": "anspdcp",
+    "entity_label": "ANSPDCP",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 1286
+  },
+  {
+    "entity": "academia-oamenilor-de-stiinta-din-romania",
+    "entity_label": "Academia Oamenilor de Stiinta",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 1255
+  },
+  {
+    "entity": "ministerul-justitiei",
+    "entity_label": "Ministerul Justitiei",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 1202
+  },
+  {
+    "entity": "autoritatea-administrarea-activelor-statului",
+    "entity_label": "AAAS",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 1000
+  },
+  {
+    "entity": "ministerul-agriculturii-dezvoltarii-rurale",
+    "entity_label": "Ministerul Agriculturii",
+    "economic_code": "80",
+    "economic_label": "Imprumuturi",
+    "propuneri_2026": 1000
+  },
+  {
+    "entity": "ministerul-culturii",
+    "entity_label": "Ministerul Culturii",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 1000
+  },
+  {
+    "entity": "ministerul-energiei",
+    "entity_label": "Ministerul Energiei",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 1000
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 1000
+  },
+  {
+    "entity": "consiliul-superior-magistraturii",
+    "entity_label": "CSM",
+    "economic_code": "58",
+    "economic_label": "Proiecte FEN 2020",
+    "propuneri_2026": 997
+  },
+  {
+    "entity": "consiliul-economic-social",
+    "entity_label": "Consiliul Economic si Social",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 850
+  },
+  {
+    "entity": "consiliul-legislativ",
+    "entity_label": "Consiliul Legislativ",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 800
+  },
+  {
+    "entity": "ministerul-finantelor",
+    "entity_label": "Ministerul Finantelor",
+    "economic_code": "58",
+    "economic_label": "Proiecte FEN 2020",
+    "propuneri_2026": 799
+  },
+  {
+    "entity": "senatul-romaniei",
+    "entity_label": "Senatul Romaniei",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 716
+  },
+  {
+    "entity": "camera-deputatilor",
+    "entity_label": "Camera Deputatilor",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 707
+  },
+  {
+    "entity": "sts",
+    "entity_label": "STS",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 654
+  },
+  {
+    "entity": "ansanitara-veterinara-siguranta-alimentelor",
+    "entity_label": "ANSVSA",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 636
+  },
+  {
+    "entity": "administratia-prezidentiala",
+    "entity_label": "Administratia Prezidentiala",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 600
+  },
+  {
+    "entity": "academia-romana",
+    "entity_label": "Academia Romana",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 588
+  },
+  {
+    "entity": "ministerul-energiei",
+    "entity_label": "Ministerul Energiei",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 542
+  },
+  {
+    "entity": "curtea-constitutionala",
+    "entity_label": "Curtea Constitutionala",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 531
+  },
+  {
+    "entity": "consiliul-concurentei",
+    "entity_label": "Consiliul Concurentei",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 525
+  },
+  {
+    "entity": "agentia-nationala-integritate",
+    "entity_label": "Agentia Nationala de Integritate",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 500
+  },
+  {
+    "entity": "ministerul-investitiilor-proiectelor-europene",
+    "entity_label": "Min. Investitiilor si Proiectelor Europene",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 500
+  },
+  {
+    "entity": "ministerul-sanatatii",
+    "entity_label": "Ministerul Sanatatii",
+    "economic_code": "58",
+    "economic_label": "Proiecte FEN 2020",
+    "propuneri_2026": 446
+  },
+  {
+    "entity": "ansanitara-veterinara-siguranta-alimentelor",
+    "entity_label": "ANSVSA",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 442
+  },
+  {
+    "entity": "ministerul-dezvoltarii-lucrarilorpublice-adm",
+    "entity_label": "Ministerul Dezvoltarii",
+    "economic_code": "40",
+    "economic_label": "Subventii",
+    "propuneri_2026": 405
+  },
+  {
+    "entity": "anrsps",
+    "entity_label": "ANRSPS",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 400
+  },
+  {
+    "entity": "agentia-nationala-presaagerpres",
+    "entity_label": "AGERPRES",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 400
+  },
+  {
+    "entity": "autoritatea-electorala-permanenta",
+    "entity_label": "Autoritatea Electorala Permanenta",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 400
+  },
+  {
+    "entity": "consiliul-superior-magistraturii",
+    "entity_label": "CSM",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 400
+  },
+  {
+    "entity": "ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+    "entity_label": "Ministerul Muncii",
+    "economic_code": "58",
+    "economic_label": "Proiecte FEN 2020",
+    "propuneri_2026": 390
+  },
+  {
+    "entity": "consiliul-concurentei",
+    "entity_label": "Consiliul Concurentei",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 368
+  },
+  {
+    "entity": "academia-oamenilor-de-stiinta-din-romania",
+    "entity_label": "Academia Oamenilor de Stiinta",
+    "economic_code": "20",
+    "economic_label": "Bunuri si servicii",
+    "propuneri_2026": 356
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "economic_code": "30",
+    "economic_label": "Dobanzi",
+    "propuneri_2026": 353
+  },
+  {
+    "entity": "ssprdecembrie1989",
+    "entity_label": "Secretariatul de Stat pentru Revolutionari",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 321
+  },
+  {
+    "entity": "consiliul-concurentei",
+    "entity_label": "Consiliul Concurentei",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 300
+  },
+  {
+    "entity": "consiliul-monitorizare-implementare-conventie",
+    "entity_label": "Consiliul de Monitorizare",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 300
+  },
+  {
+    "entity": "consiliul-national-audiovizualului",
+    "entity_label": "CNA",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 300
+  },
+  {
+    "entity": "consiliul-national-studierea-arhivelor-securitatii",
+    "entity_label": "CNSAS",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 300
+  },
+  {
+    "entity": "curtea-constitutionala",
+    "entity_label": "Curtea Constitutionala",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 270
+  },
+  {
+    "entity": "academia-romana",
+    "entity_label": "Academia Romana",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 255
+  },
+  {
+    "entity": "avocatul-poporului",
+    "entity_label": "Avocatul Poporului",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 232
+  },
+  {
+    "entity": "consiliul-national-audiovizualului",
+    "entity_label": "CNA",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 199
+  },
+  {
+    "entity": "camera-deputatilor",
+    "entity_label": "Camera Deputatilor",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 185
+  },
+  {
+    "entity": "ministerul-public",
+    "entity_label": "Ministerul Public",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 178
+  },
+  {
+    "entity": "consiliul-superior-magistraturii",
+    "entity_label": "CSM",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 168
+  },
+  {
+    "entity": "consiliul-national-combaterea-discriminarii",
+    "entity_label": "CNCD",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 161
+  },
+  {
+    "entity": "ssprdecembrie1989",
+    "entity_label": "Secretariatul de Stat pentru Revolutionari",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 154
+  },
+  {
+    "entity": "autoritatea-administrarea-activelor-statului",
+    "entity_label": "AAAS",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 145
+  },
+  {
+    "entity": "oficiul-registrului-national-informatiilor-secrete-de-stat",
+    "entity_label": "ORNISS",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 144
+  },
+  {
+    "entity": "consiliul-legislativ",
+    "entity_label": "Consiliul Legislativ",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 135
+  },
+  {
+    "entity": "consiliul-legislativ",
+    "entity_label": "Consiliul Legislativ",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 101
+  },
+  {
+    "entity": "anrp",
+    "entity_label": "ANRP",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 100
+  },
+  {
+    "entity": "anspdcp",
+    "entity_label": "ANSPDCP",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 100
+  },
+  {
+    "entity": "avocatul-poporului",
+    "entity_label": "Avocatul Poporului",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 100
+  },
+  {
+    "entity": "consiliul-national-combaterea-discriminarii",
+    "entity_label": "CNCD",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 100
+  },
+  {
+    "entity": "consiliul-national-solutionare-contestatiilor",
+    "entity_label": "CNSC",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 100
+  },
+  {
+    "entity": "consiliul-national-solutionare-contestatiilor",
+    "entity_label": "CNSC",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 100
+  },
+  {
+    "entity": "oficiul-registrului-national-informatiilor-secrete-de-stat",
+    "entity_label": "ORNISS",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 100
+  },
+  {
+    "entity": "ssprdecembrie1989",
+    "entity_label": "Secretariatul de Stat pentru Revolutionari",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 100
+  },
+  {
+    "entity": "consiliul-national-studierea-arhivelor-securitatii",
+    "entity_label": "CNSAS",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 96
+  },
+  {
+    "entity": "agentia-nationala-integritate",
+    "entity_label": "Agentia Nationala de Integritate",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 75
+  },
+  {
+    "entity": "agentia-nationala-presaagerpres",
+    "entity_label": "AGERPRES",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 68
+  },
+  {
+    "entity": "agentia-nationala-presaagerpres",
+    "entity_label": "AGERPRES",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 56
+  },
+  {
+    "entity": "inalta-curte-de-casatie-si-justitie",
+    "entity_label": "Inalta Curte",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 54
+  },
+  {
+    "entity": "inalta-curte-de-casatie-si-justitie",
+    "entity_label": "Inalta Curte",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 54
+  },
+  {
+    "entity": "ministerul-public",
+    "entity_label": "Ministerul Public",
+    "economic_code": "58",
+    "economic_label": "Proiecte FEN 2020",
+    "propuneri_2026": 43
+  },
+  {
+    "entity": "spp",
+    "entity_label": "SPP",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 42
+  },
+  {
+    "entity": "curtea-conturi",
+    "entity_label": "Curtea de Conturi",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 33
+  },
+  {
+    "entity": "consiliul-economic-social",
+    "entity_label": "Consiliul Economic si Social",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 27
+  },
+  {
+    "entity": "ministerul-public",
+    "entity_label": "Ministerul Public",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 24
+  },
+  {
+    "entity": "consiliul-national-audiovizualului",
+    "entity_label": "CNA",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 23
+  },
+  {
+    "entity": "curtea-constitutionala",
+    "entity_label": "Curtea Constitutionala",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 20
+  },
+  {
+    "entity": "avocatul-poporului",
+    "entity_label": "Avocatul Poporului",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 17
+  },
+  {
+    "entity": "agentia-nationala-integritate",
+    "entity_label": "Agentia Nationala de Integritate",
+    "economic_code": "56",
+    "economic_label": "Proiecte FEN postaderare",
+    "propuneri_2026": 15
+  },
+  {
+    "entity": "curtea-constitutionala",
+    "entity_label": "Curtea Constitutionala",
+    "economic_code": "57",
+    "economic_label": "Asistenta sociala",
+    "propuneri_2026": 15
+  },
+  {
+    "entity": "autoritatea-electorala-permanenta",
+    "entity_label": "Autoritatea Electorala Permanenta",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 11
+  },
+  {
+    "entity": "consiliul-economic-social",
+    "entity_label": "Consiliul Economic si Social",
+    "economic_code": "59",
+    "economic_label": "Alte cheltuieli",
+    "propuneri_2026": 11
+  },
+  {
+    "entity": "consiliul-national-combaterea-discriminarii",
+    "entity_label": "CNCD",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 11
+  },
+  {
+    "entity": "consiliul-legislativ",
+    "entity_label": "Consiliul Legislativ",
+    "economic_code": "55",
+    "economic_label": "Alte transferuri",
+    "propuneri_2026": 10
+  },
+  {
+    "entity": "academia-oamenilor-de-stiinta-din-romania",
+    "entity_label": "Academia Oamenilor de Stiinta",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 4
+  },
+  {
+    "entity": "consiliul-superior-magistraturii",
+    "entity_label": "CSM",
+    "economic_code": "51",
+    "economic_label": "Transferuri intre unitati",
+    "propuneri_2026": 4
+  },
+  {
+    "entity": "institutul-cultural-roman",
+    "entity_label": "Institutul Cultural Roman",
+    "economic_code": "71",
+    "economic_label": "Active nefinanciare",
+    "propuneri_2026": 1
+  }
+]

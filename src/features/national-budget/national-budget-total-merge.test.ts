@@ -3,7 +3,11 @@ import { describe, expect, it } from 'vitest'
 import type { AnalyticsFilterType } from '@/schemas/charts'
 import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
 
-import { buildTotalBudgetLineItemsFilter, mergeNationalBudgetSectionNodes } from './national-budget-total-merge'
+import {
+  buildTotalBudgetLineItemsFilter,
+  filterSectionsIncludedInInformativeTotal,
+  mergeNationalBudgetSectionNodes,
+} from './national-budget-total-merge'
 
 const baseFilter: AnalyticsFilterType = {
   account_category: 'ch',
@@ -134,5 +138,20 @@ describe('buildTotalBudgetLineItemsFilter', () => {
       economic_prefixes: undefined,
       functional_prefixes: undefined,
     })
+  })
+})
+
+describe('filterSectionsIncludedInInformativeTotal', () => {
+  it('excludes supplementary document sections from the informative total', () => {
+    const sections = [
+      { section: { includeInTotal: true }, id: '1' },
+      { section: { includeInTotal: false }, id: 'document-fen' },
+      { section: {}, id: '2' },
+    ]
+
+    expect(filterSectionsIncludedInInformativeTotal(sections)).toEqual([
+      { section: { includeInTotal: true }, id: '1' },
+      { section: {}, id: '2' },
+    ])
   })
 })

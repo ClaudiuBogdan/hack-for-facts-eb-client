@@ -1,0 +1,19 @@
+{
+  "credite_bugetare": {
+    "realizari_2024": 432389656,
+    "executie_preliminata_2025": 500854887,
+    "propuneri_2026": 527413262,
+    "estimari_2027": 501946089,
+    "estimari_2028": 506264766,
+    "estimari_2029": 493586216
+  },
+  "credite_angajament": {
+    "realizari_2024": 0,
+    "executie_preliminata_2025": 644315215,
+    "propuneri_2026": 712594671,
+    "estimari_2027": 485067314,
+    "estimari_2028": 508354742,
+    "estimari_2029": 455322151
+  },
+  "entity_count": 55
+}

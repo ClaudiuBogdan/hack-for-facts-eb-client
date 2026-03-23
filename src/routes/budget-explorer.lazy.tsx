@@ -43,6 +43,7 @@ import {
 import { getFormulaRulesForSector } from '@/features/national-budget/national-budget-formula-rules'
 import {
   buildTotalBudgetLineItemsFilter,
+  filterSectionsIncludedInInformativeTotal,
   mergeNationalBudgetSectionNodes,
 } from '@/features/national-budget/national-budget-total-merge'
 import type { NationalBudgetAccountCategory, NationalBudgetSectorDefinition, NationalBudgetTransferFilter } from '@/features/national-budget/national-budget-types'
@@ -79,6 +80,7 @@ type BudgetExplorerSectionDefinition = {
   badge: string
   order: number
   sectorIdForRules?: string
+  includeInTotal?: boolean
   baseFilter: AnalyticsFilterType
 }
 
@@ -452,6 +454,7 @@ function BudgetExplorerPage() {
         label: config.label,
         badge: config.badge,
         order: config.order,
+        includeInTotal: false,
         baseFilter: {
           ...baseSectorFilter,
           budget_sector_ids: config.budgetSectorIdsByAccountCategory[accountCategory],
@@ -468,6 +471,7 @@ function BudgetExplorerPage() {
       badge: sector.badge,
       order: sector.order,
       sectorIdForRules: sector.id,
+      includeInTotal: true,
       baseFilter: buildNationalBudgetSectorBaseFilter(effectiveFilter, sector.id, { fundingSourceIdsByKey }),
     }))
 
@@ -528,14 +532,18 @@ function BudgetExplorerPage() {
   }, [effectiveFilter.account_category, search.transferFilter, sectionDefinitions, sectorQueries])
 
   const totalSection = useMemo(() => {
-    if (sectorSections.length === 0) return null
+    const totalEligibleSections = filterSectionsIncludedInInformativeTotal(sectorSections)
+    if (totalEligibleSections.length === 0) return null
 
-    const mergedNodes = mergeNationalBudgetSectionNodes(sectorSections.map((sectionData) => sectionData.nodes))
+    const mergedNodes = mergeNationalBudgetSectionNodes(totalEligibleSections.map((sectionData) => sectionData.nodes))
     const totalLineItemsFilter = buildTotalBudgetLineItemsFilter({
       baseFilter: effectiveFilter,
-      sectionLineItemsFilters: sectorSections.map((sectionData) => sectionData.lineItemsFilter),
+      sectionLineItemsFilters: totalEligibleSections.map((sectionData) => sectionData.lineItemsFilter),
       transferFilter: search.transferFilter,
     })
+    const helperText = search.transferFilter === 'no-transfers'
+      ? 'Totalul însumează cele 5 componente principale vizibile, fără secțiunile documentare suplimentare și fără transferurile interne. Rămâne un agregat informativ, nu consolidarea oficială BGC.'
+      : 'Totalul însumează cele 5 componente principale vizibile, fără secțiunile documentare suplimentare. Cu transferurile interne incluse, poate depăși consolidarea oficială BGC.'
 
     return {
       id: 'total-budget',
@@ -545,9 +553,9 @@ function BudgetExplorerPage() {
       nodes: mergedNodes,
       excludeEconomicPrefixes: totalLineItemsFilter.exclude?.economic_prefixes ?? [],
       excludeFunctionalPrefixes: totalLineItemsFilter.exclude?.functional_prefixes ?? [],
-      isLoading: sectorSections.some((sectionData) => sectionData.isLoading),
-      hasError: sectorSections.some((sectionData) => sectionData.hasError),
-      helperText: 'Totalul este un agregat informativ al secțiunilor vizibile și nu reprezintă consolidarea oficială BGC.',
+      isLoading: totalEligibleSections.some((sectionData) => sectionData.isLoading),
+      hasError: totalEligibleSections.some((sectionData) => sectionData.hasError),
+      helperText,
     }
   }, [effectiveFilter, search.transferFilter, sectorSections])
 

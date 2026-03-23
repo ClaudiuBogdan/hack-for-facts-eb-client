@@ -1,0 +1,912 @@
+[
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "functional_code": "5500",
+    "functional_label": "Datorie publica si imprumuturi",
+    "propuneri_2026": 60433649
+  },
+  {
+    "entity": "ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+    "entity_label": "Ministerul Muncii",
+    "functional_code": "6800",
+    "functional_label": "Asigurari si asistenta sociala",
+    "propuneri_2026": 60329653
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "entity_label": "Ministerul Educatiei",
+    "functional_code": "6500",
+    "functional_label": "Invatamant",
+    "propuneri_2026": 54604456
+  },
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 47963033
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "functional_code": "8400",
+    "functional_label": "Transporturi",
+    "propuneri_2026": 41101378
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "entity_label": "Ministerul Apararii Nationale",
+    "functional_code": "6000",
+    "functional_label": "Aparare",
+    "propuneri_2026": 34277037
+  },
+  {
+    "entity": "ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+    "entity_label": "Ministerul Muncii",
+    "functional_code": "5600",
+    "functional_label": "Transferuri intre nivele",
+    "propuneri_2026": 31419238
+  },
+  {
+    "entity": "ministerul-agriculturii-dezvoltarii-rurale",
+    "entity_label": "Ministerul Agriculturii",
+    "functional_code": "8300",
+    "functional_label": "Agricultura",
+    "propuneri_2026": 26094343
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "functional_code": "6100",
+    "functional_label": "Ordine publica si siguranta",
+    "propuneri_2026": 24319154
+  },
+  {
+    "entity": "ministerul-sanatatii",
+    "entity_label": "Ministerul Sanatatii",
+    "functional_code": "6600",
+    "functional_label": "Sanatate",
+    "propuneri_2026": 22277697
+  },
+  {
+    "entity": "ministerul-dezvoltarii-lucrarilorpublice-adm",
+    "entity_label": "Ministerul Dezvoltarii",
+    "functional_code": "7000",
+    "functional_label": "Locuinte si dezvoltare publica",
+    "propuneri_2026": 11111083
+  },
+  {
+    "entity": "ministerul-dezvoltarii-lucrarilorpublice-adm",
+    "entity_label": "Ministerul Dezvoltarii",
+    "functional_code": "8000",
+    "functional_label": "Actiuni economice generale",
+    "propuneri_2026": 11098544
+  },
+  {
+    "entity": "ministerul-investitiilor-proiectelor-europene",
+    "entity_label": "Min. Investitiilor si Proiectelor Europene",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 10843167
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "functional_code": "6800",
+    "functional_label": "Asigurari si asistenta sociala",
+    "propuneri_2026": 9465190
+  },
+  {
+    "entity": "ministerul-finantelor",
+    "entity_label": "Ministerul Finantelor",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 9180347
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "entity_label": "Ministerul Apararii Nationale",
+    "functional_code": "6800",
+    "functional_label": "Asigurari si asistenta sociala",
+    "propuneri_2026": 6433148
+  },
+  {
+    "entity": "inalta-curte-de-casatie-si-justitie",
+    "entity_label": "Inalta Curte",
+    "functional_code": "6100",
+    "functional_label": "Ordine publica si siguranta",
+    "propuneri_2026": 4992246
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "functional_code": "7400",
+    "functional_label": "Protectia mediului",
+    "propuneri_2026": 3975284
+  },
+  {
+    "entity": "ministerul-justitiei",
+    "entity_label": "Ministerul Justitiei",
+    "functional_code": "6100",
+    "functional_label": "Ordine publica si siguranta",
+    "propuneri_2026": 3872555
+  },
+  {
+    "entity": "sri",
+    "entity_label": "SRI",
+    "functional_code": "6100",
+    "functional_label": "Ordine publica si siguranta",
+    "propuneri_2026": 3869315
+  },
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "functional_code": "8000",
+    "functional_label": "Actiuni economice generale",
+    "propuneri_2026": 2960963
+  },
+  {
+    "entity": "ministerul-energiei",
+    "entity_label": "Ministerul Energiei",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 2947260
+  },
+  {
+    "entity": "ministerul-public",
+    "entity_label": "Ministerul Public",
+    "functional_code": "6100",
+    "functional_label": "Ordine publica si siguranta",
+    "propuneri_2026": 2873808
+  },
+  {
+    "entity": "ministerul-finantelor",
+    "entity_label": "Ministerul Finantelor",
+    "functional_code": "5400",
+    "functional_label": "Alte servicii publice generale",
+    "propuneri_2026": 2858263
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "entity_label": "Ministerul Educatiei",
+    "functional_code": "5300",
+    "functional_label": "Cercetare fundamentala",
+    "propuneri_2026": 2701420
+  },
+  {
+    "entity": "ss-culte",
+    "entity_label": "Secretariatul de Stat pentru Culte",
+    "functional_code": "6700",
+    "functional_label": "Cultura, recreere si religie",
+    "propuneri_2026": 2661674
+  },
+  {
+    "entity": "ministerul-energiei",
+    "entity_label": "Ministerul Energiei",
+    "functional_code": "8000",
+    "functional_label": "Actiuni economice generale",
+    "propuneri_2026": 2009481
+  },
+  {
+    "entity": "ministerul-investitiilor-proiectelor-europene",
+    "entity_label": "Min. Investitiilor si Proiectelor Europene",
+    "functional_code": "7400",
+    "functional_label": "Protectia mediului",
+    "propuneri_2026": 1563148
+  },
+  {
+    "entity": "ministerul-afacerilor-externe",
+    "entity_label": "Ministerul Afacerilor Externe",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 1533483
+  },
+  {
+    "entity": "sts",
+    "entity_label": "STS",
+    "functional_code": "6100",
+    "functional_label": "Ordine publica si siguranta",
+    "propuneri_2026": 1516972
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "functional_code": "8500",
+    "functional_label": "Comunicatii",
+    "propuneri_2026": 1475223
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "entity_label": "Ministerul Apararii Nationale",
+    "functional_code": "6500",
+    "functional_label": "Invatamant",
+    "propuneri_2026": 1442327
+  },
+  {
+    "entity": "ansanitara-veterinara-siguranta-alimentelor",
+    "entity_label": "ANSVSA",
+    "functional_code": "8300",
+    "functional_label": "Agricultura",
+    "propuneri_2026": 1438061
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "entity_label": "Ministerul Apararii Nationale",
+    "functional_code": "6100",
+    "functional_label": "Ordine publica si siguranta",
+    "propuneri_2026": 1420564
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "functional_code": "8000",
+    "functional_label": "Actiuni economice generale",
+    "propuneri_2026": 1327184
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 1322762
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "functional_code": "7000",
+    "functional_label": "Locuinte si dezvoltare publica",
+    "propuneri_2026": 1306349
+  },
+  {
+    "entity": "ministerul-culturii",
+    "entity_label": "Ministerul Culturii",
+    "functional_code": "6700",
+    "functional_label": "Cultura, recreere si religie",
+    "propuneri_2026": 1298028
+  },
+  {
+    "entity": "sri",
+    "entity_label": "SRI",
+    "functional_code": "6800",
+    "functional_label": "Asigurari si asistenta sociala",
+    "propuneri_2026": 1230725
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "functional_code": "6700",
+    "functional_label": "Cultura, recreere si religie",
+    "propuneri_2026": 1097436
+  },
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "entity_label": "Min. Finantelor - Actiuni Generale",
+    "functional_code": "5400",
+    "functional_label": "Alte servicii publice generale",
+    "propuneri_2026": 1068097
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "functional_code": "6800",
+    "functional_label": "Asigurari si asistenta sociala",
+    "propuneri_2026": 800000
+  },
+  {
+    "entity": "sie",
+    "entity_label": "SIE",
+    "functional_code": "6100",
+    "functional_label": "Ordine publica si siguranta",
+    "propuneri_2026": 798000
+  },
+  {
+    "entity": "curtea-conturi",
+    "entity_label": "Curtea de Conturi",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 557791
+  },
+  {
+    "entity": "camera-deputatilor",
+    "entity_label": "Camera Deputatilor",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 502778
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "functional_code": "8200",
+    "functional_label": "Industria extractiva",
+    "propuneri_2026": 500000
+  },
+  {
+    "entity": "societatea-romana-televiziune",
+    "entity_label": "TVR",
+    "functional_code": "6700",
+    "functional_label": "Cultura, recreere si religie",
+    "propuneri_2026": 500000
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "entity_label": "Ministerul Apararii Nationale",
+    "functional_code": "6600",
+    "functional_label": "Sanatate",
+    "propuneri_2026": 494659
+  },
+  {
+    "entity": "academia-romana",
+    "entity_label": "Academia Romana",
+    "functional_code": "5300",
+    "functional_label": "Cercetare fundamentala",
+    "propuneri_2026": 485939
+  },
+  {
+    "entity": "societatea-romana-radiodifuziune",
+    "entity_label": "SRR",
+    "functional_code": "6700",
+    "functional_label": "Cultura, recreere si religie",
+    "propuneri_2026": 470000
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 463232
+  },
+  {
+    "entity": "spp",
+    "entity_label": "SPP",
+    "functional_code": "6100",
+    "functional_label": "Ordine publica si siguranta",
+    "propuneri_2026": 403722
+  },
+  {
+    "entity": "ministerul-energiei",
+    "entity_label": "Ministerul Energiei",
+    "functional_code": "8100",
+    "functional_label": "Combustibili si energie",
+    "propuneri_2026": 386325
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "functional_code": "6500",
+    "functional_label": "Invatamant",
+    "propuneri_2026": 367994
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "functional_code": "8300",
+    "functional_label": "Agricultura",
+    "propuneri_2026": 327217
+  },
+  {
+    "entity": "ministerul-agriculturii-dezvoltarii-rurale",
+    "entity_label": "Ministerul Agriculturii",
+    "functional_code": "8600",
+    "functional_label": "Cercetare si dezvoltare economica",
+    "propuneri_2026": 322251
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 315511
+  },
+  {
+    "entity": "ministerul-dezvoltarii-lucrarilorpublice-adm",
+    "entity_label": "Ministerul Dezvoltarii",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 286164
+  },
+  {
+    "entity": "ministerul-justitiei",
+    "entity_label": "Ministerul Justitiei",
+    "functional_code": "5400",
+    "functional_label": "Alte servicii publice generale",
+    "propuneri_2026": 276400
+  },
+  {
+    "entity": "senatul-romaniei",
+    "entity_label": "Senatul Romaniei",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 232481
+  },
+  {
+    "entity": "ministerul-investitiilor-proiectelor-europene",
+    "entity_label": "Min. Investitiilor si Proiectelor Europene",
+    "functional_code": "8000",
+    "functional_label": "Actiuni economice generale",
+    "propuneri_2026": 220902
+  },
+  {
+    "entity": "autoritatea-electorala-permanenta",
+    "entity_label": "Autoritatea Electorala Permanenta",
+    "functional_code": "5400",
+    "functional_label": "Alte servicii publice generale",
+    "propuneri_2026": 219200
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "entity_label": "Ministerul Mediului",
+    "functional_code": "8000",
+    "functional_label": "Actiuni economice generale",
+    "propuneri_2026": 208543
+  },
+  {
+    "entity": "consiliul-superior-magistraturii",
+    "entity_label": "CSM",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 152574
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "entity_label": "Ministerul Afacerilor Interne",
+    "functional_code": "6700",
+    "functional_label": "Cultura, recreere si religie",
+    "propuneri_2026": 146393
+  },
+  {
+    "entity": "anrsps",
+    "entity_label": "ANRSPS",
+    "functional_code": "6100",
+    "functional_label": "Ordine publica si siguranta",
+    "propuneri_2026": 138400
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "entity_label": "Ministerul Apararii Nationale",
+    "functional_code": "6700",
+    "functional_label": "Cultura, recreere si religie",
+    "propuneri_2026": 131054
+  },
+  {
+    "entity": "consiliul-superior-magistraturii",
+    "entity_label": "CSM",
+    "functional_code": "6500",
+    "functional_label": "Invatamant",
+    "propuneri_2026": 117543
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "functional_code": "8500",
+    "functional_label": "Comunicatii",
+    "propuneri_2026": 116066
+  },
+  {
+    "entity": "ministerul-energiei",
+    "entity_label": "Ministerul Energiei",
+    "functional_code": "8600",
+    "functional_label": "Cercetare si dezvoltare economica",
+    "propuneri_2026": 110000
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "functional_code": "6700",
+    "functional_label": "Cultura, recreere si religie",
+    "propuneri_2026": 107000
+  },
+  {
+    "entity": "consiliul-concurentei",
+    "entity_label": "Consiliul Concurentei",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 99009
+  },
+  {
+    "entity": "administratia-prezidentiala",
+    "entity_label": "Administratia Prezidentiala",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 91978
+  },
+  {
+    "entity": "ministerul-agriculturii-dezvoltarii-rurale",
+    "entity_label": "Ministerul Agriculturii",
+    "functional_code": "8000",
+    "functional_label": "Actiuni economice generale",
+    "propuneri_2026": 87040
+  },
+  {
+    "entity": "sri",
+    "entity_label": "SRI",
+    "functional_code": "6500",
+    "functional_label": "Invatamant",
+    "propuneri_2026": 82000
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "entity_label": "Ministerul Educatiei",
+    "functional_code": "6700",
+    "functional_label": "Cultura, recreere si religie",
+    "propuneri_2026": 74136
+  },
+  {
+    "entity": "autoritatea-electorala-permanenta",
+    "entity_label": "Autoritatea Electorala Permanenta",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 70511
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "functional_code": "8000",
+    "functional_label": "Actiuni economice generale",
+    "propuneri_2026": 69287
+  },
+  {
+    "entity": "academia-romana",
+    "entity_label": "Academia Romana",
+    "functional_code": "6600",
+    "functional_label": "Sanatate",
+    "propuneri_2026": 68580
+  },
+  {
+    "entity": "anrsps",
+    "entity_label": "ANRSPS",
+    "functional_code": "8000",
+    "functional_label": "Actiuni economice generale",
+    "propuneri_2026": 52000
+  },
+  {
+    "entity": "camera-deputatilor",
+    "entity_label": "Camera Deputatilor",
+    "functional_code": "6800",
+    "functional_label": "Asigurari si asistenta sociala",
+    "propuneri_2026": 48000
+  },
+  {
+    "entity": "consiliul-national-audiovizualului",
+    "entity_label": "CNA",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 47772
+  },
+  {
+    "entity": "ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+    "entity_label": "Ministerul Muncii",
+    "functional_code": "6500",
+    "functional_label": "Invatamant",
+    "propuneri_2026": 47000
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "functional_code": "6800",
+    "functional_label": "Asigurari si asistenta sociala",
+    "propuneri_2026": 45000
+  },
+  {
+    "entity": "agentia-nationala-integritate",
+    "entity_label": "Agentia Nationala de Integritate",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 44689
+  },
+  {
+    "entity": "curtea-constitutionala",
+    "entity_label": "Curtea Constitutionala",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 44350
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "functional_code": "8700",
+    "functional_label": "Alte actiuni economice",
+    "propuneri_2026": 44000
+  },
+  {
+    "entity": "ministerul-afacerilor-externe",
+    "entity_label": "Ministerul Afacerilor Externe",
+    "functional_code": "6700",
+    "functional_label": "Cultura, recreere si religie",
+    "propuneri_2026": 42360
+  },
+  {
+    "entity": "consiliul-national-combaterea-discriminarii",
+    "entity_label": "CNCD",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 35622
+  },
+  {
+    "entity": "institutul-cultural-roman",
+    "entity_label": "Institutul Cultural Roman",
+    "functional_code": "6700",
+    "functional_label": "Cultura, recreere si religie",
+    "propuneri_2026": 35100
+  },
+  {
+    "entity": "anrp",
+    "entity_label": "ANRP",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 30700
+  },
+  {
+    "entity": "agentia-nationala-presaagerpres",
+    "entity_label": "AGERPRES",
+    "functional_code": "6700",
+    "functional_label": "Cultura, recreere si religie",
+    "propuneri_2026": 27874
+  },
+  {
+    "entity": "consiliul-national-studierea-arhivelor-securitatii",
+    "entity_label": "CNSAS",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 27846
+  },
+  {
+    "entity": "ministerul-justitiei",
+    "entity_label": "Ministerul Justitiei",
+    "functional_code": "6800",
+    "functional_label": "Asigurari si asistenta sociala",
+    "propuneri_2026": 25553
+  },
+  {
+    "entity": "autoritatea-administrarea-activelor-statului",
+    "entity_label": "AAAS",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 25045
+  },
+  {
+    "entity": "avocatul-poporului",
+    "entity_label": "Avocatul Poporului",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 24249
+  },
+  {
+    "entity": "consiliul-national-solutionare-contestatiilor",
+    "entity_label": "CNSC",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 22109
+  },
+  {
+    "entity": "senatul-romaniei",
+    "entity_label": "Senatul Romaniei",
+    "functional_code": "6800",
+    "functional_label": "Asigurari si asistenta sociala",
+    "propuneri_2026": 21000
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "entity_label": "Ministerul Apararii Nationale",
+    "functional_code": "5400",
+    "functional_label": "Alte servicii publice generale",
+    "propuneri_2026": 19323
+  },
+  {
+    "entity": "ss-culte",
+    "entity_label": "Secretariatul de Stat pentru Culte",
+    "functional_code": "6500",
+    "functional_label": "Invatamant",
+    "propuneri_2026": 15537
+  },
+  {
+    "entity": "oficiul-registrului-national-informatiilor-secrete-de-stat",
+    "entity_label": "ORNISS",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 15122
+  },
+  {
+    "entity": "consiliul-economic-social",
+    "entity_label": "Consiliul Economic si Social",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 14886
+  },
+  {
+    "entity": "consiliul-legislativ",
+    "entity_label": "Consiliul Legislativ",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 14869
+  },
+  {
+    "entity": "ministerul-afacerilor-externe",
+    "entity_label": "Ministerul Afacerilor Externe",
+    "functional_code": "6500",
+    "functional_label": "Invatamant",
+    "propuneri_2026": 13300
+  },
+  {
+    "entity": "academia-oamenilor-de-stiinta-din-romania",
+    "entity_label": "Academia Oamenilor de Stiinta",
+    "functional_code": "5300",
+    "functional_label": "Cercetare fundamentala",
+    "propuneri_2026": 11136
+  },
+  {
+    "entity": "administratia-prezidentiala",
+    "entity_label": "Administratia Prezidentiala",
+    "functional_code": "6700",
+    "functional_label": "Cultura, recreere si religie",
+    "propuneri_2026": 10992
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "functional_code": "8100",
+    "functional_label": "Combustibili si energie",
+    "propuneri_2026": 10000
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "functional_code": "6100",
+    "functional_label": "Ordine publica si siguranta",
+    "propuneri_2026": 9988
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "entity_label": "Ministerul Apararii Nationale",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 9712
+  },
+  {
+    "entity": "ministerul-justitiei",
+    "entity_label": "Ministerul Justitiei",
+    "functional_code": "6600",
+    "functional_label": "Sanatate",
+    "propuneri_2026": 7500
+  },
+  {
+    "entity": "anspdcp",
+    "entity_label": "ANSPDCP",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 6286
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "functional_code": "6600",
+    "functional_label": "Sanatate",
+    "propuneri_2026": 6000
+  },
+  {
+    "entity": "sts",
+    "entity_label": "STS",
+    "functional_code": "6800",
+    "functional_label": "Asigurari si asistenta sociala",
+    "propuneri_2026": 5671
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "entity_label": "Ministerul Apararii Nationale",
+    "functional_code": "7000",
+    "functional_label": "Locuinte si dezvoltare publica",
+    "propuneri_2026": 5000
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "entity_label": "Ministerul Economiei",
+    "functional_code": "8600",
+    "functional_label": "Cercetare si dezvoltare economica",
+    "propuneri_2026": 5000
+  },
+  {
+    "entity": "academia-romana",
+    "entity_label": "Academia Romana",
+    "functional_code": "6700",
+    "functional_label": "Cultura, recreere si religie",
+    "propuneri_2026": 4958
+  },
+  {
+    "entity": "consiliul-monitorizare-implementare-conventie",
+    "entity_label": "Consiliul de Monitorizare",
+    "functional_code": "5100",
+    "functional_label": "Servicii publice generale",
+    "propuneri_2026": 4850
+  },
+  {
+    "entity": "sie",
+    "entity_label": "SIE",
+    "functional_code": "6800",
+    "functional_label": "Asigurari si asistenta sociala",
+    "propuneri_2026": 4520
+  },
+  {
+    "entity": "ssprdecembrie1989",
+    "entity_label": "Secretariatul de Stat pentru Revolutionari",
+    "functional_code": "6800",
+    "functional_label": "Asigurari si asistenta sociala",
+    "propuneri_2026": 4125
+  },
+  {
+    "entity": "ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+    "entity_label": "Ministerul Muncii",
+    "functional_code": "6700",
+    "functional_label": "Cultura, recreere si religie",
+    "propuneri_2026": 4108
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "entity_label": "Ministerul Educatiei",
+    "functional_code": "6600",
+    "functional_label": "Sanatate",
+    "propuneri_2026": 2500
+  },
+  {
+    "entity": "spp",
+    "entity_label": "SPP",
+    "functional_code": "6800",
+    "functional_label": "Asigurari si asistenta sociala",
+    "propuneri_2026": 1570
+  },
+  {
+    "entity": "academia-romana",
+    "entity_label": "Academia Romana",
+    "functional_code": "6800",
+    "functional_label": "Asigurari si asistenta sociala",
+    "propuneri_2026": 588
+  },
+  {
+    "entity": "administratia-prezidentiala",
+    "entity_label": "Administratia Prezidentiala",
+    "functional_code": "5400",
+    "functional_label": "Alte servicii publice generale",
+    "propuneri_2026": 500
+  },
+  {
+    "entity": "ministerul-public",
+    "entity_label": "Ministerul Public",
+    "functional_code": "6800",
+    "functional_label": "Asigurari si asistenta sociala",
+    "propuneri_2026": 178
+  },
+  {
+    "entity": "ministerul-investitiilor-proiectelor-europene",
+    "entity_label": "Min. Investitiilor si Proiectelor Europene",
+    "functional_code": "5400",
+    "functional_label": "Alte servicii publice generale",
+    "propuneri_2026": 150
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "entity_label": "Secretariatul General al Guvernului",
+    "functional_code": "8100",
+    "functional_label": "Combustibili si energie",
+    "propuneri_2026": 125
+  },
+  {
+    "entity": "inalta-curte-de-casatie-si-justitie",
+    "entity_label": "Inalta Curte",
+    "functional_code": "6800",
+    "functional_label": "Asigurari si asistenta sociala",
+    "propuneri_2026": 54
+  },
+  {
+    "entity": "inalta-curte-de-casatie-si-justitie",
+    "entity_label": "Inalta Curte",
+    "functional_code": "5400",
+    "functional_label": "Alte servicii publice generale",
+    "propuneri_2026": 17
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "entity_label": "Ministerul Transporturilor",
+    "functional_code": "5400",
+    "functional_label": "Alte servicii publice generale",
+    "propuneri_2026": 3
+  }
+]

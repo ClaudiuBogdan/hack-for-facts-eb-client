@@ -1,0 +1,867 @@
+[
+  {
+    "source": "Asigurari si asistenta sociala",
+    "target": "Asistenta sociala",
+    "value": 73823550
+  },
+  {
+    "source": "Datorie publica si imprumuturi",
+    "target": "Dobanzi",
+    "value": 58824484
+  },
+  {
+    "source": "Invatamant",
+    "target": "Cheltuieli de personal",
+    "value": 34941221
+  },
+  {
+    "source": "Ordine publica si siguranta",
+    "target": "Cheltuieli de personal",
+    "value": 31635449
+  },
+  {
+    "source": "Transferuri intre nivele",
+    "target": "Transferuri intre unitati",
+    "value": 31419238
+  },
+  {
+    "source": "Servicii publice generale",
+    "target": "Proiecte FEN postaderare",
+    "value": 23067549
+  },
+  {
+    "source": "Servicii publice generale",
+    "target": "Alte transferuri",
+    "value": 22623372
+  },
+  {
+    "source": "Agricultura",
+    "target": "Proiecte FEN postaderare",
+    "value": 19743058
+  },
+  {
+    "source": "Transporturi",
+    "target": "Proiecte FEN postaderare",
+    "value": 19600000
+  },
+  {
+    "source": "Aparare",
+    "target": "Active nefinanciare",
+    "value": 18918522
+  },
+  {
+    "source": "Servicii publice generale",
+    "target": "Proiecte asistenta financiara",
+    "value": 13396430
+  },
+  {
+    "source": "Aparare",
+    "target": "Cheltuieli de personal",
+    "value": 11218433
+  },
+  {
+    "source": "Actiuni economice generale",
+    "target": "Proiecte asistenta financiara",
+    "value": 9352385
+  },
+  {
+    "source": "Locuinte si dezvoltare publica",
+    "target": "Transferuri intre unitati",
+    "value": 8280000
+  },
+  {
+    "source": "Invatamant",
+    "target": "Transferuri intre unitati",
+    "value": 7998850
+  },
+  {
+    "source": "Servicii publice generale",
+    "target": "Proiecte FEN 2021-2027",
+    "value": 7884433
+  },
+  {
+    "source": "Servicii publice generale",
+    "target": "Cheltuieli de personal",
+    "value": 6958081
+  },
+  {
+    "source": "Sanatate",
+    "target": "Transferuri intre unitati",
+    "value": 6855570
+  },
+  {
+    "source": "Transporturi",
+    "target": "Proiecte asistenta financiara",
+    "value": 5943890
+  },
+  {
+    "source": "Invatamant",
+    "target": "Alte cheltuieli",
+    "value": 5780629
+  },
+  {
+    "source": "Sanatate",
+    "target": "Bunuri si servicii",
+    "value": 5710660
+  },
+  {
+    "source": "Invatamant",
+    "target": "Proiecte asistenta financiara",
+    "value": 5408000
+  },
+  {
+    "source": "Transporturi",
+    "target": "Proiecte FEN 2021-2027",
+    "value": 5000000
+  },
+  {
+    "source": "Transporturi",
+    "target": "Transferuri intre unitati",
+    "value": 4789000
+  },
+  {
+    "source": "Sanatate",
+    "target": "Proiecte asistenta financiara",
+    "value": 4500000
+  },
+  {
+    "source": "Agricultura",
+    "target": "Transferuri intre unitati",
+    "value": 4390993
+  },
+  {
+    "source": "Transporturi",
+    "target": "Subventii",
+    "value": 3503667
+  },
+  {
+    "source": "Cultura, recreere si religie",
+    "target": "Alte cheltuieli",
+    "value": 3394800
+  },
+  {
+    "source": "Ordine publica si siguranta",
+    "target": "Transferuri intre unitati",
+    "value": 3191067
+  },
+  {
+    "source": "Aparare",
+    "target": "Bunuri si servicii",
+    "value": 2864484
+  },
+  {
+    "source": "Alte servicii publice generale",
+    "target": "Alte cheltuieli",
+    "value": 2855019
+  },
+  {
+    "source": "Sanatate",
+    "target": "Cheltuieli de personal",
+    "value": 2522695
+  },
+  {
+    "source": "Locuinte si dezvoltare publica",
+    "target": "Alte transferuri",
+    "value": 2499400
+  },
+  {
+    "source": "Actiuni economice generale",
+    "target": "Subventii",
+    "value": 2470490
+  },
+  {
+    "source": "Ordine publica si siguranta",
+    "target": "Proiecte FEN postaderare",
+    "value": 2250055
+  },
+  {
+    "source": "Ordine publica si siguranta",
+    "target": "Bunuri si servicii",
+    "value": 2242203
+  },
+  {
+    "source": "Agricultura",
+    "target": "Subventii",
+    "value": 2200000
+  },
+  {
+    "source": "Ordine publica si siguranta",
+    "target": "Proiecte asistenta financiara",
+    "value": 2199793
+  },
+  {
+    "source": "Sanatate",
+    "target": "Proiecte FEN postaderare",
+    "value": 2000000
+  },
+  {
+    "source": "Protectia mediului",
+    "target": "Proiecte asistenta financiara",
+    "value": 1887154
+  },
+  {
+    "source": "Cultura, recreere si religie",
+    "target": "Transferuri intre unitati",
+    "value": 1781415
+  },
+  {
+    "source": "Actiuni economice generale",
+    "target": "Alte transferuri",
+    "value": 1723780
+  },
+  {
+    "source": "Cercetare fundamentala",
+    "target": "Alte transferuri",
+    "value": 1715510
+  },
+  {
+    "source": "Protectia mediului",
+    "target": "Proiecte FEN postaderare",
+    "value": 1688974
+  },
+  {
+    "source": "Ordine publica si siguranta",
+    "target": "Active nefinanciare",
+    "value": 1609145
+  },
+  {
+    "source": "Actiuni economice generale",
+    "target": "Proiecte FEN 2021-2027",
+    "value": 1500000
+  },
+  {
+    "source": "Comunicatii",
+    "target": "Proiecte asistenta financiara",
+    "value": 1370208
+  },
+  {
+    "source": "Servicii publice generale",
+    "target": "Bunuri si servicii",
+    "value": 1367204
+  },
+  {
+    "source": "Asigurari si asistenta sociala",
+    "target": "Proiecte FEN postaderare",
+    "value": 1329917
+  },
+  {
+    "source": "Actiuni economice generale",
+    "target": "Proiecte FEN postaderare",
+    "value": 1329484
+  },
+  {
+    "source": "Actiuni economice generale",
+    "target": "Imprumuturi",
+    "value": 1250000
+  },
+  {
+    "source": "Asigurari si asistenta sociala",
+    "target": "Transferuri intre unitati",
+    "value": 1177351
+  },
+  {
+    "source": "Cultura, recreere si religie",
+    "target": "Alte transferuri",
+    "value": 1094644
+  },
+  {
+    "source": "Protectia mediului",
+    "target": "Proiecte FEN 2021-2027",
+    "value": 1000000
+  },
+  {
+    "source": "Transporturi",
+    "target": "Cheltuieli judiciare",
+    "value": 1000000
+  },
+  {
+    "source": "Alte servicii publice generale",
+    "target": "Alte transferuri",
+    "value": 970875
+  },
+  {
+    "source": "Agricultura",
+    "target": "Cheltuieli de personal",
+    "value": 944707
+  },
+  {
+    "source": "Datorie publica si imprumuturi",
+    "target": "Rambursari de credite",
+    "value": 901765
+  },
+  {
+    "source": "Locuinte si dezvoltare publica",
+    "target": "Proiecte FEN postaderare",
+    "value": 866780
+  },
+  {
+    "source": "Asigurari si asistenta sociala",
+    "target": "Proiecte asistenta financiara",
+    "value": 834044
+  },
+  {
+    "source": "Servicii publice generale",
+    "target": "Proiecte FEN 2020",
+    "value": 805202
+  },
+  {
+    "source": "Sanatate",
+    "target": "Proiecte FEN 2021-2027",
+    "value": 800000
+  },
+  {
+    "source": "Aparare",
+    "target": "Alte transferuri",
+    "value": 718383
+  },
+  {
+    "source": "Invatamant",
+    "target": "Asistenta sociala",
+    "value": 712501
+  },
+  {
+    "source": "Cercetare fundamentala",
+    "target": "Proiecte asistenta financiara",
+    "value": 695485
+  },
+  {
+    "source": "Transporturi",
+    "target": "Alte transferuri",
+    "value": 600310
+  },
+  {
+    "source": "Datorie publica si imprumuturi",
+    "target": "Bunuri si servicii",
+    "value": 575125
+  },
+  {
+    "source": "Asigurari si asistenta sociala",
+    "target": "Cheltuieli de personal",
+    "value": 572100
+  },
+  {
+    "source": "Invatamant",
+    "target": "Proiecte FEN postaderare",
+    "value": 515922
+  },
+  {
+    "source": "Invatamant",
+    "target": "Proiecte FEN 2021-2027",
+    "value": 500000
+  },
+  {
+    "source": "Servicii publice generale",
+    "target": "Active nefinanciare",
+    "value": 492881
+  },
+  {
+    "source": "Ordine publica si siguranta",
+    "target": "Proiecte FEN 2021-2027",
+    "value": 487610
+  },
+  {
+    "source": "Aparare",
+    "target": "Transferuri intre unitati",
+    "value": 451948
+  },
+  {
+    "source": "Ordine publica si siguranta",
+    "target": "Cheltuieli judiciare",
+    "value": 415000
+  },
+  {
+    "source": "Sanatate",
+    "target": "Cheltuieli judiciare",
+    "value": 400000
+  },
+  {
+    "source": "Locuinte si dezvoltare publica",
+    "target": "Active nefinanciare",
+    "value": 399000
+  },
+  {
+    "source": "Protectia mediului",
+    "target": "Cheltuieli de personal",
+    "value": 398293
+  },
+  {
+    "source": "Combustibili si energie",
+    "target": "Alte transferuri",
+    "value": 396325
+  },
+  {
+    "source": "Alte servicii publice generale",
+    "target": "Bunuri si servicii",
+    "value": 366059
+  },
+  {
+    "source": "Asigurari si asistenta sociala",
+    "target": "Bunuri si servicii",
+    "value": 358434
+  },
+  {
+    "source": "Cercetare fundamentala",
+    "target": "Cheltuieli de personal",
+    "value": 342088
+  },
+  {
+    "source": "Invatamant",
+    "target": "Active nefinanciare",
+    "value": 322169
+  },
+  {
+    "source": "Cercetare si dezvoltare economica",
+    "target": "Transferuri intre unitati",
+    "value": 313202
+  },
+  {
+    "source": "Invatamant",
+    "target": "Bunuri si servicii",
+    "value": 304979
+  },
+  {
+    "source": "Protectia mediului",
+    "target": "Proiecte FEN 2020",
+    "value": 300678
+  },
+  {
+    "source": "Industria extractiva",
+    "target": "Active financiare",
+    "value": 300000
+  },
+  {
+    "source": "Transporturi",
+    "target": "Proiecte FEN 2020",
+    "value": 300000
+  },
+  {
+    "source": "Locuinte si dezvoltare publica",
+    "target": "Cheltuieli judiciare",
+    "value": 282278
+  },
+  {
+    "source": "Asigurari si asistenta sociala",
+    "target": "Alte cheltuieli",
+    "value": 233277
+  },
+  {
+    "source": "Actiuni economice generale",
+    "target": "Proiecte FEN 2020",
+    "value": 224952
+  },
+  {
+    "source": "Cercetare fundamentala",
+    "target": "Proiecte FEN 2020",
+    "value": 222604
+  },
+  {
+    "source": "Servicii publice generale",
+    "target": "Transferuri intre unitati",
+    "value": 213452
+  },
+  {
+    "source": "Agricultura",
+    "target": "Alte transferuri",
+    "value": 177177
+  },
+  {
+    "source": "Invatamant",
+    "target": "Cheltuieli judiciare",
+    "value": 160000
+  },
+  {
+    "source": "Alte servicii publice generale",
+    "target": "Active financiare",
+    "value": 150000
+  },
+  {
+    "source": "Protectia mediului",
+    "target": "Alte transferuri",
+    "value": 144079
+  },
+  {
+    "source": "Cultura, recreere si religie",
+    "target": "Cheltuieli de personal",
+    "value": 134470
+  },
+  {
+    "source": "Transporturi",
+    "target": "Rambursari de credite",
+    "value": 131423
+  },
+  {
+    "source": "Actiuni economice generale",
+    "target": "Bunuri si servicii",
+    "value": 126085
+  },
+  {
+    "source": "Agricultura",
+    "target": "Bunuri si servicii",
+    "value": 122250
+  },
+  {
+    "source": "Cercetare si dezvoltare economica",
+    "target": "Alte transferuri",
+    "value": 115000
+  },
+  {
+    "source": "Transporturi",
+    "target": "Active financiare",
+    "value": 114068
+  },
+  {
+    "source": "Aparare",
+    "target": "Asistenta sociala",
+    "value": 104355
+  },
+  {
+    "source": "Agricultura",
+    "target": "Proiecte FEN 2020",
+    "value": 103968
+  },
+  {
+    "source": "Industria extractiva",
+    "target": "Subventii",
+    "value": 100000
+  },
+  {
+    "source": "Industria extractiva",
+    "target": "Alte transferuri",
+    "value": 100000
+  },
+  {
+    "source": "Alte servicii publice generale",
+    "target": "Fonduri de rezerva",
+    "value": 100000
+  },
+  {
+    "source": "Cultura, recreere si religie",
+    "target": "Bunuri si servicii",
+    "value": 93993
+  },
+  {
+    "source": "Comunicatii",
+    "target": "Proiecte FEN 2021-2027",
+    "value": 87540
+  },
+  {
+    "source": "Agricultura",
+    "target": "Active nefinanciare",
+    "value": 85942
+  },
+  {
+    "source": "Locuinte si dezvoltare publica",
+    "target": "Proiecte FEN 2020",
+    "value": 85069
+  },
+  {
+    "source": "Ordine publica si siguranta",
+    "target": "Alte cheltuieli",
+    "value": 83281
+  },
+  {
+    "source": "Cercetare fundamentala",
+    "target": "Proiecte FEN postaderare",
+    "value": 81509
+  },
+  {
+    "source": "Comunicatii",
+    "target": "Transferuri intre unitati",
+    "value": 75000
+  },
+  {
+    "source": "Ordine publica si siguranta",
+    "target": "Proiecte FEN 2020",
+    "value": 73899
+  },
+  {
+    "source": "Datorie publica si imprumuturi",
+    "target": "Transferuri intre unitati",
+    "value": 73275
+  },
+  {
+    "source": "Servicii publice generale",
+    "target": "Alte cheltuieli",
+    "value": 73081
+  },
+  {
+    "source": "Transporturi",
+    "target": "Cheltuieli de personal",
+    "value": 65000
+  },
+  {
+    "source": "Cultura, recreere si religie",
+    "target": "Proiecte FEN postaderare",
+    "value": 61624
+  },
+  {
+    "source": "Asigurari si asistenta sociala",
+    "target": "Subventii",
+    "value": 60000
+  },
+  {
+    "source": "Datorie publica si imprumuturi",
+    "target": "Alte cheltuieli",
+    "value": 59000
+  },
+  {
+    "source": "Agricultura",
+    "target": "Alte cheltuieli",
+    "value": 56035
+  },
+  {
+    "source": "Cercetare fundamentala",
+    "target": "Alte cheltuieli",
+    "value": 51881
+  },
+  {
+    "source": "Servicii publice generale",
+    "target": "Subventii",
+    "value": 47000
+  },
+  {
+    "source": "Protectia mediului",
+    "target": "Bunuri si servicii",
+    "value": 46220
+  },
+  {
+    "source": "Invatamant",
+    "target": "Alte transferuri",
+    "value": 45886
+  },
+  {
+    "source": "Cercetare fundamentala",
+    "target": "Proiecte FEN 2021-2027",
+    "value": 42202
+  },
+  {
+    "source": "Actiuni economice generale",
+    "target": "Active nefinanciare",
+    "value": 41000
+  },
+  {
+    "source": "Transporturi",
+    "target": "Alte cheltuieli",
+    "value": 33690
+  },
+  {
+    "source": "Protectia mediului",
+    "target": "Active nefinanciare",
+    "value": 33500
+  },
+  {
+    "source": "Cultura, recreere si religie",
+    "target": "Cheltuieli judiciare",
+    "value": 30000
+  },
+  {
+    "source": "Cercetare fundamentala",
+    "target": "Bunuri si servicii",
+    "value": 29666
+  },
+  {
+    "source": "Sanatate",
+    "target": "Active nefinanciare",
+    "value": 29278
+  },
+  {
+    "source": "Comunicatii",
+    "target": "Cheltuieli de personal",
+    "value": 28202
+  },
+  {
+    "source": "Agricultura",
+    "target": "Proiecte asistenta financiara",
+    "value": 27491
+  },
+  {
+    "source": "Sanatate",
+    "target": "Alte cheltuieli",
+    "value": 26000
+  },
+  {
+    "source": "Alte actiuni economice",
+    "target": "Bunuri si servicii",
+    "value": 24000
+  },
+  {
+    "source": "Ordine publica si siguranta",
+    "target": "Alte transferuri",
+    "value": 20279
+  },
+  {
+    "source": "Alte actiuni economice",
+    "target": "Transferuri intre unitati",
+    "value": 20000
+  },
+  {
+    "source": "Asigurari si asistenta sociala",
+    "target": "Active nefinanciare",
+    "value": 18610
+  },
+  {
+    "source": "Protectia mediului",
+    "target": "Alte cheltuieli",
+    "value": 18501
+  },
+  {
+    "source": "Protectia mediului",
+    "target": "Transferuri intre unitati",
+    "value": 18000
+  },
+  {
+    "source": "Actiuni economice generale",
+    "target": "Transferuri intre unitati",
+    "value": 15768
+  },
+  {
+    "source": "Cultura, recreere si religie",
+    "target": "Proiecte FEN 2021-2027",
+    "value": 15000
+  },
+  {
+    "source": "Cercetare fundamentala",
+    "target": "Transferuri intre unitati",
+    "value": 13546
+  },
+  {
+    "source": "Comunicatii",
+    "target": "Proiecte FEN postaderare",
+    "value": 13147
+  },
+  {
+    "source": "Sanatate",
+    "target": "Alte transferuri",
+    "value": 12251
+  },
+  {
+    "source": "Transporturi",
+    "target": "Bunuri si servicii",
+    "value": 11997
+  },
+  {
+    "source": "Comunicatii",
+    "target": "Alte transferuri",
+    "value": 10124
+  },
+  {
+    "source": "Locuinte si dezvoltare publica",
+    "target": "Bunuri si servicii",
+    "value": 9500
+  },
+  {
+    "source": "Transporturi",
+    "target": "Dobanzi",
+    "value": 7333
+  },
+  {
+    "source": "Asigurari si asistenta sociala",
+    "target": "Alte transferuri",
+    "value": 7302
+  },
+  {
+    "source": "Cercetare si dezvoltare economica",
+    "target": "Proiecte asistenta financiara",
+    "value": 7251
+  },
+  {
+    "source": "Agricultura",
+    "target": "Cheltuieli judiciare",
+    "value": 7000
+  },
+  {
+    "source": "Ordine publica si siguranta",
+    "target": "Asistenta sociala",
+    "value": 6943
+  },
+  {
+    "source": "Cultura, recreere si religie",
+    "target": "Active nefinanciare",
+    "value": 5167
+  },
+  {
+    "source": "Cercetare fundamentala",
+    "target": "Active nefinanciare",
+    "value": 4004
+  },
+  {
+    "source": "Comunicatii",
+    "target": "Proiecte FEN 2020",
+    "value": 3237
+  },
+  {
+    "source": "Protectia mediului",
+    "target": "Rambursari de credite",
+    "value": 2680
+  },
+  {
+    "source": "Comunicatii",
+    "target": "Active nefinanciare",
+    "value": 1966
+  },
+  {
+    "source": "Cercetare si dezvoltare economica",
+    "target": "Proiecte FEN 2020",
+    "value": 1798
+  },
+  {
+    "source": "Servicii publice generale",
+    "target": "Asistenta sociala",
+    "value": 1503
+  },
+  {
+    "source": "Comunicatii",
+    "target": "Bunuri si servicii",
+    "value": 1380
+  },
+  {
+    "source": "Agricultura",
+    "target": "Imprumuturi",
+    "value": 1000
+  },
+  {
+    "source": "Transporturi",
+    "target": "Active nefinanciare",
+    "value": 1000
+  },
+  {
+    "source": "Aparare",
+    "target": "Alte cheltuieli",
+    "value": 912
+  },
+  {
+    "source": "Comunicatii",
+    "target": "Alte cheltuieli",
+    "value": 485
+  },
+  {
+    "source": "Sanatate",
+    "target": "Proiecte FEN 2020",
+    "value": 446
+  },
+  {
+    "source": "Locuinte si dezvoltare publica",
+    "target": "Subventii",
+    "value": 405
+  },
+  {
+    "source": "Asigurari si asistenta sociala",
+    "target": "Proiecte FEN 2020",
+    "value": 390
+  },
+  {
+    "source": "Protectia mediului",
+    "target": "Dobanzi",
+    "value": 353
+  },
+  {
+    "source": "Combustibili si energie",
+    "target": "Bunuri si servicii",
+    "value": 125
+  },
+  {
+    "source": "Sanatate",
+    "target": "Asistenta sociala",
+    "value": 36
+  }
+]

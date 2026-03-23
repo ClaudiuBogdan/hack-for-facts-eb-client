@@ -1,0 +1,497 @@
+[
+  {
+    "entity": "ministerul-finantelor-actiunigenerale",
+    "label": "Min. Finantelor - Actiuni Generale",
+    "propuneri_2026": 112425742,
+    "executie_preliminata_2025": 87149508,
+    "yoy_change_pct": 29,
+    "realizari_2024": 61512876,
+    "estimari_2027": 108625593
+  },
+  {
+    "entity": "ministerul-muncii-familiei-tineretului-solidaritatii-sociale",
+    "label": "Ministerul Muncii",
+    "propuneri_2026": 91799999,
+    "executie_preliminata_2025": 99253582,
+    "yoy_change_pct": -7.51,
+    "realizari_2024": 81900843,
+    "estimari_2027": 95776634
+  },
+  {
+    "entity": "ministerul-educatiei-cercetarii",
+    "label": "Ministerul Educatiei",
+    "propuneri_2026": 57382512,
+    "executie_preliminata_2025": 57171725,
+    "yoy_change_pct": 0.37,
+    "realizari_2024": 52797493,
+    "estimari_2027": 54050961
+  },
+  {
+    "entity": "ministerul-apararii-nationale",
+    "label": "Ministerul Apararii Nationale",
+    "propuneri_2026": 44232824,
+    "executie_preliminata_2025": 38283086,
+    "yoy_change_pct": 15.54,
+    "realizari_2024": 34820423,
+    "estimari_2027": 56131517
+  },
+  {
+    "entity": "ministerul-transporturilor-infrastructurii",
+    "label": "Ministerul Transporturilor",
+    "propuneri_2026": 42014381,
+    "executie_preliminata_2025": 43213161,
+    "yoy_change_pct": -2.77,
+    "realizari_2024": 36098533,
+    "estimari_2027": 34295163
+  },
+  {
+    "entity": "ministerul-afacerilor-interne",
+    "label": "Ministerul Afacerilor Interne",
+    "propuneri_2026": 34761963,
+    "executie_preliminata_2025": 33426296,
+    "yoy_change_pct": 4,
+    "realizari_2024": 32761761,
+    "estimari_2027": 35087121
+  },
+  {
+    "entity": "ministerul-agriculturii-dezvoltarii-rurale",
+    "label": "Ministerul Agriculturii",
+    "propuneri_2026": 26503634,
+    "executie_preliminata_2025": 26324109,
+    "yoy_change_pct": 0.68,
+    "realizari_2024": 27260773,
+    "estimari_2027": 25286830
+  },
+  {
+    "entity": "ministerul-dezvoltarii-lucrarilorpublice-adm",
+    "label": "Ministerul Dezvoltarii",
+    "propuneri_2026": 22495791,
+    "executie_preliminata_2025": 28491805,
+    "yoy_change_pct": -21.04,
+    "realizari_2024": 24530373,
+    "estimari_2027": 11448683
+  },
+  {
+    "entity": "ministerul-sanatatii",
+    "label": "Ministerul Sanatatii",
+    "propuneri_2026": 22277697,
+    "executie_preliminata_2025": 26068749,
+    "yoy_change_pct": -14.54,
+    "realizari_2024": 20134651,
+    "estimari_2027": 20416810
+  },
+  {
+    "entity": "ministerul-investitiilor-proiectelor-europene",
+    "label": "Min. Investitiilor si Proiectelor Europene",
+    "propuneri_2026": 12627367,
+    "executie_preliminata_2025": 7330711,
+    "yoy_change_pct": 72.25,
+    "realizari_2024": 11410104,
+    "estimari_2027": 13921889
+  },
+  {
+    "entity": "ministerul-finantelor",
+    "label": "Ministerul Finantelor",
+    "propuneri_2026": 12038610,
+    "executie_preliminata_2025": 11119339,
+    "yoy_change_pct": 8.27,
+    "realizari_2024": 8677137,
+    "estimari_2027": 12162333
+  },
+  {
+    "entity": "ministerul-mediului-apelor-padurilor",
+    "label": "Ministerul Mediului",
+    "propuneri_2026": 5817393,
+    "executie_preliminata_2025": 5206324,
+    "yoy_change_pct": 11.74,
+    "realizari_2024": 3069505,
+    "estimari_2027": 1923344
+  },
+  {
+    "entity": "ministerul-energiei",
+    "label": "Ministerul Energiei",
+    "propuneri_2026": 5453066,
+    "executie_preliminata_2025": 4633475,
+    "yoy_change_pct": 17.69,
+    "realizari_2024": 5327833,
+    "estimari_2027": 598316
+  },
+  {
+    "entity": "sri",
+    "label": "SRI",
+    "propuneri_2026": 5182040,
+    "executie_preliminata_2025": 4561240,
+    "yoy_change_pct": 13.61,
+    "realizari_2024": 3965347,
+    "estimari_2027": 4847624
+  },
+  {
+    "entity": "inalta-curte-de-casatie-si-justitie",
+    "label": "Inalta Curte",
+    "propuneri_2026": 4992317,
+    "executie_preliminata_2025": 3347807,
+    "yoy_change_pct": 49.12,
+    "realizari_2024": 4634599,
+    "estimari_2027": 3652768
+  },
+  {
+    "entity": "ministerul-justitiei",
+    "label": "Ministerul Justitiei",
+    "propuneri_2026": 4182008,
+    "executie_preliminata_2025": 4104100,
+    "yoy_change_pct": 1.9,
+    "realizari_2024": 3489347,
+    "estimari_2027": 4070248
+  },
+  {
+    "entity": "ministerul-economiei-digitalizarii-antreprenoriat-turism",
+    "label": "Ministerul Economiei",
+    "propuneri_2026": 3676918,
+    "executie_preliminata_2025": 2309793,
+    "yoy_change_pct": 59.19,
+    "realizari_2024": 1370857,
+    "estimari_2027": 1472542
+  },
+  {
+    "entity": "ministerul-public",
+    "label": "Ministerul Public",
+    "propuneri_2026": 2873986,
+    "executie_preliminata_2025": 1737389,
+    "yoy_change_pct": 65.42,
+    "realizari_2024": 2579443,
+    "estimari_2027": 1845910
+  },
+  {
+    "entity": "ss-culte",
+    "label": "Secretariatul de Stat pentru Culte",
+    "propuneri_2026": 2677211,
+    "executie_preliminata_2025": 2830665,
+    "yoy_change_pct": -5.42,
+    "realizari_2024": 2049761,
+    "estimari_2027": 2637243
+  },
+  {
+    "entity": "secretariatul-general-guvernului",
+    "label": "Secretariatul General al Guvernului",
+    "propuneri_2026": 2660664,
+    "executie_preliminata_2025": 2043805,
+    "yoy_change_pct": 30.18,
+    "realizari_2024": 2374387,
+    "estimari_2027": 2163643
+  },
+  {
+    "entity": "ministerul-afacerilor-externe",
+    "label": "Ministerul Afacerilor Externe",
+    "propuneri_2026": 1589143,
+    "executie_preliminata_2025": 1683363,
+    "yoy_change_pct": -5.6,
+    "realizari_2024": 1793247,
+    "estimari_2027": 1669127
+  },
+  {
+    "entity": "sts",
+    "label": "STS",
+    "propuneri_2026": 1522643,
+    "executie_preliminata_2025": 2157966,
+    "yoy_change_pct": -29.44,
+    "realizari_2024": 1604200,
+    "estimari_2027": 1338794
+  },
+  {
+    "entity": "ansanitara-veterinara-siguranta-alimentelor",
+    "label": "ANSVSA",
+    "propuneri_2026": 1438061,
+    "executie_preliminata_2025": 1393152,
+    "yoy_change_pct": 3.22,
+    "realizari_2024": 1164791,
+    "estimari_2027": 1466194
+  },
+  {
+    "entity": "ministerul-culturii",
+    "label": "Ministerul Culturii",
+    "propuneri_2026": 1298028,
+    "executie_preliminata_2025": 1288729,
+    "yoy_change_pct": 0.72,
+    "realizari_2024": 1316326,
+    "estimari_2027": 1476021
+  },
+  {
+    "entity": "sie",
+    "label": "SIE",
+    "propuneri_2026": 802520,
+    "executie_preliminata_2025": 799964,
+    "yoy_change_pct": 0.32,
+    "realizari_2024": 764750,
+    "estimari_2027": 801434
+  },
+  {
+    "entity": "academia-romana",
+    "label": "Academia Romana",
+    "propuneri_2026": 560065,
+    "executie_preliminata_2025": 507561,
+    "yoy_change_pct": 10.34,
+    "realizari_2024": 479594,
+    "estimari_2027": 501413
+  },
+  {
+    "entity": "curtea-conturi",
+    "label": "Curtea de Conturi",
+    "propuneri_2026": 557791,
+    "executie_preliminata_2025": 493949,
+    "yoy_change_pct": 12.92,
+    "realizari_2024": 415352,
+    "estimari_2027": 570274
+  },
+  {
+    "entity": "camera-deputatilor",
+    "label": "Camera Deputatilor",
+    "propuneri_2026": 550778,
+    "executie_preliminata_2025": 532185,
+    "yoy_change_pct": 3.49,
+    "realizari_2024": 603826,
+    "estimari_2027": 584974
+  },
+  {
+    "entity": "societatea-romana-televiziune",
+    "label": "TVR",
+    "propuneri_2026": 500000,
+    "executie_preliminata_2025": 483855,
+    "yoy_change_pct": 3.34,
+    "realizari_2024": 473152,
+    "estimari_2027": 532500
+  },
+  {
+    "entity": "societatea-romana-radiodifuziune",
+    "label": "SRR",
+    "propuneri_2026": 470000,
+    "executie_preliminata_2025": 445700,
+    "yoy_change_pct": 5.45,
+    "realizari_2024": 432688,
+    "estimari_2027": 500550
+  },
+  {
+    "entity": "spp",
+    "label": "SPP",
+    "propuneri_2026": 405292,
+    "executie_preliminata_2025": 450272,
+    "yoy_change_pct": -9.99,
+    "realizari_2024": 383730,
+    "estimari_2027": 422394
+  },
+  {
+    "entity": "autoritatea-electorala-permanenta",
+    "label": "Autoritatea Electorala Permanenta",
+    "propuneri_2026": 289711,
+    "executie_preliminata_2025": 770268,
+    "yoy_change_pct": -62.39,
+    "realizari_2024": 1033480,
+    "estimari_2027": 297467
+  },
+  {
+    "entity": "consiliul-superior-magistraturii",
+    "label": "CSM",
+    "propuneri_2026": 270117,
+    "executie_preliminata_2025": 255817,
+    "yoy_change_pct": 5.59,
+    "realizari_2024": 300978,
+    "estimari_2027": 283947
+  },
+  {
+    "entity": "senatul-romaniei",
+    "label": "Senatul Romaniei",
+    "propuneri_2026": 253481,
+    "executie_preliminata_2025": 252420,
+    "yoy_change_pct": 0.42,
+    "realizari_2024": 291461,
+    "estimari_2027": 260162
+  },
+  {
+    "entity": "anrsps",
+    "label": "ANRSPS",
+    "propuneri_2026": 190400,
+    "executie_preliminata_2025": 188816,
+    "yoy_change_pct": 0.84,
+    "realizari_2024": 0,
+    "estimari_2027": 202646
+  },
+  {
+    "entity": "administratia-prezidentiala",
+    "label": "Administratia Prezidentiala",
+    "propuneri_2026": 103470,
+    "executie_preliminata_2025": 71468,
+    "yoy_change_pct": 44.78,
+    "realizari_2024": 114567,
+    "estimari_2027": 86649
+  },
+  {
+    "entity": "consiliul-concurentei",
+    "label": "Consiliul Concurentei",
+    "propuneri_2026": 99009,
+    "executie_preliminata_2025": 73618,
+    "yoy_change_pct": 34.49,
+    "realizari_2024": 73126,
+    "estimari_2027": 84396
+  },
+  {
+    "entity": "consiliul-national-audiovizualului",
+    "label": "CNA",
+    "propuneri_2026": 47772,
+    "executie_preliminata_2025": 21083,
+    "yoy_change_pct": 126.59,
+    "realizari_2024": 17183,
+    "estimari_2027": 88036
+  },
+  {
+    "entity": "agentia-nationala-integritate",
+    "label": "Agentia Nationala de Integritate",
+    "propuneri_2026": 44689,
+    "executie_preliminata_2025": 71346,
+    "yoy_change_pct": -37.36,
+    "realizari_2024": 26491,
+    "estimari_2027": 22766
+  },
+  {
+    "entity": "curtea-constitutionala",
+    "label": "Curtea Constitutionala",
+    "propuneri_2026": 44350,
+    "executie_preliminata_2025": 42451,
+    "yoy_change_pct": 4.47,
+    "realizari_2024": 56781,
+    "estimari_2027": 43998
+  },
+  {
+    "entity": "consiliul-national-combaterea-discriminarii",
+    "label": "CNCD",
+    "propuneri_2026": 35622,
+    "executie_preliminata_2025": 10814,
+    "yoy_change_pct": 229.41,
+    "realizari_2024": 10241,
+    "estimari_2027": 13342
+  },
+  {
+    "entity": "institutul-cultural-roman",
+    "label": "Institutul Cultural Roman",
+    "propuneri_2026": 35100,
+    "executie_preliminata_2025": 35398,
+    "yoy_change_pct": -0.84,
+    "realizari_2024": 38737,
+    "estimari_2027": 35252
+  },
+  {
+    "entity": "anrp",
+    "label": "ANRP",
+    "propuneri_2026": 30700,
+    "executie_preliminata_2025": 30324,
+    "yoy_change_pct": 1.24,
+    "realizari_2024": 31511,
+    "estimari_2027": 32697
+  },
+  {
+    "entity": "agentia-nationala-presaagerpres",
+    "label": "AGERPRES",
+    "propuneri_2026": 27874,
+    "executie_preliminata_2025": 27912,
+    "yoy_change_pct": -0.14,
+    "realizari_2024": 28411,
+    "estimari_2027": 29687
+  },
+  {
+    "entity": "consiliul-national-studierea-arhivelor-securitatii",
+    "label": "CNSAS",
+    "propuneri_2026": 27846,
+    "executie_preliminata_2025": 28415,
+    "yoy_change_pct": -2,
+    "realizari_2024": 28050,
+    "estimari_2027": 29657
+  },
+  {
+    "entity": "autoritatea-administrarea-activelor-statului",
+    "label": "AAAS",
+    "propuneri_2026": 25045,
+    "executie_preliminata_2025": 22793,
+    "yoy_change_pct": 9.88,
+    "realizari_2024": 32808,
+    "estimari_2027": 23799
+  },
+  {
+    "entity": "avocatul-poporului",
+    "label": "Avocatul Poporului",
+    "propuneri_2026": 24249,
+    "executie_preliminata_2025": 24968,
+    "yoy_change_pct": -2.88,
+    "realizari_2024": 25239,
+    "estimari_2027": 25722
+  },
+  {
+    "entity": "consiliul-national-solutionare-contestatiilor",
+    "label": "CNSC",
+    "propuneri_2026": 22109,
+    "executie_preliminata_2025": 17381,
+    "yoy_change_pct": 27.2,
+    "realizari_2024": 18698,
+    "estimari_2027": 37409
+  },
+  {
+    "entity": "oficiul-registrului-national-informatiilor-secrete-de-stat",
+    "label": "ORNISS",
+    "propuneri_2026": 15122,
+    "executie_preliminata_2025": 14295,
+    "yoy_change_pct": 5.79,
+    "realizari_2024": 12185,
+    "estimari_2027": 14089
+  },
+  {
+    "entity": "consiliul-economic-social",
+    "label": "Consiliul Economic si Social",
+    "propuneri_2026": 14886,
+    "executie_preliminata_2025": 10985,
+    "yoy_change_pct": 35.51,
+    "realizari_2024": 10949,
+    "estimari_2027": 13488
+  },
+  {
+    "entity": "consiliul-legislativ",
+    "label": "Consiliul Legislativ",
+    "propuneri_2026": 14869,
+    "executie_preliminata_2025": 14758,
+    "yoy_change_pct": 0.75,
+    "realizari_2024": 15398,
+    "estimari_2027": 14960
+  },
+  {
+    "entity": "academia-oamenilor-de-stiinta-din-romania",
+    "label": "Academia Oamenilor de Stiinta",
+    "propuneri_2026": 11136,
+    "executie_preliminata_2025": 11132,
+    "yoy_change_pct": 0.04,
+    "realizari_2024": 11264,
+    "estimari_2027": 11444
+  },
+  {
+    "entity": "anspdcp",
+    "label": "ANSPDCP",
+    "propuneri_2026": 6286,
+    "executie_preliminata_2025": 5901,
+    "yoy_change_pct": 6.52,
+    "realizari_2024": 5598,
+    "estimari_2027": 6498
+  },
+  {
+    "entity": "consiliul-monitorizare-implementare-conventie",
+    "label": "Consiliul de Monitorizare",
+    "propuneri_2026": 4850,
+    "executie_preliminata_2025": 5090,
+    "yoy_change_pct": -4.72,
+    "realizari_2024": 4837,
+    "estimari_2027": 4840
+  },
+  {
+    "entity": "ssprdecembrie1989",
+    "label": "Secretariatul de Stat pentru Revolutionari",
+    "propuneri_2026": 4125,
+    "executie_preliminata_2025": 4069,
+    "yoy_change_pct": 1.38,
+    "realizari_2024": 3961,
+    "estimari_2027": 4291
+  }
+]

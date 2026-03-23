@@ -1,0 +1,212 @@
+[
+  {
+    "code": "6800",
+    "label": "Asigurari si asistenta sociala",
+    "realizari_2024": 74166558,
+    "executie_preliminata_2025": 77473046,
+    "propuneri_2026": 78414975,
+    "estimari_2027": 81474859,
+    "estimari_2028": 84029418,
+    "estimari_2029": 84849731
+  },
+  {
+    "code": "5100",
+    "label": "Servicii publice generale",
+    "realizari_2024": 40940883,
+    "executie_preliminata_2025": 51287414,
+    "propuneri_2026": 76930188,
+    "estimari_2027": 64183031,
+    "estimari_2028": 62697830,
+    "estimari_2029": 60822955
+  },
+  {
+    "code": "5500",
+    "label": "Datorie publica si imprumuturi",
+    "realizari_2024": 37418534,
+    "executie_preliminata_2025": 50099356,
+    "propuneri_2026": 60433649,
+    "estimari_2027": 65529742,
+    "estimari_2028": 63257391,
+    "estimari_2029": 62554422
+  },
+  {
+    "code": "6500",
+    "label": "Invatamant",
+    "realizari_2024": 54397327,
+    "executie_preliminata_2025": 56928873,
+    "propuneri_2026": 56690157,
+    "estimari_2027": 54468924,
+    "estimari_2028": 56299064,
+    "estimari_2029": 55322935
+  },
+  {
+    "code": "6100",
+    "label": "Ordine publica si siguranta",
+    "realizari_2024": 38831796,
+    "executie_preliminata_2025": 39809017,
+    "propuneri_2026": 44214724,
+    "estimari_2027": 41069742,
+    "estimari_2028": 41558230,
+    "estimari_2029": 40969763
+  },
+  {
+    "code": "8400",
+    "label": "Transporturi",
+    "realizari_2024": 35140017,
+    "executie_preliminata_2025": 41973047,
+    "propuneri_2026": 41101378,
+    "estimari_2027": 32994920,
+    "estimari_2028": 28195358,
+    "estimari_2029": 10560083
+  },
+  {
+    "code": "6000",
+    "label": "Aparare",
+    "realizari_2024": 26263362,
+    "executie_preliminata_2025": 29187251,
+    "propuneri_2026": 34277037,
+    "estimari_2027": 44362247,
+    "estimari_2028": 52172240,
+    "estimari_2029": 59508493
+  },
+  {
+    "code": "5600",
+    "label": "Transferuri intre nivele",
+    "realizari_2024": 28397909,
+    "executie_preliminata_2025": 46413233,
+    "propuneri_2026": 31419238,
+    "estimari_2027": 34571044,
+    "estimari_2028": 35944083,
+    "estimari_2029": 35084908
+  },
+  {
+    "code": "8300",
+    "label": "Agricultura",
+    "realizari_2024": 28307010,
+    "executie_preliminata_2025": 27895588,
+    "propuneri_2026": 27859621,
+    "estimari_2027": 26667465,
+    "estimari_2028": 26935236,
+    "estimari_2029": 21360706
+  },
+  {
+    "code": "6600",
+    "label": "Sanatate",
+    "realizari_2024": 16583030,
+    "executie_preliminata_2025": 19402062,
+    "propuneri_2026": 22856936,
+    "estimari_2027": 21156655,
+    "estimari_2028": 21234533,
+    "estimari_2029": 20004772
+  },
+  {
+    "code": "8000",
+    "label": "Actiuni economice generale",
+    "realizari_2024": 13299399,
+    "executie_preliminata_2025": 13413127,
+    "propuneri_2026": 18033944,
+    "estimari_2027": 2848801,
+    "estimari_2028": 2331169,
+    "estimari_2029": 2525774
+  },
+  {
+    "code": "7000",
+    "label": "Locuinte si dezvoltare publica",
+    "realizari_2024": 21374942,
+    "executie_preliminata_2025": 20004611,
+    "propuneri_2026": 12422432,
+    "estimari_2027": 11536811,
+    "estimari_2028": 10274844,
+    "estimari_2029": 16778753
+  },
+  {
+    "code": "6700",
+    "label": "Cultura, recreere si religie",
+    "realizari_2024": 5944183,
+    "executie_preliminata_2025": 6588244,
+    "propuneri_2026": 6611113,
+    "estimari_2027": 6938754,
+    "estimari_2028": 7179352,
+    "estimari_2029": 7173506
+  },
+  {
+    "code": "7400",
+    "label": "Protectia mediului",
+    "realizari_2024": 3913362,
+    "executie_preliminata_2025": 6805191,
+    "propuneri_2026": 5538432,
+    "estimari_2027": 6435944,
+    "estimari_2028": 6194726,
+    "estimari_2029": 8116921
+  },
+  {
+    "code": "5400",
+    "label": "Alte servicii publice generale",
+    "realizari_2024": 4509947,
+    "executie_preliminata_2025": 6200196,
+    "propuneri_2026": 4441953,
+    "estimari_2027": 4137791,
+    "estimari_2028": 4272852,
+    "estimari_2029": 4273377
+  },
+  {
+    "code": "5300",
+    "label": "Cercetare fundamentala",
+    "realizari_2024": 430120,
+    "executie_preliminata_2025": 2551168,
+    "propuneri_2026": 3198495,
+    "estimari_2027": 2369614,
+    "estimari_2028": 2439186,
+    "estimari_2029": 2431582
+  },
+  {
+    "code": "8500",
+    "label": "Comunicatii",
+    "realizari_2024": 27636,
+    "executie_preliminata_2025": 585392,
+    "propuneri_2026": 1591289,
+    "estimari_2027": 117820,
+    "estimari_2028": 116341,
+    "estimari_2029": 118014
+  },
+  {
+    "code": "8200",
+    "label": "Industria extractiva",
+    "realizari_2024": 542655,
+    "executie_preliminata_2025": 1041951,
+    "propuneri_2026": 500000,
+    "estimari_2027": 190850,
+    "estimari_2028": 193918,
+    "estimari_2029": 193918
+  },
+  {
+    "code": "8600",
+    "label": "Cercetare si dezvoltare economica",
+    "realizari_2024": 410093,
+    "executie_preliminata_2025": 414928,
+    "propuneri_2026": 437251,
+    "estimari_2027": 487127,
+    "estimari_2028": 554947,
+    "estimari_2029": 571290
+  },
+  {
+    "code": "8100",
+    "label": "Combustibili si energie",
+    "realizari_2024": 1455090,
+    "executie_preliminata_2025": 2756060,
+    "propuneri_2026": 396450,
+    "estimari_2027": 365773,
+    "estimari_2028": 342635,
+    "estimari_2029": 322900
+  },
+  {
+    "code": "8700",
+    "label": "Alte actiuni economice",
+    "realizari_2024": 35803,
+    "executie_preliminata_2025": 25132,
+    "propuneri_2026": 44000,
+    "estimari_2027": 38175,
+    "estimari_2028": 41413,
+    "estimari_2029": 41413
+  }
+]

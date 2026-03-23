@@ -18,6 +18,7 @@ import { Route as EntityAnalyticsRouteImport } from './routes/entity-analytics'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
 import { Route as BugeteLocale2026RouteImport } from './routes/bugete-locale-2026'
+import { Route as BugetNational2026RouteImport } from './routes/buget-national-2026'
 import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
@@ -108,6 +109,13 @@ const BugeteLocale2026Route = BugeteLocale2026RouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/bugete-locale-2026.lazy').then((d) => d.Route),
+)
+const BugetNational2026Route = BugetNational2026RouteImport.update({
+  id: '/buget-national-2026',
+  path: '/buget-national-2026',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/buget-national-2026.lazy').then((d) => d.Route),
 )
 const BudgetExplorerRoute = BudgetExplorerRouteImport.update({
   id: '/budget-explorer',
@@ -409,6 +417,7 @@ const PrimarieCuiBugetProvocariModuleSlugChallengeSlugStepSlugRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/budget-explorer': typeof BudgetExplorerRoute
+  '/buget-national-2026': typeof BugetNational2026Route
   '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
   '/cookie-policy': typeof CookiePolicyRoute
   '/cookies': typeof CookiesRoute
@@ -461,6 +470,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/budget-explorer': typeof BudgetExplorerRoute
+  '/buget-national-2026': typeof BugetNational2026Route
   '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
   '/cookie-policy': typeof CookiePolicyRoute
   '/cookies': typeof CookiesRoute
@@ -509,6 +519,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/budget-explorer': typeof BudgetExplorerRoute
+  '/buget-national-2026': typeof BugetNational2026Route
   '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
   '/cookie-policy': typeof CookiePolicyRoute
   '/cookies': typeof CookiesRoute
@@ -563,6 +574,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/budget-explorer'
+    | '/buget-national-2026'
     | '/bugete-locale-2026'
     | '/cookie-policy'
     | '/cookies'
@@ -615,6 +627,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/budget-explorer'
+    | '/buget-national-2026'
     | '/bugete-locale-2026'
     | '/cookie-policy'
     | '/cookies'
@@ -662,6 +675,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/budget-explorer'
+    | '/buget-national-2026'
     | '/bugete-locale-2026'
     | '/cookie-policy'
     | '/cookies'
@@ -715,6 +729,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BudgetExplorerRoute: typeof BudgetExplorerRoute
+  BugetNational2026Route: typeof BugetNational2026Route
   BugeteLocale2026Route: typeof BugeteLocale2026RouteWithChildren
   CookiePolicyRoute: typeof CookiePolicyRoute
   CookiesRoute: typeof CookiesRoute
@@ -805,6 +820,13 @@ declare module '@tanstack/react-router' {
       path: '/bugete-locale-2026'
       fullPath: '/bugete-locale-2026'
       preLoaderRoute: typeof BugeteLocale2026RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/buget-national-2026': {
+      id: '/buget-national-2026'
+      path: '/buget-national-2026'
+      fullPath: '/buget-national-2026'
+      preLoaderRoute: typeof BugetNational2026RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/budget-explorer': {
@@ -1211,6 +1233,7 @@ const EntitiesCuiRouteWithChildren = EntitiesCuiRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BudgetExplorerRoute: BudgetExplorerRoute,
+  BugetNational2026Route: BugetNational2026Route,
   BugeteLocale2026Route: BugeteLocale2026RouteWithChildren,
   CookiePolicyRoute: CookiePolicyRoute,
   CookiesRoute: CookiesRoute,

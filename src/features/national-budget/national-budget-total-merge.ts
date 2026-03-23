@@ -9,6 +9,12 @@ type BuildTotalBudgetLineItemsFilterOptions = {
   transferFilter: NationalBudgetTransferFilter
 }
 
+type InformativeTotalSection = {
+  section: {
+    includeInTotal?: boolean
+  }
+}
+
 function hasValue(value: unknown): boolean {
   if (Array.isArray(value)) return value.length > 0
   return value !== undefined
@@ -58,6 +64,10 @@ export function mergeNationalBudgetSectionNodes(sectionNodes: AggregatedNode[][]
   }
 
   return Array.from(nodeByCompositeKey.values())
+}
+
+export function filterSectionsIncludedInInformativeTotal<T extends InformativeTotalSection>(sections: T[]): T[] {
+  return sections.filter((sectionData) => sectionData.section.includeInTotal !== false)
 }
 
 export function buildTotalBudgetLineItemsFilter({
