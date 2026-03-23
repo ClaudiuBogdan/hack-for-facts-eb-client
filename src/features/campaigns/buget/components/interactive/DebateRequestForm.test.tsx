@@ -14,7 +14,7 @@ const formState = {
     submissionPath: 'send_yourself' | 'request_platform' | null
     submittedAt: string | null
   },
-  phase: 'idle' as 'idle' | 'resolved',
+  phase: 'idle' as 'idle' | 'pending' | 'resolved',
   isSubmitted: false,
   isCompleted: false,
   challengeStatus: 'not_started',
@@ -91,7 +91,7 @@ describe('DebateRequestForm', () => {
       formState.savedValue = null
       formState.phase = 'idle'
       formState.isSubmitted = false
-      formState.challengeStatus = 'in_progress'
+      formState.challengeStatus = 'not_started'
       formState.reviewStatus = null
       formState.reviewFeedbackText = null
       formState.submittedVariant = 'pending_review'

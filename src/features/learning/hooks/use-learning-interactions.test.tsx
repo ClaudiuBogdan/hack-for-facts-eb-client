@@ -10,6 +10,8 @@ import {
   useQuizInteraction,
   useSalaryCalculatorInteraction,
 } from './use-learning-interactions'
+import { useCustomInteraction } from './interactions/use-custom-interaction'
+import { useLearningProgress } from './use-learning-progress'
 import {
   createLearningActivePathRecord,
   createLearningOnboardingRecord,
@@ -50,6 +52,14 @@ function readProgress(): LearningGuestProgress {
     throw new Error('Expected learning progress in storage')
   }
   return JSON.parse(raw) as LearningGuestProgress
+}
+
+function readEvents(): LearningProgressEvent[] {
+  const raw = window.localStorage.getItem(EVENTS_KEY)
+  if (!raw) {
+    throw new Error('Expected learning progress events in storage')
+  }
+  return JSON.parse(raw) as LearningProgressEvent[]
 }
 
 function buildProgress(overrides: Partial<LearningGuestProgress> = {}): LearningGuestProgress {
@@ -289,6 +299,74 @@ describe('use-learning-interactions', () => {
       expect(stored.interactiveState.recordsByKey['quiz-1::global']?.interactionId).toBe('quiz-1')
       expect(stored.interactiveState.recordsByKey['quiz-2::global']).toEqual(pendingRecord)
     })
+  })
+
+  it('writes pending records without evaluation when submitInteractive is used', async () => {
+    seedProgress(buildProgress())
+
+    const { result } = renderHook(() => useLearningProgress(), { wrapper })
+
+    await act(async () => {
+      await result.current.submitInteractive({
+        definition: {
+          id: 'custom-submit',
+          lessonId: 'lesson-1',
+          kind: 'custom',
+          scopePolicy: 'global',
+          completionRule: { type: 'resolved' },
+        },
+        value: {
+          kind: 'json',
+          json: {
+            value: {
+              websiteUrl: 'https://example.com',
+            },
+          },
+        },
+      })
+    })
+
+    const stored = readProgress()
+    const record = stored.interactiveState.recordsByKey['custom-submit::global']
+
+    expect(record?.phase).toBe('pending')
+    expect(record?.result).toBeNull()
+    expect(record?.submittedAt).toBeTruthy()
+
+    const [event] = readEvents()
+    expect(event?.type).toBe('interactive.updated')
+    if (event?.type === 'interactive.updated') {
+      expect(event.payload.record.phase).toBe('pending')
+      expect(event.payload.record.result).toBeNull()
+      expect(event.payload.auditEvents).toEqual([
+        expect.objectContaining({
+          type: 'submitted',
+          actor: 'user',
+        }),
+      ])
+    }
+  })
+
+  it('uses the custom interaction submit helper to persist pending records', async () => {
+    seedProgress(buildProgress())
+
+    const { result } = renderHook(
+      () =>
+        useCustomInteraction<{ websiteUrl: string }>({
+          lessonId: 'lesson-1',
+          interactionId: 'custom-submit',
+          completionRule: { type: 'resolved' },
+        }),
+      { wrapper },
+    )
+
+    await act(async () => {
+      await result.current.submit({ websiteUrl: 'https://example.com' })
+    })
+
+    expect(result.current.phase).toBe('pending')
+    expect(result.current.isCompleted).toBe(false)
+    expect(result.current.savedValue).toEqual({ websiteUrl: 'https://example.com' })
   })
 
   it('ignores invalid persisted selections', async () => {

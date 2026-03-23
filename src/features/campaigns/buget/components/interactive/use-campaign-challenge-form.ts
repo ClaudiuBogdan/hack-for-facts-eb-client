@@ -24,6 +24,7 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
     setChallengeStatus,
   } = useCampaignProgress()
   const entityCui = progress.selectedEntityCui ?? undefined
+  const persistedChallengeProgress = progress.challenges[params.ownerChallengeSlug]
 
   const interaction = useCustomInteraction<TValue>({
     lessonId: params.ownerChallengeSlug,
@@ -41,7 +42,11 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
   }, [interaction, markChallengeInProgress, params.ownerChallengeSlug])
 
   const submit = useCallback(async (value: TValue) => {
-    await interaction.complete(value)
+    if (params.completionAction === 'pending_review') {
+      await interaction.submit(value)
+    } else {
+      await interaction.complete(value)
+    }
     setChallengeStatus(
       params.ownerChallengeSlug,
       params.completionAction === 'pending_review' ? 'pending_review' : 'completed',
@@ -50,10 +55,22 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
 
   const reset = useCallback(async () => {
     await interaction.reset()
-  }, [interaction])
+    if (!persistedChallengeProgress) {
+      return
+    }
+
+    setChallengeStatus(params.ownerChallengeSlug, 'not_started', {
+      attempts: 0,
+      emitAuditEvent: false,
+      incrementAttempts: false,
+    })
+  }, [interaction, params.ownerChallengeSlug, persistedChallengeProgress, setChallengeStatus])
 
   const reviewStatus = getInteractionReviewStatus(interaction.record)
   const reviewFeedbackText = getInteractionReviewFeedbackText(interaction.record)
+  const isSubmitted =
+    interaction.phase === 'pending'
+    || interaction.phase === 'resolved'
   // Review-required interactives are modeled as one shared record:
   // - client writes the submission payload
   // - server later attaches authoritative `record.review`
@@ -65,6 +82,8 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
         ? 'completed'
         : reviewStatus === 'rejected'
           ? 'rejected'
+          : interaction.phase === 'pending' || interaction.phase === 'resolved'
+            ? 'pending_review'
           : 'pending_review'
       : 'completed'
   const challengeStatus =
@@ -74,7 +93,7 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
         ? 'completed'
         : submittedVariant === 'rejected'
           ? 'in_progress'
-        : interaction.phase === 'resolved'
+        : interaction.phase === 'pending' || interaction.phase === 'resolved'
           ? 'pending_review'
           : 'in_progress'
   const isCompleted =
@@ -113,7 +132,7 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
     record: interaction.record,
     savedValue: interaction.savedValue,
     phase: interaction.phase,
-    isSubmitted: interaction.phase === 'resolved',
+    isSubmitted,
     isCompleted,
     challengeStatus,
     reviewStatus,
@@ -127,6 +146,7 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
     interaction.record,
     interaction.savedValue,
     interaction.phase,
+    isSubmitted,
     isCompleted,
     challengeStatus,
     reviewStatus,

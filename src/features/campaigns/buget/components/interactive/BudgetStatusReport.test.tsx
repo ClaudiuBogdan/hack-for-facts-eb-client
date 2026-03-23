@@ -11,7 +11,7 @@ const formState = {
     budgetStage: 'draft' | 'approved' | null
     submittedAt: string | null
   },
-  phase: 'idle' as 'idle' | 'resolved',
+  phase: 'idle' as 'idle' | 'pending' | 'resolved',
   isSubmitted: false,
   isCompleted: false,
   challengeStatus: 'not_started',

@@ -22,6 +22,7 @@ export type CustomInteractionContext<TValue extends Record<string, unknown>> = {
   readonly phase: InteractiveStateRecord['phase']
   readonly isCompleted: boolean
   readonly saveDraft: (value: TValue) => Promise<void>
+  readonly submit: (value: TValue) => Promise<void>
   readonly complete: (value: TValue) => Promise<void>
   readonly reset: () => Promise<void>
 }
@@ -32,6 +33,7 @@ export function useCustomInteraction<TValue extends Record<string, unknown>>(
   const {
     getInteractiveRecord,
     saveInteractiveDraft,
+    submitInteractive,
     resolveInteractive,
     resetInteractive,
   } = useLearningProgress()
@@ -69,6 +71,17 @@ export function useCustomInteraction<TValue extends Record<string, unknown>>(
     })
   }, [definition, params.entityCui, saveInteractiveDraft])
 
+  const submit = useCallback(async (value: TValue) => {
+    await submitInteractive({
+      definition,
+      entityCui: params.entityCui,
+      value: {
+        kind: 'json',
+        json: { value },
+      },
+    })
+  }, [definition, params.entityCui, submitInteractive])
+
   const complete = useCallback(async (value: TValue) => {
     await resolveInteractive({
       definition,
@@ -94,6 +107,7 @@ export function useCustomInteraction<TValue extends Record<string, unknown>>(
     phase,
     isCompleted,
     saveDraft,
+    submit,
     complete,
     reset,
   }

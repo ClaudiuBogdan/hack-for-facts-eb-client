@@ -60,7 +60,7 @@ import { useCustomInteraction } from '@/features/learning/hooks/interactions'
 type SnapshotValue = { selectedItems: string[]; notes: string }
 
 function SnapshotWidget({ lessonId, interactionId }: Props) {
-  const { savedValue, isCompleted, saveDraft, complete } =
+  const { savedValue, isCompleted, saveDraft, submit, complete } =
     useCustomInteraction<SnapshotValue>({
       lessonId,
       interactionId,
@@ -68,6 +68,7 @@ function SnapshotWidget({ lessonId, interactionId }: Props) {
     })
 
   // saveDraft(value) persists without marking resolved
+  // submit(value) persists and marks pending
   // complete(value) persists and marks resolved
 }
 ```
@@ -129,6 +130,7 @@ The progress hook (`useLearningProgress`) exposes these primitives:
 
 - `getInteractiveRecord(definition, entityCui?)` - read current record state
 - `saveInteractiveDraft({ definition, value, entityCui? })` - save without resolving
+- `submitInteractive({ definition, value, entityCui? })` - save and mark pending
 - `resolveInteractive({ definition, value, outcome, entityCui? })` - save and mark resolved
 - `resetInteractive({ definition, entityCui? })` - reset to idle
 - `applyInteractiveEvaluation({ definition, result, entityCui? })` - apply evaluation result

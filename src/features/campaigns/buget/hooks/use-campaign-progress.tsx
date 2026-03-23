@@ -40,6 +40,7 @@ type CampaignProgressContextValue = {
     challengeSlug: string,
     status: CampaignChallengeStatus,
     options?: {
+      readonly attempts?: number
       readonly incrementAttempts?: boolean
       readonly emitAuditEvent?: boolean
     },
@@ -709,6 +710,7 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     challengeSlug: string,
     status: CampaignChallengeStatus,
     options?: {
+      readonly attempts?: number
       readonly incrementAttempts?: boolean
       readonly emitAuditEvent?: boolean
     },
@@ -718,7 +720,9 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
       (options?.incrementAttempts ?? true)
       && previousChallengeProgress?.status !== status
       && (status === 'in_progress' || status === 'pending_review' || status === 'completed')
-    const nextAttempts = (previousChallengeProgress?.attempts ?? 0) + (shouldIncreaseAttempts ? 1 : 0)
+    const nextAttempts = typeof options?.attempts === 'number'
+      ? Math.max(0, options.attempts)
+      : (previousChallengeProgress?.attempts ?? 0) + (shouldIncreaseAttempts ? 1 : 0)
     const nextUpdatedAt = getNextTimestamp(previousChallengeProgress?.updatedAt ?? progressRef.current.lastUpdated)
 
     const record = createCampaignChallengeRecord({

@@ -91,8 +91,8 @@ Rules:
 
 For future campaign interactives that require moderation or validation, use one record:
 
-- the client submits `value`, `phase`, `submittedAt`, and `updatedAt`
-- the server later sets `review`
+- the client submits `value`, `phase: 'pending'`, `submittedAt`, and `updatedAt`
+- the server later sets `review` and resolves the record
 
 Example after review approval:
 
@@ -127,9 +127,10 @@ Example after review approval:
 
 Client rendering rule for review-required interactives:
 
+- `phase === 'pending'` => submitted/pending-review state
 - `review.status === 'approved'` => submitted/completed state
 - `review.status === 'rejected'` => submitted/rejected state and show `feedbackText`
-- missing review or `review.status === 'pending'` => submitted/pending-review state
+- compatibility fallback: `phase === 'resolved'` with missing review => submitted/pending-review state
 
 ### 2.3 Remote Snapshot vs Projected Snapshot
 

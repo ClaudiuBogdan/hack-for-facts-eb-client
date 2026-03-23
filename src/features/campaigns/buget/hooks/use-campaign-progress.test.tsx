@@ -386,6 +386,40 @@ describe('use-campaign-progress', () => {
     expect(reviewSyncEvent?.payload.auditEvents).toBeUndefined()
   })
 
+  it('clears challenge progress when setting not_started with zero attempts', async () => {
+    const { result } = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true)
+    })
+
+    act(() => {
+      result.current.setChallengeStatus('challenge-1', 'pending_review')
+    })
+
+    act(() => {
+      result.current.setChallengeStatus('challenge-1', 'not_started', {
+        attempts: 0,
+        emitAuditEvent: false,
+        incrementAttempts: false,
+      })
+    })
+
+    expect(result.current.progress.challenges['challenge-1']).toBeUndefined()
+
+    const clearedChallengeEvent = readStoredCampaignEvents()
+      .filter(isInteractiveUpdatedEvent)
+      .find((event) => {
+        return event.payload.record.key === 'system:campaign:buget:challenge:challenge-1'
+          && event.payload.record.value?.kind === 'json'
+          && event.payload.record.value.json.value.status === 'not_started'
+          && event.payload.record.value.json.value.attempts === 0
+      })
+
+    expect(clearedChallengeEvent).toBeDefined()
+    expect(clearedChallengeEvent?.payload.auditEvents).toBeUndefined()
+  })
+
   it('keeps the newer local active challenge module when sync resolves older remote data', async () => {
     authState = {
       isLoaded: true,
