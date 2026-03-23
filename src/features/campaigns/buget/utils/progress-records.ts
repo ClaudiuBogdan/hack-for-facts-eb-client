@@ -345,7 +345,8 @@ export function projectCampaignProgressFromRecords(
       continue
     }
 
-    const challengeSlug = readNullableString(value.challengeSlug) ?? recordKey.slice(`${CAMPAIGN_RECORD_PREFIX}:challenge:`.length)
+    const challengeSlug =
+      readNullableString(value.challengeSlug) ?? recordKey.slice(`${CAMPAIGN_RECORD_PREFIX}:challenge:`.length)
     const attempts = readNonNegativeInteger(value.attempts)
     const progress: CampaignChallengeProgress = {
       status,

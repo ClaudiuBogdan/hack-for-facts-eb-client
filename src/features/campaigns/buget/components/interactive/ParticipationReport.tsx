@@ -6,11 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { PARTICIPATION_REPORT_INTERACTION } from '../../civic-interaction-definitions'
 import { CampaignChallengeFormShell } from './CampaignChallengeFormShell'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
 import type { ParticipationReportValue, CampaignInteractiveElementProps } from './types'
-
-const INTERACTION_ID = 'campaign:participation-report'
 
 const EMPTY_VALUE: ParticipationReportValue = {
   debateTookPlace: null,
@@ -48,10 +47,10 @@ const RECORDED_OPTIONS: ReadonlyArray<{
   { value: 'dont_know', label: () => t`I don't know` },
 ]
 
-export function ParticipationReport({ challengeSlug }: CampaignInteractiveElementProps) {
+export function ParticipationReport({ ownerChallengeSlug }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<ParticipationReportValue>({
-    challengeSlug,
-    interactionId: INTERACTION_ID,
+    ownerChallengeSlug,
+    interactionId: PARTICIPATION_REPORT_INTERACTION.interactionId,
     completionAction: 'pending_review',
   })
 

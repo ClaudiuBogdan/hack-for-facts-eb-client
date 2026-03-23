@@ -8,6 +8,10 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { useCustomInteraction } from '@/features/learning/hooks/interactions/use-custom-interaction'
+import {
+  DEBATE_REQUEST_INTERACTION,
+  PRIMARIE_CONTACT_INFO_INTERACTION,
+} from '../../civic-interaction-definitions'
 import { useCampaignProgress } from '../../hooks/use-campaign-progress'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
 import { buildDebateRequestMailto } from './mailto-utils'
@@ -17,7 +21,6 @@ import type {
   PrimarieContactInfoValue,
 } from './types'
 
-const INTERACTION_ID = 'campaign:debate-request'
 const CURRENT_YEAR = 2026
 
 const EMPTY_VALUE: DebateRequestFormValue = {
@@ -47,10 +50,10 @@ type Step = 1 | 2 | 3
  *   2. For 'send_yourself' submissions: optionally verify via CC email receipt.
  *   3. Transition the challenge status to 'completed' once verified.
  */
-export function DebateRequestForm({ challengeSlug }: CampaignInteractiveElementProps) {
+export function DebateRequestForm({ ownerChallengeSlug }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<DebateRequestFormValue>({
-    challengeSlug,
-    interactionId: INTERACTION_ID,
+    ownerChallengeSlug,
+    interactionId: DEBATE_REQUEST_INTERACTION.interactionId,
     completionAction: 'pending_review',
   })
 
@@ -58,8 +61,8 @@ export function DebateRequestForm({ challengeSlug }: CampaignInteractiveElementP
   const entityCui = progress.selectedEntityCui ?? undefined
 
   const contactInfo = useCustomInteraction<PrimarieContactInfoValue>({
-    lessonId: 'ce-buget-are-primaria-ta-pentru-2026',
-    interactionId: 'campaign:primarie-contact-info',
+    lessonId: PRIMARIE_CONTACT_INFO_INTERACTION.ownerChallengeSlug,
+    interactionId: PRIMARIE_CONTACT_INFO_INTERACTION.interactionId,
     scopePolicy: 'entity',
     entityCui,
     kind: 'custom',

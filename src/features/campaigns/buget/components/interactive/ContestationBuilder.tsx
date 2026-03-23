@@ -8,6 +8,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useCustomInteraction } from '@/features/learning/hooks/interactions/use-custom-interaction'
+import {
+  CONTESTATION_BUILDER_INTERACTION,
+  DEBATE_REQUEST_INTERACTION,
+  PRIMARIE_CONTACT_INFO_INTERACTION,
+} from '../../civic-interaction-definitions'
 import { useCampaignProgress } from '../../hooks/use-campaign-progress'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
 import { buildContestationMailto, buildContestationEmailBody } from './mailto-utils'
@@ -18,8 +23,6 @@ import type {
   CampaignInteractiveElementProps,
 } from './types'
 
-const INTERACTION_ID = 'campaign:budget-contestation'
-const DEBATE_REQUEST_INTERACTION_ID = 'campaign:debate-request'
 const CURRENT_YEAR = 2026
 const MAX_CHARS = 2000
 
@@ -81,10 +84,10 @@ type Step = 1 | 2 | 3 | 4
  *   InstitutionEmailThreads table (request_type: 'contestation').
  *   Transition to 'completed' once the review confirms quality.
  */
-export function ContestationBuilder({ challengeSlug }: CampaignInteractiveElementProps) {
+export function ContestationBuilder({ ownerChallengeSlug }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<ContestationBuilderValue>({
-    challengeSlug,
-    interactionId: INTERACTION_ID,
+    ownerChallengeSlug,
+    interactionId: CONTESTATION_BUILDER_INTERACTION.interactionId,
     completionAction: 'pending_review',
   })
 
@@ -93,8 +96,8 @@ export function ContestationBuilder({ challengeSlug }: CampaignInteractiveElemen
 
   // Read debate request record for email pre-fill
   const debateRequest = useCustomInteraction<DebateRequestFormValue>({
-    lessonId: 'trimite-cerere-dezbatere-buget',
-    interactionId: DEBATE_REQUEST_INTERACTION_ID,
+    lessonId: DEBATE_REQUEST_INTERACTION.ownerChallengeSlug,
+    interactionId: DEBATE_REQUEST_INTERACTION.interactionId,
     scopePolicy: 'entity',
     entityCui,
     kind: 'custom',
@@ -103,8 +106,8 @@ export function ContestationBuilder({ challengeSlug }: CampaignInteractiveElemen
 
   // Read PrimarieContactInfo interaction for email pre-fill
   const contactInfo = useCustomInteraction<PrimarieContactInfoValue>({
-    lessonId: 'ce-buget-are-primaria-ta-pentru-2026',
-    interactionId: 'campaign:primarie-contact-info',
+    lessonId: PRIMARIE_CONTACT_INFO_INTERACTION.ownerChallengeSlug,
+    interactionId: PRIMARIE_CONTACT_INFO_INTERACTION.interactionId,
     scopePolicy: 'entity',
     entityCui,
     kind: 'custom',

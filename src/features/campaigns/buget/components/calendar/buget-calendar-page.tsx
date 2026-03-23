@@ -18,6 +18,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { Button } from '@/components/ui/button'
+import { BUDGET_PUBLICATION_DATE_INTERACTION } from '../../civic-interaction-definitions'
 import { useCustomInteraction } from '@/features/learning/hooks/interactions/use-custom-interaction'
 import { useCampaignTimeline } from '../../hooks/use-campaign-timeline'
 import { getCampaignText, getCampaignUatOverrideForCui } from '../../hooks/use-campaign-content'
@@ -161,8 +162,8 @@ export function BugetCalendarPage({ locale, entityCui }: BugetCalendarPageProps)
   const adminOverride = useMemo(() => getCampaignUatOverrideForCui(entityCui), [entityCui])
 
   const userPublicationDate = useCustomInteraction<BudgetPublicationDateValue>({
-    lessonId: 'ce-buget-are-primaria-ta-pentru-2026',
-    interactionId: 'campaign:budget-publication-date',
+    lessonId: BUDGET_PUBLICATION_DATE_INTERACTION.ownerChallengeSlug,
+    interactionId: BUDGET_PUBLICATION_DATE_INTERACTION.interactionId,
     scopePolicy: 'entity',
     entityCui,
     kind: 'custom',

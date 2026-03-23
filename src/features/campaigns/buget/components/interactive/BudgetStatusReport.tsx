@@ -4,11 +4,10 @@ import { Trans } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { BUDGET_STATUS_REPORT_INTERACTION } from '../../civic-interaction-definitions'
 import { CampaignChallengeFormShell } from './CampaignChallengeFormShell'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
 import type { BudgetStatusReportValue, CampaignInteractiveElementProps } from './types'
-
-const INTERACTION_ID = 'campaign:budget-2026-status'
 
 const EMPTY_VALUE: BudgetStatusReportValue = {
   isPublished: null,
@@ -40,10 +39,10 @@ const BUDGET_STAGE_OPTIONS: ReadonlyArray<{
  * verify the reported status against the actual entity data.
  * Record key: campaign:budget-2026-status::entity:{cui}
  */
-export function BudgetStatusReport({ challengeSlug }: CampaignInteractiveElementProps) {
+export function BudgetStatusReport({ ownerChallengeSlug }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<BudgetStatusReportValue>({
-    challengeSlug,
-    interactionId: INTERACTION_ID,
+    ownerChallengeSlug,
+    interactionId: BUDGET_STATUS_REPORT_INTERACTION.interactionId,
     completionAction: 'pending_review',
   })
 
@@ -93,7 +92,9 @@ export function BudgetStatusReport({ challengeSlug }: CampaignInteractiveElement
     return null
   }
 
-  const isSubmitDisabled = draft.isPublished === null
+  const isSubmitDisabled =
+    draft.isPublished === null
+    || (draft.isPublished === 'yes' && draft.budgetStage === null)
 
   return (
     <CampaignChallengeFormShell

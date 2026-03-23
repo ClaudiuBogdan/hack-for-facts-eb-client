@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react'
 import {
   buildCampaignCalendarPath,
 } from '@/features/campaigns/buget/constants'
+import { BUDGET_PUBLICATION_DATE_INTERACTION } from '@/features/campaigns/buget/civic-interaction-definitions'
 import { useCustomInteraction } from '@/features/learning/hooks/interactions/use-custom-interaction'
 import { useCampaignTimeline } from '@/features/campaigns/buget/hooks/use-campaign-timeline'
 import { getCampaignText, getCampaignUatOverrideForCui } from '@/features/campaigns/buget/hooks/use-campaign-content'
@@ -24,8 +25,8 @@ export function BudgetTimelineStrip({ locale, entityCui }: BudgetTimelineStripPr
   )
 
   const userPublicationDate = useCustomInteraction<BudgetPublicationDateValue>({
-    lessonId: 'ce-buget-are-primaria-ta-pentru-2026',
-    interactionId: 'campaign:budget-publication-date',
+    lessonId: BUDGET_PUBLICATION_DATE_INTERACTION.ownerChallengeSlug,
+    interactionId: BUDGET_PUBLICATION_DATE_INTERACTION.interactionId,
     scopePolicy: 'entity',
     entityCui,
     kind: 'custom',

@@ -4,6 +4,7 @@ import { Trans } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { BUDGET_PUBLICATION_DATE_INTERACTION } from '../../civic-interaction-definitions'
 import { CampaignChallengeFormShell } from './CampaignChallengeFormShell'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
 import type {
@@ -11,8 +12,6 @@ import type {
   BudgetPublicationDateValue,
   CampaignInteractiveElementProps,
 } from './types'
-
-const INTERACTION_ID = 'campaign:budget-publication-date'
 
 const SOURCE_OPTIONS: ReadonlyArray<{
   readonly value: BudgetPublicationDateSourceType
@@ -44,10 +43,10 @@ function getSourceLabel(type: BudgetPublicationDateSourceType): string {
   }
 }
 
-export function BudgetPublicationDate({ challengeSlug }: CampaignInteractiveElementProps) {
+export function BudgetPublicationDate({ ownerChallengeSlug }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<BudgetPublicationDateValue>({
-    challengeSlug,
-    interactionId: INTERACTION_ID,
+    ownerChallengeSlug,
+    interactionId: BUDGET_PUBLICATION_DATE_INTERACTION.interactionId,
     completionAction: 'pending_review',
   })
 

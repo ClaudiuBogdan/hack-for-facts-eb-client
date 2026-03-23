@@ -5,10 +5,9 @@ import { ExternalLink, Globe } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PRIMARIE_WEBSITE_LINK_INTERACTION } from '../../civic-interaction-definitions'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
 import type { CampaignInteractiveElementProps, PrimarieWebsiteLinkValue } from './types'
-
-const INTERACTION_ID = 'campaign:primarie-website-url'
 
 function isSafeUrl(url: string): boolean {
   try {
@@ -29,10 +28,10 @@ const EMPTY_VALUE: PrimarieWebsiteLinkValue = {
  * a valid primarie website.
  * Record key: campaign:primarie-website-url::entity:{cui}
  */
-export function PrimarieWebsiteLink({ challengeSlug }: CampaignInteractiveElementProps) {
+export function PrimarieWebsiteLink({ ownerChallengeSlug }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<PrimarieWebsiteLinkValue>({
-    challengeSlug,
-    interactionId: INTERACTION_ID,
+    ownerChallengeSlug,
+    interactionId: PRIMARIE_WEBSITE_LINK_INTERACTION.interactionId,
     completionAction: 'pending_review',
   })
 

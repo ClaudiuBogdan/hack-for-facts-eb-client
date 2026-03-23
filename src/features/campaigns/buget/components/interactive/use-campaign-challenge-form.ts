@@ -1,10 +1,11 @@
 import { useCallback, useMemo } from 'react'
 import { useCustomInteraction } from '@/features/learning/hooks/interactions/use-custom-interaction'
+import type { CivicOwnerChallengeSlug } from '../../civic-interaction-definitions'
 import { useChallengeInteractionAdapter } from '../../adapters/learning/challenge-interaction-adapter'
 import { useCampaignProgress } from '../../hooks/use-campaign-progress'
 
 type UseCampaignChallengeFormInput = {
-  readonly challengeSlug: string
+  readonly ownerChallengeSlug: CivicOwnerChallengeSlug
   readonly interactionId: string
   readonly completionAction: 'complete' | 'pending_review'
 }
@@ -16,7 +17,7 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
   const entityCui = progress.selectedEntityCui ?? undefined
 
   const interaction = useCustomInteraction<TValue>({
-    lessonId: params.challengeSlug,
+    lessonId: params.ownerChallengeSlug,
     interactionId: params.interactionId,
     scopePolicy: 'entity',
     entityCui,
@@ -24,7 +25,7 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
     completionRule: { type: 'resolved' },
   })
 
-  const adapter = useChallengeInteractionAdapter(params.challengeSlug)
+  const adapter = useChallengeInteractionAdapter(params.ownerChallengeSlug)
 
   const saveDraft = useCallback(async (value: TValue) => {
     adapter.markInteractionStarted()

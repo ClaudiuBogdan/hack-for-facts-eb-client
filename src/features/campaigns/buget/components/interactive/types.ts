@@ -1,3 +1,5 @@
+import type { CivicOwnerChallengeSlug } from '../../civic-interaction-definitions'
+
 export type DebateRequestFormValue = {
   readonly primariaEmail: string
   readonly isNgo: boolean
@@ -63,5 +65,5 @@ export type PrimarieContactInfoValue = {
 }
 
 export type CampaignInteractiveElementProps = {
-  readonly challengeSlug: string
+  readonly ownerChallengeSlug: CivicOwnerChallengeSlug
 }

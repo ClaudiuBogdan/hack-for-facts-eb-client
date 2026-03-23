@@ -7,10 +7,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Button } from '@/components/ui/button'
+import { BUDGET_DOCUMENT_LINK_INTERACTION } from '../../civic-interaction-definitions'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
 import type { BudgetDocumentLinkValue, CampaignInteractiveElementProps } from './types'
-
-const INTERACTION_ID = 'campaign:budget-document-url'
 
 function isSafeUrl(url: string): boolean {
   try {
@@ -49,10 +48,10 @@ const DOCUMENT_TYPE_OPTIONS: ReadonlyArray<{
  * points to a real budget document.
  * Record key: campaign:budget-document-url::entity:{cui}
  */
-export function BudgetDocumentLink({ challengeSlug }: CampaignInteractiveElementProps) {
+export function BudgetDocumentLink({ ownerChallengeSlug }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<BudgetDocumentLinkValue>({
-    challengeSlug,
-    interactionId: INTERACTION_ID,
+    ownerChallengeSlug,
+    interactionId: BUDGET_DOCUMENT_LINK_INTERACTION.interactionId,
     completionAction: 'pending_review',
   })
 

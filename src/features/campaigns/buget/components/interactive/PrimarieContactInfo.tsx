@@ -5,10 +5,9 @@ import { Building2, Mail, Phone } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PRIMARIE_CONTACT_INFO_INTERACTION } from '../../civic-interaction-definitions'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
 import type { CampaignInteractiveElementProps, PrimarieContactInfoValue } from './types'
-
-const INTERACTION_ID = 'campaign:primarie-contact-info'
 
 const EMPTY_VALUE: PrimarieContactInfoValue = {
   email: null,
@@ -22,10 +21,10 @@ const EMPTY_VALUE: PrimarieContactInfoValue = {
  * Incorrect emails would cause debate requests to fail.
  * Record key: campaign:primarie-contact-info::entity:{cui}
  */
-export function PrimarieContactInfo({ challengeSlug }: CampaignInteractiveElementProps) {
+export function PrimarieContactInfo({ ownerChallengeSlug }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<PrimarieContactInfoValue>({
-    challengeSlug,
-    interactionId: INTERACTION_ID,
+    ownerChallengeSlug,
+    interactionId: PRIMARIE_CONTACT_INFO_INTERACTION.interactionId,
     completionAction: 'pending_review',
   })
 
