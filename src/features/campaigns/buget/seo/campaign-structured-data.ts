@@ -1,15 +1,9 @@
 import type {
-  CampaignChallengeDefinition,
   CampaignDefinition,
   CampaignLocale,
-  CampaignSeoPageKind,
 } from '../types'
 import { getCampaignText } from '../hooks/use-campaign-content'
-import { buildCampaignProvocariPath } from '@/features/challenges/constants'
-import {
-  CAMPAIGN_ENTITY_SELECTOR_PATH,
-  CAMPAIGN_LANDING_PATH,
-} from '../constants'
+import { CAMPAIGN_LANDING_PATH } from '../constants'
 
 function getLanguageTag(locale: CampaignLocale): string {
   return locale === 'en' ? 'en-US' : 'ro-RO'
@@ -40,73 +34,12 @@ function buildCampaignEntity(params: {
   }
 }
 
-function buildChallengeEntity(params: {
-  readonly siteUrl: string
-  readonly locale: CampaignLocale
-  readonly canonicalUrl: string
-  readonly challenge: CampaignChallengeDefinition
-}): Record<string, unknown> {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'LearningResource',
-    '@id': `${params.canonicalUrl}#challenge`,
-    isPartOf: {
-      '@id': `${params.siteUrl}${CAMPAIGN_LANDING_PATH}#campaign`,
-    },
-    name: getCampaignText(params.challenge.title, params.locale),
-    description: getCampaignText(params.challenge.summary, params.locale),
-    educationalLevel: params.challenge.difficulty,
-    learningResourceType: 'civic challenge',
-    inLanguage: getLanguageTag(params.locale),
-    url: params.canonicalUrl,
-  }
-}
-
-function buildChallengeBreadcrumbList(params: {
-  readonly siteUrl: string
-  readonly locale: CampaignLocale
-  readonly canonicalUrl: string
-  readonly entityCui?: string
-  readonly challenge: CampaignChallengeDefinition
-}): Record<string, unknown> {
-  const langSuffix = params.locale === 'en' ? '?lang=en' : ''
-  const provocariUrl = params.entityCui
-    ? `${params.siteUrl}${buildCampaignProvocariPath(params.entityCui)}${langSuffix}`
-    : `${params.siteUrl}${CAMPAIGN_ENTITY_SELECTOR_PATH}${langSuffix}`
-
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: params.locale === 'en' ? 'Campaign' : 'Campanie',
-        item: `${params.siteUrl}${CAMPAIGN_LANDING_PATH}${langSuffix}`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: params.locale === 'en' ? 'Challenges' : 'Provocări',
-        item: provocariUrl,
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name: getCampaignText(params.challenge.title, params.locale),
-        item: params.canonicalUrl,
-      },
-    ],
-  }
-}
-
 function buildWebPageEntity(params: {
   readonly siteUrl: string
   readonly locale: CampaignLocale
   readonly canonicalUrl: string
   readonly title: string
   readonly description: string
-  readonly pageKind: CampaignSeoPageKind
 }): Record<string, unknown> {
   return {
     '@context': 'https://schema.org',
@@ -116,7 +49,7 @@ function buildWebPageEntity(params: {
     inLanguage: getLanguageTag(params.locale),
     url: params.canonicalUrl,
     isPartOf: params.siteUrl,
-    about: params.pageKind === 'challenge-detail' ? 'Challenge detail page' : 'Campaign page',
+    about: 'Campaign page',
   }
 }
 
@@ -126,10 +59,7 @@ export function buildCampaignStructuredData(params: {
   readonly canonicalUrl: string
   readonly title: string
   readonly description: string
-  readonly pageKind: CampaignSeoPageKind
-  readonly entityCui?: string
   readonly campaign: CampaignDefinition
-  readonly challenge: CampaignChallengeDefinition | null
 }): readonly Record<string, unknown>[] {
   const webPageEntity = buildWebPageEntity({
     siteUrl: params.siteUrl,
@@ -137,7 +67,6 @@ export function buildCampaignStructuredData(params: {
     canonicalUrl: params.canonicalUrl,
     title: params.title,
     description: params.description,
-    pageKind: params.pageKind,
   })
 
   const campaignEntity = buildCampaignEntity({
@@ -146,24 +75,5 @@ export function buildCampaignStructuredData(params: {
     locale: params.locale,
   })
 
-  if (params.pageKind !== 'challenge-detail' || !params.challenge) {
-    return [webPageEntity, campaignEntity]
-  }
-
-  const challengeEntity = buildChallengeEntity({
-    siteUrl: params.siteUrl,
-    locale: params.locale,
-    canonicalUrl: params.canonicalUrl,
-    challenge: params.challenge,
-  })
-
-  const breadcrumbList = buildChallengeBreadcrumbList({
-    siteUrl: params.siteUrl,
-    locale: params.locale,
-    canonicalUrl: params.canonicalUrl,
-    entityCui: params.entityCui,
-    challenge: params.challenge,
-  })
-
-  return [webPageEntity, campaignEntity, challengeEntity, breadcrumbList]
+  return [webPageEntity, campaignEntity]
 }

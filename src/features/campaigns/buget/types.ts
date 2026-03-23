@@ -15,30 +15,12 @@ export type CampaignTranslatedString = {
   readonly en?: string
 }
 
-export type CampaignChallengeDifficulty = 'beginner' | 'intermediate' | 'advanced'
-
-export type CampaignChallengeVerificationMode = 'automatic' | 'manual'
-
 export type CampaignChallengeStatus =
   | 'not_started'
   | 'in_progress'
   | 'pending_review'
   | 'completed'
   | 'locked'
-
-export type CampaignDeadlineRule =
-  | {
-      readonly type: 'none'
-    }
-  | {
-      readonly type: 'fixed_date'
-      readonly date: string
-    }
-  | {
-      readonly type: 'relative_to_timeline'
-      readonly timelineEntryId: string
-      readonly lockAfterDays: number
-    }
 
 export type CampaignDefinition = {
   readonly id: string
@@ -94,27 +76,11 @@ export type CampaignResourceDefinition = {
   readonly kind: CampaignResourceKind
 }
 
-export type CampaignChallengeDefinition = {
-  readonly slug: string
-  readonly title: CampaignTranslatedString
-  readonly summary: CampaignTranslatedString
-  readonly seoTitle?: CampaignTranslatedString
-  readonly seoDescription?: CampaignTranslatedString
-  readonly shareImage?: string
-  readonly difficulty: CampaignChallengeDifficulty
-  readonly verificationMode: CampaignChallengeVerificationMode
-  readonly contentDir: string
-  readonly resourceRefs: readonly string[]
-  readonly deadlineRule: CampaignDeadlineRule
-  readonly lockReasonTemplate: CampaignTranslatedString
-}
-
 export type CampaignSeoPageKind =
   | 'landing'
   | 'hub'
   | 'principal-selector'
   | 'challenges'
-  | 'challenge-detail'
   | 'primarie'
   | 'principal-map'
   | 'calendar'

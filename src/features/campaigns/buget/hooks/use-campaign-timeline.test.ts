@@ -1,11 +1,7 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { addDays, format, parseISO } from 'date-fns'
 import { useCampaignTimeline } from './use-campaign-timeline'
-
-vi.mock('./campaign-challenge-mdx-index', () => ({
-  campaignChallengeMdxModules: {},
-}))
 
 describe('use-campaign-timeline', () => {
   it('computes stable ISO calendar dates without timezone shifts', () => {

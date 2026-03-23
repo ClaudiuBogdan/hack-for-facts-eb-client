@@ -15,20 +15,6 @@ vi.mock('../hooks/use-campaign-content', () => ({
     startDate: '2026-02-15',
     endDate: '2026-05-15',
   }),
-  getCampaignChallengeBySlug: (slug: string) => {
-    if (slug !== 'cauta-bugetul-localitatii-tale') return null
-    return {
-      slug,
-      title: { ro: 'Caută bugetul localității tale', en: 'Find your local budget' },
-      summary: { ro: 'Rezumat', en: 'Summary' },
-      difficulty: 'beginner',
-      verificationMode: 'automatic',
-      contentDir: 'cauta-bugetul-localitatii-tale',
-      resourceRefs: [],
-      deadlineRule: { type: 'none' },
-      lockReasonTemplate: { ro: 'locked', en: 'locked' },
-    }
-  },
   getCampaignText: (value: { ro: string; en?: string }, locale: 'ro' | 'en') =>
     locale === 'en' ? (value.en ?? value.ro) : value.ro,
 }))
@@ -76,18 +62,6 @@ describe('campaign-seo', () => {
 
     expect(metadata.robots).toBe('noindex,follow')
     expect(metadata.canonicalUrl).toContain('/primarie')
-  })
-
-  it('marks unknown challenge as noindex', () => {
-    const metadata = buildCampaignSeoMetadata({
-      pageKind: 'challenge-detail',
-      locale: 'ro',
-      entityCui: '12345678',
-      challengeSlug: 'not-a-real-slug',
-    })
-
-    expect(metadata.robots).toBe('noindex,follow')
-    expect(metadata.title).toContain('Provocare Inexistentă')
   })
 
   it('builds indexable calendar metadata with correct canonical path', () => {

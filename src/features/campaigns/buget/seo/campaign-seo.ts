@@ -13,7 +13,6 @@ import {
   buildCampaignProvocariStepPath,
 } from '@/features/challenges/constants'
 import {
-  getCampaignChallengeBySlug,
   getCampaignDefinition,
   getCampaignText,
 } from '../hooks/use-campaign-content'
@@ -31,7 +30,7 @@ type LocalizedText = {
 }
 
 const CAMPAIGN_COPY: Record<
-  Exclude<CampaignSeoPageKind, 'challenge-detail'>,
+  CampaignSeoPageKind,
   { readonly title: LocalizedText; readonly description: LocalizedText }
 > = {
   landing: {
@@ -154,18 +153,7 @@ function resolvePagePath(params: {
       : CAMPAIGN_ENTITY_SELECTOR_PATH
   }
 
-  if (params.entityCui && params.moduleSlug && params.challengeSlug && params.stepSlug) {
-    return buildCampaignProvocariStepPath(
-      params.entityCui,
-      params.moduleSlug,
-      params.challengeSlug,
-      params.stepSlug,
-    )
-  }
-
-  return params.entityCui
-    ? buildCampaignProvocariPath(params.entityCui)
-    : CAMPAIGN_ENTITY_SELECTOR_PATH
+  return params.entityCui ? buildCampaignProvocariPath(params.entityCui) : CAMPAIGN_ENTITY_SELECTOR_PATH
 }
 
 function buildUrl(params: {
@@ -198,52 +186,13 @@ export function buildCampaignSeoMetadata(params: {
     stepSlug: params.stepSlug,
   })
 
-  const challenge =
-    params.pageKind === 'challenge-detail' && params.challengeSlug
-      ? getCampaignChallengeBySlug(params.challengeSlug)
-      : null
-
-  const isUnknownChallenge = params.pageKind === 'challenge-detail' && !challenge
-
-  const pageTitle = (() => {
-    if (params.pageKind === 'challenge-detail') {
-      if (!challenge) {
-        return params.locale === 'en' ? 'Challenge Not Found' : 'Provocare Inexistentă'
-      }
-
-      const rawTitle = challenge.seoTitle
-        ? getCampaignText(challenge.seoTitle, params.locale)
-        : getCampaignText(challenge.title, params.locale)
-      return rawTitle
-    }
-
-    const copy = CAMPAIGN_COPY[params.pageKind]
-    const fallback = copy.title[params.locale]
-    const campaignTitle = campaign.seo?.title
-      ? getCampaignText(campaign.seo.title, params.locale)
-      : fallback
-    return campaignTitle
-  })()
-
-  const pageDescription = (() => {
-    if (params.pageKind === 'challenge-detail') {
-      if (!challenge) {
-        return params.locale === 'en'
-          ? 'The requested challenge does not exist in this campaign.'
-          : 'Provocarea solicitată nu există în această campanie.'
-      }
-
-      return challenge.seoDescription
-        ? getCampaignText(challenge.seoDescription, params.locale)
-        : getCampaignText(challenge.summary, params.locale)
-    }
-
-    const copy = CAMPAIGN_COPY[params.pageKind]
-    const fallback = copy.description[params.locale]
-    return campaign.seo?.description
-      ? getCampaignText(campaign.seo.description, params.locale)
-      : fallback
-  })()
+  const copy = CAMPAIGN_COPY[params.pageKind]
+  const pageTitle = campaign.seo?.title
+    ? getCampaignText(campaign.seo.title, params.locale)
+    : copy.title[params.locale]
+  const pageDescription = campaign.seo?.description
+    ? getCampaignText(campaign.seo.description, params.locale)
+    : copy.description[params.locale]
 
   const canonicalUrl = buildUrl({
     siteUrl,
@@ -261,8 +210,6 @@ export function buildCampaignSeoMetadata(params: {
     siteUrl,
     locale: params.locale,
     pageKind: params.pageKind,
-    challengeTitle: challenge ? getCampaignText(challenge.title, params.locale) : undefined,
-    challengeShareImage: challenge?.shareImage,
   })
 
   const jsonLd = buildCampaignStructuredData({
@@ -271,10 +218,7 @@ export function buildCampaignSeoMetadata(params: {
     canonicalUrl,
     title: withSiteName(pageTitle),
     description: pageDescription,
-    pageKind: params.pageKind,
-    entityCui: params.entityCui,
     campaign,
-    challenge,
   })
 
   return {
@@ -285,8 +229,7 @@ export function buildCampaignSeoMetadata(params: {
       params.pageKind === 'hub' ||
       params.pageKind === 'primarie' ||
       params.pageKind === 'principal-selector' ||
-      params.pageKind === 'principal-map' ||
-      isUnknownChallenge
+      params.pageKind === 'principal-map'
         ? 'noindex,follow'
         : 'index,follow',
     alternateUrls,
