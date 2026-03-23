@@ -99,6 +99,10 @@ export function BudgetPublicationDate({ ownerChallengeSlug }: CampaignInteractiv
     void form.reset()
   }, [form])
 
+  const handleTryAgain = useCallback(() => {
+    void form.reset()
+  }, [form])
+
   if (!form.entityCui) {
     return null
   }
@@ -116,8 +120,10 @@ export function BudgetPublicationDate({ ownerChallengeSlug }: CampaignInteractiv
        * viewing this entity. The backend validates the submitted date before
        * it becomes authoritative (via a review workflow / admin action).
        */
-      submittedVariant="pending_review"
+      submittedVariant={form.submittedVariant}
+      feedbackText={form.reviewFeedbackText}
       onSubmit={handleSubmit}
+      onTryAgain={handleTryAgain}
       onReset={handleReset}
       isSubmitDisabled={isSubmitDisabled}
       submitLabel={t`Submit information`}

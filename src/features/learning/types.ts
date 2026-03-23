@@ -70,6 +70,19 @@ export type InteractionResult = {
   readonly evaluatedAt?: string | null
 }
 
+export type InteractionReviewStatus = 'pending' | 'approved' | 'rejected'
+
+export type InteractionReview = {
+  /**
+   * Review state is authoritative server-owned metadata for interactions that
+   * require validation after user submission. Clients may read this field but
+   * must not author it through public progress sync.
+   */
+  readonly status: InteractionReviewStatus
+  readonly reviewedAt: string | null
+  readonly feedbackText?: string | null
+}
+
 export type InteractiveDefinitionKind =
   | 'quiz'
   | 'url'
@@ -100,6 +113,16 @@ export type InteractiveStateRecord = {
   readonly phase: InteractionPhase
   readonly value: InteractionValue | null
   readonly result: InteractionResult | null
+  /**
+   * Optional review metadata for server-validated interactions.
+   *
+   * This is intentionally separate from `result`:
+   * - `result` remains the generic evaluation/scoring channel used by quizzes
+   *   and other immediate interaction flows.
+   * - `review` is used when the user submission is accepted first and later
+   *   reviewed by a server-side workflow.
+   */
+  readonly review?: InteractionReview | null
   readonly updatedAt: string
   readonly submittedAt?: string | null
 }

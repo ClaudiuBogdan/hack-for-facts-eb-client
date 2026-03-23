@@ -88,6 +88,10 @@ export function BudgetStatusReport({ ownerChallengeSlug }: CampaignInteractiveEl
     void form.reset()
   }, [form])
 
+  const handleTryAgain = useCallback(() => {
+    void form.reset()
+  }, [form])
+
   if (!form.entityCui) {
     return null
   }
@@ -98,7 +102,9 @@ export function BudgetStatusReport({ ownerChallengeSlug }: CampaignInteractiveEl
 
   return (
     <CampaignChallengeFormShell
-      submittedVariant="pending_review"
+      submittedVariant={form.submittedVariant}
+      feedbackText={form.reviewFeedbackText}
+      onTryAgain={handleTryAgain}
       title={t`Budget status 2026`}
       description={t`Report the publication status of the local budget for 2026.`}
       isSubmitted={form.isSubmitted}

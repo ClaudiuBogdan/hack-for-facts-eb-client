@@ -1,6 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { parseLearningProgressEvents } from '@/features/learning/schemas/progress-events'
-import type { InteractiveStateRecord, LearningProgressEvent } from '@/features/learning/types'
+import type {
+  InteractiveAuditEvent,
+  InteractiveStateRecord,
+  LearningProgressEvent,
+} from '@/features/learning/types'
 import { useAuth } from '@/lib/auth'
 import { CAMPAIGN_ID, CAMPAIGN_PROGRESS_STORAGE_KEY } from '../constants'
 import { fetchCampaignProgress, syncCampaignProgress } from '../api/campaign-progress'
@@ -32,7 +36,14 @@ type CampaignProgressContextValue = {
   readonly localSelectedEntityCui: string | null
   readonly remoteSelectedEntityCui: string | null
   readonly getChallengeStatus: (challengeSlug: string) => CampaignChallengeStatus
-  readonly setChallengeStatus: (challengeSlug: string, status: CampaignChallengeStatus) => void
+  readonly setChallengeStatus: (
+    challengeSlug: string,
+    status: CampaignChallengeStatus,
+    options?: {
+      readonly incrementAttempts?: boolean
+      readonly emitAuditEvent?: boolean
+    },
+  ) => void
   readonly setSelectedEntity: (input: { entityCui: string }) => void
   readonly setActiveChallengeModule: (input: { moduleSlug: string | null }) => void
   readonly markChallengeInProgress: (challengeSlug: string) => void
@@ -131,6 +142,36 @@ function loadSnapshotForKey(snapshotKey: string): CampaignProgressSnapshot | nul
 
 function loadEventsForKey(eventsKey: string): LearningProgressEvent[] {
   return filterCampaignProgressEvents(parseLearningProgressEvents(readJsonFromStorage(eventsKey)))
+}
+
+function isClearedCampaignRecord(record: InteractiveStateRecord): boolean {
+  if (record.value?.kind !== 'json') {
+    return record.value === null
+  }
+
+  const payload = record.value.json.value
+
+  if (record.key === CAMPAIGN_ONBOARDING_RECORD_KEY) {
+    return payload.completedAt === null && payload.locality === null
+  }
+
+  if (record.key === CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY) {
+    return payload.acceptedTermsAt === null
+  }
+
+  if (record.key === CAMPAIGN_SELECTED_ENTITY_RECORD_KEY) {
+    return payload.entityCui === null
+  }
+
+  if (record.key === CAMPAIGN_ACTIVE_MODULE_RECORD_KEY) {
+    return payload.moduleSlug === null
+  }
+
+  if (record.key.startsWith(`system:campaign:${CAMPAIGN_ID}:challenge:`)) {
+    return payload.status === 'not_started' && payload.attempts === 0
+  }
+
+  return false
 }
 
 function nowIso(): string {
@@ -279,15 +320,36 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     return generatedClientId
   }, [])
 
-  const createInteractiveUpdatedEvent = useCallback((record: InteractiveStateRecord): LearningProgressEvent => {
+  const createDefaultCampaignAuditEvent = useCallback(
+    (record: InteractiveStateRecord): InteractiveAuditEvent | null => {
+      if (record.value === null || isClearedCampaignRecord(record)) {
+        return null
+      }
+
+      return {
+        id: createEventId(),
+        recordKey: record.key,
+        lessonId: record.lessonId,
+        interactionId: record.interactionId,
+        type: 'submitted',
+        at: record.updatedAt,
+        actor: 'user',
+        value: record.value,
+      }
+    },
+    [],
+  )
+
+  const createInteractiveUpdatedEvent = useCallback((payload: {
+    readonly record: InteractiveStateRecord
+    readonly auditEvents?: readonly InteractiveAuditEvent[]
+  }): LearningProgressEvent => {
     return {
       eventId: createEventId(),
       clientId: getClientId(),
-      occurredAt: record.updatedAt,
+      occurredAt: payload.record.updatedAt,
       type: 'interactive.updated',
-      payload: {
-        record,
-      },
+      payload,
     }
   }, [getClientId])
 
@@ -553,7 +615,8 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
       )
       const migrationEvents = diffCampaignProgressRecords(nextRecords, remoteRecords)
         .filter((record) => !pendingRecordKeys.has(record.key))
-        .map((record) => createInteractiveUpdatedEvent(record))
+        // Bootstrap migration only backfills record state; it should not invent user-submission audits.
+        .map((record) => createInteractiveUpdatedEvent({ record }))
       const nextEvents = mergeEventLogs(pendingEvents, migrationEvents)
       const nextSnapshot = projectCampaignProgressFromRecords(nextRecords, remoteSnapshot.lastUpdated)
 
@@ -642,25 +705,46 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     return progressRef.current.challenges[challengeSlug]?.status ?? 'not_started'
   }, [])
 
-  const setChallengeStatus = useCallback((challengeSlug: string, status: CampaignChallengeStatus) => {
+  const setChallengeStatus = useCallback((
+    challengeSlug: string,
+    status: CampaignChallengeStatus,
+    options?: {
+      readonly incrementAttempts?: boolean
+      readonly emitAuditEvent?: boolean
+    },
+  ) => {
     const previousChallengeProgress = progressRef.current.challenges[challengeSlug]
     const shouldIncreaseAttempts =
-      previousChallengeProgress?.status !== status
+      (options?.incrementAttempts ?? true)
+      && previousChallengeProgress?.status !== status
       && (status === 'in_progress' || status === 'pending_review' || status === 'completed')
     const nextAttempts = (previousChallengeProgress?.attempts ?? 0) + (shouldIncreaseAttempts ? 1 : 0)
     const nextUpdatedAt = getNextTimestamp(previousChallengeProgress?.updatedAt ?? progressRef.current.lastUpdated)
 
-    appendEvents([createInteractiveUpdatedEvent(createCampaignChallengeRecord({
+    const record = createCampaignChallengeRecord({
       challengeSlug,
       status,
       attempts: nextAttempts,
       updatedAt: nextUpdatedAt,
-    }))])
-  }, [appendEvents, createInteractiveUpdatedEvent])
+    })
+    const auditEvent = options?.emitAuditEvent === false
+      ? null
+      : createDefaultCampaignAuditEvent(record)
+
+    appendEvents([createInteractiveUpdatedEvent({
+      record,
+      auditEvents: auditEvent ? [auditEvent] : undefined,
+    })])
+  }, [appendEvents, createDefaultCampaignAuditEvent, createInteractiveUpdatedEvent])
 
   const markChallengeInProgress = useCallback((challengeSlug: string) => {
     const existingStatus = getChallengeStatus(challengeSlug)
-    if (existingStatus === 'completed' || existingStatus === 'pending_review' || existingStatus === 'locked') {
+    if (
+      existingStatus === 'in_progress'
+      || existingStatus === 'completed'
+      || existingStatus === 'pending_review'
+      || existingStatus === 'locked'
+    ) {
       return
     }
 
@@ -674,12 +758,18 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     }
 
     const updatedAt = getNextTimestamp(getRecordUpdatedAt(progressRef.current, CAMPAIGN_ONBOARDING_RECORD_KEY))
-    appendEvents([createInteractiveUpdatedEvent(createCampaignOnboardingRecord({
+    const record = createCampaignOnboardingRecord({
       completedAt: updatedAt,
       locality: normalizedLocality,
       updatedAt,
-    }))])
-  }, [appendEvents, createInteractiveUpdatedEvent])
+    })
+    const auditEvent = createDefaultCampaignAuditEvent(record)
+
+    appendEvents([createInteractiveUpdatedEvent({
+      record,
+      auditEvents: auditEvent ? [auditEvent] : undefined,
+    })])
+  }, [appendEvents, createDefaultCampaignAuditEvent, createInteractiveUpdatedEvent])
 
   const acceptChallengeTerms = useCallback((input?: { acceptedTermsAt?: string }) => {
     const acceptedTermsAt = input?.acceptedTermsAt ?? nowIso()
@@ -687,48 +777,86 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
       getRecordUpdatedAt(progressRef.current, CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY) ?? acceptedTermsAt,
     )
 
-    appendEvents([createInteractiveUpdatedEvent(createCampaignAcceptedTermsRecord({
+    const record = createCampaignAcceptedTermsRecord({
       acceptedTermsAt,
       updatedAt,
-    }))])
-  }, [appendEvents, createInteractiveUpdatedEvent])
+    })
+    const auditEvent = createDefaultCampaignAuditEvent(record)
+
+    appendEvents([createInteractiveUpdatedEvent({
+      record,
+      auditEvents: auditEvent ? [auditEvent] : undefined,
+    })])
+  }, [appendEvents, createDefaultCampaignAuditEvent, createInteractiveUpdatedEvent])
 
   const resetAcceptedChallengeTerms = useCallback(() => {
-    appendEvents([createInteractiveUpdatedEvent(createCampaignAcceptedTermsRecord({
+    const record = createCampaignAcceptedTermsRecord({
       acceptedTermsAt: null,
       updatedAt: getNextTimestamp(getRecordUpdatedAt(progressRef.current, CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY)),
-    }))])
-  }, [appendEvents, createInteractiveUpdatedEvent])
+    })
+    const auditEvent = createDefaultCampaignAuditEvent(record)
+
+    appendEvents([createInteractiveUpdatedEvent({
+      record,
+      auditEvents: auditEvent ? [auditEvent] : undefined,
+    })])
+  }, [appendEvents, createDefaultCampaignAuditEvent, createInteractiveUpdatedEvent])
 
   const resetProgress = useCallback(() => {
     const currentProgress = progressRef.current
     const nextEvents: LearningProgressEvent[] = [
-      createInteractiveUpdatedEvent(createCampaignOnboardingRecord({
-        completedAt: null,
-        locality: null,
-        updatedAt: getNextTimestamp(getRecordUpdatedAt(currentProgress, CAMPAIGN_ONBOARDING_RECORD_KEY)),
-      })),
-      createInteractiveUpdatedEvent(createCampaignSelectedEntityRecord({
-        entityCui: null,
-        updatedAt: getNextTimestamp(getRecordUpdatedAt(currentProgress, CAMPAIGN_SELECTED_ENTITY_RECORD_KEY)),
-      })),
-      createInteractiveUpdatedEvent(createCampaignActiveModuleRecord({
-        moduleSlug: null,
-        updatedAt: getNextTimestamp(getRecordUpdatedAt(currentProgress, CAMPAIGN_ACTIVE_MODULE_RECORD_KEY)),
-      })),
+      (() => {
+        const record = createCampaignOnboardingRecord({
+          completedAt: null,
+          locality: null,
+          updatedAt: getNextTimestamp(getRecordUpdatedAt(currentProgress, CAMPAIGN_ONBOARDING_RECORD_KEY)),
+        })
+        const auditEvent = createDefaultCampaignAuditEvent(record)
+        return createInteractiveUpdatedEvent({
+          record,
+          auditEvents: auditEvent ? [auditEvent] : undefined,
+        })
+      })(),
+      (() => {
+        const record = createCampaignSelectedEntityRecord({
+          entityCui: null,
+          updatedAt: getNextTimestamp(getRecordUpdatedAt(currentProgress, CAMPAIGN_SELECTED_ENTITY_RECORD_KEY)),
+        })
+        const auditEvent = createDefaultCampaignAuditEvent(record)
+        return createInteractiveUpdatedEvent({
+          record,
+          auditEvents: auditEvent ? [auditEvent] : undefined,
+        })
+      })(),
+      (() => {
+        const record = createCampaignActiveModuleRecord({
+          moduleSlug: null,
+          updatedAt: getNextTimestamp(getRecordUpdatedAt(currentProgress, CAMPAIGN_ACTIVE_MODULE_RECORD_KEY)),
+        })
+        const auditEvent = createDefaultCampaignAuditEvent(record)
+        return createInteractiveUpdatedEvent({
+          record,
+          auditEvents: auditEvent ? [auditEvent] : undefined,
+        })
+      })(),
       ...Object.entries(currentProgress.challenges).map(([challengeSlug, challengeProgress]) => {
-        return createInteractiveUpdatedEvent(createCampaignChallengeRecord({
+        const record = createCampaignChallengeRecord({
           challengeSlug,
           status: 'not_started',
           attempts: 0,
           updatedAt: getNextTimestamp(challengeProgress.updatedAt),
-        }))
+        })
+        const auditEvent = createDefaultCampaignAuditEvent(record)
+        return createInteractiveUpdatedEvent({
+          record,
+          auditEvents: auditEvent ? [auditEvent] : undefined,
+        })
       }),
     ]
 
     setLocalSelectedEntityCui(null)
     appendEvents(nextEvents)
-  }, [appendEvents, createInteractiveUpdatedEvent])
+  }, [appendEvents, createDefaultCampaignAuditEvent, createInteractiveUpdatedEvent])
 
   const setSelectedEntity = useCallback((input: { entityCui: string }) => {
     const normalizedEntityCui = input.entityCui.trim()
@@ -737,14 +865,19 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     }
 
     const updatedAt = getNextTimestamp(getRecordUpdatedAt(progressRef.current, CAMPAIGN_SELECTED_ENTITY_RECORD_KEY))
-    const nextEvent = createInteractiveUpdatedEvent(createCampaignSelectedEntityRecord({
+    const record = createCampaignSelectedEntityRecord({
       entityCui: normalizedEntityCui,
       updatedAt,
-    }))
+    })
+    const auditEvent = createDefaultCampaignAuditEvent(record)
+    const nextEvent = createInteractiveUpdatedEvent({
+      record,
+      auditEvents: auditEvent ? [auditEvent] : undefined,
+    })
 
     setLocalSelectedEntityCui(normalizedEntityCui)
     appendEvents([nextEvent])
-  }, [appendEvents, createInteractiveUpdatedEvent])
+  }, [appendEvents, createDefaultCampaignAuditEvent, createInteractiveUpdatedEvent])
 
   const setActiveChallengeModule = useCallback((input: { moduleSlug: string | null }) => {
     const normalizedModuleSlug = input.moduleSlug?.trim() || null
@@ -753,11 +886,17 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     }
 
     const updatedAt = getNextTimestamp(getRecordUpdatedAt(progressRef.current, CAMPAIGN_ACTIVE_MODULE_RECORD_KEY))
-    appendEvents([createInteractiveUpdatedEvent(createCampaignActiveModuleRecord({
+    const record = createCampaignActiveModuleRecord({
       moduleSlug: normalizedModuleSlug,
       updatedAt,
-    }))])
-  }, [appendEvents, createInteractiveUpdatedEvent])
+    })
+    const auditEvent = createDefaultCampaignAuditEvent(record)
+
+    appendEvents([createInteractiveUpdatedEvent({
+      record,
+      auditEvents: auditEvent ? [auditEvent] : undefined,
+    })])
+  }, [appendEvents, createDefaultCampaignAuditEvent, createInteractiveUpdatedEvent])
 
   const value = useMemo<CampaignProgressContextValue>(() => ({
     isReady,

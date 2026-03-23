@@ -215,6 +215,12 @@ export function ContestationBuilder({ ownerChallengeSlug }: CampaignInteractiveE
     })
   }, [draft, form])
 
+  const handleTryAgain = useCallback(() => {
+    setStep(1)
+    setIsAwaitingEmailConfirmation(false)
+    void form.reset()
+  }, [form])
+
   const previewBody = useMemo(() => {
     const senderName = draft.senderName?.trim()
     if (!senderName) return null
@@ -242,10 +248,24 @@ export function ContestationBuilder({ ownerChallengeSlug }: CampaignInteractiveE
   const hasEmailForSend = draft.primariaEmail !== null && isValidEmail(draft.primariaEmail)
 
   if (form.isSubmitted) {
+    const isPending = form.submittedVariant === 'pending_review'
+    const isRejected = form.submittedVariant === 'rejected'
     const submittedPath = form.savedValue?.submissionPath
     return (
-      <div className="relative rounded-[28px] border border-amber-200/60 shadow-sm p-6 md:p-8 bg-gradient-to-br from-amber-50/40 via-background to-amber-50/20 dark:border-amber-800/40 dark:from-amber-950/20 dark:via-background dark:to-amber-950/10">
-        <Clock className="absolute top-4 right-4 h-16 w-16 text-amber-500/[0.08] pointer-events-none" />
+      <div className={`relative rounded-[28px] border shadow-sm p-6 md:p-8 ${
+        isPending
+          ? 'border-amber-200/60 bg-gradient-to-br from-amber-50/40 via-background to-amber-50/20 dark:border-amber-800/40 dark:from-amber-950/20 dark:via-background dark:to-amber-950/10'
+          : isRejected
+            ? 'border-red-200/60 bg-gradient-to-br from-red-50/50 via-background to-red-50/20 dark:border-red-800/40 dark:from-red-950/20 dark:via-background dark:to-red-950/10'
+            : 'border-emerald-200/60 bg-gradient-to-br from-emerald-50/50 via-background to-emerald-50/30 dark:border-emerald-800/40 dark:from-emerald-950/20 dark:via-background dark:to-emerald-950/10'
+      }`}>
+        <Clock className={`absolute top-4 right-4 h-16 w-16 pointer-events-none ${
+          isPending
+            ? 'text-amber-500/[0.08]'
+            : isRejected
+              ? 'text-red-500/[0.08]'
+              : 'text-emerald-500/[0.08]'
+        }`} />
 
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-lg font-black tracking-tight text-foreground">
@@ -260,9 +280,34 @@ export function ContestationBuilder({ ownerChallengeSlug }: CampaignInteractiveE
           {t`Your contestation has been recorded.`}
         </p>
 
-        <p className="mt-2 text-xs text-amber-600/80 dark:text-amber-400/80">
-          {t`Your information has been recorded and is being reviewed.`}
-        </p>
+        {isPending && (
+          <p className="mt-2 text-xs text-amber-600/80 dark:text-amber-400/80">
+            {t`Your information has been recorded and is being reviewed.`}
+          </p>
+        )}
+
+        {isRejected && (
+          <p className="mt-2 text-xs text-red-600/80 dark:text-red-400/80">
+            {form.reviewFeedbackText?.trim() || t`Review feedback is available. Please update your submission.`}
+          </p>
+        )}
+
+        {form.submittedVariant === 'completed' && (
+          <p className="mt-2 text-xs text-emerald-600/80 dark:text-emerald-400/80">
+            {t`Your submission has been reviewed and accepted.`}
+          </p>
+        )}
+
+        {isRejected && (
+          <div className="mt-5">
+            <Button
+              onClick={handleTryAgain}
+              className="w-full rounded-[22px] h-12 font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 transition-transform"
+            >
+              {t`Try again`}
+            </Button>
+          </div>
+        )}
       </div>
     )
   }

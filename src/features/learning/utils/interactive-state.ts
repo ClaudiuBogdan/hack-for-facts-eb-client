@@ -4,6 +4,8 @@ import type {
   InteractiveStateRecord,
   InteractionCompletionRule,
   InteractionOutcome,
+  InteractionReview,
+  InteractionReviewStatus,
   InteractionResult,
   InteractionScope,
   InteractionValue,
@@ -82,6 +84,7 @@ export function createInteractiveStateRecord(params: {
   readonly phase: InteractiveStateRecord['phase']
   readonly value: InteractionValue | null
   readonly result: InteractionResult | null
+  readonly review?: InteractionReview | null
   readonly updatedAt: string
   readonly submittedAt?: string | null
 }): InteractiveStateRecord {
@@ -95,9 +98,28 @@ export function createInteractiveStateRecord(params: {
     phase: params.phase,
     value: params.value,
     result: params.result,
+    ...(params.review !== undefined ? { review: params.review } : {}),
     updatedAt: params.updatedAt,
     submittedAt: params.submittedAt,
   }
+}
+
+export function getInteractionReview(
+  record: InteractiveStateRecord | null,
+): InteractionReview | null {
+  return record?.review ?? null
+}
+
+export function getInteractionReviewStatus(
+  record: InteractiveStateRecord | null,
+): InteractionReviewStatus | null {
+  return getInteractionReview(record)?.status ?? null
+}
+
+export function getInteractionReviewFeedbackText(
+  record: InteractiveStateRecord | null,
+): string | null {
+  return getInteractionReview(record)?.feedbackText ?? null
 }
 
 export function withInteractiveRecord(

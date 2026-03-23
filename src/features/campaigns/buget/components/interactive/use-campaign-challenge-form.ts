@@ -1,8 +1,12 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useCustomInteraction } from '@/features/learning/hooks/interactions/use-custom-interaction'
+import {
+  getInteractionReviewFeedbackText,
+  getInteractionReviewStatus,
+} from '@/features/learning/utils/interactive-state'
 import type { CivicOwnerChallengeSlug } from '../../civic-interaction-definitions'
-import { useChallengeInteractionAdapter } from '../../adapters/learning/challenge-interaction-adapter'
 import { useCampaignProgress } from '../../hooks/use-campaign-progress'
+import type { SubmittedVariant } from './CampaignChallengeFormShell'
 
 type UseCampaignChallengeFormInput = {
   readonly ownerChallengeSlug: CivicOwnerChallengeSlug
@@ -13,7 +17,12 @@ type UseCampaignChallengeFormInput = {
 export function useCampaignChallengeForm<TValue extends Record<string, unknown>>(
   params: UseCampaignChallengeFormInput,
 ) {
-  const { progress } = useCampaignProgress()
+  const {
+    progress,
+    getChallengeStatus,
+    markChallengeInProgress,
+    setChallengeStatus,
+  } = useCampaignProgress()
   const entityCui = progress.selectedEntityCui ?? undefined
 
   const interaction = useCustomInteraction<TValue>({
@@ -25,41 +34,104 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
     completionRule: { type: 'resolved' },
   })
 
-  const adapter = useChallengeInteractionAdapter(params.ownerChallengeSlug)
-
   const saveDraft = useCallback(async (value: TValue) => {
-    adapter.markInteractionStarted()
+    await Promise.resolve()
     await interaction.saveDraft(value)
-  }, [adapter, interaction])
+    markChallengeInProgress(params.ownerChallengeSlug)
+  }, [interaction, markChallengeInProgress, params.ownerChallengeSlug])
 
   const submit = useCallback(async (value: TValue) => {
     await interaction.complete(value)
-    if (params.completionAction === 'pending_review') {
-      adapter.markInteractionPendingReview()
-    } else {
-      adapter.markInteractionCompleted()
-    }
-  }, [adapter, interaction, params.completionAction])
+    setChallengeStatus(
+      params.ownerChallengeSlug,
+      params.completionAction === 'pending_review' ? 'pending_review' : 'completed',
+    )
+  }, [interaction, params.completionAction, params.ownerChallengeSlug, setChallengeStatus])
 
   const reset = useCallback(async () => {
     await interaction.reset()
   }, [interaction])
 
+  const reviewStatus = getInteractionReviewStatus(interaction.record)
+  const reviewFeedbackText = getInteractionReviewFeedbackText(interaction.record)
+  // Review-required interactives are modeled as one shared record:
+  // - client writes the submission payload
+  // - server later attaches authoritative `record.review`
+  // This keeps future review-required campaign interactives on the same
+  // rendering/completion path instead of reimplementing ad hoc status logic.
+  const submittedVariant: SubmittedVariant =
+    params.completionAction === 'pending_review'
+      ? reviewStatus === 'approved'
+        ? 'completed'
+        : reviewStatus === 'rejected'
+          ? 'rejected'
+          : 'pending_review'
+      : 'completed'
+  const challengeStatus =
+    interaction.record === null
+      ? 'not_started'
+      : submittedVariant === 'completed'
+        ? 'completed'
+        : submittedVariant === 'rejected'
+          ? 'in_progress'
+        : interaction.phase === 'resolved'
+          ? 'pending_review'
+          : 'in_progress'
+  const isCompleted =
+    params.completionAction === 'pending_review'
+      ? submittedVariant === 'completed'
+      : interaction.isCompleted
+  const persistedChallengeStatus = getChallengeStatus(params.ownerChallengeSlug)
+
+  useEffect(() => {
+    if (params.completionAction !== 'pending_review') {
+      return
+    }
+
+    if (reviewStatus !== 'approved' && reviewStatus !== 'rejected') {
+      return
+    }
+
+    const nextChallengeStatus = reviewStatus === 'approved' ? 'completed' : 'in_progress'
+    if (persistedChallengeStatus === nextChallengeStatus) {
+      return
+    }
+
+    setChallengeStatus(params.ownerChallengeSlug, nextChallengeStatus, {
+      incrementAttempts: false,
+      emitAuditEvent: false,
+    })
+  }, [
+    params.completionAction,
+    params.ownerChallengeSlug,
+    persistedChallengeStatus,
+    reviewStatus,
+    setChallengeStatus,
+  ])
+
   return useMemo(() => ({
+    record: interaction.record,
     savedValue: interaction.savedValue,
     phase: interaction.phase,
     isSubmitted: interaction.phase === 'resolved',
-    isCompleted: interaction.isCompleted,
-    challengeStatus: adapter.status,
+    isCompleted,
+    challengeStatus,
+    reviewStatus,
+    reviewFeedbackText,
+    submittedVariant,
     entityCui,
     saveDraft,
     submit,
     reset,
   }), [
+    interaction.record,
     interaction.savedValue,
     interaction.phase,
-    interaction.isCompleted,
-    adapter.status,
+    isCompleted,
+    challengeStatus,
+    reviewStatus,
+    reviewFeedbackText,
+    submittedVariant,
     entityCui,
     saveDraft,
     submit,

@@ -9,7 +9,9 @@ import {
 } from '../constants'
 import { CampaignProgressProvider, useCampaignProgress } from './use-campaign-progress'
 import {
+  CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY,
   CAMPAIGN_ACTIVE_MODULE_RECORD_KEY,
+  CAMPAIGN_SELECTED_ENTITY_RECORD_KEY,
   buildCampaignProgressRecords,
 } from '../utils/progress-records'
 import type { CampaignProgressSnapshot } from '../types'
@@ -74,6 +76,25 @@ function createRemoteResponse(
 
 function Wrapper({ children }: { readonly children: ReactNode }) {
   return <CampaignProgressProvider>{children}</CampaignProgressProvider>
+}
+
+function getCampaignEventsStorageKey() {
+  return `campaign_progress_events:${CAMPAIGN_ID}`
+}
+
+function readStoredCampaignEvents(): LearningProgressEvent[] {
+  const rawEvents = window.localStorage.getItem(getCampaignEventsStorageKey())
+  if (!rawEvents) {
+    return []
+  }
+
+  return JSON.parse(rawEvents) as LearningProgressEvent[]
+}
+
+function isInteractiveUpdatedEvent(
+  event: LearningProgressEvent,
+): event is Extract<LearningProgressEvent, { readonly type: 'interactive.updated' }> {
+  return event.type === 'interactive.updated'
 }
 
 describe('use-campaign-progress', () => {
@@ -149,6 +170,30 @@ describe('use-campaign-progress', () => {
 
     const parsedSnapshot = JSON.parse(rawSnapshot ?? '{}') as { selectedEntityCui?: string | null }
     expect(parsedSnapshot.selectedEntityCui).toBe('12345678')
+
+    expect(readStoredCampaignEvents()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'interactive.updated',
+          payload: expect.objectContaining({
+            record: expect.objectContaining({
+              key: CAMPAIGN_SELECTED_ENTITY_RECORD_KEY,
+            }),
+            auditEvents: [
+              expect.objectContaining({
+                type: 'submitted',
+                actor: 'user',
+                recordKey: CAMPAIGN_SELECTED_ENTITY_RECORD_KEY,
+                value: {
+                  kind: 'json',
+                  json: { value: { entityCui: '12345678' } },
+                },
+              }),
+            ],
+          }),
+        }),
+      ]),
+    )
   })
 
   it('persists activeChallengeModuleSlug when selecting a module', async () => {
@@ -171,6 +216,174 @@ describe('use-campaign-progress', () => {
       activeChallengeModuleSlug?: string | null
     }
     expect(parsedSnapshot.activeChallengeModuleSlug).toBe('read-local-execution')
+
+    expect(readStoredCampaignEvents()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'interactive.updated',
+          payload: expect.objectContaining({
+            record: expect.objectContaining({
+              key: CAMPAIGN_ACTIVE_MODULE_RECORD_KEY,
+            }),
+            auditEvents: [
+              expect.objectContaining({
+                type: 'submitted',
+                actor: 'user',
+                recordKey: CAMPAIGN_ACTIVE_MODULE_RECORD_KEY,
+                value: {
+                  kind: 'json',
+                  json: { value: { moduleSlug: 'read-local-execution' } },
+                },
+              }),
+            ],
+          }),
+        }),
+      ]),
+    )
+  })
+
+  it('persists accepted challenge terms with an audit event', async () => {
+    const { result } = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true)
+    })
+
+    act(() => {
+      result.current.acceptChallengeTerms({ acceptedTermsAt: '2026-01-05T00:00:00.000Z' })
+    })
+
+    expect(result.current.progress.acceptedTermsAt).toBe('2026-01-05T00:00:00.000Z')
+    expect(readStoredCampaignEvents()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'interactive.updated',
+          payload: expect.objectContaining({
+            record: expect.objectContaining({
+              key: CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY,
+            }),
+            auditEvents: [
+              expect.objectContaining({
+                type: 'submitted',
+                actor: 'user',
+                recordKey: CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY,
+                value: {
+                  kind: 'json',
+                  json: { value: { acceptedTermsAt: '2026-01-05T00:00:00.000Z' } },
+                },
+              }),
+            ],
+          }),
+        }),
+      ]),
+    )
+  })
+
+  it('does not persist an audit event when accepted challenge terms are reset', async () => {
+    const { result } = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true)
+    })
+
+    act(() => {
+      result.current.acceptChallengeTerms({ acceptedTermsAt: '2026-01-05T00:00:00.000Z' })
+    })
+
+    act(() => {
+      result.current.resetAcceptedChallengeTerms()
+    })
+
+    const resetTermsEvent = readStoredCampaignEvents()
+      .filter(isInteractiveUpdatedEvent)
+      .find((event) => {
+        return event.payload.record.key === CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY
+          && event.payload.record.value?.kind === 'json'
+          && event.payload.record.value.json.value.acceptedTermsAt === null
+      })
+
+    expect(resetTermsEvent).toBeDefined()
+    expect(resetTermsEvent?.payload.auditEvents).toBeUndefined()
+  })
+
+  it('persists challenge status updates with an audit event', async () => {
+    const { result } = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true)
+    })
+
+    act(() => {
+      result.current.setChallengeStatus('challenge-1', 'in_progress')
+    })
+
+    expect(result.current.progress.challenges['challenge-1']).toEqual(
+      expect.objectContaining({ status: 'in_progress', attempts: 1 }),
+    )
+    expect(readStoredCampaignEvents()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'interactive.updated',
+          payload: expect.objectContaining({
+            record: expect.objectContaining({
+              key: 'system:campaign:buget:challenge:challenge-1',
+            }),
+            auditEvents: [
+              expect.objectContaining({
+                type: 'submitted',
+                actor: 'user',
+                recordKey: 'system:campaign:buget:challenge:challenge-1',
+                value: {
+                  kind: 'json',
+                  json: {
+                    value: {
+                      challengeSlug: 'challenge-1',
+                      status: 'in_progress',
+                      attempts: 1,
+                    },
+                  },
+                },
+              }),
+            ],
+          }),
+        }),
+      ]),
+    )
+  })
+
+  it('supports review-driven challenge status corrections without attempts or audit events', async () => {
+    const { result } = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true)
+    })
+
+    act(() => {
+      result.current.setChallengeStatus('challenge-1', 'pending_review')
+    })
+
+    act(() => {
+      result.current.setChallengeStatus('challenge-1', 'in_progress', {
+        incrementAttempts: false,
+        emitAuditEvent: false,
+      })
+    })
+
+    expect(result.current.progress.challenges['challenge-1']).toEqual(
+      expect.objectContaining({ status: 'in_progress', attempts: 1 }),
+    )
+
+    const reviewSyncEvent = readStoredCampaignEvents()
+      .filter(isInteractiveUpdatedEvent)
+      .find((event) => {
+        return event.payload.record.key === 'system:campaign:buget:challenge:challenge-1'
+          && event.payload.record.value?.kind === 'json'
+          && event.payload.record.value.json.value.status === 'in_progress'
+          && event.payload.record.value.json.value.attempts === 1
+      })
+
+    expect(reviewSyncEvent).toBeDefined()
+    expect(reviewSyncEvent?.payload.auditEvents).toBeUndefined()
   })
 
   it('keeps the newer local active challenge module when sync resolves older remote data', async () => {
@@ -226,6 +439,20 @@ describe('use-campaign-progress', () => {
         ]),
       }),
     )
+
+    const migratedActiveModuleEvent = syncCampaignProgressMock.mock.calls
+      .flatMap(([params]) => {
+        const value = params as { events?: readonly LearningProgressEvent[] }
+        return (value.events ?? []).filter(isInteractiveUpdatedEvent)
+      })
+      .find((event) => {
+        return event.payload.record.key === CAMPAIGN_ACTIVE_MODULE_RECORD_KEY
+          && event.payload.record.value?.kind === 'json'
+          && event.payload.record.value.json.value.moduleSlug === 'read-local-execution'
+      })
+
+    expect(migratedActiveModuleEvent).toBeDefined()
+    expect(migratedActiveModuleEvent?.payload.auditEvents).toBeUndefined()
   })
 
   it('keeps initial resolution pending for signed-in users until sync resolves', async () => {
@@ -310,6 +537,55 @@ describe('use-campaign-progress', () => {
     consoleWarnSpy.mockRestore()
   })
 
+  it('does not synthesize audit events for bootstrap migrations after a fetch failure', async () => {
+    authState = {
+      isLoaded: true,
+      isSignedIn: true,
+      user: { id: 'user-1' },
+    }
+
+    window.localStorage.setItem(
+      CAMPAIGN_PROGRESS_STORAGE_KEY,
+      JSON.stringify(
+        createSnapshot({
+          activeChallengeModuleSlug: 'read-local-execution',
+          lastUpdated: '2026-01-02T00:00:00.000Z',
+        }),
+      ),
+    )
+
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    fetchCampaignProgressMock
+      .mockRejectedValueOnce(new Error('NotFoundError'))
+      .mockResolvedValue(createRemoteResponse())
+
+    const { result } = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isInitialResolutionReady).toBe(true)
+    })
+
+    await act(async () => {
+      await result.current.sync()
+    })
+
+    const migratedActiveModuleEvent = syncCampaignProgressMock.mock.calls
+      .flatMap(([params]) => {
+        const value = params as { events?: readonly LearningProgressEvent[] }
+        return (value.events ?? []).filter(isInteractiveUpdatedEvent)
+      })
+      .find((event) => {
+        return event.payload.record.key === CAMPAIGN_ACTIVE_MODULE_RECORD_KEY
+          && event.payload.record.value?.kind === 'json'
+          && event.payload.record.value.json.value.moduleSlug === 'read-local-execution'
+      })
+
+    expect(migratedActiveModuleEvent).toBeDefined()
+    expect(migratedActiveModuleEvent?.payload.auditEvents).toBeUndefined()
+
+    consoleWarnSpy.mockRestore()
+  })
+
   it('resets campaign progress without emitting a global progress.reset event', async () => {
     authState = {
       isLoaded: true,
@@ -367,5 +643,33 @@ describe('use-campaign-progress', () => {
         return (value.events ?? []).map((event) => event.type)
       }),
     ).not.toContain('progress.reset')
+
+    const syncedInteractiveEvents = syncCampaignProgressMock.mock.calls.flatMap(([params]) => {
+      const value = params as { events?: readonly LearningProgressEvent[] }
+      return (value.events ?? []).filter(isInteractiveUpdatedEvent)
+    })
+    const clearedSelectedEntityEvent = syncedInteractiveEvents.find((event) => {
+      return event.payload.record.key === CAMPAIGN_SELECTED_ENTITY_RECORD_KEY
+        && event.payload.record.value?.kind === 'json'
+        && event.payload.record.value.json.value.entityCui === null
+    })
+    const clearedActiveModuleEvent = syncedInteractiveEvents.find((event) => {
+      return event.payload.record.key === CAMPAIGN_ACTIVE_MODULE_RECORD_KEY
+        && event.payload.record.value?.kind === 'json'
+        && event.payload.record.value.json.value.moduleSlug === null
+    })
+    const resetChallengeEvent = syncedInteractiveEvents.find((event) => {
+      return event.payload.record.key === 'system:campaign:buget:challenge:challenge-1'
+        && event.payload.record.value?.kind === 'json'
+        && event.payload.record.value.json.value.status === 'not_started'
+        && event.payload.record.value.json.value.attempts === 0
+    })
+
+    expect(clearedSelectedEntityEvent).toBeDefined()
+    expect(clearedSelectedEntityEvent?.payload.auditEvents).toBeUndefined()
+    expect(clearedActiveModuleEvent).toBeDefined()
+    expect(clearedActiveModuleEvent?.payload.auditEvents).toBeUndefined()
+    expect(resetChallengeEvent).toBeDefined()
+    expect(resetChallengeEvent?.payload.auditEvents).toBeUndefined()
   })
 })

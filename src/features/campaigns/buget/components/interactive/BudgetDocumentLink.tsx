@@ -82,22 +82,46 @@ export function BudgetDocumentLink({ ownerChallengeSlug }: CampaignInteractiveEl
     void form.reset()
   }, [form])
 
+  const handleTryAgain = useCallback(() => {
+    void form.reset()
+  }, [form])
+
   if (!form.entityCui) {
     return null
   }
 
   if (form.isSubmitted && form.savedValue) {
+    const isPending = form.submittedVariant === 'pending_review'
+    const isRejected = form.submittedVariant === 'rejected'
     const saved = form.savedValue
     return (
-      <div className="rounded-[28px] border border-amber-200/60 dark:border-amber-800/40 shadow-sm p-6 md:p-8 relative overflow-hidden bg-gradient-to-br from-amber-50/40 via-background to-amber-50/20 dark:from-amber-950/20 dark:via-background dark:to-amber-950/10">
-        <FileText className="absolute top-4 right-4 h-20 w-20 rotate-6 text-amber-500/[0.06] pointer-events-none" />
+      <div className={`rounded-[28px] border shadow-sm p-6 md:p-8 relative overflow-hidden ${
+        isPending
+          ? 'border-amber-200/60 dark:border-amber-800/40 bg-gradient-to-br from-amber-50/40 via-background to-amber-50/20 dark:from-amber-950/20 dark:via-background dark:to-amber-950/10'
+          : isRejected
+            ? 'border-red-200/60 dark:border-red-800/40 bg-gradient-to-br from-red-50/50 via-background to-red-50/20 dark:from-red-950/20 dark:via-background dark:to-red-950/10'
+            : 'border-emerald-200/60 dark:border-emerald-800/40 bg-gradient-to-br from-emerald-50/50 via-background to-emerald-50/30 dark:from-emerald-950/20 dark:via-background dark:to-emerald-950/10'
+      }`}>
+        <FileText className={`absolute top-4 right-4 h-20 w-20 rotate-6 pointer-events-none ${
+          isPending
+            ? 'text-amber-500/[0.06]'
+            : isRejected
+              ? 'text-red-500/[0.06]'
+              : 'text-emerald-500/[0.06]'
+        }`} />
 
         <div className="flex items-center justify-between gap-3 mb-4">
           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
             <Trans>Budget document</Trans>
           </span>
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-            {t`Pending review`}
+          <span className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] ${
+            isPending
+              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+              : isRejected
+                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+          }`}>
+            {isPending ? t`Pending review` : isRejected ? t`Needs changes` : t`Submitted`}
           </span>
         </div>
 
@@ -124,14 +148,29 @@ export function BudgetDocumentLink({ ownerChallengeSlug }: CampaignInteractiveEl
           )}
         </div>
 
+        {isRejected && form.reviewFeedbackText && (
+          <p className="mt-4 text-sm font-medium text-red-700 dark:text-red-400">
+            {form.reviewFeedbackText}
+          </p>
+        )}
+
         <div className="mt-6">
-          <Button
-            variant="ghost"
-            onClick={handleReset}
-            className="rounded-[22px] h-10 font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40"
-          >
-            {t`Reset`}
-          </Button>
+          {isRejected ? (
+            <Button
+              onClick={handleTryAgain}
+              className="w-full rounded-[22px] h-12 font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 transition-transform"
+            >
+              {t`Try again`}
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              onClick={handleReset}
+              className="rounded-[22px] h-10 font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/40"
+            >
+              {t`Reset`}
+            </Button>
+          )}
         </div>
       </div>
     )

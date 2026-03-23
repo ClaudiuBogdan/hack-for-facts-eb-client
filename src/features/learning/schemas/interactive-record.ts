@@ -59,6 +59,12 @@ export const InteractionResultSchema = z.object({
   evaluatedAt: z.string().datetime().nullable().optional(),
 })
 
+export const InteractionReviewSchema = z.object({
+  status: z.enum(['pending', 'approved', 'rejected']),
+  reviewedAt: z.string().datetime().nullable(),
+  feedbackText: z.string().nullable().optional(),
+})
+
 export const InteractionCompletionRuleSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('outcome'),
@@ -87,6 +93,7 @@ export const InteractiveStateRecordSchema = z.object({
   phase: InteractionPhaseSchema,
   value: InteractionValueSchema.nullable(),
   result: InteractionResultSchema.nullable(),
+  review: InteractionReviewSchema.nullable().optional(),
   updatedAt: z.string().datetime(),
   submittedAt: z.string().datetime().nullable().optional(),
 })

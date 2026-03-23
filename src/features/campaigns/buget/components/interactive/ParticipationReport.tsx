@@ -88,6 +88,10 @@ export function ParticipationReport({ ownerChallengeSlug }: CampaignInteractiveE
     void form.reset()
   }, [form])
 
+  const handleTryAgain = useCallback(() => {
+    void form.reset()
+  }, [form])
+
   if (!form.entityCui) {
     return null
   }
@@ -99,7 +103,9 @@ export function ParticipationReport({ ownerChallengeSlug }: CampaignInteractiveE
       title={t`Participation report`}
       description={t`Document your participation in the local budget debate.`}
       isSubmitted={form.isSubmitted}
-      submittedVariant="pending_review"
+      submittedVariant={form.submittedVariant}
+      feedbackText={form.reviewFeedbackText}
+      onTryAgain={handleTryAgain}
       onSubmit={handleSubmit}
       onReset={handleReset}
       isSubmitDisabled={isSubmitDisabled}

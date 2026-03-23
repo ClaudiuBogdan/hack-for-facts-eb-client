@@ -68,6 +68,11 @@ type InteractiveStateRecord = {
   phase: 'idle' | 'draft' | 'pending' | 'resolved' | 'error'
   value: InteractionValue | null
   result: InteractionResult | null
+  review?: {
+    status: 'pending' | 'approved' | 'rejected'
+    reviewedAt: string | null
+    feedbackText?: string | null
+  } | null
   updatedAt: string
   submittedAt?: string | null
 }
@@ -79,6 +84,52 @@ Rules:
 - The client treats `updatedAt` as the record freshness field.
 - `kind: 'custom'` with `value.kind: 'json'` is the standard shape for reserved/system records.
 - Audit history is stored separately as `InteractiveAuditEvent[]`, keyed by `recordKey`.
+- `result` remains the generic evaluation/scoring channel used by quiz-like interactions.
+- `review` is reserved for asynchronous server validation flows and must not be authored by public client sync.
+
+### 2.4 Review-required interaction example
+
+For future campaign interactives that require moderation or validation, use one record:
+
+- the client submits `value`, `phase`, `submittedAt`, and `updatedAt`
+- the server later sets `review`
+
+Example after review approval:
+
+```ts
+{
+  key: 'campaign:primarie-website-url::entity:4305857',
+  interactionId: 'campaign:primarie-website-url',
+  lessonId: 'civic-monitor-and-request',
+  kind: 'custom',
+  scope: { type: 'entity', entityCui: '4305857' },
+  completionRule: { type: 'resolved' },
+  phase: 'resolved',
+  value: {
+    kind: 'json',
+    json: {
+      value: {
+        websiteUrl: 'https://example.com',
+        submittedAt: '2026-03-23T19:27:40.526Z',
+      },
+    },
+  },
+  result: null,
+  review: {
+    status: 'approved',
+    reviewedAt: '2026-03-23T19:30:00.000Z',
+    feedbackText: 'Approved by review.',
+  },
+  updatedAt: '2026-03-23T19:30:00.000Z',
+  submittedAt: '2026-03-23T19:27:40.527Z',
+}
+```
+
+Client rendering rule for review-required interactives:
+
+- `review.status === 'approved'` => submitted/completed state
+- `review.status === 'rejected'` => submitted/rejected state and show `feedbackText`
+- missing review or `review.status === 'pending'` => submitted/pending-review state
 
 ### 2.3 Remote Snapshot vs Projected Snapshot
 
