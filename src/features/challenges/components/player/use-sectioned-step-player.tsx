@@ -318,6 +318,28 @@ export function useSectionedStepPlayer({
     [accessCardVariant, isSubmitting, locale, onRegister],
   )
 
+  const quizAnswerRef = useRef(quizState.answer)
+  quizAnswerRef.current = quizState.answer
+  const quizIsAnsweredRef = useRef(quizState.isAnswered)
+  quizIsAnsweredRef.current = quizState.isAnswered
+
+  const handlePendingQuizOptionChange = useCallback((optionId: string) => {
+    void (async () => {
+      if (!quizInteractive || quizIsAnsweredRef.current || isSubmittingQuizAnswer || !isAccessGranted) {
+        return
+      }
+
+      setPendingQuizOptionId(optionId)
+      setIsSubmittingQuizAnswer(true)
+
+      try {
+        await quizAnswerRef.current(optionId)
+      } finally {
+        setIsSubmittingQuizAnswer(false)
+      }
+    })()
+  }, [isAccessGranted, isSubmittingQuizAnswer, quizInteractive])
+
   const sectionedMdxComponents = useSectionedStepMdxComponents({
     entityCui,
     stepId,
@@ -325,22 +347,7 @@ export function useSectionedStepPlayer({
     accessReplacement,
     isAccessGranted,
     pendingQuizOptionId,
-    onPendingQuizOptionChange: (optionId) => {
-      void (async () => {
-        if (!quizInteractive || quizState.isAnswered || isSubmittingQuizAnswer || !isAccessGranted) {
-          return
-        }
-
-        setPendingQuizOptionId(optionId)
-        setIsSubmittingQuizAnswer(true)
-
-        try {
-          await quizState.answer(optionId)
-        } finally {
-          setIsSubmittingQuizAnswer(false)
-        }
-      })()
-    },
+    onPendingQuizOptionChange: handlePendingQuizOptionChange,
     isQuizAnswered: quizState.isAnswered,
     isQuizPending: isSubmittingQuizAnswer,
   })

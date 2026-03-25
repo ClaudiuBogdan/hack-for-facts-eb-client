@@ -8,6 +8,7 @@ import type {
 import {
   buildInteractiveRecordKey,
   createInteractiveStateRecord,
+  deriveInteractiveLifecycleState,
   doesInteractionSatisfyCompletionRule,
   getChoiceSelection,
   getEmptyUnifiedInteractiveState,
@@ -43,6 +44,7 @@ function createRecord(
     phase: overrides.phase ?? 'resolved',
     value: overrides.value ?? null,
     result: overrides.result ?? null,
+    ...(overrides.review !== undefined ? { review: overrides.review } : {}),
     updatedAt: overrides.updatedAt ?? ISO_1,
     submittedAt: overrides.submittedAt ?? ISO_1,
   }
@@ -57,6 +59,7 @@ function createDefinition(
     kind: overrides.kind ?? 'quiz',
     scopePolicy: overrides.scopePolicy ?? 'global',
     completionRule: overrides.completionRule ?? { type: 'resolved' },
+    lifecycleMode: overrides.lifecycleMode ?? 'immediate',
   }
 }
 
@@ -219,6 +222,134 @@ describe('createInteractiveStateRecord', () => {
     })
     expect(record.updatedAt).toBe(ISO_1)
     expect(record.submittedAt).toBe(ISO_1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// deriveInteractiveLifecycleState
+// ---------------------------------------------------------------------------
+describe('deriveInteractiveLifecycleState', () => {
+  it('treats resolved correct immediate interactions as success', () => {
+    const record = createRecord({
+      key: 'quiz-1::global',
+      interactionId: 'quiz-1',
+      lessonId: 'lesson-1',
+      kind: 'quiz',
+      phase: 'resolved',
+      result: {
+        outcome: 'correct',
+        score: 100,
+        evaluatedAt: ISO_2,
+      },
+    })
+
+    expect(deriveInteractiveLifecycleState(record, 'immediate')).toEqual(
+      expect.objectContaining({
+        status: 'passed',
+        outcome: 'correct',
+        isSubmitted: true,
+        isSuccessful: true,
+        isFailure: false,
+      }),
+    )
+  })
+
+  it('treats resolved incorrect immediate interactions as failure', () => {
+    const record = createRecord({
+      key: 'quiz-1::global',
+      interactionId: 'quiz-1',
+      lessonId: 'lesson-1',
+      kind: 'quiz',
+      phase: 'resolved',
+      result: {
+        outcome: 'incorrect',
+        score: 0,
+        evaluatedAt: ISO_2,
+      },
+    })
+
+    expect(deriveInteractiveLifecycleState(record, 'immediate')).toEqual(
+      expect.objectContaining({
+        status: 'failed',
+        outcome: 'incorrect',
+        isSubmitted: true,
+        isSuccessful: false,
+        isFailure: true,
+      }),
+    )
+  })
+
+  it('treats pending async-review interactions as pending', () => {
+    const record = createRecord({
+      key: 'campaign:primarie-website-url::entity:4305857',
+      interactionId: 'campaign:primarie-website-url',
+      lessonId: 'civic-monitor-and-request',
+      kind: 'custom',
+      phase: 'pending',
+      result: null,
+      review: null,
+      submittedAt: ISO_1,
+    })
+
+    expect(deriveInteractiveLifecycleState(record, 'async_review')).toEqual(
+      expect.objectContaining({
+        status: 'pending',
+        reviewStatus: null,
+        isPending: true,
+        isSubmitted: true,
+      }),
+    )
+  })
+
+  it('treats approved async-review interactions as success', () => {
+    const record = createRecord({
+      key: 'campaign:primarie-website-url::entity:4305857',
+      interactionId: 'campaign:primarie-website-url',
+      lessonId: 'civic-monitor-and-request',
+      kind: 'custom',
+      phase: 'resolved',
+      result: null,
+      review: {
+        status: 'approved',
+        reviewedAt: ISO_2,
+      },
+      submittedAt: ISO_1,
+    })
+
+    expect(deriveInteractiveLifecycleState(record, 'async_review')).toEqual(
+      expect.objectContaining({
+        status: 'passed',
+        reviewStatus: 'approved',
+        isSuccessful: true,
+      }),
+    )
+  })
+
+  it('treats rejected async-review interactions as failure', () => {
+    const record = createRecord({
+      key: 'campaign:primarie-website-url::entity:4305857',
+      interactionId: 'campaign:primarie-website-url',
+      lessonId: 'civic-monitor-and-request',
+      kind: 'custom',
+      phase: 'failed',
+      result: null,
+      review: {
+        status: 'rejected',
+        reviewedAt: ISO_3,
+        feedbackText: 'Please use the official website.',
+      },
+      submittedAt: ISO_1,
+    })
+
+    expect(deriveInteractiveLifecycleState(record, 'async_review')).toEqual(
+      expect.objectContaining({
+        status: 'failed',
+        reviewStatus: 'rejected',
+        feedbackText: 'Please use the official website.',
+        isFailure: true,
+        canRetry: true,
+      }),
+    )
   })
 })
 

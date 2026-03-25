@@ -3,6 +3,7 @@ import type {
   InteractiveDefinition,
   InteractiveStateRecord,
   InteractionCompletionRule,
+  InteractionLifecycleMode,
   InteractionOutcome,
   InteractionReview,
   InteractionReviewStatus,
@@ -13,6 +14,21 @@ import type {
   UnifiedInteractiveState,
 } from '../types'
 import { isoToTime } from './date-utils'
+
+export type InteractiveLifecycleStatus = 'idle' | 'draft' | 'pending' | 'passed' | 'failed'
+
+export type DerivedInteractiveLifecycleState = {
+  readonly mode: InteractionLifecycleMode
+  readonly status: InteractiveLifecycleStatus
+  readonly reviewStatus: InteractionReviewStatus | null
+  readonly feedbackText: string | null
+  readonly outcome: InteractionOutcome
+  readonly isSubmitted: boolean
+  readonly isSuccessful: boolean
+  readonly isFailure: boolean
+  readonly isPending: boolean
+  readonly canRetry: boolean
+}
 
 export function getEmptyUnifiedInteractiveState(): UnifiedInteractiveState {
   return {
@@ -120,6 +136,62 @@ export function getInteractionReviewFeedbackText(
   record: InteractiveStateRecord | null,
 ): string | null {
   return getInteractionReview(record)?.feedbackText ?? null
+}
+
+/**
+ * Canonical client-side lifecycle interpretation for synced interaction
+ * records. The server contract is documented in
+ * `docs/specs/specs-202603201356-learning-progress-generic-sync.md`.
+ *
+ * Tests in `interactive-state.test.ts`, campaign projection tests, and
+ * campaign form tests should be treated as executable examples for this
+ * mapping.
+ */
+export function deriveInteractiveLifecycleState(
+  record: InteractiveStateRecord | null,
+  lifecycleMode: InteractionLifecycleMode = 'immediate',
+): DerivedInteractiveLifecycleState {
+  const reviewStatus = getInteractionReviewStatus(record)
+  const outcome = record?.result?.outcome ?? null
+  const feedbackText =
+    lifecycleMode === 'async_review'
+      ? getInteractionReviewFeedbackText(record)
+      : record?.result?.feedbackText ?? null
+
+  let status: InteractiveLifecycleStatus = 'idle'
+
+  if (record !== null) {
+    if (record.phase === 'draft') {
+      status = 'draft'
+    } else if (lifecycleMode === 'async_review') {
+      if (reviewStatus === 'approved') {
+        status = 'passed'
+      } else if (reviewStatus === 'rejected' || record.phase === 'failed') {
+        status = 'failed'
+      } else if (reviewStatus === 'pending' || record.phase === 'pending' || record.phase === 'resolved') {
+        status = 'pending'
+      }
+    } else if (record.phase === 'resolved') {
+      status = outcome === 'incorrect' ? 'failed' : 'passed'
+    } else if (record.phase === 'failed') {
+      status = 'failed'
+    } else if (record.phase === 'pending') {
+      status = 'pending'
+    }
+  }
+
+  return {
+    mode: lifecycleMode,
+    status,
+    reviewStatus,
+    feedbackText,
+    outcome,
+    isSubmitted: status === 'pending' || status === 'passed' || status === 'failed',
+    isSuccessful: status === 'passed',
+    isFailure: status === 'failed',
+    isPending: status === 'pending',
+    canRetry: status === 'failed',
+  }
 }
 
 export function withInteractiveRecord(

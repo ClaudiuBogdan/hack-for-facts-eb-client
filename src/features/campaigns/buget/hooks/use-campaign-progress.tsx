@@ -65,6 +65,7 @@ const CAMPAIGN_PROGRESS_EVENTS_STORAGE_KEY = `campaign_progress_events:${CAMPAIG
 const CAMPAIGN_PROGRESS_SYNC_STORAGE_KEY = `campaign_progress_sync:${CAMPAIGN_ID}`
 const CAMPAIGN_PROGRESS_CLIENT_ID_STORAGE_KEY = `campaign_progress_client_id:${CAMPAIGN_ID}`
 const SYNC_DEBOUNCE_MS = 1200
+const REMOTE_REFRESH_INTERVAL_MS = 60000
 
 const CampaignProgressContext = createContext<CampaignProgressContextValue | null>(null)
 
@@ -513,6 +514,38 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    if (!isSignedIn || !user?.id) {
+      return
+    }
+
+    const syncFromRemote = () => {
+      void syncNowRef.current()
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        syncFromRemote()
+      }
+    }
+
+    const intervalId = window.setInterval(syncFromRemote, REMOTE_REFRESH_INTERVAL_MS)
+    window.addEventListener('focus', syncFromRemote)
+    window.addEventListener('online', syncFromRemote)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      window.clearInterval(intervalId)
+      window.removeEventListener('focus', syncFromRemote)
+      window.removeEventListener('online', syncFromRemote)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [isSignedIn, user?.id])
 
   useEffect(() => {
     let isActive = true

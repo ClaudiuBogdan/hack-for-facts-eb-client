@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import type { InteractiveStateRecord, LearningProgressRemoteSnapshot } from '@/features/learning/types'
 import { CAMPAIGN_ID } from '../constants'
+import {
+  BUDGET_DOCUMENT_LINK_INTERACTION,
+  PRIMARIE_CONTACT_INFO_INTERACTION,
+  PRIMARIE_WEBSITE_LINK_INTERACTION,
+} from '../civic-interaction-definitions'
 import { getEmptyCampaignProgressSnapshot } from '../schemas/progress-schema'
 import {
   CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY,
@@ -125,6 +130,223 @@ describe('campaign progress records', () => {
       updatedAt: ISO_2,
     })
     expect(snapshot.lastUpdated).toBe(ISO_3)
+  })
+
+  it('derives challenge completion from approved review records', () => {
+    const challengeRecord = createCampaignChallengeRecord({
+      challengeSlug: 'civic-monitor-and-request',
+      status: 'pending_review',
+      attempts: 1,
+      updatedAt: ISO_1,
+    })
+
+    const snapshot = projectCampaignProgressFromRecords({
+      [challengeRecord.key]: challengeRecord,
+      'campaign:primarie-website-url::entity:4305857': {
+        key: 'campaign:primarie-website-url::entity:4305857',
+        interactionId: 'campaign:primarie-website-url',
+        lessonId: 'civic-monitor-and-request',
+        kind: 'custom',
+        scope: { type: 'entity', entityCui: '4305857' },
+        completionRule: { type: 'resolved' },
+        phase: 'resolved',
+        value: {
+          kind: 'json',
+          json: { value: { websiteUrl: 'https://example.com' } },
+        },
+        result: null,
+        review: {
+          status: 'approved',
+          reviewedAt: ISO_2,
+        },
+        updatedAt: ISO_2,
+        submittedAt: ISO_1,
+      },
+    })
+
+    expect(snapshot.challenges['civic-monitor-and-request']).toEqual({
+      status: 'completed',
+      attempts: 1,
+      updatedAt: ISO_2,
+    })
+  })
+
+  it('derives challenge retry state from rejected review records', () => {
+    const challengeRecord = createCampaignChallengeRecord({
+      challengeSlug: 'civic-monitor-and-request',
+      status: 'pending_review',
+      attempts: 2,
+      updatedAt: ISO_1,
+    })
+
+    const snapshot = projectCampaignProgressFromRecords({
+      [challengeRecord.key]: challengeRecord,
+      'campaign:primarie-website-url::entity:4305857': {
+        key: 'campaign:primarie-website-url::entity:4305857',
+        interactionId: 'campaign:primarie-website-url',
+        lessonId: 'civic-monitor-and-request',
+        kind: 'custom',
+        scope: { type: 'entity', entityCui: '4305857' },
+        completionRule: { type: 'resolved' },
+        phase: 'failed',
+        value: {
+          kind: 'json',
+          json: { value: { websiteUrl: 'https://example.com' } },
+        },
+        result: null,
+        review: {
+          status: 'rejected',
+          reviewedAt: ISO_3,
+          feedbackText: 'Please use the official website.',
+        },
+        updatedAt: ISO_3,
+        submittedAt: ISO_1,
+      },
+    })
+
+    expect(snapshot.challenges['civic-monitor-and-request']).toEqual({
+      status: 'in_progress',
+      attempts: 2,
+      updatedAt: ISO_3,
+    })
+  })
+
+  it('does not let a newer draft downgrade a completed sibling challenge state', () => {
+    const snapshot = projectCampaignProgressFromRecords({
+      [getCampaignChallengeRecordKey('civic-monitor-and-request')]: createCampaignChallengeRecord({
+        challengeSlug: 'civic-monitor-and-request',
+        status: 'completed',
+        attempts: 2,
+        updatedAt: ISO_2,
+      }),
+      'campaign:primarie-contact-info::entity:4305857': {
+        key: 'campaign:primarie-contact-info::entity:4305857',
+        interactionId: PRIMARIE_CONTACT_INFO_INTERACTION.interactionId,
+        lessonId: PRIMARIE_CONTACT_INFO_INTERACTION.ownerChallengeSlug,
+        kind: 'custom',
+        scope: { type: 'entity', entityCui: '4305857' },
+        completionRule: { type: 'resolved' },
+        phase: 'draft',
+        value: {
+          kind: 'json',
+          json: { value: { email: 'primaria@example.ro' } },
+        },
+        result: null,
+        updatedAt: ISO_3,
+        submittedAt: null,
+      },
+    })
+
+    expect(snapshot.challenges['civic-monitor-and-request']).toEqual({
+      status: 'completed',
+      attempts: 2,
+      updatedAt: ISO_2,
+    })
+  })
+
+  it('does not let a newer draft downgrade a pending sibling challenge state', () => {
+    const snapshot = projectCampaignProgressFromRecords({
+      [getCampaignChallengeRecordKey('civic-monitor-and-request')]: createCampaignChallengeRecord({
+        challengeSlug: 'civic-monitor-and-request',
+        status: 'pending_review',
+        attempts: 1,
+        updatedAt: ISO_2,
+      }),
+      'campaign:primarie-contact-info::entity:4305857': {
+        key: 'campaign:primarie-contact-info::entity:4305857',
+        interactionId: PRIMARIE_CONTACT_INFO_INTERACTION.interactionId,
+        lessonId: PRIMARIE_CONTACT_INFO_INTERACTION.ownerChallengeSlug,
+        kind: 'custom',
+        scope: { type: 'entity', entityCui: '4305857' },
+        completionRule: { type: 'resolved' },
+        phase: 'draft',
+        value: {
+          kind: 'json',
+          json: { value: { email: 'primaria@example.ro' } },
+        },
+        result: null,
+        updatedAt: ISO_3,
+        submittedAt: null,
+      },
+    })
+
+    expect(snapshot.challenges['civic-monitor-and-request']).toEqual({
+      status: 'pending_review',
+      attempts: 1,
+      updatedAt: ISO_2,
+    })
+  })
+
+  it('keeps explicit challenge resets authoritative over older tracked interactions', () => {
+    const snapshot = projectCampaignProgressFromRecords({
+      [getCampaignChallengeRecordKey('civic-monitor-and-request')]: createCampaignChallengeRecord({
+        challengeSlug: 'civic-monitor-and-request',
+        status: 'not_started',
+        attempts: 0,
+        updatedAt: ISO_3,
+      }),
+      'campaign:primarie-website-url::entity:4305857': {
+        key: 'campaign:primarie-website-url::entity:4305857',
+        interactionId: PRIMARIE_WEBSITE_LINK_INTERACTION.interactionId,
+        lessonId: PRIMARIE_WEBSITE_LINK_INTERACTION.ownerChallengeSlug,
+        kind: 'custom',
+        scope: { type: 'entity', entityCui: '4305857' },
+        completionRule: { type: 'resolved' },
+        phase: 'pending',
+        value: {
+          kind: 'json',
+          json: { value: { websiteUrl: 'https://example.com' } },
+        },
+        result: null,
+        updatedAt: ISO_2,
+        submittedAt: ISO_2,
+      },
+    })
+
+    expect(snapshot.challenges['civic-monitor-and-request']).toBeUndefined()
+  })
+
+  it('projects the strongest sibling interaction when no aggregate record exists', () => {
+    const snapshot = projectCampaignProgressFromRecords({
+      'campaign:primarie-contact-info::entity:4305857': {
+        key: 'campaign:primarie-contact-info::entity:4305857',
+        interactionId: PRIMARIE_CONTACT_INFO_INTERACTION.interactionId,
+        lessonId: PRIMARIE_CONTACT_INFO_INTERACTION.ownerChallengeSlug,
+        kind: 'custom',
+        scope: { type: 'entity', entityCui: '4305857' },
+        completionRule: { type: 'resolved' },
+        phase: 'draft',
+        value: {
+          kind: 'json',
+          json: { value: { email: 'primaria@example.ro' } },
+        },
+        result: null,
+        updatedAt: ISO_3,
+        submittedAt: null,
+      },
+      'campaign:budget-document-url::entity:4305857': {
+        key: 'campaign:budget-document-url::entity:4305857',
+        interactionId: BUDGET_DOCUMENT_LINK_INTERACTION.interactionId,
+        lessonId: BUDGET_DOCUMENT_LINK_INTERACTION.ownerChallengeSlug,
+        kind: 'custom',
+        scope: { type: 'entity', entityCui: '4305857' },
+        completionRule: { type: 'resolved' },
+        phase: 'pending',
+        value: {
+          kind: 'json',
+          json: { value: { documentUrl: 'https://example.com/document.pdf' } },
+        },
+        result: null,
+        updatedAt: ISO_1,
+        submittedAt: ISO_1,
+      },
+    })
+
+    expect(snapshot.challenges['civic-monitor-and-request']).toEqual({
+      status: 'pending_review',
+      attempts: 0,
+      updatedAt: ISO_1,
+    })
   })
 
   it('prefers the latest record when merging record maps', () => {

@@ -7,6 +7,7 @@ import {
   CAMPAIGN_PROGRESS_STORAGE_KEY,
   CAMPAIGN_PROGRESS_SCHEMA_VERSION,
 } from '../constants'
+import { PRIMARIE_WEBSITE_LINK_INTERACTION } from '../civic-interaction-definitions'
 import { CampaignProgressProvider, useCampaignProgress } from './use-campaign-progress'
 import {
   CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY,
@@ -705,5 +706,264 @@ describe('use-campaign-progress', () => {
     expect(clearedActiveModuleEvent?.payload.auditEvents).toBeUndefined()
     expect(resetChallengeEvent).toBeDefined()
     expect(resetChallengeEvent?.payload.auditEvents).toBeUndefined()
+  })
+
+  it('keeps reset challenge progress cleared when bootstrap merges older remote interaction records', async () => {
+    authState = {
+      isLoaded: true,
+      isSignedIn: true,
+      user: { id: 'user-1' },
+    }
+
+    fetchCampaignProgressMock.mockResolvedValue(createRemoteResponse(
+      {
+        challenges: {
+          'civic-monitor-and-request': {
+            status: 'pending_review',
+            attempts: 1,
+            updatedAt: '2026-01-01T00:00:00.000Z',
+          },
+        },
+      },
+      {
+        recordsByKey: {
+          ...buildCampaignProgressRecords(createSnapshot({
+            challenges: {
+              'civic-monitor-and-request': {
+                status: 'pending_review',
+                attempts: 1,
+                updatedAt: '2026-01-01T00:00:00.000Z',
+              },
+            },
+          })),
+          'campaign:primarie-website-url::entity:4305857': {
+            key: 'campaign:primarie-website-url::entity:4305857',
+            interactionId: PRIMARIE_WEBSITE_LINK_INTERACTION.interactionId,
+            lessonId: PRIMARIE_WEBSITE_LINK_INTERACTION.ownerChallengeSlug,
+            kind: 'custom',
+            scope: { type: 'entity', entityCui: '4305857' },
+            completionRule: { type: 'resolved' },
+            phase: 'pending',
+            value: {
+              kind: 'json',
+              json: { value: { websiteUrl: 'https://sibiu.ro' } },
+            },
+            result: null,
+            updatedAt: '2026-01-01T00:00:00.000Z',
+            submittedAt: '2026-01-01T00:00:00.000Z',
+          },
+        },
+      },
+    ))
+
+    const firstRender = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
+
+    await waitFor(() => {
+      expect(firstRender.result.current.isInitialResolutionReady).toBe(true)
+    })
+
+    expect(firstRender.result.current.progress.challenges['civic-monitor-and-request']).toEqual({
+      status: 'pending_review',
+      attempts: 1,
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    })
+
+    act(() => {
+      firstRender.result.current.resetProgress()
+    })
+
+    expect(firstRender.result.current.progress.challenges).toEqual({})
+
+    firstRender.unmount()
+
+    const secondRender = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
+
+    await waitFor(() => {
+      expect(secondRender.result.current.isInitialResolutionReady).toBe(true)
+    })
+
+    expect(secondRender.result.current.progress.challenges).toEqual({})
+  })
+
+  it('projects approved remote review outcomes into challenge progress during sync', async () => {
+    authState = {
+      isLoaded: true,
+      isSignedIn: true,
+      user: { id: 'user-1' },
+    }
+
+    fetchCampaignProgressMock.mockResolvedValue(createRemoteResponse(
+      {
+        challenges: {
+          'civic-monitor-and-request': {
+            status: 'pending_review',
+            attempts: 1,
+            updatedAt: '2026-01-01T00:00:00.000Z',
+          },
+        },
+      },
+      {
+        recordsByKey: {
+          ...buildCampaignProgressRecords(createSnapshot({
+            challenges: {
+              'civic-monitor-and-request': {
+                status: 'pending_review',
+                attempts: 1,
+                updatedAt: '2026-01-01T00:00:00.000Z',
+              },
+            },
+          })),
+          'campaign:primarie-website-url::entity:4305857': {
+            key: 'campaign:primarie-website-url::entity:4305857',
+            interactionId: PRIMARIE_WEBSITE_LINK_INTERACTION.interactionId,
+            lessonId: PRIMARIE_WEBSITE_LINK_INTERACTION.ownerChallengeSlug,
+            kind: 'custom',
+            scope: { type: 'entity', entityCui: '4305857' },
+            completionRule: { type: 'resolved' },
+            phase: 'resolved',
+            value: {
+              kind: 'json',
+              json: { value: { websiteUrl: 'https://sibiu.ro' } },
+            },
+            result: null,
+            review: {
+              status: 'approved',
+              reviewedAt: '2026-01-02T00:00:00.000Z',
+            },
+            updatedAt: '2026-01-02T00:00:00.000Z',
+            submittedAt: '2026-01-01T00:00:00.000Z',
+          },
+        },
+      },
+    ))
+
+    const { result } = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isInitialResolutionReady).toBe(true)
+    })
+
+    expect(result.current.progress.challenges['civic-monitor-and-request']).toEqual({
+      status: 'completed',
+      attempts: 1,
+      updatedAt: '2026-01-02T00:00:00.000Z',
+    })
+  })
+
+  it('refreshes remote review outcomes when the window regains focus', async () => {
+    authState = {
+      isLoaded: true,
+      isSignedIn: true,
+      user: { id: 'user-1' },
+    }
+
+    fetchCampaignProgressMock
+      .mockResolvedValueOnce(createRemoteResponse({
+        challenges: {
+          'civic-monitor-and-request': {
+            status: 'pending_review',
+            attempts: 1,
+            updatedAt: '2026-01-01T00:00:00.000Z',
+          },
+        },
+      }))
+      .mockResolvedValueOnce(createRemoteResponse(
+        {
+          challenges: {
+            'civic-monitor-and-request': {
+              status: 'pending_review',
+              attempts: 1,
+              updatedAt: '2026-01-01T00:00:00.000Z',
+            },
+          },
+        },
+        {
+          recordsByKey: {
+            ...buildCampaignProgressRecords(createSnapshot({
+              challenges: {
+                'civic-monitor-and-request': {
+                  status: 'pending_review',
+                  attempts: 1,
+                  updatedAt: '2026-01-01T00:00:00.000Z',
+                },
+              },
+            })),
+            'campaign:primarie-website-url::entity:4305857': {
+              key: 'campaign:primarie-website-url::entity:4305857',
+              interactionId: PRIMARIE_WEBSITE_LINK_INTERACTION.interactionId,
+              lessonId: PRIMARIE_WEBSITE_LINK_INTERACTION.ownerChallengeSlug,
+              kind: 'custom',
+              scope: { type: 'entity', entityCui: '4305857' },
+              completionRule: { type: 'resolved' },
+              phase: 'resolved',
+              value: {
+                kind: 'json',
+                json: { value: { websiteUrl: 'https://sibiu.ro' } },
+              },
+              result: null,
+              review: {
+                status: 'approved',
+                reviewedAt: '2026-01-02T00:00:00.000Z',
+              },
+              updatedAt: '2026-01-02T00:00:00.000Z',
+              submittedAt: '2026-01-01T00:00:00.000Z',
+            },
+          },
+          events: [
+            {
+              eventId: 'server-review-1',
+              clientId: 'server',
+              occurredAt: '2026-01-02T00:00:00.000Z',
+              type: 'interactive.updated',
+              payload: {
+                record: {
+                  key: 'campaign:primarie-website-url::entity:4305857',
+                  interactionId: PRIMARIE_WEBSITE_LINK_INTERACTION.interactionId,
+                  lessonId: PRIMARIE_WEBSITE_LINK_INTERACTION.ownerChallengeSlug,
+                  kind: 'custom',
+                  scope: { type: 'entity', entityCui: '4305857' },
+                  completionRule: { type: 'resolved' },
+                  phase: 'resolved',
+                  value: {
+                    kind: 'json',
+                    json: { value: { websiteUrl: 'https://sibiu.ro' } },
+                  },
+                  result: null,
+                  review: {
+                    status: 'approved',
+                    reviewedAt: '2026-01-02T00:00:00.000Z',
+                  },
+                  updatedAt: '2026-01-02T00:00:00.000Z',
+                  submittedAt: '2026-01-01T00:00:00.000Z',
+                },
+              },
+            },
+          ],
+        },
+      ))
+
+    const { result } = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isInitialResolutionReady).toBe(true)
+    })
+
+    expect(result.current.progress.challenges['civic-monitor-and-request']).toEqual({
+      status: 'pending_review',
+      attempts: 1,
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    })
+
+    act(() => {
+      window.dispatchEvent(new Event('focus'))
+    })
+
+    await waitFor(() => {
+      expect(result.current.progress.challenges['civic-monitor-and-request']).toEqual({
+        status: 'completed',
+        attempts: 1,
+        updatedAt: '2026-01-02T00:00:00.000Z',
+      })
+    })
   })
 })

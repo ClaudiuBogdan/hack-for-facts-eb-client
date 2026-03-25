@@ -2,8 +2,11 @@ import type {
   InteractiveAuditEvent,
   InteractiveStateRecord,
   LearningGuestProgress,
+  LearningProgressEvent,
+  LearningProgressRemoteSnapshot,
   UnifiedInteractiveState,
 } from '../types'
+import { applyLearningProgressEvent } from './progress-event-reducer'
 import { projectLearningGuestProgress } from './progress-projection'
 import { isoToTime, maxIsoRequired } from './date-utils'
 
@@ -101,4 +104,26 @@ export function mergeLearningGuestProgress(local: LearningGuestProgress, remote:
     interactiveState: mergeInteractiveState(local.interactiveState, remote.interactiveState),
     lastUpdated: maxIsoRequired(local.lastUpdated, remote.lastUpdated),
   })
+}
+
+export function reconcileLearningGuestProgressWithRemote(
+  local: LearningGuestProgress,
+  remoteSnapshot: LearningProgressRemoteSnapshot,
+  remoteEvents: readonly LearningProgressEvent[],
+): LearningGuestProgress {
+  const mergedSnapshot = mergeLearningGuestProgress(
+    local,
+    projectLearningGuestProgress({
+      interactiveState: {
+        recordsByKey: remoteSnapshot.recordsByKey,
+        eventLogByRecordKey: {},
+      },
+      lastUpdated: remoteSnapshot.lastUpdated,
+    }),
+  )
+
+  return remoteEvents.reduce(
+    (currentSnapshot, event) => applyLearningProgressEvent(currentSnapshot, event),
+    mergedSnapshot,
+  )
 }

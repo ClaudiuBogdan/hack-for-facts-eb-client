@@ -25,7 +25,10 @@ import {
   toDateString,
   upsertProjectedContentProgress,
 } from '../utils/progress-projection'
-import { mergeLearningGuestProgress } from '../utils/progress-merge'
+import {
+  mergeLearningGuestProgress,
+  reconcileLearningGuestProgressWithRemote,
+} from '../utils/progress-merge'
 import { calculateStreakUpdate } from '../utils/streak'
 import type {
   InteractiveAuditEvent,
@@ -48,6 +51,7 @@ const CLIENT_ID_KEY = 'learning_progress_client_id'
 const MAX_RETRIES = 4
 const RETRY_DELAYS = [1000, 5000, 15000, 60000]
 const SYNC_DEBOUNCE_MS = 1200
+const REMOTE_REFRESH_INTERVAL_MS = 15000
 
 type RemoteLearningProgress = Awaited<ReturnType<typeof fetchLearningProgress>>
 
@@ -135,7 +139,7 @@ type ResolveInteractiveInput = {
   readonly definition: InteractiveDefinition
   readonly entityCui?: string | null
   readonly value?: InteractionValue
-  readonly phase?: 'resolved' | 'error'
+  readonly phase?: 'resolved' | 'failed'
   readonly outcome?: InteractionOutcome
   readonly score?: number | null
   readonly feedbackText?: string | null
@@ -145,7 +149,7 @@ type ResolveInteractiveInput = {
 
 type ApplyInteractiveEvaluationInput = {
   readonly recordKey: string
-  readonly phase?: 'resolved' | 'error'
+  readonly phase?: 'resolved' | 'failed'
   readonly outcome?: InteractionOutcome
   readonly score?: number | null
   readonly feedbackText?: string | null
@@ -467,16 +471,15 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
         lastSyncedCursor: remote.cursor ?? syncStateRef.current.lastSyncedCursor,
       }
 
-      if (remote.events.length > 0) {
-        setProgress((current) => {
-          const nextSnapshot = remote.events.reduce(
-            (currentSnapshot, event) => applyLearningProgressEvent(currentSnapshot, event),
-            current,
-          )
-          saveSnapshotForKey(keys.snapshotKey, nextSnapshot)
-          return nextSnapshot
-        })
-      }
+      setProgress((current) => {
+        const nextSnapshot = reconcileLearningGuestProgressWithRemote(
+          current,
+          remote.snapshot,
+          remote.events,
+        )
+        saveSnapshotForKey(keys.snapshotKey, nextSnapshot)
+        return nextSnapshot
+      })
 
       persistSyncState(keys.syncKey)
     },
@@ -496,6 +499,8 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     refetchOnMount: false,
+    refetchInterval: auth.isAuthenticated ? REMOTE_REFRESH_INTERVAL_MS : false,
+    refetchIntervalInBackground: false,
     retry: 1,
   })
 
@@ -1021,6 +1026,9 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
         return null
       }
 
+      // Public submit path for async-review interactions:
+      // `pending` + `submittedAt` + no `result`. Final review outcome is
+      // attached later by the server in `record.review`.
       const submittedAt = getNextTimestamp(existingRecord?.updatedAt)
       const nextRecord = createInteractiveStateRecord({
         definition: input.definition,
@@ -1070,6 +1078,8 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
         return null
       }
 
+      // Immediate-eval path: the client resolves the interaction in one step
+      // and records the outcome in `result` without using `review`.
       const updatedAt = getNextTimestamp(existingRecord?.updatedAt)
       const phase = input.phase ?? 'resolved'
       const result = {

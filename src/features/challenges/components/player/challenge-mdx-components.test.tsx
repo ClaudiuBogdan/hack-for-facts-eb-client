@@ -13,6 +13,20 @@ vi.mock('@lingui/core/macro', () => ({
   },
 }))
 
+vi.mock('@/features/campaigns/buget/components/interactive/BudgetStatusReport', () => ({
+  BudgetStatusReport: ({
+    ownerChallengeSlug,
+    entityCui,
+  }: {
+    readonly ownerChallengeSlug: string
+    readonly entityCui: string
+  }) => (
+    <div data-testid="budget-status-report-props">
+      {ownerChallengeSlug}:{entityCui}
+    </div>
+  ),
+}))
+
 import {
   buildChallengeMdxComponents,
   type ChallengeMarkCompleteMdxProps,
@@ -45,6 +59,7 @@ describe('challenge-mdx-components', () => {
     const markCompleteWrapper = () => <div data-testid="mark-complete-wrapper">Mark complete</div>
 
     const components = buildChallengeMdxComponents({
+      entityCui: '12345678',
       QuizComponent: quizWrapper,
       MarkCompleteComponent: markCompleteWrapper,
     })
@@ -62,6 +77,7 @@ describe('challenge-mdx-components', () => {
     const customQuickLinks = () => <div data-testid="custom-quick-links">Custom quick links</div>
 
     const components = buildChallengeMdxComponents({
+      entityCui: '12345678',
       QuizComponent: () => <div />,
       MarkCompleteComponent: () => <div />,
       customComponents: {
@@ -84,6 +100,7 @@ describe('challenge-mdx-components', () => {
     )
 
     const components = buildChallengeMdxComponents({
+      entityCui: '12345678',
       QuizComponent: QuizWrapper,
       MarkCompleteComponent: MarkCompleteWrapper,
     })
@@ -92,5 +109,25 @@ describe('challenge-mdx-components', () => {
 
     expect(screen.getByTestId('quiz-render')).toHaveTextContent('quiz-1:Question?')
     expect(screen.getByTestId('mark-complete-render')).toHaveTextContent('Done')
+  })
+
+  it('injects the route entityCui into campaign interactive MDX components', async () => {
+    const components = buildChallengeMdxComponents({
+      entityCui: '12345678',
+      QuizComponent: () => <div />,
+      MarkCompleteComponent: () => <div />,
+    })
+
+    const BudgetStatusReportComponent = components.BudgetStatusReport as ComponentType<{
+      readonly ownerChallengeSlug: string
+    }>
+
+    render(
+      <BudgetStatusReportComponent ownerChallengeSlug="civic-monitor-and-request" />,
+    )
+
+    expect(await screen.findByTestId('budget-status-report-props')).toHaveTextContent(
+      'civic-monitor-and-request:12345678',
+    )
   })
 })

@@ -158,7 +158,7 @@ export function ChallengeModulePage({
   )
 
   return (
-    <div className="max-w-4xl mx-auto space-y-16 animate-in fade-in duration-700 pb-20 pt-8 px-4 md:px-6">
+    <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in duration-700 pb-20 pt-8 px-4 md:px-6">
       {/* Header Section */}
       <div className="space-y-8">
         {/* Back Link */}
@@ -245,9 +245,33 @@ export function ChallengeModulePage({
         </div>
       </div>
 
+      {/* Module Progress Bar */}
+      {stats.completionPercentage > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground px-1">
+            <span className="flex items-center gap-2">
+              <div className="h-1 w-1 rounded-full bg-primary" />
+              {t`Progress`}
+            </span>
+            <span className="text-primary tabular-nums">
+              {stats.completionPercentage}%
+            </span>
+          </div>
+          <div className="h-2 w-full rounded-full bg-muted/50 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-1000 ease-out"
+              style={{ width: `${stats.completionPercentage}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Content Section - Timeline */}
       <div className="space-y-8">
-        <h2 className="text-2xl font-black tracking-tight">{t`Challenges`}</h2>
+        <div className="flex items-center gap-3">
+          <div className="w-1 h-6 rounded-full bg-primary" />
+          <h2 className="text-2xl font-black tracking-tight">{t`Challenges`}</h2>
+        </div>
 
         {module.challenges.length === 0 ? (
           <div className="rounded-2xl border border-dashed py-10 text-center text-muted-foreground">
@@ -269,7 +293,11 @@ export function ChallengeModulePage({
                 challengeIndex === module.challenges.length - 1
 
               return (
-                <div key={challenge.id} className="flex gap-3 md:gap-6">
+                <div
+                  key={challenge.id}
+                  className="flex gap-3 md:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-both"
+                  style={{ animationDelay: `${challengeIndex * 100}ms` }}
+                >
                   {/* Timeline column: node + connector */}
                   <div className="flex w-10 md:w-12 shrink-0 flex-col items-center">
                     {/* Milestone node */}
@@ -296,11 +324,11 @@ export function ChallengeModulePage({
                     {!isLastChallenge && (
                       <div
                         className={cn(
-                          'w-0.5 flex-1',
+                          'w-1 flex-1',
                           isChallengeComplete
-                            ? 'bg-green-500'
+                            ? 'bg-green-500 shadow-sm shadow-green-500/30'
                             : isChallengeActive
-                              ? 'bg-gradient-to-b from-primary to-muted-foreground/20'
+                              ? 'bg-gradient-to-b from-primary via-primary/50 to-muted-foreground/20'
                               : 'bg-muted-foreground/20',
                         )}
                       />
@@ -309,27 +337,39 @@ export function ChallengeModulePage({
 
                   {/* Content column */}
                   <div className={cn('min-w-0 flex-1 pb-8', isLastChallenge && 'pb-0')}>
+                   <div className={cn(
+                     'rounded-2xl p-4 md:p-5 shadow-sm',
+                     isChallengeComplete
+                       ? 'bg-green-500/5'
+                       : isChallengeActive
+                         ? 'bg-primary/5'
+                         : 'bg-card',
+                   )}>
                     {/* Challenge header */}
-                    <div className="pt-1.5 md:pt-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-base md:text-lg font-black tracking-tight leading-tight">
                         {getTranslatedText(challenge.title, locale)}
                       </h3>
+                      {isChallengeComplete ? (
+                        <span className="inline-flex items-center rounded-full bg-green-500/10 px-2 py-0.5 text-xs font-bold text-green-600">
+                          <CheckCircle2 className="h-3 w-3" />
+                        </span>
+                      ) : completedSteps > 0 ? (
+                        <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-bold text-muted-foreground tabular-nums">
+                          {completedSteps}/{totalSteps}
+                        </span>
+                      ) : null}
                     </div>
                     <p className="text-muted-foreground text-xs md:text-sm font-medium leading-relaxed mt-1">
                       {getTranslatedText(challenge.description, locale)}
                     </p>
 
                     {/* Step list */}
-                    <div className="mt-2 md:mt-3 space-y-0.5">
+                    <div className="mt-2 md:mt-3 space-y-0">
                       {challenge.steps.map((step, stepIndex) => {
                         const completed = isStepCompleted(step.id)
                         const isNextUp =
-                          !completed &&
-                          stepIndex ===
-                            challenge.steps.findIndex(
-                              (challengeStep) =>
-                                !isStepCompleted(challengeStep.id),
-                            )
+                          !completed && stats.nextStep?.id === step.id
 
                         return (
                           <Link
@@ -342,7 +382,11 @@ export function ChallengeModulePage({
                                 step.slug,
                               ) as '/'
                             }
-                            className="group flex items-center gap-2 md:gap-3 rounded-xl py-2 md:py-2.5 pr-2 md:pr-3 transition-colors hover:bg-muted/50"
+                            className={cn(
+                              'group flex items-center gap-2 md:gap-3 rounded-xl py-2 md:py-2.5 px-2 md:px-3 transition-colors hover:bg-muted/50',
+                              isNextUp && 'bg-primary/5 border-l-2 border-l-primary',
+                              stepIndex < challenge.steps.length - 1 && 'border-b border-border/30',
+                            )}
                           >
                             {/* Step dot */}
                             <div
@@ -369,7 +413,7 @@ export function ChallengeModulePage({
                             {/* Step title */}
                             <span
                               className={cn(
-                                'min-w-0 flex-1 text-base font-semibold transition-colors',
+                                'min-w-0 flex-1 text-sm font-medium transition-colors',
                                 completed
                                   ? 'text-foreground'
                                   : isNextUp
@@ -398,6 +442,7 @@ export function ChallengeModulePage({
                         )
                       })}
                     </div>
+                   </div>
                   </div>
                 </div>
               )

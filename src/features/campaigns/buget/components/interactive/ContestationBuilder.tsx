@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { Mail, Download, Clock, Eye, FilePenLine } from 'lucide-react'
+import { Mail, Download, Eye, FilePenLine } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -13,7 +13,11 @@ import {
   DEBATE_REQUEST_INTERACTION,
   PRIMARIE_CONTACT_INFO_INTERACTION,
 } from '../../civic-interaction-definitions'
-import { useCampaignProgress } from '../../hooks/use-campaign-progress'
+import {
+  CampaignChallengeReviewState,
+  formatReviewDate,
+  type ReviewSummaryItem,
+} from './campaign-challenge-review-state'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
 import { buildContestationMailto, buildContestationEmailBody } from './mailto-utils'
 import type {
@@ -84,15 +88,13 @@ type Step = 1 | 2 | 3 | 4
  *   InstitutionEmailThreads table (request_type: 'contestation').
  *   Transition to 'completed' once the review confirms quality.
  */
-export function ContestationBuilder({ ownerChallengeSlug }: CampaignInteractiveElementProps) {
+export function ContestationBuilder({ ownerChallengeSlug, entityCui }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<ContestationBuilderValue>({
     ownerChallengeSlug,
     interactionId: CONTESTATION_BUILDER_INTERACTION.interactionId,
-    completionAction: 'pending_review',
+    lifecycleMode: CONTESTATION_BUILDER_INTERACTION.lifecycleMode,
+    entityCui,
   })
-
-  const { progress } = useCampaignProgress()
-  const entityCui = progress.selectedEntityCui ?? undefined
 
   // Read debate request record for email pre-fill
   const debateRequest = useCustomInteraction<DebateRequestFormValue>({
@@ -234,10 +236,6 @@ export function ContestationBuilder({ ownerChallengeSlug }: CampaignInteractiveE
     })
   }, [draft.contestedItem, draft.reasoning, draft.impact, draft.proposedChange, draft.senderName])
 
-  if (!form.entityCui) {
-    return null
-  }
-
   const hasRequiredFields =
     draft.contestedItem.trim().length > 0 &&
     draft.reasoning.trim().length > 0 &&
@@ -248,73 +246,59 @@ export function ContestationBuilder({ ownerChallengeSlug }: CampaignInteractiveE
   const hasEmailForSend = draft.primariaEmail !== null && isValidEmail(draft.primariaEmail)
 
   if (form.isSubmitted) {
-    const isPending = form.submittedVariant === 'pending_review'
-    const isRejected = form.submittedVariant === 'rejected'
     const submittedPath = form.savedValue?.submissionPath
+    const submittedSummaryItems: ReviewSummaryItem[] = form.savedValue
+      ? [
+          {
+            label: t`Delivery path`,
+            value:
+              submittedPath === 'send_email'
+                ? t`Sent via email`
+                : submittedPath === 'download_text'
+                  ? t`Downloaded as text`
+                  : t`Recorded`,
+          },
+          {
+            label: t`Contested item`,
+            value: form.savedValue.contestedItem,
+          },
+          ...(form.savedValue.senderName?.trim()
+            ? [{
+                label: t`Sender`,
+                value: form.savedValue.senderName,
+              }]
+            : []),
+          ...(form.savedValue.primariaEmail?.trim()
+            ? [{
+                label: t`City hall email`,
+                value: form.savedValue.primariaEmail,
+              }]
+            : []),
+          ...(formatReviewDate(form.savedValue.submittedAt)
+            ? [{
+                label: t`Submitted on`,
+                value: formatReviewDate(form.savedValue.submittedAt) as string,
+              }]
+            : []),
+        ]
+      : []
+
     return (
-      <div className={`relative rounded-[28px] border shadow-sm p-6 md:p-8 ${
-        isPending
-          ? 'border-amber-200/60 bg-gradient-to-br from-amber-50/40 via-background to-amber-50/20 dark:border-amber-800/40 dark:from-amber-950/20 dark:via-background dark:to-amber-950/10'
-          : isRejected
-            ? 'border-red-200/60 bg-gradient-to-br from-red-50/50 via-background to-red-50/20 dark:border-red-800/40 dark:from-red-950/20 dark:via-background dark:to-red-950/10'
-            : 'border-emerald-200/60 bg-gradient-to-br from-emerald-50/50 via-background to-emerald-50/30 dark:border-emerald-800/40 dark:from-emerald-950/20 dark:via-background dark:to-emerald-950/10'
-      }`}>
-        <Clock className={`absolute top-4 right-4 h-16 w-16 pointer-events-none ${
-          isPending
-            ? 'text-amber-500/[0.08]'
-            : isRejected
-              ? 'text-red-500/[0.08]'
-              : 'text-emerald-500/[0.08]'
-        }`} />
-
-        <div className="flex items-center justify-between gap-3">
-          <h3 className="text-lg font-black tracking-tight text-foreground">
-            {t`Local budget contestation`}
-          </h3>
-          <span className="rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1">
-            {submittedPath === 'send_email' ? t`Sent via email` : t`Downloaded`}
-          </span>
-        </div>
-
-        <p className="mt-3 text-sm text-muted-foreground font-medium leading-relaxed">
-          {t`Your contestation has been recorded.`}
-        </p>
-
-        {isPending && (
-          <p className="mt-2 text-xs text-amber-600/80 dark:text-amber-400/80">
-            {t`Your information has been recorded and is being reviewed.`}
-          </p>
-        )}
-
-        {isRejected && (
-          <p className="mt-2 text-xs text-red-600/80 dark:text-red-400/80">
-            {form.reviewFeedbackText?.trim() || t`Review feedback is available. Please update your submission.`}
-          </p>
-        )}
-
-        {form.submittedVariant === 'completed' && (
-          <p className="mt-2 text-xs text-emerald-600/80 dark:text-emerald-400/80">
-            {t`Your submission has been reviewed and accepted.`}
-          </p>
-        )}
-
-        {isRejected && (
-          <div className="mt-5">
-            <Button
-              onClick={handleTryAgain}
-              className="w-full rounded-[22px] h-12 font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 transition-transform"
-            >
-              {t`Try again`}
-            </Button>
-          </div>
-        )}
-      </div>
+      <CampaignChallengeReviewState
+        eyebrow={t`Contestation`}
+        title={t`Local budget contestation`}
+        description={t`Your contestation has been recorded and will be checked before it counts toward the challenge.`}
+        submittedVariant={form.submittedVariant}
+        feedbackText={form.reviewFeedbackText}
+        summaryItems={submittedSummaryItems}
+        onTryAgain={handleTryAgain}
+      />
     )
   }
 
   return (
     <div className="rounded-[28px] border border-border/50 shadow-sm p-6 md:p-8 relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/[0.03]">
-      <FilePenLine className="absolute top-4 right-4 h-20 w-20 rotate-6 opacity-[0.06] pointer-events-none" />
+      <FilePenLine className="absolute top-4 right-4 h-20 w-20 rotate-6 opacity-[0.06] pointer-events-none" aria-hidden="true" />
 
       <div className="space-y-1.5 mb-6">
         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
@@ -351,7 +335,9 @@ export function ContestationBuilder({ ownerChallengeSlug }: CampaignInteractiveE
               </p>
               <Textarea
                 id="contested-item"
-                placeholder={t`The budget line, category, or allocation you are contesting...`}
+                name="contestedItem"
+                autoComplete="off"
+                placeholder={t`The budget line, category, or allocation you are contesting…`}
                 className="rounded-xl text-base min-h-[100px]"
                 maxLength={MAX_CHARS}
                 value={draft.contestedItem}
@@ -386,7 +372,9 @@ export function ContestationBuilder({ ownerChallengeSlug }: CampaignInteractiveE
               </p>
               <Textarea
                 id="reasoning"
-                placeholder={t`Present the arguments and evidence supporting the contestation...`}
+                name="reasoning"
+                autoComplete="off"
+                placeholder={t`Present the arguments and evidence supporting the contestation…`}
                 className="rounded-xl text-base min-h-[100px]"
                 maxLength={MAX_CHARS}
                 value={draft.reasoning}
@@ -429,7 +417,9 @@ export function ContestationBuilder({ ownerChallengeSlug }: CampaignInteractiveE
               </p>
               <Textarea
                 id="impact"
-                placeholder={t`Describe the impact on the community...`}
+                name="impact"
+                autoComplete="off"
+                placeholder={t`Describe the impact on the community…`}
                 className="rounded-xl text-base min-h-[100px]"
                 maxLength={MAX_CHARS}
                 value={draft.impact}
@@ -453,7 +443,9 @@ export function ContestationBuilder({ ownerChallengeSlug }: CampaignInteractiveE
               </p>
               <Textarea
                 id="proposed-change"
-                placeholder={t`Describe the specific change you propose...`}
+                name="proposedChange"
+                autoComplete="off"
+                placeholder={t`Describe the specific change you propose…`}
                 className="rounded-xl text-base min-h-[100px]"
                 maxLength={MAX_CHARS}
                 value={draft.proposedChange}
@@ -494,6 +486,8 @@ export function ContestationBuilder({ ownerChallengeSlug }: CampaignInteractiveE
               <Input
                 id="contestation-sender"
                 type="text"
+                name="contestationSender"
+                autoComplete="name"
                 placeholder={t`Your full name or organization`}
                 className="rounded-xl h-12 text-base"
                 value={draft.senderName ?? ''}
@@ -519,6 +513,9 @@ export function ContestationBuilder({ ownerChallengeSlug }: CampaignInteractiveE
               <Input
                 id="contestation-email"
                 type="email"
+                name="contestationEmail"
+                autoComplete="email"
+                spellCheck={false}
                 placeholder="primaria@example.ro"
                 className="rounded-xl h-12 text-base"
                 value={draft.primariaEmail ?? ''}
@@ -539,7 +536,7 @@ export function ContestationBuilder({ ownerChallengeSlug }: CampaignInteractiveE
                     <Trans>Preview</Trans>
                   </span>
                   <div className="flex items-center gap-2">
-                    <Eye className="h-4 w-4 text-muted-foreground" />
+                    <Eye className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                     <h4 className="text-sm font-black tracking-tight text-foreground">
                       {t`Contestation preview`}
                     </h4>
@@ -556,7 +553,7 @@ export function ContestationBuilder({ ownerChallengeSlug }: CampaignInteractiveE
             {/* Two side-by-side action cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="rounded-[24px] border-2 border-border/40 p-6 text-center transition-all hover:border-border/80 hover:shadow-sm">
-                <Mail className="h-10 w-10 text-muted-foreground mb-3 mx-auto" />
+                <Mail className="h-10 w-10 text-muted-foreground mb-3 mx-auto" aria-hidden="true" />
                 <p className="text-base font-black tracking-tight">{t`Send via email`}</p>
                 <p className="text-xs text-muted-foreground mt-1.5">
                   <Trans>Opens your email client with the completed contestation.</Trans>
@@ -585,7 +582,7 @@ export function ContestationBuilder({ ownerChallengeSlug }: CampaignInteractiveE
               </div>
 
               <div className="rounded-[24px] border-2 border-border/40 p-6 text-center transition-all hover:border-border/80 hover:shadow-sm">
-                <Download className="h-10 w-10 text-muted-foreground mb-3 mx-auto" />
+                <Download className="h-10 w-10 text-muted-foreground mb-3 mx-auto" aria-hidden="true" />
                 <p className="text-base font-black tracking-tight">{t`Download as text`}</p>
                 <p className="text-xs text-muted-foreground mt-1.5">
                   <Trans>Download the formatted contestation as a text file.</Trans>

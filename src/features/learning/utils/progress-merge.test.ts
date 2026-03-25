@@ -1,12 +1,21 @@
 import { describe, expect, it } from 'vitest'
-import { LEARNING_PROGRESS_SCHEMA_VERSION, type InteractiveStateRecord, type LearningGuestProgress } from '../types'
+import {
+  LEARNING_PROGRESS_SCHEMA_VERSION,
+  type InteractiveStateRecord,
+  type LearningGuestProgress,
+  type LearningProgressEvent,
+  type LearningProgressRemoteSnapshot,
+} from '../types'
 import {
   createLearningActivePathRecord,
   createLearningOnboardingRecord,
   createLessonProgressRecord,
   createLearningStreakRecord,
 } from './progress-projection'
-import { mergeLearningGuestProgress } from './progress-merge'
+import {
+  mergeLearningGuestProgress,
+  reconcileLearningGuestProgressWithRemote,
+} from './progress-merge'
 
 const ISO_1 = '2025-01-01T00:00:00.000Z'
 const ISO_2 = '2025-01-02T00:00:00.000Z'
@@ -30,6 +39,7 @@ function createRecord(
     phase: overrides.phase ?? 'resolved',
     value: overrides.value ?? null,
     result: overrides.result ?? null,
+    ...(overrides.review !== undefined ? { review: overrides.review } : {}),
     updatedAt: overrides.updatedAt ?? ISO_1,
     submittedAt: overrides.submittedAt ?? ISO_1,
   }
@@ -190,5 +200,75 @@ describe('progress-merge', () => {
     expect(merged.content['lesson-1']?.status).toBe('passed')
     expect(merged.content['lesson-1']?.score).toBe(90)
     expect(merged.lastUpdated).toBe(ISO_3)
+  })
+
+  it('reconciles newer remote records even when no remote events are returned', () => {
+    const local = createProgress({
+      interactiveState: {
+        recordsByKey: {
+          'campaign:primarie-website-url::entity:4270740': createRecord({
+            key: 'campaign:primarie-website-url::entity:4270740',
+            interactionId: 'campaign:primarie-website-url',
+            lessonId: 'civic-monitor-and-request',
+            kind: 'custom',
+            phase: 'failed',
+            updatedAt: ISO_2,
+            value: {
+              kind: 'json',
+              json: {
+                value: {
+                  websiteUrl: 'https://old.example.ro',
+                },
+              },
+            },
+            review: {
+              status: 'rejected',
+              reviewedAt: ISO_2,
+              feedbackText: 'Old rejected review',
+            },
+          }),
+        },
+        eventLogByRecordKey: {},
+      },
+      lastUpdated: ISO_2,
+    })
+
+    const remoteSnapshot: LearningProgressRemoteSnapshot = {
+      version: LEARNING_PROGRESS_SCHEMA_VERSION,
+      lastUpdated: ISO_3,
+      recordsByKey: {
+        'campaign:primarie-website-url::entity:4270740': createRecord({
+          key: 'campaign:primarie-website-url::entity:4270740',
+          interactionId: 'campaign:primarie-website-url',
+          lessonId: 'civic-monitor-and-request',
+          kind: 'custom',
+          phase: 'resolved',
+          updatedAt: ISO_3,
+          value: {
+            kind: 'json',
+            json: {
+              value: {
+                websiteUrl: 'https://sibiu.ro',
+              },
+            },
+          },
+          review: {
+            status: 'approved',
+            reviewedAt: ISO_3,
+          },
+        }),
+      },
+    }
+
+    const merged = reconcileLearningGuestProgressWithRemote(
+      local,
+      remoteSnapshot,
+      [] as readonly LearningProgressEvent[],
+    )
+
+    const record = merged.interactiveState.recordsByKey['campaign:primarie-website-url::entity:4270740']
+    expect(record?.phase).toBe('resolved')
+    expect(record?.review?.status).toBe('approved')
+    expect(record?.updatedAt).toBe(ISO_3)
   })
 })

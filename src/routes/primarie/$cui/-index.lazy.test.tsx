@@ -348,7 +348,7 @@ describe('PrimarieEntityIndexRoutePage', () => {
     })
   })
 
-  it('syncs campaign progress to the URL entity after the entity resolves successfully', async () => {
+  it('does not write shared selected entity state when the entity resolves successfully', async () => {
     mockedParams = { cui: '87654321' }
 
     const { PrimarieEntityRoutePage } = await import('./index.lazy')
@@ -358,10 +358,10 @@ describe('PrimarieEntityIndexRoutePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Resolve entity' }))
 
     await waitFor(() => {
-      expect(setSelectedEntityMock).toHaveBeenCalledWith({
-        entityCui: '87654321',
-      })
+      expect(screen.getByTestId('analysis-page')).toBeInTheDocument()
     })
+
+    expect(setSelectedEntityMock).not.toHaveBeenCalled()
   })
 
   it('does not overwrite campaign progress when the entity never resolves', async () => {

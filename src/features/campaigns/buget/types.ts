@@ -123,6 +123,8 @@ export type CampaignProgressSnapshot = {
   readonly onboardingCompletedAt: string | null
   readonly acceptedTermsAt: string | null
   readonly selectedLocality: string | null
+  // Shared selector/navigation hint only. Route pages must use the route cui
+  // as the source of truth for entity-scoped interaction identity.
   readonly selectedEntityCui: string | null
   readonly activeChallengeModuleSlug: string | null
   readonly challenges: Readonly<Record<string, CampaignChallengeProgress>>

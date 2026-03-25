@@ -6,6 +6,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { BUDGET_PUBLICATION_DATE_INTERACTION } from '../../civic-interaction-definitions'
 import { CampaignChallengeFormShell } from './CampaignChallengeFormShell'
+import {
+  CampaignChallengeSummaryLink,
+  formatReviewDate,
+  type ReviewSummaryItem,
+} from './campaign-challenge-review-state'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
 import type {
   BudgetPublicationDateSourceType,
@@ -43,11 +48,12 @@ function getSourceLabel(type: BudgetPublicationDateSourceType): string {
   }
 }
 
-export function BudgetPublicationDate({ ownerChallengeSlug }: CampaignInteractiveElementProps) {
+export function BudgetPublicationDate({ ownerChallengeSlug, entityCui }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<BudgetPublicationDateValue>({
     ownerChallengeSlug,
     interactionId: BUDGET_PUBLICATION_DATE_INTERACTION.interactionId,
-    completionAction: 'pending_review',
+    lifecycleMode: BUDGET_PUBLICATION_DATE_INTERACTION.lifecycleMode,
+    entityCui,
   })
 
   const [draft, setDraft] = useState<BudgetPublicationDateValue>(
@@ -103,14 +109,51 @@ export function BudgetPublicationDate({ ownerChallengeSlug }: CampaignInteractiv
     void form.reset()
   }, [form])
 
-  if (!form.entityCui) {
-    return null
-  }
-
   const isSubmitDisabled = draft.publicationDate === null
+
+  const submittedSummaryItems: ReviewSummaryItem[] = form.savedValue
+    ? [
+        ...(form.savedValue.publicationDate
+          ? [{
+              label: t`Publication date`,
+              value: formatReviewDate(form.savedValue.publicationDate) ?? form.savedValue.publicationDate,
+            }]
+          : []),
+        ...(form.savedValue.sources.length > 0
+          ? [{
+              label: t`Sources`,
+              value: (
+                <div className="space-y-2">
+                  {form.savedValue.sources.map((entry) => (
+                    <div key={entry.type} className="space-y-1">
+                      <div className="font-semibold text-foreground">
+                        {getSourceLabel(entry.type)}
+                      </div>
+                      {entry.url ? (
+                        <CampaignChallengeSummaryLink url={entry.url} />
+                      ) : (
+                        <span className="text-muted-foreground">
+                          {t`No link added`}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ),
+            }]
+          : []),
+        ...(formatReviewDate(form.savedValue.submittedAt)
+          ? [{
+              label: t`Submitted on`,
+              value: formatReviewDate(form.savedValue.submittedAt) as string,
+            }]
+          : []),
+      ]
+    : []
 
   return (
     <CampaignChallengeFormShell
+      eyebrow={t`Publication date`}
       title={t`Budget draft publication date`}
       description={t`Indicate when your city hall's budget draft was published.`}
       isSubmitted={form.isSubmitted}
@@ -122,6 +165,7 @@ export function BudgetPublicationDate({ ownerChallengeSlug }: CampaignInteractiv
        */
       submittedVariant={form.submittedVariant}
       feedbackText={form.reviewFeedbackText}
+      submittedSummaryItems={submittedSummaryItems}
       onSubmit={handleSubmit}
       onTryAgain={handleTryAgain}
       onReset={handleReset}
@@ -135,6 +179,8 @@ export function BudgetPublicationDate({ ownerChallengeSlug }: CampaignInteractiv
         <Input
           id="publication-date"
           type="date"
+          name="publicationDate"
+          autoComplete="off"
           value={draft.publicationDate ?? ''}
           onChange={(e) => updatePublicationDate(e.target.value || null)}
           className="rounded-xl h-12 text-base"
@@ -172,11 +218,14 @@ export function BudgetPublicationDate({ ownerChallengeSlug }: CampaignInteractiv
           {draft.sources.map((entry) => (
             <div key={entry.type} className="space-y-2">
               <Label className="text-sm font-bold text-foreground">
-                Link - {getSourceLabel(entry.type)}
+                {t`Link`}: {getSourceLabel(entry.type)}
               </Label>
               <Input
                 type="url"
-                placeholder="https://..."
+                name={`sourceUrl-${entry.type}`}
+                autoComplete="url"
+                spellCheck={false}
+                placeholder="https://…"
                 value={entry.url ?? ''}
                 onChange={(e) => updateSourceUrl(entry.type, e.target.value || null)}
                 className="rounded-xl h-12 text-base"

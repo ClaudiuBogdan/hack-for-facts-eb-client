@@ -45,7 +45,7 @@ describe('BudgetStatusReport', () => {
 
   it('keeps submit disabled until a publication answer is selected', () => {
     render(
-      <BudgetStatusReport ownerChallengeSlug="civic-monitor-and-request" />,
+      <BudgetStatusReport ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
 
     expect(
@@ -55,7 +55,7 @@ describe('BudgetStatusReport', () => {
 
   it('enables submit for unpublished and unknown publication states', () => {
     render(
-      <BudgetStatusReport ownerChallengeSlug="civic-monitor-and-request" />,
+      <BudgetStatusReport ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
 
     const submitButton = screen.getByRole('button', { name: /report status/i })
@@ -69,7 +69,7 @@ describe('BudgetStatusReport', () => {
 
   it('requires a stage when the budget is marked as published', () => {
     render(
-      <BudgetStatusReport ownerChallengeSlug="civic-monitor-and-request" />,
+      <BudgetStatusReport ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
 
     const submitButton = screen.getByRole('button', { name: /report status/i })
@@ -83,7 +83,7 @@ describe('BudgetStatusReport', () => {
 
   it('enables submit once an approved stage is selected', () => {
     render(
-      <BudgetStatusReport ownerChallengeSlug="civic-monitor-and-request" />,
+      <BudgetStatusReport ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
 
     const submitButton = screen.getByRole('button', { name: /report status/i })
@@ -115,14 +115,14 @@ describe('BudgetStatusReport', () => {
     })
 
     const { rerender } = render(
-      <BudgetStatusReport ownerChallengeSlug="civic-monitor-and-request" />,
+      <BudgetStatusReport ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
     expect(resetMock).toHaveBeenCalledTimes(1)
 
     rerender(
-      <BudgetStatusReport ownerChallengeSlug="civic-monitor-and-request" />,
+      <BudgetStatusReport ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
 
     expect(screen.getByText('What stage is it in?')).toBeInTheDocument()

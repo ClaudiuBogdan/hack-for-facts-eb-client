@@ -1,13 +1,14 @@
 import { useCallback, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { cn } from '@/lib/utils'
+import { cn, formatNumber } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { PARTICIPATION_REPORT_INTERACTION } from '../../civic-interaction-definitions'
 import { CampaignChallengeFormShell } from './CampaignChallengeFormShell'
+import { formatReviewDate, type ReviewSummaryItem } from './campaign-challenge-review-state'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
 import type { ParticipationReportValue, CampaignInteractiveElementProps } from './types'
 
@@ -47,11 +48,45 @@ const RECORDED_OPTIONS: ReadonlyArray<{
   { value: 'dont_know', label: () => t`I don't know` },
 ]
 
-export function ParticipationReport({ ownerChallengeSlug }: CampaignInteractiveElementProps) {
+function getDebateAnswerLabel(value: NonNullable<ParticipationReportValue['debateTookPlace']>): string {
+  switch (value) {
+    case 'yes':
+      return t`Yes`
+    case 'no':
+      return t`No`
+    case 'dont_know':
+      return t`I don't know`
+  }
+}
+
+function getSpeakAnswerLabel(value: NonNullable<ParticipationReportValue['citizensAllowedToSpeak']>): string {
+  switch (value) {
+    case 'yes':
+      return t`Yes`
+    case 'no':
+      return t`No`
+    case 'partially':
+      return t`Partially`
+  }
+}
+
+function getRecordedAnswerLabel(value: NonNullable<ParticipationReportValue['citizenInputsRecorded']>): string {
+  switch (value) {
+    case 'yes':
+      return t`Yes`
+    case 'no':
+      return t`No`
+    case 'dont_know':
+      return t`I don't know`
+  }
+}
+
+export function ParticipationReport({ ownerChallengeSlug, entityCui }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<ParticipationReportValue>({
     ownerChallengeSlug,
     interactionId: PARTICIPATION_REPORT_INTERACTION.interactionId,
-    completionAction: 'pending_review',
+    lifecycleMode: PARTICIPATION_REPORT_INTERACTION.lifecycleMode,
+    entityCui,
   })
 
   const [draft, setDraft] = useState<ParticipationReportValue>(
@@ -92,19 +127,58 @@ export function ParticipationReport({ ownerChallengeSlug }: CampaignInteractiveE
     void form.reset()
   }, [form])
 
-  if (!form.entityCui) {
-    return null
-  }
-
   const isSubmitDisabled = draft.debateTookPlace === null
+
+  const submittedSummaryItems: ReviewSummaryItem[] = form.savedValue
+    ? [
+        ...(form.savedValue.debateTookPlace
+          ? [{
+              label: t`Debate took place`,
+              value: getDebateAnswerLabel(form.savedValue.debateTookPlace),
+            }]
+          : []),
+        ...(form.savedValue.approximateAttendees !== null
+          ? [{
+              label: t`Approximate attendees`,
+              value: formatNumber(form.savedValue.approximateAttendees),
+            }]
+          : []),
+        ...(form.savedValue.citizensAllowedToSpeak
+          ? [{
+              label: t`Citizens allowed to speak`,
+              value: getSpeakAnswerLabel(form.savedValue.citizensAllowedToSpeak),
+            }]
+          : []),
+        ...(form.savedValue.citizenInputsRecorded
+          ? [{
+              label: t`Contributions recorded`,
+              value: getRecordedAnswerLabel(form.savedValue.citizenInputsRecorded),
+            }]
+          : []),
+        ...(form.savedValue.observations?.trim()
+          ? [{
+              label: t`Observations`,
+              value: form.savedValue.observations,
+            }]
+          : []),
+        ...(formatReviewDate(form.savedValue.submittedAt)
+          ? [{
+              label: t`Submitted on`,
+              value: formatReviewDate(form.savedValue.submittedAt) as string,
+            }]
+          : []),
+      ]
+    : []
 
   return (
     <CampaignChallengeFormShell
+      eyebrow={t`Participation`}
       title={t`Participation report`}
       description={t`Document your participation in the local budget debate.`}
       isSubmitted={form.isSubmitted}
       submittedVariant={form.submittedVariant}
       feedbackText={form.reviewFeedbackText}
+      submittedSummaryItems={submittedSummaryItems}
       onTryAgain={handleTryAgain}
       onSubmit={handleSubmit}
       onReset={handleReset}
@@ -146,6 +220,9 @@ export function ParticipationReport({ ownerChallengeSlug }: CampaignInteractiveE
             <Input
               id="attendees"
               type="number"
+              name="approximateAttendees"
+              autoComplete="off"
+              inputMode="numeric"
               min={0}
               placeholder="0"
               value={draft.approximateAttendees ?? ''}
@@ -217,7 +294,9 @@ export function ParticipationReport({ ownerChallengeSlug }: CampaignInteractiveE
         </Label>
         <Textarea
           id="observations"
-          placeholder={t`Note your observations about the debate...`}
+          name="participationObservations"
+          autoComplete="off"
+          placeholder={t`Note your observations about the debate…`}
           maxLength={2000}
           rows={4}
           value={draft.observations ?? ''}

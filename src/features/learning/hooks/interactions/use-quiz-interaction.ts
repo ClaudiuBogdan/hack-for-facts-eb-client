@@ -154,6 +154,7 @@ export function useQuizInteraction(params: UseQuizInteractionInput): QuizInterac
           kind: 'quiz',
           scopePolicy,
           completionRule: { type: 'outcome', outcome: 'correct' },
+          lifecycleMode: 'immediate',
         },
         entityCui: params.entityCui,
         value: {
@@ -190,6 +191,7 @@ export function useQuizInteraction(params: UseQuizInteractionInput): QuizInterac
         kind: 'quiz',
         scopePolicy,
         completionRule: { type: 'outcome', outcome: 'correct' },
+        lifecycleMode: 'immediate',
       },
       entityCui: params.entityCui,
     })

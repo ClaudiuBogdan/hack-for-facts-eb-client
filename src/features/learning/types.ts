@@ -58,7 +58,7 @@ export type InteractionPhase =
   | 'draft'
   | 'pending'
   | 'resolved'
-  | 'error'
+  | 'failed'
 
 export type InteractionOutcome = 'correct' | 'incorrect' | null
 
@@ -71,6 +71,8 @@ export type InteractionResult = {
 }
 
 export type InteractionReviewStatus = 'pending' | 'approved' | 'rejected'
+
+export type InteractionLifecycleMode = 'immediate' | 'async_review'
 
 export type InteractionReview = {
   /**
@@ -101,6 +103,13 @@ export type InteractiveDefinition = {
   readonly kind: InteractiveDefinitionKind
   readonly scopePolicy: 'global' | 'entity'
   readonly completionRule: InteractionCompletionRule
+  /**
+   * Local-only lifecycle classification used by UI and projection helpers.
+   *
+   * This is not synced to the server. New definitions should set it
+   * explicitly; undefined defaults to `immediate` for compatibility.
+   */
+  readonly lifecycleMode?: InteractionLifecycleMode
 }
 
 export type InteractiveStateRecord = {
@@ -146,7 +155,7 @@ export type InteractiveAuditEvent =
       readonly type: 'evaluated'
       readonly at: string
       readonly actor: 'system'
-      readonly phase: 'resolved' | 'error'
+      readonly phase: 'resolved' | 'failed'
       readonly result: InteractionResult
     }
 

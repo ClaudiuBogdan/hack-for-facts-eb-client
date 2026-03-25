@@ -7,6 +7,12 @@ describe('CampaignChallengeFormShell', () => {
     render(
       <CampaignChallengeFormShell
         title="Review item"
+        submittedSummaryItems={[
+          {
+            label: 'Submitted value',
+            value: 'https://example.com',
+          },
+        ]}
         isSubmitted={true}
         submittedVariant="pending_review"
         onSubmit={() => {}}
@@ -16,10 +22,13 @@ describe('CampaignChallengeFormShell', () => {
       </CampaignChallengeFormShell>,
     )
 
-    expect(screen.getByText('Pending review')).toBeInTheDocument()
+    expect(screen.getAllByText('Pending review')).toHaveLength(2)
     expect(
-      screen.getByText('Your information has been recorded and is being reviewed.'),
+      screen.getByText('Your submission is saved. The system will validate it before it counts toward this challenge.'),
     ).toBeInTheDocument()
+    expect(screen.getByText('What you submitted')).toBeInTheDocument()
+    expect(screen.getByText('Submitted value')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite')
   })
 
   it('renders an approved submitted state', () => {
@@ -37,6 +46,7 @@ describe('CampaignChallengeFormShell', () => {
 
     expect(screen.getByText('Submitted')).toBeInTheDocument()
     expect(screen.queryByText('Pending review')).not.toBeInTheDocument()
+    expect(screen.getByText('Review accepted')).toBeInTheDocument()
   })
 
   it('renders rejection feedback when review fails', () => {

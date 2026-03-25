@@ -5,6 +5,7 @@ import { DebateRequestForm } from './DebateRequestForm'
 const saveDraftMock = vi.fn(async () => undefined)
 const submitMock = vi.fn(async () => undefined)
 const resetMock = vi.fn(async () => undefined)
+let customInteractionCalls: Array<Record<string, unknown>> = []
 
 const formState = {
   savedValue: null as null | {
@@ -32,17 +33,12 @@ vi.mock('./use-campaign-challenge-form', () => ({
 }))
 
 vi.mock('@/features/learning/hooks/interactions/use-custom-interaction', () => ({
-  useCustomInteraction: () => ({
-    savedValue: null,
-  }),
-}))
-
-vi.mock('../../hooks/use-campaign-progress', () => ({
-  useCampaignProgress: () => ({
-    progress: {
-      selectedEntityCui: '4305857',
-    },
-  }),
+  useCustomInteraction: (params: Record<string, unknown>) => {
+    customInteractionCalls.push(params)
+    return {
+      savedValue: null,
+    }
+  },
 }))
 
 describe('DebateRequestForm', () => {
@@ -50,6 +46,7 @@ describe('DebateRequestForm', () => {
     saveDraftMock.mockClear()
     submitMock.mockClear()
     resetMock.mockClear()
+    customInteractionCalls = []
     formState.savedValue = null
     formState.phase = 'idle'
     formState.isSubmitted = false
@@ -62,7 +59,7 @@ describe('DebateRequestForm', () => {
 
   it('returns rejected submissions to step 1 while preserving the previous answers', () => {
     const { rerender } = render(
-      <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" />,
+      <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
 
     fireEvent.change(screen.getByLabelText('City hall email'), {
@@ -98,14 +95,14 @@ describe('DebateRequestForm', () => {
     })
 
     rerender(
-      <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" />,
+      <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
     expect(resetMock).toHaveBeenCalledTimes(1)
 
     rerender(
-      <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" />,
+      <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
 
     expect(screen.getByLabelText('City hall email')).toHaveValue('primaria@example.ro')
@@ -113,5 +110,19 @@ describe('DebateRequestForm', () => {
     expect(
       screen.queryByText('Choose how you want the public debate request to be sent.'),
     ).not.toBeInTheDocument()
+  })
+
+  it('uses the explicit route entity for contact info lookups', () => {
+    render(
+      <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="87654321" />,
+    )
+
+    expect(customInteractionCalls).toContainEqual(
+      expect.objectContaining({
+        scopePolicy: 'entity',
+        entityCui: '87654321',
+        interactionId: 'campaign:primarie-contact-info',
+      }),
+    )
   })
 })

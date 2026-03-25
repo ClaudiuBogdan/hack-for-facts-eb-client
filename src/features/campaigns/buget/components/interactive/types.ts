@@ -66,4 +66,7 @@ export type PrimarieContactInfoValue = {
 
 export type CampaignInteractiveElementProps = {
   readonly ownerChallengeSlug: CivicOwnerChallengeSlug
+  // Route entity context is authoritative for entity-scoped interaction keys.
+  // Shared selectedEntityCui state is selector UX only and must not drive record identity.
+  readonly entityCui: string
 }

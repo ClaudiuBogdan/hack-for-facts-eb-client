@@ -138,7 +138,7 @@ export function useChallengeStepMdxComponents({
         onRegister={onRegister}
       />
     ),
-    [accessCardVariant, isAccessGranted, isSubmitting, locale, onRegister, stepId],
+    [accessCardVariant, entityCui, isAccessGranted, isSubmitting, locale, onRegister, stepId],
   )
 
   const MarkCompleteWrapper = useCallback(
@@ -186,21 +186,23 @@ export function useChallengeStepMdxComponents({
   const articleMdxComponents = useMemo(
     () =>
       buildChallengeMdxComponents({
+        entityCui,
         QuizComponent: QuizWrapper,
         MarkCompleteComponent: MarkCompleteWrapper,
         customComponents: lessonCustomComponents,
       }),
-    [MarkCompleteWrapper, QuizWrapper, lessonCustomComponents],
+    [MarkCompleteWrapper, QuizWrapper, entityCui, lessonCustomComponents],
   )
 
   const sectionedArticleMdxComponents = useMemo(
     () =>
       buildChallengeMdxComponents({
+        entityCui,
         QuizComponent: QuizWrapper,
         MarkCompleteComponent: () => null,
         customComponents: lessonCustomComponents,
       }),
-    [QuizWrapper, lessonCustomComponents],
+    [QuizWrapper, entityCui, lessonCustomComponents],
   )
 
   const syntheticMarkComplete = useMemo(
@@ -241,6 +243,7 @@ export function useSectionedStepMdxComponents({
   return useMemo(
     () =>
       buildChallengeMdxComponents({
+        entityCui,
         QuizComponent: (props) => (
           <ChallengeSectionedQuiz
             {...props}
@@ -263,6 +266,7 @@ export function useSectionedStepMdxComponents({
       lessonCustomComponents,
       onPendingQuizOptionChange,
       pendingQuizOptionId,
+      entityCui,
     ],
   )
 }

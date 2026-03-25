@@ -1,118 +1,76 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { useCustomInteraction } from '@/features/learning/hooks/interactions/use-custom-interaction'
-import {
-  getInteractionReviewFeedbackText,
-  getInteractionReviewStatus,
-} from '@/features/learning/utils/interactive-state'
+import { useLearningProgress } from '@/features/learning/hooks/use-learning-progress'
+import type { InteractionLifecycleMode } from '@/features/learning/types'
+import { resolveInteractiveRecordKey } from '@/features/learning/utils/interactive-state'
 import type { CivicOwnerChallengeSlug } from '../../civic-interaction-definitions'
 import { useCampaignProgress } from '../../hooks/use-campaign-progress'
-import type { SubmittedVariant } from './CampaignChallengeFormShell'
+import { deriveCampaignChallengeInteractionCandidate } from '../../utils/progress-records'
+import type { SubmittedVariant } from './campaign-challenge-review-state'
 
 type UseCampaignChallengeFormInput = {
   readonly ownerChallengeSlug: CivicOwnerChallengeSlug
   readonly interactionId: string
-  readonly completionAction: 'complete' | 'pending_review'
+  readonly lifecycleMode: InteractionLifecycleMode
+  readonly entityCui: string
 }
 
 export function useCampaignChallengeForm<TValue extends Record<string, unknown>>(
   params: UseCampaignChallengeFormInput,
 ) {
+  const { progress: learningProgress } = useLearningProgress()
   const {
-    progress,
-    getChallengeStatus,
+    progress: campaignProgress,
     markChallengeInProgress,
     setChallengeStatus,
   } = useCampaignProgress()
-  const entityCui = progress.selectedEntityCui ?? undefined
-  const persistedChallengeProgress = progress.challenges[params.ownerChallengeSlug]
-
   const interaction = useCustomInteraction<TValue>({
     lessonId: params.ownerChallengeSlug,
     interactionId: params.interactionId,
     scopePolicy: 'entity',
-    entityCui,
+    entityCui: params.entityCui,
     kind: 'custom',
     completionRule: { type: 'resolved' },
+    lifecycleMode: params.lifecycleMode,
   })
 
-  const saveDraft = useCallback(async (value: TValue) => {
-    await Promise.resolve()
-    await interaction.saveDraft(value)
-    markChallengeInProgress(params.ownerChallengeSlug)
-  }, [interaction, markChallengeInProgress, params.ownerChallengeSlug])
+  const currentRecordKey = useMemo(
+    () => resolveInteractiveRecordKey(
+      {
+        id: params.interactionId,
+        scopePolicy: 'entity',
+      },
+      params.entityCui,
+    ),
+    [params.entityCui, params.interactionId],
+  )
 
-  const submit = useCallback(async (value: TValue) => {
-    if (params.completionAction === 'pending_review') {
-      await interaction.submit(value)
-    } else {
-      await interaction.complete(value)
-    }
-    setChallengeStatus(
+  const syncAggregateChallengeStatusFromTrackedInteractions = useCallback((options?: {
+    readonly excludedRecordKey?: string | null
+  }) => {
+    const strongestSiblingCandidate = deriveCampaignChallengeInteractionCandidate(
       params.ownerChallengeSlug,
-      params.completionAction === 'pending_review' ? 'pending_review' : 'completed',
+      Object.values(learningProgress.interactiveState.recordsByKey).filter((record) => {
+        return record.key !== options?.excludedRecordKey
+      }),
     )
-  }, [interaction, params.completionAction, params.ownerChallengeSlug, setChallengeStatus])
+    const persistedChallengeProgress = campaignProgress.challenges[params.ownerChallengeSlug]
+    const nextChallengeStatus = strongestSiblingCandidate?.status ?? 'not_started'
 
-  const reset = useCallback(async () => {
-    await interaction.reset()
-    if (!persistedChallengeProgress) {
+    if (nextChallengeStatus === 'not_started') {
+      if (!persistedChallengeProgress) {
+        return
+      }
+
+      setChallengeStatus(params.ownerChallengeSlug, 'not_started', {
+        attempts: 0,
+        incrementAttempts: false,
+        emitAuditEvent: false,
+      })
       return
     }
 
-    setChallengeStatus(params.ownerChallengeSlug, 'not_started', {
-      attempts: 0,
-      emitAuditEvent: false,
-      incrementAttempts: false,
-    })
-  }, [interaction, params.ownerChallengeSlug, persistedChallengeProgress, setChallengeStatus])
-
-  const reviewStatus = getInteractionReviewStatus(interaction.record)
-  const reviewFeedbackText = getInteractionReviewFeedbackText(interaction.record)
-  const isSubmitted =
-    interaction.phase === 'pending'
-    || interaction.phase === 'resolved'
-  // Review-required interactives are modeled as one shared record:
-  // - client writes the submission payload
-  // - server later attaches authoritative `record.review`
-  // This keeps future review-required campaign interactives on the same
-  // rendering/completion path instead of reimplementing ad hoc status logic.
-  const submittedVariant: SubmittedVariant =
-    params.completionAction === 'pending_review'
-      ? reviewStatus === 'approved'
-        ? 'completed'
-        : reviewStatus === 'rejected'
-          ? 'rejected'
-          : interaction.phase === 'pending' || interaction.phase === 'resolved'
-            ? 'pending_review'
-          : 'pending_review'
-      : 'completed'
-  const challengeStatus =
-    interaction.record === null
-      ? 'not_started'
-      : submittedVariant === 'completed'
-        ? 'completed'
-        : submittedVariant === 'rejected'
-          ? 'in_progress'
-        : interaction.phase === 'pending' || interaction.phase === 'resolved'
-          ? 'pending_review'
-          : 'in_progress'
-  const isCompleted =
-    params.completionAction === 'pending_review'
-      ? submittedVariant === 'completed'
-      : interaction.isCompleted
-  const persistedChallengeStatus = getChallengeStatus(params.ownerChallengeSlug)
-
-  useEffect(() => {
-    if (params.completionAction !== 'pending_review') {
-      return
-    }
-
-    if (reviewStatus !== 'approved' && reviewStatus !== 'rejected') {
-      return
-    }
-
-    const nextChallengeStatus = reviewStatus === 'approved' ? 'completed' : 'in_progress'
-    if (persistedChallengeStatus === nextChallengeStatus) {
+    if (persistedChallengeProgress?.status === nextChallengeStatus) {
       return
     }
 
@@ -121,11 +79,70 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
       emitAuditEvent: false,
     })
   }, [
-    params.completionAction,
+    campaignProgress.challenges,
+    learningProgress.interactiveState.recordsByKey,
     params.ownerChallengeSlug,
-    persistedChallengeStatus,
-    reviewStatus,
     setChallengeStatus,
+  ])
+
+  const saveDraft = useCallback(async (value: TValue) => {
+    await Promise.resolve()
+    await interaction.saveDraft(value)
+    markChallengeInProgress(params.ownerChallengeSlug)
+  }, [interaction, markChallengeInProgress, params.ownerChallengeSlug])
+
+  const submit = useCallback(async (value: TValue) => {
+    if (params.lifecycleMode === 'async_review') {
+      await interaction.submit(value)
+    } else {
+      await interaction.complete(value)
+    }
+    setChallengeStatus(
+      params.ownerChallengeSlug,
+      params.lifecycleMode === 'async_review' ? 'pending_review' : 'completed',
+    )
+  }, [interaction, params.lifecycleMode, params.ownerChallengeSlug, setChallengeStatus])
+
+  const reset = useCallback(async () => {
+    await interaction.reset()
+    syncAggregateChallengeStatusFromTrackedInteractions({
+      excludedRecordKey: currentRecordKey,
+    })
+  }, [currentRecordKey, interaction, syncAggregateChallengeStatusFromTrackedInteractions])
+
+  const reviewStatus = interaction.lifecycle.reviewStatus
+  const reviewFeedbackText = interaction.lifecycle.feedbackText
+  const isSubmitted = interaction.lifecycle.isSubmitted
+  const submittedVariant: SubmittedVariant =
+    params.lifecycleMode === 'async_review'
+      ? interaction.lifecycle.isSuccessful
+        ? 'completed'
+        : interaction.lifecycle.isFailure
+          ? 'rejected'
+          : 'pending_review'
+      : 'completed'
+  const challengeStatus =
+    campaignProgress.challenges[params.ownerChallengeSlug]?.status
+    ?? 'not_started'
+  const isCompleted =
+    params.lifecycleMode === 'async_review'
+      ? interaction.lifecycle.isSuccessful
+      : interaction.isCompleted
+
+  useEffect(() => {
+    if (params.lifecycleMode !== 'async_review') {
+      return
+    }
+
+    if (reviewStatus !== 'approved' && reviewStatus !== 'rejected') {
+      return
+    }
+
+    syncAggregateChallengeStatusFromTrackedInteractions()
+  }, [
+    params.lifecycleMode,
+    reviewStatus,
+    syncAggregateChallengeStatusFromTrackedInteractions,
   ])
 
   return useMemo(() => ({
@@ -138,7 +155,7 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
     reviewStatus,
     reviewFeedbackText,
     submittedVariant,
-    entityCui,
+    entityCui: params.entityCui,
     saveDraft,
     submit,
     reset,
@@ -152,7 +169,7 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
     reviewStatus,
     reviewFeedbackText,
     submittedVariant,
-    entityCui,
+    params.entityCui,
     saveDraft,
     submit,
     reset,

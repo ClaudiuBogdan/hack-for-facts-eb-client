@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { BUDGET_STATUS_REPORT_INTERACTION } from '../../civic-interaction-definitions'
 import { CampaignChallengeFormShell } from './CampaignChallengeFormShell'
+import { formatReviewDate, type ReviewSummaryItem } from './campaign-challenge-review-state'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
 import type { BudgetStatusReportValue, CampaignInteractiveElementProps } from './types'
 
@@ -32,6 +33,26 @@ const BUDGET_STAGE_OPTIONS: ReadonlyArray<{
   { value: 'approved', label: () => t`Approved` },
 ]
 
+function getPublicationAnswerLabel(value: NonNullable<BudgetStatusReportValue['isPublished']>): string {
+  switch (value) {
+    case 'yes':
+      return t`Yes`
+    case 'no':
+      return t`No`
+    case 'dont_know':
+      return t`I don't know`
+  }
+}
+
+function getBudgetStageLabel(value: NonNullable<BudgetStatusReportValue['budgetStage']>): string {
+  switch (value) {
+    case 'draft':
+      return t`Draft (public consultation)`
+    case 'approved':
+      return t`Approved`
+  }
+}
+
 /**
  * This element collects crowdsourced budget status data. Submissions go to
  * pending_review because the data needs async server validation before being
@@ -39,11 +60,12 @@ const BUDGET_STAGE_OPTIONS: ReadonlyArray<{
  * verify the reported status against the actual entity data.
  * Record key: campaign:budget-2026-status::entity:{cui}
  */
-export function BudgetStatusReport({ ownerChallengeSlug }: CampaignInteractiveElementProps) {
+export function BudgetStatusReport({ ownerChallengeSlug, entityCui }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<BudgetStatusReportValue>({
     ownerChallengeSlug,
     interactionId: BUDGET_STATUS_REPORT_INTERACTION.interactionId,
-    completionAction: 'pending_review',
+    lifecycleMode: BUDGET_STATUS_REPORT_INTERACTION.lifecycleMode,
+    entityCui,
   })
 
   const [draft, setDraft] = useState<BudgetStatusReportValue>(
@@ -92,18 +114,39 @@ export function BudgetStatusReport({ ownerChallengeSlug }: CampaignInteractiveEl
     void form.reset()
   }, [form])
 
-  if (!form.entityCui) {
-    return null
-  }
-
   const isSubmitDisabled =
     draft.isPublished === null
     || (draft.isPublished === 'yes' && draft.budgetStage === null)
 
+  const submittedSummaryItems: ReviewSummaryItem[] = form.savedValue
+    ? [
+        ...(form.savedValue.isPublished
+          ? [{
+              label: t`Published`,
+              value: getPublicationAnswerLabel(form.savedValue.isPublished),
+            }]
+          : []),
+        ...(form.savedValue.budgetStage
+          ? [{
+              label: t`Budget stage`,
+              value: getBudgetStageLabel(form.savedValue.budgetStage),
+            }]
+          : []),
+        ...(formatReviewDate(form.savedValue.submittedAt)
+          ? [{
+              label: t`Submitted on`,
+              value: formatReviewDate(form.savedValue.submittedAt) as string,
+            }]
+          : []),
+      ]
+    : []
+
   return (
     <CampaignChallengeFormShell
+      eyebrow={t`Budget status`}
       submittedVariant={form.submittedVariant}
       feedbackText={form.reviewFeedbackText}
+      submittedSummaryItems={submittedSummaryItems}
       onTryAgain={handleTryAgain}
       title={t`Budget status 2026`}
       description={t`Report the publication status of the local budget for 2026.`}

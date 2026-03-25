@@ -3,7 +3,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react'
 import { createLazyFileRoute, useNavigate } from '@tanstack/react-router'
@@ -23,7 +22,6 @@ import {
 } from '@/features/challenges/components/analysis/challenge-entity-analysis-page'
 import type { ChallengeEntityInitialSettings } from '@/features/challenges/components/analysis/challenge-entity-analysis-queries'
 import type { BudgetItemAnalyticsSearchState } from '@/features/challenges/components/analysis/budget-item-analytics-search-state'
-import { useCampaignProgress } from '@/features/campaigns/buget/hooks/use-campaign-progress'
 import {
   CHALLENGE_ENTITY_ANALYSIS_INS_SEARCH_KEYS,
   encodeChallengeEntityAnalyticsSearchState,
@@ -172,18 +170,10 @@ export function PrimarieEntityRoutePage() {
   const navigate = useNavigate({
     from: '/primarie/$cui',
   })
-  const {
-    isReady,
-    isInitialResolutionReady,
-    progress,
-    setSelectedEntity,
-  } = useCampaignProgress()
-  const [isEntityResolved, setIsEntityResolved] = useState(false)
   const [pendingMapEntitySelection, setPendingMapEntitySelection] =
     useState<MapEntitySelection | null>(null)
   const [isConfirmingMapEntitySelection, setIsConfirmingMapEntitySelection] =
     useState(false)
-  const syncedEntityCuiRef = useRef<string | null>(null)
 
   const normalizedSearch = useMemo(
     () =>
@@ -196,11 +186,6 @@ export function PrimarieEntityRoutePage() {
     () => toPageState(normalizedSearch),
     [normalizedSearch],
   )
-
-  useEffect(() => {
-    setIsEntityResolved(false)
-    syncedEntityCuiRef.current = null
-  }, [cui])
 
   useEffect(() => {
     setPendingMapEntitySelection(null)
@@ -226,28 +211,6 @@ export function PrimarieEntityRoutePage() {
       replace: true,
     })
   }, [navigate, normalizedSearch, search])
-
-  useEffect(() => {
-    if (
-      !isEntityResolved ||
-      !isReady ||
-      !isInitialResolutionReady ||
-      syncedEntityCuiRef.current === cui ||
-      progress.selectedEntityCui === cui
-    ) {
-      return
-    }
-
-    syncedEntityCuiRef.current = cui
-    setSelectedEntity({ entityCui: cui })
-  }, [
-    cui,
-    isEntityResolved,
-    isInitialResolutionReady,
-    isReady,
-    progress.selectedEntityCui,
-    setSelectedEntity,
-  ])
 
   const updateSearch = useCallback(
     (
@@ -424,10 +387,6 @@ export function PrimarieEntityRoutePage() {
     [updateSearch],
   )
 
-  const handleEntityResolved = useCallback(() => {
-    setIsEntityResolved(true)
-  }, [])
-
   const dialogLanguage = normalizedSearch.lang === 'en' ? 'en' : 'ro'
   const selectedEntityName = normalizeSelectionText(
     pendingMapEntitySelection?.entityName,
@@ -467,7 +426,6 @@ export function PrimarieEntityRoutePage() {
         onCommitmentsViewStateChange={handleCommitmentsViewStateChange}
         onAnalyticsTargetChange={handleAnalyticsTargetChange}
         onEntityCuiChange={handleMapEntitySelection}
-        onEntityResolved={handleEntityResolved}
       />
 
       <Dialog

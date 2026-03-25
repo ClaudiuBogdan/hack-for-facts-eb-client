@@ -5,6 +5,7 @@ import { ContestationBuilder } from './ContestationBuilder'
 const saveDraftMock = vi.fn(async () => undefined)
 const submitMock = vi.fn(async () => undefined)
 const resetMock = vi.fn(async () => undefined)
+let customInteractionCalls: Array<Record<string, unknown>> = []
 
 const formState = {
   savedValue: null as null | {
@@ -35,17 +36,12 @@ vi.mock('./use-campaign-challenge-form', () => ({
 }))
 
 vi.mock('@/features/learning/hooks/interactions/use-custom-interaction', () => ({
-  useCustomInteraction: () => ({
-    savedValue: null,
-  }),
-}))
-
-vi.mock('../../hooks/use-campaign-progress', () => ({
-  useCampaignProgress: () => ({
-    progress: {
-      selectedEntityCui: '4305857',
-    },
-  }),
+  useCustomInteraction: (params: Record<string, unknown>) => {
+    customInteractionCalls.push(params)
+    return {
+      savedValue: null,
+    }
+  },
 }))
 
 describe('ContestationBuilder', () => {
@@ -53,6 +49,7 @@ describe('ContestationBuilder', () => {
     saveDraftMock.mockClear()
     submitMock.mockClear()
     resetMock.mockClear()
+    customInteractionCalls = []
     formState.savedValue = null
     formState.phase = 'idle'
     formState.isSubmitted = false
@@ -65,7 +62,7 @@ describe('ContestationBuilder', () => {
 
   it('returns rejected contestations to step 1 while preserving the previous draft', () => {
     const { rerender } = render(
-      <ContestationBuilder ownerChallengeSlug="civic-monitor-and-request" />,
+      <ContestationBuilder ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
 
     fireEvent.change(screen.getByLabelText('What are you contesting?'), {
@@ -114,19 +111,40 @@ describe('ContestationBuilder', () => {
     })
 
     rerender(
-      <ContestationBuilder ownerChallengeSlug="civic-monitor-and-request" />,
+      <ContestationBuilder ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
     expect(resetMock).toHaveBeenCalledTimes(1)
 
     rerender(
-      <ContestationBuilder ownerChallengeSlug="civic-monitor-and-request" />,
+      <ContestationBuilder ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
 
     expect(screen.getByLabelText('What are you contesting?')).toHaveValue(
       'Personnel expenses - Chapter 65 Education',
     )
     expect(screen.queryByLabelText('Your name or organization')).not.toBeInTheDocument()
+  })
+
+  it('uses the explicit route entity for debate and contact info lookups', () => {
+    render(
+      <ContestationBuilder ownerChallengeSlug="civic-monitor-and-request" entityCui="87654321" />,
+    )
+
+    expect(customInteractionCalls).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          scopePolicy: 'entity',
+          entityCui: '87654321',
+          interactionId: 'campaign:debate-request',
+        }),
+        expect.objectContaining({
+          scopePolicy: 'entity',
+          entityCui: '87654321',
+          interactionId: 'campaign:primarie-contact-info',
+        }),
+      ]),
+    )
   })
 })

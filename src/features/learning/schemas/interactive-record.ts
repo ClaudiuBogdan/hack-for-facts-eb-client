@@ -43,13 +43,16 @@ export const InteractionValueSchema = z.discriminatedUnion('kind', [
   }),
 ])
 
-export const InteractionPhaseSchema = z.enum([
-  'idle',
-  'draft',
-  'pending',
-  'resolved',
-  'error',
-])
+export const InteractionPhaseSchema = z
+  .enum([
+    'idle',
+    'draft',
+    'pending',
+    'resolved',
+    'failed',
+    'error',
+  ])
+  .transform((value) => value === 'error' ? 'failed' : value)
 
 export const InteractionResultSchema = z.object({
   outcome: z.enum(['correct', 'incorrect']).nullable(),
@@ -117,7 +120,7 @@ export const InteractiveAuditEventSchema = z.discriminatedUnion('type', [
     type: z.literal('evaluated'),
     at: z.string().datetime(),
     actor: z.literal('system'),
-    phase: z.enum(['resolved', 'error']),
+    phase: z.enum(['resolved', 'failed', 'error']).transform((value) => value === 'error' ? 'failed' : value),
     result: InteractionResultSchema,
   }),
 ])

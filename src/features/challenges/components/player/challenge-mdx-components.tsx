@@ -2,6 +2,7 @@ import { lazy, Suspense, type ComponentType } from 'react'
 import { t } from '@lingui/core/macro'
 import type { MDXComponents } from 'mdx/types'
 import type { QuizOption } from '@/features/learning/components/assessment/Quiz'
+import type { CampaignInteractiveElementProps } from '@/features/campaigns/buget/components/interactive/types'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ClientOnly } from '@/components/ssr/ClientOnly'
 
@@ -18,10 +19,13 @@ export type ChallengeMarkCompleteMdxProps = {
 }
 
 type BuildChallengeMdxComponentsParams = {
+  readonly entityCui: string
   readonly QuizComponent: ComponentType<ChallengeQuizMdxProps>
   readonly MarkCompleteComponent: ComponentType<ChallengeMarkCompleteMdxProps>
   readonly customComponents?: MDXComponents
 }
+
+type RouteScopedCampaignInteractiveProps = Omit<CampaignInteractiveElementProps, 'entityCui'>
 
 function createLazyComponent<Props = Record<string, unknown>>(
   loader: () => Promise<{ default: ComponentType<any> }>,
@@ -95,53 +99,62 @@ const BudgetChapterHierarchy = createLazyComponent(() =>
   })),
 )
 
-const BudgetStatusReport = createLazyComponent(() =>
+const BudgetStatusReport = createLazyComponent<CampaignInteractiveElementProps>(() =>
   import('@/features/campaigns/buget/components/interactive/BudgetStatusReport').then((module) => ({
     default: module.BudgetStatusReport,
   })),
 )
 
-const DebateRequestForm = createLazyComponent(() =>
+const DebateRequestForm = createLazyComponent<CampaignInteractiveElementProps>(() =>
   import('@/features/campaigns/buget/components/interactive/DebateRequestForm').then((module) => ({
     default: module.DebateRequestForm,
   })),
 )
 
-const ParticipationReport = createLazyComponent(() =>
+const ParticipationReport = createLazyComponent<CampaignInteractiveElementProps>(() =>
   import('@/features/campaigns/buget/components/interactive/ParticipationReport').then((module) => ({
     default: module.ParticipationReport,
   })),
 )
 
-const ContestationBuilder = createLazyComponent(() =>
+const ContestationBuilder = createLazyComponent<CampaignInteractiveElementProps>(() =>
   import('@/features/campaigns/buget/components/interactive/ContestationBuilder').then((module) => ({
     default: module.ContestationBuilder,
   })),
 )
 
-const BudgetPublicationDate = createLazyComponent(() =>
+const BudgetPublicationDate = createLazyComponent<CampaignInteractiveElementProps>(() =>
   import('@/features/campaigns/buget/components/interactive/BudgetPublicationDate').then((module) => ({
     default: module.BudgetPublicationDate,
   })),
 )
 
-const PrimarieWebsiteLink = createLazyComponent(() =>
+const PrimarieWebsiteLink = createLazyComponent<CampaignInteractiveElementProps>(() =>
   import('@/features/campaigns/buget/components/interactive/PrimarieWebsiteLink').then((module) => ({
     default: module.PrimarieWebsiteLink,
   })),
 )
 
-const BudgetDocumentLink = createLazyComponent(() =>
+const BudgetDocumentLink = createLazyComponent<CampaignInteractiveElementProps>(() =>
   import('@/features/campaigns/buget/components/interactive/BudgetDocumentLink').then((module) => ({
     default: module.BudgetDocumentLink,
   })),
 )
 
-const PrimarieContactInfo = createLazyComponent(() =>
+const PrimarieContactInfo = createLazyComponent<CampaignInteractiveElementProps>(() =>
   import('@/features/campaigns/buget/components/interactive/PrimarieContactInfo').then((module) => ({
     default: module.PrimarieContactInfo,
   })),
 )
+
+function withRouteEntityCui(
+  Component: ComponentType<CampaignInteractiveElementProps>,
+  entityCui: string,
+): ComponentType<RouteScopedCampaignInteractiveProps> {
+  return function RouteScopedCampaignInteractive(props: RouteScopedCampaignInteractiveProps) {
+    return <Component {...props} entityCui={entityCui} />
+  }
+}
 
 export function buildChallengeMdxComponents(
   params: BuildChallengeMdxComponentsParams,
@@ -157,14 +170,14 @@ export function buildChallengeMdxComponents(
     BudgetCodeAnchors,
     BudgetCodeAnatomy,
     BudgetChapterHierarchy,
-    BudgetStatusReport,
-    DebateRequestForm,
-    ParticipationReport,
-    ContestationBuilder,
-    BudgetPublicationDate,
-    PrimarieWebsiteLink,
-    BudgetDocumentLink,
-    PrimarieContactInfo,
+    BudgetStatusReport: withRouteEntityCui(BudgetStatusReport, params.entityCui),
+    DebateRequestForm: withRouteEntityCui(DebateRequestForm, params.entityCui),
+    ParticipationReport: withRouteEntityCui(ParticipationReport, params.entityCui),
+    ContestationBuilder: withRouteEntityCui(ContestationBuilder, params.entityCui),
+    BudgetPublicationDate: withRouteEntityCui(BudgetPublicationDate, params.entityCui),
+    PrimarieWebsiteLink: withRouteEntityCui(PrimarieWebsiteLink, params.entityCui),
+    BudgetDocumentLink: withRouteEntityCui(BudgetDocumentLink, params.entityCui),
+    PrimarieContactInfo: withRouteEntityCui(PrimarieContactInfo, params.entityCui),
     ...(params.customComponents ?? {}),
   }
 }

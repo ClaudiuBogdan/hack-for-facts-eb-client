@@ -3,6 +3,11 @@ import type {
   LearningProgressEvent,
   LearningProgressRemoteSnapshot,
 } from '@/features/learning/types'
+import { deriveInteractiveLifecycleState } from '@/features/learning/utils/interactive-state'
+import {
+  getCampaignInteractiveDefinitionByInteractionId,
+  getCampaignInteractiveDefinitionsForChallenge,
+} from '../civic-interaction-definitions'
 import {
   CAMPAIGN_ID,
   CAMPAIGN_PROGRESS_SCHEMA_VERSION,
@@ -23,6 +28,33 @@ export const CAMPAIGN_SELECTED_ENTITY_RECORD_KEY = `${CAMPAIGN_RECORD_PREFIX}:se
 export const CAMPAIGN_ACTIVE_MODULE_RECORD_KEY = `${CAMPAIGN_RECORD_PREFIX}:active-module`
 
 export type CampaignProgressRecordMap = Readonly<Record<string, InteractiveStateRecord>>
+
+type CampaignChallengeInteractionCandidateSource =
+  | 'approved'
+  | 'pending'
+  | 'failed'
+  | 'draft'
+
+export type CampaignChallengeInteractionCandidate = {
+  readonly ownerChallengeSlug: string
+  readonly status: Exclude<CampaignChallengeStatus, 'locked'>
+  readonly source: CampaignChallengeInteractionCandidateSource
+  readonly updatedAt: string
+}
+
+const CHALLENGE_STATUS_PRIORITY: Readonly<Record<Exclude<CampaignChallengeStatus, 'locked'>, number>> = {
+  completed: 3,
+  pending_review: 2,
+  in_progress: 1,
+  not_started: 0,
+} as const
+
+const CANDIDATE_SOURCE_PRIORITY: Readonly<Record<CampaignChallengeInteractionCandidateSource, number>> = {
+  approved: 3,
+  pending: 2,
+  failed: 1,
+  draft: 0,
+} as const
 
 function maxIso(left: string | null, right: string | null): string | null {
   if (!left) return right
@@ -58,6 +90,10 @@ function isCampaignRecordKey(recordKey: string): boolean {
   return recordKey.startsWith(`${CAMPAIGN_RECORD_PREFIX}:`)
 }
 
+function isTrackedCampaignInteractionRecord(record: InteractiveStateRecord): boolean {
+  return getCampaignInteractiveDefinitionByInteractionId(record.interactionId) !== null
+}
+
 function createCampaignRecord(params: {
   readonly key: string
   readonly updatedAt: string
@@ -89,6 +125,204 @@ function shouldPersistChallengeProgress(progress: CampaignChallengeProgress): bo
 
 function recordsAreEqual(left: InteractiveStateRecord, right: InteractiveStateRecord): boolean {
   return JSON.stringify(left) === JSON.stringify(right)
+}
+
+function toChallengeCandidateFromRecord(
+  record: InteractiveStateRecord,
+): CampaignChallengeInteractionCandidate | null {
+  const definition = getCampaignInteractiveDefinitionByInteractionId(record.interactionId)
+  if (!definition) {
+    return null
+  }
+
+  const lifecycle = deriveInteractiveLifecycleState(record, definition.lifecycleMode)
+  if (lifecycle.status === 'passed') {
+    return {
+      ownerChallengeSlug: definition.ownerChallengeSlug,
+      status: 'completed',
+      source: 'approved',
+      updatedAt: record.updatedAt,
+    }
+  }
+
+  if (lifecycle.status === 'pending') {
+    return {
+      ownerChallengeSlug: definition.ownerChallengeSlug,
+      status: 'pending_review',
+      source: 'pending',
+      updatedAt: record.updatedAt,
+    }
+  }
+
+  if (lifecycle.status === 'failed') {
+    return {
+      ownerChallengeSlug: definition.ownerChallengeSlug,
+      status: 'in_progress',
+      source: 'failed',
+      updatedAt: record.updatedAt,
+    }
+  }
+
+  if (lifecycle.status === 'draft') {
+    return {
+      ownerChallengeSlug: definition.ownerChallengeSlug,
+      status: 'in_progress',
+      source: 'draft',
+      updatedAt: record.updatedAt,
+    }
+  }
+
+  return null
+}
+
+function compareChallengeCandidates(
+  leftCandidate: CampaignChallengeInteractionCandidate,
+  rightCandidate: CampaignChallengeInteractionCandidate,
+): number {
+  const statusDiff =
+    CHALLENGE_STATUS_PRIORITY[leftCandidate.status]
+    - CHALLENGE_STATUS_PRIORITY[rightCandidate.status]
+  if (statusDiff !== 0) {
+    return statusDiff
+  }
+
+  if (leftCandidate.updatedAt !== rightCandidate.updatedAt) {
+    return leftCandidate.updatedAt.localeCompare(rightCandidate.updatedAt)
+  }
+
+  return CANDIDATE_SOURCE_PRIORITY[leftCandidate.source] - CANDIDATE_SOURCE_PRIORITY[rightCandidate.source]
+}
+
+function readExplicitChallengeProgressBySlug(
+  recordsByKey: CampaignProgressRecordMap,
+): Record<string, CampaignChallengeProgress> {
+  const challengeProgressBySlug: Record<string, CampaignChallengeProgress> = {}
+
+  for (const [recordKey, record] of Object.entries(recordsByKey)) {
+    if (!recordKey.startsWith(`${CAMPAIGN_RECORD_PREFIX}:challenge:`)) {
+      continue
+    }
+
+    const value = readJsonValue(record)
+    if (!value) {
+      continue
+    }
+
+    const status = value.status
+    if (!isCampaignChallengeStatus(status)) {
+      continue
+    }
+
+    const challengeSlug =
+      readNullableString(value.challengeSlug) ?? recordKey.slice(`${CAMPAIGN_RECORD_PREFIX}:challenge:`.length)
+    challengeProgressBySlug[challengeSlug] = {
+      status,
+      attempts: readNonNegativeInteger(value.attempts),
+      updatedAt: record.updatedAt,
+    }
+  }
+
+  return challengeProgressBySlug
+}
+
+export function deriveCampaignChallengeInteractionCandidate(
+  ownerChallengeSlug: string,
+  records: readonly InteractiveStateRecord[],
+): CampaignChallengeInteractionCandidate | null {
+  const trackedInteractionIds = new Set(
+    getCampaignInteractiveDefinitionsForChallenge(ownerChallengeSlug).map((definition) => definition.interactionId),
+  )
+
+  let strongestCandidate: CampaignChallengeInteractionCandidate | null = null
+
+  for (const record of records) {
+    if (!trackedInteractionIds.has(record.interactionId)) {
+      continue
+    }
+
+    const candidate = toChallengeCandidateFromRecord(record)
+    if (!candidate) {
+      continue
+    }
+
+    if (
+      strongestCandidate === null
+      || compareChallengeCandidates(candidate, strongestCandidate) > 0
+    ) {
+      strongestCandidate = candidate
+    }
+  }
+
+  return strongestCandidate
+}
+
+function mergeChallengeProgressWithInteractionCandidate(
+  explicitProgress: CampaignChallengeProgress | undefined,
+  candidate: CampaignChallengeInteractionCandidate | null,
+): CampaignChallengeProgress | null {
+  if (explicitProgress?.status === 'locked') {
+    return explicitProgress
+  }
+
+  if (!explicitProgress) {
+    if (!candidate || candidate.status === 'not_started') {
+      return null
+    }
+
+    return {
+      status: candidate.status,
+      attempts: 0,
+      updatedAt: candidate.updatedAt,
+    }
+  }
+
+  if (!candidate) {
+    return explicitProgress
+  }
+
+  if (candidate.updatedAt <= explicitProgress.updatedAt) {
+    return explicitProgress
+  }
+
+  if (candidate.status === 'completed') {
+    return {
+      status: 'completed',
+      attempts: explicitProgress.attempts,
+      updatedAt: candidate.updatedAt,
+    }
+  }
+
+  if (candidate.status === 'pending_review') {
+    if (explicitProgress.status === 'completed') {
+      return explicitProgress
+    }
+
+    return {
+      status: 'pending_review',
+      attempts: explicitProgress.attempts,
+      updatedAt: candidate.updatedAt,
+    }
+  }
+
+  if (candidate.status === 'in_progress') {
+    if (
+      (candidate.source === 'draft' && (
+        explicitProgress.status === 'pending_review'
+        || explicitProgress.status === 'completed'
+      ))
+      || (candidate.source === 'failed' && explicitProgress.status === 'completed')
+    ) {
+      return explicitProgress
+    }
+
+    return {
+      status: 'in_progress',
+      attempts: explicitProgress.attempts,
+      updatedAt: candidate.updatedAt,
+    }
+  }
+
+  return explicitProgress
 }
 
 export function getCampaignChallengeRecordKey(challengeSlug: string): string {
@@ -170,7 +404,9 @@ export function filterCampaignProgressRecords(
   recordsByKey: Readonly<Record<string, InteractiveStateRecord>>,
 ): Record<string, InteractiveStateRecord> {
   return Object.fromEntries(
-    Object.entries(recordsByKey).filter(([recordKey]) => isCampaignRecordKey(recordKey)),
+    Object.entries(recordsByKey).filter(([, record]) => {
+      return isCampaignRecordKey(record.key) || isTrackedCampaignInteractionRecord(record)
+    }),
   )
 }
 
@@ -178,7 +414,11 @@ export function filterCampaignProgressEvents(
   events: readonly LearningProgressEvent[],
 ): Extract<LearningProgressEvent, { readonly type: 'interactive.updated' }>[] {
   return events.filter((event): event is Extract<LearningProgressEvent, { readonly type: 'interactive.updated' }> => {
-    return event.type === 'interactive.updated' && isCampaignRecordKey(event.payload.record.key)
+    return event.type === 'interactive.updated'
+      && (
+        isCampaignRecordKey(event.payload.record.key)
+        || isTrackedCampaignInteractionRecord(event.payload.record)
+      )
   })
 }
 
@@ -328,37 +568,36 @@ export function projectCampaignProgressFromRecords(
   const acceptedTermsValue = readJsonValue(campaignRecords[CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY])
   const selectedEntityValue = readJsonValue(campaignRecords[CAMPAIGN_SELECTED_ENTITY_RECORD_KEY])
   const activeModuleValue = readJsonValue(campaignRecords[CAMPAIGN_ACTIVE_MODULE_RECORD_KEY])
+  const explicitChallengeProgressBySlug = readExplicitChallengeProgressBySlug(campaignRecords)
+  const trackedInteractionRecords = Object.values(campaignRecords).filter(isTrackedCampaignInteractionRecord)
   const challenges: Record<string, CampaignChallengeProgress> = {}
 
-  for (const [recordKey, record] of Object.entries(campaignRecords)) {
-    if (!recordKey.startsWith(`${CAMPAIGN_RECORD_PREFIX}:challenge:`)) {
+  const candidateChallengeSlugs = new Set<string>()
+  for (const record of trackedInteractionRecords) {
+    const definition = getCampaignInteractiveDefinitionByInteractionId(record.interactionId)
+    if (!definition) {
       continue
     }
 
-    const value = readJsonValue(record)
-    if (!value) {
+    candidateChallengeSlugs.add(definition.ownerChallengeSlug)
+  }
+
+  const challengeSlugs = new Set([
+    ...Object.keys(explicitChallengeProgressBySlug),
+    ...candidateChallengeSlugs,
+  ])
+
+  for (const challengeSlug of challengeSlugs) {
+    const mergedChallengeProgress = mergeChallengeProgressWithInteractionCandidate(
+      explicitChallengeProgressBySlug[challengeSlug],
+      deriveCampaignChallengeInteractionCandidate(challengeSlug, trackedInteractionRecords),
+    )
+
+    if (!mergedChallengeProgress || !shouldPersistChallengeProgress(mergedChallengeProgress)) {
       continue
     }
 
-    const status = value.status
-    if (!isCampaignChallengeStatus(status)) {
-      continue
-    }
-
-    const challengeSlug =
-      readNullableString(value.challengeSlug) ?? recordKey.slice(`${CAMPAIGN_RECORD_PREFIX}:challenge:`.length)
-    const attempts = readNonNegativeInteger(value.attempts)
-    const progress: CampaignChallengeProgress = {
-      status,
-      attempts,
-      updatedAt: record.updatedAt,
-    }
-
-    if (!shouldPersistChallengeProgress(progress)) {
-      continue
-    }
-
-    challenges[challengeSlug] = progress
+    challenges[challengeSlug] = mergedChallengeProgress
   }
 
   return {

@@ -48,7 +48,7 @@ describe('PrimarieWebsiteLink', () => {
     formState.submittedVariant = 'completed'
 
     render(
-      <PrimarieWebsiteLink ownerChallengeSlug="civic-monitor-and-request" />,
+      <PrimarieWebsiteLink ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
 
     expect(screen.getByText('Submitted')).toBeInTheDocument()
@@ -61,7 +61,7 @@ describe('PrimarieWebsiteLink', () => {
     formState.submittedVariant = 'rejected'
 
     render(
-      <PrimarieWebsiteLink ownerChallengeSlug="civic-monitor-and-request" />,
+      <PrimarieWebsiteLink ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
 
     expect(screen.getByText('Needs changes')).toBeInTheDocument()
@@ -83,14 +83,14 @@ describe('PrimarieWebsiteLink', () => {
     })
 
     const { rerender } = render(
-      <PrimarieWebsiteLink ownerChallengeSlug="civic-monitor-and-request" />,
+      <PrimarieWebsiteLink ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
     expect(formState.reset).toHaveBeenCalledTimes(1)
 
     rerender(
-      <PrimarieWebsiteLink ownerChallengeSlug="civic-monitor-and-request" />,
+      <PrimarieWebsiteLink ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
 
     expect(screen.getByLabelText('Link to the official city hall website')).toHaveValue('https://example.com')
