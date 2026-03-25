@@ -28,7 +28,7 @@ describe('CampaignChallengeFormShell', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('What you submitted')).toBeInTheDocument()
     expect(screen.getByText('Submitted value')).toBeInTheDocument()
-    expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite')
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
   it('renders an approved submitted state', () => {
