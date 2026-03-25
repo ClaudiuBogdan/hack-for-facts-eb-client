@@ -1,8 +1,14 @@
 /// <reference types="vitest" />
+import os from "node:os";
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import { lingui } from "@lingui/vite-plugin";
 import path from "path";
+
+const ciTestWorkers = Math.min(
+  6,
+  Math.max(2, Math.ceil(os.availableParallelism() * 0.75))
+);
 
 export default defineConfig({
   plugins: [
@@ -17,7 +23,8 @@ export default defineConfig({
     unstubGlobals: true,
     testTimeout: 30_000,
     hookTimeout: 30_000,
-    maxWorkers: 2,
+    fileParallelism: true,
+    maxWorkers: process.env.CI ? ciTestWorkers : 2,
     coverage: {
       reporter: ["text", "json", "html"],
       exclude: ["node_modules/", "src/test/setup.ts"],

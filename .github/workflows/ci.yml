@@ -39,9 +39,17 @@ jobs:
         run: yarn typecheck
 
   unit-tests:
-    name: Unit Tests
+    name: Unit Tests (${{ matrix.shard }})
     if: github.event_name != 'push' || github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          - 1/4
+          - 2/4
+          - 3/4
+          - 4/4
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -59,8 +67,8 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Run Vitest
-        run: yarn test
+      - name: Run Vitest shard
+        run: yarn test --shard=${{ matrix.shard }}
 
   # Integration should not block deployment; rely on GitHub failure emails.
   integration-tests:
