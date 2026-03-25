@@ -18,6 +18,7 @@ vi.mock('./graphql', () => ({
 import {
   filterLineItems,
   getEntityDetails,
+  getEntityProfile,
   getEntityRelationships,
   getEntityReports,
   getEntityRoutingSummary,
@@ -151,6 +152,67 @@ describe('entities api', () => {
       const result = await getEntityRoutingSummary('123456')
 
       expect(result).toBeNull()
+    })
+  })
+
+  describe('getEntityProfile', () => {
+    it('should fetch and return entity profile successfully', async () => {
+      const mockResponse = {
+        entity: {
+          profile: {
+            institution_type: 'municipiu',
+            website_url: 'https://example.ro',
+            official_email: 'office@example.ro',
+            phone_primary: '+40 000 000 000',
+            address_raw: 'Str. Exemplu 1',
+            address_locality: 'Cluj-Napoca',
+            county_code: 'CJ',
+            county_name: 'Cluj',
+            leader_name: 'Jane Doe',
+            leader_title: 'Primar',
+            leader_party: 'PNL',
+            scraped_at: '2026-03-26T10:00:00Z',
+            extraction_confidence: 0.92,
+          },
+        },
+      }
+
+      vi.mocked(graphqlRequest).mockResolvedValue(mockResponse)
+
+      const result = await getEntityProfile('123456')
+
+      expect(graphqlRequest).toHaveBeenCalledWith(
+        expect.stringContaining('query GetEntityProfile'),
+        { cui: '123456' },
+      )
+      expect(result).toEqual(mockResponse.entity.profile)
+    })
+
+    it('should return null when entity is missing', async () => {
+      vi.mocked(graphqlRequest).mockResolvedValue({ entity: null })
+
+      const result = await getEntityProfile('123456')
+
+      expect(result).toBeNull()
+    })
+
+    it('should return null when profile is missing', async () => {
+      vi.mocked(graphqlRequest).mockResolvedValue({
+        entity: {
+          profile: null,
+        },
+      })
+
+      const result = await getEntityProfile('123456')
+
+      expect(result).toBeNull()
+    })
+
+    it('should rethrow profile errors', async () => {
+      const error = new Error('API Error')
+      vi.mocked(graphqlRequest).mockRejectedValue(error)
+
+      await expect(getEntityProfile('123456')).rejects.toThrow('API Error')
     })
   })
 

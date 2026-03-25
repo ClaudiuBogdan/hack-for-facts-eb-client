@@ -1,4 +1,4 @@
-import { BarChart3, FileText, HandCoins, LayoutDashboard } from 'lucide-react'
+import { BarChart3, Building2, FileText, HandCoins, LayoutDashboard } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import {
   type ChallengeEntityAnalysisView,
@@ -15,6 +15,7 @@ export const VIEW_ICONS: Record<ChallengeEntityAnalysisView, LucideIcon> = {
   contracts: FileText,
   commitments: HandCoins,
   ins: BarChart3,
+  profile: Building2,
 }
 
 type ChallengeEntityViewMenuProps = {

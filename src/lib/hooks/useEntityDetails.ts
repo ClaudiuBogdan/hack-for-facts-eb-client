@@ -2,6 +2,7 @@ import { useQuery, queryOptions } from '@tanstack/react-query';
 import {
   getEntityDetails,
   getEntityExecutionLineItems,
+  getEntityProfile,
   getEntityRelationships,
   getEntityReports,
   getEntityRoutingSummary,
@@ -78,6 +79,22 @@ export function useEntityExecutionLineItems(params: {
     enabled: queryOpts.enabled && enabled,
     placeholderData: (previousData) => previousData,
   });
+}
+
+export function entityProfileQueryOptions(params: { cui?: string }) {
+  const { cui } = params;
+  const queryKey = ['entityProfile', cui] as const;
+
+  return queryOptions({
+    queryKey,
+    queryFn: async () => (cui ? getEntityProfile(cui) : null),
+    enabled: !!cui,
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+export function useEntityProfile(cui?: string) {
+  return useQuery(entityProfileQueryOptions({ cui }));
 }
 
 export function useEntityRelationships(params: { cui: string; enabled?: boolean }) {

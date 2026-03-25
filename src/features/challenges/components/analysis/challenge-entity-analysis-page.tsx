@@ -220,6 +220,9 @@ function loadCommitmentsView() {
 function loadInsStatsView() {
   return import('@/components/entities/views/ins-stats-view')
 }
+function loadEntityProfileView() {
+  return import('@/components/entities/views/entity-profile-view')
+}
 
 const DeferredMapAnalyticsPublicPreviewCard = lazy(() =>
   loadMapAnalyticsPublicPreviewCard().then((module) => ({
@@ -256,18 +259,25 @@ const DeferredInsStatsView = lazy(() =>
     default: module.InsStatsView,
   })),
 )
+const DeferredEntityProfileView = lazy(() =>
+  loadEntityProfileView().then((module) => ({
+    default: module.EntityProfileView,
+  })),
+)
 const CHALLENGE_ENTITY_VIEW_LABELS = {
   ro: {
     'main-info': 'Execuții Bugetare',
     contracts: 'Contracte',
     commitments: 'Angajamente',
     ins: 'INS',
+    profile: 'Contact',
   },
   en: {
     'main-info': 'Budget Execution',
     contracts: 'Contracts',
     commitments: 'Commitments',
     ins: 'INS',
+    profile: 'Contact',
   },
 } as const satisfies Record<'ro' | 'en', Record<ChallengeEntityAnalysisView, string>>
 
@@ -1177,6 +1187,36 @@ export function ChallengeEntityAnalysisPage({
     normalization: displayNormalizationOptions.normalization,
     currency: displayNormalizationOptions.currency,
   })
+  const isIncomeTreemap = treemapAccountCategory === 'vn'
+  const showsIncomeEconomicMessage = isIncomeTreemap && activePrimary === 'ec'
+  const treemapValueBounds = useMemo(
+    () => getTreemapValueBounds(treemapData),
+    [treemapData],
+  )
+  const hasModifiedTreemapRange = useMemo(
+    () => hasModifiedTreemapAmountRange(treemapData, amountFilter.range),
+    [amountFilter.range, treemapData],
+  )
+  const visibleTreemapNodes = useMemo<readonly TreemapInput[]>(
+    () =>
+      showsIncomeEconomicMessage
+        ? []
+        : filterTreemapNodesByAmountRange(treemapData, amountFilter.range),
+    [amountFilter.range, showsIncomeEconomicMessage, treemapData],
+  )
+  const mainCreditorOptions = useMemo<readonly ChallengeEntityMainCreditorOption[]>(
+    () => {
+      const data = entityDetailsQuery.data
+      if (!data) return []
+      return (data.parents ?? [])
+        .filter((parentEntity) => parentEntity.cui !== data.cui)
+        .map((parentEntity) => ({
+          id: parentEntity.cui,
+          label: parentEntity.name,
+        }))
+    },
+    [entityDetailsQuery.data],
+  )
 
   const visibleSubordinateRankings = useMemo(
     () => subordinateRankingQuery.data?.nodes ?? [],
@@ -1807,6 +1847,10 @@ export function ChallengeEntityAnalysisPage({
         id: 'ins',
         label: CHALLENGE_ENTITY_VIEW_LABELS[locale].ins,
       },
+      {
+        id: 'profile',
+        label: CHALLENGE_ENTITY_VIEW_LABELS[locale].profile,
+      },
     ],
     [locale],
   )
@@ -1882,16 +1926,6 @@ export function ChallengeEntityAnalysisPage({
     entity.is_uat || entity.entity_type === 'admin_county_council',
   )
   const showReportTypeControl = true
-  const mainCreditorOptions = useMemo<readonly ChallengeEntityMainCreditorOption[]>(
-    () =>
-      (entity.parents ?? [])
-        .filter((parentEntity) => parentEntity.cui !== entity.cui)
-        .map((parentEntity) => ({
-          id: parentEntity.cui,
-          label: parentEntity.name,
-        })),
-    [entity.cui, entity.parents],
-  )
   const pageLocale = resolveChallengePageLocale(languageQuery)
 
   const pageCopy = MAP_PREVIEW_MISC_COPY[pageLocale]
@@ -1899,8 +1933,6 @@ export function ChallengeEntityAnalysisPage({
     treemapAccountCategory === 'vn'
       ? pageCopy.revenueDistribution
       : pageCopy.spendingDistribution
-  const isIncomeTreemap = treemapAccountCategory === 'vn'
-  const showsIncomeEconomicMessage = isIncomeTreemap && activePrimary === 'ec'
   const treemapSubtitle = getTreemapSubtitle(
     languageQuery,
     treemapAccountCategory,
@@ -1942,21 +1974,6 @@ export function ChallengeEntityAnalysisPage({
     languageQuery,
     normalizationMode,
   )
-  const treemapValueBounds = useMemo(
-    () => getTreemapValueBounds(treemapData),
-    [treemapData],
-  )
-  const hasModifiedTreemapRange = useMemo(
-    () => hasModifiedTreemapAmountRange(treemapData, amountFilter.range),
-    [amountFilter.range, treemapData],
-  )
-  const visibleTreemapNodes = useMemo<readonly TreemapInput[]>(
-    () =>
-      showsIncomeEconomicMessage
-        ? []
-        : filterTreemapNodesByAmountRange(treemapData, amountFilter.range),
-    [amountFilter.range, showsIncomeEconomicMessage, treemapData],
-  )
   const showsResetTreemapFiltersButton = hasNonDefaultTreemapFilters({
     reportType: selectedReportType,
     normalization: normalizationMode,
@@ -1969,89 +1986,56 @@ export function ChallengeEntityAnalysisPage({
   const treemapSecondaryControlsId = 'challenge-entity-treemap-secondary-controls'
   const showTreemapResetShortcut =
     treemapAccountCategory === 'ch' && breadcrumbs.length > 0
-  const markdownExportContext = useMemo<ChallengeEntityMarkdownExportPageContext>(
-    () => ({
-      locale: pageLocale,
-      entity: {
-        name: entity.name,
-        cui: entity.cui,
-        countyName: entity.uat?.county_name,
-        population: entity.uat?.population,
-      },
-      filters: {
-        year: selectedYear,
-        reportType: selectedReportType,
-        normalization: normalizationMode,
-        currency: displayCurrency,
-        inflationAdjusted: displayInflationAdjusted,
-        treemapAccountCategory,
-        budgetTotal:
-          treemapAccountCategory === 'vn'
-            ? Number(entity.totalIncome ?? 0)
-            : Number(entity.totalExpenses ?? 0),
-        expenseType,
-        treemapPrimary,
-        currentTreemapPrimary: activePrimary,
-        treemapDepth,
-        breadcrumbs,
-        ...(treemapExcludeEconomicCodes.length > 0
-          ? { excludedEconomicCodes: treemapExcludeEconomicCodes }
-          : {}),
-        ...(treemapExcludeFunctionalCodes.length > 0
-          ? { excludedFunctionalCodes: treemapExcludeFunctionalCodes }
-          : {}),
-        ...(hasModifiedTreemapRange
-          ? {
-              amountRange: {
-                minValue: treemapValueBounds.minValue,
-                maxValue: treemapValueBounds.maxValue,
-                selectedMin: amountFilter.range[0],
-                selectedMax: amountFilter.range[1],
-              },
-            }
-          : {}),
-      },
-      treemap: {
-        title: treemapTitle,
-        subtitle: treemapSubtitle,
-        visibleNodes: visibleTreemapNodes,
-        ...(showsIncomeEconomicMessage
-          ? { unavailableReason: pageCopy.revenueWithoutEconomicCode }
-          : {}),
-      },
-    }),
-    [
-      activePrimary,
-      amountFilter.range,
-      breadcrumbs,
-      displayCurrency,
-      displayInflationAdjusted,
-      entity.cui,
-      entity.name,
-      entity.uat?.county_name,
-      entity.uat?.population,
-      entity.totalExpenses,
-      entity.totalIncome,
-      expenseType,
-      hasModifiedTreemapRange,
-      normalizationMode,
-      pageCopy.revenueWithoutEconomicCode,
-      pageLocale,
-      selectedReportType,
-      selectedYear,
-      showsIncomeEconomicMessage,
+  const markdownExportContext: ChallengeEntityMarkdownExportPageContext = {
+    locale: pageLocale,
+    entity: {
+      name: entity.name,
+      cui: entity.cui,
+      countyName: entity.uat?.county_name,
+      population: entity.uat?.population,
+    },
+    filters: {
+      year: selectedYear,
+      reportType: selectedReportType,
+      normalization: normalizationMode,
+      currency: displayCurrency,
+      inflationAdjusted: displayInflationAdjusted,
       treemapAccountCategory,
-      treemapDepth,
-      treemapExcludeEconomicCodes,
-      treemapExcludeFunctionalCodes,
+      budgetTotal:
+        treemapAccountCategory === 'vn'
+          ? Number(entity.totalIncome ?? 0)
+          : Number(entity.totalExpenses ?? 0),
+      expenseType,
       treemapPrimary,
-      treemapSubtitle,
-      treemapTitle,
-      treemapValueBounds.maxValue,
-      treemapValueBounds.minValue,
-      visibleTreemapNodes,
-    ],
-  )
+      currentTreemapPrimary: activePrimary,
+      treemapDepth,
+      breadcrumbs,
+      ...(treemapExcludeEconomicCodes.length > 0
+        ? { excludedEconomicCodes: treemapExcludeEconomicCodes }
+        : {}),
+      ...(treemapExcludeFunctionalCodes.length > 0
+        ? { excludedFunctionalCodes: treemapExcludeFunctionalCodes }
+        : {}),
+      ...(hasModifiedTreemapRange
+        ? {
+            amountRange: {
+              minValue: treemapValueBounds.minValue,
+              maxValue: treemapValueBounds.maxValue,
+              selectedMin: amountFilter.range[0],
+              selectedMax: amountFilter.range[1],
+            },
+          }
+        : {}),
+    },
+    treemap: {
+      title: treemapTitle,
+      subtitle: treemapSubtitle,
+      visibleNodes: visibleTreemapNodes,
+      ...(showsIncomeEconomicMessage
+        ? { unavailableReason: pageCopy.revenueWithoutEconomicCode }
+        : {}),
+    },
+  }
   const hasVisibleSubordinateCards = subordinateCards.length > 0
   const summaryTrendLabel =
     periodType === 'QUARTER'
@@ -2136,6 +2120,13 @@ export function ChallengeEntityAnalysisPage({
               entity={entity}
               reportPeriod={reportPeriod}
             />
+          </Suspense>
+        )
+
+      case 'profile':
+        return (
+          <Suspense fallback={<EntityViewContentFallback />}>
+            <DeferredEntityProfileView entity={entity} />
           </Suspense>
         )
 

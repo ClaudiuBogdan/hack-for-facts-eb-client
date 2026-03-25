@@ -90,6 +90,22 @@ export interface EntityDetailsData {
   } | null;
 }
 
+export interface EntityProfileData {
+  institution_type: string | null;
+  website_url: string | null;
+  official_email: string | null;
+  phone_primary: string | null;
+  address_raw: string | null;
+  address_locality: string | null;
+  county_code: string | null;
+  county_name: string | null;
+  leader_name: string | null;
+  leader_title: string | null;
+  leader_party: string | null;
+  scraped_at: string;
+  extraction_confidence: number | null;
+}
+
 export type EntityShareSnapshotData = Pick<
   EntityDetailsData,
   | "cui"
@@ -228,6 +244,28 @@ const GET_ENTITY_ROUTING_SUMMARY_QUERY = `
   }
 `;
 
+const GET_ENTITY_PROFILE_QUERY = `
+  query GetEntityProfile($cui: ID!) {
+    entity(cui: $cui) {
+      profile {
+        institution_type
+        website_url
+        official_email
+        phone_primary
+        address_raw
+        address_locality
+        county_code
+        county_name
+        leader_name
+        leader_title
+        leader_party
+        scraped_at
+        extraction_confidence
+      }
+    }
+  }
+`;
+
 export async function getEntityDetails(params: {
   cui: string
   reportPeriod: ReportPeriodInput
@@ -357,6 +395,36 @@ export async function getEntityRoutingSummary(
   }
 }
 
+export async function getEntityProfile(
+  cui: string,
+): Promise<EntityProfileData | null> {
+  logger.info(`Fetching entity profile for CUI: ${cui}`);
+
+  try {
+    const response = await graphqlRequest<{
+      entity: {
+        profile: EntityProfileData | null;
+      } | null;
+    }>(GET_ENTITY_PROFILE_QUERY, { cui });
+
+    if (!response?.entity) {
+      logger.warn("Received null or undefined response for entity profile", {
+        response,
+        cui,
+      });
+      return null;
+    }
+
+    return response.entity.profile ?? null;
+  } catch (error) {
+    logger.error(`Error fetching entity profile for CUI: ${cui}`, {
+      error,
+      cui,
+    });
+    throw error;
+  }
+}
+
 const GET_ENTITY_RELATIONSHIPS_QUERY = `
   query GetEntityRelationships($cui: ID!) {
     entity(cui: $cui) {
@@ -465,11 +533,16 @@ export async function getReportsConnection(
   limit: number = 10,
   offset: number = 0
 ): Promise<ReportConnection> {
-  const data = await graphqlRequest<{ reports: { nodes: ReportNode[]; totalCount: number } }>(
+  const data = await graphqlRequest<{
+    reports?: {
+      nodes: ReportNode[];
+      pageInfo: PageInfo;
+    } | null;
+  }>(
     GET_REPORTS_QUERY,
     { filter, limit, offset }
   );
-  const conn = (data as any)?.reports;
+  const conn = data?.reports;
   return { nodes: conn?.nodes ?? [], pageInfo: conn?.pageInfo ?? { totalCount: 0, hasNextPage: false, hasPreviousPage: false } };
 }
 

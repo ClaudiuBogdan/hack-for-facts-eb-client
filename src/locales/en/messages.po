@@ -751,16 +751,13 @@ msgstr "Add Value Filter Rule"
 msgid "Add view"
 msgstr "Add view"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:343
-#~ msgid "Add your organization name to use this option."
-#~ msgstr "Add your organization name to use this option."
-
 #: src/routes/privacy.lazy.tsx:137
 msgid "Additional technical and organizational measures"
 msgstr "Additional technical and organizational measures"
 
 #: src/components/entities/EntityHeader.tsx:127
 #: src/components/entities/EntityInfo.tsx:57
+#: src/components/entities/views/entity-profile-view.presentation.tsx:172
 msgid "Address"
 msgstr "Address"
 
@@ -1120,10 +1117,6 @@ msgstr "Approximate number of attendees"
 msgid "April"
 msgstr "April"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:272
-#~ msgid "Are you part of an NGO?"
-#~ msgstr "Are you part of an NGO?"
-
 #: src/features/notifications/components/alerts/AlertCard.tsx:115
 #: src/routes/alerts/$alertId/index.lazy.tsx:310
 msgid "Are you sure you want to delete this alert? This action cannot be undone."
@@ -1229,10 +1222,6 @@ msgstr "Available commitment credits"
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:338
 msgid "Available for legally established associations."
 msgstr "Available for legally established associations."
-
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:338
-#~ msgid "Available for NGOs."
-#~ msgstr "Available for NGOs."
 
 #: src/components/charts/components/views/SeriesConfigView.tsx:501
 msgid "Average (mean value)"
@@ -2079,6 +2068,10 @@ msgstr "Concerning"
 msgid "Condition {0}"
 msgstr "Condition {0}"
 
+#: src/components/entities/views/entity-profile-view.presentation.tsx:251
+msgid "Confidence"
+msgstr "Confidence"
+
 #: src/components/entities/views/ins-stats-view.formatters.ts:15
 #: src/components/entities/views/ins-stats-view.formatters.ts:16
 msgid "Confidential"
@@ -2175,6 +2168,10 @@ msgstr "Contact"
 msgid "Contact and data protection officer"
 msgstr "Contact and data protection officer"
 
+#: src/components/entities/views/entity-profile-view.presentation.tsx:144
+msgid "Contact information"
+msgstr "Contact information"
+
 #: src/components/footer/support-menu.tsx:84
 msgid "Contact Support"
 msgstr "Contact Support"
@@ -2265,7 +2262,7 @@ msgstr "Cookie Policy"
 msgid "Cookie Settings"
 msgstr "Cookie Settings"
 
-#: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:94
+#: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:102
 msgid "Copied"
 msgstr "Copied"
 
@@ -2308,12 +2305,12 @@ msgstr "Copy error report to clipboard"
 msgid "Copy failed"
 msgstr "Copy failed"
 
-#: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:103
+#: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:111
 msgid "Copy failed. You can still select and copy the link manually."
 msgstr "Copy failed. You can still select and copy the link manually."
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:443
-#: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:97
+#: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:105
 msgid "Copy link"
 msgstr "Copy link"
 
@@ -2344,7 +2341,7 @@ msgstr "Copy Share Link"
 msgid "Copy Support Email"
 msgstr "Copy Support Email"
 
-#: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:67
+#: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:75
 msgid "Copy the civic module link"
 msgstr "Copy the civic module link"
 
@@ -2414,6 +2411,10 @@ msgstr "Could not load INS datasets"
 msgid "Could not load localities"
 msgstr "Could not load localities"
 
+#: src/components/entities/views/entity-profile-view.presentation.tsx:60
+msgid "Could not load profile data"
+msgstr "Could not load profile data"
+
 #: src/components/charts/components/series-config/ins-dimension-values-list.tsx:51
 msgid "Could not load territories"
 msgstr "Could not load territories"
@@ -2444,6 +2445,7 @@ msgstr "Counties"
 #: src/components/charts/components/series-config/SeriesFilter.tsx:840
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1037
 #: src/components/entities/UatDisplay.tsx:60
+#: src/components/entities/views/entity-profile-view.presentation.tsx:177
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:83
 #: src/components/filters/EntityAnalyticsFilter.tsx:513
 #: src/components/filters/EntityAnalyticsFilter.tsx:691
@@ -3275,6 +3277,7 @@ msgstr "Effective Date: {effectiveDate} • Version: {version}"
 msgid "Effective Spending"
 msgstr "Effective Spending"
 
+#: src/components/entities/views/entity-profile-view.presentation.tsx:154
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:78
 msgid "Email"
 msgstr "Email"
@@ -4477,6 +4480,7 @@ msgstr "Hide details"
 msgid "Hide Map Controls"
 msgstr "Hide Map Controls"
 
+#: src/components/entities/views/entity-profile-view.presentation.tsx:211
 #: src/features/learning/components/interactive/PhaseCards.tsx:306
 msgid "High"
 msgstr "High"
@@ -4950,6 +4954,10 @@ msgstr "last available"
 msgid "Last evaluated"
 msgstr "Last evaluated"
 
+#: src/components/entities/views/entity-profile-view.presentation.tsx:272
+msgid "Last updated"
+msgstr "Last updated"
+
 #: src/features/learning/components/interactive/VATReformCard.tsx:23
 msgid "Law 141/2025"
 msgstr "Law 141/2025"
@@ -5215,7 +5223,7 @@ msgstr "Loading map editor..."
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1761
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1925
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1932
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:850
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:860
 #: src/routes/map.lazy.tsx:303
 #: src/routes/map.lazy.tsx:304
 msgid "Loading map..."
@@ -5242,7 +5250,7 @@ msgstr "Loading snapshots..."
 msgid "Loading table data..."
 msgstr "Loading table data..."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:892
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:902
 msgid "Loading view…"
 msgstr "Loading view…"
 
@@ -5267,10 +5275,6 @@ msgstr "Local backup failed. Exporting configuration anyway."
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:289
 msgid "Local budget contestation"
 msgstr "Local budget contestation"
-
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:293
-#~ msgid "Local Budgets 2026"
-#~ msgstr "Local Budgets 2026"
 
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:26
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:43
@@ -5324,6 +5328,10 @@ msgstr "Locked"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:693
 msgid "Log scale"
 msgstr "Log scale"
+
+#: src/components/entities/views/entity-profile-view.presentation.tsx:214
+msgid "Low"
+msgstr "Low"
 
 #: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:752
 msgid "Low opportunity"
@@ -5594,6 +5602,10 @@ msgstr "Median"
 msgid "Median compare"
 msgstr "Median compare"
 
+#: src/components/entities/views/entity-profile-view.presentation.tsx:213
+msgid "Medium"
+msgstr "Medium"
+
 #: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:748
 msgid "Medium opportunity"
 msgstr "Medium opportunity"
@@ -5695,7 +5707,7 @@ msgstr "Mobile quick actions"
 msgid "Mode"
 msgstr "Mode"
 
-#: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:74
+#: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:82
 msgid "Module link"
 msgstr "Module link"
 
@@ -5953,10 +5965,6 @@ msgstr "Newsletters and notifications"
 #: src/features/learning/components/player/LessonPlayer.tsx:574
 msgid "Next"
 msgstr "Next"
-
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:290
-#~ msgid "NGO name"
-#~ msgstr "NGO name"
 
 #: src/components/filters/flags-filter/index.tsx:24
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:24
@@ -6248,6 +6256,10 @@ msgstr "No options match your search."
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:1070
 msgid "No outliers"
 msgstr "No outliers"
+
+#: src/components/entities/views/entity-profile-view.presentation.tsx:78
+msgid "No profile data available"
+msgstr "No profile data available"
 
 #: src/features/learning/components/interactive/RectificationHistory.tsx:127
 msgid "No rectifications"
@@ -6660,10 +6672,6 @@ msgid "Opens your email client with the completed contestation."
 msgstr "Opens your email client with the completed contestation."
 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:334
-#~ msgid "Opens your email client with the completed request. Recommended for NGOs."
-#~ msgstr "Opens your email client with the completed request. Recommended for NGOs."
-
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:334
 msgid "Opens your email client with the completed request. Recommended when you represent a legally established association."
 msgstr "Opens your email client with the completed request. Recommended when you represent a legally established association."
 
@@ -6721,14 +6729,6 @@ msgstr "or"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:224
 msgid "OR"
 msgstr "OR"
-
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:176
-#~ msgid "Organization"
-#~ msgstr "Organization"
-
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:283
-#~ msgid "Organization name"
-#~ msgstr "Organization name"
 
 #: src/features/learning/components/interactive/RectificationFlow.tsx:170
 msgid "Original:"
@@ -6981,6 +6981,7 @@ msgstr "Phase 02"
 msgid "Phase: {0}"
 msgstr "Phase: {0}"
 
+#: src/components/entities/views/entity-profile-view.presentation.tsx:163
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:84
 msgid "Phone"
 msgstr "Phone"
@@ -7145,6 +7146,10 @@ msgstr "Processing..."
 #: src/components/footer/AppFooter.tsx:84
 msgid "Product"
 msgstr "Product"
+
+#: src/components/entities/views/entity-profile-view.presentation.tsx:81
+msgid "Profile information for this entity has not been collected yet."
+msgstr "Profile information for this entity has not been collected yet."
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:203
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:257
@@ -8088,7 +8093,7 @@ msgstr "Share"
 msgid "Share Chart"
 msgstr "Share Chart"
 
-#: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:62
+#: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:70
 msgid "Share civic module"
 msgstr "Share civic module"
 
@@ -9182,13 +9187,13 @@ msgstr "Try a different search term or sorting."
 msgid "Try again"
 msgstr "Try again"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1873
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1887
 #: src/features/learning/components/assessment/Quiz.tsx:188
 #: src/routes/settings/notifications.tsx:160
 msgid "Try Again"
 msgstr "Try Again"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:569
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:579
 msgid "Try again in a few moments."
 msgstr "Try again in a few moments."
 
@@ -9267,10 +9272,6 @@ msgstr "Unavailable"
 msgid "Under Law 52/2003, requests from legally established associations can trigger the obligation to organize a public debate."
 msgstr "Under Law 52/2003, requests from legally established associations can trigger the obligation to organize a public debate."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:279
-#~ msgid "Under Law 52/2003, requests from NGOs carry greater legal weight."
-#~ msgstr "Under Law 52/2003, requests from NGOs carry greater legal weight."
-
 #: src/components/budget-explorer/FilteredSpendingInfo.tsx:61
 msgid "Understanding the consolidated general budget spending"
 msgstr "Understanding the consolidated general budget spending"
@@ -9308,6 +9309,7 @@ msgstr "Unit options"
 msgid "Unit override"
 msgstr "Unit override"
 
+#: src/components/entities/views/entity-profile-view.presentation.tsx:209
 #: src/components/entities/views/ins-stats-view.formatters.ts:37
 #: src/components/entities/views/ins-stats-view.presentation.tsx:251
 #: src/components/entities/views/ins-stats-view.presentation.tsx:254
@@ -9723,7 +9725,7 @@ msgstr "Way off!"
 msgid "We collect different types of information depending on how you use our Service:"
 msgstr "We collect different types of information depending on how you use our Service:"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1863
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1877
 msgid "We could not load the analysis."
 msgstr "We could not load the analysis."
 
@@ -9774,10 +9776,6 @@ msgstr "We value your privacy"
 msgid "We will record the request and send it through the platform."
 msgstr "We will record the request and send it through the platform."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:374
-#~ msgid "We will send the debate request on your behalf."
-#~ msgstr "We will send the debate request on your behalf."
-
 #: src/features/learning/components/onboarding/LearningOnboarding.tsx:131
 msgid "We'll start with the path that matches your goal and choices."
 msgstr "We'll start with the path that matches your goal and choices."
@@ -9790,6 +9788,10 @@ msgstr "Weather, heating systems, and local industry can materially affect year-
 #: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:67
 msgid "Webpage"
 msgstr "Webpage"
+
+#: src/components/entities/views/entity-profile-view.presentation.tsx:149
+msgid "Website"
+msgstr "Website"
 
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:28
 msgid "Website link"
@@ -10140,10 +10142,6 @@ msgstr "Your submission has been reviewed and accepted."
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:129
 msgid "Your submission is saved and waiting for review."
 msgstr "Your submission is saved and waiting for review."
-
-#: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:129
-#~ msgid "Your submission is saved. The system will validate it before it counts toward this challenge."
-#~ msgstr "Your submission is saved. The system will validate it before it counts toward this challenge."
 
 #: src/routes/terms.lazy.tsx:33
 msgid "Your use of the Service is also governed by our <0>Privacy Policy</0> and <1>Cookie Policy</1>, which describe how we process personal data, including security logs, authentication data, and your communication preferences."

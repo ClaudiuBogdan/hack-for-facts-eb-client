@@ -22,6 +22,7 @@ export const CHALLENGE_ENTITY_ANALYSIS_VIEW_VALUES = [
   'contracts',
   'commitments',
   'ins',
+  'profile',
 ] as const
 export type ChallengeEntityAnalysisView =
   (typeof CHALLENGE_ENTITY_ANALYSIS_VIEW_VALUES)[number]
