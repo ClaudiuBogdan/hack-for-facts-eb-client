@@ -57,7 +57,10 @@ export type ChallengeStepContentResolveResult = {
   readonly error: string | null
 }
 
-const DEFAULT_LOCALE: ChallengeLocale = 'en'
+const FALLBACK_LOCALES: Record<ChallengeLocale, readonly ChallengeLocale[]> = {
+  en: ['ro'],
+  ro: ['en'],
+}
 
 export function createChallengeStepContentIndex(
   moduleLoaders: Record<string, ChallengeStepMdxModuleLoader>,
@@ -171,16 +174,18 @@ export function resolveChallengeStepModule(params: {
     }
   }
 
-  const fallbackLoader = localeLoaders[DEFAULT_LOCALE]
-  if (!fallbackLoader) {
-    return null
+  for (const fallbackLocale of FALLBACK_LOCALES[params.locale]) {
+    const fallbackLoader = localeLoaders[fallbackLocale]
+    if (fallbackLoader) {
+      return {
+        cacheKey: `${params.contentDir}:${fallbackLocale}`,
+        loader: fallbackLoader,
+        resolvedLocale: fallbackLocale,
+      }
+    }
   }
 
-  return {
-    cacheKey: `${params.contentDir}:${DEFAULT_LOCALE}`,
-    loader: fallbackLoader,
-    resolvedLocale: DEFAULT_LOCALE,
-  }
+  return null
 }
 
 export function createChallengeStepContentResource(
@@ -348,7 +353,11 @@ export function resolveChallengeStepSectionsFromMetadataIndex(params: {
     return null
   }
 
-  return localeSections[params.locale] ?? localeSections[DEFAULT_LOCALE] ?? null
+  return (
+    localeSections[params.locale]
+    ?? localeSections[FALLBACK_LOCALES[params.locale][0]]
+    ?? null
+  )
 }
 
 export function preloadChallengeStepContent(params: {

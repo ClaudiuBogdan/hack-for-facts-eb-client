@@ -107,7 +107,7 @@ describe('challenge-step-content-resolver', () => {
     expect(result.sections[0]?.Component).toBe(IntroSectionComponent)
   })
 
-  it('falls back to the default locale when the requested locale is missing', async () => {
+  it('falls back to English when Romanian content is missing', async () => {
     const resource = createChallengeStepResource({
       '/src/content/challenges/steps/test-step/index.en.mdx': () =>
         Promise.resolve({
@@ -123,9 +123,28 @@ describe('challenge-step-content-resolver', () => {
 
     expect(result.kind).toBe('article')
     expect(result.Component).toBe(ArticleComponent)
+    expect(result.frontmatter).toEqual({})
   })
 
-  it('falls back to the default locale for sectioned steps without losing sections', async () => {
+  it('falls back to Romanian when English content is missing', async () => {
+    const resource = createChallengeStepResource({
+      '/src/content/challenges/steps/test-step/index.ro.mdx': () =>
+        Promise.resolve({
+          default: ArticleComponent,
+          frontmatter: {},
+        }),
+    })
+
+    const result = await resource.preloadContent({
+      contentDir: 'test-step',
+      locale: 'en',
+    })
+
+    expect(result.kind).toBe('article')
+    expect(result.Component).toBe(ArticleComponent)
+  })
+
+  it('falls back to English for sectioned steps without losing sections', async () => {
     const resource = createChallengeStepResource({
       '/src/content/challenges/steps/test-step/index.en.mdx': () =>
         Promise.resolve({
