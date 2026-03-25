@@ -62,7 +62,7 @@ describe('PrimarieSelectorRoutePage', () => {
     await waitFor(() => {
       expect(setSelectedEntityMock).toHaveBeenCalledWith({ entityCui: '4305857' })
       expect(navigateMock).toHaveBeenCalledWith({
-        to: '/primarie/$cui',
+        to: '/primarie/$cui/buget',
         params: { cui: '4305857' },
         search: { lang: 'en' },
         replace: true,

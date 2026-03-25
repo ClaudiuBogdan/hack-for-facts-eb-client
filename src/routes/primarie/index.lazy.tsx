@@ -30,7 +30,7 @@ function PrimarieSelectorRouteContent({
     (entity: { cui: string }) => {
       setSelectedEntity({ entityCui: entity.cui })
       void navigate({
-        to: '/primarie/$cui',
+        to: '/primarie/$cui/buget',
         params: { cui: entity.cui },
         search: getProvocariSearch(languageQuery),
         replace: true,

@@ -1,16 +1,30 @@
-import { useCallback, useEffect, useState } from 'react'
-import { Link } from '@tanstack/react-router'
-import { MapPinned } from 'lucide-react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { EntitySearchInput } from '@/components/entities/EntitySearch'
+import { ClientOnly } from '@/components/ssr/ClientOnly'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useGeoJsonData } from '@/hooks/useGeoJson'
 import { Analytics } from '@/lib/analytics'
 import { useRecentEntities } from '@/hooks/useRecentEntities'
-import {
-  CAMPAIGN_ENTITY_SELECTOR_MAP_PATH,
-} from '../../constants'
+import { useUatCuiMap } from '../../hooks/use-uat-cui-map'
 import type { CampaignLocale } from '../../types'
 import { RecentUatBadges } from './recent-uat-badges'
+
+const BugetEntityMapSelectorMap = lazy(() =>
+  import('./buget-entity-map-selector-map').then((module) => ({
+    default: module.BugetEntityMapSelectorMap,
+  })),
+)
 
 export type EntitySelection = {
   readonly cui: string
@@ -25,14 +39,58 @@ type BugetEntitySelectorGateProps = {
   readonly onEntitySelected: (entity: EntitySelection) => void
 }
 
+type PendingUatSelection = {
+  readonly natcode: string
+  readonly name: string
+}
+
+function formatCityHallLabel(label: string, locale: CampaignLocale): string {
+  const trimmedLabel = label.trim()
+  if (!trimmedLabel) {
+    return locale === 'en' ? 'City Hall' : 'Primăria'
+  }
+
+  const lowerLabel = trimmedLabel.toLowerCase()
+  const hasRomanianPrefix = lowerLabel.startsWith('primăria ') || lowerLabel.startsWith('primaria ')
+  const hasEnglishPrefix = lowerLabel.startsWith('city hall ')
+
+  if (locale === 'en') {
+    if (hasEnglishPrefix) return trimmedLabel
+    if (hasRomanianPrefix) {
+      const strippedLabel = lowerLabel.startsWith('primăria ')
+        ? trimmedLabel.slice('primăria '.length)
+        : trimmedLabel.slice('primaria '.length)
+      return `City Hall ${strippedLabel}`
+    }
+    return `City Hall ${trimmedLabel}`
+  }
+
+  if (lowerLabel.startsWith('primăria ')) return trimmedLabel
+  if (lowerLabel.startsWith('primaria ')) {
+    return `Primăria ${trimmedLabel.slice('primaria '.length)}`
+  }
+  if (hasEnglishPrefix) {
+    return `Primăria ${trimmedLabel.slice('city hall '.length)}`
+  }
+  return `Primăria ${trimmedLabel}`
+}
+
 export function BugetEntitySelectorGate({
   locale,
-  languageQuery,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  languageQuery: _languageQuery,
   onEntitySelected,
 }: BugetEntitySelectorGateProps) {
   const isMobile = useIsMobile()
   const [hasMounted, setHasMounted] = useState(false)
   const { addRecentEntity } = useRecentEntities()
+
+  // Map state
+  const [pendingUatSelection, setPendingUatSelection] = useState<PendingUatSelection | null>(null)
+  const [isResolvingSelection, setIsResolvingSelection] = useState(false)
+  const { data: uatGeoJson, isLoading: isLoadingUatGeoJson, error: uatGeoJsonError } = useGeoJsonData('UAT')
+  const { data: countyGeoJson, isLoading: isLoadingCountyGeoJson, error: countyGeoJsonError } = useGeoJsonData('County')
+  const { data: uatCuiMap, isLoading: isLoadingUatCuiMap, error: uatCuiMapError } = useUatCuiMap()
 
   useEffect(() => {
     Analytics.capture(Analytics.EVENTS.CampaignEntitySelectorOpened)
@@ -65,10 +123,37 @@ export function BugetEntitySelectorGate({
         source: 'recent-badge',
         entityCui,
       })
-      // Badges don't carry name/type — pass CUI only
       onEntitySelected({ cui: entityCui, name: '' })
     },
     [onEntitySelected],
+  )
+
+  const handleConfirmUatSelection = useCallback(
+    (selection: PendingUatSelection) => {
+      const { natcode, name } = selection
+      const entityCui = uatCuiMap?.natcodeToCuiMap.get(natcode)
+      if (!entityCui) {
+        toast.warning(
+          locale === 'en'
+            ? `Could not map ${name || 'this locality'} to an entity yet.`
+            : `Nu am găsit încă maparea pentru ${name || 'această localitate'}.`,
+        )
+        setPendingUatSelection(null)
+        return
+      }
+
+      Analytics.capture(Analytics.EVENTS.CampaignEntitySelectedFromMap, {
+        source: 'map',
+        natcode,
+        entityCui,
+      })
+
+      setIsResolvingSelection(true)
+      setPendingUatSelection(null)
+      onEntitySelected({ cui: entityCui, name })
+      setIsResolvingSelection(false)
+    },
+    [locale, onEntitySelected, uatCuiMap],
   )
 
   const title =
@@ -77,22 +162,38 @@ export function BugetEntitySelectorGate({
     locale === 'en'
       ? 'Start by selecting your local administration. You can search by name or pick directly from the map.'
       : 'Începe prin selectarea administrației tale locale. Poți căuta după nume sau alege direct din hartă.'
-  const mapLabel =
-    locale === 'en' ? 'Choose from map' : 'Alege de pe hartă'
-  const separatorLabel = locale === 'en' ? 'or' : 'sau'
   const searchPlaceholder =
     locale === 'en'
       ? 'Search city hall by name or CUI...'
       : 'Caută primăria după nume sau CUI...'
+  const mapSectionLabel =
+    locale === 'en' ? 'or choose from the map' : 'sau alege de pe hartă'
+  const confirmDialogTitle =
+    locale === 'en' ? 'Select this city hall?' : 'Selectezi această primărie?'
+  const confirmButtonLabel =
+    locale === 'en' ? 'Select city hall' : 'Selectează primăria'
+  const cancelButtonLabel = locale === 'en' ? 'Cancel' : 'Anulează'
+  const selectedUatName = pendingUatSelection?.name || pendingUatSelection?.natcode || ''
+  const selectedEntityDialogLabel = formatCityHallLabel(selectedUatName, locale)
+
+  const isMapLoading = isLoadingUatGeoJson || isLoadingCountyGeoJson || isLoadingUatCuiMap
+  const mapError = uatGeoJsonError || countyGeoJsonError || uatCuiMapError
+
+  const mapPlaceholder = (
+    <div className="flex h-[40vh] sm:h-[50vh] items-center justify-center">
+      <LoadingSpinner size="lg" text={locale === 'en' ? 'Loading map...' : 'Se încarcă harta...'} />
+    </div>
+  )
 
   return (
-    <section className="flex min-h-[calc(100svh-8rem)] flex-col items-center px-4 pt-12 sm:px-6 sm:pt-[15vh]">
-      <div className="w-full max-w-lg space-y-8">
-        <div className="space-y-3 text-center">
-          <h1 className="text-balance text-4xl font-black leading-tight tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
+    <section className="mx-auto w-full max-w-4xl px-4 pb-8 pt-10 sm:px-6 sm:pt-[10vh]">
+      {/* Search section */}
+      <div className="mx-auto max-w-xl space-y-6 text-center">
+        <div className="space-y-3">
+          <h1 className="text-balance text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
             {title}
           </h1>
-          <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400 sm:text-base">
+          <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
             {description}
           </p>
         </div>
@@ -115,27 +216,88 @@ export function BugetEntitySelectorGate({
 
           <RecentUatBadges locale={locale} onSelect={handleBadgeSelect} />
         </div>
+      </div>
 
-        <div className="flex items-center gap-4">
+      {/* Map section */}
+      <div className="mt-12">
+        <div className="mx-auto flex max-w-md items-center gap-4 mb-8">
           <div className="h-px flex-1 bg-border/70" />
-          <p className="shrink-0 text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-500">
-            {separatorLabel}
+          <p className="shrink-0 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
+            {mapSectionLabel}
           </p>
           <div className="h-px flex-1 bg-border/70" />
         </div>
 
-        <div className="flex justify-center">
-          <Button asChild variant="outline" className="h-11 rounded-xl px-5 text-sm font-semibold">
-            <Link
-              to={CAMPAIGN_ENTITY_SELECTOR_MAP_PATH as '/'}
-              search={languageQuery === 'en' ? { lang: 'en' } : {}}
-            >
-              <MapPinned className="mr-2 h-4 w-4" />
-              {mapLabel}
-            </Link>
-          </Button>
+        <div className="overflow-hidden rounded-2xl border border-border/50 h-[40vh] sm:h-[50vh] [&_.leaflet-container]:h-full!">
+          {isMapLoading ? mapPlaceholder : null}
+
+          {mapError ? (
+            <div className="flex h-[40vh] sm:h-[50vh] items-center justify-center text-sm text-red-600 dark:text-red-400">
+              {locale === 'en'
+                ? 'Failed to load the map. Please refresh the page.'
+                : 'Nu am putut încărca harta. Reîncarcă pagina.'}
+            </div>
+          ) : null}
+
+          {!isMapLoading && !mapError && uatGeoJson && countyGeoJson ? (
+            <ClientOnly fallback={mapPlaceholder}>
+              <Suspense fallback={mapPlaceholder}>
+                <BugetEntityMapSelectorMap
+                  uatGeoJson={uatGeoJson}
+                  countyGeoJson={countyGeoJson}
+                  locale={locale}
+                  onUatSelect={({ natcode, name }) => {
+                    setPendingUatSelection({ natcode, name })
+                  }}
+                />
+              </Suspense>
+            </ClientOnly>
+          ) : null}
         </div>
       </div>
+
+      {/* Confirmation dialog */}
+      <Dialog
+        open={Boolean(pendingUatSelection)}
+        onOpenChange={(isOpen) => {
+          if (!isOpen && !isResolvingSelection) {
+            setPendingUatSelection(null)
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{confirmDialogTitle}</DialogTitle>
+            <DialogDescription className="sr-only">{selectedEntityDialogLabel}</DialogDescription>
+            <p className="text-2xl font-black tracking-tight text-zinc-900 dark:text-zinc-50">
+              {selectedEntityDialogLabel}
+            </p>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isResolvingSelection}
+              onClick={() => {
+                setPendingUatSelection(null)
+              }}
+            >
+              {cancelButtonLabel}
+            </Button>
+            <Button
+              type="button"
+              disabled={isResolvingSelection}
+              onClick={() => {
+                if (!pendingUatSelection) return
+                handleConfirmUatSelection(pendingUatSelection)
+              }}
+            >
+              {confirmButtonLabel}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   )
 }
