@@ -18,14 +18,15 @@ export type ChallengeStepFrontmatter = Readonly<Record<string, unknown>> & {
 export type ChallengeStepLessonChallengeDescriptor =
   | {
       readonly kind: 'fixed'
-      readonly id: string
+      readonly interactionId: string
+      readonly interactionKind: 'quiz' | 'custom'
+      readonly scopePolicy?: 'global' | 'entity'
     }
   | {
       readonly kind: 'step'
-      readonly prefix:
-        | 'lesson-aggregate-detailed-compare'
-        | 'lesson-entity-snapshot'
-        | 'lesson-execution-table-excerpt'
+      readonly prefix: string
+      readonly interactionKind: 'quiz' | 'custom'
+      readonly scopePolicy?: 'global' | 'entity'
     }
 
 export type ChallengeStepSectionMeta = {

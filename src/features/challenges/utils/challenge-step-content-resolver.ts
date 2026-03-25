@@ -4,12 +4,17 @@ import {
   createModuleLoaderCache,
   type ModuleLoader,
 } from '@/lib/module-loader-cache'
+import challengeStepSectionMetadataManifest from 'virtual:challenge-step-section-metadata'
 import type {
   ChallengeLocale,
   ChallengeStepFrontmatter,
   ChallengeStepType,
 } from '../types'
-import type { ChallengeStepSection } from './sectioned-step-markdown'
+import type {
+  ChallengeStepSection,
+  ChallengeStepSectionMetadata,
+  ChallengeStepSectionMetadataIndex,
+} from './sectioned-step-markdown'
 
 type MdxContentProps = {
   readonly components?: MDXComponents
@@ -333,6 +338,19 @@ const challengeStepContentResource = createChallengeStepContentResource(
   challengeStepContentIndex,
 )
 
+export function resolveChallengeStepSectionsFromMetadataIndex(params: {
+  readonly contentDir: string
+  readonly locale: ChallengeLocale
+  readonly metadataIndex: ChallengeStepSectionMetadataIndex
+}): readonly ChallengeStepSectionMetadata[] | null {
+  const localeSections = params.metadataIndex[params.contentDir]
+  if (!localeSections) {
+    return null
+  }
+
+  return localeSections[params.locale] ?? localeSections[DEFAULT_LOCALE] ?? null
+}
+
 export function preloadChallengeStepContent(params: {
   readonly contentDir: string
   readonly locale: ChallengeLocale
@@ -354,6 +372,16 @@ export function peekChallengeStepContent(params: {
   readonly locale: ChallengeLocale
 }): ChallengeStepContentDescriptor | null {
   return challengeStepContentResource.peekContent(params)
+}
+
+export function getChallengeStepSections(params: {
+  readonly contentDir: string
+  readonly locale: ChallengeLocale
+}): readonly ChallengeStepSectionMetadata[] | null {
+  return resolveChallengeStepSectionsFromMetadataIndex({
+    ...params,
+    metadataIndex: challengeStepSectionMetadataManifest,
+  })
 }
 
 export function getChallengeStepContentErrorMessage(params: {

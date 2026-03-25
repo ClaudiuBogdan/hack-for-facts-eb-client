@@ -177,6 +177,13 @@ export function useSectionedStepPlayer({
         .map((section) => section.id),
     [sections, trackedLessonChallengeIdsBySectionId],
   )
+  const stepHasTrackedLessonChallenges = useMemo(
+    () =>
+      Object.values(trackedLessonChallengeIdsBySectionId).some(
+        (challengeIds) => challengeIds.length > 0,
+      ),
+    [trackedLessonChallengeIdsBySectionId],
+  )
   const effectiveStepProgress = useMemo(
     () =>
       mergeCurrentSectionIntoStepProgress({
@@ -290,6 +297,7 @@ export function useSectionedStepPlayer({
     contentVersion: 'v1',
     scopePolicy: quizInteractive?.scopePolicy ?? 'global',
     entityCui: quizInteractive?.scopePolicy === 'entity' ? entityCui : undefined,
+    trackContentProgress: false,
   })
 
   useEffect(() => {
@@ -439,7 +447,10 @@ export function useSectionedStepPlayer({
 
     if (!isAccessGranted) return
 
-    if (sectionedStepCompletionState.canMarkStepComplete) {
+    if (
+      sectionedStepCompletionState.canMarkStepComplete &&
+      !stepHasTrackedLessonChallenges
+    ) {
       await markComplete()
     }
 
@@ -469,6 +480,7 @@ export function useSectionedStepPlayer({
     next,
     nextSection,
     sectionedStepCompletionState.canMarkStepComplete,
+    stepHasTrackedLessonChallenges,
   ])
 
   const handleSkip = useCallback(() => {

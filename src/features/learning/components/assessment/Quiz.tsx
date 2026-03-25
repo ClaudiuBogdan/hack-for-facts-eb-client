@@ -21,6 +21,7 @@ export type QuizProps = {
   readonly contentId: string
   readonly scopePolicy?: 'global' | 'entity'
   readonly entityCui?: string
+  readonly trackContentProgress?: boolean
 }
 
 export function Quiz({
@@ -31,6 +32,7 @@ export function Quiz({
   contentId,
   scopePolicy = 'global',
   entityCui,
+  trackContentProgress,
 }: QuizProps) {
   const validOptions = useMemo(() => (Array.isArray(options) ? options : []), [options])
 
@@ -41,6 +43,7 @@ export function Quiz({
     contentVersion: 'v1',
     scopePolicy,
     entityCui,
+    trackContentProgress,
   })
 
   // Local state for "shaking" effect or temporary error states could go here

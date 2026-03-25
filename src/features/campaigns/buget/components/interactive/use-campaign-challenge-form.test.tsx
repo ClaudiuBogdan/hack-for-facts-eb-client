@@ -25,7 +25,7 @@ let customInteractionState = {
   savedValue: null as null | Record<string, unknown>,
   phase: 'idle' as 'idle' | 'pending' | 'resolved' | 'failed',
   lifecycle: {
-    mode: 'async_review' as const,
+    mode: 'async_review' as 'async_review' | 'immediate',
     status: 'idle' as 'idle' | 'draft' | 'pending' | 'passed' | 'failed',
     reviewStatus: null as null | 'pending' | 'approved' | 'rejected',
     feedbackText: null as string | null,
@@ -57,6 +57,7 @@ const completeMock = vi.fn(async () => undefined)
 const resetMock = vi.fn(async () => undefined)
 const markChallengeInProgressMock = vi.fn()
 const setChallengeStatusMock = vi.fn()
+const registerLessonChallengeMock = vi.fn()
 let lastUseCustomInteractionParams: Record<string, unknown> | null = null
 
 vi.mock('@/features/learning/hooks/interactions/use-custom-interaction', () => ({
@@ -75,6 +76,12 @@ vi.mock('@/features/learning/hooks/interactions/use-custom-interaction', () => (
 
 vi.mock('@/features/learning/hooks/use-learning-progress', () => ({
   useLearningProgress: () => learningProgressState,
+}))
+
+vi.mock('@/features/learning/components/player/lesson-challenges-context', () => ({
+  useRegisterLessonChallenge: (params: { readonly id: string; readonly isCompleted: boolean }) => {
+    registerLessonChallengeMock(params)
+  },
 }))
 
 vi.mock('../../hooks/use-campaign-progress', () => ({
@@ -148,6 +155,7 @@ describe('use-campaign-challenge-form', () => {
     resetMock.mockClear()
     markChallengeInProgressMock.mockClear()
     setChallengeStatusMock.mockClear()
+    registerLessonChallengeMock.mockClear()
   })
 
   it('defers draft persistence side effects until after the current call stack', async () => {
@@ -211,6 +219,63 @@ describe('use-campaign-challenge-form', () => {
 
     expect(completeMock).toHaveBeenCalledWith({ websiteUrl: 'https://example.com' })
     expect(submitMock).not.toHaveBeenCalled()
+    expect(setChallengeStatusMock).toHaveBeenCalledWith(
+      'civic-monitor-and-request',
+      'completed',
+    )
+  })
+
+  it('registers the interaction as a tracked lesson challenge', () => {
+    customInteractionState = {
+      ...customInteractionState,
+      isCompleted: true,
+    }
+
+    renderHook(() =>
+      useCampaignChallengeForm<{ websiteUrl: string }>({
+        ownerChallengeSlug: 'civic-monitor-and-request',
+        interactionId: PRIMARIE_WEBSITE_LINK_INTERACTION.interactionId,
+        lifecycleMode: 'immediate',
+        entityCui: '87654321',
+      }),
+    )
+
+    expect(registerLessonChallengeMock).toHaveBeenCalledWith({
+      id: PRIMARIE_WEBSITE_LINK_INTERACTION.interactionId,
+      isCompleted: true,
+    })
+  })
+
+  it('upgrades legacy pending immediate submissions to completed', async () => {
+    customInteractionState = {
+      ...customInteractionState,
+      savedValue: { websiteUrl: 'https://example.com' },
+      phase: 'pending',
+      lifecycle: {
+        ...customInteractionState.lifecycle,
+        mode: 'immediate',
+        status: 'pending',
+        isSubmitted: true,
+        isPending: true,
+      },
+    }
+
+    renderHook(() =>
+      useCampaignChallengeForm<{ websiteUrl: string }>({
+        ownerChallengeSlug: 'civic-monitor-and-request',
+        interactionId: PRIMARIE_WEBSITE_LINK_INTERACTION.interactionId,
+        lifecycleMode: 'immediate',
+        entityCui: '87654321',
+      }),
+    )
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(completeMock).toHaveBeenCalledWith({
+      websiteUrl: 'https://example.com',
+    })
     expect(setChallengeStatusMock).toHaveBeenCalledWith(
       'civic-monitor-and-request',
       'completed',

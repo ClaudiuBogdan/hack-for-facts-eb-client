@@ -75,6 +75,8 @@ export type UseQuizInteractionInput = {
   readonly scopePolicy?: InteractiveDefinition['scopePolicy']
   /** Entity CUI used for entity-scoped quizzes */
   readonly entityCui?: string
+  /** Whether answering the quiz should also persist lesson progress */
+  readonly trackContentProgress?: boolean
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -163,12 +165,16 @@ export function useQuizInteraction(params: UseQuizInteractionInput): QuizInterac
         },
         outcome: nextScore >= passScore ? 'correct' : 'incorrect',
         score: nextScore,
-        content: {
-          contentId: params.contentId,
-          status: 'in_progress',
-          score: nextScore,
-          contentVersion: params.contentVersion,
-        },
+        ...(params.trackContentProgress === false
+          ? {}
+          : {
+              content: {
+                contentId: params.contentId,
+                status: 'in_progress' as const,
+                score: nextScore,
+                contentVersion: params.contentVersion,
+              },
+            }),
       })
     },
     [
@@ -177,6 +183,7 @@ export function useQuizInteraction(params: UseQuizInteractionInput): QuizInterac
       params.entityCui,
       params.options,
       params.quizId,
+      params.trackContentProgress,
       passScore,
       scopePolicy,
       resolveInteractive,

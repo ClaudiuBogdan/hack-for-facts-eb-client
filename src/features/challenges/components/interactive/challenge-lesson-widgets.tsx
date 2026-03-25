@@ -373,6 +373,7 @@ function DynamicLessonQuiz({
     contentVersion: 'v1',
     scopePolicy: 'entity',
     entityCui,
+    trackContentProgress: false,
   })
 
   useRegisterLessonChallenge({
@@ -389,6 +390,7 @@ function DynamicLessonQuiz({
       contentId={stepId}
       scopePolicy="entity"
       entityCui={entityCui}
+      trackContentProgress={false}
     />
   )
 }
@@ -687,11 +689,15 @@ export function LessonEntitySnapshot({
   const copy = WIDGET_COPY[locale]
   const { aggregatedTotalSummaryQuery, selectedYear } =
     useChallengeLessonEntityBundle(entityCui)
+  const interactionId = buildChallengeInteractionId(
+    stepId,
+    'lesson-entity-snapshot',
+  )
   const snapshotInteraction = useCustomInteraction<{
     checkedItems: boolean[]
   }>({
     lessonId: stepId,
-    interactionId: `lesson-entity-snapshot:${stepId}`,
+    interactionId,
     scopePolicy: 'entity',
     entityCui,
   })
@@ -716,7 +722,7 @@ export function LessonEntitySnapshot({
 
   const allChecked = checkedItems.every(Boolean)
   useRegisterLessonChallenge({
-    id: `lesson-entity-snapshot:${stepId}`,
+    id: interactionId,
     isCompleted: snapshotInteraction.isCompleted || allChecked,
   })
 
@@ -882,6 +888,7 @@ export function LessonBudgetEstimate({
     contentVersion: 'v1',
     scopePolicy: 'entity',
     entityCui,
+    trackContentProgress: false,
   })
 
   const mapPreviewDefinition = useMemo(
@@ -1310,12 +1317,16 @@ export function LessonExecutionTableExcerpt({
       }),
     [aggregatedTotalSummaryQuery.data?.totalExpenses, financialData.filteredExpenseGroups],
   )
+  const interactionId = buildChallengeInteractionId(
+    stepId,
+    'lesson-execution-table-excerpt',
+  )
   const executionTableInteraction = useCustomInteraction<{
     selectedRowId: string | null
     rowExplanation: string
   }>({
     lessonId: stepId,
-    interactionId: `lesson-execution-table-excerpt:${stepId}`,
+    interactionId,
     scopePolicy: 'entity',
     entityCui,
   })
@@ -1366,7 +1377,7 @@ export function LessonExecutionTableExcerpt({
   const selectedRow = rows.find((row) => row.id === selectedRowId) ?? null
   const isCompleted = Boolean(selectedRow) && rowExplanation.trim().length >= 30
   useRegisterLessonChallenge({
-    id: `lesson-execution-table-excerpt:${stepId}`,
+    id: interactionId,
     isCompleted: executionTableInteraction.isCompleted || isCompleted,
   })
 
@@ -1522,12 +1533,16 @@ export function LessonAggregateDetailedCompare({
   const subordinateInsights = useChallengeLessonSubordinateInsights({
     entityCui,
   })
+  const interactionId = buildChallengeInteractionId(
+    stepId,
+    'lesson-aggregate-detailed-compare',
+  )
   const aggregateDetailedInteraction = useCustomInteraction<{
     activeReportType: 'PRINCIPAL_AGGREGATED' | 'DETAILED'
     hasViewedDetailed: boolean
   }>({
     lessonId: stepId,
-    interactionId: `lesson-aggregate-detailed-compare:${stepId}`,
+    interactionId,
     scopePolicy: 'entity',
     entityCui,
   })
@@ -1605,7 +1620,7 @@ export function LessonAggregateDetailedCompare({
   const bothViewsSeen = activeReportType === 'DETAILED' ? true : hasViewedDetailed
   const isCompleted = bothViewsSeen
   useRegisterLessonChallenge({
-    id: `lesson-aggregate-detailed-compare:${stepId}`,
+    id: interactionId,
     isCompleted: aggregateDetailedInteraction.isCompleted || isCompleted,
   })
 
@@ -1876,6 +1891,10 @@ export function LessonAggregateDetailedQuiz({
     }),
     [copy, locale, entityCui.length, hasLinkedSubordinates, subordinateInsights.rankingNodes.length],
   )
+  const quizId = buildChallengeInteractionId(
+    stepId,
+    'lesson-aggregate-detailed-interpretation',
+  )
 
   if (isQuizLoading) {
     return (
@@ -1900,7 +1919,7 @@ export function LessonAggregateDetailedQuiz({
     <div className="not-prose my-6">
       <ChallengeDynamicQuiz
         contentId={stepId}
-        quizId="lesson-aggregate-detailed-interpretation"
+        quizId={quizId}
         question={quizContent.secondQuizQuestion}
         options={quizContent.secondQuizOptions}
         explanation={quizContent.secondQuizExplanation}

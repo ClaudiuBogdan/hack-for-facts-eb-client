@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm'
 import * as jsxRuntime from 'react/jsx-runtime'
 import { describe, expect, it } from 'vitest'
 import {
+  buildChallengeStepSectionMetadataManifest,
   buildChallengeStepSectionRequestId,
   parseSectionedChallengeStep,
   transformSectionedChallengeStepSource,
@@ -288,12 +289,65 @@ stepType: sectioned
       {
         kind: 'step',
         prefix: 'lesson-aggregate-detailed-compare',
+        interactionKind: 'custom',
+        scopePolicy: 'entity',
+      },
+    ])
+    expect(parsed.sections[1]?.lessonChallengeDescriptors).toEqual([
+      {
+        kind: 'step',
+        prefix: 'lesson-aggregate-detailed-interpretation',
+        interactionKind: 'quiz',
+        scopePolicy: 'entity',
+      },
+    ])
+  })
+
+  it('extracts lesson challenge descriptors for civic campaign forms', () => {
+    const parsed = parseSectionedChallengeStep({
+      source: `---
+title: Civic forms
+stepType: sectioned
+---
+
+# Civic forms
+
+## Website
+
+<PrimarieWebsiteLink ownerChallengeSlug="civic-monitor-and-request" />
+
+## Contact
+
+<PrimarieContactInfo ownerChallengeSlug="civic-monitor-and-request" />
+
+## Contestation
+
+<ContestationBuilder ownerChallengeSlug="civic-participate-and-act" />
+`,
+    })
+
+    expect(parsed.sections[0]?.lessonChallengeDescriptors).toEqual([
+      {
+        kind: 'fixed',
+        interactionId: 'campaign:primarie-website-url',
+        interactionKind: 'custom',
+        scopePolicy: 'entity',
       },
     ])
     expect(parsed.sections[1]?.lessonChallengeDescriptors).toEqual([
       {
         kind: 'fixed',
-        id: 'quiz:lesson-aggregate-detailed-interpretation',
+        interactionId: 'campaign:primarie-contact-info',
+        interactionKind: 'custom',
+        scopePolicy: 'entity',
+      },
+    ])
+    expect(parsed.sections[2]?.lessonChallengeDescriptors).toEqual([
+      {
+        kind: 'fixed',
+        interactionId: 'campaign:budget-contestation',
+        interactionKind: 'custom',
+        scopePolicy: 'entity',
       },
     ])
   })
@@ -369,5 +423,44 @@ Body.
     expect(transformed.source).toContain('stepType: sectioned')
     expect(transformed.source).toContain('Component: ChallengeStepSection0')
     expect(transformed.source).not.toContain('"bodySource"')
+  })
+
+  it('builds a metadata-only manifest for sectioned challenge steps', () => {
+    const manifest = buildChallengeStepSectionMetadataManifest({
+      files: [
+        {
+          filePath: '/src/content/challenges/steps/test-step/index.en.mdx',
+          source: `---
+title: Exported step
+stepType: sectioned
+---
+
+# Exported step
+
+## First section
+
+<LessonAggregateDetailedCompare />
+`,
+        },
+      ],
+    })
+
+    expect(manifest['test-step']?.en).toEqual([
+      {
+        id: 'first-section',
+        title: 'First section',
+        lessonChallengeDescriptors: [
+          {
+            kind: 'step',
+            prefix: 'lesson-aggregate-detailed-compare',
+            interactionKind: 'custom',
+            scopePolicy: 'entity',
+          },
+        ],
+        interactive: null,
+      },
+    ])
+    expect(manifest['test-step']?.en?.[0]).not.toHaveProperty('bodySource')
+    expect(manifest['test-step']?.en?.[0]).not.toHaveProperty('Component')
   })
 })

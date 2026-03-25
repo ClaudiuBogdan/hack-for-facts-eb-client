@@ -436,6 +436,7 @@ export function LessonBudgetContextFlow({
     contentVersion: 'v1',
     scopePolicy: 'entity',
     entityCui,
+    trackContentProgress: false,
   })
   const incomeQuizState = useQuizInteraction({
     contentId: stepId,
@@ -444,6 +445,7 @@ export function LessonBudgetContextFlow({
     contentVersion: 'v1',
     scopePolicy: 'entity',
     entityCui,
+    trackContentProgress: false,
   })
 
   const countySeries = useMemo(
@@ -552,6 +554,7 @@ export function LessonBudgetContextFlow({
     contentVersion: 'v1',
     scopePolicy: 'entity',
     entityCui,
+    trackContentProgress: false,
   })
 
   const [mapState, setMapState] = useState(() =>

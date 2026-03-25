@@ -227,7 +227,10 @@ function ChallengesSidebar({
   readonly locale: ChallengeLocale
   readonly storedActiveModuleSlug: string | null
 }) {
-  const { isStepCompleted, getStepStatus } = useChallengeProgress()
+  const { isStepCompleted, getStepStatus } = useChallengeProgress({
+    entityCui,
+    locale,
+  })
   const { moduleSlug, challengeSlug, stepSlug } = parseChallengesRoute(pathname)
   const activeStepRef = useScrollToActive<HTMLAnchorElement>(stepSlug)
   const [openChallengeSlugs, setOpenChallengeSlugs] = useState<Record<string, boolean>>({})
@@ -480,7 +483,6 @@ function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
   }, [handleTouchStart, handleTouchEnd])
 
   const locale = resolveCampaignLocale(location.search as CampaignRouteSearch | undefined)
-  const { getStepStatus } = useChallengeProgress()
   const modules = useMemo(() => getChallengeModules(), [])
   const {
     isReady,
@@ -495,6 +497,14 @@ function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
     () => (moduleSlug ? getChallengeModuleBySlug(moduleSlug) : null),
     [moduleSlug],
   )
+  const currentEntityCui =
+    pathnameEntityCui ??
+    progress.selectedEntityCui ??
+    undefined
+  const { getStepStatus } = useChallengeProgress({
+    entityCui: currentEntityCui,
+    locale,
+  })
   const resolvedHubActiveModule = useMemo(
     () =>
       resolveActiveChallengeModule({
@@ -504,10 +514,6 @@ function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
       }),
     [getStepStatus, modules, progress.activeChallengeModuleSlug],
   )
-  const currentEntityCui =
-    pathnameEntityCui ??
-    progress.selectedEntityCui ??
-    undefined
 
   useEffect(() => {
     if (

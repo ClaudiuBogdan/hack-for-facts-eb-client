@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from '@/test/test-utils'
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
+import { buildChallengeInteractionId } from '@/features/challenges/utils/interaction-ids'
 import {
   LessonExecutionTableExcerpt,
   LessonAggregateDetailedCompare,
@@ -14,6 +15,7 @@ const buildLessonExecutionTableExcerptMock = vi.fn()
 const customSaveDraftMock = vi.fn(async () => undefined)
 const customCompleteMock = vi.fn(async () => undefined)
 const customInteractionStateByKey = new Map<string, { savedValue: Record<string, unknown> | null; isCompleted?: boolean }>()
+let lastChallengeDynamicQuizProps: Record<string, unknown> | null = null
 
 function buildCustomInteractionKey(params: {
   lessonId: string
@@ -105,16 +107,20 @@ vi.mock(
 )
 
 vi.mock('@/features/challenges/components/player/challenge-dynamic-quiz', () => ({
-  ChallengeDynamicQuiz: ({ question, options }: any) => (
-    <div data-testid="lesson-quiz">
-      <p>{question}</p>
-      <ul>
-        {options.map((option: any) => (
-          <li key={option.id}>{option.text}</li>
-        ))}
-      </ul>
-    </div>
-  ),
+  ChallengeDynamicQuiz: (props: any) => {
+    lastChallengeDynamicQuizProps = props
+
+    return (
+      <div data-testid="lesson-quiz">
+        <p>{props.question}</p>
+        <ul>
+          {props.options.map((option: any) => (
+            <li key={option.id}>{option.text}</li>
+          ))}
+        </ul>
+      </div>
+    )
+  },
 }))
 
 vi.mock(
@@ -236,6 +242,7 @@ function buildSubordinateInsights(params?: {
 describe('LessonAggregateDetailedCompare', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    lastChallengeDynamicQuizProps = null
     customInteractionStateByKey.clear()
     customSaveDraftMock.mockClear()
     customCompleteMock.mockClear()
@@ -410,7 +417,10 @@ describe('LessonAggregateDetailedCompare', () => {
     customInteractionStateByKey.set(
       buildCustomInteractionKey({
         lessonId: 'lesson-step-06',
-        interactionId: 'lesson-aggregate-detailed-compare:lesson-step-06',
+        interactionId: buildChallengeInteractionId(
+          'lesson-step-06',
+          'lesson-aggregate-detailed-compare',
+        ),
         entityCui: '12345678',
       }),
       {
@@ -423,7 +433,10 @@ describe('LessonAggregateDetailedCompare', () => {
     customInteractionStateByKey.set(
       buildCustomInteractionKey({
         lessonId: 'lesson-step-06',
-        interactionId: 'lesson-aggregate-detailed-compare:lesson-step-06',
+        interactionId: buildChallengeInteractionId(
+          'lesson-step-06',
+          'lesson-aggregate-detailed-compare',
+        ),
         entityCui: '87654321',
       }),
       {
@@ -503,6 +516,7 @@ describe('LessonAggregateDetailedCompare', () => {
 describe('LessonAggregateDetailedQuiz', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    lastChallengeDynamicQuizProps = null
     useChallengeLessonSubordinateInsightsMock.mockReturnValue(
       buildSubordinateInsights(),
     )
@@ -521,6 +535,12 @@ describe('LessonAggregateDetailedQuiz', () => {
       screen.getByText(/Pentru acest UAT nu apar instituții subordonate/i),
     ).toBeInTheDocument()
     expect(screen.getAllByTestId('lesson-quiz')).toHaveLength(1)
+    expect(lastChallengeDynamicQuizProps).toMatchObject({
+      quizId: buildChallengeInteractionId(
+        'lesson-step-06',
+        'lesson-aggregate-detailed-interpretation',
+      ),
+    })
   })
 
   it('adapts the quiz question when subordinate institutions exist', () => {

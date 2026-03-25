@@ -43,7 +43,10 @@ export function ChallengesHubPage({
     register,
   } = useChallengeAccess()
   const { progress: campaignProgress } = useCampaignProgress()
-  const { getStepStatus, isStepCompleted } = useChallengeProgress()
+  const { getStepStatus, isStepCompleted } = useChallengeProgress({
+    entityCui,
+    locale,
+  })
 
   // Compute stats for all modules
   const modulesWithStats = useMemo<readonly ModuleWithStats[]>(() => {

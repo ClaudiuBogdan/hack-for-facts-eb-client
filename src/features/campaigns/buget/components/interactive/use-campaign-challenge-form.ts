@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react'
+import { useRegisterLessonChallenge } from '@/features/learning/components/player/lesson-challenges-context'
 import { useCustomInteraction } from '@/features/learning/hooks/interactions/use-custom-interaction'
 import { useLearningProgress } from '@/features/learning/hooks/use-learning-progress'
 import type { InteractionLifecycleMode } from '@/features/learning/types'
@@ -129,6 +130,11 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
       ? interaction.lifecycle.isSuccessful
       : interaction.isCompleted
 
+  useRegisterLessonChallenge({
+    id: params.interactionId,
+    isCompleted,
+  })
+
   useEffect(() => {
     if (params.lifecycleMode !== 'async_review') {
       return
@@ -143,6 +149,23 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
     params.lifecycleMode,
     reviewStatus,
     syncAggregateChallengeStatusFromTrackedInteractions,
+  ])
+
+  useEffect(() => {
+    if (params.lifecycleMode !== 'immediate') {
+      return
+    }
+
+    if (interaction.phase !== 'pending' || !interaction.savedValue) {
+      return
+    }
+
+    void submit(interaction.savedValue as TValue)
+  }, [
+    interaction.phase,
+    interaction.savedValue,
+    params.lifecycleMode,
+    submit,
   ])
 
   return useMemo(() => ({

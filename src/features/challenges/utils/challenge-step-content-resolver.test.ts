@@ -5,6 +5,7 @@ import { createDeferredPromise } from '@/test/helpers'
 import {
   createChallengeStepContentIndex,
   createChallengeStepContentResource,
+  resolveChallengeStepSectionsFromMetadataIndex,
   type ChallengeStepMdxModule,
   type ChallengeStepMdxModuleLoader,
 } from './challenge-step-content-resolver'
@@ -30,6 +31,54 @@ function createChallengeStepResource(
 }
 
 describe('challenge-step-content-resolver', () => {
+  it('reads section metadata without touching step module loaders', () => {
+    const loadModule = vi.fn(() =>
+      Promise.resolve({
+        default: ArticleComponent,
+        frontmatter: { stepType: 'sectioned' },
+        challengeSections: [
+          {
+            id: 'intro',
+            title: 'Intro',
+            bodySource: 'Intro copy',
+            interactive: null,
+            Component: IntroSectionComponent,
+          },
+        ],
+      } satisfies ChallengeStepMdxModule),
+    )
+
+    const contentIndex = createChallengeStepContentIndex({
+      '/src/content/challenges/steps/test-step/index.en.mdx': loadModule,
+    })
+
+    expect(
+      resolveChallengeStepSectionsFromMetadataIndex({
+        contentDir: 'test-step',
+        locale: 'ro',
+        metadataIndex: {
+          'test-step': {
+            en: [
+              {
+                id: 'intro',
+                title: 'Intro',
+                interactive: null,
+              },
+            ],
+          },
+        },
+      }),
+    ).toEqual([
+      {
+        id: 'intro',
+        title: 'Intro',
+        interactive: null,
+      },
+    ])
+    expect(contentIndex['test-step']?.en).toBe(loadModule)
+    expect(loadModule).not.toHaveBeenCalled()
+  })
+
   it('returns precompiled section components without runtime hydration', async () => {
     const resource = createChallengeStepResource({
       '/src/content/challenges/steps/test-step/index.en.mdx': () =>

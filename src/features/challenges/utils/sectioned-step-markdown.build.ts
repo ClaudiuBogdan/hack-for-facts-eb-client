@@ -6,11 +6,16 @@ import remarkParse from 'remark-parse'
 import remarkStringify from 'remark-stringify'
 import { unified } from 'unified'
 import type {
+  ChallengeLocale,
   ChallengeStepFrontmatter,
   ChallengeStepLessonChallengeDescriptor,
   ChallengeStepSectionMeta,
 } from '../types'
-import type { ChallengeStepSectionInteractive } from './sectioned-step-markdown'
+import type {
+  ChallengeStepSectionInteractive,
+  ChallengeStepSectionMetadata,
+  ChallengeStepSectionMetadataIndex,
+} from './sectioned-step-markdown'
 
 type ParsedChallengeSection = {
   readonly isIntro: boolean
@@ -44,6 +49,11 @@ export type BuildChallengeStepSection = ChallengeStepSectionMeta & {
   readonly interactive: ChallengeStepSectionInteractive | null
 }
 
+type ChallengeStepMetadataSourceFile = {
+  readonly filePath: string
+  readonly source: string
+}
+
 type TransformSectionedChallengeStepSourceResult = {
   readonly didTransform: boolean
   readonly source: string
@@ -55,6 +65,23 @@ const parseProcessor = unified().use(remarkParse).use(remarkMdx).use(remarkGfm)
 const stringifyProcessor = unified().use(remarkStringify).use(remarkMdx).use(remarkGfm)
 const SECTION_QUERY_PARAM = 'challenge-step-section'
 const IS_DEV_ENVIRONMENT = process.env.NODE_ENV !== 'production'
+
+function parseChallengeStepContentFilePath(filePath: string): {
+  readonly contentDirectory: string
+  readonly locale: ChallengeLocale
+} | null {
+  const matchedContentFile = filePath.match(
+    /\/steps\/(.+)\/index\.(en|ro)\.mdx$/,
+  )
+  if (!matchedContentFile) {
+    return null
+  }
+
+  return {
+    contentDirectory: matchedContentFile[1],
+    locale: matchedContentFile[2] as ChallengeLocale,
+  }
+}
 
 function normalizeInlineText(value: string): string {
   return value.replace(/\s+/g, ' ').trim()
@@ -233,8 +260,8 @@ function buildLessonChallengeDescriptorKey(
   descriptor: ChallengeStepLessonChallengeDescriptor,
 ): string {
   return descriptor.kind === 'fixed'
-    ? `fixed:${descriptor.id}`
-    : `step:${descriptor.prefix}`
+    ? `fixed:${descriptor.interactionId}:${descriptor.interactionKind}:${descriptor.scopePolicy ?? 'global'}`
+    : `step:${descriptor.prefix}:${descriptor.interactionKind}:${descriptor.scopePolicy ?? 'global'}`
 }
 
 function dedupeLessonChallengeDescriptors(
@@ -268,10 +295,13 @@ function extractLessonChallengeDescriptors(
 
     if (jsxNode.name === 'Quiz') {
       const quizId = typeof props.id === 'string' ? props.id.trim() : ''
+      const scopePolicy = props.scopePolicy === 'entity' ? 'entity' : 'global'
       if (quizId.length > 0) {
         descriptors.push({
           kind: 'fixed',
-          id: `quiz:${quizId}`,
+          interactionId: quizId,
+          interactionKind: 'quiz',
+          scopePolicy,
         })
       }
       continue
@@ -281,6 +311,8 @@ function extractLessonChallengeDescriptors(
       descriptors.push({
         kind: 'step',
         prefix: 'lesson-entity-snapshot',
+        interactionKind: 'custom',
+        scopePolicy: 'entity',
       })
       continue
     }
@@ -289,24 +321,30 @@ function extractLessonChallengeDescriptors(
       const metric =
         props.metric === 'expenses' ? 'expenses' : 'income'
       descriptors.push({
-        kind: 'fixed',
-        id: `quiz:lesson-budget-estimate-${metric}`,
+        kind: 'step',
+        prefix: `lesson-budget-estimate-${metric}`,
+        interactionKind: 'quiz',
+        scopePolicy: 'entity',
       })
       continue
     }
 
     if (jsxNode.name === 'LessonGroupedExplorer') {
       descriptors.push({
-        kind: 'fixed',
-        id: 'quiz:lesson-grouped-explorer',
+        kind: 'step',
+        prefix: 'lesson-grouped-explorer',
+        interactionKind: 'quiz',
+        scopePolicy: 'entity',
       })
       continue
     }
 
     if (jsxNode.name === 'LessonClassificationCrosswalk') {
       descriptors.push({
-        kind: 'fixed',
-        id: 'quiz:lesson-classification-crosswalk',
+        kind: 'step',
+        prefix: 'lesson-classification-crosswalk',
+        interactionKind: 'quiz',
+        scopePolicy: 'entity',
       })
       continue
     }
@@ -315,6 +353,8 @@ function extractLessonChallengeDescriptors(
       descriptors.push({
         kind: 'step',
         prefix: 'lesson-execution-table-excerpt',
+        interactionKind: 'custom',
+        scopePolicy: 'entity',
       })
       continue
     }
@@ -323,14 +363,18 @@ function extractLessonChallengeDescriptors(
       descriptors.push({
         kind: 'step',
         prefix: 'lesson-aggregate-detailed-compare',
+        interactionKind: 'custom',
+        scopePolicy: 'entity',
       })
       continue
     }
 
     if (jsxNode.name === 'LessonAggregateDetailedQuiz') {
       descriptors.push({
-        kind: 'fixed',
-        id: 'quiz:lesson-aggregate-detailed-interpretation',
+        kind: 'step',
+        prefix: 'lesson-aggregate-detailed-interpretation',
+        interactionKind: 'quiz',
+        scopePolicy: 'entity',
       })
       continue
     }
@@ -341,8 +385,10 @@ function extractLessonChallengeDescriptors(
           ? props.variant.trim()
           : 'top-income'
       descriptors.push({
-        kind: 'fixed',
-        id: `quiz:lesson-entity-quiz-${variant}`,
+        kind: 'step',
+        prefix: `lesson-entity-quiz-${variant}`,
+        interactionKind: 'quiz',
+        scopePolicy: 'entity',
       })
       continue
     }
@@ -353,20 +399,108 @@ function extractLessonChallengeDescriptors(
 
       if (stage === 'expenses-quiz') {
         descriptors.push({
-          kind: 'fixed',
-          id: 'quiz:lesson-budget-context-expenses',
+          kind: 'step',
+          prefix: 'lesson-budget-context-expenses',
+          interactionKind: 'quiz',
+          scopePolicy: 'entity',
         })
       } else if (stage === 'income-quiz') {
         descriptors.push({
-          kind: 'fixed',
-          id: 'quiz:lesson-budget-context-income',
+          kind: 'step',
+          prefix: 'lesson-budget-context-income',
+          interactionKind: 'quiz',
+          scopePolicy: 'entity',
         })
       } else if (stage === 'county-quiz') {
         descriptors.push({
-          kind: 'fixed',
-          id: 'quiz:lesson-budget-context-county-top',
+          kind: 'step',
+          prefix: 'lesson-budget-context-county-top',
+          interactionKind: 'quiz',
+          scopePolicy: 'entity',
         })
       }
+
+      continue
+    }
+
+    if (jsxNode.name === 'PrimarieWebsiteLink') {
+      descriptors.push({
+        kind: 'fixed',
+        interactionId: 'campaign:primarie-website-url',
+        interactionKind: 'custom',
+        scopePolicy: 'entity',
+      })
+      continue
+    }
+
+    if (jsxNode.name === 'BudgetDocumentLink') {
+      descriptors.push({
+        kind: 'fixed',
+        interactionId: 'campaign:budget-document-url',
+        interactionKind: 'custom',
+        scopePolicy: 'entity',
+      })
+      continue
+    }
+
+    if (jsxNode.name === 'BudgetPublicationDate') {
+      descriptors.push({
+        kind: 'fixed',
+        interactionId: 'campaign:budget-publication-date',
+        interactionKind: 'custom',
+        scopePolicy: 'entity',
+      })
+      continue
+    }
+
+    if (jsxNode.name === 'BudgetStatusReport') {
+      descriptors.push({
+        kind: 'fixed',
+        interactionId: 'campaign:budget-2026-status',
+        interactionKind: 'custom',
+        scopePolicy: 'entity',
+      })
+      continue
+    }
+
+    if (jsxNode.name === 'PrimarieContactInfo') {
+      descriptors.push({
+        kind: 'fixed',
+        interactionId: 'campaign:primarie-contact-info',
+        interactionKind: 'custom',
+        scopePolicy: 'entity',
+      })
+      continue
+    }
+
+    if (jsxNode.name === 'DebateRequestForm') {
+      descriptors.push({
+        kind: 'fixed',
+        interactionId: 'campaign:debate-request',
+        interactionKind: 'custom',
+        scopePolicy: 'entity',
+      })
+      continue
+    }
+
+    if (jsxNode.name === 'ParticipationReport') {
+      descriptors.push({
+        kind: 'fixed',
+        interactionId: 'campaign:participation-report',
+        interactionKind: 'custom',
+        scopePolicy: 'entity',
+      })
+      continue
+    }
+
+    if (jsxNode.name === 'ContestationBuilder') {
+      descriptors.push({
+        kind: 'fixed',
+        interactionId: 'campaign:budget-contestation',
+        interactionKind: 'custom',
+        scopePolicy: 'entity',
+      })
+      continue
     }
   }
 
@@ -572,6 +706,23 @@ function formatSectionExportEntry(
   }`
 }
 
+function toChallengeStepSectionMetadata(
+  section: BuildChallengeStepSection,
+): ChallengeStepSectionMetadata {
+  return {
+    id: section.id,
+    title: section.title,
+    ...(section.hideSectionTitle ? { hideSectionTitle: true } : {}),
+    ...(section.lessonChallengeDescriptors
+      ? {
+          lessonChallengeDescriptors:
+            section.lessonChallengeDescriptors,
+        }
+      : {}),
+    interactive: section.interactive,
+  }
+}
+
 function normalizeFilePath(filePath: string): string {
   return filePath.replace(/\\/g, '/')
 }
@@ -639,6 +790,36 @@ export function parseSectionedChallengeStep(params: {
     frontmatter,
     sections,
   }
+}
+
+export function buildChallengeStepSectionMetadataManifest(params: {
+  readonly files: readonly ChallengeStepMetadataSourceFile[]
+}): ChallengeStepSectionMetadataIndex {
+  return params.files.reduce<ChallengeStepSectionMetadataIndex>(
+    (metadataManifest, file) => {
+      const parsedFilePath = parseChallengeStepContentFilePath(file.filePath)
+      if (!parsedFilePath) {
+        return metadataManifest
+      }
+
+      const transformed = transformSectionedChallengeStepSource({
+        source: file.source,
+        filePath: file.filePath,
+      })
+      if (!transformed.didTransform) {
+        return metadataManifest
+      }
+
+      const localeSections =
+        metadataManifest[parsedFilePath.contentDirectory] ?? {}
+      localeSections[parsedFilePath.locale] = transformed.sections.map(
+        (section) => toChallengeStepSectionMetadata(section),
+      )
+      metadataManifest[parsedFilePath.contentDirectory] = localeSections
+      return metadataManifest
+    },
+    {},
+  )
 }
 
 export function transformSectionedChallengeStepSource(params: {

@@ -4,6 +4,7 @@ import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import { lingui } from "@lingui/vite-plugin";
 import path from "path";
+import { createChallengeStepSectionsPlugin } from "./config/challenge-step-sections-plugin";
 
 const ciTestWorkers = Math.min(
   6,
@@ -12,6 +13,7 @@ const ciTestWorkers = Math.min(
 
 export default defineConfig({
   plugins: [
+    createChallengeStepSectionsPlugin(),
     lingui(),
     react(),
   ],

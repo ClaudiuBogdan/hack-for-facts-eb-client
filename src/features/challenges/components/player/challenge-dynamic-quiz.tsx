@@ -40,6 +40,7 @@ export function ChallengeDynamicQuiz({
     contentVersion: 'v1',
     scopePolicy,
     entityCui,
+    trackContentProgress: false,
   })
 
   useRegisterLessonChallenge({

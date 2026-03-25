@@ -59,7 +59,10 @@ export function ChallengeModulePage({
     isSubmitting,
     register,
   } = useChallengeAccess()
-  const { getStepStatus, isStepCompleted } = useChallengeProgress()
+  const { getStepStatus, isStepCompleted } = useChallengeProgress({
+    entityCui,
+    locale,
+  })
 
   const stats = useMemo(() => {
     if (!module) return null

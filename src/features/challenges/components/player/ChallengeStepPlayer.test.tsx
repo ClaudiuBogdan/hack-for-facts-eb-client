@@ -10,6 +10,10 @@ const mockUseLessonChallenges = vi.fn()
 const mockGetAdjacentSteps = vi.fn()
 const markCompleteMock = vi.fn()
 const navigateMock = vi.fn()
+let lessonCompletionState = {
+  status: 'not_started' as 'not_started' | 'in_progress' | 'completed' | 'passed',
+  isCompleted: false,
+}
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to, resetScroll: _resetScroll, search: _search, ...props }: any) => (
@@ -94,8 +98,8 @@ vi.mock('@/features/learning/hooks/use-learning-progress', () => ({
 
 vi.mock('@/features/learning/hooks/use-learning-interactions', () => ({
   useLessonCompletion: () => ({
-    status: 'not_started',
-    isCompleted: false,
+    status: lessonCompletionState.status,
+    isCompleted: lessonCompletionState.isCompleted,
     markComplete: markCompleteMock,
   }),
   useQuizInteraction: () => mockUseQuizInteraction(),
@@ -131,6 +135,10 @@ describe('ChallengeStepPlayer', () => {
 
     markCompleteMock.mockReset()
     navigateMock.mockReset()
+    lessonCompletionState = {
+      status: 'not_started',
+      isCompleted: false,
+    }
     mockUseLessonChallenges.mockReturnValue({
       challenges: {},
       hasChallenges: false,
@@ -742,8 +750,8 @@ describe('ChallengeStepPlayer', () => {
   })
 
   it('keeps the quiz success footer when earlier tracked activities are incomplete', async () => {
-    const compareChallengeId = 'lesson-aggregate-detailed-compare:step-1'
-    const finalChallengeId = 'quiz:lesson-aggregate-detailed-interpretation'
+    const compareChallengeId = 'step-1:lesson-aggregate-detailed-compare'
+    const finalChallengeId = 'quiz:step-1:lesson-aggregate-detailed-interpretation'
 
     mockUseChallengeAccess.mockReturnValue({
       accessCardVariant: null,
@@ -782,7 +790,12 @@ describe('ChallengeStepPlayer', () => {
             title: 'Compare',
             bodySource: '<LessonAggregateDetailedCompare />',
             lessonChallengeDescriptors: [
-              { kind: 'step', prefix: 'lesson-aggregate-detailed-compare' },
+              {
+                kind: 'step',
+                prefix: 'lesson-aggregate-detailed-compare',
+                interactionKind: 'custom',
+                scopePolicy: 'entity',
+              },
             ],
             interactive: null,
             Component: () => <p>Compare copy</p>,
@@ -792,7 +805,12 @@ describe('ChallengeStepPlayer', () => {
             title: '',
             bodySource: '<LessonAggregateDetailedQuiz />',
             lessonChallengeDescriptors: [
-              { kind: 'fixed', id: finalChallengeId },
+              {
+                kind: 'step',
+                prefix: 'lesson-aggregate-detailed-interpretation',
+                interactionKind: 'quiz',
+                scopePolicy: 'entity',
+              },
             ],
             interactive: {
               kind: 'quiz',
@@ -878,9 +896,9 @@ describe('ChallengeStepPlayer', () => {
     expect(markCompleteMock).not.toHaveBeenCalled()
   })
 
-  it('marks complete before navigating when tracked activities are done', async () => {
-    const compareChallengeId = 'lesson-aggregate-detailed-compare:step-1'
-    const finalChallengeId = 'quiz:lesson-aggregate-detailed-interpretation'
+  it('navigates without persisting lesson progress when tracked activities are done', async () => {
+    const compareChallengeId = 'step-1:lesson-aggregate-detailed-compare'
+    const finalChallengeId = 'quiz:step-1:lesson-aggregate-detailed-interpretation'
 
     mockUseChallengeAccess.mockReturnValue({
       accessCardVariant: null,
@@ -920,7 +938,12 @@ describe('ChallengeStepPlayer', () => {
             title: 'Compare',
             bodySource: '<LessonAggregateDetailedCompare />',
             lessonChallengeDescriptors: [
-              { kind: 'step', prefix: 'lesson-aggregate-detailed-compare' },
+              {
+                kind: 'step',
+                prefix: 'lesson-aggregate-detailed-compare',
+                interactionKind: 'custom',
+                scopePolicy: 'entity',
+              },
             ],
             interactive: null,
             Component: () => <p>Compare copy</p>,
@@ -930,7 +953,12 @@ describe('ChallengeStepPlayer', () => {
             title: '',
             bodySource: '<LessonAggregateDetailedQuiz />',
             lessonChallengeDescriptors: [
-              { kind: 'fixed', id: finalChallengeId },
+              {
+                kind: 'step',
+                prefix: 'lesson-aggregate-detailed-interpretation',
+                interactionKind: 'quiz',
+                scopePolicy: 'entity',
+              },
             ],
             interactive: {
               kind: 'quiz',
@@ -993,9 +1021,134 @@ describe('ChallengeStepPlayer', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Finish$/i }))
 
     await waitFor(() => {
-      expect(markCompleteMock).toHaveBeenCalled()
       expect(navigateMock).toHaveBeenCalled()
     })
+    expect(markCompleteMock).not.toHaveBeenCalled()
+  })
+
+  it('does not auto-complete a sectioned step from tracked quizzes alone', async () => {
+    const compareChallengeId = 'step-1:lesson-aggregate-detailed-compare'
+    const finalChallengeId = 'quiz:step-1:lesson-aggregate-detailed-interpretation'
+
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseQuizInteraction.mockReturnValue({
+      selectedOptionId: 'b',
+      isAnswered: true,
+      score: 1,
+      isCorrect: true,
+      answer: vi.fn(),
+      reset: vi.fn(),
+    })
+
+    mockUseLessonChallenges.mockImplementation(() => ({
+      challenges: {
+        [compareChallengeId]: true,
+        [finalChallengeId]: true,
+      },
+      hasChallenges: true,
+      totalChallenges: 2,
+      completedChallenges: 2,
+      allChallengesCompleted: true,
+    }))
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'compare',
+            title: 'Compare',
+            bodySource: '<LessonAggregateDetailedCompare />',
+            lessonChallengeDescriptors: [
+              {
+                kind: 'step',
+                prefix: 'lesson-aggregate-detailed-compare',
+                interactionKind: 'custom',
+                scopePolicy: 'entity',
+              },
+            ],
+            interactive: null,
+            Component: () => <p>Compare copy</p>,
+          },
+          {
+            id: 'final-quiz',
+            title: '',
+            bodySource: '<LessonAggregateDetailedQuiz />',
+            lessonChallengeDescriptors: [
+              {
+                kind: 'step',
+                prefix: 'lesson-aggregate-detailed-interpretation',
+                interactionKind: 'quiz',
+                scopePolicy: 'entity',
+              },
+            ],
+            interactive: {
+              kind: 'quiz',
+              id: 'lesson-aggregate-detailed-interpretation',
+              question: 'Final question?',
+              options: [
+                { id: 'a', text: 'Wrong', isCorrect: false },
+                { id: 'b', text: 'Right', isCorrect: true },
+              ],
+              explanation: 'Correct answer.',
+            },
+            Component: ({ components }: any) => {
+              const QuizComponent = components.Quiz
+
+              return (
+                <QuizComponent
+                  id="lesson-aggregate-detailed-interpretation"
+                  question="Final question?"
+                  options={[
+                    { id: 'a', text: 'Wrong', isCorrect: false },
+                    { id: 'b', text: 'Right', isCorrect: true },
+                  ]}
+                  explanation="Correct answer."
+                />
+              )
+            },
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    const { rerender } = render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeSectionId="compare"
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Compare copy')).toBeInTheDocument()
+    })
+
+    rerender(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeSectionId="final-quiz"
+      />,
+    )
+
+    expect(markCompleteMock).not.toHaveBeenCalled()
   })
 
   it('uses the quiz question as the progress label for titleless quiz sections', () => {

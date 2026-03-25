@@ -88,6 +88,7 @@ function StepQuizWrapper({
     contentVersion: 'v1',
     scopePolicy: props.scopePolicy ?? 'global',
     entityCui: props.scopePolicy === 'entity' ? entityCui : undefined,
+    trackContentProgress: false,
   })
 
   useRegisterLessonChallenge({ id: `quiz:${props.id}`, isCompleted: isCorrect })
@@ -108,6 +109,7 @@ function StepQuizWrapper({
       {...props}
       contentId={stepId}
       entityCui={props.scopePolicy === 'entity' ? entityCui : undefined}
+      trackContentProgress={false}
     />
   )
 }

@@ -11,3 +11,10 @@ declare module '*.mdx' {
   const MDXComponent: ComponentType<MdxContentProps>
   export default MDXComponent
 }
+
+declare module 'virtual:challenge-step-section-metadata' {
+  import type { ChallengeStepSectionMetadataIndex } from '@/features/challenges/utils/sectioned-step-markdown'
+
+  const challengeStepSectionMetadata: ChallengeStepSectionMetadataIndex
+  export default challengeStepSectionMetadata
+}

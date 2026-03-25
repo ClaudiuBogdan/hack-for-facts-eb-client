@@ -16,12 +16,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { lingui } from "@lingui/vite-plugin";
 import { nitro } from "nitro/vite";
 import fs from "fs";
-import {
-  buildChallengeStepSectionRequestId,
-  isChallengeStepMdxFile,
-  parseChallengeStepSectionRequestId,
-  transformSectionedChallengeStepSource,
-} from "./src/features/challenges/utils/sectioned-step-markdown.build";
+import { createChallengeStepSectionsPlugin } from "./config/challenge-step-sections-plugin";
 
 const getHttpsConfig = () => {
   if (String(process.env.HTTPS_ENABLED) !== "true") {
@@ -62,56 +57,6 @@ const esmExtensionFixesPlugin = () => ({
     return { code: updated, map: null };
   },
 });
-
-const challengeStepSectionsPlugin = () => ({
-  name: "challenge-step-sections",
-  enforce: "pre" as const,
-  load(id: string) {
-    const sectionRequest = parseChallengeStepSectionRequestId(id);
-    if (!sectionRequest) {
-      return null;
-    }
-
-    return challengeStepSectionSources.get(
-      buildChallengeStepSectionRequestId(
-        sectionRequest.filePath,
-        sectionRequest.sectionIndex,
-      ),
-    ) ?? null;
-  },
-  transform(code: string, id: string) {
-    if (parseChallengeStepSectionRequestId(id)) {
-      return null;
-    }
-
-    const normalizedId = id.replace(/\\/g, "/");
-    if (!isChallengeStepMdxFile(normalizedId)) {
-      return null;
-    }
-
-    const transformed = transformSectionedChallengeStepSource({
-      source: code,
-      filePath: normalizedId,
-    });
-    if (!transformed.didTransform) {
-      return null;
-    }
-
-    transformed.sections.forEach((section, sectionIndex) => {
-      challengeStepSectionSources.set(
-        buildChallengeStepSectionRequestId(normalizedId, sectionIndex),
-        section.bodySource,
-      );
-    });
-
-    return {
-      code: transformed.source,
-      map: null,
-    };
-  },
-});
-
-const challengeStepSectionSources = new Map<string, string>();
 
 const getContentLocale = (id: string) => {
   if (id.includes('.en.mdx')) {
@@ -273,7 +218,7 @@ export default defineConfig(({ mode }) => {
         },
       },
       esmExtensionFixesPlugin(),
-      challengeStepSectionsPlugin(),
+      createChallengeStepSectionsPlugin(),
       lingui(),
       tanstackStart(),
       nitro({
