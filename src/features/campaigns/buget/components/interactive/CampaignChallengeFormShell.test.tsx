@@ -22,7 +22,7 @@ describe('CampaignChallengeFormShell', () => {
       </CampaignChallengeFormShell>,
     )
 
-    expect(screen.getAllByText('Pending review')).toHaveLength(2)
+    expect(screen.getByText('Pending review')).toBeInTheDocument()
     expect(
       screen.getByText('Your submission is saved. The system will validate it before it counts toward this challenge.'),
     ).toBeInTheDocument()
@@ -46,7 +46,7 @@ describe('CampaignChallengeFormShell', () => {
 
     expect(screen.getByText('Submitted')).toBeInTheDocument()
     expect(screen.queryByText('Pending review')).not.toBeInTheDocument()
-    expect(screen.getByText('Review accepted')).toBeInTheDocument()
+    expect(screen.getByText('Your submission has been reviewed and accepted.')).toBeInTheDocument()
   })
 
   it('renders rejection feedback when review fails', () => {
