@@ -126,7 +126,7 @@ function getReviewTone(submittedVariant: SubmittedVariant): ReviewTone {
 function getReviewStatusText(submittedVariant: SubmittedVariant): string {
   switch (submittedVariant) {
     case 'pending_review':
-      return t`Your submission is saved. The system will validate it before it counts toward this challenge.`
+      return t`Your submission is saved and waiting for review.`
     case 'rejected':
       return t`Update the submission and send it again.`
     case 'completed':

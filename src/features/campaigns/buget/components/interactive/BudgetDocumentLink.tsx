@@ -26,7 +26,10 @@ const EMPTY_VALUE: BudgetDocumentLinkValue = {
 function getDocumentTypeLabel(type: NonNullable<BudgetDocumentLinkValue['documentType']>): string {
   switch (type) {
     case 'pdf': return 'PDF'
+    case 'word': return 'Word'
+    case 'excel': return 'Excel'
     case 'webpage': return t`Webpage`
+    case 'graphics': return t`Graphics`
     case 'other': return t`Other`
   }
 }
@@ -59,7 +62,10 @@ const DOCUMENT_TYPE_OPTIONS: ReadonlyArray<{
   readonly label: () => string
 }> = [
   { value: 'pdf', label: () => 'PDF' },
+  { value: 'word', label: () => 'Word' },
+  { value: 'excel', label: () => 'Excel' },
   { value: 'webpage', label: () => t`Webpage` },
+  { value: 'graphics', label: () => t`Graphics` },
   { value: 'other', label: () => t`Other` },
 ]
 
@@ -163,7 +169,7 @@ export function BudgetDocumentLink({ ownerChallengeSlug, entityCui }: CampaignIn
           <RadioGroup
             value={draft.documentType ?? ''}
             onValueChange={(v) => updateField('documentType', v as BudgetDocumentLinkValue['documentType'])}
-            className="flex items-center gap-2"
+            className="flex flex-wrap gap-2"
           >
             {DOCUMENT_TYPE_OPTIONS.map((opt) => (
               <label

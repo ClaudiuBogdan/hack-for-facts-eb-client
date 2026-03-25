@@ -24,7 +24,7 @@ describe('CampaignChallengeFormShell', () => {
 
     expect(screen.getByText('Pending review')).toBeInTheDocument()
     expect(
-      screen.getByText('Your submission is saved. The system will validate it before it counts toward this challenge.'),
+      screen.getByText('Your submission is saved and waiting for review.'),
     ).toBeInTheDocument()
     expect(screen.getByText('What you submitted')).toBeInTheDocument()
     expect(screen.getByText('Submitted value')).toBeInTheDocument()

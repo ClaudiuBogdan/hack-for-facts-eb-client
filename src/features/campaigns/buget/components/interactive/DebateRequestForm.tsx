@@ -146,7 +146,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
 
   const hasValidEmail = isValidEmail(draft.primariaEmail)
   const hasOrganizationName = Boolean(draft.organizationName?.trim())
-  const canUseNgoSendFlow = hasValidEmail && draft.isNgo && hasOrganizationName
+  const canUseAssociationSendFlow = hasValidEmail && draft.isNgo && hasOrganizationName
 
   if (form.isSubmitted) {
     const submittedPath = form.savedValue?.submissionPath
@@ -173,7 +173,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
           },
           ...(form.savedValue.isNgo && form.savedValue.organizationName?.trim()
             ? [{
-                label: t`Organization`,
+                label: t`Association`,
                 value: form.savedValue.organizationName,
               }]
             : []),
@@ -269,25 +269,25 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                 onCheckedChange={(checked) => updateField('isNgo', checked)}
               />
               <Label htmlFor="is-ngo" className="text-sm font-bold text-foreground">
-                <Trans>Are you part of an NGO?</Trans>
+                <Trans>Do you represent a legally established association?</Trans>
               </Label>
             </div>
 
             {draft.isNgo && (
               <div className="space-y-3 pl-1">
                 <p className="text-xs text-muted-foreground">
-                  <Trans>Under Law 52/2003, requests from NGOs carry greater legal weight.</Trans>
+                  <Trans>Under Law 52/2003, requests from legally established associations can trigger the obligation to organize a public debate.</Trans>
                 </p>
                 <div className="space-y-2">
                   <Label htmlFor="org-name" className="text-sm font-bold text-foreground">
-                    <Trans>Organization name</Trans>
+                    <Trans>Association name</Trans>
                   </Label>
                   <Input
                     id="org-name"
                     name="organizationName"
                     autoComplete="organization"
                     className="rounded-xl h-12 text-base"
-                    placeholder={t`NGO name`}
+                    placeholder={t`Association name`}
                     value={draft.organizationName ?? ''}
                     onChange={(e) => updateField('organizationName', e.target.value || null)}
                   />
@@ -331,21 +331,21 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                 <Mail className="h-10 w-10 text-muted-foreground mb-3 mx-auto" aria-hidden="true" />
                 <p className="text-base font-black tracking-tight">{t`Send it yourself`}</p>
                 <p className="text-xs text-muted-foreground mt-1.5">
-                  <Trans>Opens your email client with the completed request. Recommended for NGOs.</Trans>
+                  <Trans>Opens your email client with the completed request. Recommended when you represent a legally established association.</Trans>
                 </p>
                 {!draft.isNgo && (
                   <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
-                    <Trans>Available for NGOs.</Trans>
+                    <Trans>Available for legally established associations.</Trans>
                   </p>
                 )}
                 {draft.isNgo && !hasOrganizationName && (
                   <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
-                    <Trans>Add your organization name to use this option.</Trans>
+                    <Trans>Add the association name to use this option.</Trans>
                   </p>
                 )}
                 <Button
                   variant="outline"
-                  disabled={!canUseNgoSendFlow}
+                  disabled={!canUseAssociationSendFlow}
                   onClick={handleOpenEmail}
                   className="rounded-[22px] h-11 w-full font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 mt-4"
                 >
@@ -371,7 +371,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                 <Send className="h-10 w-10 text-muted-foreground mb-3 mx-auto" aria-hidden="true" />
                 <p className="text-base font-black tracking-tight">{t`Ask us to send it`}</p>
                 <p className="text-xs text-muted-foreground mt-1.5">
-                  <Trans>We will send the debate request on your behalf.</Trans>
+                  <Trans>We will record the request and send it through the platform.</Trans>
                 </p>
                 <Button
                   disabled={!hasValidEmail}

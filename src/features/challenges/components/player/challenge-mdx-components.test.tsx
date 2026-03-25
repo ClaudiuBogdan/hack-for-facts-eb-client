@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { ComponentType } from 'react'
+import type { ComponentPropsWithoutRef, ComponentType } from 'react'
 import type { MDXComponents } from 'mdx/types'
 import { render, screen } from '@testing-library/react'
 
@@ -23,6 +23,20 @@ vi.mock('@/features/campaigns/buget/components/interactive/BudgetStatusReport', 
   }) => (
     <div data-testid="budget-status-report-props">
       {ownerChallengeSlug}:{entityCui}
+    </div>
+  ),
+}))
+
+vi.mock('@/features/challenges/components/interactive/CivicModuleShareCta', () => ({
+  CivicModuleShareCta: ({
+    entityCui,
+    moduleSlug,
+  }: {
+    readonly entityCui: string
+    readonly moduleSlug?: string
+  }) => (
+    <div data-testid="civic-module-share-cta-props">
+      {entityCui}:{moduleSlug ?? 'civic-campaign'}
     </div>
   ),
 }))
@@ -66,11 +80,67 @@ describe('challenge-mdx-components', () => {
 
     expect(components.Quiz).toBe(quizWrapper)
     expect(components.MarkComplete).toBe(markCompleteWrapper)
+    expect(components.a).toBeDefined()
     expect(components.FlashCard).toBeDefined()
     expect(components.FlashCardDeck).toBeDefined()
     expect(components.ExpandableHint).toBeDefined()
     expect(components.Sources).toBeDefined()
     expect(components.QuickLinks).toBeDefined()
+    expect(components.CivicModuleShareCta).toBeDefined()
+  })
+
+  it('opens external challenge MDX links in a new tab', () => {
+    const components = buildChallengeMdxComponents({
+      entityCui: '12345678',
+      QuizComponent: () => <div />,
+      MarkCompleteComponent: () => <div />,
+    })
+
+    const AnchorComponent = components.a as ComponentType<ComponentPropsWithoutRef<'a'>>
+
+    render(
+      <AnchorComponent href="https://legislatie.just.ro/Public/DetaliiDocument/41571">
+        Legea 52/2003
+      </AnchorComponent>,
+    )
+
+    expect(screen.getByRole('link', { name: 'Legea 52/2003' })).toHaveAttribute(
+      'href',
+      'https://legislatie.just.ro/Public/DetaliiDocument/41571',
+    )
+    expect(screen.getByRole('link', { name: 'Legea 52/2003' })).toHaveAttribute(
+      'target',
+      '_blank',
+    )
+    expect(screen.getByRole('link', { name: 'Legea 52/2003' })).toHaveAttribute(
+      'rel',
+      'noopener noreferrer',
+    )
+  })
+
+  it('leaves non-external challenge MDX links unchanged', () => {
+    const components = buildChallengeMdxComponents({
+      entityCui: '12345678',
+      QuizComponent: () => <div />,
+      MarkCompleteComponent: () => <div />,
+    })
+
+    const AnchorComponent = components.a as ComponentType<ComponentPropsWithoutRef<'a'>>
+
+    render(
+      <AnchorComponent href="#legal-basis">Legal basis</AnchorComponent>,
+    )
+
+    expect(screen.getByRole('link', { name: 'Legal basis' })).toHaveAttribute(
+      'href',
+      '#legal-basis',
+    )
+    expect(screen.getByRole('link', { name: 'Legal basis' })).not.toHaveAttribute(
+      'target',
+    )
+    expect(screen.getByRole('link', { name: 'Legal basis' })).not.toHaveAttribute(
+      'rel',
+    )
   })
 
   it('allows challenge custom components to override shared keys', () => {
@@ -128,6 +198,26 @@ describe('challenge-mdx-components', () => {
 
     expect(await screen.findByTestId('budget-status-report-props')).toHaveTextContent(
       'civic-monitor-and-request:12345678',
+    )
+  })
+
+  it('injects the route entityCui into the civic-module share CTA component', async () => {
+    const components = buildChallengeMdxComponents({
+      entityCui: '12345678',
+      QuizComponent: () => <div />,
+      MarkCompleteComponent: () => <div />,
+    })
+
+    const CivicModuleShareCtaComponent = components.CivicModuleShareCta as ComponentType<{
+      readonly moduleSlug?: string
+    }>
+
+    render(
+      <CivicModuleShareCtaComponent moduleSlug="civic-campaign" />,
+    )
+
+    expect(await screen.findByTestId('civic-module-share-cta-props')).toHaveTextContent(
+      '12345678:civic-campaign',
     )
   })
 })

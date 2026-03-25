@@ -1,4 +1,9 @@
-import { lazy, Suspense, type ComponentType } from 'react'
+import {
+  lazy,
+  Suspense,
+  type ComponentPropsWithoutRef,
+  type ComponentType,
+} from 'react'
 import { t } from '@lingui/core/macro'
 import type { MDXComponents } from 'mdx/types'
 import type { QuizOption } from '@/features/learning/components/assessment/Quiz'
@@ -25,7 +30,44 @@ type BuildChallengeMdxComponentsParams = {
   readonly customComponents?: MDXComponents
 }
 
-type RouteScopedCampaignInteractiveProps = Omit<CampaignInteractiveElementProps, 'entityCui'>
+type ChallengeMdxAnchorProps = ComponentPropsWithoutRef<'a'>
+
+function isExternalChallengeHref(href: string | undefined): boolean {
+  if (!href) {
+    return false
+  }
+
+  return href.startsWith('http://') || href.startsWith('https://')
+}
+
+function buildExternalLinkRel(rel: string | undefined): string {
+  const relTokens = new Set((rel ?? '').split(/\s+/).filter(Boolean))
+
+  relTokens.add('noopener')
+  relTokens.add('noreferrer')
+
+  return Array.from(relTokens).join(' ')
+}
+
+function ChallengeMdxAnchor({
+  href,
+  rel,
+  target,
+  ...props
+}: ChallengeMdxAnchorProps) {
+  if (!isExternalChallengeHref(href)) {
+    return <a {...props} href={href} rel={rel} target={target} />
+  }
+
+  return (
+    <a
+      {...props}
+      href={href}
+      rel={buildExternalLinkRel(rel)}
+      target="_blank"
+    />
+  )
+}
 
 function createLazyComponent<Props = Record<string, unknown>>(
   loader: () => Promise<{ default: ComponentType<any> }>,
@@ -147,12 +189,18 @@ const PrimarieContactInfo = createLazyComponent<CampaignInteractiveElementProps>
   })),
 )
 
-function withRouteEntityCui(
-  Component: ComponentType<CampaignInteractiveElementProps>,
+const CivicModuleShareCta = createLazyComponent<{ readonly entityCui: string, readonly moduleSlug?: string }>(() =>
+  import('@/features/challenges/components/interactive/CivicModuleShareCta').then((module) => ({
+    default: module.CivicModuleShareCta,
+  })),
+)
+
+function withRouteEntityCui<TProps extends { readonly entityCui: string }>(
+  Component: ComponentType<TProps>,
   entityCui: string,
-): ComponentType<RouteScopedCampaignInteractiveProps> {
-  return function RouteScopedCampaignInteractive(props: RouteScopedCampaignInteractiveProps) {
-    return <Component {...props} entityCui={entityCui} />
+): ComponentType<Omit<TProps, 'entityCui'>> {
+  return function RouteScopedChallengeComponent(props: Omit<TProps, 'entityCui'>) {
+    return <Component {...(props as TProps)} entityCui={entityCui} />
   }
 }
 
@@ -162,6 +210,7 @@ export function buildChallengeMdxComponents(
   return {
     Quiz: params.QuizComponent,
     MarkComplete: params.MarkCompleteComponent,
+    a: ChallengeMdxAnchor,
     FlashCard,
     FlashCardDeck,
     ExpandableHint,
@@ -178,6 +227,7 @@ export function buildChallengeMdxComponents(
     PrimarieWebsiteLink: withRouteEntityCui(PrimarieWebsiteLink, params.entityCui),
     BudgetDocumentLink: withRouteEntityCui(BudgetDocumentLink, params.entityCui),
     PrimarieContactInfo: withRouteEntityCui(PrimarieContactInfo, params.entityCui),
+    CivicModuleShareCta: withRouteEntityCui(CivicModuleShareCta, params.entityCui),
     ...(params.customComponents ?? {}),
   }
 }

@@ -27,17 +27,20 @@ export function buildDebateRequestMailto(params: {
   const sender = params.organizationName
     ? params.organizationName
     : 'un cetatean'
+  const isAssociationRequest = Boolean(params.organizationName?.trim())
 
   const body = [
     'Stimate Domn Primar / Stimata Doamna Primar,',
     '',
-    `Subsemnatul/Subsemnata, ${sender}, va solicit prin prezenta organizarea unei dezbateri publice pe tema proiectului de buget local pentru anul ${params.year}, in conformitate cu prevederile Legii nr. 52/2003 privind transparenta decizionala in administratia publica.`,
+    isAssociationRequest
+      ? `${sender}, asociatie legal constituita, va solicitam organizarea unei dezbateri publice asupra proiectului de buget local pentru anul ${params.year}.`
+      : `Subsemnatul/Subsemnata, ${sender}, va solicit organizarea unei dezbateri publice asupra proiectului de buget local pentru anul ${params.year}.`,
     '',
-    `Potrivit art. 6 si art. 7 din Legea nr. 52/2003, autoritatile administratiei publice locale au obligatia de a supune dezbaterii publice proiectele de acte normative, inclusiv proiectul de buget local, si de a organiza dezbateri publice la cererea unei asociatii legal constituite sau a altei autoritati publice.`,
+    'Va rugam sa organizati dezbaterea inainte de expirarea termenului de 15 zile pentru depunerea contestatiilor, reglementat de art. 39 alin. (3) din Legea nr. 273/2006.',
     '',
-    'Solicit ca dezbaterea publica sa fie organizata intr-un termen rezonabil, cu respectarea procedurilor legale de informare a cetatenilor, si sa permita participarea activa a tuturor celor interesati.',
+    'Potrivit art. 6 alin. (7) din Legea nr. 52/2003, autoritatea administratiei publice are obligatia de a decide organizarea unei intalniri de dezbatere publica daca acest lucru este cerut in scris de o asociatie legal constituita sau de o alta autoritate publica.',
     '',
-    'Va rugam sa ne comunicati data, ora si locatia stabilite pentru aceasta dezbatere publica.',
+    'Va rugam sa ne comunicati data, ora si locul stabilite pentru aceasta dezbatere publica.',
     '',
     'Cu stima,',
     sender,
