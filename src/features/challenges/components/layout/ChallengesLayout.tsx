@@ -6,7 +6,7 @@ import {
   ChevronRight,
   Circle,
   Library,
-  Trophy,
+  Compass,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { Button } from '@/components/ui/button'
@@ -29,6 +29,7 @@ import { resolveCampaignLocale } from '@/features/campaigns/buget/schemas/campai
 import type { CampaignRouteSearch } from '@/features/campaigns/buget/types'
 import { LearningProgressProvider } from '@/features/learning/hooks/use-learning-progress'
 import { useScrollToActive } from '@/features/learning/hooks/use-scroll-to-active'
+import { UatSwitchBadge } from '../hub/UatSwitchBadge'
 import { useChallengeProgress } from '../../hooks/use-challenge-progress'
 import {
   getChallengeModuleBySlug,
@@ -279,13 +280,11 @@ function ChallengesSidebar({
     <div className="flex h-full flex-col bg-background border-r border-border/50">
       <div className="shrink-0">
         {/* Header */}
-        <div className="relative overflow-hidden bg-linear-to-b from-amber-50/50 to-transparent dark:from-amber-950/20 py-4 px-4">
-          <Link to={hubPath as '/'} className="relative group flex items-center gap-3">
-            <div className="flex h-6 w-6 items-center justify-center rounded-xl bg-amber-600 text-white shadow-sm shadow-amber-600/20 transition-all duration-200 group-hover:scale-105 group-hover:bg-amber-700">
-              <Trophy className="h-5 w-5" />
-            </div>
+        <div className="py-4 px-4">
+          <Link to={hubPath as '/'} className="group flex items-center gap-2.5">
+            <Compass className="h-7 w-7 shrink-0 text-primary" />
             <div className="flex flex-col min-w-0">
-              <span className="font-bold text-sm tracking-tight leading-none text-foreground truncate group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors">
+              <span className="font-semibold text-sm leading-none text-foreground truncate">
                 {t`Challenges`}
               </span>
               <span className="text-[10px] text-muted-foreground mt-1 font-medium tracking-wide uppercase truncate">
@@ -362,6 +361,20 @@ function ChallengesSidebar({
             </DropdownMenu>
           </div>
         )}
+
+        {entityCui && (
+          <div className="border-b border-border/50 px-4 py-3">
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+                {t`City hall`}
+              </span>
+              <UatSwitchBadge
+                entityCui={entityCui}
+                className="flex w-full items-center justify-between rounded-lg border-none bg-transparent px-0 py-0 text-left text-sm font-medium text-foreground hover:bg-transparent hover:text-primary"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {completionStats && (
@@ -395,7 +408,7 @@ function ChallengesSidebar({
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center px-4">
               <div className="h-14 w-14 rounded-xl bg-muted/50 flex items-center justify-center mb-4">
-                <Trophy className="h-7 w-7 text-muted-foreground/40" />
+                <Compass className="h-7 w-7 text-muted-foreground/40" />
               </div>
               <p className="text-xs text-muted-foreground">{t`Select a topic to begin`}</p>
             </div>

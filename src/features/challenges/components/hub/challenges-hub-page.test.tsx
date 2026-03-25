@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { fireEvent, render, screen } from '@/test/test-utils'
+import { fireEvent, render, screen, waitFor } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ChallengesHubPage } from './ChallengesHubPage'
 
@@ -33,6 +33,7 @@ let registrationState: MockRegistrationState = {
 
 let stepStatuses: Record<string, 'completed' | 'not_started'> = {}
 let activeChallengeModuleSlug: string | null = null
+const getEntityLabelsMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to, search, ...props }: any) => {
@@ -46,6 +47,10 @@ vi.mock('@tanstack/react-router', () => ({
       </a>
     )
   },
+}))
+
+vi.mock('@/lib/api/labels', () => ({
+  getEntityLabels: (...args: unknown[]) => getEntityLabelsMock(...args),
 }))
 
 vi.mock('@/lib/auth', () => ({
@@ -94,10 +99,6 @@ vi.mock('./QuickResourcesPreview', () => ({
   QuickResourcesPreview: () => <div>Quick Resources</div>,
 }))
 
-vi.mock('./UatSwitchBadge', () => ({
-  UatSwitchBadge: () => <div>Change Entity</div>,
-}))
-
 describe('ChallengesHubPage', () => {
   beforeEach(() => {
     authState = {
@@ -114,19 +115,60 @@ describe('ChallengesHubPage', () => {
     }
     stepStatuses = {}
     activeChallengeModuleSlug = null
+    getEntityLabelsMock.mockReset()
+    getEntityLabelsMock.mockResolvedValue([
+      { id: '12345678', label: 'Primăria Cluj-Napoca' },
+    ])
   })
 
-  it('shows the auth hero for signed-out users while keeping the rest of the hub visible', () => {
+  it('shows the auth hero for signed-out users while keeping the rest of the hub visible', async () => {
     render(<ChallengesHubPage entityCui="12345678" locale="ro" />)
 
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', {
+          name: /Primăria Cluj-Napoca.*Pregătit de provocare/i,
+        }),
+      ).toBeInTheDocument()
+    })
     expect(
       screen.getByRole('heading', { name: /Conectează-te ca să participi la provocări/i }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Sign in/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /Sign in/i }),
+    ).toBeInTheDocument()
     expect(screen.queryByTestId('module-card-active')).not.toBeInTheDocument()
     expect(screen.getByText('Budget Timeline')).toBeInTheDocument()
     expect(screen.getByText('Quick Resources')).toBeInTheDocument()
     expect(screen.getAllByTestId('module-card-other').length).toBeGreaterThan(0)
+  })
+
+  it('resets the header label when the entity changes and the next lookup has no match', async () => {
+    getEntityLabelsMock
+      .mockResolvedValueOnce([{ id: '12345678', label: 'Primăria Cluj-Napoca' }])
+      .mockResolvedValueOnce([])
+
+    const { rerender } = render(<ChallengesHubPage entityCui="12345678" locale="ro" />)
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', {
+          name: /Primăria Cluj-Napoca.*Pregătit de provocare/i,
+        }),
+      ).toBeInTheDocument()
+    })
+
+    rerender(<ChallengesHubPage entityCui="87654321" locale="ro" />)
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', {
+          name: /87654321.*Pregătit de provocare/i,
+        }),
+      ).toBeInTheDocument()
+    })
+
+    expect(screen.queryByText('Primăria Cluj-Napoca')).not.toBeInTheDocument()
   })
 
   it('shows the registration hero and requires checkbox consent before registering', () => {

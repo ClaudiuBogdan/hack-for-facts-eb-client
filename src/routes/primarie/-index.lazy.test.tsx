@@ -49,7 +49,7 @@ describe('PrimarieSelectorRoutePage', () => {
     setSelectedEntityMock.mockReset()
   })
 
-  it('routes typed search selections to the primarie page and preserves language', async () => {
+  it('routes typed search selections to the challenges hub and preserves language', async () => {
     mockedSearch = { lang: 'en' }
 
     const { Route } = await import('./index.lazy')
@@ -62,8 +62,54 @@ describe('PrimarieSelectorRoutePage', () => {
     await waitFor(() => {
       expect(setSelectedEntityMock).toHaveBeenCalledWith({ entityCui: '4305857' })
       expect(navigateMock).toHaveBeenCalledWith({
-        to: '/primarie/$cui/buget',
-        params: { cui: '4305857' },
+        to: '/primarie/4305857/buget/provocari',
+        search: { lang: 'en' },
+        replace: true,
+        resetScroll: false,
+      })
+    })
+  })
+
+  it('honors redirectUri templates when selecting a new entity', async () => {
+    mockedSearch = {
+      lang: 'en',
+      redirectUri:
+        '/primarie/$cui/buget/provocari/test-module/test-challenge/test-step?lang=en&view=section',
+    }
+
+    const { Route } = await import('./index.lazy')
+    const RouteComponent = Route.options.component as ComponentType
+
+    render(<RouteComponent />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select entity' }))
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith({
+        to: '/primarie/4305857/buget/provocari/test-module/test-challenge/test-step',
+        search: { lang: 'en', view: 'section' },
+        replace: true,
+        resetScroll: false,
+      })
+    })
+  })
+
+  it('falls back to the challenges hub for unsupported primarie redirectUri values', async () => {
+    mockedSearch = {
+      lang: 'en',
+      redirectUri: '/primarie/$cui/not-a-route',
+    }
+
+    const { Route } = await import('./index.lazy')
+    const RouteComponent = Route.options.component as ComponentType
+
+    render(<RouteComponent />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Select entity' }))
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith({
+        to: '/primarie/4305857/buget/provocari',
         search: { lang: 'en' },
         replace: true,
         resetScroll: false,

@@ -20,6 +20,7 @@ function PrimarieMapSelectorRoutePage() {
         <BugetEntityMapSelectorPage
           locale={locale}
           languageQuery={search.lang}
+          redirectUri={search.redirectUri}
         />
       </CampaignPageBackground>
     </CampaignProgressProvider>

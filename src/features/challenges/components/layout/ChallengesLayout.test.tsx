@@ -7,6 +7,7 @@ import { ChallengeStepPendingShell } from '../player/challenge-step-pending-shel
 const mockLocation = {
   pathname: '/primarie/87654321/buget/provocari/test-module/test-challenge/test-step',
   search: {},
+  searchStr: '',
 }
 
 let mockCampaignProgressReady = true
@@ -16,6 +17,7 @@ let challengeStepStatuses: Record<string, 'completed' | 'not_started'> = {}
 
 const setSelectedEntityMock = vi.fn()
 const setActiveChallengeModuleMock = vi.fn()
+const getEntityLabelsMock = vi.fn()
 let activeChallengeModuleSlug: string | null = null
 
 function buildHref(
@@ -67,6 +69,10 @@ vi.mock('@/features/learning/hooks/use-learning-progress', () => ({
 
 vi.mock('@/features/learning/hooks/use-scroll-to-active', () => ({
   useScrollToActive: () => ({ current: null }),
+}))
+
+vi.mock('@/lib/api/labels', () => ({
+  getEntityLabels: (...args: unknown[]) => getEntityLabelsMock(...args),
 }))
 
 vi.mock('@/components/ui/button', () => ({
@@ -215,14 +221,37 @@ vi.mock('../../utils/modules', () => ({
 
 describe('ChallengesLayout', () => {
   beforeEach(() => {
+    const encodedAnalytics = encodeURIComponent(
+      JSON.stringify({
+        target: {
+          path: [{ type: 'fn', code: 'A.01' }],
+        },
+      }),
+    )
+
     mockLocation.pathname =
       '/primarie/87654321/buget/provocari/test-module/test-challenge/test-step'
-    mockLocation.search = {}
+    mockLocation.search = {
+      lang: 'en',
+      view: 'section',
+      section: 'overview',
+      analytics: {
+        target: {
+          path: [{ type: 'fn', code: 'A.01' }],
+        },
+      },
+    }
+    mockLocation.searchStr =
+      `?lang=en&view=section&section=overview&analytics=${encodedAnalytics}`
     mockCampaignProgressReady = true
     mockCampaignInitialResolutionReady = true
     mockChallengeProgressReady = true
     challengeStepStatuses = {}
     activeChallengeModuleSlug = null
+    getEntityLabelsMock.mockReset()
+    getEntityLabelsMock.mockResolvedValue([
+      { id: '87654321', label: 'Cluj-Napoca' },
+    ])
     setSelectedEntityMock.mockClear()
     setActiveChallengeModuleMock.mockClear()
   })
@@ -330,6 +359,34 @@ describe('ChallengesLayout', () => {
         expect(stepLink).toHaveAttribute('preload', 'intent')
       }
     })
+  })
+
+  it('renders the sidebar switch badge with a redirectUri back to the current challenge page', async () => {
+    const encodedAnalytics = encodeURIComponent(
+      JSON.stringify({
+        target: {
+          path: [{ type: 'fn', code: 'A.01' }],
+        },
+      }),
+    )
+
+    render(
+      <ChallengesLayout>
+        <div>content</div>
+      </ChallengesLayout>,
+    )
+
+    const [switchLink] = await screen.findAllByTitle('Switch city hall')
+    const switchLinkUrl = new URL(
+      switchLink.getAttribute('href') ?? '',
+      'https://example.com',
+    )
+
+    expect(switchLinkUrl.pathname).toBe('/primarie')
+    expect(switchLinkUrl.searchParams.get('lang')).toBe('en')
+    expect(switchLinkUrl.searchParams.get('redirectUri')).toBe(
+      `/primarie/$cui/buget/provocari/test-module/test-challenge/test-step?lang=en&view=section&section=overview&analytics=${encodedAnalytics}`,
+    )
   })
 
   it('keeps the sidebar visible while the step outlet is pending', () => {

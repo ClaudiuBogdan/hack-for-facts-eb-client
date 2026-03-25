@@ -1636,8 +1636,8 @@ msgstr "Challenge Question"
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:136
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:273
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:289
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:563
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:290
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:578
 msgid "Challenges"
 msgstr "Challenges"
 
@@ -1741,6 +1741,10 @@ msgstr "Choose operator"
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:148
 msgid "Citizens allowed to speak"
 msgstr "Citizens allowed to speak"
+
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:371
+msgid "City hall"
+msgstr "City hall"
 
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:70
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:109
@@ -5221,7 +5225,7 @@ msgstr "Local backup failed. Exporting configuration anyway."
 msgid "Local budget contestation"
 msgstr "Local budget contestation"
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:292
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:293
 msgid "Local Budgets 2026"
 msgstr "Local Budgets 2026"
 
@@ -7093,7 +7097,7 @@ msgstr "Product"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:203
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:254
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:203
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:204
 msgid "Progress"
 msgstr "Progress"
 
@@ -7806,7 +7810,7 @@ msgstr "Select a predefined dataset to track"
 msgid "Select a snapshot to clone into a new map."
 msgstr "Select a snapshot to clone into a new map."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:400
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:415
 msgid "Select a topic to begin"
 msgstr "Select a topic to begin"
 
@@ -7866,7 +7870,7 @@ msgstr "Select Series Type"
 msgid "Select specific years. If none selected, all years will be shown."
 msgstr "Select specific years. If none selected, all years will be shown."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:311
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:312
 msgid "Select topic"
 msgstr "Select topic"
 
@@ -8552,7 +8556,7 @@ msgstr "Sum"
 msgid "Supervisory authority"
 msgstr "Supervisory authority"
 
-#: src/features/challenges/components/hub/UatSwitchBadge.tsx:31
+#: src/features/challenges/components/hub/UatSwitchBadge.tsx:49
 msgid "Switch city hall"
 msgstr "Switch city hall"
 
@@ -9001,7 +9005,7 @@ msgstr "Top 15 Counties by Total Amount"
 msgid "Top 15 UATs by Total Amount"
 msgstr "Top 15 UATs by Total Amount"
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:306
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:307
 msgid "Topic"
 msgstr "Topic"
 

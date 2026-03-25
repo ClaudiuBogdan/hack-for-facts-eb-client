@@ -36,6 +36,7 @@ export type EntitySelection = {
 type BugetEntitySelectorGateProps = {
   readonly locale: CampaignLocale
   readonly languageQuery?: CampaignLocale
+  readonly redirectUri?: string
   readonly onEntitySelected: (entity: EntitySelection) => void
 }
 
@@ -79,6 +80,8 @@ export function BugetEntitySelectorGate({
   locale,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   languageQuery: _languageQuery,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  redirectUri: _redirectUri,
   onEntitySelected,
 }: BugetEntitySelectorGateProps) {
   const isMobile = useIsMobile()

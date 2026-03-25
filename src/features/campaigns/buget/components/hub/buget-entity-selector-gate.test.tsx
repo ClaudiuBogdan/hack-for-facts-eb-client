@@ -55,7 +55,7 @@ describe('BugetEntitySelectorGate', () => {
     useIsMobileMock.mockReturnValue(false)
   })
 
-  it('links the map action to the canonical selector map route', () => {
+  it('renders the inline map section for picking from the map', () => {
     render(
       <BugetEntitySelectorGate
         locale="ro"
@@ -63,9 +63,8 @@ describe('BugetEntitySelectorGate', () => {
       />,
     )
 
-    expect(
-      screen.getByRole('link', { name: /Alege de pe hartă/i }),
-    ).toHaveAttribute('href', '/primarie/harta')
+    expect(screen.getByText(/sau alege de pe hartă/i)).toBeInTheDocument()
+    expect(screen.getByRole('status', { name: /Se încarcă harta/i })).toBeInTheDocument()
   })
 
   it('defers search autofocus until after mount on desktop', async () => {

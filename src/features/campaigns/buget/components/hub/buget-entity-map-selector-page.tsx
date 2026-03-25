@@ -1,5 +1,4 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
@@ -23,11 +22,9 @@ import { useCampaignProgress } from '../../hooks/use-campaign-progress'
 import { useUatCuiMap } from '../../hooks/use-uat-cui-map'
 import type { CampaignLocale } from '../../types'
 import {
-  buildCampaignPrimariePath,
-  buildCampaignProvocariPath,
-} from '@/features/challenges/constants'
-import { entityRoutingSummaryQueryOptions } from '@/lib/hooks/useEntityDetails'
-import { isNonCountyUatEntity } from '@/lib/entity-navigation'
+  buildSelectorSearchState,
+  resolveEntitySelectionNavigationTarget,
+} from '../../utils/entity-selector-navigation'
 
 const BugetEntityMapSelectorMap = lazy(() =>
   import('./buget-entity-map-selector-map').then((module) => ({
@@ -38,6 +35,7 @@ const BugetEntityMapSelectorMap = lazy(() =>
 type BugetEntityMapSelectorPageProps = {
   readonly locale: CampaignLocale
   readonly languageQuery?: CampaignLocale
+  readonly redirectUri?: string
 }
 
 type PendingUatSelection = {
@@ -76,17 +74,11 @@ function formatCityHallLabel(label: string, locale: CampaignLocale): string {
   return `Primăria ${trimmedLabel}`
 }
 
-function getProvocariSearch(languageQuery: CampaignLocale | undefined) {
-  return {
-    ...(languageQuery === 'en' ? { lang: 'en' as const } : {}),
-  }
-}
-
 export function BugetEntityMapSelectorPage({
   locale,
   languageQuery,
+  redirectUri,
 }: BugetEntityMapSelectorPageProps) {
-  const queryClient = useQueryClient()
   const navigate = useNavigate({ from: '/primarie/harta/' })
   const { setSelectedEntity } = useCampaignProgress()
   const [pendingUatSelection, setPendingUatSelection] = useState<PendingUatSelection | null>(null)
@@ -127,41 +119,29 @@ export function BugetEntityMapSelectorPage({
         entityCui,
       })
 
+      const navigationTarget = resolveEntitySelectionNavigationTarget({
+        entityCui,
+        languageQuery,
+        redirectUri,
+      })
+
       setSelectedEntity({ entityCui })
       setIsResolvingSelection(true)
 
       try {
-        const entitySummary = await queryClient.fetchQuery(
-          entityRoutingSummaryQueryOptions({ cui: entityCui }),
-        )
-        const to =
-          entitySummary &&
-          isNonCountyUatEntity({
-            cui: entityCui,
-            entityType: entitySummary.entity_type,
-            isUat: entitySummary.is_uat,
-          })
-            ? buildCampaignPrimariePath(entityCui)
-            : buildCampaignProvocariPath(entityCui)
-
         await navigate({
-          to: to as '/',
-          search: getProvocariSearch(languageQuery),
+          to: navigationTarget.to as '/',
+          search: navigationTarget.search,
           replace: true,
         })
         setPendingUatSelection(null)
       } catch {
-        await navigate({
-          to: buildCampaignProvocariPath(entityCui) as '/',
-          search: getProvocariSearch(languageQuery),
-          replace: true,
-        })
         setPendingUatSelection(null)
       } finally {
         setIsResolvingSelection(false)
       }
     },
-    [languageQuery, locale, navigate, queryClient, setSelectedEntity, uatCuiMap],
+    [languageQuery, locale, navigate, redirectUri, setSelectedEntity, uatCuiMap],
   )
 
   const requestUatSelectionConfirmation = useCallback(
@@ -219,7 +199,10 @@ export function BugetEntityMapSelectorPage({
         <Button asChild variant="outline" className="shrink-0 self-start">
           <Link
             to={CAMPAIGN_ENTITY_SELECTOR_PATH as '/'}
-            search={languageQuery === 'en' ? { lang: 'en' } : {}}
+            search={buildSelectorSearchState({
+              languageQuery,
+              redirectUri,
+            })}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             {backLabel}

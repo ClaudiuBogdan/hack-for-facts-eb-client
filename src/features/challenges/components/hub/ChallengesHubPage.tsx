@@ -1,5 +1,6 @@
 import { t } from '@lingui/core/macro'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { getEntityLabels } from '@/lib/api/labels'
 import { useChallengeAccess } from '../../hooks/use-challenge-access'
 import { useChallengeProgress } from '../../hooks/use-challenge-progress'
 import { useCampaignProgress } from '@/features/campaigns/buget/hooks/use-campaign-progress'
@@ -17,7 +18,6 @@ import { ChallengeModuleCard, type ChallengeModuleCardStats } from '../cards/Cha
 import { BudgetTimelineStrip } from './BudgetTimelineStrip'
 import { ChallengeHubAccessCard } from './challenge-hub-access-card'
 import { QuickResourcesPreview } from './QuickResourcesPreview'
-import { UatSwitchBadge } from './UatSwitchBadge'
 
 type ChallengesHubPageProps = {
   readonly entityCui: string
@@ -34,6 +34,7 @@ export function ChallengesHubPage({
   entityCui,
   locale,
 }: ChallengesHubPageProps) {
+  const [entityLabel, setEntityLabel] = useState(entityCui)
   const modules = useMemo(() => getChallengeModules(), [])
   const {
     accessCardVariant,
@@ -111,6 +112,26 @@ export function ChallengesHubPage({
         ? 'Test your skills with hands-on budget exploration challenges.'
         : 'Testează-ți abilitățile cu provocări practice de explorare a bugetelor.'
 
+  useEffect(() => {
+    let cancelled = false
+    setEntityLabel(entityCui)
+
+    getEntityLabels([entityCui]).then((results) => {
+      if (cancelled) {
+        return
+      }
+
+      const matchedEntity = results.find((result) => result.id === entityCui)
+      if (matchedEntity?.label) {
+        setEntityLabel(matchedEntity.label)
+      }
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [entityCui])
+
   const mainHero = (() => {
     if (!isAccessGranted) {
       return (
@@ -149,11 +170,13 @@ export function ChallengesHubPage({
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700 py-6 px-4">
       {/* Header — compact */}
       <div className="space-y-2 pl-2">
-        <h1 className="text-3xl md:text-4xl font-black tracking-tight">{greeting}</h1>
+        <h1 className="text-3xl md:text-4xl font-black tracking-tight">
+          <span className="block text-lg font-semibold tracking-normal text-muted-foreground md:text-xl">
+            {entityLabel}
+          </span>
+          <span className="block">{greeting}</span>
+        </h1>
         <p className="text-muted-foreground font-medium text-base opacity-60">{subtitle}</p>
-        <div className="pt-1">
-          <UatSwitchBadge entityCui={entityCui} />
-        </div>
       </div>
 
       {/* Active Module Card */}

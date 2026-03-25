@@ -4,46 +4,49 @@ import { BugetEntitySelectorGate } from '@/features/campaigns/buget/components/h
 import { CampaignPageFrame } from '@/features/campaigns/buget/components/layout/campaign-page-frame'
 import { useCampaignProgress } from '@/features/campaigns/buget/hooks/use-campaign-progress'
 import { resolveCampaignLocale } from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
+import { resolveEntitySelectionNavigationTarget } from '@/features/campaigns/buget/utils/entity-selector-navigation'
 import type { CampaignLocale } from '@/features/campaigns/buget/types'
 
 export const Route = createLazyFileRoute('/primarie/')({
   component: PrimarieSelectorRoutePage,
 })
 
-function getProvocariSearch(languageQuery: CampaignLocale | undefined) {
-  return {
-    ...(languageQuery === 'en' ? { lang: 'en' as const } : {}),
-  }
-}
-
 function PrimarieSelectorRouteContent({
   locale,
   languageQuery,
+  redirectUri,
 }: {
   readonly locale: CampaignLocale
   readonly languageQuery?: CampaignLocale
+  readonly redirectUri?: string
 }) {
   const navigate = useNavigate({ from: '/primarie/' })
   const { setSelectedEntity } = useCampaignProgress()
 
   const handleEntitySelected = useCallback(
     (entity: { cui: string }) => {
+      const navigationTarget = resolveEntitySelectionNavigationTarget({
+        entityCui: entity.cui,
+        languageQuery,
+        redirectUri,
+      })
+
       setSelectedEntity({ entityCui: entity.cui })
       void navigate({
-        to: '/primarie/$cui/buget',
-        params: { cui: entity.cui },
-        search: getProvocariSearch(languageQuery),
+        to: navigationTarget.to as '/',
+        search: navigationTarget.search,
         replace: true,
         resetScroll: false,
       })
     },
-    [languageQuery, navigate, setSelectedEntity],
+    [languageQuery, navigate, redirectUri, setSelectedEntity],
   )
 
   return (
     <BugetEntitySelectorGate
       locale={locale}
       languageQuery={languageQuery}
+      redirectUri={redirectUri}
       onEntitySelected={handleEntitySelected}
     />
   )
@@ -58,6 +61,7 @@ function PrimarieSelectorRoutePage() {
       <PrimarieSelectorRouteContent
         locale={locale}
         languageQuery={search.lang}
+        redirectUri={search.redirectUri}
       />
     </CampaignPageFrame>
   )

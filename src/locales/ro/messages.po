@@ -1636,8 +1636,8 @@ msgstr "Întrebare de provocare"
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:136
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:273
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:289
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:563
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:290
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:578
 msgid "Challenges"
 msgstr "Provocări"
 
@@ -1741,6 +1741,10 @@ msgstr "Alegeți operatorul"
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:148
 msgid "Citizens allowed to speak"
 msgstr "Cetățeni care au luat cuvântul"
+
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:371
+msgid "City hall"
+msgstr "Primărie"
 
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:70
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:109
@@ -5216,7 +5220,7 @@ msgstr "Backupul local a eșuat. Exportăm configurația oricum."
 msgid "Local budget contestation"
 msgstr "Contestație buget local"
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:292
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:293
 msgid "Local Budgets 2026"
 msgstr "Bugete Locale 2026"
 
@@ -7088,7 +7092,7 @@ msgstr "Produs"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:203
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:254
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:203
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:204
 msgid "Progress"
 msgstr "Progres"
 
@@ -7801,7 +7805,7 @@ msgstr "Selectați un set de date predefinit de urmărit"
 msgid "Select a snapshot to clone into a new map."
 msgstr "Selectează un instantaneu pentru a clona într-o hartă nouă."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:400
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:415
 msgid "Select a topic to begin"
 msgstr "Alege un subiect pentru a începe"
 
@@ -7861,7 +7865,7 @@ msgstr "Selectați tipul de serie"
 msgid "Select specific years. If none selected, all years will be shown."
 msgstr "Selectați anii specifici. Dacă nu se selectează niciunul, se vor afișa toți anii."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:311
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:312
 msgid "Select topic"
 msgstr "Alege un subiect"
 
@@ -8547,7 +8551,7 @@ msgstr "Sumă"
 msgid "Supervisory authority"
 msgstr "Autoritatea de supraveghere"
 
-#: src/features/challenges/components/hub/UatSwitchBadge.tsx:31
+#: src/features/challenges/components/hub/UatSwitchBadge.tsx:49
 msgid "Switch city hall"
 msgstr "Schimbă primăria"
 
@@ -8996,7 +9000,7 @@ msgstr "Top 15 județe după suma totală"
 msgid "Top 15 UATs by Total Amount"
 msgstr "Top 15 UAT-uri după suma totală"
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:306
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:307
 msgid "Topic"
 msgstr "Subiect"
 
