@@ -3,7 +3,8 @@ import http from "http";
 import https from "https";
 import type { ClientRequest } from "http";
 import { defineConfig, loadEnv } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import babel from "@rolldown/plugin-babel";
+import react from "@vitejs/plugin-react";
 import mdx from "@mdx-js/rollup";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
@@ -287,9 +288,10 @@ export default defineConfig(({ mode }) => {
           remarkPlugins: [remarkFrontmatter, remarkMdxFrontmatter, remarkGfm],
         }),
       },
-      react({
-        plugins: [["@lingui/swc-plugin", {}]],
+      babel({
+        plugins: ["@lingui/babel-plugin-lingui-macro"],
       }),
+      react(),
       tailwindcss(),
       checker({
         typescript: true,

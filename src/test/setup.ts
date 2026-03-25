@@ -53,25 +53,87 @@ mockIntersectionObserver.mockReturnValue({
 });
 window.IntersectionObserver = mockIntersectionObserver;
 
-if (!window.localStorage || typeof window.localStorage.clear !== "function") {
-  const store: Record<string, string> = {};
-  Object.defineProperty(window, "localStorage", {
-    configurable: true,
-    value: {
-      getItem: (key: string) => (key in store ? store[key] : null),
-      setItem: (key: string, value: string) => {
-        store[key] = String(value);
-      },
-      removeItem: (key: string) => {
-        delete store[key];
-      },
-      clear: () => {
-        Object.keys(store).forEach((key) => delete store[key]);
-      },
-      key: (index: number) => Object.keys(store)[index] ?? null,
-      get length() {
-        return Object.keys(store).length;
-      },
-    },
-  });
-}
+window.scrollTo = vi.fn();
+
+const localStorageStore: Record<string, string> = {};
+const localStorageMock = {
+  getItem: (key: string) => (key in localStorageStore ? localStorageStore[key] : null),
+  setItem: (key: string, value: string) => {
+    localStorageStore[key] = String(value);
+  },
+  removeItem: (key: string) => {
+    delete localStorageStore[key];
+  },
+  clear: () => {
+    Object.keys(localStorageStore).forEach((key) => delete localStorageStore[key]);
+  },
+  key: (index: number) => Object.keys(localStorageStore)[index] ?? null,
+  get length() {
+    return Object.keys(localStorageStore).length;
+  },
+};
+
+Object.defineProperty(window, "localStorage", {
+  configurable: true,
+  value: localStorageMock,
+});
+
+Object.defineProperty(globalThis, "localStorage", {
+  configurable: true,
+  value: localStorageMock,
+});
+
+const mockCanvasContext = {
+  canvas: null as HTMLCanvasElement | null,
+  save: vi.fn(),
+  restore: vi.fn(),
+  scale: vi.fn(),
+  clearRect: vi.fn(),
+  fillRect: vi.fn(),
+  strokeRect: vi.fn(),
+  beginPath: vi.fn(),
+  closePath: vi.fn(),
+  moveTo: vi.fn(),
+  lineTo: vi.fn(),
+  arc: vi.fn(),
+  fill: vi.fn(),
+  stroke: vi.fn(),
+  clip: vi.fn(),
+  setTransform: vi.fn(),
+  resetTransform: vi.fn(),
+  translate: vi.fn(),
+  rotate: vi.fn(),
+  measureText: vi.fn(() => ({ width: 0 })),
+  fillText: vi.fn(),
+  strokeText: vi.fn(),
+  createLinearGradient: vi.fn(() => ({
+    addColorStop: vi.fn(),
+  })),
+  createPattern: vi.fn(() => null),
+  createRadialGradient: vi.fn(() => ({
+    addColorStop: vi.fn(),
+  })),
+  drawImage: vi.fn(),
+  getImageData: vi.fn(() => ({ data: new Uint8ClampedArray() })),
+  putImageData: vi.fn(),
+};
+
+Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
+  configurable: true,
+  value: vi.fn(function getContext(this: HTMLCanvasElement) {
+    mockCanvasContext.canvas = this;
+    return mockCanvasContext;
+  }),
+});
+
+Object.defineProperty(HTMLCanvasElement.prototype, "toDataURL", {
+  configurable: true,
+  value: vi.fn(() => "data:image/png;base64,"),
+});
+
+Object.defineProperty(HTMLCanvasElement.prototype, "toBlob", {
+  configurable: true,
+  value: vi.fn((callback?: BlobCallback) => {
+    callback?.(new Blob());
+  }),
+});

@@ -164,7 +164,7 @@ await dynamicActivate("ro"); // e.g., after a user changes language
 
 Notes:
 
-- Vite is configured with `@lingui/vite-plugin` and `@lingui/swc-plugin` (see `vite.config.ts`).
+- Vite is configured with `@lingui/vite-plugin` and `@lingui/babel-plugin-lingui-macro` via `@vitejs/plugin-react` (see `vite.config.ts`).
 - Source locale is `en`; catalogs are stored in PO format.
 
 ## AI Filter Generator
