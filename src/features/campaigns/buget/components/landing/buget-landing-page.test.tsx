@@ -41,8 +41,9 @@ describe('BugetLandingPage', () => {
   it('links the campaign CTA to the canonical selector route', () => {
     render(<BugetLandingPage locale="ro" />)
 
-    expect(
-      screen.getByRole('link', { name: /Începe provocarea/i }),
-    ).toHaveAttribute('href', '/primarie')
+    const ctaLinks = screen.getAllByRole('link', { name: /Începe provocarea/i })
+    for (const link of ctaLinks) {
+      expect(link).toHaveAttribute('href', '/primarie')
+    }
   })
 })
