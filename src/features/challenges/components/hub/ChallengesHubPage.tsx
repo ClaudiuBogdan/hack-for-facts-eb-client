@@ -170,7 +170,7 @@ export function ChallengesHubPage({
   })()
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700 py-6 px-4">
+    <div className="max-w-4xl mx-auto space-y-8 py-6 px-4">
       {/* Header — compact */}
       <div className="space-y-2 pl-2">
         <h1 className="text-3xl md:text-4xl font-black tracking-tight">

@@ -45,14 +45,14 @@ type MilestoneExtra = {
 
 const PAGE_CONTENT: Record<CampaignLocale, PageContent> = {
   ro: {
-    heading: 'Calendar bugete locale 2026',
+    heading: 'Calendar: Cu ochii pe bugetele locale',
     footnotes: [
       'Termenul total este de 45 de zile calendaristice de la publicarea bugetului de stat.',
       'Zilele calendaristice includ weekendurile și sărbătorile legale.',
     ],
   },
   en: {
-    heading: 'Local budgets calendar 2026',
+    heading: 'Calendar: Eyes on Local Budgets',
     footnotes: [
       'The total deadline is 45 calendar days from state budget publication.',
       'Calendar days include weekends and public holidays.',

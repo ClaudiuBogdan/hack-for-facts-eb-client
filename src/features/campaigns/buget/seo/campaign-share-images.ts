@@ -23,8 +23,8 @@ function getShareAlt(params: {
   readonly locale: CampaignLocale
 }): string {
   return params.locale === 'en'
-    ? 'Local Budgets 2026 campaign preview'
-    : 'Previzualizare campanie Bugete Locale 2026'
+    ? 'Eyes on Local Budgets campaign preview'
+    : 'Previzualizare campanie Cu ochii pe bugetele locale'
 }
 
 export function buildCampaignShareImage(params: {

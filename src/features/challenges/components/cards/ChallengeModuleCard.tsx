@@ -145,7 +145,7 @@ export function ChallengeModuleCard({
 
   return (
     <Card
-      className={`relative overflow-hidden rounded-[40px] border-none transition-all ${getCardStyles(isActive)}`}
+      className={`relative overflow-hidden rounded-[28px] transition-all ${isActive ? 'border-none' : 'border border-border/60'} ${getCardStyles(isActive)}`}
     >
       {/* Background trophy decoration */}
       <div

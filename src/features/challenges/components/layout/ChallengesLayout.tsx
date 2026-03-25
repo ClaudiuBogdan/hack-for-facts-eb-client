@@ -291,7 +291,7 @@ function ChallengesSidebar({
                 {t`Challenges`}
               </span>
               <span className="text-[10px] text-muted-foreground mt-1 font-medium tracking-wide uppercase truncate">
-                {t`Local Budgets 2026`}
+                {t`Eyes on Local Budgets`}
               </span>
             </div>
           </Link>

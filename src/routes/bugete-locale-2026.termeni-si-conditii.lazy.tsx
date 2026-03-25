@@ -10,7 +10,7 @@ export function BudgetChallengeTermsPage() {
       <div className="space-y-2">
         <h1 className="text-3xl font-semibold">Termeni și condiții</h1>
         <p className="text-sm text-muted-foreground">
-          Termeni și condiții specifice provocării Bugete Locale 2026.
+          Termeni și condiții specifice provocării Cu ochii pe bugetele locale.
         </p>
       </div>
 

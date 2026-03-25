@@ -18,7 +18,7 @@ test.describe('Buget Routing', () => {
     await expect(
       page.getByRole('heading', {
         level: 1,
-        name: 'Provocarea civică Bugete Locale 2026',
+        name: 'Cu ochii pe bugetele locale',
       }),
     ).toBeVisible({ timeout: 10000 })
   })
@@ -61,7 +61,7 @@ test.describe('Buget Routing', () => {
     ).toBeVisible({ timeout: 20000 })
     await expect(
       page.getByRole('link', {
-        name: /Provocări Bugete Locale 2026|Local budgets challenges 2026/i,
+        name: /Provocări Cu ochii pe bugetele locale|Eyes on Local Budgets challenges/i,
       }),
     ).toHaveAttribute('href', '/primarie/4305857/buget/provocari')
   })
@@ -103,7 +103,7 @@ test.describe('Buget Routing', () => {
     await expect(
       page.getByRole('heading', {
         level: 1,
-        name: /Calendar Bugete Locale 2026|Local budgets calendar 2026/i,
+        name: /Calendar.*Cu ochii pe bugetele locale|Calendar.*Eyes on Local Budgets/i,
       }),
     ).toBeVisible({ timeout: 20000 })
   })

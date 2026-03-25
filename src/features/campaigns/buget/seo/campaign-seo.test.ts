@@ -5,7 +5,7 @@ vi.mock('../hooks/use-campaign-content', () => ({
   getCampaignDefinition: () => ({
     id: 'buget',
     slug: 'buget',
-    title: { ro: 'Provocarea civică Bugete Locale 2026', en: 'Local Budgets Civic Challenge 2026' },
+    title: { ro: 'Cu ochii pe bugetele locale', en: 'Eyes on Local Budgets' },
     description: {
       ro: 'Descriere campanie',
       en: 'Campaign description',

@@ -35,18 +35,18 @@ const CAMPAIGN_COPY: Record<
 > = {
   landing: {
     title: {
-      ro: 'Bugetul Local 2026: Te ajutăm să înțelegi bugetul primăriei tale',
-      en: 'Local Budgets 2026: Explore the data shaping your city',
+      ro: 'Cu ochii pe bugetele locale: Te ajutăm să înțelegi bugetul primăriei tale',
+      en: 'Eyes on Local Budgets: Explore the data shaping your city',
     },
     description: {
-      ro: 'Înțelege rapid unde merg banii publici locali și intră în provocarea civică Bugete Locale 2026.',
-      en: 'Quickly understand where local public money goes and join the Local Budgets 2026 civic challenge.',
+      ro: 'Înțelege rapid unde merg banii publici locali și intră în provocarea civică Cu ochii pe bugetele locale.',
+      en: 'Quickly understand where local public money goes and join the Eyes on Local Budgets civic challenge.',
     },
   },
   hub: {
     title: {
-      ro: 'Pagina principală Bugete Locale 2026: Calendar, Resurse și Provocări',
-      en: 'Local Budgets 2026 Main Page: Timeline, Resources, and Challenges',
+      ro: 'Cu ochii pe bugetele locale: Calendar, Resurse și Provocări',
+      en: 'Eyes on Local Budgets: Timeline, Resources, and Challenges',
     },
     description: {
       ro: 'Accesează calendarul bugetar, resursele utile și traseul complet al provocărilor civice.',
@@ -55,28 +55,28 @@ const CAMPAIGN_COPY: Record<
   },
   'principal-selector': {
     title: {
-      ro: 'Caută Primăria Ta: Bugete Locale 2026',
-      en: 'Find Your City Hall: Local Budgets 2026',
+      ro: 'Caută Primăria Ta: Cu ochii pe bugetele locale',
+      en: 'Find Your City Hall: Eyes on Local Budgets',
     },
     description: {
-      ro: 'Selectează primăria ta pentru a continua provocarea Bugete Locale 2026.',
-      en: 'Select your city hall to continue the Local Budgets 2026 challenge.',
+      ro: 'Selectează primăria ta pentru a continua provocarea Cu ochii pe bugetele locale.',
+      en: 'Select your city hall to continue the Eyes on Local Budgets challenge.',
     },
   },
   challenges: {
     title: {
-      ro: 'Catalog Provocări: Bugete Locale 2026',
-      en: 'Challenge Catalog: Local Budgets 2026',
+      ro: 'Catalog Provocări: Cu ochii pe bugetele locale',
+      en: 'Challenge Catalog: Eyes on Local Budgets',
     },
     description: {
-      ro: 'Vezi toate provocările civice Bugete Locale 2026 și alege următorul pas de implicare.',
-      en: 'Browse all Local Budgets 2026 civic challenges and pick your next action.',
+      ro: 'Vezi toate provocările civice Cu ochii pe bugetele locale și alege următorul pas de implicare.',
+      en: 'Browse all Eyes on Local Budgets civic challenges and pick your next action.',
     },
   },
   primarie: {
     title: {
-      ro: 'Primăria mea: Bugete Locale 2026',
-      en: 'My City Hall: Local Budgets 2026',
+      ro: 'Primăria mea: Cu ochii pe bugetele locale',
+      en: 'My City Hall: Eyes on Local Budgets',
     },
     description: {
       ro: 'Analizează veniturile, cheltuielile și principalele semnale pentru primăria selectată.',
@@ -85,8 +85,8 @@ const CAMPAIGN_COPY: Record<
   },
   'principal-map': {
     title: {
-      ro: 'Alege Primăria de pe Hartă: Bugete Locale 2026',
-      en: 'Select City Hall on Map: Local Budgets 2026',
+      ro: 'Alege Primăria de pe Hartă: Cu ochii pe bugetele locale',
+      en: 'Select City Hall on Map: Eyes on Local Budgets',
     },
     description: {
       ro: 'Selectează primăria direct de pe harta UAT pentru a continua în pagina principală a campaniei.',
@@ -95,12 +95,12 @@ const CAMPAIGN_COPY: Record<
   },
   calendar: {
     title: {
-      ro: 'Calendar Bugete Locale 2026: Termene legale și etape',
-      en: 'Local Budgets 2026 Calendar: Legal deadlines and milestones',
+      ro: 'Calendar Cu ochii pe bugetele locale: Termene legale și etape',
+      en: 'Eyes on Local Budgets Calendar: Legal deadlines and milestones',
     },
     description: {
-      ro: 'Consultă calendarul complet al bugetelor locale 2026 cu termenele legale prevăzute de Art. 39, Legea 273/2006.',
-      en: 'View the full 2026 local budget calendar with legal deadlines per Art. 39, Law 273/2006.',
+      ro: 'Consultă calendarul complet al bugetelor locale cu termenele legale prevăzute de Art. 39, Legea 273/2006.',
+      en: 'View the full local budget calendar with legal deadlines per Art. 39, Law 273/2006.',
     },
   },
 }

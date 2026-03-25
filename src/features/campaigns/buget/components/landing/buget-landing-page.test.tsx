@@ -29,8 +29,8 @@ vi.mock('@/lib/analytics', () => ({
 vi.mock('../../hooks/use-campaign-content', () => ({
   getCampaignDefinition: () => ({
     title: {
-      ro: 'Provocarea civică Bugete Locale 2026',
-      en: 'Local Budgets Civic Challenge 2026',
+      ro: 'Cu ochii pe bugetele locale',
+      en: 'Eyes on Local Budgets',
     },
   }),
   getCampaignText: (value: { ro: string; en?: string }, locale: 'ro' | 'en') =>
