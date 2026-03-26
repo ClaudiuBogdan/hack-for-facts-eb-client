@@ -97,6 +97,7 @@ export const InteractiveStateRecordSchema = z.object({
   value: InteractionValueSchema.nullable(),
   result: InteractionResultSchema.nullable(),
   review: InteractionReviewSchema.nullable().optional(),
+  sourceUrl: z.string().min(1).optional(),
   updatedAt: z.string().datetime(),
   submittedAt: z.string().datetime().nullable().optional(),
 })

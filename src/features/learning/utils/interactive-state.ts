@@ -101,6 +101,7 @@ export function createInteractiveStateRecord(params: {
   readonly value: InteractionValue | null
   readonly result: InteractionResult | null
   readonly review?: InteractionReview | null
+  readonly sourceUrl?: string
   readonly updatedAt: string
   readonly submittedAt?: string | null
 }): InteractiveStateRecord {
@@ -115,6 +116,7 @@ export function createInteractiveStateRecord(params: {
     value: params.value,
     result: params.result,
     ...(params.review !== undefined ? { review: params.review } : {}),
+    ...(params.sourceUrl !== undefined ? { sourceUrl: params.sourceUrl } : {}),
     updatedAt: params.updatedAt,
     submittedAt: params.submittedAt,
   }

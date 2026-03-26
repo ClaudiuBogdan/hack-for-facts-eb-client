@@ -109,6 +109,39 @@ function clampScore(value: number | undefined): number | undefined {
   return Math.max(0, Math.min(100, value))
 }
 
+function sanitizeSourceUrl(sourceUrl: string | undefined | null): string | undefined {
+  if (typeof sourceUrl !== 'string') {
+    return undefined
+  }
+
+  const trimmedSourceUrl = sourceUrl.trim()
+  return trimmedSourceUrl.length > 0 ? trimmedSourceUrl : undefined
+}
+
+function withSourceUrl(
+  record: InteractiveStateRecord,
+  sourceUrl: string | undefined,
+): InteractiveStateRecord {
+  if (sourceUrl === undefined) {
+    if (record.sourceUrl === undefined) {
+      return record
+    }
+
+    const { sourceUrl: _sourceUrl, ...recordWithoutSourceUrl } = record
+    void _sourceUrl
+    return recordWithoutSourceUrl
+  }
+
+  if (record.sourceUrl === sourceUrl) {
+    return record
+  }
+
+  return {
+    ...record,
+    sourceUrl,
+  }
+}
+
 type SaveOnboardingInput = {
   readonly pathId: string
   readonly relatedPaths?: readonly string[]
@@ -330,6 +363,34 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     }
     return generated
   }, [])
+
+  const getCurrentSourceUrl = useCallback((): string | undefined => {
+    if (typeof window === 'undefined') {
+      return undefined
+    }
+
+    return sanitizeSourceUrl(window.location.href)
+  }, [])
+
+  const captureCurrentSourceUrl = useCallback(
+    (
+      record: InteractiveStateRecord,
+      existingRecord?: InteractiveStateRecord | null,
+    ): InteractiveStateRecord => {
+      const sourceUrl = getCurrentSourceUrl() ?? sanitizeSourceUrl(existingRecord?.sourceUrl)
+      return withSourceUrl(record, sourceUrl)
+    },
+    [getCurrentSourceUrl],
+  )
+
+  const preserveExistingSourceUrl = useCallback(
+    (
+      record: InteractiveStateRecord,
+      existingRecord?: InteractiveStateRecord | null,
+    ): InteractiveStateRecord =>
+      withSourceUrl(record, sanitizeSourceUrl(existingRecord?.sourceUrl)),
+    [],
+  )
 
   const safeWriteToStorage = useCallback((key: string, value: unknown): boolean => {
     if (storageBlockedRef.current || typeof window === 'undefined') return false
@@ -1000,14 +1061,15 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
         updatedAt: getNextTimestamp(existingRecord?.updatedAt),
         submittedAt: null,
       })
+      const nextRecordWithSourceUrl = captureCurrentSourceUrl(nextRecord, existingRecord)
 
       await appendInteractiveUpdateEvent({
-        record: nextRecord,
+        record: nextRecordWithSourceUrl,
         content: input.content,
       })
-      return nextRecord
+      return nextRecordWithSourceUrl
     },
-    [appendInteractiveUpdateEvent, getInteractiveRecordForDefinition],
+    [appendInteractiveUpdateEvent, captureCurrentSourceUrl, getInteractiveRecordForDefinition],
   )
 
   const submitInteractive = useCallback(
@@ -1039,12 +1101,13 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
         updatedAt: submittedAt,
         submittedAt,
       })
+      const nextRecordWithSourceUrl = captureCurrentSourceUrl(nextRecord, existingRecord)
 
       const auditEvent: InteractiveAuditEvent = {
         id: createEventId(),
-        recordKey: nextRecord.key,
-        lessonId: nextRecord.lessonId,
-        interactionId: nextRecord.interactionId,
+        recordKey: nextRecordWithSourceUrl.key,
+        lessonId: nextRecordWithSourceUrl.lessonId,
+        interactionId: nextRecordWithSourceUrl.interactionId,
         type: 'submitted',
         at: submittedAt,
         actor: 'user',
@@ -1052,14 +1115,14 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       }
 
       await appendInteractiveUpdateEvent({
-        record: nextRecord,
+        record: nextRecordWithSourceUrl,
         auditEvents: [auditEvent],
         content: input.content,
       })
 
-      return nextRecord
+      return nextRecordWithSourceUrl
     },
-    [appendInteractiveUpdateEvent, getInteractiveRecordForDefinition],
+    [appendInteractiveUpdateEvent, captureCurrentSourceUrl, getInteractiveRecordForDefinition],
   )
 
   const resolveInteractive = useCallback(
@@ -1099,13 +1162,14 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
         updatedAt,
         submittedAt: updatedAt,
       })
+      const nextRecordWithSourceUrl = captureCurrentSourceUrl(nextRecord, existingRecord)
 
       const auditEvents: InteractiveAuditEvent[] = [
         {
           id: createEventId(),
-          recordKey: nextRecord.key,
-          lessonId: nextRecord.lessonId,
-          interactionId: nextRecord.interactionId,
+          recordKey: nextRecordWithSourceUrl.key,
+          lessonId: nextRecordWithSourceUrl.lessonId,
+          interactionId: nextRecordWithSourceUrl.interactionId,
           type: 'submitted',
           at: updatedAt,
           actor: 'user',
@@ -1113,9 +1177,9 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
         },
         {
           id: createEventId(),
-          recordKey: nextRecord.key,
-          lessonId: nextRecord.lessonId,
-          interactionId: nextRecord.interactionId,
+          recordKey: nextRecordWithSourceUrl.key,
+          lessonId: nextRecordWithSourceUrl.lessonId,
+          interactionId: nextRecordWithSourceUrl.interactionId,
           type: 'evaluated',
           at: updatedAt,
           actor: 'system',
@@ -1125,14 +1189,14 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       ]
 
       await appendInteractiveUpdateEvent({
-        record: nextRecord,
+        record: nextRecordWithSourceUrl,
         auditEvents,
         content: input.content,
       })
 
-      return nextRecord
+      return nextRecordWithSourceUrl
     },
-    [appendInteractiveUpdateEvent, getInteractiveRecordForDefinition],
+    [appendInteractiveUpdateEvent, captureCurrentSourceUrl, getInteractiveRecordForDefinition],
   )
 
   const applyInteractiveEvaluation = useCallback(
@@ -1157,12 +1221,13 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
         result,
         updatedAt: evaluatedAt,
       }
+      const nextRecordWithSourceUrl = preserveExistingSourceUrl(nextRecord, existingRecord)
 
       const auditEvent: InteractiveAuditEvent = {
         id: createEventId(),
-        recordKey: nextRecord.key,
-        lessonId: nextRecord.lessonId,
-        interactionId: nextRecord.interactionId,
+        recordKey: nextRecordWithSourceUrl.key,
+        lessonId: nextRecordWithSourceUrl.lessonId,
+        interactionId: nextRecordWithSourceUrl.interactionId,
         type: 'evaluated',
         at: evaluatedAt,
         actor: 'system',
@@ -1171,14 +1236,14 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       }
 
       await appendInteractiveUpdateEvent({
-        record: nextRecord,
+        record: nextRecordWithSourceUrl,
         auditEvents: [auditEvent],
         content: input.content,
       })
 
-      return nextRecord
+      return nextRecordWithSourceUrl
     },
-    [appendInteractiveUpdateEvent, progress.interactiveState.recordsByKey],
+    [appendInteractiveUpdateEvent, preserveExistingSourceUrl, progress.interactiveState.recordsByKey],
   )
 
   const resetInteractive = useCallback(
@@ -1199,11 +1264,15 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
         ),
         submittedAt: null,
       })
+      const nextRecordWithSourceUrl = preserveExistingSourceUrl(
+        nextRecord,
+        getInteractiveRecordForDefinition(input.definition, input.entityCui),
+      )
 
-      await appendInteractiveUpdateEvent({ record: nextRecord })
-      return nextRecord
+      await appendInteractiveUpdateEvent({ record: nextRecordWithSourceUrl })
+      return nextRecordWithSourceUrl
     },
-    [appendInteractiveUpdateEvent, getInteractiveRecordForDefinition],
+    [appendInteractiveUpdateEvent, getInteractiveRecordForDefinition, preserveExistingSourceUrl],
   )
 
   const dispatchInteractionAction = useCallback(

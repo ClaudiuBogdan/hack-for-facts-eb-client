@@ -35,6 +35,8 @@ describe('parseLearningProgressEvents', () => {
               score: 100,
               evaluatedAt: occurredAt,
             },
+            sourceUrl:
+              'https://transparenta.eu/ro/learning/path/module/lesson-1?section=quiz#interactive',
             updatedAt: occurredAt,
             submittedAt: occurredAt,
           },
@@ -75,6 +77,9 @@ describe('parseLearningProgressEvents', () => {
     expect(result).toHaveLength(1)
     if (result[0]?.type === 'interactive.updated') {
       expect(result[0].payload.record.phase).toBe('resolved')
+      expect(result[0].payload.record.sourceUrl).toBe(
+        'https://transparenta.eu/ro/learning/path/module/lesson-1?section=quiz#interactive',
+      )
       expect(result[0].payload.auditEvents).toHaveLength(2)
     }
   })

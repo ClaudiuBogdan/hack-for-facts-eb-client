@@ -132,6 +132,13 @@ export type InteractiveStateRecord = {
    *   reviewed by a server-side workflow.
    */
   readonly review?: InteractionReview | null
+  /**
+   * Last user-authored page URL for this record.
+   *
+   * User writes may refresh it; system evaluation must preserve the existing
+   * value, and reset keeps the last known URL.
+   */
+  readonly sourceUrl?: string
   readonly updatedAt: string
   readonly submittedAt?: string | null
 }

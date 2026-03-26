@@ -144,6 +144,7 @@ function createInteractiveRecord(
     phase: overrides.phase ?? 'resolved',
     value: overrides.value ?? null,
     result: overrides.result ?? null,
+    ...(overrides.sourceUrl !== undefined ? { sourceUrl: overrides.sourceUrl } : {}),
     updatedAt: overrides.updatedAt ?? new Date().toISOString(),
     submittedAt: overrides.submittedAt ?? null,
   }
@@ -152,10 +153,12 @@ function createInteractiveRecord(
 describe('use-learning-interactions', () => {
   beforeEach(() => {
     window.localStorage.clear()
+    window.history.replaceState({}, '', '/')
   })
 
   afterEach(() => {
     window.localStorage.clear()
+    window.history.replaceState({}, '', '/')
   })
 
   it('restores a persisted quiz selection and correctness', async () => {
@@ -303,6 +306,11 @@ describe('use-learning-interactions', () => {
 
   it('writes pending records without evaluation when submitInteractive is used', async () => {
     seedProgress(buildProgress())
+    window.history.replaceState(
+      {},
+      '',
+      '/ro/learning/path-a/module-a/lesson-1?section=submit#custom-submit',
+    )
 
     const { result } = renderHook(() => useLearningProgress(), { wrapper })
 
@@ -332,18 +340,235 @@ describe('use-learning-interactions', () => {
     expect(record?.phase).toBe('pending')
     expect(record?.result).toBeNull()
     expect(record?.submittedAt).toBeTruthy()
+    expect(record?.sourceUrl).toBe(window.location.href)
 
     const [event] = readEvents()
     expect(event?.type).toBe('interactive.updated')
     if (event?.type === 'interactive.updated') {
       expect(event.payload.record.phase).toBe('pending')
       expect(event.payload.record.result).toBeNull()
+      expect(event.payload.record.sourceUrl).toBe(window.location.href)
       expect(event.payload.auditEvents).toEqual([
         expect.objectContaining({
           type: 'submitted',
           actor: 'user',
         }),
       ])
+    }
+  })
+
+  it('preserves the existing sourceUrl when evaluation is applied later', async () => {
+    const originalSourceUrl =
+      'https://transparenta.eu/ro/learning/path-a/module-a/lesson-1?section=submit#custom-submit'
+    const now = new Date().toISOString()
+    seedProgress(
+      buildProgress({
+        lastUpdated: now,
+        interactiveState: {
+          recordsByKey: {
+            'custom-submit::global': createInteractiveRecord({
+              key: 'custom-submit::global',
+              interactionId: 'custom-submit',
+              lessonId: 'lesson-1',
+              kind: 'custom',
+              phase: 'pending',
+              value: {
+                kind: 'json',
+                json: {
+                  value: {
+                    websiteUrl: 'https://example.com',
+                  },
+                },
+              },
+              result: null,
+              sourceUrl: originalSourceUrl,
+              updatedAt: now,
+              submittedAt: now,
+            }),
+          },
+          eventLogByRecordKey: {},
+        },
+      }),
+    )
+    window.history.replaceState(
+      {},
+      '',
+      '/ro/learning/path-b/module-b/lesson-1?section=review#other-page',
+    )
+
+    const { result } = renderHook(() => useLearningProgress(), { wrapper })
+
+    await act(async () => {
+      await result.current.applyInteractiveEvaluation({
+        recordKey: 'custom-submit::global',
+        phase: 'resolved',
+        outcome: 'correct',
+        score: 100,
+      })
+    })
+
+    const stored = readProgress()
+    const record = stored.interactiveState.recordsByKey['custom-submit::global']
+
+    expect(record?.phase).toBe('resolved')
+    expect(record?.result?.outcome).toBe('correct')
+    expect(record?.sourceUrl).toBe(originalSourceUrl)
+
+    const [event] = readEvents()
+    expect(event?.type).toBe('interactive.updated')
+    if (event?.type === 'interactive.updated') {
+      expect(event.payload.record.sourceUrl).toBe(originalSourceUrl)
+      expect(event.payload.auditEvents).toEqual([
+        expect.objectContaining({
+          type: 'evaluated',
+          actor: 'system',
+        }),
+      ])
+    }
+  })
+
+  it('preserves the existing sourceUrl when an interaction is reset', async () => {
+    const originalSourceUrl =
+      'https://transparenta.eu/ro/learning/path-a/module-a/lesson-1?section=quiz#dynamic-quiz'
+    const now = new Date().toISOString()
+    seedProgress(
+      buildProgress({
+        lastUpdated: now,
+        interactiveState: {
+          recordsByKey: {
+            'quiz-1::global': createInteractiveRecord({
+              key: 'quiz-1::global',
+              interactionId: 'quiz-1',
+              lessonId: 'lesson-1',
+              kind: 'quiz',
+              completionRule: { type: 'outcome', outcome: 'correct' },
+              phase: 'resolved',
+              value: {
+                kind: 'choice',
+                choice: { selectedId: 'b' },
+              },
+              result: {
+                outcome: 'correct',
+                score: 100,
+                evaluatedAt: now,
+              },
+              sourceUrl: originalSourceUrl,
+              updatedAt: now,
+              submittedAt: now,
+            }),
+          },
+          eventLogByRecordKey: {},
+        },
+      }),
+    )
+    window.history.replaceState(
+      {},
+      '',
+      '/ro/learning/path-b/module-b/lesson-1?section=review#reset-from-here',
+    )
+
+    const { result } = renderHook(() => useLearningProgress(), { wrapper })
+
+    await act(async () => {
+      await result.current.resetInteractive({
+        definition: {
+          id: 'quiz-1',
+          lessonId: 'lesson-1',
+          kind: 'quiz',
+          scopePolicy: 'global',
+          completionRule: { type: 'outcome', outcome: 'correct' },
+        },
+      })
+    })
+
+    const stored = readProgress()
+    const record = stored.interactiveState.recordsByKey['quiz-1::global']
+
+    expect(record?.phase).toBe('idle')
+    expect(record?.value).toBeNull()
+    expect(record?.result).toBeNull()
+    expect(record?.sourceUrl).toBe(originalSourceUrl)
+
+    const [event] = readEvents()
+    expect(event?.type).toBe('interactive.updated')
+    if (event?.type === 'interactive.updated') {
+      expect(event.payload.record.sourceUrl).toBe(originalSourceUrl)
+    }
+  })
+
+  it('refreshes sourceUrl on later user-authored updates for the same record', async () => {
+    const originalSourceUrl =
+      'https://transparenta.eu/ro/learning/path-a/module-a/lesson-1?section=submit#custom-submit'
+    const now = new Date().toISOString()
+    seedProgress(
+      buildProgress({
+        lastUpdated: now,
+        interactiveState: {
+          recordsByKey: {
+            'custom-submit::global': createInteractiveRecord({
+              key: 'custom-submit::global',
+              interactionId: 'custom-submit',
+              lessonId: 'lesson-1',
+              kind: 'custom',
+              phase: 'draft',
+              value: {
+                kind: 'json',
+                json: {
+                  value: {
+                    websiteUrl: 'https://old.example.com',
+                  },
+                },
+              },
+              result: null,
+              sourceUrl: originalSourceUrl,
+              updatedAt: now,
+              submittedAt: null,
+            }),
+          },
+          eventLogByRecordKey: {},
+        },
+      }),
+    )
+    window.history.replaceState(
+      {},
+      '',
+      '/ro/learning/path-b/module-b/lesson-1?section=submit#custom-submit-latest',
+    )
+
+    const { result } = renderHook(() => useLearningProgress(), { wrapper })
+
+    await act(async () => {
+      await result.current.submitInteractive({
+        definition: {
+          id: 'custom-submit',
+          lessonId: 'lesson-1',
+          kind: 'custom',
+          scopePolicy: 'global',
+          completionRule: { type: 'resolved' },
+        },
+        value: {
+          kind: 'json',
+          json: {
+            value: {
+              websiteUrl: 'https://new.example.com',
+            },
+          },
+        },
+      })
+    })
+
+    const latestSourceUrl = window.location.href
+    const stored = readProgress()
+    const record = stored.interactiveState.recordsByKey['custom-submit::global']
+
+    expect(record?.phase).toBe('pending')
+    expect(record?.sourceUrl).toBe(latestSourceUrl)
+    expect(record?.sourceUrl).not.toBe(originalSourceUrl)
+
+    const [event] = readEvents()
+    expect(event?.type).toBe('interactive.updated')
+    if (event?.type === 'interactive.updated') {
+      expect(event.payload.record.sourceUrl).toBe(latestSourceUrl)
     }
   })
 
@@ -426,6 +651,11 @@ describe('use-learning-interactions', () => {
   })
 
   it('stores quiz answers and updates status via action dispatch', async () => {
+    window.history.replaceState(
+      {},
+      '',
+      '/ro/primarie/123/buget/provocari/modul/provocare/pas?section=quiz#dynamic-quiz',
+    )
     const options = [
       { id: 'a', isCorrect: false },
       { id: 'b', isCorrect: true },
@@ -450,6 +680,9 @@ describe('use-learning-interactions', () => {
         choice: { selectedId: 'b' },
       })
       expect(stored.interactiveState.recordsByKey['quiz-1::global']?.result?.outcome).toBe('correct')
+      expect(stored.interactiveState.recordsByKey['quiz-1::global']?.sourceUrl).toBe(
+        window.location.href,
+      )
       expect(lesson.completedAt).toBeUndefined()
     })
   })

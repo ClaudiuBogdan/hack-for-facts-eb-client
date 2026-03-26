@@ -201,6 +201,7 @@ describe('createInteractiveStateRecord', () => {
       phase: 'resolved',
       value: { kind: 'choice', choice: { selectedId: 'a' } },
       result: { outcome: 'correct', score: 100, evaluatedAt: ISO_1 },
+      sourceUrl: 'https://transparenta.eu/ro/learning/path/module/lesson-1?section=quiz#answer',
       updatedAt: ISO_1,
       submittedAt: ISO_1,
     })
@@ -220,6 +221,9 @@ describe('createInteractiveStateRecord', () => {
       score: 100,
       evaluatedAt: ISO_1,
     })
+    expect(record.sourceUrl).toBe(
+      'https://transparenta.eu/ro/learning/path/module/lesson-1?section=quiz#answer',
+    )
     expect(record.updatedAt).toBe(ISO_1)
     expect(record.submittedAt).toBe(ISO_1)
   })
