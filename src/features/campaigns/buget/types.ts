@@ -73,6 +73,7 @@ export type CampaignResourceKind = 'guide' | 'tutorial' | 'template' | 'referenc
 export type CampaignResourceDefinition = {
   readonly id: string
   readonly title: CampaignTranslatedString
+  readonly description?: CampaignTranslatedString
   readonly url: string
   readonly kind: CampaignResourceKind
 }
@@ -85,6 +86,7 @@ export type CampaignSeoPageKind =
   | 'primarie'
   | 'principal-map'
   | 'calendar'
+  | 'resources'
 
 export type CampaignSeoImage = {
   readonly url: string

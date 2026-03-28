@@ -50,6 +50,7 @@ import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classi
 import { Route as LangLearningOnboardingRouteImport } from './routes/$lang/learning/onboarding'
 import { Route as PrimarieCuiBugetIndexRouteImport } from './routes/primarie/$cui/buget/index'
 import { Route as LangLearningPathIdIndexRouteImport } from './routes/$lang/learning/$pathId/index'
+import { Route as PrimarieCuiBugetResurseRouteImport } from './routes/primarie/$cui/buget/resurse'
 import { Route as PrimarieCuiBugetCalendarRouteImport } from './routes/primarie/$cui/buget/calendar'
 import { Route as LangLearningCertificatesIdRouteImport } from './routes/$lang/learning/certificates.$id'
 import { Route as PrimarieCuiBugetProvocariRouteRouteImport } from './routes/primarie/$cui/buget/provocari/route'
@@ -349,6 +350,13 @@ const LangLearningPathIdIndexRoute = LangLearningPathIdIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/$lang/learning/$pathId/index.lazy').then((d) => d.Route),
 )
+const PrimarieCuiBugetResurseRoute = PrimarieCuiBugetResurseRouteImport.update({
+  id: '/buget/resurse',
+  path: '/buget/resurse',
+  getParentRoute: () => PrimarieCuiRouteRoute,
+} as any).lazy(() =>
+  import('./routes/primarie/$cui/buget/resurse.lazy').then((d) => d.Route),
+)
 const PrimarieCuiBugetCalendarRoute =
   PrimarieCuiBugetCalendarRouteImport.update({
     id: '/buget/calendar',
@@ -460,6 +468,7 @@ export interface FileRoutesByFullPath {
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
+  '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
   '/$lang/learning/$pathId/': typeof LangLearningPathIdIndexRoute
   '/primarie/$cui/buget/': typeof PrimarieCuiBugetIndexRoute
   '/$lang/learning/$pathId/$moduleId/$lessonId': typeof LangLearningPathIdModuleIdLessonIdRoute
@@ -508,6 +517,7 @@ export interface FileRoutesByTo {
   '/charts/$chartId': typeof ChartsChartIdIndexLazyRoute
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
+  '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
   '/$lang/learning/$pathId': typeof LangLearningPathIdIndexRoute
   '/primarie/$cui/buget': typeof PrimarieCuiBugetIndexRoute
   '/$lang/learning/$pathId/$moduleId/$lessonId': typeof LangLearningPathIdModuleIdLessonIdRoute
@@ -562,6 +572,7 @@ export interface FileRoutesById {
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
+  '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
   '/$lang/learning/$pathId/': typeof LangLearningPathIdIndexRoute
   '/primarie/$cui/buget/': typeof PrimarieCuiBugetIndexRoute
   '/$lang/learning/$pathId/$moduleId/$lessonId': typeof LangLearningPathIdModuleIdLessonIdRoute
@@ -617,6 +628,7 @@ export interface FileRouteTypes {
     | '/primarie/$cui/buget/provocari'
     | '/$lang/learning/certificates/$id'
     | '/primarie/$cui/buget/calendar'
+    | '/primarie/$cui/buget/resurse'
     | '/$lang/learning/$pathId/'
     | '/primarie/$cui/buget/'
     | '/$lang/learning/$pathId/$moduleId/$lessonId'
@@ -665,6 +677,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId'
     | '/$lang/learning/certificates/$id'
     | '/primarie/$cui/buget/calendar'
+    | '/primarie/$cui/buget/resurse'
     | '/$lang/learning/$pathId'
     | '/primarie/$cui/buget'
     | '/$lang/learning/$pathId/$moduleId/$lessonId'
@@ -718,6 +731,7 @@ export interface FileRouteTypes {
     | '/primarie/$cui/buget/provocari'
     | '/$lang/learning/certificates/$id'
     | '/primarie/$cui/buget/calendar'
+    | '/primarie/$cui/buget/resurse'
     | '/$lang/learning/$pathId/'
     | '/primarie/$cui/buget/'
     | '/$lang/learning/$pathId/$moduleId/$lessonId'
@@ -1074,6 +1088,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangLearningPathIdIndexRouteImport
       parentRoute: typeof LangLearningRouteRoute
     }
+    '/primarie/$cui/buget/resurse': {
+      id: '/primarie/$cui/buget/resurse'
+      path: '/buget/resurse'
+      fullPath: '/primarie/$cui/buget/resurse'
+      preLoaderRoute: typeof PrimarieCuiBugetResurseRouteImport
+      parentRoute: typeof PrimarieCuiRouteRoute
+    }
     '/primarie/$cui/buget/calendar': {
       id: '/primarie/$cui/buget/calendar'
       path: '/buget/calendar'
@@ -1204,6 +1225,7 @@ interface PrimarieCuiRouteRouteChildren {
   PrimarieCuiIndexRoute: typeof PrimarieCuiIndexRoute
   PrimarieCuiBugetProvocariRouteRoute: typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
   PrimarieCuiBugetCalendarRoute: typeof PrimarieCuiBugetCalendarRoute
+  PrimarieCuiBugetResurseRoute: typeof PrimarieCuiBugetResurseRoute
   PrimarieCuiBugetIndexRoute: typeof PrimarieCuiBugetIndexRoute
 }
 
@@ -1212,6 +1234,7 @@ const PrimarieCuiRouteRouteChildren: PrimarieCuiRouteRouteChildren = {
   PrimarieCuiBugetProvocariRouteRoute:
     PrimarieCuiBugetProvocariRouteRouteWithChildren,
   PrimarieCuiBugetCalendarRoute: PrimarieCuiBugetCalendarRoute,
+  PrimarieCuiBugetResurseRoute: PrimarieCuiBugetResurseRoute,
   PrimarieCuiBugetIndexRoute: PrimarieCuiBugetIndexRoute,
 }
 

@@ -2,6 +2,7 @@ import { getSiteUrl } from '@/config/env'
 import {
   buildCampaignBudgetPath,
   buildCampaignCalendarPath,
+  buildCampaignResourcesPath,
   CAMPAIGN_ENTITY_SELECTOR_MAP_PATH,
   CAMPAIGN_ENTITY_SELECTOR_PATH,
   CAMPAIGN_LANDING_PATH,
@@ -103,6 +104,16 @@ const CAMPAIGN_COPY: Record<
       en: 'View the full local budget calendar with legal deadlines per Art. 39, Law 273/2006.',
     },
   },
+  resources: {
+    title: {
+      ro: 'Ghiduri și modele: Cu ochii pe bugetele locale',
+      en: 'Guides & Templates: Eyes on Local Budgets',
+    },
+    description: {
+      ro: 'Ghiduri despre bugetele locale, modele de cereri pentru acces la informații publice și dezbateri publice.',
+      en: 'Local budget guides, request templates for public information access and public debates.',
+    },
+  },
 }
 
 function withSiteName(title: string): string {
@@ -122,6 +133,11 @@ function resolvePagePath(params: {
   if (params.pageKind === 'calendar') {
     return params.entityCui
       ? buildCampaignCalendarPath(params.entityCui)
+      : CAMPAIGN_ENTITY_SELECTOR_PATH
+  }
+  if (params.pageKind === 'resources') {
+    return params.entityCui
+      ? buildCampaignResourcesPath(params.entityCui)
       : CAMPAIGN_ENTITY_SELECTOR_PATH
   }
   if (params.pageKind === 'hub') {
@@ -228,6 +244,7 @@ export function buildCampaignSeoMetadata(params: {
     robots:
       params.pageKind === 'hub' ||
       params.pageKind === 'primarie' ||
+      params.pageKind === 'resources' ||
       params.pageKind === 'principal-selector' ||
       params.pageKind === 'principal-map'
         ? 'noindex,follow'

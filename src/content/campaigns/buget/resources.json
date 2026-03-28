@@ -1,13 +1,105 @@
 {
   "resources": [
     {
-      "id": "ghid-rapid-bugete-locale",
+      "id": "ghid-bugete-locale-1",
       "title": {
-        "ro": "Ghid rapid al bugetelor locale",
-        "en": "Quick guide to local budgets"
+        "ro": "Partea I: Ce sunt bugetele publice locale?",
+        "en": "Part I: What are local public budgets?"
       },
-      "url": "https://transparenta.eu/resources/ghid-rapid-bugete-locale",
+      "url": "https://funky.ong/partea-i-ghid-despre-bugetele-locale/",
       "kind": "guide"
+    },
+    {
+      "id": "ghid-bugete-locale-2",
+      "title": {
+        "ro": "Partea II: Principii de bază",
+        "en": "Part II: Basic principles"
+      },
+      "url": "https://funky.ong/partea-2-ghid-despre-bugetele-locale/",
+      "kind": "guide"
+    },
+    {
+      "id": "ghid-bugete-locale-3",
+      "title": {
+        "ro": "Partea III: Anatomia bugetelor publice locale",
+        "en": "Part III: Anatomy of local public budgets"
+      },
+      "url": "https://funky.ong/partea-3-ghid-despre-bugetele-locale/",
+      "kind": "guide"
+    },
+    {
+      "id": "ghid-bugete-locale-4",
+      "title": {
+        "ro": "Partea IV: Recapitulare",
+        "en": "Part IV: Recap"
+      },
+      "url": "https://funky.ong/partea-4-ghid-despre-bugete-locale/",
+      "kind": "guide"
+    },
+    {
+      "id": "ghid-investitii-locale",
+      "title": {
+        "ro": "Investițiile publice locale",
+        "en": "Local public investments"
+      },
+      "description": {
+        "ro": "Lectură suplimentară",
+        "en": "Further reading"
+      },
+      "url": "https://funky.ong/ghid-cum-citim-bugetele-investitiilor-publice-locale/",
+      "kind": "reference"
+    },
+    {
+      "id": "model-cerere-dezbatere",
+      "title": {
+        "ro": "Model cerere dezbatere publică buget local",
+        "en": "Template: local budget public debate request"
+      },
+      "description": {
+        "ro": "Google Document",
+        "en": "Google Document"
+      },
+      "url": "https://docs.google.com/document/d/1w1nXdVKtervpPMKLCS-MtAaLoUin8Z2C7TNGME8v5FA/edit?usp=sharing",
+      "kind": "template"
+    },
+    {
+      "id": "model-contestatie-buget",
+      "title": {
+        "ro": "Model contestație buget local",
+        "en": "Template: local budget objection"
+      },
+      "description": {
+        "ro": "Google Document",
+        "en": "Google Document"
+      },
+      "url": "https://docs.google.com/document/d/18rskKe2X33klPw7CAvqFfBXOfHJ5nYpN/edit?usp=sharing&ouid=106704716263231554354&rtpof=true&sd=true",
+      "kind": "template"
+    },
+    {
+      "id": "model-amendament-buget",
+      "title": {
+        "ro": "Model amendament buget local",
+        "en": "Template: local budget amendment"
+      },
+      "description": {
+        "ro": "Google Document",
+        "en": "Google Document"
+      },
+      "url": "https://docs.google.com/document/d/1yrEfNE8bcBNdSiTlNz5is8icdHJB9iec/edit?usp=sharing&ouid=106704716263231554354&rtpof=true&sd=true",
+      "kind": "template"
+    },
+    {
+      "id": "toate-analizele-cmtrfb",
+      "title": {
+        "ro": "Toate analizele și resursele CMTRFB",
+        "en": "All CMTRFB analyses and resources"
+      },
+      "description": {
+        "ro": "Funky Citizens",
+        "en": "Funky Citizens"
+      },
+      "url": "https://funky.ong/toate-analizele-cmtrfb/",
+      "kind": "reference"
     },
     {
       "id": "tutorial-utilizare-platforma",
@@ -15,35 +107,8 @@
         "ro": "Tutorial utilizare transparenta.eu",
         "en": "Transparenta.eu usage tutorial"
       },
-      "url": "https://transparenta.eu/resources/tutorial-platforma",
+      "url": "https://funky.ong/toate-analizele-cmtrfb/#ghiduri",
       "kind": "tutorial"
-    },
-    {
-      "id": "model-cerere-544",
-      "title": {
-        "ro": "Model cerere Legea 544/2001",
-        "en": "Template request under Law 544/2001"
-      },
-      "url": "https://transparenta.eu/resources/model-cerere-544",
-      "kind": "template"
-    },
-    {
-      "id": "model-cerere-dezbatere",
-      "title": {
-        "ro": "Model cerere dezbatere publică buget local",
-        "en": "Template request for local budget public debate"
-      },
-      "url": "https://transparenta.eu/resources/model-cerere-dezbatere",
-      "kind": "template"
-    },
-    {
-      "id": "ghid-investitii-locale",
-      "title": {
-        "ro": "Ghid despre investițiile publice locale",
-        "en": "Guide to local public investments"
-      },
-      "url": "https://transparenta.eu/resources/ghid-investitii-locale",
-      "kind": "reference"
     }
   ]
 }

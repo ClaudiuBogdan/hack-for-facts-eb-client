@@ -19,44 +19,6 @@ export function buildMailtoUrl(params: MailtoParams): string {
 
 const PLATFORM_CC_EMAIL = 'contact@transparenta.eu'
 
-export function buildDebateRequestMailto(params: {
-  readonly primariaEmail: string
-  readonly organizationName: string | null
-  readonly year: number
-}): string {
-  const sender = params.organizationName
-    ? params.organizationName
-    : 'un cetatean'
-  const isAssociationRequest = Boolean(params.organizationName?.trim())
-
-  const body = [
-    'Stimate Domn Primar / Stimata Doamna Primar,',
-    '',
-    isAssociationRequest
-      ? `${sender}, asociatie legal constituita, va solicitam organizarea unei dezbateri publice asupra proiectului de buget local pentru anul ${params.year}.`
-      : `Subsemnatul/Subsemnata, ${sender}, va solicit organizarea unei dezbateri publice asupra proiectului de buget local pentru anul ${params.year}.`,
-    '',
-    'Va rugam sa organizati dezbaterea inainte de expirarea termenului de 15 zile pentru depunerea contestatiilor, reglementat de art. 39 alin. (3) din Legea nr. 273/2006.',
-    '',
-    'Potrivit art. 6 alin. (7) din Legea nr. 52/2003, autoritatea administratiei publice are obligatia de a decide organizarea unei intalniri de dezbatere publica daca acest lucru este cerut in scris de o asociatie legal constituita sau de o alta autoritate publica.',
-    '',
-    'Va rugam sa ne comunicati data, ora si locul stabilite pentru aceasta dezbatere publica.',
-    '',
-    'Cu stima,',
-    sender,
-    '',
-    '---',
-    'Aceasta solicitare a fost generata cu ajutorul platformei Transparenta.eu',
-  ].join('\n')
-
-  return buildMailtoUrl({
-    to: params.primariaEmail,
-    cc: PLATFORM_CC_EMAIL,
-    subject: `Solicitare organizare dezbatere publica - bugetul local ${params.year}`,
-    body,
-  })
-}
-
 export function buildContestationEmailBody(params: {
   readonly contestedItem: string
   readonly reasoning: string

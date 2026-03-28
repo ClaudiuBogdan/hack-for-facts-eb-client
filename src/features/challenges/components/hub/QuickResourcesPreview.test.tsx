@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest'
-import { fireEvent } from '@testing-library/react'
 import { render, screen } from '@/test/test-utils'
 import { QuickResourcesPreview } from './QuickResourcesPreview'
 
@@ -21,40 +20,22 @@ vi.mock('@tanstack/react-router', () => ({
 vi.mock('@/features/campaigns/buget/hooks/use-campaign-content', () => ({
   getCampaignResources: () => [
     {
-      id: 'resource-1',
+      id: 'ghid-bugete-locale-1',
       kind: 'guide',
-      title: {
-        ro: 'Resursă',
-        en: 'Resource',
-      },
-      url: 'https://example.com/resource',
+      title: { ro: 'Partea I: Ce sunt bugetele publice locale?', en: 'Part I: What are local public budgets?' },
+      url: 'https://funky.ong/partea-i-ghid-despre-bugetele-locale/',
     },
     {
-      id: 'resource-2',
-      kind: 'tutorial',
-      title: {
-        ro: 'Resursă 2',
-        en: 'Resource 2',
-      },
-      url: 'https://example.com/resource-2',
-    },
-    {
-      id: 'resource-3',
+      id: 'model-cerere-dezbatere',
       kind: 'template',
-      title: {
-        ro: 'Resursă 3',
-        en: 'Resource 3',
-      },
-      url: 'https://example.com/resource-3',
+      title: { ro: 'Model cerere dezbatere', en: 'Template debate request' },
+      url: 'https://docs.google.com/document/d/example',
     },
     {
-      id: 'resource-4',
-      kind: 'reference',
-      title: {
-        ro: 'Resursă 4',
-        en: 'Resource 4',
-      },
-      url: 'https://example.com/resource-4',
+      id: 'tutorial-utilizare-platforma',
+      kind: 'tutorial',
+      title: { ro: 'Tutorial utilizare transparenta.eu', en: 'Transparenta.eu usage tutorial' },
+      url: 'https://funky.ong/toate-analizele-cmtrfb/#ghiduri',
     },
   ],
   getCampaignText: (value: { ro: string; en: string }, locale: 'ro' | 'en') =>
@@ -74,20 +55,47 @@ describe('QuickResourcesPreview', () => {
     ).toHaveAttribute('preload', 'intent')
   })
 
-  it('shows campaign resources without the entity shortcut when no entity is available', () => {
+  it('shows the send debate request link with correct path', () => {
+    render(<QuickResourcesPreview locale="ro" entityCui="12345678" />)
+
+    const link = screen.getByRole('link', { name: /Send debate request/i })
+    expect(link).toBeInTheDocument()
+    expect(link).toHaveAttribute(
+      'href',
+      expect.stringContaining('/primarie/12345678/buget/provocari/civic-campaign/civic-monitor-and-request/04-debate-request'),
+    )
+    expect(link).toHaveAttribute(
+      'href',
+      expect.stringContaining('section=trimite-cererea'),
+    )
+  })
+
+  it('shows the guides & templates link pointing to the resources page', () => {
+    render(<QuickResourcesPreview locale="ro" entityCui="12345678" />)
+
+    const link = screen.getByRole('link', { name: /Guides & templates/i })
+    expect(link).toBeInTheDocument()
+    expect(link).toHaveAttribute('href', '/primarie/12345678/buget/resurse')
+  })
+
+  it('shows only the tutorial as an external resource link', () => {
+    render(<QuickResourcesPreview locale="ro" entityCui="12345678" />)
+
+    expect(screen.getByText('Tutorial utilizare transparenta.eu')).toBeInTheDocument()
+
+    // Consolidated resources should not appear as individual items
+    expect(screen.queryByText('Partea I: Ce sunt bugetele publice locale?')).not.toBeInTheDocument()
+    expect(screen.queryByText('Model cerere dezbatere')).not.toBeInTheDocument()
+  })
+
+  it('hides entity-specific links when no entity is available', () => {
     render(<QuickResourcesPreview locale="ro" />)
 
     expect(screen.queryByText('My city hall')).not.toBeInTheDocument()
-    expect(screen.getByText('Resursă')).toBeInTheDocument()
-  })
+    expect(screen.queryByText('Send debate request')).not.toBeInTheDocument()
+    expect(screen.queryByText('Guides & templates')).not.toBeInTheDocument()
 
-  it('reveals the remaining resources inline when requested', async () => {
-    render(<QuickResourcesPreview locale="ro" />)
-
-    expect(screen.queryByText('Resursă 4')).not.toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: /View all/i }))
-
-    expect(screen.getByText('Resursă 4')).toBeInTheDocument()
+    // Tutorial should still render
+    expect(screen.getByText('Tutorial utilizare transparenta.eu')).toBeInTheDocument()
   })
 })

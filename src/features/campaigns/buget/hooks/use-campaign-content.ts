@@ -17,6 +17,7 @@ import type {
 const CampaignResourceSchema = z.object({
   id: z.string().min(1),
   title: CampaignTranslatedStringSchema,
+  description: CampaignTranslatedStringSchema.optional(),
   url: z.string().url(),
   kind: z.enum(['guide', 'tutorial', 'template', 'reference']),
 })

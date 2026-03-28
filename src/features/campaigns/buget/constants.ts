@@ -22,3 +22,7 @@ export function buildCampaignBudgetPath(cui: string): string {
 export function buildCampaignCalendarPath(cui: string): string {
   return `${buildCampaignBudgetPath(cui)}/calendar`
 }
+
+export function buildCampaignResourcesPath(cui: string): string {
+  return `${buildCampaignBudgetPath(cui)}/resurse`
+}

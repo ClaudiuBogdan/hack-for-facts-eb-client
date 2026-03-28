@@ -1,23 +1,15 @@
 import { useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
-  BookOpen,
-  FileEdit,
-  Clock,
-  Send,
-  Gavel,
   Check,
   ChevronDown,
-  Info,
   ArrowLeft,
 } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import { Button } from '@/components/ui/button'
 import { BUDGET_PUBLICATION_DATE_INTERACTION } from '../../civic-interaction-definitions'
 import { useCustomInteraction } from '@/features/learning/hooks/interactions/use-custom-interaction'
 import { useCampaignTimeline } from '../../hooks/use-campaign-timeline'
@@ -38,35 +30,32 @@ type PageContent = {
   readonly footnotes: readonly string[]
 }
 
-type MilestoneExtra = {
-  readonly icon: LucideIcon
-  readonly footnote: { readonly ro: string; readonly en: string }
-}
-
 const PAGE_CONTENT: Record<CampaignLocale, PageContent> = {
   ro: {
-    heading: 'Calendar: Cu ochii pe bugetele locale',
+    heading: 'Calendar bugetar',
     footnotes: [
-      'Termenul total este de 45 de zile calendaristice de la publicarea bugetului de stat.',
-      'Zilele calendaristice includ weekendurile și sărbătorile legale.',
+      'Termenul total este de 45 de zile calendaristice de la publicarea bugetului de stat (Art. 39, Legea 273/2006).',
+      'Zilele calendaristice includ weekendurile si sarbatorile legale.',
+      'Estimat: datele marcate cu „estimat" sunt calculate pe baza termenelor legale maxime. In practica, daca primaria publica proiectul de buget mai devreme de termenul maxim, toate etapele urmatoare se muta corespunzator. Datele exacte depind de fiecare primarie in parte.',
     ],
   },
   en: {
-    heading: 'Calendar: Eyes on Local Budgets',
+    heading: 'Budget calendar',
     footnotes: [
-      'The total deadline is 45 calendar days from state budget publication.',
+      'The total deadline is 45 calendar days from state budget publication (Art. 39, Law 273/2006).',
       'Calendar days include weekends and public holidays.',
+      'Estimated: dates marked "estimated" are calculated based on the maximum legal deadlines. In practice, if the city hall publishes the draft budget before the maximum deadline, all subsequent steps shift earlier accordingly. Exact dates depend on each city hall.',
     ],
   },
 }
 
 const EXPLANATION_TEXT = {
   default: {
-    ro: 'Termenele de mai jos sunt termenele legale maxime conform Art. 39 din Legea 273/2006. În practică, dacă primăria publică proiectul de buget mai devreme de termenul maxim, toate etapele următoare (contestații, aprobare) se mută corespunzător mai devreme. Datele exacte depind de fiecare primărie în parte.',
-    en: 'The deadlines below are the legal maximums per Art. 39 of Law 273/2006. In practice, if the city hall publishes the draft budget before the maximum deadline, all subsequent steps (objections, approval) shift earlier accordingly. Exact dates depend on each city hall.',
+    ro: 'Termenele de mai jos sunt termenele legale maxime conform Art. 39 din Legea 273/2006. In practica, daca primaria publica proiectul de buget mai devreme, toate etapele urmatoare se muta corespunzator.',
+    en: 'The deadlines below are the legal maximums per Art. 39 of Law 273/2006. In practice, if the city hall publishes the draft budget earlier, all subsequent steps shift accordingly.',
   },
   personalized: {
-    ro: 'Calendarul de mai jos este personalizat pe baza datelor disponibile pentru primăria selectată. Etapele marcate cu „estimat" sunt calculate pe baza termenelor legale maxime.',
+    ro: 'Calendarul de mai jos este personalizat pe baza datelor disponibile pentru primaria selectata. Etapele marcate cu „estimat" sunt calculate pe baza termenelor legale maxime.',
     en: 'The calendar below is personalized based on available data for the selected city hall. Steps marked with "estimated" are calculated based on maximum legal deadlines.',
   },
 }
@@ -77,50 +66,35 @@ const ESTIMATED_LABEL: Record<CampaignLocale, string> = {
 }
 
 const BACK_LABEL: Record<CampaignLocale, string> = {
-  ro: 'Înapoi la provocări',
+  ro: 'Inapoi la provocari',
   en: 'Back to challenges',
 }
 
-const MILESTONE_EXTRAS: Record<string, MilestoneExtra> = {
+const MILESTONE_FOOTNOTES: Record<string, { readonly ro: string; readonly en: string }> = {
   'publicare-buget-de-stat': {
-    icon: BookOpen,
-    footnote: {
-      ro: 'Ziua 0 — momentul de referință pentru toate termenele.',
-      en: 'Day 0 — the reference point for all deadlines.',
-    },
+    ro: 'Ziua 0 — momentul de referinta pentru toate termenele.',
+    en: 'Day 0 — the reference point for all deadlines.',
   },
   'publicare-proiect-buget-local': {
-    icon: FileEdit,
-    footnote: {
-      ro: 'Termen maxim: 15 zile calendaristice de la bugetul de stat. Din această zi curg cele 15 zile de contestații.',
-      en: 'Maximum deadline: 15 calendar days from state budget. The 15-day objection period starts from this day.',
-    },
+    ro: 'Termen maxim: 15 zile calendaristice de la bugetul de stat. Din aceasta zi curg cele 15 zile de contestatii.',
+    en: 'Maximum deadline: 15 calendar days from state budget. The 15-day objection period starts from this day.',
   },
   'inchidere-contestatii': {
-    icon: Clock,
-    footnote: {
-      ro: '15 zile calendaristice de la publicarea proiectului de buget.',
-      en: '15 calendar days from draft budget publication.',
-    },
+    ro: '15 zile calendaristice de la publicarea proiectului de buget.',
+    en: '15 calendar days from draft budget publication.',
   },
   'depunere-spre-aprobare': {
-    icon: Send,
-    footnote: {
-      ro: 'Maximum 5 zile de la expirarea termenului de contestații.',
-      en: 'Within 5 days after the objection deadline.',
-    },
+    ro: 'Maximum 5 zile de la expirarea termenului de contestatii.',
+    en: 'Within 5 days after the objection deadline.',
   },
   'vot-aprobare-buget-local': {
-    icon: Gavel,
-    footnote: {
-      ro: 'Termen maxim: 45 de zile calendaristice de la bugetul de stat (Art. 39, Legea 273/2006).',
-      en: 'Maximum deadline: 45 calendar days from state budget (Art. 39, Law 273/2006).',
-    },
+    ro: 'Termen maxim: 45 de zile calendaristice de la bugetul de stat (Art. 39, Legea 273/2006).',
+    en: 'Maximum deadline: 45 calendar days from state budget (Art. 39, Law 273/2006).',
   },
 }
 
 const CURRENT_LABEL: Record<CampaignLocale, string> = {
-  ro: 'Etapă curentă',
+  ro: 'Etapa curenta',
   en: 'Current stage',
 }
 
@@ -139,7 +113,7 @@ function getMilestoneState(
   return 'future'
 }
 
-function formatMilestoneDate(dateStr: string, locale: CampaignLocale): string {
+function formatDate(dateStr: string, locale: CampaignLocale): string {
   const date = new Date(dateStr + 'T00:00:00')
   const day = date.getDate()
   const monthNames =
@@ -155,8 +129,33 @@ function formatMilestoneDate(dateStr: string, locale: CampaignLocale): string {
   return `${day} ${monthNames[date.getMonth()]} ${date.getFullYear()}`
 }
 
-/** Icon size in px — keep in sync with the Tailwind classes below. */
-const ICON_SIZE_PX = 30
+function formatShortDate(dateStr: string, locale: CampaignLocale): string {
+  const date = new Date(dateStr + 'T00:00:00')
+  const day = date.getDate()
+  const monthNames =
+    locale === 'ro'
+      ? [
+          'ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie',
+          'iulie', 'august', 'septembrie', 'octombrie', 'noiembrie', 'decembrie',
+        ]
+      : [
+          'January', 'February', 'March', 'April', 'May', 'June',
+          'July', 'August', 'September', 'October', 'November', 'December',
+        ]
+  return `${day} ${monthNames[date.getMonth()]}`
+}
+
+function daysBetween(a: string, b: string): number {
+  const msPerDay = 86_400_000
+  const dateA = new Date(a + 'T00:00:00')
+  const dateB = new Date(b + 'T00:00:00')
+  return Math.round((dateB.getTime() - dateA.getTime()) / msPerDay)
+}
+
+function formatDuration(days: number, locale: CampaignLocale): string {
+  if (locale === 'ro') return `${days} zile`
+  return `${days} days`
+}
 
 export function BugetCalendarPage({ locale, entityCui }: BugetCalendarPageProps) {
   const adminOverride = useMemo(() => getCampaignUatOverrideForCui(entityCui), [entityCui])
@@ -172,7 +171,6 @@ export function BugetCalendarPage({ locale, entityCui }: BugetCalendarPageProps)
 
   const mergedOverride = useMemo(() => {
     const base = adminOverride ?? {}
-    // Only use user-submitted date if admin hasn't set one for this entry
     if (!base['publicare-proiect-buget-local'] && userPublicationDate.savedValue?.publicationDate) {
       return { ...base, 'publicare-proiect-buget-local': userPublicationDate.savedValue.publicationDate }
     }
@@ -193,82 +191,59 @@ export function BugetCalendarPage({ locale, entityCui }: BugetCalendarPageProps)
   const states = entries.map((entry, i) => getMilestoneState(entry, i, entries))
 
   return (
-    <section className="mx-auto max-w-3xl animate-in fade-in duration-700 px-4 py-6 sm:px-6 sm:py-10">
+    <section className="mx-auto max-w-2xl animate-in fade-in duration-700 px-4 py-6 sm:px-6 sm:py-10">
+      {/* Back */}
+      <Link
+        to={buildCampaignProvocariPath(entityCui) as '/'}
+        search={backLinkSearch}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-8"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+        {BACK_LABEL[locale]}
+      </Link>
+
       {/* Header */}
       <div className="mb-10">
-        <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
+        <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">
           {content.heading}
         </h1>
-
-        {/* Explanation */}
-        <div className="mt-4 flex gap-3 rounded-xl border border-border/50 bg-muted/30 p-4">
-          <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {explanationText}
-          </p>
-        </div>
+        <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+          {explanationText}
+        </p>
       </div>
 
-      {/* Vertical Timeline */}
+      {/* Timeline */}
       <div>
         {entries.map((entry, index) => {
           const state = states[index]
-          const isFirst = index === 0
           const isLast = index === entries.length - 1
-          const extra = MILESTONE_EXTRAS[entry.id] ?? {
-            icon: BookOpen,
-            footnote: { ro: '', en: '' },
-          }
-
-          // Top connector: colored if the previous milestone is closed
-          const topSegmentFilled = !isFirst && entries[index - 1].isClosed
-          // Bottom connector: colored if this milestone is closed
-          const bottomSegmentFilled = !isLast && entry.isClosed
+          const footnote = MILESTONE_FOOTNOTES[entry.id]
+          const prevDate = index > 0 ? entries[index - 1].computedDate : null
 
           return (
-            <div key={entry.id} className="flex gap-4 sm:gap-5">
-              {/* ── Left rail: icon pinned to top, connector below ── */}
-              <div
-                className="relative flex flex-col items-center"
-                style={{ width: ICON_SIZE_PX }}
-              >
-                {/* Top connector: thin segment from top of row to icon center */}
-                {!isFirst && (
-                  <div
-                    className={`absolute left-1/2 top-0 -translate-x-1/2 w-0.5 ${
-                      topSegmentFilled ? 'bg-primary' : 'bg-border'
-                    }`}
-                    /* height = half icon + the pt-1 (4px) offset */
-                    style={{ height: ICON_SIZE_PX / 2 + 4 }}
-                  />
-                )}
-
-                {/* Icon — aligned with title via pt-1 */}
-                <div className="relative z-10 shrink-0 pt-1">
-                  <MilestoneIcon state={state} icon={extra.icon} />
-                </div>
-
-                {/* Bottom connector: from icon center to bottom of row */}
-                {!isLast && (
-                  <div
-                    className={`w-0.5 flex-1 ${
-                      bottomSegmentFilled ? 'bg-primary' : 'bg-border'
-                    }`}
-                  />
-                )}
+            <div key={entry.id} className="flex">
+              {/* Left bar */}
+              <div className="relative mr-6 flex flex-col items-center w-px">
+                <div
+                  className={`w-full flex-1 ${
+                    state === 'closed'
+                      ? 'bg-foreground/25'
+                      : state === 'current'
+                        ? 'bg-primary'
+                        : 'bg-border'
+                  }`}
+                />
+                {isLast && <div className="w-full h-4" />}
               </div>
 
-              {/* ── Right: content ── */}
-              <div
-                className={`min-w-0 flex-1 pb-8 ${isLast ? 'pb-0' : ''} ${
-                  state === 'closed' ? 'opacity-55' : ''
-                }`}
-              >
+              {/* Content */}
+              <div className={`min-w-0 flex-1 pb-10 ${isLast ? 'pb-0' : ''}`}>
                 <MilestoneContent
                   entry={entry}
                   state={state}
-                  extra={extra}
+                  footnote={footnote}
                   locale={locale}
+                  prevDate={prevDate}
                 />
               </div>
             </div>
@@ -276,67 +251,15 @@ export function BugetCalendarPage({ locale, entityCui }: BugetCalendarPageProps)
         })}
       </div>
 
-      {/* General Footnotes */}
-      <div className="mt-10 rounded-2xl border bg-muted/20 p-5">
-        <h3 className="text-sm font-semibold text-foreground">
-          {locale === 'en' ? 'Notes' : 'Note'}
-        </h3>
-        <ol className="mt-2 list-inside list-decimal space-y-1 text-xs text-muted-foreground">
+      {/* Footnotes */}
+      <div className="mt-12 pt-6 border-t border-border/40">
+        <ol className="list-decimal list-inside space-y-1 text-[11px] text-muted-foreground/60">
           {content.footnotes.map((note, i) => (
             <li key={i}>{note}</li>
           ))}
         </ol>
       </div>
-
-      {/* Bottom back button */}
-      <div className="mt-8 flex justify-center">
-        <Button asChild variant="outline" className="rounded-full">
-          <Link
-            to={buildCampaignProvocariPath(entityCui) as '/'}
-            search={backLinkSearch}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {BACK_LABEL[locale]}
-          </Link>
-        </Button>
-      </div>
     </section>
-  )
-}
-
-/* ────────────────────────────────────────────────────────────────── */
-
-function MilestoneIcon({
-  state,
-  icon: Icon,
-}: {
-  readonly state: MilestoneState
-  readonly icon: LucideIcon
-}) {
-  const base = 'flex shrink-0 items-center justify-center rounded-full h-[30px] w-[30px]'
-
-  if (state === 'closed') {
-    return (
-      <div className={`${base} bg-primary text-primary-foreground`}>
-        <Check className="h-3.5 w-3.5" strokeWidth={3} />
-      </div>
-    )
-  }
-
-  if (state === 'current') {
-    return (
-      <div
-        className={`${base} border-2 border-primary bg-background text-primary ring-[3px] ring-primary/15`}
-      >
-        <Icon className="h-3.5 w-3.5" strokeWidth={2} />
-      </div>
-    )
-  }
-
-  return (
-    <div className={`${base} border-2 border-border bg-background text-muted-foreground/40`}>
-      <Icon className="h-3.5 w-3.5" strokeWidth={2} />
-    </div>
   )
 }
 
@@ -345,58 +268,88 @@ function MilestoneIcon({
 function MilestoneContent({
   entry,
   state,
-  extra,
+  footnote,
   locale,
+  prevDate,
 }: {
   readonly entry: CampaignTimelineEntry
   readonly state: MilestoneState
-  readonly extra: MilestoneExtra
+  readonly footnote?: { readonly ro: string; readonly en: string }
   readonly locale: CampaignLocale
+  readonly prevDate: string | null
 }) {
   const [open, setOpen] = useState(state === 'current')
   const isClosed = state === 'closed'
+  const days = prevDate ? daysBetween(prevDate, entry.computedDate) : 0
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      {/* Title row */}
-      <div className="flex items-center gap-2 pt-1">
-        <h2
-          className={`text-base font-bold sm:text-lg ${
-            isClosed
-              ? 'text-muted-foreground line-through decoration-muted-foreground/30 decoration-1'
-              : 'text-foreground'
-          }`}
-        >
-          {getCampaignText(entry.title, locale)}
-        </h2>
-        {state === 'current' && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-            {CURRENT_LABEL[locale]}
-          </span>
+      {/* Date row */}
+      <div className={`flex items-center gap-1.5 text-sm tabular-nums ${
+        isClosed ? 'text-muted-foreground/50' : 'text-foreground/70'
+      }`}>
+        {prevDate ? (
+          <>
+            <span>{formatShortDate(prevDate, locale)}</span>
+            <span className={isClosed ? 'text-muted-foreground/30' : 'text-muted-foreground/40'}>–</span>
+            <time dateTime={entry.computedDate}>
+              {formatShortDate(entry.computedDate, locale)}
+            </time>
+            <span className={isClosed ? 'text-muted-foreground/20' : 'text-muted-foreground/30'}>·</span>
+            <span className={`text-xs ${
+              isClosed
+                ? 'text-muted-foreground/30'
+                : state === 'current'
+                  ? 'text-primary/70'
+                  : 'text-muted-foreground/40'
+            }`}>
+              {formatDuration(days, locale)}
+            </span>
+          </>
+        ) : (
+          <time dateTime={entry.computedDate}>
+            {formatDate(entry.computedDate, locale)}
+          </time>
         )}
-      </div>
-
-      {/* Date + estimated badge */}
-      <div className="mt-0.5 flex items-center gap-2">
         {entry.isEstimated && (
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+          <span className={`text-[10px] font-medium uppercase tracking-wider ${
+            isClosed ? 'text-muted-foreground/30' : 'text-muted-foreground/50'
+          }`}>
             {ESTIMATED_LABEL[locale]}
           </span>
         )}
-        <time
-          dateTime={entry.computedDate}
-          className="text-sm text-muted-foreground"
-        >
-          {formatMilestoneDate(entry.computedDate, locale)}
-        </time>
+        {state === 'current' && (
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary uppercase tracking-wider">
+            {CURRENT_LABEL[locale]}
+          </span>
+        )}
+        {isClosed && (
+          <Check className="h-3.5 w-3.5 text-muted-foreground/40" strokeWidth={2.5} />
+        )}
       </div>
 
-      {/* Toggle */}
+      {/* Title */}
+      <h2
+        className={`mt-1 text-base font-bold leading-snug ${
+          isClosed
+            ? 'text-muted-foreground/50'
+            : state === 'future'
+              ? 'text-foreground/70'
+              : 'text-foreground'
+        }`}
+      >
+        {getCampaignText(entry.title, locale)}
+      </h2>
+
+      {/* Details toggle */}
       <CollapsibleTrigger asChild>
         <button
           type="button"
-          className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-primary/70 hover:text-primary transition-colors"
+          className={`mt-2 inline-flex items-center gap-0.5 text-xs font-medium transition-colors ${
+            isClosed
+              ? 'text-muted-foreground/30 hover:text-muted-foreground/50'
+              : 'text-muted-foreground/50 hover:text-foreground'
+          }`}
         >
           {DETAILS_LABEL[locale]}
           <ChevronDown
@@ -405,17 +358,15 @@ function MilestoneContent({
         </button>
       </CollapsibleTrigger>
 
-      {/* Expandable body */}
+      {/* Body */}
       <CollapsibleContent className="overflow-hidden">
-        <div className="mt-2 space-y-1.5">
-          <p className="text-sm leading-relaxed text-muted-foreground/80">
+        <div className="mt-3 space-y-2">
+          <p className="text-sm leading-relaxed text-foreground/60">
             {getCampaignText(entry.description, locale)}
           </p>
-          {extra.footnote.ro && (
-            <p className="text-xs italic text-muted-foreground/60">
-              {locale === 'en'
-                ? (extra.footnote.en ?? extra.footnote.ro)
-                : extra.footnote.ro}
+          {footnote?.ro && (
+            <p className="text-xs text-muted-foreground/50 leading-relaxed">
+              {locale === 'en' ? (footnote.en ?? footnote.ro) : footnote.ro}
             </p>
           )}
         </div>

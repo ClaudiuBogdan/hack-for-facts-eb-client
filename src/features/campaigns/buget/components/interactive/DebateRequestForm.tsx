@@ -18,19 +18,20 @@ import {
   type ReviewSummaryItem,
 } from './campaign-challenge-review-state'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
-import { buildDebateRequestMailto } from './mailto-utils'
+import { preparePublicDebateSelfSend } from '../../api/institution-correspondence'
+import { buildMailtoUrl } from './mailto-utils'
 import type {
   DebateRequestFormValue,
   CampaignInteractiveElementProps,
   PrimarieContactInfoValue,
 } from './types'
 
-const CURRENT_YEAR = 2026
-
 const EMPTY_VALUE: DebateRequestFormValue = {
   primariaEmail: '',
   isNgo: false,
   organizationName: null,
+  ngoSenderEmail: null,
+  threadKey: null,
   submissionPath: null,
   submittedAt: null,
 }
@@ -40,6 +41,12 @@ function isValidEmail(email: string): boolean {
 }
 
 type Step = 1 | 2 | 3
+type PreparedSelfSendState = {
+  readonly threadKey: string
+  readonly subject: string
+  readonly body: string
+  readonly cc: readonly string[]
+}
 
 /**
  * Debate request form with a 3-step flow: contact info, identity, send path.
@@ -51,7 +58,8 @@ type Step = 1 | 2 | 3
  *   A cron job or admin process should:
  *   1. For 'request_platform' submissions: trigger the actual email dispatch
  *      via the InstitutionEmailThreads table (request_type: 'public_debate').
- *   2. For 'send_yourself' submissions: optionally verify via CC email receipt.
+ *   2. For 'send_yourself' submissions: prepare a thread-keyed email and
+ *      optionally verify via CC email receipt.
  *   3. Transition the challenge status to 'completed' once verified.
  */
 export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInteractiveElementProps) {
@@ -73,10 +81,24 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
 
   const [step, setStep] = useState<Step>(1)
   const [draft, setDraft] = useState<DebateRequestFormValue>(
-    form.savedValue ?? EMPTY_VALUE,
+    form.savedValue ? { ...EMPTY_VALUE, ...form.savedValue } : EMPTY_VALUE,
   )
   const [prefilled, setPrefilled] = useState(false)
   const [isAwaitingSelfSendConfirmation, setIsAwaitingSelfSendConfirmation] = useState(false)
+  const [isPreparingSelfSend, setIsPreparingSelfSend] = useState(false)
+  const [prepareSelfSendError, setPrepareSelfSendError] = useState<string | null>(null)
+  const [preparedSelfSend, setPreparedSelfSend] = useState<PreparedSelfSendState | null>(
+    form.savedValue?.threadKey
+      ? {
+        threadKey: form.savedValue.threadKey,
+        subject: '',
+        body: '',
+        cc: [],
+      }
+      : null,
+  )
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   // Pre-fill primariaEmail from PrimarieContactInfo when available
   useEffect(() => {
@@ -84,69 +106,193 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
     const prefilledEmail = contactInfo.savedValue?.email
     if (prefilledEmail && !draft.primariaEmail) {
       setPrefilled(true)
-      setDraft((prev) => {
-        const next = { ...prev, primariaEmail: prefilledEmail }
-        void form.saveDraft(next)
-        return next
-      })
+      const next = { ...draft, primariaEmail: prefilledEmail }
+      setDraft(next)
+      void form.saveDraft(next)
     }
-  }, [contactInfo.savedValue?.email, draft.primariaEmail, form, prefilled])
+  }, [contactInfo.savedValue?.email, draft, form, prefilled])
 
   const updateField = useCallback(<K extends keyof DebateRequestFormValue>(
     field: K,
     value: DebateRequestFormValue[K],
   ) => {
     setIsAwaitingSelfSendConfirmation(false)
+    setPrepareSelfSendError(null)
+    setPreparedSelfSend(null)
+    setSubmitError(null)
     setDraft((prev) => {
       const next = { ...prev, [field]: value }
 
       if (field === 'isNgo' && value === false) {
         next.organizationName = null
+        next.ngoSenderEmail = null
       }
 
-      void form.saveDraft(next)
+      next.threadKey = null
+
       return next
     })
-  }, [form])
+  }, [])
 
-  const handleOpenEmail = useCallback(() => {
-    const mailtoUrl = buildDebateRequestMailto({
-      primariaEmail: draft.primariaEmail,
-      organizationName: draft.organizationName?.trim() || null,
-      year: CURRENT_YEAR,
-    })
-
-    window.open(mailtoUrl, '_blank')
-    setIsAwaitingSelfSendConfirmation(true)
-  }, [draft.organizationName, draft.primariaEmail])
-
-  const handleConfirmSelfSend = useCallback(() => {
-    const submittedValue: DebateRequestFormValue = {
-      ...draft,
-      submissionPath: 'send_yourself',
-      submittedAt: new Date().toISOString(),
+  // Sync draft changes to backend (debounced by React batching)
+  const pendingDraftRef = useCallback(<K extends keyof DebateRequestFormValue>(
+    field: K,
+    value: DebateRequestFormValue[K],
+  ) => {
+    const next = { ...draft, [field]: value }
+    if (field === 'isNgo' && value === false) {
+      (next as Record<string, unknown>).organizationName = null;
+      (next as Record<string, unknown>).ngoSenderEmail = null
     }
-    void form.submit(submittedValue)
+    (next as Record<string, unknown>).threadKey = null
+    void form.saveDraft(next)
   }, [draft, form])
 
-  const handleRequestPlatform = useCallback(() => {
-    const submittedValue: DebateRequestFormValue = {
-      ...draft,
-      submissionPath: 'request_platform',
-      submittedAt: new Date().toISOString(),
+  const handleFieldChange = useCallback(<K extends keyof DebateRequestFormValue>(
+    field: K,
+    value: DebateRequestFormValue[K],
+  ) => {
+    updateField(field, value)
+    pendingDraftRef(field, value)
+  }, [updateField, pendingDraftRef])
+
+  const handleOpenEmail = useCallback(async () => {
+    setPrepareSelfSendError(null)
+    setSubmitError(null)
+    setIsPreparingSelfSend(true)
+
+    const openedWindow = window.open('', '_blank')
+
+    try {
+      let prepared: PreparedSelfSendState
+
+      if (
+        preparedSelfSend !== null
+        && preparedSelfSend.subject !== ''
+        && preparedSelfSend.threadKey === draft.threadKey
+      ) {
+        prepared = preparedSelfSend
+      } else {
+        const response = await preparePublicDebateSelfSend({
+          entityCui,
+          institutionEmail: draft.primariaEmail,
+          requesterOrganizationName: draft.organizationName?.trim() || null,
+          consentCapturedAt: null,
+        })
+
+        if (response.subject === null || response.body === null) {
+          throw new Error('Prepared email response was incomplete.')
+        }
+
+        prepared = {
+          threadKey: response.threadKey,
+          subject: response.subject,
+          body: response.body,
+          cc: response.cc,
+        }
+
+        setPreparedSelfSend(prepared)
+
+        const nextDraft = { ...draft, threadKey: response.threadKey }
+        setDraft(nextDraft)
+        await form.saveDraft(nextDraft)
+      }
+
+      const mailtoUrl = buildMailtoUrl({
+        to: draft.primariaEmail,
+        cc: prepared.cc.join(','),
+        subject: prepared.subject,
+        body: prepared.body,
+      })
+
+      if (openedWindow === null) {
+        window.location.href = mailtoUrl
+      } else {
+        openedWindow.location.href = mailtoUrl
+      }
+      setIsAwaitingSelfSendConfirmation(true)
+    } catch (error) {
+      if (openedWindow !== null) {
+        openedWindow.close()
+      }
+      setPrepareSelfSendError(
+        error instanceof Error
+          ? error.message
+          : t`We could not prepare the email. Please try again.`,
+      )
+    } finally {
+      setIsPreparingSelfSend(false)
     }
-    void form.submit(submittedValue)
+  }, [
+    draft,
+    entityCui,
+    form,
+    preparedSelfSend,
+  ])
+
+  const handleConfirmSelfSend = useCallback(async () => {
+    if (draft.threadKey === null) {
+      setPrepareSelfSendError(t`Please open the prepared email before confirming.`)
+      return
+    }
+
+    setSubmitError(null)
+    setIsSubmitting(true)
+    try {
+      const submittedValue: DebateRequestFormValue = {
+        ...draft,
+        ngoSenderEmail: draft.isNgo ? draft.ngoSenderEmail?.trim() || null : null,
+        submissionPath: 'send_yourself',
+        submittedAt: new Date().toISOString(),
+      }
+      await form.submit(submittedValue)
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : t`Submission failed. Please try again.`,
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [draft, form])
+
+  const handleRequestPlatform = useCallback(async () => {
+    setSubmitError(null)
+    setIsSubmitting(true)
+    try {
+      const submittedValue: DebateRequestFormValue = {
+        ...draft,
+        ngoSenderEmail: null,
+        threadKey: null,
+        submissionPath: 'request_platform',
+        submittedAt: new Date().toISOString(),
+      }
+      await form.submit(submittedValue)
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : t`Submission failed. Please try again.`,
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
   }, [draft, form])
 
   const handleTryAgain = useCallback(() => {
     setStep(1)
     setIsAwaitingSelfSendConfirmation(false)
+    setPrepareSelfSendError(null)
+    setPreparedSelfSend(null)
+    setSubmitError(null)
     void form.reset()
   }, [form])
 
   const hasValidEmail = isValidEmail(draft.primariaEmail)
   const hasOrganizationName = Boolean(draft.organizationName?.trim())
-  const canUseAssociationSendFlow = hasValidEmail && draft.isNgo && hasOrganizationName
+  const hasValidNgoSenderEmail = draft.ngoSenderEmail !== null && isValidEmail(draft.ngoSenderEmail)
+  const canUseAssociationSendFlow = hasValidEmail && draft.isNgo && hasOrganizationName && hasValidNgoSenderEmail
 
   if (form.isSubmitted) {
     const submittedPath = form.savedValue?.submissionPath
@@ -175,6 +321,12 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
             ? [{
                 label: t`Association`,
                 value: form.savedValue.organizationName,
+              }]
+            : []),
+          ...(form.savedValue.ngoSenderEmail?.trim()
+            ? [{
+                label: t`Association email`,
+                value: form.savedValue.ngoSenderEmail,
               }]
             : []),
           ...(formatReviewDate(form.savedValue.submittedAt)
@@ -238,7 +390,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                 className="rounded-xl h-12 text-base"
                 placeholder="primaria@example.ro"
                 value={draft.primariaEmail}
-                onChange={(e) => updateField('primariaEmail', e.target.value)}
+                onChange={(e) => handleFieldChange('primariaEmail', e.target.value)}
               />
               {draft.primariaEmail && !isValidEmail(draft.primariaEmail) && (
                 <p className="text-xs text-destructive">
@@ -266,7 +418,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
               <Switch
                 id="is-ngo"
                 checked={draft.isNgo}
-                onCheckedChange={(checked) => updateField('isNgo', checked)}
+                onCheckedChange={(checked) => handleFieldChange('isNgo', checked)}
               />
               <Label htmlFor="is-ngo" className="text-sm font-bold text-foreground">
                 <Trans>Do you represent a legally established association?</Trans>
@@ -289,7 +441,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                     className="rounded-xl h-12 text-base"
                     placeholder={t`Association name`}
                     value={draft.organizationName ?? ''}
-                    onChange={(e) => updateField('organizationName', e.target.value || null)}
+                    onChange={(e) => handleFieldChange('organizationName', e.target.value || null)}
                   />
                 </div>
               </div>
@@ -343,24 +495,59 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                     <Trans>Add the association name to use this option.</Trans>
                   </p>
                 )}
+                {draft.isNgo && (
+                  <div className="space-y-2 mt-4 text-left">
+                    <Label htmlFor="ngo-sender-email" className="text-sm font-bold text-foreground">
+                      <Trans>Association email</Trans>
+                    </Label>
+                    <Input
+                      id="ngo-sender-email"
+                      type="email"
+                      name="ngoSenderEmail"
+                      autoComplete="email"
+                      spellCheck={false}
+                      className="rounded-xl h-12 text-base"
+                      placeholder="asociatie@example.ro"
+                      value={draft.ngoSenderEmail ?? ''}
+                      onChange={(e) => handleFieldChange('ngoSenderEmail', e.target.value || null)}
+                    />
+                    {draft.ngoSenderEmail && !hasValidNgoSenderEmail && (
+                      <p className="text-xs text-destructive">
+                        <Trans>The association email address is not valid.</Trans>
+                      </p>
+                    )}
+                  </div>
+                )}
                 <Button
                   variant="outline"
-                  disabled={!canUseAssociationSendFlow}
-                  onClick={handleOpenEmail}
+                  disabled={!canUseAssociationSendFlow || isPreparingSelfSend}
+                  onClick={() => {
+                    void handleOpenEmail()
+                  }}
                   className="rounded-[22px] h-11 w-full font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 mt-4"
                 >
-                  {isAwaitingSelfSendConfirmation ? t`Open email again` : t`Open email`}
+                  {isPreparingSelfSend
+                    ? t`Preparing email...`
+                    : isAwaitingSelfSendConfirmation
+                      ? t`Open email again`
+                      : t`Open email`}
                 </Button>
+                {prepareSelfSendError && (
+                  <p className="text-xs text-destructive mt-3">
+                    {prepareSelfSendError}
+                  </p>
+                )}
                 {isAwaitingSelfSendConfirmation && (
                   <div className="mt-3 space-y-2">
                     <p className="text-xs text-muted-foreground">
                       <Trans>After the message opens and you send it from your email client, confirm below.</Trans>
                     </p>
                     <Button
-                      onClick={handleConfirmSelfSend}
+                      disabled={isSubmitting}
+                      onClick={() => { void handleConfirmSelfSend() }}
                       className="rounded-[22px] h-11 w-full font-black"
                     >
-                      {t`I sent the email`}
+                      {isSubmitting ? t`Submitting...` : t`I sent the email`}
                     </Button>
                   </div>
                 )}
@@ -374,14 +561,20 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                   <Trans>We will record the request and send it through the platform.</Trans>
                 </p>
                 <Button
-                  disabled={!hasValidEmail}
-                  onClick={handleRequestPlatform}
+                  disabled={!hasValidEmail || isSubmitting}
+                  onClick={() => { void handleRequestPlatform() }}
                   className="rounded-[22px] h-11 w-full font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 mt-4"
                 >
-                  {t`Request submission`}
+                  {isSubmitting ? t`Submitting...` : t`Request submission`}
                 </Button>
               </div>
             </div>
+
+            {submitError && (
+              <p className="text-sm text-destructive font-medium">
+                {submitError}
+              </p>
+            )}
 
             <div className="flex justify-start">
               <Button
