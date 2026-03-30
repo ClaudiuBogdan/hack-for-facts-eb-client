@@ -74,7 +74,7 @@ export function EntityProfilePresentation({
     return (
       <div className="rounded-[28px] border border-destructive/30 bg-destructive/5 p-6">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" aria-hidden="true" />
           <div>
             <p className="text-sm font-semibold text-destructive">
               <Trans>Could not load profile data</Trans>
@@ -92,7 +92,7 @@ export function EntityProfilePresentation({
     return (
       <div className="rounded-[28px] border border-border/50 bg-muted/30 p-6">
         <div className="flex items-start gap-3">
-          <Info className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+          <Info className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
           <div>
             <p className="text-sm font-semibold text-foreground">
               <Trans>No profile data available</Trans>
@@ -140,7 +140,7 @@ function ContactField({
           className="group inline-flex items-baseline gap-1.5 text-[15px] font-medium text-foreground underline decoration-primary/30 underline-offset-[3px] transition-colors hover:text-primary hover:decoration-primary"
         >
           <span className="break-all">{value}</span>
-          <ExternalLink className="relative top-px h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-colors group-hover:text-primary" />
+          <ExternalLink className="relative top-px h-3.5 w-3.5 shrink-0 text-muted-foreground/50 transition-colors group-hover:text-primary" aria-hidden="true" />
         </a>
       ) : (
         <p className="text-[15px] font-medium text-foreground">{value}</p>
@@ -259,7 +259,7 @@ function DataQualityCard({
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
                   {confidence !== null && (
                     <div className="flex items-center gap-2.5">
-                      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
+                      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted" role="meter" aria-valuenow={Math.round(confidence * 100)} aria-valuemin={0} aria-valuemax={100} aria-label={t`Extraction confidence`}>
                         <div
                           className={cn('h-full rounded-full', confidenceColor)}
                           style={{ width: `${confidence * 100}%` }}

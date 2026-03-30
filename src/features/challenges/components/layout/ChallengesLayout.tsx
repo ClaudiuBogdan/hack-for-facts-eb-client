@@ -133,6 +133,7 @@ function ChallengeNav({
     <Collapsible open={isOpen} onOpenChange={onOpenChange}>
       <CollapsibleTrigger className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-muted/50 transition-colors text-left group">
         <ChevronRight
+          aria-hidden="true"
           className={cn(
             'h-3 w-3 text-muted-foreground/40 transition-transform shrink-0',
             isOpen && 'rotate-90',
@@ -143,7 +144,7 @@ function ChallengeNav({
         </span>
         {isChallengeComplete ? (
           <div className="h-4 w-4 rounded-full bg-green-500/10 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="h-2.5 w-2.5 text-green-500" />
+            <CheckCircle2 className="h-2.5 w-2.5 text-green-500" aria-hidden="true" />
           </div>
         ) : (
           <span className="text-[10px] font-medium text-muted-foreground/40 tabular-nums shrink-0">
@@ -205,7 +206,7 @@ function ModuleProgress({ percent }: { readonly percent: number }) {
           </span>
           <span className="text-foreground tabular-nums">{percent}%</span>
         </div>
-        <div className="h-1.5 w-full bg-muted/50 rounded-full overflow-hidden">
+        <div className="h-1.5 w-full bg-muted/50 rounded-full overflow-hidden" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100} aria-label={t`Module progress`}>
           <div
             className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
             style={{ width: `${percent}%` }}
@@ -285,7 +286,7 @@ function ChallengesSidebar({
         {/* Header */}
         <div className="py-4 px-4">
           <Link to={hubPath as '/'} className="group flex items-center gap-2.5">
-            <Compass className="h-7 w-7 shrink-0 text-primary" />
+            <Compass className="h-7 w-7 shrink-0 text-primary" aria-hidden="true" />
             <div className="flex flex-col min-w-0">
               <span className="font-semibold text-sm leading-none text-foreground truncate">
                 {t`Challenges`}
@@ -314,7 +315,7 @@ function ChallengesSidebar({
                     </span>
                   </div>
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all ml-3 shrink-0">
-                    <ChevronDown className="h-3.5 w-3.5 transition-transform group-data-[state=open]:rotate-180" />
+                    <ChevronDown className="h-3.5 w-3.5 transition-transform group-data-[state=open]:rotate-180" aria-hidden="true" />
                   </div>
                 </button>
               </DropdownMenuTrigger>
@@ -346,7 +347,7 @@ function ChallengesSidebar({
                           <span className="font-medium text-sm">
                             {getTranslatedText(module.title, locale)}
                           </span>
-                          {isActive && <CheckCircle2 className="h-3 w-3 ml-auto" />}
+                          {isActive && <CheckCircle2 className="h-3 w-3 ml-auto" aria-hidden="true" />}
                         </div>
                         <span
                           className={cn(
@@ -366,16 +367,16 @@ function ChallengesSidebar({
         )}
 
         {entityCui && (
-          <div className="border-b border-border/50 px-4 py-3">
-            <div className="space-y-1.5">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-                {t`City hall`}
-              </span>
-              <UatSwitchBadge
-                entityCui={entityCui}
-                className="flex w-full items-center justify-between rounded-lg border-none bg-transparent px-0 py-0 text-left text-sm font-medium text-foreground hover:bg-transparent hover:text-primary"
-              />
-            </div>
+          <div className="border-b border-border/50">
+            <UatSwitchBadge
+              entityCui={entityCui}
+              className="w-full flex items-center justify-between rounded-none border-none bg-transparent py-3 px-4 text-left text-sm font-semibold text-foreground hover:bg-muted/50 hover:text-primary transition-all group"
+              labelSlot={
+                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground leading-none">
+                  {t`City hall`}
+                </span>
+              }
+            />
           </div>
         )}
       </div>
@@ -411,7 +412,7 @@ function ChallengesSidebar({
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center px-4">
               <div className="h-14 w-14 rounded-xl bg-muted/50 flex items-center justify-center mb-4">
-                <Compass className="h-7 w-7 text-muted-foreground/40" />
+                <Compass className="h-7 w-7 text-muted-foreground/40" aria-hidden="true" />
               </div>
               <p className="text-xs text-muted-foreground">{t`Select a topic to begin`}</p>
             </div>
@@ -571,10 +572,11 @@ function ChallengesLayoutInner({ children }: ChallengesLayoutProps) {
         <SheetTrigger asChild>
           <Button
             variant="outline"
-            className="lg:hidden fixed left-0 md:left-16 bottom-16 md:bottom-6 z-50 h-14 rounded-l-none! rounded-r-full! md:rounded-full! border-l-0 md:border-l pl-2 pr-4 md:px-4 shadow-lg bg-background/95 backdrop-blur-sm border-border hover:bg-muted transition-all active:scale-95"
+            aria-label={t`Open challenges menu`}
+            className="lg:hidden fixed left-0 md:left-16 bottom-16 md:bottom-6 z-50 h-14 rounded-l-none! rounded-r-full! md:rounded-full! border-l-0 md:border-l pl-2 pr-4 md:px-4 shadow-lg bg-background/95 backdrop-blur-sm border-border hover:bg-muted transition-all active:scale-95 touch-manipulation"
           >
-            <Library className="h-5 w-5" />
-            <ChevronRight className="h-4 w-4 -ml-1" />
+            <Library className="h-5 w-5" aria-hidden="true" />
+            <ChevronRight className="h-4 w-4 -ml-1" aria-hidden="true" />
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-72 p-0" aria-describedby={undefined}>

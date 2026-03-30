@@ -725,17 +725,17 @@ msgstr "Adaugă serie"
 msgid "Add Series"
 msgstr "Adaugă serie"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:495
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:579
 msgid "Add the association name to use this option."
 msgstr "Adaugă denumirea asociației pentru a folosi această opțiune."
 
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:72
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:115
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:78
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:119
 msgid "Add the city hall's contact details for future communications."
 msgstr "Adaugă datele de contact ale primăriei pentru comunicări ulterioare."
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:121
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:144
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:127
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:148
 msgid "Add the link to the city hall's budget document."
 msgstr "Adaugă linkul către documentul de buget al primăriei."
 
@@ -782,7 +782,6 @@ msgid "Advanced map analytics active view"
 msgstr "Vizualizare activă analize hărți avansate"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:572
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:543
 msgid "After the message opens and you send it from your email client, confirm below."
 msgstr "După ce mesajul se deschide și îl trimiți din clientul tău de email, confirmă mai jos."
 
@@ -1099,8 +1098,8 @@ msgstr "Aplică gradient"
 msgid "Apply gradient colors?"
 msgstr "Aplici culorile gradientului?"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:33
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:52
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:32
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:51
 msgid "Approved"
 msgstr "Aprobat"
 
@@ -1154,21 +1153,21 @@ msgstr "În calitate de persoană vizată conform RGPD, aveți următoarele drep
 msgid "Ask questions and discuss this lesson with the community."
 msgstr "Pune întrebări și discută despre această lecție cu comunitatea."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:559
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:618
 msgid "Ask us to send it"
 msgstr "Solicită-ne să trimitem"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:322
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:388
 msgid "Association"
 msgstr "Asociație"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:328
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:501
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:394
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:585
 msgid "Association email"
 msgstr "Email asociatie"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:435
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:442
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:506
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:513
 msgid "Association name"
 msgstr "Denumirea asociației"
 
@@ -1224,7 +1223,7 @@ msgstr "Credite bugetare disponibile"
 msgid "Available commitment credits"
 msgstr "Credite de angajament disponibile"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:490
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:574
 msgid "Available for legally established associations."
 msgstr "Disponibil pentru asociații legal constituite."
 
@@ -1252,8 +1251,8 @@ msgstr "Avg. Amount per UAT"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:394
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:465
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:606
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:456
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:585
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:527
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:646
 #: src/routes/alerts/new.lazy.tsx:175
 msgid "Back"
 msgstr "Înapoi"
@@ -1352,6 +1351,10 @@ msgstr "Date de bază despre populație, ocupare și locuințe."
 #: src/routes/privacy.lazy.tsx:27
 msgid "Basic security logs are kept for a short period to protect accounts."
 msgstr "Jurnalele de securitate de bază sunt păstrate pentru o perioadă scurtă pentru a proteja conturile."
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:157
+msgid "Before confirming, make sure you:"
+msgstr "Inainte de a confirma, asigura-te ca:"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:99
 msgid "Best for cross-county comparisons where scales are very different."
@@ -1473,13 +1476,13 @@ msgstr "Cronologia ciclului bugetar"
 msgid "Budget Distribution"
 msgstr "Distribuția bugetului"
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:119
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:138
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:125
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:142
 msgid "Budget document"
 msgstr "Document buget"
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:120
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:141
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:126
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:145
 msgid "Budget document link"
 msgstr "Link document buget"
 
@@ -1491,7 +1494,7 @@ msgstr "Documente bugetare"
 msgid "Budget draft publication date"
 msgstr "Data publicării proiectului de buget"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:104
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:91
 msgid "Budget guides, request templates, and more."
 msgstr "Ghiduri bugetare, modele de cereri si altele."
 
@@ -1513,15 +1516,15 @@ msgstr "Sector bugetar"
 msgid "Budget Sector"
 msgstr "Sector bugetar"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:131
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:130
 msgid "Budget stage"
 msgstr "Etapa bugetului"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:146
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:145
 msgid "Budget status"
 msgstr "Stadiul bugetului"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:151
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:150
 msgid "Budget status 2026"
 msgstr "Status buget 2026"
 
@@ -1659,8 +1662,8 @@ msgstr "Întrebare de provocare"
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:139
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:276
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:291
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:582
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:292
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:584
 msgid "Challenges"
 msgstr "Provocări"
 
@@ -1753,7 +1756,7 @@ msgstr "Alege un răspuns"
 msgid "Choose between essential-only or all cookies, then fine-tune options below."
 msgstr "Alegeți între cookie-uri doar esențiale sau toate cookie-urile, apoi ajustați opțiunile de mai jos."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:472
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:543
 msgid "Choose how you want the public debate request to be sent."
 msgstr "Alege cum dorești să fie trimisă cererea de dezbatere publică."
 
@@ -1765,34 +1768,34 @@ msgstr "Alegeți operatorul"
 msgid "Citizens allowed to speak"
 msgstr "Cetățeni care au luat cuvântul"
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:372
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:376
 msgid "City hall"
 msgstr "Primărie"
 
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:70
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:109
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:76
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:113
 msgid "City hall contact"
 msgstr "Contact primărie"
 
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:71
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:112
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:77
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:116
 msgid "City hall contact info"
 msgstr "Date contact primărie"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:273
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:511
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:317
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:382
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:122
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:383
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:454
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:132
 msgid "City hall email"
 msgstr "Email-ul primăriei"
 
-#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:84
-#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:106
+#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:90
+#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:116
 msgid "City hall link"
 msgstr "Link primărie"
 
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:139
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:149
 msgid "City hall phone (optional)"
 msgstr "Telefon primărie (opțional)"
 
@@ -1870,6 +1873,8 @@ msgid "Clear filters ({0})"
 msgstr "Șterge filtre"
 
 #: src/components/classification-explorer/ClassificationSearch.tsx:39
+#: src/components/entities/EntitySearch/index.tsx:113
+#: src/components/entities/SearchToggleInput.tsx:88
 #: src/components/filters/base-filter/SearchInput.tsx:56
 msgid "Clear search"
 msgstr "Șterge căutarea"
@@ -2068,6 +2073,7 @@ msgid "Complete!"
 msgstr "Complet!"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:92
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:359
 msgid "Completed"
 msgstr "Finalizat"
 
@@ -2220,8 +2226,8 @@ msgstr "Context"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:357
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:401
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:472
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:408
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:462
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:479
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:533
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:144
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:205
 #: src/features/learning/components/cards/LearningPathCard.tsx:24
@@ -2284,6 +2290,7 @@ msgid "Copied"
 msgstr "Copiat"
 
 #: src/components/charts/components/ChartDataError.tsx:278
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:62
 msgid "Copied to clipboard"
 msgstr "Copiat în clipboard"
 
@@ -2295,6 +2302,7 @@ msgstr "Copiat!"
 #: src/components/charts/components/views/AnnotationConfigView.tsx:220
 #: src/components/charts/components/views/SeriesConfigView.tsx:375
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:239
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:65
 msgid "Copy"
 msgstr "Copiază"
 
@@ -2322,9 +2330,13 @@ msgstr "Copiază raportul de erori în clipboard"
 msgid "Copy failed"
 msgstr "Copierea a eșuat"
 
-#: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:111
+#: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:112
 msgid "Copy failed. You can still select and copy the link manually."
 msgstr "Copierea a eșuat. Poți în continuare să selectezi și să copiezi manual linkul."
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:159
+#~ msgid "Copy full email"
+#~ msgstr "Copiaza tot emailul"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:443
 #: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:105
@@ -2361,6 +2373,10 @@ msgstr "Copiază Emailul de Suport"
 #: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:75
 msgid "Copy the civic module link"
 msgstr "Copiază linkul modulului civic"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:173
+#~ msgid "Copy the email content above or open your email client, then confirm after sending."
+#~ msgstr "Copiaza continutul emailului de mai sus sau deschide clientul de email, apoi confirma dupa trimitere."
 
 #: src/features/learning/components/assessment/Quiz.tsx:172
 msgid "Correct Choice"
@@ -2777,8 +2793,8 @@ msgstr "Rata mortalității surprinde presiunea legată de sănătate și struct
 msgid "Deaths (POP206D)"
 msgstr "Decese (POP206D)"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:343
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:359
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:409
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:425
 msgid "Debate request"
 msgstr "Cerere dezbatere"
 
@@ -2884,7 +2900,7 @@ msgid "Delete this map?"
 msgstr "Ștergi această hartă?"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:253
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:308
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:374
 msgid "Delivery path"
 msgstr "Modalitate de trimitere"
 
@@ -3054,7 +3070,7 @@ msgstr "Distribuție"
 msgid "Distribution series"
 msgstr "Serie de distribuție"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:424
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:495
 msgid "Do you represent a legally established association?"
 msgstr "Reprezinți o asociație legal constituită?"
 
@@ -3063,7 +3079,7 @@ msgid "Document link"
 msgstr "Link document"
 
 #: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:47
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:167
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:177
 msgid "Document type"
 msgstr "Tip document"
 
@@ -3101,8 +3117,8 @@ msgstr "Descarcă contestația formatată ca fișier text."
 msgid "Downloaded as text"
 msgstr "Descărcat ca text"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:32
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:50
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:31
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:49
 msgid "Draft (public consultation)"
 msgstr "Proiect (în consultare publică)"
 
@@ -3295,7 +3311,7 @@ msgid "Effective Spending"
 msgstr "Cheltuieli efective"
 
 #: src/components/entities/views/entity-profile-view.presentation.tsx:172
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:78
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:84
 msgid "Email"
 msgstr "Email"
 
@@ -3809,7 +3825,11 @@ msgstr "Exporturile trebuie să includă atribuirea sursei datelor și a Transpa
 msgid "Exports, imports and trade balance."
 msgstr "Exporturi, importuri și balanța comercială."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:294
+#: src/components/entities/views/entity-profile-view.presentation.tsx:262
+msgid "Extraction confidence"
+msgstr ""
+
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:295
 msgid "Eyes on Local Budgets"
 msgstr "Cu ochii pe bugetele locale"
 
@@ -3985,7 +4005,7 @@ msgstr "Feedback / Raportați o problemă"
 msgid "Feedback is currently unavailable."
 msgstr "Feedback-ul este indisponibil momentan."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:363
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:429
 msgid "Fill in the city hall's contact details and send the request to organize a public debate on the local budget."
 msgstr "Completează datele de contact ale primăriei și trimite cererea de organizare a dezbaterii publice pe bugetul local."
 
@@ -4154,6 +4174,10 @@ msgstr "Comerț exterior"
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:114
 msgid "Found {replacementCount} occurrence{0}"
 msgstr "S-au găsit {replacementCount} apariții"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:153
+#~ msgid "Full email copied to clipboard"
+#~ msgstr "Emailul complet a fost copiat"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1524
 msgid "Full historical observations exceeded the page cap for this view. Showing the retrieved subset."
@@ -4423,7 +4447,7 @@ msgid "Grouping"
 msgstr "Grupare"
 
 #: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:69
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:101
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:88
 msgid "Guides & templates"
 msgstr "Ghiduri si modele"
 
@@ -4435,7 +4459,7 @@ msgstr "Activitate practică"
 msgid "Hang tight while we resolve and redirect you to the destination."
 msgstr "Te rugăm să aștepți cât timp te redirecționăm către destinație."
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:161
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:160
 msgid "Has the 2026 budget been published?"
 msgstr "A fost publicat bugetul pe 2026?"
 
@@ -4559,8 +4583,8 @@ msgstr "Cum folosim datele dumneavoastră"
 msgid "I did this"
 msgstr "Am făcut asta"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:25
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:43
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:24
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:42
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:30
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:48
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:58
@@ -4569,7 +4593,7 @@ msgid "I don't know"
 msgstr "Nu știu"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:578
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:550
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:173
 msgid "I sent the email"
 msgstr "Am trimis emailul"
 
@@ -4913,6 +4937,11 @@ msgstr "Iunie"
 msgid "Justice"
 msgstr "Justiție"
 
+#. placeholder {0}: cc.join(', ')
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:162
+msgid "Keep <0>{0}</0> in CC so we can track the request"
+msgstr "Pastrezi <0>{0}</0> in CC pentru a putea urmari cererea"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:93
 msgid "Keeps UATs whose values fall between two percentiles of the selected series. Use this when absolute thresholds are misleading because data is very skewed."
 msgstr "Păstrează UAT-urile ale căror valori cad între două percentile din seria selectată. Folosește asta când pragurile absolute sunt înșelătoare deoarece datele sunt foarte asimetrice."
@@ -5108,11 +5137,11 @@ msgstr "Link"
 msgid "Link copied to clipboard"
 msgstr "Link copiat în clipboard"
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:150
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:160
 msgid "Link to the budget document"
 msgstr "Link către documentul de buget"
 
-#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:117
+#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:127
 msgid "Link to the official city hall website"
 msgstr "Link către site-ul oficial al primăriei"
 
@@ -5632,6 +5661,10 @@ msgstr "Oportunitate medie"
 msgid "Menu"
 msgstr "Meniu"
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:132
+msgid "Message"
+msgstr "Mesaj"
+
 #: src/components/alerts/components/AlertEditorView.tsx:265
 msgid "Metadata"
 msgstr "Metadate"
@@ -5648,7 +5681,7 @@ msgstr "Metrică"
 msgid "Migrating map editor link..."
 msgstr "Se migrează linkul editorului de hărți..."
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:432
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:433
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:272
 msgid "min"
 msgstr "min"
@@ -5727,6 +5760,12 @@ msgstr "Mod"
 #: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:82
 msgid "Module link"
 msgstr "Linkul modulului"
+
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:209
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:263
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:209
+msgid "Module progress"
+msgstr ""
 
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:146
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:148
@@ -5843,7 +5882,7 @@ msgstr "Multiplicatorul 1.5 este standard; folosește 3.0 pentru detectarea mai 
 msgid "My Budget Analysis Map…"
 msgstr "Harta mea de analiză bugetară…"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:55
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:46
 msgid "My city hall"
 msgstr "Primăria mea"
 
@@ -5984,8 +6023,8 @@ msgid "Next"
 msgstr "Următorul"
 
 #: src/components/filters/flags-filter/index.tsx:24
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:24
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:41
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:23
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:40
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:29
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:38
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:47
@@ -6502,8 +6541,8 @@ msgstr "din bugetul anual plătit"
 msgid "of commitment authority"
 msgstr "din autorizarea de angajament"
 
-#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:85
-#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:111
+#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:91
+#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:121
 msgid "Official city hall website"
 msgstr "Site-ul oficial al primăriei"
 
@@ -6566,6 +6605,10 @@ msgstr "Deschide meniul preset de intervale"
 msgid "Open Budget Explorer"
 msgstr "Deschide Exploratorul de Bugete"
 
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:575
+msgid "Open challenges menu"
+msgstr ""
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:142
 msgid "Open Chart"
 msgstr "Deschide Graficul"
@@ -6592,14 +6635,16 @@ msgid "Open data follows the source license."
 msgstr "Datele deschise respectă licența sursei."
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:567
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:533
 msgid "Open email"
 msgstr "Deschide email"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:567
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:532
 msgid "Open email again"
 msgstr "Deschide emailul din nou"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:151
+msgid "Open email client"
+msgstr "Deschide clientul de email"
 
 #: src/components/ui/shortcuts.tsx:21
 msgid "Open entity search dialog"
@@ -6672,6 +6717,10 @@ msgstr "Deschide meniul rândului"
 msgid "Open rule {0} menu"
 msgstr "Deschide meniul regulii {0}"
 
+#: src/components/entities/SearchToggleInput.tsx:102
+msgid "Open search"
+msgstr ""
+
 #: src/components/ui/shortcuts.tsx:31
 msgid "Open Search"
 msgstr "Deschide Căutarea"
@@ -6684,11 +6733,15 @@ msgstr "Deschide matricea sursă în INS Tempo"
 msgid "Open Table"
 msgstr "Deschide Tabelul"
 
+#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:106
+msgid "opens in new tab"
+msgstr ""
+
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:559
 msgid "Opens your email client with the completed contestation."
 msgstr "Deschide clientul de email cu contestația completată."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:486
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:570
 msgid "Opens your email client with the completed request. Recommended when you represent a legally established association."
 msgstr "Deschide clientul de email cu cererea completată. Recomandat când reprezinți o asociație legal constituită."
 
@@ -6999,7 +7052,7 @@ msgid "Phase: {0}"
 msgstr "Faza: {0}"
 
 #: src/components/entities/views/entity-profile-view.presentation.tsx:181
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:84
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:90
 msgid "Phone"
 msgstr "Telefon"
 
@@ -7015,9 +7068,9 @@ msgstr "Planificat"
 msgid "Platform Mission"
 msgstr "Misiunea platformei"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:235
-msgid "Please open the prepared email before confirming."
-msgstr "Te rugam sa deschizi emailul inainte de a confirma."
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:388
+#~ msgid "Please open the prepared email before confirming."
+#~ msgstr "Te rugam sa deschizi emailul inainte de a confirma."
 
 #: src/features/learning/components/interactive/ExecutionRateChart.tsx:251
 msgid "Poor"
@@ -7086,9 +7139,17 @@ msgstr "Preluat din provocarea de cerere dezbatere."
 msgid "Prefer median over mean when one or two UATs dominate values."
 msgstr "Preferă mediana în fața mediei când unul sau două UAT-uri domină valorile."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:530
-msgid "Preparing email..."
-msgstr "Se pregateste emailul..."
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:611
+msgid "Prepare email"
+msgstr "Pregateste emailul"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:107
+msgid "Prepared email"
+msgstr "Email pregatit"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:697
+#~ msgid "Preparing email..."
+#~ msgstr "Se pregateste emailul..."
 
 #: src/routes/maps/editor/new.lazy.tsx:250
 msgid "Preparing map creation..."
@@ -7116,6 +7177,7 @@ msgstr "Etichetă preset"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:69
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:536
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:104
 #: src/routes/alerts/$alertId/index.lazy.tsx:237
 #: src/routes/alerts/new.lazy.tsx:203
 msgid "Preview"
@@ -7178,7 +7240,7 @@ msgstr "Informatiile de profil pentru aceasta institutie nu au fost colectate in
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:203
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:257
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:204
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:205
 msgid "Progress"
 msgstr "Progres"
 
@@ -7193,8 +7255,8 @@ msgstr "Propune o modificare specifică și realistă. De exemplu: «Redistribui
 msgid "Public"
 msgstr "Publică"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:344
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:361
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:410
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:427
 msgid "Public debate request"
 msgstr "Cerere de dezbatere publică"
 
@@ -7231,7 +7293,7 @@ msgstr "Informații din sectorul public de la Ministerul Finanțelor. Nicio afil
 msgid "Publication date"
 msgstr "Data publicării"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:125
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:124
 msgid "Published"
 msgstr "Publicat"
 
@@ -7340,7 +7402,7 @@ msgid "Recipient"
 msgstr "Destinatar"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:259
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:314
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:380
 msgid "Recorded"
 msgstr "Înregistrat"
 
@@ -7438,11 +7500,11 @@ msgstr "Înlocuiește valoarea"
 msgid "Report bug"
 msgstr "Raportați eroarea"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:157
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:156
 msgid "Report status"
 msgstr "Raportează statusul"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:152
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:151
 msgid "Report the publication status of the local budget for 2026."
 msgstr "Raportează stadiul publicării bugetului local pentru anul 2026."
 
@@ -7479,15 +7541,15 @@ msgstr "Raportare:"
 msgid "Reports"
 msgstr "Rapoarte"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:81
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:70
 msgid "Request a public debate for the local budget."
 msgstr "Solicita o dezbatere publica pentru bugetul local."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:568
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:628
 msgid "Request submission"
 msgstr "Solicită trimiterea"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:313
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:379
 msgid "Requested platform delivery"
 msgstr "Trimitere solicitată prin platformă"
 
@@ -7520,7 +7582,7 @@ msgstr "Resetează la perioada disponibilă"
 msgid "Reset to default"
 msgstr "Resetează la valoarea implicită"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:37
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:29
 msgid "Resources"
 msgstr "Resurse"
 
@@ -7659,7 +7721,7 @@ msgstr "Diagramă Sankey (agregată)"
 msgid "Save"
 msgstr "Salvează"
 
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:159
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:169
 msgid "Save contact details"
 msgstr "Salvează datele de contact"
 
@@ -7871,7 +7933,7 @@ msgstr "Monitorizare și jurnale de securitate"
 msgid "See also our <0>Privacy Policy</0>."
 msgstr "Consultați și <0>Politica de confidențialitate</0>."
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:58
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:49
 msgid "See the budget analysis for the selected entity."
 msgstr "Vezi analiza bugetară pentru entitatea selectată."
 
@@ -7895,7 +7957,7 @@ msgstr "Selectați un set de date predefinit de urmărit"
 msgid "Select a snapshot to clone into a new map."
 msgstr "Selectează un instantaneu pentru a clona într-o hartă nouă."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:416
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:417
 msgid "Select a topic to begin"
 msgstr "Alege un subiect pentru a începe"
 
@@ -7955,7 +8017,7 @@ msgstr "Selectați tipul de serie"
 msgid "Select specific years. If none selected, all years will be shown."
 msgstr "Selectați anii specifici. Dacă nu se selectează niciunul, se vor afișa toți anii."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:313
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:314
 msgid "Select topic"
 msgstr "Alege un subiect"
 
@@ -7993,7 +8055,7 @@ msgstr "Selects UATs by standardized distance from mean in standard deviations. 
 msgid "Seller Keeps"
 msgstr "Vânzătorul păstrează"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:78
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:67
 msgid "Send debate request"
 msgstr "Trimite cerere dezbatere"
 
@@ -8003,9 +8065,13 @@ msgstr "Trimite cerere dezbatere"
 msgid "Send feedback"
 msgstr "Trimite feedback"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:484
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:568
 msgid "Send it yourself"
 msgstr "Trimite singur"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:160
+msgid "Send the email from your association's email address"
+msgstr "Trimiti emailul de pe adresa asociatiei tale"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:557
 msgid "Send via email"
@@ -8015,7 +8081,7 @@ msgstr "Trimite pe email"
 msgid "Sender"
 msgstr "Expeditor"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:311
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:377
 msgid "Sent by you"
 msgstr "Trimis de tine"
 
@@ -8139,7 +8205,7 @@ msgstr "Partajează link-ul"
 msgid "Share link copied"
 msgstr "Link de partajare copiat"
 
-#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:86
+#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:92
 msgid "Share the official city hall website so others can verify the budget information."
 msgstr "Adaugă site-ul oficial al primăriei pentru ca alții să poată verifica informațiile bugetare."
 
@@ -8356,7 +8422,7 @@ msgstr "Autentifică-te pentru a-ți urmări progresul de învățare."
 msgid "SIRUTA"
 msgstr "SIRUTA"
 
-#: src/features/challenges/components/player/sectioned-step-footer.tsx:57
+#: src/features/challenges/components/player/sectioned-step-footer.tsx:59
 msgid "Skip"
 msgstr "Sari peste"
 
@@ -8593,15 +8659,17 @@ msgid "Subchapter"
 msgstr "Subcapitol"
 
 #: src/components/charts/components/views/AnnotationConfigView.tsx:142
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:94
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:124
 msgid "Subject"
 msgstr "Subiect"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:253
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:276
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:326
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:349
 msgid "Submission failed. Please try again."
 msgstr "Trimiterea a esuat. Te rugam sa incerci din nou."
 
-#: src/features/campaigns/buget/components/interactive/CampaignChallengeFormShell.tsx:97
+#: src/features/campaigns/buget/components/interactive/CampaignChallengeFormShell.tsx:106
 msgid "Submit"
 msgstr "Trimite"
 
@@ -8609,8 +8677,8 @@ msgstr "Trimite"
 msgid "Submit information"
 msgstr "Trimite informația"
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:198
-#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:138
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:206
+#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:148
 msgid "Submit link"
 msgstr "Trimite linkul"
 
@@ -8618,23 +8686,27 @@ msgstr "Trimite linkul"
 msgid "Submit report"
 msgstr "Trimite raportul"
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:585
+#~ msgid "Submit request"
+#~ msgstr "Trimite cererea"
+
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:144
 msgid "Submitted"
 msgstr "Trimis"
 
 #: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:53
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:147
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:137
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:136
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:279
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:334
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:400
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:166
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:90
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:96
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:33
 msgid "Submitted on"
 msgstr "Trimis pe"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:550
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:568
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:173
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:628
 msgid "Submitting..."
 msgstr "Se trimite..."
 
@@ -8658,7 +8730,7 @@ msgstr "Sumă"
 msgid "Supervisory authority"
 msgstr "Autoritatea de supraveghere"
 
-#: src/features/challenges/components/hub/UatSwitchBadge.tsx:55
+#: src/features/challenges/components/hub/UatSwitchBadge.tsx:47
 msgid "Switch city hall"
 msgstr "Schimbă primăria"
 
@@ -8772,7 +8844,7 @@ msgstr "Valoarea reală a bunurilor și serviciilor pe care le primești."
 msgid "The answer is:"
 msgstr "Răspunsul este:"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:516
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:600
 msgid "The association email address is not valid."
 msgstr "Adresa de email a asociatiei nu este valida."
 
@@ -8796,7 +8868,7 @@ msgstr "Datele sunt prezentate în scop informativ, pe baza datelor guvernamenta
 msgid "The Deficit"
 msgstr "Deficitul"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:397
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:469
 msgid "The email address is not valid."
 msgstr "Adresa de email nu este validă."
 
@@ -8906,7 +8978,7 @@ msgstr "Aceste cookie-uri sunt esențiale pentru funcționalitatea contului. Dac
 msgid "These issues were auto-resolved (invalid points removed or values set to 0) so the chart could render."
 msgstr "Aceste probleme au fost rezolvate automat (punctele invalide au fost eliminate sau valorile setate la 0) astfel încât graficul să poată fi afișat."
 
-#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:116
+#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:117
 msgid "These materials are part of the project"
 msgstr "Materialele fac parte din proiectul"
 
@@ -9047,6 +9119,11 @@ msgstr "Titlu A–Z"
 msgid "Title Z–A"
 msgstr "Titlu Z–A"
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:92
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:114
+msgid "To"
+msgstr "Catre"
+
 #: src/routes/privacy.lazy.tsx:122
 msgid "To exercise any of these rights, contact us at contact@transparenta.eu We will respond within 30 days."
 msgstr "Pentru a exercita oricare dintre aceste drepturi, contactați-ne la contact@transparenta.eu Vă vom răspunde în termen de 30 de zile."
@@ -9115,7 +9192,7 @@ msgstr "Top 15 județe după suma totală"
 msgid "Top 15 UATs by Total Amount"
 msgstr "Top 15 UAT-uri după suma totală"
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:308
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:309
 msgid "Topic"
 msgstr "Subiect"
 
@@ -9318,7 +9395,7 @@ msgstr "UAT-uri"
 msgid "Unavailable"
 msgstr "Indisponibil"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:431
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:502
 msgid "Under Law 52/2003, requests from legally established associations can trigger the obligation to organize a public debate."
 msgstr "Potrivit Legii 52/2003, cererile formulate de asociații legal constituite pot declanșa obligația de organizare a unei dezbateri publice."
 
@@ -9784,9 +9861,9 @@ msgstr "Nu am putut încărca analiza."
 msgid "We could not load this section right now. Please refresh and try again."
 msgstr "Nu am putut încărca această secțiune acum. Vă rugăm să reîmprospătați pagina și să încercați din nou."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:221
-msgid "We could not prepare the email. Please try again."
-msgstr "Nu am putut pregati emailul. Te rugam sa incerci din nou."
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:360
+#~ msgid "We could not prepare the email. Please try again."
+#~ msgstr "Nu am putut pregati emailul. Te rugam sa incerci din nou."
 
 #. js-lingui-explicit-id
 #: src/lib/errors-utils.ts:13
@@ -9826,7 +9903,7 @@ msgstr "Folosim cookie-uri și tehnologii similare pentru a vă îmbunătăți e
 msgid "We value your privacy"
 msgstr "Confidențialitatea dumneavoastră este importantă pentru noi"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:561
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:620
 msgid "We will record the request and send it through the platform."
 msgstr "Vom înregistra solicitarea și o vom trimite prin platformă."
 
@@ -9884,7 +9961,7 @@ msgstr "Ce procent a fost de fapt utilizat?"
 msgid "What personal data we collect"
 msgstr "Ce date personale colectăm"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:188
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:187
 msgid "What stage is it in?"
 msgstr "În ce stadiu este?"
 
@@ -10003,8 +10080,8 @@ msgid "Yearly"
 msgstr "Anual"
 
 #: src/components/filters/flags-filter/index.tsx:24
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:23
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:39
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:22
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:38
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:28
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:37
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:46
@@ -10026,7 +10103,7 @@ msgstr "Sunteți autentificat. Cookie-urile de autentificare (Clerk) sunt esenț
 msgid "You are viewing a shared map. Only the owner can edit the name."
 msgstr "Vizualizezi o hartă partajată. Doar proprietarul poate edita numele."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:303
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:369
 msgid "You asked the platform to send the public debate request on your behalf."
 msgstr "Ai solicitat platformei să trimită cererea de dezbatere publică în numele tău."
 
@@ -10088,7 +10165,7 @@ msgstr "Trebuie să fiți autentificat pentru a gestiona notificările"
 msgid "You need to be signed in to subscribe to notifications"
 msgstr "Trebuie să fiți autentificat pentru a vă abona la notificări"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:301
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:367
 msgid "You opened the prepared email and confirmed that you sent the public debate request."
 msgstr "Ai deschis emailul pregătit și ai confirmat că ai trimis cererea de dezbatere publică."
 
@@ -10181,7 +10258,7 @@ msgstr "PREDICȚIA TA"
 msgid "Your progress has been saved. You can continue to the next step."
 msgstr "Progresul tău a fost salvat. Poți continua la pasul următor."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:304
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:370
 msgid "Your public debate request was recorded."
 msgstr "Cererea ta de dezbatere publică a fost înregistrată."
 

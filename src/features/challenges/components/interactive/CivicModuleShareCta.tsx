@@ -94,7 +94,7 @@ export function CivicModuleShareCta({
           <Button
             type="button"
             onClick={handleCopy}
-            className="rounded-[22px] h-12 font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 transition-transform sm:w-auto"
+            className="rounded-[22px] h-12 font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 transition-transform motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:active:scale-100 sm:w-auto"
           >
             {copyState === 'copied' ? (
               <>
@@ -106,11 +106,13 @@ export function CivicModuleShareCta({
             )}
           </Button>
 
-          {copyState === 'error' && (
-            <p className="text-sm text-destructive">
-              <Trans>Copy failed. You can still select and copy the link manually.</Trans>
-            </p>
-          )}
+          <div aria-live="polite" className="contents">
+            {copyState === 'error' && (
+              <p className="text-sm text-destructive">
+                <Trans>Copy failed. You can still select and copy the link manually.</Trans>
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

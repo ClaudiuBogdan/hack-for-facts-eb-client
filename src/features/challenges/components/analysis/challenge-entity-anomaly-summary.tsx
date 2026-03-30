@@ -154,6 +154,7 @@ export function ChallengeEntityAnomalySummary({
             size="sm"
             className="gap-2 rounded-full"
             onClick={() => setIsOpen((currentValue) => !currentValue)}
+            aria-expanded={isOpen}
           >
             {isOpen ? (
               <>

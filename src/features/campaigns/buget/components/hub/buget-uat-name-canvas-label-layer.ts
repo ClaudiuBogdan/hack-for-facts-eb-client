@@ -205,8 +205,9 @@ export class BugetUatNameCanvasLabelLayer extends L.Layer {
     this.context.font = `700 ${fontSize}px Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif`
     this.context.lineJoin = 'round'
     this.context.lineWidth = Math.max(3.5, fontSize * 0.28)
-    this.context.strokeStyle = 'rgba(255, 255, 255, 0.95)'
-    this.context.fillStyle = '#0f172a'
+    const isDark = document.documentElement.classList.contains('dark')
+    this.context.strokeStyle = isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)'
+    this.context.fillStyle = isDark ? '#f8fafc' : '#0f172a'
 
     for (const label of this.labels) {
       const point = this._map.latLngToContainerPoint([label.position[0], label.position[1]])

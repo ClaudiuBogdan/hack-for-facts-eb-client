@@ -52,7 +52,7 @@ export function SectionedStepHeader({
               onClick={() => onProgressSectionSelect(backTarget.sectionId)}
               className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft aria-hidden="true" className="h-4 w-4" />
               {backTarget.label}
             </button>
           ) : (
@@ -62,7 +62,7 @@ export function SectionedStepHeader({
               resetScroll={true}
               className="inline-flex items-center gap-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft aria-hidden="true" className="h-4 w-4" />
               {backTarget.label}
             </Link>
           )}
@@ -78,7 +78,7 @@ export function SectionedStepHeader({
                 title={toggleLabel}
                 className="h-9 w-9 rounded-full"
               >
-                <ToggleIcon className="h-4 w-4" />
+                <ToggleIcon aria-hidden="true" className="h-4 w-4" />
               </Button>
             ) : (
               <Button
@@ -89,7 +89,7 @@ export function SectionedStepHeader({
                 title={toggleLabel}
                 className="h-9 rounded-full border border-border/70 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground"
               >
-                <Rows3 className="mr-2 h-4 w-4" />
+                <Rows3 aria-hidden="true" className="mr-2 h-4 w-4" />
                 {t`Section View`}
               </Button>
             )}
@@ -116,11 +116,11 @@ export function SectionedStepHeader({
                       aria-current={index === currentSectionIndex ? 'step' : undefined}
                       aria-label={`Section ${index + 1}: ${getSectionLabel(section)}`}
                       onClick={() => onProgressSectionSelect(section.id)}
-                      className="group flex-1 rounded-full p-1 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      className="group flex-1 rounded-full py-3 px-1 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
                       <span
                         className={[
-                          'block h-2 w-full rounded-full transition-all',
+                          'block h-2 w-full rounded-full transition-colors',
                           index < currentSectionIndex ? 'bg-emerald-500' : '',
                           index === currentSectionIndex ? 'bg-foreground' : '',
                           index > currentSectionIndex

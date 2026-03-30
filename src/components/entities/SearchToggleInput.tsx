@@ -85,8 +85,8 @@ export const SearchToggleInput: React.FC<SearchToggleInputProps> = ({
           <button
             type="button"
             onClick={() => handleClear()}
-            aria-label="Clear search"
-            className="flex items-center justify-center"
+            aria-label={t`Clear search`}
+            className="flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="h-4 w-4 cursor-pointer text-muted-foreground flex-shrink-0" />
           </button>
@@ -99,7 +99,8 @@ export const SearchToggleInput: React.FC<SearchToggleInputProps> = ({
           exit={{ scale: 0.5, opacity: 0 }}
           transition={{ duration: 0.15 }}
           onClick={() => onToggle(true)}
-          className="inline-flex h-9 w-9 items-center justify-center text-muted-foreground"
+          aria-label={t`Open search`}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Search className="h-5 w-5" />
         </motion.button>

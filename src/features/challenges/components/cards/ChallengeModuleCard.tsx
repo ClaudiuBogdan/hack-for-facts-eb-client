@@ -88,7 +88,7 @@ function ActionButton({
         size="lg"
         className={`rounded-[22px] px-8 ${styles.buttonHeight} ${styles.buttonTextSize} font-black border-2 border-green-500/20 bg-green-500/[0.05] text-green-600 hover:bg-green-500/10 transition-all`}
       >
-        <Trophy className="mr-2 lg:mr-3 h-5 w-5" />
+        <Trophy className="mr-2 lg:mr-3 h-5 w-5" aria-hidden="true" />
         {t`Completed`}
       </Button>
     )
@@ -102,7 +102,7 @@ function ActionButton({
         className={`rounded-[22px] px-8 lg:px-10 ${styles.buttonHeight} ${styles.buttonTextSize} font-black shadow-lg shadow-primary/15 transition-all hover:scale-[1.03] active:scale-95 bg-primary text-primary-foreground border-none`}
       >
         <Link to={nextStepUrl as '/'}>
-          <Play className="mr-2 lg:mr-3 h-5 w-5 fill-current" />
+          <Play className="mr-2 lg:mr-3 h-5 w-5 fill-current" aria-hidden="true" />
           {actionButtonLabel}
         </Link>
       </Button>
@@ -118,7 +118,7 @@ function ActionButton({
         onClick={onNavigateAndSwitch}
       >
         <Link to={nextStepUrl as '/'}>
-          <Play className="mr-2 h-5 w-5 fill-current" />
+          <Play className="mr-2 h-5 w-5 fill-current" aria-hidden="true" />
           {actionButtonLabel}
         </Link>
       </Button>
@@ -151,7 +151,7 @@ export function ChallengeModuleCard({
       <div
         className={`absolute top-0 right-0 opacity-[0.03] pointer-events-none ${isActive ? 'p-10 group-hover:scale-110 transition-transform duration-1000' : 'p-8'}`}
       >
-        <Trophy className={isActive ? 'h-64 w-64 rotate-12' : 'h-48 w-48 rotate-12'} />
+        <Trophy className={isActive ? 'h-64 w-64 rotate-12' : 'h-48 w-48 rotate-12'} aria-hidden="true" />
       </div>
 
       <CardContent className={`${styles.padding} ${styles.spacing}`}>
@@ -188,7 +188,7 @@ export function ChallengeModuleCard({
             >
               <Link to={buildCampaignProvocariModulePath(entityCui, module.slug) as '/'}>
                 {t`View Details`}
-                <ArrowRight className="ml-2 h-4 w-4 group-hover/link:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-2 h-4 w-4 group-hover/link:translate-x-1 transition-transform" aria-hidden="true" />
               </Link>
             </Button>
           </div>
@@ -202,11 +202,11 @@ export function ChallengeModuleCard({
                 <div className="h-1 w-1 rounded-full bg-primary" />
                 {t`Progress`}
               </span>
-              <span className="text-primary">
+              <span className="text-primary tabular-nums">
                 {stats.percentage}%
               </span>
             </div>
-            <div className="h-3 w-full bg-muted/50 rounded-full overflow-hidden shadow-inner p-0.5">
+            <div className="h-3 w-full bg-muted/50 rounded-full overflow-hidden shadow-inner p-0.5" role="progressbar" aria-valuenow={stats.percentage} aria-valuemin={0} aria-valuemax={100} aria-label={t`Module progress`}>
               <div
                 className="h-full bg-primary rounded-full transition-all duration-1000 ease-out shadow-lg"
                 style={{ width: `${stats.percentage}%` }}

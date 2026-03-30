@@ -1,15 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { Link, useLocation } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { ArrowLeftRight } from 'lucide-react'
-import { getEntityLabels } from '@/lib/api/labels'
 import { cn } from '@/lib/utils'
+import { useEntityLabel } from '@/hooks/filters/useFilterLabels'
 import { buildEntitySwitchRedirectUri, buildSelectorSearchState } from '@/features/campaigns/buget/utils/entity-selector-navigation'
 import { CHALLENGE_SELECTED_ENTITY_PICKER_PATH } from '../../constants'
 
 type UatSwitchBadgeProps = {
   readonly entityCui: string
   readonly className?: string
+  readonly labelSlot?: ReactNode
 }
 
 function toTitleCase(text: string): string {
@@ -18,21 +19,12 @@ function toTitleCase(text: string): string {
     .replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
-export function UatSwitchBadge({ entityCui, className }: UatSwitchBadgeProps) {
+export function UatSwitchBadge({ entityCui, className, labelSlot }: UatSwitchBadgeProps) {
   const location = useLocation()
-  const [label, setLabel] = useState<string>(entityCui)
-
-  useEffect(() => {
-    let cancelled = false
-    getEntityLabels([entityCui]).then((results) => {
-      if (cancelled) return
-      const match = results.find((r) => r.id === entityCui)
-      if (match) setLabel(toTitleCase(match.label))
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [entityCui])
+  const entityIds = useMemo(() => [entityCui], [entityCui])
+  const entityLabelStore = useEntityLabel(entityIds)
+  const rawLabel = entityLabelStore.map(entityCui)
+  const label = rawLabel.startsWith('id::') ? entityCui : toTitleCase(rawLabel)
 
   const redirectUri = buildEntitySwitchRedirectUri({
     pathname: location.pathname,
@@ -54,8 +46,15 @@ export function UatSwitchBadge({ entityCui, className }: UatSwitchBadgeProps) {
       )}
       title={t`Switch city hall`}
     >
-      <span className="truncate max-w-[200px]">{label}</span>
-      <ArrowLeftRight className="h-3.5 w-3.5 shrink-0 opacity-60" />
+      {labelSlot ? (
+        <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
+          {labelSlot}
+          <span className="truncate w-full">{label}</span>
+        </div>
+      ) : (
+        <span className="truncate max-w-[200px]">{label}</span>
+      )}
+      <ArrowLeftRight className="h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden="true" />
     </Link>
   )
 }

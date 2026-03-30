@@ -51,7 +51,7 @@ export function ChallengeEntityViewMenu({
               type="button"
               aria-pressed={isActive}
               className={cn(
-                'flex w-full items-center gap-2.5 px-2 py-3.5 text-left text-base font-medium transition-colors sm:gap-2 sm:rounded-md sm:py-2 sm:text-sm',
+                'flex w-full items-center gap-2.5 px-2 py-3.5 text-left text-base font-medium touch-manipulation transition-colors sm:gap-2 sm:rounded-md sm:py-2 sm:text-sm',
                 'hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
                 isActive
                   ? 'bg-primary/10 text-primary'

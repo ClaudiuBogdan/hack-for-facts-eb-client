@@ -53,7 +53,7 @@ export function BugetResourcesPage({
   if (locale === 'en') linkSearch.lang = 'en'
 
   return (
-    <section className="mx-auto max-w-3xl animate-in fade-in duration-700 px-4 py-6 sm:px-6 sm:py-10">
+    <section className="mx-auto max-w-3xl motion-safe:animate-in motion-safe:fade-in motion-safe:duration-700 px-4 py-6 sm:px-6 sm:py-10">
       {/* Back + Header */}
       <Link
         to={buildCampaignBudgetPath(entityCui) as '/'}
@@ -103,6 +103,7 @@ export function BugetResourcesPage({
                       )}
                     </div>
                     <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/30 group-hover/item:text-muted-foreground transition-colors flex-shrink-0" aria-hidden="true" />
+                    <span className="sr-only">({t`opens in new tab`})</span>
                   </a>
                 )
               })}

@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { cn } from '@/lib/utils'
-import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { BUDGET_STATUS_REPORT_INTERACTION } from '../../civic-interaction-definitions'
 import { CampaignChallengeFormShell } from './CampaignChallengeFormShell'
@@ -157,9 +156,9 @@ export function BudgetStatusReport({ ownerChallengeSlug, entityCui }: CampaignIn
       submitLabel={t`Report status`}
     >
       <fieldset className="space-y-3">
-        <Label className="text-sm font-bold text-foreground">
+        <legend className="text-sm font-bold text-foreground">
           <Trans>Has the 2026 budget been published?</Trans>
-        </Label>
+        </legend>
         <RadioGroup
           value={draft.isPublished ?? ''}
           onValueChange={(v) => handleIsPublishedChange(v as BudgetStatusReportValue['isPublished'])}
@@ -184,9 +183,9 @@ export function BudgetStatusReport({ ownerChallengeSlug, entityCui }: CampaignIn
 
       {draft.isPublished === 'yes' && (
         <fieldset className="space-y-3">
-          <Label className="text-sm font-bold text-foreground">
+          <legend className="text-sm font-bold text-foreground">
             <Trans>What stage is it in?</Trans>
-          </Label>
+          </legend>
           <RadioGroup
             value={draft.budgetStage ?? ''}
             onValueChange={(v) => handleBudgetStageChange(v as BudgetStatusReportValue['budgetStage'])}

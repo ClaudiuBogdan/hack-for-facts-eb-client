@@ -57,7 +57,7 @@ export const CHALLENGE_ARTICLE_PROSE_CLASS_NAME = cn(
 )
 
 export const SECTIONED_STEP_PROSE_CLASS_NAME = cn(
-  'prose prose-slate dark:prose-invert mx-auto max-w-2xl animate-in fade-in duration-200',
+  'prose prose-slate dark:prose-invert mx-auto max-w-2xl motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200',
   'prose-headings:scroll-mt-20 prose-headings:font-black prose-headings:tracking-tight prose-headings:leading-tight',
   'prose-h1:text-4xl prose-h1:md:text-5xl prose-h1:tracking-tighter',
   'prose-h2:text-2xl prose-h2:md:text-3xl',

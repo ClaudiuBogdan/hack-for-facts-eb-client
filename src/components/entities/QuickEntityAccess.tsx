@@ -2,13 +2,14 @@ import { useRecentEntities } from '@/hooks/useRecentEntities';
 import { PREDEFINED_ENTITIES } from '@/lib/constants/predefined-entities';
 import { Badge } from '@/components/ui/badge';
 import { Link } from '@tanstack/react-router';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { buildPreferredEntityPath } from '@/lib/entity-navigation';
 
 const MAX_SUGGESTIONS = 5;
 
 export function QuickEntityAccess() {
   const { recentEntities } = useRecentEntities();
+  const prefersReducedMotion = useReducedMotion();
 
   const suggestions = [
     ...recentEntities.map(e => ({ ...e, isRecent: true })),
@@ -23,9 +24,9 @@ export function QuickEntityAccess() {
         {suggestions.map((entity, index) => (
           <motion.div
             key={entity.cui}
-            initial={{ opacity: 0, y: -10 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, delay: index * 0.05 }}
           >
             <Link
               to={buildPreferredEntityPath({

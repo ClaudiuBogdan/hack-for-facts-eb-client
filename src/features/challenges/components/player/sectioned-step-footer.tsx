@@ -24,6 +24,8 @@ export function SectionedStepFooter({
         {footerState.message ? (
           <div className="space-y-4">
             <div
+              role="status"
+              aria-live="polite"
               className={cn(
                 'rounded-2xl px-4 py-3 text-sm font-medium',
                 footerState.tone === 'success' &&
@@ -72,7 +74,7 @@ export function SectionedStepFooter({
           >
             {footerState.primaryLabel}
             {footerState.primaryAction === 'advance' ? (
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" />
             ) : null}
           </Button>
         </div>

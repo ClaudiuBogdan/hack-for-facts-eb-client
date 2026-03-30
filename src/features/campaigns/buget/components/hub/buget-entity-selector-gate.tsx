@@ -235,10 +235,20 @@ export function BugetEntitySelectorGate({
           {isMapLoading ? mapPlaceholder : null}
 
           {mapError ? (
-            <div className="flex h-[40vh] sm:h-[50vh] items-center justify-center text-sm text-red-600 dark:text-red-400">
-              {locale === 'en'
-                ? 'Failed to load the map. Please refresh the page.'
-                : 'Nu am putut încărca harta. Reîncarcă pagina.'}
+            <div className="flex h-[40vh] sm:h-[50vh] flex-col items-center justify-center gap-3 text-sm text-red-600 dark:text-red-400">
+              <p>
+                {locale === 'en'
+                  ? 'Failed to load the map.'
+                  : 'Nu am putut încărca harta.'}
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.reload()}
+              >
+                {locale === 'en' ? 'Refresh page' : 'Reincarca pagina'}
+              </Button>
             </div>
           ) : null}
 

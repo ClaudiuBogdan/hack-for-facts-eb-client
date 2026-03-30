@@ -27,13 +27,13 @@ function TreeChildren({
             {!isEllipsis && (
               <span
                 className="absolute left-0 top-3.5 h-px w-4 bg-muted-foreground/25"
-                aria-hidden
+                aria-hidden="true"
               />
             )}
             {isLast && (
               <span
                 className={`absolute -left-px bottom-0 w-px bg-background ${isEllipsis ? 'top-0' : 'top-3.5'}`}
-                aria-hidden
+                aria-hidden="true"
               />
             )}
             {isEllipsis ? (

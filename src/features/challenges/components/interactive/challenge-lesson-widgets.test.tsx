@@ -482,7 +482,7 @@ describe('LessonAggregateDetailedCompare', () => {
       />,
     )
 
-    const bodyRows = screen.getAllByRole('row').slice(1)
+    const bodyRows = screen.getAllByRole('button', { pressed: false })
     fireEvent.click(bodyRows[0]!)
 
     const textarea = screen.getByLabelText(/Explică pe scurt ce arată acest rând/i)

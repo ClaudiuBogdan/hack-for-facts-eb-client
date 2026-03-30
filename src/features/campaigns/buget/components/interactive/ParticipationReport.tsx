@@ -186,9 +186,9 @@ export function ParticipationReport({ ownerChallengeSlug, entityCui }: CampaignI
       submitLabel={t`Submit report`}
     >
       <fieldset className="space-y-3">
-        <Label className="text-sm font-bold text-foreground">
+        <legend className="text-sm font-bold text-foreground">
           <Trans>Did the debate take place?</Trans>
-        </Label>
+        </legend>
         <RadioGroup
           value={draft.debateTookPlace ?? ''}
           onValueChange={(v) => updateField('debateTookPlace', v as ParticipationReportValue['debateTookPlace'])}
@@ -235,9 +235,9 @@ export function ParticipationReport({ ownerChallengeSlug, entityCui }: CampaignI
           </div>
 
           <fieldset className="space-y-3">
-            <Label className="text-sm font-bold text-foreground">
+            <legend className="text-sm font-bold text-foreground">
               <Trans>Were citizens allowed to speak?</Trans>
-            </Label>
+            </legend>
             <RadioGroup
               value={draft.citizensAllowedToSpeak ?? ''}
               onValueChange={(v) => updateField('citizensAllowedToSpeak', v as ParticipationReportValue['citizensAllowedToSpeak'])}
@@ -261,9 +261,9 @@ export function ParticipationReport({ ownerChallengeSlug, entityCui }: CampaignI
           </fieldset>
 
           <fieldset className="space-y-3">
-            <Label className="text-sm font-bold text-foreground">
+            <legend className="text-sm font-bold text-foreground">
               <Trans>Were citizen contributions recorded?</Trans>
-            </Label>
+            </legend>
             <RadioGroup
               value={draft.citizenInputsRecorded ?? ''}
               onValueChange={(v) => updateField('citizenInputsRecorded', v as ParticipationReportValue['citizenInputsRecorded'])}

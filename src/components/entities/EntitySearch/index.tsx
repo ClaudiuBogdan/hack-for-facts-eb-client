@@ -84,7 +84,7 @@ export function EntitySearchInput({
             onBlur={onBlur}
         >
             <div className="relative">
-                <Search className="absolute left-5 sm:left-7 top-1/2 h-6 w-6 sm:h-8 sm:w-8 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <Search aria-hidden="true" className="absolute left-5 sm:left-7 top-1/2 h-6 w-6 sm:h-8 sm:w-8 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 <Input
                     ref={inputRef}
                     type="text"
@@ -100,7 +100,7 @@ export function EntitySearchInput({
                     aria-expanded={showDropdown}
                     aria-controls={`${searchId}-listbox`}
                     aria-activedescendant={activeDescendantId}
-                    className="w-full px-15 sm:px-20 py-7 text-base md:text-xl bg-white dark:bg-slate-800 rounded-3xl placeholder:text-slate-400 shadow-sm hover:shadow-md focus:shadow-lg transition-all duration-300 border-slate-300 dark:border-slate-700 focus:border-slate-400 dark:focus:border-slate-600 focus-visible:ring-slate-400 dark:focus-visible:ring-slate-600"
+                    className="w-full px-15 sm:px-20 py-7 text-base md:text-xl bg-white dark:bg-slate-800 rounded-3xl placeholder:text-slate-400 shadow-sm hover:shadow-md focus:shadow-lg transition-shadow duration-300 border-slate-300 dark:border-slate-700 focus:border-slate-400 dark:focus:border-slate-600 focus-visible:ring-slate-400 dark:focus-visible:ring-slate-600"
                 />
                 {searchTerm && (
                     <button
@@ -109,8 +109,8 @@ export function EntitySearchInput({
                             handleClearSearch();
                             inputRef.current?.focus();
                         }}
-                        className="absolute right-7 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                        aria-label="Clear search"
+                        className="absolute right-7 top-1/2 -translate-y-1/2 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                        aria-label={t`Clear search`}
                     >
                         <X className="h-8 w-8" />
                     </button>

@@ -417,7 +417,7 @@ export function ChallengeStepPlayer({
       <Card className="border-dashed">
         <CardContent className="flex flex-col items-center justify-center py-16 text-center">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-            <BookOpen className="h-8 w-8 text-muted-foreground" />
+            <BookOpen aria-hidden="true" className="h-8 w-8 text-muted-foreground" />
           </div>
           <h2 className="text-lg font-semibold">{t`Step not found`}</h2>
           <p className="mt-1 max-w-sm text-sm text-muted-foreground">

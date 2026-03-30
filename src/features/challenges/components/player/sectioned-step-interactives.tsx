@@ -60,7 +60,7 @@ export function ChallengeSectionedQuiz({
               onClick={() => onSelect(option.id)}
               disabled={isAnswered || isPending}
               className={cn(
-                'flex w-full items-center gap-4 rounded-3xl border-2 p-4 text-left transition-all md:p-5',
+                'flex w-full items-center gap-4 rounded-3xl border-2 p-4 text-left transition-[color,background-color,border-color,opacity,box-shadow] md:p-5',
                 !isAnswered &&
                   'border-border/60 bg-card hover:border-foreground/20 hover:bg-muted/30',
                 isSelected &&
@@ -84,9 +84,9 @@ export function ChallengeSectionedQuiz({
                 )}
               >
                 {showAsCorrect ? (
-                  <Check className="h-5 w-5" />
+                  <Check aria-hidden="true" className="h-5 w-5" />
                 ) : showAsIncorrect ? (
-                  <X className="h-5 w-5" />
+                  <X aria-hidden="true" className="h-5 w-5" />
                 ) : (
                   String.fromCharCode(65 + index)
                 )}

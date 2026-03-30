@@ -304,7 +304,7 @@ export function ChallengeEntityAnalysisHeader({
                     <button
                       type="button"
                       onClick={handleCompactHeaderNameClick}
-                      className="min-w-0 text-balance text-left text-[2.5rem] font-black leading-[0.94] tracking-tight text-foreground transition-colors hover:text-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 sm:text-[2.8rem]"
+                      className="min-w-0 text-balance text-left text-[2.5rem] font-black leading-[0.94] tracking-tight text-foreground touch-manipulation transition-colors hover:text-foreground/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 sm:text-[2.8rem]"
                     >
                       {displayName}
                     </button>
@@ -361,7 +361,7 @@ export function ChallengeEntityAnalysisHeader({
         className="rounded-[32px] border border-border/50 bg-linear-to-br from-background via-background to-primary/[0.04] px-5 py-5 shadow-sm sm:px-6 sm:py-7 md:px-8"
       >
         <div className="space-y-4 sm:space-y-5">
-          <h1 className="text-balance text-[3rem] font-black leading-[0.94] tracking-tight text-foreground md:text-[2.85rem] lg:text-5xl">
+          <h1 className="scroll-mt-24 text-balance text-[3rem] font-black leading-[0.94] tracking-tight text-foreground md:text-[2.85rem] lg:text-5xl">
             {displayName}
           </h1>
 

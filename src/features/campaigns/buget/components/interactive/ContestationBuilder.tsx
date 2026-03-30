@@ -552,7 +552,7 @@ export function ContestationBuilder({ ownerChallengeSlug, entityCui }: CampaignI
 
             {/* Two side-by-side action cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="rounded-[24px] border-2 border-border/40 p-6 text-center transition-all hover:border-border/80 hover:shadow-sm">
+              <div className="rounded-[24px] border-2 border-border/40 p-6 text-center transition-[border-color,box-shadow] hover:border-border/80 hover:shadow-sm">
                 <Mail className="h-10 w-10 text-muted-foreground mb-3 mx-auto" aria-hidden="true" />
                 <p className="text-base font-black tracking-tight">{t`Send via email`}</p>
                 <p className="text-xs text-muted-foreground mt-1.5">
@@ -581,7 +581,7 @@ export function ContestationBuilder({ ownerChallengeSlug, entityCui }: CampaignI
                 )}
               </div>
 
-              <div className="rounded-[24px] border-2 border-border/40 p-6 text-center transition-all hover:border-border/80 hover:shadow-sm">
+              <div className="rounded-[24px] border-2 border-border/40 p-6 text-center transition-[border-color,box-shadow] hover:border-border/80 hover:shadow-sm">
                 <Download className="h-10 w-10 text-muted-foreground mb-3 mx-auto" aria-hidden="true" />
                 <p className="text-base font-black tracking-tight">{t`Download as text`}</p>
                 <p className="text-xs text-muted-foreground mt-1.5">

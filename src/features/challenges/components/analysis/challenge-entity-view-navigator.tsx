@@ -50,7 +50,7 @@ export function ChallengeEntityViewNavigator({
                 key={view.id}
                 type="button"
                 className={cn(
-                  'flex items-center gap-3 rounded-xl border border-border/40 px-4 py-3 text-left transition-colors',
+                  'flex items-center gap-3 rounded-xl border border-border/40 px-4 py-3 text-left touch-manipulation transition-colors',
                   'hover:border-border hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
                 )}
                 onClick={() => onViewChange(view.id)}

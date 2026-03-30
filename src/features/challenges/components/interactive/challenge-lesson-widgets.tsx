@@ -302,7 +302,7 @@ function LessonWidgetShell({
             ) : null}
             {Icon ? (
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                <Icon className="h-4 w-4" />
+                <Icon className="h-4 w-4" aria-hidden="true" />
               </div>
             ) : null}
           </div>
@@ -838,7 +838,8 @@ export function LessonEntitySnapshot({
       </div>
 
       {snapshotInteraction.isCompleted || allChecked ? (
-        <div className="rounded-[24px] border border-emerald-300 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-800">
+        <div className="flex items-center gap-2 rounded-[24px] border border-emerald-300 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" role="status">
+          <svg className="h-4 w-4 shrink-0" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
           {copy.lessonReady}
         </div>
       ) : null}
@@ -974,7 +975,7 @@ export function LessonBudgetEstimate({
               <p className="text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground">
                 {copy.actualValue}
               </p>
-              <p className="mt-2 text-lg font-black text-foreground">
+              <p className="mt-2 text-lg font-black tabular-nums text-foreground">
                 {formatCurrency(actualValue, 'compact', CHALLENGE_LESSON_DEFAULT_CURRENCY)}
               </p>
             </div>
@@ -982,7 +983,7 @@ export function LessonBudgetEstimate({
               <p className="text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground">
                 {copy.perCapita}
               </p>
-              <p className="mt-2 text-lg font-black text-foreground">
+              <p className="mt-2 text-lg font-black tabular-nums text-foreground">
                 {typeof perCapitaValue === 'number'
                   ? formatCurrency(perCapitaValue, 'compact', CHALLENGE_LESSON_DEFAULT_CURRENCY)
                   : 'N/A'}
@@ -992,7 +993,7 @@ export function LessonBudgetEstimate({
               <p className="text-[11px] font-black uppercase tracking-[0.18em] text-muted-foreground">
                 {copy.comparedTo2024}
               </p>
-              <p className="mt-2 text-lg font-black text-foreground">
+              <p className="mt-2 text-lg font-black tabular-nums text-foreground">
                 {growthPercent === null
                   ? copy.noPreviousYear
                   : `${growthPercent > 0 ? '+' : ''}${formatNumber(growthPercent, 'standard')}%`}
@@ -1418,8 +1419,11 @@ export function LessonExecutionTableExcerpt({
               return (
                 <TableRow
                   key={row.id}
+                  tabIndex={0}
+                  role="button"
+                  aria-pressed={isSelected}
                   data-state={isSelected ? 'selected' : undefined}
-                  className={`cursor-pointer transition-colors hover:bg-muted/50 ${isSelected ? 'border-l-2 border-l-primary bg-muted/30' : ''}`}
+                  className={`cursor-pointer transition-colors hover:bg-muted/50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/60 ${isSelected ? 'border-l-2 border-l-primary bg-muted/30' : ''}`}
                   onClick={() => {
                     debouncedPersistExecution.cancel()
                     setSelectedRowId(row.id)
@@ -1431,6 +1435,22 @@ export function LessonExecutionTableExcerpt({
                       void executionTableInteraction.complete(nextValue)
                     } else {
                       void executionTableInteraction.saveDraft(nextValue)
+                    }
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      debouncedPersistExecution.cancel()
+                      setSelectedRowId(row.id)
+                      const nextValue = {
+                        selectedRowId: row.id,
+                        rowExplanation,
+                      }
+                      if (rowExplanation.trim().length >= 30) {
+                        void executionTableInteraction.complete(nextValue)
+                      } else {
+                        void executionTableInteraction.saveDraft(nextValue)
+                      }
                     }
                   }}
                 >
@@ -1448,7 +1468,7 @@ export function LessonExecutionTableExcerpt({
                   <TableCell className="font-mono text-xs">
                     {row.economicCode ?? '-'}
                   </TableCell>
-                  <TableCell className="text-right font-mono">
+                  <TableCell className="text-right font-mono tabular-nums">
                     {toMiiLeiLabel(row.amount)}
                   </TableCell>
                 </TableRow>
@@ -1504,9 +1524,10 @@ export function LessonExecutionTableExcerpt({
         </div>
 
         {executionTableInteraction.isCompleted || isCompleted ? (
-          <p className="text-sm font-semibold text-emerald-700">
+          <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400" role="status">
+            <svg className="h-4 w-4 shrink-0" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
             {copy.documentReady}
-          </p>
+          </div>
         ) : null}
       </div>
     </div>

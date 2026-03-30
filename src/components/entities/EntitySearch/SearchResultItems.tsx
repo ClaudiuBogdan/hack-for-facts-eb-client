@@ -17,7 +17,7 @@ interface SearchResultItemProps {
 }
 
 export const SearchResultItem = forwardRef<HTMLAnchorElement, SearchResultItemProps>(
-    ({ entity, isActive, id, selectionBehavior, onClick }, ref) => {
+    function SearchResultItem({ entity, isActive, id, selectionBehavior, onClick }, ref) {
         const destination = buildEntitySelectionPath({
             cui: entity.cui,
             entityType: entity.entity_type,
@@ -52,12 +52,12 @@ export const SearchResultItem = forwardRef<HTMLAnchorElement, SearchResultItemPr
                             </div>
                             {entity.uat?.county_name && (
                                 <div className="mt-0.5 flex items-center text-xs text-slate-400 dark:text-slate-500">
-                                    <MapPin className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
+                                    <MapPin aria-hidden="true" className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
                                     {entity.uat.name} (Jud. {entity.uat.county_name})
                                 </div>
                             )}
                         </div>
-                        <ExternalLink className={cn(
+                        <ExternalLink aria-hidden="true" className={cn(
                             "h-5 w-5 text-slate-400 dark:text-slate-500 transition-colors flex-shrink-0",
                             isActive ? "text-primary" : "group-hover:text-primary"
                         )} />

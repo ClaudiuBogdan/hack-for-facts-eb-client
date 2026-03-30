@@ -274,10 +274,18 @@ function SlideProgress({
   readonly currentIndex: number
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div
+      className="flex items-center gap-2"
+      role="progressbar"
+      aria-valuenow={currentIndex + 1}
+      aria-valuemin={1}
+      aria-valuemax={total}
+      aria-label={`Step ${currentIndex + 1} of ${total}`}
+    >
       {Array.from({ length: total }, (_, index) => (
         <div
           key={index}
+          aria-hidden="true"
           className={`h-2 flex-1 rounded-full ${
             index <= currentIndex ? 'bg-foreground' : 'bg-muted'
           }`}
@@ -325,7 +333,7 @@ export function BudgetContextMapControls({
                 <button
                   key={option.id}
                   type="button"
-                  className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors ${
+                  className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/60 ${
                     isActive
                       ? 'bg-muted/70 text-foreground'
                       : 'bg-background text-foreground hover:bg-muted/40'
@@ -913,7 +921,7 @@ export function LessonBudgetContextFlow({
                         </div>
                       </TableCell>
                       <TableCell>{row.countyName}</TableCell>
-                      <TableCell className="text-right font-mono">
+                      <TableCell className="text-right font-mono tabular-nums">
                         {formatCurrency(row.value, 'compact', CHALLENGE_LESSON_DEFAULT_CURRENCY)}
                       </TableCell>
                     </TableRow>

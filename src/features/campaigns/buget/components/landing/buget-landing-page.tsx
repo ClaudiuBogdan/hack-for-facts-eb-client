@@ -134,7 +134,7 @@ export function BugetLandingPage({ locale }: BugetLandingPageProps) {
     locale === 'en' ? 'Start the challenge' : 'Începe provocarea'
 
   return (
-    <section className="mx-auto max-w-2xl animate-in fade-in duration-500 px-5 py-12 sm:py-16 md:py-24">
+    <section className="mx-auto max-w-2xl motion-safe:animate-in motion-safe:fade-in motion-safe:duration-500 px-5 py-12 sm:py-16 md:py-24">
       {/* Hero */}
       <div className="space-y-5">
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-[3.5rem] md:leading-[1.08]">

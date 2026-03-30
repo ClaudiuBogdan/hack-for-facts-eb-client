@@ -33,7 +33,7 @@ export function ChallengeEntityYearMenu({
               type="button"
               aria-pressed={isActive}
               className={cn(
-                'flex w-full items-center justify-between gap-3 px-2 py-3.5 text-left text-base font-medium tabular-nums transition-colors sm:rounded-md sm:px-1.5 sm:py-2 sm:text-sm',
+                'flex w-full items-center justify-between gap-3 px-2 py-3.5 text-left text-base font-medium tabular-nums touch-manipulation transition-colors sm:rounded-md sm:px-1.5 sm:py-2 sm:text-sm',
                 'hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
                 isActive
                   ? 'bg-primary/10 text-primary'

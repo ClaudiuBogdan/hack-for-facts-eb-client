@@ -725,17 +725,17 @@ msgstr "Add series"
 msgid "Add Series"
 msgstr "Add Series"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:495
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:579
 msgid "Add the association name to use this option."
 msgstr "Add the association name to use this option."
 
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:72
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:115
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:78
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:119
 msgid "Add the city hall's contact details for future communications."
 msgstr "Add the city hall's contact details for future communications."
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:121
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:144
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:127
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:148
 msgid "Add the link to the city hall's budget document."
 msgstr "Add the link to the city hall's budget document."
 
@@ -782,7 +782,6 @@ msgid "Advanced map analytics active view"
 msgstr "Advanced map analytics active view"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:572
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:543
 msgid "After the message opens and you send it from your email client, confirm below."
 msgstr "After the message opens and you send it from your email client, confirm below."
 
@@ -1099,8 +1098,8 @@ msgstr "Apply gradient"
 msgid "Apply gradient colors?"
 msgstr "Apply gradient colors?"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:33
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:52
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:32
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:51
 msgid "Approved"
 msgstr "Approved"
 
@@ -1154,21 +1153,21 @@ msgstr "As a data subject under GDPR, you have the following rights:"
 msgid "Ask questions and discuss this lesson with the community."
 msgstr "Ask questions and discuss this lesson with the community."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:559
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:618
 msgid "Ask us to send it"
 msgstr "Ask us to send it"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:322
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:388
 msgid "Association"
 msgstr "Association"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:328
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:501
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:394
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:585
 msgid "Association email"
 msgstr "Association email"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:435
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:442
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:506
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:513
 msgid "Association name"
 msgstr "Association name"
 
@@ -1224,7 +1223,7 @@ msgstr "Available budget credits"
 msgid "Available commitment credits"
 msgstr "Available commitment credits"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:490
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:574
 msgid "Available for legally established associations."
 msgstr "Available for legally established associations."
 
@@ -1252,8 +1251,8 @@ msgstr "Avg. Amount per UAT"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:394
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:465
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:606
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:456
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:585
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:527
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:646
 #: src/routes/alerts/new.lazy.tsx:175
 msgid "Back"
 msgstr "Back"
@@ -1352,6 +1351,10 @@ msgstr "Basic data on population, employment and housing."
 #: src/routes/privacy.lazy.tsx:27
 msgid "Basic security logs are kept for a short period to protect accounts."
 msgstr "Basic security logs are kept for a short period to protect accounts."
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:157
+msgid "Before confirming, make sure you:"
+msgstr "Before confirming, make sure you:"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:99
 msgid "Best for cross-county comparisons where scales are very different."
@@ -1473,13 +1476,13 @@ msgstr "Budget Cycle Timeline"
 msgid "Budget Distribution"
 msgstr "Budget Distribution"
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:119
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:138
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:125
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:142
 msgid "Budget document"
 msgstr "Budget document"
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:120
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:141
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:126
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:145
 msgid "Budget document link"
 msgstr "Budget document link"
 
@@ -1491,7 +1494,7 @@ msgstr "Budget Documents"
 msgid "Budget draft publication date"
 msgstr "Budget draft publication date"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:104
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:91
 msgid "Budget guides, request templates, and more."
 msgstr "Budget guides, request templates, and more."
 
@@ -1513,15 +1516,15 @@ msgstr "Budget sector"
 msgid "Budget Sector"
 msgstr "Budget Sector"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:131
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:130
 msgid "Budget stage"
 msgstr "Budget stage"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:146
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:145
 msgid "Budget status"
 msgstr "Budget status"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:151
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:150
 msgid "Budget status 2026"
 msgstr "Budget status 2026"
 
@@ -1659,8 +1662,8 @@ msgstr "Challenge Question"
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:139
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:276
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:291
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:582
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:292
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:584
 msgid "Challenges"
 msgstr "Challenges"
 
@@ -1753,7 +1756,7 @@ msgstr "Choose an answer"
 msgid "Choose between essential-only or all cookies, then fine-tune options below."
 msgstr "Choose between essential-only or all cookies, then fine-tune options below."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:472
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:543
 msgid "Choose how you want the public debate request to be sent."
 msgstr "Choose how you want the public debate request to be sent."
 
@@ -1765,34 +1768,34 @@ msgstr "Choose operator"
 msgid "Citizens allowed to speak"
 msgstr "Citizens allowed to speak"
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:372
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:376
 msgid "City hall"
 msgstr "City hall"
 
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:70
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:109
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:76
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:113
 msgid "City hall contact"
 msgstr "City hall contact"
 
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:71
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:112
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:77
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:116
 msgid "City hall contact info"
 msgstr "City hall contact info"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:273
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:511
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:317
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:382
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:122
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:383
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:454
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:132
 msgid "City hall email"
 msgstr "City hall email"
 
-#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:84
-#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:106
+#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:90
+#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:116
 msgid "City hall link"
 msgstr "City hall link"
 
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:139
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:149
 msgid "City hall phone (optional)"
 msgstr "City hall phone (optional)"
 
@@ -1870,6 +1873,8 @@ msgid "Clear filters ({0})"
 msgstr "Clear filters ({0})"
 
 #: src/components/classification-explorer/ClassificationSearch.tsx:39
+#: src/components/entities/EntitySearch/index.tsx:113
+#: src/components/entities/SearchToggleInput.tsx:88
 #: src/components/filters/base-filter/SearchInput.tsx:56
 msgid "Clear search"
 msgstr "Clear search"
@@ -2068,6 +2073,7 @@ msgid "Complete!"
 msgstr "Complete!"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:92
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:359
 msgid "Completed"
 msgstr "Completed"
 
@@ -2220,8 +2226,8 @@ msgstr "Context"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:357
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:401
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:472
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:408
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:462
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:479
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:533
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:144
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:205
 #: src/features/learning/components/cards/LearningPathCard.tsx:24
@@ -2284,6 +2290,7 @@ msgid "Copied"
 msgstr "Copied"
 
 #: src/components/charts/components/ChartDataError.tsx:278
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:62
 msgid "Copied to clipboard"
 msgstr "Copied to clipboard"
 
@@ -2295,6 +2302,7 @@ msgstr "Copied!"
 #: src/components/charts/components/views/AnnotationConfigView.tsx:220
 #: src/components/charts/components/views/SeriesConfigView.tsx:375
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:239
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:65
 msgid "Copy"
 msgstr "Copy"
 
@@ -2322,9 +2330,13 @@ msgstr "Copy error report to clipboard"
 msgid "Copy failed"
 msgstr "Copy failed"
 
-#: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:111
+#: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:112
 msgid "Copy failed. You can still select and copy the link manually."
 msgstr "Copy failed. You can still select and copy the link manually."
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:159
+#~ msgid "Copy full email"
+#~ msgstr "Copy full email"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:443
 #: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:105
@@ -2361,6 +2373,10 @@ msgstr "Copy Support Email"
 #: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:75
 msgid "Copy the civic module link"
 msgstr "Copy the civic module link"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:173
+#~ msgid "Copy the email content above or open your email client, then confirm after sending."
+#~ msgstr "Copy the email content above or open your email client, then confirm after sending."
 
 #: src/features/learning/components/assessment/Quiz.tsx:172
 msgid "Correct Choice"
@@ -2777,8 +2793,8 @@ msgstr "Death rate captures health and age-structure pressure and helps explain 
 msgid "Deaths (POP206D)"
 msgstr "Deaths (POP206D)"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:343
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:359
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:409
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:425
 msgid "Debate request"
 msgstr "Debate request"
 
@@ -2884,7 +2900,7 @@ msgid "Delete this map?"
 msgstr "Delete this map?"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:253
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:308
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:374
 msgid "Delivery path"
 msgstr "Delivery path"
 
@@ -3054,7 +3070,7 @@ msgstr "Distribution"
 msgid "Distribution series"
 msgstr "Distribution series"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:424
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:495
 msgid "Do you represent a legally established association?"
 msgstr "Do you represent a legally established association?"
 
@@ -3063,7 +3079,7 @@ msgid "Document link"
 msgstr "Document link"
 
 #: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:47
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:167
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:177
 msgid "Document type"
 msgstr "Document type"
 
@@ -3101,8 +3117,8 @@ msgstr "Download the formatted contestation as a text file."
 msgid "Downloaded as text"
 msgstr "Downloaded as text"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:32
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:50
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:31
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:49
 msgid "Draft (public consultation)"
 msgstr "Draft (public consultation)"
 
@@ -3295,7 +3311,7 @@ msgid "Effective Spending"
 msgstr "Effective Spending"
 
 #: src/components/entities/views/entity-profile-view.presentation.tsx:172
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:78
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:84
 msgid "Email"
 msgstr "Email"
 
@@ -3809,7 +3825,11 @@ msgstr "Exports must include attribution to data source and Transparenta.eu."
 msgid "Exports, imports and trade balance."
 msgstr "Exports, imports and trade balance."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:294
+#: src/components/entities/views/entity-profile-view.presentation.tsx:262
+msgid "Extraction confidence"
+msgstr "Extraction confidence"
+
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:295
 msgid "Eyes on Local Budgets"
 msgstr "Eyes on Local Budgets"
 
@@ -3985,7 +4005,7 @@ msgstr "Feedback / Report an issue"
 msgid "Feedback is currently unavailable."
 msgstr "Feedback is currently unavailable."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:363
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:429
 msgid "Fill in the city hall's contact details and send the request to organize a public debate on the local budget."
 msgstr "Fill in the city hall's contact details and send the request to organize a public debate on the local budget."
 
@@ -4154,6 +4174,10 @@ msgstr "Foreign trade"
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:114
 msgid "Found {replacementCount} occurrence{0}"
 msgstr "Found {replacementCount} occurrence{0}"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:153
+#~ msgid "Full email copied to clipboard"
+#~ msgstr "Full email copied to clipboard"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1524
 msgid "Full historical observations exceeded the page cap for this view. Showing the retrieved subset."
@@ -4423,7 +4447,7 @@ msgid "Grouping"
 msgstr "Grouping"
 
 #: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:69
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:101
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:88
 msgid "Guides & templates"
 msgstr "Guides & templates"
 
@@ -4435,7 +4459,7 @@ msgstr "Hands-On Activity"
 msgid "Hang tight while we resolve and redirect you to the destination."
 msgstr "Hang tight while we resolve and redirect you to the destination."
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:161
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:160
 msgid "Has the 2026 budget been published?"
 msgstr "Has the 2026 budget been published?"
 
@@ -4564,8 +4588,8 @@ msgstr "How we use your data"
 msgid "I did this"
 msgstr "I did this"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:25
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:43
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:24
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:42
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:30
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:48
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:58
@@ -4574,7 +4598,7 @@ msgid "I don't know"
 msgstr "I don't know"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:578
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:550
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:173
 msgid "I sent the email"
 msgstr "I sent the email"
 
@@ -4918,6 +4942,11 @@ msgstr "June"
 msgid "Justice"
 msgstr "Justice"
 
+#. placeholder {0}: cc.join(', ')
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:162
+msgid "Keep <0>{0}</0> in CC so we can track the request"
+msgstr "Keep <0>{0}</0> in CC so we can track the request"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:93
 msgid "Keeps UATs whose values fall between two percentiles of the selected series. Use this when absolute thresholds are misleading because data is very skewed."
 msgstr "Keeps UATs whose values fall between two percentiles of the selected series. Use this when absolute thresholds are misleading because data is very skewed."
@@ -5113,11 +5142,11 @@ msgstr "Link"
 msgid "Link copied to clipboard"
 msgstr "Link copied to clipboard"
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:150
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:160
 msgid "Link to the budget document"
 msgstr "Link to the budget document"
 
-#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:117
+#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:127
 msgid "Link to the official city hall website"
 msgstr "Link to the official city hall website"
 
@@ -5637,6 +5666,10 @@ msgstr "Medium opportunity"
 msgid "Menu"
 msgstr "Menu"
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:132
+msgid "Message"
+msgstr "Message"
+
 #: src/components/alerts/components/AlertEditorView.tsx:265
 msgid "Metadata"
 msgstr "Metadata"
@@ -5653,7 +5686,7 @@ msgstr "Metric"
 msgid "Migrating map editor link..."
 msgstr "Migrating map editor link..."
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:432
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:433
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:272
 msgid "min"
 msgstr "min"
@@ -5732,6 +5765,12 @@ msgstr "Mode"
 #: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:82
 msgid "Module link"
 msgstr "Module link"
+
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:209
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:263
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:209
+msgid "Module progress"
+msgstr "Module progress"
 
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:146
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:148
@@ -5848,7 +5887,7 @@ msgstr "Multiplier 1.5 is standard; use 3.0 for stricter outlier detection."
 msgid "My Budget Analysis Map…"
 msgstr "My Budget Analysis Map…"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:55
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:46
 msgid "My city hall"
 msgstr "My city hall"
 
@@ -5989,8 +6028,8 @@ msgid "Next"
 msgstr "Next"
 
 #: src/components/filters/flags-filter/index.tsx:24
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:24
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:41
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:23
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:40
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:29
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:38
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:47
@@ -6507,8 +6546,8 @@ msgstr "of annual budget paid"
 msgid "of commitment authority"
 msgstr "of commitment authority"
 
-#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:85
-#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:111
+#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:91
+#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:121
 msgid "Official city hall website"
 msgstr "Official city hall website"
 
@@ -6571,6 +6610,10 @@ msgstr "Open bins preset menu"
 msgid "Open Budget Explorer"
 msgstr "Open Budget Explorer"
 
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:575
+msgid "Open challenges menu"
+msgstr "Open challenges menu"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:142
 msgid "Open Chart"
 msgstr "Open Chart"
@@ -6597,14 +6640,16 @@ msgid "Open data follows the source license."
 msgstr "Open data follows the source license."
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:567
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:533
 msgid "Open email"
 msgstr "Open email"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:567
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:532
 msgid "Open email again"
 msgstr "Open email again"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:151
+msgid "Open email client"
+msgstr "Open email client"
 
 #: src/components/ui/shortcuts.tsx:21
 msgid "Open entity search dialog"
@@ -6677,6 +6722,10 @@ msgstr "Open row menu"
 msgid "Open rule {0} menu"
 msgstr "Open rule {0} menu"
 
+#: src/components/entities/SearchToggleInput.tsx:102
+msgid "Open search"
+msgstr "Open search"
+
 #: src/components/ui/shortcuts.tsx:31
 msgid "Open Search"
 msgstr "Open Search"
@@ -6689,11 +6738,15 @@ msgstr "Open source matrix in INS Tempo"
 msgid "Open Table"
 msgstr "Open Table"
 
+#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:106
+msgid "opens in new tab"
+msgstr "opens in new tab"
+
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:559
 msgid "Opens your email client with the completed contestation."
 msgstr "Opens your email client with the completed contestation."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:486
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:570
 msgid "Opens your email client with the completed request. Recommended when you represent a legally established association."
 msgstr "Opens your email client with the completed request. Recommended when you represent a legally established association."
 
@@ -7004,7 +7057,7 @@ msgid "Phase: {0}"
 msgstr "Phase: {0}"
 
 #: src/components/entities/views/entity-profile-view.presentation.tsx:181
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:84
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:90
 msgid "Phone"
 msgstr "Phone"
 
@@ -7020,9 +7073,9 @@ msgstr "Planned"
 msgid "Platform Mission"
 msgstr "Platform Mission"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:235
-msgid "Please open the prepared email before confirming."
-msgstr "Please open the prepared email before confirming."
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:388
+#~ msgid "Please open the prepared email before confirming."
+#~ msgstr "Please open the prepared email before confirming."
 
 #: src/features/learning/components/interactive/ExecutionRateChart.tsx:251
 msgid "Poor"
@@ -7091,9 +7144,17 @@ msgstr "Pre-filled from the debate request challenge."
 msgid "Prefer median over mean when one or two UATs dominate values."
 msgstr "Prefer median over mean when one or two UATs dominate values."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:530
-msgid "Preparing email..."
-msgstr "Preparing email..."
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:611
+msgid "Prepare email"
+msgstr "Prepare email"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:107
+msgid "Prepared email"
+msgstr "Prepared email"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:697
+#~ msgid "Preparing email..."
+#~ msgstr "Preparing email..."
 
 #: src/routes/maps/editor/new.lazy.tsx:250
 msgid "Preparing map creation..."
@@ -7121,6 +7182,7 @@ msgstr "Preset label"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:69
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:536
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:104
 #: src/routes/alerts/$alertId/index.lazy.tsx:237
 #: src/routes/alerts/new.lazy.tsx:203
 msgid "Preview"
@@ -7183,7 +7245,7 @@ msgstr "Profile information for this entity has not been collected yet."
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:203
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:257
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:204
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:205
 msgid "Progress"
 msgstr "Progress"
 
@@ -7198,8 +7260,8 @@ msgstr "Propose a specific and realistic change. For example: \"Redistribute 500
 msgid "Public"
 msgstr "Public"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:344
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:361
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:410
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:427
 msgid "Public debate request"
 msgstr "Public debate request"
 
@@ -7236,7 +7298,7 @@ msgstr "Public sector information from Ministerul Finanțelor. No government aff
 msgid "Publication date"
 msgstr "Publication date"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:125
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:124
 msgid "Published"
 msgstr "Published"
 
@@ -7345,7 +7407,7 @@ msgid "Recipient"
 msgstr "Recipient"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:259
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:314
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:380
 msgid "Recorded"
 msgstr "Recorded"
 
@@ -7443,11 +7505,11 @@ msgstr "Replace value"
 msgid "Report bug"
 msgstr "Report bug"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:157
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:156
 msgid "Report status"
 msgstr "Report status"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:152
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:151
 msgid "Report the publication status of the local budget for 2026."
 msgstr "Report the publication status of the local budget for 2026."
 
@@ -7484,15 +7546,15 @@ msgstr "Reporting:"
 msgid "Reports"
 msgstr "Reports"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:81
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:70
 msgid "Request a public debate for the local budget."
 msgstr "Request a public debate for the local budget."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:568
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:628
 msgid "Request submission"
 msgstr "Request submission"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:313
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:379
 msgid "Requested platform delivery"
 msgstr "Requested platform delivery"
 
@@ -7525,7 +7587,7 @@ msgstr "Reset to available period"
 msgid "Reset to default"
 msgstr "Reset to default"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:37
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:29
 msgid "Resources"
 msgstr "Resources"
 
@@ -7664,7 +7726,7 @@ msgstr "Sankey Chart (Aggregated)"
 msgid "Save"
 msgstr "Save"
 
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:159
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:169
 msgid "Save contact details"
 msgstr "Save contact details"
 
@@ -7876,7 +7938,7 @@ msgstr "Security monitoring and logs"
 msgid "See also our <0>Privacy Policy</0>."
 msgstr "See also our <0>Privacy Policy</0>."
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:58
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:49
 msgid "See the budget analysis for the selected entity."
 msgstr "See the budget analysis for the selected entity."
 
@@ -7900,7 +7962,7 @@ msgstr "Select a predefined dataset to track"
 msgid "Select a snapshot to clone into a new map."
 msgstr "Select a snapshot to clone into a new map."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:416
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:417
 msgid "Select a topic to begin"
 msgstr "Select a topic to begin"
 
@@ -7960,7 +8022,7 @@ msgstr "Select Series Type"
 msgid "Select specific years. If none selected, all years will be shown."
 msgstr "Select specific years. If none selected, all years will be shown."
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:313
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:314
 msgid "Select topic"
 msgstr "Select topic"
 
@@ -7998,7 +8060,7 @@ msgstr "Selects UATs by standardized distance from mean in standard deviations. 
 msgid "Seller Keeps"
 msgstr "Seller Keeps"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:78
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:67
 msgid "Send debate request"
 msgstr "Send debate request"
 
@@ -8008,9 +8070,13 @@ msgstr "Send debate request"
 msgid "Send feedback"
 msgstr "Send feedback"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:484
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:568
 msgid "Send it yourself"
 msgstr "Send it yourself"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:160
+msgid "Send the email from your association's email address"
+msgstr "Send the email from your association's email address"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:557
 msgid "Send via email"
@@ -8020,7 +8086,7 @@ msgstr "Send via email"
 msgid "Sender"
 msgstr "Sender"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:311
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:377
 msgid "Sent by you"
 msgstr "Sent by you"
 
@@ -8144,7 +8210,7 @@ msgstr "Share Link"
 msgid "Share link copied"
 msgstr "Share link copied"
 
-#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:86
+#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:92
 msgid "Share the official city hall website so others can verify the budget information."
 msgstr "Share the official city hall website so others can verify the budget information."
 
@@ -8361,7 +8427,7 @@ msgstr "Sign in to track your learning journey."
 msgid "SIRUTA"
 msgstr "SIRUTA"
 
-#: src/features/challenges/components/player/sectioned-step-footer.tsx:57
+#: src/features/challenges/components/player/sectioned-step-footer.tsx:59
 msgid "Skip"
 msgstr "Skip"
 
@@ -8598,15 +8664,17 @@ msgid "Subchapter"
 msgstr "Subchapter"
 
 #: src/components/charts/components/views/AnnotationConfigView.tsx:142
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:94
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:124
 msgid "Subject"
 msgstr "Subject"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:253
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:276
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:326
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:349
 msgid "Submission failed. Please try again."
 msgstr "Submission failed. Please try again."
 
-#: src/features/campaigns/buget/components/interactive/CampaignChallengeFormShell.tsx:97
+#: src/features/campaigns/buget/components/interactive/CampaignChallengeFormShell.tsx:106
 msgid "Submit"
 msgstr "Submit"
 
@@ -8614,8 +8682,8 @@ msgstr "Submit"
 msgid "Submit information"
 msgstr "Submit information"
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:198
-#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:138
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:206
+#: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:148
 msgid "Submit link"
 msgstr "Submit link"
 
@@ -8623,23 +8691,27 @@ msgstr "Submit link"
 msgid "Submit report"
 msgstr "Submit report"
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:585
+#~ msgid "Submit request"
+#~ msgstr "Submit request"
+
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:144
 msgid "Submitted"
 msgstr "Submitted"
 
 #: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:53
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:147
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:137
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:136
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:279
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:334
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:400
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:166
-#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:90
+#: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:96
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:33
 msgid "Submitted on"
 msgstr "Submitted on"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:550
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:568
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:173
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:628
 msgid "Submitting..."
 msgstr "Submitting..."
 
@@ -8663,7 +8735,7 @@ msgstr "Sum"
 msgid "Supervisory authority"
 msgstr "Supervisory authority"
 
-#: src/features/challenges/components/hub/UatSwitchBadge.tsx:55
+#: src/features/challenges/components/hub/UatSwitchBadge.tsx:47
 msgid "Switch city hall"
 msgstr "Switch city hall"
 
@@ -8777,7 +8849,7 @@ msgstr "The actual value of goods & services you receive."
 msgid "The answer is:"
 msgstr "The answer is:"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:516
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:600
 msgid "The association email address is not valid."
 msgstr "The association email address is not valid."
 
@@ -8801,7 +8873,7 @@ msgstr "The data is presented for informational purposes, based on government da
 msgid "The Deficit"
 msgstr "The Deficit"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:397
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:469
 msgid "The email address is not valid."
 msgstr "The email address is not valid."
 
@@ -8911,7 +8983,7 @@ msgstr "These cookies are essential for account functionality. If you delete the
 msgid "These issues were auto-resolved (invalid points removed or values set to 0) so the chart could render."
 msgstr "These issues were auto-resolved (invalid points removed or values set to 0) so the chart could render."
 
-#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:116
+#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:117
 msgid "These materials are part of the project"
 msgstr "These materials are part of the project"
 
@@ -9052,6 +9124,11 @@ msgstr "Title A–Z"
 msgid "Title Z–A"
 msgstr "Title Z–A"
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:92
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:114
+msgid "To"
+msgstr "To"
+
 #: src/routes/privacy.lazy.tsx:122
 msgid "To exercise any of these rights, contact us at contact@transparenta.eu We will respond within 30 days."
 msgstr "To exercise any of these rights, contact us at contact@transparenta.eu We will respond within 30 days."
@@ -9120,7 +9197,7 @@ msgstr "Top 15 Counties by Total Amount"
 msgid "Top 15 UATs by Total Amount"
 msgstr "Top 15 UATs by Total Amount"
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:308
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:309
 msgid "Topic"
 msgstr "Topic"
 
@@ -9323,7 +9400,7 @@ msgstr "UATs"
 msgid "Unavailable"
 msgstr "Unavailable"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:431
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:502
 msgid "Under Law 52/2003, requests from legally established associations can trigger the obligation to organize a public debate."
 msgstr "Under Law 52/2003, requests from legally established associations can trigger the obligation to organize a public debate."
 
@@ -9789,9 +9866,9 @@ msgstr "We could not load the analysis."
 msgid "We could not load this section right now. Please refresh and try again."
 msgstr "We could not load this section right now. Please refresh and try again."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:221
-msgid "We could not prepare the email. Please try again."
-msgstr "We could not prepare the email. Please try again."
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:360
+#~ msgid "We could not prepare the email. Please try again."
+#~ msgstr "We could not prepare the email. Please try again."
 
 #. js-lingui-explicit-id
 #: src/lib/errors-utils.ts:13
@@ -9831,7 +9908,7 @@ msgstr "We use cookies and similar technologies to enhance your experience, anal
 msgid "We value your privacy"
 msgstr "We value your privacy"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:561
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:620
 msgid "We will record the request and send it through the platform."
 msgstr "We will record the request and send it through the platform."
 
@@ -9889,7 +9966,7 @@ msgstr "What percentage was actually used?"
 msgid "What personal data we collect"
 msgstr "What personal data we collect"
 
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:188
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:187
 msgid "What stage is it in?"
 msgstr "What stage is it in?"
 
@@ -10008,8 +10085,8 @@ msgid "Yearly"
 msgstr "Yearly"
 
 #: src/components/filters/flags-filter/index.tsx:24
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:23
-#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:39
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:22
+#: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:38
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:28
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:37
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:46
@@ -10031,7 +10108,7 @@ msgstr "You are signed in. Authentication cookies (Clerk) are essential and requ
 msgid "You are viewing a shared map. Only the owner can edit the name."
 msgstr "You are viewing a shared map. Only the owner can edit the name."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:303
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:369
 msgid "You asked the platform to send the public debate request on your behalf."
 msgstr "You asked the platform to send the public debate request on your behalf."
 
@@ -10093,7 +10170,7 @@ msgstr "You need to be signed in to manage notifications"
 msgid "You need to be signed in to subscribe to notifications"
 msgstr "You need to be signed in to subscribe to notifications"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:301
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:367
 msgid "You opened the prepared email and confirmed that you sent the public debate request."
 msgstr "You opened the prepared email and confirmed that you sent the public debate request."
 
@@ -10186,7 +10263,7 @@ msgstr "YOUR PREDICTION"
 msgid "Your progress has been saved. You can continue to the next step."
 msgstr "Your progress has been saved. You can continue to the next step."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:304
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:370
 msgid "Your public debate request was recorded."
 msgstr "Your public debate request was recorded."
 

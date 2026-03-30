@@ -91,7 +91,7 @@ export function ChallengeModulePage({
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center min-h-[50vh]">
         <div className="h-20 w-20 rounded-3xl bg-muted/30 flex items-center justify-center mb-6">
-          <BookOpen className="h-10 w-10 text-muted-foreground/50" />
+          <BookOpen className="h-10 w-10 text-muted-foreground/50" aria-hidden="true" />
         </div>
         <h2 className="text-2xl font-black tracking-tight">{t`Not found`}</h2>
         <p className="text-lg text-muted-foreground font-medium mt-2 max-w-md mx-auto">
@@ -134,14 +134,14 @@ export function ChallengeModulePage({
   const statsSummary = (
     <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-medium text-muted-foreground">
       <div className="flex items-center gap-2">
-        <Layers className="h-4 w-4" />
+        <Layers className="h-4 w-4" aria-hidden="true" />
         <span>
           {module.challenges.length} {t`Challenges`}
         </span>
       </div>
 
       <div className="flex items-center gap-2">
-        <Clock className="h-4 w-4" />
+        <Clock className="h-4 w-4" aria-hidden="true" />
         <span>
           {formatTime(
             stats.completedCount > 0 && !isComplete
@@ -152,7 +152,7 @@ export function ChallengeModulePage({
       </div>
 
       <div className="flex items-center gap-2">
-        <CheckCircle2 className="h-4 w-4" />
+        <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
         <span className="tabular-nums">
           {stats.completedCount}/{stats.totalCount} {t`Steps`}
         </span>
@@ -169,7 +169,7 @@ export function ChallengeModulePage({
           to={buildCampaignProvocariPath(entityCui) as '/'}
           className="inline-flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors group"
         >
-          <ArrowRight className="h-4 w-4 rotate-180 group-hover:-translate-x-1 transition-transform" />
+          <ArrowRight className="h-4 w-4 rotate-180 group-hover:-translate-x-1 transition-transform" aria-hidden="true" />
           {t`Back to Challenges`}
         </Link>
 
@@ -196,17 +196,17 @@ export function ChallengeModulePage({
                     <Link to={startHref as '/'}>
                       {isComplete ? (
                         <>
-                          <BookOpen className="mr-2 h-5 w-5" />
+                          <BookOpen className="mr-2 h-5 w-5" aria-hidden="true" />
                           {t`Review`}
                         </>
                       ) : stats.completedCount > 0 ? (
                         <>
-                          <Play className="mr-2 h-5 w-5 fill-current" />
+                          <Play className="mr-2 h-5 w-5 fill-current" aria-hidden="true" />
                           {t`Continue`}
                         </>
                       ) : (
                         <>
-                          <Play className="mr-2 h-5 w-5 fill-current" />
+                          <Play className="mr-2 h-5 w-5 fill-current" aria-hidden="true" />
                           {t`Start`}
                         </>
                       )}
@@ -260,7 +260,7 @@ export function ChallengeModulePage({
               {stats.completionPercentage}%
             </span>
           </div>
-          <div className="h-2 w-full rounded-full bg-muted/50 overflow-hidden">
+          <div className="h-2 w-full rounded-full bg-muted/50 overflow-hidden" role="progressbar" aria-valuenow={stats.completionPercentage} aria-valuemin={0} aria-valuemax={100} aria-label={t`Module progress`}>
             <div
               className="h-full rounded-full bg-primary transition-all duration-1000 ease-out"
               style={{ width: `${stats.completionPercentage}%` }}
@@ -316,7 +316,7 @@ export function ChallengeModulePage({
                         )}
                       >
                         {isChallengeComplete ? (
-                          <CheckCircle2 className="h-5 w-5" />
+                          <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
                         ) : (
                           challengeIndex + 1
                         )}
@@ -355,7 +355,8 @@ export function ChallengeModulePage({
                       </h3>
                       {isChallengeComplete ? (
                         <span className="inline-flex items-center rounded-full bg-green-500/10 px-2 py-0.5 text-xs font-bold text-green-600">
-                          <CheckCircle2 className="h-3 w-3" />
+                          <CheckCircle2 className="h-3 w-3" aria-hidden="true" />
+                          <span className="sr-only">{t`Completed`}</span>
                         </span>
                       ) : completedSteps > 0 ? (
                         <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-bold text-muted-foreground tabular-nums">
@@ -403,9 +404,9 @@ export function ChallengeModulePage({
                               )}
                             >
                               {completed ? (
-                                <CheckCircle2 className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                                <CheckCircle2 className="h-3 w-3 md:h-3.5 md:w-3.5" aria-hidden="true" />
                               ) : isNextUp ? (
-                                <Play className="h-2 w-2 md:h-2.5 md:w-2.5 fill-current" />
+                                <Play className="h-2 w-2 md:h-2.5 md:w-2.5 fill-current" aria-hidden="true" />
                               ) : (
                                 <span className="text-[8px] md:text-[9px] font-bold">
                                   {stepIndex + 1}
@@ -434,6 +435,7 @@ export function ChallengeModulePage({
 
                             {/* Arrow */}
                             <ArrowRight
+                              aria-hidden="true"
                               className={cn(
                                 'h-4 w-4 shrink-0 transition-opacity',
                                 isNextUp

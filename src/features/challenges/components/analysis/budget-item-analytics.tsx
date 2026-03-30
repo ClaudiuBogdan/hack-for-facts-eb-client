@@ -328,7 +328,7 @@ function EditableAnalyticsCodeChip({
           <button
             type="button"
             aria-label={isActive ? copy.editLabel(value ?? '') : copy.addLabel}
-            className="inline-flex items-center gap-1.5 px-3 py-1"
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
           >
             {isActive ? `${type}:${value}` : copy.addLabel}
             {!isActive ? <Plus className="h-3.5 w-3.5" aria-hidden="true" /> : null}
@@ -373,7 +373,7 @@ function EditableAnalyticsCodeChip({
         <button
           type="button"
           aria-label={copy.removeLabel(value ?? '')}
-          className="mr-1 rounded-full p-1 text-muted-foreground transition hover:bg-background/80 hover:text-foreground"
+          className="mr-1 rounded-full p-1 text-muted-foreground transition-colors hover:bg-background/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
           onClick={() => onChange(undefined)}
         >
           <X className="h-3.5 w-3.5" aria-hidden="true" />
@@ -448,7 +448,7 @@ function AnalyticsControls({ context }: BudgetItemAnalyticsSectionProps) {
                   ? 'default'
                   : 'ghost'
               }
-              className="rounded-full"
+              className="rounded-full tabular-nums"
               onClick={() =>
                 context.analyticsProps.onAnalyticsViewChange?.({
                   timeframe: 'selected',
@@ -465,7 +465,7 @@ function AnalyticsControls({ context }: BudgetItemAnalyticsSectionProps) {
                   ? 'default'
                   : 'ghost'
               }
-              className="rounded-full"
+              className="rounded-full tabular-nums"
               onClick={() =>
                 context.analyticsProps.onAnalyticsViewChange?.({
                   timeframe: 'all',

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { Building2, Landmark } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useRecentEntities } from '@/hooks/useRecentEntities'
@@ -28,6 +28,7 @@ export function RecentUatBadges({ locale, onSelect }: RecentUatBadgesProps) {
     selectedSuggestionCuis,
     rememberSelectedSuggestion,
   } = useSuggestedUatSelections()
+  const prefersReducedMotion = useReducedMotion()
 
   const recentUats = recentEntities.filter(
     (e) => e.entity_type && UAT_ENTITY_TYPES.has(e.entity_type),
@@ -59,12 +60,13 @@ export function RecentUatBadges({ locale, onSelect }: RecentUatBadgesProps) {
         {badges.map((entity, index) => (
           <motion.div
             key={entity.cui}
-            initial={{ opacity: 0, y: -8 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, delay: index * 0.04 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.25, delay: index * 0.04 }}
           >
             <button
               type="button"
+              aria-label={formatEntityName(entity.name)}
               onClick={() => {
                 rememberSelectedSuggestion(entity.cui)
                 onSelect(entity.cui)

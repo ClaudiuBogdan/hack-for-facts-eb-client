@@ -188,9 +188,9 @@ export function BudgetPublicationDate({ ownerChallengeSlug, entityCui }: Campaig
       </div>
 
       <fieldset className="space-y-3">
-        <Label className="text-sm font-bold text-foreground">
+        <legend className="text-sm font-bold text-foreground">
           <Trans>Where did you find the information?</Trans>
-        </Label>
+        </legend>
         <div className="flex flex-wrap gap-2">
           {SOURCE_OPTIONS.map((opt) => {
             const isSelected = draft.sources.some((s) => s.type === opt.value)
@@ -217,10 +217,11 @@ export function BudgetPublicationDate({ ownerChallengeSlug, entityCui }: Campaig
         <div className="space-y-4">
           {draft.sources.map((entry) => (
             <div key={entry.type} className="space-y-2">
-              <Label className="text-sm font-bold text-foreground">
+              <Label htmlFor={`source-url-${entry.type}`} className="text-sm font-bold text-foreground">
                 {t`Link`}: {getSourceLabel(entry.type)}
               </Label>
               <Input
+                id={`source-url-${entry.type}`}
                 type="url"
                 name={`sourceUrl-${entry.type}`}
                 autoComplete="url"

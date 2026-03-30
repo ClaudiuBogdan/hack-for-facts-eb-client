@@ -67,7 +67,7 @@ export function BudgetTimelineStrip({ locale, entityCui }: BudgetTimelineStripPr
         </span>
         <span className="text-xs font-medium text-muted-foreground/60 group-hover:text-primary transition-colors flex items-center gap-1">
           {t`View`}
-          <ArrowRight className="h-3 w-3" />
+          <ArrowRight className="h-3 w-3" aria-hidden="true" />
         </span>
       </div>
 
@@ -111,7 +111,7 @@ export function BudgetTimelineStrip({ locale, entityCui }: BudgetTimelineStripPr
                   {getCampaignText(entry.title, locale)}
                 </span>
                 {/* Date */}
-                <span className="text-[10px] text-muted-foreground/60 mt-0.5">
+                <span className="text-[10px] text-muted-foreground/60 mt-0.5 tabular-nums">
                   {formattedDate}
                 </span>
               </div>

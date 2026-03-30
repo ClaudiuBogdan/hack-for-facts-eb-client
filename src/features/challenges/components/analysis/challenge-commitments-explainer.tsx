@@ -106,6 +106,7 @@ export function ChallengeCommitmentsExplainer({
                 variant="link"
                 className="h-auto justify-start px-0 text-sm font-semibold"
                 onClick={() => setIsExpanded((currentValue) => !currentValue)}
+                aria-expanded={isExpanded}
               >
                 {isExpanded ? copy.showLess : copy.showMore}
               </Button>

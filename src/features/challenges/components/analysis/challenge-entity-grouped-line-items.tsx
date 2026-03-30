@@ -502,7 +502,7 @@ function GroupedLeafDisplay({
 
   const TotalValueComponent = () => (
     <div className="flex flex-col">
-      <p className="m-4 mb-0 flex items-center justify-end font-semibold">
+      <p className="m-4 mb-0 flex items-center justify-end font-semibold tabular-nums">
         Total:{' '}
         {formatNormalizedValue(
           totalValueFiltered,
@@ -515,7 +515,7 @@ function GroupedLeafDisplay({
           </span>
         ) : null}
       </p>
-      <p className="m-4 mt-0 text-right text-sm text-muted-foreground">
+      <p className="m-4 mt-0 text-right text-sm tabular-nums text-muted-foreground">
         {formatNormalizedValue(
           totalValueFiltered,
           normalizationFormatOptions,
@@ -528,7 +528,7 @@ function GroupedLeafDisplay({
   if (displayProps.items.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-4">
-        <p className="text-center text-sm text-slate-500 dark:text-slate-400">
+        <p className="text-center text-sm text-muted-foreground">
           {searchTerm
             ? `No results for "${searchTerm}"`
             : `No data available for ${title} in ${currentYear}.`}

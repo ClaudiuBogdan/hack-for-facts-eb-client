@@ -8,6 +8,7 @@ vi.mock('framer-motion', () => ({
   motion: {
     div: ({ children }: { readonly children: React.ReactNode }) => <div>{children}</div>,
   },
+  useReducedMotion: () => false,
 }))
 
 vi.mock('@/hooks/useRecentEntities', () => ({

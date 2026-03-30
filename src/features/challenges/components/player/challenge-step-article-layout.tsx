@@ -47,7 +47,7 @@ export function ChallengeStepArticleLayout({
   extraContent,
 }: ChallengeStepArticleLayoutProps) {
   return (
-    <div className="animate-in fade-in duration-300">
+    <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300">
       {header}
 
       <div className={CHALLENGE_ARTICLE_PROSE_CLASS_NAME}>
@@ -79,10 +79,10 @@ export function ChallengeStepArticleLayout({
             preload="render"
             search={(previousSearch) => clearChallengeStepSearch(previousSearch)}
             resetScroll={true}
-            className="group flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-border/60 p-4 transition-all hover:border-border hover:bg-muted/30 sm:max-w-[48%]"
+            className="group flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-border/60 p-4 transition-colors hover:border-border hover:bg-muted/30 sm:max-w-[48%]"
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted transition-colors group-hover:bg-muted/80">
-              <ArrowLeft className="h-4 w-4 text-muted-foreground" />
+              <ArrowLeft aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
             </div>
             <div className="flex min-w-0 flex-col overflow-hidden">
               <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
@@ -98,10 +98,10 @@ export function ChallengeStepArticleLayout({
             to={buildCampaignProvocariModulePath(entityCui, moduleSlug) as '/'}
             search={(previousSearch) => clearChallengeStepSearch(previousSearch)}
             resetScroll={true}
-            className="group flex items-center gap-3 rounded-2xl border border-border/60 p-4 transition-all hover:border-border hover:bg-muted/30"
+            className="group flex items-center gap-3 rounded-2xl border border-border/60 p-4 transition-colors hover:border-border hover:bg-muted/30"
           >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted transition-colors group-hover:bg-muted/80">
-              <ArrowLeft className="h-4 w-4 text-muted-foreground" />
+              <ArrowLeft aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
             </div>
             <span className="text-sm font-semibold text-muted-foreground">
               {t`Back to overview`}
@@ -120,7 +120,7 @@ export function ChallengeStepArticleLayout({
             preload="render"
             search={(previousSearch) => clearChallengeStepSearch(previousSearch)}
             resetScroll={true}
-            className="group flex min-w-0 flex-1 items-center justify-end gap-3 rounded-2xl border border-border/60 bg-foreground p-4 text-background transition-all hover:opacity-95 sm:max-w-[48%]"
+            className="group flex min-w-0 flex-1 items-center justify-end gap-3 rounded-2xl border border-border/60 bg-foreground p-4 text-background transition-opacity hover:opacity-95 sm:max-w-[48%]"
           >
             <div className="flex min-w-0 flex-col overflow-hidden text-right">
               <span className="text-[10px] font-medium uppercase tracking-wide text-background/70">
@@ -131,7 +131,7 @@ export function ChallengeStepArticleLayout({
               </span>
             </div>
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-background/10 transition-colors group-hover:bg-background/15">
-              <ArrowRight className="h-4 w-4 text-background" />
+              <ArrowRight aria-hidden="true" className="h-4 w-4 text-background" />
             </div>
           </Link>
         ) : (
@@ -139,11 +139,11 @@ export function ChallengeStepArticleLayout({
             to={buildModuleFinishHref(entityCui) as '/'}
             search={(previousSearch) => clearChallengeStepSearch(previousSearch)}
             resetScroll={true}
-            className="group flex items-center gap-3 rounded-2xl bg-primary/10 p-4 text-primary transition-all hover:bg-primary/15"
+            className="group flex items-center gap-3 rounded-2xl bg-primary/10 p-4 text-primary transition-colors hover:bg-primary/15"
           >
             <span className="text-sm font-semibold">🎉 {t`Finish`}</span>
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-              <CheckCircle2 className="h-4 w-4" />
+              <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
             </div>
           </Link>
         )}

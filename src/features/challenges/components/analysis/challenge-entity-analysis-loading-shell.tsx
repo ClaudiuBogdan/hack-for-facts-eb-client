@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export function ChallengeEntityAnalysisLoadingShell() {
   return (
-    <div className="space-y-6" aria-label={t`Loading…`}>
+    <div className="space-y-6" role="status" aria-label={t`Loading…`}>
       <section className="rounded-[32px] border border-border/50 bg-background px-6 py-7 shadow-sm sm:px-8">
         <div className="space-y-4">
           <Skeleton className="h-4 w-32" />

@@ -45,9 +45,9 @@ export function SectionedStepViewport({
                   size="icon"
                   onClick={onGoToPreviousSection}
                   aria-label={t`Go to previous section`}
-                  className="pointer-events-auto absolute left-0 top-0 hidden h-12 w-12 rounded-full border-border/70 bg-background/95 opacity-0 shadow-sm transition-all duration-200 group-hover/title:opacity-100 hover:bg-background lg:inline-flex"
+                  className="pointer-events-auto absolute left-0 top-0 hidden h-12 w-12 rounded-full border-border/70 bg-background/95 opacity-0 shadow-sm transition-opacity duration-200 group-hover/title:opacity-100 hover:bg-background lg:inline-flex"
                 >
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft aria-hidden="true" className="h-4 w-4" />
                 </Button>
               ) : null}
 
@@ -67,9 +67,9 @@ export function SectionedStepViewport({
                   size="icon"
                   onClick={onGoToNextSection}
                   aria-label={t`Go to next section`}
-                  className="pointer-events-auto absolute right-0 top-0 hidden h-12 w-12 rounded-full border-border/70 bg-background/95 opacity-0 shadow-sm transition-all duration-200 group-hover/title:opacity-100 hover:bg-background lg:inline-flex"
+                  className="pointer-events-auto absolute right-0 top-0 hidden h-12 w-12 rounded-full border-border/70 bg-background/95 opacity-0 shadow-sm transition-opacity duration-200 group-hover/title:opacity-100 hover:bg-background lg:inline-flex"
                 >
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
                 </Button>
               ) : null}
             </div>

@@ -191,7 +191,7 @@ export function BugetCalendarPage({ locale, entityCui }: BugetCalendarPageProps)
   const states = entries.map((entry, i) => getMilestoneState(entry, i, entries))
 
   return (
-    <section className="mx-auto max-w-2xl animate-in fade-in duration-700 px-4 py-6 sm:px-6 sm:py-10">
+    <section className="mx-auto max-w-2xl motion-safe:animate-in motion-safe:fade-in motion-safe:duration-700 px-4 py-6 sm:px-6 sm:py-10">
       {/* Back */}
       <Link
         to={buildCampaignProvocariPath(entityCui) as '/'}
@@ -324,7 +324,7 @@ function MilestoneContent({
           </span>
         )}
         {isClosed && (
-          <Check className="h-3.5 w-3.5 text-muted-foreground/40" strokeWidth={2.5} />
+          <Check className="h-3.5 w-3.5 text-muted-foreground/40" strokeWidth={2.5} aria-hidden="true" />
         )}
       </div>
 
@@ -345,7 +345,7 @@ function MilestoneContent({
       <CollapsibleTrigger asChild>
         <button
           type="button"
-          className={`mt-2 inline-flex items-center gap-0.5 text-xs font-medium transition-colors ${
+          className={`mt-2 inline-flex items-center gap-0.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1 rounded-sm ${
             isClosed
               ? 'text-muted-foreground/30 hover:text-muted-foreground/50'
               : 'text-muted-foreground/50 hover:text-foreground'
@@ -354,6 +354,7 @@ function MilestoneContent({
           {DETAILS_LABEL[locale]}
           <ChevronDown
             className={`h-3 w-3 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+            aria-hidden="true"
           />
         </button>
       </CollapsibleTrigger>

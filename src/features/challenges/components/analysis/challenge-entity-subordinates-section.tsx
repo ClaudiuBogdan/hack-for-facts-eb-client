@@ -95,7 +95,7 @@ function ChallengeEntitySubordinateRow({
       to="/entities/$cui"
       params={{ cui: item.entityCui }}
       search={item.entitySearch as any}
-      className="group flex flex-col gap-1.5 py-3.5 text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:rounded-md"
+      className="group flex flex-col gap-1.5 py-3.5 text-foreground touch-manipulation transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:rounded-md"
     >
       <div className="flex items-start gap-3">
         <span className="shrink-0 pt-0.5 text-xs font-medium tabular-nums text-muted-foreground/60">

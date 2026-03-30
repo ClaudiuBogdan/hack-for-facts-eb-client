@@ -5,7 +5,7 @@ export function ChallengeStepPendingShell() {
   return (
     <div
       data-testid="challenge-step-pending-shell"
-      className="animate-in fade-in duration-300"
+      className="motion-safe:animate-in motion-safe:fade-in motion-safe:duration-300"
     >
       <div className={CHALLENGE_ARTICLE_PROSE_CLASS_NAME}>
         <LessonSkeleton />

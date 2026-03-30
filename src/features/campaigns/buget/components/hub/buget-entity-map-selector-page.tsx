@@ -204,7 +204,7 @@ export function BugetEntityMapSelectorPage({
               redirectUri,
             })}
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
+            <ArrowLeft aria-hidden="true" className="mr-2 h-4 w-4" />
             {backLabel}
           </Link>
         </Button>
@@ -214,10 +214,20 @@ export function BugetEntityMapSelectorPage({
         {isLoading ? mapPlaceholder : null}
 
         {error ? (
-          <div className="flex h-[calc(100svh-10rem)] sm:h-[70vh] items-center justify-center text-sm text-red-600 dark:text-red-400">
-            {locale === 'en'
-              ? 'Failed to load the selector map. Please refresh the page.'
-              : 'Nu am putut încărca harta de selecție. Reîncarcă pagina.'}
+          <div className="flex h-[calc(100svh-10rem)] sm:h-[70vh] flex-col items-center justify-center gap-3 text-sm text-red-600 dark:text-red-400">
+            <p>
+              {locale === 'en'
+                ? 'Failed to load the selector map.'
+                : 'Nu am putut încărca harta de selectie.'}
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => window.location.reload()}
+            >
+              {locale === 'en' ? 'Refresh page' : 'Reincarca pagina'}
+            </Button>
           </div>
         ) : null}
 

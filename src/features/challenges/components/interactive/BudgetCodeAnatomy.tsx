@@ -32,7 +32,7 @@ function Connectors() {
       preserveAspectRatio="none"
       className="mx-auto h-12 w-full text-muted-foreground/50"
       fill="none"
-      aria-hidden
+      aria-hidden="true"
     >
       {/* Left: from "65" center, down then left to col-1 center */}
       <path

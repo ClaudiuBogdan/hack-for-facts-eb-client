@@ -279,7 +279,7 @@ export function ChallengeEntityReportControls({
             <ToggleGroupItem
               key={yearOption}
               value={String(yearOption)}
-              className="justify-center data-[state=on]:bg-foreground data-[state=on]:text-background"
+              className="justify-center tabular-nums data-[state=on]:bg-foreground data-[state=on]:text-background"
             >
               {yearOption}
             </ToggleGroupItem>
@@ -326,7 +326,7 @@ export function ChallengeEntityReportControls({
               <ToggleGroupItem
                 key={monthOption.id}
                 value={monthOption.id}
-                className="justify-center data-[state=on]:bg-foreground data-[state=on]:text-background"
+                className="justify-center tabular-nums data-[state=on]:bg-foreground data-[state=on]:text-background"
               >
                 {monthOption.label}
               </ToggleGroupItem>
