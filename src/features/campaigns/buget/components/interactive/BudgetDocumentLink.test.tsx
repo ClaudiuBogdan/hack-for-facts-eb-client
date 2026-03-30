@@ -2,6 +2,14 @@ import { fireEvent, render, screen } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { BudgetDocumentLink } from './BudgetDocumentLink'
 
+// ResizeObserver is required by Radix UI's RadioGroup component
+class ResizeObserverMock {
+  observe = vi.fn()
+  unobserve = vi.fn()
+  disconnect = vi.fn()
+}
+global.ResizeObserver = ResizeObserverMock
+
 const saveDraftMock = vi.fn(async () => undefined)
 const submitMock = vi.fn(async () => undefined)
 const resetMock = vi.fn(async () => undefined)
@@ -42,6 +50,22 @@ describe('BudgetDocumentLink', () => {
     formState.reviewStatus = null
     formState.reviewFeedbackText = null
     formState.submittedVariant = 'completed'
+  })
+
+  it('blocks blank submissions', () => {
+    render(
+      <BudgetDocumentLink ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
+    )
+
+    const submitButton = screen.getByRole('button', { name: 'Submit link' })
+    const form = submitButton.closest('form')
+
+    expect(submitButton).toBeDisabled()
+    expect(form).not.toBeNull()
+
+    fireEvent.submit(form as HTMLFormElement)
+
+    expect(submitMock).not.toHaveBeenCalled()
   })
 
   it('renders the extended document-type options and submits the selected type', () => {

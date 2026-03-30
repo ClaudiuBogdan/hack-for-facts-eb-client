@@ -40,7 +40,30 @@ describe('PrimarieWebsiteLink', () => {
     formState.isSubmitted = true
     formState.isCompleted = false
     formState.challengeStatus = 'pending_review'
+    formState.saveDraft.mockClear()
+    formState.submit.mockClear()
     formState.reset.mockClear()
+  })
+
+  it('blocks blank submissions', () => {
+    formState.savedValue = null
+    formState.phase = 'idle'
+    formState.isSubmitted = false
+    formState.challengeStatus = 'not_started'
+
+    render(
+      <PrimarieWebsiteLink ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
+    )
+
+    const submitButton = screen.getByRole('button', { name: 'Submit link' })
+    const form = submitButton.closest('form')
+
+    expect(submitButton).toBeDisabled()
+    expect(form).not.toBeNull()
+
+    fireEvent.submit(form as HTMLFormElement)
+
+    expect(formState.submit).not.toHaveBeenCalled()
   })
 
   it('shows a submitted state for approved reviews', () => {

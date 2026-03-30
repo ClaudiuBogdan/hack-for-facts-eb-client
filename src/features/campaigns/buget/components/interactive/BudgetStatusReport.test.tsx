@@ -2,6 +2,14 @@ import { fireEvent, render, screen } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { BudgetStatusReport } from './BudgetStatusReport'
 
+// Mock ResizeObserver for Radix UI components (RadioGroup uses useSize internally)
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+global.ResizeObserver = ResizeObserverMock
+
 const saveDraftMock = vi.fn(async () => undefined)
 const submitMock = vi.fn(async () => undefined)
 const resetMock = vi.fn(async () => undefined)
@@ -74,7 +82,10 @@ describe('BudgetStatusReport', () => {
 
     const submitButton = screen.getByRole('button', { name: /report status/i })
 
+    expect(screen.queryByText('What stage is it in?')).not.toBeInTheDocument()
+
     fireEvent.click(screen.getByText('Yes'))
+    expect(screen.getByText('What stage is it in?')).toBeInTheDocument()
     expect(submitButton).toBeDisabled()
 
     fireEvent.click(screen.getByText('Draft (public consultation)'))

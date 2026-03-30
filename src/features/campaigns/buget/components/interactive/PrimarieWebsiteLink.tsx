@@ -62,7 +62,13 @@ export function PrimarieWebsiteLink({ ownerChallengeSlug, entityCui }: CampaignI
     })
   }, [form])
 
+  const isSubmitDisabled = draft.websiteUrl.trim().length === 0
+
   const handleSubmit = useCallback(() => {
+    if (draft.websiteUrl.trim().length === 0) {
+      return
+    }
+
     void form.submit({
       ...draft,
       submittedAt: new Date().toISOString(),
@@ -93,14 +99,18 @@ export function PrimarieWebsiteLink({ ownerChallengeSlug, entityCui }: CampaignI
     )
   }
 
-  const isSubmitDisabled = draft.websiteUrl.trim().length === 0
-
   return (
     <div className="relative overflow-hidden rounded-[28px] border border-border/50 bg-gradient-to-br from-background via-background to-primary/[0.03] p-6 shadow-sm md:p-8">
       {/* Decorative watermark */}
       <Globe className="pointer-events-none absolute -top-2 right-4 h-20 w-20 rotate-6 text-foreground opacity-[0.06]" aria-hidden="true" />
 
-      <div className="relative space-y-5">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          handleSubmit()
+        }}
+        className="relative space-y-5"
+      >
         {/* Micro-label */}
         <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
           <Trans>City hall link</Trans>
@@ -131,13 +141,13 @@ export function PrimarieWebsiteLink({ ownerChallengeSlug, entityCui }: CampaignI
 
         {/* Submit button */}
         <Button
-          onClick={handleSubmit}
+          type="submit"
           disabled={isSubmitDisabled}
           className="rounded-[22px] h-12 w-full font-black shadow-lg shadow-primary/15 transition-transform hover:scale-[1.02] active:scale-95"
         >
           {t`Submit link`}
         </Button>
-      </div>
+      </form>
     </div>
   )
 }

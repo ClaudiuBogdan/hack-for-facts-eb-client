@@ -97,7 +97,13 @@ export function BudgetDocumentLink({ ownerChallengeSlug, entityCui }: CampaignIn
     })
   }, [form])
 
+  const isSubmitDisabled = draft.documentUrl.trim().length === 0
+
   const handleSubmit = useCallback(() => {
+    if (draft.documentUrl.trim().length === 0) {
+      return
+    }
+
     void form.submit({
       ...draft,
       submittedAt: new Date().toISOString(),
@@ -128,8 +134,6 @@ export function BudgetDocumentLink({ ownerChallengeSlug, entityCui }: CampaignIn
     )
   }
 
-  const isSubmitDisabled = !draft.documentUrl.trim()
-
   return (
     <div className="rounded-[28px] border border-border/50 shadow-sm p-6 md:p-8 relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/[0.03]">
       <FileText className="absolute top-4 right-4 h-20 w-20 rotate-6 opacity-[0.06] pointer-events-none" aria-hidden="true" />
@@ -144,7 +148,13 @@ export function BudgetDocumentLink({ ownerChallengeSlug, entityCui }: CampaignIn
         <Trans>Add the link to the city hall's budget document.</Trans>
       </p>
 
-      <div className="space-y-6">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          handleSubmit()
+        }}
+        className="space-y-6"
+      >
         <div className="space-y-2">
           <Label htmlFor="budget-doc-url" className="text-sm font-medium">
             <Trans>Link to the budget document</Trans>
@@ -163,9 +173,9 @@ export function BudgetDocumentLink({ ownerChallengeSlug, entityCui }: CampaignIn
         </div>
 
         <fieldset className="space-y-3">
-          <Label className="text-sm font-medium">
+          <legend className="text-sm font-medium">
             <Trans>Document type</Trans>
-          </Label>
+          </legend>
           <RadioGroup
             value={draft.documentType ?? ''}
             onValueChange={(v) => updateField('documentType', v as BudgetDocumentLinkValue['documentType'])}
@@ -187,17 +197,15 @@ export function BudgetDocumentLink({ ownerChallengeSlug, entityCui }: CampaignIn
             ))}
           </RadioGroup>
         </fieldset>
-      </div>
 
-      <div className="mt-6">
         <Button
-          onClick={handleSubmit}
+          type="submit"
           disabled={isSubmitDisabled}
           className="rounded-[22px] h-12 font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 transition-transform w-full"
         >
           {t`Submit link`}
         </Button>
-      </div>
+      </form>
     </div>
   )
 }

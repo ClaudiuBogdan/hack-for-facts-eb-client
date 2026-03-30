@@ -76,7 +76,16 @@ export function CampaignChallengeFormShell({
   }
 
   return (
-    <div className="rounded-[28px] border border-border/50 shadow-sm bg-gradient-to-br from-background via-background to-primary/[0.03] p-6 md:p-8">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (isSubmitDisabled) {
+          return
+        }
+        onSubmit()
+      }}
+      className="rounded-[28px] border border-border/50 shadow-sm bg-gradient-to-br from-background via-background to-primary/[0.03] p-6 md:p-8"
+    >
       <h3 className="text-lg font-black tracking-tight text-foreground">
         {title}
       </h3>
@@ -90,13 +99,13 @@ export function CampaignChallengeFormShell({
 
       <div className="mt-6">
         <Button
-          onClick={onSubmit}
+          type="submit"
           disabled={isSubmitDisabled}
           className="w-full rounded-[22px] h-12 font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 transition-transform"
         >
           {submitLabel ?? t`Submit`}
         </Button>
       </div>
-    </div>
+    </form>
   )
 }

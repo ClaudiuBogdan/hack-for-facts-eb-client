@@ -1,12 +1,14 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { Mail, Send } from 'lucide-react'
+import { toast } from 'sonner'
+import { Copy, Check, ExternalLink, Loader2, Mail, Send } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
+import { useEntityLabel } from '@/hooks/filters/useFilterLabels'
 import { useCustomInteraction } from '@/features/learning/hooks/interactions/use-custom-interaction'
 import {
   DEBATE_REQUEST_INTERACTION,
@@ -18,8 +20,7 @@ import {
   type ReviewSummaryItem,
 } from './campaign-challenge-review-state'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
-import { preparePublicDebateSelfSend } from '../../api/institution-correspondence'
-import { buildMailtoUrl } from './mailto-utils'
+import { buildMailtoUrl, buildPublicDebateEmailBody, PLATFORM_CC_EMAILS } from './mailto-utils'
 import type {
   DebateRequestFormValue,
   CampaignInteractiveElementProps,
@@ -41,11 +42,138 @@ function isValidEmail(email: string): boolean {
 }
 
 type Step = 1 | 2 | 3
-type PreparedSelfSendState = {
-  readonly threadKey: string
+
+function CopyFieldButton({ text }: { readonly text: string }) {
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (!copied) return
+    const timeout = setTimeout(() => setCopied(false), 1500)
+    return () => clearTimeout(timeout)
+  }, [copied])
+
+  return (
+    <button
+      type="button"
+      className="shrink-0 rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+      onClick={() => {
+        void navigator.clipboard.writeText(text).then(() => {
+          setCopied(true)
+          toast.success(t`Copied to clipboard`)
+        })
+      }}
+      aria-label={t`Copy`}
+    >
+      {copied
+        ? <Check className="h-3.5 w-3.5 text-green-500" strokeWidth={2.5} />
+        : <Copy className="h-3.5 w-3.5" />}
+    </button>
+  )
+}
+
+function EmailPreviewPanel({
+  to,
+  cc,
+  subject,
+  body,
+  onOpenEmailClient,
+  onConfirmSent,
+  isSubmitting,
+}: {
+  readonly to: string
+  readonly cc: readonly string[]
   readonly subject: string
   readonly body: string
-  readonly cc: readonly string[]
+  readonly onOpenEmailClient: () => void
+  readonly onConfirmSent: () => void
+  readonly isSubmitting: boolean
+}) {
+  const fullEmailText = [
+    `${t`To`}: ${to}`,
+    cc.length > 0 ? `CC: ${cc.join(', ')}` : null,
+    `${t`Subject`}: ${subject}`,
+    '',
+    body,
+  ].filter((line) => line !== null).join('\n')
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-[20px] border border-border/40 bg-muted/[0.06] p-5 space-y-4 text-left">
+        <div className="space-y-1">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+            <Trans>Preview</Trans>
+          </span>
+          <h4 className="text-sm font-black tracking-tight text-foreground">
+            {t`Prepared email`}
+          </h4>
+        </div>
+
+        {/* Fields */}
+        <div className="space-y-2">
+          <div className="flex items-baseline gap-2 text-sm">
+            <span className="font-semibold text-muted-foreground w-14 shrink-0">{t`To`}</span>
+            <span className="flex-1 min-w-0 break-all text-foreground">{to}</span>
+          </div>
+          {cc.length > 0 && (
+            <div className="flex items-baseline gap-2 text-sm">
+              <span className="font-semibold text-muted-foreground w-14 shrink-0">CC</span>
+              <span className="flex-1 min-w-0 break-all text-foreground">{cc.join(', ')}</span>
+            </div>
+          )}
+          <div className="flex items-baseline gap-2 text-sm">
+            <span className="font-semibold text-muted-foreground w-14 shrink-0">{t`Subject`}</span>
+            <span className="flex-1 min-w-0 text-foreground">{subject}</span>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="group/body rounded-xl border border-border/30 bg-background p-4">
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">{t`Message`}</span>
+            <div className="opacity-0 group-hover/body:opacity-100 transition-opacity">
+              <CopyFieldButton text={fullEmailText} />
+            </div>
+          </div>
+          <div className="space-y-3 text-sm text-muted-foreground leading-relaxed whitespace-pre-line max-h-60 overflow-y-auto">
+            {body.split('\n\n').map((paragraph, idx) => (
+              <p key={idx}>{paragraph}</p>
+            ))}
+          </div>
+        </div>
+
+        {/* Action */}
+        <Button
+          variant="outline"
+          onClick={onOpenEmailClient}
+          className="rounded-[18px] h-10 w-full font-bold text-sm"
+        >
+          <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+          {t`Open email client`}
+        </Button>
+      </div>
+
+      <div className="rounded-xl bg-primary/[0.04] border border-primary/10 px-4 py-3 space-y-2">
+        <p className="text-xs font-bold text-foreground">
+          <Trans>Before confirming, make sure you:</Trans>
+        </p>
+        <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
+          <li><Trans>Send the email from your association's email address</Trans></li>
+          <li>
+            <Trans>Keep <span className="font-semibold text-foreground">{cc.join(', ')}</span> in CC so we can track the request</Trans>
+          </li>
+        </ol>
+      </div>
+
+      <Button
+        disabled={isSubmitting}
+        onClick={onConfirmSent}
+        className="rounded-[22px] h-11 w-full font-black"
+      >
+        {isSubmitting && <Loader2 className="animate-spin" aria-hidden="true" />}
+        {isSubmitting ? t`Submitting...` : t`I sent the email`}
+      </Button>
+    </div>
+  )
 }
 
 /**
@@ -84,19 +212,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
     form.savedValue ? { ...EMPTY_VALUE, ...form.savedValue } : EMPTY_VALUE,
   )
   const [prefilled, setPrefilled] = useState(false)
-  const [isAwaitingSelfSendConfirmation, setIsAwaitingSelfSendConfirmation] = useState(false)
-  const [isPreparingSelfSend, setIsPreparingSelfSend] = useState(false)
-  const [prepareSelfSendError, setPrepareSelfSendError] = useState<string | null>(null)
-  const [preparedSelfSend, setPreparedSelfSend] = useState<PreparedSelfSendState | null>(
-    form.savedValue?.threadKey
-      ? {
-        threadKey: form.savedValue.threadKey,
-        subject: '',
-        body: '',
-        cc: [],
-      }
-      : null,
-  )
+  const [showEmailPreview, setShowEmailPreview] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -116,9 +232,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
     field: K,
     value: DebateRequestFormValue[K],
   ) => {
-    setIsAwaitingSelfSendConfirmation(false)
-    setPrepareSelfSendError(null)
-    setPreparedSelfSend(null)
+    setShowEmailPreview(false)
     setSubmitError(null)
     setDraft((prev) => {
       const next = { ...prev, [field]: value }
@@ -156,86 +270,45 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
     pendingDraftRef(field, value)
   }, [updateField, pendingDraftRef])
 
-  const handleOpenEmail = useCallback(async () => {
-    setPrepareSelfSendError(null)
-    setSubmitError(null)
-    setIsPreparingSelfSend(true)
+  const hasValidEmail = isValidEmail(draft.primariaEmail)
+  const hasOrganizationName = Boolean(draft.organizationName?.trim())
+  const hasValidNgoSenderEmail = draft.ngoSenderEmail !== null && isValidEmail(draft.ngoSenderEmail)
+  const canUseAssociationSendFlow =
+    hasValidEmail
+    && draft.isNgo
+    && hasOrganizationName
+    && hasValidNgoSenderEmail
 
-    const openedWindow = window.open('', '_blank')
+  const entityIds = useMemo(() => [entityCui], [entityCui])
+  const entityLabelStore = useEntityLabel(entityIds)
+  const rawCityName = entityLabelStore.map(entityCui)
+  const cityName = rawCityName.startsWith('id::') ? entityCui : rawCityName
 
-    try {
-      let prepared: PreparedSelfSendState
+  const currentYear = new Date().getFullYear()
+  const orgName = draft.organizationName?.trim() || ''
+  const emailSubject = `Cerere organizare dezbatere publica - buget local ${currentYear}`
+  const emailBody = useMemo(
+    () => buildPublicDebateEmailBody({ organizationName: orgName || 'NUMELE ASOCIATIEI', cityName, year: currentYear }),
+    [orgName, cityName, currentYear],
+  )
+  const emailCc = PLATFORM_CC_EMAILS
 
-      if (
-        preparedSelfSend !== null
-        && preparedSelfSend.subject !== ''
-        && preparedSelfSend.threadKey === draft.threadKey
-      ) {
-        prepared = preparedSelfSend
-      } else {
-        const response = await preparePublicDebateSelfSend({
-          entityCui,
-          institutionEmail: draft.primariaEmail,
-          requesterOrganizationName: draft.organizationName?.trim() || null,
-          consentCapturedAt: null,
-        })
+  const handleShowPreview = useCallback(() => {
+    if (!canUseAssociationSendFlow) return
+    setShowEmailPreview(true)
+  }, [canUseAssociationSendFlow])
 
-        if (response.subject === null || response.body === null) {
-          throw new Error('Prepared email response was incomplete.')
-        }
-
-        prepared = {
-          threadKey: response.threadKey,
-          subject: response.subject,
-          body: response.body,
-          cc: response.cc,
-        }
-
-        setPreparedSelfSend(prepared)
-
-        const nextDraft = { ...draft, threadKey: response.threadKey }
-        setDraft(nextDraft)
-        await form.saveDraft(nextDraft)
-      }
-
-      const mailtoUrl = buildMailtoUrl({
-        to: draft.primariaEmail,
-        cc: prepared.cc.join(','),
-        subject: prepared.subject,
-        body: prepared.body,
-      })
-
-      if (openedWindow === null) {
-        window.location.href = mailtoUrl
-      } else {
-        openedWindow.location.href = mailtoUrl
-      }
-      setIsAwaitingSelfSendConfirmation(true)
-    } catch (error) {
-      if (openedWindow !== null) {
-        openedWindow.close()
-      }
-      setPrepareSelfSendError(
-        error instanceof Error
-          ? error.message
-          : t`We could not prepare the email. Please try again.`,
-      )
-    } finally {
-      setIsPreparingSelfSend(false)
-    }
-  }, [
-    draft,
-    entityCui,
-    form,
-    preparedSelfSend,
-  ])
+  const handleOpenEmailClient = useCallback(() => {
+    const mailtoUrl = buildMailtoUrl({
+      to: draft.primariaEmail,
+      cc: emailCc.join(','),
+      subject: emailSubject,
+      body: emailBody,
+    })
+    window.open(mailtoUrl, '_blank')
+  }, [draft.primariaEmail, emailBody, emailCc, emailSubject])
 
   const handleConfirmSelfSend = useCallback(async () => {
-    if (draft.threadKey === null) {
-      setPrepareSelfSendError(t`Please open the prepared email before confirming.`)
-      return
-    }
-
     setSubmitError(null)
     setIsSubmitting(true)
     try {
@@ -282,17 +355,10 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
 
   const handleTryAgain = useCallback(() => {
     setStep(1)
-    setIsAwaitingSelfSendConfirmation(false)
-    setPrepareSelfSendError(null)
-    setPreparedSelfSend(null)
+    setShowEmailPreview(false)
     setSubmitError(null)
     void form.reset()
   }, [form])
-
-  const hasValidEmail = isValidEmail(draft.primariaEmail)
-  const hasOrganizationName = Boolean(draft.organizationName?.trim())
-  const hasValidNgoSenderEmail = draft.ngoSenderEmail !== null && isValidEmail(draft.ngoSenderEmail)
-  const canUseAssociationSendFlow = hasValidEmail && draft.isNgo && hasOrganizationName && hasValidNgoSenderEmail
 
   if (form.isSubmitted) {
     const submittedPath = form.savedValue?.submissionPath
@@ -376,7 +442,13 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
 
         {/* Step 1 - Contact info */}
         {step === 1 && (
-          <div className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (hasValidEmail) setStep(2)
+            }}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="primaria-email" className="text-sm font-bold text-foreground">
                 <Trans>City hall email</Trans>
@@ -393,7 +465,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                 onChange={(e) => handleFieldChange('primariaEmail', e.target.value)}
               />
               {draft.primariaEmail && !isValidEmail(draft.primariaEmail) && (
-                <p className="text-xs text-destructive">
+                <p className="text-xs text-destructive" role="alert">
                   <Trans>The email address is not valid.</Trans>
                 </p>
               )}
@@ -401,14 +473,13 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
 
             <div className="flex justify-end">
               <Button
-                disabled={!hasValidEmail}
-                onClick={() => setStep(2)}
+                type="submit"
                 className="rounded-[22px] h-11 font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 transition-transform"
               >
                 {t`Continue`}
               </Button>
             </div>
-          </div>
+          </form>
         )}
 
         {/* Step 2 - Identity */}
@@ -472,13 +543,26 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
               <Trans>Choose how you want the public debate request to be sent.</Trans>
             </p>
 
+            {/* Email preview (shown after clicking "Prepare email") */}
+            {showEmailPreview && (
+              <EmailPreviewPanel
+                to={draft.primariaEmail}
+                cc={emailCc}
+                subject={emailSubject}
+                body={emailBody}
+                onOpenEmailClient={handleOpenEmailClient}
+                onConfirmSent={() => { void handleConfirmSelfSend() }}
+                isSubmitting={isSubmitting}
+              />
+            )}
+
+            {/* Path selection cards (hidden when preview is visible) */}
+            {!showEmailPreview && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Card A - Send yourself */}
               <div className={cn(
-                'rounded-[24px] border-2 border-border/40 p-6 text-center transition-all',
-                draft.isNgo
-                  ? 'hover:border-border/80 hover:shadow-sm'
-                  : 'opacity-50 cursor-not-allowed'
+                'flex flex-col rounded-[24px] border-2 border-border/40 p-6 text-center transition-opacity',
+                !draft.isNgo && 'opacity-50 cursor-not-allowed'
               )}>
                 <Mail className="h-10 w-10 text-muted-foreground mb-3 mx-auto" aria-hidden="true" />
                 <p className="text-base font-black tracking-tight">{t`Send it yourself`}</p>
@@ -512,7 +596,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                       onChange={(e) => handleFieldChange('ngoSenderEmail', e.target.value || null)}
                     />
                     {draft.ngoSenderEmail && !hasValidNgoSenderEmail && (
-                      <p className="text-xs text-destructive">
+                      <p className="text-xs text-destructive" role="alert">
                         <Trans>The association email address is not valid.</Trans>
                       </p>
                     )}
@@ -520,58 +604,35 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                 )}
                 <Button
                   variant="outline"
-                  disabled={!canUseAssociationSendFlow || isPreparingSelfSend}
-                  onClick={() => {
-                    void handleOpenEmail()
-                  }}
+                  disabled={!canUseAssociationSendFlow}
+                  onClick={handleShowPreview}
                   className="rounded-[22px] h-11 w-full font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 mt-4"
                 >
-                  {isPreparingSelfSend
-                    ? t`Preparing email...`
-                    : isAwaitingSelfSendConfirmation
-                      ? t`Open email again`
-                      : t`Open email`}
+                  {t`Prepare email`}
                 </Button>
-                {prepareSelfSendError && (
-                  <p className="text-xs text-destructive mt-3">
-                    {prepareSelfSendError}
-                  </p>
-                )}
-                {isAwaitingSelfSendConfirmation && (
-                  <div className="mt-3 space-y-2">
-                    <p className="text-xs text-muted-foreground">
-                      <Trans>After the message opens and you send it from your email client, confirm below.</Trans>
-                    </p>
-                    <Button
-                      disabled={isSubmitting}
-                      onClick={() => { void handleConfirmSelfSend() }}
-                      className="rounded-[22px] h-11 w-full font-black"
-                    >
-                      {isSubmitting ? t`Submitting...` : t`I sent the email`}
-                    </Button>
-                  </div>
-                )}
               </div>
 
               {/* Card B - Request platform */}
-              <div className="rounded-[24px] border-2 border-border/40 p-6 text-center transition-all hover:border-border/80 hover:shadow-sm">
+              <div className="flex flex-col rounded-[24px] border-2 border-border/40 p-6 text-center">
                 <Send className="h-10 w-10 text-muted-foreground mb-3 mx-auto" aria-hidden="true" />
                 <p className="text-base font-black tracking-tight">{t`Ask us to send it`}</p>
                 <p className="text-xs text-muted-foreground mt-1.5">
                   <Trans>We will record the request and send it through the platform.</Trans>
                 </p>
                 <Button
-                  disabled={!hasValidEmail || isSubmitting}
+                  disabled={isSubmitting}
                   onClick={() => { void handleRequestPlatform() }}
-                  className="rounded-[22px] h-11 w-full font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 mt-4"
+                  className="rounded-[22px] h-11 w-full font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 mt-auto"
                 >
+                  {isSubmitting && <Loader2 className="animate-spin" aria-hidden="true" />}
                   {isSubmitting ? t`Submitting...` : t`Request submission`}
                 </Button>
               </div>
             </div>
+            )}
 
             {submitError && (
-              <p className="text-sm text-destructive font-medium">
+              <p className="text-sm text-destructive font-medium" role="alert">
                 {submitError}
               </p>
             )}

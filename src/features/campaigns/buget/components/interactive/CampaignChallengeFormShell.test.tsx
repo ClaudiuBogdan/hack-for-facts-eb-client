@@ -3,6 +3,31 @@ import { describe, expect, it, vi } from 'vitest'
 import { CampaignChallengeFormShell } from './CampaignChallengeFormShell'
 
 describe('CampaignChallengeFormShell', () => {
+  it('does not submit when disabled, even via form submit', () => {
+    const onSubmit = vi.fn()
+
+    render(
+      <CampaignChallengeFormShell
+        title="Review item"
+        isSubmitted={false}
+        onSubmit={onSubmit}
+        isSubmitDisabled={true}
+      >
+        <div>content</div>
+      </CampaignChallengeFormShell>,
+    )
+
+    const submitButton = screen.getByRole('button', { name: 'Submit' })
+    const form = submitButton.closest('form')
+
+    expect(submitButton).toBeDisabled()
+    expect(form).not.toBeNull()
+
+    fireEvent.submit(form as HTMLFormElement)
+
+    expect(onSubmit).not.toHaveBeenCalled()
+  })
+
   it('renders a pending-review submitted state', () => {
     render(
       <CampaignChallengeFormShell

@@ -48,7 +48,13 @@ export function PrimarieContactInfo({ ownerChallengeSlug, entityCui }: CampaignI
     })
   }, [form])
 
+  const isSubmitDisabled = !draft.email?.trim()
+
   const handleSubmit = useCallback(() => {
+    if (!draft.email?.trim()) {
+      return
+    }
+
     void form.submit({
       ...draft,
       submittedAt: new Date().toISOString(),
@@ -98,8 +104,6 @@ export function PrimarieContactInfo({ ownerChallengeSlug, entityCui }: CampaignI
     )
   }
 
-  const isSubmitDisabled = !draft.email
-
   return (
     <div className="rounded-[28px] border border-border/50 shadow-sm p-6 md:p-8 relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/[0.03]">
       <Building2 className="absolute top-4 right-4 h-20 w-20 rotate-6 opacity-[0.06] pointer-events-none" aria-hidden="true" />
@@ -116,48 +120,55 @@ export function PrimarieContactInfo({ ownerChallengeSlug, entityCui }: CampaignI
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <div className="space-y-2">
-          <Label htmlFor="primarie-email" className="text-sm font-bold text-foreground">
-            <Trans>City hall email</Trans>
-          </Label>
-          <Input
-            id="primarie-email"
-            type="email"
-            name="primarieEmail"
-            autoComplete="email"
-            spellCheck={false}
-            placeholder="primaria@example.ro"
-            value={draft.email ?? ''}
-            onChange={(e) => updateField('email', e.target.value || null)}
-            className="rounded-xl h-12 text-base"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="primarie-phone" className="text-sm font-bold text-foreground">
-            <Trans>City hall phone (optional)</Trans>
-          </Label>
-          <Input
-            id="primarie-phone"
-            type="tel"
-            name="primariePhone"
-            autoComplete="tel"
-            placeholder="+40…"
-            value={draft.phone ?? ''}
-            onChange={(e) => updateField('phone', e.target.value || null)}
-            className="rounded-xl h-12 text-base"
-          />
-        </div>
-      </div>
-
-      <Button
-        onClick={handleSubmit}
-        disabled={isSubmitDisabled}
-        className="rounded-[22px] h-12 font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 transition-transform w-full"
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          handleSubmit()
+        }}
       >
-        {t`Save contact details`}
-      </Button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div className="space-y-2">
+            <Label htmlFor="primarie-email" className="text-sm font-bold text-foreground">
+              <Trans>City hall email</Trans>
+            </Label>
+            <Input
+              id="primarie-email"
+              type="email"
+              name="primarieEmail"
+              autoComplete="email"
+              spellCheck={false}
+              placeholder="primaria@example.ro"
+              value={draft.email ?? ''}
+              onChange={(e) => updateField('email', e.target.value || null)}
+              className="rounded-xl h-12 text-base"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="primarie-phone" className="text-sm font-bold text-foreground">
+              <Trans>City hall phone (optional)</Trans>
+            </Label>
+            <Input
+              id="primarie-phone"
+              type="tel"
+              name="primariePhone"
+              autoComplete="tel"
+              placeholder="+40…"
+              value={draft.phone ?? ''}
+              onChange={(e) => updateField('phone', e.target.value || null)}
+              className="rounded-xl h-12 text-base"
+            />
+          </div>
+        </div>
+
+        <Button
+          type="submit"
+          disabled={isSubmitDisabled}
+          className="rounded-[22px] h-12 font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 transition-transform w-full"
+        >
+          {t`Save contact details`}
+        </Button>
+      </form>
     </div>
   )
 }

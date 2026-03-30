@@ -232,6 +232,7 @@ describe('DebateRequestForm', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
     expect(screen.queryByLabelText('Association email')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Open email' })).toBeDisabled()
 
     fireEvent.click(screen.getByRole('button', { name: 'Back' }))
     fireEvent.click(screen.getByLabelText('Do you represent a legally established association?'))
@@ -241,6 +242,17 @@ describe('DebateRequestForm', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
     expect(screen.getByLabelText('Association email')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Open email' })).toBeDisabled()
+
+    fireEvent.change(screen.getByLabelText('Association email'), {
+      target: { value: 'invalid-email' },
+    })
+    expect(screen.getByRole('button', { name: 'Open email' })).toBeDisabled()
+
+    fireEvent.change(screen.getByLabelText('Association email'), {
+      target: { value: 'ngo@example.com' },
+    })
+    expect(screen.getByRole('button', { name: 'Open email' })).toBeEnabled()
     expect(screen.getByRole('button', { name: 'Request submission' })).toBeEnabled()
   })
 
