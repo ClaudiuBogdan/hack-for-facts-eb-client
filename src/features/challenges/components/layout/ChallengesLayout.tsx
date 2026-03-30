@@ -6,8 +6,8 @@ import {
   ChevronRight,
   Circle,
   Library,
-  Compass,
 } from 'lucide-react'
+import funkyLogo from '@/assets/logo/funky-logo.png'
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -286,7 +286,7 @@ function ChallengesSidebar({
         {/* Header */}
         <div className="py-4 px-4">
           <Link to={hubPath as '/'} className="group flex items-center gap-2.5">
-            <Compass className="h-7 w-7 shrink-0 text-primary" aria-hidden="true" />
+            <img src={funkyLogo} alt="Funky Citizens" className="h-10 w-10 shrink-0 rounded" />
             <div className="flex flex-col min-w-0">
               <span className="font-semibold text-sm leading-none text-foreground truncate">
                 {t`Challenges`}
@@ -412,7 +412,7 @@ function ChallengesSidebar({
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center px-4">
               <div className="h-14 w-14 rounded-xl bg-muted/50 flex items-center justify-center mb-4">
-                <Compass className="h-7 w-7 text-muted-foreground/40" aria-hidden="true" />
+                <img src={funkyLogo} alt="Funky Citizens" className="h-7 w-7 rounded opacity-40" />
               </div>
               <p className="text-xs text-muted-foreground">{t`Select a topic to begin`}</p>
             </div>
