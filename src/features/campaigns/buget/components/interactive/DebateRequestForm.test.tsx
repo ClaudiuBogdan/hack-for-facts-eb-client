@@ -5,25 +5,6 @@ import { DebateRequestForm } from './DebateRequestForm'
 const saveDraftMock = vi.fn(async () => undefined)
 const submitMock = vi.fn(async () => undefined)
 const resetMock = vi.fn(async () => undefined)
-const preparePublicDebateSelfSendMock = vi
-  .fn<(params: unknown) => Promise<{
-    created: boolean
-    existingThread: null
-    threadKey: string
-    captureAddress: string
-    subject: string
-    body: string
-    cc: string[]
-  }>>()
-  .mockResolvedValue({
-    created: true,
-    existingThread: null,
-    threadKey: 'thread-key-1',
-    captureAddress: 'contact@transparenta.eu',
-    subject: 'Prepared subject [teu:thread-key-1]',
-    body: 'Prepared body',
-    cc: ['contact@transparenta.eu'],
-  })
 const windowOpenMock = vi.fn(() => ({
   location: { href: '' },
   close: vi.fn(),
@@ -57,10 +38,6 @@ vi.mock('./use-campaign-challenge-form', () => ({
   useCampaignChallengeForm: () => formState,
 }))
 
-vi.mock('../../api/institution-correspondence', () => ({
-  preparePublicDebateSelfSend: (params: unknown) => preparePublicDebateSelfSendMock(params),
-}))
-
 vi.mock('@/features/learning/hooks/interactions/use-custom-interaction', () => ({
   useCustomInteraction: (params: Record<string, unknown>) => {
     customInteractionCalls.push(params)
@@ -75,7 +52,6 @@ describe('DebateRequestForm', () => {
     saveDraftMock.mockClear()
     submitMock.mockClear()
     resetMock.mockClear()
-    preparePublicDebateSelfSendMock.mockClear()
     customInteractionCalls = []
     windowOpenMock.mockClear()
     vi.stubGlobal('open', windowOpenMock)
@@ -160,7 +136,7 @@ describe('DebateRequestForm', () => {
     )
   })
 
-  it('prepares the self-send email and persists threadKey plus ngoSenderEmail on submit', async () => {
+  it('shows email preview and submits self-send with ngoSenderEmail', async () => {
     render(
       <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
@@ -178,33 +154,20 @@ describe('DebateRequestForm', () => {
     fireEvent.change(screen.getByLabelText('Association email'), {
       target: { value: 'ngo@example.com' },
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Open email' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Prepare email' }))
 
-    await waitFor(() => {
-      expect(preparePublicDebateSelfSendMock).toHaveBeenCalledWith({
-        entityCui: '4305857',
-        institutionEmail: 'primaria@example.ro',
-        requesterOrganizationName: 'Asociatia Test',
-        consentCapturedAt: null,
-      })
-    })
+    // Email preview should be visible
+    expect(screen.getByText('Prepared email')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Open email client' })).toBeInTheDocument()
 
-    expect(windowOpenMock).toHaveBeenCalledWith('', '_blank')
+    // Open email client triggers mailto
+    fireEvent.click(screen.getByRole('button', { name: 'Open email client' }))
+    expect(windowOpenMock).toHaveBeenCalledWith(
+      expect.stringContaining('mailto:'),
+      '_blank',
+    )
 
-    await waitFor(() => {
-      expect(saveDraftMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          threadKey: 'thread-key-1',
-        }),
-      )
-    })
-
-    // Verify the mailto URL was set on the opened window
-    const openedWindow = windowOpenMock.mock.results[0]?.value as { location: { href: string } }
-    expect(openedWindow.location.href).toContain('mailto:')
-    expect(openedWindow.location.href).toContain(encodeURIComponent('Prepared subject [teu:thread-key-1]'))
-    expect(openedWindow.location.href).toContain(encodeURIComponent('Prepared body'))
-
+    // Confirm sending
     fireEvent.click(screen.getByRole('button', { name: 'I sent the email' }))
 
     await waitFor(() => {
@@ -213,14 +176,14 @@ describe('DebateRequestForm', () => {
         isNgo: true,
         organizationName: 'Asociatia Test',
         ngoSenderEmail: 'ngo@example.com',
-        threadKey: 'thread-key-1',
+        threadKey: null,
         submissionPath: 'send_yourself',
         submittedAt: expect.any(String),
       })
     })
   })
 
-  it('requests association email only for NGO self-send and not for platform delivery', () => {
+  it('requires association email only for NGO self-send and not for platform delivery', () => {
     render(
       <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
@@ -231,8 +194,9 @@ describe('DebateRequestForm', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
+    // Non-NGO: no association email field, prepare email is disabled
     expect(screen.queryByLabelText('Association email')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Open email' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Prepare email' })).toBeDisabled()
 
     fireEvent.click(screen.getByRole('button', { name: 'Back' }))
     fireEvent.click(screen.getByLabelText('Do you represent a legally established association?'))
@@ -241,18 +205,19 @@ describe('DebateRequestForm', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
+    // NGO: association email field is visible, prepare email still disabled without valid email
     expect(screen.getByLabelText('Association email')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Open email' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Prepare email' })).toBeDisabled()
 
     fireEvent.change(screen.getByLabelText('Association email'), {
       target: { value: 'invalid-email' },
     })
-    expect(screen.getByRole('button', { name: 'Open email' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Prepare email' })).toBeDisabled()
 
     fireEvent.change(screen.getByLabelText('Association email'), {
       target: { value: 'ngo@example.com' },
     })
-    expect(screen.getByRole('button', { name: 'Open email' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Prepare email' })).toBeEnabled()
     expect(screen.getByRole('button', { name: 'Request submission' })).toBeEnabled()
   })
 
@@ -279,9 +244,7 @@ describe('DebateRequestForm', () => {
     expect(screen.getByRole('button', { name: 'Request submission' })).toBeEnabled()
   })
 
-  it('closes the blank window and shows error when prepare API fails', async () => {
-    preparePublicDebateSelfSendMock.mockRejectedValueOnce(new Error('Server unavailable'))
-
+  it('shows email preview with prepared content after clicking prepare email', () => {
     render(
       <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
@@ -299,26 +262,18 @@ describe('DebateRequestForm', () => {
     fireEvent.change(screen.getByLabelText('Association email'), {
       target: { value: 'ngo@example.com' },
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Open email' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Prepare email' }))
 
-    await waitFor(() => {
-      expect(screen.getByText('Server unavailable')).toBeInTheDocument()
-    })
+    // Email preview should be visible with recipient and action buttons
+    expect(screen.getByText('Prepared email')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Open email client' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'I sent the email' })).toBeInTheDocument()
 
-    // The blank window should have been closed
-    const openedWindow = windowOpenMock.mock.results[0]?.value as { close: ReturnType<typeof vi.fn> }
-    expect(openedWindow.close).toHaveBeenCalled()
-
-    // "I sent the email" should not appear since prepare failed
-    expect(screen.queryByRole('button', { name: 'I sent the email' })).not.toBeInTheDocument()
+    // Path selection cards should be hidden while preview is visible
+    expect(screen.queryByText('Send it yourself')).not.toBeInTheDocument()
   })
 
-  it('disables the open email button while preparing', async () => {
-    let resolvePrep: ((value: { created: boolean; existingThread: null; threadKey: string; captureAddress: string; subject: string; body: string; cc: string[] }) => void) | null = null
-    preparePublicDebateSelfSendMock.mockImplementationOnce(
-      () => new Promise((resolve) => { resolvePrep = resolve }),
-    )
-
+  it('disables prepare email button when association email is missing or invalid', () => {
     render(
       <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
@@ -333,29 +288,19 @@ describe('DebateRequestForm', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
+    // No email yet: disabled
+    expect(screen.getByRole('button', { name: 'Prepare email' })).toBeDisabled()
+
+    // Invalid email: still disabled
+    fireEvent.change(screen.getByLabelText('Association email'), {
+      target: { value: 'not-an-email' },
+    })
+    expect(screen.getByRole('button', { name: 'Prepare email' })).toBeDisabled()
+
+    // Valid email: enabled
     fireEvent.change(screen.getByLabelText('Association email'), {
       target: { value: 'ngo@example.com' },
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Open email' }))
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Preparing email...' })).toBeDisabled()
-    })
-
-    // Resolve the prepare call to clean up
-    const resolve = resolvePrep as unknown as (value: { created: boolean; existingThread: null; threadKey: string; captureAddress: string; subject: string; body: string; cc: string[] }) => void
-    resolve({
-      created: true,
-      existingThread: null,
-      threadKey: 'thread-key-1',
-      captureAddress: 'contact@transparenta.eu',
-      subject: 'Subject',
-      body: 'Body',
-      cc: [],
-    })
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Open email again' })).toBeEnabled()
-    })
+    expect(screen.getByRole('button', { name: 'Prepare email' })).toBeEnabled()
   })
 })

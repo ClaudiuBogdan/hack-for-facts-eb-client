@@ -103,7 +103,7 @@ test.describe('Buget Routing', () => {
     await expect(
       page.getByRole('heading', {
         level: 1,
-        name: /Calendar.*Cu ochii pe bugetele locale|Calendar.*Eyes on Local Budgets/i,
+        name: /Calendar bugetar|Budget calendar/i,
       }),
     ).toBeVisible({ timeout: 20000 })
   })

@@ -3946,6 +3946,10 @@ msgstr "Eroare la încărcarea hărții"
 msgid "Failed to load maps"
 msgstr "Eroare la încărcarea hărților"
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:209
+#~ msgid "Failed to prepare email. Please try again."
+#~ msgstr "Pregatirea emailului a esuat. Te rugam sa incerci din nou."
+
 #: src/features/advanced-map-analytics/hooks/use-map-local-snapshots.ts:222
 msgid "Failed to restore local snapshot"
 msgstr "Nu s-a putut restaura instantaneul local"
@@ -7149,7 +7153,7 @@ msgstr "Pregateste emailul"
 msgid "Prepared email"
 msgstr "Email pregatit"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:697
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:473
 #~ msgid "Preparing email..."
 #~ msgstr "Se pregateste emailul..."
 

@@ -3946,6 +3946,10 @@ msgstr "Failed to load map"
 msgid "Failed to load maps"
 msgstr "Failed to load maps"
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:209
+#~ msgid "Failed to prepare email. Please try again."
+#~ msgstr "Failed to prepare email. Please try again."
+
 #: src/features/advanced-map-analytics/hooks/use-map-local-snapshots.ts:222
 msgid "Failed to restore local snapshot"
 msgstr "Failed to restore local snapshot"
@@ -7154,7 +7158,7 @@ msgstr "Prepare email"
 msgid "Prepared email"
 msgstr "Prepared email"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:697
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:473
 #~ msgid "Preparing email..."
 #~ msgstr "Preparing email..."
 
