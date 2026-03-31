@@ -6,6 +6,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { BUDGET_STATUS_REPORT_INTERACTION } from '../../civic-interaction-definitions'
 import { CampaignChallengeFormShell } from './CampaignChallengeFormShell'
 import { formatReviewDate, type ReviewSummaryItem } from './campaign-challenge-review-state'
+import { logCampaignInteractiveError } from './log-campaign-interactive-error'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
 import type { BudgetStatusReportValue, CampaignInteractiveElementProps } from './types'
 
@@ -98,9 +99,11 @@ export function BudgetStatusReport({ ownerChallengeSlug, entityCui }: CampaignIn
   )
 
   const handleSubmit = useCallback(() => {
-    void form.submit({
+    form.submit({
       ...draft,
       submittedAt: new Date().toISOString(),
+    }).catch((error) => {
+      logCampaignInteractiveError('submit', error)
     })
   }, [draft, form])
 

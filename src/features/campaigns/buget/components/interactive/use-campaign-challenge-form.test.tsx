@@ -51,10 +51,10 @@ let campaignProgressState = {
   challenges: {} as Record<string, { status: string; attempts: number; updatedAt: string }>,
 }
 
-const saveDraftMock = vi.fn(async () => undefined)
-const submitMock = vi.fn(async () => undefined)
-const completeMock = vi.fn(async () => undefined)
-const resetMock = vi.fn(async () => undefined)
+const saveDraftMock = vi.fn(async () => null as InteractiveStateRecord | null)
+const submitMock = vi.fn(async () => null as InteractiveStateRecord | null)
+const completeMock = vi.fn(async () => null as InteractiveStateRecord | null)
+const resetMock = vi.fn(async () => null as InteractiveStateRecord | null)
 const markChallengeInProgressMock = vi.fn()
 const setChallengeStatusMock = vi.fn()
 const registerLessonChallengeMock = vi.fn()
@@ -159,6 +159,8 @@ describe('use-campaign-challenge-form', () => {
   })
 
   it('defers draft persistence side effects until after the current call stack', async () => {
+    saveDraftMock.mockResolvedValue(createTrackedInteractionRecord())
+
     const { result } = renderHook(() =>
       useCampaignChallengeForm<{ websiteUrl: string }>({
         ownerChallengeSlug: 'civic-monitor-and-request',
@@ -179,6 +181,25 @@ describe('use-campaign-challenge-form', () => {
 
     expect(saveDraftMock).toHaveBeenCalledWith({ websiteUrl: 'https://example.com' })
     expect(markChallengeInProgressMock).toHaveBeenCalledWith('civic-monitor-and-request')
+  })
+
+  it('does not mark the challenge in progress when draft persistence returns null', async () => {
+    saveDraftMock.mockResolvedValueOnce(null)
+
+    const { result } = renderHook(() =>
+      useCampaignChallengeForm<{ websiteUrl: string }>({
+        ownerChallengeSlug: 'civic-monitor-and-request',
+        interactionId: PRIMARIE_WEBSITE_LINK_INTERACTION.interactionId,
+        lifecycleMode: 'async_review',
+        entityCui: '87654321',
+      }),
+    )
+
+    await act(async () => {
+      await result.current.saveDraft({ websiteUrl: 'https://example.com' })
+    })
+
+    expect(markChallengeInProgressMock).not.toHaveBeenCalled()
   })
 
   it('submits async-review interactions through submit() and updates aggregate progress', async () => {

@@ -10,6 +10,7 @@ import {
   CampaignChallengeReviewState,
   formatReviewDate,
 } from './campaign-challenge-review-state'
+import { logCampaignInteractiveError } from './log-campaign-interactive-error'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
 import type { CampaignInteractiveElementProps, PrimarieContactInfoValue } from './types'
 
@@ -55,9 +56,11 @@ export function PrimarieContactInfo({ ownerChallengeSlug, entityCui }: CampaignI
       return
     }
 
-    void form.submit({
+    form.submit({
       ...draft,
       submittedAt: new Date().toISOString(),
+    }).catch((error) => {
+      logCampaignInteractiveError('submit', error)
     })
   }, [draft, form])
 

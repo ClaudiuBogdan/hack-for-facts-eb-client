@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useLearningProgress } from '@/features/learning/hooks/use-learning-progress'
+import { LearningHubLoading } from '@/features/learning/components/loading/LearningHubLoading'
 import {
   getAllLessons,
   getLearningPathById,
@@ -28,7 +29,11 @@ export const Route = createLazyFileRoute('/$lang/learning/$pathId/')({
 function PathOverviewPage() {
   const { lang, pathId } = Route.useParams()
   const locale = lang as 'ro' | 'en'
-  const { progress } = useLearningProgress()
+  const { isReady, progress } = useLearningProgress()
+
+  if (!isReady) {
+    return <LearningHubLoading />
+  }
 
   const path = useMemo(() => getLearningPathById(pathId), [pathId])
 

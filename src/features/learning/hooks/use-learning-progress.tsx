@@ -1,8 +1,15 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { t } from '@lingui/core/macro'
+import { toast } from 'sonner'
 import { useAuth } from '@/lib/auth'
-import { fetchLearningProgress, syncLearningProgressEvents } from '../api/progress'
+import { logger } from '@/lib/logger'
+import { readJsonFromLocalStorage } from '@/lib/storage/read-json-from-local-storage'
+import {
+  fetchLearningProgress,
+  syncLearningProgressEvents,
+  UnsupportedLearningProgressSnapshotVersionError,
+} from '../api/progress'
 import { getEmptyLearningGuestProgress, parseLearningGuestProgress } from '../schemas/progress'
 import { parseLearningProgressEvents } from '../schemas/progress-events'
 import { applyLearningProgressEvent, reduceLearningProgressEvents } from '../utils/progress-event-reducer'
@@ -17,7 +24,6 @@ import {
   createLearningOnboardingRecord,
   createLearningStreakRecord,
   createLessonProgressRecord,
-  projectLearningGuestProgress,
   SYSTEM_LEARNING_ACTIVE_PATH_RECORD_KEY,
   SYSTEM_LEARNING_ONBOARDING_RECORD_KEY,
   SYSTEM_LEARNING_STREAK_RECORD_KEY,
@@ -30,18 +36,18 @@ import {
   reconcileLearningGuestProgressWithRemote,
 } from '../utils/progress-merge'
 import { calculateStreakUpdate } from '../utils/streak'
-import type {
-  InteractiveAuditEvent,
-  InteractiveDefinition,
-  InteractiveStateRecord,
-  InteractionOutcome,
-  InteractionValue,
-  LearningAuthState,
-  LearningContentProgress,
-  LearningGuestProgress,
-  LearningInteractionAction,
-  LearningProgressEvent,
-  LearningProgressRemoteSnapshot,
+import {
+  LEARNING_PROGRESS_SCHEMA_VERSION,
+  type InteractiveAuditEvent,
+  type InteractiveDefinition,
+  type InteractiveStateRecord,
+  type InteractionOutcome,
+  type InteractionValue,
+  type LearningAuthState,
+  type LearningContentProgress,
+  type LearningGuestProgress,
+  type LearningInteractionAction,
+  type LearningProgressEvent,
 } from '../types'
 
 const GUEST_EVENTS_KEY = 'learning_progress_events'
@@ -52,6 +58,11 @@ const MAX_RETRIES = 4
 const RETRY_DELAYS = [1000, 5000, 15000, 60000]
 const SYNC_DEBOUNCE_MS = 1200
 const REMOTE_REFRESH_INTERVAL_MS = 15000
+const MAX_SYNC_EVENTS_PER_REQUEST = 100
+const MAX_GUEST_PENDING_EVENTS = 100
+const BOOTSTRAP_MAX_ATTEMPTS = 3
+const BOOTSTRAP_RETRY_DELAY_MS = 3000
+const STORAGE_PROBE_KEY = '__learning_progress_storage_probe__'
 
 type RemoteLearningProgress = Awaited<ReturnType<typeof fetchLearningProgress>>
 
@@ -65,17 +76,6 @@ function getAuthSnapshotKey(userId: string): string {
 
 function getAuthSyncKey(userId: string): string {
   return `learning_progress_sync:${userId}`
-}
-
-function readJsonFromStorage(key: string): unknown {
-  if (typeof window === 'undefined') return null
-  const raw = window.localStorage.getItem(key)
-  if (!raw) return null
-  try {
-    return JSON.parse(raw) as unknown
-  } catch {
-    return null
-  }
 }
 
 function removeFromStorage(key: string): void {
@@ -107,6 +107,33 @@ function getNextTimestamp(previousTimestamp?: string | null): string {
 function clampScore(value: number | undefined): number | undefined {
   if (typeof value !== 'number' || Number.isNaN(value)) return undefined
   return Math.max(0, Math.min(100, value))
+}
+
+function chunkArray<T>(items: readonly T[], chunkSize: number): T[][] {
+  if (chunkSize <= 0) {
+    return [Array.from(items)]
+  }
+
+  const chunks: T[][] = []
+  for (let index = 0; index < items.length; index += chunkSize) {
+    chunks.push(items.slice(index, index + chunkSize))
+  }
+  return chunks
+}
+
+function assertEntityScopeMutationInput(
+  definition: Pick<InteractiveDefinition, 'scopePolicy'>,
+  entityCui?: string | null,
+): void {
+  if (
+    import.meta.env.DEV
+    && definition.scopePolicy === 'entity'
+    && (!entityCui || entityCui.trim().length === 0)
+  ) {
+    throw new Error(
+      '[useLearningProgress] entityCui is required when scopePolicy is "entity" for mutations.',
+    )
+  }
 }
 
 function sanitizeSourceUrl(sourceUrl: string | undefined | null): string | undefined {
@@ -195,9 +222,11 @@ type ResetInteractiveInput = {
   readonly entityCui?: string | null
 }
 
+type LearningProgressBootstrapPhase = 'loading' | 'ready' | 'failed'
+
 type LearningProgressContextValue = {
   readonly isReady: boolean
-  readonly isSyncedWithAuthState: boolean
+  readonly bootstrapPhase: LearningProgressBootstrapPhase
   readonly auth: LearningAuthState
   readonly progress: LearningGuestProgress
   readonly getContentProgress: (contentId: string) => LearningContentProgress | undefined
@@ -222,7 +251,7 @@ type LearningProgressContextValue = {
 
 const LearningProgressContext = createContext<LearningProgressContextValue | null>(null)
 
-type LearningSyncStatus = 'synced' | 'local' | 'syncing' | 'error'
+type LearningSyncStatus = 'synced' | 'local' | 'syncing' | 'error' | 'quarantined'
 
 type LearningProgressSyncEntry = {
   status: LearningSyncStatus
@@ -271,16 +300,6 @@ function mergeEventLogs(...logs: LearningProgressEvent[][]): LearningProgressEve
   return Array.from(byId.values())
 }
 
-function projectRemoteSnapshot(snapshot: LearningProgressRemoteSnapshot): LearningGuestProgress {
-  return projectLearningGuestProgress({
-    interactiveState: {
-      recordsByKey: snapshot.recordsByKey,
-      eventLogByRecordKey: {},
-    },
-    lastUpdated: snapshot.lastUpdated,
-  })
-}
-
 function createEventId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return crypto.randomUUID()
@@ -310,7 +329,6 @@ function getAuthState(params: {
 
 export function LearningProgressProvider({ children }: { readonly children: React.ReactNode }) {
   const { isEnabled, isLoaded, isSignedIn, user } = useAuth()
-  const queryClient = useQueryClient()
 
   const auth = useMemo<LearningAuthState>(() => {
     return getAuthState({
@@ -324,7 +342,7 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
 
   const [progress, setProgress] = useState<LearningGuestProgress>(() => getEmptyLearningGuestProgress())
   const [isReady, setIsReady] = useState(false)
-  const [isSyncedWithAuthState, setIsSyncedWithAuthState] = useState(false)
+  const [bootstrapPhase, setBootstrapPhase] = useState<LearningProgressBootstrapPhase>('loading')
 
   const progressRef = useRef(progress)
   progressRef.current = progress
@@ -340,10 +358,12 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
   const isBootstrappingRef = useRef(false)
   const queuedEventsRef = useRef<LearningProgressEvent[]>([])
   const pendingGuestCleanupRef = useRef(false)
+  const hasShownBootstrapLoadingToastRef = useRef(false)
+  const hasShownBootstrapFailedToastRef = useRef(false)
 
   const getClientId = useCallback((): string => {
     if (clientIdRef.current) return clientIdRef.current
-    const stored = readJsonFromStorage(CLIENT_ID_KEY)
+    const stored = readJsonFromLocalStorage(CLIENT_ID_KEY)
     if (typeof stored === 'string' && stored.trim().length > 0) {
       clientIdRef.current = stored
       return stored
@@ -392,8 +412,43 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     [],
   )
 
+  const createInteractiveUpdatedEvent = useCallback(
+    (payload: {
+      readonly record: InteractiveStateRecord
+      readonly auditEvents?: readonly InteractiveAuditEvent[]
+    }): LearningProgressEvent => {
+      return {
+        eventId: createEventId(),
+        occurredAt: payload.record.updatedAt,
+        clientId: getClientId(),
+        type: 'interactive.updated',
+        payload,
+      }
+    },
+    [getClientId],
+  )
+
+  const canWriteToStorage = useCallback((): boolean => {
+    if (typeof window === 'undefined') {
+      return false
+    }
+
+    if (!storageBlockedRef.current) {
+      return true
+    }
+
+    try {
+      window.localStorage.setItem(STORAGE_PROBE_KEY, '1')
+      window.localStorage.removeItem(STORAGE_PROBE_KEY)
+      storageBlockedRef.current = false
+      return true
+    } catch {
+      return false
+    }
+  }, [])
+
   const safeWriteToStorage = useCallback((key: string, value: unknown): boolean => {
-    if (storageBlockedRef.current || typeof window === 'undefined') return false
+    if (!canWriteToStorage()) return false
     try {
       window.localStorage.setItem(key, JSON.stringify(value))
       return true
@@ -404,15 +459,17 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       }
       return false
     }
-  }, [])
+  }, [canWriteToStorage])
 
   const loadEventsForKey = useCallback((eventsKey: string): LearningProgressEvent[] => {
-    const rawEvents = readJsonFromStorage(eventsKey)
+    const rawEvents = readJsonFromLocalStorage(eventsKey)
     return parseLearningProgressEvents(rawEvents)
   }, [])
 
   const loadSnapshotForKey = useCallback((snapshotKey: string): LearningGuestProgress | null => {
-    const rawSnapshot = readJsonFromStorage(snapshotKey)
+    const rawSnapshot = readJsonFromLocalStorage(snapshotKey, {
+      expectedVersion: LEARNING_PROGRESS_SCHEMA_VERSION,
+    })
     if (!rawSnapshot) {
       return null
     }
@@ -508,6 +565,11 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     const keys = getStorageKeys()
     const events = loadEventsForKey(keys.eventsKey)
     eventsRef.current = events
+    if (keys.syncKey) {
+      syncStateRef.current = parseSyncState(
+        readJsonFromLocalStorage(keys.syncKey, { expectedVersion: 1 }),
+      )
+    }
     const storedSnapshot = loadSnapshotForKey(keys.snapshotKey)
 
     if (storedSnapshot) {
@@ -555,7 +617,7 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       }
       return fetchLearningProgress({ since: syncStateRef.current.lastSyncedCursor })
     },
-    enabled: auth.isAuthenticated && isSyncedWithAuthState,
+    enabled: auth.isAuthenticated && bootstrapPhase !== 'loading',
     staleTime: 0,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
@@ -571,10 +633,13 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
   }, [auth.isAuthenticated, auth.userId, progressQuery])
 
   useEffect(() => {
-    if (!isSyncedWithAuthState || !auth.isAuthenticated || !progressQuery.data) return
+    if (!auth.isAuthenticated || !progressQuery.data || bootstrapPhase === 'loading') return
     const keys = getStorageKeys()
     applyRemoteProgress(progressQuery.data, keys)
-  }, [applyRemoteProgress, auth.isAuthenticated, getStorageKeys, isSyncedWithAuthState, progressQuery.data])
+    if (bootstrapPhase !== 'ready') {
+      setBootstrapPhase('ready')
+    }
+  }, [applyRemoteProgress, auth.isAuthenticated, bootstrapPhase, getStorageKeys, progressQuery.data])
 
   useEffect(() => {
     if (!progressQuery.error) return
@@ -587,6 +652,7 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       window.clearTimeout(syncTimeoutRef.current)
     }
     syncTimeoutRef.current = window.setTimeout(() => {
+      syncTimeoutRef.current = null
       void syncNowRef.current()
     }, SYNC_DEBOUNCE_MS)
   }, [auth.isAuthenticated])
@@ -596,9 +662,39 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       window.clearTimeout(retryTimeoutRef.current)
     }
     retryTimeoutRef.current = window.setTimeout(() => {
+      retryTimeoutRef.current = null
       void syncNowRef.current()
     }, delay)
   }, [])
+
+  const compactGuestPendingEvents = useCallback(
+    (
+      snapshot: LearningGuestProgress,
+      currentEvents: readonly LearningProgressEvent[],
+    ): LearningProgressEvent[] => {
+      if (auth.isAuthenticated || currentEvents.length <= MAX_GUEST_PENDING_EVENTS) {
+        return [...currentEvents]
+      }
+
+      const latestResetEvent = [...currentEvents].reverse().find((event) => event.type === 'progress.reset') ?? null
+      const compactedRecordEvents = Object.values(snapshot.interactiveState.recordsByKey)
+        .sort((leftRecord, rightRecord) => {
+          const timeDiff = Date.parse(leftRecord.updatedAt) - Date.parse(rightRecord.updatedAt)
+          if (!Number.isNaN(timeDiff) && timeDiff !== 0) {
+            return timeDiff
+          }
+
+          return leftRecord.key.localeCompare(rightRecord.key)
+        })
+        .map((record) => createInteractiveUpdatedEvent({
+          record,
+          auditEvents: snapshot.interactiveState.eventLogByRecordKey[record.key],
+        }))
+
+      return latestResetEvent ? [latestResetEvent, ...compactedRecordEvents] : compactedRecordEvents
+    },
+    [auth.isAuthenticated, createInteractiveUpdatedEvent],
+  )
 
   const syncNow = useCallback(async () => {
     if (isBootstrappingRef.current) return
@@ -608,8 +704,17 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     }
     if (syncInFlightRef.current) return
     if (typeof navigator !== 'undefined' && navigator.onLine === false) return
+    if (syncTimeoutRef.current) {
+      window.clearTimeout(syncTimeoutRef.current)
+      syncTimeoutRef.current = null
+    }
+    if (retryTimeoutRef.current) {
+      window.clearTimeout(retryTimeoutRef.current)
+      retryTimeoutRef.current = null
+    }
 
     const syncKey = getAuthSyncKey(auth.userId)
+    const eventsKey = getAuthEventsKey(auth.userId)
     const pendingEvents = eventsRef.current.filter((event) => {
       const entry = syncStateRef.current.events[event.eventId]
       if (!entry) return true
@@ -629,53 +734,119 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     }
 
     syncInFlightRef.current = true
-    const attemptAt = nowIso()
-
-    for (const event of pendingEvents) {
-      updateSyncEntry(event.eventId, (entry) => ({
-        ...entry,
-        status: 'syncing',
-        lastAttemptAt: attemptAt,
-      }))
-    }
-    persistSyncState(syncKey)
+    let shouldRefetchRemoteProgress = false
+    let completedAllChunks = true
 
     try {
-      await syncLearningProgressEvents({ events: pendingEvents, clientUpdatedAt: attemptAt })
-      const syncedEventIds = new Set(pendingEvents.map((event) => event.eventId))
-      eventsRef.current = eventsRef.current.filter((event) => !syncedEventIds.has(event.eventId))
-      safeWriteToStorage(getAuthEventsKey(auth.userId), eventsRef.current)
-      removeSyncEntries([...syncedEventIds])
-      syncStateRef.current = {
-        ...syncStateRef.current,
-        lastSuccessfulSyncAt: attemptAt,
-      }
-      persistSyncState(syncKey)
+      const pendingChunks = chunkArray(pendingEvents, MAX_SYNC_EVENTS_PER_REQUEST)
 
-      if (pendingGuestCleanupRef.current) {
+      for (const pendingChunk of pendingChunks) {
+        const attemptAt = nowIso()
+
+        for (const event of pendingChunk) {
+          updateSyncEntry(event.eventId, (entry) => ({
+            ...entry,
+            status: 'syncing',
+            lastAttemptAt: attemptAt,
+          }))
+        }
+        persistSyncState(syncKey)
+
+        const syncResult = await syncLearningProgressEvents({
+          events: pendingChunk,
+          clientUpdatedAt: attemptAt,
+        })
+
+        if (!syncResult.ok) {
+          if (syncResult.error.retryable) {
+            completedAllChunks = false
+
+            for (const event of pendingChunk) {
+              updateSyncEntry(event.eventId, (entry) => ({
+                ...entry,
+                status: 'error',
+                retryCount: entry.retryCount + 1,
+                errorMessage: syncResult.error.message,
+              }))
+            }
+
+            persistSyncState(syncKey)
+
+            const maxRetry = pendingChunk.reduce((maxRetryCount, event) => {
+              const entry = syncStateRef.current.events[event.eventId]
+              return Math.max(maxRetryCount, entry?.retryCount ?? 0)
+            }, 0)
+
+            if (maxRetry <= MAX_RETRIES) {
+              const delay = RETRY_DELAYS[Math.min(maxRetry, RETRY_DELAYS.length - 1)]
+              scheduleRetry(delay)
+            }
+
+            break
+          }
+
+          const permanentlyFailedEventIds = new Set(pendingChunk.map((event) => event.eventId))
+          for (const event of pendingChunk) {
+            updateSyncEntry(event.eventId, (entry) => ({
+              ...entry,
+              status: 'quarantined',
+              retryCount: MAX_RETRIES + 1,
+              errorMessage: syncResult.error.message,
+            }))
+          }
+
+          eventsRef.current = eventsRef.current.filter((event) => !permanentlyFailedEventIds.has(event.eventId))
+          safeWriteToStorage(eventsKey, eventsRef.current)
+          persistSyncState(syncKey)
+          continue
+        }
+
+        const failedEventById = new Map(
+          syncResult.data.failedEvents.map((failedEvent) => [failedEvent.eventId, failedEvent]),
+        )
+        const successfulEventIds = pendingChunk
+          .map((event) => event.eventId)
+          .filter((eventId) => !failedEventById.has(eventId))
+
+        if (successfulEventIds.length > 0) {
+          const successfulEventIdsSet = new Set(successfulEventIds)
+          eventsRef.current = eventsRef.current.filter((event) => !successfulEventIdsSet.has(event.eventId))
+          safeWriteToStorage(eventsKey, eventsRef.current)
+          removeSyncEntries(successfulEventIds)
+          syncStateRef.current = {
+            ...syncStateRef.current,
+            lastSuccessfulSyncAt: attemptAt,
+          }
+          shouldRefetchRemoteProgress = shouldRefetchRemoteProgress || syncResult.data.newEventsCount > 0
+        }
+
+        if (syncResult.data.failedEvents.length > 0) {
+          const failedEventIds = new Set(syncResult.data.failedEvents.map((failedEvent) => failedEvent.eventId))
+
+          for (const failedEvent of syncResult.data.failedEvents) {
+            updateSyncEntry(failedEvent.eventId, (entry) => ({
+              ...entry,
+              status: 'quarantined',
+              retryCount: MAX_RETRIES + 1,
+              errorMessage: failedEvent.message,
+            }))
+          }
+
+          eventsRef.current = eventsRef.current.filter((event) => !failedEventIds.has(event.eventId))
+          safeWriteToStorage(eventsKey, eventsRef.current)
+        }
+
+        persistSyncState(syncKey)
+      }
+
+      if (pendingGuestCleanupRef.current && completedAllChunks && eventsRef.current.length === 0) {
         removeFromStorage(GUEST_EVENTS_KEY)
         removeFromStorage(GUEST_SNAPSHOT_KEY)
         pendingGuestCleanupRef.current = false
       }
 
-      await refetchRemoteProgress()
-    } catch (error) {
-      for (const event of pendingEvents) {
-        updateSyncEntry(event.eventId, (entry) => ({
-          ...entry,
-          status: 'error',
-          retryCount: entry.retryCount + 1,
-          errorMessage: error instanceof Error ? error.message : 'Sync failed',
-        }))
-      }
-      persistSyncState(syncKey)
-      const maxRetry = pendingEvents.reduce((max, event) => {
-        const entry = syncStateRef.current.events[event.eventId]
-        return Math.max(max, entry?.retryCount ?? 0)
-      }, 0)
-      if (maxRetry <= MAX_RETRIES) {
-        const delay = RETRY_DELAYS[Math.min(maxRetry, RETRY_DELAYS.length - 1)]
-        scheduleRetry(delay)
+      if (shouldRefetchRemoteProgress) {
+        await refetchRemoteProgress()
       }
     } finally {
       syncInFlightRef.current = false
@@ -713,9 +884,16 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
         return
       }
 
-      const nextEvents = options?.replacePending
+      const baseSnapshot = options?.replacePending ? getEmptyLearningGuestProgress() : progressRef.current
+      const nextSnapshot = events.reduce(
+        (currentSnapshot, event) => applyLearningProgressEvent(currentSnapshot, event),
+        baseSnapshot,
+      )
+
+      let nextEvents = options?.replacePending
         ? [...events]
         : [...eventsRef.current, ...events]
+      nextEvents = compactGuestPendingEvents(nextSnapshot, nextEvents)
       eventsRef.current = nextEvents
       const eventsWritten = safeWriteToStorage(storageKeys.eventsKey, nextEvents)
 
@@ -739,22 +917,25 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
         persistSyncState(storageKeys.syncKey)
       }
 
-      setProgress((current) => {
-        const baseSnapshot = options?.replacePending ? getEmptyLearningGuestProgress() : current
-        const nextSnapshot = events.reduce(
-          (currentSnapshot, event) => applyLearningProgressEvent(currentSnapshot, event),
-          baseSnapshot,
-        )
-        saveSnapshotForKey(storageKeys.snapshotKey, nextSnapshot)
-        return nextSnapshot
-      })
+      saveSnapshotForKey(storageKeys.snapshotKey, nextSnapshot)
+      setProgress(nextSnapshot)
 
       queueSync()
     },
-    [persistSyncState, queueSync, removeSyncEntries, safeWriteToStorage, saveSnapshotForKey, updateSyncEntry],
+    [
+      compactGuestPendingEvents,
+      persistSyncState,
+      queueSync,
+      removeSyncEntries,
+      safeWriteToStorage,
+      saveSnapshotForKey,
+      updateSyncEntry,
+    ],
   )
 
   useEffect(() => {
+    let cancelled = false
+
     if (!isLoaded) {
       const guestEvents = loadEventsForKey(GUEST_EVENTS_KEY)
       eventsRef.current = guestEvents
@@ -767,8 +948,10 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
         setProgress(nextSnapshot)
       }
       setIsReady(true)
-      setIsSyncedWithAuthState(false)
-      return
+      setBootstrapPhase('loading')
+      return () => {
+        cancelled = true
+      }
     }
 
     const keys = getStorageKeys()
@@ -784,65 +967,128 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
         setProgress(nextSnapshot)
       }
       setIsReady(true)
-      setIsSyncedWithAuthState(true)
-      return
+      setBootstrapPhase('ready')
+      return () => {
+        cancelled = true
+      }
     }
 
     const bootstrap = async () => {
       isBootstrappingRef.current = true
       queuedEventsRef.current = []
+      hasShownBootstrapLoadingToastRef.current = false
+      hasShownBootstrapFailedToastRef.current = false
+
+      if (!hasShownBootstrapLoadingToastRef.current) {
+        hasShownBootstrapLoadingToastRef.current = true
+        toast.info(t`Syncing your progress...`)
+      }
 
       const guestEvents = loadEventsForKey(GUEST_EVENTS_KEY)
       const localEvents = loadEventsForKey(keys.eventsKey)
       const guestSnapshot = loadSnapshotForKey(GUEST_SNAPSHOT_KEY)
       const localSnapshot = loadSnapshotForKey(keys.snapshotKey)
-      const localSync = parseSyncState(readJsonFromStorage(keys.syncKey ?? ''))
+      const localSync = parseSyncState(
+        keys.syncKey
+          ? readJsonFromLocalStorage(keys.syncKey, { expectedVersion: 1 })
+          : null,
+      )
       syncStateRef.current = localSync
 
-      let remoteSnapshot = projectRemoteSnapshot({
-        version: 1,
-        recordsByKey: {},
-        lastUpdated: null,
-      })
-      let remoteCursor: string | null = null
-      try {
-        const remote = await fetchLearningProgress()
-        queryClient.setQueryData(progressQueryKey, remote)
-        remoteSnapshot = projectRemoteSnapshot(remote.snapshot)
-        remoteCursor = remote.cursor ?? null
-      } catch (error) {
-        console.warn('Failed to fetch remote learning progress:', error)
-      }
-
       const mergedPendingEvents = mergeEventLogs(guestEvents, localEvents)
-      let nextSnapshot = mergeLearningGuestProgress(
-        mergeLearningGuestProgress(
-          guestSnapshot ?? getEmptyLearningGuestProgress(),
-          localSnapshot ?? getEmptyLearningGuestProgress(),
-        ),
-        remoteSnapshot,
+      const localMergedSnapshot = mergeLearningGuestProgress(
+        guestSnapshot ?? getEmptyLearningGuestProgress(),
+        localSnapshot ?? getEmptyLearningGuestProgress(),
+      )
+      const localHydratedSnapshot = mergedPendingEvents.reduce(
+        (currentSnapshot, event) => applyLearningProgressEvent(currentSnapshot, event),
+        localMergedSnapshot,
       )
 
-      if (queuedEventsRef.current.length > 0) {
-        mergedPendingEvents.push(...queuedEventsRef.current)
-        queuedEventsRef.current = []
-      }
-
-      if (mergedPendingEvents.length > 0) {
-        nextSnapshot = applyEventsToSnapshot(nextSnapshot, mergedPendingEvents, null)
+      if (cancelled) {
+        return
       }
 
       eventsRef.current = mergedPendingEvents
       safeWriteToStorage(keys.eventsKey, mergedPendingEvents)
+      saveSnapshotForKey(keys.snapshotKey, localHydratedSnapshot)
+      setProgress(localHydratedSnapshot)
+      setIsReady(true)
+      setBootstrapPhase('loading')
+
+      let remoteProgress: RemoteLearningProgress | null = null
+      let bootstrapError: unknown = null
+
+      for (let attempt = 1; attempt <= BOOTSTRAP_MAX_ATTEMPTS; attempt += 1) {
+        try {
+          remoteProgress = await fetchLearningProgress()
+          bootstrapError = null
+          break
+        } catch (error) {
+          bootstrapError = error
+
+          if (error instanceof UnsupportedLearningProgressSnapshotVersionError) {
+            logger.error('Learning progress bootstrap returned an unsupported snapshot version.', {
+              error,
+              userId: auth.userId,
+            })
+            break
+          }
+
+          if (attempt < BOOTSTRAP_MAX_ATTEMPTS) {
+            await new Promise<void>((resolve) => {
+              window.setTimeout(resolve, BOOTSTRAP_RETRY_DELAY_MS)
+            })
+            if (cancelled) {
+              return
+            }
+            continue
+          }
+
+          logger.warn('Failed to fetch remote learning progress during bootstrap.', {
+            error,
+            userId: auth.userId,
+          })
+          break
+        }
+      }
+
+      if (cancelled) {
+        return
+      }
+
+      let finalPendingEvents = mergedPendingEvents
+      let nextSnapshot = localHydratedSnapshot
+
+      if (remoteProgress) {
+        nextSnapshot = reconcileLearningGuestProgressWithRemote(
+          localHydratedSnapshot,
+          remoteProgress.snapshot,
+          remoteProgress.events,
+        )
+        syncStateRef.current = {
+          ...syncStateRef.current,
+          lastSyncedCursor: remoteProgress.cursor ?? syncStateRef.current.lastSyncedCursor,
+        }
+      } else if (!hasShownBootstrapFailedToastRef.current) {
+        hasShownBootstrapFailedToastRef.current = true
+        toast.warning(t`Could not sync with server. Your progress is saved locally.`)
+      }
+
+      if (queuedEventsRef.current.length > 0) {
+        finalPendingEvents = mergeEventLogs(finalPendingEvents, queuedEventsRef.current)
+        nextSnapshot = queuedEventsRef.current.reduce(
+          (currentSnapshot, event) => applyLearningProgressEvent(currentSnapshot, event),
+          nextSnapshot,
+        )
+        queuedEventsRef.current = []
+      }
+
+      eventsRef.current = finalPendingEvents
+      safeWriteToStorage(keys.eventsKey, finalPendingEvents)
       saveSnapshotForKey(keys.snapshotKey, nextSnapshot)
       setProgress(nextSnapshot)
 
-      if (remoteCursor) {
-        syncStateRef.current = {
-          ...syncStateRef.current,
-          lastSyncedCursor: remoteCursor,
-        }
-      }
       persistSyncState(keys.syncKey)
 
       if (guestEvents.length > 0) {
@@ -850,13 +1096,25 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       }
 
       isBootstrappingRef.current = false
-      setIsReady(true)
-      setIsSyncedWithAuthState(true)
+      setBootstrapPhase(remoteProgress ? 'ready' : 'failed')
+
+      if (bootstrapError && !(bootstrapError instanceof UnsupportedLearningProgressSnapshotVersionError)) {
+        logger.warn('Learning progress bootstrap finished with local-only state.', {
+          error: bootstrapError,
+          userId: auth.userId,
+        })
+      }
+
       queueSync()
     }
 
-    setIsSyncedWithAuthState(false)
+    setBootstrapPhase('loading')
     void bootstrap()
+
+    return () => {
+      cancelled = true
+      isBootstrappingRef.current = false
+    }
   }, [
     auth.isAuthenticated,
     auth.userId,
@@ -864,13 +1122,9 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     isLoaded,
     loadEventsForKey,
     persistSyncState,
-    progressQueryKey,
-    queryClient,
     queueSync,
-    applyEventsToSnapshot,
     saveSnapshotForKey,
     safeWriteToStorage,
-    updateSyncEntry,
     loadSnapshotForKey,
   ])
 
@@ -895,22 +1149,6 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       if (storageDebounceTimeout) window.clearTimeout(storageDebounceTimeout)
     }
   }, [recomputeFromStorage])
-
-  const createInteractiveUpdatedEvent = useCallback(
-    (payload: {
-      readonly record: InteractiveStateRecord
-      readonly auditEvents?: readonly InteractiveAuditEvent[]
-    }): LearningProgressEvent => {
-      return {
-        eventId: createEventId(),
-        occurredAt: payload.record.updatedAt,
-        clientId: getClientId(),
-        type: 'interactive.updated',
-        payload,
-      }
-    },
-    [getClientId],
-  )
 
   const buildContentProjectionEvents = useCallback(
     (input: SaveContentProgressInput, occurredAt: string): LearningProgressEvent[] => {
@@ -1042,6 +1280,7 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
 
   const saveInteractiveDraft = useCallback(
     async (input: SaveInteractiveDraftInput): Promise<InteractiveStateRecord | null> => {
+      assertEntityScopeMutationInput(input.definition, input.entityCui)
       const scope = resolveInteractionScope(input.definition, input.entityCui)
       if (!scope) {
         return null
@@ -1069,11 +1308,16 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       })
       return nextRecordWithSourceUrl
     },
-    [appendInteractiveUpdateEvent, captureCurrentSourceUrl, getInteractiveRecordForDefinition],
+    [
+      appendInteractiveUpdateEvent,
+      captureCurrentSourceUrl,
+      getInteractiveRecordForDefinition,
+    ],
   )
 
   const submitInteractive = useCallback(
     async (input: SubmitInteractiveInput): Promise<InteractiveStateRecord | null> => {
+      assertEntityScopeMutationInput(input.definition, input.entityCui)
       const scope = resolveInteractionScope(input.definition, input.entityCui)
       if (!scope) {
         return null
@@ -1122,11 +1366,16 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
 
       return nextRecordWithSourceUrl
     },
-    [appendInteractiveUpdateEvent, captureCurrentSourceUrl, getInteractiveRecordForDefinition],
+    [
+      appendInteractiveUpdateEvent,
+      captureCurrentSourceUrl,
+      getInteractiveRecordForDefinition,
+    ],
   )
 
   const resolveInteractive = useCallback(
     async (input: ResolveInteractiveInput): Promise<InteractiveStateRecord | null> => {
+      assertEntityScopeMutationInput(input.definition, input.entityCui)
       const scope = resolveInteractionScope(input.definition, input.entityCui)
       if (!scope) {
         return null
@@ -1196,7 +1445,11 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
 
       return nextRecordWithSourceUrl
     },
-    [appendInteractiveUpdateEvent, captureCurrentSourceUrl, getInteractiveRecordForDefinition],
+    [
+      appendInteractiveUpdateEvent,
+      captureCurrentSourceUrl,
+      getInteractiveRecordForDefinition,
+    ],
   )
 
   const applyInteractiveEvaluation = useCallback(
@@ -1248,6 +1501,7 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
 
   const resetInteractive = useCallback(
     async (input: ResetInteractiveInput): Promise<InteractiveStateRecord | null> => {
+      assertEntityScopeMutationInput(input.definition, input.entityCui)
       const scope = resolveInteractionScope(input.definition, input.entityCui)
       if (!scope) {
         return null
@@ -1773,7 +2027,7 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
   const value = useMemo<LearningProgressContextValue>(
     () => ({
       isReady,
-      isSyncedWithAuthState,
+      bootstrapPhase,
       auth,
       progress,
       getContentProgress,
@@ -1794,7 +2048,7 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
     }),
     [
       isReady,
-      isSyncedWithAuthState,
+      bootstrapPhase,
       auth,
       progress,
       getContentProgress,

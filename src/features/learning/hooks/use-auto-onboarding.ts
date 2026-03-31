@@ -20,7 +20,7 @@ type UseAutoOnboardingParams = {
 export function useAutoOnboarding({ pathId }: UseAutoOnboardingParams): void {
   const {
     isReady,
-    isSyncedWithAuthState,
+    bootstrapPhase,
     progress,
     saveOnboarding,
   } = useLearningProgress()
@@ -35,7 +35,7 @@ export function useAutoOnboarding({ pathId }: UseAutoOnboardingParams): void {
   useEffect(() => {
     // Wait until progress state is ready
     if (!isReady) return
-    if (!isSyncedWithAuthState) return
+    if (bootstrapPhase !== 'ready') return
 
     // Skip if onboarding is already completed
     if (progress.onboarding.completedAt) return
@@ -59,5 +59,5 @@ export function useAutoOnboarding({ pathId }: UseAutoOnboardingParams): void {
     void saveOnboarding({ pathId }).finally(() => {
       isSavingRef.current = false
     })
-  }, [isReady, isSyncedWithAuthState, pathId, progress.onboarding.completedAt, saveOnboarding])
+  }, [bootstrapPhase, isReady, pathId, progress.onboarding.completedAt, saveOnboarding])
 }

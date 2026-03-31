@@ -19,6 +19,7 @@ import {
   type ReviewSummaryItem,
 } from './campaign-challenge-review-state'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
+import { logCampaignInteractiveError } from './log-campaign-interactive-error'
 import { buildContestationMailto, buildContestationEmailBody } from './mailto-utils'
 import type {
   ContestationBuilderValue,
@@ -181,10 +182,12 @@ export function ContestationBuilder({ ownerChallengeSlug, entityCui }: CampaignI
   }, [draft])
 
   const handleConfirmEmailSend = useCallback(() => {
-    void form.submit({
+    form.submit({
       ...draft,
       submissionPath: 'send_email',
       submittedAt: new Date().toISOString(),
+    }).catch((error) => {
+      logCampaignInteractiveError('submit', error)
     })
   }, [draft, form])
 
@@ -210,10 +213,12 @@ export function ContestationBuilder({ ownerChallengeSlug, entityCui }: CampaignI
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
 
-    void form.submit({
+    form.submit({
       ...draft,
       submissionPath: 'download_text',
       submittedAt: new Date().toISOString(),
+    }).catch((error) => {
+      logCampaignInteractiveError('submit', error)
     })
   }, [draft, form])
 

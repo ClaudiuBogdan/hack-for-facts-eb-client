@@ -8,6 +8,7 @@ import type { CivicOwnerChallengeSlug } from '../../civic-interaction-definition
 import { useCampaignProgress } from '../../hooks/use-campaign-progress'
 import { deriveCampaignChallengeInteractionCandidate } from '../../utils/progress-records'
 import type { SubmittedVariant } from './campaign-challenge-review-state'
+import { logCampaignInteractiveError } from './log-campaign-interactive-error'
 
 type UseCampaignChallengeFormInput = {
   readonly ownerChallengeSlug: CivicOwnerChallengeSlug
@@ -88,8 +89,10 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
 
   const saveDraft = useCallback(async (value: TValue) => {
     await Promise.resolve()
-    await interaction.saveDraft(value)
-    markChallengeInProgress(params.ownerChallengeSlug)
+    const savedRecord = await interaction.saveDraft(value)
+    if (savedRecord) {
+      markChallengeInProgress(params.ownerChallengeSlug)
+    }
   }, [interaction, markChallengeInProgress, params.ownerChallengeSlug])
 
   const submit = useCallback(async (value: TValue) => {
@@ -160,7 +163,9 @@ export function useCampaignChallengeForm<TValue extends Record<string, unknown>>
       return
     }
 
-    void submit(interaction.savedValue as TValue)
+    submit(interaction.savedValue as TValue).catch((error) => {
+      logCampaignInteractiveError('submit', error)
+    })
   }, [
     interaction.phase,
     interaction.savedValue,

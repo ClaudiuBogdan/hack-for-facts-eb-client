@@ -6,7 +6,7 @@ const saveOnboardingMock = vi.fn(async () => {})
 
 const learningProgressState = {
   isReady: true,
-  isSyncedWithAuthState: false,
+  bootstrapPhase: 'loading' as 'loading' | 'ready' | 'failed',
   progress: {
     onboarding: {
       completedAt: null,
@@ -29,7 +29,7 @@ describe('useAutoOnboarding auth sync guard', () => {
   beforeEach(() => {
     saveOnboardingMock.mockClear()
     learningProgressState.isReady = true
-    learningProgressState.isSyncedWithAuthState = false
+    learningProgressState.bootstrapPhase = 'loading'
     learningProgressState.progress.onboarding.completedAt = null
   })
 
@@ -38,7 +38,7 @@ describe('useAutoOnboarding auth sync guard', () => {
 
     expect(saveOnboardingMock).not.toHaveBeenCalled()
 
-    learningProgressState.isSyncedWithAuthState = true
+    learningProgressState.bootstrapPhase = 'ready'
     rerender()
 
     expect(saveOnboardingMock).toHaveBeenCalledWith({ pathId: 'budget-basics' })

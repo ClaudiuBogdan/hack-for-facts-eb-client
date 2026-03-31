@@ -14,6 +14,7 @@ import {
   formatReviewDate,
   type ReviewSummaryItem,
 } from './campaign-challenge-review-state'
+import { logCampaignInteractiveError } from './log-campaign-interactive-error'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
 import type { BudgetDocumentLinkValue, CampaignInteractiveElementProps } from './types'
 
@@ -104,9 +105,11 @@ export function BudgetDocumentLink({ ownerChallengeSlug, entityCui }: CampaignIn
       return
     }
 
-    void form.submit({
+    form.submit({
       ...draft,
       submittedAt: new Date().toISOString(),
+    }).catch((error) => {
+      logCampaignInteractiveError('submit', error)
     })
   }, [draft, form])
 

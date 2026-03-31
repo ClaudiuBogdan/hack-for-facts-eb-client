@@ -65,7 +65,7 @@ type InteractiveStateRecord = {
     | { type: 'resolved' }
     | { type: 'score-threshold'; minScore: number }
     | { type: 'component-flag'; flag: string }
-  phase: 'idle' | 'draft' | 'pending' | 'resolved' | 'error'
+  phase: 'idle' | 'draft' | 'pending' | 'resolved' | 'failed'
   value: InteractionValue | null
   result: InteractionResult | null
   review?: {
@@ -276,12 +276,29 @@ Incremental sync behavior:
 3. refetch remote deltas with `since=lastSyncedCursor`
 4. apply remote `interactive.updated` events directly to the projected snapshot
 
+Successful sync responses return:
+
+```ts
+{
+  ok: true,
+  data: {
+    newEventsCount: number
+    failedEvents: Array<{
+      eventId: string
+      errorType: 'InvalidEventError'
+      message: string
+    }>
+  }
+}
+```
+
 Rules:
 
 - remote deltas are applied by `record.updatedAt`, not arrival order
 - unseen audit events are merged by audit-event `id`
 - `updatedAt` controls freshness
 - the server cursor remains an opaque ordering token and is not used as a freshness signal on the client
+- validation failures are reported per event in `failedEvents` and do not roll back valid events in the same request
 
 ## 6. Validation Rules
 

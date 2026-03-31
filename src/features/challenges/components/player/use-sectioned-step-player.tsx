@@ -13,6 +13,7 @@ import {
   useQuizInteraction,
 } from '@/features/learning/hooks/use-learning-interactions'
 import { useLessonChallenges } from '@/features/learning/components/player/lesson-challenges-context'
+import { logger } from '@/lib/logger'
 import type { ChallengeLocale, ChallengeStepDefinition } from '../../types'
 import type { ChallengeAccessCardVariant } from '../../hooks/use-challenge-access'
 import {
@@ -508,16 +509,22 @@ export function useSectionedStepPlayer({
 
   const handlePrimaryAction = useCallback(() => {
     if (footerState.primaryAction === 'retry') {
-      void handleRetry()
+      handleRetry().catch((error) => {
+        logger.error('Failed to retry sectioned step action.', { error })
+      })
       return
     }
 
     if (footerState.primaryAction === 'check') {
-      void handleCheck()
+      handleCheck().catch((error) => {
+        logger.error('Failed to check sectioned step action.', { error })
+      })
       return
     }
 
-    void handleAdvance()
+    handleAdvance().catch((error) => {
+      logger.error('Failed to advance sectioned step action.', { error })
+    })
   }, [footerState.primaryAction, handleAdvance, handleCheck, handleRetry])
 
   const backTarget = useMemo(

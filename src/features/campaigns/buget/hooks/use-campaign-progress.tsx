@@ -6,7 +6,12 @@ import type {
   LearningProgressEvent,
 } from '@/features/learning/types'
 import { useAuth } from '@/lib/auth'
-import { CAMPAIGN_ID, CAMPAIGN_PROGRESS_STORAGE_KEY } from '../constants'
+import { readJsonFromLocalStorage } from '@/lib/storage/read-json-from-local-storage'
+import {
+  CAMPAIGN_ID,
+  CAMPAIGN_PROGRESS_SCHEMA_VERSION,
+  CAMPAIGN_PROGRESS_STORAGE_KEY,
+} from '../constants'
 import { fetchCampaignProgress, syncCampaignProgress } from '../api/campaign-progress'
 import { getEmptyCampaignProgressSnapshot, parseCampaignProgressSnapshot } from '../schemas/progress-schema'
 import {
@@ -102,18 +107,6 @@ function parseSyncState(raw: unknown): CampaignProgressSyncState {
   }
 }
 
-function readJsonFromStorage(key: string): unknown {
-  if (typeof window === 'undefined') return null
-  const raw = window.localStorage.getItem(key)
-  if (!raw) return null
-
-  try {
-    return JSON.parse(raw) as unknown
-  } catch {
-    return null
-  }
-}
-
 function writeJsonToStorage(key: string, value: unknown): void {
   if (typeof window === 'undefined') return
 
@@ -130,7 +123,9 @@ function removeFromStorage(key: string): void {
 }
 
 function loadSnapshotForKey(snapshotKey: string): CampaignProgressSnapshot | null {
-  const rawSnapshot = readJsonFromStorage(snapshotKey)
+  const rawSnapshot = readJsonFromLocalStorage(snapshotKey, {
+    expectedVersion: CAMPAIGN_PROGRESS_SCHEMA_VERSION,
+  })
   if (!rawSnapshot) {
     return null
   }
@@ -143,7 +138,7 @@ function loadSnapshotForKey(snapshotKey: string): CampaignProgressSnapshot | nul
 }
 
 function loadEventsForKey(eventsKey: string): LearningProgressEvent[] {
-  return filterCampaignProgressEvents(parseLearningProgressEvents(readJsonFromStorage(eventsKey)))
+  return filterCampaignProgressEvents(parseLearningProgressEvents(readJsonFromLocalStorage(eventsKey)))
 }
 
 function isClearedCampaignRecord(record: InteractiveStateRecord): boolean {
@@ -307,7 +302,7 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
       return clientIdRef.current
     }
 
-    const storedClientId = readJsonFromStorage(CAMPAIGN_PROGRESS_CLIENT_ID_STORAGE_KEY)
+    const storedClientId = readJsonFromLocalStorage(CAMPAIGN_PROGRESS_CLIENT_ID_STORAGE_KEY)
     if (typeof storedClientId === 'string' && storedClientId.trim().length > 0) {
       clientIdRef.current = storedClientId
       return storedClientId
@@ -610,7 +605,9 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
       const guestEvents = loadEventsForKey(CAMPAIGN_PROGRESS_EVENTS_STORAGE_KEY)
       const authSnapshot = loadSnapshotForKey(getAuthSnapshotKey(user.id))
       const authEvents = loadEventsForKey(getAuthEventsKey(user.id))
-      syncStateRef.current = parseSyncState(readJsonFromStorage(getAuthSyncKey(user.id)))
+      syncStateRef.current = parseSyncState(
+        readJsonFromLocalStorage(getAuthSyncKey(user.id), { expectedVersion: 1 }),
+      )
 
       let remoteRecords: Readonly<Record<string, InteractiveStateRecord>> = {}
       let remoteSnapshot = getEmptyCampaignProgressSnapshot()

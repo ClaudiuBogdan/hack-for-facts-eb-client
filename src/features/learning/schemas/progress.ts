@@ -50,7 +50,7 @@ const LearningGuestProgressSchema = z.object({
   lastUpdated: z.string().datetime(),
 })
 
-const LearningProgressRemoteSnapshotSchema = z.object({
+export const LearningProgressRemoteSnapshotSchema = z.object({
   version: z.literal(LEARNING_PROGRESS_SCHEMA_VERSION),
   recordsByKey: z.record(z.string(), InteractiveStateRecordSchema),
   lastUpdated: z.string().datetime().nullable(),

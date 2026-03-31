@@ -1,25 +1,16 @@
 import { parseLearningCertificatesState, getEmptyLearningCertificatesState } from '../../schemas/progress'
-import type {
-  LearningCertificate,
-  LearningCertificatesState,
-  LearningCertificateTier,
-  LearningGuestProgress,
-  LearningPathDefinition,
+import {
+  LEARNING_CERTIFICATES_SCHEMA_VERSION,
+  type LearningCertificate,
+  type LearningCertificatesState,
+  type LearningCertificateTier,
+  type LearningGuestProgress,
+  type LearningPathDefinition,
 } from '../../types'
 import { getLearningPathCompletionStats } from '../../utils/paths'
+import { readJsonFromLocalStorage } from '@/lib/storage/read-json-from-local-storage'
 
 const CERTIFICATES_STORAGE_KEY = 'learning_certificates'
-
-function readJsonFromStorage(key: string): unknown {
-  if (typeof window === 'undefined') return null
-  const raw = window.localStorage.getItem(key)
-  if (!raw) return null
-  try {
-    return JSON.parse(raw) as unknown
-  } catch {
-    return null
-  }
-}
 
 function writeJsonToStorage(key: string, value: unknown): void {
   if (typeof window === 'undefined') return
@@ -38,7 +29,11 @@ function getCertificateTier(completionPercentage: number): LearningCertificateTi
 }
 
 export function loadLearningCertificatesState(): LearningCertificatesState {
-  return parseLearningCertificatesState(readJsonFromStorage(CERTIFICATES_STORAGE_KEY))
+  return parseLearningCertificatesState(
+    readJsonFromLocalStorage(CERTIFICATES_STORAGE_KEY, {
+      expectedVersion: LEARNING_CERTIFICATES_SCHEMA_VERSION,
+    }),
+  )
 }
 
 export function saveLearningCertificatesState(state: LearningCertificatesState): void {

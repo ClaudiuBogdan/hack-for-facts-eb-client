@@ -28,10 +28,10 @@ export type CustomInteractionContext<TValue extends Record<string, unknown>> = {
   readonly phase: InteractiveStateRecord['phase']
   readonly lifecycle: ReturnType<typeof deriveInteractiveLifecycleState>
   readonly isCompleted: boolean
-  readonly saveDraft: (value: TValue) => Promise<void>
-  readonly submit: (value: TValue) => Promise<void>
-  readonly complete: (value: TValue) => Promise<void>
-  readonly reset: () => Promise<void>
+  readonly saveDraft: (value: TValue) => Promise<InteractiveStateRecord | null>
+  readonly submit: (value: TValue) => Promise<InteractiveStateRecord | null>
+  readonly complete: (value: TValue) => Promise<InteractiveStateRecord | null>
+  readonly reset: () => Promise<InteractiveStateRecord | null>
 }
 
 export function useCustomInteraction<TValue extends Record<string, unknown>>(
@@ -71,7 +71,7 @@ export function useCustomInteraction<TValue extends Record<string, unknown>>(
   )
 
   const saveDraft = useCallback(async (value: TValue) => {
-    await saveInteractiveDraft({
+    return saveInteractiveDraft({
       definition,
       entityCui: params.entityCui,
       value: {
@@ -82,7 +82,7 @@ export function useCustomInteraction<TValue extends Record<string, unknown>>(
   }, [definition, params.entityCui, saveInteractiveDraft])
 
   const submit = useCallback(async (value: TValue) => {
-    await submitInteractive({
+    return submitInteractive({
       definition,
       entityCui: params.entityCui,
       value: {
@@ -93,7 +93,7 @@ export function useCustomInteraction<TValue extends Record<string, unknown>>(
   }, [definition, params.entityCui, submitInteractive])
 
   const complete = useCallback(async (value: TValue) => {
-    await resolveInteractive({
+    return resolveInteractive({
       definition,
       entityCui: params.entityCui,
       value: {
@@ -105,7 +105,7 @@ export function useCustomInteraction<TValue extends Record<string, unknown>>(
   }, [definition, params.entityCui, resolveInteractive])
 
   const reset = useCallback(async () => {
-    await resetInteractive({
+    return resetInteractive({
       definition,
       entityCui: params.entityCui,
     })

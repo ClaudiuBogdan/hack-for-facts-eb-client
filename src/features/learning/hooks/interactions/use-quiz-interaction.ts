@@ -90,7 +90,10 @@ function resolveQuizState(params: {
   readonly options: readonly SingleChoiceOption[]
   readonly scopePolicy: InteractiveDefinition['scopePolicy']
   readonly entityCui?: string
-}): { readonly selectedOptionId: string | null } {
+}): {
+  readonly record: ReturnType<typeof getInteractiveRecord>
+  readonly selectedOptionId: string | null
+} {
   const record = getInteractiveRecord(
     params.progress.interactiveState,
     {
@@ -102,12 +105,12 @@ function resolveQuizState(params: {
   const selectedOptionId = getChoiceSelection(record)
 
   if (!selectedOptionId) {
-    return { selectedOptionId: null }
+    return { record, selectedOptionId: null }
   }
 
   // Validate the option still exists
   const isValidOption = params.options.some((option) => option.id === selectedOptionId)
-  return { selectedOptionId: isValidOption ? selectedOptionId : null }
+  return { record, selectedOptionId: isValidOption ? selectedOptionId : null }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -123,7 +126,7 @@ export function useQuizInteraction(params: UseQuizInteractionInput): QuizInterac
   const passScore = params.passScore ?? QUIZ_PASS_SCORE
   const scopePolicy = params.scopePolicy ?? 'global'
 
-  const { selectedOptionId } = useMemo(
+  const { record, selectedOptionId } = useMemo(
     () =>
       resolveQuizState({
         progress,
@@ -203,12 +206,6 @@ export function useQuizInteraction(params: UseQuizInteractionInput): QuizInterac
       entityCui: params.entityCui,
     })
   }, [params.contentId, params.entityCui, params.quizId, resetInteractive, scopePolicy])
-
-  const record = getInteractiveRecord(
-    progress.interactiveState,
-    { id: params.quizId, scopePolicy },
-    params.entityCui,
-  )
 
   return {
     selectedOptionId,

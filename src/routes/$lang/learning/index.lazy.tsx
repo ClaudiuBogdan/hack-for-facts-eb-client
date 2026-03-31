@@ -47,7 +47,7 @@ function LearningHubPage() {
   const navigate = useNavigate()
   const {
     isReady,
-    isSyncedWithAuthState,
+    bootstrapPhase,
     progress,
     resetOnboarding,
     clearProgress,
@@ -156,7 +156,7 @@ function LearningHubPage() {
   }, [paths, activePath?.id, progress])
 
   // Show loading while auth/progress is loading
-  if (!isReady || !isSyncedWithAuthState) {
+  if (!isReady || bootstrapPhase === 'loading') {
     return <LearningHubLoading />
   }
 

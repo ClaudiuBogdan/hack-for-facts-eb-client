@@ -12,6 +12,7 @@ import {
   formatReviewDate,
   type ReviewSummaryItem,
 } from './campaign-challenge-review-state'
+import { logCampaignInteractiveError } from './log-campaign-interactive-error'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
 import type { CampaignInteractiveElementProps, PrimarieWebsiteLinkValue } from './types'
 
@@ -69,9 +70,11 @@ export function PrimarieWebsiteLink({ ownerChallengeSlug, entityCui }: CampaignI
       return
     }
 
-    void form.submit({
+    form.submit({
       ...draft,
       submittedAt: new Date().toISOString(),
+    }).catch((error) => {
+      logCampaignInteractiveError('submit', error)
     })
   }, [draft, form])
 
