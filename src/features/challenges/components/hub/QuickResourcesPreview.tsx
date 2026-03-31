@@ -39,7 +39,7 @@ export function QuickResourcesPreview({
           className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
         >
           <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center flex-shrink-0">
-            <Building2 className="h-4 w-4 text-slate-300" aria-hidden="true" />
+            <Building2 className="h-4 w-4 text-slate-100 dark:text-slate-900" aria-hidden="true" />
           </div>
           <div className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium text-foreground/80">
