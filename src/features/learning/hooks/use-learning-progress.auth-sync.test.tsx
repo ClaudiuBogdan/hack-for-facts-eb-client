@@ -605,7 +605,6 @@ describe('use-learning-progress auth sync behavior', () => {
       expect(result.current.progress.activePathId).toBe('budget-basics')
     })
 
-    expect(toast.info).toHaveBeenCalledWith('Syncing your progress...')
     expect(toast.warning).toHaveBeenCalledWith('Could not sync with server. Your progress is saved locally.')
   })
 

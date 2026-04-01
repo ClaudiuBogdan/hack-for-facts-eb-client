@@ -979,10 +979,7 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       hasShownBootstrapLoadingToastRef.current = false
       hasShownBootstrapFailedToastRef.current = false
 
-      if (!hasShownBootstrapLoadingToastRef.current) {
-        hasShownBootstrapLoadingToastRef.current = true
-        toast.info(t`Syncing your progress...`)
-      }
+      hasShownBootstrapLoadingToastRef.current = true
 
       const guestEvents = loadEventsForKey(GUEST_EVENTS_KEY)
       const localEvents = loadEventsForKey(keys.eventsKey)
