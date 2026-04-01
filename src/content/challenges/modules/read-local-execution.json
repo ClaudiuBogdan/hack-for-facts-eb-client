@@ -11,6 +11,10 @@
     "en": "Use your city hall's 2025 execution data to understand the numbers and ask better questions about the 2026 budget.",
     "ro": "Folosește execuția din 2025 a primăriei tale ca să înțelegi cifrele și să pui întrebări mai bune despre bugetul pe 2026."
   },
+  "audienceHint": {
+    "en": "Continue with this module to use the 2025 execution as context for better 2026 budget questions.",
+    "ro": "Continuă cu acest modul ca să folosești execuția din 2025 drept context pentru întrebările despre bugetul pe 2026."
+  },
   "challenges": [
     {
       "id": "from-total-to-context",

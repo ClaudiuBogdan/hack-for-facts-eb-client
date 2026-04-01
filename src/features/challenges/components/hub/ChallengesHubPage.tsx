@@ -194,7 +194,7 @@ export function ChallengesHubPage({
           <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground pl-2">
             {t`Up Next`}
           </h2>
-          <div className="space-y-6">
+          <div className="space-y-8">
             {otherModulesData.map(({ module, stats, nextStepUrl }) => (
               <ChallengeModuleCard
                 key={module.id}

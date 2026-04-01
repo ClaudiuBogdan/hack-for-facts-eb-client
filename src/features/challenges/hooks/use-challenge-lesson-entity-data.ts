@@ -97,13 +97,15 @@ export function useChallengeLessonEntitySummary(params: {
   readonly entityCui: string
   readonly reportType?: LessonReportType
   readonly normalization?: 'total' | 'per_capita'
+  readonly inflationAdjusted?: boolean
 }) {
   const normalizationOptions = useMemo(
     () => ({
       ...LESSON_BASE_NORMALIZATION_OPTIONS,
       normalization: params.normalization ?? 'total',
+      inflation_adjusted: params.inflationAdjusted ?? LESSON_BASE_NORMALIZATION_OPTIONS.inflation_adjusted,
     }),
-    [params.normalization],
+    [params.inflationAdjusted, params.normalization],
   )
 
   return useEntityDetails({
@@ -149,6 +151,12 @@ export function useChallengeLessonEntityBundle(entityCui: string) {
     reportType: 'PRINCIPAL_AGGREGATED',
     normalization: 'per_capita',
   })
+  const inflationAdjustedTrendSummaryQuery = useChallengeLessonEntitySummary({
+    entityCui,
+    reportType: 'PRINCIPAL_AGGREGATED',
+    normalization: 'total',
+    inflationAdjusted: true,
+  })
   const lineItemsQuery = useChallengeLessonExecutionLineItems({
     entityCui,
     reportType: 'PRINCIPAL_AGGREGATED',
@@ -174,6 +182,7 @@ export function useChallengeLessonEntityBundle(entityCui: string) {
     trendPeriod: CHALLENGE_LESSON_TREND_PERIOD,
     aggregatedTotalSummaryQuery: totalSummaryQuery,
     aggregatedPerCapitaSummaryQuery: perCapitaSummaryQuery,
+    inflationAdjustedTrendSummaryQuery,
     aggregatedLineItemsQuery: lineItemsQuery,
     summaryTrends,
   }

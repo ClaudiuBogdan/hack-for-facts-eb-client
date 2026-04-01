@@ -55,9 +55,17 @@ export type PrimarieWebsiteLinkValue = {
   readonly submittedAt: string | null
 }
 
+export type BudgetDocumentType =
+  | 'pdf'
+  | 'word'
+  | 'excel'
+  | 'webpage'
+  | 'graphics'
+  | 'other'
+
 export type BudgetDocumentLinkValue = {
   readonly documentUrl: string
-  readonly documentType: 'pdf' | 'word' | 'excel' | 'webpage' | 'graphics' | 'other' | null
+  readonly documentTypes: readonly BudgetDocumentType[]
   readonly submittedAt: string | null
 }
 

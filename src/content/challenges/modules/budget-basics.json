@@ -11,6 +11,10 @@
     "en": "Learn the core budget concepts before you explore real local budget data.",
     "ro": "Învață conceptele de bază înainte să explorezi date reale despre bugetul local."
   },
+  "audienceHint": {
+    "en": "Start with this module if this is your first time working with local public budgets.",
+    "ro": "Începe cu acest modul dacă este prima dată când lucrezi cu bugetele publice locale."
+  },
   "challenges": [
     {
       "id": "understand-budget",

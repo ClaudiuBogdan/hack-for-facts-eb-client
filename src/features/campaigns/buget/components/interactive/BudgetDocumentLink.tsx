@@ -5,7 +5,6 @@ import { FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Button } from '@/components/ui/button'
 import { BUDGET_DOCUMENT_LINK_INTERACTION } from '../../civic-interaction-definitions'
 import {
@@ -16,15 +15,19 @@ import {
 } from './campaign-challenge-review-state'
 import { logCampaignInteractiveError } from './log-campaign-interactive-error'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
-import type { BudgetDocumentLinkValue, CampaignInteractiveElementProps } from './types'
+import type {
+  BudgetDocumentLinkValue,
+  BudgetDocumentType,
+  CampaignInteractiveElementProps,
+} from './types'
 
 const EMPTY_VALUE: BudgetDocumentLinkValue = {
   documentUrl: '',
-  documentType: null,
+  documentTypes: [],
   submittedAt: null,
 }
 
-function getDocumentTypeLabel(type: NonNullable<BudgetDocumentLinkValue['documentType']>): string {
+function getDocumentTypeLabel(type: BudgetDocumentType): string {
   switch (type) {
     case 'pdf': return 'PDF'
     case 'word': return 'Word'
@@ -35,18 +38,46 @@ function getDocumentTypeLabel(type: NonNullable<BudgetDocumentLinkValue['documen
   }
 }
 
+function normalizeDocumentTypes(
+  value: readonly BudgetDocumentType[] | BudgetDocumentType | null | undefined,
+): readonly BudgetDocumentType[] {
+  const normalizedValue = Array.isArray(value) ? value : value ? [value] : []
+
+  return Array.from(
+    new Set(
+      normalizedValue.filter((documentType): documentType is BudgetDocumentType =>
+        ['pdf', 'word', 'excel', 'webpage', 'graphics', 'other'].includes(documentType),
+      ),
+    ),
+  )
+}
+
+function normalizeBudgetDocumentLinkValue(
+  value:
+    | (Partial<BudgetDocumentLinkValue> & { readonly documentType?: BudgetDocumentType | null })
+    | null
+    | undefined,
+): BudgetDocumentLinkValue {
+  return {
+    documentUrl: typeof value?.documentUrl === 'string' ? value.documentUrl : '',
+    documentTypes: normalizeDocumentTypes(value?.documentTypes ?? value?.documentType),
+    submittedAt: typeof value?.submittedAt === 'string' ? value.submittedAt : null,
+  }
+}
+
 function getReviewSummaryItems(savedValue: BudgetDocumentLinkValue): ReviewSummaryItem[] {
   const submittedAt = formatReviewDate(savedValue.submittedAt)
+  const documentTypes = normalizeDocumentTypes(savedValue.documentTypes)
 
   return [
     {
       label: t`Document link`,
       value: <CampaignChallengeSummaryLink url={savedValue.documentUrl} />,
     },
-    ...(savedValue.documentType
+    ...(documentTypes.length > 0
       ? [{
-          label: t`Document type`,
-          value: getDocumentTypeLabel(savedValue.documentType),
+          label: t`Document types`,
+          value: documentTypes.map((documentType) => getDocumentTypeLabel(documentType)).join(', '),
         }]
       : []),
     ...(submittedAt
@@ -59,7 +90,7 @@ function getReviewSummaryItems(savedValue: BudgetDocumentLinkValue): ReviewSumma
 }
 
 const DOCUMENT_TYPE_OPTIONS: ReadonlyArray<{
-  readonly value: NonNullable<BudgetDocumentLinkValue['documentType']>
+  readonly value: BudgetDocumentType
   readonly label: () => string
 }> = [
   { value: 'pdf', label: () => 'PDF' },
@@ -82,9 +113,16 @@ export function BudgetDocumentLink({ ownerChallengeSlug, entityCui }: CampaignIn
     lifecycleMode: BUDGET_DOCUMENT_LINK_INTERACTION.lifecycleMode,
     entityCui,
   })
+  const normalizedSavedValue = normalizeBudgetDocumentLinkValue(
+    form.savedValue as (Partial<BudgetDocumentLinkValue> & {
+      readonly documentType?: BudgetDocumentType | null
+    }) | null | undefined,
+  )
 
   const [draft, setDraft] = useState<BudgetDocumentLinkValue>(
-    form.savedValue ?? EMPTY_VALUE,
+    normalizedSavedValue.documentUrl || normalizedSavedValue.documentTypes.length > 0 || normalizedSavedValue.submittedAt
+      ? normalizedSavedValue
+      : EMPTY_VALUE,
   )
 
   const updateField = useCallback(<K extends keyof BudgetDocumentLinkValue>(
@@ -100,6 +138,17 @@ export function BudgetDocumentLink({ ownerChallengeSlug, entityCui }: CampaignIn
 
   const isSubmitDisabled = draft.documentUrl.trim().length === 0
 
+  const toggleDocumentType = useCallback((documentType: BudgetDocumentType) => {
+    setDraft((prev) => {
+      const documentTypes = prev.documentTypes.includes(documentType)
+        ? prev.documentTypes.filter((currentType) => currentType !== documentType)
+        : [...prev.documentTypes, documentType]
+      const next = { ...prev, documentTypes }
+      void form.saveDraft(next)
+      return next
+    })
+  }, [form])
+
   const handleSubmit = useCallback(() => {
     if (draft.documentUrl.trim().length === 0) {
       return
@@ -107,6 +156,7 @@ export function BudgetDocumentLink({ ownerChallengeSlug, entityCui }: CampaignIn
 
     form.submit({
       ...draft,
+      documentTypes: normalizeDocumentTypes(draft.documentTypes),
       submittedAt: new Date().toISOString(),
     }).catch((error) => {
       logCampaignInteractiveError('submit', error)
@@ -130,7 +180,7 @@ export function BudgetDocumentLink({ ownerChallengeSlug, entityCui }: CampaignIn
         description={t`Add the link to the city hall's budget document.`}
         submittedVariant={form.submittedVariant}
         feedbackText={form.reviewFeedbackText}
-        summaryItems={getReviewSummaryItems(form.savedValue)}
+        summaryItems={getReviewSummaryItems(normalizedSavedValue)}
         onTryAgain={handleTryAgain}
         onReset={handleReset}
       />
@@ -177,28 +227,31 @@ export function BudgetDocumentLink({ ownerChallengeSlug, entityCui }: CampaignIn
 
         <fieldset className="space-y-3">
           <legend className="text-sm font-medium">
-            <Trans>Document type</Trans>
+            <Trans>Document types</Trans>
           </legend>
-          <RadioGroup
-            value={draft.documentType ?? ''}
-            onValueChange={(v) => updateField('documentType', v as BudgetDocumentLinkValue['documentType'])}
-            className="flex flex-wrap gap-2"
-          >
-            {DOCUMENT_TYPE_OPTIONS.map((opt) => (
-              <label
-                key={opt.value}
-                className={cn(
-                  'rounded-full border-2 px-4 py-2 text-sm font-bold cursor-pointer transition-colors',
-                  draft.documentType === opt.value
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border/60 text-muted-foreground hover:border-border hover:text-foreground',
-                )}
-              >
-                <RadioGroupItem value={opt.value} className="sr-only" />
-                {opt.label()}
-              </label>
-            ))}
-          </RadioGroup>
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t`Document types`}>
+            {DOCUMENT_TYPE_OPTIONS.map((opt) => {
+              const isSelected = draft.documentTypes.includes(opt.value)
+
+              return (
+                <Button
+                  key={opt.value}
+                  type="button"
+                  variant="outline"
+                  aria-pressed={isSelected}
+                  onClick={() => toggleDocumentType(opt.value)}
+                  className={cn(
+                    'rounded-full border-2 px-4 py-2 text-sm font-bold transition-colors',
+                    isSelected
+                      ? 'border-primary bg-primary/10 text-primary hover:bg-primary/15'
+                      : 'border-border/60 text-muted-foreground hover:border-border hover:text-foreground',
+                  )}
+                >
+                  {opt.label()}
+                </Button>
+              )
+            })}
+          </div>
         </fieldset>
 
         <Button

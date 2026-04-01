@@ -101,9 +101,18 @@ export function deriveChallengeStepStatus(params: {
     return params.fallbackStatus
   }
 
-  return deriveTrackedStepStatus({
+  const trackedStatus = deriveTrackedStepStatus({
     interactiveState: params.interactiveState,
     trackedInteractions,
     entityCui: params.entityCui,
   })
+
+  if (
+    params.step.completionMode === 'mark_complete' &&
+    (params.fallbackStatus === 'completed' || params.fallbackStatus === 'passed')
+  ) {
+    return params.fallbackStatus
+  }
+
+  return trackedStatus
 }

@@ -145,7 +145,7 @@ export function ChallengeModuleCard({
 
   return (
     <Card
-      className={`relative overflow-hidden rounded-[28px] transition-all ${isActive ? 'border-none' : 'border border-border/60'} ${getCardStyles(isActive)}`}
+      className={`relative overflow-hidden rounded-[28px] transition-all ${isActive ? 'border-none' : 'border border-border'} ${getCardStyles(isActive)}`}
     >
       {/* Background trophy decoration */}
       <div
@@ -168,6 +168,11 @@ export function ChallengeModuleCard({
             >
               {getTranslatedText(module.description, locale)}
             </p>
+            {module.audienceHint ? (
+              <p className="max-w-xl text-sm font-semibold leading-relaxed text-foreground/75">
+                {getTranslatedText(module.audienceHint, locale)}
+              </p>
+            ) : null}
           </div>
 
           {/* Action buttons */}

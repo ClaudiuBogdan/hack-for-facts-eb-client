@@ -40,7 +40,7 @@
         "question": "Ce înseamnă valorile ajustate cu inflația?",
         "requiresInflationAdjusted": true,
         "answerParagraphs": [
-          "Când ajustarea cu inflația este activă, valorile din anii anteriori sunt recalculate în prețuri 2024.",
+          "Când ajustarea cu inflația este activă, valorile din anii anteriori sunt recalculate în prețurile anului selectat.",
           "Ajustarea folosește indicele prețurilor de consum publicat de INS și ajută la compararea mai corectă a anilor diferiți."
         ]
       }
@@ -87,7 +87,7 @@
         "question": "What do inflation-adjusted values mean?",
         "requiresInflationAdjusted": true,
         "answerParagraphs": [
-          "When inflation adjustment is enabled, values from earlier years are recalculated in 2024 prices.",
+          "When inflation adjustment is enabled, values from earlier years are recalculated in the selected-year prices.",
           "This adjustment uses the consumer price index published by INS and helps make year-to-year comparisons easier to read."
         ]
       }

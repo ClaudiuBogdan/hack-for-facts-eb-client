@@ -324,4 +324,36 @@ describe('challenge-progress', () => {
       }),
     ).toBe('completed')
   })
+
+  it('preserves explicit mark-complete fallback status when tracked interactions are incomplete', () => {
+    const step = createStep({
+      id: 'ch-civic-05-participation-report',
+      contentDir: 'civic-campaign/05-participation-report',
+    })
+    stepSectionsByContentDir[step.contentDir] = [
+      {
+        id: 'report',
+        title: 'Report',
+        interactive: null,
+        lessonChallengeDescriptors: [
+          {
+            kind: 'fixed',
+            interactionId: 'campaign:participation-report',
+            interactionKind: 'custom',
+            scopePolicy: 'entity',
+          },
+        ],
+      },
+    ]
+
+    expect(
+      deriveChallengeStepStatus({
+        step,
+        locale: 'ro',
+        entityCui: '4305857',
+        interactiveState: getEmptyUnifiedInteractiveState(),
+        fallbackStatus: 'completed',
+      }),
+    ).toBe('completed')
+  })
 })

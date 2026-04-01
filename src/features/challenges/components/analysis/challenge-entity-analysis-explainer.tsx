@@ -24,11 +24,11 @@ const EXPLAINER_COPY = {
     detailedSecondary:
       'Dacă revii la varianta agregată, sumele pot fi mai mari decât aparatul propriu al primăriei, pentru că includ și instituțiile subordonate din aceeași structură de finanțare.',
     inflationAdjusted:
-      'Sumele sunt ajustate la inflație, iar valorile din anii anteriori sunt recalculate în prețuri 2024.',
+      'Sumele sunt ajustate la inflație, iar valorile din anii anteriori sunt recalculate în prețurile anului selectat.',
     expandedContext:
       'În practică, această vedere este utilă când vrei imaginea completă a banilor administrați de primărie. O vedere detaliată, la nivel de instituție sau linie bugetară, poate arăta alte totaluri pentru că separă primăria de fiecare instituție subordonată și coboară mai mult în structură.',
     inflationContext:
-      'Ajustarea la inflație folosește indicele prețurilor de consum (IPC) publicat de INS. Fără această ajustare, sumele din anii anteriori par mai mici decât sunt în realitate, deoarece inflația erodează puterea de cumpărare a banului. De exemplu, 1 milion RON în 2015 avea o putere de cumpărare semnificativ mai mare decât 1 milion RON în 2024. Ajustarea elimină acest efect, astfel încât creșterile sau scăderile pe care le vezi reflectă schimbări reale în cheltuieli sau venituri, nu doar efectul inflației.',
+      'Ajustarea la inflație folosește indicele prețurilor de consum (IPC) publicat de INS. Fără această ajustare, sumele din anii anteriori par mai mici decât sunt în realitate, deoarece inflația erodează puterea de cumpărare a banului. De exemplu, 1 milion RON în 2015 avea o putere de cumpărare semnificativ mai mare decât în anul selectat pentru comparație. Ajustarea elimină acest efect, astfel încât creșterile sau scăderile pe care le vezi reflectă schimbări reale în cheltuieli sau venituri, nu doar efectul inflației.',
   },
   en: {
     showLess: 'Show less',
@@ -42,11 +42,11 @@ const EXPLAINER_COPY = {
     detailedSecondary:
       'If you switch back to the aggregate view, totals can be higher than the city hall apparatus alone because they also include subordinate institutions in the same funding structure.',
     inflationAdjusted:
-      'Amounts are inflation-adjusted, and earlier years are recalculated in 2024 prices.',
+      'Amounts are inflation-adjusted, and earlier years are recalculated in the selected-year prices.',
     expandedContext:
       'In practice, this view is useful when you want the full picture of the money managed by the city hall. A detailed view, at institution or budget-line level, can show different totals because it separates the city hall from each subordinate institution and goes deeper into the structure.',
     inflationContext:
-      'Inflation adjustment uses the consumer price index published by the National Institute of Statistics. Without this adjustment, values from earlier years look smaller than they really are because inflation reduces purchasing power. For example, 1 million RON in 2015 had significantly more purchasing power than 1 million RON in 2024. The adjustment removes that effect so the increases or decreases you see reflect real changes in spending or revenue, not inflation alone.',
+      'Inflation adjustment uses the consumer price index published by the National Institute of Statistics. Without this adjustment, values from earlier years look smaller than they really are because inflation reduces purchasing power. For example, 1 million RON in 2015 had significantly more purchasing power than in the selected comparison year. The adjustment removes that effect so the increases or decreases you see reflect real changes in spending or revenue, not inflation alone.',
   },
 } as const
 

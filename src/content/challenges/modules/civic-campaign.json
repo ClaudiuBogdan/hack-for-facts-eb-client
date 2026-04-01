@@ -9,7 +9,11 @@
   },
   "description": {
     "en": "Take civic action on the 2026 local budget: monitor its status, request a public debate, participate, and formulate a contestation.",
-    "ro": "Acționează civic pe bugetul local 2026: monitorizează statusul, solicită o dezbatere publică, participă și formulează o contestație."
+    "ro": "Acționează civic pe bugetul local 2026: monitorizează statusul, solicită și participă la dezbaterea bugetului local, formulează o contestație."
+  },
+  "audienceHint": {
+    "en": "Choose this module after you know the basics and want to get directly involved in the local budget debate.",
+    "ro": "Alege acest modul după ce stăpânești noțiunile de bază și vrei să te implici direct în dezbaterea bugetului local."
   },
   "challenges": [
     {

@@ -122,8 +122,8 @@ const LESSON_BUDGET_CONTEXT_COPY: Record<ChallengeLocale, LessonBudgetContextCop
     populationLabel: 'Populație de referință',
     incomePerCapitaLabel: 'Venituri per capita',
     expensesPerCapitaLabel: 'Cheltuieli per capita',
-    incomeGrowthLabel: 'Venituri 2025 vs 2024',
-    expensesGrowthLabel: 'Cheltuieli 2025 vs 2024',
+    incomeGrowthLabel: 'Venituri 2025 vs 2024 (prețuri 2025)',
+    expensesGrowthLabel: 'Cheltuieli 2025 vs 2024 (prețuri 2025)',
     countyQuizTitle: (countyName: string) => `Care UAT este pe primul loc în ${countyName}?`,
     countyQuizQuestion: (countyName: string) => `Care UAT ocupă locul 1 în județul ${countyName} după cheltuieli per capita în 2025?`,
     countyQuizExplanation: (uatName: string, countyName: string, perCapita: string, population: string) =>
@@ -167,8 +167,8 @@ const LESSON_BUDGET_CONTEXT_COPY: Record<ChallengeLocale, LessonBudgetContextCop
     populationLabel: 'Reference population',
     incomePerCapitaLabel: 'Income per capita',
     expensesPerCapitaLabel: 'Spending per capita',
-    incomeGrowthLabel: 'Income 2025 vs 2024',
-    expensesGrowthLabel: 'Spending 2025 vs 2024',
+    incomeGrowthLabel: 'Income 2025 vs 2024 (2025 prices)',
+    expensesGrowthLabel: 'Spending 2025 vs 2024 (2025 prices)',
     countyQuizTitle: (countyName: string) => `Which UAT ranks first in ${countyName}?`,
     countyQuizQuestion: (countyName: string) => `Which UAT ranks #1 in ${countyName} county by spending per capita?`,
     countyQuizExplanation: (uatName: string, countyName: string, perCapita: string, population: string) =>
@@ -381,6 +381,7 @@ export function LessonBudgetContextFlow({
   const {
     aggregatedPerCapitaSummaryQuery,
     aggregatedTotalSummaryQuery,
+    inflationAdjustedTrendSummaryQuery,
   } = useChallengeLessonEntityBundle(entityCui)
   const [interactiveSlideIndex, setInteractiveSlideIndex] = useState(0)
   const [activeMapSeriesId, setActiveMapSeriesId] =
@@ -399,6 +400,7 @@ export function LessonBudgetContextFlow({
     forcedSlideIndex >= 0 ? forcedSlideIndex : interactiveSlideIndex
 
   const entity = aggregatedTotalSummaryQuery.data
+  const inflationAdjustedTrendEntity = inflationAdjustedTrendSummaryQuery.data
   const perCapitaEntity = aggregatedPerCapitaSummaryQuery.data
   const entityName = entity?.name?.trim() || entityCui
   const countyCode = entity?.uat?.county_code?.trim().toUpperCase() ?? null
@@ -406,8 +408,12 @@ export function LessonBudgetContextFlow({
 
   const totalExpenses = selectLessonMetricValue('expenses', entity)
   const totalIncome = selectLessonMetricValue('income', entity)
-  const expensesTrend = buildLessonTrend(selectLessonMetricSeries('expenses', entity))
-  const incomeTrend = buildLessonTrend(selectLessonMetricSeries('income', entity))
+  const expensesTrend = buildLessonTrend(
+    selectLessonMetricSeries('expenses', inflationAdjustedTrendEntity),
+  )
+  const incomeTrend = buildLessonTrend(
+    selectLessonMetricSeries('income', inflationAdjustedTrendEntity),
+  )
   const expensesPerCapita = selectLessonMetricValue('expenses', perCapitaEntity)
   const incomePerCapita = selectLessonMetricValue('income', perCapitaEntity)
   const shouldLoadCountyContext = activeSlideIndex >= 3 && Boolean(countyCode)
@@ -599,7 +605,9 @@ export function LessonBudgetContextFlow({
   })
 
   const isLoadingTotals =
-    aggregatedTotalSummaryQuery.isLoading || aggregatedPerCapitaSummaryQuery.isLoading
+    aggregatedTotalSummaryQuery.isLoading ||
+    aggregatedPerCapitaSummaryQuery.isLoading ||
+    inflationAdjustedTrendSummaryQuery.isLoading
 
   if (isLoadingTotals) {
     return (
@@ -633,12 +641,16 @@ export function LessonBudgetContextFlow({
   }
 
   const expenseGrowthLabel =
-    expensesTrend?.previousValue && expensesTrend.previousValue !== 0
-      ? `${formatNumber(((totalExpenses - expensesTrend.previousValue) / expensesTrend.previousValue) * 100, 'standard')}%`
+    typeof expensesTrend?.currentValue === 'number' &&
+    typeof expensesTrend?.previousValue === 'number' &&
+    expensesTrend.previousValue !== 0
+      ? `${formatNumber(((expensesTrend.currentValue - expensesTrend.previousValue) / expensesTrend.previousValue) * 100, 'standard')}%`
       : 'N/A'
   const incomeGrowthLabel =
-    incomeTrend?.previousValue && incomeTrend.previousValue !== 0
-      ? `${formatNumber(((totalIncome - incomeTrend.previousValue) / incomeTrend.previousValue) * 100, 'standard')}%`
+    typeof incomeTrend?.currentValue === 'number' &&
+    typeof incomeTrend?.previousValue === 'number' &&
+    incomeTrend.previousValue !== 0
+      ? `${formatNumber(((incomeTrend.currentValue - incomeTrend.previousValue) / incomeTrend.previousValue) * 100, 'standard')}%`
       : 'N/A'
 
   const activeSlide = ((): {
@@ -769,8 +781,8 @@ export function LessonBudgetContextFlow({
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {locale === 'en'
-                      ? 'Shows how fast total income changed year over year.'
-                      : 'Arată ritmul în care s-au schimbat veniturile față de anul anterior.'}
+                      ? 'Shows the year-over-year income change after recalculating the earlier year in 2025 prices.'
+                      : 'Arată schimbarea veniturilor față de anul anterior, după recalcularea anului anterior în prețuri 2025.'}
                   </TableCell>
                 </TableRow>
                 <TableRow>
@@ -780,8 +792,8 @@ export function LessonBudgetContextFlow({
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {locale === 'en'
-                      ? 'Shows how fast total spending changed year over year.'
-                      : 'Arată ritmul în care s-au schimbat cheltuielile față de anul anterior.'}
+                      ? 'Shows the year-over-year spending change after recalculating the earlier year in 2025 prices.'
+                      : 'Arată schimbarea cheltuielilor față de anul anterior, după recalcularea anului anterior în prețuri 2025.'}
                   </TableCell>
                 </TableRow>
               </TableBody>

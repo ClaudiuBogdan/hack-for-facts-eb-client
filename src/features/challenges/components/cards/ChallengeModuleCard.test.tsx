@@ -32,6 +32,10 @@ const moduleDefinition: ChallengeModuleDefinition = {
   difficulty: 'beginner',
   title: { ro: 'Modul Test', en: 'Test Module' },
   description: { ro: 'Descriere modul', en: 'Module description' },
+  audienceHint: {
+    ro: 'Începe aici dacă este prima ta interacțiune cu bugetele locale.',
+    en: 'Start here if this is your first contact with local budgets.',
+  },
   challenges: [],
 }
 
@@ -58,6 +62,9 @@ describe('ChallengeModuleCard', () => {
 
     expect(screen.getByText('Modul Test')).toBeInTheDocument()
     expect(screen.getByText('Descriere modul')).toBeInTheDocument()
+    expect(
+      screen.getByText('Începe aici dacă este prima ta interacțiune cu bugetele locale.'),
+    ).toBeInTheDocument()
   })
 
   it('shows progress bar with correct ARIA attributes for active variant', () => {

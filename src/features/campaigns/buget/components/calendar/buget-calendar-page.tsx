@@ -34,17 +34,19 @@ const PAGE_CONTENT: Record<CampaignLocale, PageContent> = {
   ro: {
     heading: 'Calendar bugetar',
     footnotes: [
-      'Termenul total este de 45 de zile calendaristice de la publicarea bugetului de stat (Art. 39, Legea 273/2006).',
-      'Zilele calendaristice includ weekendurile si sarbatorile legale.',
-      'Estimat: datele marcate cu „estimat" sunt calculate pe baza termenelor legale maxime. In practica, daca primaria publica proiectul de buget mai devreme de termenul maxim, toate etapele urmatoare se muta corespunzator. Datele exacte depind de fiecare primarie in parte.',
+      'Termenul pentru aprobarea bugetelor locale este de maximum 45 de zile calendaristice de la publicarea Legii Bugetului de Stat în Monitorul Oficial al României (Art. 39, Legea 273/2006).',
+      'Zilele calendaristice includ weekendurile și sărbătorile legale.',
+      'Estimat: datele marcate cu „estimat” sunt calculate pe baza termenelor legale maxime. În practică, dacă primăria publică proiectul de buget mai devreme de termenul maxim, toate etapele următoare se mută corespunzător. Datele exacte depind de fiecare primărie în parte.',
+      'Numărătoarea zilelor începe din ziua imediat următoare. De exemplu, dacă o etapă se încheie pe 27 martie, prima din cele 15 zile este 28 martie.',
     ],
   },
   en: {
     heading: 'Budget calendar',
     footnotes: [
-      'The total deadline is 45 calendar days from state budget publication (Art. 39, Law 273/2006).',
+      'The deadline for adopting local budgets is a maximum of 45 calendar days from the publication of the State Budget Law in the Official Gazette of Romania (Art. 39, Law 273/2006).',
       'Calendar days include weekends and public holidays.',
       'Estimated: dates marked "estimated" are calculated based on the maximum legal deadlines. In practice, if the city hall publishes the draft budget before the maximum deadline, all subsequent steps shift earlier accordingly. Exact dates depend on each city hall.',
+      'The counting of days starts from the immediately following day. For example, if a stage ends on March 27, the first of the 15 days is March 28.',
     ],
   },
 }

@@ -69,6 +69,7 @@ export const ChallengeModuleDefinitionSchema = z.object({
   difficulty: ChallengeModuleDifficultySchema,
   title: TranslatedStringSchema,
   description: TranslatedStringSchema,
+  audienceHint: TranslatedStringSchema.optional(),
   challenges: z
     .array(ChallengeDefinitionSchema)
     .min(1, 'Each module must include at least one challenge.'),

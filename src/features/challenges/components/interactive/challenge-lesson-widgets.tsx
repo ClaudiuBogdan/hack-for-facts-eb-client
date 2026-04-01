@@ -115,16 +115,16 @@ const WIDGET_COPY = {
     crosswalkQuizQuestion: 'În gruparea economică, care titlu principal are cea mai mare valoare pentru entitatea selectată?',
     crosswalkQuizExplanation: (label: string) =>
       `În lentila economică, titlul dominant este ${label}.`,
-    unitCaption: 'Sumele sunt afișate în mii lei.',
-    unitValue: 'mii lei',
+    unitCaption: 'Sumele sunt afișate în lei.',
+    unitValue: 'lei',
     colIndicator: 'Indicator',
     colFn: 'Cod FN',
     colEc: 'Cod EC',
     selectRowPrompt: 'Selectează un rând și explică-l în cuvintele tale.',
     selectedRow: 'Rând selectat',
     noRowSelected: 'Niciun rând selectat încă.',
-    explanationPrompt: 'Explică pe scurt ce arată acest rând și de ce suma poate apărea și la alte niveluri din tabel.',
-    explanationPlaceholder: 'Exemplu: acest rând arată capitolul principal, iar mai jos apar detaliile care îl compun.',
+    explanationPrompt: 'Explică pe scurt ce arată acest rând și ce coduri te ajută să-l legi de același domeniu sau tip de cheltuială.',
+    explanationPlaceholder: 'Exemplu: acest rând ține de învățământ pentru că are codul funcțional 65 și îl pot compara cu alte poziții care pornesc de la același cod.',
     explanationHint: 'Checkpoint-ul se activează după ce selectezi un rând și scrii o explicație scurtă.',
     documentReady: 'Am interpretat un rând din tabel',
     aggregateDetailedTitle: 'Compară agregat și detaliat',
@@ -149,7 +149,7 @@ const WIDGET_COPY = {
     withGapHeadline: 'Agregatul include un perimetru mai larg.',
     differenceLabel: 'Diferență cheltuieli agregat vs detaliat',
     differenceBody:
-      'Dacă agregatul este mai mare, cel mai probabil citești și instituții care nu apar în totalurile principale din modul detaliat.',
+      'Execuția agregată va fi mai mare, deoarece include suma veniturilor și cheltuielilor instituției selectate (ordonatorul de credite) și a veniturilor și cheltuielilor tuturor instituțiilor subordonate.',
     structureSummaryWithSubordinates:
       'Instituțiile de mai jos fac parte din perimetrul ordonatorului principal și devin utile când vrei să explici de ce varianta agregată spune o poveste mai largă.',
     structureSummaryWithoutSubordinates:
@@ -217,16 +217,16 @@ const WIDGET_COPY = {
     crosswalkQuizQuestion: 'In the economic grouping, which main title has the largest value for the selected entity?',
     crosswalkQuizExplanation: (label: string) =>
       `In the economic lens, the dominant title is ${label}.`,
-    unitCaption: 'Amounts are shown in thousand lei.',
-    unitValue: 'thousand lei',
+    unitCaption: 'Amounts are shown in lei.',
+    unitValue: 'lei',
     colIndicator: 'Indicator',
     colFn: 'FN code',
     colEc: 'EC code',
     selectRowPrompt: 'Select a row and explain it in your own words.',
     selectedRow: 'Selected row',
     noRowSelected: 'No row selected yet.',
-    explanationPrompt: 'Explain briefly what this row shows and why the amount may also appear at other levels of the table.',
-    explanationPlaceholder: 'Example: this row shows a main chapter, while the rows below break it down into more detail.',
+    explanationPrompt: 'Explain briefly what this row shows and which codes help you connect it to the same domain or spending type.',
+    explanationPlaceholder: 'Example: this row belongs to education because it uses functional code 65, so I can compare it with other rows that start from the same code.',
     explanationHint: 'The checkpoint becomes active after you select a row and write a short explanation.',
     documentReady: 'I interpreted one row from the table',
     aggregateDetailedTitle: 'Compare aggregated and detailed',
@@ -251,7 +251,7 @@ const WIDGET_COPY = {
     withGapHeadline: 'The aggregated view covers a wider perimeter.',
     differenceLabel: 'Spending gap: aggregated vs detailed',
     differenceBody:
-      'If the aggregated total is higher, you are most likely reading institutions that are outside the main totals of the detailed mode.',
+      'Aggregated execution is higher because it includes the income and spending of the selected institution (the main budget creditor) together with the income and spending of all subordinate institutions.',
     structureSummaryWithSubordinates:
       'The institutions below sit inside the main-creditor perimeter and help explain why the aggregated view can tell a wider story than the city hall alone.',
     structureSummaryWithoutSubordinates:
@@ -440,8 +440,8 @@ function formatDelta(previousValue: number | null | undefined, currentValue: num
   return ((currentValue - previousValue) / previousValue) * 100
 }
 
-function toMiiLeiLabel(amount: number) {
-  return formatNumber(amount / 1_000, 'standard')
+function formatLeiLabel(amount: number) {
+  return formatNumber(amount, 'standard')
 }
 
 function formatLessonAmount(value: number | null | undefined) {
@@ -1469,7 +1469,7 @@ export function LessonExecutionTableExcerpt({
                     {row.economicCode ?? '-'}
                   </TableCell>
                   <TableCell className="text-right font-mono tabular-nums">
-                    {toMiiLeiLabel(row.amount)}
+                    {formatLeiLabel(row.amount)}
                   </TableCell>
                 </TableRow>
               )

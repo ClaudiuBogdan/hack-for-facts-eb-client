@@ -94,6 +94,8 @@ export function buildPublicDebateEmailBody(params: {
     '',
     'Consideram ca accesibilitatea este o prioritate, astfel incat credem ca un astfel de eveniment ar trebui organizat intr-un mod care permite participarea fizica, dar si online, a celor interesati.',
     '',
+    'Va rugam sa organizati dezbaterea inainte de expirarea termenului de 15 zile pentru depunerea contestatiilor, reglementat de art. 39, alin. (3) din Legea 273/2006.',
+    '',
     'Va rugam asadar sa comunicati public data, locul si ora la care urmeaza a fi organizata dezbaterea, impreuna cu detaliile pentru participarea online.',
     '',
     '',

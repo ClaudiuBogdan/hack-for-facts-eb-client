@@ -7,7 +7,7 @@
   "entries": [
     {
       "id": "publicare-buget-de-stat",
-      "title": { "ro": "Legea bugetului de stat publicată", "en": "State budget law published" },
+      "title": { "ro": "Legea bugetului de stat publicată în Monitorul Oficial", "en": "State budget law published in the Official Gazette" },
       "description": {
         "ro": "Moment de referință (T0) pentru toate termenele bugetelor locale.",
         "en": "Reference point (T0) for all local budget deadlines."
@@ -32,8 +32,8 @@
       "id": "inchidere-contestatii",
       "title": { "ro": "Termen-limită depunere contestații", "en": "Objection submission deadline" },
       "description": {
-        "ro": "Contestațiile se depun în 15 zile calendaristice de la publicarea proiectului de buget.",
-        "en": "Objections must be submitted within 15 calendar days of draft publication."
+        "ro": "Contestațiile se depun în termen de maximum 15 zile calendaristice de la publicarea proiectului de buget local.",
+        "en": "Objections must be submitted within a maximum of 15 calendar days of draft local budget publication."
       },
       "dayOffset": 30,
       "relativeTo": "publicare-proiect-buget-local",

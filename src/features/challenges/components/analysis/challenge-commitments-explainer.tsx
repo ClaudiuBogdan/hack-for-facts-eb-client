@@ -23,7 +23,7 @@ const EXPLAINER_COPY = {
     perCapita:
       'Valorile sunt afișate per capita, împărțite la numărul de locuitori.',
     inflationAdjusted:
-      'Sumele sunt ajustate la inflație, iar valorile din anii anteriori sunt recalculate în prețuri 2024.',
+      'Sumele sunt ajustate la inflație, iar valorile din anii anteriori sunt recalculate în prețurile anului selectat.',
     expandedWhat:
       'Creditele bugetare reprezintă limita maximă aprobată pentru cheltuieli într-un an. Angajamentele legale sunt contracte sau comenzi semnate (promisiuni de plată). Plățile sunt sumele efectiv transferate din trezorerie.',
     expandedWhy:
@@ -41,7 +41,7 @@ const EXPLAINER_COPY = {
     perCapita:
       'Values are displayed per capita, divided by the number of inhabitants.',
     inflationAdjusted:
-      'Amounts are inflation-adjusted, and earlier years are recalculated in 2024 prices.',
+      'Amounts are inflation-adjusted, and earlier years are recalculated in the selected-year prices.',
     expandedWhat:
       'Budget credits represent the maximum approved spending limit for a year. Legal commitments are signed contracts or orders — promises to pay. Payments are the amounts actually transferred from the treasury.',
     expandedWhy:

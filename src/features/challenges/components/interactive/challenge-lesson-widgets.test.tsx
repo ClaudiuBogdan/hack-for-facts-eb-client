@@ -341,6 +341,9 @@ describe('LessonAggregateDetailedCompare', () => {
       screen.getByText(/Diferență cheltuieli agregat vs detaliat/i),
     ).toBeInTheDocument()
     expect(
+      screen.getByText(/include suma veniturilor și cheltuielilor instituției selectate/i),
+    ).toBeInTheDocument()
+    expect(
       screen.queryByText(/Ministerul Finanțelor \/ ANAF/i),
     ).not.toBeInTheDocument()
     expect(screen.getByText(/^sau$/i)).toBeInTheDocument()
@@ -510,6 +513,21 @@ describe('LessonAggregateDetailedCompare', () => {
       selectedRowId: 'row-b',
       rowExplanation: 'Aceasta este o explicație completă și suficient de lungă pentru salvare.',
     })
+  })
+
+  it('renders execution-table values in lei without dividing them by one thousand', () => {
+    render(
+      <LessonExecutionTableExcerpt
+        entityCui="12345678"
+        stepId="lesson-step-07"
+        locale="ro"
+      />,
+    )
+
+    expect(screen.getByText('2025 (lei)')).toBeInTheDocument()
+    expect(screen.getByText('Sumele sunt afișate în lei.')).toBeInTheDocument()
+    expect(screen.getByText('120')).toBeInTheDocument()
+    expect(screen.queryByText('0.12')).not.toBeInTheDocument()
   })
 })
 

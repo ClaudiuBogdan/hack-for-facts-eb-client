@@ -10,9 +10,15 @@ import { buildCampaignPrimariePath } from '@/features/challenges/constants'
 import { buildChallengeInteractionId } from '@/features/challenges/utils/interaction-ids'
 import { ChallengeDynamicQuiz } from '@/features/challenges/components/player/challenge-dynamic-quiz'
 import type { ChallengeLocale } from '@/features/challenges/types'
+import type { GroupedChapter } from '@/schemas/financial'
 import { buildEntityDataQuizOptions, buildSubItemQuizOptions } from './lesson-entity-data-quiz.utils'
 
-type LessonEntityDataQuizVariant = 'top-income' | 'top-expense' | 'top-expense-ec' | 'top-fn-subitem'
+type LessonEntityDataQuizVariant =
+  | 'top-income'
+  | 'top-expense'
+  | 'lowest-expense'
+  | 'top-expense-ec'
+  | 'top-fn-subitem'
 
 type LessonEntityDataQuizProps = {
   readonly entityCui: string
@@ -34,6 +40,12 @@ const ENTITY_DATA_QUIZ_COPY = {
         `Which spending domain has the largest executed share in ${year}?`,
       explanation: (name: string) =>
         `Correct. "${name}" is the functional spending domain with the highest executed value.`,
+    },
+    'lowest-expense': {
+      question: (year: number) =>
+        `Which spending domain has the lowest non-zero executed value in ${year}?`,
+      explanation: (name: string) =>
+        `Correct. "${name}" is the spending domain with the lowest non-zero executed value.`,
     },
     'top-expense-ec': {
       question: (year: number) =>
@@ -64,6 +76,12 @@ const ENTITY_DATA_QUIZ_COPY = {
       explanation: (name: string) =>
         `Corect. "${name}" este domeniul functional de cheltuieli cu cea mai mare valoare executata.`,
     },
+    'lowest-expense': {
+      question: (year: number) =>
+        `Pentru ce domeniu s-au cheltuit cei mai putini bani in ${year}?`,
+      explanation: (name: string) =>
+        `Corect. "${name}" este domeniul cu cea mai mica valoare executata, dintre cele cu executie diferita de zero.`,
+    },
     'top-expense-ec': {
       question: (year: number) =>
         `Care titlu economic de cheltuieli are cea mai mare valoare executata in ${year}?`,
@@ -72,15 +90,29 @@ const ENTITY_DATA_QUIZ_COPY = {
     },
     'top-fn-subitem': {
       question: (year: number) =>
-        `In cadrul celui mai mare capitol functional, care sub-element are cea mai mare suma executata in ${year}?`,
+        `In cadrul celui mai mare capitol functional, care subdomeniu are cea mai mare suma executata in ${year}?`,
       explanation: (name: string) =>
-        `Corect. "${name}" este sub-elementul cu cea mai mare suma executata din capitolul functional principal.`,
+        `Corect. "${name}" este subdomeniul cu cea mai mare suma executata din capitolul functional principal.`,
     },
     openEntityPage: 'Deschide pagina de analiza',
     loading: 'Se incarca datele...',
     unavailable: 'Datele pentru quiz nu sunt disponibile momentan.',
   },
 } as const
+
+function getLowestPositiveExpenseGroups(
+  groups: ReadonlyArray<GroupedChapter>,
+) {
+  return [...groups]
+    .filter((group) => group.totalAmount > 0)
+    .sort((leftGroup, rightGroup) => {
+      if (leftGroup.totalAmount !== rightGroup.totalAmount) {
+        return leftGroup.totalAmount - rightGroup.totalAmount
+      }
+
+      return leftGroup.description.localeCompare(rightGroup.description)
+    })
+}
 
 export function LessonEntityDataQuiz({
   entityCui,
@@ -129,7 +161,9 @@ export function LessonEntityDataQuiz({
     const groups =
       variant === 'top-income'
         ? financialData.filteredIncomeGroups
-        : financialData.filteredExpenseGroups
+        : variant === 'lowest-expense'
+          ? getLowestPositiveExpenseGroups(financialData.filteredExpenseGroups)
+          : financialData.filteredExpenseGroups
     const seed = groups[0]?.totalAmount
     return {
       quizOptions: buildEntityDataQuizOptions({ groups, seed }),

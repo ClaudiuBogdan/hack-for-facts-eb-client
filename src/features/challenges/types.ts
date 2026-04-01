@@ -54,6 +54,8 @@ export type ChallengeDefinition = {
   readonly steps: readonly ChallengeStepDefinition[]
 }
 
+export type ChallengeModuleAudienceHint = TranslatedString
+
 export type ChallengeModuleDefinition = {
   readonly id: string
   readonly slug: string
@@ -61,5 +63,6 @@ export type ChallengeModuleDefinition = {
   readonly difficulty: ChallengeModuleDifficulty
   readonly title: TranslatedString
   readonly description: TranslatedString
+  readonly audienceHint?: ChallengeModuleAudienceHint
   readonly challenges: readonly ChallengeDefinition[]
 }

@@ -2,7 +2,6 @@ import { fireEvent, render, screen } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { BudgetDocumentLink } from './BudgetDocumentLink'
 
-// ResizeObserver is required by Radix UI's RadioGroup component
 class ResizeObserverMock {
   observe = vi.fn()
   unobserve = vi.fn()
@@ -17,7 +16,8 @@ const resetMock = vi.fn(async () => undefined)
 const formState = {
   savedValue: null as null | {
     documentUrl: string
-    documentType: 'pdf' | 'word' | 'excel' | 'webpage' | 'graphics' | 'other' | null
+    documentTypes?: readonly ('pdf' | 'word' | 'excel' | 'webpage' | 'graphics' | 'other')[]
+    documentType?: 'pdf' | 'word' | 'excel' | 'webpage' | 'graphics' | 'other' | null
     submittedAt: string | null
   },
   phase: 'idle' as 'idle' | 'pending' | 'resolved',
@@ -68,7 +68,7 @@ describe('BudgetDocumentLink', () => {
     expect(submitMock).not.toHaveBeenCalled()
   })
 
-  it('renders the extended document-type options and submits the selected type', () => {
+  it('renders the extended document-type options and submits all selected types', () => {
     render(
       <BudgetDocumentLink ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
     )
@@ -80,21 +80,38 @@ describe('BudgetDocumentLink', () => {
     fireEvent.change(screen.getByLabelText('Link to the budget document'), {
       target: { value: 'https://example.ro/buget-2026.xlsx' },
     })
-    fireEvent.click(screen.getByText('Excel'))
+    fireEvent.click(screen.getByRole('button', { name: 'Excel' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Graphics' }))
     fireEvent.click(screen.getByRole('button', { name: 'Submit link' }))
 
     expect(saveDraftMock).toHaveBeenLastCalledWith(
       expect.objectContaining({
         documentUrl: 'https://example.ro/buget-2026.xlsx',
-        documentType: 'excel',
+        documentTypes: ['excel', 'graphics'],
       }),
     )
     expect(submitMock).toHaveBeenCalledWith(
       expect.objectContaining({
         documentUrl: 'https://example.ro/buget-2026.xlsx',
-        documentType: 'excel',
+        documentTypes: ['excel', 'graphics'],
         submittedAt: expect.any(String),
       }),
     )
+  })
+
+  it('hydrates legacy single-value documentType records into the multi-select summary', () => {
+    formState.savedValue = {
+      documentUrl: 'https://example.ro/buget-2026.pdf',
+      documentType: 'pdf',
+      submittedAt: '2026-04-01T10:00:00.000Z',
+    }
+    formState.isSubmitted = true
+
+    render(
+      <BudgetDocumentLink ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
+    )
+
+    expect(screen.getByText('PDF')).toBeInTheDocument()
+    expect(screen.getByText('Document types')).toBeInTheDocument()
   })
 })
