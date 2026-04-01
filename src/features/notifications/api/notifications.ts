@@ -1,14 +1,24 @@
 import { getAuthToken } from '@/lib/auth';
 import { getApiBaseUrl } from '@/config/env';
+import { t } from '@lingui/core/macro';
 import type { Notification, NotificationType } from '../types';
 
 const getApiUrl = () => getApiBaseUrl();
+const AUTH_REQUIRED_MESSAGE = t`Sign in required to manage notifications`;
 
 interface ApiResponse<T> {
   ok: boolean;
   data?: T;
   error?: string;
   message?: string;
+}
+
+async function requireAuthToken(): Promise<string> {
+  const token = await getAuthToken();
+  if (!token) {
+    throw new Error(AUTH_REQUIRED_MESSAGE);
+  }
+  return token;
 }
 
 // Fetch all user notifications
@@ -55,9 +65,9 @@ export async function getEntityNotifications(cui: string): Promise<Notification[
 export async function createNotification(data: {
   entityCui: string | null;
   notificationType: NotificationType;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
 }): Promise<Notification> {
-  const token = await getAuthToken();
+  const token = await requireAuthToken();
   const endpoint = `${getApiUrl()}/api/v1/notifications`;
 
   const headers: Record<string, string> = {
@@ -89,7 +99,7 @@ export async function createNotification(data: {
 }
 
 // Deactivate a notification (isActive: false)
-export async function unsubscribeNotification(id: number): Promise<Notification> {
+export async function unsubscribeNotification(id: string): Promise<Notification> {
   return updateNotification(id, { isActive: false });
 }
 
@@ -116,9 +126,9 @@ export async function unsubscribeViaToken(token: string): Promise<{
 }
 
 // Delete notification completely
-export async function deleteNotification(id: number): Promise<void> {
+export async function deleteNotification(id: string): Promise<void> {
   const endpoint = `${getApiUrl()}/api/v1/notifications/${id}`;
-  const token = await getAuthToken();
+  const token = await requireAuthToken();
 
   const headers: Record<string, string> = {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -141,9 +151,9 @@ export async function deleteNotification(id: number): Promise<void> {
 }
 
 // Update notification (isActive and/or config)
-export async function updateNotification(id: number, updates: { isActive?: boolean; config?: Record<string, any> }): Promise<Notification> {
+export async function updateNotification(id: string, updates: { isActive?: boolean; config?: Record<string, unknown> }): Promise<Notification> {
   const endpoint = `${getApiUrl()}/api/v1/notifications/${id}`;
-  const token = await getAuthToken();
+  const token = await requireAuthToken();
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

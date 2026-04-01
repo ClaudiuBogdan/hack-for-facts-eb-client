@@ -65,7 +65,7 @@ describe('resolveCampaignEntityCuiFromPathname', () => {
       resolveCampaignEntityCuiFromPathname('/primarie/harta'),
     ).toBeUndefined()
     expect(
-      resolveCampaignEntityCuiFromPathname('/bugete-locale-2026'),
+      resolveCampaignEntityCuiFromPathname('/provocare'),
     ).toBeUndefined()
   })
 })

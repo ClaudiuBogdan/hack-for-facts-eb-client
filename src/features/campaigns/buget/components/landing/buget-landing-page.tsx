@@ -4,7 +4,7 @@ import { ArrowRight, BarChart3, Heart, MapPin, Megaphone } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import mapPreview from '@/assets/images/map.png'
 import chartPreview from '@/assets/images/chart.png'
-import demoForumPreview from '@/assets/images/demo-forum.png'
+import chartEducationPreview from '@/assets/images/chart-education.jpeg'
 const FUNKY_LOGO_URL =
   'https://funky.ong/wp-content/uploads/2024/03/Funky_RED_RGB-1.png'
 import { Button } from '@/components/ui/button'
@@ -99,7 +99,7 @@ export function BugetLandingPage({ locale }: BugetLandingPageProps) {
             description:
               'Leave with clear arguments you can use in public debates and official requests.',
             icon: Megaphone,
-            image: demoForumPreview,
+            image: chartEducationPreview,
           },
         ]
       : [
@@ -138,7 +138,7 @@ export function BugetLandingPage({ locale }: BugetLandingPageProps) {
             description:
               'Pleci cu întrebări clare pentru dezbateri publice, sesizări și dialog cu primăria.',
             icon: Megaphone,
-            image: demoForumPreview,
+            image: chartEducationPreview,
           },
         ]
 

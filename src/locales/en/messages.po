@@ -76,6 +76,12 @@ msgstr "{0} annotations"
 msgid "{0} bins"
 msgstr "{0} bins"
 
+#. placeholder {0}: String(failed)
+#. placeholder {1}: String(failed + succeeded)
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:224
+msgid "{0} of {1} updates failed"
+msgstr "{0} of {1} updates failed"
+
 #. placeholder {0}: currentPage + 1
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:194
 msgid "{0} of {totalPages}"
@@ -139,14 +145,14 @@ msgid "{0} views enabled"
 msgstr "{0} views enabled"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:44
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:48
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:49
 #: src/features/learning/components/cards/LearningPathCard.tsx:200
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:95
 msgid "{hours}h"
 msgstr "{hours}h"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:45
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:49
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:50
 #: src/features/learning/components/cards/LearningPathCard.tsx:201
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:96
 msgid "{hours}h {mins}m"
@@ -163,7 +169,7 @@ msgid "{hours}h remaining"
 msgstr "{hours}h remaining"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:41
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:45
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:46
 #: src/features/learning/components/cards/LearningPathCard.tsx:197
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:92
 msgid "{minutes}m"
@@ -220,346 +226,6 @@ msgstr "< median"
 msgid "<= median"
 msgstr "<= median"
 
-#: src/routes/cookie-policy.lazy.tsx:52
-msgid "<0>__clerk_*</0>: Various Clerk cookies for account management and security."
-msgstr "<0>__clerk_*</0>: Various Clerk cookies for account management and security."
-
-#: src/routes/cookie-policy.lazy.tsx:50
-msgid "<0>__clerk_db_jwt</0>: Session token for authentication (httpOnly, secure)."
-msgstr "<0>__clerk_db_jwt</0>: Session token for authentication (httpOnly, secure)."
-
-#: src/routes/cookie-policy.lazy.tsx:51
-msgid "<0>__session</0>: Session identifier (httpOnly, secure)."
-msgstr "<0>__session</0>: Session identifier (httpOnly, secure)."
-
-#: src/routes/privacy.lazy.tsx:127
-msgid "<0>Access Controls:</0> Strict access controls limit who can access personal data to authorized personnel only."
-msgstr "<0>Access Controls:</0> Strict access controls limit who can access personal data to authorized personnel only."
-
-#: src/routes/terms.lazy.tsx:46
-msgid "<0>Account Creation:</0> When you create an account, you may be asked to provide certain information such as your email address and name. You are responsible for maintaining the confidentiality of your account credentials."
-msgstr "<0>Account Creation:</0> When you create an account, you may be asked to provide certain information such as your email address and name. You are responsible for maintaining the confidentiality of your account credentials."
-
-#: src/routes/privacy.lazy.tsx:102
-msgid "<0>Account Data:</0> Retained for as long as your account is active or as needed to provide services. Deleted within 90 days of account deletion request."
-msgstr "<0>Account Data:</0> Retained for as long as your account is active or as needed to provide services. Deleted within 90 days of account deletion request."
-
-#: src/routes/terms.lazy.tsx:89
-msgid "<0>Account Data:</0> When you create an account, we store your user ID, name, email address, and notification preferences for as long as your account is active."
-msgstr "<0>Account Data:</0> When you create an account, we store your user ID, name, email address, and notification preferences for as long as your account is active."
-
-#: src/routes/privacy.lazy.tsx:52
-msgid "<0>Account Information:</0> User ID (assigned by Clerk), email address, first name, last name. This is the legal basis for processing under GDPR Art. 6(1)(b) (performance of contract) and Art. 6(1)(a) (consent for newsletters)."
-msgstr "<0>Account Information:</0> User ID (assigned by Clerk), email address, first name, last name. This is the legal basis for processing under GDPR Art. 6(1)(b) (performance of contract) and Art. 6(1)(a) (consent for newsletters)."
-
-#: src/routes/privacy.lazy.tsx:61
-msgid "<0>Account Management:</0> To create and maintain your account, authenticate access, and provide account-related support (contract performance - GDPR Art. 6(1)(b))."
-msgstr "<0>Account Management:</0> To create and maintain your account, authenticate access, and provide account-related support (contract performance - GDPR Art. 6(1)(b))."
-
-#: src/routes/terms.lazy.tsx:48
-msgid "<0>Account Termination:</0> You may delete your account at any time. We may suspend or terminate accounts that violate these Terms or applicable law."
-msgstr "<0>Account Termination:</0> You may delete your account at any time. We may suspend or terminate accounts that violate these Terms or applicable law."
-
-#: src/routes/terms.lazy.tsx:71
-msgid "<0>Accurate Information:</0> If you create an account, you agree to provide accurate and current information and to keep your account information updated."
-msgstr "<0>Accurate Information:</0> If you create an account, you agree to provide accurate and current information and to keep your account information updated."
-
-#: src/routes/cookie-policy.lazy.tsx:36
-msgid "<0>Analytics (opt-in)</0>: PostHog custom events only (no autocapture)."
-msgstr "<0>Analytics (opt-in)</0>: PostHog custom events only (no autocapture)."
-
-#: src/routes/privacy.lazy.tsx:64
-msgid "<0>Analytics and Improvement:</0> With your consent, to understand usage patterns and improve the Service (consent - GDPR Art. 6(1)(a))."
-msgstr "<0>Analytics and Improvement:</0> With your consent, to understand usage patterns and improve the Service (consent - GDPR Art. 6(1)(a))."
-
-#: src/routes/privacy.lazy.tsx:105
-msgid "<0>Analytics Data:</0> Retained for 12 months, then automatically deleted or anonymized."
-msgstr "<0>Analytics Data:</0> Retained for 12 months, then automatically deleted or anonymized."
-
-#: src/routes/cookie-policy.lazy.tsx:35
-msgid "<0>Authentication (essential, if you have an account)</0>: Clerk session cookies for secure login and account management."
-msgstr "<0>Authentication (essential, if you have an account)</0>: Clerk session cookies for secure login and account management."
-
-#: src/routes/privacy.lazy.tsx:53
-msgid "<0>Authentication Data:</0> Login timestamps, login IP address, device details (e.g., user agent), authentication tokens (managed by Clerk), and session information for account security."
-msgstr "<0>Authentication Data:</0> Login timestamps, login IP address, device details (e.g., user agent), authentication tokens (managed by Clerk), and session information for account security."
-
-#: src/routes/privacy.lazy.tsx:128
-msgid "<0>Authentication:</0> Account access secured via Clerk with industry-standard security practices."
-msgstr "<0>Authentication:</0> Account access secured via Clerk with industry-standard security practices."
-
-#: src/routes/privacy.lazy.tsx:91
-msgid "<0>Clerk (Authentication):</0> Manages user authentication and account data. EU/US with standard contractual clauses."
-msgstr "<0>Clerk (Authentication):</0> Manages user authentication and account data. EU/US with standard contractual clauses."
-
-#: src/routes/cookie-policy.lazy.tsx:71
-msgid "<0>Clerk authentication cookies</0>: Session cookies (expire when you close browser) and persistent cookies (up to 30 days for \"remember me\")."
-msgstr "<0>Clerk authentication cookies</0>: Session cookies (expire when you close browser) and persistent cookies (up to 30 days for \"remember me\")."
-
-#: src/routes/privacy.lazy.tsx:63
-msgid "<0>Communication:</0> To send essential account-related communications (e.g., security alerts, terms updates) as necessary for contract performance and legitimate interests."
-msgstr "<0>Communication:</0> To send essential account-related communications (e.g., security alerts, terms updates) as necessary for contract performance and legitimate interests."
-
-#: src/routes/privacy.lazy.tsx:72
-msgid "<0>Consent (Art. 6(1)(a)):</0> Newsletter subscriptions, analytics, and enhanced error reporting. You may withdraw consent at any time."
-msgstr "<0>Consent (Art. 6(1)(a)):</0> Newsletter subscriptions, analytics, and enhanced error reporting. You may withdraw consent at any time."
-
-#: src/routes/privacy.lazy.tsx:43
-msgid "<0>Consent Preferences:</0> Your cookie and analytics consent choices stored in browser localStorage."
-msgstr "<0>Consent Preferences:</0> Your cookie and analytics consent choices stored in browser localStorage."
-
-#: src/routes/terms.lazy.tsx:57
-msgid "<0>Consent:</0> Newsletters and non-essential notifications are sent only with your explicit consent. You can withdraw consent at any time without affecting your account access."
-msgstr "<0>Consent:</0> Newsletters and non-essential notifications are sent only with your explicit consent. You can withdraw consent at any time without affecting your account access."
-
-#: src/routes/privacy.lazy.tsx:71
-msgid "<0>Contract Performance (Art. 6(1)(b)):</0> Providing account features and services you have requested."
-msgstr "<0>Contract Performance (Art. 6(1)(b)):</0> Providing account features and services you have requested."
-
-#: src/routes/terms.lazy.tsx:40
-msgid "<0>Data Accuracy Is Not Guaranteed:</0> The financial data is sourced from third-party government portals. We do not create, verify, or audit this data and are not responsible for any errors, omissions, or inaccuracies it may contain. You acknowledge that the data may be incomplete, out of date, or incorrect."
-msgstr "<0>Data Accuracy Is Not Guaranteed:</0> The financial data is sourced from third-party government portals. We do not create, verify, or audit this data and are not responsible for any errors, omissions, or inaccuracies it may contain. You acknowledge that the data may be incomplete, out of date, or incorrect."
-
-#: src/routes/terms.lazy.tsx:91
-msgid "<0>Deletion:</0> You may request deletion of your account and all associated data at any time by contacting us or using account deletion features when available."
-msgstr "<0>Deletion:</0> You may request deletion of your account and all associated data at any time by contacting us or using account deletion features when available."
-
-#: src/routes/terms.lazy.tsx:39
-msgid "<0>Disclaimer of Warranties and Guarantees:</0> The Service and all data, content, and visualizations are provided on an \"as is\" and \"as available\" basis, without any warranties or guarantees of any kind, express or implied. We explicitly disclaim all warranties, including but not limited to warranties of merchantability, fitness for a particular purpose, accuracy, completeness, timeliness, reliability, or non-infringement. We do not guarantee that the Service will be uninterrupted, error-free, or secure."
-msgstr "<0>Disclaimer of Warranties and Guarantees:</0> The Service and all data, content, and visualizations are provided on an \"as is\" and \"as available\" basis, without any warranties or guarantees of any kind, express or implied. We explicitly disclaim all warranties, including but not limited to warranties of merchantability, fitness for a particular purpose, accuracy, completeness, timeliness, reliability, or non-infringement. We do not guarantee that the Service will be uninterrupted, error-free, or secure."
-
-#: src/routes/terms.lazy.tsx:69
-msgid "<0>Duty to Verify:</0> You are solely responsible for independently verifying all information against original, official sources before using it for any purpose, including but not limited to journalistic, academic, financial, or legal matters. The content on this site is for general informational purposes only and is not professional, financial, or legal advice."
-msgstr "<0>Duty to Verify:</0> You are solely responsible for independently verifying all information against original, official sources before using it for any purpose, including but not limited to journalistic, academic, financial, or legal matters. The content on this site is for general informational purposes only and is not professional, financial, or legal advice."
-
-#: src/routes/terms.lazy.tsx:56
-msgid "<0>Email Delivery:</0> We use your email address solely for delivering the notifications you have subscribed to and for essential account-related communications. We do not sell, rent, or share your email address with third parties for marketing purposes."
-msgstr "<0>Email Delivery:</0> We use your email address solely for delivering the notifications you have subscribed to and for essential account-related communications. We do not sell, rent, or share your email address with third parties for marketing purposes."
-
-#: src/routes/privacy.lazy.tsx:94
-msgid "<0>Email Service Provider:</0> Delivers newsletters and notifications you've subscribed to."
-msgstr "<0>Email Service Provider:</0> Delivers newsletters and notifications you've subscribed to."
-
-#: src/routes/privacy.lazy.tsx:126
-msgid "<0>Encryption:</0> Data in transit is encrypted using TLS/SSL. Data at rest is encrypted in our databases."
-msgstr "<0>Encryption:</0> Data in transit is encrypted using TLS/SSL. Data at rest is encrypted in our databases."
-
-#: src/routes/cookie-policy.lazy.tsx:37
-msgid "<0>Enhanced error reporting (opt-in)</0>: Sentry optional context."
-msgstr "<0>Enhanced error reporting (opt-in)</0>: Sentry optional context."
-
-#: src/routes/privacy.lazy.tsx:65
-msgid "<0>Error Detection and Resolution:</0> With your consent, to identify and fix technical issues (consent - GDPR Art. 6(1)(a))."
-msgstr "<0>Error Detection and Resolution:</0> With your consent, to identify and fix technical issues (consent - GDPR Art. 6(1)(a))."
-
-#: src/routes/privacy.lazy.tsx:106
-msgid "<0>Error Logs:</0> Retained for 90 days for debugging, then automatically deleted."
-msgstr "<0>Error Logs:</0> Retained for 90 days for debugging, then automatically deleted."
-
-#: src/routes/privacy.lazy.tsx:46
-msgid "<0>Error Reports (opt-in):</0> If you consent, enhanced error context via Sentry to help us fix bugs. Without consent, only minimal error telemetry is collected."
-msgstr "<0>Error Reports (opt-in):</0> If you consent, enhanced error context via Sentry to help us fix bugs. Without consent, only minimal error telemetry is collected."
-
-#: src/routes/cookie-policy.lazy.tsx:70
-msgid "<0>Essential localStorage</0>: Persists until manually cleared by you."
-msgstr "<0>Essential localStorage</0>: Persists until manually cleared by you."
-
-#: src/routes/privacy.lazy.tsx:42
-msgid "<0>Essential Technical Data:</0> Browser type, device type, IP address (anonymized), and general location (country level) for security and service provision (legitimate interests under GDPR Art. 6(1)(f))."
-msgstr "<0>Essential Technical Data:</0> Browser type, device type, IP address (anonymized), and general location (country level) for security and service provision (legitimate interests under GDPR Art. 6(1)(f))."
-
-#: src/routes/cookie-policy.lazy.tsx:34
-msgid "<0>Essential</0>: Consent preferences and core UI state (always active)."
-msgstr "<0>Essential</0>: Consent preferences and core UI state (always active)."
-
-#: src/routes/terms.lazy.tsx:68
-msgid "<0>Full Assumption of Risk:</0> Your use of the Service and reliance on any information or visualization provided is done entirely at your own risk. You are solely responsible for any decisions made or actions taken based on this information."
-msgstr "<0>Full Assumption of Risk:</0> Your use of the Service and reliance on any information or visualization provided is done entirely at your own risk. You are solely responsible for any decisions made or actions taken based on this information."
-
-#: src/routes/privacy.lazy.tsx:95
-msgid "<0>Hosting Providers:</0> Store and serve application data and databases."
-msgstr "<0>Hosting Providers:</0> Store and serve application data and databases."
-
-#: src/routes/terms.lazy.tsx:70
-msgid "<0>Lawful Use:</0> You agree to use the Service only for lawful purposes and in a manner that does not harm the Service or its users. You must not remove or obscure any attribution notices on exported content."
-msgstr "<0>Lawful Use:</0> You agree to use the Service only for lawful purposes and in a manner that does not harm the Service or its users. You must not remove or obscure any attribution notices on exported content."
-
-#: src/routes/privacy.lazy.tsx:73
-msgid "<0>Legal Obligations (Art. 6(1)(c)):</0> Compliance with applicable laws and regulations."
-msgstr "<0>Legal Obligations (Art. 6(1)(c)):</0> Compliance with applicable laws and regulations."
-
-#: src/routes/privacy.lazy.tsx:70
-msgid "<0>Legitimate Interests (Art. 6(1)(f)):</0> Operating and securing the Service, preventing fraud and abuse."
-msgstr "<0>Legitimate Interests (Art. 6(1)(f)):</0> Operating and securing the Service, preventing fraud and abuse."
-
-#: src/routes/terms.lazy.tsx:63
-msgid "<0>Limited Retention:</0> Security logs are retained only for a limited period to detect and prevent abuse, troubleshoot issues, and ensure reliability."
-msgstr "<0>Limited Retention:</0> Security logs are retained only for a limited period to detect and prevent abuse, troubleshoot issues, and ensure reliability."
-
-#: src/routes/privacy.lazy.tsx:44
-msgid "<0>Local Storage Data:</0> Charts, annotations, filters, and preferences stored locally in your browser. This data never leaves your device unless you explicitly export it."
-msgstr "<0>Local Storage Data:</0> Charts, annotations, filters, and preferences stored locally in your browser. This data never leaves your device unless you explicitly export it."
-
-#: src/routes/privacy.lazy.tsx:101
-msgid "<0>LocalStorage:</0> Stored in your browser until you clear it manually."
-msgstr "<0>LocalStorage:</0> Stored in your browser until you clear it manually."
-
-#: src/routes/cookie-policy.lazy.tsx:44
-msgid "<0>localStorage</0>: <1>cookie-consent</1> (stores your consent preferences), <2>saved-charts</2> (your saved visualizations), <3>chart-categories</3> (chart organization), <4>theme-preference</4> (dark/light mode)."
-msgstr "<0>localStorage</0>: <1>cookie-consent</1> (stores your consent preferences), <2>saved-charts</2> (your saved visualizations), <3>chart-categories</3> (chart organization), <4>theme-preference</4> (dark/light mode)."
-
-#: src/routes/privacy.lazy.tsx:129
-msgid "<0>Monitoring:</0> Security monitoring and logging to detect and respond to potential breaches."
-msgstr "<0>Monitoring:</0> Security monitoring and logging to detect and respond to potential breaches."
-
-#: src/routes/privacy.lazy.tsx:104
-msgid "<0>Newsletter Delivery Records:</0> Retained for 2 years for delivery troubleshooting and compliance."
-msgstr "<0>Newsletter Delivery Records:</0> Retained for 2 years for delivery troubleshooting and compliance."
-
-#: src/routes/privacy.lazy.tsx:62
-msgid "<0>Newsletter Delivery:</0> To send you budget execution updates and notifications that you have explicitly subscribed to (consent - GDPR Art. 6(1)(a)). You can withdraw consent and unsubscribe at any time."
-msgstr "<0>Newsletter Delivery:</0> To send you budget execution updates and notifications that you have explicitly subscribed to (consent - GDPR Art. 6(1)(a)). You can withdraw consent and unsubscribe at any time."
-
-#: src/routes/terms.lazy.tsx:38
-msgid "<0>No Government Affiliation:</0> Transparenta.eu is an independent project and is not affiliated with, authorized, maintained, sponsored, or endorsed by any Romanian government entity."
-msgstr "<0>No Government Affiliation:</0> Transparenta.eu is an independent project and is not affiliated with, authorized, maintained, sponsored, or endorsed by any Romanian government entity."
-
-#: src/routes/privacy.lazy.tsx:81
-msgid "<0>No Marketing:</0> We do not send promotional or marketing emails. All communications are informational updates you have requested."
-msgstr "<0>No Marketing:</0> We do not send promotional or marketing emails. All communications are informational updates you have requested."
-
-#: src/routes/privacy.lazy.tsx:82
-msgid "<0>No Sharing:</0> We never sell, rent, or share your email address with third parties for their marketing purposes."
-msgstr "<0>No Sharing:</0> We never sell, rent, or share your email address with third parties for their marketing purposes."
-
-#: src/routes/privacy.lazy.tsx:55
-msgid "<0>Notification History:</0> Records of notifications sent to you, including delivery status and unsubscribe actions, for compliance and delivery optimization."
-msgstr "<0>Notification History:</0> Records of notifications sent to you, including delivery status and unsubscribe actions, for compliance and delivery optimization."
-
-#: src/routes/privacy.lazy.tsx:54
-msgid "<0>Notification Preferences:</0> Your subscription choices for newsletters (monthly, quarterly, annual) and entity notifications, including which entities you follow and notification types you've enabled."
-msgstr "<0>Notification Preferences:</0> Your subscription choices for newsletters (monthly, quarterly, annual) and entity notifications, including which entities you follow and notification types you've enabled."
-
-#: src/routes/privacy.lazy.tsx:103
-msgid "<0>Notification Subscriptions:</0> Retained while active. Soft-deleted (marked inactive) when you unsubscribe, with full deletion after 1 year for compliance and anti-spam purposes."
-msgstr "<0>Notification Subscriptions:</0> Retained while active. Soft-deleted (marked inactive) when you unsubscribe, with full deletion after 1 year for compliance and anti-spam purposes."
-
-#: src/routes/terms.lazy.tsx:90
-msgid "<0>Notification Subscriptions:</0> We store your notification subscription preferences, including the entities you follow and the types of updates you wish to receive."
-msgstr "<0>Notification Subscriptions:</0> We store your notification subscription preferences, including the entities you follow and the types of updates you wish to receive."
-
-#: src/routes/privacy.lazy.tsx:78
-msgid "<0>Opt-In Consent:</0> Newsletter subscriptions are strictly opt-in. We only send you newsletters if you explicitly subscribe via the notification settings or entity pages."
-msgstr "<0>Opt-In Consent:</0> Newsletter subscriptions are strictly opt-in. We only send you newsletters if you explicitly subscribe via the notification settings or entity pages."
-
-#: src/routes/terms.lazy.tsx:45
-msgid "<0>Optional Accounts:</0> User accounts are optional. You can use core features without creating an account. Creating an account enables additional features such as newsletters, notifications, and saved preferences."
-msgstr "<0>Optional Accounts:</0> User accounts are optional. You can use core features without creating an account. Creating an account enables additional features such as newsletters, notifications, and saved preferences."
-
-#: src/routes/privacy.lazy.tsx:92
-msgid "<0>PostHog (Analytics):</0> Processes usage analytics if you consent. EU-hosted option available."
-msgstr "<0>PostHog (Analytics):</0> Processes usage analytics if you consent. EU-hosted option available."
-
-#: src/routes/cookie-policy.lazy.tsx:72
-msgid "<0>PostHog analytics</0>: Up to 1 year."
-msgstr "<0>PostHog analytics</0>: Up to 1 year."
-
-#: src/routes/cookie-policy.lazy.tsx:59
-msgid "<0>PostHog</0>: <1>ph_*</1> identifiers for usage analytics. Custom events only, no autocapture or session recordings."
-msgstr "<0>PostHog</0>: <1>ph_*</1> identifiers for usage analytics. Custom events only, no autocapture or session recordings."
-
-#: src/routes/terms.lazy.tsx:84
-msgid "<0>Recommended:</0> Chart: „Titlul Graficului\" | Source: Ministerul Finanțelor, via Transparenta.eu."
-msgstr "<0>Recommended:</0> Chart: „Titlul Graficului\" | Source: Ministerul Finanțelor, via Transparenta.eu."
-
-#: src/routes/privacy.lazy.tsx:113
-msgid "<0>Right of Access (Art. 15):</0> Request a copy of the personal data we hold about you."
-msgstr "<0>Right of Access (Art. 15):</0> Request a copy of the personal data we hold about you."
-
-#: src/routes/privacy.lazy.tsx:117
-msgid "<0>Right to Data Portability (Art. 20):</0> Receive your data in a structured, machine-readable format."
-msgstr "<0>Right to Data Portability (Art. 20):</0> Receive your data in a structured, machine-readable format."
-
-#: src/routes/privacy.lazy.tsx:115
-msgid "<0>Right to Erasure (Art. 17):</0> Request deletion of your personal data (\"right to be forgotten\")."
-msgstr "<0>Right to Erasure (Art. 17):</0> Request deletion of your personal data (\"right to be forgotten\")."
-
-#: src/routes/privacy.lazy.tsx:120
-msgid "<0>Right to Lodge a Complaint:</0> File a complaint with the Romanian supervisory authority (ANSPDCP) at anspdcp.ro."
-msgstr "<0>Right to Lodge a Complaint:</0> File a complaint with the Romanian supervisory authority (ANSPDCP) at anspdcp.ro."
-
-#: src/routes/privacy.lazy.tsx:118
-msgid "<0>Right to Object (Art. 21):</0> Object to processing based on legitimate interests."
-msgstr "<0>Right to Object (Art. 21):</0> Object to processing based on legitimate interests."
-
-#: src/routes/privacy.lazy.tsx:114
-msgid "<0>Right to Rectification (Art. 16):</0> Request correction of inaccurate personal data."
-msgstr "<0>Right to Rectification (Art. 16):</0> Request correction of inaccurate personal data."
-
-#: src/routes/privacy.lazy.tsx:116
-msgid "<0>Right to Restriction (Art. 18):</0> Request limitation of processing in certain circumstances."
-msgstr "<0>Right to Restriction (Art. 18):</0> Request limitation of processing in certain circumstances."
-
-#: src/routes/privacy.lazy.tsx:119
-msgid "<0>Right to Withdraw Consent (Art. 7(3)):</0> Withdraw consent for newsletters, analytics, or error reporting at any time without affecting the lawfulness of processing before withdrawal."
-msgstr "<0>Right to Withdraw Consent (Art. 7(3)):</0> Withdraw consent for newsletters, analytics, or error reporting at any time without affecting the lawfulness of processing before withdrawal."
-
-#: src/routes/terms.lazy.tsx:62
-msgid "<0>Security Logs:</0> For safeguarding accounts and the Service, we maintain basic security logs such as IP address, user agent, timestamps, and actions (e.g., sign-in, unsubscribe) in accordance with our Privacy Policy."
-msgstr "<0>Security Logs:</0> For safeguarding accounts and the Service, we maintain basic security logs such as IP address, user agent, timestamps, and actions (e.g., sign-in, unsubscribe) in accordance with our Privacy Policy."
-
-#: src/routes/privacy.lazy.tsx:93
-msgid "<0>Sentry (Error Reporting):</0> Processes error logs if you consent. EU-first with data residency controls."
-msgstr "<0>Sentry (Error Reporting):</0> Processes error logs if you consent. EU-first with data residency controls."
-
-#: src/routes/cookie-policy.lazy.tsx:73
-msgid "<0>Sentry</0>: Session duration only."
-msgstr "<0>Sentry</0>: Session duration only."
-
-#: src/routes/cookie-policy.lazy.tsx:65
-msgid "<0>Sentry</0>: Session keys for error context and replay if enabled."
-msgstr "<0>Sentry</0>: Session keys for error context and replay if enabled."
-
-#: src/routes/privacy.lazy.tsx:47
-msgid "<0>Server Access Logs:</0> IP address, user agent, requested URL, referrer, and timestamp to detect abuse, ensure reliability, and secure the Service (legitimate interests under GDPR Art. 6(1)(f))."
-msgstr "<0>Server Access Logs:</0> IP address, user agent, requested URL, referrer, and timestamp to detect abuse, ensure reliability, and secure the Service (legitimate interests under GDPR Art. 6(1)(f))."
-
-#: src/routes/privacy.lazy.tsx:107
-msgid "<0>Server Access Logs:</0> Retained for up to 90 days for security and reliability, then automatically deleted."
-msgstr "<0>Server Access Logs:</0> Retained for up to 90 days for security and reliability, then automatically deleted."
-
-#: src/routes/privacy.lazy.tsx:60
-msgid "<0>Service Provision:</0> To operate the Service, provide visualizations, and ensure platform security (legitimate interests - GDPR Art. 6(1)(f))."
-msgstr "<0>Service Provision:</0> To operate the Service, provide visualizations, and ensure platform security (legitimate interests - GDPR Art. 6(1)(f))."
-
-#: src/routes/terms.lazy.tsx:53
-msgid "<0>Subscription:</0> If you have an account, you may subscribe to receive newsletters and notifications about budget execution updates for entities you follow. Subscriptions are opt-in and you must explicitly choose to receive these communications."
-msgstr "<0>Subscription:</0> If you have an account, you may subscribe to receive newsletters and notifications about budget execution updates for entities you follow. Subscriptions are opt-in and you must explicitly choose to receive these communications."
-
-#: src/routes/terms.lazy.tsx:47
-msgid "<0>Third-Party Authentication:</0> We use Clerk for authentication services. By creating an account, you also agree to Clerk's terms of service."
-msgstr "<0>Third-Party Authentication:</0> We use Clerk for authentication services. By creating an account, you also agree to Clerk's terms of service."
-
-#: src/routes/terms.lazy.tsx:54
-msgid "<0>Types of Communications:</0> We may send monthly, quarterly, or annual budget reports, as well as alerts about specific data changes, based on your notification preferences."
-msgstr "<0>Types of Communications:</0> We may send monthly, quarterly, or annual budget reports, as well as alerts about specific data changes, based on your notification preferences."
-
-#: src/routes/privacy.lazy.tsx:80
-msgid "<0>Unsubscribe:</0> You can unsubscribe from any newsletter at any time by clicking the unsubscribe link in any email, managing your preferences in your account settings, or contacting us at contact@transparenta.eu"
-msgstr "<0>Unsubscribe:</0> You can unsubscribe from any newsletter at any time by clicking the unsubscribe link in any email, managing your preferences in your account settings, or contacting us at contact@transparenta.eu"
-
-#: src/routes/terms.lazy.tsx:55
-msgid "<0>Unsubscribe:</0> You may unsubscribe from newsletters and notifications at any time via the unsubscribe link in any email, through your account settings, or by contacting us."
-msgstr "<0>Unsubscribe:</0> You may unsubscribe from newsletters and notifications at any time via the unsubscribe link in any email, through your account settings, or by contacting us."
-
-#: src/routes/privacy.lazy.tsx:45
-msgid "<0>Usage Analytics (opt-in):</0> If you consent, we collect custom usage events via PostHog to understand how features are used. No autocapture or session recordings."
-msgstr "<0>Usage Analytics (opt-in):</0> If you consent, we collect custom usage events via PostHog to understand how features are used. No autocapture or session recordings."
-
-#: src/routes/privacy.lazy.tsx:79
-msgid "<0>What We Send:</0> Budget execution updates (monthly, quarterly, or annual reports) for entities you follow, and alerts about significant budget changes if you've enabled them."
-msgstr "<0>What We Send:</0> Budget execution updates (monthly, quarterly, or annual reports) for entities you follow, and alerts about significant budget changes if you've enabled them."
-
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:507
 msgid "> median"
 msgstr "> median"
@@ -598,11 +264,11 @@ msgstr "Platformă de explorare a datelor financiare publice pentru cetățeni, 
 msgid "Accept All"
 msgstr "Accept All"
 
-#: src/routes/terms.lazy.tsx:31
-msgid "Acceptance"
-msgstr "Acceptance"
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:469
+msgid "Accept the terms and conditions for an entity in the campaign to automatically receive update notifications."
+msgstr "Accept the terms and conditions for an entity in the campaign to automatically receive update notifications."
 
-#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:81
+#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:89
 msgid "Access"
 msgstr "Access"
 
@@ -702,8 +368,8 @@ msgstr "Add Condition"
 msgid "Add Data Series"
 msgstr "Add Data Series"
 
-#: src/routes/settings/notifications.tsx:59
-#: src/routes/settings/notifications.tsx:60
+#: src/routes/settings/notifications.tsx:61
+#: src/routes/settings/notifications.tsx:62
 msgid "Add entity notification"
 msgstr "Add entity notification"
 
@@ -725,7 +391,7 @@ msgstr "Add series"
 msgid "Add Series"
 msgstr "Add Series"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:579
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:589
 msgid "Add the association name to use this option."
 msgstr "Add the association name to use this option."
 
@@ -751,19 +417,11 @@ msgstr "Add Value Filter Rule"
 msgid "Add view"
 msgstr "Add view"
 
-#: src/routes/privacy.lazy.tsx:137
-msgid "Additional technical and organizational measures"
-msgstr "Additional technical and organizational measures"
-
 #: src/components/entities/EntityHeader.tsx:127
 #: src/components/entities/EntityInfo.tsx:57
 #: src/components/entities/views/entity-profile-view.presentation.tsx:190
 msgid "Address"
 msgstr "Address"
-
-#: src/routes/privacy.lazy.tsx:136
-msgid "Adequacy decisions where applicable"
-msgstr "Adequacy decisions where applicable"
 
 #: src/components/normalization/normalization-controls.tsx:110
 msgid "Adjust for inflation (constant 2024 prices)"
@@ -885,7 +543,7 @@ msgstr "Alert series"
 msgid "Alert type"
 msgstr "Alert type"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:74
+#: src/features/notifications/components/EntityNotificationBell.tsx:121
 msgid "Alerts when important changes occur"
 msgstr "Alerts when important changes occur"
 
@@ -926,10 +584,6 @@ msgstr "All phases explored!"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:352
 msgid "All predefined views are already enabled."
 msgstr "All predefined views are already enabled."
-
-#: src/routes/privacy.lazy.tsx:97
-msgid "All processors are bound by data protection agreements and GDPR-compliant safeguards, including standard contractual clauses for international transfers."
-msgstr "All processors are bound by data protection agreements and GDPR-compliant safeguards, including standard contractual clauses for international transfers."
 
 #: src/components/entities/EntityReports.tsx:168
 #: src/components/entities/EntityReports.tsx:171
@@ -985,6 +639,10 @@ msgstr "Amount Per Capita"
 msgid "Amount Range"
 msgstr "Amount Range"
 
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:119
+msgid "An unexpected error occurred"
+msgstr "An unexpected error occurred"
+
 #: src/components/budget-explorer/BudgetTreemap.tsx:353
 #: src/components/entities/FinancialDataCard.tsx:80
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:108
@@ -995,18 +653,6 @@ msgstr "Analytics"
 #: src/routes/cookies.lazy.tsx:138
 msgid "Analytics (PostHog)"
 msgstr "Analytics (PostHog)"
-
-#: src/routes/cookie-policy.lazy.tsx:25
-msgid "Analytics and enhanced error reporting are opt-in."
-msgstr "Analytics and enhanced error reporting are opt-in."
-
-#: src/routes/privacy.lazy.tsx:25
-msgid "Analytics and enhanced error reporting only with your consent."
-msgstr "Analytics and enhanced error reporting only with your consent."
-
-#: src/routes/cookie-policy.lazy.tsx:56
-msgid "Analytics Cookies (opt-in only)"
-msgstr "Analytics Cookies (opt-in only)"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:291
 msgid "Analytics view"
@@ -1121,7 +767,7 @@ msgstr "April"
 msgid "Are you sure you want to delete this alert? This action cannot be undone."
 msgstr "Are you sure you want to delete this alert? This action cannot be undone."
 
-#: src/features/notifications/components/NotificationCard.tsx:116
+#: src/features/notifications/components/NotificationCard.tsx:117
 msgid "Are you sure you want to delete this notification? This action cannot be undone."
 msgstr "Are you sure you want to delete this notification? This action cannot be undone."
 
@@ -1145,37 +791,27 @@ msgstr "Area Chart"
 msgid "Arrears"
 msgstr "Arrears"
 
-#: src/routes/privacy.lazy.tsx:111
-msgid "As a data subject under GDPR, you have the following rights:"
-msgstr "As a data subject under GDPR, you have the following rights:"
-
 #: src/features/learning/components/interactive/lesson-discussion.tsx:136
 msgid "Ask questions and discuss this lesson with the community."
 msgstr "Ask questions and discuss this lesson with the community."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:618
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:628
 msgid "Ask us to send it"
 msgstr "Ask us to send it"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:388
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:398
 msgid "Association"
 msgstr "Association"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:394
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:585
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:404
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:595
 msgid "Association email"
 msgstr "Association email"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:506
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:513
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:516
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:523
 msgid "Association name"
 msgstr "Association name"
-
-#: src/routes/cookie-policy.lazy.tsx:21
-#: src/routes/privacy.lazy.tsx:21
-#: src/routes/terms.lazy.tsx:21
-msgid "At a Glance"
-msgstr "At a Glance"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:178
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:103
@@ -1191,29 +827,9 @@ msgstr "Aug 1, 2025"
 msgid "August"
 msgstr "August"
 
-#: src/routes/cookie-policy.lazy.tsx:47
-msgid "Authentication Cookies (essential if you have an account)"
-msgstr "Authentication Cookies (essential if you have an account)"
-
-#: src/routes/cookie-policy.lazy.tsx:24
-msgid "Authentication cookies are used if you create an account."
-msgstr "Authentication cookies are used if you create an account."
-
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:139
 msgid "Auto"
 msgstr "Auto"
-
-#: src/routes/privacy.lazy.tsx:140
-msgid "Automated decision-making"
-msgstr "Automated decision-making"
-
-#: src/routes/privacy.lazy.tsx:153
-msgid "Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter Personal (ANSPDCP), B-dul G-ral. Gheorghe Magheru 28-30, Sector 1, București, Romania. Website: anspdcp.ro"
-msgstr "Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter Personal (ANSPDCP), B-dul G-ral. Gheorghe Magheru 28-30, Sector 1, București, Romania. Website: anspdcp.ro"
-
-#: src/routes/terms.lazy.tsx:97
-msgid "Availability and changes"
-msgstr "Availability and changes"
 
 #: src/lib/commitments-metrics.ts:55
 msgid "Available budget credits"
@@ -1223,7 +839,7 @@ msgstr "Available budget credits"
 msgid "Available commitment credits"
 msgstr "Available commitment credits"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:574
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:584
 msgid "Available for legally established associations."
 msgstr "Available for legally established associations."
 
@@ -1251,8 +867,8 @@ msgstr "Avg. Amount per UAT"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:399
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:470
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:611
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:527
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:646
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:537
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:656
 #: src/routes/alerts/new.lazy.tsx:175
 msgid "Back"
 msgstr "Back"
@@ -1261,12 +877,16 @@ msgstr "Back"
 msgid "Back to alert"
 msgstr "Back to alert"
 
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:442
+msgid "Back to campaign"
+msgstr "Back to campaign"
+
 #: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:64
 msgid "Back to challenges"
 msgstr "Back to challenges"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:104
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:145
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:121
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:162
 #: src/features/challenges/components/player/ChallengeStepPlayer.tsx:428
 msgid "Back to Challenges"
 msgstr "Back to Challenges"
@@ -1348,11 +968,7 @@ msgstr "Based on 2024 budgetary data"
 msgid "Basic data on population, employment and housing."
 msgstr "Basic data on population, employment and housing."
 
-#: src/routes/privacy.lazy.tsx:27
-msgid "Basic security logs are kept for a short period to protect accounts."
-msgstr "Basic security logs are kept for a short period to protect accounts."
-
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:157
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:190
 msgid "Before confirming, make sure you:"
 msgstr "Before confirming, make sure you:"
 
@@ -1437,6 +1053,11 @@ msgstr "Breakdown of the selected classification, including grouped chapters and
 msgid "Browse and download all financial reports submitted by this entity"
 msgstr "Browse and download all financial reports submitted by this entity"
 
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:476
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:515
+msgid "Browse entities"
+msgstr "Browse entities"
+
 #: src/features/challenges/components/hub/BudgetTimelineStrip.tsx:66
 msgid "Budget Calendar"
 msgstr "Budget Calendar"
@@ -1494,7 +1115,7 @@ msgstr "Budget Documents"
 msgid "Budget draft publication date"
 msgstr "Budget draft publication date"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:91
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:99
 msgid "Budget guides, request templates, and more."
 msgstr "Budget guides, request templates, and more."
 
@@ -1578,10 +1199,6 @@ msgstr "By Expense Type"
 msgid "By Funding Source"
 msgstr "By Funding Source"
 
-#: src/routes/terms.lazy.tsx:32
-msgid "By using the Service, you agree to these Terms. If you disagree, please do not use the Service."
-msgstr "By using the Service, you agree to these Terms. If you disagree, please do not use the Service."
-
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils.ts:24
 msgid "Calculated series"
 msgstr "Calculated series"
@@ -1594,6 +1211,14 @@ msgstr "Calculation"
 #: src/features/learning/components/interactive/VATCalculator.tsx:198
 msgid "Calculations assume a basket of 40% essential goods (11% VAT) and 60% general goods (21% VAT)."
 msgstr "Calculations assume a basket of 40% essential goods (11% VAT) and 60% general goods (21% VAT)."
+
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:343
+msgid "Campaign notifications"
+msgstr "Campaign notifications"
+
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:446
+msgid "Campaign Notifications"
+msgstr "Campaign Notifications"
 
 #: src/components/charts/components/chart-annotations/AnnotationItemMenu.tsx:65
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:135
@@ -1612,7 +1237,7 @@ msgstr "Calculations assume a basket of 40% essential goods (11% VAT) and 60% ge
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:619
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:123
 #: src/features/notifications/components/alerts/AlertCard.tsx:122
-#: src/features/notifications/components/NotificationCard.tsx:124
+#: src/features/notifications/components/NotificationCard.tsx:125
 #: src/routes/$lang/learning/index.lazy.tsx:315
 #: src/routes/$lang/learning/index.lazy.tsx:337
 #: src/routes/alerts/$alertId/index.lazy.tsx:317
@@ -1631,10 +1256,6 @@ msgstr "Cannot load INS indicators without the locality SIRUTA code."
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:263
 msgid "Cannot regenerate bins because active data has no numeric values."
 msgstr "Cannot regenerate bins because active data has no numeric values."
-
-#: src/routes/cookie-policy.lazy.tsx:32
-msgid "Categories"
-msgstr "Categories"
 
 #: src/components/charts/components/chart-categories/ChartCategories.tsx:131
 #: src/components/charts/components/chart-categories/ChartCategories.tsx:156
@@ -1660,15 +1281,11 @@ msgstr "Certificate verified (PoC)"
 msgid "Challenge Question"
 msgstr "Challenge Question"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:161
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:178
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:292
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:584
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:585
 msgid "Challenges"
 msgstr "Challenges"
-
-#: src/routes/privacy.lazy.tsx:146
-msgid "Changes to this policy"
-msgstr "Changes to this policy"
 
 #: src/routes/budget-explorer.lazy.tsx:601
 msgid "Chapter"
@@ -1739,10 +1356,6 @@ msgstr "Checking your answer..."
 msgid "Checking..."
 msgstr "Checking..."
 
-#: src/routes/privacy.lazy.tsx:143
-msgid "Children's privacy"
-msgstr "Children's privacy"
-
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:348
 msgid "Choose a disabled view to enable it in this map."
 msgstr "Choose a disabled view to enable it in this map."
@@ -1755,7 +1368,7 @@ msgstr "Choose an answer"
 msgid "Choose between essential-only or all cookies, then fine-tune options below."
 msgstr "Choose between essential-only or all cookies, then fine-tune options below."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:543
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:553
 msgid "Choose how you want the public debate request to be sent."
 msgstr "Choose how you want the public debate request to be sent."
 
@@ -1783,8 +1396,8 @@ msgstr "City hall contact info"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:278
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:516
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:383
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:454
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:393
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:464
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:135
 msgid "City hall email"
 msgstr "City hall email"
@@ -2181,14 +1794,6 @@ msgstr "Connector"
 msgid "Constant Value"
 msgstr "Constant Value"
 
-#: src/routes/terms.lazy.tsx:103
-msgid "Contact"
-msgstr "Contact"
-
-#: src/routes/privacy.lazy.tsx:149
-msgid "Contact and data protection officer"
-msgstr "Contact and data protection officer"
-
 #: src/components/entities/views/entity-profile-view.presentation.tsx:162
 msgid "Contact information"
 msgstr "Contact information"
@@ -2196,10 +1801,6 @@ msgstr "Contact information"
 #: src/components/footer/support-menu.tsx:84
 msgid "Contact Support"
 msgstr "Contact Support"
-
-#: src/routes/terms.lazy.tsx:104
-msgid "Contact us at contact@transparenta.eu See also our <0>Privacy Policy</0> and <1>Cookie Policy</1>."
-msgstr "Contact us at contact@transparenta.eu See also our <0>Privacy Policy</0> and <1>Cookie Policy</1>."
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:293
 msgid "Contestation"
@@ -2224,10 +1825,10 @@ msgstr "Context"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:362
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:406
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:477
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:479
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:533
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:489
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:543
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:144
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:197
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:214
 #: src/features/learning/components/cards/LearningPathCard.tsx:24
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:135
 msgid "Continue"
@@ -2261,22 +1862,10 @@ msgstr "Contracts view unavailable"
 msgid "Contributions recorded"
 msgstr "Contributions recorded"
 
-#: src/routes/privacy.lazy.tsx:34
-msgid "Controller: Claudiu Constantin Bogdan, persoana fizica. Contact: contact@transparenta.eu"
-msgstr "Controller: Claudiu Constantin Bogdan, persoana fizica. Contact: contact@transparenta.eu"
-
 #: src/hooks/useSendBugReport.ts:14
 #: src/hooks/useSendFeedback.ts:13
 msgid "Cookie consent required"
 msgstr "Cookie consent required"
-
-#: src/routes/cookie-policy.lazy.tsx:68
-msgid "Cookie duration"
-msgstr "Cookie duration"
-
-#: src/routes/cookie-policy.lazy.tsx:17
-msgid "Cookie Policy"
-msgstr "Cookie Policy"
 
 #: src/components/footer/AppFooter.tsx:126
 #: src/routes/cookies.lazy.tsx:103
@@ -2288,7 +1877,7 @@ msgid "Copied"
 msgstr "Copied"
 
 #: src/components/charts/components/ChartDataError.tsx:278
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:62
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:95
 msgid "Copied to clipboard"
 msgstr "Copied to clipboard"
 
@@ -2300,7 +1889,7 @@ msgstr "Copied!"
 #: src/components/charts/components/views/AnnotationConfigView.tsx:220
 #: src/components/charts/components/views/SeriesConfigView.tsx:375
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:239
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:65
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:98
 msgid "Copy"
 msgstr "Copy"
 
@@ -2331,10 +1920,6 @@ msgstr "Copy failed"
 #: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:112
 msgid "Copy failed. You can still select and copy the link manually."
 msgstr "Copy failed. You can still select and copy the link manually."
-
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:159
-#~ msgid "Copy full email"
-#~ msgstr "Copy full email"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:443
 #: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:105
@@ -2371,10 +1956,6 @@ msgstr "Copy Support Email"
 #: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:75
 msgid "Copy the civic module link"
 msgstr "Copy the civic module link"
-
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:173
-#~ msgid "Copy the email content above or open your email client, then confirm after sending."
-#~ msgstr "Copy the email content above or open your email client, then confirm after sending."
 
 #: src/features/learning/components/assessment/Quiz.tsx:172
 msgid "Correct Choice"
@@ -2462,7 +2043,7 @@ msgstr "Could not load units"
 msgid "Could not send error report."
 msgstr "Could not send error report."
 
-#: src/features/learning/hooks/use-learning-progress.tsx:1075
+#: src/features/learning/hooks/use-learning-progress.tsx:1072
 msgid "Could not sync with server. Your progress is saved locally."
 msgstr "Could not sync with server. Your progress is saved locally."
 
@@ -2622,7 +2203,7 @@ msgstr "Currency"
 msgid "Currency is ignored for % of GDP."
 msgstr "Currency is ignored for % of GDP."
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:311
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:329
 msgid "Current"
 msgstr "Current"
 
@@ -2666,14 +2247,6 @@ msgstr "Dark"
 msgid "Dashboard"
 msgstr "Dashboard"
 
-#: src/routes/privacy.lazy.tsx:50
-msgid "Data collected with an account:"
-msgstr "Data collected with an account:"
-
-#: src/routes/privacy.lazy.tsx:40
-msgid "Data collected without an account:"
-msgstr "Data collected without an account:"
-
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1503
 msgid "Data is sourced from INS Tempo. Reuse and redistribution are subject to INS terms and license."
 msgstr "Data is sourced from INS Tempo. Reuse and redistribution are subject to INS terms and license."
@@ -2691,14 +2264,6 @@ msgstr "Data Labels"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:493
 msgid "Data period shown:"
 msgstr "Data period shown:"
-
-#: src/routes/privacy.lazy.tsx:99
-msgid "Data retention"
-msgstr "Data retention"
-
-#: src/routes/privacy.lazy.tsx:124
-msgid "Data security"
-msgstr "Data security"
 
 #: src/components/charts/components/chart-config/DataSeriesCard.tsx:17
 #: src/components/charts/components/chart-view/SeriesList.tsx:86
@@ -2723,10 +2288,6 @@ msgstr "Data series alerts"
 msgid "Data Series Filter"
 msgstr "Data Series Filter"
 
-#: src/routes/privacy.lazy.tsx:88
-msgid "Data sharing and processors"
-msgstr "Data sharing and processors"
-
 #: src/components/charts/components/series-config/InsSeriesEditor.tsx:562
 msgid "Data source:"
 msgstr "Data source:"
@@ -2734,14 +2295,6 @@ msgstr "Data source:"
 #: src/components/footer/AppFooter.tsx:139
 msgid "Data source: \"Budget Transparency\" portal administered by ANAF/Ministry of Finance. See official resources:"
 msgstr "Data source: \"Budget Transparency\" portal administered by ANAF/Ministry of Finance. See official resources:"
-
-#: src/routes/privacy.lazy.tsx:85
-msgid "Data sources and licensing"
-msgstr "Data sources and licensing"
-
-#: src/routes/terms.lazy.tsx:87
-msgid "Data storage and retention"
-msgstr "Data storage and retention"
 
 #: src/routes/map.lazy.tsx:384
 msgid "Data Table View"
@@ -2799,8 +2352,8 @@ msgstr "Death rate captures health and age-structure pressure and helps explain 
 msgid "Deaths (POP206D)"
 msgstr "Deaths (POP206D)"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:409
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:425
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:419
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:435
 msgid "Debate request"
 msgstr "Debate request"
 
@@ -2853,7 +2406,7 @@ msgstr "Defined"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:299
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:261
 #: src/features/notifications/components/alerts/AlertCard.tsx:128
-#: src/features/notifications/components/NotificationCard.tsx:127
+#: src/features/notifications/components/NotificationCard.tsx:128
 #: src/routes/alerts/$alertId/index.lazy.tsx:323
 msgid "Delete"
 msgstr "Delete"
@@ -2885,7 +2438,7 @@ msgstr "Delete local snapshot?"
 msgid "Delete map"
 msgstr "Delete map"
 
-#: src/features/notifications/components/NotificationCard.tsx:113
+#: src/features/notifications/components/NotificationCard.tsx:114
 msgid "Delete notification"
 msgstr "Delete notification"
 
@@ -2906,7 +2459,7 @@ msgid "Delete this map?"
 msgstr "Delete this map?"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:258
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:374
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:384
 msgid "Delivery path"
 msgstr "Delivery path"
 
@@ -2954,10 +2507,6 @@ msgstr "Detail level"
 #: src/components/entities/EntityReports.tsx:174
 msgid "Detailed"
 msgstr "Detailed"
-
-#: src/routes/cookie-policy.lazy.tsx:39
-msgid "Detailed breakdown"
-msgstr "Detailed breakdown"
 
 #: src/components/filters/MapFilter.tsx:183
 #: src/components/filters/report-type-filter/index.tsx:14
@@ -3076,7 +2625,7 @@ msgstr "Distribution"
 msgid "Distribution series"
 msgstr "Distribution series"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:495
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:505
 msgid "Do you represent a legally established association?"
 msgstr "Do you represent a legally established association?"
 
@@ -3095,7 +2644,7 @@ msgstr "Document your participation in the local budget debate."
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:31
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:40
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:44
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:45
 #: src/features/learning/components/cards/LearningPathCard.tsx:187
 #: src/features/learning/components/cards/LearningPathCard.tsx:196
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:91
@@ -3189,7 +2738,11 @@ msgstr "e.g. Expense growth alert"
 msgid "e.g., RON, %, Units..."
 msgstr "e.g., RON, %, Units..."
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:77
+#: src/features/notifications/components/EntityNotificationBell.tsx:112
+msgid "Easily manage your campaign notification preference"
+msgstr "Easily manage your campaign notification preference"
+
+#: src/features/notifications/components/EntityNotificationBell.tsx:124
 msgid "Easily manage your subscriptions"
 msgstr "Easily manage your subscriptions"
 
@@ -3306,12 +2859,6 @@ msgstr "Education"
 msgid "Effective Date"
 msgstr "Effective Date"
 
-#: src/routes/cookie-policy.lazy.tsx:18
-#: src/routes/privacy.lazy.tsx:17
-#: src/routes/terms.lazy.tsx:17
-msgid "Effective Date: {effectiveDate} • Version: {version}"
-msgstr "Effective Date: {effectiveDate} • Version: {version}"
-
 #: src/components/budget-explorer/FilteredSpendingInfo.tsx:114
 msgid "Effective Spending"
 msgstr "Effective Spending"
@@ -3324,6 +2871,10 @@ msgstr "Email"
 #: src/components/footer/support-menu.tsx:45
 msgid "Email address copied to clipboard!"
 msgstr "Email address copied to clipboard!"
+
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:346
+msgid "Email updates for all entities in this campaign"
+msgstr "Email updates for all entities in this campaign"
 
 #: src/components/entities/views/ins-stats-view.derived.ts:121
 #: src/components/entities/views/ins-stats-view.derived.ts:127
@@ -3456,13 +3007,17 @@ msgstr "Entity Analytics"
 msgid "Entity Details"
 msgstr "Entity Details"
 
-#: src/routes/settings/notifications.tsx:48
+#: src/routes/settings/notifications.tsx:50
 msgid "Entity Notifications"
 msgstr "Entity Notifications"
 
 #: src/components/ui/shortcuts.tsx:29
 msgid "Entity Search"
 msgstr "Entity Search"
+
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:375
+msgid "Entity subscriptions"
+msgstr "Entity subscriptions"
 
 #: src/lib/chart-filter-utils.ts:49
 msgid "Entity type"
@@ -3522,13 +3077,9 @@ msgstr "Error loading data"
 msgid "Error loading data:"
 msgstr "Error loading data:"
 
-#: src/routes/settings/notifications.tsx:143
+#: src/routes/settings/notifications.tsx:145
 msgid "Error loading notifications"
 msgstr "Error loading notifications"
-
-#: src/routes/cookie-policy.lazy.tsx:62
-msgid "Error Reporting (opt-in only)"
-msgstr "Error Reporting (opt-in only)"
 
 #: src/routes/cookies.lazy.tsx:160
 msgid "Error reporting (Sentry)"
@@ -3553,14 +3104,6 @@ msgstr "Errors"
 #: src/routes/cookies.lazy.tsx:110
 msgid "Essential cookies"
 msgstr "Essential cookies"
-
-#: src/routes/cookie-policy.lazy.tsx:41
-msgid "Essential Cookies and Storage (always active)"
-msgstr "Essential Cookies and Storage (always active)"
-
-#: src/routes/cookie-policy.lazy.tsx:23
-msgid "Essential storage is required for the app to work."
-msgstr "Essential storage is required for the app to work."
 
 #: src/features/learning/components/interactive/VATReformCard.tsx:31
 msgid "Essentials"
@@ -3819,14 +3362,6 @@ msgstr "Export CSV"
 msgid "Exporting…"
 msgstr "Exporting…"
 
-#: src/routes/terms.lazy.tsx:81
-msgid "Exports and attribution"
-msgstr "Exports and attribution"
-
-#: src/routes/terms.lazy.tsx:25
-msgid "Exports must include attribution to data source and Transparenta.eu."
-msgstr "Exports must include attribution to data source and Transparenta.eu."
-
 #: src/lib/ins/ins-dashboard-config.ts:179
 msgid "Exports, imports and trade balance."
 msgstr "Exports, imports and trade balance."
@@ -3950,10 +3485,6 @@ msgstr "Failed to load map"
 msgid "Failed to load maps"
 msgstr "Failed to load maps"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:209
-#~ msgid "Failed to prepare email. Please try again."
-#~ msgstr "Failed to prepare email. Please try again."
-
 #: src/features/advanced-map-analytics/hooks/use-map-local-snapshots.ts:222
 msgid "Failed to restore local snapshot"
 msgstr "Failed to restore local snapshot"
@@ -3981,6 +3512,11 @@ msgstr "Failed to save snapshot"
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:152
 msgid "Failed to update map visibility"
 msgstr "Failed to update map visibility"
+
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:229
+#: src/features/notifications/components/NotificationQuickMenu.tsx:84
+msgid "Failed to update notification"
+msgstr "Failed to update notification"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:506
 msgid "Fallback:"
@@ -4015,7 +3551,7 @@ msgstr "Feedback / Report an issue"
 msgid "Feedback is currently unavailable."
 msgstr "Feedback is currently unavailable."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:429
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:439
 msgid "Fill in the city hall's contact details and send the request to organize a public debate on the local budget."
 msgstr "Fill in the city hall's contact details and send the request to organize a public debate on the local budget."
 
@@ -4168,10 +3704,6 @@ msgstr "Follow the money"
 msgid "For heavily skewed data, compare with IQR or MAD robust z-score."
 msgstr "For heavily skewed data, compare with IQR or MAD robust z-score."
 
-#: src/routes/privacy.lazy.tsx:150
-msgid "For questions about this Privacy Policy, to exercise your rights, or to contact our data protection officer, email us at contact@transparenta.eu"
-msgstr "For questions about this Privacy Policy, to exercise your rights, or to contact our data protection officer, email us at contact@transparenta.eu"
-
 #: src/components/maps/utils.ts:168
 msgid "for the selected filters."
 msgstr "for the selected filters."
@@ -4184,10 +3716,6 @@ msgstr "Foreign trade"
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:114
 msgid "Found {replacementCount} occurrence{0}"
 msgstr "Found {replacementCount} occurrence{0}"
-
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:153
-#~ msgid "Full email copied to clipboard"
-#~ msgstr "Full email copied to clipboard"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1524
 msgid "Full historical observations exceeded the page cap for this view. Showing the retrieved subset."
@@ -4334,7 +3862,7 @@ msgstr "Get monthly email updates about this institution. Receive alerts when ne
 msgid "Get Started"
 msgstr "Get Started"
 
-#: src/features/notifications/components/NotificationQuickMenu.tsx:47
+#: src/features/notifications/components/NotificationQuickMenu.tsx:99
 msgid "Get updates about"
 msgstr "Get updates about"
 
@@ -4404,10 +3932,6 @@ msgstr "Goods & Services"
 msgid "Goods and Services"
 msgstr "Goods and Services"
 
-#: src/routes/terms.lazy.tsx:100
-msgid "Governing law"
-msgstr "Governing law"
-
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:367
 msgid "gradient"
 msgstr "gradient"
@@ -4457,7 +3981,7 @@ msgid "Grouping"
 msgstr "Grouping"
 
 #: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:69
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:88
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:96
 msgid "Guides & templates"
 msgstr "Guides & templates"
 
@@ -4590,10 +4114,6 @@ msgstr "How much stays <0/><1>in your wallet?</1>"
 msgid "How much was <0>built</0>?"
 msgstr "How much was <0>built</0>?"
 
-#: src/routes/privacy.lazy.tsx:58
-msgid "How we use your data"
-msgstr "How we use your data"
-
 #: src/features/learning/components/interactive/GuidedPlatformTour.tsx:204
 msgid "I did this"
 msgstr "I did this"
@@ -4608,7 +4128,7 @@ msgid "I don't know"
 msgstr "I don't know"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:583
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:173
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:206
 msgid "I sent the email"
 msgstr "I sent the email"
 
@@ -4619,10 +4139,6 @@ msgstr "I spend monthly"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:339
 msgid "Identify the specific budget line or category. For example: \"Personnel expenses - Chapter 65 Education\""
 msgstr "Identify the specific budget line or category. For example: \"Personnel expenses - Chapter 65 Education\""
-
-#: src/routes/cookie-policy.lazy.tsx:48
-msgid "If you create an account, Clerk sets the following cookies for authentication and session management:"
-msgstr "If you create an account, Clerk sets the following cookies for authentication and session management:"
 
 #. placeholder {0}: formatCurrency(gross)
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:278
@@ -4661,10 +4177,6 @@ msgstr "in \"invisible\" consumption taxes."
 #: src/features/learning/components/interactive/VATCalculator.tsx:180
 msgid "In one year, you will pay"
 msgstr "In one year, you will pay"
-
-#: src/routes/terms.lazy.tsx:82
-msgid "Include visible attribution to the data source and Transparenta.eu when sharing charts/maps."
-msgstr "Include visible attribution to the data source and Transparenta.eu when sharing charts/maps."
 
 #: src/routes/cookies.lazy.tsx:171
 msgid "Includes additional error context. No user identity is attached."
@@ -4717,10 +4229,6 @@ msgstr "Incomes"
 msgid "increase"
 msgstr "increase"
 
-#: src/routes/terms.lazy.tsx:24
-msgid "Independent project; no government affiliation."
-msgstr "Independent project; no government affiliation."
-
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:161
 msgid "Indicate when your city hall's budget draft was published."
 msgstr "Indicate when your city hall's budget draft was published."
@@ -4736,10 +4244,6 @@ msgstr "Inflation adjustment is ignored for % of GDP."
 #: src/components/common/classification-info-link.tsx:378
 msgid "Info"
 msgstr "Info"
-
-#: src/routes/terms.lazy.tsx:23
-msgid "Informational purposes only; no warranties."
-msgstr "Informational purposes only; no warranties."
 
 #: src/features/learning/components/interactive/PromiseTracker.tsx:120
 #: src/features/learning/components/interactive/PromiseTracker.tsx:325
@@ -4815,17 +4319,9 @@ msgstr "INS Trends - {normalizedDatasetLabel} ({entityName})"
 msgid "Insufficient data"
 msgstr "Insufficient data"
 
-#: src/routes/terms.lazy.tsx:74
-msgid "Intellectual property"
-msgstr "Intellectual property"
-
 #: src/features/learning/components/interactive/RectificationHistory.tsx:225
 msgid "Interactive"
 msgstr "Interactive"
-
-#: src/routes/privacy.lazy.tsx:132
-msgid "International data transfers"
-msgstr "International data transfers"
 
 #: src/components/entities/views/ins-stats-view.derived.ts:104
 msgid "Interpret together with birth rate and local age profile; short-term spikes can occur in crisis years."
@@ -4926,7 +4422,7 @@ msgstr "Item Amount"
 msgid "January"
 msgstr "January"
 
-#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:164
+#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:172
 msgid "Join the campaign"
 msgstr "Join the campaign"
 
@@ -4934,7 +4430,7 @@ msgstr "Join the campaign"
 msgid "Join with previous"
 msgstr "Join with previous"
 
-#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:164
+#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:172
 msgid "Joining…"
 msgstr "Joining…"
 
@@ -4953,7 +4449,7 @@ msgid "Justice"
 msgstr "Justice"
 
 #. placeholder {0}: cc.join(', ')
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:162
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:195
 msgid "Keep <0>{0}</0> in CC so we can track the request"
 msgstr "Keep <0>{0}</0> in CC so we can track the request"
 
@@ -5051,10 +4547,6 @@ msgstr "Leave without saving"
 msgid "Legal"
 msgstr "Legal"
 
-#: src/routes/privacy.lazy.tsx:68
-msgid "Legal bases for processing"
-msgstr "Legal bases for processing"
-
 #: src/components/commitments/CategoryChart.tsx:62
 #: src/components/commitments/CategoryChart.tsx:126
 #: src/components/commitments/commitments-trends.tsx:419
@@ -5120,10 +4612,6 @@ msgstr "Libraries, museums and tourist activity."
 #: src/components/theme/mode-toggle.tsx:27
 msgid "Light"
 msgstr "Light"
-
-#: src/routes/terms.lazy.tsx:94
-msgid "Limitation of liability"
-msgstr "Limitation of liability"
 
 #: src/components/charts/components/chart-quick-config/ChartQuickConfig.tsx:48
 msgid "Line Chart"
@@ -5318,7 +4806,7 @@ msgstr "Loading view…"
 #: src/components/classification-explorer/ClassificationDescription.tsx:77
 #: src/routes/alerts/$alertId/index.lazy.tsx:133
 #: src/routes/alerts/new.lazy.tsx:127
-#: src/routes/settings/notifications.tsx:103
+#: src/routes/settings/notifications.tsx:105
 msgid "Loading..."
 msgstr "Loading..."
 
@@ -5365,10 +4853,6 @@ msgstr "Local snapshots are stored only in this browser on this device."
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:123
 msgid "Local snapshots will appear here after autosave or manual save."
 msgstr "Local snapshots will appear here after autosave or manual save."
-
-#: src/routes/privacy.lazy.tsx:23
-msgid "Local-first: charts and preferences are stored in your browser."
-msgstr "Local-first: charts and preferences are stored in your browser."
 
 #: src/components/charts/components/series-config/ins-dimension-values-list.tsx:59
 msgid "Locality options"
@@ -5462,18 +4946,22 @@ msgstr "Make private"
 msgid "Make public"
 msgstr "Make public"
 
-#: src/features/notifications/components/NotificationQuickMenu.tsx:91
+#: src/features/notifications/components/NotificationQuickMenu.tsx:147
 msgid "Manage all notifications"
 msgstr "Manage all notifications"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:109
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:449
+msgid "Manage email notifications for entities you follow in the campaign."
+msgstr "Manage email notifications for entities you follow in the campaign."
+
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:124
+msgid "Manage email updates for this campaign."
+msgstr "Manage email updates for this campaign."
+
+#: src/features/notifications/components/EntityNotificationBell.tsx:158
 #: src/routes/unsubscribe.$token.tsx:43
 msgid "Manage notifications"
 msgstr "Manage notifications"
-
-#: src/routes/cookie-policy.lazy.tsx:26
-msgid "Manage preferences anytime in <0>Cookie Settings</0>."
-msgstr "Manage preferences anytime in <0>Cookie Settings</0>."
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:172
 msgid "Manage your advanced map analytics maps."
@@ -5483,13 +4971,9 @@ msgstr "Manage your advanced map analytics maps."
 msgid "Manage your map settings, visibility, and version history."
 msgstr "Manage your map settings, visibility, and version history."
 
-#: src/routes/settings/notifications.tsx:50
+#: src/routes/settings/notifications.tsx:52
 msgid "Manage your newsletter and alert subscriptions"
 msgstr "Manage your newsletter and alert subscriptions"
-
-#: src/routes/cookie-policy.lazy.tsx:76
-msgid "Managing preferences"
-msgstr "Managing preferences"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:366
 msgid "manual"
@@ -5676,7 +5160,7 @@ msgstr "Medium opportunity"
 msgid "Menu"
 msgstr "Menu"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:132
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:165
 msgid "Message"
 msgstr "Message"
 
@@ -5696,7 +5180,7 @@ msgstr "Metric"
 msgid "Migrating map editor link..."
 msgstr "Migrating map editor link..."
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:374
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:392
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:277
 msgid "min"
 msgstr "min"
@@ -5727,7 +5211,7 @@ msgstr "Minimum Pay"
 msgid "Missing"
 msgstr "Missing"
 
-#: src/features/learning/hooks/use-learning-progress.tsx:1204
+#: src/features/learning/hooks/use-learning-progress.tsx:1201
 msgid "Missing content id"
 msgstr "Missing content id"
 
@@ -5741,7 +5225,7 @@ msgstr "Missing description"
 msgid "Missing Items"
 msgstr "Missing Items"
 
-#: src/features/learning/hooks/use-learning-progress.tsx:1882
+#: src/features/learning/hooks/use-learning-progress.tsx:1879
 msgid "Missing path id"
 msgstr "Missing path id"
 
@@ -5777,7 +5261,7 @@ msgid "Module link"
 msgstr "Module link"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:209
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:242
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:260
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:209
 msgid "Module progress"
 msgstr "Module progress"
@@ -5820,7 +5304,7 @@ msgstr "Monthly Gross Income"
 msgid "Monthly monitoring"
 msgstr "Monthly monitoring"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:71
+#: src/features/notifications/components/EntityNotificationBell.tsx:118
 msgid "Monthly, quarterly, and annual reports"
 msgstr "Monthly, quarterly, and annual reports"
 
@@ -5897,7 +5381,7 @@ msgstr "Multiplier 1.5 is standard; use 3.0 for stricter outlier detection."
 msgid "My Budget Analysis Map…"
 msgstr "My Budget Analysis Map…"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:46
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:54
 msgid "My city hall"
 msgstr "My city hall"
 
@@ -6020,14 +5504,6 @@ msgstr "Newest"
 msgid "Newest first"
 msgstr "Newest first"
 
-#: src/routes/privacy.lazy.tsx:76
-msgid "Newsletter consent and management"
-msgstr "Newsletter consent and management"
-
-#: src/routes/terms.lazy.tsx:51
-msgid "Newsletters and notifications"
-msgstr "Newsletters and notifications"
-
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:202
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:536
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:127
@@ -6106,7 +5582,7 @@ msgstr "No category data available"
 msgid "No certificate record was found for this ID in local storage."
 msgstr "No certificate record was found for this ID in local storage."
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:254
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:272
 msgid "No challenges available yet."
 msgstr "No challenges available yet."
 
@@ -6260,6 +5736,10 @@ msgstr "No enabled series."
 msgid "No entity details found for CUI: <0>{cui}</0>. It's possible this entity does not exist or has no associated data."
 msgstr "No entity details found for CUI: <0>{cui}</0>. It's possible this entity does not exist or has no associated data."
 
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:466
+msgid "No entity subscriptions"
+msgstr "No entity subscriptions"
+
 #: src/routes/charts/index.lazy.tsx:279
 msgid "No favorites yet"
 msgstr "No favorites yet"
@@ -6364,10 +5844,6 @@ msgstr "No rows available."
 msgid "No saved versions yet"
 msgstr "No saved versions yet"
 
-#: src/routes/privacy.lazy.tsx:26
-msgid "No selling of personal data."
-msgstr "No selling of personal data."
-
 #: src/components/charts/components/series-config/CalculationEditor.tsx:165
 msgid "No series found."
 msgstr "No series found."
@@ -6376,11 +5852,11 @@ msgstr "No series found."
 msgid "No SIRUTA code associated."
 msgstr "No SIRUTA code associated."
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:213
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:230
 msgid "No steps available"
 msgstr "No steps available"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:218
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:235
 msgid "No steps available yet. Please check back later."
 msgstr "No steps available yet. Please check back later."
 
@@ -6475,7 +5951,7 @@ msgstr "Not enough values to build distribution."
 msgid "Not equal to"
 msgstr "Not equal to"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:98
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:115
 msgid "Not found"
 msgstr "Not found"
 
@@ -6490,10 +5966,6 @@ msgstr "Not quite!"
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:302
 msgid "Note your observations about the debate…"
 msgstr "Note your observations about the debate…"
-
-#: src/routes/cookie-policy.lazy.tsx:78
-msgid "Note: Deleting authentication cookies will sign you out of your account. Deleting essential localStorage will reset your saved charts and preferences."
-msgstr "Note: Deleting authentication cookies will sign you out of your account. Deleting essential localStorage will reset your saved charts and preferences."
 
 #: src/features/learning/components/interactive/RectificationHistory.tsx:245
 msgid "Note: Romania has been under EU Excessive Deficit Procedure since 2020"
@@ -6517,7 +5989,16 @@ msgstr "Nothing to paste"
 msgid "Notice the gap: <0>Current Expenses</0> (salaries, utilities) almost always reach full execution.<1> Capital Expenses</1> (investments) are the first to be cut or delayed, often falling below 60%. Always check <2>Code 71</2> to see if promised infrastructure is actually being built."
 msgstr "Notice the gap: <0>Current Expenses</0> (salaries, utilities) almost always reach full execution.<1> Capital Expenses</1> (investments) are the first to be cut or delayed, often falling below 60%. Always check <2>Code 71</2> to see if promised infrastructure is actually being built."
 
-#: src/routes/settings/notifications.tsx:38
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:121
+msgid "Notification preferences"
+msgstr "Notification preferences"
+
+#. placeholder {0}: String(entityTotalCount)
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:363
+msgid "Notifications are paused. Your {0} entity subscriptions are preserved."
+msgstr "Notifications are paused. Your {0} entity subscriptions are preserved."
+
+#: src/routes/settings/notifications.tsx:40
 msgid "Notifications Settings"
 msgstr "Notifications Settings"
 
@@ -6582,14 +6063,6 @@ msgstr "One of the lowest"
 msgid "Only observations with values"
 msgstr "Only observations with values"
 
-#: src/routes/cookie-policy.lazy.tsx:57
-msgid "Only set if you consent to analytics:"
-msgstr "Only set if you consent to analytics:"
-
-#: src/routes/cookie-policy.lazy.tsx:63
-msgid "Only set if you consent to enhanced error reporting:"
-msgstr "Only set if you consent to enhanced error reporting:"
-
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:410
 msgid "Only you"
 msgstr "Only you"
@@ -6620,7 +6093,7 @@ msgstr "Open bins preset menu"
 msgid "Open Budget Explorer"
 msgstr "Open Budget Explorer"
 
-#: src/features/challenges/components/layout/ChallengesLayout.tsx:575
+#: src/features/challenges/components/layout/ChallengesLayout.tsx:576
 msgid "Open challenges menu"
 msgstr "Open challenges menu"
 
@@ -6645,10 +6118,6 @@ msgstr "Open Config Panel"
 msgid "Open cookies"
 msgstr "Open cookies"
 
-#: src/routes/terms.lazy.tsx:76
-msgid "Open data follows the source license."
-msgstr "Open data follows the source license."
-
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:572
 msgid "Open email"
 msgstr "Open email"
@@ -6657,7 +6126,7 @@ msgstr "Open email"
 msgid "Open email again"
 msgstr "Open email again"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:151
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:184
 msgid "Open email client"
 msgstr "Open email client"
 
@@ -6756,7 +6225,7 @@ msgstr "opens in new tab"
 msgid "Opens your email client with the completed contestation."
 msgstr "Opens your email client with the completed contestation."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:570
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:580
 msgid "Opens your email client with the completed request. Recommended when you represent a legally established association."
 msgstr "Opens your email client with the completed request. Recommended when you represent a legally established association."
 
@@ -6794,14 +6263,6 @@ msgstr "Optional note about what changed…"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:181
 msgid "Optional unit override…"
 msgstr "Optional unit override…"
-
-#: src/routes/terms.lazy.tsx:26
-msgid "Optional user accounts for enhanced features like newsletters and notifications."
-msgstr "Optional user accounts for enhanced features like newsletters and notifications."
-
-#: src/routes/privacy.lazy.tsx:24
-msgid "Optional user accounts for newsletters and notifications."
-msgstr "Optional user accounts for newsletters and notifications."
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1335
 msgid "Options"
@@ -6891,7 +6352,7 @@ msgid "Partially"
 msgstr "Partially"
 
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:178
-#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:120
+#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:128
 msgid "Participation"
 msgstr "Participation"
 
@@ -7083,9 +6544,9 @@ msgstr "Planned"
 msgid "Platform Mission"
 msgstr "Platform Mission"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:388
-#~ msgid "Please open the prepared email before confirming."
-#~ msgstr "Please open the prepared email before confirming."
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:504
+msgid "Please try again to load your campaign notification preferences."
+msgstr "Please try again to load your campaign notification preferences."
 
 #: src/features/learning/components/interactive/ExecutionRateChart.tsx:251
 msgid "Poor"
@@ -7154,17 +6615,13 @@ msgstr "Pre-filled from the debate request challenge."
 msgid "Prefer median over mean when one or two UATs dominate values."
 msgstr "Prefer median over mean when one or two UATs dominate values."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:611
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:621
 msgid "Prepare email"
 msgstr "Prepare email"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:107
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:140
 msgid "Prepared email"
 msgstr "Prepared email"
-
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:473
-#~ msgid "Preparing email..."
-#~ msgstr "Preparing email..."
 
 #: src/routes/maps/editor/new.lazy.tsx:250
 msgid "Preparing map creation..."
@@ -7192,7 +6649,7 @@ msgstr "Preset label"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:69
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:541
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:104
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:137
 #: src/routes/alerts/$alertId/index.lazy.tsx:237
 #: src/routes/alerts/new.lazy.tsx:203
 msgid "Preview"
@@ -7226,7 +6683,6 @@ msgid "Principal Aggregated"
 msgstr "Principal Aggregated"
 
 #: src/components/footer/AppFooter.tsx:114
-#: src/routes/privacy.lazy.tsx:16
 msgid "Privacy Policy"
 msgstr "Privacy Policy"
 
@@ -7254,7 +6710,7 @@ msgid "Profile information for this entity has not been collected yet."
 msgstr "Profile information for this entity has not been collected yet."
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:203
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:239
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:257
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:205
 msgid "Progress"
 msgstr "Progress"
@@ -7270,8 +6726,12 @@ msgstr "Propose a specific and realistic change. For example: \"Redistribute 500
 msgid "Public"
 msgstr "Public"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:410
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:427
+#: src/features/notifications/components/EntityNotificationBell.tsx:106
+msgid "Public debate correspondence updates"
+msgstr "Public debate correspondence updates"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:420
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:437
 msgid "Public debate request"
 msgstr "Public debate request"
 
@@ -7298,10 +6758,6 @@ msgstr "Public map unavailable"
 #: src/components/entities/views/ContractsView.tsx:24
 msgid "Public procurement data is provided by SICAP.ai, an independent platform that aggregates and analyzes public contracts from Romania's Electronic Public Procurement System (SEAP)."
 msgstr "Public procurement data is provided by SICAP.ai, an independent platform that aggregates and analyzes public contracts from Romania's Electronic Public Procurement System (SEAP)."
-
-#: src/routes/privacy.lazy.tsx:86
-msgid "Public sector information from Ministerul Finanțelor. No government affiliation."
-msgstr "Public sector information from Ministerul Finanțelor. No government affiliation."
 
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:121
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:159
@@ -7417,7 +6873,7 @@ msgid "Recipient"
 msgstr "Recipient"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:264
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:380
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:390
 msgid "Recorded"
 msgstr "Recorded"
 
@@ -7556,15 +7012,15 @@ msgstr "Reporting:"
 msgid "Reports"
 msgstr "Reports"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:70
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:78
 msgid "Request a public debate for the local budget."
 msgstr "Request a public debate for the local budget."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:628
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:638
 msgid "Request submission"
 msgstr "Request submission"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:379
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:389
 msgid "Requested platform delivery"
 msgstr "Requested platform delivery"
 
@@ -7597,7 +7053,7 @@ msgstr "Reset to available period"
 msgid "Reset to default"
 msgstr "Reset to default"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:29
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:37
 msgid "Resources"
 msgstr "Resources"
 
@@ -7657,7 +7113,7 @@ msgstr "Revenues/Expenses"
 msgid "Revert"
 msgstr "Revert"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:192
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:209
 msgid "Review"
 msgstr "Review"
 
@@ -7681,10 +7137,6 @@ msgstr "Romania spending heatmap - Transparenta.eu"
 #: src/components/theme/language-toggle.tsx:46
 msgid "Romanian"
 msgstr "Romanian"
-
-#: src/routes/terms.lazy.tsx:101
-msgid "Romanian law and applicable EU law, including GDPR. Venue: Sibiu, Romania."
-msgstr "Romanian law and applicable EU law, including GDPR. Venue: Sibiu, Romania."
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:744
 #: src/components/theme/currency-toggle.tsx:60
@@ -7940,15 +7392,7 @@ msgstr "Secondary creditor aggregated"
 msgid "Section View"
 msgstr "Section View"
 
-#: src/routes/terms.lazy.tsx:60
-msgid "Security monitoring and logs"
-msgstr "Security monitoring and logs"
-
-#: src/routes/cookie-policy.lazy.tsx:79
-msgid "See also our <0>Privacy Policy</0>."
-msgstr "See also our <0>Privacy Policy</0>."
-
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:49
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:57
 msgid "See the budget analysis for the selected entity."
 msgstr "See the budget analysis for the selected entity."
 
@@ -8070,7 +7514,7 @@ msgstr "Selects UATs by standardized distance from mean in standard deviations. 
 msgid "Seller Keeps"
 msgstr "Seller Keeps"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:67
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:75
 msgid "Send debate request"
 msgstr "Send debate request"
 
@@ -8080,11 +7524,11 @@ msgstr "Send debate request"
 msgid "Send feedback"
 msgstr "Send feedback"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:568
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:578
 msgid "Send it yourself"
 msgstr "Send it yourself"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:160
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:193
 msgid "Send the email from your association's email address"
 msgstr "Send the email from your association's email address"
 
@@ -8096,7 +7540,7 @@ msgstr "Send via email"
 msgid "Sender"
 msgstr "Sender"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:377
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:387
 msgid "Sent by you"
 msgstr "Sent by you"
 
@@ -8164,10 +7608,6 @@ msgstr "Series Type"
 #: src/components/charts/components/series-config/UnitInput.tsx:36
 msgid "Series with different units will be displayed on separate Y-axes"
 msgstr "Series with different units will be displayed on separate Y-axes"
-
-#: src/routes/terms.lazy.tsx:35
-msgid "Service and data sources"
-msgstr "Service and data sources"
 
 #: src/features/advanced-map-analytics/hooks/use-map-editor-storage-fallback-warning.ts:23
 msgid "Session storage is unavailable. Your map changes are kept only in this tab memory."
@@ -8378,30 +7818,36 @@ msgstr "Shows only the funds transferred to other public administration units."
 msgid "Side"
 msgstr "Side"
 
-#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:100
+#: src/features/challenges/components/hub/challenge-hub-access-card.tsx:108
 msgid "Sign in"
 msgstr "Sign in"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:206
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:129
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:562
 #: src/features/learning/components/layout/LoginBanner.tsx:28
-#: src/features/notifications/components/EntityNotificationBell.tsx:88
+#: src/features/notifications/components/EntityNotificationBell.tsx:137
 #: src/routes/alerts/$alertId/index.lazy.tsx:163
 #: src/routes/alerts/new.lazy.tsx:157
 #: src/routes/maps/editor/new.lazy.tsx:265
-#: src/routes/settings/notifications.tsx:129
+#: src/routes/settings/notifications.tsx:131
 msgid "Sign In"
 msgstr "Sign In"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:201
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:124
-#: src/features/notifications/components/EntityNotificationBell.tsx:54
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:548
+#: src/features/notifications/components/EntityNotificationBell.tsx:87
 #: src/routes/alerts/$alertId/index.lazy.tsx:149
 #: src/routes/alerts/new.lazy.tsx:143
 #: src/routes/maps/editor/new.lazy.tsx:260
-#: src/routes/settings/notifications.tsx:115
+#: src/routes/settings/notifications.tsx:117
 msgid "Sign in required"
 msgstr "Sign in required"
+
+#: src/features/notifications/api/notifications.ts:7
+msgid "Sign in required to manage notifications"
+msgstr "Sign in required to manage notifications"
 
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:172
 msgid "Sign in to answer this section and save your progress."
@@ -8412,15 +7858,19 @@ msgstr "Sign in to answer this section and save your progress."
 msgid "Sign in to create and manage alerts for your entities."
 msgstr "Sign in to create and manage alerts for your entities."
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:43
+#: src/features/notifications/components/EntityNotificationBell.tsx:76
 msgid "Sign in to get notifications"
 msgstr "Sign in to get notifications"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:65
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:556
+msgid "Sign in to manage email notifications for entities you follow in the campaign."
+msgstr "Sign in to manage email notifications for entities you follow in the campaign."
+
+#: src/features/notifications/components/EntityNotificationBell.tsx:98
 msgid "Sign in to receive updates about <0>{entityName}</0>:"
 msgstr "Sign in to receive updates about <0>{entityName}</0>:"
 
-#: src/routes/settings/notifications.tsx:123
+#: src/routes/settings/notifications.tsx:125
 msgid "Sign in to receive updates about the entities you care about."
 msgstr "Sign in to receive updates about the entities you care about."
 
@@ -8490,10 +7940,6 @@ msgstr "Some local values are invalid. Closing now will discard unsaved local ch
 msgid "Some saved local data was corrupted and has been reset."
 msgstr "Some saved local data was corrupted and has been reset."
 
-#: src/routes/privacy.lazy.tsx:133
-msgid "Some service providers may process data outside the EU/EEA. All transfers are protected by appropriate safeguards including:"
-msgstr "Some service providers may process data outside the EU/EEA. All transfers are protected by appropriate safeguards including:"
-
 #. js-lingui-explicit-id
 #: src/lib/errors-utils.ts:26
 msgid "error.genericError"
@@ -8557,12 +8003,8 @@ msgstr "Splits UATs relative to the median value. More robust than mean-based fi
 msgid "Standard"
 msgstr "Standard"
 
-#: src/routes/privacy.lazy.tsx:135
-msgid "Standard Contractual Clauses (SCCs) approved by the European Commission"
-msgstr "Standard Contractual Clauses (SCCs) approved by the European Commission"
-
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:144
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:202
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:219
 msgid "Start"
 msgstr "Start"
 
@@ -8657,7 +8099,7 @@ msgstr "Step not found"
 msgid "Step sections"
 msgstr "Step sections"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:174
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:191
 msgid "Steps"
 msgstr "Steps"
 
@@ -8678,13 +8120,13 @@ msgid "Subchapter"
 msgstr "Subchapter"
 
 #: src/components/charts/components/views/AnnotationConfigView.tsx:142
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:94
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:124
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:127
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:157
 msgid "Subject"
 msgstr "Subject"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:326
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:349
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:335
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:359
 msgid "Submission failed. Please try again."
 msgstr "Submission failed. Please try again."
 
@@ -8705,10 +8147,6 @@ msgstr "Submit link"
 msgid "Submit report"
 msgstr "Submit report"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:585
-#~ msgid "Submit request"
-#~ msgstr "Submit request"
-
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:144
 msgid "Submitted"
 msgstr "Submitted"
@@ -8717,15 +8155,15 @@ msgstr "Submitted"
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:150
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:139
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:284
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:400
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:410
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:169
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:99
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:34
 msgid "Submitted on"
 msgstr "Submitted on"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:173
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:628
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:206
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:638
 msgid "Submitting..."
 msgstr "Submitting..."
 
@@ -8744,10 +8182,6 @@ msgstr "Successfully unsubscribed"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:585
 msgid "Sum"
 msgstr "Sum"
-
-#: src/routes/privacy.lazy.tsx:152
-msgid "Supervisory authority"
-msgstr "Supervisory authority"
 
 #: src/features/challenges/components/hub/UatSwitchBadge.tsx:47
 msgid "Switch city hall"
@@ -8777,10 +8211,6 @@ msgstr "Switch to section view"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:631
 msgid "Switching to gradient mode will overwrite current bin colors using the selected gradient anchors."
 msgstr "Switching to gradient mode will overwrite current bin colors using the selected gradient anchors."
-
-#: src/features/learning/hooks/use-learning-progress.tsx:984
-msgid "Syncing your progress..."
-msgstr "Syncing your progress..."
 
 #: src/routes/alerts/$alertId/index.lazy.tsx:126
 msgid "Syncing…"
@@ -8826,10 +8256,6 @@ msgstr "Tap an answer to continue."
 msgid "Taxes"
 msgstr "Taxes"
 
-#: src/routes/cookie-policy.lazy.tsx:30
-msgid "Technologies we use"
-msgstr "Technologies we use"
-
 #: src/components/ui/shortcuts.tsx:46
 msgid "Temporarily enable scroll wheel zoom"
 msgstr "Temporarily enable scroll wheel zoom"
@@ -8837,10 +8263,6 @@ msgstr "Temporarily enable scroll wheel zoom"
 #: src/components/footer/AppFooter.tsx:117
 msgid "Terms of Service"
 msgstr "Terms of Service"
-
-#: src/routes/terms.lazy.tsx:16
-msgid "Terms of Use"
-msgstr "Terms of Use"
 
 #: src/components/charts/components/series-config/InsSeriesEditor.tsx:851
 msgid "Territory"
@@ -8867,7 +8289,7 @@ msgstr "The actual value of goods & services you receive."
 msgid "The answer is:"
 msgstr "The answer is:"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:600
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:610
 msgid "The association email address is not valid."
 msgstr "The association email address is not valid."
 
@@ -8879,7 +8301,7 @@ msgstr "The budget line, category, or allocation you are contesting…"
 msgid "The classification code \"{selectedCode}\" could not be found."
 msgstr "The classification code \"{selectedCode}\" could not be found."
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:100
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:117
 msgid "The content you're looking for doesn't exist or has been moved."
 msgstr "The content you're looking for doesn't exist or has been moved."
 
@@ -8891,7 +8313,7 @@ msgstr "The data is presented for informational purposes, based on government da
 msgid "The Deficit"
 msgstr "The Deficit"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:469
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:479
 msgid "The email address is not valid."
 msgstr "The email address is not valid."
 
@@ -8940,18 +8362,6 @@ msgstr "The Reality"
 msgid "The reform simplified the tax code but increased the burden on consumption. The \"Essentials\" category now consolidates food, books, and tourism under a single 11% rate."
 msgstr "The reform simplified the tax code but increased the burden on consumption. The \"Essentials\" category now consolidates food, books, and tourism under a single 11% rate."
 
-#: src/routes/privacy.lazy.tsx:144
-msgid "The Service is not directed to children under 16. We do not knowingly collect personal data from children under 16. If you believe we have collected data from a child under 16, please contact us immediately."
-msgstr "The Service is not directed to children under 16. We do not knowingly collect personal data from children under 16. If you believe we have collected data from a child under 16, please contact us immediately."
-
-#: src/routes/terms.lazy.tsx:36
-msgid "The Service provides tools to explore, analyze, and visualize public budget execution data from Romania."
-msgstr "The Service provides tools to explore, analyze, and visualize public budget execution data from Romania."
-
-#: src/routes/terms.lazy.tsx:78
-msgid "The Service's software, design, and original content are protected by copyright and other intellectual property laws."
-msgstr "The Service's software, design, and original content are protected by copyright and other intellectual property laws."
-
 #: src/routes/share.$code.tsx:85
 msgid "The share link you are trying to access is invalid or no longer available."
 msgstr "The share link you are trying to access is invalid or no longer available."
@@ -8981,21 +8391,13 @@ msgstr "There is 1 warning that may affect how your map is displayed."
 msgid "There was a problem fetching the details for CUI: <0>{cui}</0>."
 msgstr "There was a problem fetching the details for CUI: <0>{cui}</0>."
 
-#: src/routes/settings/notifications.tsx:147
+#: src/routes/settings/notifications.tsx:149
 msgid "There was a problem loading your notifications. Please try again."
 msgstr "There was a problem loading your notifications. Please try again."
 
 #: src/routes/unsubscribe.$token.tsx:70
 msgid "There was an error processing your request. The link may be expired or invalid."
 msgstr "There was an error processing your request. The link may be expired or invalid."
-
-#: src/routes/cookie-policy.lazy.tsx:42
-msgid "These are necessary for the Service to function and cannot be disabled:"
-msgstr "These are necessary for the Service to function and cannot be disabled:"
-
-#: src/routes/cookie-policy.lazy.tsx:54
-msgid "These cookies are essential for account functionality. If you delete them, you will be signed out."
-msgstr "These cookies are essential for account functionality. If you delete them, you will be signed out."
 
 #: src/components/charts/components/ChartDataError.tsx:175
 msgid "These issues were auto-resolved (invalid points removed or values set to 0) so the chart could render."
@@ -9142,26 +8544,22 @@ msgstr "Title A–Z"
 msgid "Title Z–A"
 msgstr "Title Z–A"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:92
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:114
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:125
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:147
 msgid "To"
 msgstr "To"
-
-#: src/routes/privacy.lazy.tsx:122
-msgid "To exercise any of these rights, contact us at contact@transparenta.eu We will respond within 30 days."
-msgstr "To exercise any of these rights, contact us at contact@transparenta.eu We will respond within 30 days."
 
 #: src/components/commitments/DetailTable.tsx:609
 msgid "To Pay"
 msgstr "To Pay"
 
-#: src/routes/terms.lazy.tsx:95
-msgid "To the maximum extent permitted by applicable law, Claudiu Constantin Bogdan and any owners, contributors, and affiliates shall not be liable for any direct, indirect, incidental, special, consequential, or exemplary damages, including but not limited to, damages for loss of profits, revenue, data, goodwill, or other intangible losses, resulting from: (i) your access to, use of, or inability to use the Service; (ii) any reliance on the data, content, or visualizations presented by the Service, regardless of any errors, omissions, or inaccuracies therein; (iii) any financial, professional, personal, or other loss or damage incurred as a result of using the information from the Service; or (iv) any unauthorized access to or use of our servers and any personal information stored therein. This limitation applies whether the alleged liability is based on contract, tort, negligence, strict liability, or any other basis, even if we have been advised of the possibility of such damage. Your sole and exclusive remedy for any dispute with us is to stop using the Service."
-msgstr "To the maximum extent permitted by applicable law, Claudiu Constantin Bogdan and any owners, contributors, and affiliates shall not be liable for any direct, indirect, incidental, special, consequential, or exemplary damages, including but not limited to, damages for loss of profits, revenue, data, goodwill, or other intangible losses, resulting from: (i) your access to, use of, or inability to use the Service; (ii) any reliance on the data, content, or visualizations presented by the Service, regardless of any errors, omissions, or inaccuracies therein; (iii) any financial, professional, personal, or other loss or damage incurred as a result of using the information from the Service; or (iv) any unauthorized access to or use of our servers and any personal information stored therein. This limitation applies whether the alleged liability is based on contract, tort, negligence, strict liability, or any other basis, even if we have been advised of the possibility of such damage. Your sole and exclusive remedy for any dispute with us is to stop using the Service."
-
 #: src/routes/cookies.lazy.tsx:152
 msgid "Toggle analytics cookies"
 msgstr "Toggle analytics cookies"
+
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:357
+msgid "Toggle campaign notifications"
+msgstr "Toggle campaign notifications"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:119
 msgid "Toggle county boundaries"
@@ -9178,6 +8576,10 @@ msgstr "Toggle map interaction"
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:425
 msgid "Toggle map visibility"
 msgstr "Toggle map visibility"
+
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:412
+msgid "Toggle notifications for {name}"
+msgstr "Toggle notifications for {name}"
 
 #: src/components/maps/ScrollWheelZoomControl.tsx:32
 msgid "Toggle scroll zoom"
@@ -9337,9 +8739,10 @@ msgstr "Try a different search term or sorting."
 msgid "Try again"
 msgstr "Try again"
 
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:511
 #: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1917
 #: src/features/learning/components/assessment/Quiz.tsx:188
-#: src/routes/settings/notifications.tsx:160
+#: src/routes/settings/notifications.tsx:162
 msgid "Try Again"
 msgstr "Try Again"
 
@@ -9413,12 +8816,16 @@ msgstr "UAT: Yes"
 msgid "UATs"
 msgstr "UATs"
 
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:501
+msgid "Unable to load notifications"
+msgstr "Unable to load notifications"
+
 #: src/components/entities/views/ins-stats-view.formatters.ts:61
 #: src/components/entities/views/ins-stats-view.presentation.tsx:499
 msgid "Unavailable"
 msgstr "Unavailable"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:502
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:512
 msgid "Under Law 52/2003, requests from legally established associations can trigger the obligation to organize a public debate."
 msgstr "Under Law 52/2003, requests from legally established associations can trigger the obligation to organize a public debate."
 
@@ -9557,7 +8964,7 @@ msgstr "Untitled map"
 msgid "Untitled Series"
 msgstr "Untitled Series"
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:198
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:195
 msgid "Up Next"
 msgstr "Up Next"
 
@@ -9598,10 +9005,6 @@ msgstr "Usage analytics"
 #: src/components/theme/currency-toggle.tsx:76
 msgid "USD"
 msgstr "USD"
-
-#: src/routes/cookie-policy.lazy.tsx:77
-msgid "Use <0>Cookie Settings</0> to manage analytics and error reporting consent, or use your browser controls to clear site data."
-msgstr "Use <0>Cookie Settings</0> to manage analytics and error reporting consent, or use your browser controls to clear site data."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:134
 msgid "Use abs_gte for two-sided anomalies, gte/lte for one-sided anomalies."
@@ -9655,21 +9058,9 @@ msgstr "Use with OR to add extreme percentile groups without losing current matc
 msgid "Useful as a first segmentation before anomaly filters."
 msgstr "Useful as a first segmentation before anomaly filters."
 
-#: src/routes/terms.lazy.tsx:43
-msgid "User accounts and authentication"
-msgstr "User accounts and authentication"
-
-#: src/routes/terms.lazy.tsx:77
-msgid "User annotations created locally remain yours."
-msgstr "User annotations created locally remain yours."
-
 #: src/routes/$lang/learning/certificates.$id.lazy.tsx:56
 msgid "User ID"
 msgstr "User ID"
-
-#: src/routes/terms.lazy.tsx:66
-msgid "User responsibilities and assumption of risk"
-msgstr "User responsibilities and assumption of risk"
 
 #: src/components/entities/views/ins-stats-view.derived.ts:82
 msgid "Utilities"
@@ -9767,10 +9158,6 @@ msgstr "View {warningCount} warnings"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:115
 msgid "View 1 warning"
 msgstr "View 1 warning"
-
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:100
-#~ msgid "View all"
-#~ msgstr "View all"
 
 #: src/routes/alerts/$alertId/index.lazy.tsx:196
 msgid "View all alerts"
@@ -9871,10 +9258,6 @@ msgstr "Water, gas, and network service proxies."
 msgid "Way off!"
 msgstr "Way off!"
 
-#: src/routes/privacy.lazy.tsx:38
-msgid "We collect different types of information depending on how you use our Service:"
-msgstr "We collect different types of information depending on how you use our Service:"
-
 #: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1907
 msgid "We could not load the analysis."
 msgstr "We could not load the analysis."
@@ -9883,10 +9266,6 @@ msgstr "We could not load the analysis."
 #: src/routes/entities.$cui.lazy.tsx:79
 msgid "We could not load this section right now. Please refresh and try again."
 msgstr "We could not load this section right now. Please refresh and try again."
-
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:360
-#~ msgid "We could not prepare the email. Please try again."
-#~ msgstr "We could not prepare the email. Please try again."
 
 #. js-lingui-explicit-id
 #: src/lib/errors-utils.ts:13
@@ -9898,26 +9277,6 @@ msgstr "We couldn't display this page due to a data validation issue."
 msgid "error.invalidUrlIssue"
 msgstr "We couldn't display this page due to a data validation issue. The URL parameters are invalid. Open this page again with a valid link or use the homepage button."
 
-#: src/routes/privacy.lazy.tsx:141
-msgid "We do not use automated decision-making or profiling that produces legal effects or similarly significantly affects you."
-msgstr "We do not use automated decision-making or profiling that produces legal effects or similarly significantly affects you."
-
-#: src/routes/terms.lazy.tsx:98
-msgid "We may change or discontinue the Service at any time. We may update these Terms from time to time and will post the updated version with a new effective date."
-msgstr "We may change or discontinue the Service at any time. We may update these Terms from time to time and will post the updated version with a new effective date."
-
-#: src/routes/privacy.lazy.tsx:147
-msgid "We may update this Privacy Policy from time to time to reflect changes in our practices or legal requirements. We will post the updated policy with a new effective date. For material changes, we may provide additional notice such as an email notification to account holders."
-msgstr "We may update this Privacy Policy from time to time to reflect changes in our practices or legal requirements. We will post the updated policy with a new effective date. For material changes, we may provide additional notice such as an email notification to account holders."
-
-#: src/routes/privacy.lazy.tsx:89
-msgid "We share data with the following trusted service providers who process data on our behalf:"
-msgstr "We share data with the following trusted service providers who process data on our behalf:"
-
-#: src/routes/cookie-policy.lazy.tsx:31
-msgid "We use cookies and localStorage to operate the app and, with consent, to measure usage and improve reliability."
-msgstr "We use cookies and localStorage to operate the app and, with consent, to measure usage and improve reliability."
-
 #: src/components/privacy/CookieConsentBanner.tsx:90
 msgid "We use cookies and similar technologies to enhance your experience, analyze our traffic, and report errors. With your permission, we use PostHog for analytics and Sentry for error reporting to improve our service. You can change your preferences at any time. For more information, please see our <0>Privacy Policy</0>."
 msgstr "We use cookies and similar technologies to enhance your experience, analyze our traffic, and report errors. With your permission, we use PostHog for analytics and Sentry for error reporting to improve our service. You can change your preferences at any time. For more information, please see our <0>Privacy Policy</0>."
@@ -9926,7 +9285,7 @@ msgstr "We use cookies and similar technologies to enhance your experience, anal
 msgid "We value your privacy"
 msgstr "We value your privacy"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:620
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:630
 msgid "We will record the request and send it through the platform."
 msgstr "We will record the request and send it through the platform."
 
@@ -9980,10 +9339,6 @@ msgstr "What is the impact?"
 msgid "What percentage was actually used?"
 msgstr "What percentage was actually used?"
 
-#: src/routes/privacy.lazy.tsx:37
-msgid "What personal data we collect"
-msgstr "What personal data we collect"
-
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:190
 msgid "What stage is it in?"
 msgstr "What stage is it in?"
@@ -9999,6 +9354,10 @@ msgstr "What you submitted"
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:225
 msgid "What's your <0>gross</0> salary?"
 msgstr "What's your <0>gross</0> salary?"
+
+#: src/features/notifications/components/EntityNotificationBell.tsx:109
+msgid "When a request is sent, fails, or receives a reply"
+msgstr "When a request is sent, fails, or receives a reply"
 
 #: src/features/learning/components/interactive/RedFlagCards.tsx:165
 msgid "When Rectifications Are Normal"
@@ -10019,10 +9378,6 @@ msgstr "Where did you find the information?"
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:140
 msgid "Who fuels the <0>budget</0>?"
 msgstr "Who fuels the <0>budget</0>?"
-
-#: src/routes/privacy.lazy.tsx:32
-msgid "Who we are"
-msgstr "Who we are"
 
 #: src/features/learning/components/interactive/VATCalculator.tsx:175
 msgid "Why it matters"
@@ -10126,7 +9481,7 @@ msgstr "You are signed in. Authentication cookies (Clerk) are essential and requ
 msgid "You are viewing a shared map. Only the owner can edit the name."
 msgstr "You are viewing a shared map. Only the owner can edit the name."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:369
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:379
 msgid "You asked the platform to send the public debate request on your behalf."
 msgstr "You asked the platform to send the public debate request on your behalf."
 
@@ -10180,15 +9535,19 @@ msgstr "You need to be signed in to create alerts"
 msgid "You need to be signed in to edit alerts"
 msgstr "You need to be signed in to edit alerts"
 
-#: src/routes/settings/notifications.tsx:118
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:551
+msgid "You need to be signed in to manage campaign notifications"
+msgstr "You need to be signed in to manage campaign notifications"
+
+#: src/routes/settings/notifications.tsx:120
 msgid "You need to be signed in to manage notifications"
 msgstr "You need to be signed in to manage notifications"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:57
+#: src/features/notifications/components/EntityNotificationBell.tsx:90
 msgid "You need to be signed in to subscribe to notifications"
 msgstr "You need to be signed in to subscribe to notifications"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:367
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:377
 msgid "You opened the prepared email and confirmed that you sent the public debate request."
 msgstr "You opened the prepared email and confirmed that you sent the public debate request."
 
@@ -10281,13 +9640,9 @@ msgstr "YOUR PREDICTION"
 msgid "Your progress has been saved. You can continue to the next step."
 msgstr "Your progress has been saved. You can continue to the next step."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:370
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:380
 msgid "Your public debate request was recorded."
 msgstr "Your public debate request was recorded."
-
-#: src/routes/privacy.lazy.tsx:110
-msgid "Your rights under GDPR"
-msgstr "Your rights under GDPR"
 
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:133
 msgid "Your submission has been reviewed and accepted."
@@ -10296,10 +9651,6 @@ msgstr "Your submission has been reviewed and accepted."
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:129
 msgid "Your submission is saved and waiting for review."
 msgstr "Your submission is saved and waiting for review."
-
-#: src/routes/terms.lazy.tsx:33
-msgid "Your use of the Service is also governed by our <0>Privacy Policy</0> and <1>Cookie Policy</1>, which describe how we process personal data, including security logs, authentication data, and your communication preferences."
-msgstr "Your use of the Service is also governed by our <0>Privacy Policy</0> and <1>Cookie Policy</1>, which describe how we process personal data, including security logs, authentication data, and your communication preferences."
 
 #: src/components/entities/EntityFinancialSummary.tsx:114
 msgid "YoY"

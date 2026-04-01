@@ -12,6 +12,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TestErrorRouteImport } from './routes/test-error'
+import { Route as ProvocareRouteImport } from './routes/provocare'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as EntityAnalyticsRouteImport } from './routes/entity-analytics'
@@ -26,6 +27,8 @@ import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$toke
 import { Route as ShareCodeRouteImport } from './routes/share.$code'
 import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
 import { Route as SettingsNotificationsRouteImport } from './routes/settings/notifications'
+import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provocare_.termeni-si-conditii'
+import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
 import { Route as ChartsNewRouteImport } from './routes/charts/new'
 import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
@@ -77,6 +80,11 @@ const TestErrorRoute = TestErrorRouteImport.update({
   path: '/test-error',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProvocareRoute = ProvocareRouteImport.update({
+  id: '/provocare',
+  path: '/provocare',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/provocare.lazy').then((d) => d.Route))
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -108,9 +116,7 @@ const BugeteLocale2026Route = BugeteLocale2026RouteImport.update({
   id: '/bugete-locale-2026',
   path: '/bugete-locale-2026',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() =>
-  import('./routes/bugete-locale-2026.lazy').then((d) => d.Route),
-)
+} as any)
 const BugetNational2026Route = BugetNational2026RouteImport.update({
   id: '/buget-national-2026',
   path: '/buget-national-2026',
@@ -170,6 +176,21 @@ const SettingsNotificationsRoute = SettingsNotificationsRouteImport.update({
   path: '/settings/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProvocareTermeniSiConditiiRoute =
+  ProvocareTermeniSiConditiiRouteImport.update({
+    id: '/provocare_/termeni-si-conditii',
+    path: '/provocare/termeni-si-conditii',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/provocare_.termeni-si-conditii.lazy').then((d) => d.Route),
+  )
+const ProvocareNotificariRoute = ProvocareNotificariRouteImport.update({
+  id: '/provocare_/notificari',
+  path: '/provocare/notificari',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/provocare_.notificari.lazy').then((d) => d.Route),
+)
 const EntitiesCuiRoute = EntitiesCuiRouteImport.update({
   id: '/entities/$cui',
   path: '/entities/$cui',
@@ -190,11 +211,7 @@ const BugeteLocale2026TermeniSiConditiiRoute =
     id: '/termeni-si-conditii',
     path: '/termeni-si-conditii',
     getParentRoute: () => BugeteLocale2026Route,
-  } as any).lazy(() =>
-    import('./routes/bugete-locale-2026.termeni-si-conditii.lazy').then(
-      (d) => d.Route,
-    ),
-  )
+  } as any)
 const AlertsNewRoute = AlertsNewRouteImport.update({
   id: '/alerts/new',
   path: '/alerts/new',
@@ -432,6 +449,7 @@ export interface FileRoutesByFullPath {
   '/entity-analytics': typeof EntityAnalyticsRoute
   '/map': typeof MapRoute
   '/privacy': typeof PrivacyRoute
+  '/provocare': typeof ProvocareRoute
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
   '/$lang/learning': typeof LangLearningRouteRouteWithChildren
@@ -443,6 +461,8 @@ export interface FileRoutesByFullPath {
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/provocare/notificari': typeof ProvocareNotificariRoute
+  '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
@@ -486,6 +506,7 @@ export interface FileRoutesByTo {
   '/entity-analytics': typeof EntityAnalyticsRoute
   '/map': typeof MapRoute
   '/privacy': typeof PrivacyRoute
+  '/provocare': typeof ProvocareRoute
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
   '/alerts/new': typeof AlertsNewRoute
@@ -493,6 +514,8 @@ export interface FileRoutesByTo {
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/provocare/notificari': typeof ProvocareNotificariRoute
+  '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
@@ -536,6 +559,7 @@ export interface FileRoutesById {
   '/entity-analytics': typeof EntityAnalyticsRoute
   '/map': typeof MapRoute
   '/privacy': typeof PrivacyRoute
+  '/provocare': typeof ProvocareRoute
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
   '/$lang/learning': typeof LangLearningRouteRouteWithChildren
@@ -547,6 +571,8 @@ export interface FileRoutesById {
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/provocare_/notificari': typeof ProvocareNotificariRoute
+  '/provocare_/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
@@ -592,6 +618,7 @@ export interface FileRouteTypes {
     | '/entity-analytics'
     | '/map'
     | '/privacy'
+    | '/provocare'
     | '/test-error'
     | '/terms'
     | '/$lang/learning'
@@ -603,6 +630,8 @@ export interface FileRouteTypes {
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
+    | '/provocare/notificari'
+    | '/provocare/termeni-si-conditii'
     | '/settings/notifications'
     | '/settings/profile'
     | '/share/$code'
@@ -646,6 +675,7 @@ export interface FileRouteTypes {
     | '/entity-analytics'
     | '/map'
     | '/privacy'
+    | '/provocare'
     | '/test-error'
     | '/terms'
     | '/alerts/new'
@@ -653,6 +683,8 @@ export interface FileRouteTypes {
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
+    | '/provocare/notificari'
+    | '/provocare/termeni-si-conditii'
     | '/settings/notifications'
     | '/settings/profile'
     | '/share/$code'
@@ -695,6 +727,7 @@ export interface FileRouteTypes {
     | '/entity-analytics'
     | '/map'
     | '/privacy'
+    | '/provocare'
     | '/test-error'
     | '/terms'
     | '/$lang/learning'
@@ -706,6 +739,8 @@ export interface FileRouteTypes {
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
+    | '/provocare_/notificari'
+    | '/provocare_/termeni-si-conditii'
     | '/settings/notifications'
     | '/settings/profile'
     | '/share/$code'
@@ -750,6 +785,7 @@ export interface RootRouteChildren {
   EntityAnalyticsRoute: typeof EntityAnalyticsRoute
   MapRoute: typeof MapRoute
   PrivacyRoute: typeof PrivacyRoute
+  ProvocareRoute: typeof ProvocareRoute
   TestErrorRoute: typeof TestErrorRoute
   TermsLazyRoute: typeof TermsLazyRoute
   LangLearningRouteRoute: typeof LangLearningRouteRouteWithChildren
@@ -760,6 +796,8 @@ export interface RootRouteChildren {
   CertificatesIdRoute: typeof CertificatesIdRoute
   ChartsNewRoute: typeof ChartsNewRoute
   EntitiesCuiRoute: typeof EntitiesCuiRouteWithChildren
+  ProvocareNotificariRoute: typeof ProvocareNotificariRoute
+  ProvocareTermeniSiConditiiRoute: typeof ProvocareTermeniSiConditiiRoute
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
   SettingsProfileRoute: typeof SettingsProfileRoute
   ShareCodeRoute: typeof ShareCodeRoute
@@ -792,6 +830,13 @@ declare module '@tanstack/react-router' {
       path: '/test-error'
       fullPath: '/test-error'
       preLoaderRoute: typeof TestErrorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/provocare': {
+      id: '/provocare'
+      path: '/provocare'
+      fullPath: '/provocare'
+      preLoaderRoute: typeof ProvocareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -904,6 +949,20 @@ declare module '@tanstack/react-router' {
       path: '/settings/notifications'
       fullPath: '/settings/notifications'
       preLoaderRoute: typeof SettingsNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/provocare_/termeni-si-conditii': {
+      id: '/provocare_/termeni-si-conditii'
+      path: '/provocare/termeni-si-conditii'
+      fullPath: '/provocare/termeni-si-conditii'
+      preLoaderRoute: typeof ProvocareTermeniSiConditiiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/provocare_/notificari': {
+      id: '/provocare_/notificari'
+      path: '/provocare/notificari'
+      fullPath: '/provocare/notificari'
+      preLoaderRoute: typeof ProvocareNotificariRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/entities/$cui': {
@@ -1263,6 +1322,7 @@ const rootRouteChildren: RootRouteChildren = {
   EntityAnalyticsRoute: EntityAnalyticsRoute,
   MapRoute: MapRoute,
   PrivacyRoute: PrivacyRoute,
+  ProvocareRoute: ProvocareRoute,
   TestErrorRoute: TestErrorRoute,
   TermsLazyRoute: TermsLazyRoute,
   LangLearningRouteRoute: LangLearningRouteRouteWithChildren,
@@ -1273,6 +1333,8 @@ const rootRouteChildren: RootRouteChildren = {
   CertificatesIdRoute: CertificatesIdRoute,
   ChartsNewRoute: ChartsNewRoute,
   EntitiesCuiRoute: EntitiesCuiRouteWithChildren,
+  ProvocareNotificariRoute: ProvocareNotificariRoute,
+  ProvocareTermeniSiConditiiRoute: ProvocareTermeniSiConditiiRoute,
   SettingsNotificationsRoute: SettingsNotificationsRoute,
   SettingsProfileRoute: SettingsProfileRoute,
   ShareCodeRoute: ShareCodeRoute,
@@ -1293,13 +1355,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

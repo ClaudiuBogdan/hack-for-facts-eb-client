@@ -1,26 +1,14 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import {
-  CampaignRouteSearchSchema,
-  resolveCampaignLocale,
-} from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
-import { buildCampaignRouteHead } from '@/features/campaigns/buget/seo/campaign-seo'
-import type { CampaignRouteSearch } from '@/features/campaigns/buget/types'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { CAMPAIGN_LANDING_PATH } from '@/features/campaigns/buget/constants'
+import { CampaignRouteSearchSchema } from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
 
 export const Route = createFileRoute('/bugete-locale-2026')({
-  ssr: true,
   validateSearch: CampaignRouteSearchSchema,
-  headers: () =>
-    createPublicPageCacheHeaders({
-      browserMaxAgeSeconds: 0,
-      sharedMaxAgeSeconds: 600,
-      staleWhileRevalidateSeconds: 3600,
-    }),
-  head: ({ match }) => {
-    const locale = resolveCampaignLocale(match.search as CampaignRouteSearch)
-    return buildCampaignRouteHead({
-      pageKind: 'landing',
-      locale,
+  beforeLoad: ({ search }) => {
+    throw redirect({
+      to: CAMPAIGN_LANDING_PATH,
+      search,
+      replace: true,
     })
   },
 })

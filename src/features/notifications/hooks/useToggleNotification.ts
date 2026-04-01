@@ -3,20 +3,27 @@ import { createNotification, getEntityNotifications, getUserNotifications, unsub
 import { toast } from 'sonner';
 import type { NotificationType, Notification } from '../types';
 
-export function useToggleNotification() {
+type ToggleNotificationParams = {
+  entityCui: string | null;
+  notificationType: NotificationType;
+  isActive: boolean;
+  notificationId?: string;
+}
+
+export function useToggleNotification(options?: { silent?: boolean }) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (params: {
-      entityCui: string | null;
-      notificationType: NotificationType;
-      isActive: boolean;
-    }) => {
-      const { entityCui, notificationType, isActive } = params;
+    mutationFn: async (params: ToggleNotificationParams) => {
+      const { entityCui, notificationType, isActive, notificationId } = params;
 
       if (isActive) {
         // Activate (create/subscribe)
         return createNotification({ entityCui, notificationType });
+      }
+
+      if (notificationId) {
+        return unsubscribeNotification(notificationId);
       }
 
       // Deactivate (unsubscribe)
@@ -79,11 +86,12 @@ export function useToggleNotification() {
     },
 
     onSuccess: (_data, variables) => {
-      // Invalidate to refetch fresh data
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
 
-      const action = variables.isActive ? 'enabled' : 'disabled';
-      toast.success(`Notification ${action}`);
+      if (!options?.silent) {
+        const action = variables.isActive ? 'enabled' : 'disabled';
+        toast.success(`Notification ${action}`);
+      }
     },
   });
 }

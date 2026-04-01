@@ -1,7 +1,8 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useLocation } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { ArrowRight, Building2, Send, Library } from 'lucide-react'
-import { buildCampaignResourcesPath } from '@/features/campaigns/buget/constants'
+import { ArrowRight, Bell, BellOff, Building2, Send, Library } from 'lucide-react'
+import { buildCampaignResourcesPath, CAMPAIGN_NOTIFICATIONS_PATH } from '@/features/campaigns/buget/constants'
+import { useEntityNotifications } from '@/features/notifications/hooks/useEntityNotifications'
 import {
   buildCampaignPrimariePath,
   buildCampaignProvocariStepPath,
@@ -16,11 +17,18 @@ type QuickResourcesPreviewProps = {
 export function QuickResourcesPreview({
   locale,
   entityCui,
-}: QuickResourcesPreviewProps) {
+  }: QuickResourcesPreviewProps) {
+  const location = useLocation()
+  const { data: entityNotifications } = useEntityNotifications(entityCui ?? '')
+  const hasActiveNotification = (entityNotifications ?? []).some(
+    (n) => n.notificationType === 'campaign_public_debate_entity_updates' && n.isActive
+  )
+
   if (!entityCui) return null
 
   const linkSearch: Record<string, string> = {}
   if (locale === 'en') linkSearch.lang = 'en'
+  const currentUrl = `${location.pathname}${location.searchStr ?? ''}`
 
   return (
     <div className="rounded-2xl bg-muted/20 p-5 border border-border/30">
@@ -89,6 +97,31 @@ export function QuickResourcesPreview({
             </span>
             <span className="block text-xs text-muted-foreground">
               {t`Budget guides, request templates, and more.`}
+            </span>
+          </div>
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 transition-colors flex-shrink-0" aria-hidden="true" />
+        </Link>
+
+        {/* Notification preferences */}
+        <Link
+          to={CAMPAIGN_NOTIFICATIONS_PATH as '/'}
+          search={{ ...linkSearch, from: currentUrl }}
+          preload="intent"
+          className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+        >
+          <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
+            {hasActiveNotification ? (
+              <Bell className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            ) : (
+              <BellOff className="h-4 w-4 text-red-500" aria-hidden="true" />
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-medium text-foreground/80">
+              {t`Notification preferences`}
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              {t`Manage email updates for this campaign.`}
             </span>
           </div>
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 transition-colors flex-shrink-0" aria-hidden="true" />

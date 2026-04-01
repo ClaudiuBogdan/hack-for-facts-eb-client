@@ -9,19 +9,52 @@ import { NotificationQuickMenu } from './NotificationQuickMenu';
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import { useNotificationModal } from '../hooks/useNotificationModal';
+import { useLocation } from '@tanstack/react-router';
+import type { NotificationType } from '../types';
+import { CAMPAIGN_NOTIFICATIONS_PATH } from '@/features/campaigns/buget/constants';
+
+const MANUAL_ENTITY_BELL_TYPES: NotificationType[] = [
+  'newsletter_entity_monthly',
+  'newsletter_entity_quarterly',
+  'newsletter_entity_yearly',
+];
 
 interface Props {
   cui: string;
   entityName: string;
   triggerClassName?: string;
+  notificationTypes?: readonly NotificationType[];
+  managePath?: string;
 }
 
-export function EntityNotificationBell({ cui, entityName, triggerClassName }: Props) {
+export function EntityNotificationBell({
+  cui,
+  entityName,
+  triggerClassName,
+  notificationTypes = MANUAL_ENTITY_BELL_TYPES,
+  managePath = '/settings/notifications',
+}: Props) {
   const { isSignedIn, isLoaded } = useAuth();
   const { data: notifications, isLoading } = useEntityNotifications(cui);
   const { isOpen, setOpen } = useNotificationModal();
+  const location = useLocation();
+  const isCampaignEntityOnly =
+    notificationTypes.length === 1 &&
+    notificationTypes[0] === 'campaign_public_debate_entity_updates';
+  const currentUrl = `${location.pathname}${location.searchStr ?? ''}`;
+  const locationSearch = new URLSearchParams(location.searchStr ?? '');
+  const manageSearch = isCampaignEntityOnly
+    ? {
+        from: currentUrl,
+        ...(locationSearch.get('lang') === 'en' ? { lang: 'en' } : {}),
+      }
+    : undefined;
 
-  const hasActive = notifications?.some(n => n.isActive) ?? false;
+  const hasActive =
+    notifications?.some(
+      (notification) =>
+        notification.isActive && notificationTypes.includes(notification.notificationType)
+    ) ?? false;
   const triggerButtonClassName = cn(
     'relative transition-all duration-300',
     triggerClassName,
@@ -48,7 +81,7 @@ export function EntityNotificationBell({ cui, entityName, triggerClassName }: Pr
         }
         content={
           <div className="w-full p-1">
-            <div className="flex flex-col">
+            <div className="flex min-h-[24rem] flex-col">
               <div>
                 <h3 className="text-xl font-semibold tracking-tight mb-1">
                   <Trans>Sign in required</Trans>
@@ -67,19 +100,35 @@ export function EntityNotificationBell({ cui, entityName, triggerClassName }: Pr
                   </Trans>
                 </p>
                 <ul className="text-base text-muted-foreground space-y-2 ml-4 list-disc">
-                  <li>
-                    <Trans>Monthly, quarterly, and annual reports</Trans>
-                  </li>
-                  <li>
-                    <Trans>Alerts when important changes occur</Trans>
-                  </li>
-                  <li>
-                    <Trans>Easily manage your subscriptions</Trans>
-                  </li>
+                  {isCampaignEntityOnly ? (
+                    <>
+                      <li>
+                        <Trans>Public debate correspondence updates</Trans>
+                      </li>
+                      <li>
+                        <Trans>When a request is sent, fails, or receives a reply</Trans>
+                      </li>
+                      <li>
+                        <Trans>Easily manage your campaign notification preference</Trans>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li>
+                        <Trans>Monthly, quarterly, and annual reports</Trans>
+                      </li>
+                      <li>
+                        <Trans>Alerts when important changes occur</Trans>
+                      </li>
+                      <li>
+                        <Trans>Easily manage your subscriptions</Trans>
+                      </li>
+                    </>
+                  )}
                 </ul>
               </div>
 
-              <div className="mt-64 sm:mt-6">
+              <div className="mt-auto pt-6">
                 <AuthSignInButton>
                   <Button
                     variant="default"
@@ -120,24 +169,7 @@ export function EntityNotificationBell({ cui, entityName, triggerClassName }: Pr
               <Loader2 className="h-5 w-5 animate-spin" />
             </div>
           ) : hasActive ? (
-            <>
-              <style>{`
-                @keyframes ring {
-                  0% { transform: rotate(0); }
-                  10% { transform: rotate(10deg); }
-                  20% { transform: rotate(-10deg); }
-                  30% { transform: rotate(10deg); }
-                  40% { transform: rotate(-10deg); }
-                  50% { transform: rotate(0); }
-                  100% { transform: rotate(0); }
-                }
-                .animate-ring {
-                  animation: ring 2.5s ease-in-out;
-                  transform-origin: top center;
-                }
-              `}</style>
-              <Bell className="animate-ring h-5 w-5 fill-amber-400 stroke-amber-200 text-amber-400" />
-            </>
+            <Bell className="animate-ring h-5 w-5 fill-amber-400 stroke-amber-200 text-amber-400" />
           ) : (
             <BellOff className="h-5 w-5" />
           )}
@@ -148,6 +180,9 @@ export function EntityNotificationBell({ cui, entityName, triggerClassName }: Pr
           cui={cui}
           entityName={entityName}
           notifications={notifications ?? []}
+          notificationTypes={notificationTypes}
+          managePath={isCampaignEntityOnly ? CAMPAIGN_NOTIFICATIONS_PATH : managePath}
+          manageSearch={manageSearch}
           onClose={() => setOpen(false)}
         />
       }

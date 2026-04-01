@@ -1,13 +1,14 @@
 export const CAMPAIGN_ID = 'buget'
 export const CAMPAIGN_SLUG = 'buget'
-export const CAMPAIGN_LANDING_PATH = '/bugete-locale-2026'
-export const CAMPAIGN_TERMS_PATH = '/bugete-locale-2026/termeni-si-conditii'
+export const CAMPAIGN_LANDING_PATH = '/provocare'
+export const CAMPAIGN_TERMS_PATH = '/provocare/termeni-si-conditii'
 export const CAMPAIGN_ENTITY_BASE_PATH = '/primarie'
 export const CAMPAIGN_ENTITY_SELECTOR_PATH = CAMPAIGN_ENTITY_BASE_PATH
 export const CAMPAIGN_ENTITY_SELECTOR_MAP_PATH =
   `${CAMPAIGN_ENTITY_SELECTOR_PATH}/harta` as const
 export const CAMPAIGN_BUDGET_ROUTE = `${CAMPAIGN_ENTITY_BASE_PATH}/$cui/buget`
 export const CAMPAIGN_CALENDAR_ROUTE = `${CAMPAIGN_BUDGET_ROUTE}/calendar`
+export const CAMPAIGN_NOTIFICATIONS_PATH = '/provocare/notificari'
 
 export const CAMPAIGN_PROGRESS_STORAGE_KEY = `campaign_progress_snapshot:${CAMPAIGN_ID}`
 

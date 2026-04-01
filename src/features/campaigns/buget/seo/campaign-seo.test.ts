@@ -27,7 +27,7 @@ describe('campaign-seo', () => {
     })
 
     expect(metadata.robots).toBe('index,follow')
-    expect(metadata.canonicalUrl).toContain('/bugete-locale-2026')
+    expect(metadata.canonicalUrl).toContain('/provocare')
     expect(metadata.canonicalUrl).not.toContain('?lang=en')
     expect(metadata.alternateUrls.en).toContain('?lang=en')
     expect(metadata.image.url).toContain('/assets/images/campaigns/buget/share/landing.png')

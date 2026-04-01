@@ -12,9 +12,10 @@ test.describe('Buget Routing', () => {
     await mockApi.mockGraphQL('GetReports', 'get-reports')
   })
 
-  test('renders the landing route at /bugete-locale-2026', async ({ page }) => {
+  test('redirects the legacy landing route to /provocare', async ({ page }) => {
     await page.goto('/bugete-locale-2026')
 
+    await expect(page).toHaveURL(/\/provocare(?:\?.*)?$/)
     await expect(
       page.getByRole('heading', {
         level: 1,

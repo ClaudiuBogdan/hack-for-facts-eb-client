@@ -39,7 +39,7 @@ export function NotificationList({ notifications, isLoading, onAddNotification }
   const entityLabel = useEntityLabel(entityCuis);
 
   const removeMutation = useMutation({
-    mutationFn: (id: number) => deleteNotification(id),
+    mutationFn: (id: string) => deleteNotification(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
       toast.success('Notification deleted successfully');

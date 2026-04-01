@@ -31,6 +31,8 @@ function NotificationsSettingsPage() {
   }
 
   const errorMessage = isError ? getErrorMessage(error) : null;
+  const generalNotifications =
+    (notifications ?? []).filter((notification) => notification.campaignKey !== 'public_debate');
 
   return (
     <div className="container max-w-4xl mx-auto py-8 px-4 space-y-6">
@@ -64,7 +66,7 @@ function NotificationsSettingsPage() {
           </div>
         </div>
         <NotificationList
-          notifications={notifications ?? []}
+          notifications={generalNotifications}
           isLoading={isLoading}
           onAddNotification={() => setIsEntitySearchOpen(true)}
         />

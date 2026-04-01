@@ -22,7 +22,7 @@ import {
 
 interface Props {
   notifications: Notification[];
-  onRemove: (id: number) => void;
+  onRemove: (id: string) => void;
 }
 
 export function NotificationCard({ notifications, onRemove }: Props) {
@@ -39,6 +39,7 @@ export function NotificationCard({ notifications, onRemove }: Props) {
       entityCui: notification.entityCui,
       notificationType: notification.notificationType,
       isActive,
+      notificationId: notification.id,
     });
   };
 

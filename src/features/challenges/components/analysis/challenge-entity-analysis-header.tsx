@@ -435,6 +435,7 @@ export function ChallengeEntityAnalysisHeader({
               cui={entity.cui}
               entityName={entity.name}
               triggerClassName={HERO_NOTIFICATION_TRIGGER}
+              notificationTypes={['campaign_public_debate_entity_updates']}
             />
           </div>
         </div>

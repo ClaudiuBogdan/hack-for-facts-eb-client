@@ -1,5 +1,5 @@
 const MOBILE_BOTTOM_DOCK_HIDDEN_PATH_PATTERNS = [
-  /^\/bugete-locale-2026\/challenges\/.+$/,
+  /^\/provocare\/challenges\/.+$/,
   /^\/primarie\/[^/]+\/buget\/provocari\/.+$/,
 ];
 

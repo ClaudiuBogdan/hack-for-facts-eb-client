@@ -419,6 +419,7 @@ function ChallengesSidebar({
           )}
         </nav>
       </ScrollArea>
+
     </div>
   )
 }

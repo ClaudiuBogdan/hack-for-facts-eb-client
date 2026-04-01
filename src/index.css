@@ -260,6 +260,23 @@
     animation: float 4s ease-in-out infinite;
   }
 
+  @keyframes ring {
+    0%, 50%, 100% {
+      transform: rotate(0);
+    }
+    10%, 30% {
+      transform: rotate(10deg);
+    }
+    20%, 40% {
+      transform: rotate(-10deg);
+    }
+  }
+
+  .animate-ring {
+    animation: ring 2.5s ease-in-out;
+    transform-origin: top center;
+  }
+
 .leaflet-tooltip.campaign-uat-map-tooltip {
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.96));
   border: 1px solid rgba(148, 163, 184, 0.45);
