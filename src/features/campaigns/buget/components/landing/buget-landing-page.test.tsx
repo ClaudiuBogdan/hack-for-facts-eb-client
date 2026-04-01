@@ -26,17 +26,6 @@ vi.mock('@/lib/analytics', () => ({
   },
 }))
 
-vi.mock('../../hooks/use-campaign-content', () => ({
-  getCampaignDefinition: () => ({
-    title: {
-      ro: 'Cu ochii pe bugetele locale',
-      en: 'Eyes on Local Budgets',
-    },
-  }),
-  getCampaignText: (value: { ro: string; en?: string }, locale: 'ro' | 'en') =>
-    locale === 'en' ? (value.en ?? value.ro) : value.ro,
-}))
-
 describe('BugetLandingPage', () => {
   it('links the campaign CTA to the canonical selector route', () => {
     render(<BugetLandingPage locale="ro" />)
@@ -45,5 +34,27 @@ describe('BugetLandingPage', () => {
     for (const link of ctaLinks) {
       expect(link).toHaveAttribute('href', '/primarie')
     }
+  })
+
+  it('renders the hashtag badge and Funky Citizens logo', () => {
+    render(<BugetLandingPage locale="ro" />)
+
+    expect(screen.getByText('#ProvocareCivică2026')).toBeInTheDocument()
+    expect(screen.getByAltText('Funky Citizens')).toBeInTheDocument()
+  })
+
+  it('renders the title with exclamation mark', () => {
+    render(<BugetLandingPage locale="ro" />)
+
+    expect(screen.getByText(/bugetele locale!/)).toBeInTheDocument()
+  })
+
+  it('renders the FAQ section with all questions', () => {
+    render(<BugetLandingPage locale="ro" />)
+
+    expect(screen.getByText('Întrebări frecvente')).toBeInTheDocument()
+    expect(screen.getByText(/Trebuie să știu ceva despre bugete/)).toBeInTheDocument()
+    expect(screen.getByText(/Cât timp îmi ia pe săptămână/)).toBeInTheDocument()
+    expect(screen.getByText(/Ce se întâmplă dacă mă înscriu/)).toBeInTheDocument()
   })
 })

@@ -1,14 +1,15 @@
 import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
-import { ArrowRight, BarChart3, MapPin, Megaphone } from 'lucide-react'
+import { ArrowRight, BarChart3, Heart, MapPin, Megaphone } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import mapPreview from '@/assets/images/map.png'
 import chartPreview from '@/assets/images/chart.png'
-import entityAnalyticsPreview from '@/assets/images/entity-analytics.png'
+import demoForumPreview from '@/assets/images/demo-forum.png'
+const FUNKY_LOGO_URL =
+  'https://funky.ong/wp-content/uploads/2024/03/Funky_RED_RGB-1.png'
 import { Button } from '@/components/ui/button'
 import { Analytics } from '@/lib/analytics'
 import { CAMPAIGN_ENTITY_SELECTOR_PATH } from '../../constants'
-import { getCampaignDefinition, getCampaignText } from '../../hooks/use-campaign-content'
 import type { CampaignLocale } from '../../types'
 
 type BugetLandingPageProps = {
@@ -21,6 +22,11 @@ type LandingStoryItem = {
   readonly description: string
   readonly icon: LucideIcon
   readonly image: string
+}
+
+type FaqItem = {
+  readonly question: string
+  readonly answer: string
 }
 
 function CtaButton({
@@ -36,7 +42,7 @@ function CtaButton({
     <Button
       asChild
       size="lg"
-      className="h-12 rounded-full px-8 text-base font-semibold"
+      className="h-12 rounded-full bg-[#3565c4] px-8 text-base font-semibold hover:bg-[#2d57a8]"
     >
       <Link
         to={CAMPAIGN_ENTITY_SELECTOR_PATH as '/'}
@@ -56,14 +62,16 @@ function CtaButton({
 }
 
 export function BugetLandingPage({ locale }: BugetLandingPageProps) {
-  const campaign = getCampaignDefinition()
-
   const storyItems: readonly LandingStoryItem[] =
     locale === 'en'
       ? [
           {
             stepNumber: 1,
-            title: 'Find your local budget fast',
+            title: (
+              <>
+                Step 1: Find your local <strong>budget</strong> fast.
+              </>
+            ),
             description:
               'See in minutes how much money is planned for schools, roads, and local services.',
             icon: MapPin,
@@ -71,7 +79,11 @@ export function BugetLandingPage({ locale }: BugetLandingPageProps) {
           },
           {
             stepNumber: 2,
-            title: 'Identify the differences',
+            title: (
+              <>
+                Step 2: Identify the <strong>differences</strong>.
+              </>
+            ),
             description:
               'Compare this year with previous years and quickly identify the biggest shifts.',
             icon: BarChart3,
@@ -79,11 +91,15 @@ export function BugetLandingPage({ locale }: BugetLandingPageProps) {
           },
           {
             stepNumber: 3,
-            title: 'Turn data into arguments',
+            title: (
+              <>
+                Step 3: Turn data into <strong>arguments</strong>.
+              </>
+            ),
             description:
               'Leave with clear arguments you can use in public debates and official requests.',
             icon: Megaphone,
-            image: entityAnalyticsPreview,
+            image: demoForumPreview,
           },
         ]
       : [
@@ -91,7 +107,8 @@ export function BugetLandingPage({ locale }: BugetLandingPageProps) {
             stepNumber: 1,
             title: (
               <>
-                Găsești rapid <strong>bugetul</strong> localității tale
+                Pasul 1: Găsești rapid <strong>bugetul</strong> localității
+                tale.
               </>
             ),
             description:
@@ -103,7 +120,7 @@ export function BugetLandingPage({ locale }: BugetLandingPageProps) {
             stepNumber: 2,
             title: (
               <>
-                Identifici <strong>diferențele</strong>
+                Pasul 2: Identifici <strong>diferențele</strong>.
               </>
             ),
             description:
@@ -115,31 +132,91 @@ export function BugetLandingPage({ locale }: BugetLandingPageProps) {
             stepNumber: 3,
             title: (
               <>
-                Transformi datele în <strong>argumente</strong>
+                Pasul 3: Transformi datele în <strong>argumente</strong>.
               </>
             ),
             description:
               'Pleci cu întrebări clare pentru dezbateri publice, sesizări și dialog cu primăria.',
             icon: Megaphone,
-            image: entityAnalyticsPreview,
+            image: demoForumPreview,
           },
         ]
 
   const subtitle =
     locale === 'en'
-      ? 'A short civic quest: from "where does the money go?" to "what can I actually do?"'
-      : 'O misiune civică scurtă: de la "unde merg banii" la "ce pot face concret".'
+      ? '60 days to learn how to read, understand, and act on your local budget. Free, step by step, no prior knowledge needed.'
+      : '60 de zile în care înveți să citești, să înțelegi și să acționezi pe bugetul localității tale. Gratuit, pas cu pas, fără cunoștințe prealabile.'
 
   const ctaLabel =
     locale === 'en' ? 'Start the challenge' : 'Începe provocarea'
+
+  const faqItems: readonly FaqItem[] =
+    locale === 'en'
+      ? [
+          {
+            question: 'Do I need to know anything about budgets to sign up?',
+            answer:
+              'Nothing. Just that public budgets are important for how your community works. You get support from the Funky Citizens team and access to a forum for any questions.',
+          },
+          {
+            question: 'How much time does it take per week?',
+            answer:
+              'As much as you want. The challenges are independent. Do as many as you can, when you can. There is no mandatory progression.',
+          },
+          {
+            question: 'What happens if I sign up after it has started?',
+            answer:
+              'You can participate anytime, but some stages have fixed deadlines. Signing up early gives you more options.',
+          },
+        ]
+      : [
+          {
+            question:
+              'Trebuie să știu ceva despre bugete ca să mă înscriu?',
+            answer:
+              'Nimic. Doar că bugetele publice sunt importante pentru funcționarea localității tale. Primești suport de la echipa Funky Citizens și acces la forum pentru orice întrebări ai.',
+          },
+          {
+            question: 'Cât timp îmi ia pe săptămână?',
+            answer:
+              'Atât cât vrei. Provocările sunt independente. Faci câte poți, când poți. Nu există o progresie obligatorie.',
+          },
+          {
+            question: 'Ce se întâmplă dacă mă înscriu după ce a început?',
+            answer:
+              'Poți participa oricând, dar unele etape au termen fix. Înscrierea devreme îți oferă mai multe opțiuni.',
+          },
+        ]
 
   return (
     <section className="mx-auto max-w-2xl motion-safe:animate-in motion-safe:fade-in motion-safe:duration-500 px-5 py-12 sm:py-16 md:py-24">
       {/* Hero */}
       <div className="space-y-5">
+        <div className="flex items-center gap-3">
+          <span className="text-lg font-semibold text-[#ef2d00] underline decoration-[#ef2d00] decoration-2 underline-offset-4 sm:text-xl">
+            #ProvocareCivică2026
+          </span>
+          <img
+            src={FUNKY_LOGO_URL}
+            alt="Funky Citizens"
+            className="h-5 w-auto sm:h-6"
+          />
+        </div>
+
         <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl md:text-[3.5rem] md:leading-[1.08]">
-          {getCampaignText(campaign.title, locale)}
+          {locale === 'en' ? (
+            <>
+              Eyes on{' '}
+              <span className="whitespace-nowrap">Local Budgets!</span>
+            </>
+          ) : (
+            <>
+              Cu ochii pe{' '}
+              <span className="whitespace-nowrap">bugetele locale!</span>
+            </>
+          )}
         </h1>
+
         <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
           {subtitle}
         </p>
@@ -155,11 +232,11 @@ export function BugetLandingPage({ locale }: BugetLandingPageProps) {
           return (
             <div key={item.stepNumber} className="space-y-5">
               <div className="space-y-3">
-                <h2 className="flex items-center gap-3 text-2xl font-medium tracking-tight text-foreground sm:text-3xl [&_strong]:font-bold">
-                  <Icon className="h-6 w-6 shrink-0 text-primary sm:h-7 sm:w-7" aria-hidden="true" />
-                  {item.title}
+                <h2 className="flex items-start gap-3 text-xl font-medium tracking-tight text-foreground sm:text-2xl md:text-3xl">
+                  <Icon className="mt-1 h-5 w-5 shrink-0 text-[#3565c4] sm:h-6 sm:w-6 md:h-7 md:w-7" aria-hidden="true" />
+                  <span>{item.title}</span>
                 </h2>
-                <p className="max-w-md pl-9 text-base leading-relaxed text-muted-foreground sm:pl-10 sm:text-lg">
+                <p className="max-w-md pl-8 text-base leading-relaxed text-muted-foreground sm:pl-9 sm:text-lg">
                   {item.description}
                 </p>
               </div>
@@ -191,8 +268,8 @@ export function BugetLandingPage({ locale }: BugetLandingPageProps) {
             </h3>
             <p className="max-w-md text-base text-muted-foreground sm:text-lg">
               {locale === 'en'
-                ? 'Pick your city hall and follow the guided steps. It only takes a few minutes.'
-                : 'Alege primăria ta și urmează pașii ghidați. Durează doar câteva minute.'}
+                ? 'Your local budget is public. We help you understand it.'
+                : 'Bugetul localității tale e public. Noi te ajutăm să îl înțelegi.'}
             </p>
             <div className="pt-2">
               <CtaButton
@@ -202,6 +279,30 @@ export function BugetLandingPage({ locale }: BugetLandingPageProps) {
               />
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="mt-20 sm:mt-24">
+        <div className="flex items-center gap-3 mb-8">
+          <Heart className="h-6 w-6 text-[#3565c4]" aria-hidden="true" />
+          <h3 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            {locale === 'en'
+              ? 'Frequently Asked Questions'
+              : 'Întrebări frecvente'}
+          </h3>
+        </div>
+        <div className="space-y-8">
+          {faqItems.map((item) => (
+            <div key={item.question} className="space-y-2">
+              <h4 className="text-base font-bold text-foreground sm:text-lg">
+                {item.question}
+              </h4>
+              <p className="text-base leading-relaxed text-muted-foreground">
+                {item.answer}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
