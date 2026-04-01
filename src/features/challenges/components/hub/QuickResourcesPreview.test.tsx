@@ -7,10 +7,16 @@ let mockLocation = {
   searchStr: '',
 }
 let notificationsState: {
-  readonly data: Array<{ readonly notificationType: string; readonly isActive: boolean }>
+  readonly data: Array<{
+    readonly notificationType: string
+    readonly isActive: boolean
+    readonly entityCui?: string | null
+  }>
+  readonly globalPreference: { readonly isActive: boolean } | null
   readonly isLoading: boolean
 } = {
   data: [],
+  globalPreference: null,
   isLoading: false,
 }
 
@@ -45,15 +51,67 @@ vi.mock('lucide-react', () => {
   }
 })
 
-vi.mock('@/features/notifications/hooks/useEntityNotifications', () => ({
-  useEntityNotifications: () => notificationsState,
+vi.mock('@/features/notifications/hooks/useCampaignNotifications', () => ({
+  useCampaignNotifications: () => notificationsState,
 }))
 
 describe('QuickResourcesPreview', () => {
-  it('shows the inactive bell while notifications are loading', () => {
+  it('shows the normal bell while notifications are loading', () => {
     notificationsState = {
       data: [],
+      globalPreference: null,
       isLoading: true,
+    }
+
+    render(<QuickResourcesPreview locale="ro" entityCui="12345678" />)
+
+    expect(screen.getByTestId('bell-icon')).toBeInTheDocument()
+    expect(screen.queryByTestId('bell-off-icon')).not.toBeInTheDocument()
+  })
+
+  it('shows the normal bell when no entity notification exists yet', () => {
+    notificationsState = {
+      data: [],
+      globalPreference: null,
+      isLoading: false,
+    }
+
+    render(<QuickResourcesPreview locale="ro" entityCui="12345678" />)
+
+    expect(screen.getByTestId('bell-icon')).toBeInTheDocument()
+    expect(screen.queryByTestId('bell-off-icon')).not.toBeInTheDocument()
+  })
+
+  it('shows the inactive bell only when the entity notification exists and is disabled', () => {
+    notificationsState = {
+      data: [
+        {
+          notificationType: 'campaign_public_debate_entity_updates',
+          isActive: false,
+          entityCui: '12345678',
+        },
+      ],
+      globalPreference: null,
+      isLoading: false,
+    }
+
+    render(<QuickResourcesPreview locale="ro" entityCui="12345678" />)
+
+    expect(screen.getByTestId('bell-off-icon')).toBeInTheDocument()
+    expect(screen.queryByTestId('bell-icon')).not.toBeInTheDocument()
+  })
+
+  it('shows the inactive bell when the general campaign preference is disabled', () => {
+    notificationsState = {
+      data: [
+        {
+          notificationType: 'campaign_public_debate_entity_updates',
+          isActive: true,
+          entityCui: '12345678',
+        },
+      ],
+      globalPreference: { isActive: false },
+      isLoading: false,
     }
 
     render(<QuickResourcesPreview locale="ro" entityCui="12345678" />)
@@ -65,6 +123,7 @@ describe('QuickResourcesPreview', () => {
   it('shows the My city hall shortcut when an entity is available', () => {
     notificationsState = {
       data: [],
+      globalPreference: null,
       isLoading: false,
     }
 
@@ -82,6 +141,7 @@ describe('QuickResourcesPreview', () => {
   it('shows the send debate request link with correct path', () => {
     notificationsState = {
       data: [],
+      globalPreference: null,
       isLoading: false,
     }
 
@@ -102,6 +162,7 @@ describe('QuickResourcesPreview', () => {
   it('shows the guides & templates link pointing to the resources page', () => {
     notificationsState = {
       data: [],
+      globalPreference: null,
       isLoading: false,
     }
 
@@ -119,6 +180,7 @@ describe('QuickResourcesPreview', () => {
     }
     notificationsState = {
       data: [],
+      globalPreference: null,
       isLoading: false,
     }
 
@@ -139,6 +201,7 @@ describe('QuickResourcesPreview', () => {
     }
     notificationsState = {
       data: [],
+      globalPreference: null,
       isLoading: false,
     }
 

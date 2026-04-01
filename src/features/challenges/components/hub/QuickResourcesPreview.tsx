@@ -2,7 +2,7 @@ import { Link, useLocation } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { ArrowRight, Bell, BellOff, Building2, Send, Library } from 'lucide-react'
 import { buildCampaignResourcesPath, CAMPAIGN_NOTIFICATIONS_PATH } from '@/features/campaigns/buget/constants'
-import { useEntityNotifications } from '@/features/notifications/hooks/useEntityNotifications'
+import { useCampaignNotifications } from '@/features/notifications/hooks/useCampaignNotifications'
 import {
   buildCampaignPrimariePath,
   buildCampaignProvocariStepPath,
@@ -17,12 +17,21 @@ type QuickResourcesPreviewProps = {
 export function QuickResourcesPreview({
   locale,
   entityCui,
-  }: QuickResourcesPreviewProps) {
+}: QuickResourcesPreviewProps) {
   const location = useLocation()
-  const { data: entityNotifications } = useEntityNotifications(entityCui ?? '')
-  const hasActiveNotification = (entityNotifications ?? []).some(
+  const { data: campaignEntityNotifications, globalPreference } = useCampaignNotifications()
+  const entityNotifications = (campaignEntityNotifications ?? []).filter(
+    (n) => n.entityCui === entityCui
+  )
+  const hasActiveNotification = entityNotifications.some(
     (n) => n.notificationType === 'campaign_public_debate_entity_updates' && n.isActive
   )
+  const hasDisabledNotification = entityNotifications.some(
+    (n) => n.notificationType === 'campaign_public_debate_entity_updates' && !n.isActive
+  )
+  const hasDisabledGlobalPreference = globalPreference?.isActive === false
+  const showDisabledNotification =
+    hasDisabledGlobalPreference || (!hasActiveNotification && hasDisabledNotification)
 
   if (!entityCui) return null
 
@@ -110,10 +119,10 @@ export function QuickResourcesPreview({
           className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
         >
           <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
-            {hasActiveNotification ? (
-              <Bell className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-            ) : (
+            {showDisabledNotification ? (
               <BellOff className="h-4 w-4 text-red-500" aria-hidden="true" />
+            ) : (
+              <Bell className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
             )}
           </div>
           <div className="min-w-0 flex-1">
