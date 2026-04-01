@@ -41,7 +41,7 @@ export function ChallengesHubPage({
     isAccessGranted,
     isSubmitting,
     register,
-  } = useChallengeAccess()
+  } = useChallengeAccess(entityCui)
   const { progress: campaignProgress } = useCampaignProgress()
   const { getStepStatus, isStepCompleted } = useChallengeProgress({
     entityCui,
@@ -141,6 +141,7 @@ export function ChallengesHubPage({
         <ChallengeHubAccessCard
           locale={locale}
           variant={accessCardVariant ?? 'loading'}
+          entityName={entityLabel}
           isSubmitting={isSubmitting}
           onRegister={register}
         />
@@ -160,10 +161,6 @@ export function ChallengesHubPage({
           nextStepUrl={activeModuleData.nextStepUrl}
         />
       )
-    }
-
-    if (!activeModuleData) {
-      return null
     }
 
     return null

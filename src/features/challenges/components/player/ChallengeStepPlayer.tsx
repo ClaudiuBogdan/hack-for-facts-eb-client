@@ -390,7 +390,7 @@ export function ChallengeStepPlayer({
     isAccessGranted,
     isSubmitting,
     register,
-  } = useChallengeAccess()
+  } = useChallengeAccess(entityCui)
 
   const { prev, next } = useMemo(
     () =>

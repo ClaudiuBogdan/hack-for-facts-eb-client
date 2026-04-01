@@ -15,12 +15,13 @@ import {
 import { fetchCampaignProgress, syncCampaignProgress } from '../api/campaign-progress'
 import { getEmptyCampaignProgressSnapshot, parseCampaignProgressSnapshot } from '../schemas/progress-schema'
 import {
-  CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY,
   CAMPAIGN_ACTIVE_MODULE_RECORD_KEY,
+  CAMPAIGN_ENTITY_ACCEPTED_TERMS_PREFIX,
   CAMPAIGN_ONBOARDING_RECORD_KEY,
   CAMPAIGN_SELECTED_ENTITY_RECORD_KEY,
   applyCampaignProgressEventsToRecords,
-  createCampaignAcceptedTermsRecord,
+  createCampaignEntityAcceptedTermsRecord,
+  getCampaignEntityAcceptedTermsRecordKey,
   buildCampaignProgressRecords,
   createCampaignActiveModuleRecord,
   createCampaignChallengeRecord,
@@ -54,8 +55,7 @@ type CampaignProgressContextValue = {
   readonly setActiveChallengeModule: (input: { moduleSlug: string | null }) => void
   readonly markChallengeInProgress: (challengeSlug: string) => void
   readonly completeOnboarding: (input: { locality: string }) => void
-  readonly acceptChallengeTerms: (input?: { acceptedTermsAt?: string }) => void
-  readonly resetAcceptedChallengeTerms: () => void
+  readonly acceptEntityTerms: (entityCui: string) => void
   readonly resetProgress: () => void
   readonly sync: () => Promise<void>
 }
@@ -152,7 +152,7 @@ function isClearedCampaignRecord(record: InteractiveStateRecord): boolean {
     return payload.completedAt === null && payload.locality === null
   }
 
-  if (record.key === CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY) {
+  if (record.key.startsWith(CAMPAIGN_ENTITY_ACCEPTED_TERMS_PREFIX)) {
     return payload.acceptedTermsAt === null
   }
 
@@ -218,7 +218,7 @@ function hasProgressData(snapshot: CampaignProgressSnapshot | null): boolean {
   }
 
   return snapshot.onboardingCompletedAt !== null
-    || snapshot.acceptedTermsAt !== null
+    || Object.keys(snapshot.acceptedTermsByEntity).length > 0
     || snapshot.selectedLocality !== null
     || snapshot.selectedEntityCui !== null
     || snapshot.activeChallengeModuleSlug !== null
@@ -230,8 +230,9 @@ function getRecordUpdatedAt(snapshot: CampaignProgressSnapshot, recordKey: strin
     return snapshot.onboardingCompletedAt ?? snapshot.lastUpdated
   }
 
-  if (recordKey === CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY) {
-    return snapshot.acceptedTermsAt ?? snapshot.lastUpdated
+  if (recordKey.startsWith(CAMPAIGN_ENTITY_ACCEPTED_TERMS_PREFIX)) {
+    const entityCui = recordKey.slice(CAMPAIGN_ENTITY_ACCEPTED_TERMS_PREFIX.length)
+    return snapshot.acceptedTermsByEntity[entityCui] ?? snapshot.lastUpdated
   }
 
   if (recordKey === CAMPAIGN_SELECTED_ENTITY_RECORD_KEY || recordKey === CAMPAIGN_ACTIVE_MODULE_RECORD_KEY) {
@@ -805,28 +806,22 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     })])
   }, [appendEvents, createDefaultCampaignAuditEvent, createInteractiveUpdatedEvent])
 
-  const acceptChallengeTerms = useCallback((input?: { acceptedTermsAt?: string }) => {
-    const acceptedTermsAt = input?.acceptedTermsAt ?? nowIso()
+  const acceptEntityTerms = useCallback((entityCui: string) => {
+    const normalizedCui = entityCui.trim()
+    if (!normalizedCui) {
+      return
+    }
+
+    const acceptedTermsAt = nowIso()
+    const recordKey = getCampaignEntityAcceptedTermsRecordKey(normalizedCui)
     const updatedAt = getNextTimestamp(
-      getRecordUpdatedAt(progressRef.current, CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY) ?? acceptedTermsAt,
+      getRecordUpdatedAt(progressRef.current, recordKey) ?? acceptedTermsAt,
     )
 
-    const record = createCampaignAcceptedTermsRecord({
+    const record = createCampaignEntityAcceptedTermsRecord({
+      entityCui: normalizedCui,
       acceptedTermsAt,
       updatedAt,
-    })
-    const auditEvent = createDefaultCampaignAuditEvent(record)
-
-    appendEvents([createInteractiveUpdatedEvent({
-      record,
-      auditEvents: auditEvent ? [auditEvent] : undefined,
-    })])
-  }, [appendEvents, createDefaultCampaignAuditEvent, createInteractiveUpdatedEvent])
-
-  const resetAcceptedChallengeTerms = useCallback(() => {
-    const record = createCampaignAcceptedTermsRecord({
-      acceptedTermsAt: null,
-      updatedAt: getNextTimestamp(getRecordUpdatedAt(progressRef.current, CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY)),
     })
     const auditEvent = createDefaultCampaignAuditEvent(record)
 
@@ -945,12 +940,11 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     setActiveChallengeModule,
     markChallengeInProgress,
     completeOnboarding,
-    acceptChallengeTerms,
-    resetAcceptedChallengeTerms,
+    acceptEntityTerms,
     resetProgress,
     sync,
   }), [
-    acceptChallengeTerms,
+    acceptEntityTerms,
     completeOnboarding,
     getChallengeStatus,
     isInitialResolutionReady,
@@ -961,7 +955,6 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     progress,
     remoteSelectedEntityCui,
     resetProgress,
-    resetAcceptedChallengeTerms,
     setActiveChallengeModule,
     setChallengeStatus,
     setSelectedEntity,

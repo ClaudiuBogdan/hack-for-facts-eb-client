@@ -10,14 +10,14 @@ type ChallengeAccessState = {
   readonly register: () => Promise<void>
 }
 
-export function useChallengeAccess(): ChallengeAccessState {
+export function useChallengeAccess(entityCui: string | null = null): ChallengeAccessState {
   const { isEnabled: isAuthEnabled, isLoaded: isAuthLoaded, isSignedIn } = useAuth()
   const {
     isReady: isRegistrationReady,
     isRegistered,
     isSubmitting,
     register,
-  } = useCampaignRegistration()
+  } = useCampaignRegistration(entityCui)
 
   if (!isAuthEnabled) {
     return {

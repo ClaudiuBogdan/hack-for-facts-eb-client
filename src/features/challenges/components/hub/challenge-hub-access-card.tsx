@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { LockKeyhole, ShieldCheck, Sparkles } from 'lucide-react'
+import { ClipboardCheck, LockKeyhole, ShieldCheck } from 'lucide-react'
 import { useId, useState } from 'react'
 import { AuthSignInButton } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
@@ -12,44 +12,52 @@ import type { ChallengeLocale } from '../../types'
 type ChallengeHubAccessCardProps = {
   readonly locale: ChallengeLocale
   readonly variant: 'loading' | 'auth' | 'register'
+  readonly entityName?: string
   readonly isSubmitting?: boolean
   readonly onRegister?: () => Promise<void>
 }
 
-const ACCESS_CARD_COPY = {
-  ro: {
-    authTitle: 'Conectează-te ca să participi la provocări',
-    authDescription:
-      'Poți explora în continuare calendarul și resursele, dar pentru a începe provocările și a salva progresul ai nevoie de autentificare.',
-    registerTitle: 'Activează participarea în campanie',
-    registerDescription:
-      'Ai cont și ai ales deja primăria. Mai lipsește confirmarea participării ca să poți începe provocările și să-ți păstrezi progresul.',
-    termsPrefix: 'Mă înscriu în campanie și confirm că am citit ',
-    termsLinkLabel: 'termenii campaniei',
-    termsSuffix: '.',
-  },
-  en: {
-    authTitle: 'Sign in to join the challenges',
-    authDescription:
-      'You can still explore the calendar and resources, but you need to sign in before starting challenges and saving progress.',
-    registerTitle: 'Activate campaign participation',
-    registerDescription:
-      'You already have an account and picked your city hall. Confirm participation so you can start challenges and keep your progress.',
-    termsPrefix: 'I am joining the campaign and confirm that I have read the ',
-    termsLinkLabel: 'campaign terms',
-    termsSuffix: '.',
-  },
-} as const
+function getAccessCardCopy(locale: ChallengeLocale, entityName?: string) {
+  const name = entityName ?? (locale === 'ro' ? 'această primărie' : 'this city hall')
+
+  const copy = {
+    ro: {
+      authTitle: 'Conectează-te ca să participi la provocări',
+      authDescription:
+        'Poți explora în continuare calendarul și resursele, dar pentru a începe provocările și a salva progresul ai nevoie de autentificare.',
+      registerTitle: 'Activează participarea în campanie',
+      registerDescription:
+        'Ai cont și ai ales deja primăria. Mai lipsește confirmarea participării ca să poți începe provocările și să-ți păstrezi progresul.',
+      termsPrefix: `Mă înscriu în campanie pentru ${name} și confirm că am citit `,
+      termsLinkLabel: 'termenii campaniei',
+      termsSuffix: '.',
+    },
+    en: {
+      authTitle: 'Sign in to join the challenges',
+      authDescription:
+        'You can still explore the calendar and resources, but you need to sign in before starting challenges and saving progress.',
+      registerTitle: 'Activate campaign participation',
+      registerDescription:
+        'You already have an account and picked your city hall. Confirm participation so you can start challenges and keep your progress.',
+      termsPrefix: `I am joining the campaign for ${name} and confirm that I have read the `,
+      termsLinkLabel: 'campaign terms',
+      termsSuffix: '.',
+    },
+  }
+
+  return copy[locale]
+}
 
 export function ChallengeHubAccessCard({
   locale,
   variant,
+  entityName,
   isSubmitting = false,
   onRegister,
 }: ChallengeHubAccessCardProps) {
   const checkboxId = useId()
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false)
-  const copy = ACCESS_CARD_COPY[locale]
+  const copy = getAccessCardCopy(locale, entityName)
 
   if (variant === 'loading') {
     return (
@@ -109,8 +117,8 @@ export function ChallengeHubAccessCard({
 
   return (
     <Card className="relative overflow-hidden rounded-[40px] border-none shadow-lg shadow-primary/5 bg-gradient-to-br from-background via-background to-primary/[0.03]">
-      <div className="absolute top-0 right-0 p-10 opacity-[0.04] pointer-events-none">
-        <Sparkles className="h-64 w-64 rotate-12" aria-hidden="true" />
+      <div className="absolute -top-4 -right-4 opacity-[0.04] pointer-events-none">
+        <ClipboardCheck className="h-36 w-36 rotate-12" aria-hidden="true" />
       </div>
 
       <CardContent className="p-6 md:p-10 space-y-8">

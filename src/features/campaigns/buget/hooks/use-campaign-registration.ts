@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useAuth } from '@/lib/auth'
 import { useCampaignProgress } from './use-campaign-progress'
 
@@ -8,45 +8,44 @@ type CampaignRegistrationState = {
   readonly isSubmitting: boolean
   readonly registeredAt: string | null
   readonly register: () => Promise<void>
-  readonly reset: () => void
 }
 
-export function useCampaignRegistration(): CampaignRegistrationState {
+export function useCampaignRegistration(entityCui: string | null): CampaignRegistrationState {
   const { isEnabled, isLoaded, isSignedIn, user } = useAuth()
   const {
     isReady: isCampaignProgressReady,
     isInitialResolutionReady,
     progress,
-    acceptChallengeTerms,
-    resetAcceptedChallengeTerms,
+    acceptEntityTerms,
   } = useCampaignProgress()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const isSubmittingRef = useRef(false)
   const userId = user?.id ?? null
 
   const register = useCallback(async () => {
-    if (!isLoaded || !isEnabled || !isSignedIn || !userId || isSubmitting) {
+    if (!isLoaded || !isEnabled || !isSignedIn || !userId || isSubmittingRef.current || !entityCui) {
       return
     }
 
+    isSubmittingRef.current = true
     setIsSubmitting(true)
     try {
-      acceptChallengeTerms()
+      acceptEntityTerms(entityCui)
+      // Keep the guard active through the current microtask so duplicate
+      // same-tick calls cannot slip past a synchronous acceptEntityTerms().
+      await Promise.resolve()
     } finally {
+      isSubmittingRef.current = false
       setIsSubmitting(false)
     }
-  }, [acceptChallengeTerms, isEnabled, isLoaded, isSignedIn, isSubmitting, userId])
-
-  const reset = useCallback(() => {
-    if (!isLoaded || !isEnabled || !isSignedIn) {
-      return
-    }
-
-    resetAcceptedChallengeTerms()
-  }, [isEnabled, isLoaded, isSignedIn, resetAcceptedChallengeTerms])
+  }, [acceptEntityTerms, entityCui, isEnabled, isLoaded, isSignedIn, userId])
 
   const isReady = isCampaignProgressReady && (!isEnabled || !isSignedIn || isInitialResolutionReady)
-  const registeredAt = progress.acceptedTermsAt
+
+  const registeredAt = entityCui
+    ? (progress.acceptedTermsByEntity[entityCui] ?? null)
+    : null
 
   return useMemo(
     () => ({
@@ -55,8 +54,7 @@ export function useCampaignRegistration(): CampaignRegistrationState {
       isSubmitting,
       registeredAt,
       register,
-      reset,
     }),
-    [isReady, isSubmitting, register, registeredAt, reset],
+    [isReady, isSubmitting, register, registeredAt],
   )
 }

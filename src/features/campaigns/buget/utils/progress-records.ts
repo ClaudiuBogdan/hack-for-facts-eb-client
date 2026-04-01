@@ -23,7 +23,7 @@ const CAMPAIGN_RECORD_PREFIX = `system:campaign:${CAMPAIGN_ID}`
 const CAMPAIGN_RECORD_LESSON_ID = `${CAMPAIGN_RECORD_PREFIX}:state`
 
 export const CAMPAIGN_ONBOARDING_RECORD_KEY = `${CAMPAIGN_RECORD_PREFIX}:onboarding`
-export const CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY = `${CAMPAIGN_RECORD_PREFIX}:accepted-terms`
+export const CAMPAIGN_ENTITY_ACCEPTED_TERMS_PREFIX = `${CAMPAIGN_RECORD_PREFIX}:accepted-terms:entity:`
 export const CAMPAIGN_SELECTED_ENTITY_RECORD_KEY = `${CAMPAIGN_RECORD_PREFIX}:selected-entity`
 export const CAMPAIGN_ACTIVE_MODULE_RECORD_KEY = `${CAMPAIGN_RECORD_PREFIX}:active-module`
 
@@ -344,19 +344,6 @@ export function createCampaignOnboardingRecord(params: {
   })
 }
 
-export function createCampaignAcceptedTermsRecord(params: {
-  readonly acceptedTermsAt: string | null
-  readonly updatedAt: string
-}): InteractiveStateRecord {
-  return createCampaignRecord({
-    key: CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY,
-    updatedAt: params.updatedAt,
-    value: {
-      acceptedTermsAt: params.acceptedTermsAt,
-    },
-  })
-}
-
 export function createCampaignSelectedEntityRecord(params: {
   readonly entityCui: string | null
   readonly updatedAt: string
@@ -366,6 +353,25 @@ export function createCampaignSelectedEntityRecord(params: {
     updatedAt: params.updatedAt,
     value: {
       entityCui: params.entityCui,
+    },
+  })
+}
+
+export function getCampaignEntityAcceptedTermsRecordKey(entityCui: string): string {
+  return `${CAMPAIGN_ENTITY_ACCEPTED_TERMS_PREFIX}${entityCui}`
+}
+
+export function createCampaignEntityAcceptedTermsRecord(params: {
+  readonly entityCui: string
+  readonly acceptedTermsAt: string
+  readonly updatedAt: string
+}): InteractiveStateRecord {
+  return createCampaignRecord({
+    key: getCampaignEntityAcceptedTermsRecordKey(params.entityCui),
+    updatedAt: params.updatedAt,
+    value: {
+      entityCui: params.entityCui,
+      acceptedTermsAt: params.acceptedTermsAt,
     },
   })
 }
@@ -514,11 +520,13 @@ export function buildCampaignProgressRecords(
     })
   }
 
-  if (snapshot.acceptedTermsAt) {
-    records[CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY] = createCampaignAcceptedTermsRecord({
-      acceptedTermsAt: snapshot.acceptedTermsAt,
-      updatedAt: snapshot.acceptedTermsAt,
+  for (const [entityCui, acceptedTermsAt] of Object.entries(snapshot.acceptedTermsByEntity)) {
+    const record = createCampaignEntityAcceptedTermsRecord({
+      entityCui,
+      acceptedTermsAt,
+      updatedAt: acceptedTermsAt,
     })
+    records[record.key] = record
   }
 
   if (snapshot.selectedEntityCui) {
@@ -552,6 +560,29 @@ export function buildCampaignProgressRecords(
   return records
 }
 
+function readAcceptedTermsByEntity(
+  recordsByKey: CampaignProgressRecordMap,
+): Record<string, string> {
+  const result: Record<string, string> = {}
+  for (const [recordKey, record] of Object.entries(recordsByKey)) {
+    if (!recordKey.startsWith(CAMPAIGN_ENTITY_ACCEPTED_TERMS_PREFIX)) {
+      continue
+    }
+
+    const value = readJsonValue(record)
+    if (!value) {
+      continue
+    }
+
+    const entityCui = readNullableString(value.entityCui)
+    const acceptedTermsAt = readNullableString(value.acceptedTermsAt)
+    if (entityCui && acceptedTermsAt) {
+      result[entityCui] = acceptedTermsAt
+    }
+  }
+  return result
+}
+
 export function projectCampaignProgressFromRecords(
   recordsByKey: CampaignProgressRecordMap,
   fallbackLastUpdated?: string | null,
@@ -565,9 +596,9 @@ export function projectCampaignProgressFromRecords(
   }
 
   const onboardingValue = readJsonValue(campaignRecords[CAMPAIGN_ONBOARDING_RECORD_KEY])
-  const acceptedTermsValue = readJsonValue(campaignRecords[CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY])
   const selectedEntityValue = readJsonValue(campaignRecords[CAMPAIGN_SELECTED_ENTITY_RECORD_KEY])
   const activeModuleValue = readJsonValue(campaignRecords[CAMPAIGN_ACTIVE_MODULE_RECORD_KEY])
+  const acceptedTermsByEntity = readAcceptedTermsByEntity(campaignRecords)
   const explicitChallengeProgressBySlug = readExplicitChallengeProgressBySlug(campaignRecords)
   const trackedInteractionRecords = Object.values(campaignRecords).filter(isTrackedCampaignInteractionRecord)
   const challenges: Record<string, CampaignChallengeProgress> = {}
@@ -604,7 +635,7 @@ export function projectCampaignProgressFromRecords(
     version: CAMPAIGN_PROGRESS_SCHEMA_VERSION,
     campaignId: CAMPAIGN_ID,
     onboardingCompletedAt: readNullableString(onboardingValue?.completedAt),
-    acceptedTermsAt: readNullableString(acceptedTermsValue?.acceptedTermsAt),
+    acceptedTermsByEntity,
     selectedLocality: readNullableString(onboardingValue?.locality),
     selectedEntityCui: readNullableString(selectedEntityValue?.entityCui),
     activeChallengeModuleSlug: readNullableString(activeModuleValue?.moduleSlug),

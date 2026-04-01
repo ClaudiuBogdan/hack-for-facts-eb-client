@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowLeft,
   ArrowRight,
@@ -11,6 +11,7 @@ import {
   Play,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { getEntityLabels } from '@/lib/api/labels'
 import { useChallengeAccess } from '../../hooks/use-challenge-access'
 import { useChallengeProgress } from '../../hooks/use-challenge-progress'
 import {
@@ -54,17 +55,33 @@ export function ChallengeModulePage({
   locale,
   moduleSlug,
 }: ChallengeModulePageProps) {
+  const [entityLabel, setEntityLabel] = useState(entityCui)
   const module = getChallengeModuleBySlug(moduleSlug)
   const {
     accessCardVariant,
     isAccessGranted,
     isSubmitting,
     register,
-  } = useChallengeAccess()
+  } = useChallengeAccess(entityCui)
   const { getStepStatus, isStepCompleted } = useChallengeProgress({
     entityCui,
     locale,
   })
+
+  useEffect(() => {
+    let cancelled = false
+    setEntityLabel(entityCui)
+
+    getEntityLabels([entityCui]).then((results) => {
+      if (cancelled) return
+      const matched = results.find((r) => r.id === entityCui)
+      if (matched?.label) setEntityLabel(matched.label)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [entityCui])
 
   const stats = useMemo(() => {
     if (!module) return null
@@ -224,6 +241,7 @@ export function ChallengeModulePage({
               <ChallengeHubAccessCard
                 locale={locale}
                 variant={accessCardVariant ?? 'loading'}
+                entityName={entityLabel}
                 isSubmitting={isSubmitting}
                 onRegister={register}
               />

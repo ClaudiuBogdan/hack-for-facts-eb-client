@@ -50,7 +50,7 @@ function createSnapshot(
     version: CAMPAIGN_PROGRESS_SCHEMA_VERSION,
     campaignId: CAMPAIGN_ID,
     onboardingCompletedAt: null,
-    acceptedTermsAt: null,
+    acceptedTermsByEntity: {},
     selectedLocality: null,
     selectedEntityCui: null,
     activeChallengeModuleSlug: null,
@@ -105,7 +105,7 @@ describe('useCampaignRegistration', () => {
   })
 
   it('reports ready for signed-out users without accepting terms', async () => {
-    const { result } = renderHook(() => useCampaignRegistration(), { wrapper: Wrapper })
+    const { result } = renderHook(() => useCampaignRegistration(null), { wrapper: Wrapper })
 
     await waitFor(() => {
       expect(result.current.isReady).toBe(true)
@@ -122,7 +122,7 @@ describe('useCampaignRegistration', () => {
       user: { id: 'user-1' },
     }
 
-    const { result, rerender } = renderHook(() => useCampaignRegistration(), { wrapper: Wrapper })
+    const { result, rerender } = renderHook(() => useCampaignRegistration('12345678'), { wrapper: Wrapper })
 
     await waitFor(() => {
       expect(result.current.isReady).toBe(true)
@@ -141,7 +141,9 @@ describe('useCampaignRegistration', () => {
     expect(storedSnapshot).toBeTruthy()
     expect(JSON.parse(storedSnapshot ?? '{}')).toEqual(
       expect.objectContaining({
-        acceptedTermsAt: expect.any(String),
+        acceptedTermsByEntity: expect.objectContaining({
+          '12345678': expect.any(String),
+        }),
       }),
     )
 
@@ -157,7 +159,7 @@ describe('useCampaignRegistration', () => {
       user: { id: 'user-1' },
     }
 
-    const { result } = renderHook(() => useCampaignRegistration(), { wrapper: Wrapper })
+    const { result } = renderHook(() => useCampaignRegistration(null), { wrapper: Wrapper })
 
     await waitFor(() => {
       expect(result.current.isReady).toBe(true)
@@ -169,9 +171,49 @@ describe('useCampaignRegistration', () => {
     expect(storedSnapshot).toBeTruthy()
     expect(JSON.parse(storedSnapshot ?? '{}')).toEqual(
       expect.objectContaining({
-        acceptedTermsAt: null,
+        acceptedTermsByEntity: {},
       }),
     )
     expect(window.localStorage.getItem(getAuthEventsStorageKey('user-1'))).toBe(JSON.stringify([]))
+  })
+
+  it('guards against duplicate same-tick registration calls', async () => {
+    authState = {
+      isEnabled: true,
+      isLoaded: true,
+      isSignedIn: true,
+      user: { id: 'user-1' },
+    }
+
+    const { result } = renderHook(() => useCampaignRegistration('12345678'), { wrapper: Wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isReady).toBe(true)
+    })
+
+    await act(async () => {
+      await Promise.all([
+        result.current.register(),
+        result.current.register(),
+      ])
+    })
+
+    const storedEvents = JSON.parse(
+      window.localStorage.getItem(getAuthEventsStorageKey('user-1')) ?? '[]',
+    ) as Array<{
+      readonly type?: string
+      readonly payload?: {
+        readonly record?: {
+          readonly key?: string
+        }
+      }
+    }>
+
+    const acceptedTermsEvents = storedEvents.filter((event) =>
+      event.type === 'interactive.updated'
+      && event.payload?.record?.key === 'system:campaign:buget:accepted-terms:entity:12345678'
+    )
+
+    expect(acceptedTermsEvents).toHaveLength(1)
   })
 })

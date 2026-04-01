@@ -8,20 +8,20 @@ import {
 } from '../civic-interaction-definitions'
 import { getEmptyCampaignProgressSnapshot } from '../schemas/progress-schema'
 import {
-  CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY,
   CAMPAIGN_ACTIVE_MODULE_RECORD_KEY,
   CAMPAIGN_ONBOARDING_RECORD_KEY,
   CAMPAIGN_SELECTED_ENTITY_RECORD_KEY,
   applyCampaignProgressEventsToRecords,
   buildCampaignProgressRecords,
-  createCampaignAcceptedTermsRecord,
   createCampaignActiveModuleRecord,
   createCampaignChallengeRecord,
+  createCampaignEntityAcceptedTermsRecord,
   createCampaignOnboardingRecord,
   createCampaignSelectedEntityRecord,
   diffCampaignProgressRecords,
   filterCampaignProgressRecords,
   getCampaignChallengeRecordKey,
+  getCampaignEntityAcceptedTermsRecordKey,
   mergeCampaignProgressRecords,
   projectCampaignProgressFromRecords,
   projectCampaignProgressFromRemoteSnapshot,
@@ -95,7 +95,8 @@ describe('campaign progress records', () => {
         completedAt: ISO_1,
         updatedAt: ISO_1,
       }),
-      [CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY]: createCampaignAcceptedTermsRecord({
+      [getCampaignEntityAcceptedTermsRecordKey('12345678')]: createCampaignEntityAcceptedTermsRecord({
+        entityCui: '12345678',
         acceptedTermsAt: ISO_2,
         updatedAt: ISO_2,
       }),
@@ -121,7 +122,7 @@ describe('campaign progress records', () => {
 
     expect(Object.keys(filtered)).toHaveLength(5)
     expect(snapshot.selectedLocality).toBe('Cluj')
-    expect(snapshot.acceptedTermsAt).toBe(ISO_2)
+    expect(snapshot.acceptedTermsByEntity['12345678']).toBe(ISO_2)
     expect(snapshot.selectedEntityCui).toBe('12345678')
     expect(snapshot.activeChallengeModuleSlug).toBe('read-local-execution')
     expect(snapshot.challenges['challenge-1']).toEqual({
@@ -350,8 +351,10 @@ describe('campaign progress records', () => {
   })
 
   it('prefers the latest record when merging record maps', () => {
+    const entityTermsKey = getCampaignEntityAcceptedTermsRecordKey('11111111')
     const local = {
-      [CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY]: createCampaignAcceptedTermsRecord({
+      [entityTermsKey]: createCampaignEntityAcceptedTermsRecord({
+        entityCui: '11111111',
         acceptedTermsAt: ISO_3,
         updatedAt: ISO_3,
       }),
@@ -361,7 +364,8 @@ describe('campaign progress records', () => {
       }),
     }
     const remote = {
-      [CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY]: createCampaignAcceptedTermsRecord({
+      [entityTermsKey]: createCampaignEntityAcceptedTermsRecord({
+        entityCui: '11111111',
         acceptedTermsAt: ISO_1,
         updatedAt: ISO_1,
       }),
@@ -379,7 +383,7 @@ describe('campaign progress records', () => {
 
     const merged = mergeCampaignProgressRecords(local, remote)
 
-    expect(merged[CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY]?.updatedAt).toBe(ISO_3)
+    expect(merged[entityTermsKey]?.updatedAt).toBe(ISO_3)
     expect(merged[CAMPAIGN_SELECTED_ENTITY_RECORD_KEY]?.value).toEqual({
       kind: 'json',
       json: { value: { entityCui: '11111111' } },
@@ -429,7 +433,7 @@ describe('campaign progress records', () => {
   it('rebuilds records from a projected snapshot and reapplies pending events', () => {
     const snapshot = {
       ...getEmptyCampaignProgressSnapshot(),
-      acceptedTermsAt: ISO_1,
+      acceptedTermsByEntity: { '12345678': ISO_1 },
       selectedEntityCui: '12345678',
       lastUpdated: ISO_1,
     }
@@ -450,7 +454,7 @@ describe('campaign progress records', () => {
 
     const projected = projectCampaignProgressFromRecords(nextRecords)
 
-    expect(projected.acceptedTermsAt).toBe(ISO_1)
+    expect(projected.acceptedTermsByEntity['12345678']).toBe(ISO_1)
     expect(projected.selectedEntityCui).toBe('12345678')
     expect(projected.activeChallengeModuleSlug).toBe('budget-basics')
   })

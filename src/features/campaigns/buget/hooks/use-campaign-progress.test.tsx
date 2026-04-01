@@ -10,7 +10,6 @@ import {
 import { PRIMARIE_WEBSITE_LINK_INTERACTION } from '../civic-interaction-definitions'
 import { CampaignProgressProvider, useCampaignProgress } from './use-campaign-progress'
 import {
-  CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY,
   CAMPAIGN_ACTIVE_MODULE_RECORD_KEY,
   CAMPAIGN_SELECTED_ENTITY_RECORD_KEY,
   buildCampaignProgressRecords,
@@ -47,7 +46,7 @@ function createSnapshot(
     version: CAMPAIGN_PROGRESS_SCHEMA_VERSION,
     campaignId: CAMPAIGN_ID,
     onboardingCompletedAt: null,
-    acceptedTermsAt: null,
+    acceptedTermsByEntity: {},
     selectedLocality: null,
     selectedEntityCui: null,
     activeChallengeModuleSlug: null,
@@ -243,7 +242,7 @@ describe('use-campaign-progress', () => {
     )
   })
 
-  it('persists accepted challenge terms with an audit event', async () => {
+  it('persists per-entity accepted terms with an audit event', async () => {
     const { result } = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
 
     await waitFor(() => {
@@ -251,60 +250,22 @@ describe('use-campaign-progress', () => {
     })
 
     act(() => {
-      result.current.acceptChallengeTerms({ acceptedTermsAt: '2026-01-05T00:00:00.000Z' })
+      result.current.acceptEntityTerms('12345678')
     })
 
-    expect(result.current.progress.acceptedTermsAt).toBe('2026-01-05T00:00:00.000Z')
+    expect(result.current.progress.acceptedTermsByEntity['12345678']).toEqual(expect.any(String))
     expect(readStoredCampaignEvents()).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           type: 'interactive.updated',
           payload: expect.objectContaining({
             record: expect.objectContaining({
-              key: CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY,
+              key: `system:campaign:buget:accepted-terms:entity:12345678`,
             }),
-            auditEvents: [
-              expect.objectContaining({
-                type: 'submitted',
-                actor: 'user',
-                recordKey: CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY,
-                value: {
-                  kind: 'json',
-                  json: { value: { acceptedTermsAt: '2026-01-05T00:00:00.000Z' } },
-                },
-              }),
-            ],
           }),
         }),
       ]),
     )
-  })
-
-  it('does not persist an audit event when accepted challenge terms are reset', async () => {
-    const { result } = renderHook(() => useCampaignProgress(), { wrapper: Wrapper })
-
-    await waitFor(() => {
-      expect(result.current.isReady).toBe(true)
-    })
-
-    act(() => {
-      result.current.acceptChallengeTerms({ acceptedTermsAt: '2026-01-05T00:00:00.000Z' })
-    })
-
-    act(() => {
-      result.current.resetAcceptedChallengeTerms()
-    })
-
-    const resetTermsEvent = readStoredCampaignEvents()
-      .filter(isInteractiveUpdatedEvent)
-      .find((event) => {
-        return event.payload.record.key === CAMPAIGN_ACCEPTED_TERMS_RECORD_KEY
-          && event.payload.record.value?.kind === 'json'
-          && event.payload.record.value.json.value.acceptedTermsAt === null
-      })
-
-    expect(resetTermsEvent).toBeDefined()
-    expect(resetTermsEvent?.payload.auditEvents).toBeUndefined()
   })
 
   it('persists challenge status updates with an audit event', async () => {
