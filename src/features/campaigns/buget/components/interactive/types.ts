@@ -5,6 +5,7 @@ export type DebateRequestFormValue = {
   readonly isNgo: boolean
   readonly organizationName: string | null
   readonly ngoSenderEmail: string | null
+  readonly preparedSubject: string | null
   readonly threadKey: string | null
   readonly submissionPath: 'send_yourself' | 'request_platform' | null
   readonly submittedAt: string | null

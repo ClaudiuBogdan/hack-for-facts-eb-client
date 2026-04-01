@@ -17,6 +17,7 @@ const formState = {
     isNgo: boolean
     organizationName: string | null
     ngoSenderEmail: string | null
+    preparedSubject: string | null
     threadKey: string | null
     submissionPath: 'send_yourself' | 'request_platform' | null
     submittedAt: string | null
@@ -85,6 +86,7 @@ describe('DebateRequestForm', () => {
       isNgo: false,
       organizationName: null,
       ngoSenderEmail: null,
+      preparedSubject: null,
       threadKey: null,
       submissionPath: 'request_platform',
       submittedAt: '2026-03-23T19:27:40.526Z',
@@ -136,6 +138,52 @@ describe('DebateRequestForm', () => {
     )
   })
 
+  it('persists the latest city hall email draft value', () => {
+    render(
+      <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
+    )
+
+    fireEvent.change(screen.getByLabelText('City hall email'), {
+      target: { value: 'first@example.ro' },
+    })
+    fireEvent.change(screen.getByLabelText('City hall email'), {
+      target: { value: 'second@example.ro' },
+    })
+
+    expect(saveDraftMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        primariaEmail: 'second@example.ro',
+      }),
+    )
+  })
+
+  it('clears ngo-only fields in the saved draft when ngo mode is turned off', () => {
+    render(
+      <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
+    )
+
+    fireEvent.change(screen.getByLabelText('City hall email'), {
+      target: { value: 'primaria@example.ro' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    fireEvent.click(screen.getByLabelText('Do you represent a legally established association?'))
+    fireEvent.change(screen.getByLabelText('Association name'), {
+      target: { value: 'Asociatia Test' },
+    })
+    fireEvent.click(screen.getByLabelText('Do you represent a legally established association?'))
+
+    expect(screen.queryByLabelText('Association name')).not.toBeInTheDocument()
+    expect(saveDraftMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        isNgo: false,
+        organizationName: null,
+        ngoSenderEmail: null,
+        threadKey: null,
+        preparedSubject: null,
+      }),
+    )
+  })
+
   it('shows email preview and submits self-send with ngoSenderEmail', async () => {
     render(
       <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
@@ -176,6 +224,7 @@ describe('DebateRequestForm', () => {
         isNgo: true,
         organizationName: 'Asociatia Test',
         ngoSenderEmail: 'ngo@example.com',
+        preparedSubject: 'Cerere organizare dezbatere publica - 4305857 - buget local 2026',
         threadKey: null,
         submissionPath: 'send_yourself',
         submittedAt: expect.any(String),

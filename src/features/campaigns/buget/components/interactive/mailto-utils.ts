@@ -102,6 +102,13 @@ export function buildPublicDebateEmailBody(params: {
   ].join('\n')
 }
 
+export function buildPublicDebateEmailSubject(params: {
+  readonly cityName: string
+  readonly year: number
+}): string {
+  return `Cerere organizare dezbatere publica - ${params.cityName} - buget local ${params.year}`
+}
+
 export function buildPublicDebateMailto(params: {
   readonly primariaEmail: string
   readonly organizationName: string
@@ -111,7 +118,10 @@ export function buildPublicDebateMailto(params: {
   return buildMailtoUrl({
     to: params.primariaEmail,
     cc: PLATFORM_CC_EMAILS.join(','),
-    subject: `Cerere organizare dezbatere publica - buget local ${params.year}`,
+    subject: buildPublicDebateEmailSubject({
+      cityName: params.cityName,
+      year: params.year,
+    }),
     body: buildPublicDebateEmailBody({
       organizationName: params.organizationName,
       cityName: params.cityName,

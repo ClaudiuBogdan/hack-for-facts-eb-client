@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { toast } from 'sonner'
@@ -20,7 +20,12 @@ import {
   type ReviewSummaryItem,
 } from './campaign-challenge-review-state'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
-import { buildMailtoUrl, buildPublicDebateEmailBody, PLATFORM_CC_EMAILS } from './mailto-utils'
+import {
+  buildMailtoUrl,
+  buildPublicDebateEmailBody,
+  buildPublicDebateEmailSubject,
+  PLATFORM_CC_EMAILS,
+} from './mailto-utils'
 import type {
   DebateRequestFormValue,
   CampaignInteractiveElementProps,
@@ -32,6 +37,7 @@ const EMPTY_VALUE: DebateRequestFormValue = {
   isNgo: false,
   organizationName: null,
   ngoSenderEmail: null,
+  preparedSubject: null,
   threadKey: null,
   submissionPath: null,
   submittedAt: null,
@@ -42,6 +48,33 @@ function isValidEmail(email: string): boolean {
 }
 
 type Step = 1 | 2 | 3
+
+function applyDraftFieldChange<K extends keyof DebateRequestFormValue>(
+  current: DebateRequestFormValue,
+  field: K,
+  value: DebateRequestFormValue[K],
+): DebateRequestFormValue {
+  const baseNext = {
+    ...current,
+    [field]: value,
+  } as DebateRequestFormValue
+
+  if (field === 'isNgo' && value === false) {
+    return {
+      ...baseNext,
+      organizationName: null,
+      ngoSenderEmail: null,
+      threadKey: null,
+      preparedSubject: null,
+    }
+  }
+
+  return {
+    ...baseNext,
+    threadKey: null,
+    preparedSubject: null,
+  }
+}
 
 function CopyFieldButton({ text }: { readonly text: string }) {
   const [copied, setCopied] = useState(false)
@@ -186,8 +219,8 @@ function EmailPreviewPanel({
  *   A cron job or admin process should:
  *   1. For 'request_platform' submissions: trigger the actual email dispatch
  *      via the InstitutionEmailThreads table (request_type: 'public_debate').
- *   2. For 'send_yourself' submissions: prepare a thread-keyed email and
- *      optionally verify via CC email receipt.
+ *   2. For 'send_yourself' submissions: submit the exact subject used for the
+ *      email so the backend can correlate it with the captured CC email.
  *   3. Transition the challenge status to 'completed' once verified.
  */
 export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInteractiveElementProps) {
@@ -215,60 +248,35 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
   const [showEmailPreview, setShowEmailPreview] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const draftRef = useRef(draft)
+
+  const persistDraft = useCallback((next: DebateRequestFormValue) => {
+    draftRef.current = next
+    setDraft(next)
+    void form.saveDraft(next)
+  }, [form])
 
   // Pre-fill primariaEmail from PrimarieContactInfo when available
   useEffect(() => {
     if (prefilled) return
     const prefilledEmail = contactInfo.savedValue?.email
-    if (prefilledEmail && !draft.primariaEmail) {
+    if (prefilledEmail && !draftRef.current.primariaEmail) {
       setPrefilled(true)
-      const next = { ...draft, primariaEmail: prefilledEmail }
-      setDraft(next)
-      void form.saveDraft(next)
+      persistDraft({
+        ...draftRef.current,
+        primariaEmail: prefilledEmail,
+      })
     }
-  }, [contactInfo.savedValue?.email, draft, form, prefilled])
-
-  const updateField = useCallback(<K extends keyof DebateRequestFormValue>(
-    field: K,
-    value: DebateRequestFormValue[K],
-  ) => {
-    setShowEmailPreview(false)
-    setSubmitError(null)
-    setDraft((prev) => {
-      const next = { ...prev, [field]: value }
-
-      if (field === 'isNgo' && value === false) {
-        next.organizationName = null
-        next.ngoSenderEmail = null
-      }
-
-      next.threadKey = null
-
-      return next
-    })
-  }, [])
-
-  // Sync draft changes to backend (debounced by React batching)
-  const pendingDraftRef = useCallback(<K extends keyof DebateRequestFormValue>(
-    field: K,
-    value: DebateRequestFormValue[K],
-  ) => {
-    const next = { ...draft, [field]: value }
-    if (field === 'isNgo' && value === false) {
-      (next as Record<string, unknown>).organizationName = null;
-      (next as Record<string, unknown>).ngoSenderEmail = null
-    }
-    (next as Record<string, unknown>).threadKey = null
-    void form.saveDraft(next)
-  }, [draft, form])
+  }, [contactInfo.savedValue?.email, persistDraft, prefilled])
 
   const handleFieldChange = useCallback(<K extends keyof DebateRequestFormValue>(
     field: K,
     value: DebateRequestFormValue[K],
   ) => {
-    updateField(field, value)
-    pendingDraftRef(field, value)
-  }, [updateField, pendingDraftRef])
+    setShowEmailPreview(false)
+    setSubmitError(null)
+    persistDraft(applyDraftFieldChange(draftRef.current, field, value))
+  }, [persistDraft])
 
   const hasValidEmail = isValidEmail(draft.primariaEmail)
   const hasOrganizationName = Boolean(draft.organizationName?.trim())
@@ -286,7 +294,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
 
   const currentYear = new Date().getFullYear()
   const orgName = draft.organizationName?.trim() || ''
-  const emailSubject = `Cerere organizare dezbatere publica - buget local ${currentYear}`
+  const emailSubject = buildPublicDebateEmailSubject({ cityName, year: currentYear })
   const emailBody = useMemo(
     () => buildPublicDebateEmailBody({ organizationName: orgName || 'NUMELE ASOCIATIEI', cityName, year: currentYear }),
     [orgName, cityName, currentYear],
@@ -315,6 +323,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
       const submittedValue: DebateRequestFormValue = {
         ...draft,
         ngoSenderEmail: draft.isNgo ? draft.ngoSenderEmail?.trim() || null : null,
+        preparedSubject: emailSubject,
         submissionPath: 'send_yourself',
         submittedAt: new Date().toISOString(),
       }
@@ -328,7 +337,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
     } finally {
       setIsSubmitting(false)
     }
-  }, [draft, form])
+  }, [draft, emailSubject, form])
 
   const handleRequestPlatform = useCallback(async () => {
     setSubmitError(null)
@@ -337,6 +346,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
       const submittedValue: DebateRequestFormValue = {
         ...draft,
         ngoSenderEmail: null,
+        preparedSubject: null,
         threadKey: null,
         submissionPath: 'request_platform',
         submittedAt: new Date().toISOString(),
