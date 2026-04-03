@@ -14,9 +14,10 @@ let authState = {
   isSignedIn: true,
 }
 
-const notificationQuickMenuMock = vi.fn((_props: unknown) => (
-  <div data-testid="notification-quick-menu" />
-))
+const notificationQuickMenuMock = vi.fn((props?: unknown) => {
+  void props
+  return <div data-testid="notification-quick-menu" />
+})
 
 vi.mock('@tanstack/react-router', () => ({
   useLocation: () => mockLocation,

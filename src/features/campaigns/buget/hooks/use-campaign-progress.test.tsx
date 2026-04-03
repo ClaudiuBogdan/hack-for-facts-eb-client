@@ -23,13 +23,19 @@ let authState = {
   user: null as null | { id: string },
 }
 
-const fetchCampaignProgressMock = vi.fn(async (_params?: unknown) => ({
+const fetchCampaignProgressMock = vi.fn(async (params?: unknown) => {
+  void params
+
+  return {
   snapshot: createSnapshot(),
   recordsByKey: buildCampaignProgressRecords(createSnapshot()),
   events: [] as LearningProgressEvent[],
   cursor: '0',
-}))
-const syncCampaignProgressMock = vi.fn(async (_params?: unknown) => {})
+  }
+})
+const syncCampaignProgressMock = vi.fn(async (params?: unknown) => {
+  void params
+})
 
 vi.mock('@/lib/auth', () => ({
   useAuth: () => authState,

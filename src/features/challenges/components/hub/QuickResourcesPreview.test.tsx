@@ -1,3 +1,4 @@
+import type { AnchorHTMLAttributes, ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@/test/test-utils'
 import { FUNKY_NOTIFICATION_ENTITY_UPDATES } from '@/features/notifications/campaign-notification-keys'
@@ -21,9 +22,15 @@ let notificationsState: {
   isLoading: false,
 }
 
+type MockLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
+  readonly children?: ReactNode
+  readonly to?: string
+  readonly search?: Record<string, string>
+}
+
 vi.mock('@tanstack/react-router', () => ({
   useLocation: () => mockLocation,
-  Link: ({ children, to, search, ...props }: any) => {
+  Link: ({ children, to, search, ...props }: MockLinkProps) => {
     const query = search ? new URLSearchParams(search).toString() : ''
     const href = typeof to === 'string'
       ? `${to}${query ? `?${query}` : ''}`
