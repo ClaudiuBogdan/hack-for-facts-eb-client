@@ -642,7 +642,7 @@ msgstr "Interval sumă"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:123
 msgid "An unexpected error occurred"
-msgstr ""
+msgstr "A apărut o eroare neașteptată"
 
 #: src/components/budget-explorer/BudgetTreemap.tsx:353
 #: src/components/entities/FinancialDataCard.tsx:80
@@ -711,7 +711,7 @@ msgstr "Buget anual indisponibil"
 
 #: src/routes/cookies.lazy.tsx:196
 msgid "Anonymous usage patterns, page views, interactions, and feature usage events."
-msgstr ""
+msgstr "Modele anonime de utilizare, vizualizări de pagină, interacțiuni și evenimente de utilizare a funcționalităților."
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:410
 msgid "Anyone with link"
@@ -1367,7 +1367,7 @@ msgstr "Alege un răspuns"
 
 #: src/routes/cookies.lazy.tsx:135
 msgid "Choose between essential-only or all cookies, then fine-tune individual options below. Your selections are saved when you press \"Confirm choices\"."
-msgstr ""
+msgstr "Alegeți între doar cookie-urile esențiale sau toate cookie-urile, apoi ajustați opțiunile individuale de mai jos. Selecțiile sunt salvate când apăsați „Confirmă alegerile”."
 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:710
 msgid "Choose how you want the public debate request to be sent."
@@ -2593,7 +2593,7 @@ msgstr "Dezactivează seria"
 #: src/routes/cookies.lazy.tsx:188
 #: src/routes/cookies.lazy.tsx:220
 msgid "Disabled"
-msgstr ""
+msgstr "Dezactivat"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:617
 msgid "Discard & close"
@@ -3116,7 +3116,7 @@ msgstr "Cookie-uri esențiale"
 
 #: src/routes/cookies.lazy.tsx:248
 msgid "Essential only"
-msgstr ""
+msgstr "Doar esențiale"
 
 #: src/features/learning/components/interactive/VATReformCard.tsx:31
 msgid "Essentials"
@@ -4036,11 +4036,11 @@ msgstr "Ajutor"
 
 #: src/routes/cookies.lazy.tsx:210
 msgid "Help us fix problems by sending error reports. When disabled, only minimal anonymous telemetry is sent to keep the service reliable."
-msgstr ""
+msgstr "Ajutați-ne să rezolvăm problemele trimițând rapoarte de eroare. Când este dezactivată, se trimite doar telemetrie anonimă minimă pentru a menține serviciul fiabil."
 
 #: src/routes/cookies.lazy.tsx:178
 msgid "Help us understand usage to improve the product. No analytics data is sent unless you opt in."
-msgstr ""
+msgstr "Ajutați-ne să înțelegem cum este folosit produsul pentru a-l îmbunătăți. Nu trimitem date de analiză decât dacă optați pentru acest lucru."
 
 #: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:341
 msgid "Hidden infrastructure you used"
@@ -4188,7 +4188,7 @@ msgstr "Într-un an, vei plăti"
 
 #: src/routes/cookies.lazy.tsx:228
 msgid "Includes additional error context and, if you use feedback tools, may include your message text or screenshots."
-msgstr ""
+msgstr "Include context suplimentar despre erori și, dacă folosiți instrumentele de feedback, poate include textul mesajului sau capturi de ecran."
 
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:82
 msgid "Includes EU money (PNRR) and profits from state-owned companies. Essential but smaller."
@@ -4525,7 +4525,7 @@ msgstr "Ultima actualizare"
 
 #: src/routes/cookies.lazy.tsx:274
 msgid "Last updated:"
-msgstr ""
+msgstr "Ultima actualizare:"
 
 #: src/features/learning/components/interactive/VATReformCard.tsx:23
 msgid "Law 141/2025"
@@ -6558,7 +6558,7 @@ msgstr "Misiunea platformei"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:508
 msgid "Please try again to load your campaign notification preferences."
-msgstr ""
+msgstr "Vă rugăm să încercați din nou să încărcați preferințele de notificare pentru campanie."
 
 #: src/features/learning/components/interactive/ExecutionRateChart.tsx:251
 msgid "Poor"
@@ -7038,7 +7038,7 @@ msgstr "Trimitere solicitată prin platformă"
 
 #: src/routes/cookies.lazy.tsx:146
 msgid "Required for core functionality like security, authentication, and preferences. Always on."
-msgstr ""
+msgstr "Necesare pentru funcționalitățile de bază, precum securitatea, autentificarea și preferințele. Sunt mereu active."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:133
 msgid "Requires variation; rule is skipped if standard deviation is zero."
@@ -7859,7 +7859,7 @@ msgstr "Autentificare necesară"
 
 #: src/features/notifications/api/notifications.ts:7
 msgid "Sign in required to manage notifications"
-msgstr ""
+msgstr "Este necesară autentificarea pentru a gestiona notificările"
 
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:172
 msgid "Sign in to answer this section and save your progress."
@@ -8571,7 +8571,7 @@ msgstr "Comutare cookie-uri de analiză"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:361
 msgid "Toggle campaign notifications"
-msgstr ""
+msgstr "Comută notificările campaniei"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:119
 msgid "Toggle county boundaries"
@@ -8591,7 +8591,7 @@ msgstr "Comută vizibilitatea hărții"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:416
 msgid "Toggle notifications for {name}"
-msgstr ""
+msgstr "Comută notificările pentru {name}"
 
 #: src/components/maps/ScrollWheelZoomControl.tsx:32
 msgid "Toggle scroll zoom"
@@ -8830,7 +8830,7 @@ msgstr "UAT-uri"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:505
 msgid "Unable to load notifications"
-msgstr ""
+msgstr "Nu am putut încărca notificările"
 
 #: src/components/entities/views/ins-stats-view.formatters.ts:61
 #: src/components/entities/views/ins-stats-view.presentation.tsx:499
@@ -9287,7 +9287,7 @@ msgstr "Nu am putut afișa această pagină din cauza unei probleme de validare 
 
 #: src/components/privacy/CookieConsentBanner.tsx:93
 msgid "We use essential cookies and browser storage to run the service. With your permission, we also use PostHog for analytics and Sentry for enhanced error reporting. You can choose essential-only, accept all, or manage your preferences at any time. For more information, please see our <0>Privacy Policy</0>."
-msgstr ""
+msgstr "Folosim cookie-uri esențiale și stocarea din browser pentru a furniza serviciul. Cu permisiunea dvs., folosim și PostHog pentru analiză și Sentry pentru raportare avansată a erorilor. Puteți alege doar cookie-urile esențiale, puteți accepta tot sau vă puteți gestiona preferințele în orice moment. Pentru mai multe informații, consultați <0>Politica de confidențialitate</0>."
 
 #: src/components/privacy/CookieConsentBanner.tsx:89
 msgid "We value your privacy"
