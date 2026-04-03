@@ -1,4 +1,4 @@
-import type { InteractionLifecycleMode } from '@/features/learning/types'
+import type { InteractionLifecycleMode } from '../../learning/types'
 
 export const CIVIC_MONITOR_AND_REQUEST_CHALLENGE_SLUG = 'civic-monitor-and-request'
 export const CIVIC_PARTICIPATE_AND_ACT_CHALLENGE_SLUG = 'civic-participate-and-act'
