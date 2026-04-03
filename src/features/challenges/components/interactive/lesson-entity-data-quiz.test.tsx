@@ -1,5 +1,6 @@
 import { render, screen } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { buildChallengeInteractionId } from '@/features/challenges/utils/interaction-ids'
 import { LessonEntityDataQuiz } from './lesson-entity-data-quiz'
 
 const useChallengeLessonEntityBundleMock = vi.fn()
@@ -98,7 +99,10 @@ describe('LessonEntityDataQuiz', () => {
       screen.getByText(/"Cultură" este domeniul cu cea mai mica valoare executata/i),
     ).toBeInTheDocument()
     expect(lastQuizProps).toMatchObject({
-      quizId: 'step-read-local-execution:lesson-entity-quiz-lowest-expense',
+      quizId: buildChallengeInteractionId(
+        'step-read-local-execution',
+        'lesson-entity-quiz-lowest-expense',
+      ),
     })
   })
 
