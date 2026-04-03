@@ -1,0 +1,39 @@
+{
+  "data": {
+    "heatmapCountyData": [
+      {
+        "county_code": "CJ",
+        "county_name": "Cluj",
+        "county_population": 679141,
+        "total_amount": 3123456789,
+        "per_capita_amount": 4599.11,
+        "county_entity": {
+          "cui": "4288110",
+          "name": "JUDETUL CLUJ"
+        }
+      },
+      {
+        "county_code": "SB",
+        "county_name": "Sibiu",
+        "county_population": 388325,
+        "total_amount": 1789012345,
+        "per_capita_amount": 4607.02,
+        "county_entity": {
+          "cui": "4241100",
+          "name": "JUDETUL SIBIU"
+        }
+      },
+      {
+        "county_code": "B",
+        "county_name": "București",
+        "county_population": 1883425,
+        "total_amount": 15234567890,
+        "per_capita_amount": 8088.45,
+        "county_entity": {
+          "cui": "4267117",
+          "name": "MUNICIPIUL BUCUREȘTI"
+        }
+      }
+    ]
+  }
+}

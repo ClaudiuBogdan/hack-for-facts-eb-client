@@ -227,16 +227,9 @@ function EmailPreviewPanel({
 /**
  * Debate request form with a 3-step flow: contact info, identity, send path.
  *
- * Validation flow:
- * - Submissions go to pending_review (amber state) because the platform
- *   needs to track whether the email was actually sent and received.
- * - Backend reference: the record key is funky:interaction:funky_request::entity:{cui}.
- *   A cron job or admin process should:
- *   1. For 'request_platform' submissions: trigger the actual email dispatch
- *      via the InstitutionEmailThreads table (request_type: 'funky').
- *   2. For 'send_yourself' submissions: submit the exact subject used for the
- *      email so the backend can correlate it with the captured CC email.
- *   3. Transition the challenge status to 'completed' once verified.
+ * Record identity is derived from the interaction ID and entity scope.
+ * Debate requests use DEBATE_REQUEST_INTERACTION.interactionId, so the
+ * persisted key becomes {interactionId}::entity:{cui}.
  */
 export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<DebateRequestFormValue>({

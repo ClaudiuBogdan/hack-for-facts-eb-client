@@ -1,5 +1,9 @@
 import { fireEvent, render, screen } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  DEBATE_REQUEST_INTERACTION_ID,
+  PRIMARIE_CONTACT_INFO_INTERACTION,
+} from '../../civic-interaction-definitions'
 import { ContestationBuilder } from './ContestationBuilder'
 
 const saveDraftMock = vi.fn(async () => undefined)
@@ -137,12 +141,12 @@ describe('ContestationBuilder', () => {
         expect.objectContaining({
           scopePolicy: 'entity',
           entityCui: '87654321',
-          interactionId: 'funky:interaction:funky_request',
+          interactionId: DEBATE_REQUEST_INTERACTION_ID,
         }),
         expect.objectContaining({
           scopePolicy: 'entity',
           entityCui: '87654321',
-          interactionId: 'funky:interaction:city_hall_contact',
+          interactionId: PRIMARIE_CONTACT_INFO_INTERACTION.interactionId,
         }),
       ]),
     )

@@ -134,7 +134,26 @@ export const Route = createFileRoute('/entities/$cui')({
 
         const detailsOptions = entityDetailsQueryOptions(ssrParams);
 
-        await queryClient.ensureQueryData(detailsOptions);
+        try {
+            await queryClient.ensureQueryData(detailsOptions);
+        } catch (error) {
+            if (!import.meta.env.DEV) {
+                throw error;
+            }
+
+            console.warn('[entities/$cui] SSR entity prefetch failed', {
+                cui: params.cui,
+                error,
+            });
+
+            return {
+                ssrParams,
+                ssrSettings,
+                forcedOverrides,
+                entitySeoSnapshot: entitySeoSnapshotBase,
+                requestSiteUrl,
+            };
+        }
 
         const desiredView = (search?.view as string | undefined) ?? 'overview';
         const entity = queryClient.getQueryData(detailsOptions.queryKey) as EntityDetailsData | undefined;

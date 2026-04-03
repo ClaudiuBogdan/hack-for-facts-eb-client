@@ -55,8 +55,10 @@ export const PRIMARIE_CONTACT_INFO_INTERACTION = defineCampaignInteractiveDefini
   'async_review',
 )
 
+export const DEBATE_REQUEST_INTERACTION_ID = 'funky:interaction:public_debate_request' as const
+
 export const DEBATE_REQUEST_INTERACTION = defineCampaignInteractiveDefinition(
-  'funky:interaction:funky_request',
+  DEBATE_REQUEST_INTERACTION_ID,
   CIVIC_MONITOR_AND_REQUEST_CHALLENGE_SLUG,
   'async_review',
 )

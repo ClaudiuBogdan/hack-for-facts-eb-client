@@ -8,8 +8,10 @@
  * - Legend display
  */
 
-import { test, expect, type Page } from '@playwright/test'
+import { expect, type Page } from '@playwright/test'
+import { test } from '../utils/integration-base'
 import { waitForHydration } from '../utils/test-helpers'
+import type { MockApiFixture } from '../utils/types'
 
 function getGraphQLOperationName(postData: string | null): string | null {
   if (!postData) return null
@@ -46,6 +48,11 @@ async function registerDelayedHeatmapRoute(page: Page, delayMs = 1500): Promise<
   })
 }
 
+async function mockMapOperations(mockApi: MockApiFixture) {
+  await mockApi.mockGraphQL('GetHeatmapUATData', 'heatmap-uat-data')
+  await mockApi.mockGraphQL('GetHeatmapCountyData', 'heatmap-county-data')
+}
+
 async function switchDataView(page: Page, viewLabel: RegExp): Promise<void> {
   const dataViewGroup = page.getByRole('group', { name: /vizualizare.*date|data.*view/i })
   await dataViewGroup.getByText(viewLabel).click()
@@ -57,13 +64,18 @@ async function triggerHeatmapRefetch(page: Page): Promise<void> {
 }
 
 test.describe('Map Page', () => {
-	test.beforeEach(async ({ page }) => {
+	test.beforeEach(async ({ page, mockApi }) => {
+		if (mockApi.mode === 'live') {
+			test.skip()
+			return
+		}
+
+		await mockMapOperations(mockApi)
 		await page.goto('/map')
 		// Wait for filters region to be visible (indicates page loaded)
 		await expect(
 			page.getByRole('region', { name: /filtre.*hartă|map.*filters/i })
 		).toBeVisible({ timeout: 15000 })
-		await expect(page.getByTestId('leaflet-map')).toBeVisible({ timeout: 15000 })
 		await waitForHydration(page)
 	})
 
@@ -235,13 +247,19 @@ test.describe('Map Page', () => {
 	})
 
 test.describe('Map Page - Loading Overlays', () => {
-	test.beforeEach(async ({ page }) => {
+	test.beforeEach(async ({ page, mockApi }) => {
+		if (mockApi.mode === 'live') {
+			test.skip()
+			return
+		}
+
+		await mockMapOperations(mockApi)
 		await page.goto('/map')
 		await expect(
 			page.getByRole('region', { name: /filtre.*hartă|map.*filters/i })
 		).toBeVisible({ timeout: 15000 })
-		await expect(page.getByTestId('leaflet-map')).toBeVisible({ timeout: 15000 })
 		await waitForHydration(page)
+		await expect(page.getByTestId('leaflet-map')).toBeVisible({ timeout: 15000 })
 	})
 
   test('shows and hides shared loading overlay in table view during heatmap refetch', async ({ page }) => {
@@ -285,13 +303,19 @@ test.describe('Map Page - Loading Overlays', () => {
 })
 
 test.describe('Map Page - Interactions', () => {
-	test.beforeEach(async ({ page }) => {
+	test.beforeEach(async ({ page, mockApi }) => {
+		if (mockApi.mode === 'live') {
+			test.skip()
+			return
+		}
+
+		await mockMapOperations(mockApi)
 		await page.goto('/map')
 		await expect(
 			page.getByRole('region', { name: /filtre.*hartă|map.*filters/i })
 		).toBeVisible({ timeout: 15000 })
-		await expect(page.getByTestId('leaflet-map')).toBeVisible({ timeout: 15000 })
 		await waitForHydration(page)
+		await expect(page.getByTestId('leaflet-map')).toBeVisible({ timeout: 15000 })
 	})
 
 	test('can switch between map views (UAT/County)', async ({ page }) => {

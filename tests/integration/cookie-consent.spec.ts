@@ -530,8 +530,10 @@ test.describe('Cookie Settings Page', () => {
     await page.reload()
     await waitForHydration(page)
 
-    // Check for Updated text: EN "Updated" / RO "Actualizat"
-    await expect(page.getByText(/updated|actualizat/i)).toBeVisible()
+    // Check for the last-updated label in either locale.
+    await expect(
+      page.getByText(/last updated|ultima actualizare/i),
+    ).toBeVisible()
   })
 
   test('respects redirect parameter after action', async ({ page }) => {

@@ -1,0 +1,42 @@
+{
+  "data": {
+    "heatmapUATData": [
+      {
+        "uat_id": "54984",
+        "uat_name": "MUNICIPIUL CLUJ-NAPOCA",
+        "uat_code": "4305857",
+        "siruta_code": "54975",
+        "county_code": "CJ",
+        "county_name": "Cluj",
+        "population": 286598,
+        "amount": 1627387390.88,
+        "total_amount": 1627387390.88,
+        "per_capita_amount": 5678.12
+      },
+      {
+        "uat_id": "143619",
+        "uat_name": "MUNICIPIUL SIBIU",
+        "uat_code": "4270740",
+        "siruta_code": "143611",
+        "county_code": "SB",
+        "county_name": "Sibiu",
+        "population": 169611,
+        "amount": 1234567890,
+        "total_amount": 1234567890,
+        "per_capita_amount": 7278.45
+      },
+      {
+        "uat_id": "179132",
+        "uat_name": "MUNICIPIUL BUCUREȘTI",
+        "uat_code": "4267117",
+        "siruta_code": "179132",
+        "county_code": "B",
+        "county_name": "București",
+        "population": 1883425,
+        "amount": 15234567890,
+        "total_amount": 15234567890,
+        "per_capita_amount": 8088.45
+      }
+    ]
+  }
+}

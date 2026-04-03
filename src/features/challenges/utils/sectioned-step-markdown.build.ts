@@ -5,6 +5,7 @@ import remarkMdx from 'remark-mdx'
 import remarkParse from 'remark-parse'
 import remarkStringify from 'remark-stringify'
 import { unified } from 'unified'
+import { DEBATE_REQUEST_INTERACTION_ID } from '../../campaigns/buget/civic-interaction-definitions'
 import type {
   ChallengeLocale,
   ChallengeStepFrontmatter,
@@ -476,7 +477,7 @@ function extractLessonChallengeDescriptors(
     if (jsxNode.name === 'DebateRequestForm') {
       descriptors.push({
         kind: 'fixed',
-        interactionId: 'funky:interaction:funky_request',
+        interactionId: DEBATE_REQUEST_INTERACTION_ID,
         interactionKind: 'custom',
         scopePolicy: 'entity',
       })

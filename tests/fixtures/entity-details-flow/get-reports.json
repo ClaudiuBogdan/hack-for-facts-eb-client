@@ -1,0 +1,32 @@
+{
+  "data": {
+    "reports": {
+      "nodes": [
+        {
+          "report_id": "a71675d877a823f1b65e884c15ec9a79099fe7ee35de59d43243227d6986f2f0",
+          "reporting_year": 2025,
+          "report_type": "PRINCIPAL_AGGREGATED",
+          "report_date": "1761868800000",
+          "download_links": [
+            "https://static.anaf.ro/rapfxb/LOT630/20251031_FXB-EXB-901_TREZ216_4305857_4305857_02_107439913.xlsx",
+            "https://static.anaf.ro/rapfxb/LOT630/20251031_FXB-EXB-901_TREZ216_4305857_4305857_02_107439914.pdf",
+            "https://static.anaf.ro/rapfxb/LOT630/20251031_FXB-EXB-901_TREZ216_4305857_4305857_02_107439912.xml"
+          ],
+          "main_creditor": {
+            "cui": "4305857",
+            "name": "MUNICIPIUL CLUJ-NAPOCA"
+          },
+          "budgetSector": {
+            "sector_id": "2",
+            "sector_description": "Bugetul local   (administratie locala)"
+          }
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 1,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

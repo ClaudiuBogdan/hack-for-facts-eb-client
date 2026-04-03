@@ -49,6 +49,14 @@ describe('BugetLandingPage', () => {
     expect(screen.getByText(/bugetele locale!/)).toBeInTheDocument()
   })
 
+  it('shows the campaign terms and conditions link on the landing page', () => {
+    render(<BugetLandingPage locale="ro" />)
+
+    expect(
+      screen.getByRole('link', { name: /termenii și condițiile campaniei/i }),
+    ).toHaveAttribute('href', '/provocare/termeni-si-conditii')
+  })
+
   it('renders the FAQ section with all questions', () => {
     render(<BugetLandingPage locale="ro" />)
 

@@ -1,0 +1,37 @@
+{
+  "data": {
+    "aggregatedLineItems": {
+      "nodes": [
+        {
+          "fn_c": "65",
+          "fn_n": "Învățământ",
+          "ec_c": "10",
+          "ec_n": "Cheltuieli de personal",
+          "amount": 45678901234,
+          "count": 2850
+        },
+        {
+          "fn_c": "65",
+          "fn_n": "Învățământ",
+          "ec_c": "20",
+          "ec_n": "Bunuri și servicii",
+          "amount": 12345678901,
+          "count": 1920
+        },
+        {
+          "fn_c": "84",
+          "fn_n": "Transporturi",
+          "ec_c": "71",
+          "ec_n": "Investiții",
+          "amount": 18901234567,
+          "count": 450
+        }
+      ],
+      "pageInfo": {
+        "totalCount": 3,
+        "hasNextPage": false,
+        "hasPreviousPage": false
+      }
+    }
+  }
+}

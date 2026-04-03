@@ -9,12 +9,27 @@
  * - Navigation tabs
  */
 
-import { test, expect } from '@playwright/test'
+import { test, expect } from '../utils/integration-base'
+import type { MockApiFixture } from '../utils/types'
 
 const TEST_ENTITY_CUI = '4305857'
 
+async function mockEntityDetailsOperations(mockApi: MockApiFixture) {
+  await mockApi.mockGraphQL('GetEntityDetails', 'entity-details')
+  await mockApi.mockGraphQL('GetEntityLineItems', 'entity-line-items')
+  await mockApi.mockGraphQL('EntityNames', 'entity-names')
+  await mockApi.mockGraphQL('GetReports', 'get-reports')
+}
+
 test.describe('Entity Details Page', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, mockApi }) => {
+    if (mockApi.mode === 'live') {
+      test.skip()
+      return
+    }
+
+    await mockEntityDetailsOperations(mockApi)
+
     await page.goto(`/entities/${TEST_ENTITY_CUI}`)
     // Wait for entity heading to appear (indicates page loaded)
     await expect(
@@ -186,12 +201,21 @@ test.describe('Entity Details Page', () => {
 })
 
 test.describe('Entity Details - Navigation', () => {
-  test('can navigate to expense trends view', async ({ page }) => {
+  test.beforeEach(async ({ page, mockApi }) => {
+    if (mockApi.mode === 'live') {
+      test.skip()
+      return
+    }
+
+    await mockEntityDetailsOperations(mockApi)
+
     await page.goto(`/entities/${TEST_ENTITY_CUI}`)
     await expect(
       page.getByRole('heading', { name: /MUNICIPIUL CLUJ-NAPOCA/i, level: 1 })
     ).toBeVisible({ timeout: 15000 })
+  })
 
+  test('can navigate to expense trends view', async ({ page }) => {
     const expenseTrendsLink = page.getByRole('link', { name: /evoluția cheltuielilor/i })
     await expect(expenseTrendsLink).toBeVisible()
     await expenseTrendsLink.click()
@@ -201,11 +225,6 @@ test.describe('Entity Details - Navigation', () => {
   })
 
   test('can navigate to income trends view', async ({ page }) => {
-    await page.goto(`/entities/${TEST_ENTITY_CUI}`)
-    await expect(
-      page.getByRole('heading', { name: /MUNICIPIUL CLUJ-NAPOCA/i, level: 1 })
-    ).toBeVisible({ timeout: 15000 })
-
     const incomeTrendsLink = page.getByRole('link', { name: /evoluția veniturilor/i })
     await expect(incomeTrendsLink).toBeVisible()
     await incomeTrendsLink.click()
@@ -215,11 +234,6 @@ test.describe('Entity Details - Navigation', () => {
   })
 
   test('can navigate to reports view', async ({ page }) => {
-    await page.goto(`/entities/${TEST_ENTITY_CUI}`)
-    await expect(
-      page.getByRole('heading', { name: /MUNICIPIUL CLUJ-NAPOCA/i, level: 1 })
-    ).toBeVisible({ timeout: 15000 })
-
     // Use exact match to avoid matching "Vezi toate rapoartele"
     const reportsLink = page.getByRole('link', { name: 'Rapoarte', exact: true })
     await expect(reportsLink).toBeVisible()
@@ -231,7 +245,12 @@ test.describe('Entity Details - Navigation', () => {
 })
 
 test.describe('Entity Details - SSR Metadata and Share Image', () => {
-  test('returns entity-specific SSR meta tags with dynamic image URL', async ({ request }) => {
+  test('returns entity-specific SSR meta tags with dynamic image URL', async ({ request, mockApi }) => {
+    if (mockApi.mode !== 'live') {
+      test.skip()
+      return
+    }
+
     const response = await request.get(`/entities/${TEST_ENTITY_CUI}?year=2025&period=YEAR&normalization=total&currency=RON`)
     expect(response.ok()).toBeTruthy()
 
@@ -255,7 +274,12 @@ test.describe('Entity Details - SSR Metadata and Share Image', () => {
     expect(twitterImageMatch?.[1]).toContain(`/entities/${TEST_ENTITY_CUI}/share-image.png?`)
   })
 
-  test('serves share image endpoint as PNG', async ({ request }) => {
+  test('serves share image endpoint as PNG', async ({ request, mockApi }) => {
+    if (mockApi.mode !== 'live') {
+      test.skip()
+      return
+    }
+
     const imageResponse = await request.get(
       `/entities/${TEST_ENTITY_CUI}/share-image.png?year=2025&period=YEAR&normalization=total&currency=RON`,
     )

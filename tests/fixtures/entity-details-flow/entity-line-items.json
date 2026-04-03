@@ -1,0 +1,80 @@
+{
+  "data": {
+    "entity": {
+      "executionLineItemsCh": {
+        "nodes": [
+          {
+            "line_item_id": "li-001",
+            "account_category": "ch",
+            "funding_source_id": 1,
+            "expense_type": "functionare",
+            "anomaly": null,
+            "functionalClassification": {
+              "functional_name": "Servicii publice generale",
+              "functional_code": "51"
+            },
+            "economicClassification": {
+              "economic_name": "Cheltuieli de personal",
+              "economic_code": "10"
+            },
+            "ytd_amount": 45000000,
+            "quarterly_amount": 11250000,
+            "monthly_amount": 3750000
+          },
+          {
+            "line_item_id": "li-002",
+            "account_category": "ch",
+            "funding_source_id": 1,
+            "expense_type": "functionare",
+            "anomaly": null,
+            "functionalClassification": {
+              "functional_name": "Invatamant",
+              "functional_code": "65"
+            },
+            "economicClassification": {
+              "economic_name": "Bunuri si servicii",
+              "economic_code": "20"
+            },
+            "ytd_amount": 32000000,
+            "quarterly_amount": 8000000,
+            "monthly_amount": 2666667
+          }
+        ]
+      },
+      "executionLineItemsVn": {
+        "nodes": [
+          {
+            "line_item_id": "li-101",
+            "account_category": "vn",
+            "funding_source_id": 1,
+            "expense_type": null,
+            "anomaly": null,
+            "functionalClassification": {
+              "functional_name": "Venituri fiscale",
+              "functional_code": "01"
+            },
+            "economicClassification": {
+              "economic_name": "Impozit pe venit",
+              "economic_code": "01.01"
+            },
+            "ytd_amount": 520000000,
+            "quarterly_amount": 130000000,
+            "monthly_amount": 43333333
+          }
+        ]
+      }
+    },
+    "fundingSources": {
+      "nodes": [
+        {
+          "source_id": "1",
+          "source_description": "Buget local"
+        },
+        {
+          "source_id": "2",
+          "source_description": "Fonduri europene"
+        }
+      ]
+    }
+  }
+}

@@ -9,7 +9,10 @@ const FUNKY_LOGO_URL =
   'https://funky.ong/wp-content/uploads/2024/03/Funky_RED_RGB-1.png'
 import { Button } from '@/components/ui/button'
 import { Analytics } from '@/lib/analytics'
-import { CAMPAIGN_ENTITY_SELECTOR_PATH } from '../../constants'
+import {
+  CAMPAIGN_ENTITY_SELECTOR_PATH,
+  CAMPAIGN_TERMS_PATH,
+} from '../../constants'
 import type { CampaignLocale } from '../../types'
 
 type BugetLandingPageProps = {
@@ -58,6 +61,34 @@ function CtaButton({
         <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
       </Link>
     </Button>
+  )
+}
+
+function CampaignTermsLink({
+  locale,
+}: {
+  readonly locale: CampaignLocale
+}) {
+  const prefix =
+    locale === 'en'
+      ? 'Read the campaign '
+      : 'Consultă '
+  const linkLabel =
+    locale === 'en'
+      ? 'terms and conditions'
+      : 'termenii și condițiile campaniei'
+
+  return (
+    <p className="text-sm leading-relaxed text-muted-foreground">
+      {prefix}
+      <Link
+        to={CAMPAIGN_TERMS_PATH}
+        className="font-medium text-foreground underline decoration-[#3565c4] underline-offset-4 transition-colors hover:text-[#3565c4]"
+      >
+        {linkLabel}
+      </Link>
+      .
+    </p>
   )
 }
 
@@ -220,8 +251,9 @@ export function BugetLandingPage({ locale }: BugetLandingPageProps) {
         <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
           {subtitle}
         </p>
-        <div className="pt-1">
+        <div className="space-y-3 pt-1">
           <CtaButton locale={locale} ctaLabel={ctaLabel} source="landing" />
+          <CampaignTermsLink locale={locale} />
         </div>
       </div>
 
