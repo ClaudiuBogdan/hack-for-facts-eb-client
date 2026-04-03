@@ -87,7 +87,6 @@ function CookieSettingsPage() {
 
   const navigateBack = useCallback(() => {
     if (!isSafeRedirect(redirect)) {
-      navigate({ to: '/' })
       return
     }
 
@@ -193,7 +192,7 @@ function CookieSettingsPage() {
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
               <div className="text-sm font-medium"><Trans>Usage analytics</Trans></div>
-              <div className="text-xs text-muted-foreground mt-0.5"><Trans>Anonymous usage patterns, page views, interactions, and feature usage events.</Trans></div>
+              <div className="mt-0.5 text-xs text-muted-foreground"><Trans>Anonymous usage patterns, page views, interactions, and feature usage events.</Trans></div>
             </div>
             <Switch
               checked={prefs.analytics}
@@ -225,7 +224,7 @@ function CookieSettingsPage() {
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
               <div className="text-sm font-medium"><Trans>Enhanced error reporting</Trans></div>
-              <div className="text-xs text-muted-foreground mt-0.5"><Trans>Includes additional error context and, if you use feedback tools, may include your message text or screenshots.</Trans></div>
+              <div className="mt-0.5 text-xs text-muted-foreground"><Trans>Includes additional error context and, if you use feedback tools, may include your message text or screenshots.</Trans></div>
             </div>
             <Switch
               checked={prefs.sentry}
@@ -242,7 +241,7 @@ function CookieSettingsPage() {
           <Button
             variant="outline"
             onClick={handleAllowEssentialOnly}
-            className="h-12 w-full text-sm font-semibold sm:flex-1"
+            className="h-12 w-full rounded-xl border-border/70 px-5 text-sm font-semibold shadow-xs transition-[background-color,box-shadow,transform] hover:bg-secondary/70 hover:shadow-sm active:translate-y-px sm:flex-1"
             aria-label={t`Allow essential cookies only`}
           >
             <Trans>Essential only</Trans>
@@ -250,14 +249,14 @@ function CookieSettingsPage() {
           <Button
             variant={hasChanges ? 'default' : 'secondary'}
             onClick={handleAcceptSelected}
-            className="h-12 w-full text-sm font-semibold sm:flex-1"
+            className="h-12 w-full rounded-xl px-5 text-sm font-semibold shadow-sm transition-[background-color,box-shadow,transform] hover:shadow-md active:translate-y-px sm:flex-1"
             aria-label={t`Save cookie preferences`}
           >
             <Trans>Confirm choices</Trans>
           </Button>
           <Button
             onClick={handleAllowAll}
-            className="h-12 w-full text-sm font-semibold sm:flex-1"
+            className="h-12 w-full rounded-xl px-5 text-sm font-semibold shadow-sm transition-[background-color,box-shadow,transform] hover:shadow-md active:translate-y-px sm:flex-1"
             aria-label={t`Allow all cookies`}
           >
             <Trans>Allow all</Trans>
@@ -267,7 +266,7 @@ function CookieSettingsPage() {
         <div className="flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <span>
             <Trans>
-              Read our <Link to="/cookie-policy" className="underline underline-offset-2 hover:text-foreground transition-colors">Cookie Policy</Link> and <Link to="/privacy" className="underline underline-offset-2 hover:text-foreground transition-colors">Privacy Policy</Link>.
+              Read our <Link to="/cookie-policy" className="underline underline-offset-2 transition-colors hover:text-foreground">Cookie Policy</Link> and <Link to="/privacy" className="underline underline-offset-2 transition-colors hover:text-foreground">Privacy Policy</Link>.
             </Trans>
           </span>
           <span className="shrink-0">
@@ -295,24 +294,24 @@ type CookieCardProps = {
 
 function CookieCard({ icon, title, description, badge, footer, children }: CookieCardProps) {
   return (
-    <div className="rounded-xl border bg-card p-4 sm:p-5 transition-colors">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="flex items-start gap-3 min-w-0">
+    <div className="rounded-xl border bg-card p-4 transition-colors sm:p-5">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground">
             {icon}
           </div>
           <div className="min-w-0">
             <h2 className="text-base font-semibold leading-tight">{title}</h2>
-            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{description}</p>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
           </div>
         </div>
         <div className="shrink-0">{badge}</div>
       </div>
-      <div className="ml-0 sm:ml-12 border-t pt-3">
+      <div className="border-t pt-3 sm:ml-12">
         {children}
       </div>
       {footer && (
-        <div className="ml-0 sm:ml-12 mt-3">
+        <div className="mt-3 sm:ml-12">
           {footer}
         </div>
       )}
