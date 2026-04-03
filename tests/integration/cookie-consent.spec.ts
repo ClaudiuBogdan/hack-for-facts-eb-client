@@ -551,7 +551,7 @@ test.describe('Cookie Settings Page', () => {
     expect(page.url()).toContain('/charts')
   })
 
-  test('defaults to home when redirect is missing', async ({ page }) => {
+  test('stays on cookie settings when redirect is missing', async ({ page }) => {
     // Navigate to /cookies without redirect
     await page.goto('/cookies')
     await waitForHydration(page)
@@ -563,10 +563,10 @@ test.describe('Cookie Settings Page', () => {
     await expect(confirmButton).toBeVisible()
     await confirmButton.click()
 
-    await waitForPathname(page, /^\/$/)
+    await waitForPathname(page, /^\/cookies(?:\/)?$/)
 
-    // Verify we're at home
-    expect(page.url()).toMatch(/\/$/)
+    // Verify we stay on the settings page
+    expect(page.url()).toMatch(/\/cookies(?:\/)?$/)
   })
 })
 
