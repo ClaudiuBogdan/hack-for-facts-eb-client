@@ -220,4 +220,36 @@ describe('challenge-mdx-components', () => {
       '12345678:civic-campaign',
     )
   })
+
+  it('replaces gated campaign widgets while keeping the share CTA available when access is blocked', async () => {
+    const components = buildChallengeMdxComponents({
+      entityCui: '12345678',
+      QuizComponent: () => <div />,
+      MarkCompleteComponent: () => <div />,
+      campaignInteractiveAccess: {
+        isAccessGranted: false,
+        replacement: <div data-testid="campaign-access-replacement">Access required</div>,
+      },
+    })
+
+    const BudgetStatusReportComponent = components.BudgetStatusReport as ComponentType<{
+      readonly ownerChallengeSlug: string
+    }>
+    const CivicModuleShareCtaComponent = components.CivicModuleShareCta as ComponentType<{
+      readonly moduleSlug?: string
+    }>
+
+    render(
+      <>
+        <BudgetStatusReportComponent ownerChallengeSlug="civic-monitor-and-request" />
+        <CivicModuleShareCtaComponent moduleSlug="civic-campaign" />
+      </>,
+    )
+
+    expect(screen.getAllByTestId('campaign-access-replacement')).toHaveLength(1)
+    expect(screen.queryByTestId('budget-status-report-props')).not.toBeInTheDocument()
+    expect(await screen.findByTestId('civic-module-share-cta-props')).toHaveTextContent(
+      '12345678:civic-campaign',
+    )
+  })
 })

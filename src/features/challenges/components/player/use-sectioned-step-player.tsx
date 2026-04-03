@@ -45,6 +45,7 @@ const EMPTY_LESSON_CHALLENGE_IDS: readonly string[] = []
 
 type UseSectionedStepPlayerParams = {
   readonly entityCui: string
+  readonly entityName?: string
   readonly locale: ChallengeLocale
   readonly moduleSlug: string
   readonly currentSearchSectionId?: string
@@ -89,6 +90,7 @@ type UseSectionedStepPlayerResult = {
 
 export function useSectionedStepPlayer({
   entityCui,
+  entityName,
   locale,
   moduleSlug,
   currentSearchSectionId,
@@ -318,13 +320,14 @@ export function useSectionedStepPlayer({
   const accessReplacement = useMemo(
     () => (
       <ChallengeInteractionAccessReplacement
+        entityName={entityName}
         locale={locale}
         accessCardVariant={accessCardVariant}
         isSubmitting={isSubmitting}
         onRegister={onRegister}
       />
     ),
-    [accessCardVariant, isSubmitting, locale, onRegister],
+    [accessCardVariant, entityName, isSubmitting, locale, onRegister],
   )
 
   const quizAnswerRef = useRef(quizState.answer)

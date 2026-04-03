@@ -15,6 +15,7 @@ import {
 import { ChallengeSectionedQuiz } from './sectioned-step-interactives'
 
 type ChallengeInteractionAccessReplacementProps = {
+  readonly entityName?: string
   readonly locale: ChallengeLocale
   readonly accessCardVariant: ChallengeAccessCardVariant | null
   readonly isSubmitting: boolean
@@ -24,6 +25,7 @@ type ChallengeInteractionAccessReplacementProps = {
 type StepQuizWrapperProps = ChallengeQuizMdxProps & {
   readonly stepId: string
   readonly entityCui: string
+  readonly entityName?: string
   readonly locale: ChallengeLocale
   readonly accessCardVariant: ChallengeAccessCardVariant | null
   readonly isAccessGranted: boolean
@@ -33,6 +35,7 @@ type StepQuizWrapperProps = ChallengeQuizMdxProps & {
 
 type UseChallengeStepMdxComponentsParams = {
   readonly entityCui: string
+  readonly entityName?: string
   readonly stepId: string
   readonly locale: ChallengeLocale
   readonly accessCardVariant: ChallengeAccessCardVariant | null
@@ -54,6 +57,7 @@ type UseSectionedStepMdxComponentsParams = {
 }
 
 export function ChallengeInteractionAccessReplacement({
+  entityName,
   locale,
   accessCardVariant,
   isSubmitting,
@@ -62,6 +66,7 @@ export function ChallengeInteractionAccessReplacement({
   return (
     <div className="not-prose my-8">
       <ChallengeHubAccessCard
+        entityName={entityName}
         locale={locale}
         variant={accessCardVariant ?? 'loading'}
         isSubmitting={isSubmitting}
@@ -74,6 +79,7 @@ export function ChallengeInteractionAccessReplacement({
 function StepQuizWrapper({
   stepId,
   entityCui,
+  entityName,
   locale,
   accessCardVariant,
   isAccessGranted,
@@ -96,6 +102,7 @@ function StepQuizWrapper({
   if (!isAccessGranted) {
     return (
       <ChallengeInteractionAccessReplacement
+        entityName={entityName}
         locale={locale}
         accessCardVariant={accessCardVariant}
         isSubmitting={isSubmitting}
@@ -116,6 +123,7 @@ function StepQuizWrapper({
 
 export function useChallengeStepMdxComponents({
   entityCui,
+  entityName,
   stepId,
   locale,
   accessCardVariant,
@@ -133,6 +141,7 @@ export function useChallengeStepMdxComponents({
         {...props}
         stepId={stepId}
         entityCui={entityCui}
+        entityName={entityName}
         locale={locale}
         accessCardVariant={accessCardVariant}
         isAccessGranted={isAccessGranted}
@@ -140,7 +149,7 @@ export function useChallengeStepMdxComponents({
         onRegister={onRegister}
       />
     ),
-    [accessCardVariant, entityCui, isAccessGranted, isSubmitting, locale, onRegister, stepId],
+    [accessCardVariant, entityCui, entityName, isAccessGranted, isSubmitting, locale, onRegister, stepId],
   )
 
   const MarkCompleteWrapper = useCallback(
@@ -148,6 +157,7 @@ export function useChallengeStepMdxComponents({
       if (!isAccessGranted) {
         return (
           <ChallengeInteractionAccessReplacement
+            entityName={entityName}
             locale={locale}
             accessCardVariant={accessCardVariant}
             isSubmitting={isSubmitting}
@@ -158,19 +168,20 @@ export function useChallengeStepMdxComponents({
 
       return <MarkComplete {...props} contentId={stepId} />
     },
-    [accessCardVariant, isAccessGranted, isSubmitting, locale, onRegister, stepId],
+    [accessCardVariant, entityName, isAccessGranted, isSubmitting, locale, onRegister, stepId],
   )
 
   const accessReplacement = useMemo(
     () => (
       <ChallengeInteractionAccessReplacement
+        entityName={entityName}
         locale={locale}
         accessCardVariant={accessCardVariant}
         isSubmitting={isSubmitting}
         onRegister={onRegister}
       />
     ),
-    [accessCardVariant, isSubmitting, locale, onRegister],
+    [accessCardVariant, entityName, isSubmitting, locale, onRegister],
   )
 
   const lessonCustomComponents = useMemo(
@@ -191,9 +202,13 @@ export function useChallengeStepMdxComponents({
         entityCui,
         QuizComponent: QuizWrapper,
         MarkCompleteComponent: MarkCompleteWrapper,
+        campaignInteractiveAccess: {
+          isAccessGranted,
+          replacement: accessReplacement,
+        },
         customComponents: lessonCustomComponents,
       }),
-    [MarkCompleteWrapper, QuizWrapper, entityCui, lessonCustomComponents],
+    [MarkCompleteWrapper, QuizWrapper, accessReplacement, entityCui, isAccessGranted, lessonCustomComponents],
   )
 
   const sectionedArticleMdxComponents = useMemo(
@@ -202,9 +217,13 @@ export function useChallengeStepMdxComponents({
         entityCui,
         QuizComponent: QuizWrapper,
         MarkCompleteComponent: () => null,
+        campaignInteractiveAccess: {
+          isAccessGranted,
+          replacement: accessReplacement,
+        },
         customComponents: lessonCustomComponents,
       }),
-    [QuizWrapper, entityCui, lessonCustomComponents],
+    [QuizWrapper, accessReplacement, entityCui, isAccessGranted, lessonCustomComponents],
   )
 
   const syntheticMarkComplete = useMemo(
@@ -258,6 +277,10 @@ export function useSectionedStepMdxComponents({
           />
         ),
         MarkCompleteComponent: () => null,
+        campaignInteractiveAccess: {
+          isAccessGranted,
+          replacement: accessReplacement,
+        },
         customComponents: lessonCustomComponents,
       }),
     [

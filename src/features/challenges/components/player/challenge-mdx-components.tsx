@@ -3,6 +3,7 @@ import {
   Suspense,
   type ComponentPropsWithoutRef,
   type ComponentType,
+  type ReactNode,
 } from 'react'
 import { t } from '@lingui/core/macro'
 import type { MDXComponents } from 'mdx/types'
@@ -27,6 +28,10 @@ type BuildChallengeMdxComponentsParams = {
   readonly entityCui: string
   readonly QuizComponent: ComponentType<ChallengeQuizMdxProps>
   readonly MarkCompleteComponent: ComponentType<ChallengeMarkCompleteMdxProps>
+  readonly campaignInteractiveAccess?: {
+    readonly isAccessGranted: boolean
+    readonly replacement: ReactNode
+  }
   readonly customComponents?: MDXComponents
 }
 
@@ -198,8 +203,13 @@ const CivicModuleShareCta = createLazyComponent<{ readonly entityCui: string, re
 function withRouteEntityCui<TProps extends { readonly entityCui: string }>(
   Component: ComponentType<TProps>,
   entityCui: string,
+  campaignInteractiveAccess?: BuildChallengeMdxComponentsParams['campaignInteractiveAccess'],
 ): ComponentType<Omit<TProps, 'entityCui'>> {
   return function RouteScopedChallengeComponent(props: Omit<TProps, 'entityCui'>) {
+    if (campaignInteractiveAccess && !campaignInteractiveAccess.isAccessGranted) {
+      return <>{campaignInteractiveAccess.replacement}</>
+    }
+
     return <Component {...(props as TProps)} entityCui={entityCui} />
   }
 }
@@ -219,14 +229,14 @@ export function buildChallengeMdxComponents(
     BudgetCodeAnchors,
     BudgetCodeAnatomy,
     BudgetChapterHierarchy,
-    BudgetStatusReport: withRouteEntityCui(BudgetStatusReport, params.entityCui),
-    DebateRequestForm: withRouteEntityCui(DebateRequestForm, params.entityCui),
-    ParticipationReport: withRouteEntityCui(ParticipationReport, params.entityCui),
-    ContestationBuilder: withRouteEntityCui(ContestationBuilder, params.entityCui),
-    BudgetPublicationDate: withRouteEntityCui(BudgetPublicationDate, params.entityCui),
-    PrimarieWebsiteLink: withRouteEntityCui(PrimarieWebsiteLink, params.entityCui),
-    BudgetDocumentLink: withRouteEntityCui(BudgetDocumentLink, params.entityCui),
-    PrimarieContactInfo: withRouteEntityCui(PrimarieContactInfo, params.entityCui),
+    BudgetStatusReport: withRouteEntityCui(BudgetStatusReport, params.entityCui, params.campaignInteractiveAccess),
+    DebateRequestForm: withRouteEntityCui(DebateRequestForm, params.entityCui, params.campaignInteractiveAccess),
+    ParticipationReport: withRouteEntityCui(ParticipationReport, params.entityCui, params.campaignInteractiveAccess),
+    ContestationBuilder: withRouteEntityCui(ContestationBuilder, params.entityCui, params.campaignInteractiveAccess),
+    BudgetPublicationDate: withRouteEntityCui(BudgetPublicationDate, params.entityCui, params.campaignInteractiveAccess),
+    PrimarieWebsiteLink: withRouteEntityCui(PrimarieWebsiteLink, params.entityCui, params.campaignInteractiveAccess),
+    BudgetDocumentLink: withRouteEntityCui(BudgetDocumentLink, params.entityCui, params.campaignInteractiveAccess),
+    PrimarieContactInfo: withRouteEntityCui(PrimarieContactInfo, params.entityCui, params.campaignInteractiveAccess),
     CivicModuleShareCta: withRouteEntityCui(CivicModuleShareCta, params.entityCui),
     ...(params.customComponents ?? {}),
   }

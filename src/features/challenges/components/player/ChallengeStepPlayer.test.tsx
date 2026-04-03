@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ChallengeStepPlayer } from './ChallengeStepPlayer'
 
 const mockUseChallengeAccess = vi.fn()
+const mockUseEntityLabel = vi.fn()
 const mockUseChallengeStepContent = vi.fn()
 const mockUseQuizInteraction = vi.fn()
 const mockUseLessonChallenges = vi.fn()
@@ -26,6 +27,10 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('@/lib/auth', () => ({
   AuthSignInButton: ({ children }: { children: ReactNode }) => <>{children}</>,
+}))
+
+vi.mock('@/hooks/filters/useFilterLabels', () => ({
+  useEntityLabel: (...args: unknown[]) => mockUseEntityLabel(...args),
 }))
 
 vi.mock('../../hooks/use-challenge-access', () => ({
@@ -117,6 +122,12 @@ describe('ChallengeStepPlayer', () => {
   beforeEach(() => {
     mockGetAdjacentSteps.mockReset()
     mockGetAdjacentSteps.mockReturnValue({ prev: null, next: null })
+    mockUseEntityLabel.mockReset()
+    mockUseEntityLabel.mockReturnValue({
+      map: () => 'Test City Hall',
+      add: vi.fn(),
+      fetch: vi.fn(),
+    })
     mockUseChallengeAccess.mockReturnValue({
       accessCardVariant: 'auth',
       isAccessGranted: false,
@@ -146,6 +157,62 @@ describe('ChallengeStepPlayer', () => {
       completedChallenges: 0,
       allChallengesCompleted: false,
     })
+  })
+
+  it('does not resolve the entity label outside the register access state', () => {
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'article',
+        Component: () => <p>Step body copy</p>,
+        frontmatter: {},
+        sections: [],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+      />,
+    )
+
+    expect(mockUseEntityLabel).not.toHaveBeenCalled()
+  })
+
+  it('resolves the entity label when the register access card is shown', () => {
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: 'register',
+      isAccessGranted: false,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'article',
+        Component: () => <p>Step body copy</p>,
+        frontmatter: {},
+        sections: [],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+      />,
+    )
+
+    expect(mockUseEntityLabel).toHaveBeenCalledWith(['12345678'])
   })
 
   it('keeps article content visible while replacing interactive elements', () => {

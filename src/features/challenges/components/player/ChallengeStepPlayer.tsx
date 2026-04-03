@@ -4,6 +4,7 @@ import { t } from '@lingui/core/macro'
 import { BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { useEntityLabel } from '@/hooks/filters/useFilterLabels'
 import { LessonChallengesProvider } from '@/features/learning/components/player/lesson-challenges-context'
 import { prefetchChallengeStepContent, useChallengeStepContent } from '../../hooks/use-challenge-step-content'
 import { useChallengeAccess } from '../../hooks/use-challenge-access'
@@ -46,6 +47,7 @@ type ChallengeStepPlayerProps = {
 
 type ChallengeSectionedStepRendererProps = {
   readonly entityCui: string
+  readonly entityName?: string
   readonly locale: ChallengeLocale
   readonly moduleSlug: string
   readonly currentSearchSectionId?: string
@@ -76,6 +78,7 @@ type ChallengeSectionedStepRendererProps = {
 
 type ChallengeStepContentRendererProps = {
   readonly entityCui: string
+  readonly entityName?: string
   readonly locale: ChallengeLocale
   readonly moduleSlug: string
   readonly contentDir: string
@@ -103,6 +106,7 @@ type ChallengeStepContentRendererProps = {
 
 function ChallengeSectionedStepRenderer({
   entityCui,
+  entityName,
   locale,
   moduleSlug,
   currentSearchSectionId,
@@ -128,6 +132,7 @@ function ChallengeSectionedStepRenderer({
     <LessonChallengesProvider>
       <ChallengeSectionedStepRendererBody
         entityCui={entityCui}
+        entityName={entityName}
         locale={locale}
         moduleSlug={moduleSlug}
         currentSearchSectionId={currentSearchSectionId}
@@ -155,6 +160,7 @@ function ChallengeSectionedStepRenderer({
 
 function ChallengeSectionedStepRendererBody({
   entityCui,
+  entityName,
   locale,
   moduleSlug,
   currentSearchSectionId,
@@ -178,6 +184,7 @@ function ChallengeSectionedStepRendererBody({
 }: ChallengeSectionedStepRendererProps) {
   const sectionedPlayer = useSectionedStepPlayer({
     entityCui,
+    entityName,
     locale,
     moduleSlug,
     currentSearchSectionId,
@@ -281,6 +288,7 @@ function ChallengeSectionedStepRendererBody({
 
 function ChallengeStepContentRenderer({
   entityCui,
+  entityName,
   locale,
   moduleSlug,
   contentDir,
@@ -310,6 +318,7 @@ function ChallengeStepContentRenderer({
     syntheticMarkComplete,
   } = useChallengeStepMdxComponents({
     entityCui,
+    entityName,
     stepId,
     locale,
     accessCardVariant,
@@ -330,6 +339,7 @@ function ChallengeStepContentRenderer({
     return (
       <ChallengeSectionedStepRenderer
         entityCui={entityCui}
+        entityName={entityName}
         locale={locale}
         moduleSlug={moduleSlug}
         currentSearchSectionId={activeSectionId}
@@ -369,6 +379,16 @@ function ChallengeStepContentRenderer({
       error={error}
     />
   )
+}
+
+function ChallengeStepContentRendererWithRegisterEntityName(
+  props: Omit<ChallengeStepContentRendererProps, 'entityName'>,
+) {
+  const entityLabelStore = useEntityLabel([props.entityCui])
+  const rawEntityLabel = entityLabelStore.map(props.entityCui)
+  const entityName = rawEntityLabel.startsWith('id::') ? undefined : rawEntityLabel
+
+  return <ChallengeStepContentRenderer {...props} entityName={entityName} />
 }
 
 export function ChallengeStepPlayer({
@@ -451,26 +471,49 @@ export function ChallengeStepPlayer({
         />
       }
     >
-      <ChallengeStepContentRenderer
-        entityCui={entityCui}
-        locale={locale}
-        moduleSlug={moduleSlug}
-        contentDir={step.contentDir}
-        stepId={step.id}
-        stepTitle={getTranslatedText(step.title, locale)}
-        stepCompletionMode={step.completionMode}
-        activeSectionId={activeSectionId}
-        activeViewMode={activeViewMode}
-        onSectionChange={onSectionChange}
-        onViewModeChange={onViewModeChange}
-        prev={prev}
-        next={next}
-        findChallengeSlugForAdjacentStep={findChallengeSlugForAdjacentStep}
-        accessCardVariant={accessCardVariant}
-        isAccessGranted={isAccessGranted}
-        isSubmitting={isSubmitting}
-        onRegister={register}
-      />
+      {accessCardVariant === 'register' ? (
+        <ChallengeStepContentRendererWithRegisterEntityName
+          entityCui={entityCui}
+          locale={locale}
+          moduleSlug={moduleSlug}
+          contentDir={step.contentDir}
+          stepId={step.id}
+          stepTitle={getTranslatedText(step.title, locale)}
+          stepCompletionMode={step.completionMode}
+          activeSectionId={activeSectionId}
+          activeViewMode={activeViewMode}
+          onSectionChange={onSectionChange}
+          onViewModeChange={onViewModeChange}
+          prev={prev}
+          next={next}
+          findChallengeSlugForAdjacentStep={findChallengeSlugForAdjacentStep}
+          accessCardVariant={accessCardVariant}
+          isAccessGranted={isAccessGranted}
+          isSubmitting={isSubmitting}
+          onRegister={register}
+        />
+      ) : (
+        <ChallengeStepContentRenderer
+          entityCui={entityCui}
+          locale={locale}
+          moduleSlug={moduleSlug}
+          contentDir={step.contentDir}
+          stepId={step.id}
+          stepTitle={getTranslatedText(step.title, locale)}
+          stepCompletionMode={step.completionMode}
+          activeSectionId={activeSectionId}
+          activeViewMode={activeViewMode}
+          onSectionChange={onSectionChange}
+          onViewModeChange={onViewModeChange}
+          prev={prev}
+          next={next}
+          findChallengeSlugForAdjacentStep={findChallengeSlugForAdjacentStep}
+          accessCardVariant={accessCardVariant}
+          isAccessGranted={isAccessGranted}
+          isSubmitting={isSubmitting}
+          onRegister={register}
+        />
+      )}
     </Suspense>
   )
 }
