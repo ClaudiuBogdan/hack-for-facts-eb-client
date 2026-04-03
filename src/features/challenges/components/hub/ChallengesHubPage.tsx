@@ -1,9 +1,11 @@
+import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { useEffect, useMemo, useState } from 'react'
 import { getEntityLabels } from '@/lib/api/labels'
 import { useChallengeAccess } from '../../hooks/use-challenge-access'
 import { useChallengeProgress } from '../../hooks/use-challenge-progress'
 import { useCampaignProgress } from '@/features/campaigns/buget/hooks/use-campaign-progress'
+import { CAMPAIGN_TERMS_PATH } from '@/features/campaigns/buget/constants'
 import {
   getAllSteps,
   getChallengeModules,
@@ -209,6 +211,19 @@ export function ChallengesHubPage({
           </div>
         </div>
       )}
+
+      <div className="border-t border-border/50 pt-2">
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          {locale === 'en' ? 'Read the campaign ' : 'Consultă '}
+          <Link
+            to={CAMPAIGN_TERMS_PATH}
+            className="font-medium text-foreground underline decoration-[#3565c4] underline-offset-4 transition-colors hover:text-[#3565c4]"
+          >
+            {locale === 'en' ? 'terms and conditions' : 'termenii și condițiile campaniei'}
+          </Link>
+          .
+        </p>
+      </div>
     </div>
   )
 }

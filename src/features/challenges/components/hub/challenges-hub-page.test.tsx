@@ -135,6 +135,9 @@ describe('ChallengesHubPage', () => {
       screen.getByRole('heading', { name: /Conectează-te ca să participi la provocări/i }),
     ).toBeInTheDocument()
     expect(
+      screen.getByRole('link', { name: /termenii și condițiile campaniei/i }),
+    ).toHaveAttribute('href', '/provocare/termeni-si-conditii')
+    expect(
       screen.getByRole('button', { name: /Sign in/i }),
     ).toBeInTheDocument()
     expect(screen.queryByTestId('module-card-active')).not.toBeInTheDocument()
