@@ -41,7 +41,7 @@ function getReviewSummaryItems(savedValue: PrimarieWebsiteLinkValue): ReviewSumm
 /**
  * Submissions need async server validation. Backend should verify the URL is
  * a valid primarie website.
- * Record key: campaign:primarie-website-url::entity:{cui}
+ * Record key: funky:interaction:city_hall_website::entity:{cui}
  */
 export function PrimarieWebsiteLink({ ownerChallengeSlug, entityCui }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<PrimarieWebsiteLinkValue>({

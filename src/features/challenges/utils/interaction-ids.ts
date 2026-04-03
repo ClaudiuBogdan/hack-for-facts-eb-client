@@ -3,9 +3,17 @@
  * The persisted record key is built from `interactionId + scope`; `lessonId` is
  * payload metadata only and does not participate in storage identity.
  */
+function toSnakeSegment(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+}
+
 export function buildChallengeInteractionId(stepId: string, localInteractionId: string): string {
-  const normalizedStepId = stepId.trim()
-  const normalizedLocalInteractionId = localInteractionId.trim()
+  const normalizedStepId = toSnakeSegment(stepId)
+  const normalizedLocalInteractionId = toSnakeSegment(localInteractionId)
 
   if (normalizedStepId.length === 0) {
     throw new Error('Challenge interaction id requires a non-empty stepId.')
@@ -15,5 +23,5 @@ export function buildChallengeInteractionId(stepId: string, localInteractionId: 
     throw new Error('Challenge interaction id requires a non-empty localInteractionId.')
   }
 
-  return `${normalizedStepId}:${normalizedLocalInteractionId}`
+  return `funky:lesson:${normalizedStepId}_${normalizedLocalInteractionId}`
 }

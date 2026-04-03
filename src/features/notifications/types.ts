@@ -1,44 +1,50 @@
+import {
+  FUNKY_CAMPAIGN_KEY,
+  FUNKY_NOTIFICATION_ENTITY_UPDATES,
+  FUNKY_NOTIFICATION_GLOBAL,
+} from './campaign-notification-keys'
+
 export type NotificationType =
-  | 'campaign_public_debate_global'
+  | typeof FUNKY_NOTIFICATION_GLOBAL
   | 'newsletter_entity_monthly'
   | 'newsletter_entity_quarterly'
   | 'newsletter_entity_yearly'
-  | 'campaign_public_debate_entity_updates'
+  | typeof FUNKY_NOTIFICATION_ENTITY_UPDATES
   | 'alert_series_analytics'
-  | 'alert_series_static';
+  | 'alert_series_static'
 
 export interface Notification {
-  id: string;
-  userId: string;
-  entityCui: string | null;
-  notificationType: NotificationType;
-  campaignKey?: string | null;
-  isActive: boolean;
-  config: Record<string, unknown> | null;
-  hash: string;
-  createdAt: string;
-  updatedAt: string;
+  id: string
+  userId: string
+  entityCui: string | null
+  notificationType: NotificationType
+  campaignKey?: string | null
+  isActive: boolean
+  config: Record<string, unknown> | null
+  hash: string
+  createdAt: string
+  updatedAt: string
   // Joined data (if available)
   entity?: {
-    name: string;
-    cui: string;
-  };
+    name: string
+    cui: string
+  }
 }
 
 
 export interface NotificationTypeConfig {
-  type: NotificationType;
-  label: string;
-  description: string;
-  campaignKey?: string;
+  type: NotificationType
+  label: string
+  description: string
+  campaignKey?: string
 }
 
 export const NOTIFICATION_TYPE_CONFIGS: Record<NotificationType, NotificationTypeConfig> = {
-  campaign_public_debate_global: {
-    type: 'campaign_public_debate_global',
+  [FUNKY_NOTIFICATION_GLOBAL]: {
+    type: FUNKY_NOTIFICATION_GLOBAL,
     label: 'Public Debate Campaign',
     description: 'Master preference for public debate campaign notifications',
-    campaignKey: 'public_debate',
+    campaignKey: FUNKY_CAMPAIGN_KEY,
   },
   newsletter_entity_monthly: {
     type: 'newsletter_entity_monthly',
@@ -55,11 +61,11 @@ export const NOTIFICATION_TYPE_CONFIGS: Record<NotificationType, NotificationTyp
     label: 'Annual Report',
     description: 'Receive an annual report with budget execution',
   },
-  campaign_public_debate_entity_updates: {
-    type: 'campaign_public_debate_entity_updates',
+  [FUNKY_NOTIFICATION_ENTITY_UPDATES]: {
+    type: FUNKY_NOTIFICATION_ENTITY_UPDATES,
     label: 'Public Debate Updates',
     description: 'Receive updates about public debate correspondence for this entity',
-    campaignKey: 'public_debate',
+    campaignKey: FUNKY_CAMPAIGN_KEY,
   },
   alert_series_analytics: {
     type: 'alert_series_analytics',
@@ -71,4 +77,4 @@ export const NOTIFICATION_TYPE_CONFIGS: Record<NotificationType, NotificationTyp
     label: 'Static Dataset Alert',
     description: 'Receive an alert for a static dataset when conditions are met',
   },
-};
+}

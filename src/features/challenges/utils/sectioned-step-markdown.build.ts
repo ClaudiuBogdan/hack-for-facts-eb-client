@@ -426,7 +426,7 @@ function extractLessonChallengeDescriptors(
     if (jsxNode.name === 'PrimarieWebsiteLink') {
       descriptors.push({
         kind: 'fixed',
-        interactionId: 'campaign:primarie-website-url',
+        interactionId: 'funky:interaction:city_hall_website',
         interactionKind: 'custom',
         scopePolicy: 'entity',
       })
@@ -436,7 +436,7 @@ function extractLessonChallengeDescriptors(
     if (jsxNode.name === 'BudgetDocumentLink') {
       descriptors.push({
         kind: 'fixed',
-        interactionId: 'campaign:budget-document-url',
+        interactionId: 'funky:interaction:budget_document',
         interactionKind: 'custom',
         scopePolicy: 'entity',
       })
@@ -446,7 +446,7 @@ function extractLessonChallengeDescriptors(
     if (jsxNode.name === 'BudgetPublicationDate') {
       descriptors.push({
         kind: 'fixed',
-        interactionId: 'campaign:budget-publication-date',
+        interactionId: 'funky:interaction:budget_publication_date',
         interactionKind: 'custom',
         scopePolicy: 'entity',
       })
@@ -456,7 +456,7 @@ function extractLessonChallengeDescriptors(
     if (jsxNode.name === 'BudgetStatusReport') {
       descriptors.push({
         kind: 'fixed',
-        interactionId: 'campaign:budget-2026-status',
+        interactionId: 'funky:interaction:budget_status',
         interactionKind: 'custom',
         scopePolicy: 'entity',
       })
@@ -466,7 +466,7 @@ function extractLessonChallengeDescriptors(
     if (jsxNode.name === 'PrimarieContactInfo') {
       descriptors.push({
         kind: 'fixed',
-        interactionId: 'campaign:primarie-contact-info',
+        interactionId: 'funky:interaction:city_hall_contact',
         interactionKind: 'custom',
         scopePolicy: 'entity',
       })
@@ -476,7 +476,7 @@ function extractLessonChallengeDescriptors(
     if (jsxNode.name === 'DebateRequestForm') {
       descriptors.push({
         kind: 'fixed',
-        interactionId: 'campaign:debate-request',
+        interactionId: 'funky:interaction:funky_request',
         interactionKind: 'custom',
         scopePolicy: 'entity',
       })
@@ -486,7 +486,7 @@ function extractLessonChallengeDescriptors(
     if (jsxNode.name === 'ParticipationReport') {
       descriptors.push({
         kind: 'fixed',
-        interactionId: 'campaign:participation-report',
+        interactionId: 'funky:interaction:funky_participation',
         interactionKind: 'custom',
         scopePolicy: 'entity',
       })
@@ -496,7 +496,7 @@ function extractLessonChallengeDescriptors(
     if (jsxNode.name === 'ContestationBuilder') {
       descriptors.push({
         kind: 'fixed',
-        interactionId: 'campaign:budget-contestation',
+        interactionId: 'funky:interaction:budget_contestation',
         interactionKind: 'custom',
         scopePolicy: 'entity',
       })

@@ -83,7 +83,7 @@ type Step = 1 | 2 | 3 | 4
  * Validation flow:
  * - Submissions go to pending_review (amber state) because the contestation
  *   content needs quality review before being counted as a valid civic action.
- * - Backend reference: the record key is campaign:budget-contestation::entity:{cui}.
+ * - Backend reference: the record key is funky:interaction:budget_contestation::entity:{cui}.
  *   A review process should verify the contestation is substantive and well-structured.
  *   For 'send_email' submissions, the backend can track delivery via the
  *   InstitutionEmailThreads table (request_type: 'contestation').

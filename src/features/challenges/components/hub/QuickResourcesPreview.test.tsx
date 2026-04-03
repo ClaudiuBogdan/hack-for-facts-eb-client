@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@/test/test-utils'
+import { FUNKY_NOTIFICATION_ENTITY_UPDATES } from '@/features/notifications/campaign-notification-keys'
 import { QuickResourcesPreview } from './QuickResourcesPreview'
 
 let mockLocation = {
@@ -86,7 +87,7 @@ describe('QuickResourcesPreview', () => {
     notificationsState = {
       data: [
         {
-          notificationType: 'campaign_public_debate_entity_updates',
+          notificationType: FUNKY_NOTIFICATION_ENTITY_UPDATES,
           isActive: false,
           entityCui: '12345678',
         },
@@ -105,7 +106,7 @@ describe('QuickResourcesPreview', () => {
     notificationsState = {
       data: [
         {
-          notificationType: 'campaign_public_debate_entity_updates',
+          notificationType: FUNKY_NOTIFICATION_ENTITY_UPDATES,
           isActive: true,
           entityCui: '12345678',
         },

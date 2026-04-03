@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { InteractiveStateRecord, LearningProgressEvent } from '@/features/learning/types'
 import {
   CAMPAIGN_ID,
+  CAMPAIGN_PROGRESS_EVENTS_STORAGE_KEY,
   CAMPAIGN_PROGRESS_STORAGE_KEY,
   CAMPAIGN_PROGRESS_SCHEMA_VERSION,
 } from '../constants'
@@ -79,7 +80,7 @@ function Wrapper({ children }: { readonly children: ReactNode }) {
 }
 
 function getCampaignEventsStorageKey() {
-  return `campaign_progress_events:${CAMPAIGN_ID}`
+  return CAMPAIGN_PROGRESS_EVENTS_STORAGE_KEY
 }
 
 function readStoredCampaignEvents(): LearningProgressEvent[] {
@@ -260,7 +261,7 @@ describe('use-campaign-progress', () => {
           type: 'interactive.updated',
           payload: expect.objectContaining({
             record: expect.objectContaining({
-              key: `system:campaign:buget:accepted-terms:entity:12345678`,
+              key: `funky:progress:terms_accepted::entity:12345678`,
             }),
           }),
         }),
@@ -288,13 +289,13 @@ describe('use-campaign-progress', () => {
           type: 'interactive.updated',
           payload: expect.objectContaining({
             record: expect.objectContaining({
-              key: 'system:campaign:buget:challenge:challenge-1',
+              key: 'funky:progress:challenge_status_challenge-1',
             }),
             auditEvents: [
               expect.objectContaining({
                 type: 'submitted',
                 actor: 'user',
-                recordKey: 'system:campaign:buget:challenge:challenge-1',
+                recordKey: 'funky:progress:challenge_status_challenge-1',
                 value: {
                   kind: 'json',
                   json: {
@@ -338,7 +339,7 @@ describe('use-campaign-progress', () => {
     const reviewSyncEvent = readStoredCampaignEvents()
       .filter(isInteractiveUpdatedEvent)
       .find((event) => {
-        return event.payload.record.key === 'system:campaign:buget:challenge:challenge-1'
+        return event.payload.record.key === 'funky:progress:challenge_status_challenge-1'
           && event.payload.record.value?.kind === 'json'
           && event.payload.record.value.json.value.status === 'in_progress'
           && event.payload.record.value.json.value.attempts === 1
@@ -372,7 +373,7 @@ describe('use-campaign-progress', () => {
     const clearedChallengeEvent = readStoredCampaignEvents()
       .filter(isInteractiveUpdatedEvent)
       .find((event) => {
-        return event.payload.record.key === 'system:campaign:buget:challenge:challenge-1'
+        return event.payload.record.key === 'funky:progress:challenge_status_challenge-1'
           && event.payload.record.value?.kind === 'json'
           && event.payload.record.value.json.value.status === 'not_started'
           && event.payload.record.value.json.value.attempts === 0
@@ -655,7 +656,7 @@ describe('use-campaign-progress', () => {
         && event.payload.record.value.json.value.moduleSlug === null
     })
     const resetChallengeEvent = syncedInteractiveEvents.find((event) => {
-      return event.payload.record.key === 'system:campaign:buget:challenge:challenge-1'
+      return event.payload.record.key === 'funky:progress:challenge_status_challenge-1'
         && event.payload.record.value?.kind === 'json'
         && event.payload.record.value.json.value.status === 'not_started'
         && event.payload.record.value.json.value.attempts === 0
@@ -697,8 +698,8 @@ describe('use-campaign-progress', () => {
               },
             },
           })),
-          'campaign:primarie-website-url::entity:4305857': {
-            key: 'campaign:primarie-website-url::entity:4305857',
+          'funky:interaction:city_hall_website::entity:4305857': {
+            key: 'funky:interaction:city_hall_website::entity:4305857',
             interactionId: PRIMARIE_WEBSITE_LINK_INTERACTION.interactionId,
             lessonId: PRIMARIE_WEBSITE_LINK_INTERACTION.ownerChallengeSlug,
             kind: 'custom',
@@ -774,8 +775,8 @@ describe('use-campaign-progress', () => {
               },
             },
           })),
-          'campaign:primarie-website-url::entity:4305857': {
-            key: 'campaign:primarie-website-url::entity:4305857',
+          'funky:interaction:city_hall_website::entity:4305857': {
+            key: 'funky:interaction:city_hall_website::entity:4305857',
             interactionId: PRIMARIE_WEBSITE_LINK_INTERACTION.interactionId,
             lessonId: PRIMARIE_WEBSITE_LINK_INTERACTION.ownerChallengeSlug,
             kind: 'custom',
@@ -849,8 +850,8 @@ describe('use-campaign-progress', () => {
                 },
               },
             })),
-            'campaign:primarie-website-url::entity:4305857': {
-              key: 'campaign:primarie-website-url::entity:4305857',
+            'funky:interaction:city_hall_website::entity:4305857': {
+              key: 'funky:interaction:city_hall_website::entity:4305857',
               interactionId: PRIMARIE_WEBSITE_LINK_INTERACTION.interactionId,
               lessonId: PRIMARIE_WEBSITE_LINK_INTERACTION.ownerChallengeSlug,
               kind: 'custom',
@@ -878,7 +879,7 @@ describe('use-campaign-progress', () => {
               type: 'interactive.updated',
               payload: {
                 record: {
-                  key: 'campaign:primarie-website-url::entity:4305857',
+                  key: 'funky:interaction:city_hall_website::entity:4305857',
                   interactionId: PRIMARIE_WEBSITE_LINK_INTERACTION.interactionId,
                   lessonId: PRIMARIE_WEBSITE_LINK_INTERACTION.ownerChallengeSlug,
                   kind: 'custom',

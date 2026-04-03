@@ -5,7 +5,7 @@ export function CookiePolicyContentRo() {
     <div className="mx-auto w-full max-w-4xl p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-semibold">Politica privind cookie-urile</h1>
-        <p className="text-sm text-muted-foreground">Data intrării în vigoare: 17 octombrie 2025 · Versiunea: 2.0</p>
+        <p className="text-sm text-muted-foreground">Data intrării în vigoare: 3 aprilie 2026 · Versiunea: 3.0</p>
       </div>
       <div className="space-y-2">
         <h2 className="text-lg font-medium">Pe scurt</h2>
@@ -18,7 +18,7 @@ export function CookiePolicyContentRo() {
       </div>
       <div className="prose prose-slate dark:prose-invert max-w-none">
         <h3>Tehnologiile pe care le folosim</h3>
-        <p>Folosim cookie-uri și stocare locală (localStorage) pentru a opera aplicația și, cu consimțământ, pentru a măsura utilizarea și a îmbunătăți fiabilitatea.</p>
+        <p>Folosim cookie-uri și tehnologii de stocare în browser precum localStorage, sessionStorage și IndexedDB pentru a opera aplicația și, cu consimțământ, pentru a măsura utilizarea și a îmbunătăți fiabilitatea.</p>
 
         <h3>Categorii</h3>
         <ul>
@@ -33,7 +33,9 @@ export function CookiePolicyContentRo() {
         <h4>Cookie-uri și Stocare Esențiale (întotdeauna active)</h4>
         <p>Acestea sunt necesare pentru ca Serviciul să funcționeze și nu pot fi dezactivate:</p>
         <ul>
-          <li><strong>localStorage</strong>: <code>cookie-consent</code> (stochează preferințele dumneavoastră de consimțământ), <code>saved-charts</code> (vizualizările dumneavoastră salvate), <code>chart-categories</code> (organizarea graficelor), <code>theme-preference</code> (modul întunecat/luminos).</li>
+          <li><strong>localStorage</strong>: Include elemente precum <code>cookie-consent</code> (preferințe de consimțământ), <code>saved-charts</code> și <code>chart-categories</code> (vizualizări salvate și organizarea lor), preferințe de limbă, temă, monedă și ajustare la inflație, entități recente, alerte, progres de învățare, progres de campanie, stare de onboarding și alte setări de funcționalitate sau schițe stocate local.</li>
+          <li><strong>sessionStorage</strong>: Poate fi utilizat pentru stare temporară de runtime, fluxuri de recuperare sau funcționalități de transfer în cadrul unei sesiuni.</li>
+          <li><strong>IndexedDB</strong>: Poate fi utilizat de funcționalități avansate, precum snapshot-urile locale ale hărților sau alte seturi de date client-side mai mari, necesare pentru comportament de tip draft sau offline-friendly.</li>
         </ul>
 
         <h4>Cookie-uri de Autentificare (esențiale dacă aveți cont)</h4>
@@ -59,15 +61,15 @@ export function CookiePolicyContentRo() {
 
         <h3>Durata cookie-urilor</h3>
         <ul>
-          <li><strong>LocalStorage Esențial</strong>: Persistă până când este golit manual de dumneavoastră.</li>
+          <li><strong>Stocare esențială în browser</strong>: Intrările din localStorage, sessionStorage și IndexedDB pot persista până când le ștergeți manual, până când funcționalitatea relevantă le suprascrie sau până când sunt eliminate de browser.</li>
           <li><strong>Cookie-uri de autentificare Clerk</strong>: Cookie-uri de sesiune (expiră la închiderea browserului) și cookie-uri persistente (până la 30 de zile pentru „ține-mă minte").</li>
           <li><strong>Analiză PostHog</strong>: Până la 1 an.</li>
-          <li><strong>Sentry</strong>: Doar durata sesiunii.</li>
+          <li><strong>Sentry</strong>: Doar durata sesiunii, deși feedback-ul sau rapoartele de bug trimise pot fi păstrate server-side conform regulilor de retenție din Politica de confidențialitate.</li>
         </ul>
 
         <h3>Gestionarea preferințelor</h3>
         <p>Folosiți <Link to="/cookies" className="underline">Setările Cookie</Link> pentru a gestiona consimțământul pentru analize și raportarea erorilor, sau folosiți controalele browserului pentru a șterge datele site-ului.</p>
-        <p>Notă: Ștergerea cookie-urilor de autentificare vă va deconecta din cont. Ștergerea localStorage-ului esențial va reseta graficele și preferințele salvate.</p>
+        <p>Notă: Ștergerea cookie-urilor de autentificare vă va deconecta din cont. Golirea localStorage, sessionStorage sau IndexedDB poate reseta graficele salvate, progresul, hărțile, alertele și alte preferințe sau schițe stocate local.</p>
         <p>Consultați și <Link to="/privacy" className="underline">Politica de confidențialitate</Link>.</p>
       </div>
     </div>

@@ -35,13 +35,23 @@ describe('mailto-utils', () => {
   it('uses the updated public debate request paragraph', () => {
     const body = buildPublicDebateEmailBody({
       organizationName: 'Asociatia Civica Exemplu',
+      organizationLegalAddress: 'Str. Memorandumului nr. 10, Cluj-Napoca',
+      organizationRegistrationNumber: '12/A/2020',
+      organizationFiscalCode: '12345678',
+      legalRepresentativeName: 'Ana Pop',
+      legalRepresentativeRole: 'Presedinte',
       cityName: 'Cluj-Napoca',
       year: 2026,
     })
 
+    expect(body).toContain('Cerere dezbatere buget local - asociatii')
+    expect(body).toContain(
+      'Subscrisa, Asociatia Civica Exemplu, avand sediul in Str. Memorandumului nr. 10, Cluj-Napoca, inregistrata in Registrul Asociatiilor si Fundatiilor cu nr. 12/A/2020, cu CIF 12345678, prin Ana Pop, in calitate de Presedinte.',
+    )
+    expect(body).toContain('CERERE DE ORGANIZARE A UNEI DEZBATERI')
     expect(body).toContain(
       'Va solicitam organizarea unei dezbateri publice asupra proiectului de buget al Cluj-Napoca pentru anul 2026. Va rugam sa organizati dezbaterea inainte de expirarea termenului de 15 zile pentru depunerea contestatiilor, reglementat de art. 39, alin. (3) din Legea 273/2006.',
     )
-    expect(body).not.toContain('Avand in vedere cele expuse anterior')
+    expect(body).toContain('Consideram ca accesibilitatea este o prioritate')
   })
 })

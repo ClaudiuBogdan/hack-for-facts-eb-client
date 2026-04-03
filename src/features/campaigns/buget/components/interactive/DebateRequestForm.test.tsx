@@ -16,6 +16,11 @@ const formState = {
     primariaEmail: string
     isNgo: boolean
     organizationName: string | null
+    organizationLegalAddress: string | null
+    organizationRegistrationNumber: string | null
+    organizationFiscalCode: string | null
+    legalRepresentativeName: string | null
+    legalRepresentativeRole: string | null
     ngoSenderEmail: string | null
     preparedSubject: string | null
     threadKey: string | null
@@ -85,6 +90,11 @@ describe('DebateRequestForm', () => {
       primariaEmail: 'primaria@example.ro',
       isNgo: false,
       organizationName: null,
+      organizationLegalAddress: null,
+      organizationRegistrationNumber: null,
+      organizationFiscalCode: null,
+      legalRepresentativeName: null,
+      legalRepresentativeRole: null,
       ngoSenderEmail: null,
       preparedSubject: null,
       threadKey: null,
@@ -133,7 +143,7 @@ describe('DebateRequestForm', () => {
       expect.objectContaining({
         scopePolicy: 'entity',
         entityCui: '87654321',
-        interactionId: 'campaign:primarie-contact-info',
+        interactionId: 'funky:interaction:city_hall_contact',
       }),
     )
   })
@@ -177,6 +187,11 @@ describe('DebateRequestForm', () => {
       expect.objectContaining({
         isNgo: false,
         organizationName: null,
+        organizationLegalAddress: null,
+        organizationRegistrationNumber: null,
+        organizationFiscalCode: null,
+        legalRepresentativeName: null,
+        legalRepresentativeRole: null,
         ngoSenderEmail: null,
         threadKey: null,
         preparedSubject: null,
@@ -196,6 +211,21 @@ describe('DebateRequestForm', () => {
     fireEvent.click(screen.getByLabelText('Do you represent a legally established association?'))
     fireEvent.change(screen.getByLabelText('Association name'), {
       target: { value: 'Asociatia Test' },
+    })
+    fireEvent.change(screen.getByLabelText('Registered office'), {
+      target: { value: 'Str. Exemplu nr. 1, Cluj-Napoca' },
+    })
+    fireEvent.change(screen.getByLabelText('Registration number'), {
+      target: { value: '12/A/2020' },
+    })
+    fireEvent.change(screen.getByLabelText('Fiscal code (CIF)'), {
+      target: { value: '12345678' },
+    })
+    fireEvent.change(screen.getByLabelText('Legal representative name'), {
+      target: { value: 'Ana Pop' },
+    })
+    fireEvent.change(screen.getByLabelText('Legal representative role'), {
+      target: { value: 'Presedinte' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
@@ -223,6 +253,11 @@ describe('DebateRequestForm', () => {
         primariaEmail: 'primaria@example.ro',
         isNgo: true,
         organizationName: 'Asociatia Test',
+        organizationLegalAddress: 'Str. Exemplu nr. 1, Cluj-Napoca',
+        organizationRegistrationNumber: '12/A/2020',
+        organizationFiscalCode: '12345678',
+        legalRepresentativeName: 'Ana Pop',
+        legalRepresentativeRole: 'Presedinte',
         ngoSenderEmail: 'ngo@example.com',
         preparedSubject: 'Cerere organizare dezbatere publica - 4305857 - buget local 2026',
         threadKey: null,
@@ -252,6 +287,25 @@ describe('DebateRequestForm', () => {
     fireEvent.change(screen.getByLabelText('Association name'), {
       target: { value: 'Asociatia Test' },
     })
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled()
+
+    fireEvent.change(screen.getByLabelText('Registered office'), {
+      target: { value: 'Str. Exemplu nr. 1, Cluj-Napoca' },
+    })
+    fireEvent.change(screen.getByLabelText('Registration number'), {
+      target: { value: '12/A/2020' },
+    })
+    fireEvent.change(screen.getByLabelText('Fiscal code (CIF)'), {
+      target: { value: '12345678' },
+    })
+    fireEvent.change(screen.getByLabelText('Legal representative name'), {
+      target: { value: 'Ana Pop' },
+    })
+    fireEvent.change(screen.getByLabelText('Legal representative role'), {
+      target: { value: 'Presedinte' },
+    })
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled()
+
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
     // NGO: association email field is visible, prepare email still disabled without valid email
@@ -306,6 +360,21 @@ describe('DebateRequestForm', () => {
     fireEvent.change(screen.getByLabelText('Association name'), {
       target: { value: 'Asociatia Test' },
     })
+    fireEvent.change(screen.getByLabelText('Registered office'), {
+      target: { value: 'Str. Exemplu nr. 1, Cluj-Napoca' },
+    })
+    fireEvent.change(screen.getByLabelText('Registration number'), {
+      target: { value: '12/A/2020' },
+    })
+    fireEvent.change(screen.getByLabelText('Fiscal code (CIF)'), {
+      target: { value: '12345678' },
+    })
+    fireEvent.change(screen.getByLabelText('Legal representative name'), {
+      target: { value: 'Ana Pop' },
+    })
+    fireEvent.change(screen.getByLabelText('Legal representative role'), {
+      target: { value: 'Presedinte' },
+    })
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
     fireEvent.change(screen.getByLabelText('Association email'), {
@@ -335,6 +404,21 @@ describe('DebateRequestForm', () => {
     fireEvent.change(screen.getByLabelText('Association name'), {
       target: { value: 'Asociatia Test' },
     })
+    fireEvent.change(screen.getByLabelText('Registered office'), {
+      target: { value: 'Str. Exemplu nr. 1, Cluj-Napoca' },
+    })
+    fireEvent.change(screen.getByLabelText('Registration number'), {
+      target: { value: '12/A/2020' },
+    })
+    fireEvent.change(screen.getByLabelText('Fiscal code (CIF)'), {
+      target: { value: '12345678' },
+    })
+    fireEvent.change(screen.getByLabelText('Legal representative name'), {
+      target: { value: 'Ana Pop' },
+    })
+    fireEvent.change(screen.getByLabelText('Legal representative role'), {
+      target: { value: 'Presedinte' },
+    })
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
     // No email yet: disabled
@@ -351,5 +435,27 @@ describe('DebateRequestForm', () => {
       target: { value: 'ngo@example.com' },
     })
     expect(screen.getByRole('button', { name: 'Prepare email' })).toBeEnabled()
+  })
+
+  it('shows helper text for the NGO legal fields', () => {
+    render(
+      <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
+    )
+
+    fireEvent.change(screen.getByLabelText('City hall email'), {
+      target: { value: 'primaria@example.ro' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    fireEvent.click(screen.getByLabelText('Do you represent a legally established association?'))
+
+    expect(
+      screen.getByText('Use the full official name exactly as it appears in the Register of Associations and Foundations.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Add the legal address from the NGO registration documents.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('This is the person who signs the request on behalf of the association.'),
+    ).toBeInTheDocument()
   })
 })

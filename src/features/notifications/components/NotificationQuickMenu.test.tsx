@@ -1,6 +1,11 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  FUNKY_CAMPAIGN_KEY,
+  FUNKY_NOTIFICATION_ENTITY_UPDATES,
+  FUNKY_NOTIFICATION_GLOBAL,
+} from '../campaign-notification-keys'
 import { NotificationQuickMenu } from './NotificationQuickMenu'
 
 const createNotificationMock = vi.fn()
@@ -66,7 +71,7 @@ describe('NotificationQuickMenu', () => {
       <NotificationQuickMenu
         cui="12345678"
         entityName="Primaria Test"
-        notificationTypes={['campaign_public_debate_entity_updates']}
+        notificationTypes={[FUNKY_NOTIFICATION_ENTITY_UPDATES]}
         notifications={[]}
       />,
     )
@@ -121,8 +126,8 @@ describe('NotificationQuickMenu', () => {
           id: 'global-1',
           userId: 'user-1',
           entityCui: null,
-          notificationType: 'campaign_public_debate_global',
-          campaignKey: 'public_debate',
+          notificationType: FUNKY_NOTIFICATION_GLOBAL,
+          campaignKey: FUNKY_CAMPAIGN_KEY,
           isActive: true,
           config: null,
           hash: 'hash-global',
@@ -136,7 +141,7 @@ describe('NotificationQuickMenu', () => {
       <NotificationQuickMenu
         cui="12345678"
         entityName="Primaria Test"
-        notificationTypes={['campaign_public_debate_entity_updates']}
+        notificationTypes={[FUNKY_NOTIFICATION_ENTITY_UPDATES]}
         notifications={[]}
       />,
     )
@@ -148,7 +153,7 @@ describe('NotificationQuickMenu', () => {
       expect(createNotificationMock).not.toHaveBeenCalled()
       expect(mutateMock).toHaveBeenCalledWith({
         entityCui: '12345678',
-        notificationType: 'campaign_public_debate_entity_updates',
+        notificationType: FUNKY_NOTIFICATION_ENTITY_UPDATES,
         isActive: true,
         notificationId: undefined,
       })

@@ -8,9 +8,11 @@ import type {
 import { useAuth } from '@/lib/auth'
 import { readJsonFromLocalStorage } from '@/lib/storage/read-json-from-local-storage'
 import {
-  CAMPAIGN_ID,
+  CAMPAIGN_PROGRESS_CLIENT_ID_STORAGE_KEY,
+  CAMPAIGN_PROGRESS_EVENTS_STORAGE_KEY,
   CAMPAIGN_PROGRESS_SCHEMA_VERSION,
   CAMPAIGN_PROGRESS_STORAGE_KEY,
+  CAMPAIGN_PROGRESS_SYNC_STORAGE_KEY,
 } from '../constants'
 import { fetchCampaignProgress, syncCampaignProgress } from '../api/campaign-progress'
 import { getEmptyCampaignProgressSnapshot, parseCampaignProgressSnapshot } from '../schemas/progress-schema'
@@ -66,11 +68,9 @@ type CampaignProgressSyncState = {
   lastSyncedCursor: string | null
 }
 
-const CAMPAIGN_PROGRESS_EVENTS_STORAGE_KEY = `campaign_progress_events:${CAMPAIGN_ID}`
-const CAMPAIGN_PROGRESS_SYNC_STORAGE_KEY = `campaign_progress_sync:${CAMPAIGN_ID}`
-const CAMPAIGN_PROGRESS_CLIENT_ID_STORAGE_KEY = `campaign_progress_client_id:${CAMPAIGN_ID}`
 const SYNC_DEBOUNCE_MS = 1200
 const REMOTE_REFRESH_INTERVAL_MS = 60000
+const CAMPAIGN_CHALLENGE_RECORD_PREFIX = 'funky:progress:challenge_status_'
 
 const CampaignProgressContext = createContext<CampaignProgressContextValue | null>(null)
 
@@ -164,7 +164,7 @@ function isClearedCampaignRecord(record: InteractiveStateRecord): boolean {
     return payload.moduleSlug === null
   }
 
-  if (record.key.startsWith(`system:campaign:${CAMPAIGN_ID}:challenge:`)) {
+  if (record.key.startsWith(CAMPAIGN_CHALLENGE_RECORD_PREFIX)) {
     return payload.status === 'not_started' && payload.attempts === 0
   }
 
@@ -189,7 +189,7 @@ function createEventId(): string {
     return crypto.randomUUID()
   }
 
-  return `campaign-event-${Date.now()}-${Math.random().toString(16).slice(2)}`
+  return `funky:event:${Date.now()}-${Math.random().toString(16).slice(2)}`
 }
 
 function mergeEventLogs(...logs: readonly (readonly LearningProgressEvent[])[]): LearningProgressEvent[] {
@@ -239,7 +239,7 @@ function getRecordUpdatedAt(snapshot: CampaignProgressSnapshot, recordKey: strin
     return snapshot.lastUpdated
   }
 
-  const challengePrefix = `system:campaign:${CAMPAIGN_ID}:challenge:`
+  const challengePrefix = CAMPAIGN_CHALLENGE_RECORD_PREFIX
   if (recordKey.startsWith(challengePrefix)) {
     const challengeSlug = recordKey.slice(challengePrefix.length)
     return snapshot.challenges[challengeSlug]?.updatedAt ?? snapshot.lastUpdated
@@ -311,7 +311,7 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
 
     const generatedClientId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
       ? crypto.randomUUID()
-      : `campaign-client-${Date.now()}-${Math.random().toString(16).slice(2)}`
+      : `funky:client:${Date.now()}-${Math.random().toString(16).slice(2)}`
 
     clientIdRef.current = generatedClientId
     writeJsonToStorage(CAMPAIGN_PROGRESS_CLIENT_ID_STORAGE_KEY, generatedClientId)
@@ -711,7 +711,7 @@ export function CampaignProgressProvider({ children }: { readonly children: Reac
     let storageDebounceTimeout: number | null = null
 
     const handleStorage = (event: StorageEvent) => {
-      if (!event.key?.startsWith('campaign_progress_')) {
+      if (!event.key?.startsWith('funky:storage:')) {
         return
       }
 

@@ -1,6 +1,11 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+  FUNKY_CAMPAIGN_KEY,
+  FUNKY_NOTIFICATION_ENTITY_UPDATES,
+  FUNKY_NOTIFICATION_GLOBAL,
+} from '@/features/notifications/campaign-notification-keys'
 import { CampaignNotificationPreferencesPage } from './CampaignNotificationPreferencesPage'
 
 let authState = {
@@ -20,8 +25,8 @@ let campaignNotificationsState: {
     readonly id: string
     readonly userId: string
     readonly entityCui: string | null
-    readonly notificationType: 'campaign_public_debate_entity_updates'
-    readonly campaignKey: 'public_debate'
+    readonly notificationType: typeof FUNKY_NOTIFICATION_ENTITY_UPDATES
+    readonly campaignKey: typeof FUNKY_CAMPAIGN_KEY
     readonly isActive: boolean
     readonly config: null
     readonly hash: string
@@ -37,8 +42,8 @@ let campaignNotificationsState: {
     readonly id: string
     readonly userId: string
     readonly entityCui: null
-    readonly notificationType: 'campaign_public_debate_global'
-    readonly campaignKey: 'public_debate'
+    readonly notificationType: typeof FUNKY_NOTIFICATION_GLOBAL
+    readonly campaignKey: typeof FUNKY_CAMPAIGN_KEY
     readonly isActive: boolean
     readonly config: null
     readonly hash: string
@@ -52,8 +57,8 @@ let campaignNotificationsState: {
       id: 'notif-1',
       userId: 'user-1',
       entityCui: '12345678',
-      notificationType: 'campaign_public_debate_entity_updates',
-      campaignKey: 'public_debate',
+      notificationType: FUNKY_NOTIFICATION_ENTITY_UPDATES,
+      campaignKey: FUNKY_CAMPAIGN_KEY,
       isActive: true,
       config: null,
       hash: 'hash',
@@ -70,8 +75,8 @@ let campaignNotificationsState: {
     id: 'global-1',
     userId: 'user-1',
     entityCui: null,
-    notificationType: 'campaign_public_debate_global',
-    campaignKey: 'public_debate',
+    notificationType: FUNKY_NOTIFICATION_GLOBAL,
+    campaignKey: FUNKY_CAMPAIGN_KEY,
     isActive: true,
     config: null,
     hash: 'hash-global',
@@ -137,8 +142,8 @@ describe('CampaignNotificationPreferencesPage accessibility', () => {
           id: 'notif-1',
           userId: 'user-1',
           entityCui: '12345678',
-          notificationType: 'campaign_public_debate_entity_updates',
-          campaignKey: 'public_debate',
+          notificationType: FUNKY_NOTIFICATION_ENTITY_UPDATES,
+          campaignKey: FUNKY_CAMPAIGN_KEY,
           isActive: true,
           config: null,
           hash: 'hash',
@@ -155,8 +160,8 @@ describe('CampaignNotificationPreferencesPage accessibility', () => {
         id: 'global-1',
         userId: 'user-1',
         entityCui: null,
-        notificationType: 'campaign_public_debate_global',
-        campaignKey: 'public_debate',
+        notificationType: FUNKY_NOTIFICATION_GLOBAL,
+        campaignKey: FUNKY_CAMPAIGN_KEY,
         isActive: true,
         config: null,
         hash: 'hash-global',

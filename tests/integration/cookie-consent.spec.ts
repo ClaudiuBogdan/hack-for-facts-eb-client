@@ -200,6 +200,7 @@ test.describe('Cookie Consent Banner', () => {
     await waitForBanner(page)
 
     // Check for action buttons (EN/RO) - these are inside the banner
+    await expect(page.getByRole('button', { name: /allow essential|permite doar/i })).toBeVisible()
     await expect(page.getByRole('link', { name: /advanced|avansat/i })).toBeVisible()
     await expect(page.getByRole('button', { name: /accept all|acceptă tot/i })).toBeVisible()
   })
@@ -253,7 +254,7 @@ test.describe('Cookie Consent Banner', () => {
     expect(consent?.updatedAt).toBeDefined()
   })
 
-  test('Advanced link navigates to /cookies and declines consent', async ({ page }) => {
+  test('Advanced link navigates to /cookies without silently deciding consent', async ({ page }) => {
     // Wait for banner to appear
     await waitForBanner(page)
     const advancedLink = page.getByRole('link', { name: /advanced|avansat/i })
@@ -267,9 +268,27 @@ test.describe('Cookie Consent Banner', () => {
     expect(page.url()).toContain('/cookies')
     expect(page.url()).toContain('redirect=')
 
-    // Verify consent was set to declined (analytics and sentry false)
+    // Verify consent has not been silently stored yet
     const consent = await getCookieConsent(page)
-    expect(consent).not.toBeNull()
+    expect(consent).toBeNull()
+  })
+
+  test('Allow essential only button saves declined optional consent from banner', async ({ page }) => {
+    await waitForBanner(page)
+    const essentialOnlyButton = page.getByRole('button', {
+      name: /allow essential|permite doar/i,
+    })
+    await expect(essentialOnlyButton).toBeVisible()
+
+    await essentialOnlyButton.click()
+
+    await waitForCookieConsentState(page, {
+      essential: true,
+      analytics: false,
+      sentry: false,
+    })
+
+    const consent = await getCookieConsent(page)
     expect(consent?.analytics).toBe(false)
     expect(consent?.sentry).toBe(false)
   })
@@ -362,7 +381,7 @@ test.describe('Cookie Settings Page', () => {
     await expect(essentialSwitch).toHaveAttribute('data-state', 'checked')
   })
 
-  test('can toggle analytics consent', async ({ page }) => {
+  test('can draft analytics consent before confirming', async ({ page }) => {
     const analyticsSwitch = getCookieSwitchByIndex(page, 1)
     await expect(analyticsSwitch).toBeVisible()
 
@@ -373,14 +392,23 @@ test.describe('Cookie Settings Page', () => {
 
     await toggleSwitchToExpectedState(analyticsSwitch, expectedState)
 
+    // Draft should change in the UI without persisting immediately
+    const consentBeforeConfirm = await getCookieConsent(page)
+    expect(consentBeforeConfirm?.analytics ?? false).toBe(initialChecked)
+
+    const confirmButton = page.getByRole('button', {
+      name: /confirm choices|confirmă|salvează/i,
+    })
+    await expect(confirmButton).toBeEnabled()
+    await confirmButton.click()
+
     await waitForCookieConsentState(page, { analytics: !initialChecked })
 
-    // Verify localStorage was updated
-    const consent = await getCookieConsent(page)
-    expect(consent?.analytics).toBe(!initialChecked)
+    const consentAfterConfirm = await getCookieConsent(page)
+    expect(consentAfterConfirm?.analytics).toBe(!initialChecked)
   })
 
-  test('can toggle sentry consent', async ({ page }) => {
+  test('can draft sentry consent before confirming', async ({ page }) => {
     const sentrySwitch = getCookieSwitchByIndex(page, 2)
     await expect(sentrySwitch).toBeVisible()
 
@@ -390,11 +418,21 @@ test.describe('Cookie Settings Page', () => {
     const expectedState = initialChecked ? 'unchecked' : 'checked'
 
     await toggleSwitchToExpectedState(sentrySwitch, expectedState)
+
+    // Draft should change in the UI without persisting immediately
+    const consentBeforeConfirm = await getCookieConsent(page)
+    expect(consentBeforeConfirm?.sentry ?? false).toBe(initialChecked)
+
+    const confirmButton = page.getByRole('button', {
+      name: /confirm choices|confirmă|salvează/i,
+    })
+    await expect(confirmButton).toBeEnabled()
+    await confirmButton.click()
+
     await waitForCookieConsentState(page, { sentry: !initialChecked })
 
-    // Verify localStorage was updated
-    const consent = await getCookieConsent(page)
-    expect(consent?.sentry).toBe(!initialChecked)
+    const consentAfterConfirm = await getCookieConsent(page)
+    expect(consentAfterConfirm?.sentry).toBe(!initialChecked)
   })
 
   test('Allow essential only button disables all optional cookies', async ({ page }) => {

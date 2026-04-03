@@ -15,6 +15,20 @@ export type ConsentPreferences = {
 
 const CONSENT_STORAGE_KEY = 'cookie-consent'
 
+export function hasStoredConsentDecision(): boolean {
+  if (typeof window === 'undefined') return false
+
+  try {
+    const stored = window.localStorage.getItem(CONSENT_STORAGE_KEY)
+    if (!stored) return false
+
+    const parsed = JSON.parse(stored) as Partial<ConsentPreferences>
+    return parsed.version === 1 && typeof parsed.updatedAt === 'string'
+  } catch {
+    return false
+  }
+}
+
 export function getDefaultConsent(): ConsentPreferences {
   return {
     version: 1,
@@ -82,5 +96,4 @@ export function onConsentChange(handler: (prefs: ConsentPreferences) => void): (
   window.addEventListener('consent:changed', listener)
   return () => window.removeEventListener('consent:changed', listener)
 }
-
 

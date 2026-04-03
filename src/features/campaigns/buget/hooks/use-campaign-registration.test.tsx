@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { InteractiveStateRecord, LearningProgressEvent } from '@/features/learning/types'
 import {
   CAMPAIGN_ID,
+  CAMPAIGN_PROGRESS_EVENTS_STORAGE_KEY,
   CAMPAIGN_PROGRESS_SCHEMA_VERSION,
   CAMPAIGN_PROGRESS_STORAGE_KEY,
 } from '../constants'
@@ -83,7 +84,7 @@ function getAuthSnapshotStorageKey(userId: string): string {
 }
 
 function getAuthEventsStorageKey(userId: string): string {
-  return `campaign_progress_events:${CAMPAIGN_ID}:${userId}`
+  return `${CAMPAIGN_PROGRESS_EVENTS_STORAGE_KEY}:${userId}`
 }
 
 function Wrapper({ children }: { readonly children: ReactNode }) {
@@ -211,7 +212,7 @@ describe('useCampaignRegistration', () => {
 
     const acceptedTermsEvents = storedEvents.filter((event) =>
       event.type === 'interactive.updated'
-      && event.payload?.record?.key === 'system:campaign:buget:accepted-terms:entity:12345678'
+      && event.payload?.record?.key === 'funky:progress:terms_accepted::entity:12345678'
     )
 
     expect(acceptedTermsEvents).toHaveLength(1)

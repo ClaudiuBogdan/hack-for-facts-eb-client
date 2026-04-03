@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type ReactElement } from "react";
 import { CookieIcon } from "lucide-react";
 import { acceptAll, declineAll } from "@/lib/consent";
-import { onConsentChange } from "@/lib/consent";
+import { hasStoredConsentDecision, onConsentChange } from "@/lib/consent";
 import { Analytics } from "@/lib/analytics";
 import { Trans } from "@lingui/react/macro";
 import { Link, useLocation } from "@tanstack/react-router";
@@ -25,10 +25,9 @@ export function CookieConsentBanner(): ReactElement | null {
     if (typeof window === "undefined") return;
     const isCookiesPage = location.pathname.includes("/cookies");
     const isNotificationModalOpen = location.search.notificationModal === "open";
-    const storedConsent = window.localStorage.getItem("cookie-consent");
 
     const shouldHideBanner =
-      isCookiesPage || (isMobile && isNotificationModalOpen) || !!storedConsent;
+      isCookiesPage || (isMobile && isNotificationModalOpen) || hasStoredConsentDecision();
 
     if (shouldHideBanner) return;
 
@@ -54,6 +53,10 @@ export function CookieConsentBanner(): ReactElement | null {
     consentFunction();
     setBannerVisible(false);
   };
+
+  const dismissBanner = useCallback(() => {
+    setBannerVisible(false);
+  }, []);
 
   useEffect(() => {
     if (!isBannerVisible && isMounted) {
@@ -88,7 +91,7 @@ export function CookieConsentBanner(): ReactElement | null {
             </div>
             <p className="mt-3 text-sm text-gray-600">
               <Trans>
-                We use cookies and similar technologies to enhance your experience, analyze our traffic, and report errors. With your permission, we use PostHog for analytics and Sentry for error reporting to improve our service. You can change your preferences at any time. For more information, please see our{" "}
+                We use essential cookies and browser storage to run the service. With your permission, we also use PostHog for analytics and Sentry for enhanced error reporting. You can choose essential-only, accept all, or manage your preferences at any time. For more information, please see our{" "}
                 <Link to="/privacy" className="font-medium text-blue-600 hover:underline">
                   Privacy Policy
                 </Link>.
@@ -96,11 +99,17 @@ export function CookieConsentBanner(): ReactElement | null {
             </p>
 
             <div className="mt-5 flex flex-col sm:flex-row sm:items-center gap-3">
+              <button
+                onClick={() => handleDecision(declineAll)}
+                className="w-full sm:w-auto rounded-lg py-2 px-5 text-center text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+              >
+                <Trans>Allow essential only</Trans>
+              </button>
               <Link
                 to="/cookies"
                 // After managing preferences, return to the current page
                 search={{ redirect: `${location.pathname}${location.searchStr ?? ""}` }}
-                onClick={() => handleDecision(declineAll)}
+                onClick={dismissBanner}
                 className="w-full sm:w-auto rounded-lg py-2 px-5 text-center text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
               >
                 <Trans>Advanced</Trans>

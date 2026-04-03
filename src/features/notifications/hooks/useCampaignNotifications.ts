@@ -1,4 +1,9 @@
 import { useMemo } from 'react'
+import {
+  FUNKY_CAMPAIGN_KEY,
+  FUNKY_NOTIFICATION_ENTITY_UPDATES,
+  FUNKY_NOTIFICATION_GLOBAL,
+} from '../campaign-notification-keys'
 import { useAllNotifications } from './useAllNotifications'
 
 export function useCampaignNotifications() {
@@ -7,7 +12,7 @@ export function useCampaignNotifications() {
   const campaignNotifications = useMemo(
     () =>
       (query.data ?? []).filter(
-        (n) => n.campaignKey === 'public_debate'
+        (n) => n.campaignKey === FUNKY_CAMPAIGN_KEY
       ),
     [query.data]
   )
@@ -15,7 +20,7 @@ export function useCampaignNotifications() {
   const globalPreference = useMemo(
     () =>
       campaignNotifications.find(
-        (n) => n.notificationType === 'campaign_public_debate_global' && n.entityCui === null
+        (n) => n.notificationType === FUNKY_NOTIFICATION_GLOBAL && n.entityCui === null
       ) ?? null,
     [campaignNotifications]
   )
@@ -23,7 +28,7 @@ export function useCampaignNotifications() {
   const entityNotifications = useMemo(
     () =>
       campaignNotifications.filter(
-        (n) => n.notificationType === 'campaign_public_debate_entity_updates'
+        (n) => n.notificationType === FUNKY_NOTIFICATION_ENTITY_UPDATES
       ),
     [campaignNotifications]
   )

@@ -1,3 +1,32 @@
+# TODO
+
+## Funky Campaign
+
+- [ ] Bifa email primarie.
+- [ ] Add notification transaction to disable all in server.
+- [ ] Add a forceSync flag on the interactive element for sensitive data, like send public debate email or terms and conditions.
+
+- [ ] Review path and make sure it is production ready.
+- [ ] Update terms and conditions page.
+- [ ] Review the user interaction elements:
+  - [ ] Send public debate email.
+  - [ ] Add calendar start date.
+  - [ ] Review the budget link.
+- [ ] In the demo or intro video, mention that the user can subscribe to multiple entities.
+
+The main elements that I need to review and test is:
+
+- Add public budget link.
+- Add calendar date for public budget.
+- Send public debate email.
+- Make sure the public debate state updates the user interactive element.
+- Review the dynamic interactive elements.
+- Add a campaign notification page.
+- Add a dedicated page for the forum.
+- Add the video links.
+- Update the terms and conditions.
+- Update the landing page.
+- Review Diana's feedback and implement it.
 
 ### To-do: User Stories Documentation Plan
 

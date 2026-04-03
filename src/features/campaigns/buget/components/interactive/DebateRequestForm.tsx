@@ -36,11 +36,21 @@ const EMPTY_VALUE: DebateRequestFormValue = {
   primariaEmail: '',
   isNgo: false,
   organizationName: null,
+  organizationLegalAddress: null,
+  organizationRegistrationNumber: null,
+  organizationFiscalCode: null,
+  legalRepresentativeName: null,
+  legalRepresentativeRole: null,
   ngoSenderEmail: null,
   preparedSubject: null,
   threadKey: null,
   submissionPath: null,
   submittedAt: null,
+}
+
+function trimOrNull(value: string | null): string | null {
+  const trimmed = value?.trim()
+  return trimmed ? trimmed : null
 }
 
 function isValidEmail(email: string): boolean {
@@ -63,6 +73,11 @@ function applyDraftFieldChange<K extends keyof DebateRequestFormValue>(
     return {
       ...baseNext,
       organizationName: null,
+      organizationLegalAddress: null,
+      organizationRegistrationNumber: null,
+      organizationFiscalCode: null,
+      legalRepresentativeName: null,
+      legalRepresentativeRole: null,
       ngoSenderEmail: null,
       threadKey: null,
       preparedSubject: null,
@@ -215,10 +230,10 @@ function EmailPreviewPanel({
  * Validation flow:
  * - Submissions go to pending_review (amber state) because the platform
  *   needs to track whether the email was actually sent and received.
- * - Backend reference: the record key is campaign:debate-request::entity:{cui}.
+ * - Backend reference: the record key is funky:interaction:funky_request::entity:{cui}.
  *   A cron job or admin process should:
  *   1. For 'request_platform' submissions: trigger the actual email dispatch
- *      via the InstitutionEmailThreads table (request_type: 'public_debate').
+ *      via the InstitutionEmailThreads table (request_type: 'funky').
  *   2. For 'send_yourself' submissions: submit the exact subject used for the
  *      email so the backend can correlate it with the captured CC email.
  *   3. Transition the challenge status to 'completed' once verified.
@@ -279,12 +294,24 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
   }, [persistDraft])
 
   const hasValidEmail = isValidEmail(draft.primariaEmail)
-  const hasOrganizationName = Boolean(draft.organizationName?.trim())
+  const hasOrganizationName = Boolean(trimOrNull(draft.organizationName))
+  const hasOrganizationLegalAddress = Boolean(trimOrNull(draft.organizationLegalAddress))
+  const hasOrganizationRegistrationNumber = Boolean(trimOrNull(draft.organizationRegistrationNumber))
+  const hasOrganizationFiscalCode = Boolean(trimOrNull(draft.organizationFiscalCode))
+  const hasLegalRepresentativeName = Boolean(trimOrNull(draft.legalRepresentativeName))
+  const hasLegalRepresentativeRole = Boolean(trimOrNull(draft.legalRepresentativeRole))
+  const hasRequiredNgoDetails =
+    hasOrganizationName
+    && hasOrganizationLegalAddress
+    && hasOrganizationRegistrationNumber
+    && hasOrganizationFiscalCode
+    && hasLegalRepresentativeName
+    && hasLegalRepresentativeRole
   const hasValidNgoSenderEmail = draft.ngoSenderEmail !== null && isValidEmail(draft.ngoSenderEmail)
   const canUseAssociationSendFlow =
     hasValidEmail
     && draft.isNgo
-    && hasOrganizationName
+    && hasRequiredNgoDetails
     && hasValidNgoSenderEmail
 
   const entityIds = useMemo(() => [entityCui], [entityCui])
@@ -293,11 +320,34 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
   const cityName = rawCityName.startsWith('id::') ? entityCui : rawCityName
 
   const currentYear = new Date().getFullYear()
-  const orgName = draft.organizationName?.trim() || ''
+  const orgName = trimOrNull(draft.organizationName) || ''
+  const orgLegalAddress = trimOrNull(draft.organizationLegalAddress) || ''
+  const orgRegistrationNumber = trimOrNull(draft.organizationRegistrationNumber) || ''
+  const orgFiscalCode = trimOrNull(draft.organizationFiscalCode) || ''
+  const representativeName = trimOrNull(draft.legalRepresentativeName) || ''
+  const representativeRole = trimOrNull(draft.legalRepresentativeRole) || ''
   const emailSubject = buildPublicDebateEmailSubject({ cityName, year: currentYear })
   const emailBody = useMemo(
-    () => buildPublicDebateEmailBody({ organizationName: orgName || 'NUMELE ASOCIATIEI', cityName, year: currentYear }),
-    [orgName, cityName, currentYear],
+    () => buildPublicDebateEmailBody({
+      organizationName: orgName || 'NUMELE ASOCIATIEI',
+      organizationLegalAddress: orgLegalAddress || 'ADRESA LEGALA',
+      organizationRegistrationNumber: orgRegistrationNumber || 'NUMAR INREGISTRARE',
+      organizationFiscalCode: orgFiscalCode || 'CIF ONG',
+      legalRepresentativeName: representativeName || 'NUME REPREZENTANT LEGAL',
+      legalRepresentativeRole: representativeRole || 'ROL REPREZENTANT',
+      cityName,
+      year: currentYear,
+    }),
+    [
+      cityName,
+      currentYear,
+      orgFiscalCode,
+      orgLegalAddress,
+      orgName,
+      orgRegistrationNumber,
+      representativeName,
+      representativeRole,
+    ],
   )
   const emailCc = PLATFORM_CC_EMAILS
 
@@ -322,6 +372,12 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
     try {
       const submittedValue: DebateRequestFormValue = {
         ...draft,
+        organizationName: draft.isNgo ? trimOrNull(draft.organizationName) : null,
+        organizationLegalAddress: draft.isNgo ? trimOrNull(draft.organizationLegalAddress) : null,
+        organizationRegistrationNumber: draft.isNgo ? trimOrNull(draft.organizationRegistrationNumber) : null,
+        organizationFiscalCode: draft.isNgo ? trimOrNull(draft.organizationFiscalCode) : null,
+        legalRepresentativeName: draft.isNgo ? trimOrNull(draft.legalRepresentativeName) : null,
+        legalRepresentativeRole: draft.isNgo ? trimOrNull(draft.legalRepresentativeRole) : null,
         ngoSenderEmail: draft.isNgo ? draft.ngoSenderEmail?.trim() || null : null,
         preparedSubject: emailSubject,
         submissionPath: 'send_yourself',
@@ -345,6 +401,12 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
     try {
       const submittedValue: DebateRequestFormValue = {
         ...draft,
+        organizationName: draft.isNgo ? trimOrNull(draft.organizationName) : null,
+        organizationLegalAddress: draft.isNgo ? trimOrNull(draft.organizationLegalAddress) : null,
+        organizationRegistrationNumber: draft.isNgo ? trimOrNull(draft.organizationRegistrationNumber) : null,
+        organizationFiscalCode: draft.isNgo ? trimOrNull(draft.organizationFiscalCode) : null,
+        legalRepresentativeName: draft.isNgo ? trimOrNull(draft.legalRepresentativeName) : null,
+        legalRepresentativeRole: draft.isNgo ? trimOrNull(draft.legalRepresentativeRole) : null,
         ngoSenderEmail: null,
         preparedSubject: null,
         threadKey: null,
@@ -397,6 +459,12 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
             ? [{
                 label: t`Association`,
                 value: form.savedValue.organizationName,
+              }]
+            : []),
+          ...(form.savedValue.legalRepresentativeName?.trim()
+            ? [{
+                label: 'Legal representative',
+                value: form.savedValue.legalRepresentativeName,
               }]
             : []),
           ...(form.savedValue.ngoSenderEmail?.trim()
@@ -524,6 +592,94 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                     value={draft.organizationName ?? ''}
                     onChange={(e) => handleFieldChange('organizationName', e.target.value || null)}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Use the full official name exactly as it appears in the Register of Associations and Foundations.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="org-legal-address" className="text-sm font-bold text-foreground">
+                    Registered office
+                  </Label>
+                  <Input
+                    id="org-legal-address"
+                    name="organizationLegalAddress"
+                    autoComplete="street-address"
+                    className="rounded-xl h-12 text-base"
+                    placeholder="Str. Exemplu nr. 10, Cluj-Napoca"
+                    value={draft.organizationLegalAddress ?? ''}
+                    onChange={(e) => handleFieldChange('organizationLegalAddress', e.target.value || null)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Add the legal address from the NGO registration documents.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="org-registration-number" className="text-sm font-bold text-foreground">
+                    Registration number
+                  </Label>
+                  <Input
+                    id="org-registration-number"
+                    name="organizationRegistrationNumber"
+                    autoComplete="off"
+                    className="rounded-xl h-12 text-base"
+                    placeholder="Ex.: 12/A/2020"
+                    value={draft.organizationRegistrationNumber ?? ''}
+                    onChange={(e) => handleFieldChange('organizationRegistrationNumber', e.target.value || null)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Enter the number under which the NGO is registered in the Register of Associations and Foundations.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="org-fiscal-code" className="text-sm font-bold text-foreground">
+                    Fiscal code (CIF)
+                  </Label>
+                  <Input
+                    id="org-fiscal-code"
+                    name="organizationFiscalCode"
+                    autoComplete="off"
+                    className="rounded-xl h-12 text-base"
+                    placeholder="Ex.: 12345678"
+                    value={draft.organizationFiscalCode ?? ''}
+                    onChange={(e) => handleFieldChange('organizationFiscalCode', e.target.value || null)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Add the NGO fiscal identification code exactly as it appears on official documents.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="legal-representative-name" className="text-sm font-bold text-foreground">
+                    Legal representative name
+                  </Label>
+                  <Input
+                    id="legal-representative-name"
+                    name="legalRepresentativeName"
+                    autoComplete="name"
+                    className="rounded-xl h-12 text-base"
+                    placeholder="Nume Prenume"
+                    value={draft.legalRepresentativeName ?? ''}
+                    onChange={(e) => handleFieldChange('legalRepresentativeName', e.target.value || null)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This is the person who signs the request on behalf of the association.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="legal-representative-role" className="text-sm font-bold text-foreground">
+                    Legal representative role
+                  </Label>
+                  <Input
+                    id="legal-representative-role"
+                    name="legalRepresentativeRole"
+                    autoComplete="organization-title"
+                    className="rounded-xl h-12 text-base"
+                    placeholder="Ex.: Presedinte"
+                    value={draft.legalRepresentativeRole ?? ''}
+                    onChange={(e) => handleFieldChange('legalRepresentativeRole', e.target.value || null)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Add the role used in official documents, for example president or executive director.
+                  </p>
                 </div>
               </div>
             )}
@@ -537,6 +693,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                 {t`Back`}
               </Button>
               <Button
+                disabled={draft.isNgo && !hasRequiredNgoDetails}
                 onClick={() => setStep(3)}
                 className="rounded-[22px] h-11 font-black shadow-lg shadow-primary/15 hover:scale-[1.02] active:scale-95 transition-transform"
               >
@@ -589,6 +746,11 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                     <Trans>Add the association name to use this option.</Trans>
                   </p>
                 )}
+                {draft.isNgo && hasOrganizationName && !hasRequiredNgoDetails && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                    Complete all NGO legal details to generate the request template.
+                  </p>
+                )}
                 {draft.isNgo && (
                   <div className="space-y-2 mt-4 text-left">
                     <Label htmlFor="ngo-sender-email" className="text-sm font-bold text-foreground">
@@ -605,6 +767,9 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                       value={draft.ngoSenderEmail ?? ''}
                       onChange={(e) => handleFieldChange('ngoSenderEmail', e.target.value || null)}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Use the association email address from which you will actually send the request.
+                    </p>
                     {draft.ngoSenderEmail && !hasValidNgoSenderEmail && (
                       <p className="text-xs text-destructive" role="alert">
                         <Trans>The association email address is not valid.</Trans>

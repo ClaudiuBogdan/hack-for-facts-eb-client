@@ -338,7 +338,7 @@ describe('challenge-progress', () => {
         lessonChallengeDescriptors: [
           {
             kind: 'fixed',
-            interactionId: 'campaign:participation-report',
+            interactionId: 'funky:interaction:funky_participation',
             interactionKind: 'custom',
             scopePolicy: 'entity',
           },

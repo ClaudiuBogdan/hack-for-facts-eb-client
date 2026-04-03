@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@/test/test-utils'
 import { EntityNotificationBell } from './EntityNotificationBell'
 import { CAMPAIGN_NOTIFICATIONS_PATH } from '@/features/campaigns/buget/constants'
+import { FUNKY_NOTIFICATION_ENTITY_UPDATES } from '../campaign-notification-keys'
 
 let mockLocation = {
   pathname: '/primarie/12345678/buget/provocari',
@@ -70,7 +71,7 @@ describe('EntityNotificationBell', () => {
       <EntityNotificationBell
         cui="12345678"
         entityName="Primaria Test"
-        notificationTypes={['campaign_public_debate_entity_updates']}
+        notificationTypes={[FUNKY_NOTIFICATION_ENTITY_UPDATES]}
       />,
     )
 

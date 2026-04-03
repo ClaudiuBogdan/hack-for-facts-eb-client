@@ -4,6 +4,11 @@ export type DebateRequestFormValue = {
   readonly primariaEmail: string
   readonly isNgo: boolean
   readonly organizationName: string | null
+  readonly organizationLegalAddress: string | null
+  readonly organizationRegistrationNumber: string | null
+  readonly organizationFiscalCode: string | null
+  readonly legalRepresentativeName: string | null
+  readonly legalRepresentativeRole: string | null
   readonly ngoSenderEmail: string | null
   readonly preparedSubject: string | null
   readonly threadKey: string | null

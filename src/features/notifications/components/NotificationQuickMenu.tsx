@@ -11,6 +11,11 @@ import { Trans } from '@lingui/react/macro';
 import { ArrowRight } from 'lucide-react';
 import type { Notification, NotificationType } from '../types';
 import { NOTIFICATION_TYPE_CONFIGS } from '../types';
+import {
+  FUNKY_CAMPAIGN_KEY,
+  FUNKY_NOTIFICATION_ENTITY_UPDATES,
+  FUNKY_NOTIFICATION_GLOBAL,
+} from '../campaign-notification-keys';
 
 const NEWSLETTER_TYPES: NotificationType[] = [
   'newsletter_entity_monthly',
@@ -50,14 +55,14 @@ export function NotificationQuickMenu({
     const globalPreference =
       notifications.find(
         (notification) =>
-          notification.notificationType === 'campaign_public_debate_global' &&
-          notification.campaignKey === 'public_debate'
+          notification.notificationType === FUNKY_NOTIFICATION_GLOBAL &&
+          notification.campaignKey === FUNKY_CAMPAIGN_KEY
       ) ?? null;
 
     if (globalPreference === null) {
       await createNotification({
         entityCui: null,
-        notificationType: 'campaign_public_debate_global',
+        notificationType: FUNKY_NOTIFICATION_GLOBAL,
       });
       return;
     }
@@ -75,7 +80,7 @@ export function NotificationQuickMenu({
     );
 
     try {
-      if (type === 'campaign_public_debate_entity_updates' && isChecked) {
+      if (type === FUNKY_NOTIFICATION_ENTITY_UPDATES && isChecked) {
         await ensureCampaignGlobalEnabled();
       }
 

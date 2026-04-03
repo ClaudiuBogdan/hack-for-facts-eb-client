@@ -3,6 +3,7 @@ import { t } from '@lingui/core/macro'
 import { ArrowRight, Bell, BellOff, Building2, Send, Library } from 'lucide-react'
 import { buildCampaignResourcesPath, CAMPAIGN_NOTIFICATIONS_PATH } from '@/features/campaigns/buget/constants'
 import { useCampaignNotifications } from '@/features/notifications/hooks/useCampaignNotifications'
+import { FUNKY_NOTIFICATION_ENTITY_UPDATES } from '@/features/notifications/campaign-notification-keys'
 import {
   buildCampaignPrimariePath,
   buildCampaignProvocariStepPath,
@@ -24,10 +25,10 @@ export function QuickResourcesPreview({
     (n) => n.entityCui === entityCui
   )
   const hasActiveNotification = entityNotifications.some(
-    (n) => n.notificationType === 'campaign_public_debate_entity_updates' && n.isActive
+    (n) => n.notificationType === FUNKY_NOTIFICATION_ENTITY_UPDATES && n.isActive
   )
   const hasDisabledNotification = entityNotifications.some(
-    (n) => n.notificationType === 'campaign_public_debate_entity_updates' && !n.isActive
+    (n) => n.notificationType === FUNKY_NOTIFICATION_ENTITY_UPDATES && !n.isActive
   )
   const hasDisabledGlobalPreference = globalPreference?.isActive === false
   const showDisabledNotification =

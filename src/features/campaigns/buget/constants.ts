@@ -10,7 +10,10 @@ export const CAMPAIGN_BUDGET_ROUTE = `${CAMPAIGN_ENTITY_BASE_PATH}/$cui/buget`
 export const CAMPAIGN_CALENDAR_ROUTE = `${CAMPAIGN_BUDGET_ROUTE}/calendar`
 export const CAMPAIGN_NOTIFICATIONS_PATH = '/provocare/notificari'
 
-export const CAMPAIGN_PROGRESS_STORAGE_KEY = `campaign_progress_snapshot:${CAMPAIGN_ID}`
+export const CAMPAIGN_PROGRESS_STORAGE_KEY = 'funky:storage:progress_snapshot'
+export const CAMPAIGN_PROGRESS_EVENTS_STORAGE_KEY = 'funky:storage:progress_events'
+export const CAMPAIGN_PROGRESS_SYNC_STORAGE_KEY = 'funky:storage:progress_sync'
+export const CAMPAIGN_PROGRESS_CLIENT_ID_STORAGE_KEY = 'funky:storage:client_id'
 
 export const CAMPAIGN_DEFAULT_LOCALE = 'ro' as const
 

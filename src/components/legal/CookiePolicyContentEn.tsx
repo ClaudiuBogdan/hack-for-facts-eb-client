@@ -5,7 +5,7 @@ export function CookiePolicyContentEn() {
     <div className="mx-auto w-full max-w-4xl p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-semibold">Cookie Policy</h1>
-        <p className="text-sm text-muted-foreground">Effective Date: October 17, 2025 · Version: 2.0</p>
+        <p className="text-sm text-muted-foreground">Effective Date: April 3, 2026 · Version: 3.0</p>
       </div>
       <div className="space-y-2">
         <h2 className="text-lg font-medium">At a Glance</h2>
@@ -18,7 +18,7 @@ export function CookiePolicyContentEn() {
       </div>
       <div className="prose prose-slate dark:prose-invert max-w-none">
         <h3>Technologies we use</h3>
-        <p>We use cookies and localStorage to operate the app and, with consent, to measure usage and improve reliability.</p>
+        <p>We use cookies and browser storage technologies such as localStorage, sessionStorage, and IndexedDB to operate the app and, with consent, to measure usage and improve reliability.</p>
 
         <h3>Categories</h3>
         <ul>
@@ -33,7 +33,9 @@ export function CookiePolicyContentEn() {
         <h4>Essential Cookies and Storage (always active)</h4>
         <p>These are necessary for the Service to function and cannot be disabled:</p>
         <ul>
-          <li><strong>localStorage</strong>: <code>cookie-consent</code> (stores your consent preferences), <code>saved-charts</code> (your saved visualizations), <code>chart-categories</code> (chart organization), <code>theme-preference</code> (dark/light mode).</li>
+          <li><strong>localStorage</strong>: Includes items such as <code>cookie-consent</code> (consent preferences), <code>saved-charts</code> and <code>chart-categories</code> (saved visualizations and organization), language, theme, currency and inflation preferences, recent entities, alerts, learning progress, campaign progress, onboarding state, and other feature settings or locally stored drafts.</li>
+          <li><strong>sessionStorage</strong>: May be used for temporary runtime state, recovery flows, or editor/session handoff features.</li>
+          <li><strong>IndexedDB</strong>: May be used by advanced features such as local map snapshots or other larger client-side datasets needed for offline-friendly or draft-saving behavior.</li>
         </ul>
 
         <h4>Authentication Cookies (essential if you have an account)</h4>
@@ -59,15 +61,15 @@ export function CookiePolicyContentEn() {
 
         <h3>Cookie duration</h3>
         <ul>
-          <li><strong>Essential localStorage</strong>: Persists until manually cleared by you.</li>
+          <li><strong>Essential browser storage</strong>: localStorage, sessionStorage, and IndexedDB entries may persist until manually cleared by you, overwritten by the relevant feature, or removed by your browser.</li>
           <li><strong>Clerk authentication cookies</strong>: Session cookies (expire when you close browser) and persistent cookies (up to 30 days for "remember me").</li>
           <li><strong>PostHog analytics</strong>: Up to 1 year.</li>
-          <li><strong>Sentry</strong>: Session duration only.</li>
+          <li><strong>Sentry</strong>: Session duration only, although submitted feedback or bug reports may be retained server-side under the retention rules described in the Privacy Policy.</li>
         </ul>
 
         <h3>Managing preferences</h3>
         <p>Use <Link to="/cookies" className="underline">Cookie Settings</Link> to manage analytics and error reporting consent, or use your browser controls to clear site data.</p>
-        <p>Note: Deleting authentication cookies will sign you out of your account. Deleting essential localStorage will reset your saved charts and preferences.</p>
+        <p>Note: Deleting authentication cookies will sign you out of your account. Clearing localStorage, sessionStorage, or IndexedDB may reset saved charts, progress, maps, alerts, and other locally stored preferences or drafts.</p>
         <p>See also our <Link to="/privacy" className="underline">Privacy Policy</Link>.</p>
       </div>
     </div>

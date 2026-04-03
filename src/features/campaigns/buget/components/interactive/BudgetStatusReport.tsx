@@ -58,7 +58,7 @@ function getBudgetStageLabel(value: NonNullable<BudgetStatusReportValue['budgetS
  * pending_review because the data needs async server validation before being
  * considered authoritative. Backend: a review process (cron or admin) should
  * verify the reported status against the actual entity data.
- * Record key: campaign:budget-2026-status::entity:{cui}
+ * Record key: funky:interaction:budget_status::entity:{cui}
  */
 export function BudgetStatusReport({ ownerChallengeSlug, entityCui }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<BudgetStatusReportValue>({

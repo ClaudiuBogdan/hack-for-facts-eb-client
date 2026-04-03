@@ -143,9 +143,9 @@ describe('campaign progress records', () => {
 
     const snapshot = projectCampaignProgressFromRecords({
       [challengeRecord.key]: challengeRecord,
-      'campaign:primarie-website-url::entity:4305857': {
-        key: 'campaign:primarie-website-url::entity:4305857',
-        interactionId: 'campaign:primarie-website-url',
+      'funky:interaction:city_hall_website::entity:4305857': {
+        key: 'funky:interaction:city_hall_website::entity:4305857',
+        interactionId: 'funky:interaction:city_hall_website',
         lessonId: 'civic-monitor-and-request',
         kind: 'custom',
         scope: { type: 'entity', entityCui: '4305857' },
@@ -182,9 +182,9 @@ describe('campaign progress records', () => {
 
     const snapshot = projectCampaignProgressFromRecords({
       [challengeRecord.key]: challengeRecord,
-      'campaign:primarie-website-url::entity:4305857': {
-        key: 'campaign:primarie-website-url::entity:4305857',
-        interactionId: 'campaign:primarie-website-url',
+      'funky:interaction:city_hall_website::entity:4305857': {
+        key: 'funky:interaction:city_hall_website::entity:4305857',
+        interactionId: 'funky:interaction:city_hall_website',
         lessonId: 'civic-monitor-and-request',
         kind: 'custom',
         scope: { type: 'entity', entityCui: '4305857' },
@@ -220,8 +220,8 @@ describe('campaign progress records', () => {
         attempts: 2,
         updatedAt: ISO_2,
       }),
-      'campaign:primarie-contact-info::entity:4305857': {
-        key: 'campaign:primarie-contact-info::entity:4305857',
+      'funky:interaction:city_hall_contact::entity:4305857': {
+        key: 'funky:interaction:city_hall_contact::entity:4305857',
         interactionId: PRIMARIE_CONTACT_INFO_INTERACTION.interactionId,
         lessonId: PRIMARIE_CONTACT_INFO_INTERACTION.ownerChallengeSlug,
         kind: 'custom',
@@ -253,8 +253,8 @@ describe('campaign progress records', () => {
         attempts: 1,
         updatedAt: ISO_2,
       }),
-      'campaign:primarie-contact-info::entity:4305857': {
-        key: 'campaign:primarie-contact-info::entity:4305857',
+      'funky:interaction:city_hall_contact::entity:4305857': {
+        key: 'funky:interaction:city_hall_contact::entity:4305857',
         interactionId: PRIMARIE_CONTACT_INFO_INTERACTION.interactionId,
         lessonId: PRIMARIE_CONTACT_INFO_INTERACTION.ownerChallengeSlug,
         kind: 'custom',
@@ -286,8 +286,8 @@ describe('campaign progress records', () => {
         attempts: 0,
         updatedAt: ISO_3,
       }),
-      'campaign:primarie-website-url::entity:4305857': {
-        key: 'campaign:primarie-website-url::entity:4305857',
+      'funky:interaction:city_hall_website::entity:4305857': {
+        key: 'funky:interaction:city_hall_website::entity:4305857',
         interactionId: PRIMARIE_WEBSITE_LINK_INTERACTION.interactionId,
         lessonId: PRIMARIE_WEBSITE_LINK_INTERACTION.ownerChallengeSlug,
         kind: 'custom',
@@ -309,8 +309,8 @@ describe('campaign progress records', () => {
 
   it('projects the strongest sibling interaction when no aggregate record exists', () => {
     const snapshot = projectCampaignProgressFromRecords({
-      'campaign:primarie-contact-info::entity:4305857': {
-        key: 'campaign:primarie-contact-info::entity:4305857',
+      'funky:interaction:city_hall_contact::entity:4305857': {
+        key: 'funky:interaction:city_hall_contact::entity:4305857',
         interactionId: PRIMARIE_CONTACT_INFO_INTERACTION.interactionId,
         lessonId: PRIMARIE_CONTACT_INFO_INTERACTION.ownerChallengeSlug,
         kind: 'custom',
@@ -325,8 +325,8 @@ describe('campaign progress records', () => {
         updatedAt: ISO_3,
         submittedAt: null,
       },
-      'campaign:budget-document-url::entity:4305857': {
-        key: 'campaign:budget-document-url::entity:4305857',
+      'funky:interaction:budget_document::entity:4305857': {
+        key: 'funky:interaction:budget_document::entity:4305857',
         interactionId: BUDGET_DOCUMENT_LINK_INTERACTION.interactionId,
         lessonId: BUDGET_DOCUMENT_LINK_INTERACTION.ownerChallengeSlug,
         kind: 'custom',

@@ -12,6 +12,7 @@ import { useNotificationModal } from '../hooks/useNotificationModal';
 import { useLocation } from '@tanstack/react-router';
 import type { NotificationType } from '../types';
 import { CAMPAIGN_NOTIFICATIONS_PATH } from '@/features/campaigns/buget/constants';
+import { FUNKY_NOTIFICATION_ENTITY_UPDATES } from '../campaign-notification-keys';
 
 const MANUAL_ENTITY_BELL_TYPES: NotificationType[] = [
   'newsletter_entity_monthly',
@@ -40,7 +41,7 @@ export function EntityNotificationBell({
   const location = useLocation();
   const isCampaignEntityOnly =
     notificationTypes.length === 1 &&
-    notificationTypes[0] === 'campaign_public_debate_entity_updates';
+    notificationTypes[0] === FUNKY_NOTIFICATION_ENTITY_UPDATES;
   const currentUrl = `${location.pathname}${location.searchStr ?? ''}`;
   const locationSearch = new URLSearchParams(location.searchStr ?? '');
   const manageSearch = isCampaignEntityOnly

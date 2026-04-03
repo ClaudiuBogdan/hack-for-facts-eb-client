@@ -78,7 +78,7 @@ msgstr "{0} bins"
 
 #. placeholder {0}: String(failed)
 #. placeholder {1}: String(failed + succeeded)
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:224
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:228
 msgid "{0} of {1} updates failed"
 msgstr "{0} of {1} updates failed"
 
@@ -260,11 +260,11 @@ msgstr "A new version of the app is available. Please reload the page to get the
 msgid "A platform for exploring public financial data for citizens, journalists, public figures, and other interested parties."
 msgstr "Platformă de explorare a datelor financiare publice pentru cetățeni, jurnaliști, persoane publice, și alte persoane interesate."
 
-#: src/components/privacy/CookieConsentBanner.tsx:112
+#: src/components/privacy/CookieConsentBanner.tsx:121
 msgid "Accept All"
 msgstr "Accept All"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:469
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:473
 msgid "Accept the terms and conditions for an entity in the campaign to automatically receive update notifications."
 msgstr "Accept the terms and conditions for an entity in the campaign to automatically receive update notifications."
 
@@ -292,6 +292,7 @@ msgstr "active"
 #: src/components/alerts/components/AlertEditorView.tsx:286
 #: src/components/charts/components/views/SeriesConfigView.tsx:330
 #: src/features/notifications/components/alerts/AlertCard.tsx:71
+#: src/routes/cookies.lazy.tsx:150
 msgid "Active"
 msgstr "Active"
 
@@ -368,8 +369,8 @@ msgstr "Add Condition"
 msgid "Add Data Series"
 msgstr "Add Data Series"
 
-#: src/routes/settings/notifications.tsx:61
 #: src/routes/settings/notifications.tsx:62
+#: src/routes/settings/notifications.tsx:63
 msgid "Add entity notification"
 msgstr "Add entity notification"
 
@@ -391,7 +392,7 @@ msgstr "Add series"
 msgid "Add Series"
 msgstr "Add Series"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:589
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:746
 msgid "Add the association name to use this option."
 msgstr "Add the association name to use this option."
 
@@ -400,8 +401,8 @@ msgstr "Add the association name to use this option."
 msgid "Add the city hall's contact details for future communications."
 msgstr "Add the city hall's contact details for future communications."
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:130
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:151
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:180
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:201
 msgid "Add the link to the city hall's budget document."
 msgstr "Add the link to the city hall's budget document."
 
@@ -427,7 +428,7 @@ msgstr "Address"
 msgid "Adjust for inflation (constant 2024 prices)"
 msgstr "Adjust for inflation (constant 2024 prices)"
 
-#: src/components/privacy/CookieConsentBanner.tsx:106
+#: src/components/privacy/CookieConsentBanner.tsx:115
 msgid "Advanced"
 msgstr "Advanced"
 
@@ -543,7 +544,7 @@ msgstr "Alert series"
 msgid "Alert type"
 msgstr "Alert type"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:121
+#: src/features/notifications/components/EntityNotificationBell.tsx:122
 msgid "Alerts when important changes occur"
 msgstr "Alerts when important changes occur"
 
@@ -595,23 +596,23 @@ msgstr "All types"
 msgid "All years"
 msgstr "All years"
 
-#: src/routes/cookies.lazy.tsx:204
+#: src/routes/cookies.lazy.tsx:263
 msgid "Allow all"
 msgstr "Allow all"
 
-#: src/routes/cookies.lazy.tsx:202
+#: src/routes/cookies.lazy.tsx:261
 msgid "Allow all cookies"
 msgstr "Allow all cookies"
 
-#: src/routes/cookies.lazy.tsx:188
+#: src/routes/cookies.lazy.tsx:246
 msgid "Allow essential cookies only"
 msgstr "Allow essential cookies only"
 
-#: src/routes/cookies.lazy.tsx:190
+#: src/components/privacy/CookieConsentBanner.tsx:106
 msgid "Allow essential only"
 msgstr "Allow essential only"
 
-#: src/routes/cookies.lazy.tsx:118
+#: src/routes/cookies.lazy.tsx:171
 msgid "Always enabled"
 msgstr "Always enabled"
 
@@ -639,7 +640,7 @@ msgstr "Amount Per Capita"
 msgid "Amount Range"
 msgstr "Amount Range"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:119
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:123
 msgid "An unexpected error occurred"
 msgstr "An unexpected error occurred"
 
@@ -650,7 +651,7 @@ msgstr "An unexpected error occurred"
 msgid "Analytics"
 msgstr "Analytics"
 
-#: src/routes/cookies.lazy.tsx:138
+#: src/routes/cookies.lazy.tsx:177
 msgid "Analytics (PostHog)"
 msgstr "Analytics (PostHog)"
 
@@ -708,9 +709,9 @@ msgstr "Annual budget execution"
 msgid "Annual budget unavailable"
 msgstr "Annual budget unavailable"
 
-#: src/routes/cookies.lazy.tsx:147
-msgid "Anonymous usage patterns, page views, interactions."
-msgstr "Anonymous usage patterns, page views, interactions."
+#: src/routes/cookies.lazy.tsx:196
+msgid "Anonymous usage patterns, page views, interactions, and feature usage events."
+msgstr "Anonymous usage patterns, page views, interactions, and feature usage events."
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:410
 msgid "Anyone with link"
@@ -795,21 +796,21 @@ msgstr "Arrears"
 msgid "Ask questions and discuss this lesson with the community."
 msgstr "Ask questions and discuss this lesson with the community."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:628
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:793
 msgid "Ask us to send it"
 msgstr "Ask us to send it"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:398
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:460
 msgid "Association"
 msgstr "Association"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:404
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:595
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:472
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:757
 msgid "Association email"
 msgstr "Association email"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:516
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:523
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:584
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:591
 msgid "Association name"
 msgstr "Association name"
 
@@ -839,7 +840,7 @@ msgstr "Available budget credits"
 msgid "Available commitment credits"
 msgstr "Available commitment credits"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:584
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:741
 msgid "Available for legally established associations."
 msgstr "Available for legally established associations."
 
@@ -867,8 +868,8 @@ msgstr "Avg. Amount per UAT"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:399
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:470
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:611
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:537
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:656
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:693
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:821
 #: src/routes/alerts/new.lazy.tsx:175
 msgid "Back"
 msgstr "Back"
@@ -877,7 +878,7 @@ msgstr "Back"
 msgid "Back to alert"
 msgstr "Back to alert"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:442
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:446
 msgid "Back to campaign"
 msgstr "Back to campaign"
 
@@ -968,7 +969,7 @@ msgstr "Based on 2024 budgetary data"
 msgid "Basic data on population, employment and housing."
 msgstr "Basic data on population, employment and housing."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:190
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:205
 msgid "Before confirming, make sure you:"
 msgstr "Before confirming, make sure you:"
 
@@ -1053,8 +1054,8 @@ msgstr "Breakdown of the selected classification, including grouped chapters and
 msgid "Browse and download all financial reports submitted by this entity"
 msgstr "Browse and download all financial reports submitted by this entity"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:476
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:515
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:480
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:519
 msgid "Browse entities"
 msgstr "Browse entities"
 
@@ -1097,13 +1098,13 @@ msgstr "Budget Cycle Timeline"
 msgid "Budget Distribution"
 msgstr "Budget Distribution"
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:128
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:145
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:178
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:195
 msgid "Budget document"
 msgstr "Budget document"
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:129
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:148
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:179
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:198
 msgid "Budget document link"
 msgstr "Budget document link"
 
@@ -1115,7 +1116,7 @@ msgstr "Budget Documents"
 msgid "Budget draft publication date"
 msgstr "Budget draft publication date"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:99
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:109
 msgid "Budget guides, request templates, and more."
 msgstr "Budget guides, request templates, and more."
 
@@ -1212,11 +1213,11 @@ msgstr "Calculation"
 msgid "Calculations assume a basket of 40% essential goods (11% VAT) and 60% general goods (21% VAT)."
 msgstr "Calculations assume a basket of 40% essential goods (11% VAT) and 60% general goods (21% VAT)."
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:343
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:347
 msgid "Campaign notifications"
 msgstr "Campaign notifications"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:446
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:450
 msgid "Campaign Notifications"
 msgstr "Campaign Notifications"
 
@@ -1364,11 +1365,11 @@ msgstr "Choose a disabled view to enable it in this map."
 msgid "Choose an answer"
 msgstr "Choose an answer"
 
-#: src/routes/cookies.lazy.tsx:104
-msgid "Choose between essential-only or all cookies, then fine-tune options below."
-msgstr "Choose between essential-only or all cookies, then fine-tune options below."
+#: src/routes/cookies.lazy.tsx:135
+msgid "Choose between essential-only or all cookies, then fine-tune individual options below. Your selections are saved when you press \"Confirm choices\"."
+msgstr "Choose between essential-only or all cookies, then fine-tune individual options below. Your selections are saved when you press \"Confirm choices\"."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:553
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:710
 msgid "Choose how you want the public debate request to be sent."
 msgstr "Choose how you want the public debate request to be sent."
 
@@ -1396,8 +1397,8 @@ msgstr "City hall contact info"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:278
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:516
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:393
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:464
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:455
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:532
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:135
 msgid "City hall email"
 msgstr "City hall email"
@@ -1762,7 +1763,7 @@ msgstr "Configure the map name and review its status."
 msgid "Confirm"
 msgstr "Confirm"
 
-#: src/routes/cookies.lazy.tsx:197
+#: src/routes/cookies.lazy.tsx:256
 msgid "Confirm choices"
 msgstr "Confirm choices"
 
@@ -1825,8 +1826,8 @@ msgstr "Context"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:362
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:406
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:477
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:489
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:543
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:557
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:700
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:144
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:214
 #: src/features/learning/components/cards/LearningPathCard.tsx:24
@@ -1868,7 +1869,7 @@ msgid "Cookie consent required"
 msgstr "Cookie consent required"
 
 #: src/components/footer/AppFooter.tsx:126
-#: src/routes/cookies.lazy.tsx:103
+#: src/routes/cookies.lazy.tsx:131
 msgid "Cookie Settings"
 msgstr "Cookie Settings"
 
@@ -1877,7 +1878,7 @@ msgid "Copied"
 msgstr "Copied"
 
 #: src/components/charts/components/ChartDataError.tsx:278
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:95
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:110
 msgid "Copied to clipboard"
 msgstr "Copied to clipboard"
 
@@ -1889,7 +1890,7 @@ msgstr "Copied!"
 #: src/components/charts/components/views/AnnotationConfigView.tsx:220
 #: src/components/charts/components/views/SeriesConfigView.tsx:375
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:239
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:98
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:113
 msgid "Copy"
 msgstr "Copy"
 
@@ -2352,8 +2353,8 @@ msgstr "Death rate captures health and age-structure pressure and helps explain 
 msgid "Deaths (POP206D)"
 msgstr "Deaths (POP206D)"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:419
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:435
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:487
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:503
 msgid "Debate request"
 msgstr "Debate request"
 
@@ -2459,7 +2460,7 @@ msgid "Delete this map?"
 msgstr "Delete this map?"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:258
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:384
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:446
 msgid "Delivery path"
 msgstr "Delivery path"
 
@@ -2589,6 +2590,11 @@ msgstr "Disable series"
 msgid "Disable Series"
 msgstr "Disable Series"
 
+#: src/routes/cookies.lazy.tsx:188
+#: src/routes/cookies.lazy.tsx:220
+msgid "Disabled"
+msgstr "Disabled"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:617
 msgid "Discard & close"
 msgstr "Discard & close"
@@ -2625,16 +2631,17 @@ msgstr "Distribution"
 msgid "Distribution series"
 msgstr "Distribution series"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:505
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:573
 msgid "Do you represent a legally established association?"
 msgstr "Do you represent a legally established association?"
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:43
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:74
 msgid "Document link"
 msgstr "Document link"
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:48
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:180
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:79
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:230
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:232
 msgid "Document type"
 msgstr "Document type"
 
@@ -2738,11 +2745,11 @@ msgstr "e.g. Expense growth alert"
 msgid "e.g., RON, %, Units..."
 msgstr "e.g., RON, %, Units..."
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:112
+#: src/features/notifications/components/EntityNotificationBell.tsx:113
 msgid "Easily manage your campaign notification preference"
 msgstr "Easily manage your campaign notification preference"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:124
+#: src/features/notifications/components/EntityNotificationBell.tsx:125
 msgid "Easily manage your subscriptions"
 msgstr "Easily manage your subscriptions"
 
@@ -2872,7 +2879,7 @@ msgstr "Email"
 msgid "Email address copied to clipboard!"
 msgstr "Email address copied to clipboard!"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:346
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:350
 msgid "Email updates for all entities in this campaign"
 msgstr "Email updates for all entities in this campaign"
 
@@ -2935,6 +2942,8 @@ msgid "Enable Series"
 msgstr "Enable Series"
 
 #: src/components/charts/components/views/AnnotationConfigView.tsx:130
+#: src/routes/cookies.lazy.tsx:183
+#: src/routes/cookies.lazy.tsx:215
 msgid "Enabled"
 msgstr "Enabled"
 
@@ -2946,7 +2955,7 @@ msgstr "Enabled alerts are evaluated monthly and included in your newsletter."
 msgid "English"
 msgstr "English"
 
-#: src/routes/cookies.lazy.tsx:170
+#: src/routes/cookies.lazy.tsx:227
 msgid "Enhanced error reporting"
 msgstr "Enhanced error reporting"
 
@@ -3007,7 +3016,7 @@ msgstr "Entity Analytics"
 msgid "Entity Details"
 msgstr "Entity Details"
 
-#: src/routes/settings/notifications.tsx:50
+#: src/routes/settings/notifications.tsx:51
 msgid "Entity Notifications"
 msgstr "Entity Notifications"
 
@@ -3015,7 +3024,7 @@ msgstr "Entity Notifications"
 msgid "Entity Search"
 msgstr "Entity Search"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:375
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:379
 msgid "Entity subscriptions"
 msgstr "Entity subscriptions"
 
@@ -3077,11 +3086,11 @@ msgstr "Error loading data"
 msgid "Error loading data:"
 msgstr "Error loading data:"
 
-#: src/routes/settings/notifications.tsx:145
+#: src/routes/settings/notifications.tsx:146
 msgid "Error loading notifications"
 msgstr "Error loading notifications"
 
-#: src/routes/cookies.lazy.tsx:160
+#: src/routes/cookies.lazy.tsx:209
 msgid "Error reporting (Sentry)"
 msgstr "Error reporting (Sentry)"
 
@@ -3101,9 +3110,13 @@ msgstr "Error: Series not found"
 msgid "Errors"
 msgstr "Errors"
 
-#: src/routes/cookies.lazy.tsx:110
+#: src/routes/cookies.lazy.tsx:145
 msgid "Essential cookies"
 msgstr "Essential cookies"
+
+#: src/routes/cookies.lazy.tsx:248
+msgid "Essential only"
+msgstr "Essential only"
 
 #: src/features/learning/components/interactive/VATReformCard.tsx:31
 msgid "Essentials"
@@ -3513,8 +3526,8 @@ msgstr "Failed to save snapshot"
 msgid "Failed to update map visibility"
 msgstr "Failed to update map visibility"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:229
-#: src/features/notifications/components/NotificationQuickMenu.tsx:84
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:233
+#: src/features/notifications/components/NotificationQuickMenu.tsx:95
 msgid "Failed to update notification"
 msgstr "Failed to update notification"
 
@@ -3551,7 +3564,7 @@ msgstr "Feedback / Report an issue"
 msgid "Feedback is currently unavailable."
 msgstr "Feedback is currently unavailable."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:439
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:507
 msgid "Fill in the city hall's contact details and send the request to organize a public debate on the local budget."
 msgstr "Fill in the city hall's contact details and send the request to organize a public debate on the local budget."
 
@@ -3862,7 +3875,7 @@ msgstr "Get monthly email updates about this institution. Receive alerts when ne
 msgid "Get Started"
 msgstr "Get Started"
 
-#: src/features/notifications/components/NotificationQuickMenu.tsx:99
+#: src/features/notifications/components/NotificationQuickMenu.tsx:110
 msgid "Get updates about"
 msgstr "Get updates about"
 
@@ -3940,8 +3953,8 @@ msgstr "gradient"
 msgid "Gradient"
 msgstr "Gradient"
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:33
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:69
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:36
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:100
 msgid "Graphics"
 msgstr "Graphics"
 
@@ -3981,7 +3994,7 @@ msgid "Grouping"
 msgstr "Grouping"
 
 #: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:69
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:96
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:106
 msgid "Guides & templates"
 msgstr "Guides & templates"
 
@@ -4026,13 +4039,13 @@ msgstr ""
 msgid "Help"
 msgstr "Help"
 
-#: src/routes/cookies.lazy.tsx:162
-msgid "Help us fix problems by sending error reports. When disabled, we only send anonymous, minimal error telemetry necessary to keep the service reliable."
-msgstr "Help us fix problems by sending error reports. When disabled, we only send anonymous, minimal error telemetry necessary to keep the service reliable."
+#: src/routes/cookies.lazy.tsx:210
+msgid "Help us fix problems by sending error reports. When disabled, only minimal anonymous telemetry is sent to keep the service reliable."
+msgstr "Help us fix problems by sending error reports. When disabled, only minimal anonymous telemetry is sent to keep the service reliable."
 
-#: src/routes/cookies.lazy.tsx:140
-msgid "Help us understand usage to improve the product. No analytics is sent unless you opt in."
-msgstr "Help us understand usage to improve the product. No analytics is sent unless you opt in."
+#: src/routes/cookies.lazy.tsx:178
+msgid "Help us understand usage to improve the product. No analytics data is sent unless you opt in."
+msgstr "Help us understand usage to improve the product. No analytics data is sent unless you opt in."
 
 #: src/features/learning/components/interactive/BudgetFootprintRevealer.tsx:341
 msgid "Hidden infrastructure you used"
@@ -4128,7 +4141,7 @@ msgid "I don't know"
 msgstr "I don't know"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:583
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:206
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:221
 msgid "I sent the email"
 msgstr "I sent the email"
 
@@ -4149,7 +4162,7 @@ msgstr "If you earn <0>{0}</0> gross, drag the slider to your expected net home 
 msgid "If you need broader cohorts, use percentile instead of a very large N."
 msgstr "If you need broader cohorts, use percentile instead of a very large N."
 
-#: src/routes/cookies.lazy.tsx:127
+#: src/routes/cookies.lazy.tsx:161
 msgid "If you sign in, authentication cookies (Clerk) are essential to manage your session. Deleting them will sign you out."
 msgstr "If you sign in, authentication cookies (Clerk) are essential to manage your session. Deleting them will sign you out."
 
@@ -4178,9 +4191,9 @@ msgstr "in \"invisible\" consumption taxes."
 msgid "In one year, you will pay"
 msgstr "In one year, you will pay"
 
-#: src/routes/cookies.lazy.tsx:171
-msgid "Includes additional error context. No user identity is attached."
-msgstr "Includes additional error context. No user identity is attached."
+#: src/routes/cookies.lazy.tsx:228
+msgid "Includes additional error context and, if you use feedback tools, may include your message text or screenshots."
+msgstr "Includes additional error context and, if you use feedback tools, may include your message text or screenshots."
 
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:82
 msgid "Includes EU money (PNRR) and profits from state-owned companies. Essential but smaller."
@@ -4449,7 +4462,7 @@ msgid "Justice"
 msgstr "Justice"
 
 #. placeholder {0}: cc.join(', ')
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:195
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:210
 msgid "Keep <0>{0}</0> in CC so we can track the request"
 msgstr "Keep <0>{0}</0> in CC so we can track the request"
 
@@ -4514,6 +4527,10 @@ msgstr "Last evaluated"
 #: src/components/entities/views/entity-profile-view.presentation.tsx:290
 msgid "Last updated"
 msgstr "Last updated"
+
+#: src/routes/cookies.lazy.tsx:274
+msgid "Last updated:"
+msgstr "Last updated:"
 
 #: src/features/learning/components/interactive/VATReformCard.tsx:23
 msgid "Law 141/2025"
@@ -4640,7 +4657,7 @@ msgstr "Link"
 msgid "Link copied to clipboard"
 msgstr "Link copied to clipboard"
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:163
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:213
 msgid "Link to the budget document"
 msgstr "Link to the budget document"
 
@@ -4806,7 +4823,7 @@ msgstr "Loading view…"
 #: src/components/classification-explorer/ClassificationDescription.tsx:77
 #: src/routes/alerts/$alertId/index.lazy.tsx:133
 #: src/routes/alerts/new.lazy.tsx:127
-#: src/routes/settings/notifications.tsx:105
+#: src/routes/settings/notifications.tsx:106
 msgid "Loading..."
 msgstr "Loading..."
 
@@ -4946,19 +4963,19 @@ msgstr "Make private"
 msgid "Make public"
 msgstr "Make public"
 
-#: src/features/notifications/components/NotificationQuickMenu.tsx:147
+#: src/features/notifications/components/NotificationQuickMenu.tsx:158
 msgid "Manage all notifications"
 msgstr "Manage all notifications"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:449
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:453
 msgid "Manage email notifications for entities you follow in the campaign."
 msgstr "Manage email notifications for entities you follow in the campaign."
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:124
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:134
 msgid "Manage email updates for this campaign."
 msgstr "Manage email updates for this campaign."
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:158
+#: src/features/notifications/components/EntityNotificationBell.tsx:159
 #: src/routes/unsubscribe.$token.tsx:43
 msgid "Manage notifications"
 msgstr "Manage notifications"
@@ -4971,7 +4988,7 @@ msgstr "Manage your advanced map analytics maps."
 msgid "Manage your map settings, visibility, and version history."
 msgstr "Manage your map settings, visibility, and version history."
 
-#: src/routes/settings/notifications.tsx:52
+#: src/routes/settings/notifications.tsx:53
 msgid "Manage your newsletter and alert subscriptions"
 msgstr "Manage your newsletter and alert subscriptions"
 
@@ -5160,7 +5177,7 @@ msgstr "Medium opportunity"
 msgid "Menu"
 msgstr "Menu"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:165
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:180
 msgid "Message"
 msgstr "Message"
 
@@ -5260,7 +5277,7 @@ msgstr "Mode"
 msgid "Module link"
 msgstr "Module link"
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:209
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:214
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:260
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:209
 msgid "Module progress"
@@ -5304,7 +5321,7 @@ msgstr "Monthly Gross Income"
 msgid "Monthly monitoring"
 msgstr "Monthly monitoring"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:118
+#: src/features/notifications/components/EntityNotificationBell.tsx:119
 msgid "Monthly, quarterly, and annual reports"
 msgstr "Monthly, quarterly, and annual reports"
 
@@ -5381,7 +5398,7 @@ msgstr "Multiplier 1.5 is standard; use 3.0 for stricter outlier detection."
 msgid "My Budget Analysis Map…"
 msgstr "My Budget Analysis Map…"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:54
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:64
 msgid "My city hall"
 msgstr "My city hall"
 
@@ -5736,7 +5753,7 @@ msgstr "No enabled series."
 msgid "No entity details found for CUI: <0>{cui}</0>. It's possible this entity does not exist or has no associated data."
 msgstr "No entity details found for CUI: <0>{cui}</0>. It's possible this entity does not exist or has no associated data."
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:466
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:470
 msgid "No entity subscriptions"
 msgstr "No entity subscriptions"
 
@@ -5989,16 +6006,16 @@ msgstr "Nothing to paste"
 msgid "Notice the gap: <0>Current Expenses</0> (salaries, utilities) almost always reach full execution.<1> Capital Expenses</1> (investments) are the first to be cut or delayed, often falling below 60%. Always check <2>Code 71</2> to see if promised infrastructure is actually being built."
 msgstr "Notice the gap: <0>Current Expenses</0> (salaries, utilities) almost always reach full execution.<1> Capital Expenses</1> (investments) are the first to be cut or delayed, often falling below 60%. Always check <2>Code 71</2> to see if promised infrastructure is actually being built."
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:121
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:131
 msgid "Notification preferences"
 msgstr "Notification preferences"
 
 #. placeholder {0}: String(entityTotalCount)
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:363
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:367
 msgid "Notifications are paused. Your {0} entity subscriptions are preserved."
 msgstr "Notifications are paused. Your {0} entity subscriptions are preserved."
 
-#: src/routes/settings/notifications.tsx:40
+#: src/routes/settings/notifications.tsx:41
 msgid "Notifications Settings"
 msgstr "Notifications Settings"
 
@@ -6126,7 +6143,7 @@ msgstr "Open email"
 msgid "Open email again"
 msgstr "Open email again"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:184
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:199
 msgid "Open email client"
 msgstr "Open email client"
 
@@ -6225,7 +6242,7 @@ msgstr "opens in new tab"
 msgid "Opens your email client with the completed contestation."
 msgstr "Opens your email client with the completed contestation."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:580
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:737
 msgid "Opens your email client with the completed request. Recommended when you represent a legally established association."
 msgstr "Opens your email client with the completed request. Recommended when you represent a legally established association."
 
@@ -6282,8 +6299,8 @@ msgstr "Original:"
 
 #: src/components/entities/views/ins-stats-view.tsx:475
 #: src/components/entities/views/ins-stats-view.tsx:511
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:34
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:70
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:37
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:101
 msgid "Other"
 msgstr "Other"
 
@@ -6544,7 +6561,7 @@ msgstr "Planned"
 msgid "Platform Mission"
 msgstr "Platform Mission"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:504
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:508
 msgid "Please try again to load your campaign notification preferences."
 msgstr "Please try again to load your campaign notification preferences."
 
@@ -6615,11 +6632,11 @@ msgstr "Pre-filled from the debate request challenge."
 msgid "Prefer median over mean when one or two UATs dominate values."
 msgstr "Prefer median over mean when one or two UATs dominate values."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:621
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:786
 msgid "Prepare email"
 msgstr "Prepare email"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:140
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:155
 msgid "Prepared email"
 msgstr "Prepared email"
 
@@ -6649,7 +6666,7 @@ msgstr "Preset label"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:69
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:541
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:137
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:152
 #: src/routes/alerts/$alertId/index.lazy.tsx:237
 #: src/routes/alerts/new.lazy.tsx:203
 msgid "Preview"
@@ -6709,7 +6726,7 @@ msgstr "Product"
 msgid "Profile information for this entity has not been collected yet."
 msgstr "Profile information for this entity has not been collected yet."
 
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:203
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:208
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:257
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:205
 msgid "Progress"
@@ -6726,12 +6743,12 @@ msgstr "Propose a specific and realistic change. For example: \"Redistribute 500
 msgid "Public"
 msgstr "Public"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:106
+#: src/features/notifications/components/EntityNotificationBell.tsx:107
 msgid "Public debate correspondence updates"
 msgstr "Public debate correspondence updates"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:420
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:437
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:488
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:505
 msgid "Public debate request"
 msgstr "Public debate request"
 
@@ -6821,7 +6838,7 @@ msgstr "Rank (Top/Bottom N)"
 msgid "Read more"
 msgstr "Read more"
 
-#: src/routes/cookies.lazy.tsx:212
+#: src/routes/cookies.lazy.tsx:269
 msgid "Read our <0>Cookie Policy</0> and <1>Privacy Policy</1>."
 msgstr "Read our <0>Cookie Policy</0> and <1>Privacy Policy</1>."
 
@@ -6873,7 +6890,7 @@ msgid "Recipient"
 msgstr "Recipient"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:264
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:390
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:452
 msgid "Recorded"
 msgstr "Recorded"
 
@@ -7012,21 +7029,21 @@ msgstr "Reporting:"
 msgid "Reports"
 msgstr "Reports"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:78
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:88
 msgid "Request a public debate for the local budget."
 msgstr "Request a public debate for the local budget."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:638
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:803
 msgid "Request submission"
 msgstr "Request submission"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:389
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:451
 msgid "Requested platform delivery"
 msgstr "Requested platform delivery"
 
-#: src/routes/cookies.lazy.tsx:112
-msgid "Required for core functionality like security and preferences. Always on."
-msgstr "Required for core functionality like security and preferences. Always on."
+#: src/routes/cookies.lazy.tsx:146
+msgid "Required for core functionality like security, authentication, and preferences. Always on."
+msgstr "Required for core functionality like security, authentication, and preferences. Always on."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:133
 msgid "Requires variation; rule is skipped if standard deviation is zero."
@@ -7053,7 +7070,7 @@ msgstr "Reset to available period"
 msgid "Reset to default"
 msgstr "Reset to default"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:37
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:47
 msgid "Resources"
 msgstr "Resources"
 
@@ -7192,7 +7209,7 @@ msgstr "Save"
 msgid "Save contact details"
 msgstr "Save contact details"
 
-#: src/routes/cookies.lazy.tsx:195
+#: src/routes/cookies.lazy.tsx:254
 msgid "Save cookie preferences"
 msgstr "Save cookie preferences"
 
@@ -7392,7 +7409,7 @@ msgstr "Secondary creditor aggregated"
 msgid "Section View"
 msgstr "Section View"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:57
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:67
 msgid "See the budget analysis for the selected entity."
 msgstr "See the budget analysis for the selected entity."
 
@@ -7514,7 +7531,7 @@ msgstr "Selects UATs by standardized distance from mean in standard deviations. 
 msgid "Seller Keeps"
 msgstr "Seller Keeps"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:75
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:85
 msgid "Send debate request"
 msgstr "Send debate request"
 
@@ -7524,11 +7541,11 @@ msgstr "Send debate request"
 msgid "Send feedback"
 msgstr "Send feedback"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:578
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:735
 msgid "Send it yourself"
 msgstr "Send it yourself"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:193
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:208
 msgid "Send the email from your association's email address"
 msgstr "Send the email from your association's email address"
 
@@ -7540,7 +7557,7 @@ msgstr "Send via email"
 msgid "Sender"
 msgstr "Sender"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:387
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:449
 msgid "Sent by you"
 msgstr "Sent by you"
 
@@ -7824,24 +7841,24 @@ msgstr "Sign in"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:206
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:129
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:562
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:566
 #: src/features/learning/components/layout/LoginBanner.tsx:28
-#: src/features/notifications/components/EntityNotificationBell.tsx:137
+#: src/features/notifications/components/EntityNotificationBell.tsx:138
 #: src/routes/alerts/$alertId/index.lazy.tsx:163
 #: src/routes/alerts/new.lazy.tsx:157
 #: src/routes/maps/editor/new.lazy.tsx:265
-#: src/routes/settings/notifications.tsx:131
+#: src/routes/settings/notifications.tsx:132
 msgid "Sign In"
 msgstr "Sign In"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:201
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:124
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:548
-#: src/features/notifications/components/EntityNotificationBell.tsx:87
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:552
+#: src/features/notifications/components/EntityNotificationBell.tsx:88
 #: src/routes/alerts/$alertId/index.lazy.tsx:149
 #: src/routes/alerts/new.lazy.tsx:143
 #: src/routes/maps/editor/new.lazy.tsx:260
-#: src/routes/settings/notifications.tsx:117
+#: src/routes/settings/notifications.tsx:118
 msgid "Sign in required"
 msgstr "Sign in required"
 
@@ -7858,19 +7875,19 @@ msgstr "Sign in to answer this section and save your progress."
 msgid "Sign in to create and manage alerts for your entities."
 msgstr "Sign in to create and manage alerts for your entities."
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:76
+#: src/features/notifications/components/EntityNotificationBell.tsx:77
 msgid "Sign in to get notifications"
 msgstr "Sign in to get notifications"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:556
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:560
 msgid "Sign in to manage email notifications for entities you follow in the campaign."
 msgstr "Sign in to manage email notifications for entities you follow in the campaign."
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:98
+#: src/features/notifications/components/EntityNotificationBell.tsx:99
 msgid "Sign in to receive updates about <0>{entityName}</0>:"
 msgstr "Sign in to receive updates about <0>{entityName}</0>:"
 
-#: src/routes/settings/notifications.tsx:125
+#: src/routes/settings/notifications.tsx:126
 msgid "Sign in to receive updates about the entities you care about."
 msgstr "Sign in to receive updates about the entities you care about."
 
@@ -8120,13 +8137,13 @@ msgid "Subchapter"
 msgstr "Subchapter"
 
 #: src/components/charts/components/views/AnnotationConfigView.tsx:142
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:127
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:157
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:142
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:172
 msgid "Subject"
 msgstr "Subject"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:335
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:359
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:391
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:421
 msgid "Submission failed. Please try again."
 msgstr "Submission failed. Please try again."
 
@@ -8138,7 +8155,7 @@ msgstr "Submit"
 msgid "Submit information"
 msgstr "Submit information"
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:209
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:262
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:151
 msgid "Submit link"
 msgstr "Submit link"
@@ -8151,19 +8168,19 @@ msgstr "Submit report"
 msgid "Submitted"
 msgstr "Submitted"
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:54
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:85
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:150
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:139
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:284
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:410
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:478
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:169
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:99
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:34
 msgid "Submitted on"
 msgstr "Submitted on"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:206
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:638
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:221
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:803
 msgid "Submitting..."
 msgstr "Submitting..."
 
@@ -8289,7 +8306,7 @@ msgstr "The actual value of goods & services you receive."
 msgid "The answer is:"
 msgstr "The answer is:"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:610
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:775
 msgid "The association email address is not valid."
 msgstr "The association email address is not valid."
 
@@ -8313,7 +8330,7 @@ msgstr "The data is presented for informational purposes, based on government da
 msgid "The Deficit"
 msgstr "The Deficit"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:479
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:547
 msgid "The email address is not valid."
 msgstr "The email address is not valid."
 
@@ -8391,7 +8408,7 @@ msgstr "There is 1 warning that may affect how your map is displayed."
 msgid "There was a problem fetching the details for CUI: <0>{cui}</0>."
 msgstr "There was a problem fetching the details for CUI: <0>{cui}</0>."
 
-#: src/routes/settings/notifications.tsx:149
+#: src/routes/settings/notifications.tsx:150
 msgid "There was a problem loading your notifications. Please try again."
 msgstr "There was a problem loading your notifications. Please try again."
 
@@ -8544,8 +8561,8 @@ msgstr "Title A–Z"
 msgid "Title Z–A"
 msgstr "Title Z–A"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:125
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:147
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:140
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:162
 msgid "To"
 msgstr "To"
 
@@ -8553,11 +8570,11 @@ msgstr "To"
 msgid "To Pay"
 msgstr "To Pay"
 
-#: src/routes/cookies.lazy.tsx:152
+#: src/routes/cookies.lazy.tsx:201
 msgid "Toggle analytics cookies"
 msgstr "Toggle analytics cookies"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:357
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:361
 msgid "Toggle campaign notifications"
 msgstr "Toggle campaign notifications"
 
@@ -8565,7 +8582,7 @@ msgstr "Toggle campaign notifications"
 msgid "Toggle county boundaries"
 msgstr "Toggle county boundaries"
 
-#: src/routes/cookies.lazy.tsx:176
+#: src/routes/cookies.lazy.tsx:233
 msgid "Toggle enhanced error reporting"
 msgstr "Toggle enhanced error reporting"
 
@@ -8577,7 +8594,7 @@ msgstr "Toggle map interaction"
 msgid "Toggle map visibility"
 msgstr "Toggle map visibility"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:412
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:416
 msgid "Toggle notifications for {name}"
 msgstr "Toggle notifications for {name}"
 
@@ -8739,10 +8756,10 @@ msgstr "Try a different search term or sorting."
 msgid "Try again"
 msgstr "Try again"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:511
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:515
 #: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1917
 #: src/features/learning/components/assessment/Quiz.tsx:188
-#: src/routes/settings/notifications.tsx:162
+#: src/routes/settings/notifications.tsx:163
 msgid "Try Again"
 msgstr "Try Again"
 
@@ -8816,7 +8833,7 @@ msgstr "UAT: Yes"
 msgid "UATs"
 msgstr "UATs"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:501
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:505
 msgid "Unable to load notifications"
 msgstr "Unable to load notifications"
 
@@ -8825,7 +8842,7 @@ msgstr "Unable to load notifications"
 msgid "Unavailable"
 msgstr "Unavailable"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:512
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:580
 msgid "Under Law 52/2003, requests from legally established associations can trigger the obligation to organize a public debate."
 msgstr "Under Law 52/2003, requests from legally established associations can trigger the obligation to organize a public debate."
 
@@ -8989,15 +9006,11 @@ msgstr "Update the submission and send it again."
 msgid "updated"
 msgstr "updated"
 
-#: src/routes/cookies.lazy.tsx:207
-msgid "Updated:"
-msgstr "Updated:"
-
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:577
 msgid "Upper fence"
 msgstr "Upper fence"
 
-#: src/routes/cookies.lazy.tsx:146
+#: src/routes/cookies.lazy.tsx:195
 msgid "Usage analytics"
 msgstr "Usage analytics"
 
@@ -9183,7 +9196,7 @@ msgid "View Chart"
 msgstr "View Chart"
 
 #: src/components/budget-explorer/BudgetTreemap.tsx:1082
-#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:190
+#: src/features/challenges/components/cards/ChallengeModuleCard.tsx:195
 #: src/features/learning/components/cards/LearningPathCard.tsx:75
 msgid "View Details"
 msgstr "View Details"
@@ -9277,15 +9290,15 @@ msgstr "We couldn't display this page due to a data validation issue."
 msgid "error.invalidUrlIssue"
 msgstr "We couldn't display this page due to a data validation issue. The URL parameters are invalid. Open this page again with a valid link or use the homepage button."
 
-#: src/components/privacy/CookieConsentBanner.tsx:90
-msgid "We use cookies and similar technologies to enhance your experience, analyze our traffic, and report errors. With your permission, we use PostHog for analytics and Sentry for error reporting to improve our service. You can change your preferences at any time. For more information, please see our <0>Privacy Policy</0>."
-msgstr "We use cookies and similar technologies to enhance your experience, analyze our traffic, and report errors. With your permission, we use PostHog for analytics and Sentry for error reporting to improve our service. You can change your preferences at any time. For more information, please see our <0>Privacy Policy</0>."
+#: src/components/privacy/CookieConsentBanner.tsx:93
+msgid "We use essential cookies and browser storage to run the service. With your permission, we also use PostHog for analytics and Sentry for enhanced error reporting. You can choose essential-only, accept all, or manage your preferences at any time. For more information, please see our <0>Privacy Policy</0>."
+msgstr "We use essential cookies and browser storage to run the service. With your permission, we also use PostHog for analytics and Sentry for enhanced error reporting. You can choose essential-only, accept all, or manage your preferences at any time. For more information, please see our <0>Privacy Policy</0>."
 
-#: src/components/privacy/CookieConsentBanner.tsx:86
+#: src/components/privacy/CookieConsentBanner.tsx:89
 msgid "We value your privacy"
 msgstr "We value your privacy"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:630
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:795
 msgid "We will record the request and send it through the platform."
 msgstr "We will record the request and send it through the platform."
 
@@ -9297,8 +9310,8 @@ msgstr "We'll start with the path that matches your goal and choices."
 msgid "Weather, heating systems, and local industry can materially affect year-to-year variation."
 msgstr "Weather, heating systems, and local industry can materially affect year-to-year variation."
 
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:32
-#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:68
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:35
+#: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:99
 msgid "Webpage"
 msgstr "Webpage"
 
@@ -9355,7 +9368,7 @@ msgstr "What you submitted"
 msgid "What's your <0>gross</0> salary?"
 msgstr "What's your <0>gross</0> salary?"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:109
+#: src/features/notifications/components/EntityNotificationBell.tsx:110
 msgid "When a request is sent, fails, or receives a reply"
 msgstr "When a request is sent, fails, or receives a reply"
 
@@ -9473,7 +9486,7 @@ msgstr "Yes"
 msgid "You"
 msgstr "You"
 
-#: src/routes/cookies.lazy.tsx:123
+#: src/routes/cookies.lazy.tsx:157
 msgid "You are signed in. Authentication cookies (Clerk) are essential and required to keep you signed in. Deleting them will sign you out."
 msgstr "You are signed in. Authentication cookies (Clerk) are essential and required to keep you signed in. Deleting them will sign you out."
 
@@ -9481,7 +9494,7 @@ msgstr "You are signed in. Authentication cookies (Clerk) are essential and requ
 msgid "You are viewing a shared map. Only the owner can edit the name."
 msgstr "You are viewing a shared map. Only the owner can edit the name."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:379
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:441
 msgid "You asked the platform to send the public debate request on your behalf."
 msgstr "You asked the platform to send the public debate request on your behalf."
 
@@ -9535,19 +9548,19 @@ msgstr "You need to be signed in to create alerts"
 msgid "You need to be signed in to edit alerts"
 msgstr "You need to be signed in to edit alerts"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:551
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:555
 msgid "You need to be signed in to manage campaign notifications"
 msgstr "You need to be signed in to manage campaign notifications"
 
-#: src/routes/settings/notifications.tsx:120
+#: src/routes/settings/notifications.tsx:121
 msgid "You need to be signed in to manage notifications"
 msgstr "You need to be signed in to manage notifications"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:90
+#: src/features/notifications/components/EntityNotificationBell.tsx:91
 msgid "You need to be signed in to subscribe to notifications"
 msgstr "You need to be signed in to subscribe to notifications"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:377
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:439
 msgid "You opened the prepared email and confirmed that you sent the public debate request."
 msgstr "You opened the prepared email and confirmed that you sent the public debate request."
 
@@ -9640,7 +9653,7 @@ msgstr "YOUR PREDICTION"
 msgid "Your progress has been saved. You can continue to the next step."
 msgstr "Your progress has been saved. You can continue to the next step."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:380
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:442
 msgid "Your public debate request was recorded."
 msgstr "Your public debate request was recorded."
 

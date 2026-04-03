@@ -51,9 +51,7 @@ export function BudgetChallengeTermsPage() {
           3.1. Provocarea este deschisă tuturor cetățenilor români sau
           rezidenților în România, indiferent de nivelul de cunoștințe în
           domeniu. Înscrierea pe platforma transparenta.eu și participarea la
-          provocare necesită vârsta minimă de 16 ani. Anumite provocări care
-          implică transmiterea de documente oficiale către autorități publice
-          (cereri de dezbatere, contestații) necesită vârsta minimă de 18 ani.
+          provocare necesită vârsta minimă de 18 ani.
         </p>
         <p>
           3.2. Înscrierea se face prin crearea unui cont pe platforma
@@ -70,6 +68,24 @@ export function BudgetChallengeTermsPage() {
           însă unele provocări devin indisponibile după expirarea termenelor
           legale bugetare (ex. contestațiile nu mai pot fi depuse după adoptarea
           bugetului local).
+        </p>
+        <p>
+          3.5. După înscriere, participantul poate primi comunicări unice sau
+          ocazionale strict necesare pentru confirmarea participării în campanie,
+          confirmarea unor acțiuni solicitate de acesta, securitatea contului ori
+          informarea cu privire la modificări importante care afectează
+          provocarea sau platforma. Notificările recurente privind actualizările
+          campaniei sunt distincte de aceste comunicări și se gestionează prin
+          preferințele de notificare disponibile în platformă.
+        </p>
+        <p>
+          3.6. Prin acceptarea prezentelor T&amp;C pentru o anumită entitate din
+          campanie, participantul activează implicit notificările recurente
+          privind actualizările campaniei pentru entitatea respectivă, inclusiv
+          actualizări referitoare la corespondența pentru dezbaterea publică și
+          alte etape relevante ale provocării. Aceste notificări pot fi
+          dezactivate în orice moment din setările de notificare ale campaniei
+          sau prin linkurile de dezabonare incluse în emailurile relevante.
         </p>
 
         <h2>4. Contul pe transparenta.eu</h2>
@@ -133,51 +149,30 @@ export function BudgetChallengeTermsPage() {
 
         <h2>6. Forumul</h2>
         <p>
-          6.1. Forumul este accesibil în mod public pentru citire (fără cont).
-          Pentru a posta, comenta sau interacționa, este necesar un cont activ pe
-          platforma transparenta.eu.
+          6.1. În contextul acestei provocări, participanții pot fi direcționați
+          către forumul platformei transparenta.eu sau pot vedea componente de
+          discuție integrate din acesta. Forumul este o componentă generală a
+          platformei și poate fi utilizat atât pentru această provocare, cât și
+          pentru alte campanii, lecții sau activități ale platformei.
         </p>
         <p>
-          6.2. Utilizatorii pot posta folosind nickname-ul asociat contului lor de
-          pe transparenta.eu sau pot activa modul anonim din setările profilului,
-          caz în care postarea apare fără nicio identificare vizibilă în
-          interfața platformei, atât față de ceilalți utilizatori, cât și față
-          de administratori. Identitatea utilizatorului rămâne însă stocată în
-          baza de date a platformei și poate fi accesată de operatorul
-          transparenta.eu în situații justificate (ex. încălcarea regulilor
-          forumului, obligații legale).
+          6.2. Accesul, publicarea, moderarea și prelucrarea datelor în cadrul
+          forumului sunt guvernate de termenii de utilizare și politica de
+          confidențialitate ale platformei transparenta.eu, precum și de regulile
+          forumului aplicabile la nivelul platformei.
         </p>
         <p>
-          6.3. Toate postările sunt vizibile tuturor participanților înscriși.
-          Răspunsurile oficiale ale echipei Funky Citizens sunt marcate distinct
-          față de contribuțiile celorlalți utilizatori.
+          6.3. Răspunsurile sau intervențiile echipei Funky Citizens în discuțiile
+          asociate provocării au caracter informativ și civic. Moderarea
+          conținutului forumului și administrarea conturilor de forum rămân
+          supuse regulilor generale ale platformei.
         </p>
         <p>
-          6.4. Participanții sunt responsabili pentru conținutul postat pe forum.
-          Este interzisă publicarea de:
-        </p>
-        <ol>
-          <li>
-            informații false sau calomnioase la adresa unor persoane sau
-            instituții;
-          </li>
-          <li>
-            date personale ale unor terți fără consimțământul acestora;
-          </li>
-          <li>
-            conținut ofensator, discriminatoriu sau care încalcă legislația
-            română în vigoare.
-          </li>
-        </ol>
-        <p>
-          6.5. Funky Citizens își rezervă dreptul de a elimina orice postare care
-          încalcă regulile de mai sus și de a suspenda accesul participanților
-          care le încalcă în mod repetat.
-        </p>
-        <p>
-          6.6. Deținătorul platformei își rezervă dreptul de a modera conținutul
-          cu ajutorul IA, caz în care vă rugăm să consultați T&amp;C al
-          platformei transparenta.eu.
+          6.4. În măsura în care forumul, componentele de discuție integrate sau
+          alte funcționalități ale platformei utilizează instrumente automate ori
+          asistate de AI pentru organizarea discuțiilor, moderare, clasificare,
+          rezumare sau asistență, utilizarea acestora rămâne supusă regulilor și
+          informărilor generale ale platformei transparenta.eu.
         </p>
 
         <h2>7. Provocările civice</h2>
@@ -192,13 +187,23 @@ export function BudgetChallengeTermsPage() {
         </ol>
         <p>
           7.2. Opțiunea de a trimite cererea prin platformă este condiționată de
-          acordarea unui consimțământ explicit, prin intermediul unei căsuțe
-          dedicate din formularul aferent acestei provocări, separat de
-          prezentele T&amp;C. Consimțământul manifestat astfel reprezintă acordul
-          de prelucrare a datelor cu caracter personal conținute de cerere de
-          către Funky Citizens.
+          confirmarea expresă a participantului în fluxul relevant al formularului
+          sau al mesajului pregătit. În funcție de opțiunea aleasă, platforma
+          poate fie să pregătească mesajul pentru trimitere din propriul client de
+          email al participantului, fie să transmită mesajul direct prin
+          infrastructura platformei.
         </p>
-        <p>7.3. Prin bifarea acelei căsuțe, participantul confirmă că:</p>
+        <p>
+          7.3. În fluxurile în care mesajul este trimis din clientul propriu de
+          email al participantului, platforma poate include o adresă de CC, o
+          adresă de captură, un identificator de fir de corespondență sau alte
+          elemente tehnice similare pentru a putea confirma trimiterea mesajului,
+          a corela răspunsurile instituției și a urmări stadiul corespondenței.
+          Dacă participantul păstrează aceste elemente în mesaj, transparenta.eu
+          și/sau Funky Citizens pot primi și stoca o copie a mesajului trimis și
+          a răspunsurilor aferente.
+        </p>
+        <p>7.4. Prin confirmarea acțiunii de corespondență, participantul confirmă că:</p>
         <ol>
           <li>datele completate sunt corecte;</li>
           <li>
@@ -213,8 +218,37 @@ export function BudgetChallengeTermsPage() {
           </li>
         </ol>
         <p>
-          7.4. Funky Citizens nu răspunde pentru consecințele transmiterii unor
+          7.5. Funky Citizens nu răspunde pentru consecințele transmiterii unor
           date incorecte furnizate de participant în cadrul acestui formular.
+        </p>
+        <p>
+          7.6. În administrarea provocării, transparenta.eu și/sau Funky Citizens
+          pot utiliza instrumente automate, inclusiv instrumente bazate pe AI,
+          pentru a sprijini procesarea documentelor, extragerea de informații,
+          clasificarea, rezumarea, detectarea conținutului duplicat, moderarea,
+          prioritizarea sau revizuirea materialelor trimise de participanți ori a
+          documentelor publice analizate în cadrul provocării. Astfel de
+          instrumente au rol de asistență și nu înlocuiesc, în mod necesar,
+          verificarea sau decizia umană acolo unde aceasta este considerată
+          necesară de operatorul relevant.
+        </p>
+        <p>
+          7.7. Unele dintre instrumentele bazate pe AI utilizate în contextul
+          provocării pot fi furnizate de terți. În funcție de furnizor, de
+          configurarea serviciului și de termenii aplicabili acelui furnizor,
+          materialele și outputurile transmise prin aceste funcționalități pot fi
+          păstrate de furnizor și pot fi utilizate pentru îmbunătățirea
+          serviciului, dezvoltarea modelului sau antrenare.
+        </p>
+        <p>
+          7.8. Este interzisă utilizarea instrumentelor de corespondență ori a
+          altor funcționalități ale provocării pentru spam, hărțuire, amenințări,
+          doxing, intimidare, transmiterea abuzivă în masă de solicitări către
+          instituții publice sau orice alt comportament ilegal ori abuziv. Funky
+          Citizens și/sau transparenta.eu pot limita, suspenda, bloca, refuza sau
+          raporta astfel de utilizări și pot păstra ori divulga date relevante
+          atunci când legea o impune sau când acest lucru este rezonabil necesar
+          pentru investigarea unor conduite ilegale ori abuzive.
         </p>
 
         <h2>8. Drepturile asupra materialelor produse</h2>
@@ -223,13 +257,30 @@ export function BudgetChallengeTermsPage() {
           prezentări, contestații etc.) rămân în proprietatea autorilor.
         </p>
         <p>
-          8.2. Prin participare, fiecare participant acordă Funky Citizens o
-          licență neexclusivă, gratuită, de a utiliza, republica și promova
-          aceste materiale în scopuri civice și educative, dacă acesta nu
-          solicită altfel în mod explicit.
+          8.2. Prin participare, fiecare participant acordă transparenta.eu o
+          licență neexclusivă și gratuită de a găzdui, stoca, reproduce, afișa,
+          adapta și utiliza materialele respective în măsura necesară pentru
+          operarea tehnică a platformei, securitate, moderare, suport, copii de
+          siguranță, funcționare, îmbunătățire, dezvoltare, testare,
+          documentare și promovare a platformei și a funcționalităților sale.
         </p>
         <p>
-          8.3. Participanții garantează că materialele produse sunt originale, nu
+          8.3. Prin participare, fiecare participant acordă Funky Citizens o
+          licență neexclusivă și gratuită, limitată la materialele legate de
+          provocare, pentru utilizarea, reproducerea, republicarea și promovarea
+          acestora exclusiv în scopuri legate de organizarea, administrarea,
+          documentarea, raportarea, comunicarea publică și promovarea civică ori
+          educativă a provocării și a activităților asociate acesteia.
+        </p>
+        <p>
+          8.4. Dacă participantul alege să publice sau să distribuie materiale în
+          mod public prin platformă, inclusiv pe forum sau prin alte
+          funcționalități publice ale platformei, aceste materiale pot deveni
+          accesibile publicului, pot fi indexate de motoarele de căutare și pot
+          fi copiate sau redistribuite de terți.
+        </p>
+        <p>
+          8.5. Participanții garantează că materialele produse sunt originale, nu
           încalcă drepturi ale terților și nu conțin informații false sau
           calomnioase.
         </p>
@@ -243,22 +294,52 @@ export function BudgetChallengeTermsPage() {
           supuși unui dublu nivel de reglementare, conform art 4.1..
         </p>
         <p>
-          9.2. Operatorul de date al platformei este transparenta.eu, în calitate
-          de deținător al platformei și titular al relației cu participanții,
-          care prelucrează datele în conformitate cu politicile prevăzute la art.
-          4.1..
+          9.2. În legătură cu datele prelucrate în contextul acestei provocări,
+          transparenta.eu și Funky Citizens acționează ca operatori independenți,
+          pentru scopuri distincte. Niciuna dintre părți nu acționează exclusiv în
+          calitate de persoană împuternicită a celeilalte pentru toate
+          prelucrările efectuate în cadrul provocării.
         </p>
         <p>
-          9.3. Operatorul de date în cadrul campaniei „Provocarea civică” este
-          Funky Citizens, care are acces la datele participanților exclusiv în
-          scopul administrării acestei provocări și în temeiul consimțământului
-          utilizatorului.
+          9.3. transparenta.eu prelucrează datele participanților, în calitate de
+          operator, pentru scopuri care țin de funcționarea platformei, inclusiv:
+          administrarea contului și autentificării; operarea platformei și a
+          forumului; securitatea, prevenirea abuzurilor și păstrarea jurnalelor
+          tehnice; administrarea infrastructurii de notificări și comunicări
+          transmise prin platformă; gestionarea înregistrărilor tehnice privind
+          participarea la provocare; precum și analizarea, dezvoltarea, testarea,
+          îmbunătățirea și promovarea platformei și a funcționalităților sale,
+          inclusiv prin reutilizarea datelor generate în contextul provocării, cu
+          respectarea principiilor de minimizare a datelor și, după caz, în formă
+          agregată sau anonimizată pentru utilizările publice.
         </p>
         <p>
-          9.3. Categoriile de date personale prelucrate și scopurile aferente –
-          următoarele categorii de date sunt prelucrate pe baza consimțământului
-          explicit al participantului, prevăzut la art. 6 alin. 1 lit. a) din
-          Regulamentul (UE) 2016/679 (RGPD):
+          9.4. Funky Citizens prelucrează datele participanților, în calitate de
+          operator, pentru scopuri care țin de organizarea și administrarea
+          provocării, inclusiv: gestionarea participării în campanie; verificarea
+          și evaluarea răspunsurilor; acordarea de feedback personalizat;
+          comunicarea cu participanții în legătură cu campania; documentarea
+          impactului provocării; realizarea de rapoarte, statistici și analize
+          privind campania; și îmbunătățirea resurselor educative și civice
+          dezvoltate de Funky Citizens.
+        </p>
+        <p>
+          9.5. Datele relevante pentru participarea la provocare pot fi comunicate
+          între transparenta.eu și Funky Citizens în măsura necesară pentru
+          scopurile proprii ale fiecărei părți descrise mai sus. Fiecare parte
+          răspunde independent pentru legalitatea prelucrărilor pe care le
+          efectuează în nume propriu, pentru informarea persoanelor vizate și
+          pentru soluționarea cererilor privind drepturile aferente scopurilor
+          proprii. În măsura în care o cerere vizează prelucrări efectuate de
+          ambele părți, acestea vor coopera în mod rezonabil pentru soluționarea
+          cererii.
+        </p>
+        <p>
+          9.6. Categoriile de date personale prelucrate și scopurile aferente –
+          următoarele categorii de date sunt prelucrate în măsura permisă de
+          temeiurile juridice aplicabile, inclusiv consimțământul explicit al
+          participantului atunci când acesta este necesar potrivit Regulamentului
+          (UE) 2016/679 (RGPD):
         </p>
         <p>a) Date de identificare (email, nume/prenume sau username):</p>
         <ol>
@@ -301,27 +382,29 @@ export function BudgetChallengeTermsPage() {
           </li>
         </ol>
         <p>
-          9.4. Datele cu caracter personal ale participanților nu vor fi vândute
-          sau transmise unor terți în scop comercial. Funky Citizens, în calitate
-          de persoană împuternicită, accesează doar categoriile de date enumerate
-          la 9.3, strict în scopurile menționate, și nu le prelucrează în niciun
-          alt scop.
+          9.7. Datele cu caracter personal ale participanților nu vor fi vândute
+          sau transmise unor terți în scop comercial. transparenta.eu și Funky
+          Citizens pot accesa și utiliza categoriile de date enumerate mai sus
+          numai în limitele scopurilor proprii descrise în prezentele T&amp;C și în
+          politicile aplicabile.
         </p>
         <p>
-          9.5. Participanții au dreptul de acces, rectificare, ștergere,
+          9.8. Participanții au dreptul de acces, rectificare, ștergere,
           restricționare, portabilitate și opoziție, exercitabile prin email la{' '}
-          <a href="mailto:weare@funky.ong">weare@funky.ong</a>. Pentru
-          drepturile legate de contul general pe transparenta.eu, participanții
-          se vor adresa direct platformei.
+          <a href="mailto:weare@funky.ong">weare@funky.ong</a> și/sau{' '}
+          <a href="mailto:contact@transparenta.eu">contact@transparenta.eu</a>,
+          în funcție de scopul prelucrării vizat de solicitare. Pentru
+          prelucrările la nivel de platformă, participanții se vor adresa direct
+          platformei.
         </p>
         <p>
-          9.6. Datele specifice provocării vor fi păstrate pe durata acesteia și
+          9.9. Datele specifice provocării vor fi păstrate pe durata acesteia și
           maximum 3 ani ulterior, dacă utilizatorul nu își retrage
           consimțământul între timp, după care vor fi șterse, respectiv
           anonimizate în vederea raportării de date statistice.
         </p>
         <p>
-          9.7. Participantul poate retrage oricând consimțământul pentru
+          9.10. Participantul poate retrage oricând consimțământul pentru
           scopurile specifice provocării, fără a afecta legalitatea prelucrării
           anterioare și fără a-i afecta contul general pe{' '}
           <a href="https://transparenta.eu" rel="noreferrer" target="_blank">
@@ -330,7 +413,7 @@ export function BudgetChallengeTermsPage() {
           .
         </p>
         <p>
-          9.8. Dacă considerați că prelucrarea datelor dumneavoastră cu caracter
+          9.11. Dacă considerați că prelucrarea datelor dumneavoastră cu caracter
           personal încalcă prevederile Regulamentului (UE) 2016/679 (RGPD),
           aveți dreptul de a depune o plângere la{' '}
           <strong>

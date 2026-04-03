@@ -137,12 +137,12 @@ describe('ContestationBuilder', () => {
         expect.objectContaining({
           scopePolicy: 'entity',
           entityCui: '87654321',
-          interactionId: 'campaign:debate-request',
+          interactionId: 'funky:interaction:funky_request',
         }),
         expect.objectContaining({
           scopePolicy: 'entity',
           entityCui: '87654321',
-          interactionId: 'campaign:primarie-contact-info',
+          interactionId: 'funky:interaction:city_hall_contact',
         }),
       ]),
     )

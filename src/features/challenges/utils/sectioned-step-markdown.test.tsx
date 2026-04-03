@@ -329,7 +329,7 @@ stepType: sectioned
     expect(parsed.sections[0]?.lessonChallengeDescriptors).toEqual([
       {
         kind: 'fixed',
-        interactionId: 'campaign:primarie-website-url',
+        interactionId: 'funky:interaction:city_hall_website',
         interactionKind: 'custom',
         scopePolicy: 'entity',
       },
@@ -337,7 +337,7 @@ stepType: sectioned
     expect(parsed.sections[1]?.lessonChallengeDescriptors).toEqual([
       {
         kind: 'fixed',
-        interactionId: 'campaign:primarie-contact-info',
+        interactionId: 'funky:interaction:city_hall_contact',
         interactionKind: 'custom',
         scopePolicy: 'entity',
       },
@@ -345,7 +345,7 @@ stepType: sectioned
     expect(parsed.sections[2]?.lessonChallengeDescriptors).toEqual([
       {
         kind: 'fixed',
-        interactionId: 'campaign:budget-contestation',
+        interactionId: 'funky:interaction:budget_contestation',
         interactionKind: 'custom',
         scopePolicy: 'entity',
       },

@@ -285,8 +285,8 @@ describe('deriveInteractiveLifecycleState', () => {
 
   it('treats pending async-review interactions as pending', () => {
     const record = createRecord({
-      key: 'campaign:primarie-website-url::entity:4305857',
-      interactionId: 'campaign:primarie-website-url',
+      key: 'funky:interaction:city_hall_website::entity:4305857',
+      interactionId: 'funky:interaction:city_hall_website',
       lessonId: 'civic-monitor-and-request',
       kind: 'custom',
       phase: 'pending',
@@ -307,8 +307,8 @@ describe('deriveInteractiveLifecycleState', () => {
 
   it('treats approved async-review interactions as success', () => {
     const record = createRecord({
-      key: 'campaign:primarie-website-url::entity:4305857',
-      interactionId: 'campaign:primarie-website-url',
+      key: 'funky:interaction:city_hall_website::entity:4305857',
+      interactionId: 'funky:interaction:city_hall_website',
       lessonId: 'civic-monitor-and-request',
       kind: 'custom',
       phase: 'resolved',
@@ -331,8 +331,8 @@ describe('deriveInteractiveLifecycleState', () => {
 
   it('treats rejected async-review interactions as failure', () => {
     const record = createRecord({
-      key: 'campaign:primarie-website-url::entity:4305857',
-      interactionId: 'campaign:primarie-website-url',
+      key: 'funky:interaction:city_hall_website::entity:4305857',
+      interactionId: 'funky:interaction:city_hall_website',
       lessonId: 'civic-monitor-and-request',
       kind: 'custom',
       phase: 'failed',

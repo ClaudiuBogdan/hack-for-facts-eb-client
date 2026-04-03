@@ -206,9 +206,9 @@ describe('progress-merge', () => {
     const local = createProgress({
       interactiveState: {
         recordsByKey: {
-          'campaign:primarie-website-url::entity:4270740': createRecord({
-            key: 'campaign:primarie-website-url::entity:4270740',
-            interactionId: 'campaign:primarie-website-url',
+          'funky:interaction:city_hall_website::entity:4270740': createRecord({
+            key: 'funky:interaction:city_hall_website::entity:4270740',
+            interactionId: 'funky:interaction:city_hall_website',
             lessonId: 'civic-monitor-and-request',
             kind: 'custom',
             phase: 'failed',
@@ -237,9 +237,9 @@ describe('progress-merge', () => {
       version: LEARNING_PROGRESS_SCHEMA_VERSION,
       lastUpdated: ISO_3,
       recordsByKey: {
-        'campaign:primarie-website-url::entity:4270740': createRecord({
-          key: 'campaign:primarie-website-url::entity:4270740',
-          interactionId: 'campaign:primarie-website-url',
+        'funky:interaction:city_hall_website::entity:4270740': createRecord({
+          key: 'funky:interaction:city_hall_website::entity:4270740',
+          interactionId: 'funky:interaction:city_hall_website',
           lessonId: 'civic-monitor-and-request',
           kind: 'custom',
           phase: 'resolved',
@@ -266,7 +266,7 @@ describe('progress-merge', () => {
       [] as readonly LearningProgressEvent[],
     )
 
-    const record = merged.interactiveState.recordsByKey['campaign:primarie-website-url::entity:4270740']
+    const record = merged.interactiveState.recordsByKey['funky:interaction:city_hall_website::entity:4270740']
     expect(record?.phase).toBe('resolved')
     expect(record?.review?.status).toBe('approved')
     expect(record?.updatedAt).toBe(ISO_3)

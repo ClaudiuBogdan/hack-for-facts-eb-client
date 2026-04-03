@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { NotificationList } from '@/features/notifications/components/NotificationList';
 import { FloatingEntitySearch } from '@/components/entities/FloatingEntitySearch';
 import { useAllNotifications } from '@/features/notifications/hooks/useAllNotifications';
+import { FUNKY_CAMPAIGN_KEY } from '@/features/notifications/campaign-notification-keys';
 import { useAuth, AuthSignInButton } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,7 +33,7 @@ function NotificationsSettingsPage() {
 
   const errorMessage = isError ? getErrorMessage(error) : null;
   const generalNotifications =
-    (notifications ?? []).filter((notification) => notification.campaignKey !== 'public_debate');
+    (notifications ?? []).filter((notification) => notification.campaignKey !== FUNKY_CAMPAIGN_KEY);
 
   return (
     <div className="container max-w-4xl mx-auto py-8 px-4 space-y-6">

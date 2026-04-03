@@ -10,6 +10,10 @@ import { useAuth, AuthSignInButton } from '@/lib/auth'
 import { useCampaignNotifications } from '@/features/notifications/hooks/useCampaignNotifications'
 import { useToggleNotification } from '@/features/notifications/hooks/useToggleNotification'
 import { createNotification, updateNotification } from '@/features/notifications/api/notifications'
+import {
+  FUNKY_NOTIFICATION_ENTITY_UPDATES,
+  FUNKY_NOTIFICATION_GLOBAL,
+} from '@/features/notifications/campaign-notification-keys'
 import { useEntityLabel } from '@/hooks/filters/useFilterLabels'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -170,7 +174,7 @@ function NotificationPreferencesContent({
 
       const created = await createNotification({
         entityCui: null,
-        notificationType: 'campaign_public_debate_global',
+        notificationType: FUNKY_NOTIFICATION_GLOBAL,
       })
 
       if (!isActive) {
@@ -249,7 +253,7 @@ function NotificationPreferencesContent({
 
         await toggleMutation.mutateAsync({
           entityCui: notification.entityCui,
-          notificationType: 'campaign_public_debate_entity_updates',
+          notificationType: FUNKY_NOTIFICATION_ENTITY_UPDATES,
           isActive: !notification.isActive,
           notificationId: notification.id,
         })

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { ResponsivePopover } from '@/components/ui/ResponsivePopover'
 import { EntityNotificationBell } from '@/features/notifications/components/EntityNotificationBell'
+import { FUNKY_NOTIFICATION_ENTITY_UPDATES } from '@/features/notifications/campaign-notification-keys'
 import type { EntityDetailsData } from '@/lib/api/entities'
 import {
   ChallengeEntityViewMenu,
@@ -435,7 +436,7 @@ export function ChallengeEntityAnalysisHeader({
               cui={entity.cui}
               entityName={entity.name}
               triggerClassName={HERO_NOTIFICATION_TRIGGER}
-              notificationTypes={['campaign_public_debate_entity_updates']}
+              notificationTypes={[FUNKY_NOTIFICATION_ENTITY_UPDATES]}
             />
           </div>
         </div>

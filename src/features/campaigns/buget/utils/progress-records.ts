@@ -19,13 +19,14 @@ import type {
   CampaignProgressSnapshot,
 } from '../types'
 
-const CAMPAIGN_RECORD_PREFIX = `system:campaign:${CAMPAIGN_ID}`
+const CAMPAIGN_RECORD_PREFIX = 'funky:progress'
+const CAMPAIGN_CHALLENGE_RECORD_PREFIX = `${CAMPAIGN_RECORD_PREFIX}:challenge_status_`
 const CAMPAIGN_RECORD_LESSON_ID = `${CAMPAIGN_RECORD_PREFIX}:state`
 
 export const CAMPAIGN_ONBOARDING_RECORD_KEY = `${CAMPAIGN_RECORD_PREFIX}:onboarding`
-export const CAMPAIGN_ENTITY_ACCEPTED_TERMS_PREFIX = `${CAMPAIGN_RECORD_PREFIX}:accepted-terms:entity:`
-export const CAMPAIGN_SELECTED_ENTITY_RECORD_KEY = `${CAMPAIGN_RECORD_PREFIX}:selected-entity`
-export const CAMPAIGN_ACTIVE_MODULE_RECORD_KEY = `${CAMPAIGN_RECORD_PREFIX}:active-module`
+export const CAMPAIGN_ENTITY_ACCEPTED_TERMS_PREFIX = `${CAMPAIGN_RECORD_PREFIX}:terms_accepted::entity:`
+export const CAMPAIGN_SELECTED_ENTITY_RECORD_KEY = `${CAMPAIGN_RECORD_PREFIX}:selected_entity`
+export const CAMPAIGN_ACTIVE_MODULE_RECORD_KEY = `${CAMPAIGN_RECORD_PREFIX}:active_module`
 
 export type CampaignProgressRecordMap = Readonly<Record<string, InteractiveStateRecord>>
 
@@ -199,7 +200,7 @@ function readExplicitChallengeProgressBySlug(
   const challengeProgressBySlug: Record<string, CampaignChallengeProgress> = {}
 
   for (const [recordKey, record] of Object.entries(recordsByKey)) {
-    if (!recordKey.startsWith(`${CAMPAIGN_RECORD_PREFIX}:challenge:`)) {
+    if (!recordKey.startsWith(CAMPAIGN_CHALLENGE_RECORD_PREFIX)) {
       continue
     }
 
@@ -214,7 +215,7 @@ function readExplicitChallengeProgressBySlug(
     }
 
     const challengeSlug =
-      readNullableString(value.challengeSlug) ?? recordKey.slice(`${CAMPAIGN_RECORD_PREFIX}:challenge:`.length)
+      readNullableString(value.challengeSlug) ?? recordKey.slice(CAMPAIGN_CHALLENGE_RECORD_PREFIX.length)
     challengeProgressBySlug[challengeSlug] = {
       status,
       attempts: readNonNegativeInteger(value.attempts),
@@ -326,7 +327,7 @@ function mergeChallengeProgressWithInteractionCandidate(
 }
 
 export function getCampaignChallengeRecordKey(challengeSlug: string): string {
-  return `${CAMPAIGN_RECORD_PREFIX}:challenge:${challengeSlug}`
+  return `${CAMPAIGN_CHALLENGE_RECORD_PREFIX}${challengeSlug}`
 }
 
 export function createCampaignOnboardingRecord(params: {

@@ -24,7 +24,7 @@ const EMPTY_VALUE: PrimarieContactInfoValue = {
  * Contact info feeds into DebateRequestForm and ContestationBuilder for email
  * pre-fill. Submissions need async server validation to verify email accuracy.
  * Incorrect emails would cause debate requests to fail.
- * Record key: campaign:primarie-contact-info::entity:{cui}
+ * Record key: funky:interaction:city_hall_contact::entity:{cui}
  */
 export function PrimarieContactInfo({ ownerChallengeSlug, entityCui }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<PrimarieContactInfoValue>({

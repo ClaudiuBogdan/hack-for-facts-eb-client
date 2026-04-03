@@ -6,7 +6,7 @@ describe('buildChallengeInteractionId', () => {
   it('namespaces the local interaction id by step id', () => {
     expect(
       buildChallengeInteractionId('step-a', 'lesson-entity-quiz-top-expense'),
-    ).toBe('step-a:lesson-entity-quiz-top-expense')
+    ).toBe('funky:lesson:step_a_lesson_entity_quiz_top_expense')
   })
 
   it('produces different ids for the same local interaction across different steps', () => {
@@ -47,7 +47,7 @@ describe('buildChallengeInteractionId', () => {
   it('trims whitespace from inputs', () => {
     expect(
       buildChallengeInteractionId('  step-a  ', '  quiz-1  '),
-    ).toBe('step-a:quiz-1')
+    ).toBe('funky:lesson:step_a_quiz_1')
   })
 
   it('throws for whitespace-only inputs', () => {
