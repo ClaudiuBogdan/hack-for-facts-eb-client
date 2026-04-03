@@ -36,7 +36,7 @@ const PAGE_CONTENT: Record<CampaignLocale, PageContent> = {
     footnotes: [
       'Termenul pentru aprobarea bugetelor locale este de maximum 45 de zile calendaristice de la publicarea Legii Bugetului de Stat în Monitorul Oficial al României (Art. 39, Legea 273/2006).',
       'Zilele calendaristice includ weekendurile și sărbătorile legale.',
-      'Estimat: datele marcate cu „estimat” sunt calculate pe baza termenelor legale maxime. În practică, dacă primăria publică proiectul de buget mai devreme de termenul maxim, toate etapele următoare se mută corespunzător. Datele exacte depind de fiecare primărie în parte.',
+      'Confirmat: data este cunoscută direct pentru etapa respectivă. Estimat: datele marcate cu „estimat” sunt calculate pe baza termenelor legale maxime. În practică, dacă primăria publică proiectul de buget mai devreme de termenul maxim, toate etapele următoare se mută corespunzător.',
       'Numărătoarea zilelor începe din ziua imediat următoare. De exemplu, dacă o etapă se încheie pe 27 martie, prima din cele 15 zile este 28 martie.',
     ],
   },
@@ -45,7 +45,7 @@ const PAGE_CONTENT: Record<CampaignLocale, PageContent> = {
     footnotes: [
       'The deadline for adopting local budgets is a maximum of 45 calendar days from the publication of the State Budget Law in the Official Gazette of Romania (Art. 39, Law 273/2006).',
       'Calendar days include weekends and public holidays.',
-      'Estimated: dates marked "estimated" are calculated based on the maximum legal deadlines. In practice, if the city hall publishes the draft budget before the maximum deadline, all subsequent steps shift earlier accordingly. Exact dates depend on each city hall.',
+      'Confirmed: the date is known directly for that milestone. Estimated: dates marked "estimated" are calculated based on the maximum legal deadlines. In practice, if the city hall publishes the draft budget before the maximum deadline, all subsequent steps shift earlier accordingly.',
       'The counting of days starts from the immediately following day. For example, if a stage ends on March 27, the first of the 15 days is March 28.',
     ],
   },
@@ -53,18 +53,23 @@ const PAGE_CONTENT: Record<CampaignLocale, PageContent> = {
 
 const EXPLANATION_TEXT = {
   default: {
-    ro: 'Termenele de mai jos sunt termenele legale maxime conform Art. 39 din Legea 273/2006. In practica, daca primaria publica proiectul de buget mai devreme, toate etapele urmatoare se muta corespunzator.',
-    en: 'The deadlines below are the legal maximums per Art. 39 of Law 273/2006. In practice, if the city hall publishes the draft budget earlier, all subsequent steps shift accordingly.',
+    ro: 'Termenele de mai jos sunt termenele legale maxime conform Art. 39 din Legea 273/2006. Datele marcate cu „confirmat” sunt cunoscute direct pentru etapa respectiva, iar cele marcate cu „estimat” sunt calculate pe baza termenelor legale.',
+    en: 'The deadlines below are the legal maximums per Art. 39 of Law 273/2006. Dates marked "confirmed" are known directly for that milestone, while dates marked "estimated" are calculated from the legal deadlines.',
   },
   personalized: {
-    ro: 'Calendarul de mai jos este personalizat pe baza datelor disponibile pentru primaria selectata. Etapele marcate cu „estimat" sunt calculate pe baza termenelor legale maxime.',
-    en: 'The calendar below is personalized based on available data for the selected city hall. Steps marked with "estimated" are calculated based on maximum legal deadlines.',
+    ro: 'Calendarul de mai jos este personalizat pe baza datelor disponibile pentru primaria selectata. Datele marcate cu „confirmat” sunt cunoscute direct pentru etapa respectiva, iar etapele marcate cu „estimat" sunt calculate pe baza termenelor legale maxime.',
+    en: 'The calendar below is personalized based on available data for the selected city hall. Dates marked "confirmed" are known directly for that milestone, while steps marked with "estimated" are calculated based on the maximum legal deadlines.',
   },
 }
 
 const ESTIMATED_LABEL: Record<CampaignLocale, string> = {
   ro: 'estimat',
   en: 'estimated',
+}
+
+const CONFIRMED_LABEL: Record<CampaignLocale, string> = {
+  ro: 'confirmat',
+  en: 'confirmed',
 }
 
 const BACK_LABEL: Record<CampaignLocale, string> = {
@@ -313,13 +318,11 @@ function MilestoneContent({
             {formatDate(entry.computedDate, locale)}
           </time>
         )}
-        {entry.isEstimated && (
-          <span className={`text-[10px] font-medium uppercase tracking-wider ${
-            isClosed ? 'text-muted-foreground/30' : 'text-muted-foreground/50'
-          }`}>
-            {ESTIMATED_LABEL[locale]}
-          </span>
-        )}
+        <span className={`text-[10px] font-medium uppercase tracking-wider ${
+          isClosed ? 'text-muted-foreground/30' : 'text-muted-foreground/50'
+        }`}>
+          {entry.isEstimated ? ESTIMATED_LABEL[locale] : CONFIRMED_LABEL[locale]}
+        </span>
         {state === 'current' && (
           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary uppercase tracking-wider">
             {CURRENT_LABEL[locale]}

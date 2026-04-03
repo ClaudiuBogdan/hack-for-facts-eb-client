@@ -47,12 +47,21 @@ describe('BugetCalendarPage', () => {
     useCampaignTimelineMock.mockReturnValue({
       entries: [
         {
+          id: 'publicare-buget-de-stat',
+          title: { ro: 'T0', en: 'T0' },
+          description: { ro: 'Descriere T0', en: 'Description T0' },
+          computedDate: '2026-01-05',
+          isClosed: true,
+          isEstimated: false,
+          isActionable: false,
+        },
+        {
           id: 'publicare-proiect-buget-local',
           title: { ro: 'Publicare', en: 'Publication' },
           description: { ro: 'Descriere', en: 'Description' },
           computedDate: '2026-01-20',
           isClosed: false,
-          isEstimated: false,
+          isEstimated: true,
           isActionable: true,
         },
       ],
@@ -69,8 +78,17 @@ describe('BugetCalendarPage', () => {
     })
     expect(
       screen.getByText(
-        'The calendar below is personalized based on available data for the selected city hall. Steps marked with "estimated" are calculated based on maximum legal deadlines.',
+        'The calendar below is personalized based on available data for the selected city hall. Dates marked "confirmed" are known directly for that milestone, while steps marked with "estimated" are calculated based on the maximum legal deadlines.',
       ),
     ).toBeInTheDocument()
+  })
+
+  it('renders explicit confirmed and estimated badges for milestones', () => {
+    render(
+      <BugetCalendarPage locale="ro" entityCui="4305857" />,
+    )
+
+    expect(screen.getByText('confirmat')).toBeInTheDocument()
+    expect(screen.getByText('estimat')).toBeInTheDocument()
   })
 })

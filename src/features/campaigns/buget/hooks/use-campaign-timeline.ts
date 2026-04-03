@@ -36,12 +36,12 @@ function computeTimelineEntries(params: {
       computedDate = parseISO(overrideDate)
       isEstimated = false
     }
-    // 2. Check if entry has relativeTo AND the parent was NOT estimated
+    // 2. Check if entry has relativeTo
     else if (entry.relativeTo && entry.relativeDayOffset !== undefined) {
       const parent = resolvedDates.get(entry.relativeTo)
-      if (parent && !parent.isEstimated) {
+      if (parent) {
         computedDate = addDays(parent.date, entry.relativeDayOffset)
-        isEstimated = false
+        isEstimated = true
       } else {
         // Fall back to worst-case: anchorDate + dayOffset
         computedDate = addDays(anchorDate, entry.dayOffset)

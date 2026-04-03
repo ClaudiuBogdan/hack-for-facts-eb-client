@@ -34,5 +34,25 @@ describe('use-campaign-timeline', () => {
     expect(entryById.get('inchidere-contestatii')?.computedDate).toBe('2026-03-01')
     expect(entryById.get('depunere-spre-aprobare')?.computedDate).toBe('2026-03-06')
     expect(entryById.get('vot-aprobare-buget-local')?.computedDate).toBe('2026-03-16')
+    expect(entryById.get('publicare-proiect-buget-local')?.isEstimated).toBe(false)
+    expect(entryById.get('inchidere-contestatii')?.isEstimated).toBe(true)
+    expect(entryById.get('depunere-spre-aprobare')?.isEstimated).toBe(true)
+    expect(entryById.get('vot-aprobare-buget-local')?.isEstimated).toBe(true)
+  })
+
+  it('keeps directly overridden milestone dates confirmed', () => {
+    const { result } = renderHook(() =>
+      useCampaignTimeline({
+        'publicare-proiect-buget-local': '2026-02-14',
+        'inchidere-contestatii': '2026-02-25',
+      }),
+    )
+    const entryById = new Map(result.current.entries.map((entry) => [entry.id, entry]))
+
+    expect(entryById.get('publicare-proiect-buget-local')?.isEstimated).toBe(false)
+    expect(entryById.get('inchidere-contestatii')?.computedDate).toBe('2026-02-25')
+    expect(entryById.get('inchidere-contestatii')?.isEstimated).toBe(false)
+    expect(entryById.get('depunere-spre-aprobare')?.computedDate).toBe('2026-03-02')
+    expect(entryById.get('depunere-spre-aprobare')?.isEstimated).toBe(true)
   })
 })

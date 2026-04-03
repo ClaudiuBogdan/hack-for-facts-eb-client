@@ -76,7 +76,7 @@ function getReviewSummaryItems(savedValue: BudgetDocumentLinkValue): ReviewSumma
     },
     ...(documentTypes.length > 0
       ? [{
-          label: t`Document types`,
+          label: t`Document type`,
           value: documentTypes.map((documentType) => getDocumentTypeLabel(documentType)).join(', '),
         }]
       : []),
@@ -104,7 +104,7 @@ const DOCUMENT_TYPE_OPTIONS: ReadonlyArray<{
 /**
  * Submissions need async server validation. Backend should verify the URL
  * points to a real budget document.
- * Record key: campaign:budget-document-url::entity:{cui}
+ * Record key: funky:interaction:budget_document::entity:{cui}
  */
 export function BudgetDocumentLink({ ownerChallengeSlug, entityCui }: CampaignInteractiveElementProps) {
   const form = useCampaignChallengeForm<BudgetDocumentLinkValue>({
@@ -227,9 +227,9 @@ export function BudgetDocumentLink({ ownerChallengeSlug, entityCui }: CampaignIn
 
         <fieldset className="space-y-3">
           <legend className="text-sm font-medium">
-            <Trans>Document types</Trans>
+            <Trans>Document type</Trans>
           </legend>
-          <div className="flex flex-wrap gap-2" role="group" aria-label={t`Document types`}>
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t`Document type`}>
             {DOCUMENT_TYPE_OPTIONS.map((opt) => {
               const isSelected = draft.documentTypes.includes(opt.value)
 

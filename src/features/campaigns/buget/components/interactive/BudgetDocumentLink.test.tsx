@@ -112,6 +112,7 @@ describe('BudgetDocumentLink', () => {
     )
 
     expect(screen.getByText('PDF')).toBeInTheDocument()
-    expect(screen.getByText('Document types')).toBeInTheDocument()
+    expect(screen.getByText('Document type')).toBeInTheDocument()
+    expect(screen.queryByText('OLRdCL')).not.toBeInTheDocument()
   })
 })
