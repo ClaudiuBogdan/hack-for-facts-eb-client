@@ -3,7 +3,7 @@ export function PrivacyContentEn() {
     <div className="mx-auto w-full max-w-4xl p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-semibold">Privacy Policy</h1>
-        <p className="text-sm text-muted-foreground">Effective Date: April 3, 2026 · Version: 3.0</p>
+        <p className="text-sm text-muted-foreground">Effective Date: April 6, 2026 · Version: 3.0</p>
       </div>
 
       <div className="space-y-2">
@@ -11,7 +11,7 @@ export function PrivacyContentEn() {
         <ul className="list-disc pl-6 text-sm text-muted-foreground space-y-1">
           <li>Local-first: charts, learning progress, campaign progress, maps, alerts, and preferences may be stored in your browser.</li>
           <li>Optional user accounts for newsletters, notifications, forum access, and AI-enhanced features.</li>
-          <li>Community forum integrated with your account; forum data is handled through Discourse and related hosting infrastructure.</li>
+          <li>Community forum integrated with your account; some areas may be public, while others may be restricted to signed-in users or enrolled participants depending on the relevant configuration.</li>
           <li>Correspondence tools may prepare, send, or help you send emails to public institutions, depending on the workflow.</li>
           <li>AI-enhanced or experimental features may process public data, public documents, and in some cases prompts or documents you choose to submit.</li>
           <li>Analytics and enhanced error reporting only with your consent.</li>
@@ -65,10 +65,10 @@ export function PrivacyContentEn() {
 
         <h4>Data collected through the forum:</h4>
         <ul>
-          <li><strong>Forum Profile:</strong> Your user ID, email address, and display name are transmitted to the Discourse forum via DiscourseConnect SSO when you access the forum. The forum may store additional profile information you choose to provide.</li>
-          <li><strong>Forum Activity:</strong> Posts, replies, likes, bookmarks, reading history, topic tracking preferences, participation metrics, and discussions connected to platform features, lessons, campaigns, or partner-led activities. This data is stored by the Discourse forum system, and some posted content may be publicly visible without an account.</li>
-          <li><strong>Anonymous or Pseudonymous Forum Use:</strong> If you use anonymous mode or a similar pseudonymous forum feature, the forum may display your contributions under an alternate public identity, but the forum system and platform operators may still retain technical or account linkage necessary for moderation, abuse prevention, security, and legal compliance.</li>
-          <li><strong>Forum Moderation Data:</strong> Full IP addresses, user agent, and timestamps associated with forum actions, retained for content moderation, abuse prevention, and legal compliance (legitimate interests under GDPR Art. 6(1)(f)).</li>
+          <li><strong>Forum Profile:</strong> Your user ID, email address, and display name or username are transmitted to the Discourse forum via DiscourseConnect SSO when you access the forum. The forum may store additional profile information you choose to provide, including location or time zone.</li>
+          <li><strong>Forum Activity:</strong> Questions, comments, posts, replies, likes, bookmarks, reading history, topic tracking preferences, participation metrics, and discussions connected to platform features, lessons, campaigns, or partner-led activities. Visibility depends on the relevant forum area: some contributions may be public, while others may be visible only to signed-in users or enrolled participants.</li>
+          <li><strong>Anonymous or Pseudonymous Forum Use:</strong> If you use anonymous mode or a similar pseudonymous forum feature, the forum may display your contributions without visible identification or under an alternate public identity. In certain campaign spaces or similar integrations, this may also hide your identity from relevant partner teams, but the forum system and platform operators may still retain technical or account linkage necessary for moderation, abuse prevention, security, and legal compliance.</li>
+          <li><strong>Forum Moderation Data:</strong> Full IP addresses, user agent, timestamps associated with forum actions, moderation reports, and related technical metadata, retained for content moderation, abuse prevention, and legal compliance (legitimate interests under GDPR Art. 6(1)(f)).</li>
           <li><strong>Forum Notifications:</strong> Your forum notification preferences (email digests, reply notifications, mention alerts) are managed within the Discourse system separately from platform notification preferences.</li>
         </ul>
 
@@ -82,8 +82,9 @@ export function PrivacyContentEn() {
         <h4>Data collected through AI-powered features:</h4>
         <ul>
           <li><strong>AI Feature Preferences:</strong> Your settings, activation choices, monitored entities, and alert configuration preferences for AI-enhanced or experimental features. Legal basis may include GDPR Art. 6(1)(a) (consent) and/or Art. 6(1)(b) (performance of a requested service), depending on the feature.</li>
-          <li><strong>AI Inputs:</strong> Public data, public documents, prompts, questions, uploaded or submitted files, extracted text, and other inputs you choose to provide to an AI-enhanced feature, if the relevant feature accepts such content.</li>
-          <li><strong>AI Outputs and Derivatives:</strong> Findings, summaries, classifications, extracted structured data, draft text, answers, annotations, or other outputs generated or assisted by AI systems in response to the relevant input.</li>
+          <li><strong>AI Inputs:</strong> Public data, public documents, forum posts, campaign submissions, prompts, questions, uploaded or submitted files, extracted text, and other inputs you choose to provide to an AI-enhanced feature, or that the relevant feature may lawfully use for analysis, if that feature accepts such content.</li>
+          <li><strong>AI Outputs and Derivatives:</strong> Findings, summaries, classifications, extracted structured data, draft text, answers, prioritization results, duplicate-content signals, annotations, or other outputs generated or assisted by AI systems in response to the relevant input.</li>
+          <li><strong>Data Processed for AI-Assisted Moderation and Review:</strong> Where such functionality is enabled, automated systems may process forum posts, reports, campaign submissions, user-submitted materials, and analyzed public documents for classification, summarization, duplicate-content detection, prioritization, moderation support, or review.</li>
           <li><strong>AI Feature Logs and Feedback:</strong> Technical logs, usage metadata, error reports, and feedback related to AI-enhanced features, to operate, secure, review, improve, and troubleshoot those features.</li>
         </ul>
 
@@ -92,9 +93,9 @@ export function PrivacyContentEn() {
           <li><strong>Service Provision:</strong> To operate the Service, provide visualizations, and ensure platform security (legitimate interests, GDPR Art. 6(1)(f)).</li>
           <li><strong>Account Management:</strong> To create and maintain your account, authenticate access, and provide account-related support (contract performance, GDPR Art. 6(1)(b)).</li>
           <li><strong>Notification Delivery:</strong> To send you optional budget execution updates, campaign notifications, platform updates, AI research alerts, and data alerts that you have enabled, explicitly subscribed to, or activated through a campaign participation flow where such updates are clearly disclosed as enabled by default before you complete the relevant join or acceptance action (consent, GDPR Art. 6(1)(a)). You can withdraw consent and unsubscribe at any time.</li>
-          <li><strong>Forum Operation:</strong> To operate the community forum, authenticate your access via SSO, display your contributions, and moderate content (contract performance, GDPR Art. 6(1)(b), and legitimate interests, GDPR Art. 6(1)(f)).</li>
+          <li><strong>Forum Operation:</strong> To operate the community forum, authenticate your access via SSO, display your contributions according to the visibility rules of the relevant area, and moderate content (contract performance, GDPR Art. 6(1)(b), and legitimate interests, GDPR Art. 6(1)(f)).</li>
           <li><strong>Correspondence Facilitation:</strong> To prepare emails for your own email client, send emails on your behalf where that workflow applies, capture copies or replies through tracked correspondence channels, and maintain correspondence threads when you use the correspondence tools (contract performance, GDPR Art. 6(1)(b), as you initiated the action).</li>
-          <li><strong>AI-Enhanced Features:</strong> To operate AI-enhanced or experimental features you choose to use, including public-data analysis, document processing, extraction, summarization, classification, draft generation, research assistance, and proactive AI-powered monitoring where enabled (consent and/or contract performance, depending on the feature).</li>
+          <li><strong>AI-Enhanced Features:</strong> To operate AI-enhanced or experimental features you choose to use, including public-data analysis, document processing, extraction, summarization, classification, draft generation, duplicate-content detection, prioritization, moderation or review support, research assistance, and proactive AI-powered monitoring where enabled (consent and/or contract performance, depending on the feature).</li>
           <li><strong>Communication:</strong> To send essential or service-related communications such as account verification, security alerts, transactional welcome emails, confirmations of requested actions, campaign participation or subscription confirmations, and terms or policy updates, as necessary for contract performance and legitimate interests.</li>
           <li><strong>Analytics and Improvement:</strong> With your consent, to understand usage patterns and improve the Service (consent, GDPR Art. 6(1)(a)).</li>
           <li><strong>Error Detection and Resolution:</strong> With your consent, to identify and fix technical issues (consent, GDPR Art. 6(1)(a)).</li>
@@ -102,7 +103,7 @@ export function PrivacyContentEn() {
 
         <h3>Legal bases for processing</h3>
         <ul>
-          <li><strong>Legitimate Interests (Art. 6(1)(f)):</strong> Operating and securing the Service, preventing fraud and abuse, forum moderation, investigating abusive use of correspondence tools or AI features, correspondence compliance record-keeping, thread tracking, and review of institutional replies.</li>
+          <li><strong>Legitimate Interests (Art. 6(1)(f)):</strong> Operating and securing the Service, preventing fraud and abuse, forum moderation, AI-assisted classification, summarization, duplicate-content detection, prioritization, and review of forum, campaign, or public-source materials, investigating abusive use of correspondence tools or AI features, correspondence compliance record-keeping, thread tracking, and review of institutional replies.</li>
           <li><strong>Contract Performance (Art. 6(1)(b)):</strong> Providing account features and services you have requested, including forum access and correspondence sending.</li>
           <li><strong>Consent (Art. 6(1)(a)):</strong> Optional budget report subscriptions, recurring campaign update notifications, platform update notifications, AI alerts, certain AI-enhanced or experimental processing where consent is the appropriate legal basis, data alerts, forum email digests, analytics, and enhanced error reporting, including campaign update preferences activated by default through clearly disclosed campaign join flows. You may withdraw consent at any time.</li>
           <li><strong>Legal Obligations (Art. 6(1)(c)):</strong> Compliance with applicable laws and regulations.</li>
@@ -149,7 +150,7 @@ export function PrivacyContentEn() {
           <li><strong>Terms and Policy Acknowledgement Records:</strong> Where maintained, retained for 3 years after the relevant acknowledgement or the end of the applicable service or campaign relationship, whichever is later.</li>
           <li><strong>Learning and Campaign Progress:</strong> Retained for as long as needed to provide synced progress, review workflows, campaign participation features, and related audit history, unless deletion is requested and retention is not otherwise required.</li>
           <li><strong>User-Created Maps and Snapshots:</strong> Retained for as long as needed to provide the map feature, including any public or private saved versions, unless you delete them earlier or request deletion where available.</li>
-          <li><strong>Forum Data:</strong> Retained for as long as needed to operate the forum, preserve discussion integrity, administer accounts, and handle moderation, abuse prevention, legal compliance, or user deletion requests. The exact treatment of forum posts, profile data, and anonymized content may depend on forum settings, moderation needs, and applicable law.</li>
+          <li><strong>Forum Data:</strong> Retained for as long as needed to operate the forum, preserve discussion integrity, administer accounts, and handle moderation, abuse prevention, legal compliance, or user deletion requests. The exact treatment of posts in public or restricted areas, profile data, anonymized content, and moderation records may depend on forum settings, moderation needs, and applicable law.</li>
           <li><strong>Correspondence Records:</strong> Retained for 5 years, unless deletion is required earlier by applicable law or the relevant data is lawfully deleted sooner. You may request deletion where legally available.</li>
           <li><strong>AI Inputs, Outputs, and Feature Logs:</strong> Retained by us for 5 years, unless a shorter retention period is expressly stated in the relevant feature flow or deletion is required earlier by applicable law. Third-party AI providers used for a feature may apply their own retention and training practices.</li>
           <li><strong>Analytics Data:</strong> Retained for 12 months, then automatically deleted or anonymized.</li>
@@ -193,7 +194,7 @@ export function PrivacyContentEn() {
         <p>We do not use automated decision-making or profiling that produces legal effects or similarly significantly affects you. AI-enhanced features provide informational or assistive outputs only and do not make binding decisions about or on behalf of users.</p>
 
         <h3>Children's privacy</h3>
-        <p>The Service is intended only for adults aged 18 or older. We do not knowingly offer accounts or services to persons under 18. If you believe we have collected personal data from a person under 18, please contact us immediately.</p>
+        <p>The Service is intended for persons aged 16 or older. We do not knowingly offer accounts or services to persons under 16. Certain features involving official correspondence or documents may be reserved for persons aged 18 or older. If you believe we have collected personal data from a person below the applicable minimum age, please contact us immediately.</p>
 
         <h3>Changes to this policy</h3>
         <p>We may update this Privacy Policy from time to time to reflect changes in our practices, new features, or legal requirements.</p>
