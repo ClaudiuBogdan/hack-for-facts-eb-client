@@ -75,3 +75,4 @@ sentry-issues/
 **/*.secret.yaml
 
 .output/
+.opencode/package-lock.json
