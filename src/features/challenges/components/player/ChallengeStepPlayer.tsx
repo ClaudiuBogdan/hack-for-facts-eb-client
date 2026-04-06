@@ -4,7 +4,10 @@ import { t } from '@lingui/core/macro'
 import { BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { env } from '@/config/env'
 import { useEntityLabel } from '@/hooks/filters/useFilterLabels'
+import { buildDiscourseTopicUrl } from '@/lib/discourse'
+import { LessonDiscussion } from '@/features/learning/components/interactive/lesson-discussion'
 import { LessonChallengesProvider } from '@/features/learning/components/player/lesson-challenges-context'
 import { prefetchChallengeStepContent, useChallengeStepContent } from '../../hooks/use-challenge-step-content'
 import { useChallengeAccess } from '../../hooks/use-challenge-access'
@@ -74,6 +77,7 @@ type ChallengeSectionedStepRendererProps = {
   readonly isAccessGranted: ReturnType<typeof useChallengeAccess>['isAccessGranted']
   readonly isSubmitting: ReturnType<typeof useChallengeAccess>['isSubmitting']
   readonly onRegister: ReturnType<typeof useChallengeAccess>['register']
+  readonly discussionUrl?: string
 }
 
 type ChallengeStepContentRendererProps = {
@@ -102,6 +106,8 @@ type ChallengeStepContentRendererProps = {
   readonly isAccessGranted: ReturnType<typeof useChallengeAccess>['isAccessGranted']
   readonly isSubmitting: ReturnType<typeof useChallengeAccess>['isSubmitting']
   readonly onRegister: ReturnType<typeof useChallengeAccess>['register']
+  readonly stepDiscussionTopicId?: number
+  readonly stepDiscussionTopicSlug?: string
 }
 
 function ChallengeSectionedStepRenderer({
@@ -122,6 +128,7 @@ function ChallengeSectionedStepRenderer({
   prev,
   sections,
   next,
+  discussionUrl,
   findChallengeSlugForAdjacentStep,
   accessCardVariant,
   isAccessGranted,
@@ -148,6 +155,7 @@ function ChallengeSectionedStepRenderer({
         prev={prev}
         sections={sections}
         next={next}
+        discussionUrl={discussionUrl}
         findChallengeSlugForAdjacentStep={findChallengeSlugForAdjacentStep}
         accessCardVariant={accessCardVariant}
         isAccessGranted={isAccessGranted}
@@ -169,13 +177,13 @@ function ChallengeSectionedStepRendererBody({
   onViewModeChange,
   stepId,
   stepTitle,
-  stepCompletionMode,
   fullArticleComponent,
   articleMdxComponents,
   articleExtraContent,
   prev,
   sections,
   next,
+  discussionUrl,
   findChallengeSlugForAdjacentStep,
   accessCardVariant,
   isAccessGranted,
@@ -221,6 +229,7 @@ function ChallengeSectionedStepRendererBody({
           currentSectionIndex={sectionedPlayer.currentSectionIndex}
           onProgressSectionSelect={sectionedPlayer.handleProgressSectionSelect}
           onViewModeChange={onViewModeChange}
+          discussionUrl={discussionUrl}
           sections={sections}
           stepTitle={stepTitle}
         />
@@ -238,7 +247,7 @@ function ChallengeSectionedStepRendererBody({
             mdxComponents={articleMdxComponents}
             isLoading={false}
             error={null}
-            extraContent={stepCompletionMode === 'mark_complete' ? articleExtraContent : undefined}
+            extraContent={articleExtraContent}
           />
         </div>
       </div>
@@ -256,6 +265,7 @@ function ChallengeSectionedStepRendererBody({
         currentSectionIndex={sectionedPlayer.currentSectionIndex}
         onProgressSectionSelect={sectionedPlayer.handleProgressSectionSelect}
         onViewModeChange={onViewModeChange}
+        discussionUrl={discussionUrl}
         sections={sections}
         stepTitle={stepTitle}
       />
@@ -306,7 +316,10 @@ function ChallengeStepContentRenderer({
   isAccessGranted,
   isSubmitting,
   onRegister,
+  stepDiscussionTopicId,
+  stepDiscussionTopicSlug,
 }: ChallengeStepContentRendererProps) {
+  const discourseBaseUrl = env.VITE_DISCOURSE_BASE_URL
   const { content, isLoading, error } = useChallengeStepContent({
     contentDir,
     locale,
@@ -328,6 +341,34 @@ function ChallengeStepContentRenderer({
   })
 
   const resolvedSectionedViewMode = resolveChallengeStepViewMode(activeViewMode)
+  const discussionElement =
+    discourseBaseUrl && stepDiscussionTopicId
+      ? (
+          <LessonDiscussion
+            discourseBaseUrl={discourseBaseUrl}
+            topicId={stepDiscussionTopicId}
+            topicSlug={stepDiscussionTopicSlug}
+            lessonTitle={stepTitle}
+          />
+        )
+      : null
+  const discussionUrl =
+    discourseBaseUrl && stepDiscussionTopicId
+      ? buildDiscourseTopicUrl({
+          discourseBaseUrl,
+          topicId: stepDiscussionTopicId,
+          topicSlug: stepDiscussionTopicSlug,
+        })
+      : undefined
+  const sectionedArticleExtraContent = content
+    ? (
+        <>
+          {stepCompletionMode === 'mark_complete' ? syntheticMarkComplete : null}
+          {discussionElement}
+        </>
+      )
+    : undefined
+  const articleExtraContent = content ? discussionElement ?? undefined : undefined
 
   useEffect(() => {
     if (content?.kind !== 'sectioned') return
@@ -351,10 +392,11 @@ function ChallengeStepContentRenderer({
         stepCompletionMode={stepCompletionMode}
         fullArticleComponent={content.Component}
         articleMdxComponents={sectionedArticleMdxComponents}
-        articleExtraContent={syntheticMarkComplete}
+        articleExtraContent={sectionedArticleExtraContent}
         prev={prev}
         sections={content.sections}
         next={next}
+        discussionUrl={discussionUrl}
         findChallengeSlugForAdjacentStep={findChallengeSlugForAdjacentStep}
         accessCardVariant={accessCardVariant}
         isAccessGranted={isAccessGranted}
@@ -377,6 +419,7 @@ function ChallengeStepContentRenderer({
       mdxComponents={articleMdxComponents}
       isLoading={isLoading}
       error={error}
+      extraContent={articleExtraContent}
     />
   )
 }
@@ -480,6 +523,8 @@ export function ChallengeStepPlayer({
           stepId={step.id}
           stepTitle={getTranslatedText(step.title, locale)}
           stepCompletionMode={step.completionMode}
+          stepDiscussionTopicId={step.discourseTopicId}
+          stepDiscussionTopicSlug={step.discourseTopicSlug}
           activeSectionId={activeSectionId}
           activeViewMode={activeViewMode}
           onSectionChange={onSectionChange}
@@ -501,6 +546,8 @@ export function ChallengeStepPlayer({
           stepId={step.id}
           stepTitle={getTranslatedText(step.title, locale)}
           stepCompletionMode={step.completionMode}
+          stepDiscussionTopicId={step.discourseTopicId}
+          stepDiscussionTopicSlug={step.discourseTopicSlug}
           activeSectionId={activeSectionId}
           activeViewMode={activeViewMode}
           onSectionChange={onSectionChange}

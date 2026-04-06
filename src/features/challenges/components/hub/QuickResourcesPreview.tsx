@@ -1,6 +1,7 @@
 import { Link, useLocation } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { ArrowRight, Bell, BellOff, Building2, Send, Library } from 'lucide-react'
+import { ArrowRight, Bell, BellOff, Building2, Library, MessageSquare, Send } from 'lucide-react'
+import { getCampaignDefinition } from '@/features/campaigns/buget/hooks/use-campaign-content'
 import { buildCampaignResourcesPath, CAMPAIGN_NOTIFICATIONS_PATH } from '@/features/campaigns/buget/constants'
 import { useCampaignNotifications } from '@/features/notifications/hooks/useCampaignNotifications'
 import { FUNKY_NOTIFICATION_ENTITY_UPDATES } from '@/features/notifications/campaign-notification-keys'
@@ -19,6 +20,7 @@ export function QuickResourcesPreview({
   locale,
   entityCui,
 }: QuickResourcesPreviewProps) {
+  const campaign = getCampaignDefinition()
   const location = useLocation()
   const { data: campaignEntityNotifications, globalPreference } = useCampaignNotifications()
   const entityNotifications = (campaignEntityNotifications ?? []).filter(
@@ -78,7 +80,7 @@ export function QuickResourcesPreview({
           className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
         >
           <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
-            <Send className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            <Send className="h-4 w-4 text-[#3565c4]" aria-hidden="true" />
           </div>
           <div className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium text-foreground/80">
@@ -90,6 +92,26 @@ export function QuickResourcesPreview({
           </div>
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 transition-colors flex-shrink-0" aria-hidden="true" />
         </Link>
+
+        <a
+          href={campaign.forumUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+        >
+          <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
+            <MessageSquare className="h-4 w-4 text-red-500" aria-hidden="true" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-medium text-foreground/80">
+              {t`Main forum thread`}
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              {t`Open the main discussion thread for this campaign.`}
+            </span>
+          </div>
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 transition-colors flex-shrink-0" aria-hidden="true" />
+        </a>
 
         {/* Guides & templates */}
         <Link
@@ -123,7 +145,7 @@ export function QuickResourcesPreview({
             {showDisabledNotification ? (
               <BellOff className="h-4 w-4 text-red-500" aria-hidden="true" />
             ) : (
-              <Bell className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              <Bell className="h-4 w-4 text-amber-500" aria-hidden="true" />
             )}
           </div>
           <div className="min-w-0 flex-1">

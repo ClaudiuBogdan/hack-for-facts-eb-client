@@ -29,6 +29,12 @@ vi.mock('@/lib/auth', () => ({
   AuthSignInButton: ({ children }: { children: ReactNode }) => <>{children}</>,
 }))
 
+vi.mock('@/config/env', () => ({
+  env: {
+    VITE_DISCOURSE_BASE_URL: 'https://forum.example.com',
+  },
+}))
+
 vi.mock('@/hooks/filters/useFilterLabels', () => ({
   useEntityLabel: (...args: unknown[]) => mockUseEntityLabel(...args),
 }))
@@ -42,7 +48,7 @@ vi.mock('../../hooks/use-challenge-step-content', () => ({
   useChallengeStepContent: () => mockUseChallengeStepContent(),
 }))
 
-const moduleDefinition = {
+const moduleDefinition: any = {
   id: 'module-1',
   slug: 'test-module',
   title: { ro: 'Test module', en: 'Test module' },
@@ -87,6 +93,22 @@ vi.mock('@/features/learning/components/player/lesson-challenges-context', () =>
   LessonChallengesProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
   useRegisterLessonChallenge: vi.fn(),
   useLessonChallenges: () => mockUseLessonChallenges(),
+}))
+
+vi.mock('@/features/learning/components/interactive/lesson-discussion', () => ({
+  LessonDiscussion: ({
+    topicId,
+    topicSlug,
+    lessonTitle,
+  }: {
+    readonly topicId: number
+    readonly topicSlug?: string
+    readonly lessonTitle: string
+  }) => (
+    <div data-testid="challenge-step-discussion">
+      Discussion {topicId} {topicSlug} {lessonTitle}
+    </div>
+  ),
 }))
 
 vi.mock('@/features/learning/components/loading/LessonSkeleton', () => ({
@@ -150,6 +172,8 @@ describe('ChallengeStepPlayer', () => {
       status: 'not_started',
       isCompleted: false,
     }
+    delete moduleDefinition.challenges[0].steps[0].discourseTopicId
+    delete moduleDefinition.challenges[0].steps[0].discourseTopicSlug
     mockUseLessonChallenges.mockReturnValue({
       challenges: {},
       hasChallenges: false,
@@ -265,6 +289,41 @@ describe('ChallengeStepPlayer', () => {
     ).toHaveLength(2)
   })
 
+  it('renders the synced discussion block for article steps with discourse metadata', () => {
+    moduleDefinition.challenges[0].steps[0].discourseTopicId = 123
+    moduleDefinition.challenges[0].steps[0].discourseTopicSlug = 'test-step-discussion'
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'article',
+        Component: () => <p>Step body copy</p>,
+        frontmatter: {},
+        sections: [],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+      />,
+    )
+
+    expect(screen.getByTestId('challenge-step-discussion')).toHaveTextContent(
+      'Discussion 123 test-step-discussion Test step',
+    )
+  })
+
   it('adds render preloading to adjacent article step links', () => {
     mockGetAdjacentSteps.mockReturnValue({
       prev: {
@@ -372,6 +431,52 @@ describe('ChallengeStepPlayer', () => {
       'min-h-[100svh]',
     )
     expect(screen.getByTestId('sectioned-step-footer')).toHaveClass('sticky', 'bottom-0')
+  })
+
+  it('renders the section-view discussion CTA when discourse metadata exists', () => {
+    moduleDefinition.challenges[0].steps[0].discourseTopicId = 123
+    moduleDefinition.challenges[0].steps[0].discourseTopicSlug = 'test-step-discussion'
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'intro',
+            title: 'Intro',
+            bodySource: 'Intro copy',
+            interactive: null,
+            Component: () => <p>Intro copy</p>,
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeViewMode="section"
+      />,
+    )
+
+    expect(screen.getByRole('link', { name: /Open discussion/i })).toHaveAttribute(
+      'href',
+      'https://forum.example.com/t/test-step-discussion/123',
+    )
   })
 
   it('normalizes the sectioned view mode to section when missing from the url', async () => {

@@ -38,7 +38,9 @@
           "durationMinutes": 6,
           "contentDir": "budget-basics/01-what-is-the-local-budget",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 37,
+          "discourseTopicSlug": "ce-este-bugetul-local"
         },
         {
           "id": "ch-budget-basics-02-document-states",
@@ -50,7 +52,9 @@
           "durationMinutes": 5,
           "contentDir": "budget-basics/02-draft-approved-execution-rectification",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 38,
+          "discourseTopicSlug": "proiect-aprobat-executie-rectificare"
         }
       ]
     },
@@ -76,7 +80,9 @@
           "durationMinutes": 6,
           "contentDir": "budget-basics/03-who-decides-and-when",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 39,
+          "discourseTopicSlug": "cine-decide-si-cand"
         },
         {
           "id": "ch-budget-basics-04-budget-line",
@@ -88,7 +94,9 @@
           "durationMinutes": 5,
           "contentDir": "budget-basics/04-how-to-read-a-budget-line",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 40,
+          "discourseTopicSlug": "cum-citesti-o-linie-bugetara"
         }
       ]
     },
@@ -114,7 +122,9 @@
           "durationMinutes": 6,
           "contentDir": "budget-basics/05-functional-vs-economic",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 41,
+          "discourseTopicSlug": "functional-vs-economic"
         },
         {
           "id": "ch-budget-basics-06-functioning-vs-development",
@@ -126,7 +136,9 @@
           "durationMinutes": 6,
           "contentDir": "budget-basics/06-functioning-vs-development",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 42,
+          "discourseTopicSlug": "functionare-vs-dezvoltare"
         }
       ]
     }

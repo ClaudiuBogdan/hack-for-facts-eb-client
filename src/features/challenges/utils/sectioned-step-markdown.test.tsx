@@ -266,6 +266,39 @@ Some regular content.
     expect(parsed.sections[2]?.hideSectionTitle).toBeUndefined()
   })
 
+  it('extracts stable section keys from heading markers', () => {
+    const parsed = parseSectionedChallengeStep({
+      source: `---
+title: Stable keys
+stepType: sectioned
+---
+
+# Stable keys
+
+## Overview [section-key:overview]
+
+Intro copy.
+
+<Quiz
+  id="quiz-1"
+  question="Question?"
+  options={[
+    { id: "a", text: "Right", isCorrect: true }
+  ]}
+  explanation="Because"
+/>
+
+## Summary [section-key:summary]
+
+Wrap-up copy.
+`,
+    })
+
+    expect(parsed.sections[0]?.sectionKey).toBe('overview')
+    expect(parsed.sections[1]?.sectionKey).toBe('quiz-1')
+    expect(parsed.sections[2]?.sectionKey).toBe('summary')
+  })
+
   it('extracts lesson challenge descriptors for lesson widgets', () => {
     const parsed = parseSectionedChallengeStep({
       source: `---
@@ -371,6 +404,25 @@ stepType: sectioned
 
     expect(transformed.didTransform).toBe(true)
     expect(transformed.source).toContain('hideSectionTitle: true')
+  })
+
+  it('includes sectionKey in transformed exports when headings declare one', () => {
+    const filePath = '/src/content/challenges/steps/test-step/index.en.mdx'
+    const transformed = transformSectionedChallengeStepSource({
+      filePath,
+      source: `---
+title: Stable keys
+stepType: sectioned
+---
+
+## Overview [section-key:overview]
+
+Body.
+`,
+    })
+
+    expect(transformed.didTransform).toBe(true)
+    expect(transformed.source).toContain('sectionKey: "overview"')
   })
 
   it('includes lesson challenge descriptors in the transformed export', () => {

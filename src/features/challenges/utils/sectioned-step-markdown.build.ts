@@ -21,6 +21,7 @@ import type {
 type ParsedChallengeSection = {
   readonly isIntro: boolean
   readonly title: string
+  readonly sectionKey?: string
   readonly nodes: RootContent[]
 }
 
@@ -97,6 +98,33 @@ function slugifySectionId(value: string): string {
     .replace(/^-+|-+$/g, '')
 
   return normalized || 'section'
+}
+
+function normalizeStableSectionKey(value: string): string {
+  return value.trim().toLowerCase()
+}
+
+function parseSectionHeadingMetadata(value: string): {
+  readonly title: string
+  readonly sectionKey?: string
+} {
+  const normalizedValue = normalizeInlineText(value)
+  const matchedSectionKey = normalizedValue.match(
+    /^(.*?)(?:\s+\[section-key:([a-z0-9-]+)\])$/,
+  )
+  if (!matchedSectionKey) {
+    return {
+      title: normalizedValue,
+    }
+  }
+
+  const headingTitle = normalizeInlineText(matchedSectionKey[1] ?? '')
+  const sectionKey = normalizeStableSectionKey(matchedSectionKey[2] ?? '')
+
+  return {
+    title: headingTitle || 'Section',
+    sectionKey: sectionKey.length > 0 ? sectionKey : undefined,
+  }
 }
 
 function dedupeSectionId(baseId: string, seenIds: Map<string, number>): string {
@@ -524,8 +552,9 @@ function createBuildSection(params: {
   readonly section: ParsedChallengeSection
   readonly seenIds: Map<string, number>
   readonly baseIdOverride?: string
+  readonly sectionKeyOverride?: string
 }): BuildChallengeStepSection | null {
-  const { nodes, interactive, section, seenIds, baseIdOverride } = params
+  const { nodes, interactive, section, seenIds, baseIdOverride, sectionKeyOverride } = params
   const bodySource = stringifyNodes(nodes)
   if (!bodySource) {
     return null
@@ -543,6 +572,9 @@ function createBuildSection(params: {
   return {
     id: dedupeSectionId(baseId, seenIds),
     title: safeTitle,
+    ...(sectionKeyOverride || section.sectionKey
+      ? { sectionKey: sectionKeyOverride ?? section.sectionKey }
+      : {}),
     ...(hasDynamicQuizStageNode(nodes) ? { hideSectionTitle: true } : {}),
     ...(lessonChallengeDescriptors.length > 0
       ? { lessonChallengeDescriptors }
@@ -558,14 +590,26 @@ function createBuildSections(
 ): readonly BuildChallengeStepSection[] {
   const builtSections: BuildChallengeStepSection[] = []
   let bufferedNodes: RootContent[] = []
+  let contentSectionCount = 0
 
   const flushContentSection = () => {
+    if (bufferedNodes.length === 0) {
+      return
+    }
+
+    contentSectionCount += 1
     const contentSection = createBuildSection({
       title: section.title,
       nodes: bufferedNodes,
       interactive: null,
       section,
       seenIds,
+      sectionKeyOverride:
+        section.sectionKey
+          ? contentSectionCount === 1
+            ? section.sectionKey
+            : `${section.sectionKey}-part-${contentSectionCount}`
+          : undefined,
     })
 
     if (contentSection) {
@@ -600,6 +644,7 @@ function createBuildSections(
       section,
       seenIds,
       baseIdOverride: slugifySectionId(interactive.id),
+      sectionKeyOverride: slugifySectionId(interactive.id),
     })
 
     if (quizSection) {
@@ -644,7 +689,7 @@ function splitIntoSections(params: {
 
       currentSection = {
         isIntro: false,
-        title: normalizeInlineText(getNodeText(node)) || 'Section',
+        ...parseSectionHeadingMetadata(getNodeText(node)),
         nodes: [],
       }
       continue
@@ -701,7 +746,7 @@ function formatSectionExportEntry(
 ): string {
   return `  {
     id: ${JSON.stringify(section.id)},
-    title: ${JSON.stringify(section.title)},${section.hideSectionTitle ? `\n    hideSectionTitle: true,` : ''}
+    title: ${JSON.stringify(section.title)},${section.sectionKey ? `\n    sectionKey: ${JSON.stringify(section.sectionKey)},` : ''}${section.hideSectionTitle ? `\n    hideSectionTitle: true,` : ''}
     ${section.lessonChallengeDescriptors ? `lessonChallengeDescriptors: ${JSON.stringify(section.lessonChallengeDescriptors)},\n    ` : ''}interactive: ${JSON.stringify(section.interactive)},
     Component: ${getSectionComponentImportName(sectionIndex)},
   }`
@@ -713,6 +758,7 @@ function toChallengeStepSectionMetadata(
   return {
     id: section.id,
     title: section.title,
+    ...(section.sectionKey ? { sectionKey: section.sectionKey } : {}),
     ...(section.hideSectionTitle ? { hideSectionTitle: true } : {}),
     ...(section.lessonChallengeDescriptors
       ? {

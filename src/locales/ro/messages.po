@@ -143,14 +143,14 @@ msgid "{0} views enabled"
 msgstr "{0} vizualizări activate"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:44
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:49
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:53
 #: src/features/learning/components/cards/LearningPathCard.tsx:200
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:95
 msgid "{hours}h"
 msgstr "{hours}h"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:45
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:50
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:54
 #: src/features/learning/components/cards/LearningPathCard.tsx:201
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:96
 msgid "{hours}h {mins}m"
@@ -167,7 +167,7 @@ msgid "{hours}h remaining"
 msgstr "{hours}h rămase"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:41
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:46
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:50
 #: src/features/learning/components/cards/LearningPathCard.tsx:197
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:92
 msgid "{minutes}m"
@@ -810,7 +810,7 @@ msgstr "Grafic arie"
 msgid "Arrears"
 msgstr "Arierate"
 
-#: src/features/learning/components/interactive/lesson-discussion.tsx:136
+#: src/features/learning/components/interactive/lesson-discussion.tsx:114
 msgid "Ask questions and discuss this lesson with the community."
 msgstr "Pune întrebări și discută despre această lecție cu comunitatea."
 
@@ -904,9 +904,9 @@ msgstr "Inapoi la campanie"
 msgid "Back to challenges"
 msgstr "Inapoi la provocari"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:121
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:162
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:448
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:126
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:167
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:491
 msgid "Back to Challenges"
 msgstr "Înapoi la provocări"
 
@@ -1134,7 +1134,7 @@ msgstr "Documente bugetare"
 msgid "Budget draft publication date"
 msgstr "Data publicării proiectului de buget"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:109
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:131
 msgid "Budget guides, request templates, and more."
 msgstr "Ghiduri bugetare, modele de cereri si altele."
 
@@ -1309,7 +1309,7 @@ msgstr "Certificat verificat (Prototip)"
 msgid "Challenge Question"
 msgstr "Întrebare de provocare"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:178
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:183
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:292
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:585
 msgid "Challenges"
@@ -1860,7 +1860,7 @@ msgstr "Context"
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:550
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:693
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:144
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:214
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:219
 #: src/features/learning/components/cards/LearningPathCard.tsx:24
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:135
 msgid "Continue"
@@ -2235,7 +2235,7 @@ msgstr "Monedă"
 msgid "Currency is ignored for % of GDP."
 msgstr "Moneda este ignorată pentru % din PIB."
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:329
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:334
 msgid "Current"
 msgstr "Curent"
 
@@ -2638,7 +2638,8 @@ msgstr "Renunți la modificările locale?"
 msgid "discrete"
 msgstr "discret"
 
-#: src/features/learning/components/interactive/lesson-discussion.tsx:135
+#: src/features/challenges/components/player/sectioned-step-header.tsx:83
+#: src/features/learning/components/interactive/lesson-discussion.tsx:113
 msgid "Discussion"
 msgstr "Discuție"
 
@@ -2682,7 +2683,7 @@ msgstr "Documentează participarea ta la dezbaterea bugetului local."
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:31
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:40
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:45
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:49
 #: src/features/learning/components/cards/LearningPathCard.tsx:187
 #: src/features/learning/components/cards/LearningPathCard.tsx:196
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:91
@@ -3512,7 +3513,7 @@ msgstr "Eroare la încărcarea alertelor. Vă rugăm să încercați din nou."
 msgid "Failed to load budget sectors. Falling back to predefined sectors 1-5."
 msgstr "Încărcarea sectoarelor bugetare a eșuat. Se folosesc sectoarele predefinite 1-5."
 
-#: src/features/learning/components/interactive/lesson-discussion.tsx:139
+#: src/features/learning/components/interactive/lesson-discussion.tsx:117
 msgid "Failed to load comments"
 msgstr "Nu s-au putut încărca comentariile"
 
@@ -3763,6 +3764,10 @@ msgstr "pentru filtrele selectate."
 #: src/lib/ins/ins-dashboard-config.ts:178
 msgid "Foreign trade"
 msgstr "Comerț exterior"
+
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:428
+msgid "Forum"
+msgstr ""
 
 #. placeholder {0}: replacementCount === 1 ? '' : 's'
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:114
@@ -4033,7 +4038,7 @@ msgid "Grouping"
 msgstr "Grupare"
 
 #: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:69
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:106
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:128
 msgid "Guides & templates"
 msgstr "Ghiduri si modele"
 
@@ -4783,7 +4788,7 @@ msgstr "Se încarcă datele graficului..."
 msgid "Loading chart data…"
 msgstr "Se încarcă datele graficului…"
 
-#: src/features/learning/components/interactive/lesson-discussion.tsx:138
+#: src/features/learning/components/interactive/lesson-discussion.tsx:116
 msgid "Loading comments..."
 msgstr "Se încarcă comentariile..."
 
@@ -4993,6 +4998,10 @@ msgstr "Creditor Principal"
 msgid "Main creditor aggregated"
 msgstr "Creditor principal agregat"
 
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:107
+msgid "Main forum thread"
+msgstr "Firul principal din forum"
+
 #: src/features/learning/components/interactive/VATReformCard.tsx:22
 msgid "Major Reform"
 msgstr "Reformă majoră"
@@ -5030,7 +5039,7 @@ msgstr "Gestionați preferințele la nivel de campanie în <0>pagina de notific�
 msgid "Manage email notifications for entities you follow in the campaign."
 msgstr "Gestionati notificarile prin email pentru entitatile pe care le urmariti in campanie."
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:134
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:156
 msgid "Manage email updates for this campaign."
 msgstr "Gestionati actualizarile prin email pentru aceasta campanie."
 
@@ -5260,7 +5269,7 @@ msgstr "Metrică"
 msgid "Migrating map editor link..."
 msgstr "Se migrează linkul editorului de hărți..."
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:392
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:405
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:277
 msgid "min"
 msgstr "min"
@@ -5341,7 +5350,7 @@ msgid "Module link"
 msgstr "Linkul modulului"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:214
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:260
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:265
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:209
 msgid "Module progress"
 msgstr "Progresul modulului"
@@ -5465,7 +5474,7 @@ msgstr "Multiplicatorul 1.5 este standard; folosește 3.0 pentru detectarea mai 
 msgid "My Budget Analysis Map…"
 msgstr "Harta mea de analiză bugetară…"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:64
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:66
 msgid "My city hall"
 msgstr "Primăria mea"
 
@@ -5666,7 +5675,7 @@ msgstr "Nu există date pentru categorii"
 msgid "No certificate record was found for this ID in local storage."
 msgstr "Nu a fost găsită nicio înregistrare de certificat pentru acest ID în stocarea locală."
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:272
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:277
 msgid "No challenges available yet."
 msgstr "Nicio provocare disponibilă momentan."
 
@@ -5936,11 +5945,11 @@ msgstr "Nu s-a găsit nicio serie."
 msgid "No SIRUTA code associated."
 msgstr "Nu este asociat niciun cod SIRUTA."
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:230
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:235
 msgid "No steps available"
 msgstr "Nu există pași disponibili"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:235
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:240
 msgid "No steps available yet. Please check back later."
 msgstr "Niciun pas disponibil momentan. Revino mai târziu."
 
@@ -6035,7 +6044,7 @@ msgstr "Nu sunt suficiente valori pentru a construi distribuția."
 msgid "Not equal to"
 msgstr "Nu este egal cu"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:115
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:120
 msgid "Not found"
 msgstr "Nu a fost găsit"
 
@@ -6073,7 +6082,7 @@ msgstr "Nimic de lipit"
 msgid "Notice the gap: <0>Current Expenses</0> (salaries, utilities) almost always reach full execution.<1> Capital Expenses</1> (investments) are the first to be cut or delayed, often falling below 60%. Always check <2>Code 71</2> to see if promised infrastructure is actually being built."
 msgstr "Observați decalajul: <0>Cheltuielile curente</0> (salarii, utilități) ating aproape întotdeauna execuția completă.<1> Cheltuielile de capital</1> (investiții) sunt primele tăiate sau amânate, scăzând adesea sub 60%. Verificați întotdeauna <2>Codul 71</2> pentru a vedea dacă infrastructura promisă se construiește efectiv."
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:131
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:153
 msgid "Notification preferences"
 msgstr "Preferinte notificari"
 
@@ -6202,6 +6211,13 @@ msgstr "Deschide panoul de configurare"
 msgid "Open cookies"
 msgstr "Deschide setările cookie"
 
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:424
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:425
+#: src/features/challenges/components/player/sectioned-step-header.tsx:79
+#: src/features/challenges/components/player/sectioned-step-header.tsx:80
+msgid "Open discussion"
+msgstr "Deschide discuția"
+
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:572
 msgid "Open email"
 msgstr "Deschide email"
@@ -6250,7 +6266,7 @@ msgstr "Deschide în grafice"
 msgid "Open in entity analytics"
 msgstr "Deschide în analitice entitate"
 
-#: src/features/learning/components/interactive/lesson-discussion.tsx:137
+#: src/features/learning/components/interactive/lesson-discussion.tsx:115
 msgid "Open in forum"
 msgstr "Deschide în forum"
 
@@ -6300,6 +6316,10 @@ msgstr "Deschide matricea sursă în INS Tempo"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:128
 msgid "Open Table"
 msgstr "Deschide Tabelul"
+
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:110
+msgid "Open the main discussion thread for this campaign."
+msgstr "Deschide firul principal de discuție pentru această campanie."
 
 #: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:106
 msgid "opens in new tab"
@@ -6802,7 +6822,7 @@ msgid "Profile information for this entity has not been collected yet."
 msgstr "Informatiile de profil pentru aceasta institutie nu au fost colectate inca."
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:208
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:257
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:262
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:205
 msgid "Progress"
 msgstr "Progres"
@@ -7152,7 +7172,7 @@ msgstr "Raportare:"
 msgid "Reports"
 msgstr "Rapoarte"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:88
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:90
 msgid "Request a public debate for the local budget."
 msgstr "Solicita o dezbatere publica pentru bugetul local."
 
@@ -7193,7 +7213,7 @@ msgstr "Resetează la perioada disponibilă"
 msgid "Reset to default"
 msgstr "Resetează la valoarea implicită"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:47
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:49
 msgid "Resources"
 msgstr "Resurse"
 
@@ -7253,7 +7273,7 @@ msgstr "Venituri/Cheltuieli"
 msgid "Revert"
 msgstr "Anulează modificările"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:209
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:214
 msgid "Review"
 msgstr "Recapitulare"
 
@@ -7528,11 +7548,11 @@ msgstr "Agregat secundar"
 msgid "Secondary creditor aggregated"
 msgstr "Creditor secundar agregat"
 
-#: src/features/challenges/components/player/sectioned-step-header.tsx:93
+#: src/features/challenges/components/player/sectioned-step-header.tsx:110
 msgid "Section View"
 msgstr "Vedere pe secțiuni"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:67
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:69
 msgid "See the budget analysis for the selected entity."
 msgstr "Vezi analiza bugetară pentru entitatea selectată."
 
@@ -7654,7 +7674,7 @@ msgstr "Selects UATs by standardized distance from mean in standard deviations. 
 msgid "Seller Keeps"
 msgstr "Vânzătorul păstrează"
 
-#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:85
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:87
 msgid "Send debate request"
 msgstr "Trimite cerere dezbatere"
 
@@ -8144,7 +8164,7 @@ msgid "Standard"
 msgstr "Standard"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:144
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:219
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:224
 msgid "Start"
 msgstr "Începe"
 
@@ -8235,15 +8255,15 @@ msgstr "Rămâi aici"
 msgid "Step completed"
 msgstr "Pas finalizat"
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:442
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:485
 msgid "Step not found"
 msgstr "Pasul nu a fost găsit"
 
-#: src/features/challenges/components/player/sectioned-step-header.tsx:108
+#: src/features/challenges/components/player/sectioned-step-header.tsx:125
 msgid "Step sections"
 msgstr "Secțiunile pasului"
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:191
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:196
 msgid "Steps"
 msgstr "Pași"
 
@@ -8336,7 +8356,7 @@ msgstr "Schimbă primăria"
 msgid "Switch gradient colors"
 msgstr "Inversează culorile gradientului"
 
-#: src/features/challenges/components/player/sectioned-step-header.tsx:41
+#: src/features/challenges/components/player/sectioned-step-header.tsx:43
 msgid "Switch to article view"
 msgstr "Comută la vizualizarea articolului"
 
@@ -8348,7 +8368,7 @@ msgstr "Comută la economic"
 msgid "Switch to Functional"
 msgstr "Comută la funcțional"
 
-#: src/features/challenges/components/player/sectioned-step-header.tsx:41
+#: src/features/challenges/components/player/sectioned-step-header.tsx:43
 msgid "Switch to section view"
 msgstr "Comută la vizualizarea pe secțiuni"
 
@@ -8445,7 +8465,7 @@ msgstr "Linia bugetară, categoria sau alocarea pe care o contești…"
 msgid "The classification code \"{selectedCode}\" could not be found."
 msgstr "Codul de clasificare „{selectedCode}” nu a putut fi găsit."
 
-#: src/features/challenges/components/hub/ChallengeModulePage.tsx:117
+#: src/features/challenges/components/hub/ChallengeModulePage.tsx:122
 msgid "The content you're looking for doesn't exist or has been moved."
 msgstr "Conținutul pe care îl cauți nu există sau a fost mutat."
 
@@ -8519,7 +8539,7 @@ msgstr "The shared map configuration is invalid or unreadable. You can still cre
 msgid "The state total claim is <0>{0}</0>."
 msgstr "Totalul reținut de stat este <0>{0}</0>."
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:444
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:487
 msgid "The step you're looking for doesn't exist or may have been moved."
 msgstr "Pasul pe care îl cauți nu există sau este posibil să fi fost mutat."
 
@@ -8607,7 +8627,7 @@ msgstr "Aceasta este persoana care semnează cererea în numele asociației."
 msgid "This name appears as the map title for viewers."
 msgstr "Acest nume apare ca titlu al hărții pentru vizitatori."
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:209
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:217
 msgid "This sectioned step has no sections to render."
 msgstr "Acest pas pe secțiuni nu are secțiuni de afișat."
 
@@ -9368,7 +9388,7 @@ msgstr "Vizibilitate"
 msgid "Visibility at save"
 msgstr "Vizibilitate la salvare"
 
-#: src/features/learning/components/interactive/lesson-discussion.tsx:140
+#: src/features/learning/components/interactive/lesson-discussion.tsx:118
 msgid "Want to add a comment?"
 msgstr "Vrei să adaugi un comentariu?"
 

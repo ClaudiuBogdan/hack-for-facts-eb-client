@@ -38,7 +38,9 @@
           "durationMinutes": 6,
           "contentDir": "read-local-execution/01-why-2025-execution-matters",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 49,
+          "discourseTopicSlug": "de-ce-conteaza-executia-din-2025"
         },
         {
           "id": "ch-read-local-execution-02-total-budget-context",
@@ -50,7 +52,9 @@
           "durationMinutes": 7,
           "contentDir": "read-local-execution/02-total-budget-in-context",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 50,
+          "discourseTopicSlug": "cat-de-mare-este-bugetul-primariei-tale"
         }
       ]
     },
@@ -76,7 +80,9 @@
           "durationMinutes": 8,
           "contentDir": "read-local-execution/03-follow-money-from-total-to-income-and-spending",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 51,
+          "discourseTopicSlug": "cum-cobori-de-la-total-la-capitole"
         },
         {
           "id": "ch-read-local-execution-04-functional-economic",
@@ -88,7 +94,9 @@
           "durationMinutes": 8,
           "contentDir": "read-local-execution/04-functional-and-economic-lenses",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 52,
+          "discourseTopicSlug": "functional-si-economic-cele-doua-lentile"
         }
       ]
     },
@@ -114,7 +122,9 @@
           "durationMinutes": 8,
           "contentDir": "read-local-execution/05-read-the-real-execution-table",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 53,
+          "discourseTopicSlug": "cum-citesti-tabelul-real-de-executie"
         },
         {
           "id": "ch-read-local-execution-06-main-creditor-questions",
@@ -126,7 +136,9 @@
           "durationMinutes": 7,
           "contentDir": "read-local-execution/06-main-creditor-and-2026-questions",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 54,
+          "discourseTopicSlug": "primaria-ca-ordonator-principal-si-ce-intrebi-pentru-2026"
         }
       ]
     }

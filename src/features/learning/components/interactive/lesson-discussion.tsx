@@ -3,6 +3,11 @@ import { t } from '@lingui/core/macro'
 import { ChevronDown, ExternalLink, MessageSquare, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
+  buildDiscourseTopicEmbedUrl,
+  buildDiscourseTopicUrl,
+  normalizeDiscourseBaseUrl,
+} from '@/lib/discourse'
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -20,33 +25,6 @@ type DiscourseEmbedMessage = {
   readonly type?: 'discourse-resize' | 'discourse-scroll'
   readonly height?: number
   readonly top?: number
-}
-
-function normalizeDiscourseBaseUrl(value: string): string {
-  return value.replace(/\/+$/, '')
-}
-
-function buildDiscussionUrl(params: {
-  readonly discourseBaseUrl: string
-  readonly topicId: number
-  readonly topicSlug?: string
-}): string {
-  const normalizedBaseUrl = normalizeDiscourseBaseUrl(params.discourseBaseUrl)
-  if (params.topicSlug) {
-    return `${normalizedBaseUrl}/t/${encodeURIComponent(params.topicSlug)}/${params.topicId}`
-  }
-  return `${normalizedBaseUrl}/t/${params.topicId}`
-}
-
-function buildDiscussionEmbedUrl(params: {
-  readonly discourseBaseUrl: string
-  readonly topicId: number
-}): string {
-  const normalizedBaseUrl = normalizeDiscourseBaseUrl(params.discourseBaseUrl)
-  const queryString = new URLSearchParams({
-    topic_id: String(params.topicId),
-  }).toString()
-  return `${normalizedBaseUrl}/embed/comments?${queryString}`
 }
 
 function getElementTopOffset(element: HTMLElement): number {
@@ -71,12 +49,12 @@ export function LessonDiscussion({
   const embedFrameRef = useRef<HTMLIFrameElement | null>(null)
 
   const discussionUrl = useMemo(
-    () => buildDiscussionUrl({ discourseBaseUrl, topicId, topicSlug }),
+    () => buildDiscourseTopicUrl({ discourseBaseUrl, topicId, topicSlug }),
     [discourseBaseUrl, topicId, topicSlug]
   )
 
   const discussionEmbedUrl = useMemo(
-    () => buildDiscussionEmbedUrl({ discourseBaseUrl, topicId }),
+    () => buildDiscourseTopicEmbedUrl({ discourseBaseUrl, topicId }),
     [discourseBaseUrl, topicId]
   )
 

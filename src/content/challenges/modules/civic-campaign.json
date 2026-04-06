@@ -38,7 +38,9 @@
           "durationMinutes": 5,
           "contentDir": "civic-campaign/01-about-this-challenge",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 43,
+          "discourseTopicSlug": "despre-aceasta-provocare"
         },
         {
           "id": "ch-civic-02-budget-calendar-and-rights",
@@ -50,7 +52,9 @@
           "durationMinutes": 6,
           "contentDir": "civic-campaign/02-budget-calendar-and-rights",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 44,
+          "discourseTopicSlug": "calendarul-bugetar-si-drepturile-tale"
         }
       ]
     },
@@ -76,7 +80,9 @@
           "durationMinutes": 7,
           "contentDir": "civic-campaign/03-budget-status-2026",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 45,
+          "discourseTopicSlug": "statusul-bugetului-pe-2026"
         },
         {
           "id": "ch-civic-04-debate-request",
@@ -88,7 +94,9 @@
           "durationMinutes": 10,
           "contentDir": "civic-campaign/04-debate-request",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 46,
+          "discourseTopicSlug": "cererea-de-dezbatere-publica"
         }
       ]
     },
@@ -114,7 +122,9 @@
           "durationMinutes": 8,
           "contentDir": "civic-campaign/05-participation-report",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 47,
+          "discourseTopicSlug": "raport-de-participare"
         },
         {
           "id": "ch-civic-06-contestation",
@@ -126,7 +136,9 @@
           "durationMinutes": 12,
           "contentDir": "civic-campaign/06-contestation",
           "completionMode": "mark_complete",
-          "prerequisites": []
+          "prerequisites": [],
+          "discourseTopicId": 48,
+          "discourseTopicSlug": "contestatia-bugetului-local"
         }
       ]
     }

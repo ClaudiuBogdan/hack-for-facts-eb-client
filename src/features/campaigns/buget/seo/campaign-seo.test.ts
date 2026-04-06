@@ -10,7 +10,7 @@ vi.mock('../hooks/use-campaign-content', () => ({
       ro: 'Descriere campanie',
       en: 'Campaign description',
     },
-    forumUrl: 'https://forum.transparenta.eu/tag/buget',
+    forumUrl: 'https://forum.transparenta.eu/c/cu-ochii-pe-bugetele-locale/7',
     isActive: true,
     startDate: '2026-02-15',
     endDate: '2026-05-15',

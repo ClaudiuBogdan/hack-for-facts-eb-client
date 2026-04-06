@@ -54,10 +54,17 @@ vi.mock('lucide-react', () => {
     Bell: icon('bell-icon'),
     BellOff: icon('bell-off-icon'),
     Building2: icon('building2-icon'),
+    MessageSquare: icon('message-square-icon'),
     Send: icon('send-icon'),
     Library: icon('library-icon'),
   }
 })
+
+vi.mock('@/features/campaigns/buget/hooks/use-campaign-content', () => ({
+  getCampaignDefinition: () => ({
+    forumUrl: 'https://forum.transparenta.eu/c/cu-ochii-pe-bugetele-locale/7',
+  }),
+}))
 
 vi.mock('@/features/notifications/hooks/useCampaignNotifications', () => ({
   useCampaignNotifications: () => notificationsState,
@@ -179,6 +186,22 @@ describe('QuickResourcesPreview', () => {
     const link = screen.getByRole('link', { name: /Guides & templates/i })
     expect(link).toBeInTheDocument()
     expect(link).toHaveAttribute('href', '/primarie/12345678/buget/resurse')
+  })
+
+  it('shows the main forum thread external link', () => {
+    notificationsState = {
+      data: [],
+      globalPreference: null,
+      isLoading: false,
+    }
+
+    render(<QuickResourcesPreview locale="ro" entityCui="12345678" />)
+
+    const link = screen.getByRole('link', { name: /Main forum thread/i })
+    expect(link).toBeInTheDocument()
+    expect(link).toHaveAttribute('href', 'https://forum.transparenta.eu/c/cu-ochii-pe-bugetele-locale/7')
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer')
   })
 
   it('preserves locale and current return target for the notifications link', () => {

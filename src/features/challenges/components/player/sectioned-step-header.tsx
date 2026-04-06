@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { ArrowLeft, FileText, Rows3 } from 'lucide-react'
+import { ArrowLeft, ExternalLink, FileText, MessageSquare, Rows3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import type { ChallengeStepSection } from '../../utils/sectioned-step-markdown'
@@ -21,6 +21,7 @@ type SectionedStepHeaderProps = {
     viewMode: ChallengeStepViewMode,
     options?: { readonly replace?: boolean },
   ) => void
+  readonly discussionUrl?: string
   readonly sections: readonly ChallengeStepSection[]
   readonly stepTitle: string
 }
@@ -31,6 +32,7 @@ export function SectionedStepHeader({
   currentSectionIndex,
   onProgressSectionSelect,
   onViewModeChange,
+  discussionUrl,
   sections,
   stepTitle,
 }: SectionedStepHeaderProps) {
@@ -68,6 +70,21 @@ export function SectionedStepHeader({
           )}
 
           <div className="flex items-center gap-2">
+            {currentViewMode === 'section' && discussionUrl ? (
+              <Button asChild variant="ghost" className="h-9 rounded-full border border-border/70 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+                <a
+                  href={discussionUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={t`Open discussion`}
+                  title={t`Open discussion`}
+                >
+                  <MessageSquare aria-hidden="true" className="mr-2 h-4 w-4 text-[#3565c4]" />
+                  {t`Discussion`}
+                  <ExternalLink aria-hidden="true" className="ml-2 h-3 w-3 opacity-70" />
+                </a>
+              </Button>
+            ) : null}
             {currentViewMode === 'section' ? (
               <Button
                 type="button"

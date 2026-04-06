@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ChallengeModuleDefinitionSchema } from './challenge-definitions'
 
-function createValidModule() {
+function createValidModule(): any {
   return {
     id: 'explore-budgets',
     slug: 'explore-budgets',
@@ -49,6 +49,61 @@ function createValidModule() {
 describe('challenge-definitions schema', () => {
   it('accepts valid challenge module definitions', () => {
     expect(() => ChallengeModuleDefinitionSchema.parse(createValidModule())).not.toThrow()
+  })
+
+  it('accepts optional Discourse topic metadata on steps', () => {
+    const validModule = createValidModule()
+    validModule.challenges[0].steps[0].discourseTopicId = 42
+    validModule.challenges[0].steps[0].discourseTopicSlug = 'test-step-discussion'
+    validModule.challenges[0].steps[0].discourseSectionTopics = [
+      {
+        sectionKey: 'overview',
+        discourseTopicId: 84,
+        discourseTopicSlug: 'overview-thread',
+      },
+    ]
+
+    expect(() => ChallengeModuleDefinitionSchema.parse(validModule)).not.toThrow()
+  })
+
+  it('rejects discourseTopicSlug without discourseTopicId', () => {
+    const invalidModule = createValidModule()
+    invalidModule.challenges[0].steps[0].discourseTopicSlug = 'test-step-discussion'
+
+    const result = ChallengeModuleDefinitionSchema.safeParse(invalidModule)
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(
+        result.error.issues.some(
+          (issue) => issue.path.join('.') === 'challenges.0.steps.0.discourseTopicSlug',
+        ),
+      ).toBe(true)
+    }
+  })
+
+  it('rejects duplicate discourse section keys inside the same step', () => {
+    const invalidModule = createValidModule()
+    invalidModule.challenges[0].steps[0].discourseSectionTopics = [
+      {
+        sectionKey: 'overview',
+        discourseTopicId: 10,
+      },
+      {
+        sectionKey: 'overview',
+        discourseTopicId: 11,
+      },
+    ]
+
+    const result = ChallengeModuleDefinitionSchema.safeParse(invalidModule)
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(
+        result.error.issues.some(
+          (issue) =>
+            issue.path.join('.') === 'challenges.0.steps.0.discourseSectionTopics.1.sectionKey',
+        ),
+      ).toBe(true)
+    }
   })
 
   it('rejects missing or invalid order values', () => {

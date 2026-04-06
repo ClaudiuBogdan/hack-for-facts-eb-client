@@ -9,6 +9,22 @@ const ChallengeModuleDifficultySchema = z.enum(['beginner', 'intermediate', 'adv
 
 const ChallengeStepCompletionModeSchema = z.enum(['quiz', 'mark_complete'])
 
+const DiscourseTopicIdSchema = z.number().int().positive()
+
+const ChallengeStepDiscourseSectionTopicSchema = z.object({
+  sectionKey: z.string().min(1),
+  discourseTopicId: DiscourseTopicIdSchema,
+  discourseTopicSlug: z.string().min(1).optional(),
+}).superRefine((sectionTopic, ctx) => {
+  if (sectionTopic.discourseTopicSlug && !sectionTopic.discourseTopicId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['discourseTopicSlug'],
+      message: 'discourseTopicSlug requires discourseTopicId.',
+    })
+  }
+})
+
 export const ChallengeStepDefinitionSchema = z.object({
   id: z
     .string()
@@ -23,6 +39,32 @@ export const ChallengeStepDefinitionSchema = z.object({
   contentDir: z.string().min(1),
   completionMode: ChallengeStepCompletionModeSchema,
   prerequisites: z.array(z.string()).default([]),
+  discourseTopicId: DiscourseTopicIdSchema.optional(),
+  discourseTopicSlug: z.string().min(1).optional(),
+  discourseSectionTopics: z.array(ChallengeStepDiscourseSectionTopicSchema).optional(),
+}).superRefine((step, ctx) => {
+  if (step.discourseTopicSlug && !step.discourseTopicId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['discourseTopicSlug'],
+      message: 'discourseTopicSlug requires discourseTopicId.',
+    })
+  }
+
+  const usedSectionKeys = new Map<string, number>()
+  step.discourseSectionTopics?.forEach((sectionTopic, index) => {
+    const existingIndex = usedSectionKeys.get(sectionTopic.sectionKey)
+    if (existingIndex !== undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['discourseSectionTopics', index, 'sectionKey'],
+        message: `Duplicate discourse section topic key "${sectionTopic.sectionKey}".`,
+      })
+      return
+    }
+
+    usedSectionKeys.set(sectionTopic.sectionKey, index)
+  })
 })
 
 export const ChallengeDefinitionSchema = z.object({

@@ -17,6 +17,12 @@ vi.mock('@/lib/auth', () => ({
   AuthSignInButton: ({ children }: { children: ReactNode }) => <>{children}</>,
 }))
 
+vi.mock('@/config/env', () => ({
+  env: {
+    VITE_DISCOURSE_BASE_URL: 'https://forum.example.com',
+  },
+}))
+
 vi.mock('../../hooks/use-challenge-access', () => ({
   useChallengeAccess: () => mockUseChallengeAccess(),
 }))
@@ -45,6 +51,8 @@ const moduleDefinition = {
           slug: 'test-step',
           title: { ro: 'Test step', en: 'Test step' },
           durationMinutes: 5,
+          discourseTopicId: 123,
+          discourseTopicSlug: 'test-step-discussion',
         },
       ],
     },
@@ -95,5 +103,20 @@ describe('ChallengeModulePage', () => {
       screen.getByRole('heading', { name: /Conectează-te ca să participi la provocări/i }),
     ).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: /^Start$/i })).not.toBeInTheDocument()
+  })
+
+  it('renders a forum link for steps with synced discourse metadata', () => {
+    render(
+      <ChallengeModulePage
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+      />,
+    )
+
+    expect(screen.getByRole('link', { name: /Open discussion/i })).toHaveAttribute(
+      'href',
+      'https://forum.example.com/t/test-step-discussion/123',
+    )
   })
 })

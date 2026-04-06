@@ -108,6 +108,27 @@ describe('SectionedStepHeader', () => {
     expect(screen.getByRole('button', { name: /Switch to article view/i })).toBeInTheDocument()
   })
 
+  it('renders a discussion link in section mode when a forum URL is provided', () => {
+    const sections = makeSections(2)
+
+    render(
+      <SectionedStepHeader
+        backTarget={stepBackTarget}
+        currentViewMode="section"
+        currentSectionIndex={0}
+        discussionUrl="https://forum.example.com/t/topic/10"
+        onProgressSectionSelect={vi.fn()}
+        sections={sections}
+        stepTitle="Test Step"
+      />,
+    )
+
+    expect(screen.getByRole('link', { name: /Open discussion/i })).toHaveAttribute(
+      'href',
+      'https://forum.example.com/t/topic/10',
+    )
+  })
+
   it('fires onViewModeChange when the view toggle is clicked', () => {
     const sections = makeSections(2)
     const onViewModeChange = vi.fn()

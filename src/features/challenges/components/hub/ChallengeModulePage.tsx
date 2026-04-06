@@ -7,10 +7,14 @@ import {
   BookOpen,
   Check,
   Clock,
+  ExternalLink,
   Layers,
+  MessageSquare,
   Play,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { env } from '@/config/env'
+import { buildDiscourseTopicUrl } from '@/lib/discourse'
 import { getEntityLabels } from '@/lib/api/labels'
 import { useChallengeAccess } from '../../hooks/use-challenge-access'
 import { useChallengeProgress } from '../../hooks/use-challenge-progress'
@@ -56,6 +60,7 @@ export function ChallengeModulePage({
   moduleSlug,
 }: ChallengeModulePageProps) {
   const [entityLabel, setEntityLabel] = useState(entityCui)
+  const discourseBaseUrl = env.VITE_DISCOURSE_BASE_URL
   const module = getChallengeModuleBySlug(moduleSlug)
   const {
     accessCardVariant,
@@ -342,66 +347,89 @@ export function ChallengeModulePage({
                       const completed = isStepCompleted(step.id)
                       const isNextUp =
                         !completed && stats.nextStep?.id === step.id
+                      const discussionUrl =
+                        discourseBaseUrl && step.discourseTopicId
+                          ? buildDiscourseTopicUrl({
+                              discourseBaseUrl,
+                              topicId: step.discourseTopicId,
+                              topicSlug: step.discourseTopicSlug,
+                            })
+                          : null
 
                       return (
-                        <Link
+                        <div
                           key={step.id}
-                          to={
-                            buildCampaignProvocariStepPath(
-                              entityCui,
-                              module.slug,
-                              challenge.slug,
-                              step.slug,
-                            ) as '/'
-                          }
-                          className="group flex items-center gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-muted/30"
+                          className="group flex items-center gap-2 rounded-lg px-2 py-2.5 transition-colors hover:bg-muted/30"
                         >
-                          {/* Status indicator */}
-                          <div className="flex h-5 w-5 shrink-0 items-center justify-center">
-                            {completed ? (
-                              <Check
-                                className="h-3.5 w-3.5 text-muted-foreground/40"
-                                strokeWidth={2.5}
-                                aria-hidden="true"
-                              />
-                            ) : isNextUp ? (
-                              <Play
-                                className="h-3 w-3 fill-primary text-primary"
-                                aria-hidden="true"
-                              />
-                            ) : (
-                              <span className="text-xs tabular-nums font-medium text-muted-foreground/40">
-                                {stepIndex + 1}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Title */}
-                          <span
-                            className={`min-w-0 flex-1 text-sm font-medium ${
-                              isNextUp
-                                ? 'text-primary font-semibold'
-                                : 'text-foreground'
-                            }`}
+                          <Link
+                            to={
+                              buildCampaignProvocariStepPath(
+                                entityCui,
+                                module.slug,
+                                challenge.slug,
+                                step.slug,
+                              ) as '/'
+                            }
+                            className="flex min-w-0 flex-1 items-center gap-3"
                           >
-                            {getTranslatedText(step.title, locale)}
-                          </span>
+                            <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+                              {completed ? (
+                                <Check
+                                  className="h-3.5 w-3.5 text-muted-foreground/40"
+                                  strokeWidth={2.5}
+                                  aria-hidden="true"
+                                />
+                              ) : isNextUp ? (
+                                <Play
+                                  className="h-3 w-3 fill-primary text-primary"
+                                  aria-hidden="true"
+                                />
+                              ) : (
+                                <span className="text-xs tabular-nums font-medium text-muted-foreground/40">
+                                  {stepIndex + 1}
+                                </span>
+                              )}
+                            </div>
 
-                          {/* Duration */}
-                          <span className="hidden sm:inline text-xs text-muted-foreground/40 tabular-nums shrink-0">
-                            {step.durationMinutes} {t`min`}
-                          </span>
+                            <span
+                              className={`min-w-0 flex-1 text-sm font-medium ${
+                                isNextUp
+                                  ? 'text-primary font-semibold'
+                                  : 'text-foreground'
+                              }`}
+                            >
+                              {getTranslatedText(step.title, locale)}
+                            </span>
 
-                          {/* Arrow */}
-                          <ArrowRight
-                            aria-hidden="true"
-                            className={`h-3.5 w-3.5 shrink-0 transition-opacity ${
-                              isNextUp
-                                ? 'text-primary opacity-100'
-                                : 'text-muted-foreground/30 opacity-0 group-hover:opacity-100'
-                            }`}
-                          />
-                        </Link>
+                            <span className="hidden sm:inline text-xs text-muted-foreground/40 tabular-nums shrink-0">
+                              {step.durationMinutes} {t`min`}
+                            </span>
+
+                            <ArrowRight
+                              aria-hidden="true"
+                              className={`h-3.5 w-3.5 shrink-0 transition-opacity ${
+                                isNextUp
+                                  ? 'text-primary opacity-100'
+                                  : 'text-muted-foreground/30 opacity-0 group-hover:opacity-100'
+                              }`}
+                            />
+                          </Link>
+
+                          {discussionUrl ? (
+                            <a
+                              href={discussionUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex shrink-0 items-center gap-1 rounded-full border border-border/70 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:border-border hover:text-foreground"
+                              aria-label={t`Open discussion`}
+                              title={`${t`Open discussion`} - ${getTranslatedText(step.title, locale)}`}
+                            >
+                              <MessageSquare className="h-3 w-3" aria-hidden="true" />
+                              {t`Forum`}
+                              <ExternalLink className="h-2.5 w-2.5 opacity-70" aria-hidden="true" />
+                            </a>
+                          ) : null}
+                        </div>
                       )
                     })}
                   </div>

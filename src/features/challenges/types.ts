@@ -32,8 +32,15 @@ export type ChallengeStepLessonChallengeDescriptor =
 export type ChallengeStepSectionMeta = {
   readonly id: string
   readonly title: string
+  readonly sectionKey?: string
   readonly hideSectionTitle?: boolean
   readonly lessonChallengeDescriptors?: readonly ChallengeStepLessonChallengeDescriptor[]
+}
+
+export type ChallengeStepDiscourseSectionTopic = {
+  readonly sectionKey: string
+  readonly discourseTopicId: number
+  readonly discourseTopicSlug?: string
 }
 
 export type ChallengeStepDefinition = {
@@ -44,6 +51,9 @@ export type ChallengeStepDefinition = {
   readonly contentDir: string
   readonly completionMode: ChallengeStepCompletionMode
   readonly prerequisites: readonly string[]
+  readonly discourseTopicId?: number
+  readonly discourseTopicSlug?: string
+  readonly discourseSectionTopics?: readonly ChallengeStepDiscourseSectionTopic[]
 }
 
 export type ChallengeDefinition = {
