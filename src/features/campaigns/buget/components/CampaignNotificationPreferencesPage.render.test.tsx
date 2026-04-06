@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { fireEvent, render, screen } from '@/test/test-utils'
+import { fireEvent, render, screen, waitFor } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   FUNKY_CAMPAIGN_KEY,
@@ -7,6 +7,9 @@ import {
   FUNKY_NOTIFICATION_GLOBAL,
 } from '@/features/notifications/campaign-notification-keys'
 import { CampaignNotificationPreferencesPage } from './CampaignNotificationPreferencesPage'
+
+const createNotificationMock = vi.fn()
+const updateNotificationMock = vi.fn()
 
 let authState = {
   isLoaded: true,
@@ -122,6 +125,11 @@ vi.mock('@/features/notifications/hooks/useToggleNotification', () => ({
   }),
 }))
 
+vi.mock('@/features/notifications/api/notifications', () => ({
+  createNotification: (...args: unknown[]) => createNotificationMock(...args),
+  updateNotification: (...args: unknown[]) => updateNotificationMock(...args),
+}))
+
 vi.mock('@/hooks/filters/useFilterLabels', () => ({
   useEntityLabel: () => ({
     map: () => 'Primaria Test',
@@ -136,6 +144,32 @@ describe('CampaignNotificationPreferencesPage accessibility', () => {
     }
     routeSearch = {}
     refetchMock.mockReset()
+    createNotificationMock.mockReset()
+    updateNotificationMock.mockReset()
+    createNotificationMock.mockResolvedValue({
+      id: 'global-created',
+      userId: 'user-1',
+      entityCui: null,
+      notificationType: FUNKY_NOTIFICATION_GLOBAL,
+      campaignKey: FUNKY_CAMPAIGN_KEY,
+      isActive: true,
+      config: null,
+      hash: 'hash-created',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    })
+    updateNotificationMock.mockResolvedValue({
+      id: 'global-1',
+      userId: 'user-1',
+      entityCui: null,
+      notificationType: FUNKY_NOTIFICATION_GLOBAL,
+      campaignKey: FUNKY_CAMPAIGN_KEY,
+      isActive: false,
+      config: null,
+      hash: 'hash-global',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    })
     campaignNotificationsState = {
       data: [
         {
@@ -217,5 +251,51 @@ describe('CampaignNotificationPreferencesPage accessibility', () => {
     expect(
       screen.getByRole('link', { name: 'Browse entities' }),
     ).toHaveAttribute('href', '/primarie?lang=en')
+  })
+
+  it('uses a single global update and refetch when disabling campaign notifications', async () => {
+    campaignNotificationsState = {
+      ...campaignNotificationsState,
+      data: [
+        {
+          id: 'notif-1',
+          userId: 'user-1',
+          entityCui: '12345678',
+          notificationType: FUNKY_NOTIFICATION_ENTITY_UPDATES,
+          campaignKey: FUNKY_CAMPAIGN_KEY,
+          isActive: true,
+          config: null,
+          hash: 'hash-1',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+        },
+        {
+          id: 'notif-2',
+          userId: 'user-1',
+          entityCui: '87654321',
+          notificationType: FUNKY_NOTIFICATION_ENTITY_UPDATES,
+          campaignKey: FUNKY_CAMPAIGN_KEY,
+          isActive: true,
+          config: null,
+          hash: 'hash-2',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+        },
+      ],
+      activeCount: 2,
+      totalCount: 2,
+    }
+    refetchMock.mockResolvedValue({ data: [] })
+
+    render(<CampaignNotificationPreferencesPage />)
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Toggle campaign notifications' }))
+
+    await waitFor(() => {
+      expect(updateNotificationMock).toHaveBeenCalledTimes(1)
+      expect(updateNotificationMock).toHaveBeenCalledWith('global-1', { isActive: false })
+      expect(createNotificationMock).not.toHaveBeenCalled()
+      expect(refetchMock).toHaveBeenCalledTimes(1)
+    })
   })
 })

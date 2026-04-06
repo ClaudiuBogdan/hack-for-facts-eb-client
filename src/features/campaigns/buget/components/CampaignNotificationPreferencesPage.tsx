@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useSearch } from '@tanstack/react-router'
-import { useQueryClient } from '@tanstack/react-query'
 import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { ArrowLeft, Bell, BellOff, Building2 } from 'lucide-react'
@@ -157,7 +156,6 @@ function NotificationPreferencesContent({
     globalPreference,
   } = useCampaignNotifications()
   const toggleMutation = useToggleNotification({ silent: true })
-  const queryClient = useQueryClient()
   const [isBatchUpdating, setIsBatchUpdating] = useState(false)
   const entityNotifications = notifications ?? []
   const isGlobalEnabled = globalPreference?.isActive ?? activeCount > 0
@@ -201,33 +199,10 @@ function NotificationPreferencesContent({
 
   const handleBatchToggle = useCallback(
     async (activate: boolean) => {
-      const targets = entityNotifications.filter((n) =>
-        activate ? !n.isActive : n.isActive
-      )
-
       setIsBatchUpdating(true)
       try {
         await ensureGlobalPreference(activate)
-
-        if (targets.length === 0) {
-          await queryClient.invalidateQueries({ queryKey: ['notifications'] })
-          return
-        }
-
-        const results = await Promise.allSettled(
-          targets.map((n) => updateNotification(n.id, { isActive: activate }))
-        )
-
-        const succeeded = results.filter((r) => r.status === 'fulfilled').length
-        const failed = results.filter((r) => r.status === 'rejected').length
-
-        await queryClient.invalidateQueries({ queryKey: ['notifications'] })
-
-        if (failed > 0) {
-          toast.error(
-            t`${String(failed)} of ${String(failed + succeeded)} updates failed`
-          )
-        }
+        await refetch()
       } catch (error) {
         console.error('Failed to update campaign notifications:', error)
         toast.error(t`Failed to update notification`)
@@ -235,7 +210,7 @@ function NotificationPreferencesContent({
         setIsBatchUpdating(false)
       }
     },
-    [ensureGlobalPreference, entityNotifications, queryClient]
+    [ensureGlobalPreference, refetch]
   )
 
   const handleGlobalToggle = useCallback(async () => {
