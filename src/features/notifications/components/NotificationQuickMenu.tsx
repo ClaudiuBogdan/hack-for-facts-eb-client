@@ -105,6 +105,10 @@ export function NotificationQuickMenu({
   };
   const showCampaignTerms = notificationTypes.includes(FUNKY_NOTIFICATION_ENTITY_UPDATES);
   const showGeneralTerms = notificationTypes.some((type) => NEWSLETTER_TYPES.includes(type));
+  const configuredNotificationTypes = notificationTypes.flatMap((type) => {
+    const config = getNotificationTypeConfig(type);
+    return config ? [{ type, config }] : [];
+  });
 
   return (
     <div className="w-full space-y-5 p-2">
@@ -118,8 +122,7 @@ export function NotificationQuickMenu({
       <Separator />
 
       <div className="space-y-1">
-        {notificationTypes.map((type) => {
-          const config = getNotificationTypeConfig(type);
+        {configuredNotificationTypes.map(({ type, config }) => {
           const isActive = getNotificationStatus(type);
 
           return (

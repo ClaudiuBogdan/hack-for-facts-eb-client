@@ -27,10 +27,14 @@ interface Props {
 
 export function NotificationCard({ notifications, onRemove }: Props) {
   const toggleMutation = useToggleNotification();
+  const configuredNotifications = notifications.flatMap((notification) => {
+    const config = getNotificationTypeConfig(notification.notificationType);
+    return config ? [{ notification, config }] : [];
+  });
 
-  if (notifications.length === 0) return null;
+  if (configuredNotifications.length === 0) return null;
 
-  const firstNotification = notifications[0];
+  const firstNotification = configuredNotifications[0].notification;
   const entityName = firstNotification.entity?.name || 'Unknown Entity';
   const entityCui = firstNotification.entityCui;
 
@@ -74,66 +78,62 @@ export function NotificationCard({ notifications, onRemove }: Props) {
       </CardHeader>
       <CardContent>
         <div className="space-y-1">
-          {notifications
-            .map((notification, index) => {
-              const config = getNotificationTypeConfig(notification.notificationType);
-              return (
-                <div key={notification.id}>
-                  {index > 0 && <Separator className="my-3" />}
-                  <div className="flex items-center justify-between gap-4 py-2 px-3 rounded-lg hover:bg-secondary/30 transition-colors group">
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium mb-0.5">
-                        {config.label}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {config.description}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Switch
-                        className="cursor-pointer disabled:cursor-pointer transition-all duration-300"
-                        checked={notification.isActive}
-                        onCheckedChange={(isActive) => handleToggle(notification, isActive)}
-                        disabled={toggleMutation.isPending}
-                      />
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              <Trans>Delete notification</Trans>
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              <Trans>
-                                Are you sure you want to delete this notification? This action cannot be
-                                undone.
-                              </Trans>
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>
-                              <Trans>Cancel</Trans>
-                            </AlertDialogCancel>
-                            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => onRemove(notification.id)}>
-                              <Trans>Delete</Trans>
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
+          {configuredNotifications.map(({ notification, config }, index) => (
+            <div key={notification.id}>
+              {index > 0 && <Separator className="my-3" />}
+              <div className="flex items-center justify-between gap-4 py-2 px-3 rounded-lg hover:bg-secondary/30 transition-colors group">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium mb-0.5">
+                    {config.label}
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    {config.description}
+                  </p>
                 </div>
-              );
-            })}
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <Switch
+                    className="cursor-pointer disabled:cursor-pointer transition-all duration-300"
+                    checked={notification.isActive}
+                    onCheckedChange={(isActive) => handleToggle(notification, isActive)}
+                    disabled={toggleMutation.isPending}
+                  />
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          <Trans>Delete notification</Trans>
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          <Trans>
+                            Are you sure you want to delete this notification? This action cannot be
+                            undone.
+                          </Trans>
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>
+                          <Trans>Cancel</Trans>
+                        </AlertDialogCancel>
+                        <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => onRemove(notification.id)}>
+                          <Trans>Delete</Trans>
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

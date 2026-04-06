@@ -87,9 +87,14 @@ const NOTIFICATION_TYPE_CONFIGS: Record<NotificationType, NotificationTypeConfig
 }
 
 export function getNotificationTypeConfig(
-  notificationType: NotificationType,
-): NotificationTypeConfig {
-  const config = NOTIFICATION_TYPE_CONFIGS[notificationType]
+  notificationType: string,
+): NotificationTypeConfig | null {
+  const config =
+    NOTIFICATION_TYPE_CONFIGS[notificationType as NotificationType]
+
+  if (!config) {
+    return null
+  }
 
   return {
     ...config,
