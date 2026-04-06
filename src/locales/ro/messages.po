@@ -3769,6 +3769,10 @@ msgstr "Comerț exterior"
 msgid "Forum"
 msgstr ""
 
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:107
+msgid "Forum discussion"
+msgstr "Discuție pe forum"
+
 #. placeholder {0}: replacementCount === 1 ? '' : 's'
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:114
 msgid "Found {replacementCount} occurrence{0}"
@@ -4999,8 +5003,8 @@ msgid "Main creditor aggregated"
 msgstr "Creditor principal agregat"
 
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:107
-msgid "Main forum thread"
-msgstr "Firul principal din forum"
+#~ msgid "Main forum thread"
+#~ msgstr "Firul principal din forum"
 
 #: src/features/learning/components/interactive/VATReformCard.tsx:22
 msgid "Major Reform"
@@ -6318,8 +6322,12 @@ msgid "Open Table"
 msgstr "Deschide Tabelul"
 
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:110
-msgid "Open the main discussion thread for this campaign."
-msgstr "Deschide firul principal de discuție pentru această campanie."
+msgid "Open the campaign forum discussion."
+msgstr "Deschide discuția de pe forum a campaniei."
+
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:110
+#~ msgid "Open the main discussion thread for this campaign."
+#~ msgstr "Deschide firul principal de discuție pentru această campanie."
 
 #: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:106
 msgid "opens in new tab"

@@ -188,7 +188,7 @@ describe('QuickResourcesPreview', () => {
     expect(link).toHaveAttribute('href', '/primarie/12345678/buget/resurse')
   })
 
-  it('shows the main forum thread external link', () => {
+  it('shows the forum discussion external link', () => {
     notificationsState = {
       data: [],
       globalPreference: null,
@@ -197,7 +197,7 @@ describe('QuickResourcesPreview', () => {
 
     render(<QuickResourcesPreview locale="ro" entityCui="12345678" />)
 
-    const link = screen.getByRole('link', { name: /Main forum thread/i })
+    const link = screen.getByRole('link', { name: /Forum discussion/i })
     expect(link).toBeInTheDocument()
     expect(link).toHaveAttribute('href', 'https://forum.transparenta.eu/c/cu-ochii-pe-bugetele-locale/7')
     expect(link).toHaveAttribute('target', '_blank')

@@ -3769,6 +3769,10 @@ msgstr "Foreign trade"
 msgid "Forum"
 msgstr "Forum"
 
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:107
+msgid "Forum discussion"
+msgstr "Forum discussion"
+
 #. placeholder {0}: replacementCount === 1 ? '' : 's'
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:114
 msgid "Found {replacementCount} occurrence{0}"
@@ -5004,8 +5008,8 @@ msgid "Main creditor aggregated"
 msgstr "Main creditor aggregated"
 
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:107
-msgid "Main forum thread"
-msgstr "Main forum thread"
+#~ msgid "Main forum thread"
+#~ msgstr "Main forum thread"
 
 #: src/features/learning/components/interactive/VATReformCard.tsx:22
 msgid "Major Reform"
@@ -6323,8 +6327,12 @@ msgid "Open Table"
 msgstr "Open Table"
 
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:110
-msgid "Open the main discussion thread for this campaign."
-msgstr "Open the main discussion thread for this campaign."
+msgid "Open the campaign forum discussion."
+msgstr "Open the campaign forum discussion."
+
+#: src/features/challenges/components/hub/QuickResourcesPreview.tsx:110
+#~ msgid "Open the main discussion thread for this campaign."
+#~ msgstr "Open the main discussion thread for this campaign."
 
 #: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:106
 msgid "opens in new tab"

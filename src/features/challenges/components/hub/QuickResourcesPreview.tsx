@@ -104,10 +104,10 @@ export function QuickResourcesPreview({
           </div>
           <div className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium text-foreground/80">
-              {t`Main forum thread`}
+              {t`Forum discussion`}
             </span>
             <span className="block text-xs text-muted-foreground">
-              {t`Open the main discussion thread for this campaign.`}
+              {t`Open the campaign forum discussion.`}
             </span>
           </div>
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 transition-colors flex-shrink-0" aria-hidden="true" />
