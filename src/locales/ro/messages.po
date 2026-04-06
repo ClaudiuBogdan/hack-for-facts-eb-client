@@ -399,10 +399,22 @@ msgstr "Adaugă denumirea asociației pentru a folosi această opțiune."
 msgid "Add the city hall's contact details for future communications."
 msgstr "Adaugă datele de contact ale primăriei pentru comunicări ulterioare."
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:606
+msgid "Add the legal address from the NGO registration documents."
+msgstr "Adaugă adresa juridică din documentele de înregistrare ale ONG-ului."
+
 #: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:180
 #: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:201
 msgid "Add the link to the city hall's budget document."
 msgstr "Adaugă linkul către documentul de buget al primăriei."
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:640
+msgid "Add the NGO fiscal identification code exactly as it appears on official documents."
+msgstr "Adaugă codul de identificare fiscală al ONG-ului exact așa cum apare în documentele oficiale."
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:674
+msgid "Add the role used in official documents, for example president or executive director."
+msgstr "Adaugă funcția folosită în documentele oficiale, de exemplu președinte sau director executiv."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:107
 msgid "Add value filter rule"
@@ -774,7 +786,7 @@ msgstr "Aprilie"
 msgid "Are you sure you want to delete this alert? This action cannot be undone."
 msgstr "Sunteți sigur că doriți să ștergeți această alertă? Această acțiune este ireversibilă."
 
-#: src/features/notifications/components/NotificationCard.tsx:116
+#: src/features/notifications/components/NotificationCard.tsx:117
 msgid "Are you sure you want to delete this notification? This action cannot be undone."
 msgstr "Sunteți sigur că doriți să ștergeți această notificare? Această acțiune este ireversibilă."
 
@@ -977,7 +989,7 @@ msgstr "Date de bază despre populație, ocupare și locuințe."
 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:205
 msgid "Before confirming, make sure you:"
-msgstr "Inainte de a confirma, asigura-te ca:"
+msgstr "Înainte de a confirma, asigură-te că:"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:99
 msgid "Best for cross-county comparisons where scales are very different."
@@ -1248,7 +1260,7 @@ msgstr "Notificările de campanie sunt supuse <0>termenilor și condițiilor cam
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:619
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:123
 #: src/features/notifications/components/alerts/AlertCard.tsx:122
-#: src/features/notifications/components/NotificationCard.tsx:124
+#: src/features/notifications/components/NotificationCard.tsx:125
 #: src/routes/$lang/learning/index.lazy.tsx:315
 #: src/routes/$lang/learning/index.lazy.tsx:337
 #: src/routes/alerts/$alertId/index.lazy.tsx:317
@@ -1272,6 +1284,11 @@ msgstr "Nu se pot regenera intervalele deoarece datele active nu au valori numer
 #: src/components/charts/components/chart-categories/ChartCategories.tsx:156
 msgid "Category name"
 msgstr "Nume categorie"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:141
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:167
+msgid "CC"
+msgstr "CC"
 
 #: src/routes/$lang/learning/certificates.$id.lazy.tsx:48
 #: src/routes/certificates.$id.tsx:48
@@ -1686,6 +1703,10 @@ msgstr "Compact"
 #: src/components/entities/views/ins-stats-view.derived.ts:98
 msgid "Compare with death rate and migration to understand if growth is structural or temporary."
 msgstr "Comparați cu rata mortalității și migrația pentru a înțelege dacă creșterea este structurală sau temporară."
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:744
+msgid "Complete all NGO legal details to generate the request template."
+msgstr "Completează toate datele juridice ale ONG-ului pentru a genera modelul de cerere."
 
 #: src/features/learning/components/player/LessonPlayer.tsx:587
 msgid "Complete path"
@@ -2417,7 +2438,7 @@ msgstr "Definite"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:299
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:261
 #: src/features/notifications/components/alerts/AlertCard.tsx:128
-#: src/features/notifications/components/NotificationCard.tsx:127
+#: src/features/notifications/components/NotificationCard.tsx:128
 #: src/routes/alerts/$alertId/index.lazy.tsx:323
 msgid "Delete"
 msgstr "Șterge"
@@ -2449,7 +2470,7 @@ msgstr "Ștergi instantaneul local?"
 msgid "Delete map"
 msgstr "Șterge harta"
 
-#: src/features/notifications/components/NotificationCard.tsx:113
+#: src/features/notifications/components/NotificationCard.tsx:114
 msgid "Delete notification"
 msgstr "Șterge notificarea"
 
@@ -2996,6 +3017,10 @@ msgstr "Introduceți valoarea nouă"
 #: src/components/charts/components/views/SeriesConfigView.tsx:298
 msgid "Enter series label..."
 msgstr "Introduceți eticheta seriei..."
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:623
+msgid "Enter the number under which the NGO is registered in the Register of Associations and Foundations."
+msgstr "Introdu numărul sub care ONG-ul este înregistrat în Registrul Asociațiilor și Fundațiilor."
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:813
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1004
@@ -3687,6 +3712,10 @@ msgstr "Doar prima valoare"
 msgid "First value only: keep one deterministic row (fallback/debug)."
 msgstr "Doar prima valoare: păstrați un singur rând determinist (de rezervă/depanare)."
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:628
+msgid "Fiscal code (CIF)"
+msgstr "Cod fiscal (CIF)"
+
 #: src/features/learning/components/interactive/RectificationFlow.tsx:147
 msgid "Flow"
 msgstr "Flux"
@@ -3885,7 +3914,7 @@ msgstr "Primiți actualizări lunare prin e-mail despre această instituție. Pr
 msgid "Get Started"
 msgstr "Începe acum"
 
-#: src/features/notifications/components/NotificationQuickMenu.tsx:113
+#: src/features/notifications/components/NotificationQuickMenu.tsx:117
 msgid "Get updates about"
 msgstr "Primiți actualizări despre"
 
@@ -4469,7 +4498,7 @@ msgstr "Justiție"
 #. placeholder {0}: cc.join(', ')
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:210
 msgid "Keep <0>{0}</0> in CC so we can track the request"
-msgstr "Pastrezi <0>{0}</0> in CC pentru a putea urmari cererea"
+msgstr "Păstrezi <0>{0}</0> în CC pentru a putea urmări cererea"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:93
 msgid "Keeps UATs whose values fall between two percentiles of the selected series. Use this when absolute thresholds are misleading because data is very skewed."
@@ -4581,6 +4610,18 @@ msgstr "Angajamente legale"
 #: src/components/entities/views/Commitments.tsx:409
 msgid "Legal Commitments"
 msgstr "Angajamente Legale"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:459
+msgid "Legal representative"
+msgstr "Reprezentant legal"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:645
+msgid "Legal representative name"
+msgstr "Numele reprezentantului legal"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:662
+msgid "Legal representative role"
+msgstr "Funcția reprezentantului legal"
 
 #: src/components/charts/components/chart-quick-config/ChartQuickConfig.tsx:160
 #: src/routes/map.lazy.tsx:357
@@ -4976,7 +5017,7 @@ msgstr "Faci privată"
 msgid "Make public"
 msgstr "Faci publică"
 
-#: src/features/notifications/components/NotificationQuickMenu.tsx:166
+#: src/features/notifications/components/NotificationQuickMenu.tsx:169
 msgid "Manage all notifications"
 msgstr "Gestionează toate notificările"
 
@@ -6996,10 +7037,18 @@ msgstr "Regiune"
 msgid "Region Filters"
 msgstr "Filtre regiuni"
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:594
+msgid "Registered office"
+msgstr "Sediul social"
+
 #: src/lib/ins/ins-dashboard-config.ts:24
 #: src/lib/ins/ins-metric-registry.ts:25
 msgid "Registered unemployment share"
 msgstr "Ponderea șomajului înregistrat"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:611
+msgid "Registration number"
+msgstr "Număr de înregistrare"
 
 #: src/components/classification-explorer/ClassificationSiblings.tsx:32
 msgid "Related Categories"
@@ -7621,7 +7670,7 @@ msgstr "Trimite singur"
 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:208
 msgid "Send the email from your association's email address"
-msgstr "Trimiti emailul de pe adresa asociatiei tale"
+msgstr "Trimiți emailul de pe adresa asociației tale"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:562
 msgid "Send via email"
@@ -8550,6 +8599,10 @@ msgstr "Aceasta este o pagină de verificare de tip proof-of-concept stocată î
 msgid "This is not an employment rate by age group; it is a general intensity indicator."
 msgstr "Acesta nu este o rată a ocupării pe grupe de vârstă; este un indicator general de intensitate."
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:657
+msgid "This is the person who signs the request on behalf of the association."
+msgstr "Aceasta este persoana care semnează cererea în numele asociației."
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:69
 msgid "This name appears as the map title for viewers."
 msgstr "Acest nume apare ca titlu al hărții pentru vizitatori."
@@ -9120,6 +9173,14 @@ msgstr "Use gt/gte/lt/lte based on how strict your split should be around the ce
 #: src/components/charts/components/views/SeriesConfigView.tsx:57
 msgid "Use only the first matching observation for each period."
 msgstr "Folosiți doar prima observație care corespunde pentru fiecare perioadă."
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:764
+msgid "Use the association email address from which you will actually send the request."
+msgstr "Folosește adresa de email a asociației de pe care vei trimite efectiv cererea."
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:589
+msgid "Use the full official name exactly as it appears in the Register of Associations and Foundations."
+msgstr "Folosește denumirea oficială completă exact așa cum apare în Registrul Asociațiilor și Fundațiilor."
 
 #: src/components/charts/components/views/SeriesConfigView.tsx:54
 msgid "Use the mean value when multiple observations exist in the same period."

@@ -19,6 +19,7 @@ const PUBLIC_RUNTIME_CONFIG_KEYS = [
   "VITE_CLERK_PUBLISHABLE_KEY",
   "VITE_BETTER_STACK_STATUS_WIDGET_ID",
   "VITE_DISCOURSE_BASE_URL",
+  "VITE_CAMPAIGN_SELF_SEND_CC_EMAILS",
 ] as const;
 
 export type PublicRuntimeConfigKey = (typeof PUBLIC_RUNTIME_CONFIG_KEYS)[number];
@@ -26,57 +27,60 @@ export type PublicRuntimeConfig = Partial<Record<PublicRuntimeConfigKey, string>
 
 const envSchema = z
   .object({
-  VITE_APP_VERSION: z.string().min(1),
-  VITE_APP_NAME: z.string().min(1),
-  VITE_APP_ENVIRONMENT: z.string().min(1),
-  VITE_API_URL: z.string().url(),
-  VITE_API_USE_PROXY: z
-    .enum(["true", "false"])
-    .optional()
-    .transform((val) => val === "true"),
-  // Optional canonical site URL used for SEO metadata generation
-  VITE_SITE_URL: z.string().url().optional(),
+    VITE_APP_VERSION: z.string().min(1),
+    VITE_APP_NAME: z.string().min(1),
+    VITE_APP_ENVIRONMENT: z.string().min(1),
+    VITE_API_URL: z.string().url(),
+    VITE_API_USE_PROXY: z
+      .enum(["true", "false"])
+      .optional()
+      .transform((val) => val === "true"),
+    // Optional canonical site URL used for SEO metadata generation
+    VITE_SITE_URL: z.string().url().optional(),
 
-  // Environment
-  NODE_ENV: z
-    .enum(["development", "production", "test"])
-    .optional()
-    .default("production"),
+    // Environment
+    NODE_ENV: z
+      .enum(["development", "production", "test"])
+      .optional()
+      .default("production"),
 
-  // PostHog
-  VITE_POSTHOG_ENABLED: z
-    .enum(["true", "false"])
-    .optional()
-    .transform((val) => val === "true"),
-  VITE_POSTHOG_API_KEY: z.string().min(1).optional(),
-  VITE_POSTHOG_HOST: z.string().url().optional(),
-  VITE_POSTHOG_PERSON_PROFILES: z
-    .enum(["identified_only", "always", "never"])
-    .optional(),
+    // PostHog
+    VITE_POSTHOG_ENABLED: z
+      .enum(["true", "false"])
+      .optional()
+      .transform((val) => val === "true"),
+    VITE_POSTHOG_API_KEY: z.string().min(1).optional(),
+    VITE_POSTHOG_HOST: z.string().url().optional(),
+    VITE_POSTHOG_PERSON_PROFILES: z
+      .enum(["identified_only", "always", "never"])
+      .optional(),
 
-  // Sentry
-  VITE_SENTRY_ENABLED: z
-    .enum(["true", "false"]) // must be provided explicitly to enable
-    .optional()
-    .transform((val) => val === "true"),
-  VITE_SENTRY_DSN: z.string().min(1).optional(),
-  VITE_SENTRY_TRACES_SAMPLE_RATE: z
-    .string()
-    .optional(),
-  VITE_SENTRY_FEEDBACK_ENABLED: z
-    .enum(["true", "false"]) // enabled unless explicitly set to false
-    .optional()
-    .transform((val) => val !== "false"),
+    // Sentry
+    VITE_SENTRY_ENABLED: z
+      .enum(["true", "false"]) // must be provided explicitly to enable
+      .optional()
+      .transform((val) => val === "true"),
+    VITE_SENTRY_DSN: z.string().min(1).optional(),
+    VITE_SENTRY_TRACES_SAMPLE_RATE: z
+      .string()
+      .optional(),
+    VITE_SENTRY_FEEDBACK_ENABLED: z
+      .enum(["true", "false"]) // enabled unless explicitly set to false
+      .optional()
+      .transform((val) => val !== "false"),
 
-  // Clerk
-  VITE_CLERK_PUBLISHABLE_KEY: z.string().min(1).optional(),
+    // Clerk
+    VITE_CLERK_PUBLISHABLE_KEY: z.string().min(1).optional(),
 
-  // Better Stack
-  VITE_BETTER_STACK_STATUS_WIDGET_ID: z.string().min(1).optional(),
+    // Better Stack
+    VITE_BETTER_STACK_STATUS_WIDGET_ID: z.string().min(1).optional(),
 
-  // Discourse (Learning lesson discussion embedding)
-  VITE_DISCOURSE_BASE_URL: z.string().url().optional(),
-})
+    // Discourse (Learning lesson discussion embedding)
+    VITE_DISCOURSE_BASE_URL: z.string().url().optional(),
+
+    // Campaign self-send email CC list (comma-separated)
+    VITE_CAMPAIGN_SELF_SEND_CC_EMAILS: z.string().optional(),
+  })
   .superRefine((values, ctx) => {
     if (values.VITE_POSTHOG_ENABLED) {
       if (!values.VITE_POSTHOG_API_KEY) {

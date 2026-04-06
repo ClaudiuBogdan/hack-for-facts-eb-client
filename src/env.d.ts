@@ -19,6 +19,7 @@ interface ImportMetaEnv {
   readonly VITE_CLERK_PUBLISHABLE_KEY?: string;
   readonly VITE_BETTER_STACK_STATUS_WIDGET_ID?: string;
   readonly VITE_DISCOURSE_BASE_URL?: string;
+  readonly VITE_CAMPAIGN_SELF_SEND_CC_EMAILS?: string;
 }
 
 interface ImportMeta {
@@ -51,6 +52,7 @@ declare namespace NodeJS {
     readonly VITE_CLERK_PUBLISHABLE_KEY?: string;
     readonly VITE_BETTER_STACK_STATUS_WIDGET_ID?: string;
     readonly VITE_DISCOURSE_BASE_URL?: string;
+    readonly VITE_CAMPAIGN_SELF_SEND_CC_EMAILS?: string;
   }
 }
 

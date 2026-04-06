@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DebateRequestForm } from './DebateRequestForm'
+import { PLATFORM_CC_EMAILS } from './mailto-utils'
 
 const saveDraftMock = vi.fn(async () => undefined)
 const submitMock = vi.fn(async () => undefined)
@@ -386,6 +387,10 @@ describe('DebateRequestForm', () => {
     expect(screen.getByText('Prepared email')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Open email client' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'I sent the email' })).toBeInTheDocument()
+    expect(screen.getAllByText(PLATFORM_CC_EMAILS.join(', ')).length).toBeGreaterThan(0)
+    expect(
+      screen.getByText((_, element) => element?.textContent === `Keep ${PLATFORM_CC_EMAILS.join(', ')} in CC so we can track the request`),
+    ).toBeInTheDocument()
 
     // Path selection cards should be hidden while preview is visible
     expect(screen.queryByText('Send it yourself')).not.toBeInTheDocument()

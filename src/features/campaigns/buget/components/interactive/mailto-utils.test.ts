@@ -3,9 +3,20 @@ import {
   buildContestationEmailBody,
   buildContestationMailto,
   buildPublicDebateEmailBody,
+  parsePlatformCcEmails,
 } from './mailto-utils'
 
 describe('mailto-utils', () => {
+  it('parses multiple CC recipients from a comma-separated env value', () => {
+    expect(
+      parsePlatformCcEmails(' first@example.com,second@example.com , , third@example.com '),
+    ).toEqual([
+      'first@example.com',
+      'second@example.com',
+      'third@example.com',
+    ])
+  })
+
   it('includes the sender identity in the generated contestation body', () => {
     const body = buildContestationEmailBody({
       contestedItem: 'Cheltuieli de personal',
@@ -44,7 +55,8 @@ describe('mailto-utils', () => {
       year: 2026,
     })
 
-    expect(body).toContain('Cerere dezbatere buget local - asociatii')
+    expect(body.startsWith('Domnule/ Doamna Primar,')).toBe(true)
+    expect(body).not.toContain('Cerere dezbatere buget local - asociatii')
     expect(body).toContain(
       'Subscrisa, Asociatia Civica Exemplu, avand sediul in Str. Memorandumului nr. 10, Cluj-Napoca, inregistrata in Registrul Asociatiilor si Fundatiilor cu nr. 12/A/2020, cu CIF 12345678, prin Ana Pop, in calitate de Presedinte.',
     )

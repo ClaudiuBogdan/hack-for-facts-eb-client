@@ -16,6 +16,7 @@ vi.mock("@/config/env", () => ({
     VITE_SENTRY_ENABLED: false,
     VITE_SENTRY_FEEDBACK_ENABLED: false,
     VITE_CLERK_PUBLISHABLE_KEY: undefined,
+    VITE_CAMPAIGN_SELF_SEND_CC_EMAILS: undefined,
   },
   getSiteUrl: () => "http://localhost:3000",
 }));

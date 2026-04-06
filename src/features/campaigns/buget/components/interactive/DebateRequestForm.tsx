@@ -138,7 +138,7 @@ function EmailPreviewPanel({
 }) {
   const fullEmailText = [
     `${t`To`}: ${to}`,
-    cc.length > 0 ? `CC: ${cc.join(', ')}` : null,
+    cc.length > 0 ? `${t`CC`}: ${cc.join(', ')}` : null,
     `${t`Subject`}: ${subject}`,
     '',
     body,
@@ -164,7 +164,7 @@ function EmailPreviewPanel({
           </div>
           {cc.length > 0 && (
             <div className="flex items-baseline gap-2 text-sm">
-              <span className="font-semibold text-muted-foreground w-14 shrink-0">CC</span>
+              <span className="font-semibold text-muted-foreground w-14 shrink-0">{t`CC`}</span>
               <span className="flex-1 min-w-0 break-all text-foreground">{cc.join(', ')}</span>
             </div>
           )}
@@ -456,7 +456,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
             : []),
           ...(form.savedValue.legalRepresentativeName?.trim()
             ? [{
-                label: 'Legal representative',
+                label: t`Legal representative`,
                 value: form.savedValue.legalRepresentativeName,
               }]
             : []),
@@ -586,12 +586,12 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                     onChange={(e) => handleFieldChange('organizationName', e.target.value || null)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Use the full official name exactly as it appears in the Register of Associations and Foundations.
+                    <Trans>Use the full official name exactly as it appears in the Register of Associations and Foundations.</Trans>
                   </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="org-legal-address" className="text-sm font-bold text-foreground">
-                    Registered office
+                    <Trans>Registered office</Trans>
                   </Label>
                   <Input
                     id="org-legal-address"
@@ -603,12 +603,12 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                     onChange={(e) => handleFieldChange('organizationLegalAddress', e.target.value || null)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Add the legal address from the NGO registration documents.
+                    <Trans>Add the legal address from the NGO registration documents.</Trans>
                   </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="org-registration-number" className="text-sm font-bold text-foreground">
-                    Registration number
+                    <Trans>Registration number</Trans>
                   </Label>
                   <Input
                     id="org-registration-number"
@@ -620,12 +620,12 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                     onChange={(e) => handleFieldChange('organizationRegistrationNumber', e.target.value || null)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Enter the number under which the NGO is registered in the Register of Associations and Foundations.
+                    <Trans>Enter the number under which the NGO is registered in the Register of Associations and Foundations.</Trans>
                   </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="org-fiscal-code" className="text-sm font-bold text-foreground">
-                    Fiscal code (CIF)
+                    <Trans>Fiscal code (CIF)</Trans>
                   </Label>
                   <Input
                     id="org-fiscal-code"
@@ -637,12 +637,12 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                     onChange={(e) => handleFieldChange('organizationFiscalCode', e.target.value || null)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Add the NGO fiscal identification code exactly as it appears on official documents.
+                    <Trans>Add the NGO fiscal identification code exactly as it appears on official documents.</Trans>
                   </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="legal-representative-name" className="text-sm font-bold text-foreground">
-                    Legal representative name
+                    <Trans>Legal representative name</Trans>
                   </Label>
                   <Input
                     id="legal-representative-name"
@@ -654,12 +654,12 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                     onChange={(e) => handleFieldChange('legalRepresentativeName', e.target.value || null)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    This is the person who signs the request on behalf of the association.
+                    <Trans>This is the person who signs the request on behalf of the association.</Trans>
                   </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="legal-representative-role" className="text-sm font-bold text-foreground">
-                    Legal representative role
+                    <Trans>Legal representative role</Trans>
                   </Label>
                   <Input
                     id="legal-representative-role"
@@ -671,7 +671,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                     onChange={(e) => handleFieldChange('legalRepresentativeRole', e.target.value || null)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Add the role used in official documents, for example president or executive director.
+                    <Trans>Add the role used in official documents, for example president or executive director.</Trans>
                   </p>
                 </div>
               </div>
@@ -741,7 +741,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                 )}
                 {draft.isNgo && hasOrganizationName && !hasRequiredNgoDetails && (
                   <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
-                    Complete all NGO legal details to generate the request template.
+                    <Trans>Complete all NGO legal details to generate the request template.</Trans>
                   </p>
                 )}
                 {draft.isNgo && (
@@ -761,7 +761,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
                       onChange={(e) => handleFieldChange('ngoSenderEmail', e.target.value || null)}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Use the association email address from which you will actually send the request.
+                      <Trans>Use the association email address from which you will actually send the request.</Trans>
                     </p>
                     {draft.ngoSenderEmail && !hasValidNgoSenderEmail && (
                       <p className="text-xs text-destructive" role="alert">

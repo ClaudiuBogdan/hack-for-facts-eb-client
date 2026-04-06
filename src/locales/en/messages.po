@@ -399,10 +399,22 @@ msgstr "Add the association name to use this option."
 msgid "Add the city hall's contact details for future communications."
 msgstr "Add the city hall's contact details for future communications."
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:606
+msgid "Add the legal address from the NGO registration documents."
+msgstr "Add the legal address from the NGO registration documents."
+
 #: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:180
 #: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:201
 msgid "Add the link to the city hall's budget document."
 msgstr "Add the link to the city hall's budget document."
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:640
+msgid "Add the NGO fiscal identification code exactly as it appears on official documents."
+msgstr "Add the NGO fiscal identification code exactly as it appears on official documents."
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:674
+msgid "Add the role used in official documents, for example president or executive director."
+msgstr "Add the role used in official documents, for example president or executive director."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:107
 msgid "Add value filter rule"
@@ -774,7 +786,7 @@ msgstr "April"
 msgid "Are you sure you want to delete this alert? This action cannot be undone."
 msgstr "Are you sure you want to delete this alert? This action cannot be undone."
 
-#: src/features/notifications/components/NotificationCard.tsx:116
+#: src/features/notifications/components/NotificationCard.tsx:117
 msgid "Are you sure you want to delete this notification? This action cannot be undone."
 msgstr "Are you sure you want to delete this notification? This action cannot be undone."
 
@@ -1248,7 +1260,7 @@ msgstr "Campaign notifications are subject to the <0>campaign terms and conditio
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:619
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:123
 #: src/features/notifications/components/alerts/AlertCard.tsx:122
-#: src/features/notifications/components/NotificationCard.tsx:124
+#: src/features/notifications/components/NotificationCard.tsx:125
 #: src/routes/$lang/learning/index.lazy.tsx:315
 #: src/routes/$lang/learning/index.lazy.tsx:337
 #: src/routes/alerts/$alertId/index.lazy.tsx:317
@@ -1272,6 +1284,11 @@ msgstr "Cannot regenerate bins because active data has no numeric values."
 #: src/components/charts/components/chart-categories/ChartCategories.tsx:156
 msgid "Category name"
 msgstr "Category name"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:141
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:167
+msgid "CC"
+msgstr "CC"
 
 #: src/routes/$lang/learning/certificates.$id.lazy.tsx:48
 #: src/routes/certificates.$id.tsx:48
@@ -1686,6 +1703,10 @@ msgstr "Compact"
 #: src/components/entities/views/ins-stats-view.derived.ts:98
 msgid "Compare with death rate and migration to understand if growth is structural or temporary."
 msgstr "Compare with death rate and migration to understand if growth is structural or temporary."
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:744
+msgid "Complete all NGO legal details to generate the request template."
+msgstr "Complete all NGO legal details to generate the request template."
 
 #: src/features/learning/components/player/LessonPlayer.tsx:587
 msgid "Complete path"
@@ -2417,7 +2438,7 @@ msgstr "Defined"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:299
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:261
 #: src/features/notifications/components/alerts/AlertCard.tsx:128
-#: src/features/notifications/components/NotificationCard.tsx:127
+#: src/features/notifications/components/NotificationCard.tsx:128
 #: src/routes/alerts/$alertId/index.lazy.tsx:323
 msgid "Delete"
 msgstr "Delete"
@@ -2449,7 +2470,7 @@ msgstr "Delete local snapshot?"
 msgid "Delete map"
 msgstr "Delete map"
 
-#: src/features/notifications/components/NotificationCard.tsx:113
+#: src/features/notifications/components/NotificationCard.tsx:114
 msgid "Delete notification"
 msgstr "Delete notification"
 
@@ -2996,6 +3017,10 @@ msgstr "Enter new value"
 #: src/components/charts/components/views/SeriesConfigView.tsx:298
 msgid "Enter series label..."
 msgstr "Enter series label..."
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:623
+msgid "Enter the number under which the NGO is registered in the Register of Associations and Foundations."
+msgstr "Enter the number under which the NGO is registered in the Register of Associations and Foundations."
 
 #: src/components/charts/components/series-config/SeriesFilter.tsx:813
 #: src/components/charts/components/series-config/SeriesFilter.tsx:1004
@@ -3687,6 +3712,10 @@ msgstr "First value only"
 msgid "First value only: keep one deterministic row (fallback/debug)."
 msgstr "First value only: keep one deterministic row (fallback/debug)."
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:628
+msgid "Fiscal code (CIF)"
+msgstr "Fiscal code (CIF)"
+
 #: src/features/learning/components/interactive/RectificationFlow.tsx:147
 msgid "Flow"
 msgstr "Flow"
@@ -3885,7 +3914,7 @@ msgstr "Get monthly email updates about this institution. Receive alerts when ne
 msgid "Get Started"
 msgstr "Get Started"
 
-#: src/features/notifications/components/NotificationQuickMenu.tsx:113
+#: src/features/notifications/components/NotificationQuickMenu.tsx:117
 msgid "Get updates about"
 msgstr "Get updates about"
 
@@ -4587,6 +4616,18 @@ msgstr "Legal commitments"
 msgid "Legal Commitments"
 msgstr "Legal Commitments"
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:459
+msgid "Legal representative"
+msgstr "Legal representative"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:645
+msgid "Legal representative name"
+msgstr "Legal representative name"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:662
+msgid "Legal representative role"
+msgstr "Legal representative role"
+
 #: src/components/charts/components/chart-quick-config/ChartQuickConfig.tsx:160
 #: src/routes/map.lazy.tsx:357
 msgid "Legend"
@@ -4981,7 +5022,7 @@ msgstr "Make private"
 msgid "Make public"
 msgstr "Make public"
 
-#: src/features/notifications/components/NotificationQuickMenu.tsx:166
+#: src/features/notifications/components/NotificationQuickMenu.tsx:169
 msgid "Manage all notifications"
 msgstr "Manage all notifications"
 
@@ -7001,10 +7042,18 @@ msgstr "Region"
 msgid "Region Filters"
 msgstr "Region Filters"
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:594
+msgid "Registered office"
+msgstr "Registered office"
+
 #: src/lib/ins/ins-dashboard-config.ts:24
 #: src/lib/ins/ins-metric-registry.ts:25
 msgid "Registered unemployment share"
 msgstr "Registered unemployment share"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:611
+msgid "Registration number"
+msgstr "Registration number"
 
 #: src/components/classification-explorer/ClassificationSiblings.tsx:32
 msgid "Related Categories"
@@ -8555,6 +8604,10 @@ msgstr "This is a proof-of-concept verification page stored in your browser."
 msgid "This is not an employment rate by age group; it is a general intensity indicator."
 msgstr "This is not an employment rate by age group; it is a general intensity indicator."
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:657
+msgid "This is the person who signs the request on behalf of the association."
+msgstr "This is the person who signs the request on behalf of the association."
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:69
 msgid "This name appears as the map title for viewers."
 msgstr "This name appears as the map title for viewers."
@@ -9125,6 +9178,14 @@ msgstr "Use gt/gte/lt/lte based on how strict your split should be around the ce
 #: src/components/charts/components/views/SeriesConfigView.tsx:57
 msgid "Use only the first matching observation for each period."
 msgstr "Use only the first matching observation for each period."
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:764
+msgid "Use the association email address from which you will actually send the request."
+msgstr "Use the association email address from which you will actually send the request."
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:589
+msgid "Use the full official name exactly as it appears in the Register of Associations and Foundations."
+msgstr "Use the full official name exactly as it appears in the Register of Associations and Foundations."
 
 #: src/components/charts/components/views/SeriesConfigView.tsx:54
 msgid "Use the mean value when multiple observations exist in the same period."

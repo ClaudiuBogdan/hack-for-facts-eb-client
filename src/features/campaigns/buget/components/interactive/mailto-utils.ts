@@ -1,3 +1,5 @@
+import { env } from '@/config/env'
+
 type MailtoParams = {
   readonly to: string
   readonly cc?: string
@@ -17,7 +19,20 @@ export function buildMailtoUrl(params: MailtoParams): string {
   return `mailto:${encodeURIComponent(params.to)}?${queryParts.join('&')}`
 }
 
-export const PLATFORM_CC_EMAILS = ['contact@transparenta.eu']
+const DEFAULT_PLATFORM_CC_EMAILS = ['contact@transparenta.eu']
+
+export function parsePlatformCcEmails(rawValue?: string): string[] {
+  const configuredEmails = rawValue
+    ?.split(',')
+    .map((value) => value.trim())
+    .filter(Boolean)
+
+  return configuredEmails && configuredEmails.length > 0
+    ? configuredEmails
+    : DEFAULT_PLATFORM_CC_EMAILS
+}
+
+export const PLATFORM_CC_EMAILS = parsePlatformCcEmails(env.VITE_CAMPAIGN_SELF_SEND_CC_EMAILS)
 
 export function buildContestationEmailBody(params: {
   readonly contestedItem: string
@@ -98,8 +113,6 @@ export function buildPublicDebateEmailBody(params: {
   } = params
 
   return [
-    'Cerere dezbatere buget local - asociatii',
-    '',
     'Domnule/ Doamna Primar,',
     '',
     `Subscrisa, ${organizationName}, avand sediul in ${organizationLegalAddress}, inregistrata in Registrul Asociatiilor si Fundatiilor cu nr. ${organizationRegistrationNumber}, cu CIF ${organizationFiscalCode}, prin ${legalRepresentativeName}, in calitate de ${legalRepresentativeRole}.`,
