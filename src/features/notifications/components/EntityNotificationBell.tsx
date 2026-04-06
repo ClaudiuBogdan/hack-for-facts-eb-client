@@ -6,12 +6,11 @@ import { useAuth, AuthSignInButton } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 import { useEntityNotifications } from '../hooks/useEntityNotifications';
 import { NotificationQuickMenu } from './NotificationQuickMenu';
+import { NotificationLegalNotice } from './NotificationLegalNotice';
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import { useNotificationModal } from '../hooks/useNotificationModal';
-import { useLocation } from '@tanstack/react-router';
 import type { NotificationType } from '../types';
-import { CAMPAIGN_NOTIFICATIONS_PATH } from '@/features/campaigns/buget/constants';
 import { FUNKY_NOTIFICATION_ENTITY_UPDATES } from '../campaign-notification-keys';
 
 const MANUAL_ENTITY_BELL_TYPES: NotificationType[] = [
@@ -38,23 +37,18 @@ export function EntityNotificationBell({
   const { isSignedIn, isLoaded } = useAuth();
   const { data: notifications, isLoading } = useEntityNotifications(cui);
   const { isOpen, setOpen } = useNotificationModal();
-  const location = useLocation();
-  const isCampaignEntityOnly =
-    notificationTypes.length === 1 &&
-    notificationTypes[0] === FUNKY_NOTIFICATION_ENTITY_UPDATES;
-  const currentUrl = `${location.pathname}${location.searchStr ?? ''}`;
-  const locationSearch = new URLSearchParams(location.searchStr ?? '');
-  const manageSearch = isCampaignEntityOnly
-    ? {
-        from: currentUrl,
-        ...(locationSearch.get('lang') === 'en' ? { lang: 'en' } : {}),
-      }
-    : undefined;
+  const effectiveNotificationTypes = getEffectiveNotificationTypes(notificationTypes);
+  const includesCampaignEntityUpdates = effectiveNotificationTypes.includes(
+    FUNKY_NOTIFICATION_ENTITY_UPDATES,
+  );
+  const includesNewsletterReports = effectiveNotificationTypes.some((type) =>
+    MANUAL_ENTITY_BELL_TYPES.includes(type),
+  );
 
   const hasActive =
     notifications?.some(
       (notification) =>
-        notification.isActive && notificationTypes.includes(notification.notificationType)
+        notification.isActive && effectiveNotificationTypes.includes(notification.notificationType)
     ) ?? false;
   const triggerButtonClassName = cn(
     'relative transition-all duration-300',
@@ -101,19 +95,17 @@ export function EntityNotificationBell({
                   </Trans>
                 </p>
                 <ul className="text-base text-muted-foreground space-y-2 ml-4 list-disc">
-                  {isCampaignEntityOnly ? (
+                  {includesCampaignEntityUpdates ? (
                     <>
                       <li>
-                        <Trans>Public debate correspondence updates</Trans>
+                        <Trans>Local budget campaign updates for this entity</Trans>
                       </li>
                       <li>
-                        <Trans>When a request is sent, fails, or receives a reply</Trans>
-                      </li>
-                      <li>
-                        <Trans>Easily manage your campaign notification preference</Trans>
+                        <Trans>When campaign activity for this entity changes</Trans>
                       </li>
                     </>
-                  ) : (
+                  ) : null}
+                  {includesNewsletterReports ? (
                     <>
                       <li>
                         <Trans>Monthly, quarterly, and annual reports</Trans>
@@ -121,13 +113,22 @@ export function EntityNotificationBell({
                       <li>
                         <Trans>Alerts when important changes occur</Trans>
                       </li>
-                      <li>
-                        <Trans>Easily manage your subscriptions</Trans>
-                      </li>
                     </>
-                  )}
+                  ) : null}
+                  <li>
+                    {includesCampaignEntityUpdates && !includesNewsletterReports ? (
+                      <Trans>Easily manage your campaign notification preference</Trans>
+                    ) : (
+                      <Trans>Easily manage your subscriptions</Trans>
+                    )}
+                  </li>
                 </ul>
               </div>
+
+              <NotificationLegalNotice
+                showCampaignTerms={includesCampaignEntityUpdates}
+                showGeneralTerms={includesNewsletterReports}
+              />
 
               <div className="mt-auto pt-6">
                 <AuthSignInButton>
@@ -181,9 +182,8 @@ export function EntityNotificationBell({
           cui={cui}
           entityName={entityName}
           notifications={notifications ?? []}
-          notificationTypes={notificationTypes}
-          managePath={isCampaignEntityOnly ? CAMPAIGN_NOTIFICATIONS_PATH : managePath}
-          manageSearch={manageSearch}
+          notificationTypes={effectiveNotificationTypes}
+          managePath={managePath}
           onClose={() => setOpen(false)}
         />
       }
@@ -191,4 +191,22 @@ export function EntityNotificationBell({
       className="sm:w-md"
     />
   );
+}
+
+function getEffectiveNotificationTypes(
+  notificationTypes: readonly NotificationType[],
+): NotificationType[] {
+  const effectiveNotificationTypes = [...notificationTypes];
+
+  if (!effectiveNotificationTypes.includes(FUNKY_NOTIFICATION_ENTITY_UPDATES)) {
+    return effectiveNotificationTypes;
+  }
+
+  for (const type of MANUAL_ENTITY_BELL_TYPES) {
+    if (!effectiveNotificationTypes.includes(type)) {
+      effectiveNotificationTypes.push(type);
+    }
+  }
+
+  return effectiveNotificationTypes;
 }

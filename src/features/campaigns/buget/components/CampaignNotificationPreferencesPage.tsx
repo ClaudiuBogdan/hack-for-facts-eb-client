@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
+import { NotificationLegalNotice } from '@/features/notifications/components/NotificationLegalNotice'
 
 import {
   CAMPAIGN_ENTITY_SELECTOR_PATH,
@@ -430,6 +431,7 @@ function PageHeader({
           </Trans>
         </p>
       </div>
+      <NotificationLegalNotice showCampaignTerms />
     </div>
   )
 }
@@ -536,6 +538,7 @@ function SignInRequired() {
               Sign in to manage email notifications for entities you follow in the campaign.
             </Trans>
           </p>
+          <NotificationLegalNotice showCampaignTerms />
           <AuthSignInButton>
             <Button>
               <Trans>Sign In</Trans>

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { CAMPAIGN_TERMS_PATH } from '../constants'
 import {
   FUNKY_CAMPAIGN_KEY,
   FUNKY_NOTIFICATION_ENTITY_UPDATES,
@@ -225,6 +226,14 @@ describe('CampaignNotificationPreferencesPage accessibility', () => {
     expect(
       screen.getByRole('link', { name: /Primaria Test/i }),
     ).toHaveAttribute('href', '/primarie/12345678/buget?lang=en')
+  })
+
+  it('shows the campaign terms link in the notification preferences page', () => {
+    render(<CampaignNotificationPreferencesPage />)
+
+    expect(
+      screen.getByRole('link', { name: 'campaign terms and conditions' }),
+    ).toHaveAttribute('href', CAMPAIGN_TERMS_PATH)
   })
 
   it('renders a retryable error state instead of the empty state on fetch failure', () => {

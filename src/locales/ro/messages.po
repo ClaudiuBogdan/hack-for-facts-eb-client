@@ -76,11 +76,9 @@ msgstr "{0} adnotări"
 msgid "{0} bins"
 msgstr "{0} bins"
 
-#. placeholder {0}: String(failed)
-#. placeholder {1}: String(failed + succeeded)
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:228
-msgid "{0} of {1} updates failed"
-msgstr "{0} din {1} actualizari esuate"
+#~ msgid "{0} of {1} updates failed"
+#~ msgstr "{0} din {1} actualizari esuate"
 
 #. placeholder {0}: currentPage + 1
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:194
@@ -264,7 +262,7 @@ msgstr "Platformă de explorare a datelor financiare publice pentru cetățeni, 
 msgid "Accept All"
 msgstr "Acceptă tot"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:473
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:450
 msgid "Accept the terms and conditions for an entity in the campaign to automatically receive update notifications."
 msgstr "Acceptati termenii si conditiile pentru o entitate din campanie pentru a primi automat notificari cu actualizari."
 
@@ -292,7 +290,7 @@ msgstr "active"
 #: src/components/alerts/components/AlertEditorView.tsx:286
 #: src/components/charts/components/views/SeriesConfigView.tsx:330
 #: src/features/notifications/components/alerts/AlertCard.tsx:71
-#: src/routes/cookies.lazy.tsx:150
+#: src/routes/cookies.lazy.tsx:149
 msgid "Active"
 msgstr "Activ"
 
@@ -369,8 +367,8 @@ msgstr "Adaugă condiție"
 msgid "Add Data Series"
 msgstr "Adaugă serie de date"
 
-#: src/routes/settings/notifications.tsx:62
-#: src/routes/settings/notifications.tsx:63
+#: src/routes/settings/notifications.tsx:84
+#: src/routes/settings/notifications.tsx:85
 msgid "Add entity notification"
 msgstr "Adaugă notificare entitate"
 
@@ -392,7 +390,7 @@ msgstr "Adaugă serie"
 msgid "Add Series"
 msgstr "Adaugă serie"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:746
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:739
 msgid "Add the association name to use this option."
 msgstr "Adaugă denumirea asociației pentru a folosi această opțiune."
 
@@ -544,7 +542,7 @@ msgstr "Serie de date alertă"
 msgid "Alert type"
 msgstr "Tip alertă"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:122
+#: src/features/notifications/components/EntityNotificationBell.tsx:114
 msgid "Alerts when important changes occur"
 msgstr "Alerte când apar modificări importante"
 
@@ -596,15 +594,15 @@ msgstr "Toate tipurile"
 msgid "All years"
 msgstr "Toți anii"
 
-#: src/routes/cookies.lazy.tsx:263
+#: src/routes/cookies.lazy.tsx:262
 msgid "Allow all"
 msgstr "Permite tot"
 
-#: src/routes/cookies.lazy.tsx:261
+#: src/routes/cookies.lazy.tsx:260
 msgid "Allow all cookies"
 msgstr "Permite toate cookie-urile"
 
-#: src/routes/cookies.lazy.tsx:246
+#: src/routes/cookies.lazy.tsx:245
 msgid "Allow essential cookies only"
 msgstr "Permite doar cookie-urile esențiale"
 
@@ -612,7 +610,7 @@ msgstr "Permite doar cookie-urile esențiale"
 msgid "Allow essential only"
 msgstr "Permite doar esențiale"
 
-#: src/routes/cookies.lazy.tsx:171
+#: src/routes/cookies.lazy.tsx:170
 msgid "Always enabled"
 msgstr "Activat permanent"
 
@@ -651,9 +649,13 @@ msgstr "A apărut o eroare neașteptată"
 msgid "Analytics"
 msgstr "Analiză"
 
-#: src/routes/cookies.lazy.tsx:177
+#: src/routes/cookies.lazy.tsx:176
 msgid "Analytics (PostHog)"
 msgstr "Analiză (PostHog)"
+
+#: src/features/notifications/types.ts:79
+msgid "Analytics Series Alert"
+msgstr "Alertă pentru serie analitică"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:291
 msgid "Analytics view"
@@ -709,7 +711,11 @@ msgstr "Execuția bugetului anual"
 msgid "Annual budget unavailable"
 msgstr "Buget anual indisponibil"
 
-#: src/routes/cookies.lazy.tsx:196
+#: src/features/notifications/types.ts:68
+msgid "Annual Report"
+msgstr "Raport anual"
+
+#: src/routes/cookies.lazy.tsx:195
 msgid "Anonymous usage patterns, page views, interactions, and feature usage events."
 msgstr "Modele anonime de utilizare, vizualizări de pagină, interacțiuni și evenimente de utilizare a funcționalităților."
 
@@ -768,7 +774,7 @@ msgstr "Aprilie"
 msgid "Are you sure you want to delete this alert? This action cannot be undone."
 msgstr "Sunteți sigur că doriți să ștergeți această alertă? Această acțiune este ireversibilă."
 
-#: src/features/notifications/components/NotificationCard.tsx:117
+#: src/features/notifications/components/NotificationCard.tsx:116
 msgid "Are you sure you want to delete this notification? This action cannot be undone."
 msgstr "Sunteți sigur că doriți să ștergeți această notificare? Această acțiune este ireversibilă."
 
@@ -796,21 +802,21 @@ msgstr "Arierate"
 msgid "Ask questions and discuss this lesson with the community."
 msgstr "Pune întrebări și discută despre această lecție cu comunitatea."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:793
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:786
 msgid "Ask us to send it"
 msgstr "Solicită-ne să trimitem"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:460
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:453
 msgid "Association"
 msgstr "Asociație"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:472
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:757
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:465
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:750
 msgid "Association email"
 msgstr "Email asociatie"
 
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:577
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:584
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:591
 msgid "Association name"
 msgstr "Denumirea asociației"
 
@@ -840,7 +846,7 @@ msgstr "Credite bugetare disponibile"
 msgid "Available commitment credits"
 msgstr "Credite de angajament disponibile"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:741
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:734
 msgid "Available for legally established associations."
 msgstr "Disponibil pentru asociații legal constituite."
 
@@ -868,8 +874,8 @@ msgstr "Avg. Amount per UAT"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:399
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:470
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:611
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:693
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:821
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:686
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:814
 #: src/routes/alerts/new.lazy.tsx:175
 msgid "Back"
 msgstr "Înapoi"
@@ -878,7 +884,7 @@ msgstr "Înapoi"
 msgid "Back to alert"
 msgstr "Înapoi la alertă"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:446
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:422
 msgid "Back to campaign"
 msgstr "Inapoi la campanie"
 
@@ -888,7 +894,7 @@ msgstr "Inapoi la provocari"
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:121
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:162
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:428
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:448
 msgid "Back to Challenges"
 msgstr "Înapoi la provocări"
 
@@ -1054,8 +1060,8 @@ msgstr "Detalierea clasificației selectate, incluzând capitolele grupate și t
 msgid "Browse and download all financial reports submitted by this entity"
 msgstr "Răsfoiți și descărcați toate rapoartele financiare depuse de această entitate"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:480
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:519
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:457
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:496
 msgid "Browse entities"
 msgstr "Cauta entitati"
 
@@ -1213,13 +1219,17 @@ msgstr "Calcul"
 msgid "Calculations assume a basket of 40% essential goods (11% VAT) and 60% general goods (21% VAT)."
 msgstr "Calculele presupun un coș de bunuri esențiale de 40% (TVA 11%) și bunuri generale de 60% (TVA 21%)."
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:347
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:323
 msgid "Campaign notifications"
 msgstr "Notificari campanie"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:450
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:426
 msgid "Campaign Notifications"
 msgstr "Notificari Campanie"
+
+#: src/features/notifications/components/NotificationLegalNotice.tsx:33
+msgid "Campaign notifications are subject to the <0>campaign terms and conditions</0>."
+msgstr "Notificările de campanie sunt supuse <0>termenilor și condițiilor campaniei</0>."
 
 #: src/components/charts/components/chart-annotations/AnnotationItemMenu.tsx:65
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:135
@@ -1238,7 +1248,7 @@ msgstr "Notificari Campanie"
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:619
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:123
 #: src/features/notifications/components/alerts/AlertCard.tsx:122
-#: src/features/notifications/components/NotificationCard.tsx:125
+#: src/features/notifications/components/NotificationCard.tsx:124
 #: src/routes/$lang/learning/index.lazy.tsx:315
 #: src/routes/$lang/learning/index.lazy.tsx:337
 #: src/routes/alerts/$alertId/index.lazy.tsx:317
@@ -1365,11 +1375,11 @@ msgstr "Alege o vizualizare dezactivată pentru a o activa pe această hartă."
 msgid "Choose an answer"
 msgstr "Alege un răspuns"
 
-#: src/routes/cookies.lazy.tsx:135
+#: src/routes/cookies.lazy.tsx:134
 msgid "Choose between essential-only or all cookies, then fine-tune individual options below. Your selections are saved when you press \"Confirm choices\"."
 msgstr "Alegeți între doar cookie-urile esențiale sau toate cookie-urile, apoi ajustați opțiunile individuale de mai jos. Selecțiile sunt salvate când apăsați „Confirmă alegerile”."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:710
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:703
 msgid "Choose how you want the public debate request to be sent."
 msgstr "Alege cum dorești să fie trimisă cererea de dezbatere publică."
 
@@ -1397,8 +1407,8 @@ msgstr "Date contact primărie"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:278
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:516
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:455
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:532
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:448
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:525
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:135
 msgid "City hall email"
 msgstr "Email-ul primăriei"
@@ -1763,7 +1773,7 @@ msgstr "Configurează numele hărții și verifică starea acesteia."
 msgid "Confirm"
 msgstr "Confirmă"
 
-#: src/routes/cookies.lazy.tsx:256
+#: src/routes/cookies.lazy.tsx:255
 msgid "Confirm choices"
 msgstr "Confirmă alegerile"
 
@@ -1826,8 +1836,8 @@ msgstr "Context"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:362
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:406
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:477
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:557
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:700
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:550
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:693
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:144
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:214
 #: src/features/learning/components/cards/LearningPathCard.tsx:24
@@ -1869,7 +1879,7 @@ msgid "Cookie consent required"
 msgstr "Este necesar consimțământul pentru cookie-uri"
 
 #: src/components/footer/AppFooter.tsx:126
-#: src/routes/cookies.lazy.tsx:131
+#: src/routes/cookies.lazy.tsx:130
 msgid "Cookie Settings"
 msgstr "Setări cookie-uri"
 
@@ -2353,8 +2363,8 @@ msgstr "Rata mortalității surprinde presiunea legată de sănătate și struct
 msgid "Deaths (POP206D)"
 msgstr "Decese (POP206D)"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:487
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:503
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:480
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:496
 msgid "Debate request"
 msgstr "Cerere dezbatere"
 
@@ -2407,7 +2417,7 @@ msgstr "Definite"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:299
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:261
 #: src/features/notifications/components/alerts/AlertCard.tsx:128
-#: src/features/notifications/components/NotificationCard.tsx:128
+#: src/features/notifications/components/NotificationCard.tsx:127
 #: src/routes/alerts/$alertId/index.lazy.tsx:323
 msgid "Delete"
 msgstr "Șterge"
@@ -2439,7 +2449,7 @@ msgstr "Ștergi instantaneul local?"
 msgid "Delete map"
 msgstr "Șterge harta"
 
-#: src/features/notifications/components/NotificationCard.tsx:114
+#: src/features/notifications/components/NotificationCard.tsx:113
 msgid "Delete notification"
 msgstr "Șterge notificarea"
 
@@ -2460,7 +2470,7 @@ msgid "Delete this map?"
 msgstr "Ștergi această hartă?"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:258
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:446
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:439
 msgid "Delivery path"
 msgstr "Modalitate de trimitere"
 
@@ -2590,8 +2600,8 @@ msgstr "Dezactivează seria"
 msgid "Disable Series"
 msgstr "Dezactivează seria"
 
-#: src/routes/cookies.lazy.tsx:188
-#: src/routes/cookies.lazy.tsx:220
+#: src/routes/cookies.lazy.tsx:187
+#: src/routes/cookies.lazy.tsx:219
 msgid "Disabled"
 msgstr "Dezactivat"
 
@@ -2631,7 +2641,7 @@ msgstr "Distribuție"
 msgid "Distribution series"
 msgstr "Serie de distribuție"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:573
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:566
 msgid "Do you represent a legally established association?"
 msgstr "Reprezinți o asociație legal constituită?"
 
@@ -2745,11 +2755,11 @@ msgstr "ex. Alertă creștere cheltuieli"
 msgid "e.g., RON, %, Units..."
 msgstr "ex: RON, %, Unități..."
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:113
+#: src/features/notifications/components/EntityNotificationBell.tsx:120
 msgid "Easily manage your campaign notification preference"
 msgstr "Gestionati cu usurinta preferintele de notificare ale campaniei"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:125
+#: src/features/notifications/components/EntityNotificationBell.tsx:122
 msgid "Easily manage your subscriptions"
 msgstr "Gestionați-vă cu ușurință abonamentele"
 
@@ -2879,7 +2889,7 @@ msgstr "Email"
 msgid "Email address copied to clipboard!"
 msgstr "Adresa de email a fost copiată în clipboard!"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:350
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:326
 msgid "Email updates for all entities in this campaign"
 msgstr "Actualizari prin email pentru toate entitatile din aceasta campanie"
 
@@ -2942,8 +2952,8 @@ msgid "Enable Series"
 msgstr "Activează seria"
 
 #: src/components/charts/components/views/AnnotationConfigView.tsx:130
-#: src/routes/cookies.lazy.tsx:183
-#: src/routes/cookies.lazy.tsx:215
+#: src/routes/cookies.lazy.tsx:182
+#: src/routes/cookies.lazy.tsx:214
 msgid "Enabled"
 msgstr "Activat"
 
@@ -2955,7 +2965,7 @@ msgstr "Alertele activate sunt evaluate lunar și incluse în newsletter-ul dvs.
 msgid "English"
 msgstr "Engleză"
 
-#: src/routes/cookies.lazy.tsx:227
+#: src/routes/cookies.lazy.tsx:226
 msgid "Enhanced error reporting"
 msgstr "Raportare avansată a erorilor"
 
@@ -3016,7 +3026,7 @@ msgstr "Analiza entităților"
 msgid "Entity Details"
 msgstr "Detalii Entitate"
 
-#: src/routes/settings/notifications.tsx:51
+#: src/routes/settings/notifications.tsx:56
 msgid "Entity Notifications"
 msgstr "Notificări entitate"
 
@@ -3024,7 +3034,7 @@ msgstr "Notificări entitate"
 msgid "Entity Search"
 msgstr "Căutare Entitate"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:379
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:355
 msgid "Entity subscriptions"
 msgstr "Abonamente entitati"
 
@@ -3086,11 +3096,11 @@ msgstr "Eroare la încărcarea datelor"
 msgid "Error loading data:"
 msgstr "Eroare la încărcarea datelor:"
 
-#: src/routes/settings/notifications.tsx:146
+#: src/routes/settings/notifications.tsx:181
 msgid "Error loading notifications"
 msgstr "Eroare la încărcarea notificărilor"
 
-#: src/routes/cookies.lazy.tsx:209
+#: src/routes/cookies.lazy.tsx:208
 msgid "Error reporting (Sentry)"
 msgstr "Raportarea erorilor (Sentry)"
 
@@ -3110,11 +3120,11 @@ msgstr "Eroare: Seria nu a fost găsită"
 msgid "Errors"
 msgstr "Erori"
 
-#: src/routes/cookies.lazy.tsx:145
+#: src/routes/cookies.lazy.tsx:144
 msgid "Essential cookies"
 msgstr "Cookie-uri esențiale"
 
-#: src/routes/cookies.lazy.tsx:248
+#: src/routes/cookies.lazy.tsx:247
 msgid "Essential only"
 msgstr "Doar esențiale"
 
@@ -3526,8 +3536,8 @@ msgstr "Eroare la salvarea instantaneului"
 msgid "Failed to update map visibility"
 msgstr "Eroare la actualizarea vizibilității hărții"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:233
-#: src/features/notifications/components/NotificationQuickMenu.tsx:95
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:209
+#: src/features/notifications/components/NotificationQuickMenu.tsx:96
 msgid "Failed to update notification"
 msgstr "Eroare la actualizarea notificarii"
 
@@ -3564,7 +3574,7 @@ msgstr "Feedback / Raportați o problemă"
 msgid "Feedback is currently unavailable."
 msgstr "Feedback-ul este indisponibil momentan."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:507
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:500
 msgid "Fill in the city hall's contact details and send the request to organize a public debate on the local budget."
 msgstr "Completează datele de contact ale primăriei și trimite cererea de organizare a dezbaterii publice pe bugetul local."
 
@@ -3875,7 +3885,7 @@ msgstr "Primiți actualizări lunare prin e-mail despre această instituție. Pr
 msgid "Get Started"
 msgstr "Începe acum"
 
-#: src/features/notifications/components/NotificationQuickMenu.tsx:110
+#: src/features/notifications/components/NotificationQuickMenu.tsx:113
 msgid "Get updates about"
 msgstr "Primiți actualizări despre"
 
@@ -4034,11 +4044,11 @@ msgstr "Pagina: {0}"
 msgid "Help"
 msgstr "Ajutor"
 
-#: src/routes/cookies.lazy.tsx:210
+#: src/routes/cookies.lazy.tsx:209
 msgid "Help us fix problems by sending error reports. When disabled, only minimal anonymous telemetry is sent to keep the service reliable."
 msgstr "Ajutați-ne să rezolvăm problemele trimițând rapoarte de eroare. Când este dezactivată, se trimite doar telemetrie anonimă minimă pentru a menține serviciul fiabil."
 
-#: src/routes/cookies.lazy.tsx:178
+#: src/routes/cookies.lazy.tsx:177
 msgid "Help us understand usage to improve the product. No analytics data is sent unless you opt in."
 msgstr "Ajutați-ne să înțelegem cum este folosit produsul pentru a-l îmbunătăți. Nu trimitem date de analiză decât dacă optați pentru acest lucru."
 
@@ -4157,7 +4167,7 @@ msgstr "Dacă câștigi <0>{0}</0> brut, trage cursorul la salariul net aștepta
 msgid "If you need broader cohorts, use percentile instead of a very large N."
 msgstr "Dacă ai nevoie de cohorte mai largi, folosește percentile în loc de un N foarte mare."
 
-#: src/routes/cookies.lazy.tsx:161
+#: src/routes/cookies.lazy.tsx:160
 msgid "If you sign in, authentication cookies (Clerk) are essential to manage your session. Deleting them will sign you out."
 msgstr "Dacă vă autentificați, cookie-urile de autentificare (Clerk) sunt esențiale pentru a vă gestiona sesiunea. Ștergerea lor vă va deconecta."
 
@@ -4186,7 +4196,7 @@ msgstr "în taxe de consum „invizibile”."
 msgid "In one year, you will pay"
 msgstr "Într-un an, vei plăti"
 
-#: src/routes/cookies.lazy.tsx:228
+#: src/routes/cookies.lazy.tsx:227
 msgid "Includes additional error context and, if you use feedback tools, may include your message text or screenshots."
 msgstr "Include context suplimentar despre erori și, dacă folosiți instrumentele de feedback, poate include textul mesajului sau capturi de ecran."
 
@@ -4523,7 +4533,7 @@ msgstr "Ultima evaluare"
 msgid "Last updated"
 msgstr "Ultima actualizare"
 
-#: src/routes/cookies.lazy.tsx:274
+#: src/routes/cookies.lazy.tsx:273
 msgid "Last updated:"
 msgstr "Ultima actualizare:"
 
@@ -4753,7 +4763,7 @@ msgstr "Se încarcă detaliile..."
 msgid "Loading heatmap data..."
 msgstr "Se încarcă datele pentru harta termică..."
 
-#: src/features/challenges/components/player/challenge-mdx-components.tsx:81
+#: src/features/challenges/components/player/challenge-mdx-components.tsx:86
 #: src/features/learning/components/player/LessonPlayer.tsx:104
 msgid "Loading interactive content..."
 msgstr "Se încarcă conținutul interactiv..."
@@ -4818,7 +4828,7 @@ msgstr "Se încarcă vizualizarea…"
 #: src/components/classification-explorer/ClassificationDescription.tsx:77
 #: src/routes/alerts/$alertId/index.lazy.tsx:133
 #: src/routes/alerts/new.lazy.tsx:127
-#: src/routes/settings/notifications.tsx:106
+#: src/routes/settings/notifications.tsx:128
 msgid "Loading..."
 msgstr "Se încarcă..."
 
@@ -4832,6 +4842,14 @@ msgstr "Se încarcă…"
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:114
 msgid "Local backup failed. Exporting configuration anyway."
 msgstr "Backupul local a eșuat. Exportăm configurația oricum."
+
+#: src/features/notifications/types.ts:73
+msgid "Local Budget Campaign Updates"
+msgstr "Actualizări despre campania pentru bugetul local"
+
+#: src/features/notifications/components/EntityNotificationBell.tsx:101
+msgid "Local budget campaign updates for this entity"
+msgstr "Actualizări despre campania pentru bugetul local pentru această entitate"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:294
 msgid "Local budget contestation"
@@ -4958,11 +4976,16 @@ msgstr "Faci privată"
 msgid "Make public"
 msgstr "Faci publică"
 
-#: src/features/notifications/components/NotificationQuickMenu.tsx:158
+#: src/features/notifications/components/NotificationQuickMenu.tsx:166
 msgid "Manage all notifications"
 msgstr "Gestionează toate notificările"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:453
+#: src/routes/settings/notifications.tsx:66
+#: src/routes/settings/notifications.tsx:154
+msgid "Manage campaign-wide preferences on the <0>campaign notifications page</0>."
+msgstr "Gestionați preferințele la nivel de campanie în <0>pagina de notificări a campaniei</0>."
+
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:429
 msgid "Manage email notifications for entities you follow in the campaign."
 msgstr "Gestionati notificarile prin email pentru entitatile pe care le urmariti in campanie."
 
@@ -4970,7 +4993,7 @@ msgstr "Gestionati notificarile prin email pentru entitatile pe care le urmariti
 msgid "Manage email updates for this campaign."
 msgstr "Gestionati actualizarile prin email pentru aceasta campanie."
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:159
+#: src/features/notifications/components/EntityNotificationBell.tsx:160
 #: src/routes/unsubscribe.$token.tsx:43
 msgid "Manage notifications"
 msgstr "Gestionare notificări"
@@ -4983,7 +5006,7 @@ msgstr "Gestionează hărțile tale de analiză avansată."
 msgid "Manage your map settings, visibility, and version history."
 msgstr "Gestionează setările, vizibilitatea și istoricul versiunilor hărții tale."
 
-#: src/routes/settings/notifications.tsx:53
+#: src/routes/settings/notifications.tsx:58
 msgid "Manage your newsletter and alert subscriptions"
 msgstr "Gestionați-vă abonamentele la newsletter și alerte"
 
@@ -5115,6 +5138,10 @@ msgstr "Completează acest pas pentru a salva progresul."
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:57
 msgid "Markdown"
 msgstr "Markdown"
+
+#: src/features/notifications/types.ts:53
+msgid "Master preference for public debate campaign notifications"
+msgstr "Preferința principală pentru notificările campaniei de dezbatere publică"
 
 #: src/components/ui/shortcuts.tsx:68
 msgid "Master the app with these powerful keyboard shortcuts"
@@ -5316,7 +5343,11 @@ msgstr "Venit brut lunar"
 msgid "Monthly monitoring"
 msgstr "Monitorizare lunară"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:119
+#: src/features/notifications/types.ts:58
+msgid "Monthly Report"
+msgstr "Raport lunar"
+
+#: src/features/notifications/components/EntityNotificationBell.tsx:111
 msgid "Monthly, quarterly, and annual reports"
 msgstr "Rapoarte lunare, trimestriale și anuale"
 
@@ -5748,7 +5779,7 @@ msgstr "Nicio serie activată."
 msgid "No entity details found for CUI: <0>{cui}</0>. It's possible this entity does not exist or has no associated data."
 msgstr "Nu s-au găsit detalii despre entitate pentru CUI: <0>{cui}</0>. Este posibil ca această entitate să nu existe sau să nu aibă date asociate."
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:470
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:447
 msgid "No entity subscriptions"
 msgstr "Niciun abonament pentru entitati"
 
@@ -6006,11 +6037,11 @@ msgid "Notification preferences"
 msgstr "Preferinte notificari"
 
 #. placeholder {0}: String(entityTotalCount)
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:367
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:343
 msgid "Notifications are paused. Your {0} entity subscriptions are preserved."
 msgstr "Notificarile sunt in pauza. Cele {0} abonamente pentru entitati sunt pastrate."
 
-#: src/routes/settings/notifications.tsx:41
+#: src/routes/settings/notifications.tsx:46
 msgid "Notifications Settings"
 msgstr "Setări notificări"
 
@@ -6237,7 +6268,7 @@ msgstr "se deschide într-o filă nouă"
 msgid "Opens your email client with the completed contestation."
 msgstr "Deschide clientul de email cu contestația completată."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:737
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:730
 msgid "Opens your email client with the completed request. Recommended when you represent a legally established association."
 msgstr "Deschide clientul de email cu cererea completată. Recomandat când reprezinți o asociație legal constituită."
 
@@ -6306,6 +6337,10 @@ msgstr "Alte seturi de date"
 #: src/components/entities/EntityLineItemsTabs.tsx:98
 msgid "Other Economic"
 msgstr "Alte categorii economice"
+
+#: src/features/notifications/components/NotificationLegalNotice.tsx:44
+#~ msgid "Other notifications are subject to our <0>Terms of Service</0> and <1>Privacy Policy</1>."
+#~ msgstr ""
 
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:29
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:48
@@ -6556,7 +6591,11 @@ msgstr "Planificat"
 msgid "Platform Mission"
 msgstr "Misiunea platformei"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:508
+#: src/features/notifications/components/NotificationLegalNotice.tsx:44
+msgid "Platform notifications are subject to the <0>Transparenta.eu Terms of Use</0> and <1>Privacy Policy</1>."
+msgstr "Notificările platformei sunt supuse <0>Termenilor de utilizare Transparenta.eu</0> și <1>Politicii de confidențialitate</1>."
+
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:485
 msgid "Please try again to load your campaign notification preferences."
 msgstr "Vă rugăm să încercați din nou să încărcați preferințele de notificare pentru campanie."
 
@@ -6627,7 +6666,7 @@ msgstr "Preluat din provocarea de cerere dezbatere."
 msgid "Prefer median over mean when one or two UATs dominate values."
 msgstr "Preferă mediana în fața mediei când unul sau două UAT-uri domină valorile."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:786
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:779
 msgid "Prepare email"
 msgstr "Pregateste emailul"
 
@@ -6738,14 +6777,22 @@ msgstr "Propune o modificare specifică și realistă. De exemplu: «Redistribui
 msgid "Public"
 msgstr "Publică"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:107
-msgid "Public debate correspondence updates"
-msgstr "Actualizari corespondenta dezbatere publica"
+#: src/features/notifications/types.ts:52
+msgid "Public Debate Campaign"
+msgstr "Campania de dezbatere publică"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:488
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:505
+#: src/features/notifications/components/EntityNotificationBell.tsx:101
+#~ msgid "Public debate correspondence updates"
+#~ msgstr "Actualizari corespondenta dezbatere publica"
+
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:481
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:498
 msgid "Public debate request"
 msgstr "Cerere de dezbatere publică"
+
+#: src/features/notifications/types.ts:73
+#~ msgid "Public Debate Updates"
+#~ msgstr "Actualizări privind dezbaterea publică"
 
 #: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:162
 msgid "Public institutions often transfer funds between each other (e.g., from the state budget to local budgets). These transfers can double-count spending if not filtered."
@@ -6793,6 +6840,10 @@ msgstr "Trimestru"
 msgid "Quarterly"
 msgstr "Trimestrial"
 
+#: src/features/notifications/types.ts:63
+msgid "Quarterly Report"
+msgstr "Raport trimestrial"
+
 #: src/components/footer/ChatFab.tsx:15
 msgid "Quick actions"
 msgstr "Acțiuni rapide"
@@ -6833,7 +6884,7 @@ msgstr "Clasament (Top/Sus N)"
 msgid "Read more"
 msgstr "Citește mai mult"
 
-#: src/routes/cookies.lazy.tsx:269
+#: src/routes/cookies.lazy.tsx:268
 msgid "Read our <0>Cookie Policy</0> and <1>Privacy Policy</1>."
 msgstr "Citiți <0>Politica privind cookie-urile</0> și <1>Politica de confidențialitate</1>."
 
@@ -6880,12 +6931,40 @@ msgstr "Recepții și arierate"
 msgid "Receipts vs commitments"
 msgstr "Recepții vs angajamente"
 
+#: src/features/notifications/types.ts:59
+msgid "Receive a monthly report with budget execution"
+msgstr "Primește un raport lunar privind execuția bugetară"
+
+#: src/features/notifications/types.ts:64
+msgid "Receive a quarterly report with budget execution"
+msgstr "Primește un raport trimestrial privind execuția bugetară"
+
+#: src/features/notifications/types.ts:85
+msgid "Receive an alert for a static dataset when conditions are met"
+msgstr "Primește o alertă pentru un set de date static atunci când sunt îndeplinite condițiile"
+
+#: src/features/notifications/types.ts:80
+msgid "Receive an alert when an analytics data series meets conditions"
+msgstr "Primește o alertă atunci când o serie de date analitice îndeplinește condițiile"
+
+#: src/features/notifications/types.ts:69
+msgid "Receive an annual report with budget execution"
+msgstr "Primește un raport anual privind execuția bugetară"
+
+#: src/features/notifications/types.ts:74
+#~ msgid "Receive updates about public debate correspondence for this entity"
+#~ msgstr "Primește actualizări despre corespondența privind dezbaterea publică pentru această entitate"
+
+#: src/features/notifications/types.ts:74
+msgid "Receive updates about this entity in the local budget campaign"
+msgstr "Primește actualizări despre această entitate în campania pentru bugetul local"
+
 #: src/routes/$lang/learning/certificates.$id.lazy.tsx:52
 msgid "Recipient"
 msgstr "Destinatar"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:264
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:452
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:445
 msgid "Recorded"
 msgstr "Înregistrat"
 
@@ -7028,15 +7107,15 @@ msgstr "Rapoarte"
 msgid "Request a public debate for the local budget."
 msgstr "Solicita o dezbatere publica pentru bugetul local."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:803
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:796
 msgid "Request submission"
 msgstr "Solicită trimiterea"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:451
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:444
 msgid "Requested platform delivery"
 msgstr "Trimitere solicitată prin platformă"
 
-#: src/routes/cookies.lazy.tsx:146
+#: src/routes/cookies.lazy.tsx:145
 msgid "Required for core functionality like security, authentication, and preferences. Always on."
 msgstr "Necesare pentru funcționalitățile de bază, precum securitatea, autentificarea și preferințele. Sunt mereu active."
 
@@ -7204,7 +7283,7 @@ msgstr "Salvează"
 msgid "Save contact details"
 msgstr "Salvează datele de contact"
 
-#: src/routes/cookies.lazy.tsx:254
+#: src/routes/cookies.lazy.tsx:253
 msgid "Save cookie preferences"
 msgstr "Salvează preferințele cookie"
 
@@ -7536,7 +7615,7 @@ msgstr "Trimite cerere dezbatere"
 msgid "Send feedback"
 msgstr "Trimite feedback"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:735
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:728
 msgid "Send it yourself"
 msgstr "Trimite singur"
 
@@ -7552,7 +7631,7 @@ msgstr "Trimite pe email"
 msgid "Sender"
 msgstr "Expeditor"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:449
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:442
 msgid "Sent by you"
 msgstr "Trimis de tine"
 
@@ -7836,24 +7915,24 @@ msgstr "Conectează-te"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:206
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:129
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:566
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:544
 #: src/features/learning/components/layout/LoginBanner.tsx:28
-#: src/features/notifications/components/EntityNotificationBell.tsx:138
+#: src/features/notifications/components/EntityNotificationBell.tsx:139
 #: src/routes/alerts/$alertId/index.lazy.tsx:163
 #: src/routes/alerts/new.lazy.tsx:157
 #: src/routes/maps/editor/new.lazy.tsx:265
-#: src/routes/settings/notifications.tsx:132
+#: src/routes/settings/notifications.tsx:167
 msgid "Sign In"
 msgstr "Autentificare"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:201
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:124
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:552
-#: src/features/notifications/components/EntityNotificationBell.tsx:88
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:529
+#: src/features/notifications/components/EntityNotificationBell.tsx:82
 #: src/routes/alerts/$alertId/index.lazy.tsx:149
 #: src/routes/alerts/new.lazy.tsx:143
 #: src/routes/maps/editor/new.lazy.tsx:260
-#: src/routes/settings/notifications.tsx:118
+#: src/routes/settings/notifications.tsx:140
 msgid "Sign in required"
 msgstr "Autentificare necesară"
 
@@ -7870,19 +7949,19 @@ msgstr "Conectează-te pentru a răspunde la această secțiune și a-ți salva 
 msgid "Sign in to create and manage alerts for your entities."
 msgstr "Autentificați-vă pentru a crea și gestiona alerte pentru entitățile dvs."
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:77
+#: src/features/notifications/components/EntityNotificationBell.tsx:71
 msgid "Sign in to get notifications"
 msgstr "Autentificați-vă pentru a primi notificări"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:560
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:537
 msgid "Sign in to manage email notifications for entities you follow in the campaign."
 msgstr "Autentificati-va pentru a gestiona notificarile prin email pentru entitatile pe care le urmariti in campanie."
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:99
+#: src/features/notifications/components/EntityNotificationBell.tsx:93
 msgid "Sign in to receive updates about <0>{entityName}</0>:"
 msgstr "Autentificați-vă pentru a primi actualizări despre <0>{entityName}</0>:"
 
-#: src/routes/settings/notifications.tsx:126
+#: src/routes/settings/notifications.tsx:148
 msgid "Sign in to receive updates about the entities you care about."
 msgstr "Autentificați-vă pentru a primi actualizări despre entitățile care vă interesează."
 
@@ -8073,6 +8152,10 @@ msgstr "Set de date static"
 msgid "Static Dataset"
 msgstr "Set de date static"
 
+#: src/features/notifications/types.ts:84
+msgid "Static Dataset Alert"
+msgstr "Alertă pentru set de date static"
+
 #: src/components/charts/components/views/SeriesConfigView.tsx:317
 msgid "Static Series"
 msgstr "Serie statică"
@@ -8103,7 +8186,7 @@ msgstr "Rămâi aici"
 msgid "Step completed"
 msgstr "Pas finalizat"
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:422
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:442
 msgid "Step not found"
 msgstr "Pasul nu a fost găsit"
 
@@ -8137,8 +8220,8 @@ msgstr "Subcapitol"
 msgid "Subject"
 msgstr "Subiect"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:391
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:421
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:384
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:414
 msgid "Submission failed. Please try again."
 msgstr "Trimiterea a esuat. Te rugam sa incerci din nou."
 
@@ -8167,7 +8250,7 @@ msgstr "Trimis"
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:150
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:139
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:284
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:478
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:471
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:169
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:99
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:34
@@ -8175,7 +8258,7 @@ msgid "Submitted on"
 msgstr "Trimis pe"
 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:221
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:803
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:796
 msgid "Submitting..."
 msgstr "Se trimite..."
 
@@ -8301,7 +8384,7 @@ msgstr "Valoarea reală a bunurilor și serviciilor pe care le primești."
 msgid "The answer is:"
 msgstr "Răspunsul este:"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:775
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:768
 msgid "The association email address is not valid."
 msgstr "Adresa de email a asociatiei nu este valida."
 
@@ -8325,7 +8408,7 @@ msgstr "Datele sunt prezentate în scop informativ, pe baza datelor guvernamenta
 msgid "The Deficit"
 msgstr "Deficitul"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:547
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:540
 msgid "The email address is not valid."
 msgstr "Adresa de email nu este validă."
 
@@ -8387,7 +8470,7 @@ msgstr "The shared map configuration is invalid or unreadable. You can still cre
 msgid "The state total claim is <0>{0}</0>."
 msgstr "Totalul reținut de stat este <0>{0}</0>."
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:424
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:444
 msgid "The step you're looking for doesn't exist or may have been moved."
 msgstr "Pasul pe care îl cauți nu există sau este posibil să fi fost mutat."
 
@@ -8403,7 +8486,7 @@ msgstr "Există 1 avertisment care poate afecta modul în care este afișată ha
 msgid "There was a problem fetching the details for CUI: <0>{cui}</0>."
 msgstr "A apărut o problemă la preluarea detaliilor pentru CUI: <0>{cui}</0>."
 
-#: src/routes/settings/notifications.tsx:150
+#: src/routes/settings/notifications.tsx:185
 msgid "There was a problem loading your notifications. Please try again."
 msgstr "A apărut o problemă la încărcarea notificărilor. Vă rugăm să încercați din nou."
 
@@ -8471,7 +8554,7 @@ msgstr "Acesta nu este o rată a ocupării pe grupe de vârstă; este un indicat
 msgid "This name appears as the map title for viewers."
 msgstr "Acest nume apare ca titlu al hărții pentru vizitatori."
 
-#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:202
+#: src/features/challenges/components/player/ChallengeStepPlayer.tsx:209
 msgid "This sectioned step has no sections to render."
 msgstr "Acest pas pe secțiuni nu are secțiuni de afișat."
 
@@ -8565,11 +8648,11 @@ msgstr "Catre"
 msgid "To Pay"
 msgstr "De Plată"
 
-#: src/routes/cookies.lazy.tsx:201
+#: src/routes/cookies.lazy.tsx:200
 msgid "Toggle analytics cookies"
 msgstr "Comutare cookie-uri de analiză"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:361
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:337
 msgid "Toggle campaign notifications"
 msgstr "Comută notificările campaniei"
 
@@ -8577,7 +8660,7 @@ msgstr "Comută notificările campaniei"
 msgid "Toggle county boundaries"
 msgstr "Comută limitele județene"
 
-#: src/routes/cookies.lazy.tsx:233
+#: src/routes/cookies.lazy.tsx:232
 msgid "Toggle enhanced error reporting"
 msgstr "Comutare raportare avansată a erorilor"
 
@@ -8589,7 +8672,7 @@ msgstr "Comută interacțiunea cu harta"
 msgid "Toggle map visibility"
 msgstr "Comută vizibilitatea hărții"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:416
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:392
 msgid "Toggle notifications for {name}"
 msgstr "Comută notificările pentru {name}"
 
@@ -8751,10 +8834,10 @@ msgstr "Încercați un alt termen de căutare sau o altă sortare."
 msgid "Try again"
 msgstr "Încearcă din nou"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:515
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:492
 #: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1917
 #: src/features/learning/components/assessment/Quiz.tsx:188
-#: src/routes/settings/notifications.tsx:163
+#: src/routes/settings/notifications.tsx:198
 msgid "Try Again"
 msgstr "Încercați din nou"
 
@@ -8828,7 +8911,7 @@ msgstr "UAT: Da"
 msgid "UATs"
 msgstr "UAT-uri"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:505
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:482
 msgid "Unable to load notifications"
 msgstr "Nu am putut încărca notificările"
 
@@ -8837,7 +8920,7 @@ msgstr "Nu am putut încărca notificările"
 msgid "Unavailable"
 msgstr "Indisponibil"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:580
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:573
 msgid "Under Law 52/2003, requests from legally established associations can trigger the obligation to organize a public debate."
 msgstr "Potrivit Legii 52/2003, cererile formulate de asociații legal constituite pot declanșa obligația de organizare a unei dezbateri publice."
 
@@ -8976,7 +9059,7 @@ msgstr "Hartă fără titlu"
 msgid "Untitled Series"
 msgstr "Serie fără titlu"
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:195
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:197
 msgid "Up Next"
 msgstr "Următoarele"
 
@@ -9005,7 +9088,7 @@ msgstr "actualizat"
 msgid "Upper fence"
 msgstr "Upper fence"
 
-#: src/routes/cookies.lazy.tsx:195
+#: src/routes/cookies.lazy.tsx:194
 msgid "Usage analytics"
 msgstr "Analiza utilizării"
 
@@ -9293,7 +9376,7 @@ msgstr "Folosim cookie-uri esențiale și stocarea din browser pentru a furniza 
 msgid "We value your privacy"
 msgstr "Confidențialitatea dumneavoastră este importantă pentru noi"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:795
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:788
 msgid "We will record the request and send it through the platform."
 msgstr "Vom înregistra solicitarea și o vom trimite prin platformă."
 
@@ -9318,7 +9401,7 @@ msgstr "Website"
 msgid "Website link"
 msgstr "Link site web"
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:106
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:108
 #: src/routes/$lang/learning/index.lazy.tsx:185
 msgid "Welcome back."
 msgstr "Bine ai revenit."
@@ -9363,9 +9446,13 @@ msgstr "Ce ai trimis"
 msgid "What's your <0>gross</0> salary?"
 msgstr "Care este salariul tău <0>brut</0>?"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:110
-msgid "When a request is sent, fails, or receives a reply"
-msgstr "Cand o cerere este trimisa, esueaza sau primeste un raspuns"
+#: src/features/notifications/components/EntityNotificationBell.tsx:104
+#~ msgid "When a request is sent, fails, or receives a reply"
+#~ msgstr "Cand o cerere este trimisa, esueaza sau primeste un raspuns"
+
+#: src/features/notifications/components/EntityNotificationBell.tsx:104
+msgid "When campaign activity for this entity changes"
+msgstr "Când activitatea din campanie pentru această entitate se schimbă"
 
 #: src/features/learning/components/interactive/RedFlagCards.tsx:165
 msgid "When Rectifications Are Normal"
@@ -9481,7 +9568,7 @@ msgstr "Da"
 msgid "You"
 msgstr "Tu"
 
-#: src/routes/cookies.lazy.tsx:157
+#: src/routes/cookies.lazy.tsx:156
 msgid "You are signed in. Authentication cookies (Clerk) are essential and required to keep you signed in. Deleting them will sign you out."
 msgstr "Sunteți autentificat. Cookie-urile de autentificare (Clerk) sunt esențiale și necesare pentru a vă menține autentificat. Ștergerea lor vă va deconecta."
 
@@ -9489,7 +9576,7 @@ msgstr "Sunteți autentificat. Cookie-urile de autentificare (Clerk) sunt esenț
 msgid "You are viewing a shared map. Only the owner can edit the name."
 msgstr "Vizualizezi o hartă partajată. Doar proprietarul poate edita numele."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:441
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:434
 msgid "You asked the platform to send the public debate request on your behalf."
 msgstr "Ai solicitat platformei să trimită cererea de dezbatere publică în numele tău."
 
@@ -9543,19 +9630,19 @@ msgstr "Trebuie să fiți autentificat pentru a crea alerte"
 msgid "You need to be signed in to edit alerts"
 msgstr "Trebuie să fiți autentificat pentru a edita alerte"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:555
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:532
 msgid "You need to be signed in to manage campaign notifications"
 msgstr "Trebuie sa fiti autentificat pentru a gestiona notificarile campaniei"
 
-#: src/routes/settings/notifications.tsx:121
+#: src/routes/settings/notifications.tsx:143
 msgid "You need to be signed in to manage notifications"
 msgstr "Trebuie să fiți autentificat pentru a gestiona notificările"
 
-#: src/features/notifications/components/EntityNotificationBell.tsx:91
+#: src/features/notifications/components/EntityNotificationBell.tsx:85
 msgid "You need to be signed in to subscribe to notifications"
 msgstr "Trebuie să fiți autentificat pentru a vă abona la notificări"
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:439
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:432
 msgid "You opened the prepared email and confirmed that you sent the public debate request."
 msgstr "Ai deschis emailul pregătit și ai confirmat că ai trimis cererea de dezbatere publică."
 
@@ -9563,7 +9650,7 @@ msgstr "Ai deschis emailul pregătit și ai confirmat că ai trimis cererea de d
 msgid "You will no longer receive notifications via email."
 msgstr "Nu veți mai primi notificări prin e-mail."
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:113
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:115
 #: src/routes/$lang/learning/index.lazy.tsx:189
 msgid "You're doing great. Keep up the momentum."
 msgstr "Te descurci de minune. Menține ritmul."
@@ -9648,7 +9735,7 @@ msgstr "PREDICȚIA TA"
 msgid "Your progress has been saved. You can continue to the next step."
 msgstr "Progresul tău a fost salvat. Poți continua la pasul următor."
 
-#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:442
+#: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:435
 msgid "Your public debate request was recorded."
 msgstr "Cererea ta de dezbatere publică a fost înregistrată."
 

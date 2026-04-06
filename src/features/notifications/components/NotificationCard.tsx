@@ -6,7 +6,7 @@ import { Link } from '@tanstack/react-router';
 import { Building2, Trash2, ExternalLink } from 'lucide-react';
 import { Trans } from '@lingui/react/macro';
 import type { Notification } from '../types';
-import { NOTIFICATION_TYPE_CONFIGS } from '../types';
+import { getNotificationTypeConfig } from '../types';
 import { useToggleNotification } from '../hooks/useToggleNotification';
 import {
   AlertDialog,
@@ -75,9 +75,8 @@ export function NotificationCard({ notifications, onRemove }: Props) {
       <CardContent>
         <div className="space-y-1">
           {notifications
-            .filter(notification => NOTIFICATION_TYPE_CONFIGS[notification.notificationType])
             .map((notification, index) => {
-              const config = NOTIFICATION_TYPE_CONFIGS[notification.notificationType];
+              const config = getNotificationTypeConfig(notification.notificationType);
               return (
                 <div key={notification.id}>
                   {index > 0 && <Separator className="my-3" />}

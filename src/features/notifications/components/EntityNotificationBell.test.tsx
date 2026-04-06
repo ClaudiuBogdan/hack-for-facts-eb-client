@@ -2,13 +2,8 @@ import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@/test/test-utils'
 import { EntityNotificationBell } from './EntityNotificationBell'
-import { CAMPAIGN_NOTIFICATIONS_PATH } from '@/features/campaigns/buget/constants'
+import { CAMPAIGN_TERMS_PATH } from '@/features/campaigns/buget/constants'
 import { FUNKY_NOTIFICATION_ENTITY_UPDATES } from '../campaign-notification-keys'
-
-let mockLocation = {
-  pathname: '/primarie/12345678/buget/provocari',
-  searchStr: '?lang=en&view=section',
-}
 let authState = {
   isLoaded: true,
   isSignedIn: true,
@@ -20,7 +15,22 @@ const notificationQuickMenuMock = vi.fn((props?: unknown) => {
 })
 
 vi.mock('@tanstack/react-router', () => ({
-  useLocation: () => mockLocation,
+  Link: ({
+    children,
+    to,
+    search,
+    ...props
+  }: {
+    readonly children: ReactNode
+    readonly to?: string
+    readonly search?: Record<string, string>
+    readonly [key: string]: unknown
+  }) => {
+    const href = typeof to === 'string' ? to : ''
+    const query = search ? new URLSearchParams(search).toString() : ''
+    const nextHref = query ? `${href}?${query}` : href
+    return <a href={nextHref} {...props}>{children}</a>
+  },
 }))
 
 vi.mock('@/components/ui/ResponsivePopover', () => ({
@@ -56,10 +66,6 @@ vi.mock('./NotificationQuickMenu', () => ({
 
 describe('EntityNotificationBell', () => {
   beforeEach(() => {
-    mockLocation = {
-      pathname: '/primarie/12345678/buget/provocari',
-      searchStr: '?lang=en&view=section',
-    }
     authState = {
       isLoaded: true,
       isSignedIn: true,
@@ -67,7 +73,7 @@ describe('EntityNotificationBell', () => {
     notificationQuickMenuMock.mockClear()
   })
 
-  it('passes campaign notification navigation as path plus search state', () => {
+  it('expands campaign entity notifications to include the report subscriptions', () => {
     render(
       <EntityNotificationBell
         cui="12345678"
@@ -78,11 +84,13 @@ describe('EntityNotificationBell', () => {
 
     expect(notificationQuickMenuMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        managePath: CAMPAIGN_NOTIFICATIONS_PATH,
-        manageSearch: {
-          from: '/primarie/12345678/buget/provocari?lang=en&view=section',
-          lang: 'en',
-        },
+        notificationTypes: [
+          FUNKY_NOTIFICATION_ENTITY_UPDATES,
+          'newsletter_entity_monthly',
+          'newsletter_entity_quarterly',
+          'newsletter_entity_yearly',
+        ],
+        managePath: '/settings/notifications',
       }),
     )
   })
@@ -98,7 +106,11 @@ describe('EntityNotificationBell', () => {
     expect(notificationQuickMenuMock).toHaveBeenCalledWith(
       expect.objectContaining({
         managePath: '/settings/notifications',
-        manageSearch: undefined,
+        notificationTypes: [
+          'newsletter_entity_monthly',
+          'newsletter_entity_quarterly',
+          'newsletter_entity_yearly',
+        ],
       }),
     )
   })
@@ -117,6 +129,29 @@ describe('EntityNotificationBell', () => {
     )
 
     expect(screen.getByRole('button', { name: 'Sign In' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Transparenta.eu Terms of Use' }),
+    ).toHaveAttribute('href', '/terms')
+    expect(screen.getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute('href', '/privacy')
     expect(container.querySelector('.mt-64')).toBeNull()
+  })
+
+  it('shows the campaign terms link in the sign-in state when campaign updates are available', () => {
+    authState = {
+      isLoaded: true,
+      isSignedIn: false,
+    }
+
+    render(
+      <EntityNotificationBell
+        cui="12345678"
+        entityName="Primaria Test"
+        notificationTypes={[FUNKY_NOTIFICATION_ENTITY_UPDATES]}
+      />,
+    )
+
+    expect(
+      screen.getByRole('link', { name: 'campaign terms and conditions' }),
+    ).toHaveAttribute('href', CAMPAIGN_TERMS_PATH)
   })
 })

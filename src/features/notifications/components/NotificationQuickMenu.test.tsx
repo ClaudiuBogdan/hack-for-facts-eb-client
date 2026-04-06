@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { CAMPAIGN_TERMS_PATH } from '@/features/campaigns/buget/constants'
 import {
   FUNKY_CAMPAIGN_KEY,
   FUNKY_NOTIFICATION_ENTITY_UPDATES,
@@ -20,11 +21,20 @@ const refetchAllNotificationsMock = vi.fn()
 vi.mock('@tanstack/react-router', () => ({
   Link: ({
     children,
+    to,
+    search,
     ...props
   }: {
     readonly children: ReactNode
+    readonly to?: string
+    readonly search?: Record<string, string>
     readonly [key: string]: unknown
-  }) => <a {...props}>{children}</a>,
+  }) => {
+    const href = typeof to === 'string' ? to : ''
+    const query = search ? new URLSearchParams(search).toString() : ''
+    const nextHref = query ? `${href}?${query}` : href
+    return <a href={nextHref} {...props}>{children}</a>
+  },
 }))
 
 vi.mock('sonner', () => ({
@@ -76,7 +86,7 @@ describe('NotificationQuickMenu', () => {
       />,
     )
 
-    fireEvent.click(screen.getByText('Public Debate Updates'))
+    fireEvent.click(screen.getByText('Local Budget Campaign Updates'))
 
     await waitFor(() => {
       expect(toastErrorMock).toHaveBeenCalledWith('Failed to update notification')
@@ -146,7 +156,7 @@ describe('NotificationQuickMenu', () => {
       />,
     )
 
-    fireEvent.click(screen.getByText('Public Debate Updates'))
+    fireEvent.click(screen.getByText('Local Budget Campaign Updates'))
 
     await waitFor(() => {
       expect(refetchAllNotificationsMock).toHaveBeenCalledTimes(1)
@@ -158,5 +168,29 @@ describe('NotificationQuickMenu', () => {
         notificationId: undefined,
       })
     })
+  })
+
+  it('renders campaign and general legal links when both notification groups are shown', () => {
+    render(
+      <NotificationQuickMenu
+        cui="12345678"
+        entityName="Primaria Test"
+        notificationTypes={[
+          FUNKY_NOTIFICATION_ENTITY_UPDATES,
+          'newsletter_entity_monthly',
+        ]}
+        notifications={[]}
+      />,
+    )
+
+    expect(
+      screen.getByRole('link', { name: 'campaign terms and conditions' }),
+    ).toHaveAttribute('href', CAMPAIGN_TERMS_PATH)
+    expect(
+      screen.getByRole('link', { name: 'Transparenta.eu Terms of Use' }),
+    ).toHaveAttribute('href', '/terms')
+    expect(
+      screen.getByRole('link', { name: 'Privacy Policy' }),
+    ).toHaveAttribute('href', '/privacy')
   })
 })

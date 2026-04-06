@@ -10,7 +10,8 @@ import { Link } from '@tanstack/react-router';
 import { Trans } from '@lingui/react/macro';
 import { ArrowRight } from 'lucide-react';
 import type { Notification, NotificationType } from '../types';
-import { NOTIFICATION_TYPE_CONFIGS } from '../types';
+import { getNotificationTypeConfig } from '../types';
+import { NotificationLegalNotice } from './NotificationLegalNotice';
 import {
   FUNKY_CAMPAIGN_KEY,
   FUNKY_NOTIFICATION_ENTITY_UPDATES,
@@ -102,6 +103,8 @@ export function NotificationQuickMenu({
     );
     return notification?.isActive ?? false;
   };
+  const showCampaignTerms = notificationTypes.includes(FUNKY_NOTIFICATION_ENTITY_UPDATES);
+  const showGeneralTerms = notificationTypes.some((type) => NEWSLETTER_TYPES.includes(type));
 
   return (
     <div className="w-full space-y-5 p-2">
@@ -116,7 +119,7 @@ export function NotificationQuickMenu({
 
       <div className="space-y-1">
         {notificationTypes.map((type) => {
-          const config = NOTIFICATION_TYPE_CONFIGS[type];
+          const config = getNotificationTypeConfig(type);
           const isActive = getNotificationStatus(type);
 
           return (
@@ -148,6 +151,11 @@ export function NotificationQuickMenu({
           );
         })}
       </div>
+
+      <NotificationLegalNotice
+        showCampaignTerms={showCampaignTerms}
+        showGeneralTerms={showGeneralTerms}
+      />
 
       <Link to={managePath} search={manageSearch} onClick={onClose} className="block">
         <Button
