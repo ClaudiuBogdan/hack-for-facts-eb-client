@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import { BookOpen, Library, FileText, ExternalLink, ArrowLeft } from 'lucide-react'
+import { BookOpen, Library, FileText, ExternalLink, ArrowLeft, Video } from 'lucide-react'
 import {
   getCampaignResources,
   getCampaignText,
@@ -16,12 +16,10 @@ type BugetResourcesPageProps = {
 
 const RESOURCE_ICONS: Record<CampaignResourceKind, typeof BookOpen> = {
   guide: BookOpen,
-  tutorial: BookOpen,
+  tutorial: Video,
   template: FileText,
   reference: Library,
 }
-
-const TUTORIAL_RESOURCE_ID = 'tutorial-utilizare-platforma'
 
 type ResourceGroup = {
   readonly label: string
@@ -30,11 +28,15 @@ type ResourceGroup = {
 
 function groupResources(resources: readonly CampaignResourceDefinition[], locale: CampaignLocale): readonly ResourceGroup[] {
   const guides = resources.filter((r) => r.kind === 'guide' || r.kind === 'reference')
+  const videos = resources.filter((r) => r.kind === 'tutorial')
   const templates = resources.filter((r) => r.kind === 'template')
 
   const groups: ResourceGroup[] = []
   if (guides.length > 0) {
     groups.push({ label: locale === 'en' ? 'Guides' : 'Ghiduri', items: guides })
+  }
+  if (videos.length > 0) {
+    groups.push({ label: locale === 'en' ? 'Videos' : 'Video', items: videos })
   }
   if (templates.length > 0) {
     groups.push({ label: locale === 'en' ? 'Templates' : 'Modele', items: templates })
@@ -47,8 +49,7 @@ export function BugetResourcesPage({
   entityCui,
 }: BugetResourcesPageProps) {
   const allResources = getCampaignResources()
-  const resources = allResources.filter((r) => r.id !== TUTORIAL_RESOURCE_ID)
-  const groups = groupResources(resources, locale)
+  const groups = groupResources(allResources, locale)
   const linkSearch: Record<string, string> = {}
   if (locale === 'en') linkSearch.lang = 'en'
 

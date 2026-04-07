@@ -900,7 +900,7 @@ msgstr "Back to alert"
 msgid "Back to campaign"
 msgstr "Back to campaign"
 
-#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:64
+#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:65
 msgid "Back to challenges"
 msgstr "Back to challenges"
 
@@ -1138,7 +1138,7 @@ msgstr "Budget draft publication date"
 msgid "Budget guides, request templates, and more."
 msgstr "Budget guides, request templates, and more."
 
-#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:72
+#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:73
 msgid "Budget guides, request templates, and useful resources for civic engagement."
 msgstr "Budget guides, request templates, and useful resources for civic engagement."
 
@@ -1231,6 +1231,14 @@ msgstr "Calculation"
 msgid "Calculations assume a basket of 40% essential goods (11% VAT) and 60% general goods (21% VAT)."
 msgstr "Calculations assume a basket of 40% essential goods (11% VAT) and 60% general goods (21% VAT)."
 
+#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:73
+#~ msgid "Campaign access"
+#~ msgstr "Campaign access"
+
+#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:115
+#~ msgid "Campaign link"
+#~ msgstr "Campaign link"
+
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:323
 msgid "Campaign notifications"
 msgstr "Campaign notifications"
@@ -1309,6 +1317,7 @@ msgstr "Certificate verified (PoC)"
 msgid "Challenge Question"
 msgstr "Challenge Question"
 
+#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:39
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:183
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:292
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:585
@@ -1886,7 +1895,7 @@ msgstr "Continuous range"
 msgid "Contracts"
 msgstr "Contracts"
 
-#: src/routes/entities.$cui.lazy.tsx:77
+#: src/routes/entities.$cui.lazy.tsx:79
 msgid "Contracts view unavailable"
 msgstr "Contracts view unavailable"
 
@@ -2565,7 +2574,7 @@ msgstr "Details"
 msgid "Details about excluded items and amount filters used in this view."
 msgstr "Details about excluded items and amount filters used in this view."
 
-#: src/routes/entities.$cui.lazy.tsx:453
+#: src/routes/entities.$cui.lazy.tsx:464
 msgid "Details:"
 msgstr "Details:"
 
@@ -2939,7 +2948,7 @@ msgstr "Employees (FOM104D)"
 msgid "Employees per 1,000 inhabitants is a simple proxy for local labor-market intensity."
 msgstr "Employees per 1,000 inhabitants is a simple proxy for local labor-market intensity."
 
-#: src/routes/entities.$cui.lazy.tsx:65
+#: src/routes/entities.$cui.lazy.tsx:67
 msgid "Employees view unavailable"
 msgstr "Employees view unavailable"
 
@@ -3102,7 +3111,7 @@ msgstr "equals"
 msgid "Error"
 msgstr "Error"
 
-#: src/routes/entities.$cui.lazy.tsx:450
+#: src/routes/entities.$cui.lazy.tsx:461
 msgid "Error Fetching Entity Details"
 msgstr "Error Fetching Entity Details"
 
@@ -3419,6 +3428,7 @@ msgstr "Exports, imports and trade balance."
 msgid "Extraction confidence"
 msgstr "Extraction confidence"
 
+#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:42
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:295
 msgid "Eyes on Local Budgets"
 msgstr "Eyes on Local Budgets"
@@ -4041,7 +4051,7 @@ msgstr "Gross"
 msgid "Grouping"
 msgstr "Grouping"
 
-#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:69
+#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:70
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:128
 msgid "Guides & templates"
 msgstr "Guides & templates"
@@ -4849,7 +4859,7 @@ msgstr "Loading map editor..."
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1761
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1925
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1932
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:860
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:861
 #: src/routes/map.lazy.tsx:303
 #: src/routes/map.lazy.tsx:304
 msgid "Loading map..."
@@ -4876,7 +4886,7 @@ msgstr "Loading snapshots..."
 msgid "Loading table data..."
 msgstr "Loading table data..."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:902
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:903
 msgid "Loading view…"
 msgstr "Loading view…"
 
@@ -5767,7 +5777,7 @@ msgstr "No data available to display commitment evolution."
 msgid "No data available to display financial evolution."
 msgstr "No data available to display financial evolution."
 
-#: src/routes/entities.$cui.lazy.tsx:465
+#: src/routes/entities.$cui.lazy.tsx:476
 msgid "No Data Found"
 msgstr "No Data Found"
 
@@ -5834,7 +5844,7 @@ msgstr "No enabled series data available to display."
 msgid "No enabled series."
 msgstr "No enabled series."
 
-#: src/routes/entities.$cui.lazy.tsx:467
+#: src/routes/entities.$cui.lazy.tsx:478
 msgid "No entity details found for CUI: <0>{cui}</0>. It's possible this entity does not exist or has no associated data."
 msgstr "No entity details found for CUI: <0>{cui}</0>. It's possible this entity does not exist or has no associated data."
 
@@ -6195,6 +6205,10 @@ msgstr "Open bins preset menu"
 msgid "Open Budget Explorer"
 msgstr "Open Budget Explorer"
 
+#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:56
+msgid "Open campaign"
+msgstr "Open campaign"
+
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:576
 msgid "Open challenges menu"
 msgstr "Open challenges menu"
@@ -6330,11 +6344,15 @@ msgstr "Open Table"
 msgid "Open the campaign forum discussion."
 msgstr "Open the campaign forum discussion."
 
+#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:78
+#~ msgid "Open the campaign page"
+#~ msgstr "Open the campaign page"
+
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:110
 #~ msgid "Open the main discussion thread for this campaign."
 #~ msgstr "Open the main discussion thread for this campaign."
 
-#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:106
+#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:107
 msgid "opens in new tab"
 msgstr "opens in new tab"
 
@@ -7173,7 +7191,7 @@ msgstr "Reporting entity"
 msgid "Reporting filters"
 msgstr "Reporting filters"
 
-#: src/routes/entities.$cui.lazy.tsx:496
+#: src/routes/entities.$cui.lazy.tsx:507
 msgid "Reporting period"
 msgstr "Reporting period"
 
@@ -8564,7 +8582,7 @@ msgstr "There are {warningCount} warnings that may affect how your map is displa
 msgid "There is 1 warning that may affect how your map is displayed."
 msgstr "There is 1 warning that may affect how your map is displayed."
 
-#: src/routes/entities.$cui.lazy.tsx:452
+#: src/routes/entities.$cui.lazy.tsx:463
 msgid "There was a problem fetching the details for CUI: <0>{cui}</0>."
 msgstr "There was a problem fetching the details for CUI: <0>{cui}</0>."
 
@@ -8580,7 +8598,7 @@ msgstr "There was an error processing your request. The link may be expired or i
 msgid "These issues were auto-resolved (invalid points removed or values set to 0) so the chart could render."
 msgstr "These issues were auto-resolved (invalid points removed or values set to 0) so the chart could render."
 
-#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:117
+#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:118
 msgid "These materials are part of the project"
 msgstr "These materials are part of the project"
 
@@ -8921,13 +8939,13 @@ msgid "Try again"
 msgstr "Try again"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:492
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1917
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1919
 #: src/features/learning/components/assessment/Quiz.tsx:188
 #: src/routes/settings/notifications.tsx:198
 msgid "Try Again"
 msgstr "Try Again"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:579
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:580
 msgid "Try again in a few moments."
 msgstr "Try again in a few moments."
 
@@ -9443,12 +9461,12 @@ msgstr "Water, gas, and network service proxies."
 msgid "Way off!"
 msgstr "Way off!"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1907
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1909
 msgid "We could not load the analysis."
 msgstr "We could not load the analysis."
 
-#: src/routes/entities.$cui.lazy.tsx:67
-#: src/routes/entities.$cui.lazy.tsx:79
+#: src/routes/entities.$cui.lazy.tsx:69
+#: src/routes/entities.$cui.lazy.tsx:81
 msgid "We could not load this section right now. Please refresh and try again."
 msgstr "We could not load this section right now. Please refresh and try again."
 

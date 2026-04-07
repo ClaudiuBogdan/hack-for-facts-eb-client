@@ -900,7 +900,7 @@ msgstr "Înapoi la alertă"
 msgid "Back to campaign"
 msgstr "Inapoi la campanie"
 
-#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:64
+#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:65
 msgid "Back to challenges"
 msgstr "Inapoi la provocari"
 
@@ -1138,7 +1138,7 @@ msgstr "Data publicării proiectului de buget"
 msgid "Budget guides, request templates, and more."
 msgstr "Ghiduri bugetare, modele de cereri si altele."
 
-#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:72
+#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:73
 msgid "Budget guides, request templates, and useful resources for civic engagement."
 msgstr "Ghiduri bugetare, modele de cereri si resurse utile pentru implicare civica."
 
@@ -1231,6 +1231,14 @@ msgstr "Calcul"
 msgid "Calculations assume a basket of 40% essential goods (11% VAT) and 60% general goods (21% VAT)."
 msgstr "Calculele presupun un coș de bunuri esențiale de 40% (TVA 11%) și bunuri generale de 60% (TVA 21%)."
 
+#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:73
+#~ msgid "Campaign access"
+#~ msgstr ""
+
+#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:115
+#~ msgid "Campaign link"
+#~ msgstr ""
+
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:323
 msgid "Campaign notifications"
 msgstr "Notificari campanie"
@@ -1309,6 +1317,7 @@ msgstr "Certificat verificat (Prototip)"
 msgid "Challenge Question"
 msgstr "Întrebare de provocare"
 
+#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:39
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:183
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:292
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:585
@@ -1886,7 +1895,7 @@ msgstr "Interval continuu"
 msgid "Contracts"
 msgstr "Contracte"
 
-#: src/routes/entities.$cui.lazy.tsx:77
+#: src/routes/entities.$cui.lazy.tsx:79
 msgid "Contracts view unavailable"
 msgstr "Vizualizarea contractelor nu este disponibilă"
 
@@ -2565,7 +2574,7 @@ msgstr "Detalii"
 msgid "Details about excluded items and amount filters used in this view."
 msgstr "Detalii despre elementele excluse și filtrele de sumă utilizate în această vizualizare."
 
-#: src/routes/entities.$cui.lazy.tsx:453
+#: src/routes/entities.$cui.lazy.tsx:464
 msgid "Details:"
 msgstr "Detalii:"
 
@@ -2939,7 +2948,7 @@ msgstr "Salariați (FOM104D)"
 msgid "Employees per 1,000 inhabitants is a simple proxy for local labor-market intensity."
 msgstr "Salariații la 1.000 de locuitori reprezintă un indicator simplu al intensității pieței locale a muncii."
 
-#: src/routes/entities.$cui.lazy.tsx:65
+#: src/routes/entities.$cui.lazy.tsx:67
 msgid "Employees view unavailable"
 msgstr "Vizualizarea pentru angajați nu este disponibilă"
 
@@ -3102,7 +3111,7 @@ msgstr "este egal cu"
 msgid "Error"
 msgstr "Eroare"
 
-#: src/routes/entities.$cui.lazy.tsx:450
+#: src/routes/entities.$cui.lazy.tsx:461
 msgid "Error Fetching Entity Details"
 msgstr "Eroare la preluarea detaliilor entității"
 
@@ -3419,6 +3428,7 @@ msgstr "Exporturi, importuri și balanța comercială."
 msgid "Extraction confidence"
 msgstr "Nivel de încredere al extragerii"
 
+#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:42
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:295
 msgid "Eyes on Local Budgets"
 msgstr "Cu ochii pe bugetele locale"
@@ -3767,7 +3777,7 @@ msgstr "Comerț exterior"
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:428
 msgid "Forum"
-msgstr ""
+msgstr "Forum"
 
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:107
 msgid "Forum discussion"
@@ -4041,7 +4051,7 @@ msgstr "Brut"
 msgid "Grouping"
 msgstr "Grupare"
 
-#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:69
+#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:70
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:128
 msgid "Guides & templates"
 msgstr "Ghiduri si modele"
@@ -4844,7 +4854,7 @@ msgstr "Se încarcă editorul de hărți..."
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1761
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1925
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1932
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:860
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:861
 #: src/routes/map.lazy.tsx:303
 #: src/routes/map.lazy.tsx:304
 msgid "Loading map..."
@@ -4871,7 +4881,7 @@ msgstr "Se încarcă instantaneele..."
 msgid "Loading table data..."
 msgstr "Se încarcă datele tabelului..."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:902
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:903
 msgid "Loading view…"
 msgstr "Se încarcă vizualizarea…"
 
@@ -5762,7 +5772,7 @@ msgstr "Nu sunt date disponibile pentru afișarea evoluției angajamentelor."
 msgid "No data available to display financial evolution."
 msgstr "Nu sunt date disponibile pentru afișarea evoluției financiare."
 
-#: src/routes/entities.$cui.lazy.tsx:465
+#: src/routes/entities.$cui.lazy.tsx:476
 msgid "No Data Found"
 msgstr "Nu s-au găsit date"
 
@@ -5829,7 +5839,7 @@ msgstr "Nu există date disponibile în seriile activate pentru a fi afișate."
 msgid "No enabled series."
 msgstr "Nicio serie activată."
 
-#: src/routes/entities.$cui.lazy.tsx:467
+#: src/routes/entities.$cui.lazy.tsx:478
 msgid "No entity details found for CUI: <0>{cui}</0>. It's possible this entity does not exist or has no associated data."
 msgstr "Nu s-au găsit detalii despre entitate pentru CUI: <0>{cui}</0>. Este posibil ca această entitate să nu existe sau să nu aibă date asociate."
 
@@ -6190,6 +6200,10 @@ msgstr "Deschide meniul preset de intervale"
 msgid "Open Budget Explorer"
 msgstr "Deschide Exploratorul de Bugete"
 
+#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:56
+msgid "Open campaign"
+msgstr "Deschide provocarea"
+
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:576
 msgid "Open challenges menu"
 msgstr "Deschide meniul provocărilor"
@@ -6325,11 +6339,15 @@ msgstr "Deschide Tabelul"
 msgid "Open the campaign forum discussion."
 msgstr "Deschide discuția de pe forum a campaniei."
 
+#: src/features/campaigns/buget/components/CampaignAccessShareCard.tsx:78
+#~ msgid "Open the campaign page"
+#~ msgstr ""
+
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:110
 #~ msgid "Open the main discussion thread for this campaign."
 #~ msgstr "Deschide firul principal de discuție pentru această campanie."
 
-#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:106
+#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:107
 msgid "opens in new tab"
 msgstr "se deschide într-o filă nouă"
 
@@ -7168,7 +7186,7 @@ msgstr "Entitate raportoare"
 msgid "Reporting filters"
 msgstr "Filtre de raportare"
 
-#: src/routes/entities.$cui.lazy.tsx:496
+#: src/routes/entities.$cui.lazy.tsx:507
 msgid "Reporting period"
 msgstr "Perioada de raportare"
 
@@ -8559,7 +8577,7 @@ msgstr "Există {warningCount} avertismente care pot afecta modul în care este 
 msgid "There is 1 warning that may affect how your map is displayed."
 msgstr "Există 1 avertisment care poate afecta modul în care este afișată harta ta."
 
-#: src/routes/entities.$cui.lazy.tsx:452
+#: src/routes/entities.$cui.lazy.tsx:463
 msgid "There was a problem fetching the details for CUI: <0>{cui}</0>."
 msgstr "A apărut o problemă la preluarea detaliilor pentru CUI: <0>{cui}</0>."
 
@@ -8575,7 +8593,7 @@ msgstr "A apărut o eroare la procesarea solicitării dvs. Linkul poate fi expir
 msgid "These issues were auto-resolved (invalid points removed or values set to 0) so the chart could render."
 msgstr "Aceste probleme au fost rezolvate automat (punctele invalide au fost eliminate sau valorile setate la 0) astfel încât graficul să poată fi afișat."
 
-#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:117
+#: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:118
 msgid "These materials are part of the project"
 msgstr "Materialele fac parte din proiectul"
 
@@ -8916,13 +8934,13 @@ msgid "Try again"
 msgstr "Încearcă din nou"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:492
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1917
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1919
 #: src/features/learning/components/assessment/Quiz.tsx:188
 #: src/routes/settings/notifications.tsx:198
 msgid "Try Again"
 msgstr "Încercați din nou"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:579
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:580
 msgid "Try again in a few moments."
 msgstr "Încearcă din nou peste câteva momente."
 
@@ -9438,12 +9456,12 @@ msgstr "Indicatori proxy pentru apă, gaze și rețele de servicii."
 msgid "Way off!"
 msgstr "Departe!"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1907
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1909
 msgid "We could not load the analysis."
 msgstr "Nu am putut încărca analiza."
 
-#: src/routes/entities.$cui.lazy.tsx:67
-#: src/routes/entities.$cui.lazy.tsx:79
+#: src/routes/entities.$cui.lazy.tsx:69
+#: src/routes/entities.$cui.lazy.tsx:81
 msgid "We could not load this section right now. Please refresh and try again."
 msgstr "Nu am putut încărca această secțiune acum. Vă rugăm să reîmprospătați pagina și să încercați din nou."
 

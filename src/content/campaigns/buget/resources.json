@@ -89,6 +89,24 @@
       "kind": "template"
     },
     {
+      "id": "youtube-bugete-locale-pagina",
+      "title": {
+        "ro": "Cu ochii pe bugetele locale: ce găsești pe pagina localității tale 🔍",
+        "en": "Keeping an eye on local budgets: what you can find on your locality's page 🔍"
+      },
+      "url": "https://www.youtube.com/watch?v=YgsCc5mKDzw",
+      "kind": "tutorial"
+    },
+    {
+      "id": "youtube-bugete-locale-clasificatii",
+      "title": {
+        "ro": "Cu ochii pe bugetele locale: ce sunt clasificațiile bugetare? 👀",
+        "en": "Keeping an eye on local budgets: what are budget classifications? 👀"
+      },
+      "url": "https://www.youtube.com/watch?v=MzMSRRYGeBk",
+      "kind": "tutorial"
+    },
+    {
       "id": "toate-analizele-cmtrfb",
       "title": {
         "ro": "Toate analizele și resursele CMTRFB",

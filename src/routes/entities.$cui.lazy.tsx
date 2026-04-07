@@ -7,6 +7,7 @@ import { Trans } from '@lingui/react/macro'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { CampaignAccessShareCard } from '@/features/campaigns/buget/components/CampaignAccessShareCard'
 import { ResponsivePopover } from '@/components/ui/ResponsivePopover'
 import { EntityHeader } from '@/components/entities/EntityHeader'
 import { EntityReportControls } from '@/components/entities/EntityReportControls'
@@ -30,6 +31,7 @@ import { useDebouncedCallback } from '@/lib/hooks/useDebouncedCallback'
 import { FloatingQuickNav } from '@/components/ui/FloatingQuickNav'
 import type { NormalizationOptions } from '@/lib/normalization'
 import { useGlobalSettings } from '@/lib/hooks/useGlobalSettings'
+import { isNonCountyUatEntity } from '@/lib/entity-navigation'
 import { DEFAULT_CURRENCY, DEFAULT_INFLATION_ADJUSTED, resolveNormalizationSettings, type NormalizationInput } from '@/lib/globalSettings/params'
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -144,6 +146,7 @@ function EntityDetailsPage() {
   const selectedExpenseTypeKey = search.selectedExpenseTypeKey as string | undefined
   const normalizationRaw = (search.normalization as NormalizationInput | undefined) ?? 'total'
   const showPeriodGrowth = Boolean((search as { show_period_growth?: unknown }).show_period_growth)
+  const campaignLocale = search.lang === 'en' ? 'en' : 'ro'
 
   useEntityViewAnalytics({
     cui,
@@ -441,6 +444,14 @@ function EntityDetailsPage() {
     if (entity?.is_uat) return 'UAT'
     return 'UAT'
   }, [entity?.entity_type, entity?.is_uat])
+  const showCampaignAccessCard = Boolean(
+    entity &&
+      isNonCountyUatEntity({
+        cui: entity.cui,
+        entityType: entity.entity_type,
+        isUat: entity.is_uat,
+      }),
+  )
 
   if (isError) {
     return (
@@ -517,6 +528,13 @@ function EntityDetailsPage() {
             />
           }
         />
+        {showCampaignAccessCard && entity ? (
+          <CampaignAccessShareCard
+            entityCui={entity.cui}
+            locale={campaignLocale}
+            className="max-w-none"
+          />
+        ) : null}
         <MemoizedViewsContent
           cui={cui}
           entity={entity}

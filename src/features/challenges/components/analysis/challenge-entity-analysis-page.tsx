@@ -1,7 +1,7 @@
 import { t } from '@lingui/core/macro'
 import { AlertTriangle, Minus, Plus, RefreshCw, Users } from 'lucide-react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { BudgetTreemap } from '@/components/budget-explorer/BudgetTreemap'
 import { FilteredSpendingInfo } from '@/components/budget-explorer/FilteredSpendingInfo'
 import type { AggregatedNode } from '@/components/budget-explorer/budget-transform'
@@ -125,6 +125,7 @@ type ChallengeEntityAnalysisPageProps = {
   ) => void
   readonly onEntityCuiChange?: (selection: MapEntitySelection) => void
   readonly onEntityResolved?: () => void
+  readonly belowHeader?: ReactNode
 }
 
 export type ChallengeTreemapAccountCategory = 'ch' | 'vn'
@@ -918,6 +919,7 @@ export function ChallengeEntityAnalysisPage({
   onAnalyticsTargetChange,
   onEntityCuiChange,
   onEntityResolved,
+  belowHeader,
 }: ChallengeEntityAnalysisPageProps) {
   const {
     periodType,
@@ -2538,6 +2540,8 @@ export function ChallengeEntityAnalysisPage({
         showInflationBadge={displayInflationAdjusted}
         languageQuery={languageQuery}
       />
+
+      {belowHeader}
 
       {renderActiveView()}
 

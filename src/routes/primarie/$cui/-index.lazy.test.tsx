@@ -35,6 +35,18 @@ vi.mock('@tanstack/react-router', () => ({
     useLoaderData: () => mockedLoaderData,
   }),
   useNavigate: () => navigateMock,
+  Link: ({ children, to, search, ...props }: any) => {
+    const query = search ? new URLSearchParams(search).toString() : ''
+    const href = typeof to === 'string'
+      ? `${to}${query ? `?${query}` : ''}`
+      : '#'
+
+    return (
+      <a href={href} {...props}>
+        {children}
+      </a>
+    )
+  },
 }))
 
 vi.mock('@/features/campaigns/buget/hooks/use-campaign-progress', () => ({
@@ -57,117 +69,121 @@ vi.mock(
       onAnalyticsTargetChange,
       onEntityCuiChange,
       onEntityResolved,
+      belowHeader,
     }: any) => (
-      <div data-testid="analysis-page">
-        {entityCui}:{languageQuery ?? 'ro'}:{state.selectedYear}:
-        {state.reportType}:{state.activeView}:{state.treemapAccountCategory}:{state.expenseType ?? 'all'}:{state.treemapPrimary}:
-        {state.treemapDepth}:{state.treemapPath.join('|')}:{state.evolutionAccountCategory}:
-        {state.evolutionPrimary}:{state.mapPreviewKey}:
-        {JSON.stringify(analyticsTarget ?? null)}:
-        {commitmentsGrouping ?? 'none'}:{commitmentsDetailLevel ?? 'none'}:
-        {initialSettings?.currency ?? 'none'}:
-        {String(initialSettings?.inflationAdjusted)}
-        <button type="button" onClick={() => onEntityResolved?.()}>
-          Resolve entity
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            onStateChange?.({
-              selectedYear: 2023,
-              treemapPath: ['51', '51.01.03'],
-              mapPreviewKey: 'local-taxes',
-            })
-          }
-        >
-          Change state
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            onStateChange?.({
-              activeView: 'contracts',
-            })
-          }
-        >
-          Change view
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            onStateChange?.({
-              treemapDepth: 'subchapter',
-            })
-          }
-        >
-          Change treemap depth
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            onStateChange?.({
-              expenseType: 'dezvoltare',
-            })
-          }
-        >
-          Change expense type
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            onStateChange?.({
-              expenseType: undefined,
-            })
-          }
-        >
-          Clear expense type
-        </button>
-        <button
-          type="button"
-          onClick={() => onCommitmentsViewStateChange?.('ec', 'detailed')}
-        >
-          Change commitments state
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            onAnalyticsTargetChange?.({
-              target: {
-                subjectLabel: 'Education salaries',
-                path: [
-                  { type: 'fn', code: '65.00' },
-                  { type: 'ec', code: '10.01.00' },
-                ],
-              },
-              view: {
-                tab: 'execution',
-                timeframe: 'selected',
-                commitmentsMetric: 'CREDITE_ANGAJAMENT',
-              },
-            })
-          }
-        >
-          Open analytics
-        </button>
-        <button
-          type="button"
-          onClick={() => onAnalyticsTargetChange?.(null)}
-        >
-          Close analytics
-        </button>
-        <button
-          type="button"
-          onClick={() =>
-            onEntityCuiChange?.({
-              entityCui: '87654321',
-              entityName: 'Cluj-Napoca',
-              countyName: 'Cluj',
-            })
-          }
-        >
-          Select entity from map
-        </button>
-      </div>
+      <>
+        {belowHeader}
+        <div data-testid="analysis-page">
+          {entityCui}:{languageQuery ?? 'ro'}:{state.selectedYear}:
+          {state.reportType}:{state.activeView}:{state.treemapAccountCategory}:{state.expenseType ?? 'all'}:{state.treemapPrimary}:
+          {state.treemapDepth}:{state.treemapPath.join('|')}:{state.evolutionAccountCategory}:
+          {state.evolutionPrimary}:{state.mapPreviewKey}:
+          {JSON.stringify(analyticsTarget ?? null)}:
+          {commitmentsGrouping ?? 'none'}:{commitmentsDetailLevel ?? 'none'}:
+          {initialSettings?.currency ?? 'none'}:
+          {String(initialSettings?.inflationAdjusted)}
+          <button type="button" onClick={() => onEntityResolved?.()}>
+            Resolve entity
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onStateChange?.({
+                selectedYear: 2023,
+                treemapPath: ['51', '51.01.03'],
+                mapPreviewKey: 'local-taxes',
+              })
+            }
+          >
+            Change state
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onStateChange?.({
+                activeView: 'contracts',
+              })
+            }
+          >
+            Change view
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onStateChange?.({
+                treemapDepth: 'subchapter',
+              })
+            }
+          >
+            Change treemap depth
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onStateChange?.({
+                expenseType: 'dezvoltare',
+              })
+            }
+          >
+            Change expense type
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onStateChange?.({
+                expenseType: undefined,
+              })
+            }
+          >
+            Clear expense type
+          </button>
+          <button
+            type="button"
+            onClick={() => onCommitmentsViewStateChange?.('ec', 'detailed')}
+          >
+            Change commitments state
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onAnalyticsTargetChange?.({
+                target: {
+                  subjectLabel: 'Education salaries',
+                  path: [
+                    { type: 'fn', code: '65.00' },
+                    { type: 'ec', code: '10.01.00' },
+                  ],
+                },
+                view: {
+                  tab: 'execution',
+                  timeframe: 'selected',
+                  commitmentsMetric: 'CREDITE_ANGAJAMENT',
+                },
+              })
+            }
+          >
+            Open analytics
+          </button>
+          <button
+            type="button"
+            onClick={() => onAnalyticsTargetChange?.(null)}
+          >
+            Close analytics
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              onEntityCuiChange?.({
+                entityCui: '87654321',
+                entityName: 'Cluj-Napoca',
+                countyName: 'Cluj',
+              })
+            }
+          >
+            Select entity from map
+          </button>
+        </div>
+      </>
     ),
   }),
 )
@@ -213,6 +229,19 @@ describe('PrimarieEntityIndexRoutePage', () => {
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
       `87654321:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:all:fn:chapter::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:null:none:none:RON:false`,
     )
+  })
+
+  it('shows the campaign access card above the analysis page', async () => {
+    mockedParams = { cui: '4305857' }
+    mockedSearch = { lang: 'en' }
+
+    const { PrimarieEntityRoutePage } = await import('./index.lazy')
+
+    render(<PrimarieEntityRoutePage />)
+
+    expect(
+      screen.getByRole('link', { name: 'Open campaign' }),
+    ).toHaveAttribute('href', '/primarie/4305857/buget/provocari?lang=en')
   })
 
   it('normalizes invalid URL combinations before rendering the stable state', async () => {

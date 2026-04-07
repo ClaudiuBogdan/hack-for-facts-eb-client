@@ -26,6 +26,19 @@ vi.mock('../../hooks/use-campaign-content', () => ({
       kind: 'guide',
     },
     {
+      id: 'reference-1',
+      title: { ro: 'Resursă suplimentară', en: 'Additional resource' },
+      description: { ro: 'Lectură suplimentară', en: 'Further reading' },
+      url: 'https://example.com/reference',
+      kind: 'reference',
+    },
+    {
+      id: 'tutorial-buget-local',
+      title: { ro: 'Tutorial pagină localitate', en: 'Locality page tutorial' },
+      url: 'https://example.com/tutorial-local',
+      kind: 'tutorial',
+    },
+    {
       id: 'template-1',
       title: { ro: 'Model cerere', en: 'Request template' },
       description: { ro: 'Google Doc', en: 'Google Doc' },
@@ -33,9 +46,9 @@ vi.mock('../../hooks/use-campaign-content', () => ({
       kind: 'template',
     },
     {
-      id: 'tutorial-utilizare-platforma',
-      title: { ro: 'Tutorial platforma', en: 'Platform tutorial' },
-      url: 'https://example.com/tutorial',
+      id: 'tutorial-buget-clasificatii',
+      title: { ro: 'Tutorial clasificări', en: 'Budget classifications tutorial' },
+      url: 'https://example.com/tutorial-classifications',
       kind: 'tutorial',
     },
   ],
@@ -63,11 +76,13 @@ describe('BugetResourcesPage', () => {
     expect(backLink).toHaveAttribute('href', '/primarie/4305857/buget')
   })
 
-  it('renders guide resources and filters out the tutorial resource', () => {
+  it('renders guides, videos, and templates', () => {
     render(<BugetResourcesPage locale="ro" entityCui="4305857" />)
 
     expect(screen.getByText('Ghid buget')).toBeInTheDocument()
-    expect(screen.queryByText('Tutorial platforma')).not.toBeInTheDocument()
+    expect(screen.getByText('Tutorial pagină localitate')).toBeInTheDocument()
+    expect(screen.getByText('Tutorial clasificări')).toBeInTheDocument()
+    expect(screen.getByText('Resursă suplimentară')).toBeInTheDocument()
   })
 
   it('renders template resources with descriptions', () => {
@@ -90,6 +105,7 @@ describe('BugetResourcesPage', () => {
     render(<BugetResourcesPage locale="ro" entityCui="4305857" />)
 
     expect(screen.getByText('Ghiduri')).toBeInTheDocument()
+    expect(screen.getByText('Video')).toBeInTheDocument()
     expect(screen.getByText('Modele')).toBeInTheDocument()
   })
 
@@ -97,6 +113,7 @@ describe('BugetResourcesPage', () => {
     render(<BugetResourcesPage locale="en" entityCui="4305857" />)
 
     expect(screen.getByText('Guides')).toBeInTheDocument()
+    expect(screen.getByText('Videos')).toBeInTheDocument()
     expect(screen.getByText('Templates')).toBeInTheDocument()
   })
 })
