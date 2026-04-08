@@ -20,11 +20,11 @@ patches:
       template:
         metadata:
           annotations:
-            image-sha: d7ac2c87a8a3ceb73851911c06bb3733111b27a3
+            image-sha: 880941547c5359a0e927da884961a9d5d86fea14
   target:
     kind: Deployment
     name: hack-for-facts-eb-client
 images:
 - name: harbor.devostack.com/hack-for-facts/hack-for-facts-eb-client
   newName: harbor.devostack.com/hack-for-facts/hack-for-facts-eb-client
-  newTag: d7ac2c87a8a3ceb73851911c06bb3733111b27a3
+  newTag: 880941547c5359a0e927da884961a9d5d86fea14
