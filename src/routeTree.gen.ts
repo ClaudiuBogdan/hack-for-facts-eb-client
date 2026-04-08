@@ -26,6 +26,8 @@ import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
 import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$token'
+import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
+import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
 import { Route as ShareCodeRouteImport } from './routes/share.$code'
 import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
 import { Route as SettingsNotificationsRouteImport } from './routes/settings/notifications'
@@ -172,6 +174,16 @@ const UnsubscribeTokenRoute = UnsubscribeTokenRouteImport.update({
   id: '/unsubscribe/$token',
   path: '/unsubscribe/$token',
   getParentRoute: () => rootRouteImport,
+} as any)
+const SignUpSplatRoute = SignUpSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => SignUpRoute,
+} as any)
+const SignInSplatRoute = SignInSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => SignInRoute,
 } as any)
 const ShareCodeRoute = ShareCodeRouteImport.update({
   id: '/share/$code',
@@ -462,8 +474,8 @@ export interface FileRoutesByFullPath {
   '/map': typeof MapRoute
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
-  '/sign-in': typeof SignInRoute
-  '/sign-up': typeof SignUpRoute
+  '/sign-in': typeof SignInRouteWithChildren
+  '/sign-up': typeof SignUpRouteWithChildren
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
   '/$lang/learning': typeof LangLearningRouteRouteWithChildren
@@ -480,6 +492,8 @@ export interface FileRoutesByFullPath {
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
+  '/sign-in/$': typeof SignInSplatRoute
+  '/sign-up/$': typeof SignUpSplatRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/primarie/': typeof PrimarieIndexRoute
@@ -521,8 +535,8 @@ export interface FileRoutesByTo {
   '/map': typeof MapRoute
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
-  '/sign-in': typeof SignInRoute
-  '/sign-up': typeof SignUpRoute
+  '/sign-in': typeof SignInRouteWithChildren
+  '/sign-up': typeof SignUpRouteWithChildren
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
   '/alerts/new': typeof AlertsNewRoute
@@ -535,6 +549,8 @@ export interface FileRoutesByTo {
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
+  '/sign-in/$': typeof SignInSplatRoute
+  '/sign-up/$': typeof SignUpSplatRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/primarie': typeof PrimarieIndexRoute
@@ -576,8 +592,8 @@ export interface FileRoutesById {
   '/map': typeof MapRoute
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
-  '/sign-in': typeof SignInRoute
-  '/sign-up': typeof SignUpRoute
+  '/sign-in': typeof SignInRouteWithChildren
+  '/sign-up': typeof SignUpRouteWithChildren
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
   '/$lang/learning': typeof LangLearningRouteRouteWithChildren
@@ -594,6 +610,8 @@ export interface FileRoutesById {
   '/settings/notifications': typeof SettingsNotificationsRoute
   '/settings/profile': typeof SettingsProfileRoute
   '/share/$code': typeof ShareCodeRoute
+  '/sign-in/$': typeof SignInSplatRoute
+  '/sign-up/$': typeof SignUpSplatRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/primarie/': typeof PrimarieIndexRoute
@@ -655,6 +673,8 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/settings/profile'
     | '/share/$code'
+    | '/sign-in/$'
+    | '/sign-up/$'
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/primarie/'
@@ -710,6 +730,8 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/settings/profile'
     | '/share/$code'
+    | '/sign-in/$'
+    | '/sign-up/$'
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/primarie'
@@ -768,6 +790,8 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/settings/profile'
     | '/share/$code'
+    | '/sign-in/$'
+    | '/sign-up/$'
     | '/unsubscribe/$token'
     | '/research/employees-data'
     | '/primarie/'
@@ -810,8 +834,8 @@ export interface RootRouteChildren {
   MapRoute: typeof MapRoute
   PrivacyRoute: typeof PrivacyRoute
   ProvocareRoute: typeof ProvocareRoute
-  SignInRoute: typeof SignInRoute
-  SignUpRoute: typeof SignUpRoute
+  SignInRoute: typeof SignInRouteWithChildren
+  SignUpRoute: typeof SignUpRouteWithChildren
   TestErrorRoute: typeof TestErrorRoute
   TermsLazyRoute: typeof TermsLazyRoute
   LangLearningRouteRoute: typeof LangLearningRouteRouteWithChildren
@@ -969,6 +993,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/unsubscribe/$token'
       preLoaderRoute: typeof UnsubscribeTokenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/sign-up/$': {
+      id: '/sign-up/$'
+      path: '/$'
+      fullPath: '/sign-up/$'
+      preLoaderRoute: typeof SignUpSplatRouteImport
+      parentRoute: typeof SignUpRoute
+    }
+    '/sign-in/$': {
+      id: '/sign-in/$'
+      path: '/$'
+      fullPath: '/sign-in/$'
+      preLoaderRoute: typeof SignInSplatRouteImport
+      parentRoute: typeof SignInRoute
     }
     '/share/$code': {
       id: '/share/$code'
@@ -1258,6 +1296,28 @@ const BugeteLocale2026RouteChildren: BugeteLocale2026RouteChildren = {
 const BugeteLocale2026RouteWithChildren =
   BugeteLocale2026Route._addFileChildren(BugeteLocale2026RouteChildren)
 
+interface SignInRouteChildren {
+  SignInSplatRoute: typeof SignInSplatRoute
+}
+
+const SignInRouteChildren: SignInRouteChildren = {
+  SignInSplatRoute: SignInSplatRoute,
+}
+
+const SignInRouteWithChildren =
+  SignInRoute._addFileChildren(SignInRouteChildren)
+
+interface SignUpRouteChildren {
+  SignUpSplatRoute: typeof SignUpSplatRoute
+}
+
+const SignUpRouteChildren: SignUpRouteChildren = {
+  SignUpSplatRoute: SignUpSplatRoute,
+}
+
+const SignUpRouteWithChildren =
+  SignUpRoute._addFileChildren(SignUpRouteChildren)
+
 interface LangLearningRouteRouteChildren {
   LangLearningOnboardingRoute: typeof LangLearningOnboardingRoute
   LangLearningIndexRoute: typeof LangLearningIndexRoute
@@ -1363,8 +1423,8 @@ const rootRouteChildren: RootRouteChildren = {
   MapRoute: MapRoute,
   PrivacyRoute: PrivacyRoute,
   ProvocareRoute: ProvocareRoute,
-  SignInRoute: SignInRoute,
-  SignUpRoute: SignUpRoute,
+  SignInRoute: SignInRouteWithChildren,
+  SignUpRoute: SignUpRouteWithChildren,
   TestErrorRoute: TestErrorRoute,
   TermsLazyRoute: TermsLazyRoute,
   LangLearningRouteRoute: LangLearningRouteRouteWithChildren,
