@@ -16,7 +16,6 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { Analytics } from '@/lib/analytics'
 import { useRecentEntities } from '@/hooks/useRecentEntities'
 import { FUNKY_CAMPAIGN_KEY } from '@/features/notifications/campaign-notification-keys'
-import { useCampaignUatDirectory } from '../../hooks/use-campaign-uat-directory'
 import { useSubscriptionStats } from '../../hooks/use-subscription-stats'
 import { useUatCuiMap } from '../../hooks/use-uat-cui-map'
 import type { CampaignLocale } from '../../types'
@@ -94,16 +93,15 @@ export function BugetEntitySelectorGate({
     isLoading: isSubscriptionStatsLoading,
     isError: isSubscriptionStatsError,
   } = useSubscriptionStats(FUNKY_CAMPAIGN_KEY)
-  const {
-    data: campaignUatDirectory,
-    isLoading: isCampaignUatDirectoryLoading,
-    isError: isCampaignUatDirectoryError,
-  } = useCampaignUatDirectory()
 
   // Map state
   const [pendingUatSelection, setPendingUatSelection] = useState<PendingUatSelection | null>(null)
   const [isResolvingSelection, setIsResolvingSelection] = useState(false)
-  const { data: uatCuiMap } = useUatCuiMap()
+  const {
+    data: uatCuiMap,
+    isLoading: isUatCuiMapLoading,
+    isError: isUatCuiMapError,
+  } = useUatCuiMap()
 
   useEffect(() => {
     Analytics.capture(Analytics.EVENTS.CampaignEntitySelectorOpened)
@@ -190,7 +188,7 @@ export function BugetEntitySelectorGate({
   const selectedEntityDialogLabel = formatCityHallLabel(selectedUatName, locale)
 
   const subscriptionCountByEntityCui = useMemo(() => {
-    if (!campaignUatDirectory) {
+    if (!uatCuiMap) {
       return new Map<string, number>()
     }
 
@@ -199,19 +197,19 @@ export function BugetEntitySelectorGate({
     )
     const next = new Map<string, number>()
 
-    for (const [cui, directoryEntry] of campaignUatDirectory.byCui.entries()) {
-      next.set(cui, countBySirutaCode.get(normalizeSirutaCode(directoryEntry.natcode)) ?? 0)
+    for (const [cui, natcode] of uatCuiMap.cuiToNatcodeMap.entries()) {
+      next.set(cui, countBySirutaCode.get(normalizeSirutaCode(natcode)) ?? 0)
     }
 
     return next
-  }, [campaignUatDirectory, perUat])
+  }, [perUat, uatCuiMap])
 
   const renderSearchResultTrailing = useCallback((entity: EntitySelection) => {
-    if (isSubscriptionStatsLoading || isCampaignUatDirectoryLoading) {
+    if (isSubscriptionStatsLoading || isUatCuiMapLoading) {
       return <Skeleton className="h-6 w-12 rounded-full" />
     }
 
-    if (isSubscriptionStatsError || isCampaignUatDirectoryError) {
+    if (isSubscriptionStatsError || isUatCuiMapError) {
       return (
         <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
           --
@@ -222,8 +220,8 @@ export function BugetEntitySelectorGate({
     const count = subscriptionCountByEntityCui.get(entity.cui) ?? 0
     const srLabel =
       locale === 'en'
-        ? `${count.toLocaleString('en-US')} subscribers`
-        : `${count.toLocaleString('ro-RO')} abonați`
+        ? `${count.toLocaleString('en-US')} participants`
+        : `${count.toLocaleString('ro-RO')} participanți`
 
     return (
       <span className="inline-flex items-center justify-center rounded-full bg-[#ef2d00]/10 px-2.5 py-1 text-xs font-semibold text-[#c91d00]">
@@ -234,10 +232,10 @@ export function BugetEntitySelectorGate({
       </span>
     )
   }, [
-    isCampaignUatDirectoryError,
-    isCampaignUatDirectoryLoading,
     isSubscriptionStatsError,
     isSubscriptionStatsLoading,
+    isUatCuiMapError,
+    isUatCuiMapLoading,
     locale,
     subscriptionCountByEntityCui,
   ])

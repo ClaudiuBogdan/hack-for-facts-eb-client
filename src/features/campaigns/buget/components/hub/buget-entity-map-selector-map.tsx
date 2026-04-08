@@ -389,8 +389,8 @@ export function BugetEntityMapSelectorMap({
         maxBounds={DEFAULT_MAX_BOUNDS}
         scrollWheelZoom
         preferCanvas
-        style={{ height: 'calc(100svh - 10rem)', width: '100%', backgroundColor: 'transparent' }}
-        className="z-0 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 sm:rounded-2xl"
+        style={{ height: '100%', width: '100%', backgroundColor: 'transparent' }}
+        className="z-0 h-full w-full overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 sm:rounded-2xl"
         data-testid="campaign-entity-map-selector"
       >
         {uatGeoJson.type === 'FeatureCollection' ? (

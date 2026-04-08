@@ -115,6 +115,7 @@ export function CampaignParticipantsMap({
               onUatSelect={onUatSelect}
               highlightSubscriptions={
                 shouldHighlightSubscriptions &&
+                !isSubscriptionStatsLoading &&
                 !isSubscriptionStatsError
               }
               totalParticipants={

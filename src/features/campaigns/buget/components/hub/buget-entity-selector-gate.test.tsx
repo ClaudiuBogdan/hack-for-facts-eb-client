@@ -12,6 +12,23 @@ type MockLinkProps = {
 
 const entitySearchInputMock = vi.fn((props: Record<string, unknown>) => <div>{String(props.placeholder ?? 'Entity search')}</div>)
 const useIsMobileMock = vi.fn(() => false)
+let subscriptionStatsState = {
+  total: 12,
+  perUat: [] as Array<{ sirutaCode: string; uatName: string; count: number }>,
+  isLoading: false,
+  isError: false,
+}
+let uatCuiMapState = {
+  data: {
+    natcodeToCuiMap: new Map<string, string>(),
+    cuiToNatcodeMap: new Map<string, string>(),
+    validRows: 0,
+    invalidRows: 0,
+    duplicateNatcodeRows: 0,
+  },
+  isLoading: false,
+  isError: false,
+}
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to, search, ...props }: MockLinkProps) => {
@@ -68,24 +85,11 @@ vi.mock('./recent-uat-badges', () => ({
 }))
 
 vi.mock('../../hooks/use-subscription-stats', () => ({
-  useSubscriptionStats: () => ({
-    total: 12,
-    perUat: [],
-    isLoading: false,
-    isError: false,
-  }),
+  useSubscriptionStats: () => subscriptionStatsState,
 }))
 
-vi.mock('../../hooks/use-campaign-uat-directory', () => ({
-  useCampaignUatDirectory: () => ({
-    data: {
-      byCui: new Map(),
-      byNatcode: new Map(),
-      byUatId: new Map(),
-    },
-    isLoading: false,
-    isError: false,
-  }),
+vi.mock('../../hooks/use-uat-cui-map', () => ({
+  useUatCuiMap: () => uatCuiMapState,
 }))
 
 describe('BugetEntitySelectorGate', () => {
@@ -93,6 +97,23 @@ describe('BugetEntitySelectorGate', () => {
     entitySearchInputMock.mockClear()
     useIsMobileMock.mockReset()
     useIsMobileMock.mockReturnValue(false)
+    subscriptionStatsState = {
+      total: 12,
+      perUat: [],
+      isLoading: false,
+      isError: false,
+    }
+    uatCuiMapState = {
+      data: {
+        natcodeToCuiMap: new Map(),
+        cuiToNatcodeMap: new Map(),
+        validRows: 0,
+        invalidRows: 0,
+        duplicateNatcodeRows: 0,
+      },
+      isLoading: false,
+      isError: false,
+    }
   })
 
   it('renders the inline map section for picking from the map', () => {
@@ -153,5 +174,62 @@ describe('BugetEntitySelectorGate', () => {
         }),
       )
     })
+  })
+
+  it('maps search-result participant counts via the CSV cui-to-siruta lookup', () => {
+    subscriptionStatsState = {
+      total: 12,
+      perUat: [
+        { sirutaCode: '154972', uatName: 'Orașul Cisnădie', count: 3 },
+      ],
+      isLoading: false,
+      isError: false,
+    }
+    uatCuiMapState = {
+      data: {
+        natcodeToCuiMap: new Map([['154972', '4406002']]),
+        cuiToNatcodeMap: new Map([['4406002', '154972']]),
+        validRows: 1,
+        invalidRows: 0,
+        duplicateNatcodeRows: 0,
+      },
+      isLoading: false,
+      isError: false,
+    }
+
+    render(
+      <BugetEntitySelectorGate
+        locale="ro"
+        onEntitySelected={vi.fn()}
+      />,
+    )
+
+    const props = entitySearchInputMock.mock.calls[
+      entitySearchInputMock.mock.calls.length - 1
+    ]?.[0] as {
+      renderResultTrailing?: (entity: {
+        cui: string
+        name: string
+        entity_type?: string | null
+        uat?: {
+          county_name?: string | null
+        } | null
+      }) => ReactNode
+    }
+
+    expect(props.renderResultTrailing).toBeDefined()
+
+    render(
+      <>{props.renderResultTrailing?.({
+        cui: '4406002',
+        name: 'Orașul Cisnădie',
+        entity_type: 'admin_town_hall',
+        uat: {
+          county_name: 'Sibiu',
+        },
+      })}</>,
+    )
+
+    expect(screen.getByText('3')).toBeInTheDocument()
   })
 })

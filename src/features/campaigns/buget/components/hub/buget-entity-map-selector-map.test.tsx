@@ -17,8 +17,22 @@ const fillColors: string[] = []
 const removeLayerMock = vi.fn()
 
 vi.mock('react-leaflet', () => ({
-  MapContainer: ({ children }: { readonly children: ReactNode }) => (
-    <div data-testid="mock-map-container">{children}</div>
+  MapContainer: ({
+    children,
+    style,
+    className,
+  }: {
+    readonly children: ReactNode
+    readonly style?: Record<string, string>
+    readonly className?: string
+  }) => (
+    <div
+      data-testid="mock-map-container"
+      style={style}
+      className={className}
+    >
+      {children}
+    </div>
   ),
   GeoJSON: forwardRef(function MockGeoJson(
     {
@@ -165,5 +179,9 @@ describe('BugetEntityMapSelectorMap', () => {
 
     expect(tooltipContents[tooltipContents.length - 1]).toContain('3 participanți')
     expect(fillColors[fillColors.length - 1]).not.toBe(SUBSCRIPTION_NO_DATA_COLOR)
+    expect(document.querySelector('[data-testid="mock-map-container"]')).toHaveStyle({
+      height: '100%',
+      width: '100%',
+    })
   })
 })
