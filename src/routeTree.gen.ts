@@ -12,6 +12,8 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TestErrorRouteImport } from './routes/test-error'
+import { Route as SignUpRouteImport } from './routes/sign-up'
+import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as ProvocareRouteImport } from './routes/provocare'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as MapRouteImport } from './routes/map'
@@ -78,6 +80,16 @@ const TermsLazyRoute = TermsLazyRouteImport.update({
 const TestErrorRoute = TestErrorRouteImport.update({
   id: '/test-error',
   path: '/test-error',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignUpRoute = SignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProvocareRoute = ProvocareRouteImport.update({
@@ -450,6 +462,8 @@ export interface FileRoutesByFullPath {
   '/map': typeof MapRoute
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
   '/$lang/learning': typeof LangLearningRouteRouteWithChildren
@@ -507,6 +521,8 @@ export interface FileRoutesByTo {
   '/map': typeof MapRoute
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
   '/alerts/new': typeof AlertsNewRoute
@@ -560,6 +576,8 @@ export interface FileRoutesById {
   '/map': typeof MapRoute
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
   '/$lang/learning': typeof LangLearningRouteRouteWithChildren
@@ -619,6 +637,8 @@ export interface FileRouteTypes {
     | '/map'
     | '/privacy'
     | '/provocare'
+    | '/sign-in'
+    | '/sign-up'
     | '/test-error'
     | '/terms'
     | '/$lang/learning'
@@ -676,6 +696,8 @@ export interface FileRouteTypes {
     | '/map'
     | '/privacy'
     | '/provocare'
+    | '/sign-in'
+    | '/sign-up'
     | '/test-error'
     | '/terms'
     | '/alerts/new'
@@ -728,6 +750,8 @@ export interface FileRouteTypes {
     | '/map'
     | '/privacy'
     | '/provocare'
+    | '/sign-in'
+    | '/sign-up'
     | '/test-error'
     | '/terms'
     | '/$lang/learning'
@@ -786,6 +810,8 @@ export interface RootRouteChildren {
   MapRoute: typeof MapRoute
   PrivacyRoute: typeof PrivacyRoute
   ProvocareRoute: typeof ProvocareRoute
+  SignInRoute: typeof SignInRoute
+  SignUpRoute: typeof SignUpRoute
   TestErrorRoute: typeof TestErrorRoute
   TermsLazyRoute: typeof TermsLazyRoute
   LangLearningRouteRoute: typeof LangLearningRouteRouteWithChildren
@@ -830,6 +856,20 @@ declare module '@tanstack/react-router' {
       path: '/test-error'
       fullPath: '/test-error'
       preLoaderRoute: typeof TestErrorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-up': {
+      id: '/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/provocare': {
@@ -1323,6 +1363,8 @@ const rootRouteChildren: RootRouteChildren = {
   MapRoute: MapRoute,
   PrivacyRoute: PrivacyRoute,
   ProvocareRoute: ProvocareRoute,
+  SignInRoute: SignInRoute,
+  SignUpRoute: SignUpRoute,
   TestErrorRoute: TestErrorRoute,
   TermsLazyRoute: TermsLazyRoute,
   LangLearningRouteRoute: LangLearningRouteRouteWithChildren,

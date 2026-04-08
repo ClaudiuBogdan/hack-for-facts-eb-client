@@ -69,6 +69,7 @@ const mockSignOut = vi.fn()
 const mockAuthState = vi.fn()
 
 vi.mock('@/lib/auth', () => ({
+  AUTH_ACCOUNT_URL: 'https://accounts.transparenta.eu/user',
   useAuth: () => mockAuthState(),
   AuthSignInButton: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="auth-sign-in-button">{children}</div>
@@ -76,8 +77,9 @@ vi.mock('@/lib/auth', () => ({
 }))
 
 // Mock utils
+const mockLocale = vi.fn(() => 'en')
 vi.mock('@/lib/utils', () => ({
-  getUserLocale: () => 'en',
+  getUserLocale: () => mockLocale(),
   cn: (...classes: (string | undefined)[]) => classes.filter(Boolean).join(' '),
 }))
 
@@ -132,6 +134,7 @@ vi.mock('@/components/ui/shortcuts-modal', () => ({
 describe('NavUser', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockLocale.mockReturnValue('en')
     mockSidebarState.mockReturnValue({
       isMobile: false,
       setOpenMobile: mockSetOpenMobile,
@@ -186,10 +189,11 @@ describe('NavUser', () => {
       expect(screen.getByText('Log out')).toBeInTheDocument()
     })
 
-    it('renders settings link', () => {
+    it('renders account link', () => {
       render(<NavUser />)
 
-      expect(screen.getByText('Settings')).toBeInTheDocument()
+      expect(screen.getByText('Account')).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'Account' })).toHaveAttribute('href', 'https://accounts.transparenta.eu/user')
     })
 
     it('renders notifications link', () => {
@@ -237,6 +241,24 @@ describe('NavUser', () => {
       render(<NavUser />)
 
       expect(screen.getByTestId('auth-sign-in-button')).toBeInTheDocument()
+    })
+
+    it('renders Romanian sign-in copy when locale is ro', () => {
+      mockLocale.mockReturnValue('ro')
+
+      render(<NavUser />)
+
+      expect(screen.getByText('Conectare')).toBeInTheDocument()
+    })
+  })
+
+  describe('Romanian labels', () => {
+    it('renders Romanian logout copy when locale is ro', () => {
+      mockLocale.mockReturnValue('ro')
+
+      render(<NavUser />)
+
+      expect(screen.getByText('Deconectare')).toBeInTheDocument()
     })
   })
 

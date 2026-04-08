@@ -1,4 +1,14 @@
+import React from 'react'
+import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { roRO } from '@clerk/localizations'
+
+const mockLocale = { value: 'ro' as 'ro' | 'en' }
+const capturedClerkProviderProps: Array<Record<string, unknown>> = []
+
+function getLastClerkProviderProps() {
+  return capturedClerkProviderProps[capturedClerkProviderProps.length - 1]
+}
 
 // Mock logger before importing the module under test
 vi.mock('@/lib/logger', () => ({
@@ -10,12 +20,18 @@ vi.mock('@/lib/logger', () => ({
   })),
 }))
 
+vi.mock('@/lib/utils', () => ({
+  getUserLocale: () => mockLocale.value,
+}))
+
 // Mock Clerk components to avoid JSX/React dependency issues
 vi.mock('@clerk/clerk-react', () => ({
-  ClerkProvider: ({ children }: { children: React.ReactNode }) => children,
+  ClerkProvider: ({ children, ...props }: { children: React.ReactNode } & Record<string, unknown>) => {
+    capturedClerkProviderProps.push(props)
+    return children
+  },
   SignIn: () => null,
   SignUp: () => null,
-  SignInButton: ({ children }: { children: React.ReactNode }) => children,
   SignOutButton: ({ children }: { children: React.ReactNode }) => children,
   useAuth: () => ({ isLoaded: true, isSignedIn: false, signOut: vi.fn() }),
   useUser: () => ({ user: null }),
@@ -36,6 +52,9 @@ vi.mock('@/config/env', () => ({
 let waitForClerk: typeof import('./index').waitForClerk
 let getAuthToken: typeof import('./index').getAuthToken
 let markClerkReady: typeof import('./index').markClerkReady
+let buildAuthNavigationTarget: typeof import('./index').buildAuthNavigationTarget
+let resolveClerkLocalization: typeof import('./index').resolveClerkLocalization
+let AuthProvider: typeof import('./index').AuthProvider
 
 beforeEach(async () => {
   vi.useFakeTimers()
@@ -45,12 +64,18 @@ beforeEach(async () => {
   waitForClerk = mod.waitForClerk
   getAuthToken = mod.getAuthToken
   markClerkReady = mod.markClerkReady
+  buildAuthNavigationTarget = mod.buildAuthNavigationTarget
+  resolveClerkLocalization = mod.resolveClerkLocalization
+  AuthProvider = mod.AuthProvider
+  mockLocale.value = 'ro'
+  capturedClerkProviderProps.length = 0
 })
 
 afterEach(() => {
   vi.useRealTimers()
   // Clean up Clerk global
   delete (window as any).Clerk
+  capturedClerkProviderProps.length = 0
 })
 
 describe('waitForClerk', () => {
@@ -125,6 +150,69 @@ describe('waitForClerk', () => {
 
     await promise
     // Should resolve without error
+  })
+})
+
+describe('resolveClerkLocalization', () => {
+  it('returns Romanian Clerk translations when the app locale is ro', () => {
+    expect(resolveClerkLocalization('ro')).toBe(roRO)
+  })
+
+  it('falls back to Clerk defaults for English', () => {
+    expect(resolveClerkLocalization('en')).toBeUndefined()
+  })
+})
+
+describe('AuthProvider localization', () => {
+  it('passes Romanian localization and auth routes to ClerkProvider when locale is ro', () => {
+    render(
+      React.createElement(
+        AuthProvider,
+        { publishableKey: 'pk_test_abc' },
+        React.createElement('div', null, 'child'),
+      ),
+    )
+
+    expect(screen.getByText('child')).toBeInTheDocument()
+    expect(getLastClerkProviderProps()).toMatchObject({
+      localization: roRO,
+      signInUrl: '/sign-in',
+      signUpUrl: '/sign-up',
+    })
+  })
+
+  it('omits localization for English while keeping auth routes configured', () => {
+    mockLocale.value = 'en'
+
+    render(
+      React.createElement(
+        AuthProvider,
+        { publishableKey: 'pk_test_abc' },
+        React.createElement('div', null, 'child'),
+      ),
+    )
+
+    expect(getLastClerkProviderProps()).toMatchObject({
+      localization: undefined,
+      signInUrl: '/sign-in',
+      signUpUrl: '/sign-up',
+    })
+  })
+})
+
+describe('Auth button wrappers', () => {
+  it('builds a sign-in destination with redirect_url', () => {
+    window.history.pushState({}, '', '/provocare/notificari?lang=ro')
+
+    expect(buildAuthNavigationTarget('/sign-in', window.location.href)).toBe(
+      '/sign-in?redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fprovocare%2Fnotificari%3Flang%3Dro',
+    )
+  })
+
+  it('does not include redirect_url when already on an auth route', () => {
+    window.history.pushState({}, '', '/sign-in')
+
+    expect(buildAuthNavigationTarget('/sign-up', window.location.href)).toBe('/sign-up')
   })
 })
 

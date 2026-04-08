@@ -3,13 +3,15 @@ import {
   ClerkProvider,
   SignIn as ClerkSignIn,
   SignUp as ClerkSignUp,
-  SignInButton as ClerkSignInButton,
   SignOutButton as ClerkSignOutButton,
   useAuth as useClerkAuth,
   useUser as useClerkUser,
 } from '@clerk/clerk-react'
+import { roRO } from '@clerk/localizations'
 import type { LoadedClerk } from '@clerk/shared/types'
 import { env } from '@/config/env'
+import type { SupportedLocale } from '@/lib/i18n'
+import { getUserLocale } from '@/lib/utils'
 import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('auth')
@@ -37,6 +39,93 @@ type AuthContextValue = {
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
+
+export const AUTH_SIGN_IN_PATH = '/sign-in'
+export const AUTH_SIGN_UP_PATH = '/sign-up'
+export const AUTH_ACCOUNT_URL = 'https://accounts.transparenta.eu/user'
+export const AUTH_CLERK_APPEARANCE = {
+  layout: {
+    socialButtonsVariant: 'blockButton',
+  },
+  elements: {
+    socialButtonsRoot: 'w-full',
+    socialButtons: 'grid w-full grid-cols-1 !grid-cols-1 gap-3',
+    socialButtonsBlockButton: 'flex w-full !w-full justify-start rounded-lg border border-border bg-background px-4 py-3 shadow-none hover:bg-accent hover:text-accent-foreground',
+    socialButtonsBlockButtonText: 'flex-1 text-left text-sm font-medium',
+    socialButtonsProviderIcon: 'mr-3 shrink-0',
+  },
+} satisfies NonNullable<ComponentProps<typeof ClerkSignIn>['appearance']>
+
+export function resolveClerkLocalization(locale: SupportedLocale) {
+  return locale === 'ro' ? roRO : undefined
+}
+
+function isAuthRoutePath(pathname: string): boolean {
+  return pathname === AUTH_SIGN_IN_PATH || pathname === AUTH_SIGN_UP_PATH
+}
+
+function getCurrentAbsoluteUrl(): string | undefined {
+  if (typeof window === 'undefined') {
+    return undefined
+  }
+
+  return window.location.href
+}
+
+function normalizeAuthRedirectUrl(target: string | undefined): string | undefined {
+  if (!target || typeof window === 'undefined') {
+    return undefined
+  }
+
+  try {
+    const url = new URL(target, window.location.origin)
+
+    if (url.origin !== window.location.origin || isAuthRoutePath(url.pathname)) {
+      return undefined
+    }
+
+    return url.toString()
+  } catch {
+    return undefined
+  }
+}
+
+export function buildAuthNavigationTarget(destinationPath: string, redirectUrl?: string): string {
+  const normalizedRedirectUrl = normalizeAuthRedirectUrl(redirectUrl)
+
+  if (typeof window === 'undefined') {
+    return destinationPath
+  }
+
+  const destination = new URL(destinationPath, window.location.origin)
+
+  if (normalizedRedirectUrl) {
+    destination.searchParams.set('redirect_url', normalizedRedirectUrl)
+  }
+
+  return `${destination.pathname}${destination.search}${destination.hash}`
+}
+
+function prepareAuthButtonChild(
+  children: React.ReactNode,
+  redirectUrl: string | undefined,
+  destination: string,
+): React.ReactNode {
+  if (!React.isValidElement<{ onClick?: (event: React.MouseEvent) => void }>(children)) {
+    return children
+  }
+
+  const originalOnClick = children.props.onClick
+
+  return React.cloneElement<{ onClick?: (event: React.MouseEvent) => void }>(children, {
+    onClick: (event: React.MouseEvent) => {
+      originalOnClick?.(event)
+      if (!event.defaultPrevented && typeof window !== 'undefined') {
+        window.location.assign(buildAuthNavigationTarget(destination, redirectUrl))
+      }
+    },
+  })
+}
 
 function ClerkAuthBridge({ children }: PropsWithChildren) {
   const { isLoaded, isSignedIn, signOut } = useClerkAuth()
@@ -100,8 +189,14 @@ export function AuthProvider({ publishableKey, children }: PropsWithChildren<{ p
     return <NoopAuthProvider isSSR>{children}</NoopAuthProvider>
   }
   if (publishableKey) {
+    const locale = getUserLocale()
     return (
-      <ClerkProvider publishableKey={publishableKey}>
+      <ClerkProvider
+        publishableKey={publishableKey}
+        localization={resolveClerkLocalization(locale)}
+        signInUrl={AUTH_SIGN_IN_PATH}
+        signUpUrl={AUTH_SIGN_UP_PATH}
+      >
         <ClerkAuthBridge>{children}</ClerkAuthBridge>
       </ClerkProvider>
     )
@@ -149,24 +244,44 @@ type AuthSignUpProps = Omit<ComponentProps<typeof ClerkSignUp>, LegacyRedirectPr
   path?: string
 }
 
-type AuthSignInButtonProps = PropsWithChildren<Omit<ComponentProps<typeof ClerkSignInButton>, 'children' | LegacyRedirectPropKeys>>
+type AuthSignInButtonProps = PropsWithChildren<{
+  fallbackRedirectUrl?: string
+}>
 
-export function AuthSignIn({ path = '/sign-in', ...rest }: AuthSignInProps) {
+type AuthSignUpButtonProps = PropsWithChildren<{
+  fallbackRedirectUrl?: string
+}>
+
+export function AuthSignIn({ path = AUTH_SIGN_IN_PATH, ...rest }: AuthSignInProps) {
   const { isEnabled } = useAuth()
   if (!isEnabled) {
     return <div className="text-sm text-muted-foreground">Authentication is disabled.</div>
   }
   const safeProps = omitLegacyRedirectProps(rest as Record<string, unknown>)
-  return <ClerkSignIn {...(safeProps as typeof rest)} routing="path" path={path} />
+  return (
+    <ClerkSignIn
+      {...(safeProps as typeof rest)}
+      routing="path"
+      path={path}
+      signUpUrl={AUTH_SIGN_UP_PATH}
+    />
+  )
 }
 
-export function AuthSignUp({ path = '/sign-up', ...rest }: AuthSignUpProps) {
+export function AuthSignUp({ path = AUTH_SIGN_UP_PATH, ...rest }: AuthSignUpProps) {
   const { isEnabled } = useAuth()
   if (!isEnabled) {
     return <div className="text-sm text-muted-foreground">Authentication is disabled.</div>
   }
   const safeProps = omitLegacyRedirectProps(rest as Record<string, unknown>)
-  return <ClerkSignUp {...(safeProps as typeof rest)} routing="path" path={path} />
+  return (
+    <ClerkSignUp
+      {...(safeProps as typeof rest)}
+      routing="path"
+      path={path}
+      signInUrl={AUTH_SIGN_IN_PATH}
+    />
+  )
 }
 
 export function AuthSignInButton({ children = 'Sign in', ...rest }: AuthSignInButtonProps) {
@@ -174,8 +289,25 @@ export function AuthSignInButton({ children = 'Sign in', ...rest }: AuthSignInBu
   if (!isEnabled) {
     return <span>{children}</span>
   }
-  const safeProps = omitLegacyRedirectProps(rest as Record<string, unknown>)
-  return <ClerkSignInButton {...(safeProps as typeof rest)}>{children}</ClerkSignInButton>
+  const preparedChildren = prepareAuthButtonChild(
+    children,
+    rest.fallbackRedirectUrl ?? getCurrentAbsoluteUrl(),
+    AUTH_SIGN_IN_PATH,
+  )
+  return <>{preparedChildren}</>
+}
+
+export function AuthSignUpButton({ children = 'Sign up', ...rest }: AuthSignUpButtonProps) {
+  const { isEnabled } = useAuth()
+  if (!isEnabled) {
+    return <span>{children}</span>
+  }
+  const preparedChildren = prepareAuthButtonChild(
+    children,
+    rest.fallbackRedirectUrl ?? getCurrentAbsoluteUrl(),
+    AUTH_SIGN_UP_PATH,
+  )
+  return <>{preparedChildren}</>
 }
 
 export function AuthSignOutButton({ children = 'Sign out' }: PropsWithChildren) {

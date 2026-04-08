@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { createLogger } from "@/lib/logger";
-import { useAuth, AuthSignInButton } from "@/lib/auth";
+import { AUTH_ACCOUNT_URL, useAuth, AuthSignInButton } from "@/lib/auth";
 import { ThemeSwitcher } from "./theme-switcher";
 import { getUserLocale } from "@/lib/utils";
 import { ShortcutsModal } from "@/components/ui/shortcuts-modal";
@@ -51,6 +51,12 @@ export function NavUser(_props: NavUserProps) {
   }, [user]);
 
   const email = user?.email ?? "";
+  const accountLabel = locale === "ro" ? "Cont" : "Account";
+  const settingsLabel = locale === "ro" ? "Setări" : "Settings";
+  const notificationsLabel = locale === "ro" ? "Notificări" : "Notifications";
+  const keyboardShortcutsLabel = locale === "ro" ? "Scurtături tastatură" : "Keyboard Shortcuts";
+  const logOutLabel = locale === "ro" ? "Deconectare" : "Log out";
+  const signInLabel = locale === "ro" ? "Conectare" : "Sign in";
 
   const handleUserMenuNavigate = React.useCallback(() => {
     // On mobile, close the sidebar sheet when navigating from user menu
@@ -119,22 +125,31 @@ export function NavUser(_props: NavUserProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem asChild>
-                <Link to="/settings/profile" onClick={handleUserMenuNavigate}>
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </Link>
-              </DropdownMenuItem>
+              {isLoaded && isSignedIn ? (
+                <DropdownMenuItem asChild>
+                  <a href={AUTH_ACCOUNT_URL} onClick={handleUserMenuNavigate} rel="noreferrer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>{accountLabel}</span>
+                  </a>
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem asChild>
+                  <Link to="/settings/profile" onClick={handleUserMenuNavigate}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>{settingsLabel}</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem asChild>
                 <Link to="/settings/notifications" onClick={handleUserMenuNavigate}>
                   <Bell className="mr-2 h-4 w-4" />
-                  <span>Notifications</span>
+                  <span>{notificationsLabel}</span>
                 </Link>
               </DropdownMenuItem>
               {!isMobile && (
                 <DropdownMenuItem onClick={() => setShortcutsModalOpen(true)}>
                   <Keyboard className="mr-2 h-4 w-4" />
-                  <span>Keyboard Shortcuts</span>
+                  <span>{keyboardShortcutsLabel}</span>
                 </DropdownMenuItem>
               )}
             </DropdownMenuGroup>
@@ -144,13 +159,13 @@ export function NavUser(_props: NavUserProps) {
             {isLoaded && isSignedIn ? (
               <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
+                <span>{logOutLabel}</span>
               </DropdownMenuItem>
             ) : (
               <AuthSignInButton>
                 <DropdownMenuItem>
                   <LogIn className="mr-2 h-4 w-4" />
-                  <span>Sign in</span>
+                  <span>{signInLabel}</span>
                 </DropdownMenuItem>
               </AuthSignInButton>
             )}

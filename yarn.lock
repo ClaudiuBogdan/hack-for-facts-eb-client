@@ -231,6 +231,13 @@
     "@clerk/shared" "^3.47.2"
     tslib "2.8.1"
 
+"@clerk/localizations@^4.3.2":
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/@clerk/localizations/-/localizations-4.3.2.tgz#94fe5e0d802fe229839f48e21ed844a0b6cb7ad3"
+  integrity sha512-wcT1gG13/1otyx1jM2eU4cU+TmYbic/8iHA/SObXIPx9cM/+CQ/Y7rliiER6LiFs4zWgFKbgklL2kcoP1JbNcw==
+  dependencies:
+    "@clerk/shared" "^4.5.0"
+
 "@clerk/shared@^3.47.2":
   version "3.47.2"
   resolved "https://registry.yarnpkg.com/@clerk/shared/-/shared-3.47.2.tgz#24ecb7eb385800845d5068a836b50f09119452ed"
@@ -242,6 +249,17 @@
     js-cookie "3.0.5"
     std-env "^3.9.0"
     swr "2.3.4"
+
+"@clerk/shared@^4.5.0":
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/@clerk/shared/-/shared-4.5.0.tgz#7f1bde51bc9852ed2d6111dc4ba92a866f8f09ba"
+  integrity sha512-01xc2Mb6/srZa9kvk9apEFr98Zsoe3XZusTUrSzAQDaX0ltQn5W0r7V1cJiDGHKTYG5vv4ACeNfZ7sZgspKTbA==
+  dependencies:
+    "@tanstack/query-core" "5.90.16"
+    dequal "2.0.3"
+    glob-to-regexp "0.4.1"
+    js-cookie "3.0.5"
+    std-env "^3.9.0"
 
 "@csstools/color-helpers@^6.0.2":
   version "6.0.2"
@@ -2343,6 +2361,11 @@
   version "1.161.6"
   resolved "https://registry.yarnpkg.com/@tanstack/history/-/history-1.161.6.tgz#9011182f021ef7c9a6a30148570e2b1b99a12d2d"
   integrity sha512-NaOGLRrddszbQj9upGat6HG/4TKvXLvu+osAIgfxPYA+eIvYKv8GKDJOrY2D3/U9MRnKfMWD7bU4jeD4xmqyIg==
+
+"@tanstack/query-core@5.90.16":
+  version "5.90.16"
+  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.90.16.tgz#19a972c2ffbc47727ab6649028af1bee70e28cdf"
+  integrity sha512-MvtWckSVufs/ja463/K4PyJeqT+HMlJWtw6PrCpywznd2NSgO3m4KwO9RqbFqGg6iDE8vVMFWMeQI4Io3eEYww==
 
 "@tanstack/query-core@5.95.2":
   version "5.95.2"
