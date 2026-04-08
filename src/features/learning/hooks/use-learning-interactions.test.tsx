@@ -22,6 +22,7 @@ import type { InteractiveStateRecord, LearningGuestProgress, LearningProgressEve
 
 vi.mock('@lingui/core/macro', () => ({
   t: (strings: TemplateStringsArray) => strings[0],
+  msg: (strings: TemplateStringsArray) => strings[0],
 }))
 
 const EVENTS_KEY = 'learning_progress_events'
