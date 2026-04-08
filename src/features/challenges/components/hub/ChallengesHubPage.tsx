@@ -14,7 +14,6 @@ import { Analytics } from '@/lib/analytics'
 import { getEntityLabels } from '@/lib/api/labels'
 import { CampaignParticipantsMap } from '@/features/campaigns/buget/components/hub/campaign-participants-map'
 import { CampaignParticipantsRankedList } from '@/features/campaigns/buget/components/hub/campaign-participants-ranked-list'
-import { SubscriptionCounter } from '@/features/campaigns/buget/components/stats/subscription-counter'
 import { FUNKY_CAMPAIGN_KEY } from '@/features/notifications/campaign-notification-keys'
 import { useSubscriptionStats } from '@/features/campaigns/buget/hooks/use-subscription-stats'
 import { useUatCuiMap } from '@/features/campaigns/buget/hooks/use-uat-cui-map'
@@ -356,37 +355,6 @@ export function ChallengesHubPage({
       {/* Quick Resources */}
       <QuickResourcesPreview locale={locale} entityCui={entityCui} />
 
-      {!isSubscriptionStatsLoading && !isSubscriptionStatsError && perUat.length > 0 ? (
-        <div className="space-y-4">
-          <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground pl-2">
-            {locale === 'en' ? 'Most followed localities' : 'Localități cu cei mai mulți abonați'}
-          </h2>
-          <div className="grid gap-3 md:grid-cols-2">
-            {perUat.slice(0, 6).map((entry, index) => (
-              <div
-                key={entry.sirutaCode}
-                className="rounded-2xl border border-border/50 bg-muted/20 p-4"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                      {locale === 'en' ? `Top ${index + 1}` : `Top ${index + 1}`}
-                    </p>
-                    <p className="text-base font-semibold text-foreground">
-                      {entry.uatName}
-                    </p>
-                  </div>
-                  <SubscriptionCounter
-                    count={entry.count}
-                    label={locale === 'en' ? 'subscribers' : 'abonați'}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
       {/* Other Modules — flat, no collapsible */}
       {otherModulesData.length > 0 && (
         <div className="space-y-5">
@@ -421,6 +389,43 @@ export function ChallengesHubPage({
           .
         </p>
       </div>
+
+      {!isSubscriptionStatsLoading && !isSubscriptionStatsError && perUat.length > 0 ? (
+        <div className="space-y-4">
+          <h2 className="pl-2 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+            {locale === 'en'
+              ? 'Localities with most participants'
+              : 'Localități cu cei mai mulți participanți'}
+          </h2>
+          <div className="overflow-hidden rounded-2xl border border-border/50 bg-muted/20">
+            {perUat.slice(0, 10).map((entry, index) => (
+              <div key={entry.sirutaCode}>
+                <div className="flex items-center justify-between gap-4 px-4 py-3">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                      {locale === 'en' ? `Top ${index + 1}` : `Top ${index + 1}`}
+                    </p>
+                    <p className="truncate text-base font-semibold text-foreground">
+                      {entry.uatName}
+                    </p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="tabular-nums text-3xl font-black tracking-tight text-foreground">
+                      {entry.count.toLocaleString(locale === 'en' ? 'en-US' : 'ro-RO')}
+                    </p>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {locale === 'en' ? 'participants' : 'participanți'}
+                    </p>
+                  </div>
+                </div>
+                {index < Math.min(perUat.length, 10) - 1 ? (
+                  <div className="mx-4 border-t border-border/50" />
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
