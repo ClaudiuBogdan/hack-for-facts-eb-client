@@ -258,14 +258,16 @@ export function ChallengesHubPage({
     <div className="max-w-4xl mx-auto space-y-8 py-6 px-4">
       {/* Header */}
       <div className="pl-2">
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <h1 className="text-3xl font-black tracking-tight md:text-4xl">
-              <span className="block text-lg font-semibold tracking-normal text-muted-foreground md:text-xl">
+            <div className="min-w-0 flex-1 space-y-1 sm:space-y-1.5">
+              <p className="truncate text-base font-semibold tracking-normal text-muted-foreground md:text-lg">
                 {entityLabel}
-              </span>
-              <span className="block">{greeting}</span>
-            </h1>
+              </p>
+              <h1 className="max-w-[12ch] text-balance text-[2.6rem] font-black leading-[0.92] tracking-[-0.04em] text-foreground sm:max-w-none md:text-[3.35rem]">
+                {greeting}
+              </h1>
+            </div>
 
             {!isSubscriptionStatsError && !isSubscriptionStatsLoading ? (
               <button
@@ -273,7 +275,7 @@ export function ChallengesHubPage({
                 onClick={() => {
                   setIsParticipantsMapOpen(true)
                 }}
-                className="group self-start rounded-lg px-1 py-1 text-left transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                className="group self-start rounded-lg px-1 py-1 text-left transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 sm:shrink-0"
                 aria-label={
                   locale === 'en'
                     ? 'Open participant map'
@@ -288,7 +290,9 @@ export function ChallengesHubPage({
               </button>
             ) : null}
           </div>
-          <p className="text-muted-foreground font-medium text-base opacity-60">{subtitle}</p>
+          <p className="max-w-2xl text-base font-medium text-muted-foreground opacity-60">
+            {subtitle}
+          </p>
         </div>
       </div>
 
@@ -450,10 +454,13 @@ function CompactParticipantsSummary({
   return (
     <span className="inline-flex flex-col items-start gap-0.5 border-l border-border/70 pl-3 sm:items-end sm:pl-4">
       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">
-        {locale === 'en' ? 'Participants here' : 'Participanți în această primărie'}
+        {locale === 'en' ? 'Participants' : 'Participanți'}
       </span>
-      <span className="tabular-nums text-lg font-black tracking-tight text-foreground sm:text-xl">
-        {formattedCurrentCount}
+      <span className="text-sm font-medium tracking-tight text-foreground sm:text-base">
+        <span className="tabular-nums text-lg font-black sm:text-xl">
+          {formattedCurrentCount}
+        </span>{' '}
+        {locale === 'en' ? 'in this city hall' : 'în această primărie'}
       </span>
       <span className="text-sm font-medium tracking-tight text-muted-foreground">
         {locale === 'en'

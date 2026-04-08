@@ -194,15 +194,16 @@ describe('ChallengesHubPage', () => {
     render(<ChallengesHubPage entityCui="12345678" locale="ro" />)
 
     await waitFor(() => {
-    expect(
-      screen.getByRole('heading', {
-          name: /Primăria Cluj-Napoca.*Pregătit de provocare/i,
-        }),
+      expect(screen.getByText('Primăria Cluj-Napoca')).toBeInTheDocument()
+      expect(
+        screen.getByRole('heading', { name: /Pregătit de provocare/i }),
       ).toBeInTheDocument()
     })
-    expect(screen.getByText('8')).toBeInTheDocument()
-    expect(screen.getByText(/Participanți în această primărie/i)).toBeInTheDocument()
-    expect(screen.getByText(/12 în campanie/i)).toBeInTheDocument()
+    const participantMapButton = screen.getByRole('button', {
+      name: /Deschide harta participanților/i,
+    })
+    expect(participantMapButton).toHaveTextContent('8 în această primărie')
+    expect(participantMapButton).toHaveTextContent('12 în campanie')
     expect(
       screen.getByRole('heading', { name: /Conectează-te ca să participi la provocări/i }),
     ).toBeInTheDocument()
@@ -226,20 +227,18 @@ describe('ChallengesHubPage', () => {
     const { rerender } = render(<ChallengesHubPage entityCui="12345678" locale="ro" />)
 
     await waitFor(() => {
+      expect(screen.getByText('Primăria Cluj-Napoca')).toBeInTheDocument()
       expect(
-        screen.getByRole('heading', {
-          name: /Primăria Cluj-Napoca.*Pregătit de provocare/i,
-        }),
+        screen.getByRole('heading', { name: /Pregătit de provocare/i }),
       ).toBeInTheDocument()
     })
 
     rerender(<ChallengesHubPage entityCui="87654321" locale="ro" />)
 
     await waitFor(() => {
+      expect(screen.getByText('87654321')).toBeInTheDocument()
       expect(
-        screen.getByRole('heading', {
-          name: /87654321.*Pregătit de provocare/i,
-        }),
+        screen.getByRole('heading', { name: /Pregătit de provocare/i }),
       ).toBeInTheDocument()
     })
 
