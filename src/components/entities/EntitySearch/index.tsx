@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { Search, X, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ interface EntitySearchInputProps {
     autoFocus?: boolean;
     /** When true, scroll the input into view (top) on focus. Useful for mobile UX. */
     scrollToTopOnFocus?: boolean;
+    renderResultTrailing?: (entity: EntitySearchNode) => ReactNode;
 }
 
 export function EntitySearchInput({
@@ -32,6 +33,7 @@ export function EntitySearchInput({
     entitySearchFilter,
     autoFocus,
     scrollToTopOnFocus,
+    renderResultTrailing,
 }: EntitySearchInputProps) {
     const {
         searchTerm,
@@ -137,6 +139,7 @@ export function EntitySearchInput({
                                     entity={entity}
                                     isActive={activeIndex === index}
                                     selectionBehavior={selectionBehavior}
+                                    trailingContent={renderResultTrailing?.(entity)}
                                     onClick={(e) => {
                                         // Allow browser default for new-tab/window gestures
                                         if (e.metaKey || e.ctrlKey) {

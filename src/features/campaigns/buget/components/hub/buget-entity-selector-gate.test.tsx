@@ -1,12 +1,20 @@
+import type { ReactNode } from 'react'
 import { render, screen, waitFor } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { BugetEntitySelectorGate } from './buget-entity-selector-gate'
 
-const entitySearchInputMock = vi.fn((_: Record<string, unknown>) => <div>Entity search</div>)
+type MockLinkProps = {
+  readonly children: ReactNode
+  readonly to: string
+  readonly search?: Record<string, string>
+  readonly [key: string]: unknown
+}
+
+const entitySearchInputMock = vi.fn((props: Record<string, unknown>) => <div>{String(props.placeholder ?? 'Entity search')}</div>)
 const useIsMobileMock = vi.fn(() => false)
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, search, ...props }: any) => {
+  Link: ({ children, to, search, ...props }: MockLinkProps) => {
     const query = search ? new URLSearchParams(search).toString() : ''
     const href = typeof to === 'string'
       ? `${to}${query ? `?${query}` : ''}`
@@ -36,6 +44,13 @@ vi.mock('@/hooks/useRecentEntities', () => ({
   }),
 }))
 
+vi.mock('react-intersection-observer', () => ({
+  useInView: () => ({
+    ref: vi.fn(),
+    inView: true,
+  }),
+}))
+
 vi.mock('@/hooks/use-mobile', () => ({
   useIsMobile: () => useIsMobileMock(),
 }))
@@ -44,8 +59,33 @@ vi.mock('@/components/entities/EntitySearch', () => ({
   EntitySearchInput: (props: Record<string, unknown>) => entitySearchInputMock(props),
 }))
 
+vi.mock('./campaign-participants-map', () => ({
+  CampaignParticipantsMap: () => <div>Participant map</div>,
+}))
+
 vi.mock('./recent-uat-badges', () => ({
   RecentUatBadges: () => <div>Recent entities</div>,
+}))
+
+vi.mock('../../hooks/use-subscription-stats', () => ({
+  useSubscriptionStats: () => ({
+    total: 12,
+    perUat: [],
+    isLoading: false,
+    isError: false,
+  }),
+}))
+
+vi.mock('../../hooks/use-campaign-uat-directory', () => ({
+  useCampaignUatDirectory: () => ({
+    data: {
+      byCui: new Map(),
+      byNatcode: new Map(),
+      byUatId: new Map(),
+    },
+    isLoading: false,
+    isError: false,
+  }),
 }))
 
 describe('BugetEntitySelectorGate', () => {
@@ -64,7 +104,7 @@ describe('BugetEntitySelectorGate', () => {
     )
 
     expect(screen.getByText(/sau alege de pe hartă/i)).toBeInTheDocument()
-    expect(screen.getByRole('status', { name: /Se încarcă harta/i })).toBeInTheDocument()
+    expect(screen.getByText('Participant map')).toBeInTheDocument()
   })
 
   it('defers search autofocus until after mount on desktop', async () => {

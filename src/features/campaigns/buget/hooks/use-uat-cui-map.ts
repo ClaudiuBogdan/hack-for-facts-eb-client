@@ -2,11 +2,13 @@ import { useQuery } from '@tanstack/react-query'
 import Papa from 'papaparse'
 import { createLogger } from '@/lib/logger'
 import type { UatCuiMapRow } from '../types'
+import { normalizeSirutaCode } from '../utils/normalize-siruta-code'
 
 const logger = createLogger('campaign-uat-cui-map')
 
 export type UatCuiMapResult = {
   readonly natcodeToCuiMap: ReadonlyMap<string, string>
+  readonly cuiToNatcodeMap: ReadonlyMap<string, string>
   readonly validRows: number
   readonly invalidRows: number
   readonly duplicateNatcodeRows: number
@@ -32,13 +34,14 @@ export function parseUatCuiMapCsv(csvRaw: string): UatCuiMapResult {
   }
 
   const natcodeToCuiMap = new Map<string, string>()
+  const cuiToNatcodeMap = new Map<string, string>()
   let validRows = 0
   let invalidRows = 0
   let duplicateNatcodeRows = 0
 
   for (const row of parseResult.data) {
     const cui = sanitizeCsvValue(row.cui)
-    const natcode = sanitizeCsvValue(row.natcode)
+    const natcode = normalizeSirutaCode(sanitizeCsvValue(row.natcode))
 
     if (!cui || !natcode) {
       invalidRows += 1
@@ -52,11 +55,15 @@ export function parseUatCuiMapCsv(csvRaw: string): UatCuiMapResult {
     }
 
     natcodeToCuiMap.set(natcode, cui)
+    if (!cuiToNatcodeMap.has(cui)) {
+      cuiToNatcodeMap.set(cui, natcode)
+    }
     validRows += 1
   }
 
   return {
     natcodeToCuiMap,
+    cuiToNatcodeMap,
     validRows,
     invalidRows,
     duplicateNatcodeRows,

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
@@ -11,26 +11,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { ClientOnly } from '@/components/ssr/ClientOnly'
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { useGeoJsonData } from '@/hooks/useGeoJson'
+import { FUNKY_CAMPAIGN_KEY } from '@/features/notifications/campaign-notification-keys'
 import { Analytics } from '@/lib/analytics'
+import { SubscriptionCounter } from '../stats/subscription-counter'
+import { CampaignParticipantsMap } from './campaign-participants-map'
 import {
   CAMPAIGN_ENTITY_SELECTOR_PATH,
 } from '../../constants'
 import { useCampaignProgress } from '../../hooks/use-campaign-progress'
+import { useSubscriptionStats } from '../../hooks/use-subscription-stats'
 import { useUatCuiMap } from '../../hooks/use-uat-cui-map'
 import type { CampaignLocale } from '../../types'
 import {
   buildSelectorSearchState,
   resolveEntitySelectionNavigationTarget,
 } from '../../utils/entity-selector-navigation'
-
-const BugetEntityMapSelectorMap = lazy(() =>
-  import('./buget-entity-map-selector-map').then((module) => ({
-    default: module.BugetEntityMapSelectorMap,
-  })),
-)
 
 type BugetEntityMapSelectorPageProps = {
   readonly locale: CampaignLocale
@@ -84,16 +79,11 @@ export function BugetEntityMapSelectorPage({
   const [pendingUatSelection, setPendingUatSelection] = useState<PendingUatSelection | null>(null)
   const [isResolvingSelection, setIsResolvingSelection] = useState(false)
   const {
-    data: uatGeoJson,
-    isLoading: isLoadingUatGeoJson,
-    error: uatGeoJsonError,
-  } = useGeoJsonData('UAT')
-  const {
-    data: countyGeoJson,
-    isLoading: isLoadingCountyGeoJson,
-    error: countyGeoJsonError,
-  } = useGeoJsonData('County')
-  const { data: uatCuiMap, isLoading: isLoadingUatCuiMap, error: uatCuiMapError } = useUatCuiMap()
+    total: totalSubscriptions,
+    isLoading: isSubscriptionStatsLoading,
+    isError: isSubscriptionStatsError,
+  } = useSubscriptionStats(FUNKY_CAMPAIGN_KEY)
+  const { data: uatCuiMap } = useUatCuiMap()
 
   useEffect(() => {
     Analytics.capture(Analytics.EVENTS.CampaignEntityMapSelectorOpened)
@@ -178,15 +168,6 @@ export function BugetEntityMapSelectorPage({
   const selectedUatName = pendingUatSelection?.name || pendingUatSelection?.natcode || ''
   const selectedEntityDialogLabel = formatCityHallLabel(selectedUatName, locale)
 
-  const isLoading = isLoadingUatGeoJson || isLoadingCountyGeoJson || isLoadingUatCuiMap
-  const error = uatGeoJsonError || countyGeoJsonError || uatCuiMapError
-
-  const mapPlaceholder = (
-    <div className="flex h-[calc(100svh-10rem)] sm:h-[70vh] items-center justify-center">
-      <LoadingSpinner size="lg" text={locale === 'en' ? 'Loading map...' : 'Se încarcă harta...'} />
-    </div>
-  )
-
   return (
     <section className="mx-auto max-w-5xl space-y-4 px-4 py-4 sm:px-6 sm:py-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -210,40 +191,32 @@ export function BugetEntityMapSelectorPage({
         </Button>
       </div>
 
-      <div>
-        {isLoading ? mapPlaceholder : null}
-
-        {error ? (
-          <div className="flex h-[calc(100svh-10rem)] sm:h-[70vh] flex-col items-center justify-center gap-3 text-sm text-red-600 dark:text-red-400">
-            <p>
-              {locale === 'en'
-                ? 'Failed to load the selector map.'
-                : 'Nu am putut încărca harta de selectie.'}
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => window.location.reload()}
-            >
-              {locale === 'en' ? 'Refresh page' : 'Reincarca pagina'}
-            </Button>
+      <div className="rounded-3xl border border-border/60 bg-background/80 p-5 shadow-sm">
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
+          {locale === 'en' ? 'Campaign reach' : 'Participare în campanie'}
+        </p>
+        {isSubscriptionStatsError ? (
+          <p className="mt-3 text-sm text-muted-foreground">
+            {locale === 'en'
+              ? 'Subscription stats are temporarily unavailable.'
+              : 'Statisticile de abonare sunt temporar indisponibile.'}
+          </p>
+        ) : (
+          <div className="mt-3">
+            <SubscriptionCounter
+              count={totalSubscriptions}
+              label={locale === 'en' ? 'campaign subscribers' : 'abonați în campanie'}
+              isLoading={isSubscriptionStatsLoading}
+            />
           </div>
-        ) : null}
-
-        {!isLoading && !error && uatGeoJson && countyGeoJson ? (
-          <ClientOnly fallback={mapPlaceholder}>
-            <Suspense fallback={mapPlaceholder}>
-              <BugetEntityMapSelectorMap
-                uatGeoJson={uatGeoJson}
-                countyGeoJson={countyGeoJson}
-                locale={locale}
-                onUatSelect={requestUatSelectionConfirmation}
-              />
-            </Suspense>
-          </ClientOnly>
-        ) : null}
+        )}
       </div>
+
+      <CampaignParticipantsMap
+        locale={locale}
+        mapHeightClassName="h-[calc(100svh-10rem)] sm:h-[70vh]"
+        onUatSelect={requestUatSelectionConfirmation}
+      />
 
       <Dialog
         open={Boolean(pendingUatSelection)}

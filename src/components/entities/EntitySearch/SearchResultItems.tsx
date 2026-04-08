@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { EntitySearchNode } from "@/schemas/entities";
@@ -14,10 +14,11 @@ interface SearchResultItemProps {
     id: string;
     selectionBehavior: EntitySelectionBehavior;
     onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+    trailingContent?: ReactNode;
 }
 
 export const SearchResultItem = forwardRef<HTMLAnchorElement, SearchResultItemProps>(
-    function SearchResultItem({ entity, isActive, id, selectionBehavior, onClick }, ref) {
+    function SearchResultItem({ entity, isActive, id, selectionBehavior, onClick, trailingContent }, ref) {
         const destination = buildEntitySelectionPath({
             cui: entity.cui,
             entityType: entity.entity_type,
@@ -57,10 +58,17 @@ export const SearchResultItem = forwardRef<HTMLAnchorElement, SearchResultItemPr
                                 </div>
                             )}
                         </div>
-                        <ExternalLink aria-hidden="true" className={cn(
-                            "h-5 w-5 text-slate-400 dark:text-slate-500 transition-colors flex-shrink-0",
-                            isActive ? "text-primary" : "group-hover:text-primary"
-                        )} />
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                            {trailingContent ? (
+                                <div className="min-w-[3rem] text-right">
+                                    {trailingContent}
+                                </div>
+                            ) : null}
+                            <ExternalLink aria-hidden="true" className={cn(
+                                "h-5 w-5 text-slate-400 dark:text-slate-500 transition-colors flex-shrink-0",
+                                isActive ? "text-primary" : "group-hover:text-primary"
+                            )} />
+                        </div>
                     </div>
                 </Link>
             </li>

@@ -12,6 +12,26 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/features/campaigns/buget/components/hub/campaign-subscription-map-legend.tsx:20
+msgid "{0} - {1} participants"
+msgstr "{0} - {1} participants"
+
+#: src/features/campaigns/buget/components/hub/campaign-subscription-map-legend.tsx:17
+msgid "{0} participant"
+msgstr "{0} participant"
+
+#: src/features/campaigns/buget/components/hub/campaign-subscription-map-legend.tsx:20
+msgid "{0} participants"
+msgstr "{0} participants"
+
+#: src/features/campaigns/buget/components/hub/campaign-subscription-map-legend.tsx:39
+msgid "0 participants"
+msgstr "0 participants"
+
+#: src/features/campaigns/buget/components/hub/campaign-subscription-map-legend.tsx:30
+msgid "Participants"
+msgstr "Participants"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:408
 msgid " (active)"
 msgstr " (active)"

@@ -34,9 +34,18 @@ let registrationState: MockRegistrationState = {
 let stepStatuses: Record<string, 'completed' | 'not_started'> = {}
 let activeChallengeModuleSlug: string | null = null
 const getEntityLabelsMock = vi.fn()
+const navigateMock = vi.fn()
+const setSelectedEntityMock = vi.fn()
+
+type MockLinkProps = {
+  readonly children: ReactNode
+  readonly to: string
+  readonly search?: Record<string, string>
+  readonly [key: string]: unknown
+}
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, search, ...props }: any) => {
+  Link: ({ children, to, search, ...props }: MockLinkProps) => {
     const href = typeof to === 'string'
       ? `${to}${search?.lang === 'en' ? '?lang=en' : ''}`
       : '#'
@@ -47,6 +56,7 @@ vi.mock('@tanstack/react-router', () => ({
       </a>
     )
   },
+  useNavigate: () => navigateMock,
 }))
 
 vi.mock('@/lib/api/labels', () => ({
@@ -64,10 +74,67 @@ vi.mock('@/features/campaigns/buget/hooks/use-campaign-registration', () => ({
 
 vi.mock('@/features/campaigns/buget/hooks/use-campaign-progress', () => ({
   useCampaignProgress: () => ({
+    setSelectedEntity: setSelectedEntityMock,
     progress: {
       activeChallengeModuleSlug,
     },
   }),
+}))
+
+vi.mock('@/features/campaigns/buget/hooks/use-subscription-stats', () => ({
+  useSubscriptionStats: () => ({
+    total: 12,
+    perUat: [
+      { sirutaCode: '143450', uatName: 'Cluj-Napoca', count: 8 },
+      { sirutaCode: '55274', uatName: 'Florești', count: 4 },
+    ],
+    isLoading: false,
+    isError: false,
+  }),
+}))
+
+vi.mock('@/features/campaigns/buget/hooks/use-campaign-uat-directory', () => ({
+  useCampaignUatDirectory: () => ({
+    data: {
+      byCui: new Map([
+        ['12345678', { uatId: '1', natcode: '143450', uatName: 'Cluj-Napoca', countyName: 'Cluj' }],
+      ]),
+      byNatcode: new Map([
+        ['143450', { uatId: '1', cui: '12345678', uatName: 'Cluj-Napoca', countyName: 'Cluj' }],
+      ]),
+      byUatId: new Map([
+        ['1', { cui: '12345678', natcode: '143450', uatName: 'Cluj-Napoca', countyName: 'Cluj' }],
+      ]),
+    },
+  }),
+}))
+
+vi.mock('@/features/campaigns/buget/hooks/use-uat-cui-map', () => ({
+  useUatCuiMap: () => ({
+    data: {
+      natcodeToCuiMap: new Map([
+        ['143450', '12345678'],
+      ]),
+      cuiToNatcodeMap: new Map([
+        ['12345678', '143450'],
+      ]),
+    },
+  }),
+}))
+
+vi.mock('@/features/campaigns/buget/components/hub/campaign-participants-map', () => ({
+  CampaignParticipantsMap: ({
+    onUatSelect,
+  }: {
+    readonly onUatSelect: (input: { natcode: string; name: string }) => void
+  }) => (
+    <button
+      type="button"
+      onClick={() => onUatSelect({ natcode: '143450', name: 'Cluj-Napoca' })}
+    >
+      Select participant map UAT
+    </button>
+  ),
 }))
 
 vi.mock('../../hooks/use-challenge-progress', () => ({
@@ -101,6 +168,8 @@ vi.mock('./QuickResourcesPreview', () => ({
 
 describe('ChallengesHubPage', () => {
   beforeEach(() => {
+    navigateMock.mockReset()
+    setSelectedEntityMock.mockReset()
     authState = {
       isEnabled: true,
       isLoaded: true,
@@ -125,12 +194,15 @@ describe('ChallengesHubPage', () => {
     render(<ChallengesHubPage entityCui="12345678" locale="ro" />)
 
     await waitFor(() => {
-      expect(
-        screen.getByRole('heading', {
+    expect(
+      screen.getByRole('heading', {
           name: /Primăria Cluj-Napoca.*Pregătit de provocare/i,
         }),
       ).toBeInTheDocument()
     })
+    expect(screen.getByText('8')).toBeInTheDocument()
+    expect(screen.getByText(/Participanți în această primărie/i)).toBeInTheDocument()
+    expect(screen.getByText(/12 în campanie/i)).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { name: /Conectează-te ca să participi la provocări/i }),
     ).toBeInTheDocument()
@@ -223,6 +295,33 @@ describe('ChallengesHubPage', () => {
     expect(
       screen.queryByRole('heading', { name: /Activează participarea în campanie/i }),
     ).not.toBeInTheDocument()
+  })
+
+  it('opens the participant map modal from the counter and navigates after selecting a UAT', async () => {
+    render(<ChallengesHubPage entityCui="12345678" locale="ro" />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /Deschide harta participanților/i }),
+    )
+
+    expect(
+      screen.getByRole('heading', { name: /Harta participanților/i }),
+    ).toBeInTheDocument()
+
+    expect(screen.queryByRole('button', { name: /Cluj-Napoca/i })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Vezi lista/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Cluj-Napoca/i }))
+
+    await waitFor(() => {
+      expect(setSelectedEntityMock).toHaveBeenCalledWith({ entityCui: '12345678' })
+      expect(navigateMock).toHaveBeenCalledWith({
+        to: '/primarie/12345678/buget/provocari',
+        search: undefined,
+        replace: true,
+        resetScroll: false,
+      })
+    })
   })
 
   it('uses the stored active module slug for the hero when available', () => {

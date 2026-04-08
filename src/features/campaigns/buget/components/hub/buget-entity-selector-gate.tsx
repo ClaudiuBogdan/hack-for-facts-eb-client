@@ -1,5 +1,6 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { useInView } from 'react-intersection-observer'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -10,21 +11,18 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { EntitySearchInput } from '@/components/entities/EntitySearch'
-import { ClientOnly } from '@/components/ssr/ClientOnly'
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { useGeoJsonData } from '@/hooks/useGeoJson'
 import { Analytics } from '@/lib/analytics'
 import { useRecentEntities } from '@/hooks/useRecentEntities'
+import { FUNKY_CAMPAIGN_KEY } from '@/features/notifications/campaign-notification-keys'
+import { useCampaignUatDirectory } from '../../hooks/use-campaign-uat-directory'
+import { useSubscriptionStats } from '../../hooks/use-subscription-stats'
 import { useUatCuiMap } from '../../hooks/use-uat-cui-map'
 import type { CampaignLocale } from '../../types'
+import { normalizeSirutaCode } from '../../utils/normalize-siruta-code'
+import { CampaignParticipantsMap } from './campaign-participants-map'
 import { RecentUatBadges } from './recent-uat-badges'
-
-const BugetEntityMapSelectorMap = lazy(() =>
-  import('./buget-entity-map-selector-map').then((module) => ({
-    default: module.BugetEntityMapSelectorMap,
-  })),
-)
 
 export type EntitySelection = {
   readonly cui: string
@@ -87,13 +85,25 @@ export function BugetEntitySelectorGate({
   const isMobile = useIsMobile()
   const [hasMounted, setHasMounted] = useState(false)
   const { addRecentEntity } = useRecentEntities()
+  const { ref: mapSectionRef, inView: isMapSectionInView } = useInView({
+    triggerOnce: true,
+    threshold: 0.15,
+  })
+  const {
+    perUat,
+    isLoading: isSubscriptionStatsLoading,
+    isError: isSubscriptionStatsError,
+  } = useSubscriptionStats(FUNKY_CAMPAIGN_KEY)
+  const {
+    data: campaignUatDirectory,
+    isLoading: isCampaignUatDirectoryLoading,
+    isError: isCampaignUatDirectoryError,
+  } = useCampaignUatDirectory()
 
   // Map state
   const [pendingUatSelection, setPendingUatSelection] = useState<PendingUatSelection | null>(null)
   const [isResolvingSelection, setIsResolvingSelection] = useState(false)
-  const { data: uatGeoJson, isLoading: isLoadingUatGeoJson, error: uatGeoJsonError } = useGeoJsonData('UAT')
-  const { data: countyGeoJson, isLoading: isLoadingCountyGeoJson, error: countyGeoJsonError } = useGeoJsonData('County')
-  const { data: uatCuiMap, isLoading: isLoadingUatCuiMap, error: uatCuiMapError } = useUatCuiMap()
+  const { data: uatCuiMap } = useUatCuiMap()
 
   useEffect(() => {
     Analytics.capture(Analytics.EVENTS.CampaignEntitySelectorOpened)
@@ -179,14 +189,58 @@ export function BugetEntitySelectorGate({
   const selectedUatName = pendingUatSelection?.name || pendingUatSelection?.natcode || ''
   const selectedEntityDialogLabel = formatCityHallLabel(selectedUatName, locale)
 
-  const isMapLoading = isLoadingUatGeoJson || isLoadingCountyGeoJson || isLoadingUatCuiMap
-  const mapError = uatGeoJsonError || countyGeoJsonError || uatCuiMapError
+  const subscriptionCountByEntityCui = useMemo(() => {
+    if (!campaignUatDirectory) {
+      return new Map<string, number>()
+    }
 
-  const mapPlaceholder = (
-    <div className="flex h-[40vh] sm:h-[50vh] items-center justify-center">
-      <LoadingSpinner size="lg" text={locale === 'en' ? 'Loading map...' : 'Se încarcă harta...'} />
-    </div>
-  )
+    const countBySirutaCode = new Map(
+      perUat.map((entry) => [normalizeSirutaCode(entry.sirutaCode), entry.count]),
+    )
+    const next = new Map<string, number>()
+
+    for (const [cui, directoryEntry] of campaignUatDirectory.byCui.entries()) {
+      next.set(cui, countBySirutaCode.get(normalizeSirutaCode(directoryEntry.natcode)) ?? 0)
+    }
+
+    return next
+  }, [campaignUatDirectory, perUat])
+
+  const renderSearchResultTrailing = useCallback((entity: EntitySelection) => {
+    if (isSubscriptionStatsLoading || isCampaignUatDirectoryLoading) {
+      return <Skeleton className="h-6 w-12 rounded-full" />
+    }
+
+    if (isSubscriptionStatsError || isCampaignUatDirectoryError) {
+      return (
+        <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">
+          --
+        </span>
+      )
+    }
+
+    const count = subscriptionCountByEntityCui.get(entity.cui) ?? 0
+    const srLabel =
+      locale === 'en'
+        ? `${count.toLocaleString('en-US')} subscribers`
+        : `${count.toLocaleString('ro-RO')} abonați`
+
+    return (
+      <span className="inline-flex items-center justify-center rounded-full bg-[#ef2d00]/10 px-2.5 py-1 text-xs font-semibold text-[#c91d00]">
+        <span aria-hidden="true">
+          {count.toLocaleString(locale === 'en' ? 'en-US' : 'ro-RO')}
+        </span>
+        <span className="sr-only">{srLabel}</span>
+      </span>
+    )
+  }, [
+    isCampaignUatDirectoryError,
+    isCampaignUatDirectoryLoading,
+    isSubscriptionStatsError,
+    isSubscriptionStatsLoading,
+    locale,
+    subscriptionCountByEntityCui,
+  ])
 
   return (
     <section className="mx-auto w-full max-w-4xl px-4 pb-8 pt-10 sm:px-6 sm:pt-[10vh]">
@@ -207,6 +261,14 @@ export function BugetEntitySelectorGate({
             selectionBehavior="callback-only"
             entitySearchFilter={{ isUat: true, excludeCounty: true }}
             autoFocus={hasMounted && !isMobile}
+            renderResultTrailing={(entity) =>
+              renderSearchResultTrailing({
+                cui: entity.cui,
+                name: entity.name,
+                entityType: entity.entity_type,
+                countyName: entity.uat?.county_name,
+              })
+            }
             onSelect={(entity) =>
               handleSelect({
                 cui: entity.cui,
@@ -222,7 +284,7 @@ export function BugetEntitySelectorGate({
       </div>
 
       {/* Map section */}
-      <div className="mt-12">
+      <div ref={mapSectionRef} className="mt-12">
         <div className="mx-auto flex max-w-md items-center gap-4 mb-8">
           <div className="h-px flex-1 bg-border/70" />
           <p className="shrink-0 text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
@@ -231,42 +293,14 @@ export function BugetEntitySelectorGate({
           <div className="h-px flex-1 bg-border/70" />
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-border/50 h-[40vh] sm:h-[50vh] [&_.leaflet-container]:h-full!">
-          {isMapLoading ? mapPlaceholder : null}
-
-          {mapError ? (
-            <div className="flex h-[40vh] sm:h-[50vh] flex-col items-center justify-center gap-3 text-sm text-red-600 dark:text-red-400">
-              <p>
-                {locale === 'en'
-                  ? 'Failed to load the map.'
-                  : 'Nu am putut încărca harta.'}
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => window.location.reload()}
-              >
-                {locale === 'en' ? 'Refresh page' : 'Reincarca pagina'}
-              </Button>
-            </div>
-          ) : null}
-
-          {!isMapLoading && !mapError && uatGeoJson && countyGeoJson ? (
-            <ClientOnly fallback={mapPlaceholder}>
-              <Suspense fallback={mapPlaceholder}>
-                <BugetEntityMapSelectorMap
-                  uatGeoJson={uatGeoJson}
-                  countyGeoJson={countyGeoJson}
-                  locale={locale}
-                  onUatSelect={({ natcode, name }) => {
-                    setPendingUatSelection({ natcode, name })
-                  }}
-                />
-              </Suspense>
-            </ClientOnly>
-          ) : null}
-        </div>
+        <CampaignParticipantsMap
+          locale={locale}
+          mapHeightClassName="h-[40vh] sm:h-[50vh]"
+          shouldHighlightSubscriptions={isMapSectionInView}
+          onUatSelect={({ natcode, name }) => {
+            setPendingUatSelection({ natcode, name })
+          }}
+        />
       </div>
 
       {/* Confirmation dialog */}

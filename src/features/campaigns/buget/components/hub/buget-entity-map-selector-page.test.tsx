@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { BugetEntityMapSelectorPage } from './buget-entity-map-selector-page'
@@ -5,13 +6,26 @@ import { BugetEntityMapSelectorPage } from './buget-entity-map-selector-page'
 const navigateMock = vi.fn()
 const setSelectedEntityMock = vi.fn()
 const toastWarningMock = vi.fn()
+let subscriptionStatsState = {
+  total: 12,
+  perUat: [],
+  isLoading: false,
+  isError: false,
+}
+
+type MockLinkProps = {
+  readonly children: ReactNode
+  readonly to: string
+  readonly search?: Record<string, string>
+  readonly [key: string]: unknown
+}
 
 const natcodeToCuiMap = new Map<string, string>([
   ['1017', '4305857'],
 ])
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, search, ...props }: any) => {
+  Link: ({ children, to, search, ...props }: MockLinkProps) => {
     const query = search ? new URLSearchParams(search).toString() : ''
     const href = typeof to === 'string'
       ? `${to}${query ? `?${query}` : ''}`
@@ -60,6 +74,9 @@ vi.mock('../../hooks/use-uat-cui-map', () => ({
   useUatCuiMap: () => ({
     data: {
       natcodeToCuiMap,
+      cuiToNatcodeMap: new Map([
+        ['4305857', '1017'],
+      ]),
       validRows: natcodeToCuiMap.size,
       invalidRows: 0,
       duplicateNatcodeRows: 0,
@@ -69,8 +86,24 @@ vi.mock('../../hooks/use-uat-cui-map', () => ({
   }),
 }))
 
-vi.mock('./buget-entity-map-selector-map', () => ({
-  BugetEntityMapSelectorMap: ({
+vi.mock('../../hooks/use-subscription-stats', () => ({
+  useSubscriptionStats: () => subscriptionStatsState,
+}))
+
+vi.mock('../../hooks/use-campaign-uat-directory', () => ({
+  useCampaignUatDirectory: () => ({
+    data: {
+      byCui: new Map(),
+      byNatcode: new Map(),
+      byUatId: new Map(),
+    },
+    isLoading: false,
+    isError: false,
+  }),
+}))
+
+vi.mock('./campaign-participants-map', () => ({
+  CampaignParticipantsMap: ({
     onUatSelect,
   }: {
     readonly onUatSelect: (input: { natcode: string; name: string }) => void
@@ -97,6 +130,12 @@ describe('BugetEntityMapSelectorPage', () => {
     navigateMock.mockReset()
     setSelectedEntityMock.mockReset()
     toastWarningMock.mockReset()
+    subscriptionStatsState = {
+      total: 12,
+      perUat: [],
+      isLoading: false,
+      isError: false,
+    }
   })
 
   it('links the back action to the canonical selector route', () => {
@@ -105,6 +144,22 @@ describe('BugetEntityMapSelectorPage', () => {
     expect(
       screen.getByRole('link', { name: /Înapoi la căutare/i }),
     ).toHaveAttribute('href', '/primarie')
+  })
+
+  it('shows an unavailable message instead of a false zero when subscription stats fail', () => {
+    subscriptionStatsState = {
+      total: 0,
+      perUat: [],
+      isLoading: false,
+      isError: true,
+    }
+
+    render(<BugetEntityMapSelectorPage locale="en" />)
+
+    expect(
+      screen.getByText(/Subscription stats are temporarily unavailable\./i),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/campaign subscribers/i)).not.toBeInTheDocument()
   })
 
   it('routes map selections to the challenges hub and preserves language', async () => {
