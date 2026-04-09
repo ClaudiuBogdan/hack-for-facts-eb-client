@@ -183,6 +183,7 @@ describe('BugetEntityMapSelectorMap', () => {
     expect(tooltipContents[tooltipContents.length - 1]).toContain('0 participanți')
     expect(fillColors[fillColors.length - 1]).toBe(SUBSCRIPTION_NO_DATA_COLOR)
     expect(screen.getByTestId('mock-map-legend')).toBeInTheDocument()
+    expect(screen.getByTestId('mock-map-container').parentElement).toHaveClass('isolate')
 
     rerender(
       <BugetEntityMapSelectorMap

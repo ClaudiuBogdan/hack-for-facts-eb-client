@@ -391,7 +391,7 @@ export function BugetEntityMapSelectorMap({
   }, [getFeatureStyle, highlightSubscriptions, isMobile, locale, normalizedSubscriptionCountsByNatcode])
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative isolate h-full w-full">
       <MapContainer
         center={DEFAULT_MAP_CENTER}
         zoom={DEFAULT_MAP_ZOOM}
