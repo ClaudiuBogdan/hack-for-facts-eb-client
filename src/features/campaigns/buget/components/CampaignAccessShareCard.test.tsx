@@ -1,6 +1,9 @@
 import { render, screen } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { CampaignAccessShareCard } from './CampaignAccessShareCard'
+import {
+  CampaignAccessShareCard,
+  CampaignLandingShareCard,
+} from './CampaignAccessShareCard'
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to, search, ...props }: any) => {
@@ -43,5 +46,15 @@ describe('CampaignAccessShareCard', () => {
     expect(
       screen.getByRole('link', { name: 'Open campaign' }),
     ).toHaveAttribute('href', expectedHref)
+  })
+})
+
+describe('CampaignLandingShareCard', () => {
+  it('links directly to the campaign landing page', () => {
+    render(<CampaignLandingShareCard />)
+
+    expect(
+      screen.getByRole('link', { name: 'Open campaign' }),
+    ).toHaveAttribute('href', '/provocare')
   })
 })

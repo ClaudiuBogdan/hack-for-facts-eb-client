@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react'
 import funkyLogo from '@/assets/logo/funky-logo.png'
 import { Button } from '@/components/ui/button'
 import { buildCampaignProvocariPath } from '@/features/challenges/constants'
+import { CAMPAIGN_LANDING_PATH } from '../constants'
 import type { CampaignLocale } from '../types'
 import { cn } from '@/lib/utils'
 
@@ -13,17 +14,21 @@ type CampaignAccessShareCardProps = {
   readonly className?: string
 }
 
-export function CampaignAccessShareCard({
-  entityCui,
-  locale,
-  className,
-}: CampaignAccessShareCardProps) {
-  const campaignSearch = locale === 'en' ? { lang: 'en' as const } : undefined
+type CampaignShareCardProps = {
+  readonly to: string
+  readonly search?: { readonly lang: 'en' }
+  readonly className?: string
+}
 
+function CampaignShareCard({
+  to,
+  search,
+  className,
+}: CampaignShareCardProps) {
   return (
     <article
       className={cn(
-        'w-full max-w-[54rem] rounded-[30px] border border-[#ef2d00]/12 bg-linear-to-r from-white via-orange-50/55 to-[#3565c4]/[0.08] p-5 shadow-sm sm:p-6 md:p-7',
+        'w-full max-w-[54rem] rounded-[30px] border border-[#ef2d00]/12 bg-linear-to-r from-white via-orange-50/55 to-[#3565c4]/[0.08] p-5 text-left shadow-sm sm:p-6 md:p-7',
         className,
       )}
     >
@@ -49,10 +54,7 @@ export function CampaignAccessShareCard({
           size="lg"
           className="h-12 rounded-full bg-[#3565c4] px-6 text-base font-semibold shadow-lg shadow-[#3565c4]/20 hover:bg-[#2d57a8]"
         >
-          <Link
-            to={buildCampaignProvocariPath(entityCui) as '/'}
-            search={campaignSearch}
-          >
+          <Link to={to as '/'} search={search}>
             {t`Open campaign`}
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
@@ -60,4 +62,28 @@ export function CampaignAccessShareCard({
       </div>
     </article>
   )
+}
+
+export function CampaignAccessShareCard({
+  entityCui,
+  locale,
+  className,
+}: CampaignAccessShareCardProps) {
+  const campaignSearch = locale === 'en' ? { lang: 'en' as const } : undefined
+
+  return (
+    <CampaignShareCard
+      to={buildCampaignProvocariPath(entityCui)}
+      search={campaignSearch}
+      className={className}
+    />
+  )
+}
+
+export function CampaignLandingShareCard({
+  className,
+}: {
+  readonly className?: string
+}) {
+  return <CampaignShareCard to={CAMPAIGN_LANDING_PATH} className={className} />
 }

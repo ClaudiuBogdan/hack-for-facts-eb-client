@@ -4,6 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { EntitySearchInput } from "@/components/entities/EntitySearch";
 import { PageCard } from "@/components/landing/PageCard";
 import { QuickEntityAccess } from "@/components/entities/QuickEntityAccess";
+import { CampaignLandingShareCard } from "@/features/campaigns/buget/components/CampaignAccessShareCard";
 import mapPreview from "@/assets/images/map.png";
 import chartPreview from "@/assets/images/chart.png";
 import entityAnalyticsPreview from "@/assets/images/entity-analytics.png";
@@ -64,7 +65,9 @@ function Index() {
           </div>
 
           {/* Quick navigation cards */}
-          <div className="lg:mt-20 grid w-full max-w-5xl grid-cols-1 gap-8 md:grid-cols-2">
+          <CampaignLandingShareCard className="w-full max-w-5xl" />
+
+          <div className="lg:mt-8 grid w-full max-w-5xl grid-cols-1 gap-8 md:grid-cols-2">
             <PageCard
               title={t`Map`}
               description={t`Explore data through a map.`}
