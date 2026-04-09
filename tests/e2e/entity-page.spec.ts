@@ -9,11 +9,32 @@
  * - `yarn test:e2e:snapshot`        - Replay from snapshots (fast CI)
  */
 
+import type { Page } from '@playwright/test'
 import { test, expect } from '../utils/e2e-base'
 
 // Using historical year for stable data
 const TEST_YEAR = '2023'
 const TEST_ENTITY_CUI = '4305857' // MUNICIPIUL CLUJ-NAPOCA
+
+async function waitForBudgetExplorer(page: Page) {
+  await page.goto(`/budget-explorer?year=${TEST_YEAR}`)
+
+  await expect(
+    page.getByRole('heading', { level: 1, name: /buget național|national budget/i })
+  ).toBeVisible({ timeout: 15000 })
+
+  await expect(
+    page.getByText(/distribuția bugetului|budget distribution/i).first()
+  ).toBeVisible({ timeout: 10000 })
+
+  await expect(
+    page.getByRole('heading', { level: 2, name: /total buget|total budget/i }).first()
+  ).toBeVisible({ timeout: 20000 })
+
+  await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {
+    // The live page can keep background requests open; the section heading above is the main readiness gate.
+  })
+}
 
 test.describe('Entity Page', () => {
   test('loads entity overview with financial data', async ({ page }) => {
@@ -140,48 +161,30 @@ test.describe('Landing Page', () => {
 
 test.describe('Budget Explorer', () => {
   test('loads with aggregated data', async ({ page }) => {
-    // Use historical year for stable data
-    await page.goto(`/budget-explorer?year=${TEST_YEAR}`)
+    await waitForBudgetExplorer(page)
 
-    // Verify page loads by checking for "Budget Distribution" heading with year
     await expect(
-      page.getByRole('heading', { name: /distribuția bugetului|budget distribution/i }).first()
-    ).toBeVisible({ timeout: 15000 })
-
-    // Verify data loads - check for Total text in the treemap (i18n may vary)
-    // "Total" text appears below the treemap with the sum value
-    await expect(
-      page.locator('text=/Total|total/i').first()
+      page.getByRole('link', { name: /analizează articolele bugetare|analyze line items/i }).first()
     ).toBeVisible({ timeout: 20000 })
   })
 
   test('can toggle between spending and revenue', async ({ page }) => {
-    await page.goto(`/budget-explorer?year=${TEST_YEAR}`)
+    await waitForBudgetExplorer(page)
 
-    // Wait for page load - check for the heading
-    await expect(
-      page.getByRole('heading', { name: /distribuția bugetului|budget distribution/i }).first()
-    ).toBeVisible({ timeout: 15000 })
-
-    // Find the income/expenses toggle - look for the toggle group in the header
-    // The toggle has "Venituri"/"Income" and "Cheltuieli"/"Expenses" options
-    const incomeToggle = page.locator('button[role="radio"]').filter({ hasText: /venituri|income/i }).first()
-    const expensesToggle = page.locator('button[role="radio"]').filter({ hasText: /cheltuieli|expenses/i }).first()
+    const incomeToggle = page.getByRole('radio', { name: /venituri|income/i }).first()
+    const expensesToggle = page.getByRole('radio', { name: /cheltuieli|expenses/i }).first()
 
     await expect(incomeToggle).toBeVisible({ timeout: 10000 })
     await expect(expensesToggle).toBeVisible({ timeout: 10000 })
 
-    // Verify expenses is initially selected (default is 'ch')
-    await expect(expensesToggle).toHaveAttribute('data-state', 'on')
-
-    // Verify income toggle exists and is clickable - this tests the UI presence
+    await expect(expensesToggle).toHaveAttribute('aria-checked', 'true')
+    await expect(incomeToggle).toHaveAttribute('aria-checked', 'false')
     await expect(incomeToggle).toBeEnabled()
 
-    // The toggle group is visible and functional - that's the key verification
-    // Clicking behavior depends on React state management which can be flaky in E2E
-    // For a robust test, we verify the toggle group exists with both options
-    const incomeText = await incomeToggle.textContent()
-    expect(incomeText).toMatch(/venituri|income/i)
+    await incomeToggle.click()
+
+    await expect(incomeToggle).toHaveAttribute('aria-checked', 'true', { timeout: 10000 })
+    await expect(expensesToggle).toHaveAttribute('aria-checked', 'false', { timeout: 10000 })
   })
 })
 
