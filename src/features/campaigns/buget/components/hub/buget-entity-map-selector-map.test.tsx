@@ -6,15 +6,20 @@ import {
   type ForwardedRef,
   type ReactNode,
 } from 'react'
-import { render } from '@/test/test-utils'
+import { render, screen } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { BugetEntityMapSelectorMap } from './buget-entity-map-selector-map'
 import { buildSubscriptionLegendBins, SUBSCRIPTION_NO_DATA_COLOR } from '../../utils/subscription-scale'
 
 const tooltipContents: string[] = []
 const fillColors: string[] = []
+const useIsMobileMock = vi.fn(() => false)
 
 const removeLayerMock = vi.fn()
+
+vi.mock('@/hooks/use-mobile', () => ({
+  useIsMobile: () => useIsMobileMock(),
+}))
 
 vi.mock('react-leaflet', () => ({
   MapContainer: ({
@@ -67,18 +72,28 @@ vi.mock('react-leaflet', () => ({
       }
 
       layersRef.current = (data.features ?? []).map((feature) => {
+        let tooltipBound = false
         const layer = {
           feature,
           bindTooltip: (content: string) => {
+            tooltipBound = true
             tooltipContents.push(content)
           },
-          getTooltip: () => ({
-            setContent: (content: string) => {
-              tooltipContents.push(content)
-            },
-          }),
+          unbindTooltip: () => {
+            tooltipBound = false
+          },
+          getTooltip: () =>
+            tooltipBound
+              ? {
+                  setContent: (content: string) => {
+                    tooltipContents.push(content)
+                  },
+                }
+              : null,
           setTooltipContent: (content: string) => {
-            tooltipContents.push(content)
+            if (tooltipBound) {
+              tooltipContents.push(content)
+            }
           },
           setStyle: (nextStyle: { readonly fillColor?: string }) => {
             fillColors.push(nextStyle.fillColor ?? '')
@@ -147,6 +162,8 @@ describe('BugetEntityMapSelectorMap', () => {
     tooltipContents.length = 0
     fillColors.length = 0
     removeLayerMock.mockReset()
+    useIsMobileMock.mockReset()
+    useIsMobileMock.mockReturnValue(false)
   })
 
   it('refreshes choropleth tooltips and styles when normalized SIRUTA counts arrive after mount', () => {
@@ -157,6 +174,7 @@ describe('BugetEntityMapSelectorMap', () => {
         locale="ro"
         onUatSelect={vi.fn()}
         highlightSubscriptions={true}
+        totalParticipants={3}
         subscriptionCountsByNatcode={new Map()}
         subscriptionLegendBins={buildSubscriptionLegendBins([3])}
       />,
@@ -164,6 +182,7 @@ describe('BugetEntityMapSelectorMap', () => {
 
     expect(tooltipContents[tooltipContents.length - 1]).toContain('0 participanți')
     expect(fillColors[fillColors.length - 1]).toBe(SUBSCRIPTION_NO_DATA_COLOR)
+    expect(screen.getByTestId('mock-map-legend')).toBeInTheDocument()
 
     rerender(
       <BugetEntityMapSelectorMap
@@ -172,6 +191,7 @@ describe('BugetEntityMapSelectorMap', () => {
         locale="ro"
         onUatSelect={vi.fn()}
         highlightSubscriptions={true}
+        totalParticipants={3}
         subscriptionCountsByNatcode={new Map([['055274', 3]])}
         subscriptionLegendBins={buildSubscriptionLegendBins([3])}
       />,
@@ -183,5 +203,26 @@ describe('BugetEntityMapSelectorMap', () => {
       height: '100%',
       width: '100%',
     })
+  })
+
+  it('does not bind participant tooltips on mobile', () => {
+    useIsMobileMock.mockReturnValue(true)
+
+    render(
+      <BugetEntityMapSelectorMap
+        uatGeoJson={uatGeoJson}
+        countyGeoJson={countyGeoJson}
+        locale="ro"
+        onUatSelect={vi.fn()}
+        highlightSubscriptions={true}
+        totalParticipants={3}
+        subscriptionCountsByNatcode={new Map([['055274', 3]])}
+        subscriptionLegendBins={buildSubscriptionLegendBins([3])}
+      />,
+    )
+
+    expect(tooltipContents).toHaveLength(0)
+    expect(screen.queryByTestId('mock-map-legend')).not.toBeInTheDocument()
+    expect(document.querySelector('[data-testid="mock-map-container"]')).toBeInTheDocument()
   })
 })

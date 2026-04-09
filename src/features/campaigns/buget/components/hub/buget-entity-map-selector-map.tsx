@@ -11,6 +11,7 @@ import {
   DEFAULT_MAX_ZOOM,
   DEFAULT_MIN_ZOOM,
 } from '@/components/maps/constants'
+import { useIsMobile } from '@/hooks/use-mobile'
 import {
   getSubscriptionFillColor,
   type SubscriptionLegendBin,
@@ -45,6 +46,7 @@ type TooltipLayer = {
       offset?: [number, number]
     },
   ) => void
+  unbindTooltip?: () => void
 }
 
 type TooltipUpdater = {
@@ -251,6 +253,7 @@ export function BugetEntityMapSelectorMap({
   subscriptionCountsByNatcode,
   subscriptionLegendBins = [],
 }: BugetEntityMapSelectorMapProps) {
+  const isMobile = useIsMobile()
   const normalizedSubscriptionCountsByNatcode = useMemo(() => {
     if (subscriptionCountsByNatcode == null) {
       return undefined
@@ -301,15 +304,17 @@ export function BugetEntityMapSelectorMap({
       if (!featureProperties) return
 
       const tooltipLayer = layer as TooltipLayer
-      tooltipLayer.bindTooltip(
-        buildTooltipContent(
-          featureProperties,
-          locale,
-          highlightSubscriptions,
-          normalizedSubscriptionCountsByNatcode,
-        ),
-        UAT_TOOLTIP_OPTIONS,
-      )
+      if (!isMobile) {
+        tooltipLayer.bindTooltip(
+          buildTooltipContent(
+            featureProperties,
+            locale,
+            highlightSubscriptions,
+            normalizedSubscriptionCountsByNatcode,
+          ),
+          UAT_TOOLTIP_OPTIONS,
+        )
+      }
 
       layer.on({
         mouseover: (event: LeafletMouseEvent) => {
@@ -333,6 +338,7 @@ export function BugetEntityMapSelectorMap({
     [
       getFeatureStyle,
       highlightSubscriptions,
+      isMobile,
       locale,
       normalizedSubscriptionCountsByNatcode,
       onUatSelect,
@@ -357,6 +363,11 @@ export function BugetEntityMapSelectorMap({
 
       featureLayer.setStyle?.(getFeatureStyle(featureProperties))
 
+      if (isMobile) {
+        featureLayer.unbindTooltip?.()
+        return
+      }
+
       const tooltipContent = buildTooltipContent(
         featureProperties,
         locale,
@@ -377,7 +388,7 @@ export function BugetEntityMapSelectorMap({
 
       featureLayer.bindTooltip?.(tooltipContent, UAT_TOOLTIP_OPTIONS)
     })
-  }, [getFeatureStyle, highlightSubscriptions, locale, normalizedSubscriptionCountsByNatcode])
+  }, [getFeatureStyle, highlightSubscriptions, isMobile, locale, normalizedSubscriptionCountsByNatcode])
 
   return (
     <div className="relative h-full w-full">
@@ -413,7 +424,7 @@ export function BugetEntityMapSelectorMap({
         <BugetUatCanvasLabelsOverlay uatGeoJson={uatGeoJson} />
       </MapContainer>
 
-      {highlightSubscriptions && (subscriptionLegendBins.length > 0 || totalParticipants != null) ? (
+      {!isMobile && highlightSubscriptions && (subscriptionLegendBins.length > 0 || totalParticipants != null) ? (
         <CampaignSubscriptionMapLegend
           bins={subscriptionLegendBins}
           totalParticipants={totalParticipants}
