@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
@@ -289,25 +289,27 @@ export function AdvancedMapDatasetListPage() {
   >(null);
   const [previewDatasetRef, setPreviewDatasetRef] =
     useState<UploadedMapDatasetReference | null>(null);
+  const [activeTab, setActiveTab] = useState("mine");
 
   const ownerParentRef = useRef<HTMLDivElement>(null);
   const publicParentRef = useRef<HTMLDivElement>(null);
 
   const dateTimeLocale = getUserLocale() === "en" ? "en-US" : "ro-RO";
 
-  const ownerDatasets = ownerDatasetsQuery.data ?? [];
-  const publicDatasets = publicDatasetsQuery.data ?? [];
+  const ownerDatasets = useMemo(
+    () => ownerDatasetsQuery.data ?? [],
+    [ownerDatasetsQuery.data],
+  );
+  const publicDatasets = useMemo(
+    () => publicDatasetsQuery.data ?? [],
+    [publicDatasetsQuery.data],
+  );
 
   const ownerVirtualizer = useVirtualizer({
     count: ownerDatasets.length,
     getScrollElement: () => ownerParentRef.current,
     estimateSize: () => 64,
     overscan: 5,
-    measureElement:
-      typeof window !== "undefined" &&
-      "ResizeObserver" in window
-        ? (element) => element.getBoundingClientRect().height
-        : undefined,
   });
 
   const publicVirtualizer = useVirtualizer({
@@ -315,21 +317,7 @@ export function AdvancedMapDatasetListPage() {
     getScrollElement: () => publicParentRef.current,
     estimateSize: () => 64,
     overscan: 5,
-    measureElement:
-      typeof window !== "undefined" &&
-      "ResizeObserver" in window
-        ? (element) => element.getBoundingClientRect().height
-        : undefined,
   });
-
-  // Re-measure virtualizers when tab content becomes visible
-  useEffect(() => {
-    ownerVirtualizer.measure();
-  }, [ownerVirtualizer]);
-
-  useEffect(() => {
-    publicVirtualizer.measure();
-  }, [publicVirtualizer]);
 
   const pendingDeleteDataset = useMemo(
     () =>
@@ -478,13 +466,13 @@ export function AdvancedMapDatasetListPage() {
       {/* Main Content */}
       <main className="flex-1">
         <div className="mx-auto max-w-xl px-6 py-6">
-          <Tabs defaultValue="mine" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="mb-4 grid w-full grid-cols-2">
               <TabsTrigger value="mine">{t`My data series`}</TabsTrigger>
               <TabsTrigger value="public">{t`Public explorer`}</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="mine" className="mt-0">
+            <TabsContent value="mine" className="mt-0" forceMount>
               {ownerDatasets.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
                   <p className="text-sm font-medium text-foreground">
@@ -496,6 +484,7 @@ export function AdvancedMapDatasetListPage() {
                 </div>
               ) : (
                 <div
+                  key={`owner-list-${activeTab}`}
                   ref={ownerParentRef}
                   className="max-h-[500px] overflow-y-auto overflow-x-hidden rounded-lg border border-border/60"
                   style={{
@@ -546,7 +535,7 @@ export function AdvancedMapDatasetListPage() {
               )}
             </TabsContent>
 
-            <TabsContent value="public" className="mt-0">
+            <TabsContent value="public" className="mt-0" forceMount>
               {publicDatasets.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
                   <p className="text-sm font-medium text-foreground">
@@ -558,6 +547,7 @@ export function AdvancedMapDatasetListPage() {
                 </div>
               ) : (
                 <div
+                  key={`public-list-${activeTab}`}
                   ref={publicParentRef}
                   className="max-h-[500px] overflow-y-auto overflow-x-hidden rounded-lg border border-border/60"
                   style={{
