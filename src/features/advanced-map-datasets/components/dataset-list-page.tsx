@@ -440,7 +440,7 @@ export function AdvancedMapDatasetListPage() {
           <div className="min-w-0 flex-1">
             <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
               <Database className="h-6 w-6" aria-hidden="true" />
-              {t`Custom data series`}
+              {t`Data series`}
             </h1>
             <p className="mt-0.5 truncate text-sm text-muted-foreground">
               {t`Manage your own map-ready datasets or clone shared ones.`}
