@@ -40,6 +40,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AuthSignInButton, useAuth } from "@/lib/auth";
 import { getUserLocale } from "@/lib/utils";
 import {
@@ -457,132 +458,115 @@ export function AdvancedMapDatasetListPage() {
 
       {/* Main Content */}
       <main className="flex-1">
-        <div className="mx-auto max-w-xl space-y-6 px-6 py-6">
-          {/* My Data Series Section */}
-          <section>
-            <div className="mb-3 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold tracking-tight">
-                  {t`My data series`}
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  {t`Edit datasets you own and reuse them across maps.`}
-                </p>
-              </div>
-            </div>
+        <div className="mx-auto max-w-xl px-6 py-6">
+          <Tabs defaultValue="mine" className="w-full">
+            <TabsList className="mb-4 grid w-full grid-cols-2">
+              <TabsTrigger value="mine">{t`My data series`}</TabsTrigger>
+              <TabsTrigger value="public">{t`Public explorer`}</TabsTrigger>
+            </TabsList>
 
-            {ownerDatasets.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-                <p className="text-sm font-medium text-foreground">
-                  {t`No data series yet`}
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {t`Create your first custom dataset to get started with map visualization.`}
-                </p>
-              </div>
-            ) : (
-              <div
-                ref={ownerParentRef}
-                className="max-h-[400px] overflow-auto rounded-lg border border-border/60 [scrollbar-width:none] hover:[scrollbar-width:auto] [&::-webkit-scrollbar]:w-0 hover:[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border hover:[&::-webkit-scrollbar-thumb]:bg-border/60"
-              >
-                <div
-                  style={{
-                    height: `${ownerVirtualizer.getTotalSize()}px`,
-                    width: "100%",
-                    position: "relative",
-                  }}
-                >
-                  {ownerVirtualizer.getVirtualItems().map((virtualItem) => {
-                    const dataset = ownerDatasets[virtualItem.index];
-                    return (
-                      <div
-                        key={dataset.id}
-                        style={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          width: "100%",
-                          height: `${virtualItem.size}px`,
-                          transform: `translateY(${virtualItem.start}px)`,
-                        }}
-                        className="border-b border-border/60 last:border-b-0"
-                      >
-                        <DatasetListItem
-                          dataset={dataset}
-                          dateTimeLocale={dateTimeLocale}
-                          onClone={cloneDataset}
-                          onPreview={handlePreviewDataset}
-                          onDelete={handleDeleteDataset}
-                        />
-                      </div>
-                    );
-                  })}
+            <TabsContent value="mine" className="mt-0">
+              {ownerDatasets.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
+                  <p className="text-sm font-medium text-foreground">
+                    {t`No data series yet`}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {t`Create your first custom dataset to get started with map visualization.`}
+                  </p>
                 </div>
-              </div>
-            )}
-          </section>
-
-          {/* Public Explorer Section */}
-          <section>
-            <div className="mb-3 flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold tracking-tight">
-                  {t`Public explorer`}
-                </h2>
-                <p className="text-xs text-muted-foreground">
-                  {t`Explore public data series and clone them into your own workspace.`}
-                </p>
-              </div>
-            </div>
-
-            {publicDatasets.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
-                <p className="text-sm font-medium text-foreground">
-                  {t`No public datasets available`}
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {t`Public datasets will appear here when shared by the community.`}
-                </p>
-              </div>
-            ) : (
-              <div
-                ref={publicParentRef}
-                className="max-h-[400px] overflow-auto rounded-lg border border-border/60 [scrollbar-width:none] hover:[scrollbar-width:auto] [&::-webkit-scrollbar]:w-0 hover:[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border hover:[&::-webkit-scrollbar-thumb]:bg-border/60"
-              >
+              ) : (
                 <div
-                  style={{
-                    height: `${publicVirtualizer.getTotalSize()}px`,
-                    width: "100%",
-                    position: "relative",
-                  }}
+                  ref={ownerParentRef}
+                  className="max-h-[500px] overflow-auto rounded-lg border border-border/60 [scrollbar-width:none] hover:[scrollbar-width:auto] [&::-webkit-scrollbar]:w-0 hover:[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border hover:[&::-webkit-scrollbar-thumb]:bg-border/60"
                 >
-                  {publicVirtualizer.getVirtualItems().map((virtualItem) => {
-                    const dataset = publicDatasets[virtualItem.index];
-                    return (
-                      <div
-                        key={dataset.publicId ?? dataset.id}
-                        style={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          width: "100%",
-                          height: `${virtualItem.size}px`,
-                          transform: `translateY(${virtualItem.start}px)`,
-                        }}
-                        className="border-b border-border/60 last:border-b-0"
-                      >
-                        <PublicDatasetListItem
-                          dataset={dataset}
-                          dateTimeLocale={dateTimeLocale}
-                          onPreview={handlePreviewDataset}
-                        />
-                      </div>
-                    );
-                  })}
+                  <div
+                    style={{
+                      height: `${ownerVirtualizer.getTotalSize()}px`,
+                      width: "100%",
+                      position: "relative",
+                    }}
+                  >
+                    {ownerVirtualizer.getVirtualItems().map((virtualItem) => {
+                      const dataset = ownerDatasets[virtualItem.index];
+                      return (
+                        <div
+                          key={dataset.id}
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: `${virtualItem.size}px`,
+                            transform: `translateY(${virtualItem.start}px)`,
+                          }}
+                          className="border-b border-border/60 last:border-b-0"
+                        >
+                          <DatasetListItem
+                            dataset={dataset}
+                            dateTimeLocale={dateTimeLocale}
+                            onClone={cloneDataset}
+                            onPreview={handlePreviewDataset}
+                            onDelete={handleDeleteDataset}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
-          </section>
+              )}
+            </TabsContent>
+
+            <TabsContent value="public" className="mt-0">
+              {publicDatasets.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
+                  <p className="text-sm font-medium text-foreground">
+                    {t`No public datasets available`}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {t`Public datasets will appear here when shared by the community.`}
+                  </p>
+                </div>
+              ) : (
+                <div
+                  ref={publicParentRef}
+                  className="max-h-[500px] overflow-auto rounded-lg border border-border/60 [scrollbar-width:none] hover:[scrollbar-width:auto] [&::-webkit-scrollbar]:w-0 hover:[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border hover:[&::-webkit-scrollbar-thumb]:bg-border/60"
+                >
+                  <div
+                    style={{
+                      height: `${publicVirtualizer.getTotalSize()}px`,
+                      width: "100%",
+                      position: "relative",
+                    }}
+                  >
+                    {publicVirtualizer.getVirtualItems().map((virtualItem) => {
+                      const dataset = publicDatasets[virtualItem.index];
+                      return (
+                        <div
+                          key={dataset.publicId ?? dataset.id}
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: `${virtualItem.size}px`,
+                            transform: `translateY(${virtualItem.start}px)`,
+                          }}
+                          className="border-b border-border/60 last:border-b-0"
+                        >
+                          <PublicDatasetListItem
+                            dataset={dataset}
+                            dateTimeLocale={dateTimeLocale}
+                            onPreview={handlePreviewDataset}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
 
