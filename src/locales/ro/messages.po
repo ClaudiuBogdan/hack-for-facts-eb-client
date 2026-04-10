@@ -1447,7 +1447,7 @@ msgstr ""
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:632
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:136
 #: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:135
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:603
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:656
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:244
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:272
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:298
@@ -2456,14 +2456,14 @@ msgid "Create chart for this entity"
 msgstr "Creează grafic pentru această entitate"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1203
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:183
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:184
 msgid "Create copy"
 msgstr "Creează o copie"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1163
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1175
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1212
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:454
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:462
 msgid "Create data series"
 msgstr "Creează o serie de date"
 
@@ -2513,7 +2513,7 @@ msgstr "Creați primul dumneavoastră grafic"
 msgid "Create your first chart to start visualizing public spending data."
 msgstr "Creați primul dumneavoastră grafic pentru a începe vizualizarea datelor privind cheltuielile publice."
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:475
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:488
 msgid "Create your first custom dataset to get started with map visualization."
 msgstr "Creați primul dvs. set de date personalizat pentru a începe vizualizarea pe hartă."
 
@@ -2576,10 +2576,6 @@ msgstr "Perioada curentă și sursa"
 msgid "Custom Data"
 msgstr "Date personalizate"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:443
-msgid "Data series"
-msgstr "Serii de date"
-
 #: src/components/charts/components/views/SeriesConfigView.tsx:315
 msgid "Custom Series"
 msgstr "Serie personalizată"
@@ -2626,9 +2622,9 @@ msgstr "Etichete de date"
 msgid "Data period shown:"
 msgstr "Perioada datelor afișate:"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:177
-#~ msgid "Data series"
-#~ msgstr "Serii de date"
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:451
+msgid "Data series"
+msgstr "Serii de date"
 
 #: src/components/charts/components/chart-config/DataSeriesCard.tsx:17
 #: src/components/charts/components/chart-view/SeriesList.tsx:86
@@ -2653,7 +2649,7 @@ msgstr "Alerte pentru serii de date"
 msgid "Data series created"
 msgstr "Seria de date a fost creată"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:617
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:670
 msgid "Data series deleted"
 msgstr "Seria de date a fost ștearsă"
 
@@ -2806,8 +2802,8 @@ msgstr "Definite"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:251
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:299
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:261
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:197
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:627
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:198
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:680
 #: src/features/notifications/components/alerts/AlertCard.tsx:128
 #: src/features/notifications/components/NotificationCard.tsx:128
 #: src/routes/alerts/$alertId/index.lazy.tsx:323
@@ -2829,7 +2825,7 @@ msgstr "Șterge interval"
 msgid "Delete Chart"
 msgstr "Șterge graficul"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:587
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:640
 msgid "Delete data series?"
 msgstr "Ștergeți seria de date?"
 
@@ -2871,7 +2867,7 @@ msgstr "Ștergeți acest grafic?"
 msgid "Delete this map?"
 msgstr "Ștergi această hartă?"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:627
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:680
 msgid "Deleting..."
 msgstr "Se șterge..."
 
@@ -3938,7 +3934,7 @@ msgstr "Eroare la copierea linkului de partajare"
 msgid "Failed to create"
 msgstr "Crearea a eșuat"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:175
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:176
 msgid "Failed to create copy"
 msgstr "Crearea copiei a eșuat"
 
@@ -4007,7 +4003,7 @@ msgid "Failed to load data for this budget sector."
 msgstr "Încărcarea datelor pentru acest sector bugetar a eșuat."
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1073
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:424
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:432
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:112
 msgid "Failed to load data series"
 msgstr "Încărcarea seriilor de date a eșuat"
@@ -5492,7 +5488,7 @@ msgstr "Se încarcă datele graficului…"
 msgid "Loading comments..."
 msgstr "Se încarcă comentariile..."
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:385
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:393
 msgid "Loading data series"
 msgstr "Se încarcă serii de date"
 
@@ -5808,6 +5804,10 @@ msgstr "Gestionati notificarile prin email pentru entitatile pe care le urmariti
 msgid "Manage email updates for this campaign."
 msgstr "Gestionati actualizarile prin email pentru aceasta campanie."
 
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:551
+msgid "Manage maps"
+msgstr "Gestionează hărțile"
+
 #: src/features/notifications/components/EntityNotificationBell.tsx:160
 #: src/routes/unsubscribe.$token.tsx:43
 msgid "Manage notifications"
@@ -5829,7 +5829,7 @@ msgstr "Gestionează setările, vizibilitatea și istoricul versiunilor hărții
 msgid "Manage your newsletter and alert subscriptions"
 msgstr "Gestionați-vă abonamentele la newsletter și alerte"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:446
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:454
 msgid "Manage your own map-ready datasets or clone shared ones."
 msgstr "Gestionați-vă propriile seturi de date pregătite pentru hartă sau clonați-le pe cele partajate."
 
@@ -6284,7 +6284,7 @@ msgid "My city hall"
 msgstr "Primăria mea"
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:270
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:464
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:472
 msgid "My data series"
 msgstr "Seriile mele de date"
 
@@ -6603,7 +6603,7 @@ msgstr "Nicio serie de date"
 msgid "No data series alerts"
 msgstr "Nicio alertă pentru serii de date"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:472
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:485
 msgid "No data series yet"
 msgstr "Nicio serie de date încă"
 
@@ -6788,7 +6788,7 @@ msgid "No profile data available"
 msgstr "Nu exista date de profil"
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:433
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:524
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:566
 msgid "No public datasets available"
 msgstr "Nu sunt disponibile seturi de date publice"
 
@@ -7096,8 +7096,8 @@ msgstr "Doar tu poți accesa această versiune salvată."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:451
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:120
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:150
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:257
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:151
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:258
 #: src/features/learning/components/interactive/HandsOnExplorer.tsx:106
 msgid "Open"
 msgstr "Deschide"
@@ -7331,7 +7331,7 @@ msgstr "Opțiuni"
 #. placeholder {0}: dataset.title
 #. placeholder {0}: map.title
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:131
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:160
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:161
 msgid "Options for {0}"
 msgstr "Opțiuni pentru {0}"
 
@@ -7823,8 +7823,8 @@ msgstr "Previzualizează setul de date pe hartă"
 msgid "Preview of the alert chart and settings."
 msgstr "Previzualizare a graficului și setărilor alertei."
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:190
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:265
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:191
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:266
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:139
 msgid "Preview on map"
 msgstr "Previzualizează pe hartă"
@@ -7833,7 +7833,7 @@ msgstr "Previzualizează pe hartă"
 msgid "Preview selection"
 msgstr "Previzualizează selecția"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:273
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:274
 msgid "Preview unavailable"
 msgstr "Previzualizare indisponibilă"
 
@@ -7878,7 +7878,7 @@ msgstr "Politica de confidențialitate"
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:110
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:101
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1294
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:92
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:93
 msgid "Private"
 msgstr "Privată"
 
@@ -7924,7 +7924,7 @@ msgstr "Propune o modificare specifică și realistă. De exemplu: «Redistribui
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:108
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:84
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1296
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:77
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:78
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:164
 msgid "Public"
 msgstr "Publică"
@@ -7941,7 +7941,7 @@ msgstr "Seturi de date publice"
 msgid "Public datasets are still available in the shared list."
 msgstr "Seturile de date publice sunt în continuare disponibile în lista partajată."
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:527
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:569
 msgid "Public datasets will appear here when shared by the community."
 msgstr "Seturile de date publice vor apărea aici când sunt partajate de comunitate."
 
@@ -7955,7 +7955,7 @@ msgid "Public debate request"
 msgstr "Cerere de dezbatere publică"
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:271
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:465
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:473
 msgid "Public explorer"
 msgstr "Explorator public"
 
@@ -9334,7 +9334,7 @@ msgstr "Conectează-te"
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:215
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:277
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1055
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:410
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:418
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:544
 #: src/features/learning/components/layout/LoginBanner.tsx:28
 #: src/features/notifications/components/EntityNotificationBell.tsx:139
@@ -9352,7 +9352,7 @@ msgstr ""
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:210
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:270
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1046
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:402
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:410
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:270
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:529
 #: src/features/notifications/components/EntityNotificationBell.tsx:82
@@ -10112,7 +10112,7 @@ msgstr "Această valoare va fi utilizată pentru fiecare an din intervalul grafi
 msgid "This verification is a proof of concept using local storage."
 msgstr "Această verificare este un proof-of-concept care utilizează stocarea locală."
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:592
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:645
 msgid "This will permanently delete"
 msgstr "Aceasta va șterge definitiv"
 
@@ -10133,7 +10133,7 @@ msgstr "Aceasta va elimina toate instantaneele locale pentru această hartă doa
 msgid "This will remove every local dataset snapshot saved in this browser for the current draft."
 msgstr "Aceasta va elimina toate instantaneele locale ale setului de date salvate în acest browser pentru schița curentă."
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:597
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:650
 msgid "This will remove the dataset unless it is still referenced by existing maps."
 msgstr "Aceasta va elimina setul de date, cu excepția cazului în care este încă referențiat de hărți existente."
 
@@ -10597,14 +10597,14 @@ msgstr "Sursă necunoscută"
 msgid "Unknown type"
 msgstr "Tip necunoscut"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:594
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:647
 msgid "Unless it is still referenced by existing maps, it cannot be recovered."
 msgstr "Dacă nu mai este referențiat de hărți existente, nu mai poate fi recuperat."
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:109
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:93
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1295
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:85
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:86
 msgid "Unlisted"
 msgstr "Nelistat"
 
@@ -11362,7 +11362,7 @@ msgstr "Trebuie să fiți autentificat pentru a edita serii de date personalizat
 msgid "You need to be signed in to manage campaign notifications"
 msgstr "Trebuie sa fiti autentificat pentru a gestiona notificarile campaniei"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:405
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:413
 msgid "You need to be signed in to manage custom data series."
 msgstr "Trebuie să fiți autentificat pentru a gestiona serii de date personalizate."
 
