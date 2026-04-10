@@ -13,6 +13,7 @@ import {
   EyeOff,
   Database,
   Table2,
+  Map,
 } from "lucide-react";
 import { toast } from "sonner";
 import { t } from "@lingui/core/macro";
@@ -538,6 +539,19 @@ export function AdvancedMapDatasetListPage() {
                   </div>
                 </div>
               )}
+              <div className="border-t border-border/60 bg-muted/20 px-4 py-3">
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-center gap-2 text-muted-foreground hover:text-foreground"
+                >
+                  <Link to="/maps/editor" preload="intent">
+                    <Map className="h-4 w-4" aria-hidden="true" />
+                    {t`Manage maps`}
+                  </Link>
+                </Button>
+              </div>
             </TabsContent>
 
             <TabsContent 
