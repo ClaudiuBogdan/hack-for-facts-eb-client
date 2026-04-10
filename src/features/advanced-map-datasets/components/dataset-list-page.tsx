@@ -472,7 +472,12 @@ export function AdvancedMapDatasetListPage() {
               <TabsTrigger value="public">{t`Public explorer`}</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="mine" className="mt-0" forceMount>
+            <TabsContent 
+              value="mine" 
+              className="mt-0" 
+              forceMount
+              hidden={activeTab !== "mine"}
+            >
               {ownerDatasets.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
                   <p className="text-sm font-medium text-foreground">
@@ -535,7 +540,12 @@ export function AdvancedMapDatasetListPage() {
               )}
             </TabsContent>
 
-            <TabsContent value="public" className="mt-0" forceMount>
+            <TabsContent 
+              value="public" 
+              className="mt-0" 
+              forceMount
+              hidden={activeTab !== "public"}
+            >
               {publicDatasets.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
                   <p className="text-sm font-medium text-foreground">
