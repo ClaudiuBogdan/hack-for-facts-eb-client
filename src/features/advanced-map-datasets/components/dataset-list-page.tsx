@@ -301,8 +301,8 @@ export function AdvancedMapDatasetListPage() {
   const ownerVirtualizer = useVirtualizer({
     count: ownerDatasets.length,
     getScrollElement: () => ownerParentRef.current,
-    estimateSize: () => 56,
-    overscan: 10,
+    estimateSize: () => 72,
+    overscan: 5,
     measureElement:
       typeof window !== "undefined" &&
       "ResizeObserver" in window
@@ -313,8 +313,8 @@ export function AdvancedMapDatasetListPage() {
   const publicVirtualizer = useVirtualizer({
     count: publicDatasets.length,
     getScrollElement: () => publicParentRef.current,
-    estimateSize: () => 56,
-    overscan: 10,
+    estimateSize: () => 72,
+    overscan: 5,
     measureElement:
       typeof window !== "undefined" &&
       "ResizeObserver" in window
