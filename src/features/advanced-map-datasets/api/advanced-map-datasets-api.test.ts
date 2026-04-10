@@ -4,17 +4,13 @@ const getAuthTokenMock = vi.fn();
 const getApiBaseUrlMock = vi.fn();
 
 vi.mock('@/config/env', async () => {
-  const actual = await vi.importActual<typeof import('@/config/env')>('@/config/env');
   return {
-    ...actual,
     getApiBaseUrl: getApiBaseUrlMock,
   };
 });
 
 vi.mock('@/lib/auth', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/auth')>('@/lib/auth');
   return {
-    ...actual,
     getAuthToken: getAuthTokenMock,
   };
 });
