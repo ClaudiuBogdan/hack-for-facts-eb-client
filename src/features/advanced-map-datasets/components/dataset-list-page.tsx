@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
@@ -303,6 +303,11 @@ export function AdvancedMapDatasetListPage() {
     getScrollElement: () => ownerParentRef.current,
     estimateSize: () => 56,
     overscan: 10,
+    measureElement:
+      typeof window !== "undefined" &&
+      "ResizeObserver" in window
+        ? (element) => element.getBoundingClientRect().height
+        : undefined,
   });
 
   const publicVirtualizer = useVirtualizer({
@@ -310,7 +315,21 @@ export function AdvancedMapDatasetListPage() {
     getScrollElement: () => publicParentRef.current,
     estimateSize: () => 56,
     overscan: 10,
+    measureElement:
+      typeof window !== "undefined" &&
+      "ResizeObserver" in window
+        ? (element) => element.getBoundingClientRect().height
+        : undefined,
   });
+
+  // Re-measure virtualizers when tab content becomes visible
+  useEffect(() => {
+    ownerVirtualizer.measure();
+  }, [ownerVirtualizer]);
+
+  useEffect(() => {
+    publicVirtualizer.measure();
+  }, [publicVirtualizer]);
 
   const pendingDeleteDataset = useMemo(
     () =>
