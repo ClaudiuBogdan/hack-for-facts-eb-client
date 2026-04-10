@@ -478,7 +478,17 @@ export function AdvancedMapDatasetListPage() {
               ) : (
                 <div
                   ref={ownerParentRef}
-                  className="max-h-[500px] overflow-auto rounded-lg border border-border/60 [scrollbar-width:none] hover:[scrollbar-width:auto] [&::-webkit-scrollbar]:w-0 hover:[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border hover:[&::-webkit-scrollbar-thumb]:bg-border/60"
+                  className="max-h-[500px] overflow-y-auto overflow-x-hidden rounded-lg border border-border/60"
+                  style={{
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'transparent transparent',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.scrollbarColor = 'hsl(var(--border)) transparent';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.scrollbarColor = 'transparent transparent';
+                  }}
                 >
                   <div
                     style={{
@@ -530,7 +540,17 @@ export function AdvancedMapDatasetListPage() {
               ) : (
                 <div
                   ref={publicParentRef}
-                  className="max-h-[500px] overflow-auto rounded-lg border border-border/60 [scrollbar-width:none] hover:[scrollbar-width:auto] [&::-webkit-scrollbar]:w-0 hover:[&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-border hover:[&::-webkit-scrollbar-thumb]:bg-border/60"
+                  className="max-h-[500px] overflow-y-auto overflow-x-hidden rounded-lg border border-border/60"
+                  style={{
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'transparent transparent',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.scrollbarColor = 'hsl(var(--border)) transparent';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.scrollbarColor = 'transparent transparent';
+                  }}
                 >
                   <div
                     style={{
