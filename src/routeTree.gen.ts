@@ -45,12 +45,15 @@ import { Route as LangLearningRouteRouteImport } from './routes/$lang/learning/r
 import { Route as PrimarieHartaIndexRouteImport } from './routes/primarie/harta/index'
 import { Route as PrimarieCuiIndexRouteImport } from './routes/primarie/$cui/index'
 import { Route as MapsEditorIndexRouteImport } from './routes/maps/editor/index'
+import { Route as MapsDatasetsIndexRouteImport } from './routes/maps/datasets/index'
 import { Route as ClassificationsFunctionalIndexRouteImport } from './routes/classifications/functional/index'
 import { Route as ClassificationsEconomicIndexRouteImport } from './routes/classifications/economic/index'
 import { Route as LangLearningIndexRouteImport } from './routes/$lang/learning/index'
 import { Route as MapsPublicMapIdRouteImport } from './routes/maps/public/$mapId'
 import { Route as MapsEditorNewRouteImport } from './routes/maps/editor/new'
 import { Route as MapsEditorMapIdRouteImport } from './routes/maps/editor/$mapId'
+import { Route as MapsDatasetsNewRouteImport } from './routes/maps/datasets/new'
+import { Route as MapsDatasetsDatasetIdRouteImport } from './routes/maps/datasets/$datasetId'
 import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entities.$cui.share-image[.]png'
 import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
@@ -59,6 +62,7 @@ import { Route as PrimarieCuiBugetIndexRouteImport } from './routes/primarie/$cu
 import { Route as LangLearningPathIdIndexRouteImport } from './routes/$lang/learning/$pathId/index'
 import { Route as PrimarieCuiBugetResurseRouteImport } from './routes/primarie/$cui/buget/resurse'
 import { Route as PrimarieCuiBugetCalendarRouteImport } from './routes/primarie/$cui/buget/calendar'
+import { Route as MapsDatasetsPublicPublicIdRouteImport } from './routes/maps/datasets/public/$publicId'
 import { Route as LangLearningCertificatesIdRouteImport } from './routes/$lang/learning/certificates.$id'
 import { Route as PrimarieCuiBugetProvocariRouteRouteImport } from './routes/primarie/$cui/buget/provocari/route'
 import { Route as PrimarieCuiBugetProvocariIndexRouteImport } from './routes/primarie/$cui/buget/provocari/index'
@@ -300,6 +304,13 @@ const MapsEditorIndexRoute = MapsEditorIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/maps/editor/index.lazy').then((d) => d.Route),
 )
+const MapsDatasetsIndexRoute = MapsDatasetsIndexRouteImport.update({
+  id: '/maps/datasets/',
+  path: '/maps/datasets/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/maps/datasets/index.lazy').then((d) => d.Route),
+)
 const ClassificationsFunctionalIndexRoute =
   ClassificationsFunctionalIndexRouteImport.update({
     id: '/classifications/functional/',
@@ -345,6 +356,20 @@ const MapsEditorMapIdRoute = MapsEditorMapIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/maps/editor/$mapId.lazy').then((d) => d.Route),
+)
+const MapsDatasetsNewRoute = MapsDatasetsNewRouteImport.update({
+  id: '/maps/datasets/new',
+  path: '/maps/datasets/new',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/maps/datasets/new.lazy').then((d) => d.Route),
+)
+const MapsDatasetsDatasetIdRoute = MapsDatasetsDatasetIdRouteImport.update({
+  id: '/maps/datasets/$datasetId',
+  path: '/maps/datasets/$datasetId',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/maps/datasets/$datasetId.lazy').then((d) => d.Route),
 )
 const EntitiesCuiShareImageDotpngRoute =
   EntitiesCuiShareImageDotpngRouteImport.update({
@@ -405,6 +430,14 @@ const PrimarieCuiBugetCalendarRoute =
     getParentRoute: () => PrimarieCuiRouteRoute,
   } as any).lazy(() =>
     import('./routes/primarie/$cui/buget/calendar.lazy').then((d) => d.Route),
+  )
+const MapsDatasetsPublicPublicIdRoute =
+  MapsDatasetsPublicPublicIdRouteImport.update({
+    id: '/maps/datasets/public/$publicId',
+    path: '/maps/datasets/public/$publicId',
+    getParentRoute: () => rootRouteImport,
+  } as any).lazy(() =>
+    import('./routes/maps/datasets/public/$publicId.lazy').then((d) => d.Route),
   )
 const LangLearningCertificatesIdRoute =
   LangLearningCertificatesIdRouteImport.update({
@@ -502,12 +535,15 @@ export interface FileRoutesByFullPath {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
+  '/maps/datasets/new': typeof MapsDatasetsNewRoute
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
+  '/maps/datasets/': typeof MapsDatasetsIndexRoute
   '/maps/editor/': typeof MapsEditorIndexRoute
   '/primarie/$cui/': typeof PrimarieCuiIndexRoute
   '/primarie/harta/': typeof PrimarieHartaIndexRoute
@@ -515,6 +551,7 @@ export interface FileRoutesByFullPath {
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
+  '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
   '/$lang/learning/$pathId/': typeof LangLearningPathIdIndexRoute
@@ -559,18 +596,22 @@ export interface FileRoutesByTo {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
+  '/maps/datasets/new': typeof MapsDatasetsNewRoute
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/$lang/learning': typeof LangLearningIndexRoute
   '/classifications/economic': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional': typeof ClassificationsFunctionalIndexRoute
+  '/maps/datasets': typeof MapsDatasetsIndexRoute
   '/maps/editor': typeof MapsEditorIndexRoute
   '/primarie/$cui': typeof PrimarieCuiIndexRoute
   '/primarie/harta': typeof PrimarieHartaIndexRoute
   '/alerts/$alertId': typeof AlertsAlertIdIndexLazyRoute
   '/charts/$chartId': typeof ChartsChartIdIndexLazyRoute
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
+  '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
   '/$lang/learning/$pathId': typeof LangLearningPathIdIndexRoute
@@ -620,12 +661,15 @@ export interface FileRoutesById {
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
   '/entities/$cui/share-image.png': typeof EntitiesCuiShareImageDotpngRoute
+  '/maps/datasets/$datasetId': typeof MapsDatasetsDatasetIdRoute
+  '/maps/datasets/new': typeof MapsDatasetsNewRoute
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
+  '/maps/datasets/': typeof MapsDatasetsIndexRoute
   '/maps/editor/': typeof MapsEditorIndexRoute
   '/primarie/$cui/': typeof PrimarieCuiIndexRoute
   '/primarie/harta/': typeof PrimarieHartaIndexRoute
@@ -633,6 +677,7 @@ export interface FileRoutesById {
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
+  '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
   '/$lang/learning/$pathId/': typeof LangLearningPathIdIndexRoute
@@ -683,12 +728,15 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/maps/datasets/$datasetId'
+    | '/maps/datasets/new'
     | '/maps/editor/$mapId'
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
+    | '/maps/datasets/'
     | '/maps/editor/'
     | '/primarie/$cui/'
     | '/primarie/harta/'
@@ -696,6 +744,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId/'
     | '/primarie/$cui/buget/provocari'
     | '/$lang/learning/certificates/$id'
+    | '/maps/datasets/public/$publicId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
     | '/$lang/learning/$pathId/'
@@ -740,18 +789,22 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/maps/datasets/$datasetId'
+    | '/maps/datasets/new'
     | '/maps/editor/$mapId'
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/$lang/learning'
     | '/classifications/economic'
     | '/classifications/functional'
+    | '/maps/datasets'
     | '/maps/editor'
     | '/primarie/$cui'
     | '/primarie/harta'
     | '/alerts/$alertId'
     | '/charts/$chartId'
     | '/$lang/learning/certificates/$id'
+    | '/maps/datasets/public/$publicId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
     | '/$lang/learning/$pathId'
@@ -800,12 +853,15 @@ export interface FileRouteTypes {
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
     | '/entities/$cui/share-image.png'
+    | '/maps/datasets/$datasetId'
+    | '/maps/datasets/new'
     | '/maps/editor/$mapId'
     | '/maps/editor/new'
     | '/maps/public/$mapId'
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
+    | '/maps/datasets/'
     | '/maps/editor/'
     | '/primarie/$cui/'
     | '/primarie/harta/'
@@ -813,6 +869,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId/'
     | '/primarie/$cui/buget/provocari'
     | '/$lang/learning/certificates/$id'
+    | '/maps/datasets/public/$publicId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
     | '/$lang/learning/$pathId/'
@@ -857,13 +914,17 @@ export interface RootRouteChildren {
   ChartsIndexLazyRoute: typeof ChartsIndexLazyRoute
   ClassificationsEconomicCodeRoute: typeof ClassificationsEconomicCodeRoute
   ClassificationsFunctionalCodeRoute: typeof ClassificationsFunctionalCodeRoute
+  MapsDatasetsDatasetIdRoute: typeof MapsDatasetsDatasetIdRoute
+  MapsDatasetsNewRoute: typeof MapsDatasetsNewRoute
   MapsEditorMapIdRoute: typeof MapsEditorMapIdRoute
   MapsEditorNewRoute: typeof MapsEditorNewRoute
   MapsPublicMapIdRoute: typeof MapsPublicMapIdRoute
   ClassificationsEconomicIndexRoute: typeof ClassificationsEconomicIndexRoute
   ClassificationsFunctionalIndexRoute: typeof ClassificationsFunctionalIndexRoute
+  MapsDatasetsIndexRoute: typeof MapsDatasetsIndexRoute
   MapsEditorIndexRoute: typeof MapsEditorIndexRoute
   PrimarieHartaIndexRoute: typeof PrimarieHartaIndexRoute
+  MapsDatasetsPublicPublicIdRoute: typeof MapsDatasetsPublicPublicIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1141,6 +1202,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MapsEditorIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/maps/datasets/': {
+      id: '/maps/datasets/'
+      path: '/maps/datasets'
+      fullPath: '/maps/datasets/'
+      preLoaderRoute: typeof MapsDatasetsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/classifications/functional/': {
       id: '/classifications/functional/'
       path: '/classifications/functional'
@@ -1181,6 +1249,20 @@ declare module '@tanstack/react-router' {
       path: '/maps/editor/$mapId'
       fullPath: '/maps/editor/$mapId'
       preLoaderRoute: typeof MapsEditorMapIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maps/datasets/new': {
+      id: '/maps/datasets/new'
+      path: '/maps/datasets/new'
+      fullPath: '/maps/datasets/new'
+      preLoaderRoute: typeof MapsDatasetsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maps/datasets/$datasetId': {
+      id: '/maps/datasets/$datasetId'
+      path: '/maps/datasets/$datasetId'
+      fullPath: '/maps/datasets/$datasetId'
+      preLoaderRoute: typeof MapsDatasetsDatasetIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/entities/$cui/share-image.png': {
@@ -1238,6 +1320,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/primarie/$cui/buget/calendar'
       preLoaderRoute: typeof PrimarieCuiBugetCalendarRouteImport
       parentRoute: typeof PrimarieCuiRouteRoute
+    }
+    '/maps/datasets/public/$publicId': {
+      id: '/maps/datasets/public/$publicId'
+      path: '/maps/datasets/public/$publicId'
+      fullPath: '/maps/datasets/public/$publicId'
+      preLoaderRoute: typeof MapsDatasetsPublicPublicIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/$lang/learning/certificates/$id': {
       id: '/$lang/learning/certificates/$id'
@@ -1446,13 +1535,17 @@ const rootRouteChildren: RootRouteChildren = {
   ChartsIndexLazyRoute: ChartsIndexLazyRoute,
   ClassificationsEconomicCodeRoute: ClassificationsEconomicCodeRoute,
   ClassificationsFunctionalCodeRoute: ClassificationsFunctionalCodeRoute,
+  MapsDatasetsDatasetIdRoute: MapsDatasetsDatasetIdRoute,
+  MapsDatasetsNewRoute: MapsDatasetsNewRoute,
   MapsEditorMapIdRoute: MapsEditorMapIdRoute,
   MapsEditorNewRoute: MapsEditorNewRoute,
   MapsPublicMapIdRoute: MapsPublicMapIdRoute,
   ClassificationsEconomicIndexRoute: ClassificationsEconomicIndexRoute,
   ClassificationsFunctionalIndexRoute: ClassificationsFunctionalIndexRoute,
+  MapsDatasetsIndexRoute: MapsDatasetsIndexRoute,
   MapsEditorIndexRoute: MapsEditorIndexRoute,
   PrimarieHartaIndexRoute: PrimarieHartaIndexRoute,
+  MapsDatasetsPublicPublicIdRoute: MapsDatasetsPublicPublicIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -25,6 +25,7 @@ interface MapAnalyticsSaveSnapshotDialogProps {
   open: boolean;
   defaultVisibility: AdvancedMapAnalyticsVisibility;
   isPending: boolean;
+  publicVisibilityErrorMessage?: string | null;
   onOpenChange: (open: boolean) => void;
   onConfirm: (input: SaveSnapshotDialogConfirmInput) => Promise<void> | void;
 }
@@ -33,6 +34,7 @@ export function MapAnalyticsSaveSnapshotDialog({
   open,
   defaultVisibility,
   isPending,
+  publicVisibilityErrorMessage = null,
   onOpenChange,
   onConfirm,
 }: Readonly<MapAnalyticsSaveSnapshotDialogProps>) {
@@ -98,12 +100,23 @@ export function MapAnalyticsSaveSnapshotDialog({
                 </Badge>
                 <Switch
                   checked={visibilityAtSave === 'public'}
-                  onCheckedChange={(checked) => setVisibilityAtSave(checked ? 'public' : 'private')}
+                  onCheckedChange={(checked) => {
+                    if (checked && publicVisibilityErrorMessage) {
+                      return;
+                    }
+
+                    setVisibilityAtSave(checked ? 'public' : 'private');
+                  }}
                   aria-label={t`Toggle snapshot visibility`}
                   disabled={isPending}
                 />
               </div>
             </div>
+            {publicVisibilityErrorMessage ? (
+              <p className="mt-3 rounded-md border border-amber-300 bg-amber-50 px-2.5 py-2 text-xs text-amber-900">
+                {publicVisibilityErrorMessage}
+              </p>
+            ) : null}
             {visibilityAtSave === 'public' ? (
               <p className="mt-3 flex items-start gap-2 rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-2 text-xs text-emerald-900 dark:border-emerald-700/40 dark:bg-emerald-900/20 dark:text-emerald-200">
                 <Globe className="mt-0.5 h-3.5 w-3.5 shrink-0" />

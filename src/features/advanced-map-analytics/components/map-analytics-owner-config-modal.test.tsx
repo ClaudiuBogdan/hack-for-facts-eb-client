@@ -178,6 +178,35 @@ describe('MapAnalyticsOwnerConfigModal', () => {
     expect(onRequestSaveSnapshot).toHaveBeenCalledTimes(1);
   });
 
+  it('blocks making the map public when uploaded datasets are private', async () => {
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentVisibility="private"
+        currentPublicId={null}
+        publicVisibilityErrorMessage="Public maps can use only unlisted or public datasets."
+        onOpenChange={vi.fn()}
+        onMapNameChange={vi.fn()}
+        onRequestSaveSnapshot={vi.fn()}
+        onLoadSnapshot={vi.fn()}
+        onApplyImportedConfig={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Toggle map visibility' }));
+
+    expect(updateMutateAsyncMock).not.toHaveBeenCalled();
+    expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
+      'Public maps can use only unlisted or public datasets.'
+    );
+  });
+
   it('opens split description editor from config modal and emits description changes', async () => {
     const onMapDescriptionChange = vi.fn();
     const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');

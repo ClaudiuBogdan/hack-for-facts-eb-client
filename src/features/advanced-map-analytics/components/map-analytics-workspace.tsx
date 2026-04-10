@@ -45,8 +45,9 @@ import {
 } from '@/schemas/advanced-map-analytics';
 import { useUserCurrency } from '@/lib/hooks/useUserCurrency';
 import { useUserInflationAdjusted } from '@/lib/hooks/useUserInflationAdjusted';
+import { useEntityProfile } from '@/lib/hooks/useEntityDetails';
 import { DEFAULT_FEATURE_STYLE } from '@/components/maps/constants';
-import type { GroupedSeriesDataResponse } from '@/lib/map-series/interfaces';
+import type { GroupedSeriesDataResponse, MapSeriesVectorCache } from '@/lib/map-series/interfaces';
 import { AdvancedMapAnalyticsConfigPanel } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel';
 import { AdvancedMapAnalyticsBinsModal } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal';
 import { AdvancedMapAnalyticsBinsPanel } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-bins-panel';
@@ -57,6 +58,11 @@ import { AdvancedMapAnalyticsValueFiltersPanel } from '@/components/maps/advance
 import { AdvancedMapAnalyticsSeriesEditorModal } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal';
 import { AdvancedMapAnalyticsWarningsModal } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal';
 import { AdvancedMapAnalyticsAnalyticsView } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view';
+import {
+  MapAnalyticsEntityDetailsPanel,
+  type MapAnalyticsEntityDetailsSelection,
+  type MapAnalyticsEntitySeriesRow,
+} from './map-analytics-entity-details-panel';
 import { MapAnalyticsQuickActions } from './map-analytics-quick-actions';
 import {
   applySetActiveSeries,
@@ -73,8 +79,15 @@ import {
   parseMapConfigTransferInput,
   type ImportedMapConfig,
 } from '@/features/advanced-map-analytics/store/map-config-transfer';
+import {
+  createUploadedMapDatasetSeries,
+  type UploadedMapDatasetReference,
+} from '@/features/advanced-map-analytics/uploaded-map-dataset';
+import { useUploadedMapDatasetPayloads } from '@/features/advanced-map-analytics/hooks/use-uploaded-map-dataset-payloads';
+import type { AdvancedMapDatasetDetail } from '@/features/advanced-map-datasets/api/schemas';
 import { loadInteractiveMapModule } from '@/features/advanced-map-analytics/analytics-map-warmup';
 import type { MapEntitySelection } from '@/features/advanced-map-analytics/types/map-entity-selection';
+import type { PublicMapViewport } from '@/features/advanced-map-analytics/hooks/use-public-map-viewport';
 import { t } from '@lingui/core/macro';
 import { cn, getUserLocale } from '@/lib/utils';
 
@@ -92,6 +105,8 @@ interface ValueFilterEditorState {
   mode: 'add' | 'edit';
   ruleId: string;
 }
+
+type SelectedMapEntityDetails = MapAnalyticsEntityDetailsSelection;
 
 export interface MapAnalyticsWorkspaceCapabilities {
   readOnly: boolean;
@@ -121,6 +136,13 @@ interface MapAnalyticsWorkspaceProps {
   layout?: 'full' | 'preview';
   previewContainerClassName?: string;
   onEntityCuiSelect?: (selection: MapEntitySelection) => void;
+  localValuesBySeriesId?: MapSeriesVectorCache;
+  localUnitsBySeriesId?: Map<string, string | undefined>;
+  displayUnitOverridesBySeriesId?: Map<string, string | null>;
+  mapZoomOverride?: number;
+  mapCenterOverride?: [number, number];
+  onMapViewportChange?: (nextViewport: PublicMapViewport) => void;
+  onMapFeatureSelect?: (properties: UatProperties) => void;
 }
 
 // NOTE: Do not use module-scope t`` — it freezes the translation at import time.
@@ -146,6 +168,13 @@ export function MapAnalyticsWorkspace({
   layout = 'full',
   previewContainerClassName,
   onEntityCuiSelect,
+  localValuesBySeriesId,
+  localUnitsBySeriesId,
+  displayUnitOverridesBySeriesId,
+  mapZoomOverride,
+  mapCenterOverride,
+  onMapViewportChange,
+  onMapFeatureSelect,
 }: Readonly<MapAnalyticsWorkspaceProps>) {
   const navigate = useNavigate();
   const [userCurrency] = useUserCurrency();
@@ -155,11 +184,16 @@ export function MapAnalyticsWorkspace({
   const [valueFilterEditorState, setValueFilterEditorState] = useState<ValueFilterEditorState | null>(null);
   const [isWarningsModalOpen, setIsWarningsModalOpen] = useState(false);
   const [selectedSeriesId, setSelectedSeriesId] = useState<string | undefined>(undefined);
+  const [selectedMapEntity, setSelectedMapEntity] = useState<SelectedMapEntityDetails | null>(null);
   const [isMobileControlsCollapsed, setIsMobileControlsCollapsed] = useState(
     mobileControlsDefaultCollapsed
   );
   const isReadOnly = mode === 'public' || capabilities.readOnly;
   const isPreviewLayout = layout === 'preview';
+  const shouldUseEntityDetailsPanel =
+    !isPreviewLayout &&
+    typeof onEntityCuiSelect !== 'function' &&
+    typeof onMapFeatureSelect !== 'function';
   const isMobileControlsCollapseEnabled = isMobile && mobileControlsDefaultCollapsed;
   const shouldOverlayMobileControls =
     !isPreviewLayout &&
@@ -167,6 +201,7 @@ export function MapAnalyticsWorkspace({
     isMobileControlsCollapseEnabled &&
     mapState.activeView === 'map';
   const mobileControlsContentId = 'map-analytics-mobile-controls';
+  const selectedEntityProfileQuery = useEntityProfile(selectedMapEntity?.entityCui);
 
   const updateState = useCallback(
     (updater: (draft: AdvancedMapAnalyticsUrlState) => void) => {
@@ -808,7 +843,45 @@ export function MapAnalyticsWorkspace({
     [isReadOnly, updateState]
   );
 
-  const mapZoom = mapState.mapZoom ?? (isMobile ? 6 : 7.7);
+  const assignUploadedDatasetSeries = useCallback(
+    (
+      seriesId: string,
+      selection: UploadedMapDatasetReference,
+      dataset: AdvancedMapDatasetDetail
+    ) => {
+      if (isReadOnly) {
+        return;
+      }
+
+      updateState((draft) => {
+        const index = draft.series.findIndex((series) => series.id === seriesId);
+        if (index === -1) {
+          return;
+        }
+
+        const currentSeries = draft.series[index];
+
+        const nextLabel = dataset.title.trim().length > 0 ? dataset.title.trim() : 'Uploaded dataset';
+
+        draft.series[index] = createUploadedMapDatasetSeries(dataset, selection, {
+          id: currentSeries.id,
+          enabled: currentSeries.enabled,
+          label: nextLabel,
+          unit: currentSeries.unit ?? '',
+          createdAt: currentSeries.createdAt,
+          updatedAt: new Date().toISOString(),
+        });
+
+        if (!draft.activeSeriesId) {
+          draft.activeSeriesId = currentSeries.id;
+        }
+      });
+    },
+    [isReadOnly, updateState]
+  );
+
+  const mapZoom = mapZoomOverride ?? mapState.mapZoom ?? (isMobile ? 6 : 7.7);
+  const mapCenter = mapCenterOverride ?? mapState.mapCenter;
 
   const serializedDraftLength = useMemo(
     () => JSON.stringify({ mapState, mapDescription }).length,
@@ -913,6 +986,38 @@ export function MapAnalyticsWorkspace({
     return unitsBySeriesId;
   }, [enabledGeoJsonDatasetSeries]);
 
+  const mergedLocalValuesBySeriesId = useMemo(() => {
+    const valuesBySeriesId = new Map<string, Map<string, number | undefined>>();
+
+    for (const [seriesId, vector] of localGeoJsonValuesBySeriesId.entries()) {
+      valuesBySeriesId.set(seriesId, new Map(vector));
+    }
+
+    if (localValuesBySeriesId?.size) {
+      for (const [seriesId, vector] of localValuesBySeriesId.entries()) {
+        valuesBySeriesId.set(seriesId, new Map(vector));
+      }
+    }
+
+    return valuesBySeriesId;
+  }, [localGeoJsonValuesBySeriesId, localValuesBySeriesId]);
+
+  const mergedLocalUnitsBySeriesId = useMemo(() => {
+    const unitsBySeriesId = new Map<string, string | undefined>(
+      localGeoJsonUnitsBySeriesId
+    );
+
+    if (!localUnitsBySeriesId?.size) {
+      return unitsBySeriesId;
+    }
+
+    for (const [seriesId, unit] of localUnitsBySeriesId.entries()) {
+      unitsBySeriesId.set(seriesId, unit);
+    }
+
+    return unitsBySeriesId;
+  }, [localGeoJsonUnitsBySeriesId, localUnitsBySeriesId]);
+
   const {
     valuesBySeriesId,
     unitsBySeriesId,
@@ -929,8 +1034,8 @@ export function MapAnalyticsWorkspace({
     defaultInflationAdjusted: userInflationAdjusted,
     serializedDraftLength,
     enabled: editorState == null,
-    localValuesBySeriesId: localGeoJsonValuesBySeriesId,
-    localUnitsBySeriesId: localGeoJsonUnitsBySeriesId,
+    localValuesBySeriesId: mergedLocalValuesBySeriesId,
+    localUnitsBySeriesId: mergedLocalUnitsBySeriesId,
     bundledGroupedSeriesData,
     bundledRemoteBaseSeriesHash,
   });
@@ -983,6 +1088,17 @@ export function MapAnalyticsWorkspace({
     valueFilterEditorState !== null ||
     binsEditorState !== null ||
     isWarningsModalOpen;
+  const closeSelectedMapEntityPanel = useCallback(() => {
+    setSelectedMapEntity(null);
+  }, []);
+
+  useHotkeys('esc', () => {
+    if (!shouldUseEntityDetailsPanel || mapState.activeView !== 'map' || selectedMapEntity === null) {
+      return;
+    }
+
+    closeSelectedMapEntityPanel();
+  });
 
   useHotkeys('mod+c', (event) => {
     if (
@@ -1210,6 +1326,16 @@ export function MapAnalyticsWorkspace({
     () => mapState.series.filter((series) => series.enabled),
     [mapState.series]
   );
+  const hasEnabledUploadedDatasetSeries = useMemo(
+    () => enabledSeries.some((series) => series.type === 'uploaded-map-dataset'),
+    [enabledSeries]
+  );
+  const { payloadsBySeriesId: uploadedDatasetPayloadsBySeriesId } =
+    useUploadedMapDatasetPayloads(
+      enabledSeries,
+      (isPreviewLayout || mapState.activeView === 'map') &&
+        hasEnabledUploadedDatasetSeries
+    );
 
   const seriesColumns = useMemo<AdvancedMapAnalyticsTableSeriesColumn[]>(() => {
     if (enabledSeries.length === 0) {
@@ -1219,9 +1345,9 @@ export function MapAnalyticsWorkspace({
     return enabledSeries.map((series) => ({
       id: series.id,
       label: resolveSeriesDisplayLabel(series),
-      unit: resolveSeriesDisplayUnit(series, unitsBySeriesId),
+      unit: resolveSeriesDisplayUnit(series, unitsBySeriesId, displayUnitOverridesBySeriesId),
     }));
-  }, [enabledSeries, unitsBySeriesId]);
+  }, [displayUnitOverridesBySeriesId, enabledSeries, unitsBySeriesId]);
 
   const uatMetadataBySirutaCode = useMemo(() => {
     const metadataBySirutaCode = new Map<string, Omit<AdvancedMapAnalyticsTableRow, 'sirutaCode' | 'valuesBySeriesId'>>();
@@ -1242,6 +1368,34 @@ export function MapAnalyticsWorkspace({
 
     return metadataBySirutaCode;
   }, [geoJsonFeatures]);
+
+  const selectedMapEntitySeriesRows = useMemo<MapAnalyticsEntitySeriesRow[]>(() => {
+    if (!selectedMapEntity) {
+      return [];
+    }
+
+    return enabledSeries.map((series) => ({
+      id: series.id,
+      label: resolveSeriesDisplayLabel(series),
+      payload:
+        uploadedDatasetPayloadsBySeriesId
+          .get(series.id)
+          ?.get(selectedMapEntity.sirutaCode) ?? null,
+      value: formatAdvancedMapAnalyticsSeriesValue(
+        valuesBySeriesId.get(series.id)?.get(selectedMapEntity.sirutaCode),
+        resolveSeriesDisplayUnit(series, unitsBySeriesId, displayUnitOverridesBySeriesId)
+      ),
+      isActive: series.id === activeSeriesId,
+    }));
+  }, [
+    activeSeriesId,
+    displayUnitOverridesBySeriesId,
+    enabledSeries,
+    selectedMapEntity,
+    unitsBySeriesId,
+    uploadedDatasetPayloadsBySeriesId,
+    valuesBySeriesId,
+  ]);
 
   const tableRows = useMemo<AdvancedMapAnalyticsTableRow[]>(() => {
     const activeSeriesColumn = activeSeriesId
@@ -1406,7 +1560,7 @@ export function MapAnalyticsWorkspace({
       const sirutaCode = String(properties.natcode ?? '');
       const seriesRows = enabledSeries.map((series) => {
         const seriesValue = valuesBySeriesId.get(series.id)?.get(sirutaCode);
-        const unit = resolveSeriesDisplayUnit(series, unitsBySeriesId);
+        const unit = resolveSeriesDisplayUnit(series, unitsBySeriesId, displayUnitOverridesBySeriesId);
         const formattedValue = formatAdvancedMapAnalyticsSeriesValue(seriesValue, unit);
         return {
           label: resolveSeriesDisplayLabel(series),
@@ -1479,6 +1633,7 @@ export function MapAnalyticsWorkspace({
       binsCanApply,
       binsClassification.groupsBySiruta,
       enabledSeries,
+      displayUnitOverridesBySeriesId,
       unitsBySeriesId,
       valuesBySeriesId,
     ]
@@ -1506,8 +1661,13 @@ export function MapAnalyticsWorkspace({
         draft.mapCenter = nextCenter;
         draft.mapZoom = nextZoom;
       });
+
+      onMapViewportChange?.({
+        mapCenter: nextCenter,
+        mapZoom: nextZoom,
+      });
     },
-    [mapState.mapCenter, mapState.mapZoom, updateState]
+    [mapState.mapCenter, mapState.mapZoom, onMapViewportChange, updateState]
   );
 
   const hasEnabledGeoJsonDatasetSeries = enabledGeoJsonDatasetSeries.length > 0;
@@ -1518,7 +1678,7 @@ export function MapAnalyticsWorkspace({
   const isAnalyticsLoading = isLoading || (hasEnabledGeoJsonDatasetSeries && isGeoJsonLoading);
   const analyticsError = error || (hasEnabledGeoJsonDatasetSeries ? geoJsonError : null);
   const activeUnit = activeSeries
-    ? resolveSeriesDisplayUnit(activeSeries, unitsBySeriesId)
+    ? resolveSeriesDisplayUnit(activeSeries, unitsBySeriesId, displayUnitOverridesBySeriesId)
     : undefined;
   const modalSeries = editorState
     ? mapState.series.find((series) => series.id === editorState.seriesId)
@@ -1536,6 +1696,22 @@ export function MapAnalyticsWorkspace({
   const isMapViewActive = isPreviewLayout || mapState.activeView === 'map';
   const isTableViewActive = !isPreviewLayout && mapState.activeView === 'table';
   const isAnalyticsViewActive = !isPreviewLayout && mapState.activeView === 'analytics';
+  const isEntityDetailsPanelOpen =
+    shouldUseEntityDetailsPanel && !isPreviewLayout && isMapViewActive && selectedMapEntity !== null;
+  const selectedEntityProfileErrorMessage =
+    selectedEntityProfileQuery.error instanceof Error
+      ? selectedEntityProfileQuery.error.message
+      : selectedEntityProfileQuery.error
+        ? t`Failed to load UAT profile details.`
+        : undefined;
+  const legendContainerClassName = cn(
+    'absolute z-20',
+    shouldUseEntityDetailsPanel
+      ? isMobile
+        ? 'left-4 top-4'
+        : 'bottom-4 left-4'
+      : 'bottom-4 right-4'
+  );
   const canOpenLocalSnapshots = !isReadOnly && typeof onOpenLocalSnapshots === 'function';
   const shouldShowSaveSnapshotCallToAction =
     !isReadOnly &&
@@ -1570,16 +1746,31 @@ export function MapAnalyticsWorkspace({
 
   const handleMapFeatureClick = useCallback(
     (properties: UatProperties) => {
-      if (mode !== 'public') {
-        return;
-      }
-
       const directEntityCui = getEntityCuiFromUatProperties(properties);
       const sirutaCode = String(properties?.natcode ?? '').trim();
       const metadata =
         sirutaCode.length > 0 ? uatMetadataBySirutaCode.get(sirutaCode) : undefined;
       const metadataEntityCui = metadata?.entityCui;
       const entityCui = directEntityCui ?? metadataEntityCui;
+      const uatName = String(properties?.name ?? '').trim() || metadata?.uatName || t`Selected UAT`;
+      const countyName = String(properties?.county ?? '').trim() || metadata?.countyName || '';
+      const title = resolveUatDisplayTitle(properties, metadata?.uatName);
+
+      if (shouldUseEntityDetailsPanel) {
+        setSelectedMapEntity({
+          entityCui,
+          sirutaCode: sirutaCode || entityCui || uatName,
+          title,
+          uatName,
+          countyName,
+        });
+        return;
+      }
+
+      if (mode !== 'public') {
+        onMapFeatureSelect?.(properties);
+        return;
+      }
 
       if (!entityCui) {
         return;
@@ -1588,8 +1779,8 @@ export function MapAnalyticsWorkspace({
       if (onEntityCuiSelect) {
         onEntityCuiSelect({
           entityCui,
-          entityName: String(properties?.name ?? '').trim() || metadata?.uatName,
-          countyName: String(properties?.county ?? '').trim() || metadata?.countyName,
+          entityName: uatName,
+          countyName,
         });
         return;
       }
@@ -1599,8 +1790,12 @@ export function MapAnalyticsWorkspace({
         params: { cui: entityCui },
       });
     },
-    [mode, navigate, onEntityCuiSelect, uatMetadataBySirutaCode]
+    [mode, navigate, onEntityCuiSelect, onMapFeatureSelect, shouldUseEntityDetailsPanel, uatMetadataBySirutaCode]
   );
+
+  const selectedMapEntityPrimarieHref = selectedMapEntity?.entityCui
+    ? `/primarie/${encodeURIComponent(selectedMapEntity.entityCui)}`
+    : undefined;
 
   useEffect(() => {
     if (editorState?.mode === 'edit' && !modalSeries) {
@@ -1613,6 +1808,12 @@ export function MapAnalyticsWorkspace({
       setValueFilterEditorState(null);
     }
   }, [modalValueFilterRule, valueFilterEditorState]);
+
+  useEffect(() => {
+    if (!isEntityDetailsPanelOpen && selectedMapEntity !== null && !isMapViewActive) {
+      setSelectedMapEntity(null);
+    }
+  }, [isEntityDetailsPanelOpen, isMapViewActive, selectedMapEntity]);
 
   useEffect(() => {
     if (!isMobileControlsCollapseEnabled) {
@@ -1769,7 +1970,7 @@ export function MapAnalyticsWorkspace({
                   geoJsonData={geoJsonData}
                   countyBoundaryGeoJsonData={countyBoundaryGeoJsonData}
                   zoom={mapZoom}
-                  center={mapState.mapCenter}
+                  center={mapCenter}
                   mapViewType="UAT"
                   filters={defaultMapFilters}
                   mapHeight="100%"
@@ -1786,7 +1987,7 @@ export function MapAnalyticsWorkspace({
             </ClientOnly>
 
             {!activeSeries ? (
-              <div className="pointer-events-none absolute inset-0 z-[500] flex items-center justify-center p-4">
+              <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center p-4">
                 <div className="rounded-md border bg-card/95 px-3 py-2 text-sm text-muted-foreground shadow-sm">
                   {t`No active series selected.`}
                 </div>
@@ -1794,7 +1995,7 @@ export function MapAnalyticsWorkspace({
             ) : null}
 
             {activeSeries ? (
-              <div className="absolute bottom-4 right-4 z-[500]">
+              <div className="absolute bottom-4 right-4 z-20">
                 {binsCanApply ? (
                   <AdvancedMapAnalyticsDiscreteLegend
                     title={activeBinsLegendTitle}
@@ -1837,6 +2038,7 @@ export function MapAnalyticsWorkspace({
         mapState={mapState}
         mapDescription={mapDescription}
         onBeforeExportConfig={onBeforeExportConfig}
+        hidden={isEntityDetailsPanelOpen}
         hiddenOnMobile={shouldOverlayMobileControls && !isMobileControlsCollapsed}
       />
       {shouldOverlayMobileControls && !isMobileControlsCollapsed ? (
@@ -1940,7 +2142,7 @@ export function MapAnalyticsWorkspace({
                       geoJsonData={geoJsonData}
                       countyBoundaryGeoJsonData={countyBoundaryGeoJsonData}
                       zoom={mapZoom}
-                      center={mapState.mapCenter}
+                      center={mapCenter}
                       mapViewType="UAT"
                       filters={defaultMapFilters}
                       showLabels={Boolean(activeSeries)}
@@ -1955,7 +2157,7 @@ export function MapAnalyticsWorkspace({
                 </ClientOnly>
 
                 {!activeSeries ? (
-                  <div className="pointer-events-none absolute inset-0 z-[500] flex items-center justify-center p-4">
+                  <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center p-4">
                     <div className="rounded-md border bg-card/95 px-3 py-2 text-sm text-muted-foreground shadow-sm">
                       {t`No active series selected.`}
                     </div>
@@ -1970,7 +2172,7 @@ export function MapAnalyticsWorkspace({
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
                       transition={{ duration: 0.2, ease: 'easeOut' }}
-                      className="pointer-events-none absolute inset-x-0 bottom-14 z-[520] flex justify-center px-4"
+                      className="pointer-events-none absolute inset-x-0 bottom-14 z-30 flex justify-center px-4"
                     >
                       <button
                         type="button"
@@ -1986,7 +2188,7 @@ export function MapAnalyticsWorkspace({
                 </AnimatePresence>
 
                 {activeSeries ? (
-                  <div className="absolute bottom-4 right-4 z-[500]">
+                  <div className={legendContainerClassName} data-testid="map-legend-container">
                     {binsCanApply ? (
                       <AdvancedMapAnalyticsDiscreteLegend
                         title={activeBinsLegendTitle}
@@ -2016,6 +2218,21 @@ export function MapAnalyticsWorkspace({
                     )}
                   </div>
                 ) : null}
+
+                <AnimatePresence>
+                  {isEntityDetailsPanelOpen && selectedMapEntity ? (
+                    <MapAnalyticsEntityDetailsPanel
+                      selection={selectedMapEntity}
+                      seriesRows={selectedMapEntitySeriesRows}
+                      isMobile={isMobile}
+                      isProfileLoading={selectedEntityProfileQuery.isLoading}
+                      profile={selectedEntityProfileQuery.data}
+                      profileErrorMessage={selectedEntityProfileErrorMessage}
+                      onClose={closeSelectedMapEntityPanel}
+                      primarieHref={selectedMapEntityPrimarieHref}
+                    />
+                  ) : null}
+                </AnimatePresence>
 
               </>
             )
@@ -2096,6 +2313,7 @@ export function MapAnalyticsWorkspace({
         }}
         onUpdateSeries={updateSeries}
         onChangeSeriesType={changeSeriesType}
+        onAssignUploadedDatasetSeries={assignUploadedDatasetSeries}
       />
 
       <AdvancedMapAnalyticsValueFilterEditorModal
@@ -2211,6 +2429,19 @@ function getEntityCuiFromUatProperties(properties: UatProperties | undefined): s
   return undefined;
 }
 
+function resolveUatDisplayTitle(
+  properties: UatProperties | undefined,
+  fallbackName?: string
+): string {
+  const rawName =
+    typeof properties?.name === 'string' && properties.name.trim().length > 0
+      ? properties.name.trim()
+      : fallbackName?.trim() || t`Selected UAT`;
+  const natLevelPrefix = normalizeNatLevelPrefix(properties?.natLevName);
+
+  return natLevelPrefix.length > 0 ? `${natLevelPrefix} ${rawName}`.trim() : rawName;
+}
+
 function resolveSeriesDisplayLabel(series: MapSupportedSeries): string {
   const trimmedLabel = series.label.trim();
   if (trimmedLabel.length > 0) {
@@ -2221,13 +2452,25 @@ function resolveSeriesDisplayLabel(series: MapSupportedSeries): string {
     return getGeoJsonDatasetLabel(series.datasetKey);
   }
 
+  if (series.type === 'uploaded-map-dataset') {
+    return t`Uploaded dataset`;
+  }
+
   return series.id;
 }
 
 function resolveSeriesDisplayUnit(
   series: MapSupportedSeries,
-  unitsBySeriesId: Map<string, string | undefined>
+  unitsBySeriesId: Map<string, string | undefined>,
+  displayUnitOverridesBySeriesId?: Map<string, string | null>
 ): string | undefined {
+  if (displayUnitOverridesBySeriesId?.has(series.id)) {
+    const overriddenUnit = displayUnitOverridesBySeriesId.get(series.id);
+    const trimmedOverriddenUnit =
+      typeof overriddenUnit === 'string' ? overriddenUnit.trim() : '';
+    return trimmedOverriddenUnit.length > 0 ? trimmedOverriddenUnit : undefined;
+  }
+
   const derivedUnit = unitsBySeriesId.get(series.id);
   if (typeof derivedUnit === 'string') {
     const trimmedDerivedUnit = derivedUnit.trim();

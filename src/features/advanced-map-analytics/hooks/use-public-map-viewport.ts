@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { AdvancedMapAnalyticsUrlStateSchema, type AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 import { areMapCentersEqual } from '@/features/advanced-map-analytics/map-viewport-utils';
+import { parseSearchParamJson } from '@/lib/router-search';
 
 export interface PublicMapViewport {
   mapZoom?: number;
@@ -43,10 +44,42 @@ export function usePublicMapViewportUrlSync({
   rawSearch,
   updatePublicMapSearch,
 }: Readonly<UsePublicMapViewportUrlSyncInput>): UsePublicMapViewportUrlSyncResult {
+  const [windowSearchFallback, setWindowSearchFallback] = useState<{
+    mapZoom?: number;
+    mapCenter?: [number, number];
+  }>({});
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const mapZoom = parseSearchParamJson(params.get('mapZoom'));
+    const mapCenter = parseSearchParamJson(params.get('mapCenter'));
+
+    const parsedZoom = PublicMapViewportSearchSchema.shape.mapZoom.safeParse(mapZoom);
+    const parsedCenter = PublicMapViewportSearchSchema.shape.mapCenter.safeParse(mapCenter);
+
+    setWindowSearchFallback({
+      ...(parsedZoom.success ? { mapZoom: parsedZoom.data } : {}),
+      ...(parsedCenter.success ? { mapCenter: parsedCenter.data } : {}),
+    });
+  }, []);
+
   const parsedViewportSearch = useMemo(() => {
-    const parsedSearch = PublicMapViewportSearchSchema.safeParse(rawSearch);
-    return parsedSearch.success ? parsedSearch.data : {};
-  }, [rawSearch]);
+    const record =
+      typeof rawSearch === 'object' && rawSearch !== null
+        ? (rawSearch as Record<string, unknown>)
+        : {};
+
+    const mapZoomCandidate = record.mapZoom ?? windowSearchFallback.mapZoom;
+    const mapCenterCandidate = record.mapCenter ?? windowSearchFallback.mapCenter;
+
+    const parsedMapZoom = PublicMapViewportSearchSchema.shape.mapZoom.safeParse(mapZoomCandidate);
+    const parsedMapCenter = PublicMapViewportSearchSchema.shape.mapCenter.safeParse(mapCenterCandidate);
+
+    return {
+      ...(parsedMapZoom.success ? { mapZoom: parsedMapZoom.data } : {}),
+      ...(parsedMapCenter.success ? { mapCenter: parsedMapCenter.data } : {}),
+    };
+  }, [rawSearch, windowSearchFallback]);
 
   const onMapViewportChange = useCallback(
     (nextViewport: PublicMapViewport) => {

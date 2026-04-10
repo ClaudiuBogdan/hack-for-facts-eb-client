@@ -10,6 +10,7 @@ import {
   createDefaultAdvancedMapAnalyticsSeries,
   AdvancedMapAnalyticsUrlStateSchema,
   GEOJSON_POPULATION_DATASET_KEYS,
+  UploadedMapDatasetSeriesConfigurationSchema,
 } from '@/schemas/advanced-map-analytics';
 
 describe('AdvancedMapAnalyticsUrlStateSchema', () => {
@@ -376,5 +377,46 @@ describe('AdvancedMapAnalyticsUrlStateSchema', () => {
         .map((entry) => entry.datasetKey)
         .sort((left, right) => left.localeCompare(right))
     ).toEqual([...GEOJSON_POPULATION_DATASET_KEYS].sort((left, right) => left.localeCompare(right)));
+  });
+
+  it('accepts uploaded dataset series when exactly one dataset reference is present', () => {
+    const uploadedDatasetSeries = UploadedMapDatasetSeriesConfigurationSchema.parse({
+      id: 'uploaded-series-1',
+      type: 'uploaded-map-dataset',
+      datasetId: '8d2f8f2b-f8d9-4a9f-86e1-5c4fb4f0b68b',
+      label: 'Uploaded dataset',
+    });
+
+    const parsed = AdvancedMapAnalyticsUrlStateSchema.parse({
+      series: [uploadedDatasetSeries],
+      activeSeriesId: uploadedDatasetSeries.id,
+    });
+
+    expect(parsed.series[0]).toMatchObject({
+      type: 'uploaded-map-dataset',
+      datasetId: '8d2f8f2b-f8d9-4a9f-86e1-5c4fb4f0b68b',
+    });
+  });
+
+  it('rejects uploaded dataset series without a dataset reference', () => {
+    expect(() =>
+      UploadedMapDatasetSeriesConfigurationSchema.parse({
+        id: 'uploaded-series-1',
+        type: 'uploaded-map-dataset',
+        label: 'Broken uploaded dataset',
+      })
+    ).toThrow();
+  });
+
+  it('rejects uploaded dataset series with both dataset references', () => {
+    expect(() =>
+      UploadedMapDatasetSeriesConfigurationSchema.parse({
+        id: 'uploaded-series-1',
+        type: 'uploaded-map-dataset',
+        label: 'Broken uploaded dataset',
+        datasetId: '8d2f8f2b-f8d9-4a9f-86e1-5c4fb4f0b68b',
+        datasetPublicId: '2dd2fc76-8481-4706-a8f4-39d8f4d37f77',
+      })
+    ).toThrow();
   });
 });

@@ -22,6 +22,7 @@ interface MapAnalyticsQuickActionsProps {
   mapDescription?: string;
   onBeforeExportConfig?: () => Promise<void> | void;
   className?: string;
+  hidden?: boolean;
   hiddenOnMobile?: boolean;
 }
 
@@ -31,6 +32,7 @@ export function MapAnalyticsQuickActions({
   mapDescription = '',
   onBeforeExportConfig,
   className,
+  hidden = false,
   hiddenOnMobile,
 }: Readonly<MapAnalyticsQuickActionsProps>) {
   const { isSignedIn } = useAuth();
@@ -163,9 +165,10 @@ export function MapAnalyticsQuickActions({
     <>
       <div
         className={cn(
-          'fixed z-[700] flex gap-2',
+          'fixed z-30 flex gap-2',
           'md:top-10 md:right-4 md:flex-col',
           'bottom-4 right-4 flex-row md:bottom-auto',
+          hidden && 'hidden',
           hiddenOnMobile && 'hidden md:flex',
           className
         )}

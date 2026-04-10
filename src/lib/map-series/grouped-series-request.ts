@@ -33,6 +33,15 @@ export function buildRemoteGroupedSeriesState(series: MapSupportedSeries[]): Rem
   };
 }
 
+export function serializeRemoteFetchSeriesForRequest(series: RemoteFetchSeries): unknown {
+  const normalizedPayload = normalizeSeriesForFetch(series) as Record<string, unknown>;
+
+  return {
+    id: series.id,
+    ...normalizedPayload,
+  };
+}
+
 export function getRemoteGroupedSeriesHash(series: MapSupportedSeries[]): string {
   return buildRemoteGroupedSeriesState(series).remoteBaseSeriesHash;
 }
@@ -53,6 +62,19 @@ export function resolveSeriesUnitOverride(series: MapBaseSeries): string | undef
 
 function normalizeSeriesForFetch(series: RemoteFetchSeries): unknown {
   const unit = resolveSeriesUnitOverride(series);
+
+  if (series.type === 'uploaded-map-dataset') {
+    return {
+      type: series.type,
+      unit,
+      ...(typeof series.datasetId === 'string' && series.datasetId.trim().length > 0
+        ? { datasetId: series.datasetId.trim() }
+        : {}),
+      ...(typeof series.datasetPublicId === 'string' && series.datasetPublicId.trim().length > 0
+        ? { datasetPublicId: series.datasetPublicId.trim() }
+        : {}),
+    };
+  }
 
   if (series.type === 'line-items-aggregated-yearly') {
     return {
@@ -89,7 +111,8 @@ function isRemoteFetchSeries(series: MapBaseSeries): series is RemoteFetchSeries
   return (
     series.type === 'line-items-aggregated-yearly' ||
     series.type === 'commitments-analytics' ||
-    series.type === 'ins-series'
+    series.type === 'ins-series' ||
+    series.type === 'uploaded-map-dataset'
   );
 }
 

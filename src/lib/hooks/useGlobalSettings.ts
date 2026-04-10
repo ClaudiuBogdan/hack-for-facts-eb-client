@@ -133,7 +133,7 @@ export function useGlobalSettings(
     if (Object.keys(searchUpdates).length > 0) {
       router.navigate({
         to: '.',
-        search: (prev) => ({ ...prev, ...searchUpdates }),
+        search: (prev: Record<string, unknown>) => ({ ...prev, ...searchUpdates }),
         replace: true,
         resetScroll: false,
       })
@@ -226,7 +226,7 @@ export function useGlobalSettings(
       persistSettings({ currency: value })
       router.navigate({
         to: '.',
-        search: (prev) => ({ ...prev, currency: value }),
+        search: (prev: Record<string, unknown>) => ({ ...prev, currency: value }),
         replace: true,
         resetScroll: false,
       })
@@ -243,7 +243,7 @@ export function useGlobalSettings(
       persistSettings({ inflationAdjusted: value })
       router.navigate({
         to: '.',
-        search: (prev) => ({ ...prev, inflation_adjusted: value }),
+        search: (prev: Record<string, unknown>) => ({ ...prev, inflation_adjusted: value }),
         replace: true,
         resetScroll: false,
       })
@@ -274,7 +274,7 @@ export function useGlobalSettings(
       if (Object.keys(searchUpdates).length > 0) {
         router.navigate({
           to: '.',
-          search: (prev) => ({ ...prev, ...searchUpdates }),
+          search: (prev: Record<string, unknown>) => ({ ...prev, ...searchUpdates }),
           replace: true,
           resetScroll: false,
         })

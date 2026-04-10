@@ -178,6 +178,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   const geoJsonLayerRef = useRef<L.GeoJSON | null>(null);
   const featureLayerRecordsRef = useRef<FeatureLayerRecord[]>([]);
   const activeTooltipLayerRef = useRef<TooltipLayer | null>(null);
+  const highlightedLayerRef = useRef<Layer | null>(null);
   const shouldSuppressTooltipRef = useRef(false);
   const latestFeatureStyleRef = useRef<FeatureStyleResolver>(() => DEFAULT_FEATURE_STYLE);
   const useCanvasRenderer = useMemo(
@@ -196,6 +197,24 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
     isMobile && mobilePanMode === 'pinch-zoom-until-unlocked';
 
   const heatmapDataMap = useMemo(() => buildHeatmapDataMap(heatmapData), [heatmapData]);
+
+  const resetLayerHighlight = useCallback((layer: Layer) => {
+    if (!(layer instanceof L.Path)) return;
+    const feature = (layer as any).feature as Feature<Geometry, unknown> | undefined;
+    const nextStyle = latestFeatureStyleRef.current(feature);
+    layer.setStyle(nextStyle);
+  }, []);
+
+  const clearActiveHighlight = useCallback(() => {
+    if (highlightedLayerRef.current) {
+      resetLayerHighlight(highlightedLayerRef.current);
+      highlightedLayerRef.current = null;
+    }
+    if (activeTooltipLayerRef.current) {
+      activeTooltipLayerRef.current.unbindTooltip();
+      activeTooltipLayerRef.current = null;
+    }
+  }, [resetLayerHighlight]);
 
   const highlightFeature = useCallback((layer: Layer) => {
     if (layer instanceof L.Path) {
@@ -320,14 +339,19 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
             return;
           }
 
+          if (highlightedLayerRef.current && highlightedLayerRef.current !== e.target) {
+            resetLayerHighlight(highlightedLayerRef.current);
+          }
           highlightFeature(e.target);
+          highlightedLayerRef.current = e.target;
           applyTooltipForFeature(layer, uatProps);
         },
         mouseout: (e) => {
           unbindFeatureTooltip(layer);
-          // Use latest style function to avoid stale styling after data/normalization changes
-          const nextStyle = latestFeatureStyleRef.current(feature);
-          (e.target as L.Path).setStyle(nextStyle);
+          resetLayerHighlight(e.target);
+          if (highlightedLayerRef.current === e.target) {
+            highlightedLayerRef.current = null;
+          }
         },
         click: (e) => {
           const { mapViewType, onFeatureClick } = latestInteractionContextRef.current;
@@ -360,6 +384,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       style={{ height: mapHeight, width: '100%', backgroundColor: 'transparent' }}
       className="z-0 isolate"
       data-testid="leaflet-map"
+      data-map-interaction-root="true"
       preferCanvas={useCanvasRenderer}
     >
       <MapCleanup />
@@ -375,6 +400,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       <MapTooltipDismiss
         onInteractionStart={handleMapInteractionStart}
         onInteractionEnd={handleMapInteractionEnd}
+        onClearHighlight={clearActiveHighlight}
       />
       <MapViewChangeListener onViewChange={onViewChange} />
       {geoJsonData.type === 'FeatureCollection' && (
@@ -633,14 +659,28 @@ const MapViewChangeListener: React.FC<{ onViewChange?: (center: [number, number]
 const MapTooltipDismiss: React.FC<{
   onInteractionStart: () => void
   onInteractionEnd: () => void
+  onClearHighlight: () => void
 }> = ({
   onInteractionStart,
   onInteractionEnd,
+  onClearHighlight,
 }) => {
   useMapEvents({
     movestart: () => onInteractionStart(),
     moveend: () => onInteractionEnd(),
   });
+
+  const map = useMap();
+
+  useEffect(() => {
+    const container = map.getContainer();
+    if (!container) return;
+
+    container.addEventListener('mouseleave', onClearHighlight);
+    return () => {
+      container.removeEventListener('mouseleave', onClearHighlight);
+    };
+  }, [map, onClearHighlight]);
 
   return null;
 };

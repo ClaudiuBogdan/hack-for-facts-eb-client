@@ -63,6 +63,14 @@ export function getGeoJsonDatasetLabel(datasetKey: GeoJsonDatasetKey): string {
   return GEOJSON_DATASET_LABELS_BY_KEY[datasetKey];
 }
 
+const MapSeriesDisplayConfigSchema = z.object({
+  showDataLabels: z.boolean().default(false),
+  color: z.string().default('#2563eb'),
+}).default({
+  showDataLabels: false,
+  color: '#2563eb',
+});
+
 const GeoJsonFilterIdsSchema = z
   .array(z.number().int())
   .transform((ids) => [...new Set(ids)].sort((left, right) => left - right))
@@ -77,24 +85,47 @@ export const GeoJsonDatasetSeriesConfigurationSchema = z.object({
   datasetKey: GeoJsonDatasetKeySchema.default('insPop2021'),
   countyFilterIds: GeoJsonFilterIdsSchema,
   regionFilterIds: GeoJsonFilterIdsSchema,
-  config: z.object({
-    showDataLabels: z.boolean().default(false),
-    color: z.string().default('#2563eb'),
-  }).default({
-    showDataLabels: false,
-    color: '#2563eb',
-  }),
+  config: MapSeriesDisplayConfigSchema,
   createdAt: z.string().default(() => new Date().toISOString()),
   updatedAt: z.string().default(() => new Date().toISOString()),
 });
 
+export const UploadedMapDatasetSeriesConfigurationSchema = z.object({
+  id: z.string().default(() => createAdvancedMapAnalyticsId()),
+  type: z.literal('uploaded-map-dataset'),
+  enabled: z.boolean().default(true),
+  label: z.string().default('Uploaded dataset'),
+  unit: z.string().optional().default(''),
+  datasetId: z.string().uuid().optional(),
+  datasetPublicId: z.string().uuid().optional(),
+  config: MapSeriesDisplayConfigSchema,
+  createdAt: z.string().default(() => new Date().toISOString()),
+  updatedAt: z.string().default(() => new Date().toISOString()),
+}).superRefine((series, context) => {
+  const hasDatasetId = typeof series.datasetId === 'string' && series.datasetId.trim().length > 0;
+  const hasDatasetPublicId =
+    typeof series.datasetPublicId === 'string' && series.datasetPublicId.trim().length > 0;
+
+  if (hasDatasetId !== hasDatasetPublicId) {
+    return;
+  }
+
+  context.addIssue({
+    code: z.ZodIssueCode.custom,
+    path: ['datasetId'],
+    message: 'uploaded-map-dataset requires exactly one of datasetId or datasetPublicId',
+  });
+});
+
 export type GeoJsonDatasetSeriesConfiguration = z.infer<typeof GeoJsonDatasetSeriesConfigurationSchema>;
+export type UploadedMapDatasetSeriesConfiguration = z.infer<typeof UploadedMapDatasetSeriesConfigurationSchema>;
 
 export const MapSupportedSeriesSchema = z.discriminatedUnion('type', [
   SeriesConfigurationSchema,
   CommitmentsSeriesConfigurationSchema,
   InsSeriesConfigurationSchema,
   GeoJsonDatasetSeriesConfigurationSchema,
+  UploadedMapDatasetSeriesConfigurationSchema,
   SeriesGroupConfigurationSchema,
 ]);
 
@@ -699,6 +730,10 @@ export function createDefaultAdvancedMapAnalyticsSeries(
       datasetKey: defaultDatasetKey,
     }) as GeoJsonDatasetSeriesConfiguration;
     return series;
+  }
+
+  if (type === 'uploaded-map-dataset') {
+    throw new Error('Uploaded map dataset series requires explicit dataset selection.');
   }
 
   const series = SeriesGroupConfigurationSchema.parse({

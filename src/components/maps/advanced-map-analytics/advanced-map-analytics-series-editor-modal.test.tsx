@@ -5,6 +5,7 @@ import { createDefaultAdvancedMapAnalyticsSeries } from '@/schemas/advanced-map-
 import { AdvancedMapAnalyticsSeriesEditorModal } from './advanced-map-analytics-series-editor-modal';
 
 const linkPropsSpy = vi.fn();
+const uploadedDatasetBrowserMock = vi.fn();
 
 vi.mock('@tanstack/react-router', () => ({
   Link: (props: Record<string, unknown>) => {
@@ -23,6 +24,13 @@ vi.mock('@/components/charts/components/series-config/InsSeriesEditor', () => ({
 
 vi.mock('@/components/charts/components/series-config/CalculationEditor', () => ({
   CalculationEditor: () => <div>CalculationEditor</div>,
+}));
+
+vi.mock('@/features/advanced-map-analytics/components/uploaded-map-dataset-browser', () => ({
+  UploadedMapDatasetBrowser: (props: unknown) => {
+    uploadedDatasetBrowserMock(props);
+    return <div data-testid="uploaded-map-dataset-browser" />;
+  },
 }));
 
 vi.mock('@/components/ui/dialog', () => ({
@@ -124,6 +132,7 @@ vi.mock('@/components/filters/base-filter/FilterListContainer', () => ({
 describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
   beforeEach(() => {
     linkPropsSpy.mockReset();
+    uploadedDatasetBrowserMock.mockReset();
   });
 
   it('renders population/county/region sections for geojson editor', () => {
@@ -149,6 +158,7 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
         onOpenChange={vi.fn()}
         onUpdateSeries={vi.fn()}
         onChangeSeriesType={vi.fn()}
+        onAssignUploadedDatasetSeries={vi.fn()}
       />
     );
 
@@ -186,6 +196,7 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
         onOpenChange={vi.fn()}
         onUpdateSeries={onUpdateSeries}
         onChangeSeriesType={vi.fn()}
+        onAssignUploadedDatasetSeries={vi.fn()}
       />
     );
 
@@ -227,6 +238,7 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
         onOpenChange={vi.fn()}
         onUpdateSeries={vi.fn()}
         onChangeSeriesType={vi.fn()}
+        onAssignUploadedDatasetSeries={vi.fn()}
       />
     );
 
@@ -267,5 +279,44 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
     expect(chartSearch.chart.series[0].filter).toEqual(executionSeries.filter);
     expect(chartSearch.chart.series[0].label).toBe(executionSeries.label);
     expect(chartSearch.chart.series[0].config.color).toBe(executionSeries.config.color);
+  });
+
+  it('opens uploaded dataset browser instead of converting immediately', () => {
+    const executionSeries = createDefaultAdvancedMapAnalyticsSeries('line-items-aggregated-yearly');
+    if (executionSeries.type !== 'line-items-aggregated-yearly') {
+      throw new Error('Unexpected series type in test setup');
+    }
+
+    const onChangeSeriesType = vi.fn();
+
+    render(
+      <AdvancedMapAnalyticsSeriesEditorModal
+        open={true}
+        mode="edit"
+        series={executionSeries}
+        allSeries={[executionSeries]}
+        onOpenChange={vi.fn()}
+        onUpdateSeries={vi.fn()}
+        onChangeSeriesType={onChangeSeriesType}
+        onAssignUploadedDatasetSeries={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'advanced-map-analytics-series-type' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Uploaded dataset' }));
+
+    expect(onChangeSeriesType).not.toHaveBeenCalled();
+    expect(screen.getByTestId('uploaded-map-dataset-browser')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Update the selected series. Label and unit changes apply immediately, while the uploaded dataset changes only after you use the selected dataset.'
+      )
+    ).toBeInTheDocument();
+    expect(uploadedDatasetBrowserMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        open: true,
+        currentSelection: null,
+      })
+    );
   });
 });

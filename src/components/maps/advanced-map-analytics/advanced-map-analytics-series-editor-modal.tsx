@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import type {
   CommitmentsSeriesConfiguration,
@@ -31,8 +31,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
-import { largeModalClassName, modalHeaderClassName } from '@/components/ui/modal-sizes';
-import { ModalSection } from '@/components/ui/modal-section';
+import { largeModalClassName, modalHeaderClassName, modalContentClassName } from '@/components/ui/modal-sizes';
 import {
   Select,
   SelectContent,
@@ -48,6 +47,12 @@ import {
   buildExecutionSeriesChartSearch,
   buildExecutionSeriesTableSearch,
 } from './advanced-map-analytics-series-quick-links';
+import { UploadedMapDatasetBrowser } from '@/features/advanced-map-analytics/components/uploaded-map-dataset-browser';
+import {
+  getUploadedMapDatasetReference,
+  type UploadedMapDatasetReference,
+} from '@/features/advanced-map-analytics/uploaded-map-dataset';
+import type { AdvancedMapDatasetDetail } from '@/features/advanced-map-datasets/api/schemas';
 
 const GEOJSON_DATASET_DEFAULT_LABEL = msg`GeoJSON dataset`;
 const COUNTY_FILTER_PREFIX_LABEL = msg`County`;
@@ -64,6 +69,11 @@ interface AdvancedMapAnalyticsSeriesEditorModalProps {
   onOpenChange: (open: boolean) => void;
   onUpdateSeries: (seriesId: string, updater: (draft: MapSupportedSeries) => void) => void;
   onChangeSeriesType: (seriesId: string, type: MapSupportedSeries['type']) => void;
+  onAssignUploadedDatasetSeries: (
+    seriesId: string,
+    selection: UploadedMapDatasetReference,
+    dataset: AdvancedMapDatasetDetail,
+  ) => void;
 }
 
 export function AdvancedMapAnalyticsSeriesEditorModal({
@@ -76,25 +86,10 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
   onOpenChange,
   onUpdateSeries,
   onChangeSeriesType,
+  onAssignUploadedDatasetSeries,
 }: Readonly<AdvancedMapAnalyticsSeriesEditorModalProps>) {
-  if (!series) {
-    return null;
-  }
-
-  const title = mode === 'add' ? t`Add Data Series` : t`Edit Data Series`;
-  const description =
-    mode === 'add'
-      ? t`Configure a new series. Changes apply immediately while this modal is open.`
-      : t`Update the selected series configuration. Changes apply immediately while this modal is open.`;
-  const configurationTitle =
-    series.type === 'aggregated-series-calculation'
-      ? t`Calculation`
-      : series.type === 'ins-series'
-        ? t`INS Settings`
-        : series.type === 'geojson-dataset-series'
-          ? t`GeoJSON dataset`
-        : t`Filters`;
-  const isExecutionSeries = series.type === 'line-items-aggregated-yearly';
+  const [pendingSeriesType, setPendingSeriesType] = useState<MapSupportedSeries['type'] | null>(null);
+  const isExecutionSeries = series?.type === 'line-items-aggregated-yearly';
   const executionSeries = isExecutionSeries ? series : undefined;
   const tableSearch = useMemo(
     () => (executionSeries ? buildExecutionSeriesTableSearch(executionSeries) : undefined),
@@ -105,17 +100,57 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
     [executionSeries]
   );
 
+  useEffect(() => {
+    if (!open) {
+      setPendingSeriesType(null);
+      return;
+    }
+
+    if (series?.type === 'uploaded-map-dataset') {
+      setPendingSeriesType(null);
+    }
+  }, [open, series?.type]);
+
+  if (!series) {
+    return null;
+  }
+
+  const displayedSeriesType = pendingSeriesType ?? series.type;
+  const isUploadedDatasetMode = displayedSeriesType === 'uploaded-map-dataset';
+
+  const title = mode === 'add' ? t`Add Data Series` : t`Edit Data Series`;
+  const description =
+    isUploadedDatasetMode
+      ? mode === 'add'
+        ? t`Configure a new series. Label and unit changes apply immediately, while the uploaded dataset changes only after you use the selected dataset.`
+        : t`Update the selected series. Label and unit changes apply immediately, while the uploaded dataset changes only after you use the selected dataset.`
+      : mode === 'add'
+        ? t`Configure a new series. Changes apply immediately while this modal is open.`
+        : t`Update the selected series configuration. Changes apply immediately while this modal is open.`;
+  const configurationTitle =
+    displayedSeriesType === 'aggregated-series-calculation'
+      ? t`Calculation`
+      : displayedSeriesType === 'ins-series'
+        ? t`INS Settings`
+        : displayedSeriesType === 'geojson-dataset-series'
+          ? t`GeoJSON dataset`
+          : displayedSeriesType === 'uploaded-map-dataset'
+            ? t`Uploaded datasets`
+            : t`Filters`;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={`${largeModalClassName} max-w-5xl`}>
         <div className={modalHeaderClassName}>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 flex-1">
-              <DialogTitle>{title}</DialogTitle>
-              <DialogDescription className="mt-1.5">{description}</DialogDescription>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 flex-1">
+                <DialogTitle>{title}</DialogTitle>
+                <DialogDescription className="mt-1.5">{description}</DialogDescription>
+              </div>
             </div>
-            {tableSearch && chartSearch ? (
-              <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
+            {tableSearch && chartSearch && displayedSeriesType === series.type ? (
+              <div className="flex flex-wrap items-center gap-2">
                 <Button asChild size="sm" variant="outline">
                   <Link
                     data-testid="advanced-map-analytics-open-table-link"
@@ -148,9 +183,9 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
           </div>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden px-6 py-4">
-          <ModalSection variant="muted">
-            <div className="space-y-4">
+        <div className={modalContentClassName}>
+          <div className="rounded-xl bg-muted/30 p-5">
+            <div className="grid gap-5 md:grid-cols-3">
               <FormField label={t`Label`} htmlFor="advanced-map-analytics-series-label">
                 <Input
                   id="advanced-map-analytics-series-label"
@@ -183,12 +218,19 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
                 />
               </FormField>
 
-              <FormField label={t`Series type`} htmlFor="advanced-map-analytics-series-type" className="max-w-sm">
+              <FormField label={t`Series type`} htmlFor="advanced-map-analytics-series-type">
                 <Select
-                  value={series.type}
-                  onValueChange={(value) =>
-                    onChangeSeriesType(series.id, value as MapSupportedSeries['type'])
-                  }
+                  value={displayedSeriesType}
+                  onValueChange={(value) => {
+                    const nextType = value as MapSupportedSeries['type'];
+                    if (nextType === 'uploaded-map-dataset' && series.type !== 'uploaded-map-dataset') {
+                      setPendingSeriesType('uploaded-map-dataset');
+                      return;
+                    }
+
+                    setPendingSeriesType(null);
+                    onChangeSeriesType(series.id, nextType);
+                  }}
                 >
                   <SelectTrigger id="advanced-map-analytics-series-type">
                     <SelectValue placeholder={t`Select series type`} />
@@ -205,20 +247,30 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
                 </Select>
               </FormField>
             </div>
-          </ModalSection>
+          </div>
 
           <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border">
             <div className="flex items-center justify-between border-b px-4 py-3">
               <h3 className="text-sm font-semibold">{configurationTitle}</h3>
-              <p className="text-xs text-muted-foreground">{t`Live apply`}</p>
+              {!isUploadedDatasetMode && (
+                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                  {t`Live apply`}
+                </span>
+              )}
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
               <SeriesConfigEditor
                 series={series}
+                displayedSeriesType={displayedSeriesType}
+                open={open}
                 allSeries={allSeries}
                 geoJsonCountyOptions={geoJsonCountyOptions}
                 geoJsonRegionOptions={geoJsonRegionOptions}
                 onUpdateSeries={onUpdateSeries}
+                onAssignUploadedDatasetSeries={(selection, dataset) => {
+                  onAssignUploadedDatasetSeries(series.id, selection, dataset);
+                  setPendingSeriesType(null);
+                }}
               />
             </div>
           </section>
@@ -229,20 +281,43 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
 }
 
 interface SeriesConfigEditorProps {
+  open: boolean;
   series: MapSupportedSeries;
+  displayedSeriesType: MapSupportedSeries['type'];
   allSeries: MapSupportedSeries[];
   geoJsonCountyOptions: GeoJsonFilterOption[];
   geoJsonRegionOptions: GeoJsonFilterOption[];
   onUpdateSeries: (seriesId: string, updater: (draft: MapSupportedSeries) => void) => void;
+  onAssignUploadedDatasetSeries: (
+    selection: UploadedMapDatasetReference,
+    dataset: AdvancedMapDatasetDetail,
+  ) => void;
 }
 
 function SeriesConfigEditor({
+  open,
   series,
+  displayedSeriesType,
   allSeries,
   geoJsonCountyOptions,
   geoJsonRegionOptions,
   onUpdateSeries,
+  onAssignUploadedDatasetSeries,
 }: Readonly<SeriesConfigEditorProps>) {
+  if (displayedSeriesType === 'uploaded-map-dataset') {
+    return (
+      <UploadedDatasetSeriesEditor
+        open={open}
+        currentSelection={
+          series.type === 'uploaded-map-dataset'
+            ? getUploadedMapDatasetReference(series)
+            : null
+        }
+        onAssignUploadedDatasetSeries={onAssignUploadedDatasetSeries}
+      />
+    );
+  }
+
   if (series.type === 'line-items-aggregated-yearly' || series.type === 'commitments-analytics') {
     const adapter: SeriesFilterAdapter = {
       series,
@@ -261,8 +336,6 @@ function SeriesConfigEditor({
   }
 
   if (series.type === 'aggregated-series-calculation') {
-    // Safety: CalculationEditor only reads `id`, `label`, and `calculation` from Series[],
-    // which are present on all MapSupportedSeries variants including geojson-dataset-series.
     const calculationCompatibleSeries = allSeries as unknown as Series[];
 
     return (
@@ -299,6 +372,10 @@ function SeriesConfigEditor({
     );
   }
 
+  if (series.type !== 'ins-series') {
+    return null;
+  }
+
   const adapter: InsSeriesEditorAdapter = {
     series,
     datasetFilter: {
@@ -320,6 +397,27 @@ function SeriesConfigEditor({
   };
 
   return <InsSeriesEditor adapter={adapter} />;
+}
+
+function UploadedDatasetSeriesEditor({
+  open,
+  currentSelection,
+  onAssignUploadedDatasetSeries,
+}: Readonly<{
+  open: boolean;
+  currentSelection: UploadedMapDatasetReference | null;
+  onAssignUploadedDatasetSeries: (
+    selection: UploadedMapDatasetReference,
+    dataset: AdvancedMapDatasetDetail,
+  ) => void;
+}>) {
+  return (
+    <UploadedMapDatasetBrowser
+      open={open}
+      currentSelection={currentSelection}
+      onApply={onAssignUploadedDatasetSeries}
+    />
+  );
 }
 
 function GeoJsonDatasetSeriesEditor({
@@ -435,8 +533,8 @@ function GeoJsonDatasetSeriesEditor({
       <p className="text-sm text-muted-foreground">
         {t`Values are always population. County and region selections filter the included UATs.`}
       </p>
-      <ModalSection variant="primary">
-        <div className="flex items-center justify-between gap-3">
+      <div className="rounded-lg bg-muted/30 p-4">
+        <div className="flex items-center justify-between gap-3 mb-4">
           <h4 className="text-sm font-semibold">{t`Population`}</h4>
           <span className="text-xs text-muted-foreground">{t`Value source`}</span>
         </div>
@@ -470,7 +568,7 @@ function GeoJsonDatasetSeriesEditor({
             </SelectContent>
           </Select>
         </FormField>
-      </ModalSection>
+      </div>
 
       <div className="rounded-lg border">
         <FilterListContainer

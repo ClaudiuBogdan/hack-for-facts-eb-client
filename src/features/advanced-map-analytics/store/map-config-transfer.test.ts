@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AdvancedMapAnalyticsUrlStateSchema } from '@/schemas/advanced-map-analytics';
+import { createUploadedMapDatasetSeries } from '@/features/advanced-map-analytics/uploaded-map-dataset';
 import {
   createMapConfigTransferEnvelope,
   parseMapConfigTransferInput,
@@ -47,5 +48,39 @@ describe('map-config-transfer', () => {
         mapState: { invalid: true },
       })
     ).toBeNull();
+  });
+
+  it('round-trips uploaded dataset series in wrapped payloads', () => {
+    const uploadedDatasetSeries = createUploadedMapDatasetSeries(
+      {
+        title: 'Uploaded population',
+        description: 'Uploaded dataset',
+        unit: 'inhabitants',
+      },
+      {
+        source: 'public',
+        datasetPublicId: '2dd2fc76-8481-4706-a8f4-39d8f4d37f77',
+      },
+      {
+        id: 'uploaded-series-1',
+      }
+    );
+    const mapState = AdvancedMapAnalyticsUrlStateSchema.parse({
+      mapName: 'Uploaded dataset map',
+      activeSeriesId: uploadedDatasetSeries.id,
+      series: [uploadedDatasetSeries],
+    });
+
+    const wrappedPayload = createMapConfigTransferEnvelope({
+      mapState,
+      mapDescription: 'Wrapped description',
+    });
+
+    const parsed = parseMapConfigTransferInput(wrappedPayload);
+
+    expect(parsed).toEqual({
+      mapState,
+      mapDescription: 'Wrapped description',
+    });
   });
 });

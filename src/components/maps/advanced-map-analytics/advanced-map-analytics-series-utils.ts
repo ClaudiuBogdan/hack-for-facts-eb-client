@@ -21,6 +21,7 @@ export const SERIES_TYPE_LABELS: Record<MapSupportedSeries['type'], string> = {
   'commitments-analytics': t`Commitments analytics`,
   'ins-series': t`INS series`,
   'geojson-dataset-series': t`GeoJSON dataset`,
+  'uploaded-map-dataset': t`Uploaded dataset`,
   'aggregated-series-calculation': t`Calculated series`,
 };
 
@@ -29,6 +30,7 @@ export const SERIES_TYPE_ICONS: Record<MapSupportedSeries['type'], LucideIcon> =
   'commitments-analytics': FileText,
   'ins-series': Database,
   'geojson-dataset-series': Shapes,
+  'uploaded-map-dataset': Database,
   'aggregated-series-calculation': Sigma,
 };
 
@@ -37,6 +39,7 @@ const MAP_SUPPORTED_SERIES_TYPES = new Set<MapSupportedSeries['type']>([
   'commitments-analytics',
   'ins-series',
   'geojson-dataset-series',
+  'uploaded-map-dataset',
   'aggregated-series-calculation',
 ]);
 
@@ -168,6 +171,10 @@ export function convertSeriesToType(
 ): MapSupportedSeries {
   if (currentSeries.type === nextType) {
     return currentSeries;
+  }
+
+  if (nextType === 'uploaded-map-dataset') {
+    throw new Error('Uploaded map dataset series requires explicit dataset selection.');
   }
 
   const replacementSeries = createDefaultAdvancedMapAnalyticsSeries(nextType);

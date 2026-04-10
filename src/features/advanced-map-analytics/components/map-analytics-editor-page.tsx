@@ -20,6 +20,7 @@ import { useMapEditorInitialState } from '@/features/advanced-map-analytics/hook
 import { useMapEditorDraftStore } from '@/features/advanced-map-analytics/store/map-editor-draft-store';
 import type { ImportedMapConfig } from '@/features/advanced-map-analytics/store/map-config-transfer';
 import { getRemoteGroupedSeriesHash } from '@/lib/map-series/grouped-series-request';
+import { useUploadedMapDatasetPublicGuard } from '@/features/advanced-map-analytics/hooks/use-uploaded-map-dataset-public-guard';
 import { t } from '@lingui/core/macro';
 
 interface MapAnalyticsEditorPageProps {
@@ -45,6 +46,9 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
 
   const mapQuery = useAdvancedMapAnalyticsMapQuery(mapId, isLoaded && isSignedIn);
   const saveSnapshotMutation = useSaveAdvancedMapAnalyticsSnapshotMutation();
+  const {
+    blockingMessage: uploadedDatasetPublicBlockingMessage,
+  } = useUploadedMapDatasetPublicGuard(mapState.series, isLoaded && isSignedIn);
   const {
     snapshots: localSnapshots,
     isLoading: isLocalSnapshotsLoading,
@@ -106,6 +110,11 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
     stateAtSave: 'private' | 'public';
   }) => {
     if (!mapQuery.data) {
+      return;
+    }
+
+    if (input.stateAtSave === 'public' && uploadedDatasetPublicBlockingMessage) {
+      toast.error(uploadedDatasetPublicBlockingMessage);
       return;
     }
 
@@ -268,6 +277,7 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
         mapName={mapState.mapName}
         currentVisibility={mapQuery.data.state}
         currentPublicId={mapQuery.data.publicId}
+        publicVisibilityErrorMessage={uploadedDatasetPublicBlockingMessage}
         mapDescription={mapDescriptionDraft}
         onMapDescriptionChange={setMapDescriptionDraft}
         onOpenChange={setIsOwnerConfigModalOpen}
@@ -293,6 +303,7 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
         open={isSaveSnapshotDialogOpen}
         defaultVisibility={mapQuery.data.state}
         isPending={saveSnapshotMutation.isPending}
+        publicVisibilityErrorMessage={uploadedDatasetPublicBlockingMessage}
         onOpenChange={setIsSaveSnapshotDialogOpen}
         onConfirm={handleConfirmSaveSnapshot}
       />

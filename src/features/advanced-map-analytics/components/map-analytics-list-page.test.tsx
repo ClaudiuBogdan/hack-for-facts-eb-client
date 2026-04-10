@@ -103,6 +103,7 @@ describe('MapAnalyticsListPage', () => {
     render(<MapAnalyticsListPage />);
 
     expect(screen.getByRole('button', { name: 'Open options for Map 1' })).toBeInTheDocument();
+    expect(screen.getByText('Data series')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Clone latest' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Clone snapshot' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();

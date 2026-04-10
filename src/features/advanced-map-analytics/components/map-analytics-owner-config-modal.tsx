@@ -47,6 +47,7 @@ interface MapAnalyticsOwnerConfigModalProps {
   mapDescription?: string;
   currentVisibility: AdvancedMapAnalyticsVisibility;
   currentPublicId: string | null;
+  publicVisibilityErrorMessage?: string | null;
   onOpenChange: (open: boolean) => void;
   onMapNameChange: (nextMapName: string) => void;
   onMapDescriptionChange?: (nextDescription: string) => void;
@@ -65,6 +66,7 @@ export function MapAnalyticsOwnerConfigModal({
   mapDescription = '',
   currentVisibility,
   currentPublicId,
+  publicVisibilityErrorMessage = null,
   onOpenChange,
   onMapNameChange,
   onMapDescriptionChange,
@@ -128,6 +130,11 @@ export function MapAnalyticsOwnerConfigModal({
   const handleRequestVisibilityToggle = (checked: boolean) => {
     const nextVisibility: AdvancedMapAnalyticsVisibility = checked ? 'public' : 'private';
     if (nextVisibility === visibility) {
+      return;
+    }
+
+    if (nextVisibility === 'public' && publicVisibilityErrorMessage) {
+      toast.error(publicVisibilityErrorMessage);
       return;
     }
 
@@ -425,6 +432,12 @@ export function MapAnalyticsOwnerConfigModal({
                   aria-label={t`Toggle map visibility`}
                 />
               </div>
+
+              {publicVisibilityErrorMessage ? (
+                <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                  {publicVisibilityErrorMessage}
+                </div>
+              ) : null}
 
               {visibility === 'public' && normalizedPublicId && (
                 <FormField label={t`Public link`} htmlFor="public-map-url-input" className="mt-4">

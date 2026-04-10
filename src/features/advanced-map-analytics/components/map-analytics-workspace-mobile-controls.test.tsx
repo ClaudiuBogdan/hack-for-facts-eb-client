@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   AdvancedMapAnalyticsUrlStateSchema,
   createDefaultAdvancedMapAnalyticsSeries,
 } from '@/schemas/advanced-map-analytics';
+import { createUploadedMapDatasetSeries } from '@/features/advanced-map-analytics/uploaded-map-dataset';
+import type { AdvancedMapDatasetJsonItem } from '@/features/advanced-map-datasets/api/schemas';
 
 const mockIsMobile = vi.fn(() => false);
 const navigateMock = vi.fn();
@@ -14,6 +16,21 @@ const toastWarningMock = vi.fn();
 const toastErrorMock = vi.fn();
 const clipboardWriteTextMock = vi.fn();
 const clipboardReadTextMock = vi.fn();
+let mockEntityProfileResult = {
+  data: null as
+    | {
+        leader_name: string | null;
+        leader_title: string | null;
+        address_raw: string | null;
+        address_locality: string | null;
+        official_email: string | null;
+        phone_primary: string | null;
+        website_url: string | null;
+      }
+    | null,
+  isLoading: false,
+  error: null as Error | null,
+};
 let capturedGetTooltipContent:
   | ((args: {
       properties: Record<string, unknown>;
@@ -50,6 +67,10 @@ let mockSeriesDataResult = {
   activeValues: undefined as Map<string, number | undefined> | undefined,
   isLoading: false,
   error: null as Error | null,
+};
+let mockUploadedDatasetPayloadsResult = {
+  payloadsBySeriesId: new Map<string, Map<string, AdvancedMapDatasetJsonItem>>(),
+  isLoading: false,
 };
 let mockBinsResult = {
   binsEditorState: null,
@@ -100,6 +121,10 @@ vi.mock('@/lib/hooks/useUserInflationAdjusted', () => ({
   useUserInflationAdjusted: () => [false],
 }));
 
+vi.mock('@/lib/hooks/useEntityDetails', () => ({
+  useEntityProfile: () => mockEntityProfileResult,
+}));
+
 vi.mock('@/hooks/useGeoJson', () => ({
   useGeoJsonData: (mapViewType: 'UAT' | 'County') =>
     mapViewType === 'County' ? mockCountyGeoJsonData : mockGeoJsonData,
@@ -107,6 +132,10 @@ vi.mock('@/hooks/useGeoJson', () => ({
 
 vi.mock('@/hooks/useAdvancedMapAnalyticsSeriesData', () => ({
   useAdvancedMapAnalyticsSeriesData: () => mockSeriesDataResult,
+}));
+
+vi.mock('@/features/advanced-map-analytics/hooks/use-uploaded-map-dataset-payloads', () => ({
+  useUploadedMapDatasetPayloads: () => mockUploadedDatasetPayloadsResult,
 }));
 
 vi.mock('@/hooks/useAdvancedMapAnalyticsBins', () => ({
@@ -142,6 +171,7 @@ vi.mock('@/components/maps/InteractiveMap', () => ({
   }) => (
     <div
       data-testid="interactive-map"
+      data-map-interaction-root="true"
       ref={() => {
         capturedGetTooltipContent = getTooltipContent;
         latestInteractiveMapProps = {
@@ -175,6 +205,19 @@ vi.mock('@/components/maps/InteractiveMap', () => ({
         }
       >
         Map click without CUI
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          onFeatureClick({
+            natcode: '2002',
+            name: 'Second UAT',
+            county: 'Alt county',
+            cui: '87654321',
+          })
+        }
+      >
+        Map click second UAT
       </button>
     </div>
   ),
@@ -277,6 +320,10 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
       isLoading: false,
       error: null,
     };
+    mockUploadedDatasetPayloadsResult = {
+      payloadsBySeriesId: new Map<string, Map<string, AdvancedMapDatasetJsonItem>>(),
+      isLoading: false,
+    };
     mockBinsResult = {
       binsEditorState: null,
       activeBinsPreset: undefined,
@@ -296,6 +343,11 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
       applyBinsPreset: vi.fn(),
       closeBinsEditor: vi.fn(),
       activeNoDataConfig: undefined,
+    };
+    mockEntityProfileResult = {
+      data: null,
+      isLoading: false,
+      error: null,
     };
   });
 
@@ -503,7 +555,189 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(sourceLink).toHaveTextContent('geo-spatial.org');
   });
 
-  it('navigates to the clicked UAT on public map click when CUI is available', async () => {
+  it('opens the public UAT details panel on map click instead of navigating away', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+    mockEntityProfileResult = {
+      data: {
+        leader_name: 'Jane Mayor',
+        leader_title: 'Primar',
+        address_raw: 'Piața Unirii 1',
+        address_locality: 'Mapped UAT',
+        official_email: 'contact@example.ro',
+        phone_primary: '+40 123 456 789',
+        website_url: 'https://example.ro',
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({ activeView: 'map' })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
+
+    expect(screen.getByTestId('map-analytics-quick-actions')).toBeInTheDocument();
+    expect(navigateMock).not.toHaveBeenCalled();
+    const detailsPanel = screen.getByTestId('map-entity-details-panel');
+    expect(detailsPanel).toBeInTheDocument();
+    expect(within(detailsPanel).getByRole('heading', { name: 'Mapped UAT' })).toBeInTheDocument();
+    expect(within(detailsPanel).getByText(/Jane Mayor/)).toBeInTheDocument();
+    expect(within(detailsPanel).getByRole('link', { name: 'Open primarie page' })).toHaveAttribute(
+      'href',
+      '/primarie/12345678'
+    );
+  });
+
+  it('renders uploaded dataset payloads in the selected UAT details panel', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const textSeries = createUploadedMapDatasetSeries(
+      { title: 'Notes', description: null, unit: 'RON' },
+      {
+        source: 'owner',
+        datasetId: '11111111-1111-4111-8111-111111111111',
+      },
+      { id: 'series_text', label: 'Notes' }
+    );
+    const linkSeries = createUploadedMapDatasetSeries(
+      { title: 'Documents', description: null, unit: 'RON' },
+      {
+        source: 'public',
+        datasetPublicId: '22222222-2222-4222-8222-222222222222',
+      },
+      { id: 'series_link', label: 'Documents' }
+    );
+    const markdownSeries = createUploadedMapDatasetSeries(
+      { title: 'Summary', description: null, unit: 'RON' },
+      {
+        source: 'owner',
+        datasetId: '33333333-3333-4333-8333-333333333333',
+      },
+      { id: 'series_markdown', label: 'Summary' }
+    );
+
+    mockSeriesDataResult = {
+      valuesBySeriesId: new Map<string, Map<string, number | undefined>>([
+        [textSeries.id, new Map([['1001', 120]])],
+        [linkSeries.id, new Map([['1001', 220]])],
+        [markdownSeries.id, new Map([['1001', 320]])],
+      ]),
+      unitsBySeriesId: new Map<string, string | undefined>([
+        [textSeries.id, 'RON'],
+        [linkSeries.id, 'RON'],
+        [markdownSeries.id, 'RON'],
+      ]),
+      warnings: [],
+      activeSeriesId: textSeries.id,
+      activeValues: new Map([['1001', 120]]),
+      isLoading: false,
+      error: null,
+    };
+    mockUploadedDatasetPayloadsResult = {
+      payloadsBySeriesId: new Map<string, Map<string, AdvancedMapDatasetJsonItem>>([
+        [
+          textSeries.id,
+          new Map([
+            [
+              '1001',
+              {
+                type: 'text',
+                value: {
+                  text: 'Local budget note',
+                },
+              },
+            ],
+          ]),
+        ],
+        [
+          linkSeries.id,
+          new Map([
+            [
+              '1001',
+              {
+                type: 'link',
+                value: {
+                  url: 'https://example.com/report',
+                  label: 'Open report',
+                },
+              },
+            ],
+          ]),
+        ],
+        [
+          markdownSeries.id,
+          new Map([
+            [
+              '1001',
+              {
+                type: 'markdown',
+                value: {
+                  markdown: '**Summary**\n\n- bullet item',
+                },
+              },
+            ],
+          ]),
+        ],
+      ]),
+      isLoading: false,
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({
+          activeView: 'map',
+          series: [textSeries, linkSeries, markdownSeries],
+          activeSeriesId: textSeries.id,
+        })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
+
+    const detailsPanel = screen.getByTestId('map-entity-details-panel');
+    expect(within(detailsPanel).getByText('Local budget note')).toBeInTheDocument();
+    expect(within(detailsPanel).getByRole('link', { name: /Open report/i })).toHaveAttribute(
+      'href',
+      'https://example.com/report'
+    );
+    expect(within(detailsPanel).getAllByText('Summary').length).toBeGreaterThan(0);
+    expect(within(detailsPanel).getByText('bullet item')).toBeInTheDocument();
+  });
+
+  it('closes the desktop details container when clicking outside it', async () => {
     mockIsMobile.mockReturnValue(false);
     mockGeoJsonData = {
       data: {
@@ -528,16 +762,61 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     );
 
     fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
+    expect(screen.getByTestId('map-entity-details-panel')).toBeInTheDocument();
 
-    expect(screen.getByTestId('map-analytics-quick-actions')).toBeInTheDocument();
-    expect(navigateMock).toHaveBeenCalledTimes(1);
-    expect(navigateMock).toHaveBeenCalledWith({
-      to: '/entities/$cui',
-      params: { cui: '12345678' },
+    fireEvent.pointerDown(document.body);
+    fireEvent.mouseUp(document.body);
+    fireEvent.click(document.body);
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('map-entity-details-panel')).not.toBeInTheDocument();
     });
   });
 
-  it('does not navigate on public map click when CUI is missing', async () => {
+  it('updates the open details panel when a different UAT is selected', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({ activeView: 'map' })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
+    const initialDetailsPanel = screen.getByTestId('map-entity-details-panel');
+    expect(
+      within(initialDetailsPanel).getByRole('heading', {
+        name: 'Mapped UAT',
+      })
+    ).toBeInTheDocument();
+
+    const secondUatTrigger = screen.getByRole('button', { name: 'Map click second UAT' });
+    fireEvent.pointerDown(secondUatTrigger);
+    fireEvent.mouseUp(secondUatTrigger);
+    fireEvent.click(secondUatTrigger);
+
+    const detailsPanel = screen.getByTestId('map-entity-details-panel');
+    expect(detailsPanel).toBe(initialDetailsPanel);
+    expect(within(detailsPanel).getByRole('heading', { name: 'Second UAT' })).toBeInTheDocument();
+    expect(within(detailsPanel).queryByRole('heading', { name: 'Mapped UAT' })).not.toBeInTheDocument();
+  });
+
+  it('opens a fallback details panel when the clicked UAT has no mapped CUI', async () => {
     mockIsMobile.mockReturnValue(false);
     mockGeoJsonData = {
       data: {
@@ -564,6 +843,78 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Map click without CUI' }));
 
     expect(navigateMock).not.toHaveBeenCalled();
+    const detailsPanel = screen.getByTestId('map-entity-details-panel');
+    expect(detailsPanel).toBeInTheDocument();
+    expect(within(detailsPanel).getByRole('button', { name: 'Open primarie page' })).toBeDisabled();
+  });
+
+  it('renders the primarie CTA as a new-tab link', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({ activeView: 'map' })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
+
+    const primarieLink = screen.getByRole('link', { name: 'Open primarie page' });
+    expect(primarieLink).toHaveAttribute('href', '/primarie/12345678');
+    expect(primarieLink).toHaveAttribute('target', '_blank');
+    expect(primarieLink).toHaveAttribute('rel', expect.stringContaining('noopener'));
+    expect(navigateMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close details' }));
+    await waitFor(() => {
+      expect(screen.queryByTestId('map-entity-details-panel')).not.toBeInTheDocument();
+    });
+  });
+
+  it('renders the same details panel as a mobile popover surface', async () => {
+    mockIsMobile.mockReturnValue(true);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({ activeView: 'map' })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+      />
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
+
+    const detailsPanel = screen.getByTestId('map-entity-details-panel');
+    expect(detailsPanel).toBeInTheDocument();
+    expect(within(detailsPanel).getByRole('heading', { name: 'Mapped UAT' })).toBeInTheDocument();
   });
 
   it('passes the mobile pan lock mode to the public full map', async () => {
@@ -596,7 +947,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     );
   });
 
-  it('does not navigate on owner map click even when CUI is available', async () => {
+  it('opens the same details panel on owner map click without navigating away', async () => {
     mockIsMobile.mockReturnValue(false);
     mockGeoJsonData = {
       data: {
@@ -624,6 +975,9 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     expect(screen.getByTestId('map-analytics-quick-actions')).toBeInTheDocument();
     expect(navigateMock).not.toHaveBeenCalled();
+    const detailsPanel = screen.getByTestId('map-entity-details-panel');
+    expect(detailsPanel).toBeInTheDocument();
+    expect(within(detailsPanel).getByRole('heading', { name: 'Mapped UAT' })).toBeInTheDocument();
   });
 
   it('passes county boundary geojson data to map when boundaries are enabled', async () => {
@@ -858,6 +1212,9 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     );
 
     await screen.findByTestId('interactive-map');
+
+    expect(screen.getByTestId('map-legend-container')).toHaveClass('left-4');
+    expect(screen.getByTestId('map-legend-container')).not.toHaveClass('right-4');
 
     const legendCard = screen.getByText('Legend Series').closest('div');
     expect(legendCard).not.toBeNull();

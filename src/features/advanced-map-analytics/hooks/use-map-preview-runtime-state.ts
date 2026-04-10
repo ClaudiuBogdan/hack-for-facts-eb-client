@@ -105,7 +105,12 @@ export function useMapPreviewRuntimeState({
       selectedYearOverride,
     ]
   );
-  const [mapState, setMapState] = useState<AdvancedMapAnalyticsUrlState>(() => runtimeMapConfig);
+  const [mapState, setMapState] = useState<AdvancedMapAnalyticsUrlState>(() =>
+    withPreservedViewport(runtimeMapConfig, {
+      mapZoomOverride,
+      mapCenterOverride,
+    })
+  );
 
   useEffect(() => {
     setMapState((previousMapState) =>

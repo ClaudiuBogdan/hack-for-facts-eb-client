@@ -11,6 +11,7 @@ import { parseGroupedSeriesWideCsv } from '@/lib/map-series/csv';
 import {
   buildRemoteGroupedSeriesState,
   resolveSeriesUnitOverride,
+  serializeRemoteFetchSeriesForRequest,
 } from '@/lib/map-series/grouped-series-request';
 import { applyAdvancedMapAnalyticsValueFilters } from '@/lib/map-series/value-filters';
 import type {
@@ -299,7 +300,7 @@ export function advancedMapAnalyticsSeriesDataQueryOptions(params: {
 
       return fetchGroupedSeriesData({
         granularity: 'UAT',
-        series: normalizedRemoteBaseSeries,
+        series: normalizedRemoteBaseSeries.map((series) => serializeRemoteFetchSeriesForRequest(series)) as typeof normalizedRemoteBaseSeries,
       });
     },
     staleTime: convertDaysToMs(1),

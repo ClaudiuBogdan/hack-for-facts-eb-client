@@ -2,29 +2,4 @@
   "$schema": "https://opencode.ai/config.json",
   // Auto-update OpenCode
   "autoupdate": true,
-  // ============================================================================
-  // FORMATTER CONFIGURATION - Use Prettier for code formatting
-  // ============================================================================
-  "formatter": {
-    "prettier": {
-      "command": [
-        "yarn",
-        "exec",
-        "prettier",
-        "--write",
-        "$FILE"
-      ],
-      "extensions": [
-        ".ts",
-        ".tsx",
-        ".js",
-        ".jsx",
-        ".json",
-        ".md",
-        ".yaml",
-        ".yml",
-        ".css"
-      ]
-    }
-  }
 }

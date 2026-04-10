@@ -31,6 +31,14 @@ vi.mock('@/features/advanced-map-analytics/hooks/use-map-local-snapshots', () =>
   useMapLocalSnapshots: (...args: unknown[]) => useMapLocalSnapshotsMock(...args),
 }));
 
+vi.mock('@/features/advanced-map-analytics/hooks/use-uploaded-map-dataset-public-guard', () => ({
+  useUploadedMapDatasetPublicGuard: () => ({
+    privateDatasetTitles: [],
+    blockingMessage: null,
+    isChecking: false,
+  }),
+}));
+
 vi.mock('@/features/advanced-map-analytics/local-snapshots/local-map-snapshots-db', () => ({
   getLatestLocalMapSnapshot: (...args: unknown[]) => getLatestLocalMapSnapshotMock(...args),
 }));

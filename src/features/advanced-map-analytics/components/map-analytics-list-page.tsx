@@ -171,7 +171,14 @@ export function MapAnalyticsListPage() {
           <h1 className="text-2xl font-semibold">{t`Map editor`}</h1>
           <p className="text-sm text-muted-foreground">{t`Manage your advanced map analytics maps.`}</p>
         </div>
-        <Button onClick={() => createMapFromState()}>{t`Create map`}</Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline">
+            <Link to="/maps/datasets" preload="intent">
+              {t`Data series`}
+            </Link>
+          </Button>
+          <Button onClick={() => createMapFromState()}>{t`Create map`}</Button>
+        </div>
       </div>
 
       {maps.length === 0 ? (

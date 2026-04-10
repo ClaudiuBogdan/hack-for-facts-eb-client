@@ -30,4 +30,31 @@ describe('MapAnalyticsSaveSnapshotDialog', () => {
       });
     });
   });
+
+  it('blocks switching snapshot visibility to public when uploaded datasets are private', async () => {
+    const onConfirm = vi.fn().mockResolvedValue(undefined);
+    const { MapAnalyticsSaveSnapshotDialog } = await import('./map-analytics-save-snapshot-dialog');
+
+    render(
+      <MapAnalyticsSaveSnapshotDialog
+        open
+        defaultVisibility="private"
+        isPending={false}
+        publicVisibilityErrorMessage="Public maps can use only unlisted or public datasets."
+        onOpenChange={vi.fn()}
+        onConfirm={onConfirm}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('switch', { name: 'Toggle snapshot visibility' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save snapshot' }));
+
+    await waitFor(() => {
+      expect(onConfirm).toHaveBeenCalledWith({
+        description: null,
+        stateAtSave: 'private',
+      });
+    });
+    expect(screen.getByText('Public maps can use only unlisted or public datasets.')).toBeInTheDocument();
+  });
 });
