@@ -203,6 +203,19 @@ export function AdvancedMapDatasetListPage() {
           </Button>
         </div>
 
+        {/* Mobile FAB */}
+        <div className="md:hidden fixed right-6 bottom-6 z-50">
+          <Button
+            onClick={createEmptyDatasetDraft}
+            variant="default"
+            size="icon"
+            className="rounded-full shadow-lg w-14 h-14"
+            aria-label={t`Create new data series`}
+          >
+            <Plus className="w-6 h-6" />
+          </Button>
+        </div>
+
         {/* My Data Series Section */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 border-b pb-3">
