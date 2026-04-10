@@ -29,6 +29,10 @@ msgstr " (activ)"
 msgid " / capita"
 msgstr " / capita"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:105
+msgid ", and more."
+msgstr ""
+
 #: src/components/entities/views/ins-stats-view.derived.ts:126
 msgid "((Immigrants − Emigrants) / Population) × 1,000"
 msgstr "((Imigranți − Emigranți) / Populație) × 1.000"
@@ -80,6 +84,11 @@ msgstr "{0} bins"
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:179
 msgid "{0} enabled series"
 msgstr "{0} serii activate"
+
+#. placeholder {0}: items.length
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:97
+msgid "{0} items selected"
+msgstr ""
 
 #. placeholder {0}: issues.length - 8
 #: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:125
@@ -134,6 +143,12 @@ msgstr "{0} serii configurate"
 msgid "{0} series pasted"
 msgstr "Au fost lipite {0} serii"
 
+#. placeholder {0}: item.submittedEventCount
+#. placeholder {1}: item.evaluatedEventCount
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:177
+msgid "{0} submitted / {1} evaluated"
+msgstr ""
+
 #. placeholder {0}: normalizedPasteResult.skippedUnsupportedCount
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:483
 msgid "{0} unsupported series were skipped"
@@ -177,6 +192,10 @@ msgstr "{hours}h {mins}m rămase"
 #: src/features/learning/components/cards/LearningPathCard.tsx:191
 msgid "{hours}h remaining"
 msgstr "{hours}h rămase"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminCursorPager.tsx:33
+msgid "{itemCount} rows loaded in the current cursor window"
+msgstr ""
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:41
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:50
@@ -266,6 +285,14 @@ msgstr "|z| >= threshold"
 msgid "0 participants"
 msgstr "0 participanți"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:96
+msgid "1 item selected"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminCursorPager.tsx:32
+msgid "1 row loaded in the current cursor window"
+msgstr ""
+
 #: src/components/entities/views/ins-stats-view.derived.ts:254
 msgid "1,000 inhabitants"
 msgstr "1.000 locuitori"
@@ -300,7 +327,7 @@ msgid "Access"
 msgstr "Acces"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:228
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:142
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:290
 msgid "Access denied"
 msgstr "Acces interzis"
 
@@ -409,6 +436,14 @@ msgstr "Adaugă filtru"
 #: src/components/charts/components/series-config/CalculationEditor.tsx:190
 msgid "Add Number"
 msgstr "Adaugă număr"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:195
+msgid "Add operator context for this review"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:120
+msgid "Add optional operator context for the approved batch"
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel.tsx:71
 msgid "Add series"
@@ -798,6 +833,31 @@ msgstr "Aplică gradient"
 msgid "Apply gradient colors?"
 msgstr "Aplici culorile gradientului?"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:86
+msgid "Apply one bulk approval decision to the selected pending interactions."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:187
+msgid "Approval can omit a note, but rejection requires one."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:204
+msgid "Approval requires explicit confirmation"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:274
+msgid "Approve"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:182
+msgid "Approve selected"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:82
+msgid "Approve selected interactions"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/constants.ts:69
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:33
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:52
 msgid "Approved"
@@ -872,6 +932,14 @@ msgstr "Denumirea asociației"
 msgid "At least one bin is required."
 msgstr "Este necesar cel puțin un interval."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:134
+msgid "At least one selected interaction has an institution-email warning. Approval may trigger platform-send side effects on the server."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:176
+msgid "Audit counters"
+msgstr ""
+
 #: src/features/learning/components/interactive/VATReformCard.tsx:26
 msgid "Aug 1, 2025"
 msgstr "1 august 2025"
@@ -917,6 +985,10 @@ msgstr "Avg. Amount"
 #: src/components/maps/charts/UatAverageSpendingCountyChart.tsx:75
 msgid "Avg. Amount per UAT"
 msgstr "Avg. Amount per UAT"
+
+#: src/features/campaigns/buget/admin/constants.ts:103
+msgid "Awaiting reply"
+msgstr "Se așteaptă răspuns"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:399
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:470
@@ -1228,6 +1300,10 @@ msgstr "Construiți un set de date personalizat pentru utilizare în editorul de
 msgid "Build and manage custom visualizations of public spending data."
 msgstr "Creați și gestionați vizualizări personalizate ale datelor privind cheltuielile publice."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:131
+msgid "Bulk approval includes risky items"
+msgstr ""
+
 #: src/components/charts/components/series-config/CustomSeriesDataEditor.tsx:65
 msgid "Bulk Edit"
 msgstr "Editare în masă"
@@ -1278,6 +1354,10 @@ msgstr "Calcul"
 msgid "Calculations assume a basket of 40% essential goods (11% VAT) and 60% general goods (21% VAT)."
 msgstr "Calculele presupun un coș de bunuri esențiale de 40% (TVA 11%) și bunuri generale de 60% (TVA 21%)."
 
+#: src/features/campaigns/buget/admin/components/AdminCampaignLayout.tsx:32
+msgid "Campaign admin"
+msgstr ""
+
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:323
 msgid "Campaign notifications"
 msgstr "Notificari campanie"
@@ -1299,6 +1379,7 @@ msgstr "Notificările de campanie sunt supuse <0>termenilor și condițiilor cam
 #: src/components/charts/components/views/SeriesConfigView.tsx:579
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:386
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:635
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:418
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:235
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:255
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:276
@@ -1307,10 +1388,11 @@ msgstr "Notificările de campanie sunt supuse <0>termenilor și condițiilor cam
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:632
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:136
 #: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:135
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:426
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:482
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:244
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:272
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:298
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:166
 #: src/features/notifications/components/alerts/AlertCard.tsx:122
 #: src/features/notifications/components/NotificationCard.tsx:125
 #: src/routes/$lang/learning/index.lazy.tsx:315
@@ -1444,6 +1526,10 @@ msgstr "Se verifică răspunsul tău..."
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:186
 msgid "Checking..."
 msgstr "Se verifică..."
+
+#: src/features/campaigns/buget/admin/constants.ts:82
+msgid "Choice"
+msgstr "Opțiune"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:348
 msgid "Choose a disabled view to enable it in this map."
@@ -1611,7 +1697,8 @@ msgstr "Datele din clipboard trebuie să conțină SIRUTA și valori numerice."
 msgid "Clipboard does not contain copied chart series."
 msgstr "Clipboardul nu conține serii de grafic copiate."
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:296
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:420
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:487
 msgid "Clone"
 msgstr "Clonează"
 
@@ -1619,24 +1706,25 @@ msgstr "Clonează"
 msgid "Clone dataset"
 msgstr "Clonează setul de date"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:268
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:434
 msgid "Clone from snapshot"
 msgstr "Clonează din instantaneu"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:216
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:142
 msgid "Clone latest"
 msgstr "Clonează ultima versiune"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:247
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:392
 msgid "Clone latest snapshot"
 msgstr "Clonează ultimul instantaneu"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:220
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:149
 msgid "Clone snapshot"
 msgstr "Clonează instantaneul"
 
 #: src/components/budget-explorer/FilteredSpendingInfo.tsx:259
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:417
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:239
 msgid "Close"
 msgstr "Închide"
 
@@ -1663,6 +1751,10 @@ msgstr "Închide Căutarea"
 #: src/features/learning/components/interactive/PromiseTracker.tsx:315
 msgid "Close!"
 msgstr "Aproape!"
+
+#: src/features/campaigns/buget/admin/constants.ts:113
+msgid "Closed without reply"
+msgstr "Închis fără răspuns"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1101
 #: src/features/learning/components/interactive/ExecutionRateChart.tsx:145
@@ -1885,6 +1977,14 @@ msgstr "Configurează numele hărții și verifică starea acesteia."
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:139
 msgid "Confirm"
 msgstr "Confirmă"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:213
+msgid "Confirm approval warning"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:150
+msgid "Confirm bulk approval warning"
+msgstr ""
 
 #: src/routes/cookies.lazy.tsx:255
 msgid "Confirm choices"
@@ -2255,9 +2355,17 @@ msgstr "Calitatea acoperirii depinde în continuare de ratele de conectare și d
 msgid "Create a chart for this entity to start tracking its financial evolution."
 msgstr "Creează un grafic pentru această entitate pentru a începe să-i urmărești evoluția financiară."
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:248
-msgid "Create a new map using the latest saved snapshot."
-msgstr "Creează o hartă nouă folosind ultimul instantaneu salvat."
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:345
+msgid "Create a map to visualize geographic data"
+msgstr "Creează o hartă pentru a vizualiza date geografice"
+
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:395
+msgid "Create a new map using the latest saved snapshot"
+msgstr "Creează o hartă nouă folosind ultimul instantaneu salvat"
+
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:334
+#~ msgid "Create a new map using the latest saved snapshot."
+#~ msgstr "Creează o hartă nouă folosind ultimul instantaneu salvat."
 
 #: src/features/notifications/components/NotificationList.tsx:158
 #: src/features/notifications/components/NotificationList.tsx:159
@@ -2285,15 +2393,14 @@ msgid "Create chart for this entity"
 msgstr "Creează grafic pentru această entitate"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1203
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:270
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:309
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:328
 msgid "Create copy"
 msgstr "Creează o copie"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1163
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1175
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1212
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:202
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:223
 msgid "Create data series"
 msgstr "Creează o serie de date"
 
@@ -2307,11 +2414,11 @@ msgstr "Creează copie editabilă"
 msgid "Create empty map"
 msgstr "Create empty map"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:259
-msgid "Create from latest"
-msgstr "Creează din ultima versiune"
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:345
+#~ msgid "Create from latest"
+#~ msgstr "Creează din ultima versiune"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:180
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:333
 msgid "Create map"
 msgstr "Creează hartă"
 
@@ -2322,6 +2429,14 @@ msgstr "Creează o hartă cu acest set de date"
 #: src/routes/alerts/$alertId/index.lazy.tsx:199
 msgid "Create new alert"
 msgstr "Creează o alertă nouă"
+
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:233
+msgid "Create new data series"
+msgstr "Creează o serie de date nouă"
+
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:232
+#~ msgid "Create new map"
+#~ msgstr "Creează hartă nouă"
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:410
 msgid "Create or upload a dataset to make it available here."
@@ -2335,9 +2450,13 @@ msgstr "Creați primul dumneavoastră grafic"
 msgid "Create your first chart to start visualizing public spending data."
 msgstr "Creați primul dumneavoastră grafic pentru a începe vizualizarea datelor privind cheltuielile publice."
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:224
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:256
 msgid "Create your first custom dataset to get started with map visualization."
 msgstr "Creați primul dvs. set de date personalizat pentru a începe vizualizarea pe hartă."
+
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:257
+#~ msgid "Create your first map to start visualizing data on the interactive map."
+#~ msgstr "Creează prima hartă pentru a începe vizualizarea datelor pe harta interactivă."
 
 #: src/routes/maps/editor/new.lazy.tsx:309
 msgid "Creating map..."
@@ -2394,7 +2513,7 @@ msgstr "Perioada curentă și sursa"
 msgid "Custom Data"
 msgstr "Date personalizate"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:195
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:217
 msgid "Custom data series"
 msgstr "Serii de date personalizate"
 
@@ -2445,8 +2564,8 @@ msgid "Data period shown:"
 msgstr "Perioada datelor afișate:"
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:177
-msgid "Data series"
-msgstr "Serii de date"
+#~ msgid "Data series"
+#~ msgstr "Serii de date"
 
 #: src/components/charts/components/chart-config/DataSeriesCard.tsx:17
 #: src/components/charts/components/chart-view/SeriesList.tsx:86
@@ -2471,7 +2590,7 @@ msgstr "Alerte pentru serii de date"
 msgid "Data series created"
 msgstr "Seria de date a fost creată"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:439
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:495
 msgid "Data series deleted"
 msgstr "Seria de date a fost ștearsă"
 
@@ -2624,8 +2743,8 @@ msgstr "Definite"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-list-item.tsx:251
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:299
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:261
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:277
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:449
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:346
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:505
 #: src/features/notifications/components/alerts/AlertCard.tsx:128
 #: src/features/notifications/components/NotificationCard.tsx:128
 #: src/routes/alerts/$alertId/index.lazy.tsx:323
@@ -2647,7 +2766,7 @@ msgstr "Șterge interval"
 msgid "Delete Chart"
 msgstr "Șterge graficul"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:413
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:465
 msgid "Delete data series?"
 msgstr "Ștergeți seria de date?"
 
@@ -2689,7 +2808,7 @@ msgstr "Ștergeți acest grafic?"
 msgid "Delete this map?"
 msgstr "Ștergi această hartă?"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:449
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:505
 msgid "Deleting..."
 msgstr "Se șterge..."
 
@@ -2926,6 +3045,10 @@ msgstr "Descărcat ca text"
 msgid "draft"
 msgstr "ciornă"
 
+#: src/features/campaigns/buget/admin/constants.ts:52
+msgid "Draft"
+msgstr "Ciornă"
+
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:32
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:50
 msgid "Draft (public consultation)"
@@ -3067,6 +3190,10 @@ msgstr "Editează alerta"
 msgid "Edit Alert"
 msgstr "Editare alertă"
 
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:244
+#~ msgid "Edit and manage your saved map configurations."
+#~ msgstr "Editează și gestionează configurațiile salvate ale hărților tale."
+
 #: src/components/charts/components/chart-annotations/AnnotationItemMenu.tsx:34
 msgid "Edit Annotation"
 msgstr "Editează adnotarea"
@@ -3096,7 +3223,7 @@ msgstr "Editează serie de date"
 msgid "Edit dataset"
 msgstr "Editează setul de date"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:212
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:244
 msgid "Edit datasets you own and reuse them across maps."
 msgstr "Editați seturile de date pe care le dețineți și reutilizați-le în mai multe hărți."
 
@@ -3298,6 +3425,10 @@ msgstr "Entitate"
 #: src/components/sidebar/nav-main.tsx:41
 msgid "Entity Analytics"
 msgstr "Analiza entităților"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:156
+msgid "Entity CUI"
+msgstr ""
 
 #: src/components/ui/shortcuts.tsx:50
 msgid "Entity Details"
@@ -3601,6 +3732,10 @@ msgstr "Tip cheltuială"
 msgid "Expenses"
 msgstr "Cheltuieli"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:121
+msgid "Explain why this batch is being rejected"
+msgstr ""
+
 #: src/features/learning/components/interactive/PhaseCards.tsx:95
 msgid "Exploration Progress"
 msgstr "Progresul explorării"
@@ -3637,7 +3772,7 @@ msgstr "Explorează mai multe parcursuri"
 msgid "Explore national budget."
 msgstr "Explorați bugetul național."
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:325
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:362
 msgid "Explore public data series and clone them into your own workspace."
 msgstr "Explorați seriile de date publice și clonați-le în propriul spațiu de lucru."
 
@@ -3683,6 +3818,10 @@ msgstr "Nivel de încredere al extragerii"
 msgid "Eyes on Local Budgets"
 msgstr "Cu ochii pe bugetele locale"
 
+#: src/features/campaigns/buget/admin/constants.ts:58
+msgid "Failed"
+msgstr "Eșuat"
+
 #: src/features/advanced-map-analytics/hooks/use-map-local-snapshots.ts:149
 #: src/features/advanced-map-datasets/hooks/use-advanced-map-dataset-local-snapshots.ts:126
 msgid "Failed to autosave local snapshot"
@@ -3693,7 +3832,7 @@ msgstr "Nu s-a putut salva automat instantaneul local"
 msgid "Failed to clear local snapshots"
 msgstr "Nu s-au putut șterge instantaneele locale"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:73
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:208
 msgid "Failed to clone map configuration"
 msgstr "Clonarea configurației hărții a eșuat"
 
@@ -3732,8 +3871,7 @@ msgstr "Eroare la copierea linkului de partajare"
 msgid "Failed to create"
 msgstr "Crearea a eșuat"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:265
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:305
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:321
 msgid "Failed to create copy"
 msgstr "Crearea copiei a eșuat"
 
@@ -3802,7 +3940,7 @@ msgid "Failed to load data for this budget sector."
 msgstr "Încărcarea datelor pentru acest sector bugetar a eșuat."
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1073
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:175
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:199
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:112
 msgid "Failed to load data series"
 msgstr "Încărcarea seriilor de date a eșuat"
@@ -3830,7 +3968,7 @@ msgstr "Nu s-au putut încărca instantaneele locale"
 msgid "Failed to load map"
 msgstr "Eroare la încărcarea hărții"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:155
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:303
 msgid "Failed to load maps"
 msgstr "Eroare la încărcarea hărților"
 
@@ -4172,6 +4310,10 @@ msgstr "Sursă de Finanțare"
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:73
 msgid "Funds the pension checks and hospital bills directly. It's a huge mandatory system."
 msgstr "Finanțează direct pensiile și facturile spitalelor. Este un sistem obligatoriu uriaș."
+
+#: src/features/campaigns/buget/admin/constants.ts:41
+msgid "Funky Citizens"
+msgstr ""
 
 #: src/features/learning/components/interactive/EUComparisonChart.tsx:71
 msgid "Gap"
@@ -4515,6 +4657,14 @@ msgstr "Am trimis emailul"
 msgid "I spend monthly"
 msgstr "Cheltui lunar"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:152
+msgid "I understand the risk and still want to approve the selected items."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:215
+msgid "I understand the risk and want to continue with approval."
+msgstr ""
+
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:163
 msgid "Identifiers"
 msgstr "Identificatori"
@@ -4522,6 +4672,10 @@ msgstr "Identificatori"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:339
 msgid "Identify the specific budget line or category. For example: \"Personnel expenses - Chapter 65 Education\""
 msgstr "Identifică linia bugetară sau categoria specifică. De exemplu: «Cheltuieli de personal - Capitolul 65 Învățământ»"
+
+#: src/features/campaigns/buget/admin/constants.ts:50
+msgid "Idle"
+msgstr "Inactiv"
 
 #. placeholder {0}: formatCurrency(gross)
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:278
@@ -4738,9 +4892,25 @@ msgstr "Inspectează valorile în timp real pentru acest UAT și accesează pagi
 msgid "Inspect the live values for this UAT. Primarie navigation is unavailable for this selection."
 msgstr "Inspectează valorile în timp real pentru acest UAT. Navigarea către primărie nu este disponibilă pentru această selecție."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:154
+msgid "Institution email"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/constants.ts:128
+msgid "Institution email mismatch"
+msgstr "Neconcordanță email instituție"
+
+#: src/features/campaigns/buget/admin/constants.ts:132
+msgid "Institution thread failed"
+msgstr "Eșuare conversație instituție"
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:1066
 msgid "Insufficient data"
 msgstr "Date insuficiente"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:129
+msgid "Interaction review"
+msgstr ""
 
 #: src/features/learning/components/interactive/RectificationHistory.tsx:225
 msgid "Interactive"
@@ -4782,6 +4952,10 @@ msgstr "Date invalide detectate în seriile graficului"
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:94
 msgid "Invalid data series link"
 msgstr "Link de serie de date invalid"
+
+#: src/features/campaigns/buget/admin/constants.ts:126
+msgid "Invalid institution email"
+msgstr "Email instituție invalid"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:267
 msgid "Invalid map configuration"
@@ -4946,9 +5120,17 @@ msgstr "Limbă"
 msgid "last available"
 msgstr "ultima disponibilă"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:172
+msgid "Last email"
+msgstr ""
+
 #: src/components/alerts/components/AlertEditorView.tsx:290
 msgid "Last evaluated"
 msgstr "Ultima evaluare"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:173
+msgid "Last reply"
+msgstr ""
 
 #: src/components/entities/views/entity-profile-view.presentation.tsx:290
 msgid "Last updated"
@@ -5047,6 +5229,10 @@ msgstr "Mai mic decât"
 msgid "Lesson completed!"
 msgstr "Lecție finalizată!"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:158
+msgid "Lesson ID"
+msgstr ""
+
 #: src/features/learning/components/player/LessonPlayer.tsx:492
 msgid "Lesson not found"
 msgstr "Lecția nu a fost găsită"
@@ -5091,6 +5277,7 @@ msgstr "Linii bugetare"
 msgid "Line Items Aggregated Yearly"
 msgstr "Linii bugetare agregate anual"
 
+#: src/features/campaigns/buget/admin/constants.ts:86
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:224
 msgid "Link"
 msgstr "Link"
@@ -5207,13 +5394,17 @@ msgstr "Se încarcă datele graficului…"
 msgid "Loading comments..."
 msgstr "Se încarcă comentariile..."
 
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:158
+msgid "Loading data series"
+msgstr "Se încarcă serii de date"
+
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1032
 msgid "Loading data series editor..."
 msgstr "Se încarcă editorul seriei de date..."
 
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:134
-msgid "Loading data series..."
-msgstr "Se încarcă seriile de date..."
+#~ msgid "Loading data series..."
+#~ msgstr "Se încarcă seriile de date..."
 
 #: src/routes/map.lazy.tsx:265
 msgid "Loading data..."
@@ -5249,9 +5440,13 @@ msgstr "Se încarcă datele pentru harta termică..."
 msgid "Loading interactive content..."
 msgstr "Se încarcă conținutul interactiv..."
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:252
-msgid "Loading latest snapshot..."
-msgstr "Se încarcă ultimul instantaneu..."
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:337
+#~ msgid "Loading latest snapshot..."
+#~ msgstr "Se încarcă ultimul instantaneu..."
+
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:338
+#~ msgid "Loading latest snapshot…"
+#~ msgstr "Se încarcă ultimul instantaneu…"
 
 #: src/features/learning/components/loading/LessonSkeleton.tsx:61
 msgid "Loading lesson content..."
@@ -5281,9 +5476,13 @@ msgstr "Se încarcă editorul de hărți..."
 msgid "Loading map..."
 msgstr "Se încarcă harta..."
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:114
-msgid "Loading maps..."
-msgstr "Se încarcă hărțile..."
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:249
+msgid "Loading maps"
+msgstr "Se încarcă hărțile"
+
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:133
+#~ msgid "Loading maps…"
+#~ msgstr "Se încarcă hărțile…"
 
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:80
 msgid "Loading public data series..."
@@ -5301,9 +5500,13 @@ msgstr "Se încarcă rapoartele..."
 msgid "Loading shared datasets..."
 msgstr "Se încarcă seturile de date partajate..."
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:273
-msgid "Loading snapshots..."
-msgstr "Se încarcă instantaneele..."
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:358
+#~ msgid "Loading snapshots..."
+#~ msgstr "Se încarcă instantaneele..."
+
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:359
+#~ msgid "Loading snapshots…"
+#~ msgstr "Se încarcă instantaneele…"
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2243
 #: src/routes/map.lazy.tsx:398
@@ -5486,10 +5689,18 @@ msgstr "Faci publică"
 msgid "Manage all notifications"
 msgstr "Gestionează toate notificările"
 
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:325
+msgid "Manage and create map visualizations"
+msgstr "Gestionează și creează vizualizări pe hartă"
+
 #: src/routes/settings/notifications.tsx:66
 #: src/routes/settings/notifications.tsx:154
 msgid "Manage campaign-wide preferences on the <0>campaign notifications page</0>."
 msgstr "Gestionați preferințele la nivel de campanie în <0>pagina de notificări a campaniei</0>."
+
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:375
+msgid "Manage custom data series"
+msgstr "Gestionează serii de date personalizate"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:429
 msgid "Manage email notifications for entities you follow in the campaign."
@@ -5504,9 +5715,13 @@ msgstr "Gestionati actualizarile prin email pentru aceasta campanie."
 msgid "Manage notifications"
 msgstr "Gestionare notificări"
 
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:216
+#~ msgid "Manage your advanced map analytics and create new visualizations."
+#~ msgstr "Gestionează hărțile tale de analiză avansată și creează noi vizualizări."
+
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:172
-msgid "Manage your advanced map analytics maps."
-msgstr "Gestionează hărțile tale de analiză avansată."
+#~ msgid "Manage your advanced map analytics maps."
+#~ msgstr "Gestionează hărțile tale de analiză avansată."
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:128
 msgid "Manage your map settings, visibility, and version history."
@@ -5516,7 +5731,7 @@ msgstr "Gestionează setările, vizibilitatea și istoricul versiunilor hărții
 msgid "Manage your newsletter and alert subscriptions"
 msgstr "Gestionați-vă abonamentele la newsletter și alerte"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:197
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:219
 msgid "Manage your own map-ready datasets or clone shared ones."
 msgstr "Gestionați-vă propriile seturi de date pregătite pentru hartă sau clonați-le pe cele partajate."
 
@@ -5527,6 +5742,10 @@ msgstr "manual"
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:139
 msgid "Manual"
 msgstr "Manual"
+
+#: src/features/campaigns/buget/admin/constants.ts:107
+msgid "Manual follow-up"
+msgstr "Urmărire manuală"
 
 #: src/components/filters/MapFilter.tsx:212
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:106
@@ -5567,9 +5786,9 @@ msgstr "Descriere hartă"
 msgid "Map description markdown editor"
 msgstr "Editor markdown pentru descrierea hărții"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:171
-msgid "Map editor"
-msgstr "Editor de hărți"
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:214
+#~ msgid "Map editor"
+#~ msgstr "Editor de hărți"
 
 #: src/components/filters/MapFilter.tsx:192
 msgid "Map Filters"
@@ -5630,6 +5849,7 @@ msgid "Map View"
 msgstr "Vizualizare hartă"
 
 #: src/components/footer/AppFooter.tsx:98
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:322
 msgid "Maps"
 msgstr "Hărți"
 
@@ -5792,6 +6012,10 @@ msgstr "Descriere lipsă"
 #: src/components/entities/EntityLineItemsTabs.tsx:99
 msgid "Missing Items"
 msgstr "Elemente lipsă"
+
+#: src/features/campaigns/buget/admin/constants.ts:130
+msgid "Missing official email"
+msgstr "Lipsește email-ul oficial"
 
 #: src/features/learning/hooks/use-learning-progress.tsx:1879
 msgid "Missing path id"
@@ -5958,13 +6182,17 @@ msgid "My city hall"
 msgstr "Primăria mea"
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:270
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:210
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:242
 msgid "My data series"
 msgstr "Seriile mele de date"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:62
 msgid "My interactive budget map…"
 msgstr "Harta mea interactivă de buget…"
+
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:242
+#~ msgid "My maps"
+#~ msgstr "Hărțile mele"
 
 #: src/components/commitments/LinearBudgetFlow.tsx:152
 #: src/components/commitments/LinearBudgetFlow.tsx:180
@@ -6087,12 +6315,17 @@ msgstr "Cele mai noi primele"
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:202
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:549
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:211
+#: src/features/campaigns/buget/admin/components/CampaignAdminCursorPager.tsx:55
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:127
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:162
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:207
 #: src/features/learning/components/player/LessonPlayer.tsx:574
 msgid "Next"
 msgstr "Următorul"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:174
+msgid "Next action"
+msgstr ""
 
 #: src/components/filters/flags-filter/index.tsx:24
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:24
@@ -6267,7 +6500,7 @@ msgstr "Nicio serie de date"
 msgid "No data series alerts"
 msgstr "Nicio alertă pentru serii de date"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:223
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:254
 msgid "No data series yet"
 msgstr "Nicio serie de date încă"
 
@@ -6377,9 +6610,13 @@ msgstr "Niciun link adăugat"
 msgid "No local snapshots yet"
 msgstr "Încă nu există instantanee locale"
 
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:343
+msgid "No maps yet"
+msgstr "Nu ai hărți încă"
+
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:187
-msgid "No maps yet. Create your first map to get started."
-msgstr "Nu ai hărți încă. Creează prima hartă pentru a începe."
+#~ msgid "No maps yet. Create your first map to get started."
+#~ msgstr "Nu ai hărți încă. Creează prima hartă pentru a începe."
 
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:114
 msgid "No matches yet"
@@ -6440,7 +6677,7 @@ msgid "No profile data available"
 msgstr "Nu exista date de profil"
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:433
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:336
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:372
 msgid "No public datasets available"
 msgstr "Nu sunt disponibile seturi de date publice"
 
@@ -6499,6 +6736,10 @@ msgstr "Nu există pași disponibili"
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:240
 msgid "No steps available yet. Please check back later."
 msgstr "Niciun pas disponibil momentan. Revino mai târziu."
+
+#: src/features/campaigns/buget/admin/constants.ts:117
+msgid "No thread"
+msgstr "Fără conversație"
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:512
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:47
@@ -6608,6 +6849,10 @@ msgstr "Nu chiar"
 msgid "Not quite!"
 msgstr "Nu chiar!"
 
+#: src/features/campaigns/buget/admin/constants.ts:73
+msgid "Not reviewed"
+msgstr "Nerevizuit"
+
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:302
 msgid "Note your observations about the debate…"
 msgstr "Notează observațiile tale despre dezbatere…"
@@ -6655,6 +6900,10 @@ msgstr "Noiembrie"
 #: src/features/learning/components/interactive/BudgetCycleTimeline.tsx:368
 msgid "Now"
 msgstr "Acum"
+
+#: src/features/campaigns/buget/admin/constants.ts:88
+msgid "Number"
+msgstr "Număr"
 
 #: src/components/maps/charts/UatDistributionChart.tsx:39
 #: src/components/maps/charts/UatDistributionChart.tsx:105
@@ -6733,8 +6982,9 @@ msgid "Only you can access this saved version."
 msgstr "Doar tu poți accesa această versiune salvată."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-list.tsx:451
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:235
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:286
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:120
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:293
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:414
 #: src/features/learning/components/interactive/HandsOnExplorer.tsx:106
 msgid "Open"
 msgstr "Deschide"
@@ -6780,9 +7030,9 @@ msgstr "Deschide panoul de configurare"
 msgid "Open cookies"
 msgstr "Deschide setările cookie"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:385
-msgid "Open dataset"
-msgstr "Deschide setul de date"
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:398
+#~ msgid "Open dataset"
+#~ msgstr "Deschide setul de date"
 
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:424
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:425
@@ -6860,12 +7110,9 @@ msgstr "Deschide descrierea hărții"
 msgid "Open on Wikipedia"
 msgstr "Deschide pe Wikipedia"
 
-#. placeholder {0}: dataset.title
-#. placeholder {0}: map.title
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:208
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:257
-msgid "Open options for {0}"
-msgstr "Deschide opțiunile pentru {0}"
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:270
+#~ msgid "Open options for {0}"
+#~ msgstr "Deschide opțiunile pentru {0}"
 
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:306
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:312
@@ -6924,6 +7171,10 @@ msgstr "Operațiuni"
 msgid "Operator"
 msgstr "Operator"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:140
+msgid "Operator warnings"
+msgstr ""
+
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:273
 msgid "Optional content displayed when users click this UAT on the map."
 msgstr "Conținut opțional afișat când utilizatorii dau click pe acest UAT pe hartă."
@@ -6944,6 +7195,10 @@ msgstr "Titlu opțional pentru legendă"
 msgid "Optional name"
 msgstr "Nume opțional"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:112
+msgid "Optional note"
+msgstr ""
+
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:110
 msgid "Optional note about this version"
 msgstr "Notă opțională despre această versiune"
@@ -6960,6 +7215,13 @@ msgstr "Suprascriere unitate opțională..."
 msgid "Options"
 msgstr "Opțiuni"
 
+#. placeholder {0}: dataset.title
+#. placeholder {0}: map.title
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:131
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:306
+msgid "Options for {0}"
+msgstr "Opțiuni pentru {0}"
+
 #: src/components/ui/shortcuts.tsx:105
 msgid "or"
 msgstr "sau"
@@ -6967,6 +7229,10 @@ msgstr "sau"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:224
 msgid "OR"
 msgstr "OR"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:155
+msgid "Organization"
+msgstr ""
 
 #: src/features/learning/components/interactive/RectificationFlow.tsx:170
 msgid "Original:"
@@ -7016,6 +7282,10 @@ msgstr "Set de date propriu"
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:540
 msgid "Page {page}"
 msgstr "Pagina {page}"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminCursorPager.tsx:28
+msgid "Page {pageIndex}"
+msgstr ""
 
 #. js-lingui-explicit-id
 #: src/lib/errors-utils.ts:22
@@ -7128,6 +7398,10 @@ msgstr "Pauză"
 msgid "Payload"
 msgstr "Payload"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:157
+msgid "Payload kind"
+msgstr ""
+
 #: src/components/commitments/CategoryChart.tsx:68
 #: src/components/commitments/CategoryChart.tsx:132
 #: src/components/commitments/commitments-trends.tsx:444
@@ -7141,6 +7415,11 @@ msgstr "Plăți"
 #: src/components/entities/views/Commitments.tsx:417
 msgid "Payments Made"
 msgstr "Plăți Efectuate"
+
+#: src/features/campaigns/buget/admin/constants.ts:54
+#: src/features/campaigns/buget/admin/constants.ts:67
+msgid "Pending"
+msgstr "În așteptare"
 
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:140
 msgid "Pending review"
@@ -7424,8 +7703,8 @@ msgstr "Previzualizează setul de date pe hartă"
 msgid "Preview of the alert chart and settings."
 msgstr "Previzualizare a graficului și setărilor alertei."
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:298
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:381
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:339
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:425
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:139
 msgid "Preview on map"
 msgstr "Previzualizează pe hartă"
@@ -7434,7 +7713,7 @@ msgstr "Previzualizează pe hartă"
 msgid "Preview selection"
 msgstr "Previzualizează selecția"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:391
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:443
 msgid "Preview unavailable"
 msgstr "Previzualizare indisponibilă"
 
@@ -7445,6 +7724,7 @@ msgstr "Previzualizare:"
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:191
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:537
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:199
+#: src/features/campaigns/buget/admin/components/CampaignAdminCursorPager.tsx:46
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:89
 #: src/features/learning/components/player/LessonPlayer.tsx:549
 msgid "Previous"
@@ -7470,6 +7750,7 @@ msgstr "Agregat principal"
 msgid "Privacy Policy"
 msgstr "Politica de confidențialitate"
 
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:63
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:142
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:415
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:508
@@ -7477,7 +7758,7 @@ msgstr "Politica de confidențialitate"
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:110
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:101
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1294
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:73
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:85
 msgid "Private"
 msgstr "Privată"
 
@@ -7515,6 +7796,7 @@ msgstr "Progres"
 msgid "Propose a specific and realistic change. For example: \"Redistribute 500,000 lei from personnel expenses to school infrastructure investments.\""
 msgstr "Propune o modificare specifică și realistă. De exemplu: «Redistribuirea a 500.000 lei de la cheltuieli de personal către investiții în infrastructură școlară.»"
 
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:56
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:142
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:415
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:508
@@ -7522,7 +7804,7 @@ msgstr "Propune o modificare specifică și realistă. De exemplu: «Redistribui
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:108
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:84
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1296
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:58
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:72
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:164
 msgid "Public"
 msgstr "Publică"
@@ -7539,7 +7821,7 @@ msgstr "Seturi de date publice"
 msgid "Public datasets are still available in the shared list."
 msgstr "Seturile de date publice sunt în continuare disponibile în lista partajată."
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:337
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:374
 msgid "Public datasets will appear here when shared by the community."
 msgstr "Seturile de date publice vor apărea aici când sunt partajate de comunitate."
 
@@ -7553,7 +7835,7 @@ msgid "Public debate request"
 msgstr "Cerere de dezbatere publică"
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:271
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:323
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:360
 msgid "Public explorer"
 msgstr "Explorator public"
 
@@ -7656,6 +7938,10 @@ msgstr "Citește mai mult"
 msgid "Read our <0>Cookie Policy</0> and <1>Privacy Policy</1>."
 msgstr "Citiți <0>Politica privind cookie-urile</0> și <1>Politica de confidențialitate</1>."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:224
+msgid "Read-only review"
+msgstr ""
+
 #: src/features/learning/components/layout/LearningLayout.tsx:261
 msgid "Ready to Begin?"
 msgstr "Ești gata să începi?"
@@ -7727,6 +8013,10 @@ msgstr "Primește actualizări despre această entitate în campania pentru buge
 msgid "Recipient"
 msgstr "Destinatar"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:159
+msgid "Record key"
+msgstr ""
+
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:264
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:445
 msgid "Recorded"
@@ -7785,6 +8075,26 @@ msgstr "Ponderea șomajului înregistrat"
 msgid "Registration number"
 msgstr "Număr de înregistrare"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:257
+msgid "Reject"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:183
+msgid "Reject selected"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:82
+msgid "Reject selected interactions"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:87
+msgid "Reject the selected pending interactions with a shared operator note."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/constants.ts:71
+msgid "Rejected"
+msgstr "Respins"
+
 #: src/components/classification-explorer/ClassificationSiblings.tsx:32
 msgid "Related Categories"
 msgstr "Categorii conexe"
@@ -7841,6 +8151,10 @@ msgstr "Înlocuiește"
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:93
 msgid "Replace value"
 msgstr "Înlocuiește valoarea"
+
+#: src/features/campaigns/buget/admin/constants.ts:105
+msgid "Reply received"
+msgstr "Răspuns primit"
 
 #: src/components/sentry/SendErrorAction.tsx:16
 msgid "Report bug"
@@ -7903,6 +8217,10 @@ msgstr "Trimitere solicitată prin platformă"
 msgid "Required for core functionality like security, authentication, and preferences. Always on."
 msgstr "Necesare pentru funcționalitățile de bază, precum securitatea, autentificarea și preferințele. Sunt mereu active."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:112
+msgid "Required rejection note"
+msgstr ""
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:133
 msgid "Requires variation; rule is skipped if standard deviation is zero."
 msgstr "Necesită variație; regula este omisă dacă deviația standard este zero."
@@ -7927,6 +8245,18 @@ msgstr "Resetează la perioada disponibilă"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1239
 msgid "Reset to default"
 msgstr "Resetează la valoarea implicită"
+
+#: src/features/campaigns/buget/admin/constants.ts:56
+msgid "Resolved"
+msgstr "Rezolvat"
+
+#: src/features/campaigns/buget/admin/constants.ts:111
+msgid "Resolved negative"
+msgstr "Rezolvat negativ"
+
+#: src/features/campaigns/buget/admin/constants.ts:109
+msgid "Resolved positive"
+msgstr "Rezolvat pozitiv"
 
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:49
 msgid "Resources"
@@ -7996,14 +8326,34 @@ msgstr "Recapitulare"
 msgid "Review and manage alerts created from your custom data series."
 msgstr "Examinați și gestionați alertele create din seriile de date personalizate."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:166
+msgid "Review and thread state"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:184
+msgid "Review note"
+msgstr ""
+
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:130
 #: src/routes/$lang/learning/index.lazy.tsx:248
 msgid "Review Path"
 msgstr "Revizuiește parcursul"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:131
+msgid "Review the current safe projection for this campaign interaction without exposing raw synced payloads."
+msgstr ""
+
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:197
 msgid "Review the selected UAT metadata and update its dataset value here."
 msgstr "Revizuiți metadatele UAT-ului selectat și actualizați aici valoarea sa din setul de date."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:169
+msgid "Reviewed at"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:170
+msgid "Reviewed by"
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:153
 msgid "Robust anomaly detection based on median absolute deviation (MAD), less sensitive to extreme outliers than z-score."
@@ -8036,8 +8386,8 @@ msgstr "Rândul {0}"
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:511
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:160
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:375
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:245
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:355
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:274
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:393
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:131
 msgid "rows"
 msgstr "rânduri"
@@ -8119,6 +8469,12 @@ msgstr "Salvează versiuni ale hărții tale pentru a urmări schimbările în t
 #: src/features/learning/components/layout/LoginBanner.tsx:19
 msgid "Save your progress"
 msgstr "Salvează-ți progresul"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:180
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:257
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:274
+msgid "Saving..."
+msgstr ""
 
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:142
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2184
@@ -8324,9 +8680,13 @@ msgstr "Selectați un card de metrică sau un set de date din listă pentru a î
 msgid "Select a predefined dataset to track"
 msgstr "Selectați un set de date predefinit de urmărit"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:269
-msgid "Select a snapshot to clone into a new map."
-msgstr "Selectează un instantaneu pentru a clona într-o hartă nouă."
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:437
+msgid "Select a snapshot to clone into a new map"
+msgstr "Selectează un instantaneu pentru a clona într-o hartă nouă"
+
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:355
+#~ msgid "Select a snapshot to clone into a new map."
+#~ msgstr "Selectează un instantaneu pentru a clona într-o hartă nouă."
 
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:417
 msgid "Select a topic to begin"
@@ -8469,6 +8829,10 @@ msgstr "Trimite pe email"
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:272
 msgid "Sender"
 msgstr "Expeditor"
+
+#: src/features/campaigns/buget/admin/constants.ts:101
+msgid "Sending"
+msgstr "Se trimite"
 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:442
 msgid "Sent by you"
@@ -8769,9 +9133,9 @@ msgid "Sign in"
 msgstr "Conectează-te"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:215
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:129
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:277
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1055
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:157
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:186
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:544
 #: src/features/learning/components/layout/LoginBanner.tsx:28
 #: src/features/notifications/components/EntityNotificationBell.tsx:139
@@ -8783,9 +9147,9 @@ msgid "Sign In"
 msgstr "Autentificare"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:210
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:124
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:270
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1046
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:148
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:179
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:529
 #: src/features/notifications/components/EntityNotificationBell.tsx:82
 #: src/routes/alerts/$alertId/index.lazy.tsx:149
@@ -8862,9 +9226,9 @@ msgstr "Notă instantaneu"
 msgid "Snapshot saved"
 msgstr "Instantaneu salvat"
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:198
-msgid "snapshots"
-msgstr "instantanee"
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:222
+#~ msgid "snapshots"
+#~ msgstr "instantanee"
 
 #: src/lib/ins/ins-metric-registry.ts:107
 msgid "Social"
@@ -9079,6 +9443,10 @@ msgstr "Stocată doar în acest browser, pe acest dispozitiv."
 msgid "Strip this prefix from x-axis labels for this series (e.g., 2024-). Helps align yearly and monthly data on a common axis."
 msgstr "Eliminați acest prefix din etichetele axei X pentru această serie (de exemplu, 2024-). Ajută la alinierea datelor anuale și lunare pe o axă comună."
 
+#: src/features/campaigns/buget/admin/constants.ts:90
+msgid "Structured"
+msgstr "Structurat"
+
 #: src/components/classification-explorer/ClassificationChildren.tsx:20
 msgid "Subcategories"
 msgstr "Subcategorii"
@@ -9097,6 +9465,10 @@ msgstr "Subiect"
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:414
 msgid "Submission failed. Please try again."
 msgstr "Trimiterea a esuat. Te rugam sa incerci din nou."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:152
+msgid "Submission summary"
+msgstr ""
 
 #: src/features/campaigns/buget/components/interactive/CampaignChallengeFormShell.tsx:106
 msgid "Submit"
@@ -9118,6 +9490,10 @@ msgstr "Trimite raportul"
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:144
 msgid "Submitted"
 msgstr "Trimis"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:161
+msgid "Submitted at"
+msgstr ""
 
 #: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:85
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:150
@@ -9248,6 +9624,10 @@ msgstr "Opțiuni teritoriu"
 #: src/routes/test-error.tsx:9
 msgid "Test error"
 msgstr "Eroare de test"
+
+#: src/features/campaigns/buget/admin/constants.ts:84
+msgid "Text"
+msgstr "Text"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:148
 #~ msgid "Text payload cannot be empty."
@@ -9454,6 +9834,14 @@ msgstr "Această entitate nu are relații de finanțare sau finanțate."
 msgid "This hides the view from this map. You can add it back later from Add view."
 msgstr "Aceasta ascunde vizualizarea din această hartă. O poți adăuga din nou mai târziu din „Adaugă vizualizare”."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:188
+msgid "This interaction is no longer pending. The saved review note is shown below."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:226
+msgid "This interaction is no longer pending. You can inspect the saved review state, but you cannot submit another decision from this screen."
+msgstr ""
+
 #: src/routes/$lang/learning/certificates.$id.lazy.tsx:38
 msgid "This is a proof-of-concept verification page stored in your browser."
 msgstr "Aceasta este o pagină de verificare de tip proof-of-concept stocată în browserul tău."
@@ -9465,6 +9853,10 @@ msgstr "Acesta nu este o rată a ocupării pe grupe de vârstă; este un indicat
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:657
 msgid "This is the person who signs the request on behalf of the association."
 msgstr "Aceasta este persoana care semnează cererea în numele asociației."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:207
+msgid "This item carries an institution-email risk flag. Approving it may trigger a platform send flow on the server."
+msgstr ""
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:69
 msgid "This name appears as the map title for viewers."
@@ -9494,7 +9886,7 @@ msgstr "Această valoare va fi utilizată pentru fiecare an din intervalul grafi
 msgid "This verification is a proof of concept using local storage."
 msgstr "Această verificare este un proof-of-concept care utilizează stocarea locală."
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:418
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:470
 msgid "This will permanently delete"
 msgstr "Aceasta va șterge definitiv"
 
@@ -9515,13 +9907,21 @@ msgstr "Aceasta va elimina toate instantaneele locale pentru această hartă doa
 msgid "This will remove every local dataset snapshot saved in this browser for the current draft."
 msgstr "Aceasta va elimina toate instantaneele locale ale setului de date salvate în acest browser pentru schița curentă."
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:421
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:475
 msgid "This will remove the dataset unless it is still referenced by existing maps."
 msgstr "Aceasta va elimina setul de date, cu excepția cazului în care este încă referențiat de hărți existente."
 
 #: src/routes/$lang/learning/index.lazy.tsx:311
 msgid "This will reset your onboarding preferences and show the welcome flow again. Your lesson progress will be preserved."
 msgstr "Această acțiune îți va reseta preferințele de inițiere și va afișa din nou fluxul de bun venit. Progresul lecțiilor tale va fi păstrat."
+
+#: src/features/campaigns/buget/admin/constants.ts:115
+msgid "Thread failed"
+msgstr "Conversație eșuată"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:171
+msgid "Thread ID"
+msgstr ""
 
 #: src/components/alerts/components/ConditionsList.tsx:101
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:47
@@ -9858,6 +10258,8 @@ msgstr "Nu am putut încărca notificările"
 
 #: src/components/entities/views/ins-stats-view.formatters.ts:61
 #: src/components/entities/views/ins-stats-view.presentation.tsx:499
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:46
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:71
 msgid "Unavailable"
 msgstr "Indisponibil"
 
@@ -9918,6 +10320,10 @@ msgstr "Unit override"
 #: src/components/entities/views/ins-stats-view.tsx:581
 #: src/components/entities/views/ins-stats-view.tsx:626
 #: src/components/entities/views/ins-stats-view.tsx:1244
+#: src/features/campaigns/buget/admin/constants.ts:75
+#: src/features/campaigns/buget/admin/constants.ts:92
+#: src/features/campaigns/buget/admin/constants.ts:94
+#: src/features/campaigns/buget/admin/constants.ts:119
 msgid "Unknown"
 msgstr "Necunoscut"
 
@@ -9944,14 +10350,14 @@ msgstr "Sursă necunoscută"
 msgid "Unknown type"
 msgstr "Tip necunoscut"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:418
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:472
 msgid "Unless it is still referenced by existing maps, it cannot be recovered."
 msgstr "Dacă nu mai este referențiat de hărți existente, nu mai poate fi recuperat."
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:109
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:93
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1295
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:66
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:79
 msgid "Unlisted"
 msgstr "Nelistat"
 
@@ -10055,9 +10461,8 @@ msgstr "Actualizați seria selectată. Modificările etichetei și ale unități
 msgid "Update the submission and send it again."
 msgstr "Actualizează trimiterea și retrimite-o."
 
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:198
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:248
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:358
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:275
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:394
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:134
 msgid "updated"
 msgstr "actualizat"
@@ -10065,6 +10470,10 @@ msgstr "actualizat"
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:169
 msgid "Updated"
 msgstr "Actualizat"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:168
+msgid "Updated at"
+msgstr ""
 
 #: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:78
 msgid "Upload file"
@@ -10160,9 +10569,14 @@ msgstr "Use with OR to add extreme percentile groups without losing current matc
 msgid "Useful as a first segmentation before anomaly filters."
 msgstr "Useful as a first segmentation before anomaly filters."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:160
 #: src/routes/$lang/learning/certificates.$id.lazy.tsx:56
 msgid "User ID"
 msgstr "ID Utilizator"
+
+#: src/features/campaigns/buget/admin/components/AdminCampaignLayout.tsx:53
+msgid "User interactions"
+msgstr ""
 
 #: src/components/entities/views/ins-stats-view.derived.ts:82
 msgid "Utilities"
@@ -10642,8 +11056,11 @@ msgid "You need to accept cookies to send feedback."
 msgstr "Trebuie să accepți cookie-urile pentru a trimite feedback."
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:211
-#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:125
 msgid "You need to be signed in to access map editor."
+msgstr "Trebuie să fii autentificat pentru a accesa editorul de hărți."
+
+#: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:272
+msgid "You need to be signed in to access the map editor."
 msgstr "Trebuie să fii autentificat pentru a accesa editorul de hărți."
 
 #: src/routes/maps/editor/new.lazy.tsx:261
@@ -10666,7 +11083,7 @@ msgstr "Trebuie să fiți autentificat pentru a edita serii de date personalizat
 msgid "You need to be signed in to manage campaign notifications"
 msgstr "Trebuie sa fiti autentificat pentru a gestiona notificarile campaniei"
 
-#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:150
+#: src/features/advanced-map-datasets/components/dataset-list-page.tsx:181
 msgid "You need to be signed in to manage custom data series."
 msgstr "Trebuie să fiți autentificat pentru a gestiona serii de date personalizate."
 
