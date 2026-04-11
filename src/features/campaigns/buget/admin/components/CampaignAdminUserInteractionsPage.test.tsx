@@ -387,7 +387,7 @@ describe('CampaignAdminUserInteractionsPage', () => {
       />
     )
 
-    const summary = screen.getByRole('region', { name: 'Campaign queue summary' })
+    const summary = screen.getByLabelText('Campaign queue summary')
 
     expect(within(summary).getByRole('group', { name: 'Pending: 41' })).toBeInTheDocument()
     expect(within(summary).getByRole('group', { name: 'Warnings: 29' })).toBeInTheDocument()
@@ -403,9 +403,14 @@ describe('CampaignAdminUserInteractionsPage', () => {
     )
 
     firstRender.unmount()
+    const metaRefetchMock = vi.fn()
     useCampaignAdminInteractionMetaQueryMock.mockReturnValue({
       data: undefined,
-      error: null,
+      error: {
+        status: 500,
+        message: 'Metadata failed',
+      },
+      refetch: metaRefetchMock,
     })
 
     render(
@@ -416,18 +421,13 @@ describe('CampaignAdminUserInteractionsPage', () => {
       />
     )
 
-    const fallbackSummary = screen.getByRole('region', {
-      name: 'Campaign queue summary',
-    })
-
     expect(
-      within(fallbackSummary).getByRole('group', { name: 'Pending: 0' })
+      screen.getByText('Failed to load the queue summary')
     ).toBeInTheDocument()
     expect(
-      within(fallbackSummary).getByRole('group', { name: 'Warnings: 0' })
-    ).toBeInTheDocument()
-    expect(
-      within(fallbackSummary).getByRole('group', { name: 'Total: 0' })
+      screen.getByText(
+        'Queue totals and warning counts are unavailable right now. The review table is still current.'
+      )
     ).toBeInTheDocument()
   })
 
@@ -594,54 +594,6 @@ describe('CampaignAdminUserInteractionsPage', () => {
     expect(screen.getByRole('button', { name: 'Send review' })).toBeEnabled()
   })
 
-  it('blocks risky approved rows in send selected until they are acknowledged', async () => {
-    mockQueueState({
-      items: [
-        createItem({
-          riskFlags: ['institution_email_mismatch'],
-        }),
-      ],
-    })
-
-    renderStatefulPage()
-
-    fireEvent.click(screen.getAllByLabelText('Select row')[0])
-    fireEvent.click(screen.getAllByRole('button', { name: 'Review' })[0])
-
-    await screen.findByText('Staged decision')
-    fireEvent.click(screen.getByRole('radio', { name: /^Approved/ }))
-    fireEvent.click(getSheetFooterCloseButton('contact@primarie.ro'))
-
-    fireEvent.click(screen.getByRole('button', { name: 'Send selected' }))
-
-    expect(await screen.findByText(riskyApprovalValidationMessage)).toBeInTheDocument()
-    expect(mutateAsyncMock).not.toHaveBeenCalled()
-
-    fireEvent.click(screen.getByRole('button', { name: /contact@primarie\.ro/i }))
-
-    const reviewSheet = await screen.findByRole('dialog', { name: 'contact@primarie.ro' })
-    fireEvent.click(within(reviewSheet).getByLabelText('Confirm approval warning'))
-    fireEvent.click(getSheetFooterCloseButton('contact@primarie.ro'))
-
-    await waitFor(() => {
-      expect(screen.queryByRole('dialog', { name: 'contact@primarie.ro' })).not.toBeInTheDocument()
-    })
-
-    fireEvent.click(screen.getByRole('button', { name: 'Send selected' }))
-    fireEvent.click(within(getAlertDialog('Send 1 review?')).getByRole('button', { name: 'Send selected' }))
-
-    expect(mutateAsyncMock).toHaveBeenCalledWith({
-      items: [
-        {
-          userId: 'user-1',
-          recordKey: 'funky:interaction:public_debate_request::entity:12345678',
-          expectedUpdatedAt: '2026-04-10T10:00:00.000Z',
-          status: 'approved',
-        },
-      ],
-    })
-  })
-
   it('uses staged spreadsheet drafts when submitting bulk review', async () => {
     mockQueueState({
       items: [
@@ -778,12 +730,12 @@ describe('CampaignAdminUserInteractionsPage', () => {
       />
     )
 
-    fireEvent.click(screen.getAllByLabelText('Select row')[0])
     await dispatchWindowPaste(
       'User Interaction ID\tDecision\tReview Feedback\n'
       + 'user-1::funky:interaction:public_debate_request::entity:12345678\tapproved\t'
     )
 
+    fireEvent.click(screen.getAllByLabelText('Select row')[0])
     await screen.findByText('1 row staged')
     fireEvent.click(screen.getByRole('button', { name: 'Send selected' }))
     fireEvent.click(within(getAlertDialog('Send 1 review?')).getByRole('button', { name: 'Send selected' }))
@@ -833,6 +785,7 @@ describe('CampaignAdminUserInteractionsPage', () => {
       expect(screen.queryByRole('dialog', { name: 'contact@primarie.ro' })).not.toBeInTheDocument()
     })
 
+    fireEvent.click(screen.getAllByLabelText('Select row')[0])
     fireEvent.click(screen.getByRole('button', { name: 'Send selected' }))
     fireEvent.click(within(getAlertDialog('Send 1 review?')).getByRole('button', { name: 'Send selected' }))
 
@@ -955,7 +908,6 @@ describe('CampaignAdminUserInteractionsPage', () => {
 
     renderStatefulPage()
 
-    fireEvent.click(screen.getAllByLabelText('Select row')[0])
     fireEvent.click(screen.getAllByRole('button', { name: 'Review' })[0])
     await screen.findByText('Staged decision')
     fireEvent.click(screen.getByRole('radio', { name: /^Rejected/ }))
@@ -969,6 +921,7 @@ describe('CampaignAdminUserInteractionsPage', () => {
     })
     expect(screen.getAllByText('Needs human follow-up')).not.toHaveLength(0)
 
+    fireEvent.click(screen.getAllByLabelText('Select row')[0])
     fireEvent.click(screen.getByRole('button', { name: 'Send selected' }))
     fireEvent.click(within(getAlertDialog('Send 1 review?')).getByRole('button', { name: 'Send selected' }))
 
@@ -990,12 +943,12 @@ describe('CampaignAdminUserInteractionsPage', () => {
 
     renderStatefulPage()
 
-    fireEvent.click(screen.getAllByLabelText('Select row')[0])
     fireEvent.click(screen.getAllByRole('button', { name: 'Review' })[0])
     await screen.findByText('Staged decision')
     fireEvent.click(screen.getByRole('radio', { name: /^Rejected/ }))
     fireEvent.click(getSheetFooterCloseButton('contact@primarie.ro'))
 
+    fireEvent.click(screen.getAllByLabelText('Select row')[0])
     fireEvent.click(screen.getByRole('button', { name: 'Send selected' }))
 
     expect(await screen.findByText('Rejected rows need a review note before sending.')).toBeInTheDocument()

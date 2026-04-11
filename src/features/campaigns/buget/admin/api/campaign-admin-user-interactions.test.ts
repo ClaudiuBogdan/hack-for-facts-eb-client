@@ -7,10 +7,11 @@ import {
 
 const getAuthTokenMock = vi.fn<() => Promise<string | null>>()
 
-vi.mock('@/config/env', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/config/env')>()
+vi.mock('@/config/env', async () => {
   return {
-    ...actual,
+    env: {
+      VITE_APP_ENVIRONMENT: 'test',
+    },
     getApiBaseUrl: () => 'http://localhost:3000',
   }
 })
