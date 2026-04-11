@@ -58,11 +58,13 @@ import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entiti
 import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
 import { Route as LangLearningOnboardingRouteImport } from './routes/$lang/learning/onboarding'
+import { Route as AdminCampaignsCampaignKeyRouteRouteImport } from './routes/admin/campaigns/$campaignKey/route'
 import { Route as PrimarieCuiBugetIndexRouteImport } from './routes/primarie/$cui/buget/index'
 import { Route as LangLearningPathIdIndexRouteImport } from './routes/$lang/learning/$pathId/index'
 import { Route as PrimarieCuiBugetResurseRouteImport } from './routes/primarie/$cui/buget/resurse'
 import { Route as PrimarieCuiBugetCalendarRouteImport } from './routes/primarie/$cui/buget/calendar'
 import { Route as MapsDatasetsPublicPublicIdRouteImport } from './routes/maps/datasets/public/$publicId'
+import { Route as AdminCampaignsCampaignKeyUserInteractionsRouteImport } from './routes/admin/campaigns/$campaignKey/user-interactions'
 import { Route as LangLearningCertificatesIdRouteImport } from './routes/$lang/learning/certificates.$id'
 import { Route as PrimarieCuiBugetProvocariRouteRouteImport } from './routes/primarie/$cui/buget/provocari/route'
 import { Route as PrimarieCuiBugetProvocariIndexRouteImport } from './routes/primarie/$cui/buget/provocari/index'
@@ -402,6 +404,12 @@ const LangLearningOnboardingRoute = LangLearningOnboardingRouteImport.update({
 } as any).lazy(() =>
   import('./routes/$lang/learning/onboarding.lazy').then((d) => d.Route),
 )
+const AdminCampaignsCampaignKeyRouteRoute =
+  AdminCampaignsCampaignKeyRouteRouteImport.update({
+    id: '/admin/campaigns/$campaignKey',
+    path: '/admin/campaigns/$campaignKey',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const PrimarieCuiBugetIndexRoute = PrimarieCuiBugetIndexRouteImport.update({
   id: '/buget/',
   path: '/buget/',
@@ -438,6 +446,16 @@ const MapsDatasetsPublicPublicIdRoute =
     getParentRoute: () => rootRouteImport,
   } as any).lazy(() =>
     import('./routes/maps/datasets/public/$publicId.lazy').then((d) => d.Route),
+  )
+const AdminCampaignsCampaignKeyUserInteractionsRoute =
+  AdminCampaignsCampaignKeyUserInteractionsRouteImport.update({
+    id: '/user-interactions',
+    path: '/user-interactions',
+    getParentRoute: () => AdminCampaignsCampaignKeyRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/admin/campaigns/$campaignKey/user-interactions.lazy').then(
+      (d) => d.Route,
+    ),
   )
 const LangLearningCertificatesIdRoute =
   LangLearningCertificatesIdRouteImport.update({
@@ -531,6 +549,7 @@ export interface FileRoutesByFullPath {
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
+  '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
@@ -551,6 +570,7 @@ export interface FileRoutesByFullPath {
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
+  '/admin/campaigns/$campaignKey/user-interactions': typeof AdminCampaignsCampaignKeyUserInteractionsRoute
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
@@ -592,6 +612,7 @@ export interface FileRoutesByTo {
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/primarie': typeof PrimarieIndexRoute
   '/charts': typeof ChartsIndexLazyRoute
+  '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
@@ -611,6 +632,7 @@ export interface FileRoutesByTo {
   '/alerts/$alertId': typeof AlertsAlertIdIndexLazyRoute
   '/charts/$chartId': typeof ChartsChartIdIndexLazyRoute
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
+  '/admin/campaigns/$campaignKey/user-interactions': typeof AdminCampaignsCampaignKeyUserInteractionsRoute
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
@@ -657,6 +679,7 @@ export interface FileRoutesById {
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
+  '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
@@ -677,6 +700,7 @@ export interface FileRoutesById {
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
+  '/admin/campaigns/$campaignKey/user-interactions': typeof AdminCampaignsCampaignKeyUserInteractionsRoute
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
   '/primarie/$cui/buget/calendar': typeof PrimarieCuiBugetCalendarRoute
   '/primarie/$cui/buget/resurse': typeof PrimarieCuiBugetResurseRoute
@@ -724,6 +748,7 @@ export interface FileRouteTypes {
     | '/research/employees-data'
     | '/primarie/'
     | '/charts/'
+    | '/admin/campaigns/$campaignKey'
     | '/$lang/learning/onboarding'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
@@ -744,6 +769,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId/'
     | '/primarie/$cui/buget/provocari'
     | '/$lang/learning/certificates/$id'
+    | '/admin/campaigns/$campaignKey/user-interactions'
     | '/maps/datasets/public/$publicId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
@@ -785,6 +811,7 @@ export interface FileRouteTypes {
     | '/research/employees-data'
     | '/primarie'
     | '/charts'
+    | '/admin/campaigns/$campaignKey'
     | '/$lang/learning/onboarding'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
@@ -804,6 +831,7 @@ export interface FileRouteTypes {
     | '/alerts/$alertId'
     | '/charts/$chartId'
     | '/$lang/learning/certificates/$id'
+    | '/admin/campaigns/$campaignKey/user-interactions'
     | '/maps/datasets/public/$publicId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
@@ -849,6 +877,7 @@ export interface FileRouteTypes {
     | '/research/employees-data'
     | '/primarie/'
     | '/charts/'
+    | '/admin/campaigns/$campaignKey'
     | '/$lang/learning/onboarding'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
@@ -869,6 +898,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId/'
     | '/primarie/$cui/buget/provocari'
     | '/$lang/learning/certificates/$id'
+    | '/admin/campaigns/$campaignKey/user-interactions'
     | '/maps/datasets/public/$publicId'
     | '/primarie/$cui/buget/calendar'
     | '/primarie/$cui/buget/resurse'
@@ -912,6 +942,7 @@ export interface RootRouteChildren {
   ResearchEmployeesDataLazyRoute: typeof ResearchEmployeesDataLazyRoute
   PrimarieIndexRoute: typeof PrimarieIndexRoute
   ChartsIndexLazyRoute: typeof ChartsIndexLazyRoute
+  AdminCampaignsCampaignKeyRouteRoute: typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
   ClassificationsEconomicCodeRoute: typeof ClassificationsEconomicCodeRoute
   ClassificationsFunctionalCodeRoute: typeof ClassificationsFunctionalCodeRoute
   MapsDatasetsDatasetIdRoute: typeof MapsDatasetsDatasetIdRoute
@@ -1293,6 +1324,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangLearningOnboardingRouteImport
       parentRoute: typeof LangLearningRouteRoute
     }
+    '/admin/campaigns/$campaignKey': {
+      id: '/admin/campaigns/$campaignKey'
+      path: '/admin/campaigns/$campaignKey'
+      fullPath: '/admin/campaigns/$campaignKey'
+      preLoaderRoute: typeof AdminCampaignsCampaignKeyRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/primarie/$cui/buget/': {
       id: '/primarie/$cui/buget/'
       path: '/buget'
@@ -1327,6 +1365,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/maps/datasets/public/$publicId'
       preLoaderRoute: typeof MapsDatasetsPublicPublicIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/campaigns/$campaignKey/user-interactions': {
+      id: '/admin/campaigns/$campaignKey/user-interactions'
+      path: '/user-interactions'
+      fullPath: '/admin/campaigns/$campaignKey/user-interactions'
+      preLoaderRoute: typeof AdminCampaignsCampaignKeyUserInteractionsRouteImport
+      parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
     }
     '/$lang/learning/certificates/$id': {
       id: '/$lang/learning/certificates/$id'
@@ -1501,6 +1546,21 @@ const EntitiesCuiRouteWithChildren = EntitiesCuiRoute._addFileChildren(
   EntitiesCuiRouteChildren,
 )
 
+interface AdminCampaignsCampaignKeyRouteRouteChildren {
+  AdminCampaignsCampaignKeyUserInteractionsRoute: typeof AdminCampaignsCampaignKeyUserInteractionsRoute
+}
+
+const AdminCampaignsCampaignKeyRouteRouteChildren: AdminCampaignsCampaignKeyRouteRouteChildren =
+  {
+    AdminCampaignsCampaignKeyUserInteractionsRoute:
+      AdminCampaignsCampaignKeyUserInteractionsRoute,
+  }
+
+const AdminCampaignsCampaignKeyRouteRouteWithChildren =
+  AdminCampaignsCampaignKeyRouteRoute._addFileChildren(
+    AdminCampaignsCampaignKeyRouteRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BudgetExplorerRoute: BudgetExplorerRoute,
@@ -1533,6 +1593,8 @@ const rootRouteChildren: RootRouteChildren = {
   ResearchEmployeesDataLazyRoute: ResearchEmployeesDataLazyRoute,
   PrimarieIndexRoute: PrimarieIndexRoute,
   ChartsIndexLazyRoute: ChartsIndexLazyRoute,
+  AdminCampaignsCampaignKeyRouteRoute:
+    AdminCampaignsCampaignKeyRouteRouteWithChildren,
   ClassificationsEconomicCodeRoute: ClassificationsEconomicCodeRoute,
   ClassificationsFunctionalCodeRoute: ClassificationsFunctionalCodeRoute,
   MapsDatasetsDatasetIdRoute: MapsDatasetsDatasetIdRoute,
