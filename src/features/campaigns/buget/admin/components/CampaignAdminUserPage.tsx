@@ -4,6 +4,7 @@ import {
   Ban,
   ClipboardList,
   LockKeyhole,
+  Mail,
   Plus,
   RefreshCw,
   SearchX,
@@ -41,14 +42,18 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { AuthSignInButton, useAuth } from "@/lib/auth";
 import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components/AdminCampaignLayout";
+import { CampaignAdminNotificationsTable } from "@/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable";
 import { CampaignAdminReviewSheet } from "@/features/campaigns/buget/admin/components/CampaignAdminReviewSheet";
 import { CampaignAdminSendValidationDialog } from "@/features/campaigns/buget/admin/components/CampaignAdminSendValidationDialog";
+import { CampaignAdminTemplatePreviewDialog } from "@/features/campaigns/buget/admin/components/CampaignAdminTemplatePreviewDialog";
 import { CampaignAdminUserInteractionsTable } from "@/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable";
 import { CampaignAdminUserPageFilters } from "@/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters";
 import {
+  DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
   buildCampaignAdminSelectionKey,
   getCampaignAdminCampaignLabel,
 } from "@/features/campaigns/buget/admin/constants";
+import { useCampaignAdminNotificationsAuditQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-notifications";
 import {
   useCampaignAdminInteractionMetaQuery,
   useCampaignAdminUserPageItemsQuery,
@@ -85,6 +90,8 @@ import {
   readCampaignAdminStagedReviewDraftsFromSessionStorage,
   writeCampaignAdminStagedReviewDraftsToSessionStorage,
 } from "@/features/campaigns/buget/admin/utils/staged-review-session-storage";
+
+const USER_NOTIFICATION_PREVIEW_LIMIT = 10;
 
 type CampaignAdminUserPageProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
@@ -139,6 +146,7 @@ export function CampaignAdminUserPage({
   const normalizedSearch = normalizeCampaignAdminUserPageSearch(search);
   const { isLoaded, isSignedIn } = useAuth();
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
+  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
   const [isSendValidationOpen, setIsSendValidationOpen] = useState(false);
   const [isSendConfirmOpen, setIsSendConfirmOpen] = useState(false);
   const [isClearStagedConfirmOpen, setIsClearStagedConfirmOpen] =
@@ -158,10 +166,34 @@ export function CampaignAdminUserPage({
     campaignKey,
     enabled: isLoaded && isSignedIn,
   });
+  const notificationsQuery = useCampaignAdminNotificationsAuditQuery({
+    campaignKey,
+    filters: {
+      userId,
+      sortBy: "createdAt",
+      sortOrder: "desc",
+    },
+    cursor: null,
+    limit: DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
+    enabled: isLoaded && isSignedIn,
+  });
   const submitReviewsMutation =
     useSubmitCampaignAdminReviewsMutation(campaignKey);
 
   const allItems = interactionsQuery.data ?? [];
+  const allUserNotificationItems = useMemo(
+    () =>
+      (notificationsQuery.data?.items ?? []).filter(
+        (item) =>
+          "userId" in item.projection && item.projection.userId === userId,
+      ),
+    [notificationsQuery.data?.items, userId],
+  );
+  const userNotificationItems = useMemo(
+    () =>
+      allUserNotificationItems.slice(0, USER_NOTIFICATION_PREVIEW_LIMIT),
+    [allUserNotificationItems],
+  );
   const items = useMemo(
     () =>
       filterAndSortCampaignAdminUserInteractionItems({
@@ -239,11 +271,43 @@ export function CampaignAdminUserPage({
     };
   }, [allItems]);
   const queueHref = `/admin/campaigns/${campaignKey}/user-interactions?userId=${encodeURIComponent(userId)}`;
+  const notificationsHref = useMemo(() => {
+    const searchParams = new URLSearchParams({
+      tab: "audit",
+      userId,
+      sortBy: "createdAt",
+      sortOrder: "desc",
+      limit: String(DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT),
+    });
+
+    return `/admin/campaigns/${campaignKey}/notifications?${searchParams.toString()}`;
+  }, [campaignKey, userId]);
   const userIdPreview = formatCampaignAdminUserIdPreview(userId, {
     maxLength: 20,
     prefixLength: 12,
     suffixLength: 6,
   });
+  const selectedNotificationTemplate = useMemo(() => {
+    if (activeTemplateId === null) {
+      return null;
+    }
+
+    const matchingItem =
+      allUserNotificationItems.find(
+        (item) => item.templateId === activeTemplateId,
+      ) ?? null;
+
+    return {
+      templateId: activeTemplateId,
+      name:
+        matchingItem?.templateName?.trim() ||
+        matchingItem?.templateId ||
+        activeTemplateId,
+      version: matchingItem?.templateVersion ?? "preview",
+      description: "",
+      requiredFields: [],
+    };
+  }, [activeTemplateId, allUserNotificationItems]);
 
   useEffect(() => {
     writeCampaignAdminStagedReviewDraftsToSessionStorage(
@@ -848,12 +912,20 @@ export function CampaignAdminUserPage({
         </Breadcrumb>
       )}
       actions={(
-        <Button asChild type="button" variant="outline" size="sm" className="gap-2">
-          <a href={queueHref}>
-            <ClipboardList className="h-4 w-4" aria-hidden="true" />
-            {t`Open interactions queue`}
-          </a>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild type="button" variant="outline" size="sm" className="gap-2">
+            <a href={notificationsHref}>
+              <Mail className="h-4 w-4" aria-hidden="true" />
+              {t`Open notifications`}
+            </a>
+          </Button>
+          <Button asChild type="button" variant="outline" size="sm" className="gap-2">
+            <a href={queueHref}>
+              <ClipboardList className="h-4 w-4" aria-hidden="true" />
+              {t`Open interactions queue`}
+            </a>
+          </Button>
+        </div>
       )}
       details={(
         <>
@@ -1099,6 +1171,85 @@ export function CampaignAdminUserPage({
         )}
       </section>
 
+      <section className="space-y-4" aria-labelledby="user-notifications-section-title">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-1">
+            <h2
+              id="user-notifications-section-title"
+              className="text-base font-semibold tracking-tight text-foreground"
+            >
+              {t`User notifications`}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {t`Inspect the most recent notification audit entries tied to this user and jump to the full notifications view when you need the broader log.`}
+            </p>
+          </div>
+          <Button asChild type="button" variant="outline" size="sm" className="gap-2">
+            <a href={notificationsHref}>
+              <Mail className="h-4 w-4" aria-hidden="true" />
+              {t`Open full notifications view`}
+            </a>
+          </Button>
+        </div>
+
+        {notificationsQuery.error?.status === 403 ? (
+          <EmptyState
+            icon={<LockKeyhole className="h-6 w-6" />}
+            title={t`Notifications unavailable in this workspace`}
+            description={t`The user workspace is available, but the server denied access to the campaign notifications admin boundary.`}
+            className="rounded-3xl border border-border/70 bg-card/80"
+          />
+        ) : notificationsQuery.error?.status === 404 ? (
+          <EmptyState
+            icon={<SearchX className="h-6 w-6" />}
+            title={t`Notifications unavailable`}
+            description={t`This campaign notifications admin surface is either not enabled on the current server or the campaign key is not supported.`}
+            className="rounded-3xl border border-border/70 bg-card/80"
+          />
+        ) : notificationsQuery.error ? (
+          <Alert variant="destructive" aria-live="polite">
+            <Ban className="h-4 w-4" aria-hidden="true" />
+            <AlertTitle>{t`Failed to load notifications`}</AlertTitle>
+            <AlertDescription className="space-y-3">
+              <p>{notificationsQuery.error.message}</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => {
+                  void notificationsQuery.refetch();
+                }}
+              >
+                <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                {t`Retry`}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        ) : notificationsQuery.isLoading && notificationsQuery.data === undefined ? (
+          <div className="flex min-h-[18rem] items-center justify-center rounded-3xl border border-border/70 bg-card/80">
+            <LoadingSpinner />
+          </div>
+        ) : userNotificationItems.length === 0 ? (
+          <EmptyState
+            title={t`No notifications recorded yet`}
+            description={t`No campaign notification audit entries were recorded for this user in the current admin projection.`}
+            className="rounded-3xl border border-border/70 bg-card/80 p-10"
+          />
+        ) : (
+          <CampaignAdminNotificationsTable
+            campaignKey={campaignKey}
+            items={userNotificationItems}
+            onClearFilters={() => {
+              window.location.href = notificationsHref;
+            }}
+            onPreviewTemplate={(templateId) => {
+              setActiveTemplateId(templateId);
+            }}
+          />
+        )}
+      </section>
+
       <CampaignAdminReviewSheet
         open={activeItem !== null}
         item={activeItem}
@@ -1184,6 +1335,19 @@ export function CampaignAdminUserPage({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {selectedNotificationTemplate ? (
+        <CampaignAdminTemplatePreviewDialog
+          campaignKey={campaignKey}
+          open={activeTemplateId !== null}
+          template={selectedNotificationTemplate}
+          onOpenChange={(open) => {
+            if (!open) {
+              setActiveTemplateId(null);
+            }
+          }}
+        />
+      ) : null}
     </AdminCampaignLayout>
   );
 }

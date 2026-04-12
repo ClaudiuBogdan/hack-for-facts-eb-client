@@ -90,6 +90,75 @@ export const campaignAdminUsersSortKeyValues = [
   "pendingReviewCount",
 ] as const;
 
+export const campaignAdminNotificationStatusValues = [
+  "pending",
+  "composing",
+  "sending",
+  "sent",
+  "delivered",
+  "webhook_timeout",
+  "failed_transient",
+  "failed_permanent",
+  "suppressed",
+  "skipped_unsubscribed",
+  "skipped_no_email",
+] as const;
+
+export const campaignAdminNotificationEventTypeValues = [
+  "thread_started",
+  "thread_failed",
+  "reply_received",
+  "reply_reviewed",
+] as const;
+
+export const campaignAdminNotificationSourceValues = [
+  "campaign_admin",
+  "user_event_worker",
+  "system",
+  "clerk_webhook",
+] as const;
+
+export const campaignAdminNotificationSafeErrorCategoryValues = [
+  "skipped_unsubscribed",
+  "skipped_no_email",
+  "suppressed",
+  "webhook_timeout",
+  "compose_validation",
+  "render_error",
+  "email_lookup",
+  "send_retryable",
+  "send_permanent",
+  "provider_bounce",
+  "provider_suppressed",
+  "unknown",
+] as const;
+
+export const campaignAdminNotificationProjectionKindValues = [
+  "public_debate_campaign_welcome",
+  "public_debate_entity_subscription",
+  "public_debate_entity_update",
+  "public_debate_admin_failure",
+] as const;
+
+export const campaignAdminNotificationSortKeyValues = [
+  "createdAt",
+  "sentAt",
+  "status",
+  "attemptCount",
+] as const;
+
+export const campaignAdminNotificationsTabValues = [
+  "audit",
+  "triggers",
+  "templates",
+] as const;
+
+export const campaignAdminNotificationTriggerExecutionStatusValues = [
+  "queued",
+  "skipped",
+  "partial",
+] as const;
+
 export type CampaignAdminPhase = (typeof campaignAdminPhaseValues)[number];
 export type CampaignAdminReviewStatus =
   (typeof campaignAdminReviewStatusValues)[number];
@@ -115,6 +184,22 @@ export type CampaignAdminUserInteractionsSortKey =
   (typeof campaignAdminUserInteractionsSortKeyValues)[number];
 export type CampaignAdminUsersSortKey =
   (typeof campaignAdminUsersSortKeyValues)[number];
+export type CampaignAdminNotificationStatus =
+  (typeof campaignAdminNotificationStatusValues)[number];
+export type CampaignAdminNotificationEventType =
+  (typeof campaignAdminNotificationEventTypeValues)[number];
+export type CampaignAdminNotificationSource =
+  (typeof campaignAdminNotificationSourceValues)[number];
+export type CampaignAdminNotificationSafeErrorCategory =
+  (typeof campaignAdminNotificationSafeErrorCategoryValues)[number];
+export type CampaignAdminNotificationProjectionKind =
+  (typeof campaignAdminNotificationProjectionKindValues)[number];
+export type CampaignAdminNotificationSortKey =
+  (typeof campaignAdminNotificationSortKeyValues)[number];
+export type CampaignAdminNotificationsTab =
+  (typeof campaignAdminNotificationsTabValues)[number];
+export type CampaignAdminNotificationTriggerExecutionStatus =
+  (typeof campaignAdminNotificationTriggerExecutionStatusValues)[number];
 export type CampaignAdminSortOrder = "asc" | "desc";
 export type CampaignAdminCampaignKey = "funky";
 export type CampaignAdminReviewDecision = Exclude<
@@ -330,6 +415,128 @@ export type CampaignAdminSubmitReviewsBody = {
   readonly items: readonly CampaignAdminSubmitReviewItem[];
 };
 
+export type CampaignAdminNotificationSafeError = {
+  readonly category: CampaignAdminNotificationSafeErrorCategory | null;
+  readonly code: string | null;
+};
+
+export type CampaignAdminNotificationProjection =
+  | {
+      readonly kind: "public_debate_campaign_welcome";
+      readonly userId: string | null;
+      readonly entityCui: string;
+      readonly entityName: string | null;
+      readonly acceptedTermsAt: string | null;
+      readonly triggerSource: CampaignAdminNotificationSource | null;
+    }
+  | {
+      readonly kind: "public_debate_entity_subscription";
+      readonly userId: string | null;
+      readonly entityCui: string;
+      readonly entityName: string | null;
+      readonly acceptedTermsAt: string | null;
+      readonly selectedEntitiesCount: number | null;
+      readonly triggerSource: CampaignAdminNotificationSource | null;
+    }
+  | {
+      readonly kind: "public_debate_entity_update";
+      readonly userId: string | null;
+      readonly entityCui: string;
+      readonly entityName: string | null;
+      readonly threadId: string;
+      readonly threadKey: string | null;
+      readonly eventType: CampaignAdminNotificationEventType | null;
+      readonly phase: string | null;
+      readonly replyEntryId: string | null;
+      readonly basedOnEntryId: string | null;
+      readonly resolutionCode: string | null;
+      readonly triggerSource: CampaignAdminNotificationSource | null;
+    }
+  | {
+      readonly kind: "public_debate_admin_failure";
+      readonly entityCui: string;
+      readonly entityName: string | null;
+      readonly threadId: string;
+      readonly phase: string | null;
+    };
+
+export type CampaignAdminNotificationListItem = {
+  readonly outboxId: string;
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly notificationType: string;
+  readonly templateId: string | null;
+  readonly templateName: string | null;
+  readonly templateVersion: string | null;
+  readonly status: CampaignAdminNotificationStatus;
+  readonly createdAt: string;
+  readonly sentAt: string | null;
+  readonly attemptCount: number;
+  readonly safeError: CampaignAdminNotificationSafeError;
+  readonly projection: CampaignAdminNotificationProjection;
+};
+
+export type CampaignAdminNotificationsListResponse = {
+  readonly items: readonly CampaignAdminNotificationListItem[];
+  readonly page: {
+    readonly hasMore: boolean;
+    readonly nextCursor: string | null;
+  };
+};
+
+export type CampaignAdminNotificationFieldDescriptor = {
+  readonly name: string;
+  readonly type: string;
+  readonly required: boolean;
+};
+
+export type CampaignAdminNotificationTriggerDescriptor = {
+  readonly triggerId: string;
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly templateId: string;
+  readonly description: string;
+  readonly inputFields: readonly CampaignAdminNotificationFieldDescriptor[];
+  readonly targetKind: string;
+};
+
+export type CampaignAdminNotificationTriggerExecutionResult = {
+  readonly status: CampaignAdminNotificationTriggerExecutionStatus;
+  readonly reason?: string;
+  readonly createdOutboxIds: readonly string[];
+  readonly reusedOutboxIds: readonly string[];
+  readonly queuedOutboxIds: readonly string[];
+  readonly enqueueFailedOutboxIds: readonly string[];
+};
+
+export type CampaignAdminNotificationTriggerExecutionResponse = {
+  readonly triggerId: string;
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly templateId: string;
+  readonly result: CampaignAdminNotificationTriggerExecutionResult;
+};
+
+export type CampaignAdminNotificationTriggerExecutionBody = Readonly<
+  Record<string, unknown>
+>;
+
+export type CampaignAdminNotificationTemplateDescriptor = {
+  readonly templateId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly description: string;
+  readonly requiredFields: readonly CampaignAdminNotificationFieldDescriptor[];
+};
+
+export type CampaignAdminNotificationTemplatePreview = {
+  readonly templateId: string;
+  readonly name: string;
+  readonly version: string;
+  readonly description: string;
+  readonly requiredFields: readonly CampaignAdminNotificationFieldDescriptor[];
+  readonly exampleSubject: string;
+  readonly html: string;
+  readonly text: string;
+};
+
 export type CampaignAdminStagedReviewDraft = {
   readonly userId: string;
   readonly recordKey: string;
@@ -383,6 +590,28 @@ export type CampaignAdminUsersSearch = {
   readonly pageIndex?: number;
   readonly limit: number;
 };
+
+export type CampaignAdminNotificationsSearch = {
+  readonly tab?: CampaignAdminNotificationsTab;
+  readonly notificationType?: string;
+  readonly templateId?: string;
+  readonly userId?: string;
+  readonly status?: CampaignAdminNotificationStatus;
+  readonly eventType?: CampaignAdminNotificationEventType;
+  readonly entityCui?: string;
+  readonly threadId?: string;
+  readonly source?: CampaignAdminNotificationSource;
+  readonly sortBy?: CampaignAdminNotificationSortKey;
+  readonly sortOrder?: CampaignAdminSortOrder;
+  readonly cursor?: string;
+  readonly pageIndex?: number;
+  readonly limit: number;
+};
+
+export type CampaignAdminNotificationsAuditFilters = Omit<
+  CampaignAdminNotificationsSearch,
+  "tab" | "cursor" | "pageIndex" | "limit"
+>;
 
 export type CampaignAdminFilterDraft = {
   readonly phase: CampaignAdminPhase | "";

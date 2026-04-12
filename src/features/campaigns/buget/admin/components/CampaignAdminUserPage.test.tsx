@@ -12,6 +12,7 @@ import { getCampaignAdminStagedReviewDraftsStorageKey } from "@/features/campaig
 const useAuthMock = vi.fn();
 const useCampaignAdminInteractionMetaQueryMock = vi.fn();
 const useCampaignAdminUserPageItemsQueryMock = vi.fn();
+const useCampaignAdminNotificationsAuditQueryMock = vi.fn();
 const useSubmitCampaignAdminReviewsMutationMock = vi.fn();
 
 vi.mock("@tanstack/react-router", () => ({
@@ -31,6 +32,14 @@ vi.mock("@/features/campaigns/buget/admin/hooks/use-campaign-admin-user-interact
   useSubmitCampaignAdminReviewsMutation: (...args: unknown[]) =>
     useSubmitCampaignAdminReviewsMutationMock(...args),
 }));
+
+vi.mock(
+  "@/features/campaigns/buget/admin/hooks/use-campaign-admin-notifications",
+  () => ({
+    useCampaignAdminNotificationsAuditQuery: (...args: unknown[]) =>
+      useCampaignAdminNotificationsAuditQueryMock(...args),
+  }),
+);
 
 function createItem(
   overrides: Partial<CampaignAdminUserInteractionListItem> = {},
@@ -132,6 +141,7 @@ describe("CampaignAdminUserPage", () => {
     useAuthMock.mockReset();
     useCampaignAdminInteractionMetaQueryMock.mockReset();
     useCampaignAdminUserPageItemsQueryMock.mockReset();
+    useCampaignAdminNotificationsAuditQueryMock.mockReset();
     useSubmitCampaignAdminReviewsMutationMock.mockReset();
     window.localStorage.clear();
     window.sessionStorage.clear();
@@ -145,6 +155,19 @@ describe("CampaignAdminUserPage", () => {
     });
     useCampaignAdminUserPageItemsQueryMock.mockReturnValue({
       data: [createItem()],
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+    useCampaignAdminNotificationsAuditQueryMock.mockReturnValue({
+      data: {
+        items: [],
+        page: {
+          hasMore: false,
+          nextCursor: null,
+        },
+      },
       error: null,
       isLoading: false,
       isFetching: false,
@@ -180,7 +203,7 @@ describe("CampaignAdminUserPage", () => {
     expect(screen.getByText("1 row selected")).toBeInTheDocument();
   });
 
-  it("renders the restored user workspace header and queue action", () => {
+  it("renders the restored user workspace header and notification actions", () => {
     render(
       <CampaignAdminUserPage
         campaignKey="funky"
@@ -194,10 +217,19 @@ describe("CampaignAdminUserPage", () => {
       screen.getByRole("heading", { name: "User workspace" }),
     ).toBeInTheDocument();
     expect(
+      screen.getByRole("link", { name: "Open notifications" }),
+    ).toHaveAttribute(
+      "href",
+      "/admin/campaigns/funky/notifications?tab=audit&userId=user-1&sortBy=createdAt&sortOrder=desc&limit=50",
+    );
+    expect(
       screen.getByRole("link", { name: "Open interactions queue" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: "User interactions" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "User notifications" }),
     ).toBeInTheDocument();
   });
 

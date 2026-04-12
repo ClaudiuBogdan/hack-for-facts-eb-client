@@ -67,6 +67,7 @@ import { Route as PrimarieCuiBugetCalendarRouteImport } from './routes/primarie/
 import { Route as MapsDatasetsPublicPublicIdRouteImport } from './routes/maps/datasets/public/$publicId'
 import { Route as AdminCampaignsCampaignKeyUsersRouteImport } from './routes/admin/campaigns/$campaignKey/users'
 import { Route as AdminCampaignsCampaignKeyUserInteractionsRouteImport } from './routes/admin/campaigns/$campaignKey/user-interactions'
+import { Route as AdminCampaignsCampaignKeyNotificationsRouteImport } from './routes/admin/campaigns/$campaignKey/notifications'
 import { Route as LangLearningCertificatesIdRouteImport } from './routes/$lang/learning/certificates.$id'
 import { Route as PrimarieCuiBugetProvocariRouteRouteImport } from './routes/primarie/$cui/buget/provocari/route'
 import { Route as PrimarieCuiBugetProvocariIndexRouteImport } from './routes/primarie/$cui/buget/provocari/index'
@@ -480,6 +481,16 @@ const AdminCampaignsCampaignKeyUserInteractionsRoute =
       (d) => d.Route,
     ),
   )
+const AdminCampaignsCampaignKeyNotificationsRoute =
+  AdminCampaignsCampaignKeyNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AdminCampaignsCampaignKeyRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/admin/campaigns/$campaignKey/notifications.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const LangLearningCertificatesIdRoute =
   LangLearningCertificatesIdRouteImport.update({
     id: '/certificates/$id',
@@ -603,6 +614,7 @@ export interface FileRoutesByFullPath {
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
+  '/admin/campaigns/$campaignKey/notifications': typeof AdminCampaignsCampaignKeyNotificationsRoute
   '/admin/campaigns/$campaignKey/user-interactions': typeof AdminCampaignsCampaignKeyUserInteractionsRoute
   '/admin/campaigns/$campaignKey/users': typeof AdminCampaignsCampaignKeyUsersRouteWithChildren
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
@@ -667,6 +679,7 @@ export interface FileRoutesByTo {
   '/alerts/$alertId': typeof AlertsAlertIdIndexLazyRoute
   '/charts/$chartId': typeof ChartsChartIdIndexLazyRoute
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
+  '/admin/campaigns/$campaignKey/notifications': typeof AdminCampaignsCampaignKeyNotificationsRoute
   '/admin/campaigns/$campaignKey/user-interactions': typeof AdminCampaignsCampaignKeyUserInteractionsRoute
   '/admin/campaigns/$campaignKey/users': typeof AdminCampaignsCampaignKeyUsersRouteWithChildren
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
@@ -738,6 +751,7 @@ export interface FileRoutesById {
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
+  '/admin/campaigns/$campaignKey/notifications': typeof AdminCampaignsCampaignKeyNotificationsRoute
   '/admin/campaigns/$campaignKey/user-interactions': typeof AdminCampaignsCampaignKeyUserInteractionsRoute
   '/admin/campaigns/$campaignKey/users': typeof AdminCampaignsCampaignKeyUsersRouteWithChildren
   '/maps/datasets/public/$publicId': typeof MapsDatasetsPublicPublicIdRoute
@@ -810,6 +824,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId/'
     | '/primarie/$cui/buget/provocari'
     | '/$lang/learning/certificates/$id'
+    | '/admin/campaigns/$campaignKey/notifications'
     | '/admin/campaigns/$campaignKey/user-interactions'
     | '/admin/campaigns/$campaignKey/users'
     | '/maps/datasets/public/$publicId'
@@ -874,6 +889,7 @@ export interface FileRouteTypes {
     | '/alerts/$alertId'
     | '/charts/$chartId'
     | '/$lang/learning/certificates/$id'
+    | '/admin/campaigns/$campaignKey/notifications'
     | '/admin/campaigns/$campaignKey/user-interactions'
     | '/admin/campaigns/$campaignKey/users'
     | '/maps/datasets/public/$publicId'
@@ -944,6 +960,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId/'
     | '/primarie/$cui/buget/provocari'
     | '/$lang/learning/certificates/$id'
+    | '/admin/campaigns/$campaignKey/notifications'
     | '/admin/campaigns/$campaignKey/user-interactions'
     | '/admin/campaigns/$campaignKey/users'
     | '/maps/datasets/public/$publicId'
@@ -1436,6 +1453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCampaignsCampaignKeyUserInteractionsRouteImport
       parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
     }
+    '/admin/campaigns/$campaignKey/notifications': {
+      id: '/admin/campaigns/$campaignKey/notifications'
+      path: '/notifications'
+      fullPath: '/admin/campaigns/$campaignKey/notifications'
+      preLoaderRoute: typeof AdminCampaignsCampaignKeyNotificationsRouteImport
+      parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
+    }
     '/$lang/learning/certificates/$id': {
       id: '/$lang/learning/certificates/$id'
       path: '/certificates/$id'
@@ -1632,6 +1656,7 @@ const AdminCampaignsCampaignKeyUsersRouteWithChildren =
   )
 
 interface AdminCampaignsCampaignKeyRouteRouteChildren {
+  AdminCampaignsCampaignKeyNotificationsRoute: typeof AdminCampaignsCampaignKeyNotificationsRoute
   AdminCampaignsCampaignKeyUserInteractionsRoute: typeof AdminCampaignsCampaignKeyUserInteractionsRoute
   AdminCampaignsCampaignKeyUsersRoute: typeof AdminCampaignsCampaignKeyUsersRouteWithChildren
   AdminCampaignsCampaignKeyIndexRoute: typeof AdminCampaignsCampaignKeyIndexRoute
@@ -1639,6 +1664,8 @@ interface AdminCampaignsCampaignKeyRouteRouteChildren {
 
 const AdminCampaignsCampaignKeyRouteRouteChildren: AdminCampaignsCampaignKeyRouteRouteChildren =
   {
+    AdminCampaignsCampaignKeyNotificationsRoute:
+      AdminCampaignsCampaignKeyNotificationsRoute,
     AdminCampaignsCampaignKeyUserInteractionsRoute:
       AdminCampaignsCampaignKeyUserInteractionsRoute,
     AdminCampaignsCampaignKeyUsersRoute:

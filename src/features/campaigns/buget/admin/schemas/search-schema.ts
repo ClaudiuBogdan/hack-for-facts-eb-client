@@ -5,12 +5,21 @@ import {
   toUtcRangeBoundary,
 } from "@/features/campaigns/buget/admin/utils/date-inputs";
 import {
+  campaignAdminNotificationEventTypeValues,
+  campaignAdminNotificationsTabValues,
+  campaignAdminNotificationSortKeyValues,
+  campaignAdminNotificationSourceValues,
+  campaignAdminNotificationStatusValues,
   campaignAdminPayloadKindValues,
   campaignAdminPhaseValues,
   campaignAdminReviewStatusValues,
   campaignAdminScopeTypeValues,
   campaignAdminSubmissionPathValues,
   campaignAdminThreadPhaseValues,
+  type CampaignAdminNotificationsAuditFilters,
+  type CampaignAdminNotificationsSearch,
+  type CampaignAdminNotificationsTab,
+  type CampaignAdminNotificationSortKey,
   campaignAdminUsersSortKeyValues,
   campaignAdminUserInteractionsSortKeyValues,
   type CampaignAdminUserInteractionsSortKey,
@@ -28,6 +37,10 @@ const campaignAdminUserInteractionsSortKeySet = new Set<string>(
 
 const campaignAdminUsersSortKeySet = new Set<string>(
   campaignAdminUsersSortKeyValues,
+);
+
+const campaignAdminNotificationSortKeySet = new Set<string>(
+  campaignAdminNotificationSortKeyValues,
 );
 
 function toTrimmedOptionalString(value: unknown): string | undefined {
@@ -125,6 +138,34 @@ function toOptionalCampaignAdminUsersSortKey(
 
   return campaignAdminUsersSortKeySet.has(nextValue)
     ? (nextValue as CampaignAdminUsersSortKey)
+    : undefined;
+}
+
+function toOptionalCampaignAdminNotificationsTab(
+  value: unknown,
+): CampaignAdminNotificationsTab | undefined {
+  const nextValue = toTrimmedOptionalString(value);
+  if (nextValue === undefined) {
+    return undefined;
+  }
+
+  return campaignAdminNotificationsTabValues.includes(
+    nextValue as CampaignAdminNotificationsTab,
+  )
+    ? (nextValue as CampaignAdminNotificationsTab)
+    : undefined;
+}
+
+function toOptionalCampaignAdminNotificationSortKey(
+  value: unknown,
+): CampaignAdminNotificationSortKey | undefined {
+  const nextValue = toTrimmedOptionalString(value);
+  if (nextValue === undefined) {
+    return undefined;
+  }
+
+  return campaignAdminNotificationSortKeySet.has(nextValue)
+    ? (nextValue as CampaignAdminNotificationSortKey)
     : undefined;
 }
 
@@ -234,10 +275,7 @@ export const campaignAdminUserInteractionsRouteSearchSchema = z.object({
     toTrimmedOptionalString,
     z.string().min(1).optional(),
   ),
-  cursor: z.preprocess(
-    toTrimmedOptionalString,
-    z.string().min(1).optional(),
-  ),
+  cursor: z.preprocess(toTrimmedOptionalString, z.string().min(1).optional()),
   pageIndex: z.preprocess(
     toOptionalPositiveInt,
     z.number().int().min(1).optional(),
@@ -258,10 +296,7 @@ export const campaignAdminUserPageRouteSearchSchema =
   });
 
 export const campaignAdminUsersRouteSearchSchema = z.object({
-  query: z.preprocess(
-    toTrimmedOptionalString,
-    z.string().min(1).optional(),
-  ),
+  query: z.preprocess(toTrimmedOptionalString, z.string().min(1).optional()),
   sortBy: z.preprocess(
     toOptionalCampaignAdminUsersSortKey,
     z.enum(campaignAdminUsersSortKeyValues).optional(),
@@ -270,10 +305,56 @@ export const campaignAdminUsersRouteSearchSchema = z.object({
     toTrimmedOptionalString,
     z.enum(["asc", "desc"]).optional(),
   ),
-  cursor: z.preprocess(
+  cursor: z.preprocess(toTrimmedOptionalString, z.string().min(1).optional()),
+  pageIndex: z.preprocess(
+    toOptionalPositiveInt,
+    z.number().int().min(1).optional(),
+  ),
+  limit: z
+    .preprocess(toOptionalLimit, z.number().int().min(1).max(100).optional())
+    .transform((value) => value ?? DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT),
+});
+
+export const campaignAdminNotificationsRouteSearchSchema = z.object({
+  tab: z.preprocess(
+    toOptionalCampaignAdminNotificationsTab,
+    z.enum(campaignAdminNotificationsTabValues).optional(),
+  ),
+  notificationType: z.preprocess(
     toTrimmedOptionalString,
     z.string().min(1).optional(),
   ),
+  templateId: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().min(1).optional(),
+  ),
+  userId: z.preprocess(toTrimmedOptionalString, z.string().min(1).optional()),
+  status: z.preprocess(
+    toTrimmedOptionalString,
+    z.enum(campaignAdminNotificationStatusValues).optional(),
+  ),
+  eventType: z.preprocess(
+    toTrimmedOptionalString,
+    z.enum(campaignAdminNotificationEventTypeValues).optional(),
+  ),
+  entityCui: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().min(1).optional(),
+  ),
+  threadId: z.preprocess(toTrimmedOptionalString, z.string().min(1).optional()),
+  source: z.preprocess(
+    toTrimmedOptionalString,
+    z.enum(campaignAdminNotificationSourceValues).optional(),
+  ),
+  sortBy: z.preprocess(
+    toOptionalCampaignAdminNotificationSortKey,
+    z.enum(campaignAdminNotificationSortKeyValues).optional(),
+  ),
+  sortOrder: z.preprocess(
+    toTrimmedOptionalString,
+    z.enum(["asc", "desc"]).optional(),
+  ),
+  cursor: z.preprocess(toTrimmedOptionalString, z.string().min(1).optional()),
   pageIndex: z.preprocess(
     toOptionalPositiveInt,
     z.number().int().min(1).optional(),
@@ -293,6 +374,10 @@ export type CampaignAdminUserPageRouteSearch = z.infer<
 
 export type CampaignAdminUsersRouteSearch = z.infer<
   typeof campaignAdminUsersRouteSearchSchema
+>;
+
+export type CampaignAdminNotificationsRouteSearch = z.infer<
+  typeof campaignAdminNotificationsRouteSearchSchema
 >;
 
 export function normalizeCampaignAdminQueueSearch(
@@ -359,6 +444,19 @@ export function normalizeCampaignAdminUsersSearch(
   };
 }
 
+export function normalizeCampaignAdminNotificationsSearch(
+  input: unknown,
+): CampaignAdminNotificationsSearch {
+  const parsedSearch = campaignAdminNotificationsRouteSearchSchema.parse(input);
+
+  return {
+    ...parsedSearch,
+    tab: parsedSearch.tab ?? "audit",
+    sortBy: parsedSearch.sortBy ?? "createdAt",
+    sortOrder: parsedSearch.sortOrder ?? "desc",
+  };
+}
+
 export function getCampaignAdminQueueFilters(
   search: CampaignAdminQueueSearch,
 ): CampaignAdminQueueFilters {
@@ -367,6 +465,18 @@ export function getCampaignAdminQueueFilters(
   void reviewSelectionKey;
   void cursor;
   void pageIndex;
+
+  return filters;
+}
+
+export function getCampaignAdminNotificationsAuditFilters(
+  search: CampaignAdminNotificationsSearch,
+): CampaignAdminNotificationsAuditFilters {
+  const { tab, cursor, pageIndex, limit, ...filters } = search;
+  void tab;
+  void cursor;
+  void pageIndex;
+  void limit;
 
   return filters;
 }
@@ -455,6 +565,31 @@ export function createEmptyCampaignAdminQueueSearch(
       sortBy: currentSearch?.sortBy,
       sortOrder: currentSearch?.sortOrder,
       limit,
+    }),
+  );
+}
+
+export function createCampaignAdminNotificationsPaginationSignature(
+  search: CampaignAdminNotificationsSearch,
+): string {
+  const { cursor, pageIndex, ...searchWithoutPagination } = search;
+  void cursor;
+  void pageIndex;
+
+  return JSON.stringify(searchWithoutPagination);
+}
+
+export function createEmptyCampaignAdminNotificationsSearch(input?: {
+  readonly tab?: CampaignAdminNotificationsTab;
+  readonly limit?: number;
+  readonly currentSearch?: CampaignAdminNotificationsSearch;
+}): CampaignAdminNotificationsSearch {
+  return normalizeCampaignAdminNotificationsSearch(
+    omitUndefinedValues({
+      tab: input?.tab ?? input?.currentSearch?.tab ?? "audit",
+      sortBy: input?.currentSearch?.sortBy,
+      sortOrder: input?.currentSearch?.sortOrder,
+      limit: input?.limit ?? input?.currentSearch?.limit,
     }),
   );
 }

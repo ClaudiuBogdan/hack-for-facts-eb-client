@@ -1,11 +1,19 @@
 import { t } from "@lingui/core/macro";
 import type {
   CampaignAdminCampaignKey,
+  CampaignAdminNotificationEventType,
+  CampaignAdminNotificationProjectionKind,
+  CampaignAdminNotificationsTab,
+  CampaignAdminNotificationSafeErrorCategory,
+  CampaignAdminNotificationSortKey,
+  CampaignAdminNotificationSource,
+  CampaignAdminNotificationStatus,
+  CampaignAdminNotificationTriggerExecutionStatus,
   CampaignAdminPayloadKind,
   CampaignAdminPhase,
-  CampaignAdminSortOrder,
   CampaignAdminReviewStatus,
   CampaignAdminRiskFlag,
+  CampaignAdminSortOrder,
   CampaignAdminThreadPhase,
   CampaignAdminUsersSortKey,
   CampaignAdminUserInteractionsSortKey,
@@ -116,6 +124,31 @@ export const CAMPAIGN_ADMIN_USERS_SORTABLE_COLUMNS: Record<
   },
 };
 
+export const CAMPAIGN_ADMIN_NOTIFICATION_SORTABLE_COLUMNS: Record<
+  CampaignAdminNotificationSortKey,
+  {
+    readonly dataType: "date" | "number" | "enum";
+    readonly defaultOrder: CampaignAdminSortOrder;
+  }
+> = {
+  createdAt: {
+    dataType: "date",
+    defaultOrder: "desc",
+  },
+  sentAt: {
+    dataType: "date",
+    defaultOrder: "desc",
+  },
+  status: {
+    dataType: "enum",
+    defaultOrder: "asc",
+  },
+  attemptCount: {
+    dataType: "number",
+    defaultOrder: "desc",
+  },
+};
+
 export function getCampaignAdminUserInteractionsSortLabel(
   sortKey: CampaignAdminUserInteractionsSortKey,
 ): string {
@@ -157,6 +190,174 @@ export function getCampaignAdminUsersSortLabel(
       return t`Pending Reviews`;
     default:
       return sortKey;
+  }
+}
+
+export function getCampaignAdminNotificationTabLabel(
+  tab: CampaignAdminNotificationsTab,
+): string {
+  switch (tab) {
+    case "audit":
+      return t`Audit`;
+    case "triggers":
+      return t`Triggers`;
+    case "templates":
+      return t`Templates`;
+    default:
+      return tab;
+  }
+}
+
+export function getCampaignAdminNotificationStatusLabel(
+  status: CampaignAdminNotificationStatus,
+): string {
+  switch (status) {
+    case "pending":
+      return t`Pending`;
+    case "composing":
+      return t`Composing`;
+    case "sending":
+      return t`Sending`;
+    case "sent":
+      return t`Sent`;
+    case "delivered":
+      return t`Delivered`;
+    case "webhook_timeout":
+      return t`Webhook timeout`;
+    case "failed_transient":
+      return t`Transient failure`;
+    case "failed_permanent":
+      return t`Permanent failure`;
+    case "suppressed":
+      return t`Suppressed`;
+    case "skipped_unsubscribed":
+      return t`Skipped: unsubscribed`;
+    case "skipped_no_email":
+      return t`Skipped: no email`;
+    default:
+      return status;
+  }
+}
+
+export function getCampaignAdminNotificationEventTypeLabel(
+  eventType: CampaignAdminNotificationEventType | null,
+): string {
+  switch (eventType) {
+    case "thread_started":
+      return t`Thread started`;
+    case "thread_failed":
+      return t`Thread failed`;
+    case "reply_received":
+      return t`Reply received`;
+    case "reply_reviewed":
+      return t`Reply reviewed`;
+    case null:
+      return t`Not applicable`;
+    default:
+      return t`Unknown`;
+  }
+}
+
+export function getCampaignAdminNotificationSourceLabel(
+  source: CampaignAdminNotificationSource | null,
+): string {
+  switch (source) {
+    case "campaign_admin":
+      return t`Campaign admin`;
+    case "user_event_worker":
+      return t`User event worker`;
+    case "system":
+      return t`System`;
+    case "clerk_webhook":
+      return t`Clerk webhook`;
+    case null:
+      return t`Unknown`;
+    default:
+      return t`Unknown`;
+  }
+}
+
+export function getCampaignAdminNotificationProjectionLabel(
+  projectionKind: CampaignAdminNotificationProjectionKind,
+): string {
+  switch (projectionKind) {
+    case "public_debate_campaign_welcome":
+      return t`Campaign welcome`;
+    case "public_debate_entity_subscription":
+      return t`Entity subscription`;
+    case "public_debate_entity_update":
+      return t`Entity update`;
+    case "public_debate_admin_failure":
+      return t`Admin failure`;
+    default:
+      return projectionKind;
+  }
+}
+
+export function getCampaignAdminNotificationSortLabel(
+  sortKey: CampaignAdminNotificationSortKey,
+): string {
+  switch (sortKey) {
+    case "createdAt":
+      return t`Created`;
+    case "sentAt":
+      return t`Sent`;
+    case "status":
+      return t`Status`;
+    case "attemptCount":
+      return t`Attempts`;
+    default:
+      return sortKey;
+  }
+}
+
+export function getCampaignAdminNotificationSafeErrorCategoryLabel(
+  category: CampaignAdminNotificationSafeErrorCategory | null,
+): string {
+  switch (category) {
+    case "skipped_unsubscribed":
+      return t`Skipped: unsubscribed`;
+    case "skipped_no_email":
+      return t`Skipped: no email`;
+    case "suppressed":
+      return t`Suppressed`;
+    case "webhook_timeout":
+      return t`Webhook timeout`;
+    case "compose_validation":
+      return t`Compose validation`;
+    case "render_error":
+      return t`Render error`;
+    case "email_lookup":
+      return t`Email lookup`;
+    case "send_retryable":
+      return t`Retryable send failure`;
+    case "send_permanent":
+      return t`Permanent send failure`;
+    case "provider_bounce":
+      return t`Provider bounce`;
+    case "provider_suppressed":
+      return t`Provider suppressed`;
+    case "unknown":
+      return t`Unknown`;
+    case null:
+      return t`None`;
+    default:
+      return t`Unknown`;
+  }
+}
+
+export function getCampaignAdminNotificationTriggerExecutionStatusLabel(
+  status: CampaignAdminNotificationTriggerExecutionStatus,
+): string {
+  switch (status) {
+    case "queued":
+      return t`Queued`;
+    case "skipped":
+      return t`Skipped`;
+    case "partial":
+      return t`Partial`;
+    default:
+      return status;
   }
 }
 

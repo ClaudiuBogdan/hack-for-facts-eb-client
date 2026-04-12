@@ -1,8 +1,19 @@
-import { z } from 'zod'
+import { z } from "zod";
 import {
+  campaignAdminNotificationEventTypeValues,
+  campaignAdminNotificationSafeErrorCategoryValues,
+  campaignAdminNotificationSourceValues,
+  campaignAdminNotificationStatusValues,
+  campaignAdminNotificationTriggerExecutionStatusValues,
   campaignAdminPayloadKindValues,
   campaignAdminPendingReasonValues,
   campaignAdminPhaseValues,
+  type CampaignAdminNotificationTemplateDescriptor,
+  type CampaignAdminNotificationTemplatePreview,
+  type CampaignAdminNotificationTriggerDescriptor,
+  type CampaignAdminNotificationTriggerExecutionBody,
+  type CampaignAdminNotificationTriggerExecutionResponse,
+  type CampaignAdminNotificationsListResponse,
   type CampaignAdminMetaResponse,
   campaignAdminReviewSourceValues,
   campaignAdminReviewStatusValues,
@@ -16,74 +27,98 @@ import {
   type CampaignAdminSubmitReviewsBody,
   type CampaignAdminUsersListResponse,
   type CampaignAdminUserInteractionListItem,
-} from '@/features/campaigns/buget/admin/types'
+} from "@/features/campaigns/buget/admin/types";
 
-const campaignAdminPayloadSummarySchema = z.discriminatedUnion('kind', [
-  z.object({
-    kind: z.literal('public_debate_request'),
-    institutionEmail: z.string().min(1).nullable(),
-    organizationName: z.string().nullable(),
-    submissionPath: z.enum(campaignAdminSubmissionPathValues).nullable(),
-    isNgo: z.boolean().nullable(),
-  }).strict(),
-  z.object({
-    kind: z.literal('website_url'),
-    websiteUrl: z.string().min(1).nullable(),
-  }).strict(),
-  z.object({
-    kind: z.literal('budget_document'),
-    documentUrl: z.string().min(1).nullable(),
-    documentTypes: z.array(z.enum(['pdf', 'word', 'excel', 'webpage', 'graphics', 'other'])),
-  }).strict(),
-  z.object({
-    kind: z.literal('budget_publication_date'),
-    publicationDate: z.string().min(1).nullable(),
-    sources: z.array(z.object({
-      type: z.enum(['website', 'press', 'social_media', 'other']),
-      url: z.string().min(1).nullable(),
-    }).strict()),
-  }).strict(),
-  z.object({
-    kind: z.literal('budget_status'),
-    isPublished: z.enum(['yes', 'no', 'dont_know']).nullable(),
-    budgetStage: z.enum(['draft', 'approved']).nullable(),
-  }).strict(),
-  z.object({
-    kind: z.literal('city_hall_contact'),
-    email: z.string().min(1).nullable(),
-    phone: z.string().nullable(),
-  }).strict(),
-  z.object({
-    kind: z.literal('participation_report'),
-    debateTookPlace: z.enum(['yes', 'no', 'dont_know']).nullable(),
-    approximateAttendees: z.number().nullable(),
-    citizensAllowedToSpeak: z.enum(['yes', 'no', 'partially']).nullable(),
-    citizenInputsRecorded: z.enum(['yes', 'no', 'dont_know']).nullable(),
-    observations: z.string().nullable(),
-  }).strict(),
-  z.object({
-    kind: z.literal('quiz'),
-    selectedOptionId: z.string().min(1).nullable(),
-    outcome: z.enum(['correct', 'incorrect']).nullable(),
-    score: z.number().nullable(),
-  }).strict(),
-  z.object({
-    kind: z.literal('contestation'),
-    contestedItem: z.string().nullable(),
-    reasoning: z.string().nullable(),
-    impact: z.string().nullable(),
-    proposedChange: z.string().nullable(),
-    senderName: z.string().nullable(),
-    submissionPath: z.enum(campaignAdminSubmissionPathValues).nullable(),
-    institutionEmail: z.string().min(1).nullable(),
-  }).strict(),
-])
+const campaignAdminPayloadSummarySchema = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("public_debate_request"),
+      institutionEmail: z.string().min(1).nullable(),
+      organizationName: z.string().nullable(),
+      submissionPath: z.enum(campaignAdminSubmissionPathValues).nullable(),
+      isNgo: z.boolean().nullable(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("website_url"),
+      websiteUrl: z.string().min(1).nullable(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("budget_document"),
+      documentUrl: z.string().min(1).nullable(),
+      documentTypes: z.array(
+        z.enum(["pdf", "word", "excel", "webpage", "graphics", "other"]),
+      ),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("budget_publication_date"),
+      publicationDate: z.string().min(1).nullable(),
+      sources: z.array(
+        z
+          .object({
+            type: z.enum(["website", "press", "social_media", "other"]),
+            url: z.string().min(1).nullable(),
+          })
+          .strict(),
+      ),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("budget_status"),
+      isPublished: z.enum(["yes", "no", "dont_know"]).nullable(),
+      budgetStage: z.enum(["draft", "approved"]).nullable(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("city_hall_contact"),
+      email: z.string().min(1).nullable(),
+      phone: z.string().nullable(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("participation_report"),
+      debateTookPlace: z.enum(["yes", "no", "dont_know"]).nullable(),
+      approximateAttendees: z.number().nullable(),
+      citizensAllowedToSpeak: z.enum(["yes", "no", "partially"]).nullable(),
+      citizenInputsRecorded: z.enum(["yes", "no", "dont_know"]).nullable(),
+      observations: z.string().nullable(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("quiz"),
+      selectedOptionId: z.string().min(1).nullable(),
+      outcome: z.enum(["correct", "incorrect"]).nullable(),
+      score: z.number().nullable(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("contestation"),
+      contestedItem: z.string().nullable(),
+      reasoning: z.string().nullable(),
+      impact: z.string().nullable(),
+      proposedChange: z.string().nullable(),
+      senderName: z.string().nullable(),
+      submissionPath: z.enum(campaignAdminSubmissionPathValues).nullable(),
+      institutionEmail: z.string().min(1).nullable(),
+    })
+    .strict(),
+]);
 
 const campaignAdminInteractionListItemSchema = z
   .object({
     userId: z.string().min(1),
     recordKey: z.string().min(1),
-    campaignKey: z.literal('funky'),
+    campaignKey: z.literal("funky"),
     interactionId: z.string().min(1),
     lessonId: z.string().min(1),
     entityCui: z.string().min(1).nullable(),
@@ -118,7 +153,7 @@ const campaignAdminInteractionListItemSchema = z
     evaluatedEventCount: z.number().int().nonnegative(),
     lastAuditAt: z.string().datetime().nullable(),
   })
-  .strict()
+  .strict();
 
 const campaignAdminAvailableInteractionTypeSchema = z
   .object({
@@ -126,9 +161,9 @@ const campaignAdminAvailableInteractionTypeSchema = z
     label: z.string().min(1).nullable(),
     reviewable: z.boolean().optional(),
   })
-  .strict()
+  .strict();
 
-const campaignAdminCountSchema = z.number().int().nonnegative()
+const campaignAdminCountSchema = z.number().int().nonnegative();
 
 const campaignAdminMetaStatsSchema = z
   .object({
@@ -166,7 +201,7 @@ const campaignAdminMetaStatsSchema = z
       })
       .strict(),
   })
-  .strict()
+  .strict();
 
 const campaignAdminListResponseSchema = z
   .object({
@@ -179,14 +214,16 @@ const campaignAdminListResponseSchema = z
             limit: z.number().int().min(1).max(100),
             hasMore: z.boolean(),
             nextCursor: z.string().min(1).nullable(),
-            sortBy: z.enum(campaignAdminUserInteractionsSortKeyValues).optional(),
-            sortOrder: z.enum(['asc', 'desc']).optional(),
+            sortBy: z
+              .enum(campaignAdminUserInteractionsSortKeyValues)
+              .optional(),
+            sortOrder: z.enum(["asc", "desc"]).optional(),
           })
           .strict(),
       })
       .strict(),
   })
-  .strict()
+  .strict();
 
 const campaignAdminUserListItemSchema = z
   .object({
@@ -198,7 +235,7 @@ const campaignAdminUserListItemSchema = z
     latestEntityCui: z.string().min(1).nullable(),
     latestEntityName: z.string().nullable(),
   })
-  .strict()
+  .strict();
 
 const campaignAdminUsersListResponseSchema = z
   .object({
@@ -211,13 +248,204 @@ const campaignAdminUsersListResponseSchema = z
             hasMore: z.boolean(),
             nextCursor: z.string().min(1).nullable(),
             sortBy: z.enum(campaignAdminUsersSortKeyValues).optional(),
-            sortOrder: z.enum(['asc', 'desc']).optional(),
+            sortOrder: z.enum(["asc", "desc"]).optional(),
           })
           .strict(),
       })
       .strict(),
   })
-  .strict()
+  .strict();
+
+const campaignAdminNotificationSafeErrorSchema = z
+  .object({
+    category: z
+      .enum(campaignAdminNotificationSafeErrorCategoryValues)
+      .nullable(),
+    code: z.string().min(1).nullable(),
+  })
+  .strict();
+
+const campaignAdminNotificationProjectionSchema = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("public_debate_campaign_welcome"),
+      userId: z.string().min(1).nullable(),
+      entityCui: z.string().min(1),
+      entityName: z.string().min(1).nullable(),
+      acceptedTermsAt: z.string().datetime().nullable(),
+      triggerSource: z.enum(campaignAdminNotificationSourceValues).nullable(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("public_debate_entity_subscription"),
+      userId: z.string().min(1).nullable(),
+      entityCui: z.string().min(1),
+      entityName: z.string().min(1).nullable(),
+      acceptedTermsAt: z.string().datetime().nullable(),
+      selectedEntitiesCount: z.number().nonnegative().nullable(),
+      triggerSource: z.enum(campaignAdminNotificationSourceValues).nullable(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("public_debate_entity_update"),
+      userId: z.string().min(1).nullable(),
+      entityCui: z.string().min(1),
+      entityName: z.string().min(1).nullable(),
+      threadId: z.string().min(1),
+      threadKey: z.string().min(1).nullable(),
+      eventType: z.enum(campaignAdminNotificationEventTypeValues).nullable(),
+      phase: z.string().min(1).nullable(),
+      replyEntryId: z.string().min(1).nullable(),
+      basedOnEntryId: z.string().min(1).nullable(),
+      resolutionCode: z.string().min(1).nullable(),
+      triggerSource: z.enum(campaignAdminNotificationSourceValues).nullable(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("public_debate_admin_failure"),
+      entityCui: z.string().min(1),
+      entityName: z.string().min(1).nullable(),
+      threadId: z.string().min(1),
+      phase: z.string().min(1).nullable(),
+    })
+    .strict(),
+]);
+
+const campaignAdminNotificationListItemSchema = z
+  .object({
+    outboxId: z.string().min(1),
+    campaignKey: z.literal("funky"),
+    notificationType: z.string().min(1),
+    templateId: z.string().min(1).nullable(),
+    templateName: z.string().min(1).nullable(),
+    templateVersion: z.string().min(1).nullable(),
+    status: z.enum(campaignAdminNotificationStatusValues),
+    createdAt: z.string().datetime(),
+    sentAt: z.string().datetime().nullable(),
+    attemptCount: z.number().nonnegative(),
+    safeError: campaignAdminNotificationSafeErrorSchema,
+    projection: campaignAdminNotificationProjectionSchema,
+  })
+  .strict();
+
+const campaignAdminNotificationsListResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        items: z.array(campaignAdminNotificationListItemSchema),
+        page: z
+          .object({
+            nextCursor: z.string().min(1).nullable(),
+            hasMore: z.boolean(),
+          })
+          .strict(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const campaignAdminNotificationFieldDescriptorSchema = z
+  .object({
+    name: z.string().min(1),
+    type: z.string().min(1),
+    required: z.boolean(),
+  })
+  .strict();
+
+const campaignAdminNotificationTriggerDescriptorSchema = z
+  .object({
+    triggerId: z.string().min(1),
+    campaignKey: z.literal("funky"),
+    templateId: z.string().min(1),
+    description: z.string().min(1),
+    inputFields: z.array(campaignAdminNotificationFieldDescriptorSchema),
+    targetKind: z.string().min(1),
+  })
+  .strict();
+
+const campaignAdminNotificationTriggersResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        items: z.array(campaignAdminNotificationTriggerDescriptorSchema),
+      })
+      .strict(),
+  })
+  .strict();
+
+const campaignAdminNotificationTriggerExecutionResultSchema = z
+  .object({
+    status: z.enum(campaignAdminNotificationTriggerExecutionStatusValues),
+    reason: z.string().min(1).optional(),
+    createdOutboxIds: z.array(z.string().min(1)),
+    reusedOutboxIds: z.array(z.string().min(1)),
+    queuedOutboxIds: z.array(z.string().min(1)),
+    enqueueFailedOutboxIds: z.array(z.string().min(1)),
+  })
+  .strict();
+
+const campaignAdminNotificationTriggerExecutionResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        triggerId: z.string().min(1),
+        campaignKey: z.literal("funky"),
+        templateId: z.string().min(1),
+        result: campaignAdminNotificationTriggerExecutionResultSchema,
+      })
+      .strict(),
+  })
+  .strict();
+
+export const campaignAdminNotificationTriggerExecutionBodySchema = z.record(
+  z.string(),
+  z.unknown(),
+);
+
+const campaignAdminNotificationTemplateDescriptorSchema = z
+  .object({
+    templateId: z.string().min(1),
+    name: z.string().min(1),
+    version: z.string().min(1),
+    description: z.string().min(1),
+    requiredFields: z.array(campaignAdminNotificationFieldDescriptorSchema),
+  })
+  .strict();
+
+const campaignAdminNotificationTemplatesResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        items: z.array(campaignAdminNotificationTemplateDescriptorSchema),
+      })
+      .strict(),
+  })
+  .strict();
+
+const campaignAdminNotificationTemplatePreviewResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        templateId: z.string().min(1),
+        name: z.string().min(1),
+        version: z.string().min(1),
+        description: z.string().min(1),
+        requiredFields: z.array(campaignAdminNotificationFieldDescriptorSchema),
+        exampleSubject: z.string().min(1),
+        html: z.string().min(1),
+        text: z.string(),
+      })
+      .strict(),
+  })
+  .strict();
 
 const campaignAdminSubmitReviewsResponseSchema = z
   .object({
@@ -228,19 +456,21 @@ const campaignAdminSubmitReviewsResponseSchema = z
       })
       .strict(),
   })
-  .strict()
+  .strict();
 
 const campaignAdminMetaResponseSchema = z
   .object({
     ok: z.literal(true),
     data: z
       .object({
-        availableInteractionTypes: z.array(campaignAdminAvailableInteractionTypeSchema),
+        availableInteractionTypes: z.array(
+          campaignAdminAvailableInteractionTypeSchema,
+        ),
         stats: campaignAdminMetaStatsSchema,
       })
       .strict(),
   })
-  .strict()
+  .strict();
 
 const campaignAdminErrorEnvelopeSchema = z
   .object({
@@ -251,91 +481,167 @@ const campaignAdminErrorEnvelopeSchema = z
     retryable: z.boolean().optional(),
     details: z.unknown().optional(),
   })
-  .strict()
+  .strict();
 
 const campaignAdminApproveReviewSchema = z
   .object({
     userId: z.string().min(1),
     recordKey: z.string().min(1),
     expectedUpdatedAt: z.string().datetime(),
-    status: z.literal('approved'),
+    status: z.literal("approved"),
     feedbackText: z.string().min(1).optional(),
     approvalRiskAcknowledged: z.boolean().optional(),
   })
-  .strict()
+  .strict();
 
 const campaignAdminRejectReviewSchema = z
   .object({
     userId: z.string().min(1),
     recordKey: z.string().min(1),
     expectedUpdatedAt: z.string().datetime(),
-    status: z.literal('rejected'),
+    status: z.literal("rejected"),
     feedbackText: z.string().min(1),
   })
-  .strict()
+  .strict();
 
 export const campaignAdminSubmitReviewsBodySchema = z
   .object({
     items: z
-      .array(z.union([campaignAdminApproveReviewSchema, campaignAdminRejectReviewSchema]))
+      .array(
+        z.union([
+          campaignAdminApproveReviewSchema,
+          campaignAdminRejectReviewSchema,
+        ]),
+      )
       .min(1)
       .max(100),
   })
-  .strict()
+  .strict();
 
-export function parseCampaignAdminListResponse(payload: unknown): CampaignAdminListResponse {
-  const parsedPayload = campaignAdminListResponseSchema.safeParse(payload)
+export function parseCampaignAdminListResponse(
+  payload: unknown,
+): CampaignAdminListResponse {
+  const parsedPayload = campaignAdminListResponseSchema.safeParse(payload);
   if (!parsedPayload.success) {
-    throw new Error('Invalid campaign admin queue response.')
+    throw new Error("Invalid campaign admin queue response.");
   }
 
-  return parsedPayload.data.data
+  return parsedPayload.data.data;
 }
 
 export function parseCampaignAdminUsersListResponse(
-  payload: unknown
+  payload: unknown,
 ): CampaignAdminUsersListResponse {
-  const parsedPayload = campaignAdminUsersListResponseSchema.safeParse(payload)
+  const parsedPayload = campaignAdminUsersListResponseSchema.safeParse(payload);
   if (!parsedPayload.success) {
-    throw new Error('Invalid campaign admin users response.')
+    throw new Error("Invalid campaign admin users response.");
   }
 
-  return parsedPayload.data.data
+  return parsedPayload.data.data;
+}
+
+export function parseCampaignAdminNotificationsListResponse(
+  payload: unknown,
+): CampaignAdminNotificationsListResponse {
+  const parsedPayload =
+    campaignAdminNotificationsListResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin notifications response.");
+  }
+
+  return parsedPayload.data.data;
+}
+
+export function parseCampaignAdminNotificationTriggersResponse(
+  payload: unknown,
+): readonly CampaignAdminNotificationTriggerDescriptor[] {
+  const parsedPayload =
+    campaignAdminNotificationTriggersResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin notification triggers response.");
+  }
+
+  return parsedPayload.data.data.items;
+}
+
+export function parseCampaignAdminNotificationTriggerExecutionResponse(
+  payload: unknown,
+): CampaignAdminNotificationTriggerExecutionResponse {
+  const parsedPayload =
+    campaignAdminNotificationTriggerExecutionResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin notification trigger response.");
+  }
+
+  return parsedPayload.data.data;
+}
+
+export function parseCampaignAdminNotificationTemplatesResponse(
+  payload: unknown,
+): readonly CampaignAdminNotificationTemplateDescriptor[] {
+  const parsedPayload =
+    campaignAdminNotificationTemplatesResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin notification templates response.");
+  }
+
+  return parsedPayload.data.data.items;
+}
+
+export function parseCampaignAdminNotificationTemplatePreviewResponse(
+  payload: unknown,
+): CampaignAdminNotificationTemplatePreview {
+  const parsedPayload =
+    campaignAdminNotificationTemplatePreviewResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error(
+      "Invalid campaign admin notification template preview response.",
+    );
+  }
+
+  return parsedPayload.data.data;
 }
 
 export function parseCampaignAdminSubmitReviewsResponse(
-  payload: unknown
+  payload: unknown,
 ): readonly CampaignAdminUserInteractionListItem[] {
-  const parsedPayload = campaignAdminSubmitReviewsResponseSchema.safeParse(payload)
+  const parsedPayload =
+    campaignAdminSubmitReviewsResponseSchema.safeParse(payload);
   if (!parsedPayload.success) {
-    throw new Error('Invalid campaign admin review response.')
+    throw new Error("Invalid campaign admin review response.");
   }
 
-  return parsedPayload.data.data.items
+  return parsedPayload.data.data.items;
 }
 
 export function parseCampaignAdminMetaResponse(
-  payload: unknown
+  payload: unknown,
 ): CampaignAdminMetaResponse {
-  const parsedPayload = campaignAdminMetaResponseSchema.safeParse(payload)
+  const parsedPayload = campaignAdminMetaResponseSchema.safeParse(payload);
   if (!parsedPayload.success) {
-    throw new Error('Invalid campaign admin metadata response.')
+    throw new Error("Invalid campaign admin metadata response.");
   }
 
-  return parsedPayload.data.data
+  return parsedPayload.data.data;
 }
 
 export function parseCampaignAdminErrorEnvelope(payload: unknown) {
-  const parsedPayload = campaignAdminErrorEnvelopeSchema.safeParse(payload)
+  const parsedPayload = campaignAdminErrorEnvelopeSchema.safeParse(payload);
   if (!parsedPayload.success) {
-    return null
+    return null;
   }
 
-  return parsedPayload.data
+  return parsedPayload.data;
 }
 
 export function parseCampaignAdminSubmitReviewsBody(
-  payload: unknown
+  payload: unknown,
 ): CampaignAdminSubmitReviewsBody {
-  return campaignAdminSubmitReviewsBodySchema.parse(payload)
+  return campaignAdminSubmitReviewsBodySchema.parse(payload);
+}
+
+export function parseCampaignAdminNotificationTriggerExecutionBody(
+  payload: unknown,
+): CampaignAdminNotificationTriggerExecutionBody {
+  return campaignAdminNotificationTriggerExecutionBodySchema.parse(payload);
 }

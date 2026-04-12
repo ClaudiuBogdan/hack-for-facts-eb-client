@@ -1,10 +1,16 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from "vitest";
 import {
+  parseCampaignAdminNotificationTemplatePreviewResponse,
+  parseCampaignAdminNotificationTemplatesResponse,
+  parseCampaignAdminNotificationTriggerExecutionBody,
+  parseCampaignAdminNotificationTriggerExecutionResponse,
+  parseCampaignAdminNotificationTriggersResponse,
+  parseCampaignAdminNotificationsListResponse,
   parseCampaignAdminListResponse,
   parseCampaignAdminMetaResponse,
   parseCampaignAdminSubmitReviewsBody,
   parseCampaignAdminUsersListResponse,
-} from './api-schemas'
+} from "./api-schemas";
 
 function createMetaResponsePayload() {
   return {
@@ -12,8 +18,8 @@ function createMetaResponsePayload() {
     data: {
       availableInteractionTypes: [
         {
-          interactionId: 'funky:interaction:public_debate_request',
-          label: 'Public debate request',
+          interactionId: "funky:interaction:public_debate_request",
+          label: "Public debate request",
           reviewable: true,
         },
       ],
@@ -47,7 +53,7 @@ function createMetaResponsePayload() {
         },
       },
     },
-  }
+  };
 }
 
 function createListResponsePayload() {
@@ -56,49 +62,49 @@ function createListResponsePayload() {
     data: {
       items: [
         {
-          userId: 'user-1',
-          recordKey: 'funky:interaction:public_debate_request::entity:12345678',
-          campaignKey: 'funky',
-          interactionId: 'funky:interaction:public_debate_request',
-          lessonId: 'civic-monitor-and-request',
-          entityCui: '12345678',
-          entityName: 'Oras Test',
-          scopeType: 'entity',
-          phase: 'pending',
-          reviewStatus: 'pending',
+          userId: "user-1",
+          recordKey: "funky:interaction:public_debate_request::entity:12345678",
+          campaignKey: "funky",
+          interactionId: "funky:interaction:public_debate_request",
+          lessonId: "civic-monitor-and-request",
+          entityCui: "12345678",
+          entityName: "Oras Test",
+          scopeType: "entity",
+          phase: "pending",
+          reviewStatus: "pending",
           reviewable: true,
-          pendingReason: 'institution_email_mismatch',
-          submittedAt: '2026-04-10T10:00:00.000Z',
-          createdAt: '2026-04-10T10:00:00.000Z',
-          updatedAt: '2026-04-10T10:00:00.000Z',
+          pendingReason: "institution_email_mismatch",
+          submittedAt: "2026-04-10T10:00:00.000Z",
+          createdAt: "2026-04-10T10:00:00.000Z",
+          updatedAt: "2026-04-10T10:00:00.000Z",
           reviewedAt: null,
           reviewedByUserId: null,
           reviewSource: null,
           feedbackText: null,
-          payloadKind: 'json',
+          payloadKind: "json",
           payloadSummary: {
-            kind: 'public_debate_request',
-            institutionEmail: 'contact@primarie.ro',
-            organizationName: 'Asociatia Test',
-            submissionPath: 'request_platform',
+            kind: "public_debate_request",
+            institutionEmail: "contact@primarie.ro",
+            organizationName: "Asociatia Test",
+            submissionPath: "request_platform",
             isNgo: true,
           },
-          institutionEmail: 'contact@primarie.ro',
+          institutionEmail: "contact@primarie.ro",
           websiteUrl: null,
-          organizationName: 'Asociatia Test',
+          organizationName: "Asociatia Test",
           interactionElementLink:
-            '/primarie/12345678/buget/provocari/civic-campaign/civic-monitor-and-request/04-debate-request',
-          submissionPath: 'request_platform',
+            "/primarie/12345678/buget/provocari/civic-campaign/civic-monitor-and-request/04-debate-request",
+          submissionPath: "request_platform",
           isNgo: true,
-          riskFlags: ['institution_email_mismatch'],
-          threadId: 'thread-1',
-          threadPhase: 'failed',
-          lastEmailAt: '2026-04-10T10:10:00.000Z',
+          riskFlags: ["institution_email_mismatch"],
+          threadId: "thread-1",
+          threadPhase: "failed",
+          lastEmailAt: "2026-04-10T10:10:00.000Z",
           lastReplyAt: null,
           nextActionAt: null,
           submittedEventCount: 1,
           evaluatedEventCount: 0,
-          lastAuditAt: '2026-04-10T10:00:00.000Z',
+          lastAuditAt: "2026-04-10T10:00:00.000Z",
         },
       ],
       page: {
@@ -107,7 +113,7 @@ function createListResponsePayload() {
         nextCursor: null,
       },
     },
-  }
+  };
 }
 
 function createUsersListResponsePayload() {
@@ -116,74 +122,239 @@ function createUsersListResponsePayload() {
     data: {
       items: [
         {
-          userId: 'user-1',
+          userId: "user-1",
           interactionCount: 3,
           pendingReviewCount: 1,
-          latestUpdatedAt: '2026-04-10T10:00:00.000Z',
-          latestInteractionId: 'funky:interaction:public_debate_request',
-          latestEntityCui: '12345678',
-          latestEntityName: 'Oras Test',
+          latestUpdatedAt: "2026-04-10T10:00:00.000Z",
+          latestInteractionId: "funky:interaction:public_debate_request",
+          latestEntityCui: "12345678",
+          latestEntityName: "Oras Test",
         },
       ],
       page: {
         hasMore: false,
         nextCursor: null,
-        sortBy: 'latestUpdatedAt',
-        sortOrder: 'desc',
+        sortBy: "latestUpdatedAt",
+        sortOrder: "desc",
       },
     },
-  }
+  };
 }
 
-describe('campaign admin api schemas', () => {
-  it('parses the queue metadata stats contract', () => {
+function createNotificationsListResponsePayload() {
+  return {
+    ok: true,
+    data: {
+      items: [
+        {
+          outboxId: "outbox-1",
+          campaignKey: "funky",
+          notificationType: "funky:outbox:entity_update",
+          templateId: "public_debate_entity_update",
+          templateName: "Entity update",
+          templateVersion: "3",
+          status: "delivered",
+          createdAt: "2026-04-12T08:00:00.000Z",
+          sentAt: "2026-04-12T08:02:00.000Z",
+          attemptCount: 1,
+          safeError: {
+            category: null,
+            code: null,
+          },
+          projection: {
+            kind: "public_debate_entity_update",
+            userId: "user-1",
+            entityCui: "12345678",
+            entityName: "Oras Test",
+            threadId: "thread-1",
+            threadKey: "thread-key-1",
+            eventType: "reply_received",
+            phase: "awaiting_reply",
+            replyEntryId: null,
+            basedOnEntryId: null,
+            resolutionCode: null,
+            triggerSource: "campaign_admin",
+          },
+        },
+      ],
+      page: {
+        hasMore: true,
+        nextCursor: "cursor-1",
+      },
+    },
+  };
+}
+
+function createNotificationsTriggerCatalogPayload() {
+  return {
+    ok: true,
+    data: {
+      items: [
+        {
+          triggerId: "public_debate_entity_update.reply_received",
+          campaignKey: "funky",
+          templateId: "public_debate_entity_update",
+          description: "Queue the reply received notification.",
+          inputFields: [
+            {
+              name: "threadId",
+              type: "string",
+              required: true,
+            },
+          ],
+          targetKind: "thread",
+        },
+      ],
+    },
+  };
+}
+
+function createNotificationsTriggerExecutionPayload() {
+  return {
+    ok: true,
+    data: {
+      triggerId: "public_debate_entity_update.reply_received",
+      campaignKey: "funky",
+      templateId: "public_debate_entity_update",
+      result: {
+        status: "queued",
+        createdOutboxIds: ["outbox-1"],
+        reusedOutboxIds: [],
+        queuedOutboxIds: ["outbox-1"],
+        enqueueFailedOutboxIds: [],
+      },
+    },
+  };
+}
+
+function createNotificationsTemplateCatalogPayload() {
+  return {
+    ok: true,
+    data: {
+      items: [
+        {
+          templateId: "public_debate_entity_update",
+          name: "Entity update",
+          version: "3",
+          description: "Entity update email",
+          requiredFields: [
+            {
+              name: "threadId",
+              type: "string",
+              required: true,
+            },
+          ],
+        },
+      ],
+    },
+  };
+}
+
+function createNotificationsTemplatePreviewPayload() {
+  return {
+    ok: true,
+    data: {
+      templateId: "public_debate_entity_update",
+      name: "Entity update",
+      version: "3",
+      description: "Entity update email",
+      requiredFields: [
+        {
+          name: "threadId",
+          type: "string",
+          required: true,
+        },
+      ],
+      exampleSubject: "Reply received for Oras Test",
+      html: "<html><body><h1>Preview</h1></body></html>",
+      text: "Preview",
+    },
+  };
+}
+
+describe("campaign admin api schemas", () => {
+  it("parses the queue metadata stats contract", () => {
     expect(parseCampaignAdminMetaResponse(createMetaResponsePayload())).toEqual(
-      createMetaResponsePayload().data
-    )
-  })
+      createMetaResponsePayload().data,
+    );
+  });
 
-  it('parses queue items that include pendingReason', () => {
+  it("parses queue items that include pendingReason", () => {
     expect(parseCampaignAdminListResponse(createListResponsePayload())).toEqual(
-      createListResponsePayload().data
-    )
-  })
+      createListResponsePayload().data,
+    );
+  });
 
-  it('parses campaign admin users list responses', () => {
+  it("parses campaign admin users list responses", () => {
     expect(
-      parseCampaignAdminUsersListResponse(createUsersListResponsePayload())
-    ).toEqual(createUsersListResponsePayload().data)
-  })
+      parseCampaignAdminUsersListResponse(createUsersListResponsePayload()),
+    ).toEqual(createUsersListResponsePayload().data);
+  });
 
-  it('parses audit-only quiz summaries and additive reviewable metadata', () => {
+  it("parses campaign admin notifications audit responses", () => {
+    expect(
+      parseCampaignAdminNotificationsListResponse(
+        createNotificationsListResponsePayload(),
+      ),
+    ).toEqual(createNotificationsListResponsePayload().data);
+  });
+
+  it("parses notification trigger and template catalogs", () => {
+    expect(
+      parseCampaignAdminNotificationTriggersResponse(
+        createNotificationsTriggerCatalogPayload(),
+      ),
+    ).toEqual(createNotificationsTriggerCatalogPayload().data.items);
+    expect(
+      parseCampaignAdminNotificationTemplatesResponse(
+        createNotificationsTemplateCatalogPayload(),
+      ),
+    ).toEqual(createNotificationsTemplateCatalogPayload().data.items);
+  });
+
+  it("parses trigger execution and template preview payloads", () => {
+    expect(
+      parseCampaignAdminNotificationTriggerExecutionResponse(
+        createNotificationsTriggerExecutionPayload(),
+      ),
+    ).toEqual(createNotificationsTriggerExecutionPayload().data);
+    expect(
+      parseCampaignAdminNotificationTemplatePreviewResponse(
+        createNotificationsTemplatePreviewPayload(),
+      ),
+    ).toEqual(createNotificationsTemplatePreviewPayload().data);
+  });
+
+  it("parses audit-only quiz summaries and additive reviewable metadata", () => {
     const payload = {
       ok: true,
       data: {
         items: [
           {
-            userId: 'user-2',
-            recordKey: 'ch-civic-01-how-module-works-q1::global',
-            campaignKey: 'funky',
-            interactionId: 'ch-civic-01-how-module-works-q1',
-            lessonId: 'civic-monitor-and-request',
+            userId: "user-2",
+            recordKey: "ch-civic-01-how-module-works-q1::global",
+            campaignKey: "funky",
+            interactionId: "ch-civic-01-how-module-works-q1",
+            lessonId: "civic-monitor-and-request",
             entityCui: null,
             entityName: null,
-            scopeType: 'global',
-            phase: 'resolved',
+            scopeType: "global",
+            phase: "resolved",
             reviewStatus: null,
             reviewable: false,
             pendingReason: null,
-            submittedAt: '2026-04-10T11:00:00.000Z',
-            createdAt: '2026-04-10T11:00:00.000Z',
-            updatedAt: '2026-04-10T11:00:00.000Z',
+            submittedAt: "2026-04-10T11:00:00.000Z",
+            createdAt: "2026-04-10T11:00:00.000Z",
+            updatedAt: "2026-04-10T11:00:00.000Z",
             reviewedAt: null,
             reviewedByUserId: null,
             reviewSource: null,
             feedbackText: null,
-            payloadKind: 'choice',
+            payloadKind: "choice",
             payloadSummary: {
-              kind: 'quiz',
-              selectedOptionId: 'option-a',
-              outcome: 'correct',
+              kind: "quiz",
+              selectedOptionId: "option-a",
+              outcome: "correct",
               score: 1,
             },
             institutionEmail: null,
@@ -200,7 +371,7 @@ describe('campaign admin api schemas', () => {
             nextActionAt: null,
             submittedEventCount: 1,
             evaluatedEventCount: 1,
-            lastAuditAt: '2026-04-10T11:00:00.000Z',
+            lastAuditAt: "2026-04-10T11:00:00.000Z",
           },
         ],
         page: {
@@ -209,29 +380,40 @@ describe('campaign admin api schemas', () => {
           nextCursor: null,
         },
       },
-    }
+    };
 
-    expect(parseCampaignAdminListResponse(payload)).toEqual(payload.data)
-  })
+    expect(parseCampaignAdminListResponse(payload)).toEqual(payload.data);
+  });
 
-  it('parses approved review submissions with explicit risk acknowledgement', () => {
+  it("parses approved review submissions with explicit risk acknowledgement", () => {
     const payload = {
       items: [
         {
-          userId: 'user-1',
-          recordKey: 'funky:interaction:public_debate_request::entity:12345678',
-          expectedUpdatedAt: '2026-04-10T10:00:00.000Z',
-          status: 'approved',
+          userId: "user-1",
+          recordKey: "funky:interaction:public_debate_request::entity:12345678",
+          expectedUpdatedAt: "2026-04-10T10:00:00.000Z",
+          status: "approved",
           approvalRiskAcknowledged: true,
         },
       ],
-    }
+    };
 
-    expect(parseCampaignAdminSubmitReviewsBody(payload)).toEqual(payload)
-  })
+    expect(parseCampaignAdminSubmitReviewsBody(payload)).toEqual(payload);
+  });
 
-  it('rejects metadata payloads that omit zero-filled count keys', () => {
-    const payload = createMetaResponsePayload()
+  it("accepts structured notification trigger execution bodies", () => {
+    const payload = {
+      threadId: "thread-1",
+      dryRun: false,
+    };
+
+    expect(parseCampaignAdminNotificationTriggerExecutionBody(payload)).toEqual(
+      payload,
+    );
+  });
+
+  it("rejects metadata payloads that omit zero-filled count keys", () => {
+    const payload = createMetaResponsePayload();
     const invalidPayload = {
       ...payload,
       data: {
@@ -245,10 +427,10 @@ describe('campaign admin api schemas', () => {
           },
         },
       },
-    }
+    };
 
     expect(() => parseCampaignAdminMetaResponse(invalidPayload)).toThrowError(
-      'Invalid campaign admin metadata response.'
-    )
-  })
-})
+      "Invalid campaign admin metadata response.",
+    );
+  });
+});
