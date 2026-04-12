@@ -17,12 +17,14 @@ import {
   type CampaignAdminEntitiesListResponse,
   type CampaignAdminEntitiesMetaResponse,
   type CampaignAdminNotificationsListResponse,
+  type CampaignAdminNotificationsMetaResponse,
   type CampaignAdminMetaResponse,
   campaignAdminReviewSourceValues,
   campaignAdminReviewStatusValues,
   campaignAdminRiskFlagValues,
   campaignAdminScopeTypeValues,
   campaignAdminSubmissionPathValues,
+  type CampaignAdminUsersMetaResponse,
   campaignAdminThreadPhaseValues,
   campaignAdminUsersSortKeyValues,
   campaignAdminUserInteractionsSortKeyValues,
@@ -259,6 +261,18 @@ const campaignAdminUsersListResponseSchema = z
   })
   .strict();
 
+const campaignAdminUsersMetaResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        totalUsers: campaignAdminCountSchema,
+        usersWithPendingReviews: campaignAdminCountSchema,
+      })
+      .strict(),
+  })
+  .strict();
+
 const campaignAdminEntityListItemSchema = z
   .object({
     entityCui: z.string().min(1),
@@ -407,6 +421,19 @@ const campaignAdminNotificationsListResponseSchema = z
             hasMore: z.boolean(),
           })
           .strict(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const campaignAdminNotificationsMetaResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        pendingDeliveryCount: campaignAdminCountSchema,
+        failedDeliveryCount: campaignAdminCountSchema,
+        replyReceivedCount: campaignAdminCountSchema,
       })
       .strict(),
   })
@@ -604,6 +631,17 @@ export function parseCampaignAdminUsersListResponse(
   return parsedPayload.data.data;
 }
 
+export function parseCampaignAdminUsersMetaResponse(
+  payload: unknown,
+): CampaignAdminUsersMetaResponse {
+  const parsedPayload = campaignAdminUsersMetaResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin users metadata response.");
+  }
+
+  return parsedPayload.data.data;
+}
+
 export function parseCampaignAdminNotificationsListResponse(
   payload: unknown,
 ): CampaignAdminNotificationsListResponse {
@@ -611,6 +649,18 @@ export function parseCampaignAdminNotificationsListResponse(
     campaignAdminNotificationsListResponseSchema.safeParse(payload);
   if (!parsedPayload.success) {
     throw new Error("Invalid campaign admin notifications response.");
+  }
+
+  return parsedPayload.data.data;
+}
+
+export function parseCampaignAdminNotificationsMetaResponse(
+  payload: unknown,
+): CampaignAdminNotificationsMetaResponse {
+  const parsedPayload =
+    campaignAdminNotificationsMetaResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin notifications metadata response.");
   }
 
   return parsedPayload.data.data;

@@ -6,10 +6,12 @@ import { createLogger } from "@/lib/logger";
 import {
   parseCampaignAdminErrorEnvelope,
   parseCampaignAdminUsersListResponse,
+  parseCampaignAdminUsersMetaResponse,
 } from "@/features/campaigns/buget/admin/schemas/api-schemas";
 import type {
   CampaignAdminCampaignKey,
   CampaignAdminUsersListResponse,
+  CampaignAdminUsersMetaResponse,
   CampaignAdminUsersSearch,
 } from "@/features/campaigns/buget/admin/types";
 import { CampaignAdminApiError } from "./campaign-admin-user-interactions";
@@ -227,5 +229,21 @@ export async function listCampaignAdminUsers(input: {
     parse: parseCampaignAdminUsersListResponse,
     errorMessage: t`Campaign admin users response was invalid.`,
     logMessage: "Campaign admin users response did not match the expected schema",
+  });
+}
+
+export async function getCampaignAdminUsersMeta(input: {
+  readonly campaignKey: CampaignAdminCampaignKey;
+}): Promise<CampaignAdminUsersMetaResponse> {
+  const payload = await authorizedRequest(input.campaignKey, "/users/meta", {
+    method: "GET",
+  });
+
+  return parseCampaignAdminSuccessPayload({
+    payload,
+    parse: parseCampaignAdminUsersMetaResponse,
+    errorMessage: t`Campaign admin users metadata response was invalid.`,
+    logMessage:
+      "Campaign admin users metadata response did not match the expected schema",
   });
 }

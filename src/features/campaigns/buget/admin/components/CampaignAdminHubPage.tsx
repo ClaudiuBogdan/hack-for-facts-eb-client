@@ -11,8 +11,18 @@ import { AuthSignInButton, useAuth } from "@/lib/auth";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components/AdminCampaignLayout";
 import { getCampaignAdminCampaignLabel } from "@/features/campaigns/buget/admin/constants";
+import { useCampaignAdminEntitiesMetaQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-entities";
+import {
+  useCampaignAdminNotificationsMetaQuery,
+} from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-notifications";
 import { useCampaignAdminInteractionMetaQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-user-interactions";
-import type { CampaignAdminCampaignKey } from "@/features/campaigns/buget/admin/types";
+import { useCampaignAdminUsersMetaQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-users";
+import type {
+  CampaignAdminCampaignKey,
+  CampaignAdminEntitiesMetaResponse,
+  CampaignAdminNotificationsMetaResponse,
+  CampaignAdminUsersMetaResponse,
+} from "@/features/campaigns/buget/admin/types";
 
 type CampaignAdminHubPageProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
@@ -96,13 +106,108 @@ function createCampaignAdminEntitiesRouteSearch() {
   };
 }
 
+function UsersHubCardSummary({
+  meta,
+  totalInteractions,
+  isLoading,
+}: {
+  readonly meta?: CampaignAdminUsersMetaResponse;
+  readonly totalInteractions: number;
+  readonly isLoading: boolean;
+}) {
+  if (meta === undefined) {
+    return (
+      <p className="mt-0.5 text-sm text-muted-foreground">
+        {isLoading
+          ? t`Loading…`
+          : t`Browse ${totalInteractions} interactions across all users`}
+      </p>
+    );
+  }
+
+  return (
+    <div>
+      <p className="mt-0.5 text-sm text-muted-foreground">
+        {t`${meta.totalUsers} users · ${meta.usersWithPendingReviews} need review`}
+      </p>
+    </div>
+  );
+}
+
+function EntitiesHubCardSummary({
+  meta,
+}: {
+  readonly meta?: CampaignAdminEntitiesMetaResponse;
+}) {
+  if (meta === undefined) {
+    return (
+      <p className="mt-0.5 text-sm text-muted-foreground">
+        {t`View entity-level campaign state across users, interactions, and delivery activity`}
+      </p>
+    );
+  }
+
+  return (
+    <div>
+      <p className="mt-0.5 text-sm text-muted-foreground">
+        {t`${meta.totalEntities} tracked · ${meta.entitiesWithPendingReviews} pending`}
+      </p>
+      {meta.entitiesWithFailedNotifications > 0 ? (
+        <p className="mt-2 text-xs text-rose-600 dark:text-rose-400">
+          {t`${meta.entitiesWithFailedNotifications} delivery issues`}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function NotificationsHubCardSummary({
+  meta,
+}: {
+  readonly meta?: CampaignAdminNotificationsMetaResponse;
+}) {
+  if (meta === undefined) {
+    return (
+      <p className="mt-0.5 text-sm text-muted-foreground">
+        {t`Audit campaign notification activity, run manual triggers, and preview templates`}
+      </p>
+    );
+  }
+
+  return (
+    <div>
+      <p className="mt-0.5 text-sm text-muted-foreground">
+        {t`${meta.pendingDeliveryCount} pending delivery · ${meta.replyReceivedCount} replies`}
+      </p>
+      {meta.failedDeliveryCount > 0 ? (
+        <p className="mt-2 text-xs text-rose-600 dark:text-rose-400">
+          {t`${meta.failedDeliveryCount} failed deliveries`}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 export function CampaignAdminHubPage({
   campaignKey,
 }: CampaignAdminHubPageProps) {
   const { isLoaded, isSignedIn } = useAuth();
+  const isHubQueriesEnabled = isLoaded && isSignedIn;
   const metaQuery = useCampaignAdminInteractionMetaQuery({
     campaignKey,
-    enabled: isLoaded && isSignedIn,
+    enabled: isHubQueriesEnabled,
+  });
+  const usersMetaQuery = useCampaignAdminUsersMetaQuery({
+    campaignKey,
+    enabled: isHubQueriesEnabled,
+  });
+  const entitiesMetaQuery = useCampaignAdminEntitiesMetaQuery({
+    campaignKey,
+    enabled: isHubQueriesEnabled,
+  });
+  const notificationsMetaQuery = useCampaignAdminNotificationsMetaQuery({
+    campaignKey,
+    enabled: isHubQueriesEnabled,
   });
 
   const stats = metaQuery.data?.stats;
@@ -111,6 +216,9 @@ export function CampaignAdminHubPage({
   const approvedCount = stats?.reviewStatusCounts.approved ?? 0;
   const rejectedCount = stats?.reviewStatusCounts.rejected ?? 0;
   const riskFlaggedCount = stats?.riskFlagged ?? 0;
+  const usersMeta = usersMetaQuery.data;
+  const entitiesMeta = entitiesMetaQuery.data;
+  const notificationsMeta = notificationsMetaQuery.data;
 
   const campaignLabel = getCampaignAdminCampaignLabel(campaignKey);
 
@@ -148,113 +256,158 @@ export function CampaignAdminHubPage({
           </p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Link
-            to="/admin/campaigns/$campaignKey/users"
-            params={{ campaignKey }}
-            search={createCampaignAdminUsersRouteSearch()}
-            className="group flex flex-col gap-3 rounded-xl border border-border/70 bg-card/80 p-5 transition-colors hover:border-border hover:bg-muted/20"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                <Users className="h-5 w-5" aria-hidden="true" />
+        <div className="space-y-6">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                {t`Interactions`}
+              </span>
+              <span className="text-lg font-semibold tabular-nums text-foreground">
+                {totalInteractions}
+              </span>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                {t`Pending`}
+              </span>
+              <span className="text-lg font-semibold tabular-nums text-amber-600 dark:text-amber-400">
+                {pendingCount}
+              </span>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                {t`Approved`}
+              </span>
+              <span className="text-lg font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                {approvedCount}
+              </span>
+            </div>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                {t`Rejected`}
+              </span>
+              <span className="text-lg font-semibold tabular-nums text-foreground">
+                {rejectedCount}
+              </span>
+            </div>
+            {riskFlaggedCount > 0 ? (
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                  {t`Flagged`}
+                </span>
+                <span className="text-lg font-semibold tabular-nums text-rose-600 dark:text-rose-400">
+                  {riskFlaggedCount}
+                </span>
               </div>
-              <ArrowRight
-                className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-                aria-hidden="true"
-              />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">{t`Users`}</p>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                {metaQuery.isLoading
-                  ? t`Loading\u2026`
-                  : t`Browse ${totalInteractions} interactions across all users`}
-              </p>
-            </div>
-          </Link>
+            ) : null}
+          </div>
 
-          <Link
-            to="/admin/campaigns/$campaignKey/entities"
-            params={{ campaignKey }}
-            search={createCampaignAdminEntitiesRouteSearch()}
-            className="group flex flex-col gap-3 rounded-xl border border-border/70 bg-card/80 p-5 transition-colors hover:border-border hover:bg-muted/20"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                <Building2 className="h-5 w-5" aria-hidden="true" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Link
+              to="/admin/campaigns/$campaignKey/users"
+              params={{ campaignKey }}
+              search={createCampaignAdminUsersRouteSearch()}
+              className="group flex flex-col gap-3 rounded-xl border border-border/70 bg-card/80 p-5 transition-colors hover:border-border hover:bg-muted/20"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <Users className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <ArrowRight
+                  className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
               </div>
-              <ArrowRight
-                className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-                aria-hidden="true"
-              />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                {t`Entities`}
-              </p>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                {t`View entity-level campaign state across users, interactions, and delivery activity`}
-              </p>
-            </div>
-          </Link>
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  {t`Users`}
+                </p>
+                <UsersHubCardSummary
+                  meta={usersMeta}
+                  totalInteractions={totalInteractions}
+                  isLoading={metaQuery.isLoading}
+                />
+              </div>
+            </Link>
 
-          <Link
-            to="/admin/campaigns/$campaignKey/user-interactions"
-            params={{ campaignKey }}
-            search={createCampaignAdminQueueRouteSearch()}
-            className="group flex flex-col gap-3 rounded-xl border border-border/70 bg-card/80 p-5 transition-colors hover:border-border hover:bg-muted/20"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                <ClipboardList className="h-5 w-5" aria-hidden="true" />
+            <Link
+              to="/admin/campaigns/$campaignKey/entities"
+              params={{ campaignKey }}
+              search={createCampaignAdminEntitiesRouteSearch()}
+              className="group flex flex-col gap-3 rounded-xl border border-border/70 bg-card/80 p-5 transition-colors hover:border-border hover:bg-muted/20"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <Building2 className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <ArrowRight
+                  className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
               </div>
-              <ArrowRight
-                className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-                aria-hidden="true"
-              />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                {t`Interactions Queue`}
-              </p>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                {metaQuery.isLoading
-                  ? t`Loading\u2026`
-                  : t`${pendingCount} pending \u00b7 ${approvedCount} approved \u00b7 ${rejectedCount} rejected`}
-              </p>
-            </div>
-            {riskFlaggedCount > 0 && (
-              <p className="text-xs text-amber-600 dark:text-amber-400">
-                {t`${riskFlaggedCount} flagged for review`}
-              </p>
-            )}
-          </Link>
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  {t`Entities`}
+                </p>
+                <EntitiesHubCardSummary meta={entitiesMeta} />
+              </div>
+            </Link>
 
-          <Link
-            to="/admin/campaigns/$campaignKey/notifications"
-            params={{ campaignKey }}
-            search={createCampaignAdminNotificationsRouteSearch()}
-            className="group flex flex-col gap-3 rounded-xl border border-border/70 bg-card/80 p-5 transition-colors hover:border-border hover:bg-muted/20"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                <Mail className="h-5 w-5" aria-hidden="true" />
+            <Link
+              to="/admin/campaigns/$campaignKey/user-interactions"
+              params={{ campaignKey }}
+              search={createCampaignAdminQueueRouteSearch()}
+              className="group flex flex-col gap-3 rounded-xl border border-border/70 bg-card/80 p-5 transition-colors hover:border-border hover:bg-muted/20"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <ClipboardList className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <ArrowRight
+                  className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
               </div>
-              <ArrowRight
-                className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-                aria-hidden="true"
-              />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                {t`Notifications`}
-              </p>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                {t`Audit campaign notification activity, run manual triggers, and preview templates`}
-              </p>
-            </div>
-          </Link>
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  {t`Interactions Queue`}
+                </p>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  {metaQuery.isLoading
+                    ? t`Loading…`
+                    : t`${pendingCount} pending · ${approvedCount} approved · ${rejectedCount} rejected`}
+                </p>
+              </div>
+              {riskFlaggedCount > 0 && (
+                <p className="text-xs text-amber-600 dark:text-amber-400">
+                  {t`${riskFlaggedCount} flagged for review`}
+                </p>
+              )}
+            </Link>
+
+            <Link
+              to="/admin/campaigns/$campaignKey/notifications"
+              params={{ campaignKey }}
+              search={createCampaignAdminNotificationsRouteSearch()}
+              className="group flex flex-col gap-3 rounded-xl border border-border/70 bg-card/80 p-5 transition-colors hover:border-border hover:bg-muted/20"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                  <Mail className="h-5 w-5" aria-hidden="true" />
+                </div>
+                <ArrowRight
+                  className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  {t`Notifications`}
+                </p>
+                <NotificationsHubCardSummary meta={notificationsMeta} />
+              </div>
+            </Link>
+          </div>
         </div>
       )}
     </AdminCampaignLayout>

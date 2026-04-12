@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { listCampaignAdminUsers } from "./campaign-admin-users";
+import {
+  getCampaignAdminUsersMeta,
+  listCampaignAdminUsers,
+} from "./campaign-admin-users";
 
 const getAuthTokenMock = vi.fn<() => Promise<string | null>>();
 
@@ -37,6 +40,16 @@ function createUsersListResponsePayload() {
         sortBy: "latestUpdatedAt",
         sortOrder: "desc",
       },
+    },
+  };
+}
+
+function createUsersMetaResponsePayload() {
+  return {
+    ok: true,
+    data: {
+      totalUsers: 14,
+      usersWithPendingReviews: 4,
     },
   };
 }
@@ -132,6 +145,31 @@ describe("campaign-admin-users api", () => {
       message: "Invalid campaign user cursor",
       retryable: false,
     });
+  });
+
+  it("loads users metadata from the dedicated meta endpoint", async () => {
+    getAuthTokenMock.mockResolvedValue("token-123");
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify(createUsersMetaResponsePayload()), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const result = await getCampaignAdminUsersMeta({
+      campaignKey: "funky",
+    });
+
+    expect(result).toEqual(createUsersMetaResponsePayload().data);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3000/api/v1/admin/campaigns/funky/users/meta",
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({
+          Authorization: "Bearer token-123",
+        }),
+      }),
+    );
   });
 
   it("accepts subscription-only entity users with a null latest interaction id", async () => {

@@ -8,6 +8,7 @@ import {
   campaignAdminNotificationTemplatePreviewQueryOptions,
   campaignAdminNotificationsAuditQueryOptions,
   campaignAdminNotificationsKeys,
+  campaignAdminNotificationsMetaQueryOptions,
   useExecuteCampaignAdminNotificationTriggerMutation,
 } from "./use-campaign-admin-notifications";
 
@@ -18,6 +19,7 @@ vi.mock(
   () => ({
     executeCampaignAdminNotificationTrigger: (input: unknown) =>
       executeCampaignAdminNotificationTriggerMock(input),
+    getCampaignAdminNotificationsMeta: vi.fn(),
     getCampaignAdminNotificationTemplatePreview: vi.fn(),
     listCampaignAdminNotificationTemplates: vi.fn(),
     listCampaignAdminNotificationTriggers: vi.fn(),
@@ -86,6 +88,19 @@ describe("use-campaign-admin-notifications", () => {
     expect(options.queryKey).toEqual(
       campaignAdminNotificationsKeys.templatePreview("funky", null),
     );
+  });
+
+  it("builds the notifications meta query options with retries disabled", () => {
+    const options = campaignAdminNotificationsMetaQueryOptions({
+      campaignKey: "funky",
+      enabled: false,
+    });
+
+    expect(options.queryKey).toEqual(
+      campaignAdminNotificationsKeys.meta("funky"),
+    );
+    expect(options.enabled).toBe(false);
+    expect(options.retry).toBe(false);
   });
 
   it("invalidates the notifications subtree after executing a trigger", async () => {

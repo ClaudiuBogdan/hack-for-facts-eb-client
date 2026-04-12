@@ -5,6 +5,9 @@ import { CampaignAdminHubPage } from "./CampaignAdminHubPage";
 
 const useAuthMock = vi.fn();
 const useCampaignAdminInteractionMetaQueryMock = vi.fn();
+const useCampaignAdminUsersMetaQueryMock = vi.fn();
+const useCampaignAdminEntitiesMetaQueryMock = vi.fn();
+const useCampaignAdminNotificationsMetaQueryMock = vi.fn();
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
@@ -58,10 +61,34 @@ vi.mock(
   }),
 );
 
+vi.mock("@/features/campaigns/buget/admin/hooks/use-campaign-admin-users", () => ({
+  useCampaignAdminUsersMetaQuery: (...args: unknown[]) =>
+    useCampaignAdminUsersMetaQueryMock(...args),
+}));
+
+vi.mock(
+  "@/features/campaigns/buget/admin/hooks/use-campaign-admin-entities",
+  () => ({
+    useCampaignAdminEntitiesMetaQuery: (...args: unknown[]) =>
+      useCampaignAdminEntitiesMetaQueryMock(...args),
+  }),
+);
+
+vi.mock(
+  "@/features/campaigns/buget/admin/hooks/use-campaign-admin-notifications",
+  () => ({
+    useCampaignAdminNotificationsMetaQuery: (...args: unknown[]) =>
+      useCampaignAdminNotificationsMetaQueryMock(...args),
+  }),
+);
+
 describe("CampaignAdminHubPage", () => {
   beforeEach(() => {
     useAuthMock.mockReset();
     useCampaignAdminInteractionMetaQueryMock.mockReset();
+    useCampaignAdminUsersMetaQueryMock.mockReset();
+    useCampaignAdminEntitiesMetaQueryMock.mockReset();
+    useCampaignAdminNotificationsMetaQueryMock.mockReset();
 
     useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
     useCampaignAdminInteractionMetaQueryMock.mockReturnValue({
@@ -99,6 +126,35 @@ describe("CampaignAdminHubPage", () => {
       error: null,
       isLoading: false,
     });
+    useCampaignAdminUsersMetaQueryMock.mockReturnValue({
+      data: {
+        totalUsers: 9,
+        usersWithPendingReviews: 3,
+      },
+      error: null,
+      isLoading: false,
+    });
+    useCampaignAdminEntitiesMetaQueryMock.mockReturnValue({
+      data: {
+        totalEntities: 18,
+        entitiesWithPendingReviews: 5,
+        entitiesWithSubscribers: 7,
+        entitiesWithNotificationActivity: 9,
+        entitiesWithFailedNotifications: 2,
+        availableInteractionTypes: [],
+      },
+      error: null,
+      isLoading: false,
+    });
+    useCampaignAdminNotificationsMetaQueryMock.mockReturnValue({
+      data: {
+        pendingDeliveryCount: 3,
+        failedDeliveryCount: 1,
+        replyReceivedCount: 4,
+      },
+      error: null,
+      isLoading: false,
+    });
   });
 
   it("renders the notifications hub card with the notifications route search", () => {
@@ -114,10 +170,15 @@ describe("CampaignAdminHubPage", () => {
       "/admin/campaigns/funky/notifications?tab=audit&sortBy=createdAt&sortOrder=desc&limit=50",
     );
     expect(
-      screen.getByText(
-        "Audit campaign notification activity, run manual triggers, and preview templates",
-      ),
+      screen.getByText("3 pending delivery · 4 replies"),
     ).toBeInTheDocument();
+    expect(screen.getByText("1 failed deliveries")).toBeInTheDocument();
+  });
+
+  it("renders the users hub card with the compact queue-style summary", () => {
+    render(<CampaignAdminHubPage campaignKey="funky" />);
+
+    expect(screen.getByText("9 users · 3 need review")).toBeInTheDocument();
   });
 
   it("renders the entities hub card with the entities route search", () => {
@@ -132,9 +193,40 @@ describe("CampaignAdminHubPage", () => {
       "href",
       "/admin/campaigns/funky/entities?limit=50",
     );
+    expect(screen.getByText("18 tracked · 5 pending")).toBeInTheDocument();
+    expect(screen.getByText("2 delivery issues")).toBeInTheDocument();
+  });
+
+  it("falls back to the existing descriptive copy when optional hub stats are unavailable", () => {
+    useCampaignAdminUsersMetaQueryMock.mockReturnValue({
+      data: undefined,
+      error: { status: 404 },
+      isLoading: false,
+    });
+    useCampaignAdminEntitiesMetaQueryMock.mockReturnValue({
+      data: undefined,
+      error: { status: 404 },
+      isLoading: false,
+    });
+    useCampaignAdminNotificationsMetaQueryMock.mockReturnValue({
+      data: undefined,
+      error: { status: 404 },
+      isLoading: false,
+    });
+
+    render(<CampaignAdminHubPage campaignKey="funky" />);
+
+    expect(
+      screen.getByText("Browse 12 interactions across all users"),
+    ).toBeInTheDocument();
     expect(
       screen.getByText(
         "View entity-level campaign state across users, interactions, and delivery activity",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Audit campaign notification activity, run manual triggers, and preview templates",
       ),
     ).toBeInTheDocument();
   });

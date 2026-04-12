@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import {
   executeCampaignAdminNotificationTrigger,
+  getCampaignAdminNotificationsMeta,
   getCampaignAdminNotificationTemplatePreview,
   listCampaignAdminNotificationTemplates,
   listCampaignAdminNotificationTriggers,
@@ -16,6 +17,7 @@ import type {
   CampaignAdminCampaignKey,
   CampaignAdminNotificationsAuditFilters,
   CampaignAdminNotificationsListResponse,
+  CampaignAdminNotificationsMetaResponse,
   CampaignAdminNotificationTemplateDescriptor,
   CampaignAdminNotificationTemplatePreview,
   CampaignAdminNotificationTriggerDescriptor,
@@ -29,6 +31,8 @@ export const campaignAdminNotificationsKeys = {
     ["campaign-admin", campaignKey] as const,
   notificationsForCampaign: (campaignKey: CampaignAdminCampaignKey) =>
     ["campaign-admin", campaignKey, "notifications"] as const,
+  meta: (campaignKey: CampaignAdminCampaignKey) =>
+    ["campaign-admin", campaignKey, "notifications", "meta"] as const,
   audit: (
     campaignKey: CampaignAdminCampaignKey,
     filters: CampaignAdminNotificationsAuditFilters,
@@ -89,6 +93,26 @@ export function campaignAdminNotificationsAuditQueryOptions(input: {
     enabled: input.enabled ?? true,
     staleTime: 15_000,
     refetchOnWindowFocus: true,
+  });
+}
+
+export function campaignAdminNotificationsMetaQueryOptions(input: {
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly enabled?: boolean;
+}) {
+  return queryOptions<
+    CampaignAdminNotificationsMetaResponse,
+    CampaignAdminApiError
+  >({
+    queryKey: campaignAdminNotificationsKeys.meta(input.campaignKey),
+    queryFn: async () =>
+      getCampaignAdminNotificationsMeta({
+        campaignKey: input.campaignKey,
+      }),
+    enabled: input.enabled ?? true,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    retry: false,
   });
 }
 
@@ -174,6 +198,13 @@ export function useCampaignAdminNotificationsAuditQuery(input: {
   readonly enabled?: boolean;
 }) {
   return useQuery(campaignAdminNotificationsAuditQueryOptions(input));
+}
+
+export function useCampaignAdminNotificationsMetaQuery(input: {
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly enabled?: boolean;
+}) {
+  return useQuery(campaignAdminNotificationsMetaQueryOptions(input));
 }
 
 export function useCampaignAdminNotificationTriggersQuery(input: {

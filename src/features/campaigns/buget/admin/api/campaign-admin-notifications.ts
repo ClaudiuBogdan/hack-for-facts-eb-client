@@ -11,11 +11,13 @@ import {
   parseCampaignAdminNotificationTriggerExecutionResponse,
   parseCampaignAdminNotificationTriggersResponse,
   parseCampaignAdminNotificationsListResponse,
+  parseCampaignAdminNotificationsMetaResponse,
 } from "@/features/campaigns/buget/admin/schemas/api-schemas";
 import type {
   CampaignAdminCampaignKey,
   CampaignAdminNotificationsAuditFilters,
   CampaignAdminNotificationsListResponse,
+  CampaignAdminNotificationsMetaResponse,
   CampaignAdminNotificationTemplateDescriptor,
   CampaignAdminNotificationTemplatePreview,
   CampaignAdminNotificationTriggerDescriptor,
@@ -28,6 +30,7 @@ const logger = createLogger("campaign-admin-notifications-api");
 
 type CampaignAdminNotificationsRequestKind =
   | "audit"
+  | "meta"
   | "triggerCatalog"
   | "triggerExecution"
   | "templateCatalog"
@@ -81,6 +84,8 @@ function getFallbackErrorMessage(
     switch (requestKind) {
       case "audit":
         return t`Campaign admin notifications request was invalid.`;
+      case "meta":
+        return t`Campaign admin notifications metadata request was invalid.`;
       case "triggerCatalog":
         return t`Campaign admin notification triggers request was invalid.`;
       case "triggerExecution":
@@ -121,6 +126,8 @@ function getFallbackErrorMessage(
     switch (requestKind) {
       case "audit":
         return t`Campaign notification audit could not be loaded right now.`;
+      case "meta":
+        return t`Campaign notification summary could not be loaded right now.`;
       case "triggerCatalog":
         return t`Campaign notification triggers could not be loaded right now.`;
       case "triggerExecution":
@@ -137,6 +144,8 @@ function getFallbackErrorMessage(
   switch (requestKind) {
     case "audit":
       return t`Campaign notification audit request failed.`;
+    case "meta":
+      return t`Campaign notification summary request failed.`;
     case "triggerCatalog":
       return t`Campaign notification triggers request failed.`;
     case "triggerExecution":
@@ -327,6 +336,27 @@ export async function listCampaignAdminNotifications(input: {
     errorMessage: t`Campaign notification audit response was invalid.`,
     logMessage:
       "Campaign notification audit response did not match the expected schema",
+  });
+}
+
+export async function getCampaignAdminNotificationsMeta(input: {
+  readonly campaignKey: CampaignAdminCampaignKey;
+}): Promise<CampaignAdminNotificationsMetaResponse> {
+  const payload = await authorizedRequest({
+    campaignKey: input.campaignKey,
+    pathname: "/notifications/meta",
+    init: {
+      method: "GET",
+    },
+    requestKind: "meta",
+  });
+
+  return parseCampaignAdminSuccessPayload({
+    payload,
+    parse: parseCampaignAdminNotificationsMetaResponse,
+    errorMessage: t`Campaign notification summary response was invalid.`,
+    logMessage:
+      "Campaign notification summary response did not match the expected schema",
   });
 }
 

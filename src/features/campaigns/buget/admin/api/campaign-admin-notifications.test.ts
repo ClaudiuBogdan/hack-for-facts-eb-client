@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   executeCampaignAdminNotificationTrigger,
+  getCampaignAdminNotificationsMeta,
   getCampaignAdminNotificationTemplatePreview,
   listCampaignAdminNotificationTriggers,
   listCampaignAdminNotifications,
@@ -61,6 +62,17 @@ function createNotificationsListPayload() {
         hasMore: true,
         nextCursor: "cursor-1",
       },
+    },
+  };
+}
+
+function createNotificationsMetaPayload() {
+  return {
+    ok: true,
+    data: {
+      pendingDeliveryCount: 3,
+      failedDeliveryCount: 2,
+      replyReceivedCount: 6,
     },
   };
 }
@@ -189,6 +201,31 @@ describe("campaign-admin-notifications api", () => {
       status: 401,
       message: "Sign in required for this campaign notifications admin.",
     });
+  });
+
+  it("loads notification metadata from the dedicated meta endpoint", async () => {
+    getAuthTokenMock.mockResolvedValue("token-123");
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify(createNotificationsMetaPayload()), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const result = await getCampaignAdminNotificationsMeta({
+      campaignKey: "funky",
+    });
+
+    expect(result).toEqual(createNotificationsMetaPayload().data);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3000/api/v1/admin/campaigns/funky/notifications/meta",
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({
+          Authorization: "Bearer token-123",
+        }),
+      }),
+    );
   });
 
   it("posts trigger execution bodies with JSON headers", async () => {

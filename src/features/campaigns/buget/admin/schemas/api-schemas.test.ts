@@ -8,10 +8,12 @@ import {
   parseCampaignAdminNotificationTriggerExecutionResponse,
   parseCampaignAdminNotificationTriggersResponse,
   parseCampaignAdminNotificationsListResponse,
+  parseCampaignAdminNotificationsMetaResponse,
   parseCampaignAdminListResponse,
   parseCampaignAdminMetaResponse,
   parseCampaignAdminSubmitReviewsBody,
   parseCampaignAdminUsersListResponse,
+  parseCampaignAdminUsersMetaResponse,
 } from "./api-schemas";
 
 function createMetaResponsePayload() {
@@ -238,6 +240,27 @@ function createEntitiesMetaResponsePayload() {
           reviewable: true,
         },
       ],
+    },
+  };
+}
+
+function createUsersMetaResponsePayload() {
+  return {
+    ok: true,
+    data: {
+      totalUsers: 14,
+      usersWithPendingReviews: 4,
+    },
+  };
+}
+
+function createNotificationsMetaResponsePayload() {
+  return {
+    ok: true,
+    data: {
+      pendingDeliveryCount: 3,
+      failedDeliveryCount: 2,
+      replyReceivedCount: 6,
     },
   };
 }
@@ -521,6 +544,20 @@ describe("campaign admin api schemas", () => {
     const payload = createEntitiesMetaResponsePayload();
 
     expect(parseCampaignAdminEntitiesMetaResponse(payload)).toEqual(payload.data);
+  });
+
+  it("parses users metadata payloads", () => {
+    const payload = createUsersMetaResponsePayload();
+
+    expect(parseCampaignAdminUsersMetaResponse(payload)).toEqual(payload.data);
+  });
+
+  it("parses notifications metadata payloads", () => {
+    const payload = createNotificationsMetaResponsePayload();
+
+    expect(parseCampaignAdminNotificationsMetaResponse(payload)).toEqual(
+      payload.data,
+    );
   });
 
   it("rejects entity list payloads that omit failed notification counts", () => {

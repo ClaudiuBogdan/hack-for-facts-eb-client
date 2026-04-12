@@ -410,6 +410,11 @@ export type CampaignAdminUsersListResponse = {
   };
 };
 
+export type CampaignAdminUsersMetaResponse = {
+  readonly totalUsers: number;
+  readonly usersWithPendingReviews: number;
+};
+
 export type CampaignAdminMetaResponse = {
   readonly availableInteractionTypes: readonly CampaignAdminAvailableInteractionType[];
   readonly stats: CampaignAdminInteractionMetaStats;
@@ -541,6 +546,12 @@ export type CampaignAdminNotificationsListResponse = {
     readonly hasMore: boolean;
     readonly nextCursor: string | null;
   };
+};
+
+export type CampaignAdminNotificationsMetaResponse = {
+  readonly pendingDeliveryCount: number;
+  readonly failedDeliveryCount: number;
+  readonly replyReceivedCount: number;
 };
 
 export type CampaignAdminNotificationFieldDescriptor = {
