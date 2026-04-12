@@ -180,6 +180,27 @@ describe("CampaignAdminUserPage", () => {
     expect(screen.getByText("1 row selected")).toBeInTheDocument();
   });
 
+  it("renders the restored user workspace header and queue action", () => {
+    render(
+      <CampaignAdminUserPage
+        campaignKey="funky"
+        userId="user-1"
+        search={defaultSearch}
+        onSearchChange={() => {}}
+      />,
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "User workspace" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Open interactions queue" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "User interactions" }),
+    ).toBeInTheDocument();
+  });
+
   it("does not clear staged drafts before the first query result arrives", () => {
     const stagedStorageKey = getCampaignAdminStagedReviewDraftsStorageKey(
       "funky",

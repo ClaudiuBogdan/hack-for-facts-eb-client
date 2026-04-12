@@ -86,7 +86,7 @@ msgid "{0} enabled series"
 msgstr "{0} enabled series"
 
 #. placeholder {0}: activeFilters.length
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:724
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:744
 msgid "{0} filters applied"
 msgstr "{0} filters applied"
 
@@ -133,12 +133,14 @@ msgid "{0} rectifications"
 msgstr "{0} rectifications"
 
 #. placeholder {0}: selectedItems.length
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:782
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:739
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1038
 msgid "{0} rows selected"
 msgstr "{0} rows selected"
 
 #. placeholder {0}: selectedSendValidationIssues.length
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:796
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:753
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1051
 msgid "{0} rows still need review data"
 msgstr "{0} rows still need review data"
 
@@ -178,6 +180,11 @@ msgstr "{0} submitted / {1} evaluated"
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:483
 msgid "{0} unsupported series were skipped"
 msgstr "{0} unsupported series were skipped"
+
+#. placeholder {0}: items.length
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:520
+msgid "{0} users"
+msgstr "{0} users"
 
 #. placeholder {0}: issues.length
 #: src/features/campaigns/buget/admin/components/CampaignAdminSendValidationDialog.tsx:56
@@ -243,6 +250,10 @@ msgstr "{minutes}m"
 msgid "{minutes}m remaining"
 msgstr "{minutes}m remaining"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:155
+msgid "{pendingCount} pending · {approvedCount} approved · {rejectedCount} rejected"
+msgstr "{pendingCount} pending · {approvedCount} approved · {rejectedCount} rejected"
+
 #: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:367
 #~ msgid "{rejectedWithoutFeedbackCount} selected rows are currently rejected without a review note. Add notes in the spreadsheet or the default rejection note before submitting."
 #~ msgstr "{rejectedWithoutFeedbackCount} selected rows are currently rejected without a review note. Add notes in the spreadsheet or the default rejection note before submitting."
@@ -251,7 +262,15 @@ msgstr "{minutes}m remaining"
 msgid "{resultsCount} results found"
 msgstr "{resultsCount} results found"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:789
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:160
+msgid "{riskFlaggedCount} flagged for review"
+msgstr "{riskFlaggedCount} flagged for review"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1044
+msgid "{selectedHiddenCount} selected rows are hidden by the current filters"
+msgstr "{selectedHiddenCount} selected rows are hidden by the current filters"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:746
 msgid "{selectedStagedDraftCount} rows staged"
 msgstr "{selectedStagedDraftCount} rows staged"
 
@@ -263,7 +282,8 @@ msgstr "{selectedStagedDraftCount} rows staged"
 #~ msgid "{selectedStagedDraftCount} selected rows already have staged spreadsheet drafts."
 #~ msgstr "{selectedStagedDraftCount} selected rows already have staged spreadsheet drafts."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:180
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:182
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:200
 msgid "{sortLabel} sort"
 msgstr "{sortLabel} sort"
 
@@ -286,7 +306,7 @@ msgstr "{totalRowCount} total"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1501
 #: src/features/campaigns/buget/admin/components/CampaignAdminCursorPager.tsx:39
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:501
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:571
 msgid "{visibleRowCount} visible"
 msgstr "{visibleRowCount} visible"
 
@@ -353,7 +373,7 @@ msgstr "|z| >= threshold"
 msgid "0 participants"
 msgstr "0 participants"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:723
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:743
 msgid "1 filter applied"
 msgstr "1 filter applied"
 
@@ -369,11 +389,12 @@ msgstr "1 item selected"
 #~ msgid "1 row loaded in the current cursor window"
 #~ msgstr "1 row loaded in the current cursor window"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:781
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:738
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1037
 msgid "1 row selected"
 msgstr "1 row selected"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:788
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:745
 msgid "1 row staged"
 msgstr "1 row staged"
 
@@ -381,7 +402,8 @@ msgstr "1 row staged"
 #~ msgid "1 row staged."
 #~ msgstr "1 row staged."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:795
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:752
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1050
 msgid "1 row still needs review data"
 msgstr "1 row still needs review data"
 
@@ -396,6 +418,10 @@ msgstr "1 row still needs review data"
 #: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:366
 #~ msgid "1 selected row is currently rejected without a review note. Add a note in the spreadsheet or the default rejection note before submitting."
 #~ msgstr "1 selected row is currently rejected without a review note. Add a note in the spreadsheet or the default rejection note before submitting."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1043
+msgid "1 selected row is hidden by the current filters"
+msgstr "1 selected row is hidden by the current filters"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminSendValidationDialog.tsx:55
 msgid "1 validation issue"
@@ -447,7 +473,7 @@ msgstr "Access denied"
 msgid "Account category"
 msgstr "Account category"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:694
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:738
 msgid "Actions"
 msgstr "Actions"
 
@@ -496,6 +522,7 @@ msgid "Actual impact on budget"
 msgstr "Actual impact on budget"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:368
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1012
 msgid "Add"
 msgstr "Add"
 
@@ -617,6 +644,10 @@ msgstr "Add Value Filter Rule"
 msgid "Add view"
 msgstr "Add view"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1012
+msgid "Added"
+msgstr "Added"
+
 #: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:300
 msgid "Additional selected rows follow the same import and submit rules."
 msgstr "Additional selected rows follow the same import and submit rules."
@@ -636,23 +667,32 @@ msgstr "Address"
 msgid "Adjust for inflation (constant 2024 prices)"
 msgstr "Adjust for inflation (constant 2024 prices)"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:955
+msgid "Adjust the filters to inspect a broader slice of this user’s activity."
+msgstr "Adjust the filters to inspect a broader slice of this user’s activity."
+
 #: src/components/privacy/CookieConsentBanner.tsx:115
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:910
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:482
 msgid "Advanced"
 msgstr "Advanced"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:909
+msgid "Advanced ({appliedAdvancedFiltersCount})"
+msgstr "Advanced ({appliedAdvancedFiltersCount})"
 
 #: src/components/budget-explorer/BudgetLineItemsPreview.tsx:72
 msgid "Advanced Filtering"
 msgstr "Advanced Filtering"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:888
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:904
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:914
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:973
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:537
 msgid "Advanced filters"
 msgstr "Advanced filters"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:903
-msgid "Advanced filters ({appliedAdvancedFiltersCount})"
-msgstr "Advanced filters ({appliedAdvancedFiltersCount})"
+#~ msgid "Advanced filters ({appliedAdvancedFiltersCount})"
+#~ msgstr "Advanced filters ({appliedAdvancedFiltersCount})"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:110
 msgid "Advanced map analytics active view"
@@ -774,8 +814,10 @@ msgstr "Alerts when important changes occur"
 #: src/components/entities/LineItemsGroupedSection.tsx:175
 #: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:150
 #: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:168
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:383
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:386
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:399
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:402
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:863
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:866
 #: src/features/learning/components/interactive/DocumentLibrary.tsx:147
 #: src/routes/charts/index.lazy.tsx:244
 msgid "All"
@@ -802,10 +844,12 @@ msgstr "All counties"
 msgid "All Economic"
 msgstr "All Economic"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:423
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:428
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:868
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:873
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:439
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:444
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:814
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:817
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:430
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:434
 msgid "All interaction types"
 msgstr "All interaction types"
 
@@ -816,6 +860,11 @@ msgstr "All phases explored!"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:352
 msgid "All predefined views are already enabled."
 msgstr "All predefined views are already enabled."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:401
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:404
+msgid "All statuses"
+msgstr "All statuses"
 
 #: src/components/entities/EntityReports.tsx:168
 #: src/components/entities/EntityReports.tsx:171
@@ -956,29 +1005,49 @@ msgstr "Annual Report"
 msgid "Anonymous usage patterns, page views, interactions, and feature usage events."
 msgstr "Anonymous usage patterns, page views, interactions, and feature usage events."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:613
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:616
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:633
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:636
 msgid "Any payload"
 msgstr "Any payload"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:642
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:645
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:678
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:682
+msgid "Any payload kind"
+msgstr "Any payload kind"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:475
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:478
+msgid "Any phase"
+msgstr "Any phase"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:662
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:665
 msgid "Any scope"
 msgstr "Any scope"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:354
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:357
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:526
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:529
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:823
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:826
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:709
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:713
+msgid "Any scope type"
+msgstr "Any scope type"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:370
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:373
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:546
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:549
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:788
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:791
 msgid "Any status"
 msgstr "Any status"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:482
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:485
-#~ msgid "Any thread phase"
-#~ msgstr "Any thread phase"
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:740
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:744
+msgid "Any submission path"
+msgstr "Any submission path"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:602
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:606
+msgid "Any thread phase"
+msgstr "Any thread phase"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:681
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:684
@@ -998,11 +1067,13 @@ msgid "Anyone with the public link will see this saved version."
 msgstr "Anyone with the public link will see this saved version."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:458
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:799
 msgid "Apply"
 msgstr "Apply"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:953
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:943
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:1012
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:514
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:848
 #: src/routes/map.lazy.tsx:481
 msgid "Apply filters"
 msgstr "Apply filters"
@@ -1054,7 +1125,8 @@ msgstr "Approval requires explicit confirmation"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:186
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:676
-#: src/features/campaigns/buget/admin/constants.ts:162
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:865
+#: src/features/campaigns/buget/admin/constants.ts:205
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:33
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:52
 msgid "Approved"
@@ -1068,7 +1140,7 @@ msgstr "Approved rows can send with or without a review note."
 msgid "Approved rows can send without a note. Rejected rows still need one."
 msgstr "Approved rows can send without a note. Rejected rows still need one."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:185
+#: src/features/campaigns/buget/admin/utils/review-workspace.ts:94
 msgid "Approved rows with institution-email risk flags need explicit confirmation before sending."
 msgstr "Approved rows with institution-email risk flags need explicit confirmation before sending."
 
@@ -1123,9 +1195,9 @@ msgstr "Ask questions and discuss this lesson with the community."
 msgid "Ask us to send it"
 msgstr "Ask us to send it"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:460
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:603
-#: src/features/campaigns/buget/admin/constants.ts:102
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:466
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:647
+#: src/features/campaigns/buget/admin/constants.ts:128
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:453
 msgid "Association"
 msgstr "Association"
@@ -1149,12 +1221,12 @@ msgstr "At least one bin is required."
 #~ msgid "At least one selected interaction has an institution-email warning. Approval may trigger platform-send side effects on the server."
 #~ msgstr "At least one selected interaction has an institution-email warning. Approval may trigger platform-send side effects on the server."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1042
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1066
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1090
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1107
-msgid "Audit and review campaign interactions that require an operator decision."
-msgstr "Audit and review campaign interactions that require an operator decision."
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:968
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:992
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1016
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1033
+#~ msgid "Audit and review campaign interactions that require an operator decision."
+#~ msgstr "Audit and review campaign interactions that require an operator decision."
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:555
 msgid "Audit counters"
@@ -1206,7 +1278,7 @@ msgstr "Avg. Amount"
 msgid "Avg. Amount per UAT"
 msgstr "Avg. Amount per UAT"
 
-#: src/features/campaigns/buget/admin/constants.ts:225
+#: src/features/campaigns/buget/admin/constants.ts:268
 msgid "Awaiting reply"
 msgstr "Awaiting reply"
 
@@ -1314,6 +1386,10 @@ msgstr "Based on 2024 budgetary data"
 msgid "Basic data on population, employment and housing."
 msgstr "Basic data on population, employment and housing."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1032
+msgid "Batch review"
+msgstr "Batch review"
+
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:205
 msgid "Before confirming, make sure you:"
 msgstr "Before confirming, make sure you:"
@@ -1395,9 +1471,17 @@ msgstr "Bottom"
 msgid "Breakdown of the selected classification, including grouped chapters and totals."
 msgstr "Breakdown of the selected classification, including grouped chapters and totals."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:128
+msgid "Browse {totalInteractions} interactions across all users"
+msgstr "Browse {totalInteractions} interactions across all users"
+
 #: src/components/entities/EntityReports.tsx:74
 msgid "Browse and download all financial reports submitted by this entity"
 msgstr "Browse and download all financial reports submitted by this entity"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:455
+msgid "Browse and manage user workspaces. Inspect individual campaign interactions and continue review work."
+msgstr "Browse and manage user workspaces. Inspect individual campaign interactions and continue review work."
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:457
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:496
@@ -1424,7 +1508,7 @@ msgstr "Budget category"
 msgid "Budget Chapter"
 msgstr "Budget Chapter"
 
-#: src/features/campaigns/buget/admin/constants.ts:191
+#: src/features/campaigns/buget/admin/constants.ts:234
 msgid "Budget contestation"
 msgstr "Budget contestation"
 
@@ -1455,7 +1539,7 @@ msgstr "Budget Cycle Timeline"
 msgid "Budget Distribution"
 msgstr "Budget Distribution"
 
-#: src/features/campaigns/buget/admin/constants.ts:181
+#: src/features/campaigns/buget/admin/constants.ts:224
 #: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:178
 #: src/features/campaigns/buget/components/interactive/BudgetDocumentLink.tsx:195
 msgid "Budget document"
@@ -1482,7 +1566,7 @@ msgstr "Budget guides, request templates, and more."
 msgid "Budget guides, request templates, and useful resources for civic engagement."
 msgstr "Budget guides, request templates, and useful resources for civic engagement."
 
-#: src/features/campaigns/buget/admin/constants.ts:183
+#: src/features/campaigns/buget/admin/constants.ts:226
 msgid "Budget publication date"
 msgstr "Budget publication date"
 
@@ -1505,7 +1589,7 @@ msgstr "Budget Sector"
 msgid "Budget stage"
 msgstr "Budget stage"
 
-#: src/features/campaigns/buget/admin/constants.ts:185
+#: src/features/campaigns/buget/admin/constants.ts:228
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:148
 msgid "Budget status"
 msgstr "Budget status"
@@ -1552,7 +1636,7 @@ msgstr "Bulk Edit Data"
 msgid "Bulk edit filters"
 msgstr "Bulk edit filters"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:777
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:734
 msgid "Bulk review"
 msgstr "Bulk review"
 
@@ -1598,10 +1682,10 @@ msgid "Calculations assume a basket of 40% essential goods (11% VAT) and 60% gen
 msgstr "Calculations assume a basket of 40% essential goods (11% VAT) and 60% general goods (21% VAT)."
 
 #: src/features/campaigns/buget/admin/components/AdminCampaignLayout.tsx:27
-msgid "Campaign admin"
-msgstr "Campaign admin"
+#~ msgid "Campaign admin"
+#~ msgstr "Campaign admin"
 
-#: src/features/campaigns/buget/admin/api/campaign-admin-user-interactions.ts:309
+#: src/features/campaigns/buget/admin/api/campaign-admin-user-interactions.ts:370
 msgid "Campaign admin metadata response was invalid."
 msgstr "Campaign admin metadata response was invalid."
 
@@ -1621,13 +1705,34 @@ msgstr "Campaign admin request was invalid."
 msgid "Campaign admin review could not be completed right now."
 msgstr "Campaign admin review could not be completed right now."
 
-#: src/features/campaigns/buget/admin/api/campaign-admin-user-interactions.ts:334
+#: src/features/campaigns/buget/admin/api/campaign-admin-user-interactions.ts:395
 msgid "Campaign admin review response was invalid."
 msgstr "Campaign admin review response was invalid."
 
 #: src/features/campaigns/buget/admin/api/campaign-admin-user-interactions.ts:208
+#: src/features/campaigns/buget/admin/api/campaign-admin-users.ts:173
 msgid "Campaign admin server returned invalid JSON."
 msgstr "Campaign admin server returned invalid JSON."
+
+#: src/features/campaigns/buget/admin/api/campaign-admin-user-interactions.ts:341
+msgid "Campaign admin user page exceeded the safe pagination limit."
+msgstr "Campaign admin user page exceeded the safe pagination limit."
+
+#: src/features/campaigns/buget/admin/api/campaign-admin-users.ts:80
+msgid "Campaign admin users request failed."
+msgstr "Campaign admin users request failed."
+
+#: src/features/campaigns/buget/admin/api/campaign-admin-users.ts:61
+msgid "Campaign admin users request was invalid."
+msgstr "Campaign admin users request was invalid."
+
+#: src/features/campaigns/buget/admin/api/campaign-admin-users.ts:227
+msgid "Campaign admin users response was invalid."
+msgstr "Campaign admin users response was invalid."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:76
+msgid "Campaign Admin: {campaignLabel}"
+msgstr "Campaign Admin: {campaignLabel}"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:323
 msgid "Campaign notifications"
@@ -1645,13 +1750,21 @@ msgstr "Campaign notifications are subject to the <0>campaign terms and conditio
 #~ msgid "Campaign queue not found"
 #~ msgstr "Campaign queue not found"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1150
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1168
 msgid "Campaign queue summary"
 msgstr "Campaign queue summary"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1111
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1080
 msgid "Campaign queue unavailable"
 msgstr "Campaign queue unavailable"
+
+#: src/features/campaigns/buget/admin/api/campaign-admin-users.ts:77
+msgid "Campaign users could not be loaded right now."
+msgstr "Campaign users could not be loaded right now."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:601
+msgid "Campaign users unavailable"
+msgstr "Campaign users unavailable"
 
 #: src/components/charts/components/chart-annotations/AnnotationItemMenu.tsx:65
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:135
@@ -1675,8 +1788,10 @@ msgstr "Campaign queue unavailable"
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:244
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:272
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:298
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1303
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1333
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1347
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1377
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1150
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1180
 #: src/features/notifications/components/alerts/AlertCard.tsx:122
 #: src/features/notifications/components/NotificationCard.tsx:125
 #: src/routes/$lang/learning/index.lazy.tsx:315
@@ -1811,7 +1926,7 @@ msgstr "Checking your answer..."
 msgid "Checking..."
 msgstr "Checking..."
 
-#: src/features/campaigns/buget/admin/constants.ts:202
+#: src/features/campaigns/buget/admin/constants.ts:245
 msgid "Choice"
 msgstr "Choice"
 
@@ -1864,7 +1979,7 @@ msgstr "Citizens allowed to speak"
 msgid "City hall"
 msgstr "City hall"
 
-#: src/features/campaigns/buget/admin/constants.ts:187
+#: src/features/campaigns/buget/admin/constants.ts:230
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:79
 #: src/features/campaigns/buget/components/interactive/PrimarieContactInfo.tsx:116
 msgid "City hall contact"
@@ -1893,7 +2008,7 @@ msgid "City hall phone (optional)"
 msgstr "City hall phone (optional)"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:197
-#: src/features/campaigns/buget/admin/constants.ts:179
+#: src/features/campaigns/buget/admin/constants.ts:222
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:26
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:42
 msgid "City hall website"
@@ -1935,6 +2050,10 @@ msgstr "Classifications"
 msgid "Clear"
 msgstr "Clear"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:831
+msgid "Clear advanced"
+msgstr "Clear advanced"
+
 #: src/components/charts/components/series-config/SeriesFilter.tsx:683
 #: src/components/charts/components/series-config/SeriesFilter.tsx:991
 #: src/components/entities/EntityReports.tsx:132
@@ -1960,7 +2079,7 @@ msgid "Clear all local snapshots?"
 msgstr "Clear all local snapshots?"
 
 #: src/components/filters/EntityAnalyticsFilter.tsx:426
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:490
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:496
 #: src/routes/entity-analytics.lazy.tsx:216
 msgid "Clear filters"
 msgstr "Clear filters"
@@ -1977,7 +2096,8 @@ msgstr "Clear filters ({0})"
 msgid "Clear search"
 msgstr "Clear search"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:823
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:780
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1077
 msgid "Clear selection"
 msgstr "Clear selection"
 
@@ -1986,16 +2106,24 @@ msgid "Clear snapshots"
 msgstr "Clear snapshots"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:823
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:813
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1335
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:770
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1379
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1068
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1182
 msgid "Clear staged"
 msgstr "Clear staged"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1326
+#. placeholder {0}: selectedItems.length
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1173
+msgid "Clear staged data for {0} rows?"
+msgstr "Clear staged data for {0} rows?"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1370
 msgid "Clear staged data for {selectedStagedDraftCount} rows?"
 msgstr "Clear staged data for {selectedStagedDraftCount} rows?"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1325
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1369
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1172
 msgid "Clear staged data for 1 row?"
 msgstr "Clear staged data for 1 row?"
 
@@ -2012,7 +2140,8 @@ msgstr "Click a phase to explore details"
 msgid "Click the link below to explore all {type} classifications."
 msgstr "Click the link below to explore all {type} classifications."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:923
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:881
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:631
 msgid "Clipboard copy is not available in this browser."
 msgstr "Clipboard copy is not available in this browser."
 
@@ -2054,7 +2183,8 @@ msgstr "Clone snapshot"
 #: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:324
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:814
 #: src/features/campaigns/buget/admin/components/CampaignAdminSendValidationDialog.tsx:84
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:933
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:992
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:839
 msgid "Close"
 msgstr "Close"
 
@@ -2082,7 +2212,7 @@ msgstr "Close Search"
 msgid "Close!"
 msgstr "Close!"
 
-#: src/features/campaigns/buget/admin/constants.ts:235
+#: src/features/campaigns/buget/admin/constants.ts:278
 msgid "Closed without reply"
 msgstr "Closed without reply"
 
@@ -2139,14 +2269,18 @@ msgstr "Column"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:623
 #: src/components/maps/HeatmapDataTable.tsx:481
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:513
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:518
 #: src/routes/entity-analytics.lazy.tsx:234
 msgid "Columns"
 msgstr "Columns"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:476
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:496
 msgid "Combine updated date, submitted date, and thread phase when the queue needs a narrower review slice."
 msgstr "Combine updated date, submitted date, and thread phase when the queue needs a narrower review slice."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:549
+msgid "Combine updated date, submitted date, and thread phase when the user workspace needs a narrower review slice."
+msgstr "Combine updated date, submitted date, and thread phase when the user workspace needs a narrower review slice."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:613
 #: src/components/maps/HeatmapDataTable.tsx:473
@@ -2438,11 +2572,13 @@ msgid "Copied"
 msgstr "Copied"
 
 #. placeholder {0}: bulkReviewItems.length
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:940
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:898
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:645
 msgid "Copied {0} review rows to the clipboard."
 msgstr "Copied {0} review rows to the clipboard."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:939
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:897
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:644
 msgid "Copied 1 review row to the clipboard."
 msgstr "Copied 1 review row to the clipboard."
 
@@ -2467,7 +2603,7 @@ msgstr "Copied!"
 msgid "Copy"
 msgstr "Copy"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:453
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:459
 msgid "Copy all rows"
 msgstr "Copy all rows"
 
@@ -2517,7 +2653,7 @@ msgid "Copy prompt"
 msgstr "Copy prompt"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:176
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:453
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:459
 msgid "Copy selected rows"
 msgstr "Copy selected rows"
 
@@ -2872,7 +3008,7 @@ msgstr "Current date"
 msgid "Current period and source"
 msgstr "Current period and source"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:718
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:738
 msgid "Current queue view"
 msgstr "Current queue view"
 
@@ -3422,6 +3558,7 @@ msgid "Download Excel"
 msgstr "Download Excel"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:158
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:225
 msgid "Download text"
 msgstr "Download text"
 
@@ -3439,7 +3576,7 @@ msgid "draft"
 msgstr "draft"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:184
-#: src/features/campaigns/buget/admin/constants.ts:143
+#: src/features/campaigns/buget/admin/constants.ts:186
 msgid "Draft"
 msgstr "Draft"
 
@@ -3819,10 +3956,11 @@ msgstr "Entities"
 
 #: src/components/entity-analytics/EntityAnalyticsTable.tsx:69
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:481
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:614
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:875
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:208
-#: src/features/campaigns/buget/admin/constants.ts:104
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:658
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:932
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:216
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:292
+#: src/features/campaigns/buget/admin/constants.ts:130
 #: src/lib/chart-filter-utils.ts:37
 #: src/routes/entity-analytics.lazy.tsx:235
 msgid "Entity"
@@ -3836,8 +3974,9 @@ msgid "Entity Analytics"
 msgstr "Entity Analytics"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:485
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:394
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:837
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:410
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:831
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:456
 msgid "Entity CUI"
 msgstr "Entity CUI"
 
@@ -4233,8 +4372,8 @@ msgstr "Extraction confidence"
 msgid "Eyes on Local Budgets"
 msgstr "Eyes on Local Budgets"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:406
-#: src/features/campaigns/buget/admin/constants.ts:149
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:315
+#: src/features/campaigns/buget/admin/constants.ts:192
 msgid "Failed"
 msgstr "Failed"
 
@@ -4283,7 +4422,8 @@ msgstr "Failed to copy public map link"
 msgid "Failed to copy share link"
 msgstr "Failed to copy share link"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:943
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:901
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:648
 msgid "Failed to copy the review rows."
 msgstr "Failed to copy the review rows."
 
@@ -4355,6 +4495,10 @@ msgstr "Failed to load alerts. Please try again."
 msgid "Failed to load budget sectors. Falling back to predefined sectors 1-5."
 msgstr "Failed to load budget sectors. Falling back to predefined sectors 1-5."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:100
+msgid "Failed to load campaign data"
+msgstr "Failed to load campaign data"
+
 #: src/features/learning/components/interactive/lesson-discussion.tsx:117
 msgid "Failed to load comments"
 msgstr "Failed to load comments"
@@ -4381,6 +4525,10 @@ msgstr "Failed to load dataset preview"
 msgid "Failed to load datasets"
 msgstr "Failed to load datasets"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:882
+msgid "Failed to load interaction metadata"
+msgstr "Failed to load interaction metadata"
+
 #: src/features/advanced-map-analytics/hooks/use-map-editor-initial-state.ts:109
 #: src/features/advanced-map-analytics/hooks/use-map-local-snapshots.ts:86
 #: src/features/advanced-map-datasets/hooks/use-advanced-map-dataset-editor-initial-state.ts:158
@@ -4396,17 +4544,25 @@ msgstr "Failed to load map"
 msgid "Failed to load maps"
 msgstr "Failed to load maps"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1128
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1146
 msgid "Failed to load the queue summary"
 msgstr "Failed to load the queue summary"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1192
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1185
 msgid "Failed to load the review queue"
 msgstr "Failed to load the review queue"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:909
+msgid "Failed to load the user workspace"
+msgstr "Failed to load the user workspace"
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1705
 msgid "Failed to load UAT profile details."
 msgstr "Failed to load UAT profile details."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:612
+msgid "Failed to load users"
+msgstr "Failed to load users"
 
 #: src/features/advanced-map-analytics/hooks/use-map-local-snapshots.ts:222
 #: src/features/advanced-map-datasets/hooks/use-advanced-map-dataset-local-snapshots.ts:185
@@ -4438,7 +4594,8 @@ msgstr "Failed to save local snapshot"
 msgid "Failed to save snapshot"
 msgstr "Failed to save snapshot"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:600
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:562
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:405
 msgid "Failed to save the review."
 msgstr "Failed to save the review."
 
@@ -4512,14 +4669,22 @@ msgstr "Filter field"
 #~ msgid "Filter one entity"
 #~ msgstr "Filter one entity"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:404
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:848
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:841
+msgid "Filter one entity..."
+msgstr "Filter one entity..."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:420
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:466
 msgid "Filter one entity…"
 msgstr "Filter one entity…"
 
 #: src/components/entities/EntityReports.tsx:153
 msgid "Filter Reports"
 msgstr "Filter Reports"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1213
+msgid "Filter the campaign-wide queue, stage decisions, and keep the existing review workflow moving."
+msgstr "Filter the campaign-wide queue, stage decisions, and keep the existing review workflow moving."
 
 #: src/components/entities/EntityLineItemsTabs.tsx:145
 #: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:160
@@ -4654,7 +4819,7 @@ msgstr "Focus year selector in entity details"
 msgid "Follow the money"
 msgstr "Follow the money"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:398
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:307
 msgid "Follow-up"
 msgstr "Follow-up"
 
@@ -4760,7 +4925,7 @@ msgstr "Funding Source"
 msgid "Funds the pension checks and hospital bills directly. It's a huge mandatory system."
 msgstr "Funds the pension checks and hospital bills directly. It's a huge mandatory system."
 
-#: src/features/campaigns/buget/admin/constants.ts:132
+#: src/features/campaigns/buget/admin/constants.ts:175
 msgid "Funky Citizens"
 msgstr "Funky Citizens"
 
@@ -4836,7 +5001,8 @@ msgstr "Get Started"
 msgid "Get updates about"
 msgstr "Get updates about"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:138
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:143
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:206
 msgid "Global"
 msgstr "Global"
 
@@ -5134,7 +5300,8 @@ msgid "I understand the risk and want to continue with approval."
 msgstr "I understand the risk and want to continue with approval."
 
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:163
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:661
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:681
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:778
 msgid "Identifiers"
 msgstr "Identifiers"
 
@@ -5142,7 +5309,7 @@ msgstr "Identifiers"
 msgid "Identify the specific budget line or category. For example: \"Personnel expenses - Chapter 65 Education\""
 msgstr "Identify the specific budget line or category. For example: \"Personnel expenses - Chapter 65 Education\""
 
-#: src/features/campaigns/buget/admin/constants.ts:141
+#: src/features/campaigns/buget/admin/constants.ts:184
 msgid "Idle"
 msgstr "Idle"
 
@@ -5214,11 +5381,13 @@ msgstr "Import pasted rows"
 #~ msgstr "Import values"
 
 #. placeholder {0}: result.drafts.length
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:969
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:927
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:674
 msgid "Imported staged review values for {0} rows."
 msgstr "Imported staged review values for {0} rows."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:968
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:926
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:673
 msgid "Imported staged review values for 1 row."
 msgstr "Imported staged review values for 1 row."
 
@@ -5235,7 +5404,7 @@ msgstr "in \"invisible\" consumption taxes."
 msgid "In one year, you will pay"
 msgstr "In one year, you will pay"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:390
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:299
 msgid "In progress"
 msgstr "In progress"
 
@@ -5376,10 +5545,21 @@ msgstr "INS terms"
 msgid "INS Trends - {normalizedDatasetLabel} ({entityName})"
 msgstr "INS Trends - {normalizedDatasetLabel} ({entityName})"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:803
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:919
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:850
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:977
 msgid "Inspect"
 msgstr "Inspect"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:747
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:771
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:795
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:812
+msgid "Inspect and review all campaign interactions submitted by a single user."
+msgstr "Inspect and review all campaign interactions submitted by a single user."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:937
+msgid "Inspect submitted records, filter the workspace, and stage review decisions for this user."
+msgstr "Inspect submitted records, filter the workspace, and stage review decisions for this user."
 
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:138
 msgid "Inspect the live values for this UAT and jump into its primarie page."
@@ -5394,7 +5574,7 @@ msgstr "Inspect the live values for this UAT. Primarie navigation is unavailable
 msgid "Institution email"
 msgstr "Institution email"
 
-#: src/features/campaigns/buget/admin/constants.ts:252
+#: src/features/campaigns/buget/admin/constants.ts:295
 msgid "Institution email mismatch"
 msgstr "Institution email mismatch"
 
@@ -5402,7 +5582,7 @@ msgstr "Institution email mismatch"
 #~ msgid "Institution thread"
 #~ msgstr "Institution thread"
 
-#: src/features/campaigns/buget/admin/constants.ts:256
+#: src/features/campaigns/buget/admin/constants.ts:299
 msgid "Institution thread failed"
 msgstr "Institution thread failed"
 
@@ -5410,15 +5590,17 @@ msgstr "Institution thread failed"
 msgid "Insufficient data"
 msgstr "Insufficient data"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:464
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:662
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:883
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:216
-#: src/features/campaigns/buget/admin/constants.ts:112
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:470
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:706
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:940
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:224
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:285
+#: src/features/campaigns/buget/admin/constants.ts:138
 msgid "Interaction"
 msgstr "Interaction"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:577
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:597
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:655
 msgid "Interaction details"
 msgstr "Interaction details"
 
@@ -5430,14 +5612,32 @@ msgstr "Interaction element"
 #~ msgid "Interaction ID"
 #~ msgstr "Interaction ID"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:885
+msgid "Interaction labels are using local fallbacks right now. The user workspace still works."
+msgstr "Interaction labels are using local fallbacks right now. The user workspace still works."
+
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:129
 #~ msgid "Interaction review"
 #~ msgstr "Interaction review"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:411
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:855
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:427
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:802
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:419
 msgid "Interaction type"
 msgstr "Interaction type"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:672
+#: src/features/campaigns/buget/admin/constants.ts:155
+msgid "Interactions"
+msgstr "Interactions"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:169
+msgid "Interactions queue"
+msgstr "Interactions queue"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:150
+msgid "Interactions Queue"
+msgstr "Interactions Queue"
 
 #: src/features/learning/components/interactive/RectificationHistory.tsx:225
 msgid "Interactive"
@@ -5484,7 +5684,7 @@ msgstr "Invalid data series link"
 msgid "Invalid decision value: {decisionValue}"
 msgstr "Invalid decision value: {decisionValue}"
 
-#: src/features/campaigns/buget/admin/constants.ts:250
+#: src/features/campaigns/buget/admin/constants.ts:293
 msgid "Invalid institution email"
 msgstr "Invalid institution email"
 
@@ -5646,6 +5846,11 @@ msgstr "Labor market and housing pressure indicators."
 msgid "Language"
 msgstr "Language"
 
+#. placeholder {0}: formatDateTime(summary.latestUpdatedAt)
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:873
+msgid "Last activity {0}"
+msgstr "Last activity {0}"
+
 #: src/components/entities/views/ins-stats-view.presentation.tsx:255
 #: src/components/entities/views/ins-stats-view.presentation.tsx:325
 msgid "last available"
@@ -5667,9 +5872,18 @@ msgstr "Last reply"
 msgid "Last updated"
 msgstr "Last updated"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:660
+#: src/features/campaigns/buget/admin/constants.ts:153
+msgid "Last Updated"
+msgstr "Last Updated"
+
 #: src/routes/cookies.lazy.tsx:273
 msgid "Last updated:"
 msgstr "Last updated:"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:687
+msgid "Latest Interaction"
+msgstr "Latest Interaction"
 
 #: src/features/learning/components/interactive/VATReformCard.tsx:23
 msgid "Law 141/2025"
@@ -5756,17 +5970,18 @@ msgstr "less than"
 msgid "Less than"
 msgstr "Less than"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:260
-#~ msgid "Lesson"
-#~ msgstr "Lesson"
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:356
+msgid "Lesson"
+msgstr "Lesson"
 
 #: src/features/learning/components/player/MarkComplete.tsx:64
 msgid "Lesson completed!"
 msgstr "Lesson completed!"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:498
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:268
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:584
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:284
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:604
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:756
 msgid "Lesson ID"
 msgstr "Lesson ID"
 
@@ -5814,7 +6029,7 @@ msgstr "Line Items"
 msgid "Line Items Aggregated Yearly"
 msgstr "Line Items Aggregated Yearly"
 
-#: src/features/campaigns/buget/admin/constants.ts:206
+#: src/features/campaigns/buget/admin/constants.ts:249
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:224
 msgid "Link"
 msgstr "Link"
@@ -5913,6 +6128,10 @@ msgstr "Loading analytics data..."
 #: src/routes/budget-explorer.lazy.tsx:648
 msgid "Loading budget sectors…"
 msgstr "Loading budget sectors…"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1392
+msgid "Loading campaign queue summary"
+msgstr "Loading campaign queue summary"
 
 #: src/components/charts/components/views/ChartView.tsx:65
 msgid "Loading chart configuration..."
@@ -6029,9 +6248,17 @@ msgstr "Loading public data series..."
 msgid "Loading public map..."
 msgstr "Loading public map..."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1428
+msgid "Loading queue filters"
+msgstr "Loading queue filters"
+
 #: src/components/entities/EntityReportsSummary.tsx:39
 msgid "Loading reports…"
 msgstr "Loading reports…"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1473
+msgid "Loading review queue"
+msgstr "Loading review queue"
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:302
 msgid "Loading shared datasets..."
@@ -6068,6 +6295,8 @@ msgstr "Loading..."
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:117
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:482
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:128
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:127
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:154
 #: src/features/challenges/components/analysis/challenge-entity-analysis-loading-shell.tsx:10
 msgid "Loading…"
 msgstr "Loading…"
@@ -6285,7 +6514,7 @@ msgstr "manual"
 msgid "Manual"
 msgstr "Manual"
 
-#: src/features/campaigns/buget/admin/constants.ts:229
+#: src/features/campaigns/buget/admin/constants.ts:272
 msgid "Manual follow-up"
 msgstr "Manual follow-up"
 
@@ -6489,12 +6718,14 @@ msgstr "Medium opportunity"
 msgid "Menu"
 msgstr "Menu"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:463
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:650
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:887
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:224
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:368
-#: src/features/campaigns/buget/admin/constants.ts:110
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:469
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:694
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:944
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:232
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:384
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:848
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:299
+#: src/features/campaigns/buget/admin/constants.ts:136
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:180
 msgid "Message"
 msgstr "Message"
@@ -6534,7 +6765,7 @@ msgstr "Min percentile"
 msgid "Minimum"
 msgstr "Minimum"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:706
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:726
 msgid "Minimum 16 characters…"
 msgstr "Minimum 16 characters…"
 
@@ -6569,7 +6800,7 @@ msgstr "Missing description"
 msgid "Missing Items"
 msgstr "Missing Items"
 
-#: src/features/campaigns/buget/admin/constants.ts:254
+#: src/features/campaigns/buget/admin/constants.ts:297
 msgid "Missing official email"
 msgstr "Missing official email"
 
@@ -6590,11 +6821,11 @@ msgstr "Missing required columns: {0}"
 msgid "Missing review note"
 msgstr "Missing review note"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:170
+#: src/features/campaigns/buget/admin/utils/review-workspace.ts:79
 msgid "Missing staged review decision. Set approved or rejected before sending."
 msgstr "Missing staged review decision. Set approved or rejected before sending."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:166
+#: src/features/campaigns/buget/admin/utils/review-workspace.ts:75
 msgid "Missing staged review values. Paste spreadsheet rows with matching ids first."
 msgstr "Missing staged review values. Paste spreadsheet rows with matching ids first."
 
@@ -6901,6 +7132,7 @@ msgstr "Newest first"
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:549
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:211
 #: src/features/campaigns/buget/admin/components/CampaignAdminCursorPager.tsx:61
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:553
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:127
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:162
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:207
@@ -6921,8 +7153,10 @@ msgstr "NGO sender"
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:214
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:229
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:267
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:225
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:388
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:233
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:404
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:868
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:300
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:24
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:41
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:30
@@ -7048,7 +7282,7 @@ msgid "No data"
 msgstr "No data"
 
 #: src/components/commitments/DetailTable.tsx:522
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:489
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:495
 msgid "No data available"
 msgstr "No data available"
 
@@ -7165,6 +7399,10 @@ msgstr "No enabled series data available to display."
 msgid "No enabled series."
 msgstr "No enabled series."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:161
+msgid "No entity"
+msgstr "No entity"
+
 #: src/routes/entities.$cui.lazy.tsx:478
 msgid "No entity details found for CUI: <0>{cui}</0>. It's possible this entity does not exist or has no associated data."
 msgstr "No entity details found for CUI: <0>{cui}</0>. It's possible this entity does not exist or has no associated data."
@@ -7201,9 +7439,17 @@ msgstr "No INS filters configured."
 #~ msgid "No institution thread"
 #~ msgstr "No institution thread"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:950
+msgid "No interactions match the current filters"
+msgstr "No interactions match the current filters"
+
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:265
 #~ msgid "No interactions match these filters"
 #~ msgstr "No interactions match these filters"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:874
+msgid "No interactions yet"
+msgstr "No interactions yet"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:127
 msgid "No issues found"
@@ -7325,7 +7571,8 @@ msgstr "No results found."
 #~ msgid "No review note"
 #~ msgstr "No review note"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:915
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:873
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:623
 msgid "No review rows are available to copy."
 msgstr "No review rows are available to copy."
 
@@ -7353,7 +7600,8 @@ msgstr "No SIRUTA code associated."
 msgid "No staged decision"
 msgstr "No staged decision"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:972
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:930
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:677
 msgid "No staged review values were imported."
 msgstr "No staged review values were imported."
 
@@ -7377,8 +7625,8 @@ msgstr "No steps available yet. Please check back later."
 msgid "No tabular review rows were found in the pasted data."
 msgstr "No tabular review rows were found in the pasted data."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:410
-#: src/features/campaigns/buget/admin/constants.ts:239
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:319
+#: src/features/campaigns/buget/admin/constants.ts:282
 msgid "No thread"
 msgstr "No thread"
 
@@ -7386,6 +7634,18 @@ msgstr "No thread"
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:47
 msgid "No unit"
 msgstr "No unit"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:949
+msgid "No user interactions yet"
+msgstr "No user interactions yet"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:626
+msgid "No users match this search"
+msgstr "No users match this search"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:627
+msgid "No users yet"
+msgstr "No users yet"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:118
 msgid "No value filters configured yet."
@@ -7490,14 +7750,14 @@ msgstr "Not Quite"
 msgid "Not quite!"
 msgstr "Not quite!"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:792
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:906
-#: src/features/campaigns/buget/admin/constants.ts:166
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:837
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:963
+#: src/features/campaigns/buget/admin/constants.ts:209
 msgid "Not reviewed"
 msgstr "Not reviewed"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:781
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:896
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:826
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:953
 msgid "Not staged"
 msgstr "Not staged"
 
@@ -7549,7 +7809,7 @@ msgstr "November"
 msgid "Now"
 msgstr "Now"
 
-#: src/features/campaigns/buget/admin/constants.ts:208
+#: src/features/campaigns/buget/admin/constants.ts:251
 msgid "Number"
 msgstr "Number"
 
@@ -7750,6 +8010,11 @@ msgstr "Open in forum"
 msgid "Open in SICAP.ai"
 msgstr "Open in SICAP.ai"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:854
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:485
+msgid "Open interactions queue"
+msgstr "Open interactions queue"
+
 #: src/routes/map.lazy.tsx:350
 msgid "Open legend"
 msgstr "Open legend"
@@ -7804,6 +8069,15 @@ msgstr "Open Table"
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:110
 msgid "Open the campaign forum discussion."
 msgstr "Open the campaign forum discussion."
+
+#. placeholder {0}: item.userId
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:290
+msgid "Open user {0}"
+msgstr "Open user {0}"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1112
+msgid "Open users"
+msgstr "Open users"
 
 #: src/features/campaigns/buget/components/resources/buget-resources-page.tsx:107
 msgid "opens in new tab"
@@ -7941,9 +8215,18 @@ msgstr "Outliers series"
 msgid "Overview"
 msgstr "Overview"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:77
+msgid "Overview of the {campaignLabel} campaign workspace. Inspect user activity or review pending interactions."
+msgstr "Overview of the {campaignLabel} campaign workspace. Inspect user activity or review pending interactions."
+
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:397
 msgid "Owner dataset"
 msgstr "Owner dataset"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1138
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:524
+msgid "Page {currentPageIndex}"
+msgstr "Page {currentPageIndex}"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:540
 msgid "Page {page}"
@@ -7993,7 +8276,7 @@ msgstr "Participants"
 msgid "Participation"
 msgstr "Participation"
 
-#: src/features/campaigns/buget/admin/constants.ts:189
+#: src/features/campaigns/buget/admin/constants.ts:232
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:179
 msgid "Participation report"
 msgstr "Participation report"
@@ -8072,12 +8355,14 @@ msgstr "Paused"
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1426
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:271
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:193
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:252
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:335
 msgid "Payload"
 msgstr "Payload"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:490
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:244
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:598
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:618
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:663
 msgid "Payload kind"
 msgstr "Payload kind"
 
@@ -8095,9 +8380,10 @@ msgstr "Payments"
 msgid "Payments Made"
 msgstr "Payments Made"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1155
-#: src/features/campaigns/buget/admin/constants.ts:145
-#: src/features/campaigns/buget/admin/constants.ts:160
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1121
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:867
+#: src/features/campaigns/buget/admin/constants.ts:188
+#: src/features/campaigns/buget/admin/constants.ts:203
 msgid "Pending"
 msgstr "Pending"
 
@@ -8108,6 +8394,11 @@ msgstr "Pending"
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:140
 msgid "Pending review"
 msgstr "Pending review"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:684
+#: src/features/campaigns/buget/admin/constants.ts:157
+msgid "Pending Reviews"
+msgstr "Pending Reviews"
 
 #: src/features/learning/components/interactive/SalaryTaxCalculator.tsx:351
 msgid "Pension (CAS)"
@@ -8207,7 +8498,8 @@ msgstr "Personalized paths and interactive lessons."
 msgid "Personnel Costs"
 msgstr "Personnel Costs"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1163
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1172
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:460
 msgid "Phase"
 msgstr "Phase"
 
@@ -8257,6 +8549,7 @@ msgid "Platform notifications are subject to the <0>Transparenta.eu Terms of Use
 msgstr "Platform notifications are subject to the <0>Transparenta.eu Terms of Use</0> and <1>Privacy Policy</1>."
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:152
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:219
 msgid "Platform send"
 msgstr "Platform send"
 
@@ -8426,6 +8719,7 @@ msgstr "Preview:"
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:537
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:199
 #: src/features/campaigns/buget/admin/components/CampaignAdminCursorPager.tsx:52
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:543
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:89
 #: src/features/learning/components/player/LessonPlayer.tsx:549
 msgid "Previous"
@@ -8491,6 +8785,7 @@ msgstr "Profile details require a mapped entity CUI for this selected UAT."
 msgid "Profile information for this entity has not been collected yet."
 msgstr "Profile information for this entity has not been collected yet."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:268
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:208
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:262
 #: src/features/challenges/components/layout/ChallengesLayout.tsx:205
@@ -8538,7 +8833,7 @@ msgstr "Public datasets will appear here when shared by the community."
 msgid "Public Debate Campaign"
 msgstr "Public Debate Campaign"
 
-#: src/features/campaigns/buget/admin/constants.ts:177
+#: src/features/campaigns/buget/admin/constants.ts:220
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:481
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:498
 msgid "Public debate request"
@@ -8606,12 +8901,11 @@ msgstr "Quarterly"
 msgid "Quarterly Report"
 msgstr "Quarterly Report"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:331
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:749
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:347
 msgid "Queue filters"
 msgstr "Queue filters"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1131
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1149
 msgid "Queue totals and warning counts are unavailable right now. The review table is still current."
 msgstr "Queue totals and warning counts are unavailable right now. The review table is still current."
 
@@ -8675,7 +8969,8 @@ msgstr "Ready to create"
 msgid "Ready to learn?"
 msgstr "Ready to learn?"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:799
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:756
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1054
 msgid "Ready to send selected reviews."
 msgstr "Ready to send selected reviews."
 
@@ -8742,20 +9037,26 @@ msgstr "Receive updates about this entity in the local budget campaign"
 msgid "Recipient"
 msgstr "Recipient"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:276
-#~ msgid "Record"
-#~ msgstr "Record"
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:363
+msgid "Record"
+msgstr "Record"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:503
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:284
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:680
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:300
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:700
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:786
 msgid "Record key"
 msgstr "Record key"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:292
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:696
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:308
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:716
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:803
 msgid "Record key prefix"
 msgstr "Record key prefix"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:370
+msgid "Record prefix"
+msgstr "Record prefix"
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:264
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:445
@@ -8790,18 +9091,28 @@ msgstr "Reference"
 #~ msgid "Refine the queue with additional server-backed fields."
 #~ msgstr "Refine the queue with additional server-backed fields."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:539
+msgid "Refine the user workspace by timeline, payload, and record identifiers."
+msgstr "Refine the user workspace by timeline, payload, and record identifiers."
+
 #: src/components/entities/EntityReports.tsx:155
 msgid "Refine your search using the options below"
 msgstr "Refine your search using the options below"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:766
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:772
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1107
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:933
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:505
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:499
 msgid "Refresh"
 msgstr "Refresh"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1072
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1039
 msgid "Refresh your authentication session, then try loading the queue again."
 msgstr "Refresh your authentication session, then try loading the queue again."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:777
+msgid "Refresh your authentication session, then try loading the user workspace again."
+msgstr "Refresh your authentication session, then try loading the user workspace again."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal.tsx:563
 msgid "Regenerate from active data"
@@ -8846,7 +9157,8 @@ msgstr "Registration number"
 #~ msgstr "Reject the selected pending interactions with a shared operator note."
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:716
-#: src/features/campaigns/buget/admin/constants.ts:164
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:868
+#: src/features/campaigns/buget/admin/constants.ts:207
 msgid "Rejected"
 msgstr "Rejected"
 
@@ -8855,7 +9167,7 @@ msgstr "Rejected"
 #~ msgstr "Rejected rows must include a note either in the spreadsheet or in this default field."
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:743
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:177
+#: src/features/campaigns/buget/admin/utils/review-workspace.ts:86
 msgid "Rejected rows need a review note before sending."
 msgstr "Rejected rows need a review note before sending."
 
@@ -8920,8 +9232,8 @@ msgstr "Replace"
 msgid "Replace value"
 msgstr "Replace value"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:394
-#: src/features/campaigns/buget/admin/constants.ts:227
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:303
+#: src/features/campaigns/buget/admin/constants.ts:270
 msgid "Reply received"
 msgstr "Reply received"
 
@@ -8998,13 +9310,13 @@ msgstr "Required for core functionality like security, authentication, and prefe
 msgid "Requires variation; rule is skipped if standard deviation is zero."
 msgstr "Requires variation; rule is skipped if standard deviation is zero."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:783
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:789
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:922
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:494
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:259
 msgid "Reset"
 msgstr "Reset"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:943
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:1002
 msgid "Reset all"
 msgstr "Reset all"
 
@@ -9025,16 +9337,16 @@ msgstr "Reset to available period"
 msgid "Reset to default"
 msgstr "Reset to default"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:402
-#: src/features/campaigns/buget/admin/constants.ts:147
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:311
+#: src/features/campaigns/buget/admin/constants.ts:190
 msgid "Resolved"
 msgstr "Resolved"
 
-#: src/features/campaigns/buget/admin/constants.ts:233
+#: src/features/campaigns/buget/admin/constants.ts:276
 msgid "Resolved negative"
 msgstr "Resolved negative"
 
-#: src/features/campaigns/buget/admin/constants.ts:231
+#: src/features/campaigns/buget/admin/constants.ts:274
 msgid "Resolved positive"
 msgstr "Resolved positive"
 
@@ -9068,12 +9380,17 @@ msgstr "Restore this version?"
 msgid "Result limit"
 msgstr "Result limit"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1205
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1198
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:922
 #: src/routes/maps/editor/new.lazy.tsx:300
 msgid "Retry"
 msgstr "Retry"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1143
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:897
+msgid "Retry metadata"
+msgstr "Retry metadata"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1161
 msgid "Retry summary"
 msgstr "Retry summary"
 
@@ -9103,9 +9420,10 @@ msgstr "Revenues/Expenses"
 msgid "Revert"
 msgstr "Revert"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1162
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:803
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:919
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1171
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:850
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:977
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:278
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:214
 msgid "Review"
 msgstr "Review"
@@ -9118,31 +9436,49 @@ msgstr "Review and manage alerts created from your custom data series."
 msgid "Review and thread state"
 msgstr "Review and thread state"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:749
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:706
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:537
 msgid "Review approved."
 msgstr "Review approved."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:170
+msgid "Review campaign interactions with the existing operator workflow and durable reviewer attribution."
+msgstr "Review campaign interactions with the existing operator workflow and durable reviewer attribution."
+
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:736
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:467
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:678
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:901
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:473
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:722
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:958
 msgid "Review note"
 msgstr "Review note"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:329
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:331
 msgid "Review note required"
 msgstr "Review note required"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:828
+msgid "Review one user’s campaign activity with batch selection and the existing operator review workflow."
+msgstr "Review one user’s campaign activity with batch selection and the existing operator review workflow."
 
 #: src/routes/$lang/learning/$pathId/index.lazy.tsx:130
 #: src/routes/$lang/learning/index.lazy.tsx:248
 msgid "Review Path"
 msgstr "Review Path"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1123
-msgid "Review pending public-debate interactions using the server’s safe admin projection and durable reviewer attribution."
-msgstr "Review pending public-debate interactions using the server’s safe admin projection and durable reviewer attribution."
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:954
+#~ msgid "Review pending public-debate interactions using the server's safe admin projection and durable reviewer attribution."
+#~ msgstr "Review pending public-debate interactions using the server's safe admin projection and durable reviewer attribution."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:750
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1049
+#~ msgid "Review pending public-debate interactions using the server’s safe admin projection and durable reviewer attribution."
+#~ msgstr "Review pending public-debate interactions using the server’s safe admin projection and durable reviewer attribution."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1210
+msgid "Review queue"
+msgstr "Review queue"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:707
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:538
 msgid "Review rejected."
 msgstr "Review rejected."
 
@@ -9150,16 +9486,17 @@ msgstr "Review rejected."
 #~ msgid "Review selected interactions"
 #~ msgstr "Review selected interactions"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:466
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:673
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:891
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:472
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:717
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:948
 msgid "Review state"
 msgstr "Review state"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:580
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:339
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:807
-#: src/features/campaigns/buget/admin/constants.ts:98
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:624
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:355
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:773
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:387
+#: src/features/campaigns/buget/admin/constants.ts:124
 msgid "Review status"
 msgstr "Review status"
 
@@ -9176,16 +9513,20 @@ msgid "Reviewed at"
 msgstr "Reviewed at"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:533
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:468
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:689
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:905
-#: src/features/campaigns/buget/admin/constants.ts:114
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:474
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:733
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:962
+#: src/features/campaigns/buget/admin/constants.ts:140
 msgid "Reviewed by"
 msgstr "Reviewed by"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:462
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:637
-#: src/features/campaigns/buget/admin/constants.ts:108
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:866
+msgid "Risk"
+msgstr "Risk"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:468
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:681
+#: src/features/campaigns/buget/admin/constants.ts:134
 msgid "Risk flags"
 msgstr "Risk flags"
 
@@ -9230,7 +9571,7 @@ msgid "rows"
 msgstr "rows"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminCursorPager.tsx:36
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:444
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:874
 msgid "Rows per page"
 msgstr "Rows per page"
 
@@ -9343,12 +9684,13 @@ msgstr "Saving…"
 msgid "Schools, students and teachers."
 msgstr "Schools, students and teachers."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:244
-#~ msgid "Scope"
-#~ msgstr "Scope"
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:260
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:342
+msgid "Scope"
+msgstr "Scope"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:252
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:627
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:647
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:694
 msgid "Scope type"
 msgstr "Scope type"
 
@@ -9401,6 +9743,10 @@ msgstr "Search by name or code (ex: Social assistance, 7.06, fn:7.06)"
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1351
 msgid "Search by UAT name, CUI, or SIRUTA"
 msgstr "Search by UAT name, CUI, or SIRUTA"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:513
+msgid "Search by User ID"
+msgstr "Search by User ID"
 
 #: src/routes/charts/index.lazy.tsx:205
 msgid "Search charts"
@@ -9496,6 +9842,10 @@ msgstr "Search UATs (ex: Municipiul Arad)"
 msgid "Search units"
 msgstr "Search units"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:514
+msgid "Search users"
+msgstr "Search users"
+
 #: src/components/entities/SearchToggleInput.tsx:25
 msgid "Search..."
 msgstr "Search..."
@@ -9564,7 +9914,7 @@ msgstr "Select a UAT from the map to edit its value."
 msgid "Select a UAT from the map to load its details here."
 msgstr "Select a UAT from the map to load its details here."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:569
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:613
 msgid "Select all pending rows"
 msgstr "Select all pending rows"
 
@@ -9608,8 +9958,8 @@ msgstr "Select Path"
 msgid "Select population field"
 msgstr "Select population field"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:719
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:859
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:763
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:912
 msgid "Select row"
 msgstr "Select row"
 
@@ -9663,8 +10013,9 @@ msgstr "Selected period:"
 #~ msgid "Selected reviews rejected."
 #~ msgstr "Selected reviews rejected."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:850
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:879
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:808
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:837
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:563
 msgid "Selected rows changed before send. Review the staged data and try again."
 msgstr "Selected rows changed before send. Review the staged data and try again."
 
@@ -9703,11 +10054,13 @@ msgid "Seller Keeps"
 msgstr "Seller Keeps"
 
 #. placeholder {0}: selectedItems.length
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1293
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1337
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1140
 msgid "Send {0} reviews?"
 msgstr "Send {0} reviews?"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1292
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1336
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1139
 msgid "Send 1 review?"
 msgstr "Send 1 review?"
 
@@ -9716,6 +10069,7 @@ msgid "Send debate request"
 msgstr "Send debate request"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:156
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:223
 msgid "Send email"
 msgstr "Send email"
 
@@ -9738,8 +10092,10 @@ msgstr "Send review"
 msgid "Send reviews"
 msgstr "Send reviews"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:831
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1311
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:788
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1355
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1092
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1158
 msgid "Send selected"
 msgstr "Send selected"
 
@@ -9752,6 +10108,7 @@ msgid "Send via email"
 msgstr "Send via email"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:154
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:221
 msgid "Send yourself"
 msgstr "Send yourself"
 
@@ -9760,20 +10117,23 @@ msgstr "Send yourself"
 msgid "Sender"
 msgstr "Sender"
 
-#: src/features/campaigns/buget/admin/constants.ts:223
+#: src/features/campaigns/buget/admin/constants.ts:266
 msgid "Sending"
 msgstr "Sending"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1311
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1355
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1158
 msgid "Sending…"
 msgstr "Sending…"
 
 #. placeholder {0}: selectedItems.length
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:906
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:864
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:614
 msgid "Sent {0} reviews."
 msgstr "Sent {0} reviews."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:905
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:863
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:613
 msgid "Sent 1 review."
 msgstr "Sent 1 review."
 
@@ -9846,7 +10206,8 @@ msgstr "Series Type"
 msgid "Series with different units will be displayed on separate Y-axes"
 msgstr "Series with different units will be displayed on separate Y-axes"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1070
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1037
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:775
 msgid "Session expired"
 msgstr "Session expired"
 
@@ -10046,7 +10407,7 @@ msgstr "Show top economic categories"
 msgid "Show top functional categories"
 msgstr "Show top functional categories"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:721
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:741
 msgid "Showing the latest review queue by last update."
 msgstr "Showing the latest review queue by last update."
 
@@ -10079,7 +10440,9 @@ msgstr "Shows only the funds transferred to other public administration units."
 msgid "Side"
 msgstr "Side"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1053
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:93
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1019
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:758
 #: src/features/challenges/components/hub/challenge-hub-access-card.tsx:108
 msgid "Sign in"
 msgstr "Sign in"
@@ -10098,7 +10461,9 @@ msgstr "Sign in"
 msgid "Sign In"
 msgstr "Sign In"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1077
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1044
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:782
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:572
 msgid "Sign in again"
 msgstr "Sign in again"
 
@@ -10106,7 +10471,10 @@ msgstr "Sign in again"
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:270
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1046
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:410
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1046
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:86
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1012
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:751
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:566
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:529
 #: src/features/notifications/components/EntityNotificationBell.tsx:82
 #: src/routes/alerts/$alertId/index.lazy.tsx:149
@@ -10120,6 +10488,11 @@ msgstr "Sign in required"
 #: src/features/campaigns/buget/admin/api/campaign-admin-user-interactions.ts:185
 msgid "Sign in required for this campaign admin queue."
 msgstr "Sign in required for this campaign admin queue."
+
+#: src/features/campaigns/buget/admin/api/campaign-admin-users.ts:65
+#: src/features/campaigns/buget/admin/api/campaign-admin-users.ts:150
+msgid "Sign in required for this campaign users directory."
+msgstr "Sign in required for this campaign users directory."
 
 #: src/features/notifications/api/notifications.ts:7
 msgid "Sign in required to manage notifications"
@@ -10162,7 +10535,8 @@ msgstr "Sign in to save this step as completed."
 msgid "Sign in to track your learning journey."
 msgstr "Sign in to track your learning journey."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:140
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:145
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:208
 msgid "Single entity"
 msgstr "Single entity"
 
@@ -10355,8 +10729,7 @@ msgstr "Start Over"
 msgid "Start Path"
 msgstr "Start Path"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:333
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:752
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:349
 msgid "Start with the core review filters, then open advanced filters for exact identifiers and thread details."
 msgstr "Start with the core review filters, then open advanced filters for exact identifiers and thread details."
 
@@ -10400,9 +10773,8 @@ msgstr "Stats type"
 
 #: src/components/alerts/components/AlertEditorView.tsx:285
 #: src/components/entities/views/ins-stats-view.presentation.tsx:995
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:200
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:260
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:513
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:208
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:533
 msgid "Status"
 msgstr "Status"
 
@@ -10439,7 +10811,7 @@ msgstr "Stored only in this browser on this device."
 msgid "Strip this prefix from x-axis labels for this series (e.g., 2024-). Helps align yearly and monthly data on a common axis."
 msgstr "Strip this prefix from x-axis labels for this series (e.g., 2024-). Helps align yearly and monthly data on a common axis."
 
-#: src/features/campaigns/buget/admin/constants.ts:210
+#: src/features/campaigns/buget/admin/constants.ts:253
 msgid "Structured"
 msgstr "Structured"
 
@@ -10457,12 +10829,17 @@ msgstr "Subchapter"
 msgid "Subject"
 msgstr "Subject"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:349
+msgid "Submission"
+msgstr "Submission"
+
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:384
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:414
 msgid "Submission failed. Please try again."
 msgstr "Submission failed. Please try again."
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:257
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:725
 msgid "Submission path"
 msgstr "Submission path"
 
@@ -10487,7 +10864,8 @@ msgstr "Submit link"
 msgid "Submit report"
 msgstr "Submit report"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:304
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:320
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:321
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:144
 msgid "Submitted"
 msgstr "Submitted"
@@ -10496,7 +10874,8 @@ msgstr "Submitted"
 msgid "Submitted at"
 msgstr "Submitted at"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:540
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:560
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:618
 msgid "Submitted from"
 msgstr "Submitted from"
 
@@ -10511,7 +10890,8 @@ msgstr "Submitted from"
 msgid "Submitted on"
 msgstr "Submitted on"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:556
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:576
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:634
 msgid "Submitted to"
 msgstr "Submitted to"
 
@@ -10638,7 +11018,7 @@ msgstr "Territory options"
 msgid "Test error"
 msgstr "Test error"
 
-#: src/features/campaigns/buget/admin/constants.ts:204
+#: src/features/campaigns/buget/admin/constants.ts:247
 msgid "Text"
 msgstr "Text"
 
@@ -10670,6 +11050,10 @@ msgstr "The budget line, category, or allocation you are contesting…"
 #: src/features/campaigns/buget/admin/api/campaign-admin-user-interactions.ts:102
 msgid "The campaign admin queue is unavailable on this server or the campaign key is not supported."
 msgstr "The campaign admin queue is unavailable on this server or the campaign key is not supported."
+
+#: src/features/campaigns/buget/admin/api/campaign-admin-users.ts:73
+msgid "The campaign users directory is unavailable on this server or the campaign key is not supported."
+msgstr "The campaign users directory is unavailable on this server or the campaign key is not supported."
 
 #: src/components/classification-explorer/ClassificationExplorer.tsx:150
 msgid "The classification code \"{selectedCode}\" could not be found."
@@ -10708,6 +11092,10 @@ msgstr "The generated contestation needs a sender identity."
 msgid "The government planned to spend <0>{0}</0> on Infrastructure in {selectedYear}."
 msgstr "The government planned to spend <0>{0}</0> on Infrastructure in {selectedYear}."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:393
+msgid "The interaction changed before this review was saved. Reloaded data may differ from your staged state."
+msgstr "The interaction changed before this review was saved. Reloaded data may differ from your staged state."
+
 #: src/features/learning/components/interactive/RevenueDistributionGame.tsx:64
 msgid "The largest chunk. VAT alone brings in nearly as much as all salary taxes combined."
 msgstr "The largest chunk. VAT alone brings in nearly as much as all salary taxes combined."
@@ -10744,7 +11132,7 @@ msgstr "The Pattern"
 msgid "The public dataset link is malformed."
 msgstr "The public dataset link is malformed."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:584
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:546
 msgid "The queue changed before this review was saved. The current page was refreshed."
 msgstr "The queue changed before this review was saved. The current page was refreshed."
 
@@ -10764,7 +11152,9 @@ msgstr "The selected dataset could not be resolved from the server."
 msgid "The selected row cannot be sent yet. Fix the issue below."
 msgstr "The selected row cannot be sent yet. Fix the issue below."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1095
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1063
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:800
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:587
 msgid "The server denied access to the current campaign-admin permission boundary."
 msgstr "The server denied access to the current campaign-admin permission boundary."
 
@@ -10835,13 +11225,21 @@ msgstr "This alert doesn't exist or you don't have permission to view it."
 msgid "This alert is included in every monthly newsletter with its current status. When all threshold conditions are met, the alert will be emphasized with a customized message to draw your attention."
 msgstr "This alert is included in every monthly newsletter with its current status. When all threshold conditions are met, the alert will be emphasized with a customized message to draw your attention."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1112
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1081
 msgid "This campaign admin queue is either not enabled on the current server or the campaign key is not supported by the current admin review surface."
 msgstr "This campaign admin queue is either not enabled on the current server or the campaign key is not supported by the current admin review surface."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:817
+msgid "This campaign admin queue is either not enabled on the current server or the campaign key is not supported."
+msgstr "This campaign admin queue is either not enabled on the current server or the campaign key is not supported."
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:483
 #~ msgid "This campaign key is not supported by the current admin review surface."
 #~ msgstr "This campaign key is not supported by the current admin review surface."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:604
+msgid "This campaign users directory is not available on the current server or the campaign key is unsupported."
+msgstr "This campaign users directory is not available on the current server or the campaign key is unsupported."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-series-editor-modal.tsx:356
 msgid "This change would create a circular dependency."
@@ -10907,7 +11305,8 @@ msgstr "This name appears as the map title for viewers."
 msgid "This preview uses the persisted dataset state from the server."
 msgstr "This preview uses the persisted dataset state from the server."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1329
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1373
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1176
 msgid "This removes the staged review decision and note for the currently selected rows."
 msgstr "This removes the staged review decision and note for the currently selected rows."
 
@@ -10919,7 +11318,7 @@ msgstr "This removes the staged review decision and note for the currently selec
 #~ msgid "This row already has a staged spreadsheet rejection. The review note above was prefilled from that draft."
 #~ msgstr "This row already has a staged spreadsheet rejection. The review note above was prefilled from that draft."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:162
+#: src/features/campaigns/buget/admin/utils/review-workspace.ts:71
 msgid "This row is no longer pending. Refresh the queue before sending."
 msgstr "This row is no longer pending. Refresh the queue before sending."
 
@@ -10934,6 +11333,10 @@ msgstr "This snapshot will be visible on the public map URL."
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:331
 msgid "This title is displayed at the top of your map."
 msgstr "This title is displayed at the top of your map."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:954
+msgid "This user has not submitted any campaign interactions through the current admin projection."
+msgstr "This user has not submitted any campaign interactions through the current admin projection."
 
 #: src/components/charts/components/series-config/CustomSeriesValueEditor.tsx:47
 msgid "This value will be used for every year in the chart's range."
@@ -10972,21 +11375,22 @@ msgstr "This will remove the dataset unless it is still referenced by existing m
 msgid "This will reset your onboarding preferences and show the welcome flow again. Your lesson progress will be preserved."
 msgstr "This will reset your onboarding preferences and show the welcome flow again. Your lesson progress will be preserved."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1297
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1341
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1144
 msgid "This will submit the staged review for the selected row."
 msgstr "This will submit the staged review for the selected row."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1298
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1342
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1145
 msgid "This will submit the staged reviews for the selected rows."
 msgstr "This will submit the staged reviews for the selected rows."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:291
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:430
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:219
-#~ msgid "Thread"
-#~ msgstr "Thread"
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:276
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:328
+msgid "Thread"
+msgstr "Thread"
 
-#: src/features/campaigns/buget/admin/constants.ts:237
+#: src/features/campaigns/buget/admin/constants.ts:280
 msgid "Thread failed"
 msgstr "Thread failed"
 
@@ -10994,12 +11398,11 @@ msgstr "Thread failed"
 msgid "Thread ID"
 msgstr "Thread ID"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:252
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:471
-#~ msgid "Thread phase"
-#~ msgstr "Thread phase"
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:587
+msgid "Thread phase"
+msgstr "Thread phase"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1164
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1173
 msgid "Threads"
 msgstr "Threads"
 
@@ -11030,7 +11433,8 @@ msgstr "Tie-breaking is deterministic by value, then SIRUTA code."
 msgid "Tier"
 msgstr "Tier"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:474
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:494
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:547
 msgid "Timeline"
 msgstr "Timeline"
 
@@ -11146,7 +11550,8 @@ msgstr "total"
 #: src/components/entities/views/MapView.tsx:166
 #: src/components/filters/normalization-filter/NormalizationFilter.tsx:13
 #: src/components/normalization/normalization-mode-select.tsx:38
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1159
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1131
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:864
 msgid "Total"
 msgstr "Total"
 
@@ -11240,6 +11645,10 @@ msgstr "Treemap Chart (Aggregated)"
 #: src/routes/charts/index.lazy.tsx:262
 msgid "Try a different search term or sorting."
 msgstr "Try a different search term or sorting."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:631
+msgid "Try adjusting the search query."
+msgstr "Try adjusting the search query."
 
 #: src/components/errors/ErrorBoundary.tsx:68
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:199
@@ -11365,13 +11774,16 @@ msgstr "Unable to load notifications"
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:596
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:597
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:598
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:117
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:122
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:342
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:738
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:773
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:847
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:850
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:127
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:132
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:344
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:783
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:818
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:900
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:903
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:101
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:106
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:137
 msgid "Unavailable"
 msgstr "Unavailable"
 
@@ -11432,10 +11844,10 @@ msgstr "Unit override"
 #: src/components/entities/views/ins-stats-view.tsx:581
 #: src/components/entities/views/ins-stats-view.tsx:626
 #: src/components/entities/views/ins-stats-view.tsx:1244
-#: src/features/campaigns/buget/admin/constants.ts:168
-#: src/features/campaigns/buget/admin/constants.ts:212
-#: src/features/campaigns/buget/admin/constants.ts:214
-#: src/features/campaigns/buget/admin/constants.ts:241
+#: src/features/campaigns/buget/admin/constants.ts:211
+#: src/features/campaigns/buget/admin/constants.ts:255
+#: src/features/campaigns/buget/admin/constants.ts:257
+#: src/features/campaigns/buget/admin/constants.ts:284
 msgid "Unknown"
 msgstr "Unknown"
 
@@ -11590,11 +12002,12 @@ msgid "updated"
 msgstr "updated"
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:169
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:461
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:625
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:879
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:236
-#: src/features/campaigns/buget/admin/constants.ts:106
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:467
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:669
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:936
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:244
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:310
+#: src/features/campaigns/buget/admin/constants.ts:132
 msgid "Updated"
 msgstr "Updated"
 
@@ -11602,11 +12015,13 @@ msgstr "Updated"
 msgid "Updated at"
 msgstr "Updated at"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:482
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:502
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:555
 msgid "Updated from"
 msgstr "Updated from"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:498
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:518
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:571
 msgid "Updated to"
 msgstr "Updated to"
 
@@ -11652,7 +12067,7 @@ msgstr "Use alongside natural increase to separate demographic change from movem
 msgid "Use both sides when you want high and low extremes."
 msgstr "Use both sides when you want high and low extremes."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:917
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:976
 msgid "Use exact identifiers and secondary queue fields when the quick filters are not enough."
 msgstr "Use exact identifiers and secondary queue fields when the quick filters are not enough."
 
@@ -11688,7 +12103,11 @@ msgstr "Use the total of all matching observations in each period."
 #~ msgid "Use these identifiers to confirm you are editing the correct UAT."
 #~ msgstr "Use these identifiers to confirm you are editing the correct UAT."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:663
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:780
+msgid "Use these only when an operator already knows the exact record they need to inspect."
+msgstr "Use these only when an operator already knows the exact record they need to inspect."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:683
 msgid "Use these only when an operator needs to find a specific user or review record."
 msgstr "Use these only when an operator needs to find a specific user or review record."
 
@@ -11712,21 +12131,27 @@ msgstr "Use with OR to add extreme percentile groups without losing current matc
 msgid "Useful as a first segmentation before anomaly filters."
 msgstr "Useful as a first segmentation before anomaly filters."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:579
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:599
 msgid "Useful when you already know the lesson, payload, or scope you need to inspect."
 msgstr "Useful when you already know the lesson, payload, or scope you need to inspect."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:657
+msgid "Useful when you already know the lesson, payload, scope, or submission path you need to inspect."
+msgstr "Useful when you already know the lesson, payload, scope, or submission path you need to inspect."
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:268
 #~ msgid "User"
 #~ msgstr "User"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:508
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:459
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:591
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:867
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:276
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:668
-#: src/features/campaigns/buget/admin/constants.ts:100
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:465
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:635
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:920
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:292
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:688
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:648
+#: src/features/campaigns/buget/admin/constants.ts:126
+#: src/features/campaigns/buget/admin/constants.ts:151
 #: src/routes/$lang/learning/certificates.$id.lazy.tsx:56
 msgid "User ID"
 msgstr "User ID"
@@ -11735,17 +12160,41 @@ msgstr "User ID"
 msgid "User Interaction ID"
 msgstr "User Interaction ID"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1041
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1065
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1089
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1106
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1122
-msgid "User interaction review"
-msgstr "User interaction review"
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:953
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:967
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:991
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1015
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1032
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1048
+#~ msgid "User interaction review"
+#~ msgstr "User interaction review"
 
-#: src/features/campaigns/buget/admin/components/AdminCampaignLayout.tsx:58
-#~ msgid "User interactions"
-#~ msgstr "User interactions"
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:934
+msgid "User interactions"
+msgstr "User interactions"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:746
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:770
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:794
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:811
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:827
+msgid "User workspace"
+msgstr "User workspace"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:816
+msgid "User workspace unavailable"
+msgstr "User workspace unavailable"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:124
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:840
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:454
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:471
+msgid "Users"
+msgstr "Users"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:632
+msgid "Users will appear here after the campaign records interaction activity."
+msgstr "Users will appear here after the campaign records interaction activity."
 
 #: src/components/entities/views/ins-stats-view.derived.ts:82
 msgid "Utilities"
@@ -11780,8 +12229,8 @@ msgstr "Validation issues"
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1470
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:247
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:192
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:465
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:668
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:471
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:712
 msgid "Value"
 msgstr "Value"
 
@@ -11931,7 +12380,7 @@ msgstr "Warning Signs"
 #: src/components/charts/components/ChartDataError.tsx:311
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:125
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:24
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1158
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1126
 msgid "Warnings"
 msgstr "Warnings"
 
@@ -12109,7 +12558,7 @@ msgstr "Wipe All Data"
 msgid "Wipe All Data?"
 msgstr "Wipe All Data?"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:386
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:295
 msgid "With thread"
 msgstr "With thread"
 
@@ -12175,8 +12624,10 @@ msgstr "Yearly"
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:212
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:227
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:266
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:225
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:387
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:233
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:403
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:867
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:300
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:23
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:39
 #: src/features/campaigns/buget/components/interactive/ParticipationReport.tsx:29
@@ -12221,9 +12672,21 @@ msgstr "You can search by: name (ex: Social assistance) • code (ex: 7.06, 7.06
 msgid "You do not have access to this campaign admin queue."
 msgstr "You do not have access to this campaign admin queue."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1094
+#: src/features/campaigns/buget/admin/api/campaign-admin-users.ts:69
+msgid "You do not have access to this campaign users directory."
+msgstr "You do not have access to this campaign users directory."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1062
 msgid "You do not have access to this queue"
 msgstr "You do not have access to this queue"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:799
+msgid "You do not have access to this user workspace"
+msgstr "You do not have access to this user workspace"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:584
+msgid "You do not have access to this users directory"
+msgstr "You do not have access to this users directory"
 
 #: src/features/notifications/components/NotificationList.tsx:111
 msgid "You have no active notifications. Navigate to an entity page and click the bell icon to subscribe to updates."
@@ -12241,7 +12704,16 @@ msgstr "You have unsaved changes. Are you sure you want to leave this page?"
 msgid "You have unsaved dataset changes. Are you sure you want to leave this page?"
 msgstr "You have unsaved dataset changes. Are you sure you want to leave this page?"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1048
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:89
+msgid "You need an authenticated admin session to access the campaign workspace."
+msgstr "You need an authenticated admin session to access the campaign workspace."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:569
+msgid "You need an authenticated admin session to inspect user workspaces."
+msgstr "You need an authenticated admin session to inspect user workspaces."
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1014
+#: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:753
 msgid "You need an authenticated session before the server can evaluate your campaign-admin permission."
 msgstr "You need an authenticated session before the server can evaluate your campaign-admin permission."
 

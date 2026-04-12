@@ -1,6 +1,12 @@
 import { type ReactNode, useEffect, useMemo, useState } from "react";
-import { Filter, RefreshCw, RotateCcw, Search } from "lucide-react";
+import {
+  RefreshCw,
+  RotateCcw,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react";
 import { t } from "@lingui/core/macro";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,14 +26,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
   CAMPAIGN_ADMIN_INTERACTION_TYPE_OPTIONS,
   CAMPAIGN_ADMIN_PAGE_LIMIT_VALUES,
+  getCampaignAdminPhaseLabel,
   getCampaignAdminInteractionTypeLabel,
   getCampaignAdminPayloadKindLabel,
   getCampaignAdminReviewStatusLabel,
@@ -40,6 +41,7 @@ import {
   isCampaignAdminFilterDraftEqual,
 } from "@/features/campaigns/buget/admin/schemas/search-schema";
 import {
+  campaignAdminPhaseValues,
   campaignAdminPayloadKindValues,
   campaignAdminReviewStatusValues,
   campaignAdminScopeTypeValues,
@@ -57,6 +59,9 @@ type CampaignAdminUserInteractionsToolbarProps = {
   readonly availableInteractionTypes: readonly CampaignAdminAvailableInteractionType[];
   readonly search: CampaignAdminQueueSearch;
   readonly isLoading: boolean;
+  readonly embedded?: boolean;
+  readonly actions?: ReactNode;
+  readonly trailingActions?: ReactNode;
   readonly onApply: (search: CampaignAdminQueueSearch) => void;
   readonly onReset: (search: CampaignAdminQueueSearch) => void;
   readonly onRefresh: () => void;
@@ -147,6 +152,9 @@ export function CampaignAdminUserInteractionsToolbar({
   availableInteractionTypes,
   search,
   isLoading,
+  embedded = false,
+  actions,
+  trailingActions,
   onApply,
   onReset,
   onRefresh,
@@ -241,7 +249,7 @@ export function CampaignAdminUserInteractionsToolbar({
 
     if (search.payloadKind) {
       filters.push({
-        label: t`Payload kind`,
+        label: t`Payload`,
         value: getCampaignAdminPayloadKindLabel(search.payloadKind),
         section: "advanced",
       });
@@ -249,15 +257,23 @@ export function CampaignAdminUserInteractionsToolbar({
 
     if (search.scopeType) {
       filters.push({
-        label: t`Scope type`,
+        label: t`Scope`,
         value: getScopeTypeLabel(search.scopeType),
+        section: "advanced",
+      });
+    }
+
+    if (search.phase) {
+      filters.push({
+        label: t`Progress`,
+        value: getCampaignAdminPhaseLabel(search.phase),
         section: "advanced",
       });
     }
 
     if (search.threadPhase) {
       filters.push({
-        label: t`Status`,
+        label: t`Thread`,
         value: getCampaignAdminThreadPhaseLabel(search.threadPhase),
         section: "advanced",
       });
@@ -441,24 +457,28 @@ export function CampaignAdminUserInteractionsToolbar({
           </ToolbarField>
 
           <ToolbarField
-            label={t`Rows per page`}
-            htmlFor="campaign-admin-limit-sheet"
+            label={t`Phase`}
+            htmlFor="campaign-admin-phase"
           >
             <Select
-              value={String(draft.limit)}
+              value={draft.phase || ALL_VALUE}
               onValueChange={(value) =>
                 updateDraft({
-                  limit: Number(value),
+                  phase:
+                    value === ALL_VALUE
+                      ? ""
+                      : (value as CampaignAdminFilterDraft["phase"]),
                 })
               }
             >
-              <SelectTrigger id="campaign-admin-limit-sheet">
-                <SelectValue />
+              <SelectTrigger id="campaign-admin-phase">
+                <SelectValue placeholder={t`Any phase`} />
               </SelectTrigger>
               <SelectContent>
-                {CAMPAIGN_ADMIN_PAGE_LIMIT_VALUES.map((limit) => (
-                  <SelectItem key={limit} value={String(limit)}>
-                    {limit}
+                <SelectItem value={ALL_VALUE}>{t`Any phase`}</SelectItem>
+                {campaignAdminPhaseValues.map((phase) => (
+                  <SelectItem key={phase} value={phase}>
+                    {getCampaignAdminPhaseLabel(phase)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -741,72 +761,17 @@ export function CampaignAdminUserInteractionsToolbar({
   );
 
   return (
-    <div className="rounded-3xl border border-border/70 bg-card/80 p-4 sm:p-5">
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold tracking-tight text-foreground">
-              {t`Queue filters`}
-            </h2>
-            <p className="max-w-3xl text-sm text-muted-foreground">
-              {t`Start with the core review filters, then open advanced filters for exact identifiers and thread details.`}
-            </p>
-          </div>
-
-          <TooltipProvider delayDuration={150}>
-            <div className="flex flex-wrap gap-2 xl:justify-end">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={onRefresh}
-                    disabled={isLoading}
-                    aria-label={t`Refresh`}
-                    className="rounded-xl"
-                  >
-                    <RefreshCw className="h-4 w-4" aria-hidden="true" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t`Refresh`}</TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleReset}
-                    disabled={isLoading}
-                    aria-label={t`Reset`}
-                    className="rounded-xl"
-                  >
-                    <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t`Reset`}</TooltipContent>
-              </Tooltip>
-
-              <Button
-                type="button"
-                onClick={handleApply}
-                disabled={!isDirty || isLoading}
-                className="gap-2 rounded-xl"
-              >
-                <Search className="h-4 w-4" aria-hidden="true" />
-                {t`Apply`}
-              </Button>
-            </div>
-          </TooltipProvider>
-        </div>
-
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-12">
+    <div
+      className={cn(
+        "space-y-3",
+        embedded ? "" : "rounded-3xl border border-border/70 bg-card/80 p-4 sm:p-5",
+      )}
+    >
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-end">
+        <div className="grid flex-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <ToolbarField
             label={t`Review status`}
             htmlFor="campaign-admin-review-status"
-            className="xl:col-span-2"
           >
             <Select
               value={draft.reviewStatus || ALL_VALUE}
@@ -834,27 +799,8 @@ export function CampaignAdminUserInteractionsToolbar({
           </ToolbarField>
 
           <ToolbarField
-            label={t`Entity CUI`}
-            htmlFor="campaign-admin-entity-cui"
-            className="xl:col-span-3"
-          >
-            <Input
-              id="campaign-admin-entity-cui"
-              name="entityCui"
-              value={draft.entityCui}
-              onChange={(event) =>
-                updateDraft({ entityCui: event.target.value })
-              }
-              placeholder={t`Filter one entity…`}
-              autoComplete="off"
-              spellCheck={false}
-            />
-          </ToolbarField>
-
-          <ToolbarField
             label={t`Interaction type`}
             htmlFor="campaign-admin-interaction-type"
-            className="xl:col-span-3"
           >
             <Select
               value={draft.interactionId || ALL_VALUE}
@@ -868,96 +814,206 @@ export function CampaignAdminUserInteractionsToolbar({
                 <SelectValue placeholder={t`All interaction types`} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem
-                  value={ALL_VALUE}
-                >{t`All interaction types`}</SelectItem>
+                <SelectItem value={ALL_VALUE}>{t`All interaction types`}</SelectItem>
                 {interactionTypeOptions.map((interactionType) => (
                   <SelectItem
                     key={interactionType.interactionId}
                     value={interactionType.interactionId}
                   >
-                    {getInteractionTypeOptionLabel(
-                      interactionType.interactionId,
-                    )}
+                    {getInteractionTypeOptionLabel(interactionType.interactionId)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </ToolbarField>
 
-          <ToolbarField label={t`Advanced filters`} className="xl:col-span-4">
-            <Sheet
-              open={advancedFiltersOpen}
-              onOpenChange={setAdvancedFiltersOpen}
+          <ToolbarField
+            label={t`Entity CUI`}
+            htmlFor="campaign-admin-entity-cui"
+          >
+            <Input
+              id="campaign-admin-entity-cui"
+              name="entityCui"
+              value={draft.entityCui}
+              onChange={(event) =>
+                updateDraft({ entityCui: event.target.value })
+              }
+              placeholder={t`Filter one entity...`}
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </ToolbarField>
+
+          <ToolbarField
+            label={t`Message`}
+            htmlFor="campaign-admin-has-thread"
+          >
+            <Select
+              value={draft.hasInstitutionThread || ANY_MESSAGE_VALUE}
+              onValueChange={(value) =>
+                updateDraft({
+                  hasInstitutionThread:
+                    value === ANY_MESSAGE_VALUE
+                      ? ""
+                      : (value as CampaignAdminFilterDraft["hasInstitutionThread"]),
+                })
+              }
             >
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setAdvancedFiltersOpen(true)}
-                className="h-10 w-full justify-start rounded-xl px-3 text-left text-sm font-normal"
-              >
-                <span className="flex min-w-0 items-center gap-2">
-                  <Filter className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span className="truncate">
-                    {appliedAdvancedFiltersCount > 0
-                      ? t`Advanced filters (${appliedAdvancedFiltersCount})`
-                      : t`Advanced filters`}
-                  </span>
-                </span>
-              </Button>
-              <SheetContent
-                side="right"
-                className="flex h-full w-full flex-col overflow-hidden border-l border-border/70 bg-background px-0 sm:max-w-3xl"
-              >
-                <SheetHeader className="shrink-0 space-y-2 border-b border-border/60 px-6 pb-5">
-                  <SheetTitle className="text-lg font-medium tracking-tight">
-                    {t`Advanced filters`}
-                  </SheetTitle>
-                  <SheetDescription>
-                    {t`Use exact identifiers and secondary queue fields when the quick filters are not enough.`}
-                  </SheetDescription>
-                </SheetHeader>
+              <SelectTrigger id="campaign-admin-has-thread">
+                <SelectValue placeholder={t`All`} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ANY_MESSAGE_VALUE}>{t`All`}</SelectItem>
+                <SelectItem value="true">{t`Yes`}</SelectItem>
+                <SelectItem value="false">{t`No`}</SelectItem>
+              </SelectContent>
+            </Select>
+          </ToolbarField>
 
-                <div className="min-h-0 flex-1 overflow-y-auto">
-                  {advancedFiltersContent}
-                </div>
-
-                <SheetFooter className="shrink-0 gap-2 border-t border-border/60 bg-background px-6 py-5">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setAdvancedFiltersOpen(false)}
-                    size="sm"
-                    className="rounded-lg"
-                  >
-                    {t`Close`}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={handleReset}
-                    disabled={isLoading}
-                    size="sm"
-                    className="rounded-lg"
-                  >
-                    {t`Reset all`}
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleApply}
-                    disabled={!isDirty || isLoading}
-                    size="sm"
-                    className="gap-1.5 rounded-lg"
-                  >
-                    <Search className="h-3.5 w-3.5" aria-hidden="true" />
-                    {t`Apply filters`}
-                  </Button>
-                </SheetFooter>
-              </SheetContent>
-            </Sheet>
+          <ToolbarField
+            label={t`Rows per page`}
+            htmlFor="campaign-admin-limit"
+          >
+            <Select
+              value={String(draft.limit)}
+              onValueChange={(value) =>
+                updateDraft({
+                  limit: Number(value),
+                })
+              }
+            >
+              <SelectTrigger id="campaign-admin-limit">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CAMPAIGN_ADMIN_PAGE_LIMIT_VALUES.map((limit) => (
+                  <SelectItem key={limit} value={String(limit)}>
+                    {limit}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </ToolbarField>
         </div>
+
+        <div className="flex flex-wrap gap-2 xl:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-2 rounded-full"
+            onClick={() => setAdvancedFiltersOpen(true)}
+          >
+            <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+            {appliedAdvancedFiltersCount > 0
+              ? t`Advanced (${appliedAdvancedFiltersCount})`
+              : t`Advanced`}
+          </Button>
+          {actions}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-2 rounded-full"
+            onClick={handleReset}
+            disabled={activeFilters.length === 0 && !isDirty}
+          >
+            <RotateCcw className="h-4 w-4" aria-hidden="true" />
+            {t`Reset`}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-2 rounded-full"
+            onClick={onRefresh}
+            disabled={isLoading}
+          >
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+            {t`Refresh`}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            className="gap-2 rounded-full"
+            onClick={handleApply}
+            disabled={!isDirty || isLoading}
+          >
+            <Search className="h-4 w-4" aria-hidden="true" />
+            {t`Apply filters`}
+          </Button>
+          {trailingActions}
+        </div>
       </div>
+
+      {activeFilters.length > 0 ? (
+        <div className="flex flex-wrap gap-2">
+          {activeFilters.map((filter) => (
+            <Badge
+              key={`${filter.label}:${filter.value}`}
+              variant="secondary"
+              className="rounded-full"
+            >
+              {filter.label}: {filter.value}
+            </Badge>
+          ))}
+        </div>
+      ) : null}
+
+      <Sheet
+        open={advancedFiltersOpen}
+        onOpenChange={setAdvancedFiltersOpen}
+      >
+        <SheetContent
+          side="right"
+          className="flex h-full w-full flex-col overflow-hidden border-l border-border/70 bg-background px-0 sm:max-w-3xl"
+        >
+          <SheetHeader className="shrink-0 space-y-2 border-b border-border/60 px-6 pb-5">
+            <SheetTitle className="text-lg font-medium tracking-tight">
+              {t`Advanced filters`}
+            </SheetTitle>
+            <SheetDescription>
+              {t`Use exact identifiers and secondary queue fields when the quick filters are not enough.`}
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {advancedFiltersContent}
+          </div>
+
+          <SheetFooter className="shrink-0 gap-2 border-t border-border/60 bg-background px-6 py-5">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setAdvancedFiltersOpen(false)}
+              size="sm"
+              className="rounded-lg"
+            >
+              {t`Close`}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleReset}
+              disabled={isLoading}
+              size="sm"
+              className="rounded-lg"
+            >
+              {t`Reset all`}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleApply}
+              disabled={!isDirty || isLoading}
+              size="sm"
+              className="gap-1.5 rounded-lg"
+            >
+              <Search className="h-3.5 w-3.5" aria-hidden="true" />
+              {t`Apply filters`}
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

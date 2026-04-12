@@ -52,6 +52,7 @@ import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components
 import {
   CAMPAIGN_ADMIN_USERS_SORTABLE_COLUMNS,
   DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
+  getCampaignAdminCampaignLabel,
   getCampaignAdminInteractionTypeLabel,
   getCampaignAdminUsersSortLabel,
 } from "@/features/campaigns/buget/admin/constants";
@@ -64,7 +65,6 @@ import type {
   CampaignAdminUsersSearch,
   CampaignAdminUsersSortKey,
 } from "@/features/campaigns/buget/admin/types";
-import { formatCampaignAdminUserIdPreview } from "@/features/campaigns/buget/admin/utils/format-user-id-preview";
 
 type CampaignAdminUsersSectionPageProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
@@ -236,9 +236,9 @@ function UserDirectoryRow({
                   to="/admin/campaigns/$campaignKey/users/$userId"
                   params={{ campaignKey, userId: item.userId }}
                   search={createCampaignAdminUserPageRouteSearch()}
-                  className="font-medium text-foreground hover:underline"
+                  className="block max-w-[20rem] break-all font-mono text-xs text-foreground hover:underline"
                 >
-                  {formatCampaignAdminUserIdPreview(item.userId)}
+                  {item.userId}
                 </Link>
               </TooltipTrigger>
               <TooltipContent className="max-w-xs break-all">
@@ -453,63 +453,83 @@ export function CampaignAdminUsersSectionPage({
       campaignKey={campaignKey}
       title={t`Users`}
       description={t`Browse and manage user workspaces. Inspect individual campaign interactions and continue review work.`}
-    >
-      <Breadcrumb className="py-1">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link
-                to="/admin/campaigns/$campaignKey"
-                params={{ campaignKey }}
-              >
-                {t`Campaign Admin`}
-              </Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{t`Users`}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
-      <section className="flex flex-col gap-3 border-b border-border/70 pb-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative w-full max-w-md">
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            aria-hidden="true"
-          />
-          <Input
-            value={searchDraft}
-            onChange={(event) => handleQueryChange(event.target.value)}
-            placeholder={t`Search by User ID`}
-            aria-label={t`Search users`}
-            className="pl-9"
-          />
-        </div>
-        <Button variant="outline" size="sm" className="gap-2" asChild>
-          <Link
-            to="/admin/campaigns/$campaignKey/user-interactions"
-            params={{ campaignKey }}
-            search={createCampaignAdminQueueRouteSearch()}
+      eyebrow={(
+        <Breadcrumb className="py-0">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link
+                  to="/admin/campaigns/$campaignKey"
+                  params={{ campaignKey }}
+                >
+                  {getCampaignAdminCampaignLabel(campaignKey)}
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{t`Users`}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      )}
+      actions={(
+        <>
+          <Button variant="outline" size="sm" className="gap-2" asChild>
+            <Link
+              to="/admin/campaigns/$campaignKey/user-interactions"
+              params={{ campaignKey }}
+              search={createCampaignAdminQueueRouteSearch()}
+            >
+              <ClipboardList className="h-4 w-4" aria-hidden="true" />
+              {t`Open interactions queue`}
+            </Link>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              void usersQuery.refetch();
+            }}
+            disabled={usersQuery.isLoading || usersQuery.isFetching}
+            className="gap-2"
           >
-            <ClipboardList className="h-4 w-4" aria-hidden="true" />
-            {t`Interactions Queue`}
-          </Link>
-        </Button>
-      </section>
-
-      <section>
-        <div className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap items-baseline gap-2">
-            <h2 className="text-sm font-medium text-foreground">{t`Users`}</h2>
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+            {t`Refresh`}
+          </Button>
+        </>
+      )}
+      details={(
+        <>
+          <div className="relative w-full max-w-md grow">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <Input
+              value={searchDraft}
+              onChange={(event) => handleQueryChange(event.target.value)}
+              placeholder={t`Search by User ID`}
+              aria-label={t`Search users`}
+              className="pl-9"
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span className="text-xs text-muted-foreground">
               {t`${items.length} users`}
             </span>
+            <span className="hidden h-4 w-px bg-border/60 md:block" aria-hidden="true" />
             <span className="text-xs text-muted-foreground">
               {t`Page ${currentPageIndex}`}
             </span>
           </div>
+        </>
+      )}
+    >
+
+      <section>
+        <div className="flex justify-end py-1">
           <div className="flex items-center gap-2">
             <Button
               type="button"
@@ -532,19 +552,6 @@ export function CampaignAdminUsersSectionPage({
             >
               {t`Next`}
               <ChevronRight className="h-4 w-4" aria-hidden="true" />
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                void usersQuery.refetch();
-              }}
-              disabled={usersQuery.isLoading || usersQuery.isFetching}
-              className="gap-2"
-            >
-              <RefreshCw className="h-4 w-4" aria-hidden="true" />
-              {t`Refresh`}
             </Button>
           </div>
         </div>

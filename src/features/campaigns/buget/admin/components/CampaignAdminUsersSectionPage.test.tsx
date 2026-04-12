@@ -230,7 +230,7 @@ describe("CampaignAdminUsersSectionPage", () => {
     );
 
     const breadcrumb = screen.getByRole("navigation", { name: "breadcrumb" });
-    expect(within(breadcrumb).getByText("Campaign Admin")).toBeInTheDocument();
+    expect(within(breadcrumb).getByText("Funky Citizens")).toBeInTheDocument();
     expect(within(breadcrumb).getAllByText("Users").length).toBeGreaterThan(0);
   });
 
@@ -243,7 +243,10 @@ describe("CampaignAdminUsersSectionPage", () => {
       />,
     );
 
-    expect(screen.getByText("Interactions Queue")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Users" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Open interactions queue")).toBeInTheDocument();
   });
 
   it("displays pending review count as a warning badge when greater than zero", () => {

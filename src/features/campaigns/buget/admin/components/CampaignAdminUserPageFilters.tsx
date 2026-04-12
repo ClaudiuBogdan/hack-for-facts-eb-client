@@ -532,15 +532,16 @@ export function CampaignAdminUserPageFilters({
       ) : null}
 
       <Sheet open={advancedOpen} onOpenChange={setAdvancedOpen}>
-        <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
-          <SheetHeader>
+        <SheetContent className="flex h-full w-full flex-col sm:max-w-xl">
+          <SheetHeader className="shrink-0">
             <SheetTitle>{t`Advanced filters`}</SheetTitle>
             <SheetDescription>
               {t`Refine the user workspace by timeline, payload, and record identifiers.`}
             </SheetDescription>
           </SheetHeader>
 
-          <div className="space-y-5 px-6 py-6">
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <div className="space-y-5 px-6 py-6">
             <section className="space-y-3">
               <div className="space-y-1">
                 <h4 className="text-sm font-medium text-foreground">{t`Timeline`}</h4>
@@ -816,9 +817,10 @@ export function CampaignAdminUserPageFilters({
                 </ToolbarField>
               </div>
             </section>
+            </div>
           </div>
 
-          <SheetFooter className="gap-2 sm:justify-between">
+          <SheetFooter className="shrink-0 border-t border-border/60 bg-background px-6 py-4 gap-2 sm:justify-between">
             <Button
               type="button"
               variant="outline"

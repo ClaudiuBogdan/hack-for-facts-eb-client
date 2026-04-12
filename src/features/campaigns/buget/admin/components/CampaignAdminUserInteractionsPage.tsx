@@ -1,5 +1,12 @@
 import { useEffect, useEffectEvent, useMemo, useState } from "react";
-import { AlertTriangle, Ban, LockKeyhole, RefreshCw, SearchX } from "lucide-react";
+import {
+  AlertTriangle,
+  Ban,
+  LockKeyhole,
+  RefreshCw,
+  SearchX,
+  Users,
+} from "lucide-react";
 import { t } from "@lingui/core/macro";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -13,6 +20,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -34,6 +49,7 @@ import { CampaignAdminUserInteractionsTable } from "@/features/campaigns/buget/a
 import { CampaignAdminUserInteractionsToolbar } from "@/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar";
 import {
   buildCampaignAdminSelectionKey,
+  getCampaignAdminCampaignLabel,
   getCampaignAdminPhaseLabel,
   getCampaignAdminReviewStatusLabel,
 } from "@/features/campaigns/buget/admin/constants";
@@ -83,24 +99,26 @@ type CampaignAdminUserInteractionsPageProps = {
   ) => void;
 };
 
-function SummaryStat({
+function InlineStat({
   label,
   value,
+  dimmed = false,
 }: {
   readonly label: string;
   readonly value: number;
+  readonly dimmed?: boolean;
 }) {
   return (
-    <div
+    <span
+      className={`inline-flex items-baseline gap-1 text-sm tabular-nums ${dimmed ? "text-muted-foreground/60" : "text-foreground"}`}
       role="group"
       aria-label={`${label}: ${value}`}
-      className="flex min-w-0 flex-col justify-center gap-1 px-5 py-4"
     >
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <span className="text-3xl font-semibold tracking-tight text-foreground tabular-nums">
-        {value}
+      <span className={`text-xs font-medium ${dimmed ? "text-muted-foreground/50" : "text-muted-foreground"}`}>
+        {label}
       </span>
-    </div>
+      <span className="font-semibold">{value}</span>
+    </span>
   );
 }
 
@@ -148,6 +166,8 @@ export function CampaignAdminUserInteractionsPage({
   search,
   onSearchChange,
 }: CampaignAdminUserInteractionsPageProps) {
+  const pageTitle = t`Interactions queue`;
+  const pageDescription = t`Review campaign interactions with the existing operator workflow and durable reviewer attribution.`;
   const normalizedSearch = normalizeCampaignAdminQueueSearch(search);
   const queueFilters = useMemo(
     () => getCampaignAdminQueueFilters(normalizedSearch),
@@ -306,6 +326,24 @@ export function CampaignAdminUserInteractionsPage({
         buildCampaignAdminSelectionKey(item.userId, item.recordKey)
       ] !== undefined,
   ).length;
+  const usersHref = `/admin/campaigns/${campaignKey}/users`;
+  const headerEyebrow = (
+    <Breadcrumb className="py-0">
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <a href={`/admin/campaigns/${campaignKey}`}>
+              {getCampaignAdminCampaignLabel(campaignKey)}
+            </a>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage>{pageTitle}</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
   useEffect(() => {
     writeCampaignAdminStagedReviewDraftsToSessionStorage(
       campaignKey,
@@ -950,8 +988,9 @@ export function CampaignAdminUserInteractionsPage({
     return (
       <AdminCampaignLayout
         campaignKey={campaignKey}
-        title={t`User interaction review`}
-        description={t`Review pending public-debate interactions using the server's safe admin projection and durable reviewer attribution.`}
+        title={pageTitle}
+        description={pageDescription}
+        eyebrow={headerEyebrow}
       >
         <CampaignAdminSummarySkeleton />
         <CampaignAdminToolbarSkeleton />
@@ -964,8 +1003,9 @@ export function CampaignAdminUserInteractionsPage({
     return (
       <AdminCampaignLayout
         campaignKey={campaignKey}
-        title={t`User interaction review`}
-        description={t`Audit and review campaign interactions that require an operator decision.`}
+        title={pageTitle}
+        description={pageDescription}
+        eyebrow={headerEyebrow}
       >
         <Card className="max-w-xl rounded-3xl border-border/70 bg-card/80 shadow-none">
           <CardHeader>
@@ -988,8 +1028,9 @@ export function CampaignAdminUserInteractionsPage({
     return (
       <AdminCampaignLayout
         campaignKey={campaignKey}
-        title={t`User interaction review`}
-        description={t`Audit and review campaign interactions that require an operator decision.`}
+        title={pageTitle}
+        description={pageDescription}
+        eyebrow={headerEyebrow}
       >
         <Card className="max-w-xl rounded-3xl border-border/70 bg-card/80 shadow-none">
           <CardHeader>
@@ -1012,8 +1053,9 @@ export function CampaignAdminUserInteractionsPage({
     return (
       <AdminCampaignLayout
         campaignKey={campaignKey}
-        title={t`User interaction review`}
-        description={t`Audit and review campaign interactions that require an operator decision.`}
+        title={pageTitle}
+        description={pageDescription}
+        eyebrow={headerEyebrow}
       >
         <EmptyState
           icon={<LockKeyhole className="h-6 w-6" />}
@@ -1029,8 +1071,9 @@ export function CampaignAdminUserInteractionsPage({
     return (
       <AdminCampaignLayout
         campaignKey={campaignKey}
-        title={t`User interaction review`}
-        description={t`Audit and review campaign interactions that require an operator decision.`}
+        title={pageTitle}
+        description={pageDescription}
+        eyebrow={headerEyebrow}
       >
         <EmptyState
           icon={<SearchX className="h-6 w-6" />}
@@ -1045,8 +1088,57 @@ export function CampaignAdminUserInteractionsPage({
   return (
     <AdminCampaignLayout
       campaignKey={campaignKey}
-      title={t`User interaction review`}
-      description={t`Review pending public-debate interactions using the server’s safe admin projection and durable reviewer attribution.`}
+      title={pageTitle}
+      description={pageDescription}
+      eyebrow={headerEyebrow}
+      actions={(
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => {
+              void queueQuery.refetch();
+            }}
+            disabled={queueQuery.isLoading || queueQuery.isFetching}
+          >
+            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+            {t`Refresh`}
+          </Button>
+          <Button asChild type="button" variant="outline" size="sm" className="gap-2">
+            <a href={usersHref}>
+              <Users className="h-4 w-4" aria-hidden="true" />
+              {t`Open users`}
+            </a>
+          </Button>
+        </>
+      )}
+      details={(
+        <>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <InlineStat
+              label={t`Pending`}
+              value={metaStats.reviewStatusCounts.pending}
+              dimmed={metaStats.reviewStatusCounts.pending === 0}
+            />
+            <InlineStat
+              label={t`Warnings`}
+              value={metaStats.riskFlagged}
+              dimmed={metaStats.riskFlagged === 0}
+            />
+            <InlineStat
+              label={t`Total`}
+              value={metaStats.total}
+              dimmed={metaStats.total === 0}
+            />
+          </div>
+          <span className="hidden h-4 w-px bg-border/60 md:block" aria-hidden="true" />
+          <span className="text-xs text-muted-foreground">
+            {t`Page ${currentPageIndex}`}
+          </span>
+        </>
+      )}
     >
       {metaQuery.error && metaQuery.data === undefined ? (
         <Alert variant="destructive" aria-live="polite">
@@ -1074,38 +1166,15 @@ export function CampaignAdminUserInteractionsPage({
         <div
           role="region"
           aria-label={t`Campaign queue summary`}
-          className="overflow-hidden rounded-3xl border border-border/70 bg-card/80"
+          className="flex flex-wrap gap-x-6 gap-y-3 border-b border-border/60 pb-4"
         >
-          <div className="grid divide-y divide-border/60 md:grid-cols-3 md:divide-x md:divide-y-0">
-            <SummaryStat
-              label={t`Pending`}
-              value={metaStats.reviewStatusCounts.pending}
-            />
-            <SummaryStat label={t`Warnings`} value={metaStats.riskFlagged} />
-            <SummaryStat label={t`Total`} value={metaStats.total} />
-          </div>
-          <div className="grid gap-2 border-t border-border/60 px-5 py-3 lg:grid-cols-3">
-            <SummaryBreakdown label={t`Review`} items={reviewBreakdownItems} />
-            <SummaryBreakdown label={t`Phase`} items={phaseBreakdownItems} />
-            <SummaryBreakdown label={t`Threads`} items={threadBreakdownItems} />
-          </div>
+          <SummaryBreakdown label={t`Review`} items={reviewBreakdownItems} />
+          <SummaryBreakdown label={t`Phase`} items={phaseBreakdownItems} />
+          <SummaryBreakdown label={t`Threads`} items={threadBreakdownItems} />
         </div>
       ) : (
         <CampaignAdminSummarySkeleton />
       )}
-
-      <CampaignAdminUserInteractionsToolbar
-        availableInteractionTypes={
-          metaQuery.data?.availableInteractionTypes ?? []
-        }
-        search={normalizedSearch}
-        isLoading={queueQuery.isLoading || queueQuery.isFetching}
-        onApply={handleSearchChange}
-        onReset={handleSearchChange}
-        onRefresh={() => {
-          void queueQuery.refetch();
-        }}
-      />
 
       {queueQuery.error &&
       queueQuery.error.status !== 401 &&
@@ -1132,47 +1201,100 @@ export function CampaignAdminUserInteractionsPage({
         </Alert>
       ) : null}
 
-      {queueQuery.isLoading ? (
-        <CampaignAdminTableSkeleton />
-      ) : (
-        <div className="space-y-4">
-          <CampaignAdminUserInteractionsTable
-            campaignKey={campaignKey}
-            items={items}
-            stagedDraftsByKey={stagedReviewDraftsByKey}
-            selectedKeys={selectedKeys}
-            isLoading={queueQuery.isFetching || submitReviewsMutation.isPending}
-            sortBy={normalizedSearch.sortBy}
-            sortOrder={normalizedSearch.sortOrder}
-            onCopyRows={handleCopySelectedRows}
-            onSortChange={handleSortChange}
-            onToggleSelectAll={handleToggleSelectAll}
-            onToggleSelection={handleToggleSelection}
-            onOpenItem={(item) =>
-              openReviewSidebar(
-                buildCampaignAdminSelectionKey(item.userId, item.recordKey),
-              )
-            }
-          />
-
-          <CampaignAdminCursorPager
-            pageIndex={currentPageIndex}
-            pageSize={normalizedSearch.limit}
-            itemCount={items.length}
-            canPrevious={canPreviousPage}
-            canNext={queueQuery.data?.page.hasMore ?? false}
-            isLoading={queueQuery.isFetching}
-            onPrevious={handlePreviousPage}
-            onNext={handleNextPage}
-          />
-
-          {bulkReviewFooter ? (
-            <div className="rounded-3xl border border-border/70 bg-card/80 px-4 py-4 shadow-none">
-              {bulkReviewFooter}
-            </div>
-          ) : null}
+      <section className="space-y-4" aria-labelledby="review-queue-section-title">
+        <div className="space-y-1">
+          <h2
+            id="review-queue-section-title"
+            className="text-base font-semibold tracking-tight text-foreground"
+          >
+            {t`Review queue`}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t`Filter the campaign-wide queue, stage decisions, and keep the existing review workflow moving.`}
+          </p>
         </div>
-      )}
+
+        {queueQuery.isLoading ? (
+          <CampaignAdminTableSkeleton />
+        ) : (
+          <div className="space-y-4">
+            {items.length === 0 ? (
+              <CampaignAdminUserInteractionsToolbar
+                embedded
+                availableInteractionTypes={
+                  metaQuery.data?.availableInteractionTypes ?? []
+                }
+                search={normalizedSearch}
+                isLoading={queueQuery.isLoading || queueQuery.isFetching}
+                onApply={handleSearchChange}
+                onReset={handleSearchChange}
+                onRefresh={() => {
+                  void queueQuery.refetch();
+                }}
+              />
+            ) : null}
+
+            <CampaignAdminUserInteractionsTable
+              campaignKey={campaignKey}
+              items={items}
+              stagedDraftsByKey={stagedReviewDraftsByKey}
+              selectedKeys={selectedKeys}
+              isLoading={queueQuery.isFetching || submitReviewsMutation.isPending}
+              header={
+                items.length > 0
+                  ? ({ actions, trailingActions }) => (
+                      <CampaignAdminUserInteractionsToolbar
+                        embedded
+                        actions={actions}
+                        trailingActions={trailingActions}
+                        availableInteractionTypes={
+                          metaQuery.data?.availableInteractionTypes ?? []
+                        }
+                        search={normalizedSearch}
+                        isLoading={queueQuery.isLoading || queueQuery.isFetching}
+                        onApply={handleSearchChange}
+                        onReset={handleSearchChange}
+                        onRefresh={() => {
+                          void queueQuery.refetch();
+                        }}
+                      />
+                    )
+                  : undefined
+              }
+              sortBy={normalizedSearch.sortBy}
+              sortOrder={normalizedSearch.sortOrder}
+              onCopyRows={handleCopySelectedRows}
+              onSortChange={handleSortChange}
+              onToggleSelectAll={handleToggleSelectAll}
+              onToggleSelection={handleToggleSelection}
+              onOpenItem={(item) =>
+                openReviewSidebar(
+                  buildCampaignAdminSelectionKey(item.userId, item.recordKey),
+                )
+              }
+            />
+
+            {items.length > 0 ? (
+              <CampaignAdminCursorPager
+                pageIndex={currentPageIndex}
+                pageSize={normalizedSearch.limit}
+                itemCount={items.length}
+                canPrevious={canPreviousPage}
+                canNext={queueQuery.data?.page.hasMore ?? false}
+                isLoading={queueQuery.isFetching}
+                onPrevious={handlePreviousPage}
+                onNext={handleNextPage}
+              />
+            ) : null}
+
+            {bulkReviewFooter ? (
+              <div className="rounded-3xl border border-border/70 bg-card/80 px-4 py-4 shadow-none">
+                {bulkReviewFooter}
+              </div>
+            ) : null}
+          </div>
+        )}
+      </section>
 
       <CampaignAdminReviewSheet
         open={activeItem !== null}

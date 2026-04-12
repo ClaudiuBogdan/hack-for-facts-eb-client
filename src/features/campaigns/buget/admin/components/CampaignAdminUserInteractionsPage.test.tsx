@@ -323,6 +323,24 @@ describe('CampaignAdminUserInteractionsPage', () => {
     expect(screen.getByText('Clear filters')).toBeInTheDocument()
   })
 
+  it('renders the shared queue header and review section shell', () => {
+    render(
+      <CampaignAdminUserInteractionsPage
+        campaignKey="funky"
+        search={defaultSearch}
+        onSearchChange={vi.fn()}
+      />
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Interactions queue' })
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Open users' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Review queue' })
+    ).toBeInTheDocument()
+  })
+
   it('renders campaign-wide summary stats from meta data with safe fallbacks', () => {
     mockQueueState({
       items: [
@@ -389,9 +407,9 @@ describe('CampaignAdminUserInteractionsPage', () => {
 
     const summary = screen.getByLabelText('Campaign queue summary')
 
-    expect(within(summary).getByRole('group', { name: 'Pending: 41' })).toBeInTheDocument()
-    expect(within(summary).getByRole('group', { name: 'Warnings: 29' })).toBeInTheDocument()
-    expect(within(summary).getByRole('group', { name: 'Total: 137' })).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: 'Pending: 41' })).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: 'Warnings: 29' })).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: 'Total: 137' })).toBeInTheDocument()
     expect(within(summary).getByText('Not reviewed').parentElement).toHaveTextContent(
       '5 Not reviewed'
     )
@@ -462,12 +480,14 @@ describe('CampaignAdminUserInteractionsPage', () => {
       />
     )
 
-    const copyButton = screen.getByRole('button', { name: 'Copy all rows' })
+    const copyButton = screen.getAllByRole('button', { name: 'Copy all rows' })[0]
     expect(copyButton).toBeEnabled()
 
     fireEvent.click(screen.getAllByLabelText('Select row')[0])
 
-    expect(screen.getByRole('button', { name: 'Copy selected rows' })).toBeEnabled()
+    expect(
+      screen.getAllByRole('button', { name: 'Copy selected rows' })[0]
+    ).toBeEnabled()
   })
 
   it('copies selected rows from the toolbar clipboard action', async () => {
@@ -482,7 +502,7 @@ describe('CampaignAdminUserInteractionsPage', () => {
     )
 
     fireEvent.click(screen.getAllByLabelText('Select row')[0])
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Copy selected rows' }))
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Copy selected rows' })[0])
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Copy selected rows' }))
 
     await waitFor(() => {
@@ -525,7 +545,7 @@ describe('CampaignAdminUserInteractionsPage', () => {
       />
     )
 
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Copy all rows' }))
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Copy all rows' })[0])
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Copy all rows' }))
 
     await waitFor(() => {

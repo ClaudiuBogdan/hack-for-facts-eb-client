@@ -1,8 +1,8 @@
 import { useEffect, useEffectEvent, useMemo, useState } from "react";
 import {
   AlertTriangle,
-  ArrowLeft,
   Ban,
+  ClipboardList,
   LockKeyhole,
   Plus,
   RefreshCw,
@@ -21,7 +21,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -40,6 +47,7 @@ import { CampaignAdminUserInteractionsTable } from "@/features/campaigns/buget/a
 import { CampaignAdminUserPageFilters } from "@/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters";
 import {
   buildCampaignAdminSelectionKey,
+  getCampaignAdminCampaignLabel,
 } from "@/features/campaigns/buget/admin/constants";
 import {
   useCampaignAdminInteractionMetaQuery,
@@ -101,20 +109,24 @@ function formatDateTime(value: string | null): string {
   return parsedDate.toLocaleString();
 }
 
-function SummaryStat({
+function InlineStat({
   label,
   value,
+  dimmed = false,
 }: {
   readonly label: string;
   readonly value: number;
+  readonly dimmed?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-background/50 px-4 py-4">
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="mt-1 text-3xl font-semibold tracking-tight text-foreground tabular-nums">
-        {value}
-      </p>
-    </div>
+    <span
+      className={`inline-flex items-baseline gap-1 text-sm tabular-nums ${dimmed ? "text-muted-foreground/60" : "text-foreground"}`}
+    >
+      <span className={`text-xs font-medium ${dimmed ? "text-muted-foreground/50" : "text-muted-foreground"}`}>
+        {label}
+      </span>
+      <span className={`font-semibold ${dimmed ? "" : ""}`}>{value}</span>
+    </span>
   );
 }
 
@@ -226,6 +238,12 @@ export function CampaignAdminUserPage({
       latestUpdatedAt,
     };
   }, [allItems]);
+  const queueHref = `/admin/campaigns/${campaignKey}/user-interactions?userId=${encodeURIComponent(userId)}`;
+  const userIdPreview = formatCampaignAdminUserIdPreview(userId, {
+    maxLength: 20,
+    prefixLength: 12,
+    suffixLength: 6,
+  });
 
   useEffect(() => {
     writeCampaignAdminStagedReviewDraftsToSessionStorage(
@@ -725,7 +743,7 @@ export function CampaignAdminUserPage({
     return (
       <AdminCampaignLayout
         campaignKey={campaignKey}
-        title={t`User page`}
+        title={t`User workspace`}
         description={t`Inspect and review all campaign interactions submitted by a single user.`}
       >
         <Card className="max-w-xl rounded-3xl border-border/70 bg-card/80 shadow-none">
@@ -749,7 +767,7 @@ export function CampaignAdminUserPage({
     return (
       <AdminCampaignLayout
         campaignKey={campaignKey}
-        title={t`User page`}
+        title={t`User workspace`}
         description={t`Inspect and review all campaign interactions submitted by a single user.`}
       >
         <Card className="max-w-xl rounded-3xl border-border/70 bg-card/80 shadow-none">
@@ -773,7 +791,7 @@ export function CampaignAdminUserPage({
     return (
       <AdminCampaignLayout
         campaignKey={campaignKey}
-        title={t`User page`}
+        title={t`User workspace`}
         description={t`Inspect and review all campaign interactions submitted by a single user.`}
       >
         <EmptyState
@@ -790,7 +808,7 @@ export function CampaignAdminUserPage({
     return (
       <AdminCampaignLayout
         campaignKey={campaignKey}
-        title={t`User page`}
+        title={t`User workspace`}
         description={t`Inspect and review all campaign interactions submitted by a single user.`}
       >
         <EmptyState
@@ -806,40 +824,58 @@ export function CampaignAdminUserPage({
   return (
     <AdminCampaignLayout
       campaignKey={campaignKey}
-      title={t`User page`}
+      title={t`User workspace`}
       description={t`Review one user’s campaign activity with batch selection and the existing operator review workflow.`}
-    >
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-border/70 bg-card/80 px-5 py-4">
-        <div className="min-w-0 space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="secondary" className="rounded-full">
-              {t`User workspace`}
-            </Badge>
-            <Badge variant="outline" className="rounded-full font-mono">
-              {formatCampaignAdminUserIdPreview(userId, {
-                maxLength: 20,
-                prefixLength: 12,
-                suffixLength: 6,
-              })}
-            </Badge>
-          </div>
-          <p className="max-w-3xl text-sm text-muted-foreground">
-            {summary.latestUpdatedAt
-              ? t`Latest activity: ${formatDateTime(summary.latestUpdatedAt)}`
-              : t`No interactions have been submitted by this user yet.`}
-          </p>
-        </div>
-
-        <Button asChild type="button" variant="outline" className="rounded-full">
-          <a
-            href={`/admin/campaigns/${campaignKey}/user-interactions?userId=${encodeURIComponent(userId)}`}
-          >
-            <ArrowLeft className="mr-1.5 h-4 w-4" aria-hidden="true" />
-            {t`Back to queue`}
+      eyebrow={(
+        <Breadcrumb className="py-0">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <a href={`/admin/campaigns/${campaignKey}`}>{getCampaignAdminCampaignLabel(campaignKey)}</a>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <a href={`/admin/campaigns/${campaignKey}/users`}>{t`Users`}</a>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{userIdPreview}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      )}
+      actions={(
+        <Button asChild type="button" variant="outline" size="sm" className="gap-2">
+          <a href={queueHref}>
+            <ClipboardList className="h-4 w-4" aria-hidden="true" />
+            {t`Open interactions queue`}
           </a>
         </Button>
-      </div>
-
+      )}
+      details={(
+        <>
+          <span className="inline-flex items-center rounded-full border border-border/60 bg-background px-2.5 py-1 font-mono text-xs text-muted-foreground">
+            {userIdPreview}
+          </span>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <InlineStat label={t`Total`} value={summary.total} />
+            <InlineStat label={t`Approved`} value={summary.approved} dimmed={summary.approved === 0} />
+            <InlineStat label={t`Risk`} value={summary.flagged} dimmed={summary.flagged === 0} />
+            <InlineStat label={t`Pending`} value={summary.pending} dimmed={summary.pending === 0} />
+            <InlineStat label={t`Rejected`} value={summary.rejected} dimmed={summary.rejected === 0} />
+          </div>
+          <span className="hidden h-4 w-px bg-border/60 md:block" aria-hidden="true" />
+          <span className="text-xs text-muted-foreground">
+            {summary.latestUpdatedAt
+              ? t`Last activity ${formatDateTime(summary.latestUpdatedAt)}`
+              : t`No interactions yet`}
+          </span>
+        </>
+      )}
+    >
       {metaQuery.error && metaQuery.data === undefined ? (
         <Alert variant="destructive" aria-live="polite">
           <AlertTriangle className="h-4 w-4" aria-hidden="true" />
@@ -889,173 +925,179 @@ export function CampaignAdminUserPage({
         </Alert>
       ) : null}
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-        <SummaryStat label={t`Total`} value={summary.total} />
-        <SummaryStat label={t`Pending`} value={summary.pending} />
-        <SummaryStat label={t`Approved`} value={summary.approved} />
-        <SummaryStat label={t`Rejected`} value={summary.rejected} />
-        <SummaryStat label={t`Risk flagged`} value={summary.flagged} />
-      </div>
-
-      {interactionsQuery.isLoading ? (
-        <div className="flex min-h-[18rem] items-center justify-center rounded-3xl border border-border/70 bg-card/80">
-          <LoadingSpinner />
+      <section className="space-y-4" aria-labelledby="user-interactions-section-title">
+        <div className="space-y-1">
+          <h2
+            id="user-interactions-section-title"
+            className="text-base font-semibold tracking-tight text-foreground"
+          >
+            {t`User interactions`}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t`Inspect submitted records, filter the workspace, and stage review decisions for this user.`}
+          </p>
         </div>
-      ) : items.length === 0 ? (
-        <EmptyState
-          title={
-            allItems.length === 0
-              ? t`No user interactions yet`
-              : t`No interactions match the current filters`
-          }
-          description={
-            allItems.length === 0
-              ? t`This user has not submitted any campaign interactions through the current admin projection.`
-              : t`Adjust the filters to inspect a broader slice of this user’s activity.`
-          }
-          className="rounded-3xl border border-border/70 bg-card/80 p-10"
-        />
-      ) : (
-        <div className="space-y-4">
-          <CampaignAdminUserInteractionsTable
-            campaignKey={campaignKey}
-            items={items}
-            stagedDraftsByKey={stagedReviewDraftsByKey}
-            selectedKeys={selectedKeys}
-            isLoading={interactionsQuery.isFetching || submitReviewsMutation.isPending}
-            header={({ actions, trailingActions }) => (
-              <CampaignAdminUserPageFilters
-                embedded
-                actions={actions}
-                trailingActions={trailingActions}
-                availableInteractionTypes={metaQuery.data?.availableInteractionTypes ?? []}
-                search={normalizedSearch}
-                isLoading={interactionsQuery.isLoading || interactionsQuery.isFetching}
-                onApply={(nextSearch) => handleSearchStateChange(nextSearch)}
-                onReset={(nextSearch) => handleSearchStateChange(nextSearch)}
-                onRefresh={() => {
-                  void interactionsQuery.refetch();
-                }}
-              />
-            )}
-            tablePreferencesKey={`campaign-admin-user-page:${campaignKey}:${userId}`}
-            defaultVisibleColumnIds={[
-              "association",
-              "updated",
-              "riskFlags",
-              "message",
-              "interaction",
-              "value",
-              "reviewState",
-              "reviewNote",
-            ]}
-            sortBy={normalizedSearch.sortBy}
-            sortOrder={normalizedSearch.sortOrder}
-            renderItemActions={(item) => {
-              const selectionKey = buildCampaignAdminSelectionKey(
-                item.userId,
-                item.recordKey,
-              );
-              const isSelected = selectedKeys.has(selectionKey);
 
-              return (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleAddToSelection(item)}
-                  disabled={isSelected || !isCampaignAdminPendingReview(item)}
-                  className="rounded-full px-3"
-                >
-                  <Plus className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-                  {isSelected ? t`Added` : t`Add`}
-                </Button>
-              );
-            }}
-            onCopyRows={handleCopyRows}
-            onSortChange={handleSortChange}
-            onToggleSelectAll={handleToggleSelectAll}
-            onToggleSelection={handleToggleSelection}
-            onOpenItem={(item) =>
-              openReviewSidebar(
-                buildCampaignAdminSelectionKey(item.userId, item.recordKey),
-              )
+        {interactionsQuery.isLoading ? (
+          <div className="flex min-h-[18rem] items-center justify-center rounded-3xl border border-border/70 bg-card/80">
+            <LoadingSpinner />
+          </div>
+        ) : items.length === 0 ? (
+          <EmptyState
+            title={
+              allItems.length === 0
+                ? t`No user interactions yet`
+                : t`No interactions match the current filters`
             }
+            description={
+              allItems.length === 0
+                ? t`This user has not submitted any campaign interactions through the current admin projection.`
+                : t`Adjust the filters to inspect a broader slice of this user’s activity.`
+            }
+            className="rounded-3xl border border-border/70 bg-card/80 p-10"
           />
+        ) : (
+          <div className="space-y-4">
+            <CampaignAdminUserInteractionsTable
+              campaignKey={campaignKey}
+              items={items}
+              stagedDraftsByKey={stagedReviewDraftsByKey}
+              selectedKeys={selectedKeys}
+              isLoading={interactionsQuery.isFetching || submitReviewsMutation.isPending}
+              header={({ actions, trailingActions }) => (
+                <CampaignAdminUserPageFilters
+                  embedded
+                  actions={actions}
+                  trailingActions={trailingActions}
+                  availableInteractionTypes={metaQuery.data?.availableInteractionTypes ?? []}
+                  search={normalizedSearch}
+                  isLoading={interactionsQuery.isLoading || interactionsQuery.isFetching}
+                  onApply={(nextSearch) => handleSearchStateChange(nextSearch)}
+                  onReset={(nextSearch) => handleSearchStateChange(nextSearch)}
+                  onRefresh={() => {
+                    void interactionsQuery.refetch();
+                  }}
+                />
+              )}
+              tablePreferencesKey={`campaign-admin-user-page:${campaignKey}:${userId}`}
+              defaultVisibleColumnIds={[
+                "association",
+                "updated",
+                "riskFlags",
+                "message",
+                "interaction",
+                "value",
+                "reviewState",
+                "reviewNote",
+              ]}
+              sortBy={normalizedSearch.sortBy}
+              sortOrder={normalizedSearch.sortOrder}
+              renderItemActions={(item) => {
+                const selectionKey = buildCampaignAdminSelectionKey(
+                  item.userId,
+                  item.recordKey,
+                );
+                const isSelected = selectedKeys.has(selectionKey);
 
-          {selectedItems.length > 0 ? (
-            <div className="rounded-3xl border border-border/70 bg-card/80 px-4 py-4">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-foreground">
-                    {t`Batch review`}
-                  </p>
-                  <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                    <span>
-                      {selectedItems.length === 1
-                        ? t`1 row selected`
-                        : t`${selectedItems.length} rows selected`}
-                    </span>
-                    {selectedHiddenCount > 0 ? (
+                return (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddToSelection(item)}
+                    disabled={isSelected || !isCampaignAdminPendingReview(item)}
+                    className="rounded-full px-3"
+                  >
+                    <Plus className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                    {isSelected ? t`Added` : t`Add`}
+                  </Button>
+                );
+              }}
+              onCopyRows={handleCopyRows}
+              onSortChange={handleSortChange}
+              onToggleSelectAll={handleToggleSelectAll}
+              onToggleSelection={handleToggleSelection}
+              onOpenItem={(item) =>
+                openReviewSidebar(
+                  buildCampaignAdminSelectionKey(item.userId, item.recordKey),
+                )
+              }
+            />
+
+            {selectedItems.length > 0 ? (
+              <div className="rounded-3xl border border-border/70 bg-card/80 px-4 py-4">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-foreground">
+                      {t`Batch review`}
+                    </p>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
                       <span>
-                        {selectedHiddenCount === 1
-                          ? t`1 selected row is hidden by the current filters`
-                          : t`${selectedHiddenCount} selected rows are hidden by the current filters`}
+                        {selectedItems.length === 1
+                          ? t`1 row selected`
+                          : t`${selectedItems.length} rows selected`}
                       </span>
-                    ) : null}
-                    {selectedSendValidationIssues.length > 0 ? (
-                      <span>
-                        {selectedSendValidationIssues.length === 1
-                          ? t`1 row still needs review data`
-                          : t`${selectedSendValidationIssues.length} rows still need review data`}
-                      </span>
-                    ) : (
-                      <span>{t`Ready to send selected reviews.`}</span>
-                    )}
+                      {selectedHiddenCount > 0 ? (
+                        <span>
+                          {selectedHiddenCount === 1
+                            ? t`1 selected row is hidden by the current filters`
+                            : t`${selectedHiddenCount} selected rows are hidden by the current filters`}
+                        </span>
+                      ) : null}
+                      {selectedSendValidationIssues.length > 0 ? (
+                        <span>
+                          {selectedSendValidationIssues.length === 1
+                            ? t`1 row still needs review data`
+                            : t`${selectedSendValidationIssues.length} rows still need review data`}
+                        </span>
+                      ) : (
+                        <span>{t`Ready to send selected reviews.`}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 lg:justify-end">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full"
+                      onClick={() => setIsClearStagedConfirmOpen(true)}
+                      disabled={selectedItems.length === 0}
+                    >
+                      {t`Clear staged`}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full"
+                      onClick={() => setSelectedKeys(new Set())}
+                    >
+                      {t`Clear selection`}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="rounded-full"
+                      onClick={() => {
+                        if (canSendSelectedReviews) {
+                          setIsSendConfirmOpen(true);
+                          return;
+                        }
+
+                        setIsSendValidationOpen(true);
+                      }}
+                    >
+                      {t`Send selected`}
+                    </Button>
                   </div>
                 </div>
-
-                <div className="flex flex-wrap gap-2 lg:justify-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="rounded-full"
-                    onClick={() => setIsClearStagedConfirmOpen(true)}
-                    disabled={selectedItems.length === 0}
-                  >
-                    {t`Clear staged`}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="rounded-full"
-                    onClick={() => setSelectedKeys(new Set())}
-                  >
-                    {t`Clear selection`}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    className="rounded-full"
-                    onClick={() => {
-                      if (canSendSelectedReviews) {
-                        setIsSendConfirmOpen(true);
-                        return;
-                      }
-
-                      setIsSendValidationOpen(true);
-                    }}
-                  >
-                    {t`Send selected`}
-                  </Button>
-                </div>
               </div>
-            </div>
-          ) : null}
-        </div>
-      )}
+            ) : null}
+          </div>
+        )}
+      </section>
 
       <CampaignAdminReviewSheet
         open={activeItem !== null}
