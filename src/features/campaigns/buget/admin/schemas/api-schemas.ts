@@ -227,6 +227,7 @@ const campaignAdminApproveReviewSchema = z
     expectedUpdatedAt: z.string().datetime(),
     status: z.literal('approved'),
     feedbackText: z.string().min(1).optional(),
+    approvalRiskAcknowledged: z.boolean().optional(),
   })
   .strict()
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   parseCampaignAdminListResponse,
   parseCampaignAdminMetaResponse,
+  parseCampaignAdminSubmitReviewsBody,
 } from './api-schemas'
 
 function createMetaResponsePayload() {
@@ -179,6 +180,22 @@ describe('campaign admin api schemas', () => {
     }
 
     expect(parseCampaignAdminListResponse(payload)).toEqual(payload.data)
+  })
+
+  it('parses approved review submissions with explicit risk acknowledgement', () => {
+    const payload = {
+      items: [
+        {
+          userId: 'user-1',
+          recordKey: 'funky:interaction:public_debate_request::entity:12345678',
+          expectedUpdatedAt: '2026-04-10T10:00:00.000Z',
+          status: 'approved',
+          approvalRiskAcknowledged: true,
+        },
+      ],
+    }
+
+    expect(parseCampaignAdminSubmitReviewsBody(payload)).toEqual(payload)
   })
 
   it('rejects metadata payloads that omit zero-filled count keys', () => {

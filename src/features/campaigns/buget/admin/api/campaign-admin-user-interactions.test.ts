@@ -306,6 +306,61 @@ describe('campaign-admin-user-interactions api', () => {
     })
   })
 
+  it('submits explicit approval risk acknowledgement when present on approved reviews', async () => {
+    getAuthTokenMock.mockResolvedValue('token-123')
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          ok: true,
+          data: {
+            items: createListResponsePayload().data.items,
+          },
+        }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+    )
+
+    await submitCampaignAdminReviews({
+      campaignKey: 'funky',
+      body: {
+        items: [
+          {
+            userId: 'user-1',
+            recordKey: 'record-1',
+            expectedUpdatedAt: '2026-04-10T10:00:00.000Z',
+            status: 'approved',
+            approvalRiskAcknowledged: true,
+          },
+        ],
+      },
+    })
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/api/v1/admin/campaigns/funky/user-interactions/reviews'),
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer token-123',
+          'Content-Type': 'application/json',
+        }),
+        body: JSON.stringify({
+          items: [
+            {
+              userId: 'user-1',
+              recordKey: 'record-1',
+              expectedUpdatedAt: '2026-04-10T10:00:00.000Z',
+              status: 'approved',
+              approvalRiskAcknowledged: true,
+            },
+          ],
+        }),
+      })
+    )
+  })
+
   it('maps 404 responses to an unavailable-queue error', async () => {
     getAuthTokenMock.mockResolvedValue('token-123')
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(

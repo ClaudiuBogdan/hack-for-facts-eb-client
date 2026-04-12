@@ -201,6 +201,9 @@ function buildSubmitReviewItem(input: {
         expectedUpdatedAt: input.item.updatedAt,
         status: "approved",
         ...(trimmedFeedbackText ? { feedbackText: trimmedFeedbackText } : {}),
+        ...(input.draft.approvalRiskAcknowledged === true
+          ? { approvalRiskAcknowledged: true }
+          : {}),
       }
     : {
         userId: input.item.userId,

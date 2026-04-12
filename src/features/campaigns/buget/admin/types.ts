@@ -287,6 +287,7 @@ export type CampaignAdminSubmitReviewItem =
       readonly expectedUpdatedAt: string;
       readonly status: "approved";
       readonly feedbackText?: string;
+      readonly approvalRiskAcknowledged?: boolean;
     }
   | {
       readonly userId: string;

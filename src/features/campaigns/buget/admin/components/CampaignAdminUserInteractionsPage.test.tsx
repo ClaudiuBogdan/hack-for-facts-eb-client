@@ -796,6 +796,7 @@ describe('CampaignAdminUserInteractionsPage', () => {
           recordKey: 'funky:interaction:public_debate_request::entity:12345678',
           expectedUpdatedAt: '2026-04-10T10:00:00.000Z',
           status: 'approved',
+          approvalRiskAcknowledged: true,
         },
       ],
     })
