@@ -292,6 +292,67 @@ export async function listCampaignAdminUserInteractions(input: {
   })
 }
 
+export async function listAllCampaignAdminUserInteractions(input: {
+  readonly campaignKey: CampaignAdminCampaignKey
+  readonly filters: CampaignAdminQueueFilters
+  readonly limit?: number
+  readonly maxPages?: number
+}): Promise<readonly CampaignAdminUserInteractionListItem[]> {
+  const limit = input.limit ?? 100
+  const maxPages = input.maxPages ?? 1000
+  const items: CampaignAdminUserInteractionListItem[] = []
+  const seenCursors = new Set<string | null>()
+  let cursor: string | null = null
+
+  for (let pageIndex = 0; pageIndex < maxPages; pageIndex += 1) {
+    if (seenCursors.has(cursor)) {
+      logger.warn('Campaign admin all-items query encountered a repeated cursor', {
+        campaignKey: input.campaignKey,
+        cursor,
+        pageIndex,
+      })
+      break
+    }
+
+    seenCursors.add(cursor)
+
+    const response = await listCampaignAdminUserInteractions({
+      campaignKey: input.campaignKey,
+      filters: input.filters,
+      cursor,
+      limit,
+    })
+
+    items.push(...response.items)
+
+    if (!response.page.hasMore || response.page.nextCursor === null) {
+      break
+    }
+
+    if (pageIndex === maxPages - 1) {
+      logger.error('Campaign admin all-items query exceeded the safe pagination limit', {
+        campaignKey: input.campaignKey,
+        userId: input.filters.userId ?? null,
+        maxPages,
+        limit,
+      })
+
+      throw new CampaignAdminApiError(
+        t`Campaign admin user page exceeded the safe pagination limit.`,
+        502,
+        {
+          code: 'pagination_limit_exceeded',
+          retryable: false,
+        }
+      )
+    }
+
+    cursor = response.page.nextCursor
+  }
+
+  return items
+}
+
 export async function getCampaignAdminUserInteractionsMeta(input: {
   readonly campaignKey: CampaignAdminCampaignKey
 }): Promise<CampaignAdminMetaResponse> {

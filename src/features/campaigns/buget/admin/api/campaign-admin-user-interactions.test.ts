@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   getCampaignAdminUserInteractionsMeta,
+  listAllCampaignAdminUserInteractions,
   listCampaignAdminUserInteractions,
   submitCampaignAdminReviews,
 } from './campaign-admin-user-interactions'
@@ -505,5 +506,48 @@ describe('campaign-admin-user-interactions api', () => {
       message: 'Campaign admin queue response was invalid.',
       code: 'invalid_response',
     })
+  })
+
+  it('fails loudly when the all-items query exceeds its safe pagination limit', async () => {
+    getAuthTokenMock.mockResolvedValue('token-123')
+    let callCount = 0
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
+      callCount += 1
+
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          data: {
+            items: createListResponsePayload().data.items,
+            page: {
+              limit: 1,
+              hasMore: true,
+              nextCursor: `cursor-${callCount}`,
+            },
+          },
+        }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+    })
+
+    await expect(
+      listAllCampaignAdminUserInteractions({
+        campaignKey: 'funky',
+        filters: {
+          userId: 'user-1',
+        },
+        limit: 1,
+        maxPages: 2,
+      })
+    ).rejects.toMatchObject({
+      status: 502,
+      code: 'pagination_limit_exceeded',
+      message: 'Campaign admin user page exceeded the safe pagination limit.',
+    })
+
+    expect(callCount).toBe(2)
   })
 })

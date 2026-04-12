@@ -40,6 +40,7 @@ import {
   getCampaignAdminThreadPhaseLabel,
   getCampaignAdminUserInteractionsSortLabel,
 } from "@/features/campaigns/buget/admin/constants";
+import { formatCampaignAdminUserIdPreview } from "@/features/campaigns/buget/admin/utils/format-user-id-preview";
 import { getCampaignAdminPrimaryValue } from "@/features/campaigns/buget/admin/utils/payload-summary";
 import { resolveSafeCampaignAdminHref } from "@/features/campaigns/buget/admin/utils/resolve-safe-campaign-admin-href";
 import { buildCampaignPrimariePath } from "@/features/challenges/constants";
@@ -61,7 +62,16 @@ type CampaignAdminUserInteractionsTableProps = {
   >;
   readonly selectedKeys: ReadonlySet<string>;
   readonly isLoading: boolean;
+  readonly header?: (input: {
+    readonly actions: ReactNode;
+    readonly trailingActions: ReactNode;
+  }) => ReactNode;
   readonly footer?: ReactNode;
+  readonly tablePreferencesKey?: string;
+  readonly defaultVisibleColumnIds?: readonly OptionalColumnId[];
+  readonly renderItemActions?: (
+    item: CampaignAdminUserInteractionListItem,
+  ) => ReactNode;
   readonly sortBy?: CampaignAdminUserInteractionsSortKey;
   readonly sortOrder?: CampaignAdminSortOrder;
   readonly onCopyRows: () => Promise<void> | void;
@@ -130,14 +140,6 @@ function formatDateTime(value: string | null): string {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function formatUserIdPreview(userId: string): string {
-  if (userId.length <= 14) {
-    return userId;
-  }
-
-  return `${userId.slice(0, 8)}…${userId.slice(-4)}`;
 }
 
 function SortableHeaderButton({
@@ -413,7 +415,11 @@ export function CampaignAdminUserInteractionsTable({
   stagedDraftsByKey,
   selectedKeys,
   isLoading,
+  header,
   footer,
+  tablePreferencesKey,
+  defaultVisibleColumnIds = DEFAULT_VISIBLE_COLUMN_IDS,
+  renderItemActions,
   sortBy,
   sortOrder,
   onCopyRows,
@@ -423,12 +429,12 @@ export function CampaignAdminUserInteractionsTable({
   onOpenItem,
 }: CampaignAdminUserInteractionsTableProps) {
   const { columnVisibility, setColumnVisibility } = useTablePreferences(
-    `campaign-admin-user-interactions:${campaignKey}`,
+    tablePreferencesKey ?? `campaign-admin-user-interactions:${campaignKey}`,
     {
       columnVisibility: Object.fromEntries(
         ALL_OPTIONAL_COLUMN_IDS.map((columnId) => [
           columnId,
-          DEFAULT_VISIBLE_COLUMN_IDS.includes(columnId),
+          defaultVisibleColumnIds.includes(columnId),
         ]),
       ),
     },
@@ -469,7 +475,7 @@ export function CampaignAdminUserInteractionsTable({
   ];
 
   const isColumnVisible = (columnId: OptionalColumnId): boolean =>
-    columnVisibility[columnId] ?? DEFAULT_VISIBLE_COLUMN_IDS.includes(columnId);
+    columnVisibility[columnId] ?? defaultVisibleColumnIds.includes(columnId);
 
   const toggleColumn = (columnId: OptionalColumnId, checked: boolean) => {
     setColumnVisibility((currentColumnVisibility: Record<string, boolean>) => ({
@@ -496,38 +502,76 @@ export function CampaignAdminUserInteractionsTable({
   return (
     <>
       <div className="hidden overflow-hidden rounded-3xl border border-border/70 bg-card/80 lg:block">
-        <div className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3">
+        {header ? (
+          <div className="border-b border-border/60 px-4 py-4">
+            {header({
+              actions: (
+                <>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full px-3"
+                      >
+                        {t`Columns`}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      {columnOptions.map((column) => (
+                        <DropdownMenuCheckboxItem
+                          key={column.id}
+                          checked={isColumnVisible(column.id)}
+                          onCheckedChange={(checked) =>
+                            toggleColumn(column.id, checked === true)
+                          }
+                        >
+                          {column.label}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              ),
+              trailingActions: (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full"
+                      aria-label={copyButtonLabel}
+                    >
+                      <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onSelect={() => {
+                        void onCopyRows();
+                      }}
+                      disabled={items.length === 0 || isLoading}
+                    >
+                      {copyButtonLabel}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ),
+            })}
+          </div>
+        ) : null}
+        <div
+          className={`flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3 ${
+            header ? "hidden" : ""
+          }`}
+        >
           <p className="text-sm text-muted-foreground" aria-live="polite">
             {t`${visibleRowCount} visible`}
           </p>
 
           <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full px-3"
-                >
-                  {t`Columns`}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                {columnOptions.map((column) => (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    checked={isColumnVisible(column.id)}
-                    onCheckedChange={(checked) =>
-                      toggleColumn(column.id, checked === true)
-                    }
-                  >
-                    {column.label}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -725,12 +769,13 @@ export function CampaignAdminUserInteractionsTable({
                   </TableCell>
                   {isColumnVisible("userId") ? (
                     <TableCell className="max-w-[9rem]">
-                      <span
-                        className="block truncate font-mono text-xs text-muted-foreground"
+                      <a
+                        href={`/admin/campaigns/${campaignKey}/users/${encodeURIComponent(item.userId)}`}
+                        className="block truncate font-mono text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                         title={item.userId}
                       >
-                        {formatUserIdPreview(item.userId)}
-                      </span>
+                        {formatCampaignAdminUserIdPreview(item.userId)}
+                      </a>
                     </TableCell>
                   ) : null}
                   {isColumnVisible("association") ? (
@@ -793,15 +838,18 @@ export function CampaignAdminUserInteractionsTable({
                     </TableCell>
                   ) : null}
                   <TableCell className="sticky right-0 z-10 bg-card pr-4 text-right group-hover:bg-muted/30">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onOpenItem(item)}
-                      className="rounded-full px-3"
-                    >
-                      {selectable ? t`Review` : t`Inspect`}
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      {renderItemActions ? renderItemActions(item) : null}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onOpenItem(item)}
+                        className="rounded-full px-3"
+                      >
+                        {selectable ? t`Review` : t`Inspect`}
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               );
@@ -817,6 +865,11 @@ export function CampaignAdminUserInteractionsTable({
       </div>
 
       <div className="space-y-3 lg:hidden">
+        {header ? (
+          <div className="rounded-3xl border border-border/70 bg-card/80 p-4">
+            {header({ actions: null, trailingActions: null })}
+          </div>
+        ) : null}
         {items.map((item) => {
           const selectionKey = buildCampaignAdminSelectionKey(
             item.userId,
@@ -866,9 +919,13 @@ export function CampaignAdminUserInteractionsTable({
                   <MobileInfoRow
                     label={t`User ID`}
                     value={
-                      <span className="font-mono text-xs" title={item.userId}>
-                        {formatUserIdPreview(item.userId)}
-                      </span>
+                      <a
+                        href={`/admin/campaigns/${campaignKey}/users/${encodeURIComponent(item.userId)}`}
+                        className="font-mono text-xs underline-offset-4 hover:underline"
+                        title={item.userId}
+                      >
+                        {formatCampaignAdminUserIdPreview(item.userId)}
+                      </a>
                     }
                   />
                   <MobileInfoRow
@@ -909,7 +966,8 @@ export function CampaignAdminUserInteractionsTable({
 
                 <RiskFlagBadgeList riskFlags={item.riskFlags} />
 
-                <div className="flex justify-end">
+                <div className="flex flex-wrap justify-end gap-2">
+                  {renderItemActions ? renderItemActions(item) : null}
                   <Button
                     type="button"
                     variant="outline"
@@ -929,6 +987,32 @@ export function CampaignAdminUserInteractionsTable({
             {footer}
           </div>
         ) : null}
+
+        <div className="flex justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="rounded-full"
+                aria-label={copyButtonLabel}
+              >
+                <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onSelect={() => {
+                  void onCopyRows();
+                }}
+                disabled={items.length === 0 || isLoading}
+              >
+                {copyButtonLabel}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </>
   );

@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-query'
 import {
   getCampaignAdminUserInteractionsMeta,
+  listAllCampaignAdminUserInteractions,
   listCampaignAdminUserInteractions,
   submitCampaignAdminReviews,
   type CampaignAdminApiError,
@@ -28,6 +29,10 @@ export const campaignAdminKeys = {
     ['campaign-admin', campaignKey, 'queue'] as const,
   meta: (campaignKey: CampaignAdminCampaignKey) =>
     ['campaign-admin', campaignKey, 'meta'] as const,
+  userPageItems: (
+    campaignKey: CampaignAdminCampaignKey,
+    userId: string
+  ) => ['campaign-admin', campaignKey, 'user-page', userId, 'items'] as const,
   queue: (
     campaignKey: CampaignAdminCampaignKey,
     filters: CampaignAdminQueueFilters,
@@ -103,6 +108,26 @@ export function campaignAdminQueueQueryOptions(input: {
   })
 }
 
+export function campaignAdminUserPageItemsQueryOptions(input: {
+  readonly campaignKey: CampaignAdminCampaignKey
+  readonly userId: string
+  readonly enabled?: boolean
+}) {
+  return queryOptions<readonly CampaignAdminUserInteractionListItem[], CampaignAdminApiError>({
+    queryKey: campaignAdminKeys.userPageItems(input.campaignKey, input.userId),
+    queryFn: async () =>
+      listAllCampaignAdminUserInteractions({
+        campaignKey: input.campaignKey,
+        filters: {
+          userId: input.userId,
+        },
+      }),
+    enabled: input.enabled ?? true,
+    staleTime: 15_000,
+    refetchOnWindowFocus: true,
+  })
+}
+
 export function campaignAdminMetaQueryOptions(input: {
   readonly campaignKey: CampaignAdminCampaignKey
   readonly enabled?: boolean
@@ -134,6 +159,14 @@ export function useCampaignAdminInteractionMetaQuery(input: {
   readonly enabled?: boolean
 }) {
   return useQuery(campaignAdminMetaQueryOptions(input))
+}
+
+export function useCampaignAdminUserPageItemsQuery(input: {
+  readonly campaignKey: CampaignAdminCampaignKey
+  readonly userId: string
+  readonly enabled?: boolean
+}) {
+  return useQuery(campaignAdminUserPageItemsQueryOptions(input))
 }
 
 export function useSubmitCampaignAdminReviewsMutation(

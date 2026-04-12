@@ -3,6 +3,7 @@ import {
   parseCampaignAdminListResponse,
   parseCampaignAdminMetaResponse,
   parseCampaignAdminSubmitReviewsBody,
+  parseCampaignAdminUsersListResponse,
 } from './api-schemas'
 
 function createMetaResponsePayload() {
@@ -109,6 +110,31 @@ function createListResponsePayload() {
   }
 }
 
+function createUsersListResponsePayload() {
+  return {
+    ok: true,
+    data: {
+      items: [
+        {
+          userId: 'user-1',
+          interactionCount: 3,
+          pendingReviewCount: 1,
+          latestUpdatedAt: '2026-04-10T10:00:00.000Z',
+          latestInteractionId: 'funky:interaction:public_debate_request',
+          latestEntityCui: '12345678',
+          latestEntityName: 'Oras Test',
+        },
+      ],
+      page: {
+        hasMore: false,
+        nextCursor: null,
+        sortBy: 'latestUpdatedAt',
+        sortOrder: 'desc',
+      },
+    },
+  }
+}
+
 describe('campaign admin api schemas', () => {
   it('parses the queue metadata stats contract', () => {
     expect(parseCampaignAdminMetaResponse(createMetaResponsePayload())).toEqual(
@@ -120,6 +146,12 @@ describe('campaign admin api schemas', () => {
     expect(parseCampaignAdminListResponse(createListResponsePayload())).toEqual(
       createListResponsePayload().data
     )
+  })
+
+  it('parses campaign admin users list responses', () => {
+    expect(
+      parseCampaignAdminUsersListResponse(createUsersListResponsePayload())
+    ).toEqual(createUsersListResponsePayload().data)
   })
 
   it('parses audit-only quiz summaries and additive reviewable metadata', () => {

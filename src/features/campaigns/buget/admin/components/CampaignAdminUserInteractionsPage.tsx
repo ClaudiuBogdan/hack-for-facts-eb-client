@@ -29,7 +29,6 @@ import { CampaignAdminCursorPager } from "@/features/campaigns/buget/admin/compo
 import { CampaignAdminReviewSheet } from "@/features/campaigns/buget/admin/components/CampaignAdminReviewSheet";
 import {
   CampaignAdminSendValidationDialog,
-  type CampaignAdminSendValidationIssue,
 } from "@/features/campaigns/buget/admin/components/CampaignAdminSendValidationDialog";
 import { CampaignAdminUserInteractionsTable } from "@/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable";
 import { CampaignAdminUserInteractionsToolbar } from "@/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar";
@@ -37,7 +36,6 @@ import {
   buildCampaignAdminSelectionKey,
   getCampaignAdminPhaseLabel,
   getCampaignAdminReviewStatusLabel,
-  requiresApprovalConfirmation,
 } from "@/features/campaigns/buget/admin/constants";
 import {
   getCampaignAdminQueueFilters,
@@ -54,7 +52,6 @@ import {
   type CampaignAdminQueueSearch,
   type CampaignAdminReviewDecision,
   type CampaignAdminSortOrder,
-  type CampaignAdminSubmitReviewItem,
   type CampaignAdminStagedReviewDraft,
   type CampaignAdminUserInteractionListItem,
   type CampaignAdminUserInteractionsSortKey,
@@ -68,7 +65,14 @@ import {
   readCampaignAdminStagedReviewDraftsFromSessionStorage,
   writeCampaignAdminStagedReviewDraftsToSessionStorage,
 } from "@/features/campaigns/buget/admin/utils/staged-review-session-storage";
-import { getCampaignAdminPrimaryValue } from "@/features/campaigns/buget/admin/utils/payload-summary";
+import {
+  buildCampaignAdminSubmitReviewItem,
+  createCampaignAdminStageReviewDraft,
+  getCampaignAdminSelectedSendValidationIssues,
+  getCampaignAdminSendValidationMessage,
+  isCampaignAdminEditablePasteTarget,
+  isCampaignAdminPendingReview,
+} from "@/features/campaigns/buget/admin/utils/review-workspace";
 
 type CampaignAdminUserInteractionsPageProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
@@ -128,122 +132,6 @@ function SummaryBreakdown({
       ))}
     </div>
   );
-}
-
-function isPendingReview(item: CampaignAdminUserInteractionListItem): boolean {
-  return item.reviewStatus === "pending";
-}
-
-function isEditablePasteTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) {
-    return false;
-  }
-
-  return (
-    target.closest(
-      'input, textarea, select, [contenteditable=""], [contenteditable="true"]',
-    ) !== null
-  );
-}
-
-function isApprovalRiskAcknowledged(
-  stagedDraft: CampaignAdminStagedReviewDraft | null | undefined,
-): boolean {
-  return stagedDraft?.approvalRiskAcknowledged === true;
-}
-
-function getSendValidationMessage(input: {
-  readonly item: CampaignAdminUserInteractionListItem;
-  readonly stagedDraft: CampaignAdminStagedReviewDraft | null | undefined;
-}): string | null {
-  const { item, stagedDraft } = input;
-
-  if (item.reviewStatus !== "pending") {
-    return t`This row is no longer pending. Refresh the queue before sending.`;
-  }
-
-  if (stagedDraft === undefined || stagedDraft === null) {
-    return t`Missing staged review values. Paste spreadsheet rows with matching ids first.`;
-  }
-
-  if (stagedDraft.status !== "approved" && stagedDraft.status !== "rejected") {
-    return t`Missing staged review decision. Set approved or rejected before sending.`;
-  }
-
-  if (
-    stagedDraft.status === "rejected" &&
-    stagedDraft.feedbackText.trim().length === 0
-  ) {
-    return t`Rejected rows need a review note before sending.`;
-  }
-
-  if (
-    stagedDraft.status === "approved" &&
-    requiresApprovalConfirmation(item.riskFlags) &&
-    !isApprovalRiskAcknowledged(stagedDraft)
-  ) {
-    return t`Approved rows with institution-email risk flags need explicit confirmation before sending.`;
-  }
-
-  return null;
-}
-
-function buildSubmitReviewItem(input: {
-  readonly item: CampaignAdminUserInteractionListItem;
-  readonly draft: CampaignAdminStagedReviewDraft;
-}): CampaignAdminSubmitReviewItem {
-  const trimmedFeedbackText = input.draft.feedbackText.trim();
-
-  return input.draft.status === "approved"
-    ? {
-        userId: input.item.userId,
-        recordKey: input.item.recordKey,
-        expectedUpdatedAt: input.item.updatedAt,
-        status: "approved",
-        ...(trimmedFeedbackText ? { feedbackText: trimmedFeedbackText } : {}),
-        ...(input.draft.approvalRiskAcknowledged === true
-          ? { approvalRiskAcknowledged: true }
-          : {}),
-      }
-    : {
-        userId: input.item.userId,
-        recordKey: input.item.recordKey,
-        expectedUpdatedAt: input.item.updatedAt,
-        status: "rejected",
-        feedbackText: trimmedFeedbackText,
-      };
-}
-
-function getSelectedSendValidationIssues(input: {
-  readonly items: readonly CampaignAdminUserInteractionListItem[];
-  readonly stagedReviewDraftsByKey: Readonly<
-    Record<string, CampaignAdminStagedReviewDraft>
-  >;
-}): readonly CampaignAdminSendValidationIssue[] {
-  return input.items.flatMap((item) => {
-    const selectionKey = buildCampaignAdminSelectionKey(
-      item.userId,
-      item.recordKey,
-    );
-    const stagedDraft = input.stagedReviewDraftsByKey[selectionKey];
-    const message = getSendValidationMessage({
-      item,
-      stagedDraft,
-    });
-
-    if (message !== null) {
-      return [
-        {
-          selectionKey,
-          primaryValue: getCampaignAdminPrimaryValue(item) ?? item.recordKey,
-          recordKey: item.recordKey,
-          message,
-        },
-      ];
-    }
-
-    return [];
-  });
 }
 
 function createPaginationStateSignature(search: CampaignAdminQueueSearch): string {
@@ -326,9 +214,10 @@ export function CampaignAdminUserInteractionsPage({
 
   const selectedSendValidationIssues = useMemo(
     () =>
-      getSelectedSendValidationIssues({
+      getCampaignAdminSelectedSendValidationIssues({
         items: selectedItems,
         stagedReviewDraftsByKey,
+        buildSelectionKey: buildCampaignAdminSelectionKey,
       }),
     [selectedItems, stagedReviewDraftsByKey],
   );
@@ -575,7 +464,7 @@ export function CampaignAdminUserInteractionsPage({
     item: CampaignAdminUserInteractionListItem,
     checked: boolean,
   ) => {
-    if (!isPendingReview(item)) {
+    if (!isCampaignAdminPendingReview(item)) {
       return;
     }
 
@@ -603,7 +492,7 @@ export function CampaignAdminUserInteractionsPage({
     setSelectedKeys(
       new Set(
         items
-          .filter(isPendingReview)
+          .filter(isCampaignAdminPendingReview)
           .map((item) =>
             buildCampaignAdminSelectionKey(item.userId, item.recordKey),
           ),
@@ -658,16 +547,11 @@ export function CampaignAdminUserInteractionsPage({
 
     setStagedReviewDraftsByKey((currentDraftsByKey) => {
       const currentDraft = currentDraftsByKey[selectionKey];
-      const nextDraft: CampaignAdminStagedReviewDraft = {
-        userId: item.userId,
-        recordKey: item.recordKey,
+      const nextDraft = createCampaignAdminStageReviewDraft({
+        item,
+        currentDraft,
         status,
-        feedbackText: currentDraft?.feedbackText ?? "",
-        approvalRiskAcknowledged:
-          status === "approved" &&
-          currentDraft?.status === "approved" &&
-          currentDraft.approvalRiskAcknowledged === true,
-      };
+      });
 
       if (
         currentDraft?.status === nextDraft.status &&
@@ -748,7 +632,7 @@ export function CampaignAdminUserInteractionsPage({
     item: CampaignAdminUserInteractionListItem;
     draft: CampaignAdminStagedReviewDraft;
   }) => {
-    const validationMessage = getSendValidationMessage({
+    const validationMessage = getCampaignAdminSendValidationMessage({
       item: input.item,
       stagedDraft: input.draft,
     });
@@ -765,7 +649,7 @@ export function CampaignAdminUserInteractionsPage({
       );
 
       await submitReviewsMutation.mutateAsync({
-        items: [buildSubmitReviewItem(input)],
+        items: [buildCampaignAdminSubmitReviewItem(input)],
       });
 
       clearStagedReviewDraft(selectionKey);
@@ -874,9 +758,10 @@ export function CampaignAdminUserInteractionsPage({
       return;
     }
 
-    const latestValidationIssues = getSelectedSendValidationIssues({
+    const latestValidationIssues = getCampaignAdminSelectedSendValidationIssues({
       items: selectedItems,
       stagedReviewDraftsByKey,
+      buildSelectionKey: buildCampaignAdminSelectionKey,
     });
 
     if (latestValidationIssues.length > 0) {
@@ -901,7 +786,7 @@ export function CampaignAdminUserInteractionsPage({
 
         submittedSelectionKeys.add(selectionKey);
         return [
-          buildSubmitReviewItem({
+          buildCampaignAdminSubmitReviewItem({
             item,
             draft: stagedDraft,
           }),
@@ -1016,7 +901,7 @@ export function CampaignAdminUserInteractionsPage({
     }
 
     const handleWindowPaste = (event: ClipboardEvent) => {
-      if (isEditablePasteTarget(event.target)) {
+      if (isCampaignAdminEditablePasteTarget(event.target)) {
         return;
       }
 

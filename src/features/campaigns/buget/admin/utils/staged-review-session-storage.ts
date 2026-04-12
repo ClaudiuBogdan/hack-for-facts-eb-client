@@ -26,16 +26,22 @@ const campaignAdminStagedReviewDraftMapSchema = z.record(
 )
 
 export function getCampaignAdminStagedReviewDraftsStorageKey(
-  campaignKey: CampaignAdminCampaignKey
+  campaignKey: CampaignAdminCampaignKey,
+  userId?: string
 ): string {
+  if (userId && userId.trim().length > 0) {
+    return `campaign-admin:user-interactions:${campaignKey}:${userId}:staged-review-drafts`
+  }
+
   return `campaign-admin:user-interactions:${campaignKey}:staged-review-drafts`
 }
 
 export function readCampaignAdminStagedReviewDraftsFromSessionStorage(
-  campaignKey: CampaignAdminCampaignKey
+  campaignKey: CampaignAdminCampaignKey,
+  userId?: string
 ): Record<string, CampaignAdminStagedReviewDraft> {
   const rawValue = getSafeSessionStorageItem(
-    getCampaignAdminStagedReviewDraftsStorageKey(campaignKey)
+    getCampaignAdminStagedReviewDraftsStorageKey(campaignKey, userId)
   )
 
   if (rawValue === null || rawValue.trim().length === 0) {
@@ -54,9 +60,13 @@ export function readCampaignAdminStagedReviewDraftsFromSessionStorage(
 
 export function writeCampaignAdminStagedReviewDraftsToSessionStorage(
   campaignKey: CampaignAdminCampaignKey,
-  draftsByKey: Readonly<Record<string, CampaignAdminStagedReviewDraft>>
+  draftsByKey: Readonly<Record<string, CampaignAdminStagedReviewDraft>>,
+  userId?: string
 ): void {
-  const storageKey = getCampaignAdminStagedReviewDraftsStorageKey(campaignKey)
+  const storageKey = getCampaignAdminStagedReviewDraftsStorageKey(
+    campaignKey,
+    userId
+  )
 
   if (Object.keys(draftsByKey).length === 0) {
     removeSafeSessionStorageItem(storageKey)

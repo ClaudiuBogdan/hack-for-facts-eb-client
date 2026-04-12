@@ -4,6 +4,8 @@ import {
   createEmptyCampaignAdminQueueSearch,
   isCampaignAdminFilterDraftEqual,
   normalizeCampaignAdminQueueSearch,
+  normalizeCampaignAdminUserPageSearch,
+  normalizeCampaignAdminUsersSearch,
 } from './search-schema'
 
 describe('campaign admin search schema', () => {
@@ -162,6 +164,84 @@ describe('campaign admin search schema', () => {
     ).toEqual({
       limit: 25,
       reviewStatus: 'pending',
+    })
+  })
+
+  it('normalizes users route search defaults', () => {
+    expect(normalizeCampaignAdminUsersSearch({})).toEqual({
+      limit: 50,
+      sortBy: 'latestUpdatedAt',
+      sortOrder: 'desc',
+    })
+  })
+
+  it('trims users query text and keeps paging state', () => {
+    expect(
+      normalizeCampaignAdminUsersSearch({
+        query: '  user-1  ',
+        cursor: 'cursor-1',
+        pageIndex: '2',
+        sortBy: 'interactionCount',
+        sortOrder: 'asc',
+        limit: '25',
+      })
+    ).toEqual({
+      query: 'user-1',
+      cursor: 'cursor-1',
+      pageIndex: 2,
+      sortBy: 'interactionCount',
+      sortOrder: 'asc',
+      limit: 25,
+    })
+  })
+
+  it('maps legacy child-route updatedAt sorting to the users sort key', () => {
+    expect(
+      normalizeCampaignAdminUsersSearch({
+        sortBy: 'updatedAt',
+        sortOrder: 'desc',
+      })
+    ).toEqual({
+      limit: 50,
+      sortBy: 'latestUpdatedAt',
+      sortOrder: 'desc',
+    })
+  })
+
+  it('ignores child-only sort keys on the users route instead of throwing', () => {
+    expect(
+      normalizeCampaignAdminUsersSearch({
+        sortBy: 'reviewStatus',
+        sortOrder: 'asc',
+      })
+    ).toEqual({
+      limit: 50,
+      sortBy: 'latestUpdatedAt',
+      sortOrder: 'asc',
+    })
+  })
+
+  it('maps inherited users-route latestUpdatedAt sorting to the user page sort key', () => {
+    expect(
+      normalizeCampaignAdminUserPageSearch({
+        sortBy: 'latestUpdatedAt',
+        sortOrder: 'desc',
+      })
+    ).toEqual({
+      sortBy: 'updatedAt',
+      sortOrder: 'desc',
+    })
+  })
+
+  it('ignores users-only sort keys on the user page instead of throwing', () => {
+    expect(
+      normalizeCampaignAdminUserPageSearch({
+        sortBy: 'interactionCount',
+        sortOrder: 'asc',
+      })
+    ).toEqual({
+      sortBy: 'updatedAt',
+      sortOrder: 'asc',
     })
   })
 })

@@ -1,0 +1,231 @@
+import { fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useState, type ReactNode } from "react";
+import { CampaignAdminUserPage } from "./CampaignAdminUserPage";
+import type {
+  CampaignAdminMetaResponse,
+  CampaignAdminUserInteractionListItem,
+  CampaignAdminUserPageSearch,
+} from "@/features/campaigns/buget/admin/types";
+import { getCampaignAdminStagedReviewDraftsStorageKey } from "@/features/campaigns/buget/admin/utils/staged-review-session-storage";
+
+const useAuthMock = vi.fn();
+const useCampaignAdminInteractionMetaQueryMock = vi.fn();
+const useCampaignAdminUserPageItemsQueryMock = vi.fn();
+const useSubmitCampaignAdminReviewsMutationMock = vi.fn();
+
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({ children }: { children: ReactNode }) => <a>{children}</a>,
+}));
+
+vi.mock("@/lib/auth", () => ({
+  useAuth: () => useAuthMock(),
+  AuthSignInButton: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
+
+vi.mock("@/features/campaigns/buget/admin/hooks/use-campaign-admin-user-interactions", () => ({
+  useCampaignAdminInteractionMetaQuery: (...args: unknown[]) =>
+    useCampaignAdminInteractionMetaQueryMock(...args),
+  useCampaignAdminUserPageItemsQuery: (...args: unknown[]) =>
+    useCampaignAdminUserPageItemsQueryMock(...args),
+  useSubmitCampaignAdminReviewsMutation: (...args: unknown[]) =>
+    useSubmitCampaignAdminReviewsMutationMock(...args),
+}));
+
+function createItem(
+  overrides: Partial<CampaignAdminUserInteractionListItem> = {},
+): CampaignAdminUserInteractionListItem {
+  return {
+    userId: "user-1",
+    recordKey: "record-1",
+    campaignKey: "funky",
+    interactionId: "funky:interaction:public_debate_request",
+    lessonId: "lesson-1",
+    entityCui: "12345678",
+    entityName: "Oras Test",
+    scopeType: "entity",
+    phase: "pending",
+    reviewStatus: "pending",
+    reviewable: true,
+    pendingReason: "awaiting_manual_review",
+    submittedAt: "2026-04-10T10:00:00.000Z",
+    createdAt: "2026-04-10T10:00:00.000Z",
+    updatedAt: "2026-04-10T10:00:00.000Z",
+    reviewedAt: null,
+    reviewedByUserId: null,
+    reviewSource: null,
+    feedbackText: null,
+    payloadKind: "json",
+    payloadSummary: {
+      kind: "public_debate_request",
+      institutionEmail: "contact@primarie.ro",
+      organizationName: "Asociatia Test",
+      submissionPath: "request_platform",
+      isNgo: true,
+    },
+    institutionEmail: "contact@primarie.ro",
+    websiteUrl: null,
+    organizationName: "Asociatia Test",
+    interactionElementLink: null,
+    submissionPath: "request_platform",
+    isNgo: true,
+    riskFlags: [],
+    threadId: "thread-1",
+    threadPhase: "awaiting_reply",
+    lastEmailAt: "2026-04-10T10:05:00.000Z",
+    lastReplyAt: null,
+    nextActionAt: null,
+    submittedEventCount: 1,
+    evaluatedEventCount: 0,
+    lastAuditAt: "2026-04-10T10:00:00.000Z",
+    ...overrides,
+  };
+}
+
+function createMetaResponse(): CampaignAdminMetaResponse {
+  return {
+    availableInteractionTypes: [
+      {
+        interactionId: "funky:interaction:public_debate_request",
+        label: "Public debate request",
+      },
+    ],
+    stats: {
+      total: 1,
+      riskFlagged: 0,
+      withInstitutionThread: 1,
+      reviewStatusCounts: {
+        pending: 1,
+        approved: 0,
+        rejected: 0,
+        notReviewed: 0,
+      },
+      phaseCounts: {
+        idle: 0,
+        draft: 0,
+        pending: 1,
+        resolved: 0,
+        failed: 0,
+      },
+      threadPhaseCounts: {
+        sending: 0,
+        awaiting_reply: 1,
+        reply_received_unreviewed: 0,
+        manual_follow_up_needed: 0,
+        resolved_positive: 0,
+        resolved_negative: 0,
+        closed_no_response: 0,
+        failed: 0,
+        none: 0,
+      },
+    },
+  };
+}
+
+describe("CampaignAdminUserPage", () => {
+  const defaultSearch: CampaignAdminUserPageSearch = {
+    sortBy: "updatedAt",
+    sortOrder: "desc",
+  };
+
+  beforeEach(() => {
+    useAuthMock.mockReset();
+    useCampaignAdminInteractionMetaQueryMock.mockReset();
+    useCampaignAdminUserPageItemsQueryMock.mockReset();
+    useSubmitCampaignAdminReviewsMutationMock.mockReset();
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+
+    useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
+    useCampaignAdminInteractionMetaQueryMock.mockReturnValue({
+      data: createMetaResponse(),
+      error: null,
+      isPending: false,
+      refetch: vi.fn(),
+    });
+    useCampaignAdminUserPageItemsQueryMock.mockReturnValue({
+      data: [createItem()],
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+    useSubmitCampaignAdminReviewsMutationMock.mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    });
+  });
+
+  it("adds a row to the current batch selection", async () => {
+    function StatefulPage() {
+      const [search, setSearch] = useState<CampaignAdminUserPageSearch>(
+        defaultSearch,
+      );
+      return (
+        <CampaignAdminUserPage
+          campaignKey="funky"
+          userId="user-1"
+          search={search}
+          onSearchChange={(nextSearch) => {
+            setSearch(nextSearch);
+          }}
+        />
+      );
+    }
+
+    render(<StatefulPage />);
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Add" })[0]!);
+    expect(screen.getByText("Batch review")).toBeInTheDocument();
+    expect(screen.getByText("1 row selected")).toBeInTheDocument();
+  });
+
+  it("does not clear staged drafts before the first query result arrives", () => {
+    const stagedStorageKey = getCampaignAdminStagedReviewDraftsStorageKey(
+      "funky",
+      "user-1",
+    );
+
+    window.sessionStorage.setItem(
+      stagedStorageKey,
+      JSON.stringify({
+        "user-1::record-1": {
+          userId: "user-1",
+          recordKey: "record-1",
+          status: "approved",
+          feedbackText: "",
+          approvalRiskAcknowledged: false,
+        },
+      }),
+    );
+
+    useCampaignAdminUserPageItemsQueryMock.mockReturnValue({
+      data: undefined,
+      error: null,
+      isLoading: true,
+      isFetching: true,
+      refetch: vi.fn(),
+    });
+
+    render(
+      <CampaignAdminUserPage
+        campaignKey="funky"
+        userId="user-1"
+        search={defaultSearch}
+        onSearchChange={() => {}}
+      />,
+    );
+
+    expect(window.sessionStorage.getItem(stagedStorageKey)).toBe(
+      JSON.stringify({
+        "user-1::record-1": {
+          userId: "user-1",
+          recordKey: "record-1",
+          status: "approved",
+          feedbackText: "",
+          approvalRiskAcknowledged: false,
+        },
+      }),
+    );
+  });
+});

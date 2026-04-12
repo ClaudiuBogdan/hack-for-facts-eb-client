@@ -7,6 +7,7 @@ import type {
   CampaignAdminReviewStatus,
   CampaignAdminRiskFlag,
   CampaignAdminThreadPhase,
+  CampaignAdminUsersSortKey,
   CampaignAdminUserInteractionsSortKey,
 } from "./types";
 
@@ -90,6 +91,31 @@ export const CAMPAIGN_ADMIN_USER_INTERACTIONS_SORTABLE_COLUMNS: Record<
   },
 };
 
+export const CAMPAIGN_ADMIN_USERS_SORTABLE_COLUMNS: Record<
+  CampaignAdminUsersSortKey,
+  {
+    readonly dataType: "string" | "date" | "number";
+    readonly defaultOrder: CampaignAdminSortOrder;
+  }
+> = {
+  userId: {
+    dataType: "string",
+    defaultOrder: "asc",
+  },
+  latestUpdatedAt: {
+    dataType: "date",
+    defaultOrder: "desc",
+  },
+  interactionCount: {
+    dataType: "number",
+    defaultOrder: "desc",
+  },
+  pendingReviewCount: {
+    dataType: "number",
+    defaultOrder: "desc",
+  },
+};
+
 export function getCampaignAdminUserInteractionsSortLabel(
   sortKey: CampaignAdminUserInteractionsSortKey,
 ): string {
@@ -112,6 +138,23 @@ export function getCampaignAdminUserInteractionsSortLabel(
       return t`Interaction`;
     case "reviewedByUserId":
       return t`Reviewed by`;
+    default:
+      return sortKey;
+  }
+}
+
+export function getCampaignAdminUsersSortLabel(
+  sortKey: CampaignAdminUsersSortKey,
+): string {
+  switch (sortKey) {
+    case "userId":
+      return t`User ID`;
+    case "latestUpdatedAt":
+      return t`Last Updated`;
+    case "interactionCount":
+      return t`Interactions`;
+    case "pendingReviewCount":
+      return t`Pending Reviews`;
     default:
       return sortKey;
   }

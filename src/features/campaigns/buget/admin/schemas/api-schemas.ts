@@ -10,9 +10,11 @@ import {
   campaignAdminScopeTypeValues,
   campaignAdminSubmissionPathValues,
   campaignAdminThreadPhaseValues,
+  campaignAdminUsersSortKeyValues,
   campaignAdminUserInteractionsSortKeyValues,
   type CampaignAdminListResponse,
   type CampaignAdminSubmitReviewsBody,
+  type CampaignAdminUsersListResponse,
   type CampaignAdminUserInteractionListItem,
 } from '@/features/campaigns/buget/admin/types'
 
@@ -186,6 +188,37 @@ const campaignAdminListResponseSchema = z
   })
   .strict()
 
+const campaignAdminUserListItemSchema = z
+  .object({
+    userId: z.string().min(1),
+    interactionCount: z.number().int().nonnegative(),
+    pendingReviewCount: z.number().int().nonnegative(),
+    latestUpdatedAt: z.string().datetime(),
+    latestInteractionId: z.string().min(1),
+    latestEntityCui: z.string().min(1).nullable(),
+    latestEntityName: z.string().nullable(),
+  })
+  .strict()
+
+const campaignAdminUsersListResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        items: z.array(campaignAdminUserListItemSchema),
+        page: z
+          .object({
+            hasMore: z.boolean(),
+            nextCursor: z.string().min(1).nullable(),
+            sortBy: z.enum(campaignAdminUsersSortKeyValues).optional(),
+            sortOrder: z.enum(['asc', 'desc']).optional(),
+          })
+          .strict(),
+      })
+      .strict(),
+  })
+  .strict()
+
 const campaignAdminSubmitReviewsResponseSchema = z
   .object({
     ok: z.literal(true),
@@ -254,6 +287,17 @@ export function parseCampaignAdminListResponse(payload: unknown): CampaignAdminL
   const parsedPayload = campaignAdminListResponseSchema.safeParse(payload)
   if (!parsedPayload.success) {
     throw new Error('Invalid campaign admin queue response.')
+  }
+
+  return parsedPayload.data.data
+}
+
+export function parseCampaignAdminUsersListResponse(
+  payload: unknown
+): CampaignAdminUsersListResponse {
+  const parsedPayload = campaignAdminUsersListResponseSchema.safeParse(payload)
+  if (!parsedPayload.success) {
+    throw new Error('Invalid campaign admin users response.')
   }
 
   return parsedPayload.data.data

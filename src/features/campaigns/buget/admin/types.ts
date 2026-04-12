@@ -83,6 +83,13 @@ export const campaignAdminUserInteractionsSortKeyValues = [
   "reviewedByUserId",
 ] as const;
 
+export const campaignAdminUsersSortKeyValues = [
+  "userId",
+  "latestUpdatedAt",
+  "interactionCount",
+  "pendingReviewCount",
+] as const;
+
 export type CampaignAdminPhase = (typeof campaignAdminPhaseValues)[number];
 export type CampaignAdminReviewStatus =
   (typeof campaignAdminReviewStatusValues)[number];
@@ -106,6 +113,8 @@ export type CampaignAdminMetaThreadPhaseCountKey =
   (typeof campaignAdminMetaThreadPhaseCountValues)[number];
 export type CampaignAdminUserInteractionsSortKey =
   (typeof campaignAdminUserInteractionsSortKeyValues)[number];
+export type CampaignAdminUsersSortKey =
+  (typeof campaignAdminUsersSortKeyValues)[number];
 export type CampaignAdminSortOrder = "asc" | "desc";
 export type CampaignAdminCampaignKey = "funky";
 export type CampaignAdminReviewDecision = Exclude<
@@ -275,6 +284,26 @@ export type CampaignAdminListResponse = {
   };
 };
 
+export type CampaignAdminUserListItem = {
+  readonly userId: string;
+  readonly interactionCount: number;
+  readonly pendingReviewCount: number;
+  readonly latestUpdatedAt: string;
+  readonly latestInteractionId: string;
+  readonly latestEntityCui: string | null;
+  readonly latestEntityName: string | null;
+};
+
+export type CampaignAdminUsersListResponse = {
+  readonly items: readonly CampaignAdminUserListItem[];
+  readonly page: {
+    readonly hasMore: boolean;
+    readonly nextCursor: string | null;
+    readonly sortBy?: CampaignAdminUsersSortKey;
+    readonly sortOrder?: CampaignAdminSortOrder;
+  };
+};
+
 export type CampaignAdminMetaResponse = {
   readonly availableInteractionTypes: readonly CampaignAdminAvailableInteractionType[];
   readonly stats: CampaignAdminInteractionMetaStats;
@@ -340,6 +369,20 @@ export type CampaignAdminQueueFilters = Omit<
   CampaignAdminQueueSearch,
   "limit" | "reviewSelectionKey" | "reviewStatusMode" | "cursor" | "pageIndex"
 >;
+
+export type CampaignAdminUserPageSearch = Omit<
+  CampaignAdminQueueSearch,
+  "phase" | "reviewStatusMode" | "userId" | "cursor" | "pageIndex" | "limit"
+>;
+
+export type CampaignAdminUsersSearch = {
+  readonly query?: string;
+  readonly sortBy?: CampaignAdminUsersSortKey;
+  readonly sortOrder?: CampaignAdminSortOrder;
+  readonly cursor?: string;
+  readonly pageIndex?: number;
+  readonly limit: number;
+};
 
 export type CampaignAdminFilterDraft = {
   readonly phase: CampaignAdminPhase | "";

@@ -1,17 +1,34 @@
 import { z } from "zod";
 import { DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT } from "@/features/campaigns/buget/admin/constants";
 import {
+  toDateInputValue,
+  toUtcRangeBoundary,
+} from "@/features/campaigns/buget/admin/utils/date-inputs";
+import {
   campaignAdminPayloadKindValues,
   campaignAdminPhaseValues,
   campaignAdminReviewStatusValues,
   campaignAdminScopeTypeValues,
   campaignAdminSubmissionPathValues,
   campaignAdminThreadPhaseValues,
+  campaignAdminUsersSortKeyValues,
   campaignAdminUserInteractionsSortKeyValues,
+  type CampaignAdminUserInteractionsSortKey,
+  type CampaignAdminUsersSortKey,
   type CampaignAdminFilterDraft,
   type CampaignAdminQueueFilters,
   type CampaignAdminQueueSearch,
+  type CampaignAdminUsersSearch,
+  type CampaignAdminUserPageSearch,
 } from "@/features/campaigns/buget/admin/types";
+
+const campaignAdminUserInteractionsSortKeySet = new Set<string>(
+  campaignAdminUserInteractionsSortKeyValues,
+);
+
+const campaignAdminUsersSortKeySet = new Set<string>(
+  campaignAdminUsersSortKeyValues,
+);
 
 function toTrimmedOptionalString(value: unknown): string | undefined {
   if (typeof value !== "string") {
@@ -77,26 +94,38 @@ function toOptionalIsoDateTime(value: unknown): string | undefined {
   return nextValue;
 }
 
-function toDateInputValue(value: string | undefined): string {
-  return value?.slice(0, 10) ?? "";
+function toOptionalCampaignAdminUserInteractionsSortKey(
+  value: unknown,
+): CampaignAdminUserInteractionsSortKey | undefined {
+  const nextValue = toTrimmedOptionalString(value);
+  if (nextValue === undefined) {
+    return undefined;
+  }
+
+  if (nextValue === "latestUpdatedAt") {
+    return "updatedAt";
+  }
+
+  return campaignAdminUserInteractionsSortKeySet.has(nextValue)
+    ? (nextValue as CampaignAdminUserInteractionsSortKey)
+    : undefined;
 }
 
-function toUtcRangeBoundary(
-  dateValue: string,
-  boundary: "start" | "end",
-): string | undefined {
-  const trimmedValue = dateValue.trim();
-  if (trimmedValue.length === 0) {
+function toOptionalCampaignAdminUsersSortKey(
+  value: unknown,
+): CampaignAdminUsersSortKey | undefined {
+  const nextValue = toTrimmedOptionalString(value);
+  if (nextValue === undefined) {
     return undefined;
   }
 
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmedValue)) {
-    return undefined;
+  if (nextValue === "updatedAt") {
+    return "latestUpdatedAt";
   }
 
-  return boundary === "start"
-    ? `${trimmedValue}T00:00:00.000Z`
-    : `${trimmedValue}T23:59:59.999Z`;
+  return campaignAdminUsersSortKeySet.has(nextValue)
+    ? (nextValue as CampaignAdminUsersSortKey)
+    : undefined;
 }
 
 function omitUndefinedValues<T extends Record<string, unknown>>(
@@ -109,13 +138,19 @@ function omitUndefinedValues<T extends Record<string, unknown>>(
 
 function createSearchSignature(search: CampaignAdminQueueSearch): string {
   const {
-    reviewSelectionKey: _reviewSelectionKey,
-    cursor: _cursor,
-    pageIndex: _pageIndex,
-    sortBy: _sortBy,
-    sortOrder: _sortOrder,
+    reviewSelectionKey,
+    cursor,
+    pageIndex,
+    sortBy,
+    sortOrder,
     ...searchWithoutSidebarState
   } = search;
+  void reviewSelectionKey;
+  void cursor;
+  void pageIndex;
+  void sortBy;
+  void sortOrder;
+
   return JSON.stringify(searchWithoutSidebarState);
 }
 
@@ -188,7 +223,7 @@ export const campaignAdminUserInteractionsRouteSearchSchema = z.object({
     z.enum(campaignAdminThreadPhaseValues).optional(),
   ),
   sortBy: z.preprocess(
-    toTrimmedOptionalString,
+    toOptionalCampaignAdminUserInteractionsSortKey,
     z.enum(campaignAdminUserInteractionsSortKeyValues).optional(),
   ),
   sortOrder: z.preprocess(
@@ -212,8 +247,52 @@ export const campaignAdminUserInteractionsRouteSearchSchema = z.object({
     .transform((value) => value ?? DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT),
 });
 
+export const campaignAdminUserPageRouteSearchSchema =
+  campaignAdminUserInteractionsRouteSearchSchema.omit({
+    phase: true,
+    reviewStatusMode: true,
+    userId: true,
+    cursor: true,
+    pageIndex: true,
+    limit: true,
+  });
+
+export const campaignAdminUsersRouteSearchSchema = z.object({
+  query: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().min(1).optional(),
+  ),
+  sortBy: z.preprocess(
+    toOptionalCampaignAdminUsersSortKey,
+    z.enum(campaignAdminUsersSortKeyValues).optional(),
+  ),
+  sortOrder: z.preprocess(
+    toTrimmedOptionalString,
+    z.enum(["asc", "desc"]).optional(),
+  ),
+  cursor: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().min(1).optional(),
+  ),
+  pageIndex: z.preprocess(
+    toOptionalPositiveInt,
+    z.number().int().min(1).optional(),
+  ),
+  limit: z
+    .preprocess(toOptionalLimit, z.number().int().min(1).max(100).optional())
+    .transform((value) => value ?? DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT),
+});
+
 export type CampaignAdminRouteSearch = z.infer<
   typeof campaignAdminUserInteractionsRouteSearchSchema
+>;
+
+export type CampaignAdminUserPageRouteSearch = z.infer<
+  typeof campaignAdminUserPageRouteSearchSchema
+>;
+
+export type CampaignAdminUsersRouteSearch = z.infer<
+  typeof campaignAdminUsersRouteSearchSchema
 >;
 
 export function normalizeCampaignAdminQueueSearch(
@@ -256,16 +335,39 @@ export function normalizeCampaignAdminQueueSearch(
   return parsedSearch;
 }
 
+export function normalizeCampaignAdminUserPageSearch(
+  input: unknown,
+): CampaignAdminUserPageSearch {
+  const parsedSearch = campaignAdminUserPageRouteSearchSchema.parse(input);
+
+  return {
+    ...parsedSearch,
+    sortBy: parsedSearch.sortBy ?? "updatedAt",
+    sortOrder: parsedSearch.sortOrder ?? "desc",
+  };
+}
+
+export function normalizeCampaignAdminUsersSearch(
+  input: unknown,
+): CampaignAdminUsersSearch {
+  const parsedSearch = campaignAdminUsersRouteSearchSchema.parse(input);
+
+  return {
+    ...parsedSearch,
+    sortBy: parsedSearch.sortBy ?? "latestUpdatedAt",
+    sortOrder: parsedSearch.sortOrder ?? "desc",
+  };
+}
+
 export function getCampaignAdminQueueFilters(
   search: CampaignAdminQueueSearch,
 ): CampaignAdminQueueFilters {
-  const {
-    limit: _limit,
-    reviewSelectionKey: _reviewSelectionKey,
-    cursor: _cursor,
-    pageIndex: _pageIndex,
-    ...filters
-  } = search;
+  const { limit, reviewSelectionKey, cursor, pageIndex, ...filters } = search;
+  void limit;
+  void reviewSelectionKey;
+  void cursor;
+  void pageIndex;
+
   return filters;
 }
 
