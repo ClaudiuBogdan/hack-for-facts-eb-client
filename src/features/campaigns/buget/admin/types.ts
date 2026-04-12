@@ -90,6 +90,23 @@ export const campaignAdminUsersSortKeyValues = [
   "pendingReviewCount",
 ] as const;
 
+export const campaignAdminEntitiesSortKeyValues = [
+  "entityCui",
+  "userCount",
+  "interactionCount",
+  "pendingReviewCount",
+  "notificationSubscriberCount",
+  "notificationOutboxCount",
+  "latestInteractionAt",
+  "latestNotificationAt",
+] as const;
+
+export const campaignAdminEntityNotificationTypeValues = [
+  "funky:outbox:welcome",
+  "funky:outbox:entity_subscription",
+  "funky:outbox:entity_update",
+] as const;
+
 export const campaignAdminNotificationStatusValues = [
   "pending",
   "composing",
@@ -184,6 +201,10 @@ export type CampaignAdminUserInteractionsSortKey =
   (typeof campaignAdminUserInteractionsSortKeyValues)[number];
 export type CampaignAdminUsersSortKey =
   (typeof campaignAdminUsersSortKeyValues)[number];
+export type CampaignAdminEntitiesSortKey =
+  (typeof campaignAdminEntitiesSortKeyValues)[number];
+export type CampaignAdminEntityNotificationType =
+  (typeof campaignAdminEntityNotificationTypeValues)[number];
 export type CampaignAdminNotificationStatus =
   (typeof campaignAdminNotificationStatusValues)[number];
 export type CampaignAdminNotificationEventType =
@@ -374,7 +395,7 @@ export type CampaignAdminUserListItem = {
   readonly interactionCount: number;
   readonly pendingReviewCount: number;
   readonly latestUpdatedAt: string;
-  readonly latestInteractionId: string;
+  readonly latestInteractionId: string | null;
   readonly latestEntityCui: string | null;
   readonly latestEntityName: string | null;
 };
@@ -392,6 +413,45 @@ export type CampaignAdminUsersListResponse = {
 export type CampaignAdminMetaResponse = {
   readonly availableInteractionTypes: readonly CampaignAdminAvailableInteractionType[];
   readonly stats: CampaignAdminInteractionMetaStats;
+};
+
+export type CampaignAdminEntityListItem = {
+  readonly entityCui: string;
+  readonly entityName: string | null;
+  readonly userCount: number;
+  readonly interactionCount: number;
+  readonly pendingReviewCount: number;
+  readonly notificationSubscriberCount: number;
+  readonly notificationOutboxCount: number;
+  readonly failedNotificationCount: number;
+  readonly latestInteractionAt: string | null;
+  readonly latestInteractionId: string | null;
+  readonly latestNotificationAt: string | null;
+  readonly latestNotificationType: string | null;
+  readonly latestNotificationStatus: CampaignAdminNotificationStatus | null;
+  readonly hasPendingReviews: boolean;
+  readonly hasSubscribers: boolean;
+  readonly hasNotificationActivity: boolean;
+  readonly hasFailedNotifications: boolean;
+};
+
+export type CampaignAdminEntitiesListResponse = {
+  readonly items: readonly CampaignAdminEntityListItem[];
+  readonly page: {
+    readonly hasMore: boolean;
+    readonly nextCursor: string | null;
+    readonly sortBy: CampaignAdminEntitiesSortKey;
+    readonly sortOrder: CampaignAdminSortOrder;
+  };
+};
+
+export type CampaignAdminEntitiesMetaResponse = {
+  readonly totalEntities: number;
+  readonly entitiesWithPendingReviews: number;
+  readonly entitiesWithSubscribers: number;
+  readonly entitiesWithNotificationActivity: number;
+  readonly entitiesWithFailedNotifications: number;
+  readonly availableInteractionTypes: readonly CampaignAdminAvailableInteractionType[];
 };
 
 export type CampaignAdminSubmitReviewItem =
@@ -584,12 +644,34 @@ export type CampaignAdminUserPageSearch = Omit<
 
 export type CampaignAdminUsersSearch = {
   readonly query?: string;
+  readonly entityCui?: string;
   readonly sortBy?: CampaignAdminUsersSortKey;
   readonly sortOrder?: CampaignAdminSortOrder;
   readonly cursor?: string;
   readonly pageIndex?: number;
   readonly limit: number;
 };
+
+export type CampaignAdminEntitiesSearch = {
+  readonly query?: string;
+  readonly interactionId?: string;
+  readonly hasPendingReviews?: boolean;
+  readonly hasSubscribers?: boolean;
+  readonly hasNotificationActivity?: boolean;
+  readonly hasFailedNotifications?: boolean;
+  readonly latestNotificationType?: CampaignAdminEntityNotificationType;
+  readonly latestNotificationStatus?: CampaignAdminNotificationStatus;
+  readonly sortBy?: CampaignAdminEntitiesSortKey;
+  readonly sortOrder?: CampaignAdminSortOrder;
+  readonly cursor?: string;
+  readonly pageIndex?: number;
+  readonly limit: number;
+};
+
+export type CampaignAdminEntitiesFilters = Omit<
+  CampaignAdminEntitiesSearch,
+  "cursor" | "pageIndex" | "limit"
+>;
 
 export type CampaignAdminNotificationsSearch = {
   readonly tab?: CampaignAdminNotificationsTab;

@@ -99,15 +99,15 @@ export function NotificationList({ notifications, isLoading, onAddNotification }
 
     if (!enrichedNotifications || enrichedNotifications.length === 0) {
       return (
-        <Card className="border-dashed border-2 border-slate-300 dark:border-slate-600">
+        <Card className="border-dashed border-2 border-muted-foreground/25">
           <CardContent className="flex flex-col items-center justify-center py-12 px-6 text-center">
-            <div className="rounded-full bg-slate-100 dark:bg-slate-800 p-4 mb-4">
-              <Bell className="h-8 w-8 text-slate-500 dark:text-slate-400" />
+            <div className="rounded-full bg-muted p-4 mb-4">
+              <Bell className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold mb-2 text-slate-900 dark:text-slate-100">
+            <h3 className="text-lg font-semibold mb-2">
               <Trans>No active notifications</Trans>
             </h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 max-w-md">
+            <p className="text-sm text-muted-foreground mb-6 max-w-md">
               <Trans>
                 You have no active notifications. Navigate to an entity page and click the bell icon to subscribe to updates.
               </Trans>

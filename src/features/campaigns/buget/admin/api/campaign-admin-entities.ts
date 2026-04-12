@@ -4,17 +4,19 @@ import { API_FETCH_REFERRER_POLICY } from "@/lib/api/fetch-options";
 import { getAuthToken } from "@/lib/auth";
 import { createLogger } from "@/lib/logger";
 import {
+  parseCampaignAdminEntitiesListResponse,
+  parseCampaignAdminEntitiesMetaResponse,
   parseCampaignAdminErrorEnvelope,
-  parseCampaignAdminUsersListResponse,
 } from "@/features/campaigns/buget/admin/schemas/api-schemas";
 import type {
   CampaignAdminCampaignKey,
-  CampaignAdminUsersListResponse,
-  CampaignAdminUsersSearch,
+  CampaignAdminEntitiesFilters,
+  CampaignAdminEntitiesListResponse,
+  CampaignAdminEntitiesMetaResponse,
 } from "@/features/campaigns/buget/admin/types";
 import { CampaignAdminApiError } from "./campaign-admin-user-interactions";
 
-const logger = createLogger("campaign-admin-users-api");
+const logger = createLogger("campaign-admin-entities-api");
 
 function getCampaignAdminEndpoint(
   campaignKey: CampaignAdminCampaignKey,
@@ -40,7 +42,7 @@ function parseJsonSafely(rawText: string): {
       invalidJson: false,
     };
   } catch (error) {
-    logger.error("Failed to parse campaign admin users response JSON", {
+    logger.error("Failed to parse campaign admin entities response JSON", {
       error: error instanceof Error ? error.message : String(error),
       responseLength: rawText.length,
     });
@@ -58,26 +60,26 @@ function isRetryableStatus(status: number): boolean {
 
 function getFallbackErrorMessage(status: number): string {
   if (status === 400) {
-    return t`Campaign admin users request was invalid.`;
+    return t`Campaign admin entities request was invalid.`;
   }
 
   if (status === 401) {
-    return t`Sign in required for this campaign users directory.`;
+    return t`Sign in required for this campaign entities admin.`;
   }
 
   if (status === 403) {
-    return t`You do not have access to this campaign users directory.`;
+    return t`You do not have access to this campaign entities admin.`;
   }
 
   if (status === 404) {
-    return t`The campaign users directory is unavailable on this server or the campaign key is not supported.`;
+    return t`The campaign entities admin is unavailable on this server or the campaign key is not supported.`;
   }
 
   if (status === 502) {
-    return t`Campaign users could not be loaded right now.`;
+    return t`Campaign entities could not be loaded right now.`;
   }
 
-  return t`Campaign admin users request failed.`;
+  return t`Campaign admin entities request failed.`;
 }
 
 function buildCampaignAdminApiError(
@@ -113,7 +115,8 @@ function buildInvalidCampaignAdminResponseError(input: {
   readonly error: unknown;
 }): CampaignAdminApiError {
   logger.error(input.logMessage, {
-    error: input.error instanceof Error ? input.error.message : String(input.error),
+    error:
+      input.error instanceof Error ? input.error.message : String(input.error),
   });
 
   return new CampaignAdminApiError(input.message, 502, {
@@ -147,7 +150,7 @@ async function authorizedRequest(
   const token = await getAuthToken();
   if (token === null || token.trim().length === 0) {
     throw new CampaignAdminApiError(
-      t`Sign in required for this campaign users directory.`,
+      t`Sign in required for this campaign entities admin.`,
       401,
     );
   }
@@ -185,7 +188,7 @@ async function authorizedRequest(
 function appendOptionalSearchParam(
   searchParams: URLSearchParams,
   key: string,
-  value: string | number | undefined,
+  value: string | number | boolean | undefined,
 ) {
   if (value === undefined) {
     return;
@@ -194,29 +197,67 @@ function appendOptionalSearchParam(
   searchParams.set(key, String(value));
 }
 
-function buildCampaignAdminUsersQueryString(
-  search: Omit<CampaignAdminUsersSearch, "pageIndex">,
+function buildCampaignAdminEntitiesQueryString(
+  filters: CampaignAdminEntitiesFilters,
+  cursor: string | null,
+  limit: number,
 ): string {
   const searchParams = new URLSearchParams();
 
-  appendOptionalSearchParam(searchParams, "query", search.query);
-  appendOptionalSearchParam(searchParams, "entityCui", search.entityCui);
-  appendOptionalSearchParam(searchParams, "sortBy", search.sortBy);
-  appendOptionalSearchParam(searchParams, "sortOrder", search.sortOrder);
-  appendOptionalSearchParam(searchParams, "cursor", search.cursor);
-  appendOptionalSearchParam(searchParams, "limit", search.limit);
+  appendOptionalSearchParam(searchParams, "query", filters.query);
+  appendOptionalSearchParam(searchParams, "interactionId", filters.interactionId);
+  appendOptionalSearchParam(
+    searchParams,
+    "hasPendingReviews",
+    filters.hasPendingReviews,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "hasSubscribers",
+    filters.hasSubscribers,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "hasNotificationActivity",
+    filters.hasNotificationActivity,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "hasFailedNotifications",
+    filters.hasFailedNotifications,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "latestNotificationType",
+    filters.latestNotificationType,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "latestNotificationStatus",
+    filters.latestNotificationStatus,
+  );
+  appendOptionalSearchParam(searchParams, "sortBy", filters.sortBy);
+  appendOptionalSearchParam(searchParams, "sortOrder", filters.sortOrder);
+  appendOptionalSearchParam(searchParams, "cursor", cursor ?? undefined);
+  appendOptionalSearchParam(searchParams, "limit", limit);
 
   const nextSearch = searchParams.toString();
   return nextSearch.length > 0 ? `?${nextSearch}` : "";
 }
 
-export async function listCampaignAdminUsers(input: {
+export async function listCampaignAdminEntities(input: {
   readonly campaignKey: CampaignAdminCampaignKey;
-  readonly search: Omit<CampaignAdminUsersSearch, "pageIndex">;
-}): Promise<CampaignAdminUsersListResponse> {
+  readonly filters: CampaignAdminEntitiesFilters;
+  readonly cursor: string | null;
+  readonly limit: number;
+}): Promise<CampaignAdminEntitiesListResponse> {
   const payload = await authorizedRequest(
     input.campaignKey,
-    `/users${buildCampaignAdminUsersQueryString(input.search)}`,
+    `/entities${buildCampaignAdminEntitiesQueryString(
+      input.filters,
+      input.cursor,
+      input.limit,
+    )}`,
     {
       method: "GET",
     },
@@ -224,8 +265,25 @@ export async function listCampaignAdminUsers(input: {
 
   return parseCampaignAdminSuccessPayload({
     payload,
-    parse: parseCampaignAdminUsersListResponse,
-    errorMessage: t`Campaign admin users response was invalid.`,
-    logMessage: "Campaign admin users response did not match the expected schema",
+    parse: parseCampaignAdminEntitiesListResponse,
+    errorMessage: t`Campaign admin entities response was invalid.`,
+    logMessage:
+      "Campaign admin entities response did not match the expected schema",
+  });
+}
+
+export async function getCampaignAdminEntitiesMeta(input: {
+  readonly campaignKey: CampaignAdminCampaignKey;
+}): Promise<CampaignAdminEntitiesMetaResponse> {
+  const payload = await authorizedRequest(input.campaignKey, "/entities/meta", {
+    method: "GET",
+  });
+
+  return parseCampaignAdminSuccessPayload({
+    payload,
+    parse: parseCampaignAdminEntitiesMetaResponse,
+    errorMessage: t`Campaign admin entities metadata response was invalid.`,
+    logMessage:
+      "Campaign admin entities metadata response did not match the expected schema",
   });
 }

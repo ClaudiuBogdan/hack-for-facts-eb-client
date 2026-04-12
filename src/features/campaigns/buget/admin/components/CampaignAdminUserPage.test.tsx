@@ -208,7 +208,7 @@ describe("CampaignAdminUserPage", () => {
       <CampaignAdminUserPage
         campaignKey="funky"
         userId="user-1"
-        search={defaultSearch}
+        search={{ ...defaultSearch, entityCui: '"4270740"' }}
         onSearchChange={() => {}}
       />,
     );
@@ -220,7 +220,7 @@ describe("CampaignAdminUserPage", () => {
       screen.getByRole("link", { name: "Open notifications" }),
     ).toHaveAttribute(
       "href",
-      "/admin/campaigns/funky/notifications?tab=audit&userId=user-1&sortBy=createdAt&sortOrder=desc&limit=50",
+      "/admin/campaigns/funky/notifications?tab=audit&userId=user-1&sortBy=createdAt&sortOrder=desc&limit=50&entityCui=4270740",
     );
     expect(
       screen.getByRole("link", { name: "Open interactions queue" }),
@@ -231,6 +231,46 @@ describe("CampaignAdminUserPage", () => {
     expect(
       screen.getByRole("heading", { name: "User notifications" }),
     ).toBeInTheDocument();
+    expect(useCampaignAdminNotificationsAuditQueryMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        campaignKey: "funky",
+        filters: {
+          userId: "user-1",
+          entityCui: "4270740",
+          sortBy: "createdAt",
+          sortOrder: "desc",
+        },
+      }),
+    );
+  });
+
+  it("keeps the user notifications preview scoped when no entity filter is present", () => {
+    render(
+      <CampaignAdminUserPage
+        campaignKey="funky"
+        userId="user-1"
+        search={defaultSearch}
+        onSearchChange={() => {}}
+      />,
+    );
+
+    expect(useCampaignAdminNotificationsAuditQueryMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        campaignKey: "funky",
+        filters: {
+          userId: "user-1",
+          entityCui: undefined,
+          sortBy: "createdAt",
+          sortOrder: "desc",
+        },
+      }),
+    );
+    expect(
+      screen.getByRole("link", { name: "Open notifications" }),
+    ).toHaveAttribute(
+      "href",
+      "/admin/campaigns/funky/notifications?tab=audit&userId=user-1&sortBy=createdAt&sortOrder=desc&limit=50",
+    );
   });
 
   it("does not clear staged drafts before the first query result arrives", () => {

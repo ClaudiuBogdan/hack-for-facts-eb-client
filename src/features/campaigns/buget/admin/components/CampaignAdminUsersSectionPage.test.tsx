@@ -11,7 +11,40 @@ const useAuthMock = vi.fn();
 const useCampaignAdminUsersQueryMock = vi.fn();
 
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children }: { children: ReactNode }) => <a>{children}</a>,
+  Link: ({
+    children,
+    to,
+    params,
+    search,
+    ...props
+  }: {
+    readonly children: ReactNode;
+    readonly to?: string;
+    readonly params?: Record<string, string>;
+    readonly search?: Record<string, string | number | boolean | undefined>;
+    readonly [key: string]: unknown;
+  }) => {
+    let href = typeof to === "string" ? to : "";
+    if (params) {
+      for (const [key, value] of Object.entries(params)) {
+        href = href.replace(`$${key}`, value);
+      }
+    }
+
+    const query = search
+      ? new URLSearchParams(
+          Object.entries(search)
+            .filter(([, value]) => value !== undefined)
+            .map(([key, value]) => [key, String(value)]),
+        ).toString()
+      : "";
+
+    return (
+      <a href={query ? `${href}?${query}` : href} {...props}>
+        {children}
+      </a>
+    );
+  },
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -118,6 +151,35 @@ describe("CampaignAdminUsersSectionPage", () => {
     expect(screen.getByText("City hall contact")).toBeInTheDocument();
     expect(screen.getByText("Oras Test · 12345678")).toBeInTheDocument();
     expect(screen.getByText("87654321")).toBeInTheDocument();
+  });
+
+  it("renders a fallback label for subscription-only users", () => {
+    useCampaignAdminUsersQueryMock.mockReturnValue({
+      data: createResponse([
+        createItem({
+          userId: "subscriber-only",
+          interactionCount: 0,
+          pendingReviewCount: 0,
+          latestInteractionId: null,
+        }),
+      ]),
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+
+    render(
+      <CampaignAdminUsersSectionPage
+        campaignKey="funky"
+        search={{ entityCui: "12345678", limit: 50 }}
+        onSearchChange={onSearchChangeMock}
+      />,
+    );
+
+    expect(screen.getByText("subscriber-only")).toBeInTheDocument();
+    expect(screen.getByText("No interactions yet")).toBeInTheDocument();
+    expect(screen.getByText("Oras Test · 12345678")).toBeInTheDocument();
   });
 
   it("resets cursor paging and applies trimmed query text when searching", async () => {
@@ -247,6 +309,48 @@ describe("CampaignAdminUsersSectionPage", () => {
       screen.getByRole("heading", { name: "Users" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Open interactions queue")).toBeInTheDocument();
+  });
+
+  it("passes entity filters to the users query and preserved navigation links", () => {
+    useCampaignAdminUsersQueryMock.mockReturnValue({
+      data: createResponse([createItem()]),
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+
+    render(
+      <CampaignAdminUsersSectionPage
+        campaignKey="funky"
+        search={{ entityCui: "12345678", limit: 50 }}
+        onSearchChange={onSearchChangeMock}
+      />,
+    );
+
+    expect(useCampaignAdminUsersQueryMock).toHaveBeenCalledWith({
+      campaignKey: "funky",
+      search: {
+        query: undefined,
+        entityCui: "12345678",
+        sortBy: "latestUpdatedAt",
+        sortOrder: "desc",
+        cursor: undefined,
+        limit: 50,
+      },
+      enabled: true,
+    });
+
+    expect(
+      screen.getByRole("link", { name: "Open interactions queue" }),
+    ).toHaveAttribute(
+      "href",
+      "/admin/campaigns/funky/user-interactions?reviewStatus=pending&entityCui=12345678&limit=50",
+    );
+    expect(screen.getByRole("link", { name: "user-1" })).toHaveAttribute(
+      "href",
+      "/admin/campaigns/funky/users/user-1?entityCui=12345678&sortBy=updatedAt&sortOrder=desc&limit=50",
+    );
   });
 
   it("displays pending review count as a warning badge when greater than zero", () => {

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  parseCampaignAdminEntitiesListResponse,
+  parseCampaignAdminEntitiesMetaResponse,
   parseCampaignAdminNotificationTemplatePreviewResponse,
   parseCampaignAdminNotificationTemplatesResponse,
   parseCampaignAdminNotificationTriggerExecutionBody,
@@ -185,6 +187,61 @@ function createNotificationsListResponsePayload() {
   };
 }
 
+function createEntitiesListResponsePayload() {
+  return {
+    ok: true,
+    data: {
+      items: [
+        {
+          entityCui: "12345678",
+          entityName: "Oras Test",
+          userCount: 4,
+          interactionCount: 11,
+          pendingReviewCount: 2,
+          notificationSubscriberCount: 3,
+          notificationOutboxCount: 5,
+          failedNotificationCount: 1,
+          latestInteractionAt: "2026-04-12T10:00:00.000Z",
+          latestInteractionId: "funky:interaction:public_debate_request",
+          latestNotificationAt: "2026-04-12T10:30:00.000Z",
+          latestNotificationType: "funky:outbox:entity_update",
+          latestNotificationStatus: "failed_permanent",
+          hasPendingReviews: true,
+          hasSubscribers: true,
+          hasNotificationActivity: true,
+          hasFailedNotifications: true,
+        },
+      ],
+      page: {
+        hasMore: true,
+        nextCursor: "cursor-1",
+        sortBy: "latestInteractionAt",
+        sortOrder: "desc",
+      },
+    },
+  };
+}
+
+function createEntitiesMetaResponsePayload() {
+  return {
+    ok: true,
+    data: {
+      totalEntities: 18,
+      entitiesWithPendingReviews: 5,
+      entitiesWithSubscribers: 7,
+      entitiesWithNotificationActivity: 9,
+      entitiesWithFailedNotifications: 2,
+      availableInteractionTypes: [
+        {
+          interactionId: "funky:interaction:public_debate_request",
+          label: "Public debate request",
+          reviewable: true,
+        },
+      ],
+    },
+  };
+}
+
 function createNotificationsTriggerCatalogPayload() {
   return {
     ok: true,
@@ -289,6 +346,26 @@ describe("campaign admin api schemas", () => {
     expect(
       parseCampaignAdminUsersListResponse(createUsersListResponsePayload()),
     ).toEqual(createUsersListResponsePayload().data);
+  });
+
+  it("parses campaign admin users list responses with subscription-only rows", () => {
+    const basePayload = createUsersListResponsePayload();
+    const payload = {
+      ...basePayload,
+      data: {
+        ...basePayload.data,
+        items: [
+          {
+            ...basePayload.data.items[0],
+            interactionCount: 0,
+            pendingReviewCount: 0,
+            latestInteractionId: null,
+          },
+        ],
+      },
+    };
+
+    expect(parseCampaignAdminUsersListResponse(payload)).toEqual(payload.data);
   });
 
   it("parses campaign admin notifications audit responses", () => {
@@ -431,6 +508,72 @@ describe("campaign admin api schemas", () => {
 
     expect(() => parseCampaignAdminMetaResponse(invalidPayload)).toThrowError(
       "Invalid campaign admin metadata response.",
+    );
+  });
+
+  it("parses entities list payloads", () => {
+    const payload = createEntitiesListResponsePayload();
+
+    expect(parseCampaignAdminEntitiesListResponse(payload)).toEqual(payload.data);
+  });
+
+  it("parses entities metadata payloads", () => {
+    const payload = createEntitiesMetaResponsePayload();
+
+    expect(parseCampaignAdminEntitiesMetaResponse(payload)).toEqual(payload.data);
+  });
+
+  it("rejects entity list payloads that omit failed notification counts", () => {
+    const payload = createEntitiesListResponsePayload();
+    const invalidPayload = {
+      ...payload,
+      data: {
+        ...payload.data,
+        items: payload.data.items.map(({ failedNotificationCount, ...item }) => {
+          void failedNotificationCount;
+          return item;
+        }),
+      },
+    };
+
+    expect(() =>
+      parseCampaignAdminEntitiesListResponse(invalidPayload),
+    ).toThrowError("Invalid campaign admin entities response.");
+  });
+
+  it("accepts entity list payloads with deprecated latest notification type values", () => {
+    const payload = createEntitiesListResponsePayload();
+    const legacyPayload = {
+      ...payload,
+      data: {
+        ...payload.data,
+        items: payload.data.items.map((item) => ({
+          ...item,
+          latestNotificationType: "public_debate_entity_update",
+        })),
+      },
+    };
+
+    expect(parseCampaignAdminEntitiesListResponse(legacyPayload)).toEqual(
+      legacyPayload.data,
+    );
+  });
+
+  it("accepts entity list payloads with unknown latest notification type values", () => {
+    const payload = createEntitiesListResponsePayload();
+    const nextPayload = {
+      ...payload,
+      data: {
+        ...payload.data,
+        items: payload.data.items.map((item) => ({
+          ...item,
+          latestNotificationType: "funky:outbox:future_type",
+        })),
+      },
+    };
+
+    expect(parseCampaignAdminEntitiesListResponse(nextPayload)).toEqual(
+      nextPayload.data,
     );
   });
 });

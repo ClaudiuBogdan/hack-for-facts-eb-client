@@ -3,16 +3,11 @@ import {
   useEffect,
   useMemo,
   useState,
-  type ReactNode,
 } from "react";
 import { Link } from "@tanstack/react-router";
 import {
-  ArrowRight,
-  ArrowUpDown,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   ClipboardList,
   LockKeyhole,
   RefreshCw,
@@ -30,38 +25,20 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { CopyButton } from "@/components/ui/copy-button";
 import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { AuthSignInButton, useAuth } from "@/lib/auth";
 import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components/AdminCampaignLayout";
+import { CampaignAdminUsersTable } from "@/features/campaigns/buget/admin/components/CampaignAdminUsersTable";
 import {
-  CAMPAIGN_ADMIN_USERS_SORTABLE_COLUMNS,
   DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
   getCampaignAdminCampaignLabel,
-  getCampaignAdminInteractionTypeLabel,
-  getCampaignAdminUsersSortLabel,
 } from "@/features/campaigns/buget/admin/constants";
 import { useCampaignAdminUsersQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-users";
 import { normalizeCampaignAdminUsersSearch } from "@/features/campaigns/buget/admin/schemas/search-schema";
 import type {
   CampaignAdminCampaignKey,
   CampaignAdminSortOrder,
-  CampaignAdminUserListItem,
   CampaignAdminUsersSearch,
   CampaignAdminUsersSortKey,
 } from "@/features/campaigns/buget/admin/types";
@@ -75,41 +52,14 @@ type CampaignAdminUsersSectionPageProps = {
   ) => void;
 };
 
-function createCampaignAdminUserPageRouteSearch() {
-  return {
-    query: undefined,
-    reviewStatus: undefined,
-    interactionId: undefined,
-    lessonId: undefined,
-    entityCui: undefined,
-    scopeType: undefined,
-    payloadKind: undefined,
-    submissionPath: undefined,
-    recordKey: undefined,
-    recordKeyPrefix: undefined,
-    submittedAtFrom: undefined,
-    submittedAtTo: undefined,
-    updatedAtFrom: undefined,
-    updatedAtTo: undefined,
-    hasInstitutionThread: undefined,
-    threadPhase: undefined,
-    sortBy: "updatedAt" as const,
-    sortOrder: "desc" as const,
-    reviewSelectionKey: undefined,
-    cursor: undefined,
-    pageIndex: undefined,
-    limit: DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
-  };
-}
-
-function createCampaignAdminQueueRouteSearch() {
+function createCampaignAdminQueueRouteSearch(entityCui?: string) {
   return {
     phase: undefined,
     reviewStatusMode: undefined,
     reviewStatus: "pending" as const,
     interactionId: undefined,
     lessonId: undefined,
-    entityCui: undefined,
+    entityCui,
     scopeType: undefined,
     payloadKind: undefined,
     submissionPath: undefined,
@@ -131,172 +81,8 @@ function createCampaignAdminQueueRouteSearch() {
   };
 }
 
-function formatDateTime(value: string): string {
-  const parsedDate = new Date(value);
-  if (Number.isNaN(parsedDate.getTime())) {
-    return t`Unavailable`;
-  }
-
-  return parsedDate.toLocaleString();
-}
-
 function createPaginationStateSignature(search: CampaignAdminUsersSearch): string {
   return JSON.stringify(search);
-}
-
-function getLatestEntityPreview(item: CampaignAdminUserListItem): string {
-  const latestEntityName = item.latestEntityName?.trim();
-  if (latestEntityName && item.latestEntityCui) {
-    return `${latestEntityName} · ${item.latestEntityCui}`;
-  }
-
-  if (latestEntityName) {
-    return latestEntityName;
-  }
-
-  if (item.latestEntityCui) {
-    return item.latestEntityCui;
-  }
-
-  return t`No entity`;
-}
-
-function SortableHeaderButton({
-  sortKey,
-  sortBy,
-  sortOrder,
-  onSortChange,
-  children,
-}: {
-  readonly sortKey: CampaignAdminUsersSortKey;
-  readonly sortBy?: CampaignAdminUsersSortKey;
-  readonly sortOrder?: CampaignAdminSortOrder;
-  readonly onSortChange: (
-    sortBy: CampaignAdminUsersSortKey,
-    sortOrder: CampaignAdminSortOrder,
-  ) => void;
-  readonly children: ReactNode;
-}) {
-  const columnConfig = CAMPAIGN_ADMIN_USERS_SORTABLE_COLUMNS[sortKey];
-  const sortLabel = getCampaignAdminUsersSortLabel(sortKey);
-  const isActive = sortBy === sortKey && sortOrder !== undefined;
-
-  const handleClick = () => {
-    const nextSortOrder =
-      isActive && sortOrder === "asc"
-        ? "desc"
-        : isActive && sortOrder === "desc"
-          ? "asc"
-          : columnConfig.defaultOrder;
-
-    onSortChange(sortKey, nextSortOrder);
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className="flex w-full items-center gap-1 text-left text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-      aria-label={t`${sortLabel} sort`}
-    >
-      <span className="flex min-w-0 items-center gap-1">{children}</span>
-      {isActive ? (
-        sortOrder === "asc" ? (
-          <ChevronUp className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-        ) : (
-          <ChevronDown className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-        )
-      ) : (
-        <ArrowUpDown
-          className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70"
-          aria-hidden="true"
-        />
-      )}
-    </button>
-  );
-}
-
-function UserDirectoryRow({
-  campaignKey,
-  item,
-}: {
-  readonly campaignKey: CampaignAdminCampaignKey;
-  readonly item: CampaignAdminUserListItem;
-}) {
-  const latestEntityPreview = getLatestEntityPreview(item);
-
-  return (
-    <TableRow className="group">
-      <TableCell>
-        <div className="flex items-center gap-1.5">
-          <TooltipProvider delayDuration={300}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link
-                  to="/admin/campaigns/$campaignKey/users/$userId"
-                  params={{ campaignKey, userId: item.userId }}
-                  search={createCampaignAdminUserPageRouteSearch()}
-                  className="block max-w-[20rem] break-all font-mono text-xs text-foreground hover:underline"
-                >
-                  {item.userId}
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs break-all">
-                {item.userId}
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <CopyButton
-            onCopy={() => {
-              void navigator.clipboard.writeText(item.userId);
-            }}
-            className="h-6 w-6 p-1 opacity-0 transition-opacity group-hover:opacity-100"
-          />
-        </div>
-      </TableCell>
-      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-        {formatDateTime(item.latestUpdatedAt)}
-      </TableCell>
-      <TableCell className="tabular-nums text-sm">
-        {item.interactionCount}
-      </TableCell>
-      <TableCell className="text-sm">
-        {item.pendingReviewCount > 0 ? (
-          <Badge variant="warning" className="tabular-nums">
-            {item.pendingReviewCount}
-          </Badge>
-        ) : (
-          <span className="tabular-nums text-muted-foreground">
-            {item.pendingReviewCount}
-          </span>
-        )}
-      </TableCell>
-      <TableCell className="min-w-0 text-sm">
-        <p className="truncate text-foreground">
-          {getCampaignAdminInteractionTypeLabel(item.latestInteractionId)}
-        </p>
-        <p
-          className="truncate text-xs text-muted-foreground"
-          title={latestEntityPreview}
-        >
-          {latestEntityPreview}
-        </p>
-      </TableCell>
-      <TableCell className="w-10 text-right">
-        <Link
-          to="/admin/campaigns/$campaignKey/users/$userId"
-          params={{ campaignKey, userId: item.userId }}
-          search={createCampaignAdminUserPageRouteSearch()}
-          aria-label={t`Open user ${item.userId}`}
-        >
-          <ArrowRight
-            className="ml-auto h-4 w-4 text-muted-foreground transition-colors hover:text-foreground"
-            aria-hidden="true"
-          />
-        </Link>
-      </TableCell>
-    </TableRow>
-  );
 }
 
 export function CampaignAdminUsersSectionPage({
@@ -328,6 +114,7 @@ export function CampaignAdminUsersSectionPage({
     campaignKey,
     search: {
       query: normalizedSearch.query,
+      entityCui: normalizedSearch.entityCui,
       sortBy: normalizedSearch.sortBy,
       sortOrder: normalizedSearch.sortOrder,
       cursor: normalizedSearch.cursor,
@@ -479,7 +266,9 @@ export function CampaignAdminUsersSectionPage({
             <Link
               to="/admin/campaigns/$campaignKey/user-interactions"
               params={{ campaignKey }}
-              search={createCampaignAdminQueueRouteSearch()}
+              search={createCampaignAdminQueueRouteSearch(
+                normalizedSearch.entityCui,
+              )}
             >
               <ClipboardList className="h-4 w-4" aria-hidden="true" />
               {t`Open interactions queue`}
@@ -519,6 +308,17 @@ export function CampaignAdminUsersSectionPage({
             <span className="text-xs text-muted-foreground">
               {t`${items.length} users`}
             </span>
+            {normalizedSearch.entityCui !== undefined ? (
+              <>
+                <span
+                  className="hidden h-4 w-px bg-border/60 md:block"
+                  aria-hidden="true"
+                />
+                <Badge variant="outline" className="font-mono text-[11px]">
+                  {t`Entity ${normalizedSearch.entityCui}`}
+                </Badge>
+              </>
+            ) : null}
             <span className="hidden h-4 w-px bg-border/60 md:block" aria-hidden="true" />
             <span className="text-xs text-muted-foreground">
               {t`Page ${currentPageIndex}`}
@@ -633,71 +433,14 @@ export function CampaignAdminUsersSectionPage({
             </p>
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>
-                  <SortableHeaderButton
-                    sortKey="userId"
-                    sortBy={usersQuery.data?.page.sortBy ?? normalizedSearch.sortBy}
-                    sortOrder={
-                      usersQuery.data?.page.sortOrder ?? normalizedSearch.sortOrder
-                    }
-                    onSortChange={handleSortChange}
-                  >
-                    {t`User ID`}
-                  </SortableHeaderButton>
-                </TableHead>
-                <TableHead>
-                  <SortableHeaderButton
-                    sortKey="latestUpdatedAt"
-                    sortBy={usersQuery.data?.page.sortBy ?? normalizedSearch.sortBy}
-                    sortOrder={
-                      usersQuery.data?.page.sortOrder ?? normalizedSearch.sortOrder
-                    }
-                    onSortChange={handleSortChange}
-                  >
-                    {t`Last Updated`}
-                  </SortableHeaderButton>
-                </TableHead>
-                <TableHead>
-                  <SortableHeaderButton
-                    sortKey="interactionCount"
-                    sortBy={usersQuery.data?.page.sortBy ?? normalizedSearch.sortBy}
-                    sortOrder={
-                      usersQuery.data?.page.sortOrder ?? normalizedSearch.sortOrder
-                    }
-                    onSortChange={handleSortChange}
-                  >
-                    {t`Interactions`}
-                  </SortableHeaderButton>
-                </TableHead>
-                <TableHead>
-                  <SortableHeaderButton
-                    sortKey="pendingReviewCount"
-                    sortBy={usersQuery.data?.page.sortBy ?? normalizedSearch.sortBy}
-                    sortOrder={
-                      usersQuery.data?.page.sortOrder ?? normalizedSearch.sortOrder
-                    }
-                    onSortChange={handleSortChange}
-                  >
-                    {t`Pending Reviews`}
-                  </SortableHeaderButton>
-                </TableHead>
-                <TableHead>{t`Latest Interaction`}</TableHead>
-                <TableHead className="w-10" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((item) => (
-                <UserDirectoryRow
-                  key={item.userId}
-                  campaignKey={campaignKey}
-                  item={item}
-                />
-              ))}
-            </TableBody>
-          </Table>
+          <CampaignAdminUsersTable
+            campaignKey={campaignKey}
+            entityCui={normalizedSearch.entityCui}
+            items={items}
+            sortBy={usersQuery.data?.page.sortBy ?? normalizedSearch.sortBy}
+            sortOrder={usersQuery.data?.page.sortOrder ?? normalizedSearch.sortOrder}
+            onSortChange={handleSortChange}
+          />
         )}
       </section>
     </AdminCampaignLayout>

@@ -60,6 +60,7 @@ describe("campaign-admin-users api", () => {
       campaignKey: "funky",
       search: {
         query: "user-1",
+        entityCui: "12345678",
         sortBy: "interactionCount",
         sortOrder: "asc",
         cursor: "cursor-0",
@@ -70,7 +71,7 @@ describe("campaign-admin-users api", () => {
     expect(result.items).toHaveLength(1);
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining(
-        "/api/v1/admin/campaigns/funky/users?query=user-1&sortBy=interactionCount&sortOrder=asc&cursor=cursor-0&limit=25",
+        "/api/v1/admin/campaigns/funky/users?query=user-1&entityCui=12345678&sortBy=interactionCount&sortOrder=asc&cursor=cursor-0&limit=25",
       ),
       expect.objectContaining({
         method: "GET",
@@ -131,5 +132,62 @@ describe("campaign-admin-users api", () => {
       message: "Invalid campaign user cursor",
       retryable: false,
     });
+  });
+
+  it("accepts subscription-only entity users with a null latest interaction id", async () => {
+    getAuthTokenMock.mockResolvedValue("token-123");
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          ok: true,
+          data: {
+            items: [
+              {
+                userId: "subscriber-only",
+                interactionCount: 0,
+                pendingReviewCount: 0,
+                latestUpdatedAt: "2026-04-10T14:00:00.000Z",
+                latestInteractionId: null,
+                latestEntityCui: "12345678",
+                latestEntityName: "Oras Test",
+              },
+            ],
+            page: {
+              hasMore: false,
+              nextCursor: null,
+              sortBy: "latestUpdatedAt",
+              sortOrder: "desc",
+            },
+          },
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        },
+      ),
+    );
+
+    const result = await listCampaignAdminUsers({
+      campaignKey: "funky",
+      search: {
+        entityCui: "12345678",
+        sortBy: "latestUpdatedAt",
+        sortOrder: "desc",
+        limit: 25,
+      },
+    });
+
+    expect(result.items).toEqual([
+      {
+        userId: "subscriber-only",
+        interactionCount: 0,
+        pendingReviewCount: 0,
+        latestUpdatedAt: "2026-04-10T14:00:00.000Z",
+        latestInteractionId: null,
+        latestEntityCui: "12345678",
+        latestEntityName: "Oras Test",
+      },
+    ]);
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 });

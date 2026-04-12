@@ -119,4 +119,23 @@ describe("CampaignAdminHubPage", () => {
       ),
     ).toBeInTheDocument();
   });
+
+  it("renders the entities hub card with the entities route search", () => {
+    render(<CampaignAdminHubPage campaignKey="funky" />);
+
+    const entitiesLink = screen.getByRole("link", {
+      name: /Entities/i,
+    });
+
+    expect(entitiesLink).toBeInTheDocument();
+    expect(entitiesLink).toHaveAttribute(
+      "href",
+      "/admin/campaigns/funky/entities?limit=50",
+    );
+    expect(
+      screen.getByText(
+        "View entity-level campaign state across users, interactions, and delivery activity",
+      ),
+    ).toBeInTheDocument();
+  });
 });

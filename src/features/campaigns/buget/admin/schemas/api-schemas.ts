@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  campaignAdminEntitiesSortKeyValues,
   campaignAdminNotificationEventTypeValues,
   campaignAdminNotificationSafeErrorCategoryValues,
   campaignAdminNotificationSourceValues,
@@ -13,6 +14,8 @@ import {
   type CampaignAdminNotificationTriggerDescriptor,
   type CampaignAdminNotificationTriggerExecutionBody,
   type CampaignAdminNotificationTriggerExecutionResponse,
+  type CampaignAdminEntitiesListResponse,
+  type CampaignAdminEntitiesMetaResponse,
   type CampaignAdminNotificationsListResponse,
   type CampaignAdminMetaResponse,
   campaignAdminReviewSourceValues,
@@ -231,7 +234,7 @@ const campaignAdminUserListItemSchema = z
     interactionCount: z.number().int().nonnegative(),
     pendingReviewCount: z.number().int().nonnegative(),
     latestUpdatedAt: z.string().datetime(),
-    latestInteractionId: z.string().min(1),
+    latestInteractionId: z.string().min(1).nullable(),
     latestEntityCui: z.string().min(1).nullable(),
     latestEntityName: z.string().nullable(),
   })
@@ -251,6 +254,67 @@ const campaignAdminUsersListResponseSchema = z
             sortOrder: z.enum(["asc", "desc"]).optional(),
           })
           .strict(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const campaignAdminEntityListItemSchema = z
+  .object({
+    entityCui: z.string().min(1),
+    entityName: z.string().min(1).nullable(),
+    userCount: z.number().int().nonnegative(),
+    interactionCount: z.number().int().nonnegative(),
+    pendingReviewCount: z.number().int().nonnegative(),
+    notificationSubscriberCount: z.number().int().nonnegative(),
+    notificationOutboxCount: z.number().int().nonnegative(),
+    failedNotificationCount: z.number().int().nonnegative(),
+    latestInteractionAt: z.string().datetime().nullable(),
+    latestInteractionId: z.string().min(1).nullable(),
+    latestNotificationAt: z.string().datetime().nullable(),
+    latestNotificationType: z.string().min(1).nullable(),
+    latestNotificationStatus: z
+      .enum(campaignAdminNotificationStatusValues)
+      .nullable(),
+    hasPendingReviews: z.boolean(),
+    hasSubscribers: z.boolean(),
+    hasNotificationActivity: z.boolean(),
+    hasFailedNotifications: z.boolean(),
+  })
+  .strict();
+
+const campaignAdminEntitiesListResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        items: z.array(campaignAdminEntityListItemSchema),
+        page: z
+          .object({
+            hasMore: z.boolean(),
+            nextCursor: z.string().min(1).nullable(),
+            sortBy: z.enum(campaignAdminEntitiesSortKeyValues),
+            sortOrder: z.enum(["asc", "desc"]),
+          })
+          .strict(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const campaignAdminEntitiesMetaResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        totalEntities: campaignAdminCountSchema,
+        entitiesWithPendingReviews: campaignAdminCountSchema,
+        entitiesWithSubscribers: campaignAdminCountSchema,
+        entitiesWithNotificationActivity: campaignAdminCountSchema,
+        entitiesWithFailedNotifications: campaignAdminCountSchema,
+        availableInteractionTypes: z.array(
+          campaignAdminAvailableInteractionTypeSchema,
+        ),
       })
       .strict(),
   })
@@ -552,6 +616,18 @@ export function parseCampaignAdminNotificationsListResponse(
   return parsedPayload.data.data;
 }
 
+export function parseCampaignAdminEntitiesListResponse(
+  payload: unknown,
+): CampaignAdminEntitiesListResponse {
+  const parsedPayload =
+    campaignAdminEntitiesListResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin entities response.");
+  }
+
+  return parsedPayload.data.data;
+}
+
 export function parseCampaignAdminNotificationTriggersResponse(
   payload: unknown,
 ): readonly CampaignAdminNotificationTriggerDescriptor[] {
@@ -620,6 +696,18 @@ export function parseCampaignAdminMetaResponse(
   const parsedPayload = campaignAdminMetaResponseSchema.safeParse(payload);
   if (!parsedPayload.success) {
     throw new Error("Invalid campaign admin metadata response.");
+  }
+
+  return parsedPayload.data.data;
+}
+
+export function parseCampaignAdminEntitiesMetaResponse(
+  payload: unknown,
+): CampaignAdminEntitiesMetaResponse {
+  const parsedPayload =
+    campaignAdminEntitiesMetaResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin entities metadata response.");
   }
 
   return parsedPayload.data.data;

@@ -78,10 +78,10 @@ export function EntityNotificationBell({
           <div className="w-full p-1">
             <div className="flex min-h-[24rem] flex-col">
               <div>
-                <h3 className="text-xl font-semibold tracking-tight mb-1">
+                <h3 className="text-lg font-semibold tracking-tight mb-1">
                   <Trans>Sign in required</Trans>
                 </h3>
-                <p className="text-base text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   <Trans>You need to be signed in to subscribe to notifications</Trans>
                 </p>
               </div>
@@ -89,12 +89,12 @@ export function EntityNotificationBell({
               <Separator className="my-3" />
 
               <div className="space-y-3">
-                <p className="text-base text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   <Trans>
                     Sign in to receive updates about <strong>{entityName}</strong>:
                   </Trans>
                 </p>
-                <ul className="text-base text-muted-foreground space-y-2 ml-4 list-disc">
+                <ul className="text-sm text-muted-foreground space-y-1.5 ml-4 list-disc">
                   {includesCampaignEntityUpdates ? (
                     <>
                       <li>
@@ -161,7 +161,7 @@ export function EntityNotificationBell({
           className={cn(
             triggerButtonClassName,
             hasActive
-              ? 'bg-gradient-to-br from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 !shadow-lg !border !border-amber-500/20'
+              ? 'bg-primary text-primary-foreground shadow-md ring-1 ring-primary/20 hover:bg-primary/90'
               : '',
           )}
           disabled={isLoading}
@@ -171,7 +171,7 @@ export function EntityNotificationBell({
               <Loader2 className="h-5 w-5 animate-spin" />
             </div>
           ) : hasActive ? (
-            <Bell className="animate-ring h-5 w-5 fill-amber-400 stroke-amber-200 text-amber-400" />
+            <Bell className="h-5 w-5 text-primary fill-primary/20" />
           ) : (
             <BellOff className="h-5 w-5" />
           )}

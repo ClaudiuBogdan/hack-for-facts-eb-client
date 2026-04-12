@@ -1,5 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, ClipboardList, Mail, Users } from "lucide-react";
+import {
+  ArrowRight,
+  Building2,
+  ClipboardList,
+  Mail,
+  Users,
+} from "lucide-react";
 import { t } from "@lingui/core/macro";
 import { AuthSignInButton, useAuth } from "@/lib/auth";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -15,6 +21,7 @@ type CampaignAdminHubPageProps = {
 function createCampaignAdminUsersRouteSearch() {
   return {
     query: undefined,
+    entityCui: undefined,
     sortBy: undefined,
     sortOrder: undefined,
     cursor: undefined,
@@ -65,6 +72,24 @@ function createCampaignAdminNotificationsRouteSearch() {
     source: undefined,
     sortBy: "createdAt" as const,
     sortOrder: "desc" as const,
+    cursor: undefined,
+    pageIndex: undefined,
+    limit: 50,
+  };
+}
+
+function createCampaignAdminEntitiesRouteSearch() {
+  return {
+    query: undefined,
+    interactionId: undefined,
+    hasPendingReviews: undefined,
+    hasSubscribers: undefined,
+    hasNotificationActivity: undefined,
+    hasFailedNotifications: undefined,
+    latestNotificationType: undefined,
+    latestNotificationStatus: undefined,
+    sortBy: undefined,
+    sortOrder: undefined,
     cursor: undefined,
     pageIndex: undefined,
     limit: 50,
@@ -123,7 +148,7 @@ export function CampaignAdminHubPage({
           </p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Link
             to="/admin/campaigns/$campaignKey/users"
             params={{ campaignKey }}
@@ -145,6 +170,31 @@ export function CampaignAdminHubPage({
                 {metaQuery.isLoading
                   ? t`Loading\u2026`
                   : t`Browse ${totalInteractions} interactions across all users`}
+              </p>
+            </div>
+          </Link>
+
+          <Link
+            to="/admin/campaigns/$campaignKey/entities"
+            params={{ campaignKey }}
+            search={createCampaignAdminEntitiesRouteSearch()}
+            className="group flex flex-col gap-3 rounded-xl border border-border/70 bg-card/80 p-5 transition-colors hover:border-border hover:bg-muted/20"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                <Building2 className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <ArrowRight
+                className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                {t`Entities`}
+              </p>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                {t`View entity-level campaign state across users, interactions, and delivery activity`}
               </p>
             </div>
           </Link>

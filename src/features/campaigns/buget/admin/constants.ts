@@ -15,6 +15,7 @@ import type {
   CampaignAdminRiskFlag,
   CampaignAdminSortOrder,
   CampaignAdminThreadPhase,
+  CampaignAdminEntitiesSortKey,
   CampaignAdminUsersSortKey,
   CampaignAdminUserInteractionsSortKey,
 } from "./types";
@@ -124,6 +125,47 @@ export const CAMPAIGN_ADMIN_USERS_SORTABLE_COLUMNS: Record<
   },
 };
 
+export const CAMPAIGN_ADMIN_ENTITIES_SORTABLE_COLUMNS: Record<
+  CampaignAdminEntitiesSortKey,
+  {
+    readonly dataType: "string" | "date" | "number";
+    readonly defaultOrder: CampaignAdminSortOrder;
+  }
+> = {
+  entityCui: {
+    dataType: "string",
+    defaultOrder: "asc",
+  },
+  userCount: {
+    dataType: "number",
+    defaultOrder: "desc",
+  },
+  interactionCount: {
+    dataType: "number",
+    defaultOrder: "desc",
+  },
+  pendingReviewCount: {
+    dataType: "number",
+    defaultOrder: "desc",
+  },
+  notificationSubscriberCount: {
+    dataType: "number",
+    defaultOrder: "desc",
+  },
+  notificationOutboxCount: {
+    dataType: "number",
+    defaultOrder: "desc",
+  },
+  latestInteractionAt: {
+    dataType: "date",
+    defaultOrder: "desc",
+  },
+  latestNotificationAt: {
+    dataType: "date",
+    defaultOrder: "desc",
+  },
+};
+
 export const CAMPAIGN_ADMIN_NOTIFICATION_SORTABLE_COLUMNS: Record<
   CampaignAdminNotificationSortKey,
   {
@@ -190,6 +232,51 @@ export function getCampaignAdminUsersSortLabel(
       return t`Pending Reviews`;
     default:
       return sortKey;
+  }
+}
+
+export function getCampaignAdminEntitiesSortLabel(
+  sortKey: CampaignAdminEntitiesSortKey,
+): string {
+  switch (sortKey) {
+    case "entityCui":
+      return t`Entity`;
+    case "userCount":
+      return t`Users`;
+    case "interactionCount":
+      return t`Interactions`;
+    case "pendingReviewCount":
+      return t`Pending reviews`;
+    case "notificationSubscriberCount":
+      return t`Subscribers`;
+    case "notificationOutboxCount":
+      return t`Notifications`;
+    case "latestInteractionAt":
+      return t`Latest interaction`;
+    case "latestNotificationAt":
+      return t`Latest notification`;
+    default:
+      return sortKey;
+  }
+}
+
+export function getCampaignAdminEntityNotificationTypeLabel(
+  notificationType: string | null,
+): string {
+  switch (notificationType) {
+    case "funky:outbox:welcome":
+    case "public_debate_campaign_welcome":
+      return t`Campaign welcome`;
+    case "funky:outbox:entity_subscription":
+    case "public_debate_entity_subscription":
+      return t`Entity subscription`;
+    case "funky:outbox:entity_update":
+    case "public_debate_entity_update":
+      return t`Entity update`;
+    case null:
+      return t`Unavailable`;
+    default:
+      return notificationType;
   }
 }
 

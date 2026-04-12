@@ -111,7 +111,7 @@ export function NotificationQuickMenu({
   });
 
   return (
-    <div className="w-full space-y-5 p-2">
+    <div className="flex w-full min-h-[24rem] flex-col space-y-5 p-2">
       <div className="space-y-1">
         <h3 className="font-semibold text-xl">
           <Trans>Get updates about</Trans>
@@ -121,28 +121,28 @@ export function NotificationQuickMenu({
 
       <Separator />
 
-      <div className="space-y-1">
+      <div className="space-y-1 flex-1">
         {configuredNotificationTypes.map(({ type, config }) => {
           const isActive = getNotificationStatus(type);
 
           return (
             <div
               key={type}
-              className="flex items-center justify-between gap-4 px-3 py-3 rounded-lg hover:bg-secondary/50 transition-colors cursor-pointer group"
+              className="flex items-center justify-between gap-4 px-3 py-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
               onClick={() => {
                 void handleToggle(type, !isActive);
               }}
             >
               <div className="flex-1 min-w-0">
-                <div className="text-base font-medium group-hover:text-foreground transition-colors">
+                <div className="text-sm font-medium group-hover:text-foreground transition-colors">
                   {config.label}
                 </div>
-                <p className="text-sm text-muted-foreground mt-0.5 break-words">
+                <p className="text-xs text-muted-foreground mt-0.5 break-words">
                   {config.description}
                 </p>
               </div>
               <Switch
-                className="cursor-pointer disabled:cursor-pointer transition-all duration-300"
+                className="cursor-pointer disabled:cursor-pointer"
                 checked={isActive}
                 onCheckedChange={(checked) => {
                   void handleToggle(type, checked);
@@ -164,7 +164,7 @@ export function NotificationQuickMenu({
         <Button
           variant="default"
           size="lg"
-          className="w-full mt-16 sm:mt-auto justify-between group hover:bg-primary hover:text-primary-foreground transition-all"
+          className="w-full justify-between group hover:bg-primary hover:text-primary-foreground"
         >
           <Trans>Manage all notifications</Trans>
           <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />

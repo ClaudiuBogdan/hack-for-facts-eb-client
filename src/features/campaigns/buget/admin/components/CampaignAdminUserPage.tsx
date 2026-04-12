@@ -170,6 +170,7 @@ export function CampaignAdminUserPage({
     campaignKey,
     filters: {
       userId,
+      entityCui: normalizedSearch.entityCui,
       sortBy: "createdAt",
       sortOrder: "desc",
     },
@@ -280,8 +281,15 @@ export function CampaignAdminUserPage({
       limit: String(DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT),
     });
 
+    if (
+      normalizedSearch.entityCui !== undefined &&
+      normalizedSearch.entityCui.length > 0
+    ) {
+      searchParams.set("entityCui", normalizedSearch.entityCui);
+    }
+
     return `/admin/campaigns/${campaignKey}/notifications?${searchParams.toString()}`;
-  }, [campaignKey, userId]);
+  }, [campaignKey, normalizedSearch.entityCui, userId]);
   const userIdPreview = formatCampaignAdminUserIdPreview(userId, {
     maxLength: 20,
     prefixLength: 12,

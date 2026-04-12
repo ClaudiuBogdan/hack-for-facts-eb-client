@@ -19,6 +19,7 @@ export const campaignAdminUsersKeys = {
       campaignKey,
       "users",
       search.query ?? null,
+      search.entityCui ?? null,
       search.sortBy ?? null,
       search.sortOrder ?? null,
       search.cursor ?? null,

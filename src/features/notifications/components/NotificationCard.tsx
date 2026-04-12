@@ -48,8 +48,8 @@ export function NotificationCard({ notifications, onRemove }: Props) {
   };
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="bg-gradient-to-br from-background via-background to-muted/20">
+      <CardHeader className="pb-4">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="flex-1 min-w-0">
             {entityCui ? (
@@ -59,20 +59,24 @@ export function NotificationCard({ notifications, onRemove }: Props) {
                 className="group"
               >
                 <CardTitle className="text-lg flex items-center gap-2 hover:text-primary transition-colors">
-                  <Building2 className="h-4 w-4 shrink-0" />
+                  <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
                   <span className="break-words">{entityName}</span>
                   <ExternalLink className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                 </CardTitle>
               </Link>
             ) : (
               <CardTitle className="text-lg flex items-center gap-2">
-                <Building2 className="h-4 w-4 shrink-0" />
+                <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <span className="break-words">{entityName}</span>
               </CardTitle>
             )}
-            <CardDescription className="mt-1 ml-6">
-              <code className="text-xs">{entityCui}</code>
-            </CardDescription>
+            {entityCui ? (
+              <CardDescription className="mt-1 ml-6">
+                <span className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
+                  {entityCui}
+                </span>
+              </CardDescription>
+            ) : null}
           </div>
         </div>
       </CardHeader>
@@ -81,7 +85,7 @@ export function NotificationCard({ notifications, onRemove }: Props) {
           {configuredNotifications.map(({ notification, config }, index) => (
             <div key={notification.id}>
               {index > 0 && <Separator className="my-3" />}
-              <div className="flex items-center justify-between gap-4 py-2 px-3 rounded-lg hover:bg-secondary/30 transition-colors group">
+              <div className="flex items-center justify-between gap-4 py-2.5 px-3 rounded-lg hover:bg-muted/50 transition-colors group">
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium mb-0.5">
                     {config.label}
@@ -93,7 +97,7 @@ export function NotificationCard({ notifications, onRemove }: Props) {
 
                 <div className="flex items-center gap-2 shrink-0">
                   <Switch
-                    className="cursor-pointer disabled:cursor-pointer transition-all duration-300"
+                    className="cursor-pointer disabled:cursor-pointer"
                     checked={notification.isActive}
                     onCheckedChange={(isActive) => handleToggle(notification, isActive)}
                     disabled={toggleMutation.isPending}
@@ -103,7 +107,7 @@ export function NotificationCard({ notifications, onRemove }: Props) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive hover:bg-destructive/10 transition-opacity"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

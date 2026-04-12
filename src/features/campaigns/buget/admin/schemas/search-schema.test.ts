@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   createEmptyCampaignAdminNotificationsSearch,
+  createEmptyCampaignAdminEntitiesSearch,
   buildCampaignAdminQueueSearchFromDraft,
   createEmptyCampaignAdminQueueSearch,
   isCampaignAdminFilterDraftEqual,
+  normalizeCampaignAdminEntitiesSearch,
   normalizeCampaignAdminNotificationsSearch,
   normalizeCampaignAdminQueueSearch,
   normalizeCampaignAdminUserPageSearch,
@@ -189,6 +191,74 @@ describe("campaign admin search schema", () => {
     });
   });
 
+  it("normalizes entities route search defaults", () => {
+    expect(normalizeCampaignAdminEntitiesSearch({})).toEqual({
+      limit: 50,
+      sortBy: "latestInteractionAt",
+      sortOrder: "desc",
+    });
+  });
+
+  it("trims entities search values and preserves paging state", () => {
+    expect(
+      normalizeCampaignAdminEntitiesSearch({
+        query: "  12345678  ",
+        interactionId: "  funky:interaction:public_debate_request  ",
+        hasPendingReviews: "true",
+        hasSubscribers: "false",
+        latestNotificationType: "  funky:outbox:entity_update  ",
+        latestNotificationStatus: "failed_permanent",
+        cursor: "cursor-1",
+        pageIndex: "2",
+        limit: "25",
+      }),
+    ).toEqual({
+      query: "12345678",
+      interactionId: "funky:interaction:public_debate_request",
+      hasPendingReviews: true,
+      hasSubscribers: false,
+      latestNotificationType: "funky:outbox:entity_update",
+      latestNotificationStatus: "failed_permanent",
+      cursor: "cursor-1",
+      pageIndex: 2,
+      sortBy: "latestInteractionAt",
+      sortOrder: "desc",
+      limit: 25,
+    });
+  });
+
+  it("defaults entityCui sorting to ascending and drops deprecated notification types", () => {
+    expect(
+      normalizeCampaignAdminEntitiesSearch({
+        sortBy: "entityCui",
+        latestNotificationType:
+          "public_debate_entity_update" as unknown as never,
+      }),
+    ).toEqual({
+      sortBy: "entityCui",
+      sortOrder: "asc",
+      limit: 50,
+    });
+  });
+
+  it("creates an empty entities search while preserving display options", () => {
+    expect(
+      createEmptyCampaignAdminEntitiesSearch({
+        currentSearch: {
+          query: "Oras Test",
+          hasPendingReviews: true,
+          sortBy: "userCount",
+          sortOrder: "asc",
+          limit: 25,
+        },
+      }),
+    ).toEqual({
+      sortBy: "userCount",
+      sortOrder: "asc",
+      limit: 25,
+    });
+  });
+
   it("trims notifications search text values and preserves paging state", () => {
     expect(
       normalizeCampaignAdminNotificationsSearch({
@@ -235,10 +305,11 @@ describe("campaign admin search schema", () => {
     });
   });
 
-  it("trims users query text and keeps paging state", () => {
+  it("trims users query text and entity filters while keeping paging state", () => {
     expect(
       normalizeCampaignAdminUsersSearch({
         query: "  user-1  ",
+        entityCui: " 12345678 ",
         cursor: "cursor-1",
         pageIndex: "2",
         sortBy: "interactionCount",
@@ -247,11 +318,38 @@ describe("campaign admin search schema", () => {
       }),
     ).toEqual({
       query: "user-1",
+      entityCui: "12345678",
       cursor: "cursor-1",
       pageIndex: 2,
       sortBy: "interactionCount",
       sortOrder: "asc",
       limit: 25,
+    });
+  });
+
+  it("strips wrapping quotes from entityCui across users and user-page search", () => {
+    expect(
+      normalizeCampaignAdminUsersSearch({
+        entityCui: '"4270740"',
+        limit: 50,
+      }),
+    ).toEqual({
+      entityCui: "4270740",
+      limit: 50,
+      sortBy: "latestUpdatedAt",
+      sortOrder: "desc",
+    });
+
+    expect(
+      normalizeCampaignAdminUserPageSearch({
+        entityCui: '"4270740"',
+        sortBy: "updatedAt",
+        sortOrder: "desc",
+      }),
+    ).toEqual({
+      entityCui: "4270740",
+      sortBy: "updatedAt",
+      sortOrder: "desc",
     });
   });
 

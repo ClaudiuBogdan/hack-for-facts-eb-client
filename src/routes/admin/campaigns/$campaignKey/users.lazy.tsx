@@ -61,6 +61,7 @@ function resolveCampaignAdminCampaignKey(
 function toCampaignAdminUsersRouteSearch(search: CampaignAdminUsersSearch) {
   return {
     query: search.query,
+    entityCui: search.entityCui,
     sortBy: search.sortBy,
     sortOrder: search.sortOrder,
     cursor: search.cursor,
