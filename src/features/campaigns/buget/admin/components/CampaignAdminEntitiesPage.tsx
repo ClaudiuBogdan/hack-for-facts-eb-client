@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Ban, LockKeyhole, RefreshCw, SearchX } from "lucide-react";
+import { Ban, ChevronDown, LockKeyhole, RefreshCw, SearchX } from "lucide-react";
 import { t } from "@lingui/core/macro";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -20,6 +20,11 @@ import {
 } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { AuthSignInButton, useAuth } from "@/lib/auth";
 import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components/AdminCampaignLayout";
 import { CampaignAdminCursorPager } from "@/features/campaigns/buget/admin/components/CampaignAdminCursorPager";
@@ -164,6 +169,7 @@ export function CampaignAdminEntitiesPage({
   const [paginationStateSignature, setPaginationStateSignature] = useState(
     paginationStateSignatureFromSearch,
   );
+  const [isEntitySummaryExpanded, setIsEntitySummaryExpanded] = useState(false);
   const { isLoaded, isSignedIn } = useAuth();
 
   const entitiesQuery = useCampaignAdminEntitiesQuery({
@@ -487,48 +493,69 @@ export function CampaignAdminEntitiesPage({
       }
     >
       <section className="space-y-4" aria-labelledby="entities-summary-title">
-        <div className="space-y-1">
-          <h2
-            id="entities-summary-title"
-            className="text-base font-semibold tracking-tight text-foreground"
-          >
-            {t`Entity summary`}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {t`Use the entity view to find where review load, subscriptions, and notification failures are concentrated.`}
-          </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="space-y-1">
+            <h2
+              id="entities-summary-title"
+              className="text-base font-semibold tracking-tight text-foreground"
+            >
+              {t`Entity summary`}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {t`Use the entity view to find where review load, subscriptions, and notification failures are concentrated.`}
+            </p>
+          </div>
         </div>
 
         {metaQuery.isLoading && meta === undefined ? (
           <EntitiesSummarySkeleton />
         ) : meta ? (
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-            <SummaryCard
-              label={t`Total entities`}
-              value={meta.totalEntities}
-              description={t`Distinct campaign entities available in this admin view.`}
-            />
-            <SummaryCard
-              label={t`Pending reviews`}
-              value={meta.entitiesWithPendingReviews}
-              description={t`Entities that currently surface review work.`}
-            />
-            <SummaryCard
-              label={t`Subscribers`}
-              value={meta.entitiesWithSubscribers}
-              description={t`Entities with notification subscribers.`}
-            />
-            <SummaryCard
-              label={t`Notification activity`}
-              value={meta.entitiesWithNotificationActivity}
-              description={t`Entities with queued or sent notification activity.`}
-            />
-            <SummaryCard
-              label={t`Failed notifications`}
-              value={meta.entitiesWithFailedNotifications}
-              description={t`Entities with any recent failed notification signal.`}
-            />
-          </div>
+          <Collapsible
+            open={isEntitySummaryExpanded}
+            onOpenChange={setIsEntitySummaryExpanded}
+          >
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+              <SummaryCard
+                label={t`Total entities`}
+                value={meta.totalEntities}
+                description={t`Distinct campaign entities available in this admin view.`}
+              />
+              <SummaryCard
+                label={t`Pending reviews`}
+                value={meta.entitiesWithPendingReviews}
+                description={t`Entities that currently surface review work.`}
+              />
+              <CollapsibleContent className="contents">
+                <SummaryCard
+                  label={t`Subscribers`}
+                  value={meta.entitiesWithSubscribers}
+                  description={t`Entities with notification subscribers.`}
+                />
+                <SummaryCard
+                  label={t`Notification activity`}
+                  value={meta.entitiesWithNotificationActivity}
+                  description={t`Entities with queued or sent notification activity.`}
+                />
+                <SummaryCard
+                  label={t`Failed notifications`}
+                  value={meta.entitiesWithFailedNotifications}
+                  description={t`Entities with any recent failed notification signal.`}
+                />
+              </CollapsibleContent>
+            </div>
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <ChevronDown
+                  className={`h-3.5 w-3.5 transition-transform ${isEntitySummaryExpanded ? "rotate-180" : ""}`}
+                  aria-hidden="true"
+                />
+                {isEntitySummaryExpanded ? t`Show less` : t`Show more stats`}
+              </button>
+            </CollapsibleTrigger>
+          </Collapsible>
         ) : (
           <div className="rounded-2xl border border-dashed border-border/70 px-4 py-3 text-sm text-muted-foreground">
             {t`Summary data is unavailable right now. You can still use the entity table below.`}

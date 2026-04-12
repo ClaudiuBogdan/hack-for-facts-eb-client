@@ -413,6 +413,9 @@ describe('CampaignAdminUserInteractionsPage', () => {
     expect(within(summary).getByText('Not reviewed').parentElement).toHaveTextContent(
       '5 Not reviewed'
     )
+
+    fireEvent.click(screen.getByText('Show phase & thread breakdown'))
+
     expect(within(summary).getByText('With thread').parentElement).toHaveTextContent(
       '101 With thread'
     )

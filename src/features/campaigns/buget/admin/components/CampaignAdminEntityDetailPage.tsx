@@ -1,7 +1,7 @@
-import { useMemo, type ReactNode } from "react";
+import { useMemo, type ReactNode, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Ban, LockKeyhole, RefreshCw } from "lucide-react";
+import { Ban, ChevronDown, LockKeyhole, RefreshCw } from "lucide-react";
 import { t } from "@lingui/core/macro";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,11 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Table,
   TableBody,
@@ -493,6 +498,7 @@ export function CampaignAdminEntityDetailPage({
 }: CampaignAdminEntityDetailPageProps) {
   const { isLoaded, isSignedIn } = useAuth();
   const queryClient = useQueryClient();
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
   const usersQuery = useCampaignAdminUsersQuery({
     campaignKey,
     search: {
@@ -726,14 +732,44 @@ export function CampaignAdminEntityDetailPage({
               </CardDescription>
             </CardHeader>
             {summaryStats.length > 0 ? (
-              <CardContent className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                {summaryStats.map((stat) => (
-                  <SummaryCard
-                    key={stat.label}
-                    label={stat.label}
-                    value={stat.value}
-                  />
-                ))}
+              <CardContent className="space-y-3">
+                <Collapsible
+                  open={isSummaryExpanded}
+                  onOpenChange={setIsSummaryExpanded}
+                >
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                    {summaryStats.slice(0, 2).map((stat) => (
+                      <SummaryCard
+                        key={stat.label}
+                        label={stat.label}
+                        value={stat.value}
+                      />
+                    ))}
+                    <CollapsibleContent className="contents">
+                      {summaryStats.slice(2).map((stat) => (
+                        <SummaryCard
+                          key={stat.label}
+                          label={stat.label}
+                          value={stat.value}
+                        />
+                      ))}
+                    </CollapsibleContent>
+                  </div>
+                  {summaryStats.length > 2 ? (
+                    <CollapsibleTrigger asChild>
+                      <button
+                        type="button"
+                        className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        <ChevronDown
+                          className={`h-3.5 w-3.5 transition-transform ${isSummaryExpanded ? "rotate-180" : ""}`}
+                          aria-hidden="true"
+                        />
+                        {isSummaryExpanded ? t`Show less` : t`Show more stats`}
+                      </button>
+                    </CollapsibleTrigger>
+                  ) : null}
+                </Collapsible>
               </CardContent>
             ) : null}
           </Card>

@@ -2,6 +2,8 @@
 
 ## Funky Campaign
 
+- Fix main share card and also improve campaign share cards.
+
 - [ ] Bifa email primarie.
 - [ ] Add notification transaction to disable all in server.
 - [ ] Add a forceSync flag on the interactive element for sensitive data, like send public debate email or terms and conditions.

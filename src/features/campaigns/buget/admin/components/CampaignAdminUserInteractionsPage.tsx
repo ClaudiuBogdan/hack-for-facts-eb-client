@@ -2,6 +2,7 @@ import { useEffect, useEffectEvent, useMemo, useState } from "react";
 import {
   AlertTriangle,
   Ban,
+  ChevronDown,
   LockKeyhole,
   RefreshCw,
   SearchX,
@@ -37,6 +38,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { useAuth, AuthSignInButton } from "@/lib/auth";
 import { EmptyState } from "@/components/ui/empty-state";
 import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components/AdminCampaignLayout";
@@ -177,6 +183,7 @@ export function CampaignAdminUserInteractionsPage({
     () => createPaginationStateSignature(normalizedSearch),
     [normalizedSearch],
   );
+  const [isStatsExpanded, setIsStatsExpanded] = useState(false);
   const { isLoaded, isSignedIn } = useAuth();
   const [previousCursors, setPreviousCursors] = useState<Array<string | null>>(
     [],
@@ -1163,15 +1170,35 @@ export function CampaignAdminUserInteractionsPage({
           </AlertDescription>
         </Alert>
       ) : shouldShowMetaSummary ? (
-        <div
-          role="region"
-          aria-label={t`Campaign queue summary`}
-          className="flex flex-wrap gap-x-6 gap-y-3 border-b border-border/60 pb-4"
-        >
-          <SummaryBreakdown label={t`Review`} items={reviewBreakdownItems} />
-          <SummaryBreakdown label={t`Phase`} items={phaseBreakdownItems} />
-          <SummaryBreakdown label={t`Threads`} items={threadBreakdownItems} />
-        </div>
+        <Collapsible open={isStatsExpanded} onOpenChange={setIsStatsExpanded}>
+          <div
+            role="region"
+            aria-label={t`Campaign queue summary`}
+            className="flex flex-col gap-3 border-b border-border/60 pb-4"
+          >
+            <div className="flex flex-wrap gap-x-6 gap-y-3">
+              <SummaryBreakdown label={t`Review`} items={reviewBreakdownItems} />
+            </div>
+            <CollapsibleContent>
+              <div className="flex flex-wrap gap-x-6 gap-y-3 pt-1">
+                <SummaryBreakdown label={t`Phase`} items={phaseBreakdownItems} />
+                <SummaryBreakdown label={t`Threads`} items={threadBreakdownItems} />
+              </div>
+            </CollapsibleContent>
+            <CollapsibleTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <ChevronDown
+                  className={`h-3.5 w-3.5 transition-transform ${isStatsExpanded ? "rotate-180" : ""}`}
+                  aria-hidden="true"
+                />
+                {isStatsExpanded ? t`Show less` : t`Show phase & thread breakdown`}
+              </button>
+            </CollapsibleTrigger>
+          </div>
+        </Collapsible>
       ) : (
         <CampaignAdminSummarySkeleton />
       )}
