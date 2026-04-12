@@ -124,6 +124,9 @@ export function useMapEditorInitialState({
       }
 
       setMapState(resolvedMapState);
+      if (isCancelled) {
+        return;
+      }
       setMapDescriptionDraft(resolvedDescription);
       hasResolvedInitialStateRef.current = true;
       setIsInitialStateResolved(true);
