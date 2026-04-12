@@ -60,6 +60,12 @@ const campaignAdminPayloadSummarySchema = z.discriminatedUnion('kind', [
     observations: z.string().nullable(),
   }).strict(),
   z.object({
+    kind: z.literal('quiz'),
+    selectedOptionId: z.string().min(1).nullable(),
+    outcome: z.enum(['correct', 'incorrect']).nullable(),
+    score: z.number().nullable(),
+  }).strict(),
+  z.object({
     kind: z.literal('contestation'),
     contestedItem: z.string().nullable(),
     reasoning: z.string().nullable(),
@@ -83,6 +89,7 @@ const campaignAdminInteractionListItemSchema = z
     scopeType: z.enum(campaignAdminScopeTypeValues),
     phase: z.enum(campaignAdminPhaseValues),
     reviewStatus: z.enum(campaignAdminReviewStatusValues).nullable(),
+    reviewable: z.boolean().optional(),
     pendingReason: z.enum(campaignAdminPendingReasonValues).nullable(),
     submittedAt: z.string().datetime().nullable(),
     createdAt: z.string().datetime(),
@@ -115,6 +122,7 @@ const campaignAdminAvailableInteractionTypeSchema = z
   .object({
     interactionId: z.string().min(1),
     label: z.string().min(1).nullable(),
+    reviewable: z.boolean().optional(),
   })
   .strict()
 

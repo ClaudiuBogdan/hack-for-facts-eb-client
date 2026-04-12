@@ -36,6 +36,7 @@ function createListResponsePayload() {
           scopeType: 'entity',
           phase: 'pending',
           reviewStatus: 'pending',
+          reviewable: true,
           pendingReason: 'institution_email_mismatch',
           submittedAt: '2026-04-10T10:00:00.000Z',
           createdAt: '2026-04-10T10:00:00.000Z',
@@ -89,10 +90,12 @@ function createMetaResponsePayload() {
         {
           interactionId: 'funky:interaction:public_debate_request',
           label: 'Public debate request',
+          reviewable: true,
         },
         {
           interactionId: 'funky:interaction:city_hall_website',
           label: 'City hall website',
+          reviewable: true,
         },
       ],
       stats: {
@@ -203,13 +206,104 @@ describe('campaign-admin-user-interactions api', () => {
       {
         interactionId: 'funky:interaction:public_debate_request',
         label: 'Public debate request',
+        reviewable: true,
       },
       {
         interactionId: 'funky:interaction:city_hall_website',
         label: 'City hall website',
+        reviewable: true,
       },
     ])
     expect(result.stats).toEqual(createMetaResponsePayload().data.stats)
+  })
+
+  it('accepts expanded audit rows with quiz summaries', async () => {
+    getAuthTokenMock.mockResolvedValue('token-123')
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          ok: true,
+          data: {
+            items: [
+              {
+                userId: 'user-2',
+                recordKey: 'ch-civic-01-how-module-works-q1::global',
+                campaignKey: 'funky',
+                interactionId: 'ch-civic-01-how-module-works-q1',
+                lessonId: 'civic-monitor-and-request',
+                entityCui: null,
+                entityName: null,
+                scopeType: 'global',
+                phase: 'resolved',
+                reviewStatus: null,
+                reviewable: false,
+                pendingReason: null,
+                submittedAt: '2026-04-10T11:00:00.000Z',
+                createdAt: '2026-04-10T11:00:00.000Z',
+                updatedAt: '2026-04-10T11:00:00.000Z',
+                reviewedAt: null,
+                reviewedByUserId: null,
+                reviewSource: null,
+                feedbackText: null,
+                payloadKind: 'choice',
+                payloadSummary: {
+                  kind: 'quiz',
+                  selectedOptionId: 'option-a',
+                  outcome: 'correct',
+                  score: 1,
+                },
+                institutionEmail: null,
+                websiteUrl: null,
+                organizationName: null,
+                interactionElementLink: null,
+                submissionPath: null,
+                isNgo: null,
+                riskFlags: [],
+                threadId: null,
+                threadPhase: null,
+                lastEmailAt: null,
+                lastReplyAt: null,
+                nextActionAt: null,
+                submittedEventCount: 1,
+                evaluatedEventCount: 1,
+                lastAuditAt: '2026-04-10T11:00:00.000Z',
+              },
+            ],
+            page: {
+              limit: 50,
+              hasMore: false,
+              nextCursor: null,
+            },
+          },
+        }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
+    )
+
+    await expect(
+      listCampaignAdminUserInteractions({
+        campaignKey: 'funky',
+        filters: {},
+        cursor: null,
+        limit: 50,
+      })
+    ).resolves.toMatchObject({
+      items: [
+        {
+          interactionId: 'ch-civic-01-how-module-works-q1',
+          reviewable: false,
+          payloadSummary: {
+            kind: 'quiz',
+            selectedOptionId: 'option-a',
+            outcome: 'correct',
+            score: 1,
+          },
+        },
+      ],
+    })
   })
 
   it('maps 404 responses to an unavailable-queue error', async () => {

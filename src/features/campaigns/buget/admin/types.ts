@@ -159,6 +159,12 @@ export type CampaignAdminPayloadSummary =
       readonly observations: string | null;
     }
   | {
+      readonly kind: "quiz";
+      readonly selectedOptionId: string | null;
+      readonly outcome: "correct" | "incorrect" | null;
+      readonly score: number | null;
+    }
+  | {
       readonly kind: "contestation";
       readonly contestedItem: string | null;
       readonly reasoning: string | null;
@@ -172,6 +178,7 @@ export type CampaignAdminPayloadSummary =
 export type CampaignAdminAvailableInteractionType = {
   readonly interactionId: string;
   readonly label: string | null;
+  readonly reviewable?: boolean;
 };
 
 export type CampaignAdminInteractionMetaStats = {
@@ -229,6 +236,7 @@ export type CampaignAdminUserInteractionListItem = {
   readonly scopeType: CampaignAdminScopeType;
   readonly phase: CampaignAdminPhase;
   readonly reviewStatus: CampaignAdminReviewStatus | null;
+  readonly reviewable?: boolean;
   readonly pendingReason: CampaignAdminPendingReason | null;
   readonly submittedAt: string | null;
   readonly createdAt: string;
