@@ -30,7 +30,24 @@ describe('campaign-seo', () => {
     expect(metadata.canonicalUrl).toContain('/provocare')
     expect(metadata.canonicalUrl).not.toContain('?lang=en')
     expect(metadata.alternateUrls.en).toContain('?lang=en')
-    expect(metadata.image.url).toContain('/assets/images/campaigns/buget/share/landing.png')
+    expect(metadata.image.url).toContain('/assets/images/campaigns/buget/share/funky-campaign.png')
+  })
+
+  it('reuses the same campaign share image across campaign routes', () => {
+    const hubMetadata = buildCampaignSeoMetadata({
+      pageKind: 'hub',
+      locale: 'ro',
+      entityCui: '4305857',
+    })
+
+    const challengeMetadata = buildCampaignSeoMetadata({
+      pageKind: 'challenges',
+      locale: 'ro',
+      entityCui: '4305857',
+    })
+
+    expect(hubMetadata.image.url).toContain('/assets/images/campaigns/buget/share/funky-campaign.png')
+    expect(challengeMetadata.image.url).toBe(hubMetadata.image.url)
   })
 
   it('builds provocari canonical with lang query and noindex', () => {
