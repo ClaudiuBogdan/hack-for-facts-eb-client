@@ -593,6 +593,46 @@ describe('CampaignAdminUserInteractionsPage', () => {
     ])
   })
 
+  it('sorts the value column locally without changing the queue search', () => {
+    mockQueueState({
+      items: [
+        createItem({
+          recordKey: 'record-zeta',
+          institutionEmail: 'zeta@primarie.ro',
+        }),
+        createItem({
+          userId: 'user-2',
+          recordKey: 'record-alpha',
+          institutionEmail: 'alpha@primarie.ro',
+        }),
+      ],
+    })
+    const onSearchChange = vi.fn()
+    const { container } = render(
+      <CampaignAdminUserInteractionsPage
+        campaignKey="funky"
+        search={defaultSearch}
+        onSearchChange={onSearchChange}
+      />
+    )
+
+    const getDesktopRowOrder = () =>
+      Array.from(container.querySelectorAll('tbody tr')).map((row) =>
+        row.textContent?.includes('alpha@primarie.ro')
+          ? 'alpha'
+          : row.textContent?.includes('zeta@primarie.ro')
+            ? 'zeta'
+            : 'unknown'
+      )
+
+    expect(getDesktopRowOrder()).toEqual(['zeta', 'alpha'])
+
+    fireEvent.click(screen.getByRole('button', { name: 'Value sort' }))
+
+    expect(onSearchChange).not.toHaveBeenCalled()
+    expect(getDesktopRowOrder()).toEqual(['alpha', 'zeta'])
+  })
+
   it('requires explicit confirmation before risky approval', async () => {
     mockQueueState({
       items: [

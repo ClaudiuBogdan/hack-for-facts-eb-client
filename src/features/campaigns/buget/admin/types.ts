@@ -80,6 +80,8 @@ export const campaignAdminUserInteractionsSortKeyValues = [
   "riskFlagCount",
   "threadPhase",
   "interactionType",
+  "value",
+  "reviewState",
   "reviewedByUserId",
 ] as const;
 

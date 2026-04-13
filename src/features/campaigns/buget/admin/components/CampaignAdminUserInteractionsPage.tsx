@@ -58,6 +58,7 @@ import {
   getCampaignAdminCampaignLabel,
   getCampaignAdminPhaseLabel,
   getCampaignAdminReviewStatusLabel,
+  isCampaignAdminUserInteractionsLocalSortKey,
 } from "@/features/campaigns/buget/admin/constants";
 import {
   getCampaignAdminQueueFilters,
@@ -192,6 +193,19 @@ export function CampaignAdminUserInteractionsPage({
     paginationStateSignatureFromSearch,
   );
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
+  const [localSort, setLocalSort] = useState<{
+    readonly sortBy: CampaignAdminUserInteractionsSortKey;
+    readonly sortOrder: CampaignAdminSortOrder;
+  } | null>(() =>
+    normalizedSearch.sortBy !== undefined &&
+    normalizedSearch.sortOrder !== undefined &&
+    isCampaignAdminUserInteractionsLocalSortKey(normalizedSearch.sortBy)
+      ? {
+          sortBy: normalizedSearch.sortBy,
+          sortOrder: normalizedSearch.sortOrder,
+        }
+      : null,
+  );
   const [isSendValidationOpen, setIsSendValidationOpen] = useState(false);
   const [isSendConfirmOpen, setIsSendConfirmOpen] = useState(false);
   const [isClearStagedConfirmOpen, setIsClearStagedConfirmOpen] =
@@ -219,6 +233,34 @@ export function CampaignAdminUserInteractionsPage({
   });
   const submitReviewsMutation =
     useSubmitCampaignAdminReviewsMutation(campaignKey);
+  const effectiveSortBy = localSort?.sortBy ?? normalizedSearch.sortBy;
+  const effectiveSortOrder = localSort?.sortOrder ?? normalizedSearch.sortOrder;
+
+  useEffect(() => {
+    if (
+      normalizedSearch.sortBy !== undefined &&
+      normalizedSearch.sortOrder !== undefined &&
+      isCampaignAdminUserInteractionsLocalSortKey(normalizedSearch.sortBy)
+    ) {
+      const localSortBy = normalizedSearch.sortBy;
+      const localSortOrder = normalizedSearch.sortOrder;
+
+      setLocalSort((currentLocalSort) =>
+        currentLocalSort?.sortBy === localSortBy &&
+        currentLocalSort?.sortOrder === localSortOrder
+          ? currentLocalSort
+          : {
+              sortBy: localSortBy,
+              sortOrder: localSortOrder,
+            },
+      );
+      return;
+    }
+
+    setLocalSort((currentLocalSort) =>
+      currentLocalSort === null ? currentLocalSort : null,
+    );
+  }, [normalizedSearch.sortBy, normalizedSearch.sortOrder]);
 
   const items = queueQuery.data?.items ?? [];
   const activeSelectionKey = normalizedSearch.reviewSelectionKey ?? null;
@@ -428,6 +470,12 @@ export function CampaignAdminUserInteractionsPage({
     sortBy: CampaignAdminUserInteractionsSortKey,
     sortOrder: CampaignAdminSortOrder,
   ) => {
+    if (isCampaignAdminUserInteractionsLocalSortKey(sortBy)) {
+      setLocalSort({ sortBy, sortOrder });
+      return;
+    }
+
+    setLocalSort(null);
     const nextQueueSearch = normalizeCampaignAdminQueueSearch({
       ...normalizedSearch,
       sortBy,
@@ -1288,8 +1336,8 @@ export function CampaignAdminUserInteractionsPage({
                     )
                   : undefined
               }
-              sortBy={normalizedSearch.sortBy}
-              sortOrder={normalizedSearch.sortOrder}
+              sortBy={effectiveSortBy}
+              sortOrder={effectiveSortOrder}
               onCopyRows={handleCopySelectedRows}
               onSortChange={handleSortChange}
               onToggleSelectAll={handleToggleSelectAll}

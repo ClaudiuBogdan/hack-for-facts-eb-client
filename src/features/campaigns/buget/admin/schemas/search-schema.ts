@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT } from "@/features/campaigns/buget/admin/constants";
+import {
+  DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
+  isCampaignAdminUserInteractionsLocalSortKey,
+} from "@/features/campaigns/buget/admin/constants";
 import {
   toDateInputValue,
   toUtcRangeBoundary,
@@ -584,13 +587,29 @@ export function normalizeCampaignAdminNotificationsSearch(
 export function getCampaignAdminQueueFilters(
   search: CampaignAdminQueueSearch,
 ): CampaignAdminQueueFilters {
-  const { limit, reviewSelectionKey, cursor, pageIndex, ...filters } = search;
+  const {
+    limit,
+    reviewSelectionKey,
+    cursor,
+    pageIndex,
+    sortBy,
+    sortOrder,
+    ...filters
+  } = search;
   void limit;
   void reviewSelectionKey;
   void cursor;
   void pageIndex;
 
-  return filters;
+  if (sortBy === undefined || isCampaignAdminUserInteractionsLocalSortKey(sortBy)) {
+    return filters;
+  }
+
+  return {
+    ...filters,
+    sortBy,
+    sortOrder,
+  };
 }
 
 export function getCampaignAdminEntitiesFilters(

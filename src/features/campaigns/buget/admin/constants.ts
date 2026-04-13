@@ -94,11 +94,32 @@ export const CAMPAIGN_ADMIN_USER_INTERACTIONS_SORTABLE_COLUMNS: Record<
     dataType: "string",
     defaultOrder: "asc",
   },
+  value: {
+    dataType: "string",
+    defaultOrder: "asc",
+  },
+  reviewState: {
+    dataType: "enum",
+    defaultOrder: "asc",
+  },
   reviewedByUserId: {
     dataType: "string",
     defaultOrder: "asc",
   },
 };
+
+export const CAMPAIGN_ADMIN_USER_INTERACTIONS_LOCAL_SORT_KEYS = [
+  "value",
+  "reviewState",
+] as const;
+
+export function isCampaignAdminUserInteractionsLocalSortKey(
+  sortKey: CampaignAdminUserInteractionsSortKey,
+): sortKey is (typeof CAMPAIGN_ADMIN_USER_INTERACTIONS_LOCAL_SORT_KEYS)[number] {
+  return CAMPAIGN_ADMIN_USER_INTERACTIONS_LOCAL_SORT_KEYS.includes(
+    sortKey as (typeof CAMPAIGN_ADMIN_USER_INTERACTIONS_LOCAL_SORT_KEYS)[number],
+  );
+}
 
 export const CAMPAIGN_ADMIN_USERS_SORTABLE_COLUMNS: Record<
   CampaignAdminUsersSortKey,
@@ -211,6 +232,10 @@ export function getCampaignAdminUserInteractionsSortLabel(
       return t`Message`;
     case "interactionType":
       return t`Interaction`;
+    case "value":
+      return t`Value`;
+    case "reviewState":
+      return t`Review state`;
     case "reviewedByUserId":
       return t`Reviewed by`;
     default:

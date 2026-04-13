@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowUpDown,
@@ -39,10 +39,12 @@ import {
   getCampaignAdminRiskFlagLabel,
   getCampaignAdminThreadPhaseLabel,
   getCampaignAdminUserInteractionsSortLabel,
+  isCampaignAdminUserInteractionsLocalSortKey,
 } from "@/features/campaigns/buget/admin/constants";
 import { formatCampaignAdminUserIdPreview } from "@/features/campaigns/buget/admin/utils/format-user-id-preview";
 import { getCampaignAdminPrimaryValue } from "@/features/campaigns/buget/admin/utils/payload-summary";
 import { resolveSafeCampaignAdminHref } from "@/features/campaigns/buget/admin/utils/resolve-safe-campaign-admin-href";
+import { sortCampaignAdminUserInteractionItems } from "@/features/campaigns/buget/admin/utils/sort-campaign-admin-user-interactions";
 import { buildCampaignPrimariePath } from "@/features/challenges/constants";
 import type {
   CampaignAdminCampaignKey,
@@ -428,6 +430,20 @@ export function CampaignAdminUserInteractionsTable({
   onToggleSelection,
   onOpenItem,
 }: CampaignAdminUserInteractionsTableProps) {
+  const displayedItems = useMemo(
+    () =>
+      sortBy !== undefined &&
+      sortOrder !== undefined &&
+      isCampaignAdminUserInteractionsLocalSortKey(sortBy)
+        ? sortCampaignAdminUserInteractionItems({
+            items,
+            sortBy,
+            sortOrder,
+            stagedDraftsByKey,
+          })
+        : items,
+    [items, sortBy, sortOrder, stagedDraftsByKey],
+  );
   const { columnVisibility, setColumnVisibility } = useTablePreferences(
     tablePreferencesKey ?? `campaign-admin-user-interactions:${campaignKey}`,
     {
@@ -440,13 +456,13 @@ export function CampaignAdminUserInteractionsTable({
     },
   );
 
-  const selectableItems = items.filter(isSelectable);
+  const selectableItems = displayedItems.filter(isSelectable);
   const selectedSelectableCount = selectableItems.filter((item) =>
     selectedKeys.has(
       buildCampaignAdminSelectionKey(item.userId, item.recordKey),
     ),
   ).length;
-  const selectedVisibleCount = items.filter((item) =>
+  const selectedVisibleCount = displayedItems.filter((item) =>
     selectedKeys.has(
       buildCampaignAdminSelectionKey(item.userId, item.recordKey),
     ),
@@ -454,7 +470,7 @@ export function CampaignAdminUserInteractionsTable({
   const allSelectableChecked =
     selectableItems.length > 0 &&
     selectedSelectableCount === selectableItems.length;
-  const visibleRowCount = items.length;
+  const visibleRowCount = displayedItems.length;
   const copyButtonLabel =
     selectedVisibleCount > 0 ? t`Copy selected rows` : t`Copy all rows`;
 
@@ -489,7 +505,7 @@ export function CampaignAdminUserInteractionsTable({
       buildCampaignAdminSelectionKey(item.userId, item.recordKey)
     ] ?? null;
 
-  if (items.length === 0) {
+  if (displayedItems.length === 0) {
     return (
       <EmptyState
         title={t`No data available`}
@@ -709,12 +725,26 @@ export function CampaignAdminUserInteractionsTable({
               ) : null}
               {isColumnVisible("value") ? (
                 <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
-                  {t`Value`}
+                  <SortableHeaderButton
+                    sortKey="value"
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSortChange={onSortChange}
+                  >
+                    {t`Value`}
+                  </SortableHeaderButton>
                 </TableHead>
               ) : null}
               {isColumnVisible("reviewState") ? (
                 <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
-                  {t`Review state`}
+                  <SortableHeaderButton
+                    sortKey="reviewState"
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSortChange={onSortChange}
+                  >
+                    {t`Review state`}
+                  </SortableHeaderButton>
                 </TableHead>
               ) : null}
               {isColumnVisible("reviewNote") ? (
@@ -740,7 +770,7 @@ export function CampaignAdminUserInteractionsTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {items.map((item) => {
+            {displayedItems.map((item) => {
               const selectionKey = buildCampaignAdminSelectionKey(
                 item.userId,
                 item.recordKey,
@@ -870,7 +900,7 @@ export function CampaignAdminUserInteractionsTable({
             {header({ actions: null, trailingActions: null })}
           </div>
         ) : null}
-        {items.map((item) => {
+        {displayedItems.map((item) => {
           const selectionKey = buildCampaignAdminSelectionKey(
             item.userId,
             item.recordKey,

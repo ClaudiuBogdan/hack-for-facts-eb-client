@@ -1,10 +1,13 @@
 import {
+  buildCampaignAdminSelectionKey,
   getCampaignAdminInteractionTypeLabel,
   getCampaignAdminReviewStatusLabel,
   getCampaignAdminThreadPhaseLabel,
 } from "@/features/campaigns/buget/admin/constants";
+import { getCampaignAdminPrimaryValue } from "@/features/campaigns/buget/admin/utils/payload-summary";
 import type {
   CampaignAdminSortOrder,
+  CampaignAdminStagedReviewDraft,
   CampaignAdminUserInteractionListItem,
   CampaignAdminUserInteractionsSortKey,
 } from "@/features/campaigns/buget/admin/types";
@@ -42,9 +45,29 @@ function getEntitySortValue(
   return item.entityName?.trim() || item.entityCui;
 }
 
+function getReviewStateSortValue(
+  item: CampaignAdminUserInteractionListItem,
+  stagedDraftsByKey?: Readonly<Record<string, CampaignAdminStagedReviewDraft>>,
+): number {
+  const stagedDraft =
+    stagedDraftsByKey?.[
+      buildCampaignAdminSelectionKey(item.userId, item.recordKey)
+    ] ?? null;
+
+  switch (stagedDraft?.status) {
+    case "approved":
+      return 0;
+    case "rejected":
+      return 2;
+    default:
+      return 1;
+  }
+}
+
 function getSortValue(
   item: CampaignAdminUserInteractionListItem,
   sortBy: CampaignAdminUserInteractionsSortKey,
+  stagedDraftsByKey?: Readonly<Record<string, CampaignAdminStagedReviewDraft>>,
 ): string | number | null {
   switch (sortBy) {
     case "reviewStatus":
@@ -65,6 +88,10 @@ function getSortValue(
       return getCampaignAdminThreadPhaseLabel(item.threadPhase);
     case "interactionType":
       return getCampaignAdminInteractionTypeLabel(item.interactionId);
+    case "value":
+      return getCampaignAdminPrimaryValue(item);
+    case "reviewState":
+      return getReviewStateSortValue(item, stagedDraftsByKey);
     case "reviewedByUserId":
       return item.reviewedByUserId;
     default:
@@ -77,9 +104,10 @@ function compareItems(
   right: CampaignAdminUserInteractionListItem,
   sortBy: CampaignAdminUserInteractionsSortKey,
   sortOrder: CampaignAdminSortOrder,
+  stagedDraftsByKey?: Readonly<Record<string, CampaignAdminStagedReviewDraft>>,
 ): number {
-  const leftValue = getSortValue(left, sortBy);
-  const rightValue = getSortValue(right, sortBy);
+  const leftValue = getSortValue(left, sortBy, stagedDraftsByKey);
+  const rightValue = getSortValue(right, sortBy, stagedDraftsByKey);
 
   const valueComparison =
     typeof leftValue === "number" || typeof rightValue === "number"
@@ -112,14 +140,17 @@ export function sortCampaignAdminUserInteractionItems(input: {
   readonly items: readonly CampaignAdminUserInteractionListItem[];
   readonly sortBy?: CampaignAdminUserInteractionsSortKey;
   readonly sortOrder?: CampaignAdminSortOrder;
+  readonly stagedDraftsByKey?: Readonly<
+    Record<string, CampaignAdminStagedReviewDraft>
+  >;
 }): readonly CampaignAdminUserInteractionListItem[] {
-  const { items, sortBy, sortOrder } = input;
+  const { items, sortBy, sortOrder, stagedDraftsByKey } = input;
 
   if (sortBy === undefined || sortOrder === undefined) {
     return input.items;
   }
 
   return [...items].sort((left, right) =>
-    compareItems(left, right, sortBy, sortOrder),
+    compareItems(left, right, sortBy, sortOrder, stagedDraftsByKey),
   );
 }

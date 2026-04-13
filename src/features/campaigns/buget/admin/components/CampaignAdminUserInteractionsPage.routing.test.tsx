@@ -302,6 +302,71 @@ describe('CampaignAdminUserInteractionsPage routing', () => {
     expect(screen.getByText('Staged decision')).toBeInTheDocument()
   })
 
+  it('clears stale local sorting when route search switches to a server sort', async () => {
+    useCampaignAdminQueueQueryMock.mockReturnValue({
+      data: {
+        items: [
+          createItem({
+            recordKey: 'record-zeta',
+            institutionEmail: 'zeta@primarie.ro',
+            updatedAt: '2026-04-11T10:00:00.000Z',
+          }),
+          createItem({
+            userId: 'user-2',
+            recordKey: 'record-alpha',
+            institutionEmail: 'alpha@primarie.ro',
+            updatedAt: '2026-04-10T10:00:00.000Z',
+          }),
+        ],
+        page: {
+          limit: 50,
+          hasMore: false,
+          nextCursor: null,
+        },
+      },
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    })
+
+    const { container, rerender } = render(
+      <CampaignAdminUserInteractionsPage
+        campaignKey="funky"
+        search={{ limit: 50 }}
+        onSearchChange={vi.fn()}
+      />
+    )
+
+    const getDesktopRowOrder = () =>
+      Array.from(container.querySelectorAll('tbody tr')).map((row) =>
+        row.textContent?.includes('alpha@primarie.ro')
+          ? 'alpha'
+          : row.textContent?.includes('zeta@primarie.ro')
+            ? 'zeta'
+            : 'unknown'
+      )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Value sort' }))
+    expect(getDesktopRowOrder()).toEqual(['alpha', 'zeta'])
+
+    rerender(
+      <CampaignAdminUserInteractionsPage
+        campaignKey="funky"
+        search={{
+          limit: 50,
+          sortBy: 'updatedAt',
+          sortOrder: 'desc',
+        }}
+        onSearchChange={vi.fn()}
+      />
+    )
+
+    await waitFor(() => {
+      expect(getDesktopRowOrder()).toEqual(['zeta', 'alpha'])
+    })
+  })
+
   it('shows a summary error instead of rendering zero stats when metadata fails', () => {
     const refetch = vi.fn()
 
