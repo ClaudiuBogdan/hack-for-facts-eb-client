@@ -633,6 +633,104 @@ describe('CampaignAdminUserInteractionsPage', () => {
     expect(getDesktopRowOrder()).toEqual(['alpha', 'zeta'])
   })
 
+  it('selects a visible range when shift-clicking a row checkbox', () => {
+    mockQueueState({
+      items: [
+        createItem({
+          recordKey: 'record-1',
+        }),
+        createItem({
+          userId: 'user-2',
+          recordKey: 'record-2',
+        }),
+        createItem({
+          userId: 'user-3',
+          recordKey: 'record-3',
+        }),
+      ],
+    })
+
+    renderStatefulPage()
+
+    const rowCheckboxes = screen.getAllByLabelText('Select row')
+
+    fireEvent.click(rowCheckboxes[0]!)
+    fireEvent.click(rowCheckboxes[2]!, { shiftKey: true })
+
+    expect(screen.getByText('3 rows selected')).toBeInTheDocument()
+  })
+
+  it('supports keyboard range selection with Space and Shift+Space', () => {
+    mockQueueState({
+      items: [
+        createItem({
+          recordKey: 'record-1',
+        }),
+        createItem({
+          userId: 'user-2',
+          recordKey: 'record-2',
+        }),
+        createItem({
+          userId: 'user-3',
+          recordKey: 'record-3',
+        }),
+      ],
+    })
+
+    renderStatefulPage()
+
+    const rowCheckboxes = screen.getAllByLabelText('Select row')
+
+    rowCheckboxes[0]!.focus()
+    fireEvent.keyDown(rowCheckboxes[0]!, { key: ' ', code: 'Space' })
+    fireEvent.keyUp(rowCheckboxes[0]!, { key: ' ', code: 'Space' })
+
+    rowCheckboxes[2]!.focus()
+    fireEvent.keyDown(rowCheckboxes[2]!, {
+      key: ' ',
+      code: 'Space',
+      shiftKey: true,
+    })
+    fireEvent.keyUp(rowCheckboxes[2]!, {
+      key: ' ',
+      code: 'Space',
+      shiftKey: true,
+    })
+
+    expect(screen.getByText('3 rows selected')).toBeInTheDocument()
+  })
+
+  it('skips non-pending rows inside a shift-click selection range', () => {
+    mockQueueState({
+      items: [
+        createItem({
+          recordKey: 'record-1',
+        }),
+        createItem({
+          userId: 'user-2',
+          recordKey: 'record-2',
+          reviewStatus: 'approved',
+          reviewable: false,
+        }),
+        createItem({
+          userId: 'user-3',
+          recordKey: 'record-3',
+        }),
+      ],
+    })
+
+    renderStatefulPage()
+
+    const rowCheckboxes = screen.getAllByLabelText('Select row')
+
+    expect(rowCheckboxes[1]).toBeDisabled()
+
+    fireEvent.click(rowCheckboxes[0]!)
+    fireEvent.click(rowCheckboxes[2]!, { shiftKey: true })
+
+    expect(screen.getByText('2 rows selected')).toBeInTheDocument()
+  })
+
   it('requires explicit confirmation before risky approval', async () => {
     mockQueueState({
       items: [

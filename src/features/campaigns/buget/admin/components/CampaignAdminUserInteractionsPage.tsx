@@ -70,6 +70,10 @@ import {
   useSubmitCampaignAdminReviewsMutation,
 } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-user-interactions";
 import {
+  useCampaignAdminInteractionSelection,
+  type CampaignAdminToggleUserInteractionSelectionInput,
+} from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-interaction-selection";
+import {
   EMPTY_CAMPAIGN_ADMIN_META_STATS,
   type CampaignAdminCampaignKey,
   type CampaignAdminQueueSearch,
@@ -192,7 +196,6 @@ export function CampaignAdminUserInteractionsPage({
   const [paginationStateSignature, setPaginationStateSignature] = useState(
     paginationStateSignatureFromSearch,
   );
-  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
   const [localSort, setLocalSort] = useState<{
     readonly sortBy: CampaignAdminUserInteractionsSortKey;
     readonly sortOrder: CampaignAdminSortOrder;
@@ -210,6 +213,13 @@ export function CampaignAdminUserInteractionsPage({
   const [isSendConfirmOpen, setIsSendConfirmOpen] = useState(false);
   const [isClearStagedConfirmOpen, setIsClearStagedConfirmOpen] =
     useState(false);
+  const {
+    selectedKeys,
+    clearSelection,
+    replaceSelection,
+    toggleSelection,
+    removeSelectionKey,
+  } = useCampaignAdminInteractionSelection();
   const [stagedReviewDraftsByKey, setStagedReviewDraftsByKey] = useState<
     Record<string, CampaignAdminStagedReviewDraft>
   >(() => readCampaignAdminStagedReviewDraftsFromSessionStorage(campaignKey));
@@ -405,12 +415,16 @@ export function CampaignAdminUserInteractionsPage({
     }
 
     setPreviousCursors([]);
-    setSelectedKeys(new Set());
+    clearSelection();
     setIsSendValidationOpen(false);
     setIsSendConfirmOpen(false);
     setIsClearStagedConfirmOpen(false);
     setPaginationStateSignature(paginationStateSignatureFromSearch);
-  }, [paginationStateSignature, paginationStateSignatureFromSearch]);
+  }, [
+    clearSelection,
+    paginationStateSignature,
+    paginationStateSignatureFromSearch,
+  ]);
 
   const handleSearchStateChange = (
     nextSearch: CampaignAdminQueueSearch,
@@ -449,7 +463,7 @@ export function CampaignAdminUserInteractionsPage({
   const resetLocalPagingState = (nextSearch: CampaignAdminQueueSearch) => {
     setPreviousCursors([]);
     setPaginationStateSignature(createPaginationStateSignature(nextSearch));
-    setSelectedKeys(new Set());
+    clearSelection();
     setIsSendValidationOpen(false);
     setIsSendConfirmOpen(false);
     setIsClearStagedConfirmOpen(false);
@@ -506,7 +520,7 @@ export function CampaignAdminUserInteractionsPage({
       normalizedSearch.cursor ?? null,
     ]);
     setPaginationStateSignature(createPaginationStateSignature(nextQueueSearch));
-    setSelectedKeys(new Set());
+    clearSelection();
     setIsSendValidationOpen(false);
     setIsSendConfirmOpen(false);
     setIsClearStagedConfirmOpen(false);
@@ -526,7 +540,7 @@ export function CampaignAdminUserInteractionsPage({
         reviewSelectionKey: undefined,
       });
       setPaginationStateSignature(createPaginationStateSignature(nextQueueSearch));
-      setSelectedKeys(new Set());
+      clearSelection();
       setIsSendValidationOpen(false);
       setIsSendConfirmOpen(false);
       setIsClearStagedConfirmOpen(false);
@@ -546,7 +560,7 @@ export function CampaignAdminUserInteractionsPage({
 
     setPreviousCursors(nextPreviousCursors);
     setPaginationStateSignature(createPaginationStateSignature(nextQueueSearch));
-    setSelectedKeys(new Set());
+    clearSelection();
     setIsSendValidationOpen(false);
     setIsSendConfirmOpen(false);
     setIsClearStagedConfirmOpen(false);
@@ -554,42 +568,21 @@ export function CampaignAdminUserInteractionsPage({
   };
 
   const handleToggleSelection = (
-    item: CampaignAdminUserInteractionListItem,
-    checked: boolean,
+    input: CampaignAdminToggleUserInteractionSelectionInput,
   ) => {
-    if (!isCampaignAdminPendingReview(item)) {
-      return;
-    }
-
-    const selectionKey = buildCampaignAdminSelectionKey(
-      item.userId,
-      item.recordKey,
-    );
-    setSelectedKeys((currentKeys) => {
-      const nextKeys = new Set(currentKeys);
-      if (checked) {
-        nextKeys.add(selectionKey);
-      } else {
-        nextKeys.delete(selectionKey);
-      }
-      return nextKeys;
-    });
+    toggleSelection(input);
   };
 
   const handleToggleSelectAll = (checked: boolean) => {
     if (!checked) {
-      setSelectedKeys(new Set());
+      clearSelection();
       return;
     }
 
-    setSelectedKeys(
-      new Set(
-        items
-          .filter(isCampaignAdminPendingReview)
-          .map((item) =>
-            buildCampaignAdminSelectionKey(item.userId, item.recordKey),
-          ),
-      ),
+    replaceSelection(
+      items
+        .filter(isCampaignAdminPendingReview)
+        .map((item) => buildCampaignAdminSelectionKey(item.userId, item.recordKey)),
     );
   };
 
@@ -600,7 +593,7 @@ export function CampaignAdminUserInteractionsPage({
         toast.error(
           t`The queue changed before this review was saved. The current page was refreshed.`,
         );
-        setSelectedKeys(new Set());
+        clearSelection();
         setIsSendValidationOpen(false);
         setIsSendConfirmOpen(false);
         setIsClearStagedConfirmOpen(false);
@@ -746,15 +739,7 @@ export function CampaignAdminUserInteractionsPage({
       });
 
       clearStagedReviewDraft(selectionKey);
-      setSelectedKeys((currentKeys) => {
-        if (!currentKeys.has(selectionKey)) {
-          return currentKeys;
-        }
-
-        const nextKeys = new Set(currentKeys);
-        nextKeys.delete(selectionKey);
-        return nextKeys;
-      });
+      removeSelectionKey(selectionKey);
       closeReviewSidebar({ replace: true });
       toast.success(
         input.draft.status === "approved"
@@ -829,7 +814,7 @@ export function CampaignAdminUserInteractionsPage({
             type="button"
             size="sm"
             variant="outline"
-            onClick={() => setSelectedKeys(new Set())}
+            onClick={clearSelection}
             className="rounded-full"
           >
             {t`Clear selection`}
@@ -904,7 +889,7 @@ export function CampaignAdminUserInteractionsPage({
         });
         return nextDraftsByKey;
       });
-      setSelectedKeys(new Set());
+      clearSelection();
       setIsSendValidationOpen(false);
       setIsSendConfirmOpen(false);
       if (

@@ -59,6 +59,10 @@ import {
   useCampaignAdminUserPageItemsQuery,
   useSubmitCampaignAdminReviewsMutation,
 } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-user-interactions";
+import {
+  useCampaignAdminInteractionSelection,
+  type CampaignAdminToggleUserInteractionSelectionInput,
+} from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-interaction-selection";
 import { normalizeCampaignAdminUserPageSearch } from "@/features/campaigns/buget/admin/schemas/search-schema";
 import type {
   CampaignAdminCampaignKey,
@@ -145,12 +149,20 @@ export function CampaignAdminUserPage({
 }: CampaignAdminUserPageProps) {
   const normalizedSearch = normalizeCampaignAdminUserPageSearch(search);
   const { isLoaded, isSignedIn } = useAuth();
-  const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
   const [isSendValidationOpen, setIsSendValidationOpen] = useState(false);
   const [isSendConfirmOpen, setIsSendConfirmOpen] = useState(false);
   const [isClearStagedConfirmOpen, setIsClearStagedConfirmOpen] =
     useState(false);
+  const {
+    selectedKeys,
+    clearSelection,
+    updateSelection,
+    toggleSelection,
+    selectItem,
+    removeSelectionKey,
+    pruneSelection,
+  } = useCampaignAdminInteractionSelection();
   const [stagedReviewDraftsByKey, setStagedReviewDraftsByKey] = useState<
     Record<string, CampaignAdminStagedReviewDraft>
   >(() =>
@@ -331,16 +343,7 @@ export function CampaignAdminUserPage({
     }
 
     const liveSelectionKeys = new Set(itemsBySelectionKey.keys());
-
-    setSelectedKeys((currentKeys) => {
-      const nextKeys = new Set(
-        Array.from(currentKeys).filter((selectionKey) =>
-          liveSelectionKeys.has(selectionKey),
-        ),
-      );
-
-      return nextKeys.size === currentKeys.size ? currentKeys : nextKeys;
-    });
+    pruneSelection(liveSelectionKeys);
 
     setStagedReviewDraftsByKey((currentDraftsByKey) => {
       const nextEntries = Object.entries(currentDraftsByKey).filter(
@@ -353,7 +356,7 @@ export function CampaignAdminUserPage({
 
       return Object.fromEntries(nextEntries);
     });
-  }, [interactionsQuery.data, itemsBySelectionKey]);
+  }, [interactionsQuery.data, itemsBySelectionKey, pruneSelection]);
 
   const handleSearchStateChange = (
     nextSearch: CampaignAdminUserPageSearch,
@@ -405,38 +408,13 @@ export function CampaignAdminUserPage({
   };
 
   const handleToggleSelection = (
-    item: CampaignAdminUserInteractionListItem,
-    checked: boolean,
+    input: CampaignAdminToggleUserInteractionSelectionInput,
   ) => {
-    if (!isCampaignAdminPendingReview(item)) {
-      return;
-    }
-
-    const selectionKey = buildCampaignAdminSelectionKey(item.userId, item.recordKey);
-    setSelectedKeys((currentKeys) => {
-      const nextKeys = new Set(currentKeys);
-      if (checked) {
-        nextKeys.add(selectionKey);
-      } else {
-        nextKeys.delete(selectionKey);
-      }
-      return nextKeys;
-    });
+    toggleSelection(input);
   };
 
   const handleAddToSelection = (item: CampaignAdminUserInteractionListItem) => {
-    if (!isCampaignAdminPendingReview(item)) {
-      return;
-    }
-
-    const selectionKey = buildCampaignAdminSelectionKey(item.userId, item.recordKey);
-    setSelectedKeys((currentKeys) => {
-      if (currentKeys.has(selectionKey)) {
-        return currentKeys;
-      }
-
-      return new Set([...currentKeys, selectionKey]);
-    });
+    selectItem(item);
   };
 
   const handleToggleSelectAll = (checked: boolean) => {
@@ -444,7 +422,7 @@ export function CampaignAdminUserPage({
       .filter(isCampaignAdminPendingReview)
       .map((item) => buildCampaignAdminSelectionKey(item.userId, item.recordKey));
 
-    setSelectedKeys((currentKeys) => {
+    updateSelection((currentKeys) => {
       const nextKeys = new Set(currentKeys);
       visiblePendingSelectionKeys.forEach((selectionKey) => {
         if (checked) {
@@ -594,15 +572,7 @@ export function CampaignAdminUserPage({
       });
 
       clearStagedReviewDraft(selectionKey);
-      setSelectedKeys((currentKeys) => {
-        if (!currentKeys.has(selectionKey)) {
-          return currentKeys;
-        }
-
-        const nextKeys = new Set(currentKeys);
-        nextKeys.delete(selectionKey);
-        return nextKeys;
-      });
+      removeSelectionKey(selectionKey);
       closeReviewSidebar({ replace: true });
       toast.success(
         input.draft.status === "approved"
@@ -671,7 +641,7 @@ export function CampaignAdminUserPage({
         });
         return nextDraftsByKey;
       });
-      setSelectedKeys(new Set());
+      clearSelection();
       setIsSendValidationOpen(false);
       setIsSendConfirmOpen(false);
       if (
@@ -1152,7 +1122,7 @@ export function CampaignAdminUserPage({
                       variant="outline"
                       size="sm"
                       className="rounded-full"
-                      onClick={() => setSelectedKeys(new Set())}
+                      onClick={clearSelection}
                     >
                       {t`Clear selection`}
                     </Button>

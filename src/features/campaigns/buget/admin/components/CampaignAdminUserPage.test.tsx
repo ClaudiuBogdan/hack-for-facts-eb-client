@@ -203,6 +203,36 @@ describe("CampaignAdminUserPage", () => {
     expect(screen.getByText("1 row selected")).toBeInTheDocument();
   });
 
+  it("selects a visible range when shift-clicking interaction checkboxes", () => {
+    useCampaignAdminUserPageItemsQueryMock.mockReturnValue({
+      data: [
+        createItem({ recordKey: "record-1" }),
+        createItem({ userId: "user-2", recordKey: "record-2" }),
+        createItem({ userId: "user-3", recordKey: "record-3" }),
+      ],
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+
+    render(
+      <CampaignAdminUserPage
+        campaignKey="funky"
+        userId="user-1"
+        search={defaultSearch}
+        onSearchChange={() => {}}
+      />,
+    );
+
+    const rowCheckboxes = screen.getAllByLabelText("Select row");
+
+    fireEvent.click(rowCheckboxes[0]!);
+    fireEvent.click(rowCheckboxes[2]!, { shiftKey: true });
+
+    expect(screen.getByText("3 rows selected")).toBeInTheDocument();
+  });
+
   it("renders the restored user workspace header and notification actions", () => {
     render(
       <CampaignAdminUserPage

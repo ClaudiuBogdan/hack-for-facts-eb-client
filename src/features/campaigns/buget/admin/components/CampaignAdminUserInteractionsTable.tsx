@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowUpDown,
@@ -41,6 +41,7 @@ import {
   getCampaignAdminUserInteractionsSortLabel,
   isCampaignAdminUserInteractionsLocalSortKey,
 } from "@/features/campaigns/buget/admin/constants";
+import type { CampaignAdminToggleUserInteractionSelectionInput } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-interaction-selection";
 import { formatCampaignAdminUserIdPreview } from "@/features/campaigns/buget/admin/utils/format-user-id-preview";
 import { getCampaignAdminPrimaryValue } from "@/features/campaigns/buget/admin/utils/payload-summary";
 import { resolveSafeCampaignAdminHref } from "@/features/campaigns/buget/admin/utils/resolve-safe-campaign-admin-href";
@@ -83,8 +84,7 @@ type CampaignAdminUserInteractionsTableProps = {
   ) => void;
   readonly onToggleSelectAll: (checked: boolean) => void;
   readonly onToggleSelection: (
-    item: CampaignAdminUserInteractionListItem,
-    checked: boolean,
+    input: CampaignAdminToggleUserInteractionSelectionInput,
   ) => void;
   readonly onOpenItem: (item: CampaignAdminUserInteractionListItem) => void;
 };
@@ -411,6 +411,10 @@ function MobileInfoRow({
   );
 }
 
+function isCheckboxToggleKey(eventKey: string): boolean {
+  return eventKey === " " || eventKey === "Spacebar";
+}
+
 export function CampaignAdminUserInteractionsTable({
   campaignKey,
   items,
@@ -430,6 +434,9 @@ export function CampaignAdminUserInteractionsTable({
   onToggleSelection,
   onOpenItem,
 }: CampaignAdminUserInteractionsTableProps) {
+  const pendingSelectionShiftKeyRef = useRef(false);
+  const suppressNextSelectionCheckedChangeRef = useRef(false);
+  const selectedKeysRef = useRef(selectedKeys);
   const displayedItems = useMemo(
     () =>
       sortBy !== undefined &&
@@ -444,6 +451,10 @@ export function CampaignAdminUserInteractionsTable({
         : items,
     [items, sortBy, sortOrder, stagedDraftsByKey],
   );
+
+  useEffect(() => {
+    selectedKeysRef.current = selectedKeys;
+  }, [selectedKeys]);
   const { columnVisibility, setColumnVisibility } = useTablePreferences(
     tablePreferencesKey ?? `campaign-admin-user-interactions:${campaignKey}`,
     {
@@ -504,6 +515,55 @@ export function CampaignAdminUserInteractionsTable({
     stagedDraftsByKey[
       buildCampaignAdminSelectionKey(item.userId, item.recordKey)
     ] ?? null;
+
+  const buildSelectionToggleInput = (
+    item: CampaignAdminUserInteractionListItem,
+    checked: boolean,
+  ): CampaignAdminToggleUserInteractionSelectionInput => ({
+    item,
+    checked,
+    shiftKey: pendingSelectionShiftKeyRef.current,
+    visibleItems: displayedItems,
+  });
+
+  const captureSelectionShiftKey = (shiftKey: boolean) => {
+    pendingSelectionShiftKeyRef.current = shiftKey;
+  };
+
+  const handleSelectionCheckedChange = (
+    item: CampaignAdminUserInteractionListItem,
+    checked: boolean | "indeterminate",
+  ) => {
+    if (suppressNextSelectionCheckedChangeRef.current) {
+      suppressNextSelectionCheckedChangeRef.current = false;
+      pendingSelectionShiftKeyRef.current = false;
+      return;
+    }
+
+    if (checked === "indeterminate") {
+      return;
+    }
+
+    onToggleSelection(buildSelectionToggleInput(item, checked));
+    pendingSelectionShiftKeyRef.current = false;
+  };
+
+  const handleKeyboardSelectionToggle = (
+    item: CampaignAdminUserInteractionListItem,
+    shiftKey: boolean,
+  ) => {
+    suppressNextSelectionCheckedChangeRef.current = true;
+    pendingSelectionShiftKeyRef.current = shiftKey;
+    onToggleSelection({
+      item,
+      checked: !selectedKeysRef.current.has(
+        buildCampaignAdminSelectionKey(item.userId, item.recordKey),
+      ),
+      shiftKey,
+      visibleItems: displayedItems,
+    });
+    pendingSelectionShiftKeyRef.current = false;
+  };
 
   if (displayedItems.length === 0) {
     return (
@@ -787,8 +847,22 @@ export function CampaignAdminUserInteractionsTable({
                   <TableCell className="sticky left-0 z-10 bg-card pl-4 group-hover:bg-muted/30">
                     <Checkbox
                       checked={selectedKeys.has(selectionKey)}
+                      onPointerDown={(event) =>
+                        captureSelectionShiftKey(event.shiftKey)
+                      }
+                      onClick={(event) =>
+                        captureSelectionShiftKey(event.shiftKey)
+                      }
+                      onKeyDown={(event) => {
+                        if (!isCheckboxToggleKey(event.key)) {
+                          return;
+                        }
+
+                        event.preventDefault();
+                        handleKeyboardSelectionToggle(item, event.shiftKey);
+                      }}
                       onCheckedChange={(checked) =>
-                        onToggleSelection(item, Boolean(checked))
+                        handleSelectionCheckedChange(item, checked)
                       }
                       aria-label={t`Select row`}
                       disabled={!selectable || isLoading}
@@ -936,8 +1010,22 @@ export function CampaignAdminUserInteractionsTable({
                 </div>
                 <Checkbox
                   checked={selectedKeys.has(selectionKey)}
+                  onPointerDown={(event) =>
+                    captureSelectionShiftKey(event.shiftKey)
+                  }
+                  onClick={(event) =>
+                    captureSelectionShiftKey(event.shiftKey)
+                  }
+                  onKeyDown={(event) => {
+                    if (!isCheckboxToggleKey(event.key)) {
+                      return;
+                    }
+
+                    event.preventDefault();
+                    handleKeyboardSelectionToggle(item, event.shiftKey);
+                  }}
                   onCheckedChange={(checked) =>
-                    onToggleSelection(item, Boolean(checked))
+                    handleSelectionCheckedChange(item, checked)
                   }
                   aria-label={t`Select row`}
                   disabled={!selectable || isLoading}
