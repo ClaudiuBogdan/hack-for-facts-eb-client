@@ -84,12 +84,19 @@ import {
 import { formatCampaignAdminUserIdPreview } from "@/features/campaigns/buget/admin/utils/format-user-id-preview";
 import {
   buildCampaignAdminSubmitReviewItem,
+  buildCampaignAdminSubmitReviewBatches,
+  countCampaignAdminNotifyingDrafts,
   createCampaignAdminStageReviewDraft,
   getCampaignAdminSelectedSendValidationIssues,
   getCampaignAdminSendValidationMessage,
   isCampaignAdminEditablePasteTarget,
   isCampaignAdminPendingReview,
+  toggleCampaignAdminStageReviewDraftNotification,
 } from "@/features/campaigns/buget/admin/utils/review-workspace";
+import {
+  buildCampaignAdminNotificationsTriggerHref,
+  wasCampaignAdminReviewSavedDespiteError,
+} from "@/features/campaigns/buget/admin/utils/review-notification-helpers";
 import {
   readCampaignAdminStagedReviewDraftsFromSessionStorage,
   writeCampaignAdminStagedReviewDraftsToSessionStorage,
@@ -258,6 +265,22 @@ export function CampaignAdminUserPage({
         buildSelectionKey: buildCampaignAdminSelectionKey,
       }),
     [selectedItems, stagedReviewDraftsByKey],
+  );
+  const selectedStagedDrafts = useMemo(
+    () =>
+      selectedItems.flatMap((item) => {
+        const stagedDraft =
+          stagedReviewDraftsByKey[
+            buildCampaignAdminSelectionKey(item.userId, item.recordKey)
+          ];
+
+        return stagedDraft ? [stagedDraft] : [];
+      }),
+    [selectedItems, stagedReviewDraftsByKey],
+  );
+  const selectedStagedDraftCount = selectedStagedDrafts.length;
+  const selectedNotifyingDraftCount = countCampaignAdminNotifyingDrafts(
+    selectedStagedDrafts,
   );
 
   const summary = useMemo(() => {
@@ -485,7 +508,8 @@ export function CampaignAdminUserPage({
         currentDraft?.status === nextDraft.status &&
         currentDraft.feedbackText === nextDraft.feedbackText &&
         currentDraft.approvalRiskAcknowledged ===
-          nextDraft.approvalRiskAcknowledged
+          nextDraft.approvalRiskAcknowledged &&
+        currentDraft.sendNotification === nextDraft.sendNotification
       ) {
         return currentDraftsByKey;
       }
@@ -547,6 +571,35 @@ export function CampaignAdminUserPage({
     });
   };
 
+  const stageReviewSendNotification = (
+    item: CampaignAdminUserInteractionListItem,
+    sendNotification: boolean,
+  ) => {
+    const selectionKey = buildCampaignAdminSelectionKey(item.userId, item.recordKey);
+
+    setStagedReviewDraftsByKey((currentDraftsByKey) => {
+      const nextDraft = toggleCampaignAdminStageReviewDraftNotification({
+        item,
+        currentDraft: currentDraftsByKey[selectionKey],
+        sendNotification,
+      });
+
+      if (nextDraft === null) {
+        return currentDraftsByKey;
+      }
+
+      const currentDraft = currentDraftsByKey[selectionKey];
+      if (currentDraft?.sendNotification === nextDraft.sendNotification) {
+        return currentDraftsByKey;
+      }
+
+      return {
+        ...currentDraftsByKey,
+        [selectionKey]: nextDraft,
+      };
+    });
+  };
+
   const submitStagedReview = async (input: {
     item: CampaignAdminUserInteractionListItem;
     draft: CampaignAdminStagedReviewDraft;
@@ -561,25 +614,35 @@ export function CampaignAdminUserPage({
       return;
     }
 
-    try {
-      const selectionKey = buildCampaignAdminSelectionKey(
-        input.item.userId,
-        input.item.recordKey,
-      );
+    const selectionKey = buildCampaignAdminSelectionKey(
+      input.item.userId,
+      input.item.recordKey,
+    );
 
+    try {
       await submitReviewsMutation.mutateAsync({
         items: [buildCampaignAdminSubmitReviewItem(input)],
+        send_notification: input.draft.sendNotification === true,
       });
 
       clearStagedReviewDraft(selectionKey);
       removeSelectionKey(selectionKey);
       closeReviewSidebar({ replace: true });
       toast.success(
-        input.draft.status === "approved"
-          ? t`Review approved.`
-          : t`Review rejected.`,
+        input.draft.sendNotification === true
+          ? input.draft.status === "approved"
+            ? t`Review approved and notification requested.`
+            : t`Review rejected and notification requested.`
+          : input.draft.status === "approved"
+            ? t`Review approved.`
+            : t`Review rejected.`,
       );
     } catch (error) {
+      if (wasCampaignAdminReviewSavedDespiteError(error)) {
+        clearStagedReviewDraft(selectionKey);
+        removeSelectionKey(selectionKey);
+        closeReviewSidebar({ replace: true });
+      }
       handleMutationError(error);
     }
   };
@@ -607,32 +670,45 @@ export function CampaignAdminUserPage({
       return;
     }
 
+    const submittedSelectionKeys = new Set<string>();
+    let submittedBatchCount = 0;
+
     try {
-      const submittedSelectionKeys = new Set<string>();
-      const submitItems = selectedItems.flatMap((item) => {
-        const selectionKey = buildCampaignAdminSelectionKey(
-          item.userId,
-          item.recordKey,
-        );
-        const stagedDraft = stagedReviewDraftsByKey[selectionKey];
-
-        if (stagedDraft === undefined) {
-          return [];
-        }
-
-        submittedSelectionKeys.add(selectionKey);
-        return [buildCampaignAdminSubmitReviewItem({ item, draft: stagedDraft })];
+      const batches = buildCampaignAdminSubmitReviewBatches({
+        items: selectedItems,
+        stagedReviewDraftsByKey,
+        buildSelectionKey: buildCampaignAdminSelectionKey,
       });
 
-      if (submitItems.length !== selectedItems.length) {
+      const submitItemCount = batches.reduce(
+        (count, batch) => count + batch.body.items.length,
+        0,
+      );
+
+      if (submitItemCount !== selectedItems.length) {
         setIsSendConfirmOpen(false);
         setIsSendValidationOpen(true);
         return;
       }
 
-      await submitReviewsMutation.mutateAsync({
-        items: submitItems,
-      });
+      for (const batch of batches) {
+        try {
+          await submitReviewsMutation.mutateAsync(batch.body);
+          batch.selectionKeys.forEach((selectionKey) => {
+            submittedSelectionKeys.add(selectionKey);
+          });
+          submittedBatchCount += batch.body.items.length;
+        } catch (error) {
+          if (wasCampaignAdminReviewSavedDespiteError(error)) {
+            batch.selectionKeys.forEach((selectionKey) => {
+              submittedSelectionKeys.add(selectionKey);
+            });
+            submittedBatchCount += batch.body.items.length;
+          }
+
+          throw error;
+        }
+      }
 
       setStagedReviewDraftsByKey((currentDraftsByKey) => {
         const nextDraftsByKey = { ...currentDraftsByKey };
@@ -651,11 +727,40 @@ export function CampaignAdminUserPage({
         closeReviewSidebar({ replace: true });
       }
       toast.success(
-        selectedItems.length === 1
-          ? t`Sent 1 review.`
-          : t`Sent ${selectedItems.length} reviews.`,
+        selectedNotifyingDraftCount > 0
+          ? selectedItems.length === 1
+            ? t`Submitted 1 review with notification intent.`
+            : t`Submitted ${submittedBatchCount} reviews with ${selectedNotifyingDraftCount} set to notify.`
+          : selectedItems.length === 1
+            ? t`Submitted 1 review.`
+            : t`Submitted ${submittedBatchCount} reviews.`,
       );
     } catch (error) {
+      setIsSendConfirmOpen(false);
+      if (submittedSelectionKeys.size > 0) {
+        setStagedReviewDraftsByKey((currentDraftsByKey) => {
+          const nextDraftsByKey = { ...currentDraftsByKey };
+          submittedSelectionKeys.forEach((selectionKey) => {
+            delete nextDraftsByKey[selectionKey];
+          });
+          return nextDraftsByKey;
+        });
+        submittedSelectionKeys.forEach((selectionKey) => {
+          removeSelectionKey(selectionKey);
+        });
+        if (
+          activeSelectionKey !== null &&
+          submittedSelectionKeys.has(activeSelectionKey)
+        ) {
+          closeReviewSidebar({ replace: true });
+        }
+        toast.error(
+          submittedBatchCount === 1
+            ? t`Saved 1 review before the remaining batch failed.`
+            : t`Saved ${submittedBatchCount} reviews before the remaining batch failed.`,
+        );
+        return;
+      }
       handleMutationError(error);
     }
   };
@@ -702,9 +807,17 @@ export function CampaignAdminUserPage({
         const nextDraftsByKey = { ...currentDraftsByKey };
 
         result.drafts.forEach((draft) => {
-          nextDraftsByKey[
-            buildCampaignAdminSelectionKey(draft.userId, draft.recordKey)
-          ] = draft;
+          const selectionKey = buildCampaignAdminSelectionKey(
+            draft.userId,
+            draft.recordKey,
+          );
+          const currentDraft = nextDraftsByKey[selectionKey];
+
+          nextDraftsByKey[selectionKey] = {
+            ...draft,
+            sendNotification:
+              draft.sendNotification ?? currentDraft?.sendNotification ?? false,
+          };
         });
 
         return nextDraftsByKey;
@@ -1067,6 +1180,7 @@ export function CampaignAdminUserPage({
               onSortChange={handleSortChange}
               onToggleSelectAll={handleToggleSelectAll}
               onToggleSelection={handleToggleSelection}
+              onToggleSendNotification={stageReviewSendNotification}
               onOpenItem={(item) =>
                 openReviewSidebar(
                   buildCampaignAdminSelectionKey(item.userId, item.recordKey),
@@ -1101,7 +1215,13 @@ export function CampaignAdminUserPage({
                             : t`${selectedSendValidationIssues.length} rows still need review data`}
                         </span>
                       ) : (
-                        <span>{t`Ready to send selected reviews.`}</span>
+                        <span>
+                          {selectedNotifyingDraftCount > 0
+                            ? selectedNotifyingDraftCount === selectedStagedDraftCount
+                              ? t`Ready to submit: all staged rows will notify.`
+                              : t`Ready to submit: ${selectedNotifyingDraftCount} notify, ${selectedStagedDraftCount - selectedNotifyingDraftCount} save only.`
+                            : t`Ready to submit selected reviews without notifications.`}
+                        </span>
                       )}
                     </div>
                   </div>
@@ -1139,7 +1259,7 @@ export function CampaignAdminUserPage({
                         setIsSendValidationOpen(true);
                       }}
                     >
-                      {t`Send selected`}
+                      {t`Submit selected`}
                     </Button>
                   </div>
                 </div>
@@ -1233,6 +1353,14 @@ export function CampaignAdminUserPage({
         item={activeItem}
         stagedDraft={activeStagedDraft}
         isSubmitting={submitReviewsMutation.isPending}
+        notificationAdminHref={
+          activeItem
+            ? buildCampaignAdminNotificationsTriggerHref({
+                campaignKey,
+                item: activeItem,
+              })
+            : null
+        }
         onOpenChange={(open) => {
           if (!open) {
             closeReviewSidebar();
@@ -1241,6 +1369,7 @@ export function CampaignAdminUserPage({
         onDecisionChange={stageReviewDecision}
         onFeedbackTextChange={stageReviewFeedbackText}
         onApprovalRiskAcknowledgedChange={stageReviewApprovalRiskAcknowledged}
+        onSendNotificationChange={stageReviewSendNotification}
         onClearDraft={(item) =>
           clearStagedReviewDraft(
             buildCampaignAdminSelectionKey(item.userId, item.recordKey),
@@ -1265,13 +1394,13 @@ export function CampaignAdminUserPage({
           <AlertDialogHeader>
             <AlertDialogTitle>
               {selectedItems.length === 1
-                ? t`Send 1 review?`
-                : t`Send ${selectedItems.length} reviews?`}
+                ? t`Submit 1 review?`
+                : t`Submit ${selectedItems.length} reviews?`}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {selectedItems.length === 1
-                ? t`This will submit the staged review for the selected row.`
-                : t`This will submit the staged reviews for the selected rows.`}
+                ? t`This will save the staged review for the selected row and apply its notification setting.`
+                : t`This will save the staged reviews for the selected rows and preserve mixed notification settings.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1284,7 +1413,7 @@ export function CampaignAdminUserPage({
               }}
               disabled={submitReviewsMutation.isPending}
             >
-              {submitReviewsMutation.isPending ? t`Sending…` : t`Send selected`}
+              {submitReviewsMutation.isPending ? t`Submitting…` : t`Submit selected`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

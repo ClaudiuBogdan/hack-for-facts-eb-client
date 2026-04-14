@@ -4,6 +4,7 @@ import { getCampaignAdminPrimaryValue } from "@/features/campaigns/buget/admin/u
 import type {
   CampaignAdminReviewDecision,
   CampaignAdminStagedReviewDraft,
+  CampaignAdminSubmitReviewsBody,
   CampaignAdminSubmitReviewItem,
   CampaignAdminUserInteractionListItem,
 } from "@/features/campaigns/buget/admin/types";
@@ -76,14 +77,14 @@ export function getCampaignAdminSendValidationMessage(input: {
   }
 
   if (stagedDraft.status !== "approved" && stagedDraft.status !== "rejected") {
-    return t`Missing staged review decision. Set approved or rejected before sending.`;
+    return t`Missing staged review decision. Set approved or rejected before submitting.`;
   }
 
   if (
     stagedDraft.status === "rejected" &&
     stagedDraft.feedbackText.trim().length === 0
   ) {
-    return t`Rejected rows need a review note before sending.`;
+    return t`Rejected rows need a review note before saving.`;
   }
 
   if (
@@ -91,7 +92,7 @@ export function getCampaignAdminSendValidationMessage(input: {
     requiresApprovalConfirmation(item.riskFlags) &&
     stagedDraft.approvalRiskAcknowledged !== true
   ) {
-    return t`Approved rows with institution-email risk flags need explicit confirmation before sending.`;
+    return t`Approved rows with institution-email risk flags need explicit confirmation before saving.`;
   }
 
   return null;
@@ -144,5 +145,85 @@ export function createCampaignAdminStageReviewDraft(input: {
       input.status === "approved" &&
       input.currentDraft?.status === "approved" &&
       input.currentDraft.approvalRiskAcknowledged === true,
+    sendNotification: input.currentDraft?.sendNotification === true,
   };
+}
+
+export function toggleCampaignAdminStageReviewDraftNotification(input: {
+  readonly item: CampaignAdminUserInteractionListItem;
+  readonly currentDraft: CampaignAdminStagedReviewDraft | undefined;
+  readonly sendNotification: boolean;
+}): CampaignAdminStagedReviewDraft | null {
+  if (input.currentDraft === undefined) {
+    return null;
+  }
+
+  return {
+    ...input.currentDraft,
+    sendNotification: input.sendNotification,
+  };
+}
+
+export function countCampaignAdminNotifyingDrafts(
+  drafts: readonly CampaignAdminStagedReviewDraft[],
+): number {
+  return drafts.filter((draft) => draft.sendNotification === true).length;
+}
+
+export function buildCampaignAdminSubmitReviewBatches(input: {
+  readonly items: readonly CampaignAdminUserInteractionListItem[];
+  readonly stagedReviewDraftsByKey: Readonly<
+    Record<string, CampaignAdminStagedReviewDraft>
+  >;
+  readonly buildSelectionKey: (userId: string, recordKey: string) => string;
+}): ReadonlyArray<{
+  readonly selectionKeys: readonly string[];
+  readonly body: CampaignAdminSubmitReviewsBody;
+}> {
+  const grouped = new Map<
+    boolean,
+    {
+      selectionKeys: string[];
+      items: CampaignAdminSubmitReviewItem[];
+    }
+  >();
+
+  for (const item of input.items) {
+    const selectionKey = input.buildSelectionKey(item.userId, item.recordKey);
+    const stagedDraft = input.stagedReviewDraftsByKey[selectionKey];
+    if (stagedDraft === undefined) {
+      continue;
+    }
+
+    const sendNotification = stagedDraft.sendNotification === true;
+    const group = grouped.get(sendNotification) ?? {
+      selectionKeys: [],
+      items: [],
+    };
+
+    group.selectionKeys.push(selectionKey);
+    group.items.push(
+      buildCampaignAdminSubmitReviewItem({
+        item,
+        draft: stagedDraft,
+      }),
+    );
+    grouped.set(sendNotification, group);
+  }
+
+  return [false, true]
+    .flatMap((sendNotification) => {
+      const group = grouped.get(sendNotification);
+      if (group === undefined || group.items.length === 0) {
+        return [];
+      }
+
+      return [{
+        selectionKeys: group.selectionKeys,
+        body: {
+          items: group.items,
+          send_notification: sendNotification,
+        },
+      }];
+    });
 }

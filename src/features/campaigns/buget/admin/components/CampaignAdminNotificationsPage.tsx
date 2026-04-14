@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useMemo, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useMemo, useState } from "react";
 import {
   AlertTriangle,
   Ban,
@@ -42,6 +42,7 @@ import {
   useCampaignAdminNotificationsAuditQuery,
   useCampaignAdminNotificationTemplatesQuery,
   useCampaignAdminNotificationTriggersQuery,
+  useExecuteCampaignAdminNotificationTriggerBulkMutation,
   useExecuteCampaignAdminNotificationTriggerMutation,
 } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-notifications";
 import {
@@ -54,8 +55,11 @@ import type {
   CampaignAdminCampaignKey,
   CampaignAdminNotificationsSearch,
   CampaignAdminNotificationSortKey,
+  CampaignAdminNotificationTriggerBulkExecutionBody,
+  CampaignAdminNotificationTriggerBulkExecutionResponse,
   CampaignAdminNotificationTriggerExecutionBody,
   CampaignAdminNotificationTriggerExecutionResponse,
+  CampaignAdminNotificationTriggerMode,
   CampaignAdminSortOrder,
 } from "@/features/campaigns/buget/admin/types";
 import { AuthSignInButton, useAuth } from "@/lib/auth";
@@ -68,6 +72,117 @@ type CampaignAdminNotificationsPageProps = {
     options?: { readonly replace?: boolean },
   ) => void;
 };
+
+type CampaignAdminTriggerResultState =
+  | {
+      readonly mode: "single";
+      readonly data: CampaignAdminNotificationTriggerExecutionResponse;
+    }
+  | {
+      readonly mode: "bulk";
+      readonly data: CampaignAdminNotificationTriggerBulkExecutionResponse;
+    };
+
+function getSupportedTriggerMode(
+  supportsSingleExecution: boolean,
+  supportsBulkExecution: boolean,
+  requestedMode: CampaignAdminNotificationTriggerMode | undefined,
+): CampaignAdminNotificationTriggerMode {
+  if (
+    requestedMode === "bulk" &&
+    supportsBulkExecution
+  ) {
+    return "bulk";
+  }
+
+  if (
+    requestedMode === "single" &&
+    supportsSingleExecution
+  ) {
+    return "single";
+  }
+
+  if (supportsSingleExecution) {
+    return "single";
+  }
+
+  return "bulk";
+}
+
+function buildInitialTriggerSingleBody(
+  search: CampaignAdminNotificationsSearch,
+): CampaignAdminNotificationTriggerExecutionBody {
+  const body: Record<string, unknown> = {};
+
+  if (search.triggerUserId) {
+    body.userId = search.triggerUserId;
+  }
+
+  if (search.triggerRecordKey) {
+    body.recordKey = search.triggerRecordKey;
+  }
+
+  return body;
+}
+
+function buildInitialTriggerBulkBody(
+  search: CampaignAdminNotificationsSearch,
+): CampaignAdminNotificationTriggerBulkExecutionBody {
+  const filters: Record<string, unknown> = {};
+
+  if (search.triggerUserId) {
+    filters.userId = search.triggerUserId;
+  }
+
+  if (search.triggerRecordKey) {
+    filters.recordKey = search.triggerRecordKey;
+  }
+
+  if (search.triggerEntityCui) {
+    filters.entityCui = search.triggerEntityCui;
+  }
+
+  if (search.triggerInteractionId) {
+    filters.interactionId = search.triggerInteractionId;
+  }
+
+  if (search.triggerInteractionIds) {
+    filters.interactionIds = search.triggerInteractionIds
+      .split(",")
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0);
+  }
+
+  if (search.triggerReviewStatus) {
+    filters.reviewStatus = search.triggerReviewStatus;
+  }
+
+  if (search.triggerUpdatedAtFrom) {
+    filters.updatedAtFrom = search.triggerUpdatedAtFrom;
+  }
+
+  if (search.triggerUpdatedAtTo) {
+    filters.updatedAtTo = search.triggerUpdatedAtTo;
+  }
+
+  if (search.triggerSubmittedAtFrom) {
+    filters.submittedAtFrom = search.triggerSubmittedAtFrom;
+  }
+
+  if (search.triggerSubmittedAtTo) {
+    filters.submittedAtTo = search.triggerSubmittedAtTo;
+  }
+
+  return {
+    filters,
+    ...(search.triggerDryRun !== undefined
+      ? { dryRun: search.triggerDryRun }
+      : {}),
+    ...(search.triggerLimit !== undefined
+      ? { limit: search.triggerLimit }
+      : {}),
+  };
+}
 
 function InlineStat({
   label,
@@ -167,9 +282,8 @@ export function CampaignAdminNotificationsPage({
   const [paginationStateSignature, setPaginationStateSignature] = useState(
     paginationStateSignatureFromSearch,
   );
-  const [activeTriggerId, setActiveTriggerId] = useState<string | null>(null);
   const [triggerResult, setTriggerResult] =
-    useState<CampaignAdminNotificationTriggerExecutionResponse | null>(null);
+    useState<CampaignAdminTriggerResultState | null>(null);
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
   const { isLoaded, isSignedIn } = useAuth();
 
@@ -193,11 +307,21 @@ export function CampaignAdminNotificationsPage({
   });
   const executeTriggerMutation =
     useExecuteCampaignAdminNotificationTriggerMutation(campaignKey);
+  const executeTriggerBulkMutation =
+    useExecuteCampaignAdminNotificationTriggerBulkMutation(campaignKey);
 
   const activeTrigger =
     triggersQuery.data?.find(
-      (trigger) => trigger.triggerId === activeTriggerId,
+      (trigger) => trigger.triggerId === normalizedSearch.triggerId,
     ) ?? null;
+  const activeTriggerMode =
+    normalizedSearch.triggerId === undefined
+      ? undefined
+      : getSupportedTriggerMode(
+          activeTrigger?.capabilities?.supportsSingleExecution ?? true,
+          activeTrigger?.capabilities?.supportsBulkExecution ?? false,
+          normalizedSearch.triggerMode,
+        );
   const auditItems = auditQuery.data?.items ?? [];
   const currentPageIndex = normalizedSearch.pageIndex ?? 1;
   const canPreviousPage =
@@ -239,6 +363,14 @@ export function CampaignAdminNotificationsPage({
           requiredFields: [],
         }
       : null);
+  const initialTriggerSingleBody = useMemo(
+    () => buildInitialTriggerSingleBody(normalizedSearch),
+    [normalizedSearch],
+  );
+  const initialTriggerBulkBody = useMemo(
+    () => buildInitialTriggerBulkBody(normalizedSearch),
+    [normalizedSearch],
+  );
 
   const headerEyebrow = (
     <Breadcrumb className="py-0">
@@ -269,7 +401,7 @@ export function CampaignAdminNotificationsPage({
 
   useEffect(() => {
     setTriggerResult(null);
-  }, [activeTriggerId]);
+  }, [normalizedSearch.triggerId, normalizedSearch.triggerMode]);
 
   const activeQuery =
     normalizedSearch.tab === "audit"
@@ -278,7 +410,7 @@ export function CampaignAdminNotificationsPage({
         ? triggersQuery
         : templatesQuery;
 
-  const handleSearchStateChange = (
+  const handleSearchStateChange = useCallback((
     nextSearch: CampaignAdminNotificationsSearch,
     options?: { readonly replace?: boolean },
   ) => {
@@ -286,7 +418,7 @@ export function CampaignAdminNotificationsPage({
       normalizeCampaignAdminNotificationsSearch(nextSearch),
       options,
     );
-  };
+  }, [onSearchChange]);
 
   const resetLocalPagingState = (
     nextSearch: CampaignAdminNotificationsSearch,
@@ -332,11 +464,148 @@ export function CampaignAdminNotificationsPage({
     const nextSearch = normalizeCampaignAdminNotificationsSearch({
       ...normalizedSearch,
       tab: nextTab,
+      ...(nextTab === "triggers"
+        ? {}
+        : {
+            triggerId: undefined,
+            triggerMode: undefined,
+            triggerDryRun: undefined,
+            triggerLimit: undefined,
+            triggerUserId: undefined,
+            triggerRecordKey: undefined,
+            triggerEntityCui: undefined,
+            triggerInteractionId: undefined,
+            triggerInteractionIds: undefined,
+            triggerReviewStatus: undefined,
+            triggerUpdatedAtFrom: undefined,
+            triggerUpdatedAtTo: undefined,
+            triggerSubmittedAtFrom: undefined,
+            triggerSubmittedAtTo: undefined,
+          }),
       cursor: undefined,
       pageIndex: undefined,
     });
     resetLocalPagingState(nextSearch);
     handleSearchStateChange(nextSearch, { replace: true });
+  };
+
+  const openTriggerDialog = (
+    triggerId: string,
+    requestedMode?: CampaignAdminNotificationTriggerMode,
+  ) => {
+    const trigger =
+      triggersQuery.data?.find((candidate) => candidate.triggerId === triggerId) ??
+      null;
+    const nextMode = getSupportedTriggerMode(
+      trigger?.capabilities?.supportsSingleExecution ?? true,
+      trigger?.capabilities?.supportsBulkExecution ?? false,
+      requestedMode,
+    );
+
+    handleSearchStateChange(
+      {
+        ...normalizedSearch,
+        tab: "triggers",
+        triggerId,
+        triggerMode: nextMode,
+        triggerDryRun: undefined,
+        triggerLimit: undefined,
+        triggerUserId: undefined,
+        triggerRecordKey: undefined,
+        triggerEntityCui: undefined,
+        triggerInteractionId: undefined,
+        triggerInteractionIds: undefined,
+        triggerReviewStatus: undefined,
+        triggerUpdatedAtFrom: undefined,
+        triggerUpdatedAtTo: undefined,
+        triggerSubmittedAtFrom: undefined,
+        triggerSubmittedAtTo: undefined,
+      },
+      { replace: true },
+    );
+  };
+
+  const closeTriggerDialog = useCallback(() => {
+    handleSearchStateChange(
+      {
+        ...normalizedSearch,
+        triggerId: undefined,
+        triggerMode: undefined,
+        triggerDryRun: undefined,
+        triggerLimit: undefined,
+        triggerUserId: undefined,
+        triggerRecordKey: undefined,
+        triggerEntityCui: undefined,
+        triggerInteractionId: undefined,
+        triggerInteractionIds: undefined,
+        triggerReviewStatus: undefined,
+        triggerUpdatedAtFrom: undefined,
+        triggerUpdatedAtTo: undefined,
+        triggerSubmittedAtFrom: undefined,
+        triggerSubmittedAtTo: undefined,
+      },
+      { replace: true },
+    );
+  }, [
+    handleSearchStateChange,
+    normalizedSearch.cursor,
+    normalizedSearch.entityCui,
+    normalizedSearch.eventType,
+    normalizedSearch.limit,
+    normalizedSearch.notificationType,
+    normalizedSearch.pageIndex,
+    normalizedSearch.sortBy,
+    normalizedSearch.sortOrder,
+    normalizedSearch.source,
+    normalizedSearch.status,
+    normalizedSearch.tab,
+    normalizedSearch.templateId,
+    normalizedSearch.threadId,
+    normalizedSearch.triggerDryRun,
+    normalizedSearch.triggerEntityCui,
+    normalizedSearch.triggerId,
+    normalizedSearch.triggerInteractionId,
+    normalizedSearch.triggerInteractionIds,
+    normalizedSearch.triggerLimit,
+    normalizedSearch.triggerMode,
+    normalizedSearch.triggerRecordKey,
+    normalizedSearch.triggerReviewStatus,
+    normalizedSearch.triggerSubmittedAtFrom,
+    normalizedSearch.triggerSubmittedAtTo,
+    normalizedSearch.triggerUpdatedAtFrom,
+    normalizedSearch.triggerUpdatedAtTo,
+    normalizedSearch.triggerUserId,
+    normalizedSearch.userId,
+  ]);
+
+  useEffect(() => {
+    if (
+      normalizedSearch.triggerId === undefined ||
+      triggersQuery.data === undefined ||
+      activeTrigger !== null
+    ) {
+      return;
+    }
+
+    toast.error(t`This notification trigger is no longer available.`);
+    closeTriggerDialog();
+  }, [
+    activeTrigger,
+    closeTriggerDialog,
+    normalizedSearch.triggerId,
+    triggersQuery.data,
+  ]);
+
+  const handleTriggerModeChange = (
+    mode: CampaignAdminNotificationTriggerMode,
+  ) => {
+    handleSearchStateChange(
+      {
+        ...normalizedSearch,
+        triggerMode: mode,
+      },
+      { replace: true },
+    );
   };
 
   const handleNextPage = () => {
@@ -441,7 +710,10 @@ export function CampaignAdminNotificationsPage({
         triggerId: activeTrigger.triggerId,
         body,
       });
-      setTriggerResult(result);
+      setTriggerResult({
+        mode: "single",
+        data: result,
+      });
       toast.success(
         t`Trigger ${activeTrigger.triggerId} finished with status ${result.result.status}.`,
       );
@@ -450,6 +722,36 @@ export function CampaignAdminNotificationsPage({
         error instanceof Error
           ? error.message
           : t`Campaign notification trigger failed.`;
+      toast.error(message);
+    }
+  };
+
+  const handleTriggerBulkSubmit = async (
+    body: CampaignAdminNotificationTriggerBulkExecutionBody,
+  ) => {
+    if (activeTrigger === null) {
+      return;
+    }
+
+    try {
+      const result = await executeTriggerBulkMutation.mutateAsync({
+        triggerId: activeTrigger.triggerId,
+        body,
+      });
+      setTriggerResult({
+        mode: "bulk",
+        data: result,
+      });
+      toast.success(
+        body.dryRun === true
+          ? t`Bulk dry-run finished for ${activeTrigger.triggerId}.`
+          : t`Bulk trigger finished for ${activeTrigger.triggerId}.`,
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : t`Campaign bulk notification trigger failed.`;
       toast.error(message);
     }
   };
@@ -773,6 +1075,29 @@ export function CampaignAdminNotificationsPage({
                             {trigger.targetKind}
                           </span>
                         </span>
+                        {trigger.familyId ? (
+                          <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+                            {t`Family`}
+                            <span className="ml-1.5 font-mono font-medium text-foreground">
+                              {trigger.familyId}
+                            </span>
+                          </span>
+                        ) : null}
+                        {trigger.capabilities?.supportsSingleExecution ? (
+                          <span className="inline-flex items-center rounded-full border border-border/70 px-2.5 py-1 text-xs text-foreground">
+                            {t`Single`}
+                          </span>
+                        ) : null}
+                        {trigger.capabilities?.supportsBulkExecution ? (
+                          <span className="inline-flex items-center rounded-full border border-border/70 px-2.5 py-1 text-xs text-foreground">
+                            {t`Bulk`}
+                          </span>
+                        ) : null}
+                        {trigger.capabilities?.supportsDryRun ? (
+                          <span className="inline-flex items-center rounded-full border border-border/70 px-2.5 py-1 text-xs text-foreground">
+                            {t`Dry-run`}
+                          </span>
+                        ) : null}
                       </div>
 
                       {trigger.inputFields.length > 0 ? (
@@ -807,15 +1132,30 @@ export function CampaignAdminNotificationsPage({
                     </div>
 
                     <div className="flex items-stretch border-t border-border/60 lg:border-l lg:border-t-0">
-                      <div className="flex w-full items-center justify-center p-5 lg:w-auto lg:min-w-[12rem]">
+                      <div className="flex w-full flex-col gap-2 p-5 lg:w-auto lg:min-w-[12rem]">
                         <Button
                           type="button"
-                          className="w-full lg:w-auto"
+                          className="w-full"
                           onClick={() => {
-                            setActiveTriggerId(trigger.triggerId);
+                            openTriggerDialog(
+                              trigger.triggerId,
+                              trigger.capabilities?.supportsSingleExecution === false
+                                ? "bulk"
+                                : "single",
+                            );
                           }}
                         >
-                          {t`Execute`}
+                          {t`Open trigger`}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => {
+                            setActiveTemplateId(trigger.templateId);
+                          }}
+                        >
+                          {t`Preview template`}
                         </Button>
                       </div>
                     </div>
@@ -941,16 +1281,25 @@ export function CampaignAdminNotificationsPage({
       ) : null}
 
       <CampaignAdminNotificationTriggerDialog
-        open={activeTriggerId !== null}
+        open={normalizedSearch.triggerId !== undefined}
         trigger={activeTrigger}
-        isPending={executeTriggerMutation.isPending}
-        result={triggerResult}
+        mode={activeTriggerMode}
+        initialSingleBody={initialTriggerSingleBody}
+        initialBulkBody={initialTriggerBulkBody}
+        isSinglePending={executeTriggerMutation.isPending}
+        isBulkPending={executeTriggerBulkMutation.isPending}
+        singleResult={
+          triggerResult?.mode === "single" ? triggerResult.data : null
+        }
+        bulkResult={triggerResult?.mode === "bulk" ? triggerResult.data : null}
         onOpenChange={(open) => {
           if (!open) {
-            setActiveTriggerId(null);
+            closeTriggerDialog();
           }
         }}
-        onSubmit={handleTriggerSubmit}
+        onModeChange={handleTriggerModeChange}
+        onSubmitSingle={handleTriggerSubmit}
+        onSubmitBulk={handleTriggerBulkSubmit}
       />
 
       <CampaignAdminTemplatePreviewDialog

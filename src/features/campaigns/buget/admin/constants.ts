@@ -401,6 +401,8 @@ export function getCampaignAdminNotificationProjectionLabel(
       return t`Entity update`;
     case "public_debate_admin_failure":
       return t`Admin failure`;
+    case "admin_reviewed_interaction":
+      return t`Reviewed interaction`;
     default:
       return projectionKind;
   }
@@ -468,6 +470,8 @@ export function getCampaignAdminNotificationTriggerExecutionStatusLabel(
       return t`Skipped`;
     case "partial":
       return t`Partial`;
+    case "delegated":
+      return t`Delegated`;
     default:
       return status;
   }

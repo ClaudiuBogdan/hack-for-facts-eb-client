@@ -54,7 +54,7 @@ const defaultSearch: CampaignAdminQueueSearch = {
   limit: 50,
 }
 const riskyApprovalValidationMessage =
-  'Approved rows with institution-email risk flags need explicit confirmation before sending.'
+  'Approved rows with institution-email risk flags need explicit confirmation before saving.'
 
 function createItem(
   overrides: Partial<CampaignAdminUserInteractionListItem> = {}
@@ -462,14 +462,14 @@ describe('CampaignAdminUserInteractionsPage', () => {
     await screen.findByText('Staged decision')
     fireEvent.click(screen.getByRole('radio', { name: /^Rejected/ }))
 
-    const sendButton = screen.getByRole('button', { name: 'Send review' })
+    const sendButton = screen.getByRole('button', { name: 'Save review' })
     expect(sendButton).toBeDisabled()
 
     fireEvent.change(screen.getByLabelText('Review note'), {
       target: { value: 'Needs correction' },
     })
 
-    expect(screen.getByRole('button', { name: 'Send review' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Save review' })).toBeEnabled()
   })
 
   it('shows copy all rows by default when nothing is selected', () => {
@@ -589,6 +589,7 @@ describe('CampaignAdminUserInteractionsPage', () => {
       'Interaction',
       'Value',
       'Review state',
+      'Notify',
       'Actions',
     ])
   })
@@ -747,12 +748,12 @@ describe('CampaignAdminUserInteractionsPage', () => {
     await screen.findByText('Staged decision')
     fireEvent.click(screen.getByRole('radio', { name: /^Approved/ }))
 
-    const sendButton = screen.getByRole('button', { name: 'Send review' })
+    const sendButton = screen.getByRole('button', { name: 'Save review' })
     expect(sendButton).toBeDisabled()
 
     fireEvent.click(screen.getByLabelText('Confirm approval warning'))
 
-    expect(screen.getByRole('button', { name: 'Send review' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Save review' })).toBeEnabled()
   })
 
   it('uses staged spreadsheet drafts when submitting bulk review', async () => {
@@ -791,8 +792,8 @@ describe('CampaignAdminUserInteractionsPage', () => {
       + 'user-2::funky:interaction:city_hall_website::entity:87654321\trejected\tNeeds website cleanup'
     )
     expect(await screen.findByText('2 rows staged')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Send selected' }))
-    fireEvent.click(within(getAlertDialog('Send 2 reviews?')).getByRole('button', { name: 'Send selected' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Submit selected' }))
+    fireEvent.click(within(getAlertDialog('Submit 2 reviews?')).getByRole('button', { name: 'Submit selected' }))
 
     expect(mutateAsyncMock).toHaveBeenCalledWith({
       items: [
@@ -811,6 +812,7 @@ describe('CampaignAdminUserInteractionsPage', () => {
           feedbackText: 'Needs website cleanup',
         },
       ],
+      send_notification: false,
     })
   })
 
@@ -874,7 +876,7 @@ describe('CampaignAdminUserInteractionsPage', () => {
     )
 
     fireEvent.click(screen.getAllByLabelText('Select row')[0])
-    fireEvent.click(screen.getByRole('button', { name: 'Send selected' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Submit selected' }))
 
     expect(await screen.findByText('Selected rows need fixes')).toBeInTheDocument()
     expect(screen.getByText('Missing staged review values. Paste spreadsheet rows with matching ids first.')).toBeInTheDocument()
@@ -898,8 +900,8 @@ describe('CampaignAdminUserInteractionsPage', () => {
 
     fireEvent.click(screen.getAllByLabelText('Select row')[0])
     await screen.findByText('1 row staged')
-    fireEvent.click(screen.getByRole('button', { name: 'Send selected' }))
-    fireEvent.click(within(getAlertDialog('Send 1 review?')).getByRole('button', { name: 'Send selected' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Submit selected' }))
+    fireEvent.click(within(getAlertDialog('Submit 1 review?')).getByRole('button', { name: 'Submit selected' }))
 
     expect(mutateAsyncMock).toHaveBeenCalledWith({
       items: [
@@ -910,6 +912,7 @@ describe('CampaignAdminUserInteractionsPage', () => {
           status: 'approved',
         },
       ],
+      send_notification: false,
     })
   })
 
@@ -931,7 +934,7 @@ describe('CampaignAdminUserInteractionsPage', () => {
     )
 
     await screen.findByText('1 row staged')
-    fireEvent.click(screen.getByRole('button', { name: 'Send selected' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Submit selected' }))
 
     expect(await screen.findByText(riskyApprovalValidationMessage)).toBeInTheDocument()
     expect(mutateAsyncMock).not.toHaveBeenCalled()
@@ -947,8 +950,8 @@ describe('CampaignAdminUserInteractionsPage', () => {
     })
 
     fireEvent.click(screen.getAllByLabelText('Select row')[0])
-    fireEvent.click(screen.getByRole('button', { name: 'Send selected' }))
-    fireEvent.click(within(getAlertDialog('Send 1 review?')).getByRole('button', { name: 'Send selected' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Submit selected' }))
+    fireEvent.click(within(getAlertDialog('Submit 1 review?')).getByRole('button', { name: 'Submit selected' }))
 
     expect(mutateAsyncMock).toHaveBeenCalledWith({
       items: [
@@ -960,6 +963,7 @@ describe('CampaignAdminUserInteractionsPage', () => {
           approvalRiskAcknowledged: true,
         },
       ],
+      send_notification: false,
     })
   })
 
@@ -1053,7 +1057,7 @@ describe('CampaignAdminUserInteractionsPage', () => {
     )
     await screen.findByText('1 row staged')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Send selected' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Submit selected' }))
 
     const issueButton = await screen.findByRole('button', { name: /https:\/\/primarie-2\.test/i })
     fireEvent.click(issueButton)
@@ -1084,8 +1088,8 @@ describe('CampaignAdminUserInteractionsPage', () => {
     expect(screen.getAllByText('Needs human follow-up')).not.toHaveLength(0)
 
     fireEvent.click(screen.getAllByLabelText('Select row')[0])
-    fireEvent.click(screen.getByRole('button', { name: 'Send selected' }))
-    fireEvent.click(within(getAlertDialog('Send 1 review?')).getByRole('button', { name: 'Send selected' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Submit selected' }))
+    fireEvent.click(within(getAlertDialog('Submit 1 review?')).getByRole('button', { name: 'Submit selected' }))
 
     expect(mutateAsyncMock).toHaveBeenCalledWith({
       items: [
@@ -1097,6 +1101,7 @@ describe('CampaignAdminUserInteractionsPage', () => {
           feedbackText: 'Needs human follow-up',
         },
       ],
+      send_notification: false,
     })
   })
 
@@ -1111,9 +1116,9 @@ describe('CampaignAdminUserInteractionsPage', () => {
     fireEvent.click(getSheetFooterCloseButton('contact@primarie.ro'))
 
     fireEvent.click(screen.getAllByLabelText('Select row')[0])
-    fireEvent.click(screen.getByRole('button', { name: 'Send selected' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Submit selected' }))
 
-    expect(await screen.findByText('Rejected rows need a review note before sending.')).toBeInTheDocument()
+    expect(await screen.findByText('Rejected rows need a review note before saving.')).toBeInTheDocument()
   })
 
   it('confirms before clearing staged data', async () => {

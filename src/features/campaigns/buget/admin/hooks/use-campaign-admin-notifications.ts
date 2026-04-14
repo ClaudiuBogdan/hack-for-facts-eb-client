@@ -5,6 +5,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import {
+  executeCampaignAdminNotificationTriggerBulk,
   executeCampaignAdminNotificationTrigger,
   getCampaignAdminNotificationsMeta,
   getCampaignAdminNotificationTemplatePreview,
@@ -20,6 +21,8 @@ import type {
   CampaignAdminNotificationsMetaResponse,
   CampaignAdminNotificationTemplateDescriptor,
   CampaignAdminNotificationTemplatePreview,
+  CampaignAdminNotificationTriggerBulkExecutionBody,
+  CampaignAdminNotificationTriggerBulkExecutionResponse,
   CampaignAdminNotificationTriggerDescriptor,
   CampaignAdminNotificationTriggerExecutionBody,
   CampaignAdminNotificationTriggerExecutionResponse,
@@ -244,6 +247,44 @@ export function useExecuteCampaignAdminNotificationTriggerMutation(
   >({
     mutationFn: async (input) =>
       executeCampaignAdminNotificationTrigger({
+        campaignKey,
+        triggerId: input.triggerId,
+        body: input.body,
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey:
+          campaignAdminNotificationsKeys.notificationsForCampaign(campaignKey),
+      });
+    },
+    onError: async (error) => {
+      if (error.status === 404 || error.status === 409) {
+        await queryClient.invalidateQueries({
+          queryKey:
+            campaignAdminNotificationsKeys.notificationsForCampaign(
+              campaignKey,
+            ),
+        });
+      }
+    },
+  });
+}
+
+export function useExecuteCampaignAdminNotificationTriggerBulkMutation(
+  campaignKey: CampaignAdminCampaignKey,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    CampaignAdminNotificationTriggerBulkExecutionResponse,
+    CampaignAdminApiError,
+    {
+      readonly triggerId: string;
+      readonly body: CampaignAdminNotificationTriggerBulkExecutionBody;
+    }
+  >({
+    mutationFn: async (input) =>
+      executeCampaignAdminNotificationTriggerBulk({
         campaignKey,
         triggerId: input.triggerId,
         body: input.body,

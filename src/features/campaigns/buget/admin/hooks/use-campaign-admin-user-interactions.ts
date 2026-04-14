@@ -191,7 +191,11 @@ export function useSubmitCampaignAdminReviewsMutation(
       })
     },
     onError: async (error) => {
-      if (error.status === 404 || error.status === 409) {
+      if (
+        error.status === 404 ||
+        error.status === 409 ||
+        error.status === 502
+      ) {
         await queryClient.invalidateQueries({
           queryKey: campaignAdminKeys.allForCampaign(campaignKey),
         })

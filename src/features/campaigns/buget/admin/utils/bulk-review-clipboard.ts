@@ -25,6 +25,7 @@ export const CAMPAIGN_ADMIN_BULK_REVIEW_CLIPBOARD_HEADERS = [
   'Interaction Element Link',
   'Submitted Value',
   'Decision',
+  'Send Notification',
   'Review Feedback',
 ] as const
 
@@ -69,6 +70,14 @@ const HEADER_ALIASES = {
     'approval',
     'result',
   ],
+  sendNotification: [
+    'send notification',
+    'send_notification',
+    'notify',
+    'notification',
+    'send notify',
+    'send_notify',
+  ],
   feedbackText: [
     'review feedback',
     'review_feedback',
@@ -107,6 +116,25 @@ const REJECTED_DECISION_ALIASES = [
   '0',
   'respins',
   'respinge',
+  'nu',
+] as const
+
+const TRUTHY_NOTIFY_ALIASES = [
+  'yes',
+  'true',
+  '1',
+  'notify',
+  'send',
+  'da',
+] as const
+
+const FALSY_NOTIFY_ALIASES = [
+  'no',
+  'false',
+  '0',
+  'skip',
+  'save only',
+  'save_only',
   'nu',
 ] as const
 
@@ -180,6 +208,31 @@ function parseDecisionValue(rawValue: string): CampaignAdminReviewDecision | nul
   return 'invalid'
 }
 
+function parseSendNotificationValue(rawValue: string): boolean | null | 'invalid' {
+  const normalizedValue = normalizeHeaderCell(rawValue)
+  if (normalizedValue === '') {
+    return null
+  }
+
+  if (
+    TRUTHY_NOTIFY_ALIASES.includes(
+      normalizedValue as (typeof TRUTHY_NOTIFY_ALIASES)[number]
+    )
+  ) {
+    return true
+  }
+
+  if (
+    FALSY_NOTIFY_ALIASES.includes(
+      normalizedValue as (typeof FALSY_NOTIFY_ALIASES)[number]
+    )
+  ) {
+    return false
+  }
+
+  return 'invalid'
+}
+
 export function serializeCampaignAdminBulkReviewRowsToClipboardTsv(input: {
   readonly items: readonly CampaignAdminUserInteractionListItem[]
   readonly stagedDraftsByKey?: Readonly<Record<string, CampaignAdminStagedReviewDraft>>
@@ -210,6 +263,13 @@ export function serializeCampaignAdminBulkReviewRowsToClipboardTsv(input: {
         ),
         escapeTabularCell(getPrimaryInteractionValue(item)),
         escapeTabularCell(stagedDraft?.status ?? ''),
+        escapeTabularCell(
+          stagedDraft === undefined
+            ? ''
+            : stagedDraft.sendNotification === true
+              ? 'yes'
+              : 'no'
+        ),
         escapeTabularCell(stagedDraft?.feedbackText ?? ''),
       ].join('\t')
     )
@@ -265,6 +325,7 @@ export function parseCampaignAdminBulkReviewClipboardText(input: {
   const userIdIndex = findHeaderIndex(headers, HEADER_ALIASES.userId)
   const recordKeyIndex = findHeaderIndex(headers, HEADER_ALIASES.recordKey)
   const decisionIndex = findHeaderIndex(headers, HEADER_ALIASES.decision)
+  const sendNotificationIndex = findHeaderIndex(headers, HEADER_ALIASES.sendNotification)
   const feedbackIndex = findHeaderIndex(headers, HEADER_ALIASES.feedbackText)
 
   const missingColumns: string[] = []
@@ -312,9 +373,13 @@ export function parseCampaignAdminBulkReviewClipboardText(input: {
     const userId = userIdIndex >= 0 ? normalizeCell(cells[userIdIndex] ?? '') : ''
     const recordKey = recordKeyIndex >= 0 ? normalizeCell(cells[recordKeyIndex] ?? '') : ''
     const decisionValue = normalizeCell(cells[decisionIndex] ?? '')
+    const sendNotificationValue =
+      sendNotificationIndex >= 0
+        ? normalizeCell(cells[sendNotificationIndex] ?? '')
+        : ''
     const feedbackText = feedbackIndex >= 0 ? normalizeCell(cells[feedbackIndex] ?? '') : ''
 
-    if (decisionValue === '' && feedbackText === '') {
+    if (decisionValue === '' && feedbackText === '' && sendNotificationValue === '') {
       skippedCount += 1
       return
     }
@@ -340,6 +405,15 @@ export function parseCampaignAdminBulkReviewClipboardText(input: {
       issues.push({
         rowNumber,
         message: t`Invalid decision value: ${decisionValue}`,
+      })
+      return
+    }
+
+    const parsedSendNotification = parseSendNotificationValue(sendNotificationValue)
+    if (parsedSendNotification === 'invalid') {
+      issues.push({
+        rowNumber,
+        message: t`Invalid send notification value: ${sendNotificationValue}`,
       })
       return
     }
@@ -399,6 +473,9 @@ export function parseCampaignAdminBulkReviewClipboardText(input: {
       recordKey: matchedItem.recordKey,
       status: parsedDecision,
       feedbackText,
+      ...(parsedSendNotification === null
+        ? {}
+        : { sendNotification: parsedSendNotification === true }),
     })
   })
 

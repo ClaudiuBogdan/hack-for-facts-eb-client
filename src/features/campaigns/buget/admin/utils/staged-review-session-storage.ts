@@ -15,9 +15,11 @@ const campaignAdminStagedReviewDraftSchema = z.object({
   status: z.enum(['approved', 'rejected']),
   feedbackText: z.string(),
   approvalRiskAcknowledged: z.boolean().optional(),
+  sendNotification: z.boolean().optional(),
 }).transform((draft) => ({
   ...draft,
   approvalRiskAcknowledged: draft.approvalRiskAcknowledged ?? false,
+  sendNotification: draft.sendNotification ?? false,
 }))
 
 const campaignAdminStagedReviewDraftMapSchema = z.record(

@@ -107,6 +107,7 @@ export const campaignAdminEntityNotificationTypeValues = [
   "funky:outbox:welcome",
   "funky:outbox:entity_subscription",
   "funky:outbox:entity_update",
+  "funky:outbox:admin_reviewed_interaction",
 ] as const;
 
 export const campaignAdminNotificationStatusValues = [
@@ -157,6 +158,7 @@ export const campaignAdminNotificationProjectionKindValues = [
   "public_debate_entity_subscription",
   "public_debate_entity_update",
   "public_debate_admin_failure",
+  "admin_reviewed_interaction",
 ] as const;
 
 export const campaignAdminNotificationSortKeyValues = [
@@ -176,6 +178,12 @@ export const campaignAdminNotificationTriggerExecutionStatusValues = [
   "queued",
   "skipped",
   "partial",
+  "delegated",
+] as const;
+
+export const campaignAdminNotificationTriggerModeValues = [
+  "single",
+  "bulk",
 ] as const;
 
 export type CampaignAdminPhase = (typeof campaignAdminPhaseValues)[number];
@@ -223,6 +231,8 @@ export type CampaignAdminNotificationsTab =
   (typeof campaignAdminNotificationsTabValues)[number];
 export type CampaignAdminNotificationTriggerExecutionStatus =
   (typeof campaignAdminNotificationTriggerExecutionStatusValues)[number];
+export type CampaignAdminNotificationTriggerMode =
+  (typeof campaignAdminNotificationTriggerModeValues)[number];
 export type CampaignAdminSortOrder = "asc" | "desc";
 export type CampaignAdminCampaignKey = "funky";
 export type CampaignAdminReviewDecision = Exclude<
@@ -480,6 +490,7 @@ export type CampaignAdminSubmitReviewItem =
 
 export type CampaignAdminSubmitReviewsBody = {
   readonly items: readonly CampaignAdminSubmitReviewItem[];
+  readonly send_notification?: boolean;
 };
 
 export type CampaignAdminNotificationSafeError = {
@@ -525,6 +536,20 @@ export type CampaignAdminNotificationProjection =
       readonly entityName: string | null;
       readonly threadId: string;
       readonly phase: string | null;
+    }
+  | {
+      readonly kind: "admin_reviewed_interaction";
+      readonly userId: string | null;
+      readonly entityCui: string;
+      readonly entityName: string | null;
+      readonly recordKey: string;
+      readonly interactionId: string;
+      readonly interactionLabel: string | null;
+      readonly reviewStatus: Exclude<CampaignAdminReviewStatus, "pending">;
+      readonly reviewedAt: string;
+      readonly hasFeedbackText: boolean;
+      readonly nextStepCount: number;
+      readonly triggerSource: CampaignAdminNotificationSource | null;
     };
 
 export type CampaignAdminNotificationListItem = {
@@ -562,23 +587,53 @@ export type CampaignAdminNotificationFieldDescriptor = {
   readonly required: boolean;
 };
 
+export type CampaignAdminNotificationTriggerCapabilities = {
+  readonly supportsSingleExecution: boolean;
+  readonly supportsBulkExecution: boolean;
+  readonly supportsDryRun: boolean;
+  readonly defaultLimit?: number;
+  readonly maxLimit?: number;
+  readonly bulkInputFields?: readonly CampaignAdminNotificationFieldDescriptor[];
+};
+
 export type CampaignAdminNotificationTriggerDescriptor = {
   readonly triggerId: string;
   readonly campaignKey: CampaignAdminCampaignKey;
+  readonly familyId?: string;
   readonly templateId: string;
   readonly description: string;
   readonly inputFields: readonly CampaignAdminNotificationFieldDescriptor[];
   readonly targetKind: string;
+  readonly capabilities?: CampaignAdminNotificationTriggerCapabilities;
 };
 
-export type CampaignAdminNotificationTriggerExecutionResult = {
-  readonly status: CampaignAdminNotificationTriggerExecutionStatus;
+export type CampaignAdminNotificationTriggerLegacyExecutionResult = {
+  readonly status: Exclude<
+    CampaignAdminNotificationTriggerExecutionStatus,
+    "delegated"
+  >;
   readonly reason?: string;
   readonly createdOutboxIds: readonly string[];
   readonly reusedOutboxIds: readonly string[];
   readonly queuedOutboxIds: readonly string[];
   readonly enqueueFailedOutboxIds: readonly string[];
 };
+
+export type CampaignAdminNotificationTriggerFamilySingleExecutionResult = {
+  readonly kind: "family_single";
+  readonly familyId: string;
+  readonly status: CampaignAdminNotificationTriggerExecutionStatus;
+  readonly reason: string;
+  readonly delegateTarget?: string;
+  readonly createdOutboxIds: readonly string[];
+  readonly reusedOutboxIds: readonly string[];
+  readonly queuedOutboxIds: readonly string[];
+  readonly enqueueFailedOutboxIds: readonly string[];
+};
+
+export type CampaignAdminNotificationTriggerExecutionResult =
+  | CampaignAdminNotificationTriggerLegacyExecutionResult
+  | CampaignAdminNotificationTriggerFamilySingleExecutionResult;
 
 export type CampaignAdminNotificationTriggerExecutionResponse = {
   readonly triggerId: string;
@@ -590,6 +645,39 @@ export type CampaignAdminNotificationTriggerExecutionResponse = {
 export type CampaignAdminNotificationTriggerExecutionBody = Readonly<
   Record<string, unknown>
 >;
+
+export type CampaignAdminNotificationTriggerBulkExecutionBody = {
+  readonly filters: Readonly<Record<string, unknown>>;
+  readonly dryRun?: boolean;
+  readonly limit?: number;
+};
+
+export type CampaignAdminNotificationTriggerBulkExecutionResult = {
+  readonly kind: "family_bulk";
+  readonly familyId: string;
+  readonly dryRun: boolean;
+  readonly watermark: string;
+  readonly limit: number;
+  readonly hasMoreCandidates: boolean;
+  readonly candidateCount: number;
+  readonly plannedCount: number;
+  readonly eligibleCount: number;
+  readonly queuedCount: number;
+  readonly reusedCount: number;
+  readonly skippedCount: number;
+  readonly delegatedCount: number;
+  readonly ineligibleCount: number;
+  readonly notReplayableCount: number;
+  readonly staleCount: number;
+  readonly enqueueFailedCount: number;
+};
+
+export type CampaignAdminNotificationTriggerBulkExecutionResponse = {
+  readonly triggerId: string;
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly templateId: string;
+  readonly result: CampaignAdminNotificationTriggerBulkExecutionResult;
+};
 
 export type CampaignAdminNotificationTemplateDescriptor = {
   readonly templateId: string;
@@ -616,6 +704,7 @@ export type CampaignAdminStagedReviewDraft = {
   readonly status: CampaignAdminReviewDecision;
   readonly feedbackText: string;
   readonly approvalRiskAcknowledged?: boolean;
+  readonly sendNotification?: boolean;
 };
 
 export type CampaignAdminQueueSearch = {
@@ -698,6 +787,20 @@ export type CampaignAdminNotificationsSearch = {
   readonly source?: CampaignAdminNotificationSource;
   readonly sortBy?: CampaignAdminNotificationSortKey;
   readonly sortOrder?: CampaignAdminSortOrder;
+  readonly triggerId?: string;
+  readonly triggerMode?: CampaignAdminNotificationTriggerMode;
+  readonly triggerDryRun?: boolean;
+  readonly triggerLimit?: number;
+  readonly triggerUserId?: string;
+  readonly triggerRecordKey?: string;
+  readonly triggerEntityCui?: string;
+  readonly triggerInteractionId?: string;
+  readonly triggerInteractionIds?: string;
+  readonly triggerReviewStatus?: Exclude<CampaignAdminReviewStatus, "pending">;
+  readonly triggerUpdatedAtFrom?: string;
+  readonly triggerUpdatedAtTo?: string;
+  readonly triggerSubmittedAtFrom?: string;
+  readonly triggerSubmittedAtTo?: string;
   readonly cursor?: string;
   readonly pageIndex?: number;
   readonly limit: number;
@@ -705,7 +808,24 @@ export type CampaignAdminNotificationsSearch = {
 
 export type CampaignAdminNotificationsAuditFilters = Omit<
   CampaignAdminNotificationsSearch,
-  "tab" | "cursor" | "pageIndex" | "limit"
+  | "tab"
+  | "triggerId"
+  | "triggerMode"
+  | "triggerDryRun"
+  | "triggerLimit"
+  | "triggerUserId"
+  | "triggerRecordKey"
+  | "triggerEntityCui"
+  | "triggerInteractionId"
+  | "triggerInteractionIds"
+  | "triggerReviewStatus"
+  | "triggerUpdatedAtFrom"
+  | "triggerUpdatedAtTo"
+  | "triggerSubmittedAtFrom"
+  | "triggerSubmittedAtTo"
+  | "cursor"
+  | "pageIndex"
+  | "limit"
 >;
 
 export type CampaignAdminFilterDraft = {

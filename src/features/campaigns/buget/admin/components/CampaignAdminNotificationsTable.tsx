@@ -350,6 +350,30 @@ function ThreadEventCell({
           </p>
         </div>
       );
+    case "admin_reviewed_interaction":
+      return (
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-foreground">
+            {item.projection.reviewStatus === "approved"
+              ? t`Review approved`
+              : t`Review rejected`}
+          </p>
+          <p className="font-mono text-xs text-muted-foreground">
+            {item.projection.interactionLabel?.trim() ||
+              item.projection.interactionId}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {formatDateTime(item.projection.reviewedAt)}
+          </p>
+          {item.projection.triggerSource ? (
+            <p className="text-xs text-muted-foreground">
+              {getCampaignAdminNotificationSourceLabel(
+                item.projection.triggerSource,
+              )}
+            </p>
+          ) : null}
+        </div>
+      );
     default:
       return <span className="text-sm text-muted-foreground">—</span>;
   }
@@ -431,6 +455,21 @@ function DetailsCell({
   return (
     <div className="space-y-2">
       <p className="font-mono text-xs text-muted-foreground">{item.outboxId}</p>
+      {item.projection.kind === "admin_reviewed_interaction" ? (
+        <div className="space-y-1 text-xs text-muted-foreground">
+          <p className="font-mono">{item.projection.recordKey}</p>
+          <p>
+            {item.projection.hasFeedbackText
+              ? t`Includes review feedback`
+              : t`No review feedback`}
+          </p>
+          <p>
+            {item.projection.nextStepCount === 1
+              ? t`1 next step link`
+              : t`${item.projection.nextStepCount} next step links`}
+          </p>
+        </div>
+      ) : null}
       {item.sentAt ? (
         <p className="text-xs text-muted-foreground">
           {t`Sent ${formatDateTime(item.sentAt)}`}

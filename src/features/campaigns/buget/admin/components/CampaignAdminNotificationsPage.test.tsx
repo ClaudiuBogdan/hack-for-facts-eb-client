@@ -17,7 +17,9 @@ const useCampaignAdminNotificationTriggersQueryMock = vi.fn();
 const useCampaignAdminNotificationTemplatesQueryMock = vi.fn();
 const useCampaignAdminNotificationTemplatePreviewQueryMock = vi.fn();
 const useExecuteCampaignAdminNotificationTriggerMutationMock = vi.fn();
+const useExecuteCampaignAdminNotificationTriggerBulkMutationMock = vi.fn();
 const mutateAsyncMock = vi.fn();
+const bulkMutateAsyncMock = vi.fn();
 const toastSuccessMock = vi.fn();
 const toastErrorMock = vi.fn();
 
@@ -41,6 +43,8 @@ vi.mock(
       useCampaignAdminNotificationTemplatePreviewQueryMock(...args),
     useExecuteCampaignAdminNotificationTriggerMutation: (...args: unknown[]) =>
       useExecuteCampaignAdminNotificationTriggerMutationMock(...args),
+    useExecuteCampaignAdminNotificationTriggerBulkMutation: (...args: unknown[]) =>
+      useExecuteCampaignAdminNotificationTriggerBulkMutationMock(...args),
   }),
 );
 
@@ -192,7 +196,9 @@ describe("CampaignAdminNotificationsPage", () => {
     useCampaignAdminNotificationTemplatesQueryMock.mockReset();
     useCampaignAdminNotificationTemplatePreviewQueryMock.mockReset();
     useExecuteCampaignAdminNotificationTriggerMutationMock.mockReset();
+    useExecuteCampaignAdminNotificationTriggerBulkMutationMock.mockReset();
     mutateAsyncMock.mockReset();
+    bulkMutateAsyncMock.mockReset();
     toastSuccessMock.mockReset();
     toastErrorMock.mockReset();
 
@@ -236,6 +242,10 @@ describe("CampaignAdminNotificationsPage", () => {
     });
     useExecuteCampaignAdminNotificationTriggerMutationMock.mockReturnValue({
       mutateAsync: mutateAsyncMock,
+      isPending: false,
+    });
+    useExecuteCampaignAdminNotificationTriggerBulkMutationMock.mockReturnValue({
+      mutateAsync: bulkMutateAsyncMock,
       isPending: false,
     });
   });
@@ -370,7 +380,7 @@ describe("CampaignAdminNotificationsPage", () => {
       limit: 50,
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Execute" }));
+    fireEvent.click(screen.getByRole("button", { name: "Open trigger" }));
 
     const dialog = await screen.findByRole("dialog", {
       name: "Queue the reply received notification.",
@@ -380,7 +390,7 @@ describe("CampaignAdminNotificationsPage", () => {
       target: { value: "thread-1" },
     });
     fireEvent.click(
-      within(dialog).getByRole("button", { name: "Execute trigger" }),
+      within(dialog).getByRole("button", { name: "Execute single" }),
     );
 
     await waitFor(() => {
@@ -439,7 +449,7 @@ describe("CampaignAdminNotificationsPage", () => {
       limit: 50,
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Execute" }));
+    fireEvent.click(screen.getByRole("button", { name: "Open trigger" }));
 
     const dialog = await screen.findByRole("dialog", {
       name: "Queue the reply received notification.",
@@ -449,7 +459,7 @@ describe("CampaignAdminNotificationsPage", () => {
       target: { value: "thread-1" },
     });
     fireEvent.click(
-      within(dialog).getByRole("button", { name: "Execute trigger" }),
+      within(dialog).getByRole("button", { name: "Execute single" }),
     );
 
     await waitFor(() => {
@@ -477,6 +487,22 @@ describe("CampaignAdminNotificationsPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByTitle("Entity update HTML preview")).toBeInTheDocument();
     expect(screen.getByText("Text preview")).toBeInTheDocument();
+  });
+
+  it("opens the template preview dialog from a trigger item", async () => {
+    renderStatefulPage({
+      tab: "triggers",
+      sortBy: "createdAt",
+      sortOrder: "desc",
+      limit: 50,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Preview template" }));
+
+    expect(
+      await screen.findByText("Reply received for Oras Test"),
+    ).toBeInTheDocument();
+    expect(screen.getByTitle("Entity update HTML preview")).toBeInTheDocument();
   });
 
   it("lets admins type a template ID outside the current page suggestions", async () => {

@@ -14,6 +14,7 @@ const useCampaignAdminNotificationTriggersQueryMock = vi.fn();
 const useCampaignAdminNotificationTemplatesQueryMock = vi.fn();
 const useCampaignAdminNotificationTemplatePreviewQueryMock = vi.fn();
 const useExecuteCampaignAdminNotificationTriggerMutationMock = vi.fn();
+const useExecuteCampaignAdminNotificationTriggerBulkMutationMock = vi.fn();
 
 vi.mock("@/lib/auth", () => ({
   useAuth: () => useAuthMock(),
@@ -35,6 +36,8 @@ vi.mock(
       useCampaignAdminNotificationTemplatePreviewQueryMock(...args),
     useExecuteCampaignAdminNotificationTriggerMutation: (...args: unknown[]) =>
       useExecuteCampaignAdminNotificationTriggerMutationMock(...args),
+    useExecuteCampaignAdminNotificationTriggerBulkMutation: (...args: unknown[]) =>
+      useExecuteCampaignAdminNotificationTriggerBulkMutationMock(...args),
   }),
 );
 
@@ -82,6 +85,7 @@ describe("CampaignAdminNotificationsPage routing", () => {
     useCampaignAdminNotificationTemplatesQueryMock.mockReset();
     useCampaignAdminNotificationTemplatePreviewQueryMock.mockReset();
     useExecuteCampaignAdminNotificationTriggerMutationMock.mockReset();
+    useExecuteCampaignAdminNotificationTriggerBulkMutationMock.mockReset();
 
     useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
     useCampaignAdminNotificationTriggersQueryMock.mockReturnValue({
@@ -106,6 +110,10 @@ describe("CampaignAdminNotificationsPage routing", () => {
       refetch: vi.fn(),
     });
     useExecuteCampaignAdminNotificationTriggerMutationMock.mockReturnValue({
+      mutateAsync: vi.fn(),
+      isPending: false,
+    });
+    useExecuteCampaignAdminNotificationTriggerBulkMutationMock.mockReturnValue({
       mutateAsync: vi.fn(),
       isPending: false,
     });

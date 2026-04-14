@@ -5,6 +5,8 @@ import { getAuthToken } from "@/lib/auth";
 import { createLogger } from "@/lib/logger";
 import {
   parseCampaignAdminErrorEnvelope,
+  parseCampaignAdminNotificationTriggerBulkExecutionBody,
+  parseCampaignAdminNotificationTriggerBulkExecutionResponse,
   parseCampaignAdminNotificationTemplatePreviewResponse,
   parseCampaignAdminNotificationTemplatesResponse,
   parseCampaignAdminNotificationTriggerExecutionBody,
@@ -20,6 +22,8 @@ import type {
   CampaignAdminNotificationsMetaResponse,
   CampaignAdminNotificationTemplateDescriptor,
   CampaignAdminNotificationTemplatePreview,
+  CampaignAdminNotificationTriggerBulkExecutionBody,
+  CampaignAdminNotificationTriggerBulkExecutionResponse,
   CampaignAdminNotificationTriggerDescriptor,
   CampaignAdminNotificationTriggerExecutionBody,
   CampaignAdminNotificationTriggerExecutionResponse,
@@ -33,6 +37,7 @@ type CampaignAdminNotificationsRequestKind =
   | "meta"
   | "triggerCatalog"
   | "triggerExecution"
+  | "triggerBulkExecution"
   | "templateCatalog"
   | "templatePreview";
 
@@ -90,6 +95,8 @@ function getFallbackErrorMessage(
         return t`Campaign admin notification triggers request was invalid.`;
       case "triggerExecution":
         return t`Campaign admin notification trigger request was invalid.`;
+      case "triggerBulkExecution":
+        return t`Campaign admin bulk notification trigger request was invalid.`;
       case "templateCatalog":
         return t`Campaign admin notification templates request was invalid.`;
       case "templatePreview":
@@ -113,6 +120,8 @@ function getFallbackErrorMessage(
         return t`This campaign notification template preview is unavailable on this server or the template is not supported.`;
       case "triggerExecution":
         return t`This campaign notification trigger is unavailable on this server or the campaign key is not supported.`;
+      case "triggerBulkExecution":
+        return t`This campaign bulk notification trigger is unavailable on this server or the campaign key is not supported.`;
       default:
         return t`The campaign notifications admin is unavailable on this server or the campaign key is not supported.`;
     }
@@ -132,6 +141,8 @@ function getFallbackErrorMessage(
         return t`Campaign notification triggers could not be loaded right now.`;
       case "triggerExecution":
         return t`Campaign notification trigger could not be completed right now.`;
+      case "triggerBulkExecution":
+        return t`Campaign bulk notification trigger could not be completed right now.`;
       case "templateCatalog":
         return t`Campaign notification templates could not be loaded right now.`;
       case "templatePreview":
@@ -150,6 +161,8 @@ function getFallbackErrorMessage(
       return t`Campaign notification triggers request failed.`;
     case "triggerExecution":
       return t`Campaign notification trigger request failed.`;
+    case "triggerBulkExecution":
+      return t`Campaign bulk notification trigger request failed.`;
     case "templateCatalog":
       return t`Campaign notification templates request failed.`;
     case "templatePreview":
@@ -406,6 +419,34 @@ export async function executeCampaignAdminNotificationTrigger(input: {
     errorMessage: t`Campaign notification trigger response was invalid.`,
     logMessage:
       "Campaign notification trigger response did not match the expected schema",
+  });
+}
+
+export async function executeCampaignAdminNotificationTriggerBulk(input: {
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly triggerId: string;
+  readonly body: CampaignAdminNotificationTriggerBulkExecutionBody;
+}): Promise<CampaignAdminNotificationTriggerBulkExecutionResponse> {
+  const body = parseCampaignAdminNotificationTriggerBulkExecutionBody(input.body);
+  const payload = await authorizedRequest({
+    campaignKey: input.campaignKey,
+    pathname: `/notifications/triggers/${encodeURIComponent(input.triggerId)}/bulk`,
+    init: {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    },
+    requestKind: "triggerBulkExecution",
+  });
+
+  return parseCampaignAdminSuccessPayload({
+    payload,
+    parse: parseCampaignAdminNotificationTriggerBulkExecutionResponse,
+    errorMessage: t`Campaign bulk notification trigger response was invalid.`,
+    logMessage:
+      "Campaign bulk notification trigger response did not match the expected schema",
   });
 }
 

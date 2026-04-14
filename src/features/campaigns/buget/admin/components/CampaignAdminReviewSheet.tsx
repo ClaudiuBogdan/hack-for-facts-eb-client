@@ -42,6 +42,7 @@ type CampaignAdminReviewSheetProps = {
   readonly item: CampaignAdminUserInteractionListItem | null
   readonly stagedDraft: CampaignAdminStagedReviewDraft | null
   readonly isSubmitting: boolean
+  readonly notificationAdminHref?: string | null
   readonly onOpenChange: (open: boolean) => void
   readonly onDecisionChange: (
     item: CampaignAdminUserInteractionListItem,
@@ -54,6 +55,10 @@ type CampaignAdminReviewSheetProps = {
   readonly onApprovalRiskAcknowledgedChange: (
     item: CampaignAdminUserInteractionListItem,
     approvalRiskAcknowledged: boolean
+  ) => void
+  readonly onSendNotificationChange: (
+    item: CampaignAdminUserInteractionListItem,
+    sendNotification: boolean
   ) => void
   readonly onClearDraft: (item: CampaignAdminUserInteractionListItem) => void
   readonly onSubmitDraft: (input: {
@@ -440,10 +445,12 @@ export function CampaignAdminReviewSheet({
   item,
   stagedDraft,
   isSubmitting,
+  notificationAdminHref = null,
   onOpenChange,
   onDecisionChange,
   onFeedbackTextChange,
   onApprovalRiskAcknowledgedChange,
+  onSendNotificationChange,
   onClearDraft,
   onSubmitDraft,
 }: CampaignAdminReviewSheetProps) {
@@ -723,7 +730,7 @@ export function CampaignAdminReviewSheet({
                               : 'text-muted-foreground'
                           )}
                         >
-                          {t`Rejected rows require a review note before sending.`}
+                          {t`Rejected rows require a review note before saving.`}
                         </span>
                       </span>
                     </label>
@@ -740,8 +747,8 @@ export function CampaignAdminReviewSheet({
                       : stagedDraft === null
                         ? t`Choose approved or rejected to start editing the staged review note.`
                         : stagedDraft.status === 'rejected'
-                          ? t`Rejected rows need a review note before sending.`
-                          : t`Approved rows can send with or without a review note.`}
+                          ? t`Rejected rows need a review note before saving.`
+                          : t`Approved rows can be saved with or without a review note.`}
                   </p>
                 </div>
                 <Textarea
@@ -766,13 +773,55 @@ export function CampaignAdminReviewSheet({
                 />
               </section>
 
+              {isPendingReview && stagedDraft !== null ? (
+                <section className="space-y-3">
+                  <div className="space-y-1">
+                    <Label>{t`Notification`}</Label>
+                    <p className="text-xs text-muted-foreground">
+                      {t`Review submission always saves the decision. Notification side effects only run when you opt in.`}
+                    </p>
+                  </div>
+                  <label className="flex items-start gap-3 rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-foreground">
+                    <Checkbox
+                      checked={stagedDraft.sendNotification === true}
+                      onCheckedChange={(checked) => {
+                        if (item === null) {
+                          return
+                        }
+
+                        onSendNotificationChange(item, Boolean(checked))
+                      }}
+                      aria-label={t`Send notification after saving review`}
+                      disabled={isSubmitting}
+                    />
+                    <span className="space-y-1">
+                      <span className="block font-medium">
+                        {t`Send notification after saving`}
+                      </span>
+                      <span className="block text-xs text-muted-foreground">
+                        {stagedDraft.sendNotification === true
+                          ? t`This review will save and then allow notification-capable side effects.`
+                          : t`This review will save without notification side effects.`}
+                      </span>
+                    </span>
+                  </label>
+                  {notificationAdminHref ? (
+                    <p className="text-xs text-muted-foreground">
+                      <a href={notificationAdminHref} className="underline-offset-4 hover:underline">
+                        {t`Open notifications admin for manual trigger operations`}
+                      </a>
+                    </p>
+                  ) : null}
+                </section>
+              ) : null}
+
               {requiresRiskConfirmation && isPendingReview ? (
                 <Alert>
                   <MessageSquareWarning className="h-4 w-4" aria-hidden="true" />
                   <AlertTitle>{t`Approval requires explicit confirmation`}</AlertTitle>
                   <AlertDescription className="space-y-3">
                     <p>
-                      {t`This item carries an institution-email risk flag. Approving it may trigger a platform send flow on the server.`}
+                      {t`This item carries an institution-email risk flag. Approving it may trigger additional server follow-up when notification side effects are enabled.`}
                     </p>
                     <label className="flex items-start gap-3 text-sm text-foreground">
                       <Checkbox
@@ -844,7 +893,11 @@ export function CampaignAdminReviewSheet({
                   ) : (
                     <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                   )}
-                  {isSubmitting ? t`Saving…` : t`Send review`}
+                  {isSubmitting
+                    ? t`Saving…`
+                    : stagedDraft?.sendNotification === true
+                      ? t`Save review & notify`
+                      : t`Save review`}
                 </Button>
               ) : null}
             </SheetFooter>

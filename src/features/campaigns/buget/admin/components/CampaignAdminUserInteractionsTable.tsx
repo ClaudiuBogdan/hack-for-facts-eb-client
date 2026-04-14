@@ -86,6 +86,10 @@ type CampaignAdminUserInteractionsTableProps = {
   readonly onToggleSelection: (
     input: CampaignAdminToggleUserInteractionSelectionInput,
   ) => void;
+  readonly onToggleSendNotification: (
+    item: CampaignAdminUserInteractionListItem,
+    sendNotification: boolean,
+  ) => void;
   readonly onOpenItem: (item: CampaignAdminUserInteractionListItem) => void;
 };
 
@@ -98,6 +102,7 @@ type OptionalColumnId =
   | "interaction"
   | "value"
   | "reviewState"
+  | "notify"
   | "reviewNote"
   | "reviewedBy";
 
@@ -110,6 +115,7 @@ const ALL_OPTIONAL_COLUMN_IDS: readonly OptionalColumnId[] = [
   "interaction",
   "value",
   "reviewState",
+  "notify",
   "reviewNote",
   "reviewedBy",
 ] as const;
@@ -122,6 +128,7 @@ const DEFAULT_VISIBLE_COLUMN_IDS: readonly OptionalColumnId[] = [
   "interaction",
   "value",
   "reviewState",
+  "notify",
 ] as const;
 
 function formatDateTime(value: string | null): string {
@@ -337,6 +344,22 @@ function renderReviewNotePreview(
   return <span className="text-sm text-muted-foreground">—</span>;
 }
 
+function renderNotifyPreview(
+  stagedDraft: CampaignAdminStagedReviewDraft | null,
+): ReactNode {
+  if (stagedDraft === null) {
+    return <span className="text-sm text-muted-foreground">{t`Stage review first`}</span>;
+  }
+
+  return stagedDraft.sendNotification === true ? (
+    <Badge variant="outline" className="border-sky-300 bg-sky-100 text-sky-950">
+      {t`Notify`}
+    </Badge>
+  ) : (
+    <span className="text-sm text-muted-foreground">{t`Save only`}</span>
+  );
+}
+
 function EntityLink({
   item,
 }: {
@@ -432,6 +455,7 @@ export function CampaignAdminUserInteractionsTable({
   onSortChange,
   onToggleSelectAll,
   onToggleSelection,
+  onToggleSendNotification,
   onOpenItem,
 }: CampaignAdminUserInteractionsTableProps) {
   const pendingSelectionShiftKeyRef = useRef(false);
@@ -497,6 +521,7 @@ export function CampaignAdminUserInteractionsTable({
     { id: "interaction", label: t`Interaction` },
     { id: "value", label: t`Value` },
     { id: "reviewState", label: t`Review state` },
+    { id: "notify", label: t`Notify` },
     { id: "reviewNote", label: t`Review note` },
     { id: "reviewedBy", label: t`Reviewed by` },
   ];
@@ -807,6 +832,11 @@ export function CampaignAdminUserInteractionsTable({
                   </SortableHeaderButton>
                 </TableHead>
               ) : null}
+              {isColumnVisible("notify") ? (
+                <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                  {t`Notify`}
+                </TableHead>
+              ) : null}
               {isColumnVisible("reviewNote") ? (
                 <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
                   {t`Review note`}
@@ -928,6 +958,29 @@ export function CampaignAdminUserInteractionsTable({
                         <StagedReviewStateBadge status={reviewPreviewStatus} />
                       ) : (
                         <span className="text-sm text-muted-foreground">{t`Not staged`}</span>
+                      )}
+                    </TableCell>
+                  ) : null}
+                  {isColumnVisible("notify") ? (
+                    <TableCell>
+                      {stagedDraft !== null ? (
+                        <label className="inline-flex items-center gap-2 text-sm text-foreground">
+                          <Checkbox
+                            checked={stagedDraft.sendNotification === true}
+                            onCheckedChange={(checked) =>
+                              onToggleSendNotification(item, Boolean(checked))
+                            }
+                            aria-label={t`Send notification`}
+                            disabled={isLoading}
+                          />
+                          <span>
+                            {stagedDraft.sendNotification === true
+                              ? t`Notify`
+                              : t`Save only`}
+                          </span>
+                        </label>
+                      ) : (
+                        renderNotifyPreview(stagedDraft)
                       )}
                     </TableCell>
                   ) : null}
@@ -1069,6 +1122,30 @@ export function CampaignAdminUserInteractionsTable({
                         <StagedReviewStateBadge status={stagedDraft.status} />
                       ) : (
                         t`Not staged`
+                      )
+                    }
+                  />
+                  <MobileInfoRow
+                    label={t`Notify`}
+                    value={
+                      stagedDraft ? (
+                        <label className="inline-flex items-center gap-2 text-sm text-foreground">
+                          <Checkbox
+                            checked={stagedDraft.sendNotification === true}
+                            onCheckedChange={(checked) =>
+                              onToggleSendNotification(item, Boolean(checked))
+                            }
+                            aria-label={t`Send notification`}
+                            disabled={isLoading}
+                          />
+                          <span>
+                            {stagedDraft.sendNotification === true
+                              ? t`Notify`
+                              : t`Save only`}
+                          </span>
+                        </label>
+                      ) : (
+                        renderNotifyPreview(stagedDraft)
                       )
                     }
                   />

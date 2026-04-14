@@ -15,6 +15,7 @@ import {
   campaignAdminNotificationSortKeyValues,
   campaignAdminNotificationSourceValues,
   campaignAdminNotificationStatusValues,
+  campaignAdminNotificationTriggerModeValues,
   campaignAdminPayloadKindValues,
   campaignAdminPhaseValues,
   campaignAdminReviewStatusValues,
@@ -25,6 +26,7 @@ import {
   type CampaignAdminNotificationsSearch,
   type CampaignAdminNotificationsTab,
   type CampaignAdminNotificationSortKey,
+  type CampaignAdminNotificationTriggerMode,
   campaignAdminUsersSortKeyValues,
   campaignAdminUserInteractionsSortKeyValues,
   type CampaignAdminEntitiesFilters,
@@ -57,6 +59,10 @@ const campaignAdminEntityNotificationTypeSet = new Set<string>(
 
 const campaignAdminNotificationSortKeySet = new Set<string>(
   campaignAdminNotificationSortKeyValues,
+);
+
+const campaignAdminNotificationTriggerModeSet = new Set<string>(
+  campaignAdminNotificationTriggerModeValues,
 );
 
 function toTrimmedOptionalString(value: unknown): string | undefined {
@@ -229,6 +235,19 @@ function toOptionalCampaignAdminNotificationSortKey(
 
   return campaignAdminNotificationSortKeySet.has(nextValue)
     ? (nextValue as CampaignAdminNotificationSortKey)
+    : undefined;
+}
+
+function toOptionalCampaignAdminNotificationTriggerMode(
+  value: unknown,
+): CampaignAdminNotificationTriggerMode | undefined {
+  const nextValue = toTrimmedOptionalString(value);
+  if (nextValue === undefined) {
+    return undefined;
+  }
+
+  return campaignAdminNotificationTriggerModeSet.has(nextValue)
+    ? (nextValue as CampaignAdminNotificationTriggerMode)
     : undefined;
 }
 
@@ -463,6 +482,59 @@ export const campaignAdminNotificationsRouteSearchSchema = z.object({
     toTrimmedOptionalString,
     z.enum(["asc", "desc"]).optional(),
   ),
+  triggerId: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().min(1).optional(),
+  ),
+  triggerMode: z.preprocess(
+    toOptionalCampaignAdminNotificationTriggerMode,
+    z.enum(campaignAdminNotificationTriggerModeValues).optional(),
+  ),
+  triggerDryRun: z.preprocess(toOptionalBoolean, z.boolean().optional()),
+  triggerLimit: z.preprocess(
+    toOptionalPositiveInt,
+    z.number().int().min(1).max(1000).optional(),
+  ),
+  triggerUserId: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().min(1).optional(),
+  ),
+  triggerRecordKey: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().min(1).optional(),
+  ),
+  triggerEntityCui: z.preprocess(
+    toOptionalEntityCui,
+    z.string().min(1).optional(),
+  ),
+  triggerInteractionId: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().min(1).optional(),
+  ),
+  triggerInteractionIds: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().min(1).optional(),
+  ),
+  triggerReviewStatus: z.preprocess(
+    toTrimmedOptionalString,
+    z.enum(["approved", "rejected"]).optional(),
+  ),
+  triggerUpdatedAtFrom: z.preprocess(
+    toOptionalIsoDateTime,
+    z.string().datetime().optional(),
+  ),
+  triggerUpdatedAtTo: z.preprocess(
+    toOptionalIsoDateTime,
+    z.string().datetime().optional(),
+  ),
+  triggerSubmittedAtFrom: z.preprocess(
+    toOptionalIsoDateTime,
+    z.string().datetime().optional(),
+  ),
+  triggerSubmittedAtTo: z.preprocess(
+    toOptionalIsoDateTime,
+    z.string().datetime().optional(),
+  ),
   cursor: z.preprocess(toTrimmedOptionalString, z.string().min(1).optional()),
   pageIndex: z.preprocess(
     toOptionalPositiveInt,
@@ -626,8 +698,42 @@ export function getCampaignAdminEntitiesFilters(
 export function getCampaignAdminNotificationsAuditFilters(
   search: CampaignAdminNotificationsSearch,
 ): CampaignAdminNotificationsAuditFilters {
-  const { tab, cursor, pageIndex, limit, ...filters } = search;
+  const {
+    tab,
+    triggerId,
+    triggerMode,
+    triggerDryRun,
+    triggerLimit,
+    triggerUserId,
+    triggerRecordKey,
+    triggerEntityCui,
+    triggerInteractionId,
+    triggerInteractionIds,
+    triggerReviewStatus,
+    triggerUpdatedAtFrom,
+    triggerUpdatedAtTo,
+    triggerSubmittedAtFrom,
+    triggerSubmittedAtTo,
+    cursor,
+    pageIndex,
+    limit,
+    ...filters
+  } = search;
   void tab;
+  void triggerId;
+  void triggerMode;
+  void triggerDryRun;
+  void triggerLimit;
+  void triggerUserId;
+  void triggerRecordKey;
+  void triggerEntityCui;
+  void triggerInteractionId;
+  void triggerInteractionIds;
+  void triggerReviewStatus;
+  void triggerUpdatedAtFrom;
+  void triggerUpdatedAtTo;
+  void triggerSubmittedAtFrom;
+  void triggerSubmittedAtTo;
   void cursor;
   void pageIndex;
   void limit;
@@ -753,6 +859,20 @@ export function createEmptyCampaignAdminNotificationsSearch(input?: {
       tab: input?.tab ?? input?.currentSearch?.tab ?? "audit",
       sortBy: input?.currentSearch?.sortBy,
       sortOrder: input?.currentSearch?.sortOrder,
+      triggerId: input?.currentSearch?.triggerId,
+      triggerMode: input?.currentSearch?.triggerMode,
+      triggerDryRun: input?.currentSearch?.triggerDryRun,
+      triggerLimit: input?.currentSearch?.triggerLimit,
+      triggerUserId: input?.currentSearch?.triggerUserId,
+      triggerRecordKey: input?.currentSearch?.triggerRecordKey,
+      triggerEntityCui: input?.currentSearch?.triggerEntityCui,
+      triggerInteractionId: input?.currentSearch?.triggerInteractionId,
+      triggerInteractionIds: input?.currentSearch?.triggerInteractionIds,
+      triggerReviewStatus: input?.currentSearch?.triggerReviewStatus,
+      triggerUpdatedAtFrom: input?.currentSearch?.triggerUpdatedAtFrom,
+      triggerUpdatedAtTo: input?.currentSearch?.triggerUpdatedAtTo,
+      triggerSubmittedAtFrom: input?.currentSearch?.triggerSubmittedAtFrom,
+      triggerSubmittedAtTo: input?.currentSearch?.triggerSubmittedAtTo,
       limit: input?.limit ?? input?.currentSearch?.limit,
     }),
   );

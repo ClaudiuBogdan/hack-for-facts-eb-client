@@ -318,6 +318,7 @@ describe("CampaignAdminUserPage", () => {
           status: "approved",
           feedbackText: "",
           approvalRiskAcknowledged: false,
+          sendNotification: false,
         },
       }),
     );
@@ -347,6 +348,7 @@ describe("CampaignAdminUserPage", () => {
           status: "approved",
           feedbackText: "",
           approvalRiskAcknowledged: false,
+          sendNotification: false,
         },
       }),
     );

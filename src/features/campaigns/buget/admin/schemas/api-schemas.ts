@@ -11,6 +11,8 @@ import {
   campaignAdminPhaseValues,
   type CampaignAdminNotificationTemplateDescriptor,
   type CampaignAdminNotificationTemplatePreview,
+  type CampaignAdminNotificationTriggerBulkExecutionBody,
+  type CampaignAdminNotificationTriggerBulkExecutionResponse,
   type CampaignAdminNotificationTriggerDescriptor,
   type CampaignAdminNotificationTriggerExecutionBody,
   type CampaignAdminNotificationTriggerExecutionResponse,
@@ -390,6 +392,22 @@ const campaignAdminNotificationProjectionSchema = z.discriminatedUnion("kind", [
       phase: z.string().min(1).nullable(),
     })
     .strict(),
+  z
+    .object({
+      kind: z.literal("admin_reviewed_interaction"),
+      userId: z.string().min(1).nullable(),
+      entityCui: z.string().min(1),
+      entityName: z.string().min(1).nullable(),
+      recordKey: z.string().min(1),
+      interactionId: z.string().min(1),
+      interactionLabel: z.string().min(1).nullable(),
+      reviewStatus: z.enum(["approved", "rejected"]),
+      reviewedAt: z.string().datetime(),
+      hasFeedbackText: z.boolean(),
+      nextStepCount: z.number().int().nonnegative(),
+      triggerSource: z.enum(campaignAdminNotificationSourceValues).nullable(),
+    })
+    .strict(),
 ]);
 
 const campaignAdminNotificationListItemSchema = z
@@ -447,14 +465,29 @@ const campaignAdminNotificationFieldDescriptorSchema = z
   })
   .strict();
 
+const campaignAdminNotificationTriggerCapabilitiesSchema = z
+  .object({
+    supportsSingleExecution: z.boolean(),
+    supportsBulkExecution: z.boolean(),
+    supportsDryRun: z.boolean(),
+    defaultLimit: z.number().int().min(1).optional(),
+    maxLimit: z.number().int().min(1).optional(),
+    bulkInputFields: z
+      .array(campaignAdminNotificationFieldDescriptorSchema)
+      .optional(),
+  })
+  .strict();
+
 const campaignAdminNotificationTriggerDescriptorSchema = z
   .object({
     triggerId: z.string().min(1),
     campaignKey: z.literal("funky"),
+    familyId: z.string().min(1).optional(),
     templateId: z.string().min(1),
     description: z.string().min(1),
     inputFields: z.array(campaignAdminNotificationFieldDescriptorSchema),
     targetKind: z.string().min(1),
+    capabilities: campaignAdminNotificationTriggerCapabilitiesSchema.optional(),
   })
   .strict();
 
@@ -469,9 +502,9 @@ const campaignAdminNotificationTriggersResponseSchema = z
   })
   .strict();
 
-const campaignAdminNotificationTriggerExecutionResultSchema = z
+const campaignAdminNotificationTriggerLegacyExecutionResultSchema = z
   .object({
-    status: z.enum(campaignAdminNotificationTriggerExecutionStatusValues),
+    status: z.enum(["queued", "skipped", "partial"]),
     reason: z.string().min(1).optional(),
     createdOutboxIds: z.array(z.string().min(1)),
     reusedOutboxIds: z.array(z.string().min(1)),
@@ -479,6 +512,25 @@ const campaignAdminNotificationTriggerExecutionResultSchema = z
     enqueueFailedOutboxIds: z.array(z.string().min(1)),
   })
   .strict();
+
+const campaignAdminNotificationTriggerFamilySingleExecutionResultSchema = z
+  .object({
+    kind: z.literal("family_single"),
+    familyId: z.string().min(1),
+    status: z.enum(campaignAdminNotificationTriggerExecutionStatusValues),
+    reason: z.string().min(1),
+    delegateTarget: z.string().min(1).optional(),
+    createdOutboxIds: z.array(z.string().min(1)),
+    reusedOutboxIds: z.array(z.string().min(1)),
+    queuedOutboxIds: z.array(z.string().min(1)),
+    enqueueFailedOutboxIds: z.array(z.string().min(1)),
+  })
+  .strict();
+
+const campaignAdminNotificationTriggerExecutionResultSchema = z.union([
+  campaignAdminNotificationTriggerLegacyExecutionResultSchema,
+  campaignAdminNotificationTriggerFamilySingleExecutionResultSchema,
+]);
 
 const campaignAdminNotificationTriggerExecutionResponseSchema = z
   .object({
@@ -498,6 +550,50 @@ export const campaignAdminNotificationTriggerExecutionBodySchema = z.record(
   z.string(),
   z.unknown(),
 );
+
+export const campaignAdminNotificationTriggerBulkExecutionBodySchema = z
+  .object({
+    filters: z.record(z.string(), z.unknown()),
+    dryRun: z.boolean().optional(),
+    limit: z.number().int().min(1).max(1000).optional(),
+  })
+  .strict();
+
+const campaignAdminNotificationTriggerBulkExecutionResultSchema = z
+  .object({
+    kind: z.literal("family_bulk"),
+    familyId: z.string().min(1),
+    dryRun: z.boolean(),
+    watermark: z.string().min(1),
+    limit: z.number().int().min(1),
+    hasMoreCandidates: z.boolean(),
+    candidateCount: z.number().int().nonnegative(),
+    plannedCount: z.number().int().nonnegative(),
+    eligibleCount: z.number().int().nonnegative(),
+    queuedCount: z.number().int().nonnegative(),
+    reusedCount: z.number().int().nonnegative(),
+    skippedCount: z.number().int().nonnegative(),
+    delegatedCount: z.number().int().nonnegative(),
+    ineligibleCount: z.number().int().nonnegative(),
+    notReplayableCount: z.number().int().nonnegative(),
+    staleCount: z.number().int().nonnegative(),
+    enqueueFailedCount: z.number().int().nonnegative(),
+  })
+  .strict();
+
+const campaignAdminNotificationTriggerBulkExecutionResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        triggerId: z.string().min(1),
+        campaignKey: z.literal("funky"),
+        templateId: z.string().min(1),
+        result: campaignAdminNotificationTriggerBulkExecutionResultSchema,
+      })
+      .strict(),
+  })
+  .strict();
 
 const campaignAdminNotificationTemplateDescriptorSchema = z
   .object({
@@ -606,6 +702,7 @@ export const campaignAdminSubmitReviewsBodySchema = z
       )
       .min(1)
       .max(100),
+    send_notification: z.boolean().optional(),
   })
   .strict();
 
@@ -702,6 +799,20 @@ export function parseCampaignAdminNotificationTriggerExecutionResponse(
   return parsedPayload.data.data;
 }
 
+export function parseCampaignAdminNotificationTriggerBulkExecutionResponse(
+  payload: unknown,
+): CampaignAdminNotificationTriggerBulkExecutionResponse {
+  const parsedPayload =
+    campaignAdminNotificationTriggerBulkExecutionResponseSchema.safeParse(
+      payload,
+    );
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin notification bulk trigger response.");
+  }
+
+  return parsedPayload.data.data;
+}
+
 export function parseCampaignAdminNotificationTemplatesResponse(
   payload: unknown,
 ): readonly CampaignAdminNotificationTemplateDescriptor[] {
@@ -782,4 +893,10 @@ export function parseCampaignAdminNotificationTriggerExecutionBody(
   payload: unknown,
 ): CampaignAdminNotificationTriggerExecutionBody {
   return campaignAdminNotificationTriggerExecutionBodySchema.parse(payload);
+}
+
+export function parseCampaignAdminNotificationTriggerBulkExecutionBody(
+  payload: unknown,
+): CampaignAdminNotificationTriggerBulkExecutionBody {
+  return campaignAdminNotificationTriggerBulkExecutionBodySchema.parse(payload);
 }
