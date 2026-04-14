@@ -30,6 +30,7 @@ describe('staged-review-session-storage', () => {
         status: 'approved',
         feedbackText: '',
         approvalRiskAcknowledged: false,
+        sendNotification: false,
       },
     })
   })
@@ -52,6 +53,7 @@ describe('staged-review-session-storage', () => {
         status: 'approved',
         feedbackText: '',
         approvalRiskAcknowledged: true,
+        sendNotification: false,
       },
     })
   })
