@@ -115,6 +115,7 @@ function mockEntitiesState(input: {
   readonly error?: { status: number; message: string } | null;
   readonly isLoading?: boolean;
   readonly isFetching?: boolean;
+  readonly totalCount?: number;
 }) {
   useCampaignAdminEntitiesQueryMock.mockReturnValue({
     data:
@@ -123,6 +124,7 @@ function mockEntitiesState(input: {
         : {
             items: input.items ?? [],
             page: {
+              totalCount: input.totalCount ?? (input.items ?? []).length,
               hasMore: false,
               nextCursor: null,
               sortBy: "latestInteractionAt",
@@ -256,6 +258,7 @@ describe("CampaignAdminEntitiesPage", () => {
           hasFailedNotifications: false,
         }),
       ],
+      totalCount: 23,
     });
 
     render(
@@ -272,6 +275,7 @@ describe("CampaignAdminEntitiesPage", () => {
 
     expect(screen.getByRole("heading", { name: "Entities" })).toBeInTheDocument();
     expect(screen.getByText("18")).toBeInTheDocument();
+    expect(screen.getAllByText("Showing 2 of 23")[0]).toBeInTheDocument();
     expect(screen.getByText("Oras Test")).toBeInTheDocument();
     expect(screen.getByText("Comuna Test")).toBeInTheDocument();
 

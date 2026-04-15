@@ -213,7 +213,7 @@ describe('CampaignAdminUserInteractionsPage routing', () => {
 
     const { rerender } = render(<StatefulPage initialSearch={{ limit: 50 }} />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    fireEvent.click(screen.getAllByRole('button', { name: 'Next' })[0]!)
 
     await waitFor(() => {
       expect(queueQueryCalls[queueQueryCalls.length - 1]).toMatchObject({

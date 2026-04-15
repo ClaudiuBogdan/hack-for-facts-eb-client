@@ -61,6 +61,7 @@ function createPlanResponse(): CampaignAdminNotificationPlanResponse {
     },
     rows: [],
     page: {
+      totalCount: 2,
       hasMore: false,
       nextCursor: null,
     },

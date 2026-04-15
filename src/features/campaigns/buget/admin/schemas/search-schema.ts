@@ -39,6 +39,11 @@ import {
   type CampaignAdminUserPageSearch,
 } from "@/features/campaigns/buget/admin/types";
 
+type CampaignAdminUsersFilters = Pick<
+  CampaignAdminUsersSearch,
+  "query" | "entityCui"
+>;
+
 const campaignAdminUserInteractionsSortKeySet = new Set<string>(
   campaignAdminUserInteractionsSortKeyValues,
 );
@@ -585,6 +590,25 @@ export function normalizeCampaignAdminUsersSearch(
     sortBy: parsedSearch.sortBy ?? "latestUpdatedAt",
     sortOrder: parsedSearch.sortOrder ?? "desc",
   };
+}
+
+export function getCampaignAdminUsersFilters(
+  search: CampaignAdminUsersSearch,
+): CampaignAdminUsersFilters {
+  const { query, entityCui } = search;
+
+  return {
+    query,
+    entityCui,
+  };
+}
+
+export function hasActiveCampaignAdminUsersFilters(
+  search: CampaignAdminUsersSearch,
+): boolean {
+  const { query, entityCui } = getCampaignAdminUsersFilters(search);
+
+  return query !== undefined || entityCui !== undefined;
 }
 
 export function normalizeCampaignAdminEntitiesSearch(

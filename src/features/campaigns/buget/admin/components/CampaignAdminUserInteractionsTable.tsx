@@ -713,6 +713,7 @@ export function CampaignAdminUserInteractionsTable({
                   }
                   aria-label={t`Select all pending rows`}
                   disabled={selectableItems.length === 0 || isLoading}
+                  className="h-5 w-5"
                 />
               </TableHead>
               <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
@@ -896,6 +897,7 @@ export function CampaignAdminUserInteractionsTable({
                       }
                       aria-label={t`Select row`}
                       disabled={!selectable || isLoading}
+                      className="h-5 w-5"
                     />
                   </TableCell>
                   <TableCell>
@@ -1082,6 +1084,7 @@ export function CampaignAdminUserInteractionsTable({
                   }
                   aria-label={t`Select row`}
                   disabled={!selectable || isLoading}
+                  className="h-5 w-5"
                 />
               </div>
 

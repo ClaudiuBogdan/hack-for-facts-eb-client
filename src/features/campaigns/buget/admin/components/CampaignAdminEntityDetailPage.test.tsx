@@ -149,6 +149,7 @@ function createUsersResponse(
   return {
     items,
     page: {
+      totalCount: items.length,
       hasMore: false,
       nextCursor: null,
       sortBy: "latestUpdatedAt",
@@ -273,6 +274,7 @@ function mockNotificationsState(input: {
         : {
             items: input.items ?? [],
             page: {
+              totalCount: (input.items ?? []).length,
               hasMore: false,
               nextCursor: null,
             },
@@ -298,6 +300,7 @@ function mockInteractionsState(input: {
             items: input.items ?? [],
             page: {
               limit: 10,
+              totalCount: (input.items ?? []).length,
               hasMore: false,
               nextCursor: null,
             },

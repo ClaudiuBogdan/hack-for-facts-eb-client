@@ -35,6 +35,7 @@ function createUsersListResponsePayload() {
         },
       ],
       page: {
+        totalCount: 1,
         hasMore: true,
         nextCursor: "cursor-1",
         sortBy: "latestUpdatedAt",
@@ -82,6 +83,7 @@ describe("campaign-admin-users api", () => {
     });
 
     expect(result.items).toHaveLength(1);
+    expect(result.page.totalCount).toBe(1);
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining(
         "/api/v1/admin/campaigns/funky/users?query=user-1&entityCui=12345678&sortBy=interactionCount&sortOrder=asc&cursor=cursor-0&limit=25",
@@ -191,6 +193,7 @@ describe("campaign-admin-users api", () => {
               },
             ],
             page: {
+              totalCount: 1,
               hasMore: false,
               nextCursor: null,
               sortBy: "latestUpdatedAt",

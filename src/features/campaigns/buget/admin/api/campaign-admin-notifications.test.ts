@@ -30,6 +30,7 @@ function createNotificationsListPayload() {
     data: {
       items: [],
       page: {
+        totalCount: 0,
         hasMore: false,
         nextCursor: null,
       },
@@ -109,6 +110,7 @@ function createPlanPayload() {
         },
       ],
       page: {
+        totalCount: 2,
         hasMore: true,
         nextCursor: "cursor-2",
       },
@@ -165,7 +167,7 @@ describe("campaign-admin-notifications api", () => {
       }),
     );
 
-    await listCampaignAdminNotifications({
+    const result = await listCampaignAdminNotifications({
       campaignKey: "funky",
       filters: {
         status: "delivered",
@@ -177,6 +179,7 @@ describe("campaign-admin-notifications api", () => {
       limit: 25,
     });
 
+    expect(result.page.totalCount).toBe(0);
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining(
         "/api/v1/admin/campaigns/funky/notifications?status=delivered&entityCui=12345678&sortBy=createdAt&sortOrder=desc&cursor=cursor-0&limit=25",
@@ -285,13 +288,14 @@ describe("campaign-admin-notifications api", () => {
       }),
     );
 
-    await getCampaignAdminNotificationPlanPage({
+    const result = await getCampaignAdminNotificationPlanPage({
       campaignKey: "funky",
       planId: "plan-1",
       cursor: "cursor-2",
       limit: 25,
     });
 
+    expect(result.page.totalCount).toBe(2);
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining(
         "/api/v1/admin/campaigns/funky/notifications/plans/plan-1?cursor=cursor-2&limit=25",

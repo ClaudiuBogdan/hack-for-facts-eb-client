@@ -30,6 +30,7 @@ import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components
 import { CampaignAdminCursorPager } from "@/features/campaigns/buget/admin/components/CampaignAdminCursorPager";
 import { CampaignAdminEntitiesTable } from "@/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable";
 import { CampaignAdminEntitiesToolbar } from "@/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar";
+import { CompactStat } from "@/features/campaigns/buget/admin/components/CompactStat";
 import { getCampaignAdminCampaignLabel } from "@/features/campaigns/buget/admin/constants";
 import {
   useCampaignAdminEntitiesMetaQuery,
@@ -59,21 +60,6 @@ type CampaignAdminEntitiesPageProps = {
   ) => void;
 };
 
-function InlineStat({
-  label,
-  value,
-}: {
-  readonly label: string;
-  readonly value: number;
-}) {
-  return (
-    <span className="inline-flex items-baseline gap-1 text-sm tabular-nums">
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <span className="font-semibold text-foreground">{value}</span>
-    </span>
-  );
-}
-
 function SummaryCard({
   label,
   value,
@@ -98,17 +84,14 @@ function SummaryCard({
 
 function EntitiesSummarySkeleton() {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+    <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
       {Array.from({ length: 5 }).map((_, index) => (
-        <div
-          key={index}
-          className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-none"
-        >
-          <Skeleton className="h-3 w-28" />
-          <Skeleton className="mt-3 h-8 w-20" />
-          <Skeleton className="mt-2 h-3 w-full" />
+        <div key={index} className="flex items-baseline gap-1.5">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-6 w-12" />
         </div>
       ))}
+      <Skeleton className="h-3 w-28" />
     </div>
   );
 }
@@ -132,7 +115,7 @@ function EntitiesTableSkeleton() {
           <Skeleton className="h-8 w-28 rounded-full" />
         </div>
       </div>
-      <div className="rounded-2xl border border-border/70 bg-card/80 shadow-none">
+      <div className="overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-none">
         <div className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3">
           <Skeleton className="h-4 w-20" />
           <Skeleton className="h-8 w-24 rounded-full" />
@@ -141,6 +124,18 @@ function EntitiesTableSkeleton() {
           {Array.from({ length: 5 }).map((_, index) => (
             <Skeleton key={index} className="h-14 w-full rounded-none" />
           ))}
+        </div>
+        <div className="border-t border-border/60 bg-muted/30 px-4 py-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-24" />
+              <Skeleton className="h-9 w-20" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -483,30 +478,9 @@ export function CampaignAdminEntitiesPage({
           {t`Refresh`}
         </Button>
       }
-      details={
-        <>
-          <InlineStat label={t`Visible`} value={items.length} />
-          <span className="text-xs text-muted-foreground">
-            {t`Page ${currentPageIndex}`}
-          </span>
-        </>
-      }
-    >
-      <section className="space-y-4" aria-labelledby="entities-summary-title">
-        <div className="flex items-center justify-between gap-3">
-          <div className="space-y-1">
-            <h2
-              id="entities-summary-title"
-              className="text-base font-semibold tracking-tight text-foreground"
-            >
-              {t`Entity summary`}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {t`Use the entity view to find where review load, subscriptions, and notification failures are concentrated.`}
-            </p>
-          </div>
-        </div>
 
+    >
+      <section className="space-y-4" aria-label={t`Entities summary`}>
         {metaQuery.isLoading && meta === undefined ? (
           <EntitiesSummarySkeleton />
         ) : meta ? (
@@ -514,18 +488,44 @@ export function CampaignAdminEntitiesPage({
             open={isEntitySummaryExpanded}
             onOpenChange={setIsEntitySummaryExpanded}
           >
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-              <SummaryCard
-                label={t`Total entities`}
-                value={meta.totalEntities}
-                description={t`Distinct campaign entities available in this admin view.`}
-              />
-              <SummaryCard
-                label={t`Pending reviews`}
-                value={meta.entitiesWithPendingReviews}
-                description={t`Entities that currently surface review work.`}
-              />
-              <CollapsibleContent className="contents">
+            {/* Compact stats bar - always visible */}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              <CompactStat label={t`Total entities`} value={meta.totalEntities} />
+              <CompactStat label={t`Pending reviews`} value={meta.entitiesWithPendingReviews} className="text-amber-600 dark:text-amber-400" />
+              <CompactStat label={t`Subscribers`} value={meta.entitiesWithSubscribers} className="text-emerald-600 dark:text-emerald-400" />
+              <CompactStat label={t`Notification activity`} value={meta.entitiesWithNotificationActivity} className="text-blue-600 dark:text-blue-400" />
+              {meta.entitiesWithFailedNotifications > 0 ? (
+                <CompactStat label={t`Failed notifications`} value={meta.entitiesWithFailedNotifications} className="text-rose-600 dark:text-rose-400" />
+              ) : null}
+              <CollapsibleTrigger asChild>
+                <button
+                  type="button"
+                  className="group flex items-baseline gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <span className="font-medium uppercase tracking-[0.16em]">
+                    {isEntitySummaryExpanded ? t`Show less` : t`Show more stats`}
+                  </span>
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 transition-transform ${isEntitySummaryExpanded ? "rotate-180" : ""}`}
+                    aria-hidden="true"
+                  />
+                </button>
+              </CollapsibleTrigger>
+            </div>
+
+            {/* Expanded full cards */}
+            <CollapsibleContent className="mt-4">
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                <SummaryCard
+                  label={t`Total entities`}
+                  value={meta.totalEntities}
+                  description={t`Distinct campaign entities available in this admin view.`}
+                />
+                <SummaryCard
+                  label={t`Pending reviews`}
+                  value={meta.entitiesWithPendingReviews}
+                  description={t`Entities that currently surface review work.`}
+                />
                 <SummaryCard
                   label={t`Subscribers`}
                   value={meta.entitiesWithSubscribers}
@@ -541,20 +541,8 @@ export function CampaignAdminEntitiesPage({
                   value={meta.entitiesWithFailedNotifications}
                   description={t`Entities with any recent failed notification signal.`}
                 />
-              </CollapsibleContent>
-            </div>
-            <CollapsibleTrigger asChild>
-              <button
-                type="button"
-                className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <ChevronDown
-                  className={`h-3.5 w-3.5 transition-transform ${isEntitySummaryExpanded ? "rotate-180" : ""}`}
-                  aria-hidden="true"
-                />
-                {isEntitySummaryExpanded ? t`Show less` : t`Show more stats`}
-              </button>
-            </CollapsibleTrigger>
+              </div>
+            </CollapsibleContent>
           </Collapsible>
         ) : (
           <div className="rounded-2xl border border-dashed border-border/70 px-4 py-3 text-sm text-muted-foreground">
@@ -654,6 +642,22 @@ export function CampaignAdminEntitiesPage({
                     )
                   : undefined
               }
+              footer={
+                items.length > 0 ? (
+                  <CampaignAdminCursorPager
+                    pageIndex={currentPageIndex}
+                    pageSize={normalizedSearch.limit}
+                    itemCount={items.length}
+                    totalCount={entitiesQuery.data?.page.totalCount}
+                    canPrevious={canPreviousPage}
+                    canNext={entitiesQuery.data?.page.hasMore ?? false}
+                    isLoading={entitiesQuery.isFetching}
+                    onPrevious={handlePreviousPage}
+                    onNext={handleNextPage}
+                    variant="connected"
+                  />
+                ) : null
+              }
               onClearFilters={() => {
                 handleEntitiesSearchChange(
                   createEmptyCampaignAdminEntitiesSearch({
@@ -662,19 +666,6 @@ export function CampaignAdminEntitiesPage({
                 );
               }}
             />
-
-            {items.length > 0 ? (
-              <CampaignAdminCursorPager
-                pageIndex={currentPageIndex}
-                pageSize={normalizedSearch.limit}
-                itemCount={items.length}
-                canPrevious={canPreviousPage}
-                canNext={entitiesQuery.data?.page.hasMore ?? false}
-                isLoading={entitiesQuery.isFetching}
-                onPrevious={handlePreviousPage}
-                onNext={handleNextPage}
-              />
-            ) : null}
           </div>
         )}
       </section>

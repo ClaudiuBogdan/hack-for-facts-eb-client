@@ -665,9 +665,13 @@ export function CampaignAdminEntitiesTable({
             </TableBody>
           </Table>
         </div>
-      </div>
 
-      {footer}
+        {footer ? (
+          <div className="border-t border-border/60 bg-muted/30 px-4 py-3">
+            {footer}
+          </div>
+        ) : null}
+      </div>
     </>
   );
 }

@@ -230,9 +230,9 @@ function DistributionList({
               onClick={() => {
                 onNavigate(item.href!);
               }}
-              className="flex w-full items-start justify-between gap-3 hover:text-primary"
+              className="flex w-full items-start justify-between gap-3 text-left hover:text-primary"
             >
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground">{item.label}</p>
                 {item.description ? (
                   <p className="mt-0.5 text-xs text-muted-foreground">
@@ -245,8 +245,8 @@ function DistributionList({
               </span>
             </button>
           ) : (
-            <>
-              <div className="min-w-0">
+            <div className="flex w-full items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground">{item.label}</p>
                 {item.description ? (
                   <p className="mt-0.5 text-xs text-muted-foreground">
@@ -257,7 +257,7 @@ function DistributionList({
               <span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
                 {item.value}
               </span>
-            </>
+            </div>
           )}
         </div>
       ))}

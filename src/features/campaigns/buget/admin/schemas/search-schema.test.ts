@@ -4,6 +4,7 @@ import {
   createEmptyCampaignAdminEntitiesSearch,
   buildCampaignAdminQueueSearchFromDraft,
   createEmptyCampaignAdminQueueSearch,
+  hasActiveCampaignAdminUsersFilters,
   isCampaignAdminFilterDraftEqual,
   normalizeCampaignAdminEntitiesSearch,
   normalizeCampaignAdminNotificationsSearch,
@@ -392,6 +393,32 @@ describe("campaign admin search schema", () => {
       sortBy: "latestUpdatedAt",
       sortOrder: "desc",
     });
+  });
+
+  it("treats only query and entity scope as active users filters", () => {
+    expect(
+      hasActiveCampaignAdminUsersFilters({
+        limit: 50,
+        sortBy: "latestUpdatedAt",
+        sortOrder: "desc",
+        cursor: "cursor-1",
+        pageIndex: 2,
+      }),
+    ).toBe(false);
+
+    expect(
+      hasActiveCampaignAdminUsersFilters({
+        limit: 50,
+        query: "user-1",
+      }),
+    ).toBe(true);
+
+    expect(
+      hasActiveCampaignAdminUsersFilters({
+        limit: 50,
+        entityCui: "12345678",
+      }),
+    ).toBe(true);
   });
 
   it("ignores child-only sort keys on the users route instead of throwing", () => {

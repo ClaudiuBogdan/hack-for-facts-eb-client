@@ -245,23 +245,32 @@ describe("CampaignAdminHubPage", () => {
     expect(screen.getByText("9 users · 3 need review")).toBeInTheDocument();
   });
 
-  it("renders campaign analytics as a featured block with the dedicated analytics link", () => {
+  it("renders analytics link in stats bar with dedicated analytics route", () => {
     render(<CampaignAdminHubPage campaignKey="funky" />);
 
     const analyticsLink = screen.getByRole("link", {
-      name: /Campaign analytics/i,
+      name: /Analytics/i,
     });
 
-    expect(screen.getByText("Campaign analytics")).toBeInTheDocument();
+    expect(analyticsLink).toBeInTheDocument();
     expect(analyticsLink).toHaveAttribute(
       "href",
       "/admin/campaigns/funky/analytics",
     );
-    expect(
-      screen.getByText(
-        "18 entities · 10 delivered · 7 opened · 3 users need review",
-      ),
-    ).toBeInTheDocument();
+
+    // Verify analytics stats labels are displayed in the stats bar
+    const statsBarLabels = screen.getAllByTestId("compact-stat-label");
+    const statsBarValues = screen.getAllByTestId("compact-stat-value");
+
+    const labelTexts = statsBarLabels.map((el) => el.textContent);
+    expect(labelTexts).toContain("Entities");
+    expect(labelTexts).toContain("Delivered");
+    expect(labelTexts).toContain("Opened");
+
+    const valueTexts = statsBarValues.map((el) => el.textContent);
+    expect(valueTexts).toContain("18");
+    expect(valueTexts).toContain("10");
+    expect(valueTexts).toContain("7");
   });
 
   it("renders the entities hub card with the entities route search", () => {
@@ -317,10 +326,14 @@ describe("CampaignAdminHubPage", () => {
         "Audit campaign notification activity, preview matches, and send notifications",
       ),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "View campaign totals and current distributions across users, interactions, entities, and notifications",
-      ),
-    ).toBeInTheDocument();
+    // Analytics link should still be present even when stats are unavailable
+    const analyticsLink = screen.getByRole("link", {
+      name: /Analytics/i,
+    });
+    expect(analyticsLink).toBeInTheDocument();
+    // Analytics stats labels should not be shown when data is unavailable
+    const statsBarLabels = screen.queryAllByTestId("compact-stat-label");
+    const entitiesLabel = statsBarLabels.find((el) => el.textContent === "Entities");
+    expect(entitiesLabel).toBeUndefined();
   });
 });

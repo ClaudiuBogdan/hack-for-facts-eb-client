@@ -93,6 +93,7 @@ function createListResponse(
     items,
     page: {
       limit: 50,
+      totalCount: items.length,
       hasMore: false,
       nextCursor: null,
     },

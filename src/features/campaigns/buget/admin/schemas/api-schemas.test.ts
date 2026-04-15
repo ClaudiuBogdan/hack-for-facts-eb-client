@@ -116,6 +116,7 @@ function createListResponsePayload() {
       ],
       page: {
         limit: 50,
+        totalCount: 1,
         hasMore: false,
         nextCursor: null,
       },
@@ -139,6 +140,7 @@ function createUsersListResponsePayload() {
         },
       ],
       page: {
+        totalCount: 1,
         hasMore: false,
         nextCursor: null,
         sortBy: "latestUpdatedAt",
@@ -185,6 +187,7 @@ function createNotificationsListResponsePayload() {
         },
       ],
       page: {
+        totalCount: 1,
         hasMore: true,
         nextCursor: "cursor-1",
       },
@@ -218,6 +221,7 @@ function createEntitiesListResponsePayload() {
         },
       ],
       page: {
+        totalCount: 1,
         hasMore: true,
         nextCursor: "cursor-1",
         sortBy: "latestInteractionAt",
@@ -592,6 +596,7 @@ describe("campaign admin api schemas", () => {
         ],
         page: {
           limit: 50,
+          totalCount: 1,
           hasMore: false,
           nextCursor: null,
         },

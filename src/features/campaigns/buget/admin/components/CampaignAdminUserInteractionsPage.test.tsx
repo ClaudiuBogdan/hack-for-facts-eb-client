@@ -158,12 +158,14 @@ function mockQueueState(input: {
   error?: { status: number; message: string } | null
   isLoading?: boolean
   isFetching?: boolean
+  totalCount?: number
 }) {
   useCampaignAdminQueueQueryMock.mockReturnValue({
     data: {
       items: input.items ?? [],
       page: {
         limit: 50,
+        totalCount: input.totalCount ?? (input.items ?? []).length,
         hasMore: false,
         nextCursor: null,
       },
@@ -324,6 +326,8 @@ describe('CampaignAdminUserInteractionsPage', () => {
   })
 
   it('renders the shared queue header and review section shell', () => {
+    mockQueueState({ items: [createItem()], totalCount: 23 })
+
     render(
       <CampaignAdminUserInteractionsPage
         campaignKey="funky"
@@ -335,6 +339,10 @@ describe('CampaignAdminUserInteractionsPage', () => {
     expect(
       screen.getByRole('heading', { name: 'Interactions queue' })
     ).toBeInTheDocument()
+    // Pager now shows in table footer with "connected" variant
+    // Use getAllByText since pager appears in both desktop and mobile views
+    expect(screen.getAllByText('Page 1').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Showing 1 of 23').length).toBeGreaterThan(0)
     expect(screen.getByRole('link', { name: 'Open users' })).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { name: 'Review queue' })
@@ -405,23 +413,25 @@ describe('CampaignAdminUserInteractionsPage', () => {
       />
     )
 
-    const summary = screen.getByLabelText('Campaign queue summary')
+    // Check compact stats bar shows key metrics via CompactStat data-testid
+    const statValues = screen.getAllByTestId('compact-stat-value').map((el) => el.textContent)
+    expect(statValues).toContain('137')
+    expect(statValues).toContain('41')
+    expect(statValues).toContain('72')
+    expect(statValues).toContain('19')
+    expect(statValues).toContain('29')
+    expect(statValues).toContain('21')
 
-    expect(screen.getByRole('group', { name: 'Pending: 41' })).toBeInTheDocument()
-    expect(screen.getByRole('group', { name: 'Warnings: 29' })).toBeInTheDocument()
-    expect(screen.getByRole('group', { name: 'Total: 137' })).toBeInTheDocument()
-    expect(within(summary).getByText('Not reviewed').parentElement).toHaveTextContent(
-      '5 Not reviewed'
-    )
+    // Show more button should expand full stats
+    fireEvent.click(screen.getByText('Show more'))
 
-    fireEvent.click(screen.getByText('Show phase & thread breakdown'))
-
-    expect(within(summary).getByText('With thread').parentElement).toHaveTextContent(
-      '101 With thread'
-    )
-    expect(within(summary).getByText('No thread').parentElement).toHaveTextContent(
-      '36 No thread'
-    )
+    // Expanded content should show summary cards (use getAllByText for duplicates in mobile/desktop)
+    expect(screen.getAllByText('Review status').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Phase').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Threads').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Risk flags').length).toBeGreaterThan(0)
+    expect(screen.getByText(/4 Thread failed/)).toBeInTheDocument()
+    expect(screen.getByText(/36 No thread/)).toBeInTheDocument()
 
     firstRender.unmount()
     const metaRefetchMock = vi.fn()

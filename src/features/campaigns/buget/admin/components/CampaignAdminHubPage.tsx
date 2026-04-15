@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
-  BarChart3,
   Building2,
   ClipboardList,
   Mail,
@@ -19,11 +18,11 @@ import {
 import { useCampaignAdminStatsOverviewQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-stats";
 import { useCampaignAdminInteractionMetaQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-user-interactions";
 import { useCampaignAdminUsersMetaQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-users";
+import { CompactStat } from "@/features/campaigns/buget/admin/components/CompactStat";
 import type {
   CampaignAdminCampaignKey,
   CampaignAdminEntitiesMetaResponse,
   CampaignAdminNotificationsMetaResponse,
-  CampaignAdminStatsOverview,
   CampaignAdminUsersMetaResponse,
 } from "@/features/campaigns/buget/admin/types";
 
@@ -198,66 +197,6 @@ function NotificationsHubCardSummary({
   );
 }
 
-function AnalyticsFeaturedBlock({
-  campaignKey,
-  overview,
-  isLoading,
-}: {
-  readonly campaignKey: string;
-  readonly overview?: CampaignAdminStatsOverview;
-  readonly isLoading: boolean;
-}) {
-  if (overview === undefined) {
-    return (
-      <Link
-        to="/admin/campaigns/$campaignKey/analytics"
-        params={{ campaignKey }}
-        className="group flex items-center gap-4 rounded-xl border border-border/70 bg-card/80 p-5 transition-colors hover:border-border hover:bg-muted/20"
-      >
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-          <BarChart3 className="h-5 w-5" aria-hidden="true" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-foreground">
-            {isLoading ? t`Loading campaign analytics…` : t`Campaign analytics`}
-          </p>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            {t`View campaign totals and current distributions across users, interactions, entities, and notifications`}
-          </p>
-        </div>
-        <ArrowRight
-          className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-          aria-hidden="true"
-        />
-      </Link>
-    );
-  }
-
-  return (
-    <Link
-      to="/admin/campaigns/$campaignKey/analytics"
-      params={{ campaignKey }}
-      className="group flex items-center gap-4 rounded-xl border border-border/70 bg-card/80 p-5 transition-colors hover:border-border hover:bg-muted/20"
-    >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-        <BarChart3 className="h-5 w-5" aria-hidden="true" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-foreground">
-          {t`Campaign analytics`}
-        </p>
-        <p className="mt-0.5 text-sm text-muted-foreground">
-          {t`${overview.entities.totalEntities} entities · ${overview.notifications.deliveredCount} delivered · ${overview.notifications.openedCount} opened · ${overview.users.usersWithPendingReviews} users need review`}
-        </p>
-      </div>
-      <ArrowRight
-        className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-        aria-hidden="true"
-      />
-    </Link>
-  );
-}
-
 export function CampaignAdminHubPage({
   campaignKey,
 }: CampaignAdminHubPageProps) {
@@ -293,6 +232,7 @@ export function CampaignAdminHubPage({
   const usersMeta = usersMetaQuery.data;
   const entitiesMeta = entitiesMetaQuery.data;
   const notificationsMeta = notificationsMetaQuery.data;
+  const overview = statsOverviewQuery.data;
 
   const campaignLabel = getCampaignAdminCampaignLabel(campaignKey);
 
@@ -332,55 +272,97 @@ export function CampaignAdminHubPage({
       ) : (
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                {t`Interactions`}
-              </span>
-              <span className="text-lg font-semibold tabular-nums text-foreground">
-                {totalInteractions}
-              </span>
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                {t`Pending`}
-              </span>
-              <span className="text-lg font-semibold tabular-nums text-amber-600 dark:text-amber-400">
-                {pendingCount}
-              </span>
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                {t`Approved`}
-              </span>
-              <span className="text-lg font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
-                {approvedCount}
-              </span>
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                {t`Rejected`}
-              </span>
-              <span className="text-lg font-semibold tabular-nums text-foreground">
-                {rejectedCount}
-              </span>
-            </div>
-            {riskFlaggedCount > 0 ? (
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                  {t`Flagged`}
-                </span>
-                <span className="text-lg font-semibold tabular-nums text-rose-600 dark:text-rose-400">
-                  {riskFlaggedCount}
-                </span>
-              </div>
+            {/* Users - Primary audience metric */}
+            {statsOverviewQuery.isLoading ? (
+              <CompactStat label={t`Users`} value={0} isLoading />
+            ) : overview ? (
+              <CompactStat
+                label={t`Users`}
+                value={overview.users.totalUsers}
+                className="text-blue-600 dark:text-blue-400"
+              />
             ) : null}
-          </div>
 
-          <AnalyticsFeaturedBlock
-            campaignKey={campaignKey}
-            overview={statsOverviewQuery.data}
-            isLoading={statsOverviewQuery.isLoading}
-          />
+            {/* Entities - Primary scope metric */}
+            {statsOverviewQuery.isLoading ? (
+              <CompactStat label={t`Entities`} value={0} isLoading />
+            ) : overview ? (
+              <CompactStat
+                label={t`Entities`}
+                value={overview.entities.totalEntities}
+                className="text-indigo-600 dark:text-indigo-400"
+              />
+            ) : null}
+
+            {/* Interactions - Total activity */}
+            <CompactStat
+              label={t`Interactions`}
+              value={totalInteractions}
+              isLoading={metaQuery.isLoading}
+            />
+
+            {/* Review Status Group */}
+            <CompactStat
+              label={t`Pending`}
+              value={pendingCount}
+              isLoading={metaQuery.isLoading}
+              className="text-amber-600 dark:text-amber-400"
+            />
+            {metaQuery.isLoading ? null : riskFlaggedCount > 0 ? (
+              <CompactStat
+                label={t`Flagged`}
+                value={riskFlaggedCount}
+                className="text-rose-600 dark:text-rose-400"
+              />
+            ) : null}
+            <CompactStat
+              label={t`Approved`}
+              value={approvedCount}
+              isLoading={metaQuery.isLoading}
+              className="text-emerald-600 dark:text-emerald-400"
+            />
+            <CompactStat
+              label={t`Rejected`}
+              value={rejectedCount}
+              isLoading={metaQuery.isLoading}
+              className="text-muted-foreground"
+            />
+
+            {/* Notification Metrics Group */}
+            {statsOverviewQuery.isLoading ? (
+              <>
+                <CompactStat label={t`Delivered`} value={0} isLoading />
+                <CompactStat label={t`Opened`} value={0} isLoading />
+              </>
+            ) : overview ? (
+              <>
+                <CompactStat
+                  label={t`Delivered`}
+                  value={overview.notifications.deliveredCount}
+                  className="text-cyan-600 dark:text-cyan-400"
+                />
+                <CompactStat
+                  label={t`Opened`}
+                  value={overview.notifications.openedCount}
+                  className="text-violet-600 dark:text-violet-400"
+                />
+              </>
+            ) : null}
+
+            <Link
+              to="/admin/campaigns/$campaignKey/analytics"
+              params={{ campaignKey }}
+              className="group flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <span className="text-xs font-medium uppercase tracking-[0.16em]">
+                {t`Analytics`}
+              </span>
+              <ArrowRight
+                className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+                aria-hidden="true"
+              />
+            </Link>
+          </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <Link

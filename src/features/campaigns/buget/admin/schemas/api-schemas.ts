@@ -227,6 +227,7 @@ const campaignAdminListResponseSchema = z
         page: z
           .object({
             limit: z.number().int().min(1).max(100),
+            totalCount: campaignAdminCountSchema,
             hasMore: z.boolean(),
             nextCursor: z.string().min(1).nullable(),
             sortBy: z
@@ -260,6 +261,7 @@ const campaignAdminUsersListResponseSchema = z
         items: z.array(campaignAdminUserListItemSchema),
         page: z
           .object({
+            totalCount: campaignAdminCountSchema,
             hasMore: z.boolean(),
             nextCursor: z.string().min(1).nullable(),
             sortBy: z.enum(campaignAdminUsersSortKeyValues).optional(),
@@ -438,6 +440,7 @@ const campaignAdminEntitiesListResponseSchema = z
         items: z.array(campaignAdminEntityListItemSchema),
         page: z
           .object({
+            totalCount: campaignAdminCountSchema,
             hasMore: z.boolean(),
             nextCursor: z.string().min(1).nullable(),
             sortBy: z.enum(campaignAdminEntitiesSortKeyValues),
@@ -566,6 +569,7 @@ const campaignAdminNotificationsListResponseSchema = z
         items: z.array(campaignAdminNotificationListItemSchema),
         page: z
           .object({
+            totalCount: campaignAdminCountSchema,
             nextCursor: z.string().min(1).nullable(),
             hasMore: z.boolean(),
           })
@@ -850,6 +854,7 @@ const campaignAdminNotificationPlanResponseSchema = z
         rows: z.array(campaignAdminNotificationPlanRowSchema),
         page: z
           .object({
+            totalCount: campaignAdminCountSchema,
             nextCursor: z.string().min(1).nullable(),
             hasMore: z.boolean(),
           })

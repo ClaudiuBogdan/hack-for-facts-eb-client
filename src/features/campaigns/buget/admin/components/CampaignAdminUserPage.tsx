@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   Ban,
   ClipboardList,
+  Copy,
   LockKeyhole,
   Mail,
   Plus,
@@ -101,6 +102,7 @@ import {
   readCampaignAdminStagedReviewDraftsFromSessionStorage,
   writeCampaignAdminStagedReviewDraftsToSessionStorage,
 } from "@/features/campaigns/buget/admin/utils/staged-review-session-storage";
+import { CompactStat } from "@/features/campaigns/buget/admin/components/CompactStat";
 
 const USER_NOTIFICATION_PREVIEW_LIMIT = 10;
 
@@ -114,38 +116,64 @@ type CampaignAdminUserPageProps = {
   ) => void;
 };
 
-function formatDateTime(value: string | null): string {
-  if (value === null) {
-    return t`Unavailable`;
+function createCampaignAdminQueryString(
+  entries: ReadonlyArray<readonly [string, string | boolean | undefined]>,
+): string {
+  const searchParams = new URLSearchParams();
+
+  for (const [key, value] of entries) {
+    if (value !== undefined) {
+      searchParams.set(key, String(value));
+    }
   }
 
-  const parsedDate = new Date(value);
-  if (Number.isNaN(parsedDate.getTime())) {
-    return t`Unavailable`;
-  }
-
-  return parsedDate.toLocaleString();
+  return searchParams.toString();
 }
 
-function InlineStat({
-  label,
-  value,
-  dimmed = false,
-}: {
-  readonly label: string;
-  readonly value: number;
-  readonly dimmed?: boolean;
-}) {
-  return (
-    <span
-      className={`inline-flex items-baseline gap-1 text-sm tabular-nums ${dimmed ? "text-muted-foreground/60" : "text-foreground"}`}
-    >
-      <span className={`text-xs font-medium ${dimmed ? "text-muted-foreground/50" : "text-muted-foreground"}`}>
-        {label}
-      </span>
-      <span className={`font-semibold ${dimmed ? "" : ""}`}>{value}</span>
-    </span>
-  );
+function createFilteredQueueHref(
+  campaignKey: CampaignAdminCampaignKey,
+  userId: string,
+  search: CampaignAdminUserPageSearch,
+): string {
+  const queryString = createCampaignAdminQueryString([
+    ["userId", userId],
+    ["reviewStatus", search.reviewStatus],
+    ["interactionId", search.interactionId],
+    ["lessonId", search.lessonId],
+    ["entityCui", search.entityCui],
+    ["scopeType", search.scopeType],
+    ["payloadKind", search.payloadKind],
+    ["submissionPath", search.submissionPath],
+    ["recordKey", search.recordKey],
+    ["recordKeyPrefix", search.recordKeyPrefix],
+    ["submittedAtFrom", search.submittedAtFrom],
+    ["submittedAtTo", search.submittedAtTo],
+    ["updatedAtFrom", search.updatedAtFrom],
+    ["updatedAtTo", search.updatedAtTo],
+    ["hasInstitutionThread", search.hasInstitutionThread],
+    ["threadPhase", search.threadPhase],
+    ["sortBy", search.sortBy],
+    ["sortOrder", search.sortOrder],
+  ]);
+
+  return `/admin/campaigns/${campaignKey}/user-interactions?${queryString}`;
+}
+
+function createNotificationsHref(
+  campaignKey: CampaignAdminCampaignKey,
+  userId: string,
+  entityCui?: string,
+): string {
+  const queryString = createCampaignAdminQueryString([
+    ["tab", "audit"],
+    ["userId", userId],
+    ["sortBy", "createdAt"],
+    ["sortOrder", "desc"],
+    ["limit", String(DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT)],
+    ["entityCui", entityCui],
+  ]);
+
+  return `/admin/campaigns/${campaignKey}/notifications?${queryString}`;
 }
 
 export function CampaignAdminUserPage({
@@ -292,10 +320,6 @@ export function CampaignAdminUserPage({
       (item) => item.reviewStatus === "rejected",
     ).length;
     const flagged = allItems.filter((item) => item.riskFlags.length > 0).length;
-    const latestUpdatedAt =
-      [...allItems]
-        .map((item) => item.updatedAt)
-        .sort((left, right) => Date.parse(right) - Date.parse(left))[0] ?? null;
 
     return {
       total: allItems.length,
@@ -303,27 +327,21 @@ export function CampaignAdminUserPage({
       approved,
       rejected,
       flagged,
-      latestUpdatedAt,
     };
   }, [allItems]);
   const queueHref = `/admin/campaigns/${campaignKey}/user-interactions?userId=${encodeURIComponent(userId)}`;
-  const notificationsHref = useMemo(() => {
-    const searchParams = new URLSearchParams({
-      tab: "audit",
-      userId,
-      sortBy: "createdAt",
-      sortOrder: "desc",
-      limit: String(DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT),
+  const filteredQueueHref = useMemo(() => {
+    return createFilteredQueueHref(campaignKey, userId, {
+      ...normalizedSearch,
+      reviewSelectionKey: undefined,
     });
-
-    if (
-      normalizedSearch.entityCui !== undefined &&
-      normalizedSearch.entityCui.length > 0
-    ) {
-      searchParams.set("entityCui", normalizedSearch.entityCui);
-    }
-
-    return `/admin/campaigns/${campaignKey}/notifications?${searchParams.toString()}`;
+  }, [campaignKey, normalizedSearch, userId]);
+  const notificationsHref = useMemo(() => {
+    return createNotificationsHref(
+      campaignKey,
+      userId,
+      normalizedSearch.entityCui,
+    );
   }, [campaignKey, normalizedSearch.entityCui, userId]);
   const userIdPreview = formatCampaignAdminUserIdPreview(userId, {
     maxLength: 20,
@@ -976,11 +994,40 @@ export function CampaignAdminUserPage({
     );
   }
 
+  const handleCopyUserId = async () => {
+    if (typeof navigator === "undefined" || navigator.clipboard?.writeText === undefined) {
+      toast.error(t`Clipboard copy is not available in this browser.`);
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(userId);
+      toast.success(t`User ID copied to clipboard.`);
+    } catch {
+      toast.error(t`Failed to copy user ID.`);
+    }
+  };
+
   return (
     <AdminCampaignLayout
       campaignKey={campaignKey}
-      title={t`User workspace`}
-      description={t`Review one user’s campaign activity with batch selection and the existing operator review workflow.`}
+      title={(
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="text-xl font-semibold tracking-tight text-foreground text-pretty sm:text-2xl">
+            {t`User workspace`}
+          </h1>
+          <button
+            type="button"
+            onClick={handleCopyUserId}
+            className="inline-flex max-w-[12rem] items-center gap-1.5 rounded-full border border-border/60 bg-background px-2.5 py-1 font-mono text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            title={t`Click to copy full user ID`}
+          >
+            <Copy className="h-3 w-3 shrink-0" aria-hidden="true" />
+            <span className="truncate">{userId}</span>
+          </button>
+        </div>
+      )}
+      description={t`Review one user's campaign activity with batch selection and the existing operator review workflow.`}
       eyebrow={(
         <Breadcrumb className="py-0">
           <BreadcrumbList>
@@ -1017,26 +1064,6 @@ export function CampaignAdminUserPage({
             </a>
           </Button>
         </div>
-      )}
-      details={(
-        <>
-          <span className="inline-flex items-center rounded-full border border-border/60 bg-background px-2.5 py-1 font-mono text-xs text-muted-foreground">
-            {userIdPreview}
-          </span>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <InlineStat label={t`Total`} value={summary.total} />
-            <InlineStat label={t`Approved`} value={summary.approved} dimmed={summary.approved === 0} />
-            <InlineStat label={t`Risk`} value={summary.flagged} dimmed={summary.flagged === 0} />
-            <InlineStat label={t`Pending`} value={summary.pending} dimmed={summary.pending === 0} />
-            <InlineStat label={t`Rejected`} value={summary.rejected} dimmed={summary.rejected === 0} />
-          </div>
-          <span className="hidden h-4 w-px bg-border/60 md:block" aria-hidden="true" />
-          <span className="text-xs text-muted-foreground">
-            {summary.latestUpdatedAt
-              ? t`Last activity ${formatDateTime(summary.latestUpdatedAt)}`
-              : t`No interactions yet`}
-          </span>
-        </>
       )}
     >
       {metaQuery.error && metaQuery.data === undefined ? (
@@ -1088,17 +1115,62 @@ export function CampaignAdminUserPage({
         </Alert>
       ) : null}
 
+      {/* Stats bar - moved from header details to content area */}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pb-4" aria-label={t`User interactions summary`}>
+        {interactionsQuery.isLoading ? (
+          <>
+            <CompactStat label={t`Total`} value={0} isLoading />
+            <CompactStat label={t`Pending`} value={0} isLoading />
+            <CompactStat label={t`Approved`} value={0} isLoading />
+            <CompactStat label={t`Risk`} value={0} isLoading />
+            <CompactStat label={t`Rejected`} value={0} isLoading />
+          </>
+        ) : (
+          <>
+            <CompactStat label={t`Total`} value={summary.total} />
+            {summary.pending > 0 ? (
+              <CompactStat
+                label={t`Pending`}
+                value={summary.pending}
+                className="text-amber-600 dark:text-amber-400"
+              />
+            ) : (
+              <CompactStat label={t`Pending`} value={summary.pending} />
+            )}
+            <CompactStat label={t`Approved`} value={summary.approved} />
+            {summary.flagged > 0 ? (
+              <CompactStat
+                label={t`Risk`}
+                value={summary.flagged}
+                className="text-rose-600 dark:text-rose-400"
+              />
+            ) : (
+              <CompactStat label={t`Risk`} value={summary.flagged} />
+            )}
+            <CompactStat label={t`Rejected`} value={summary.rejected} />
+          </>
+        )}
+      </div>
+
       <section className="space-y-4" aria-labelledby="user-interactions-section-title">
-        <div className="space-y-1">
-          <h2
-            id="user-interactions-section-title"
-            className="text-base font-semibold tracking-tight text-foreground"
-          >
-            {t`User interactions`}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {t`Inspect submitted records, filter the workspace, and stage review decisions for this user.`}
-          </p>
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-1">
+            <h2
+              id="user-interactions-section-title"
+              className="text-base font-semibold tracking-tight text-foreground"
+            >
+              {t`User interactions`}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {t`Inspect submitted records, filter the workspace, and stage review decisions for this user.`}
+            </p>
+          </div>
+          <Button asChild type="button" variant="outline" size="sm" className="gap-2 shrink-0">
+            <a href={filteredQueueHref}>
+              <ClipboardList className="h-4 w-4" aria-hidden="true" />
+              {t`Open interactions with filters`}
+            </a>
+          </Button>
         </div>
 
         {interactionsQuery.isLoading ? (

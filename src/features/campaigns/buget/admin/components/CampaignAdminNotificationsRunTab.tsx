@@ -1070,6 +1070,7 @@ export function CampaignAdminNotificationsRunTab({
                   : 25
               }
               itemCount={activePreview.rows.length}
+              totalCount={activePreview.page.totalCount}
               canPrevious={
                 currentPreviewPagination.pageIndex > 1 && !isPreviewConsumed
               }

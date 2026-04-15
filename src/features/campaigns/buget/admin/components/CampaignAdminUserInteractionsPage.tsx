@@ -2,7 +2,6 @@ import { useEffect, useEffectEvent, useMemo, useState } from "react";
 import {
   AlertTriangle,
   Ban,
-  ChevronDown,
   LockKeyhole,
   RefreshCw,
   SearchX,
@@ -38,15 +37,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { useAuth, AuthSignInButton } from "@/lib/auth";
 import { EmptyState } from "@/components/ui/empty-state";
 import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components/AdminCampaignLayout";
 import { CampaignAdminCursorPager } from "@/features/campaigns/buget/admin/components/CampaignAdminCursorPager";
+import { InteractionsSummaryPanel } from "@/features/campaigns/buget/admin/components/InteractionsSummaryPanel";
 import { CampaignAdminReviewSheet } from "@/features/campaigns/buget/admin/components/CampaignAdminReviewSheet";
 import {
   CampaignAdminSendValidationDialog,
@@ -56,8 +51,6 @@ import { CampaignAdminUserInteractionsToolbar } from "@/features/campaigns/buget
 import {
   buildCampaignAdminSelectionKey,
   getCampaignAdminCampaignLabel,
-  getCampaignAdminPhaseLabel,
-  getCampaignAdminReviewStatusLabel,
   isCampaignAdminUserInteractionsLocalSortKey,
 } from "@/features/campaigns/buget/admin/constants";
 import {
@@ -116,59 +109,6 @@ type CampaignAdminUserInteractionsPageProps = {
     options?: { readonly replace?: boolean },
   ) => void;
 };
-
-function InlineStat({
-  label,
-  value,
-  dimmed = false,
-}: {
-  readonly label: string;
-  readonly value: number;
-  readonly dimmed?: boolean;
-}) {
-  return (
-    <span
-      className={`inline-flex items-baseline gap-1 text-sm tabular-nums ${dimmed ? "text-muted-foreground/60" : "text-foreground"}`}
-      role="group"
-      aria-label={`${label}: ${value}`}
-    >
-      <span className={`text-xs font-medium ${dimmed ? "text-muted-foreground/50" : "text-muted-foreground"}`}>
-        {label}
-      </span>
-      <span className="font-semibold">{value}</span>
-    </span>
-  );
-}
-
-function SummaryBreakdown({
-  label,
-  items,
-}: {
-  readonly label: string;
-  readonly items: ReadonlyArray<{
-    readonly label: string;
-    readonly value: number;
-  }>;
-}) {
-  return (
-    <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-      <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/80">
-        {label}
-      </span>
-      {items.map((item) => (
-        <span
-          key={`${label}:${item.label}`}
-          className="whitespace-nowrap text-sm text-muted-foreground"
-        >
-          <span className="font-medium text-foreground tabular-nums">
-            {item.value}
-          </span>{" "}
-          {item.label}
-        </span>
-      ))}
-    </div>
-  );
-}
 
 function createPaginationStateSignature(search: CampaignAdminQueueSearch): string {
   const {
@@ -321,83 +261,6 @@ export function CampaignAdminUserInteractionsPage({
   );
   const metaStats = metaQuery.data?.stats ?? EMPTY_CAMPAIGN_ADMIN_META_STATS;
   const shouldShowMetaSummary = metaQuery.data !== undefined;
-  const threadInProgressCount =
-    metaStats.threadPhaseCounts.sending +
-    metaStats.threadPhaseCounts.awaiting_reply;
-  const threadResolvedCount =
-    metaStats.threadPhaseCounts.resolved_positive +
-    metaStats.threadPhaseCounts.resolved_negative +
-    metaStats.threadPhaseCounts.closed_no_response;
-  const reviewBreakdownItems = [
-    {
-      label: getCampaignAdminReviewStatusLabel("pending"),
-      value: metaStats.reviewStatusCounts.pending,
-    },
-    {
-      label: getCampaignAdminReviewStatusLabel("approved"),
-      value: metaStats.reviewStatusCounts.approved,
-    },
-    {
-      label: getCampaignAdminReviewStatusLabel("rejected"),
-      value: metaStats.reviewStatusCounts.rejected,
-    },
-    {
-      label: getCampaignAdminReviewStatusLabel(null),
-      value: metaStats.reviewStatusCounts.notReviewed,
-    },
-  ];
-  const phaseBreakdownItems = [
-    {
-      label: getCampaignAdminPhaseLabel("idle"),
-      value: metaStats.phaseCounts.idle,
-    },
-    {
-      label: getCampaignAdminPhaseLabel("draft"),
-      value: metaStats.phaseCounts.draft,
-    },
-    {
-      label: getCampaignAdminPhaseLabel("pending"),
-      value: metaStats.phaseCounts.pending,
-    },
-    {
-      label: getCampaignAdminPhaseLabel("resolved"),
-      value: metaStats.phaseCounts.resolved,
-    },
-    {
-      label: getCampaignAdminPhaseLabel("failed"),
-      value: metaStats.phaseCounts.failed,
-    },
-  ];
-  const threadBreakdownItems = [
-    {
-      label: t`With thread`,
-      value: metaStats.withInstitutionThread,
-    },
-    {
-      label: t`In progress`,
-      value: threadInProgressCount,
-    },
-    {
-      label: t`Reply received`,
-      value: metaStats.threadPhaseCounts.reply_received_unreviewed,
-    },
-    {
-      label: t`Follow-up`,
-      value: metaStats.threadPhaseCounts.manual_follow_up_needed,
-    },
-    {
-      label: t`Resolved`,
-      value: threadResolvedCount,
-    },
-    {
-      label: t`Failed`,
-      value: metaStats.threadPhaseCounts.failed,
-    },
-    {
-      label: t`No thread`,
-      value: metaStats.threadPhaseCounts.none,
-    },
-  ];
   const selectedStagedDraftCount = selectedStagedDrafts.length;
   const selectedNotifyingDraftCount = countCampaignAdminNotifyingDrafts(
     selectedStagedDrafts,
@@ -1265,31 +1128,6 @@ export function CampaignAdminUserInteractionsPage({
           </Button>
         </>
       )}
-      details={(
-        <>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <InlineStat
-              label={t`Pending`}
-              value={metaStats.reviewStatusCounts.pending}
-              dimmed={metaStats.reviewStatusCounts.pending === 0}
-            />
-            <InlineStat
-              label={t`Warnings`}
-              value={metaStats.riskFlagged}
-              dimmed={metaStats.riskFlagged === 0}
-            />
-            <InlineStat
-              label={t`Total`}
-              value={metaStats.total}
-              dimmed={metaStats.total === 0}
-            />
-          </div>
-          <span className="hidden h-4 w-px bg-border/60 md:block" aria-hidden="true" />
-          <span className="text-xs text-muted-foreground">
-            {t`Page ${currentPageIndex}`}
-          </span>
-        </>
-      )}
     >
       {metaQuery.error && metaQuery.data === undefined ? (
         <Alert variant="destructive" aria-live="polite">
@@ -1314,35 +1152,13 @@ export function CampaignAdminUserInteractionsPage({
           </AlertDescription>
         </Alert>
       ) : shouldShowMetaSummary ? (
-        <Collapsible open={isStatsExpanded} onOpenChange={setIsStatsExpanded}>
-          <div
-            role="region"
-            aria-label={t`Campaign queue summary`}
-            className="flex flex-col gap-3 border-b border-border/60 pb-4"
-          >
-            <div className="flex flex-wrap gap-x-6 gap-y-3">
-              <SummaryBreakdown label={t`Review`} items={reviewBreakdownItems} />
-            </div>
-            <CollapsibleContent>
-              <div className="flex flex-wrap gap-x-6 gap-y-3 pt-1">
-                <SummaryBreakdown label={t`Phase`} items={phaseBreakdownItems} />
-                <SummaryBreakdown label={t`Threads`} items={threadBreakdownItems} />
-              </div>
-            </CollapsibleContent>
-            <CollapsibleTrigger asChild>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <ChevronDown
-                  className={`h-3.5 w-3.5 transition-transform ${isStatsExpanded ? "rotate-180" : ""}`}
-                  aria-hidden="true"
-                />
-                {isStatsExpanded ? t`Show less` : t`Show phase & thread breakdown`}
-              </button>
-            </CollapsibleTrigger>
-          </div>
-        </Collapsible>
+        <section className="space-y-4" aria-label={t`Campaign queue summary`}>
+          <InteractionsSummaryPanel
+            stats={metaStats}
+            isExpanded={isStatsExpanded}
+            onExpandedChange={setIsStatsExpanded}
+          />
+        </section>
       ) : (
         <CampaignAdminSummarySkeleton />
       )}
@@ -1432,6 +1248,22 @@ export function CampaignAdminUserInteractionsPage({
                     )
                   : undefined
               }
+              footer={
+                items.length > 0 ? (
+                  <CampaignAdminCursorPager
+                    pageIndex={currentPageIndex}
+                    pageSize={normalizedSearch.limit}
+                    itemCount={items.length}
+                    totalCount={queueQuery.data?.page.totalCount}
+                    canPrevious={canPreviousPage}
+                    canNext={queueQuery.data?.page.hasMore ?? false}
+                    isLoading={queueQuery.isFetching}
+                    onPrevious={handlePreviousPage}
+                    onNext={handleNextPage}
+                    variant="connected"
+                  />
+                ) : null
+              }
               sortBy={effectiveSortBy}
               sortOrder={effectiveSortOrder}
               onCopyRows={handleCopySelectedRows}
@@ -1445,19 +1277,6 @@ export function CampaignAdminUserInteractionsPage({
                 )
               }
             />
-
-            {items.length > 0 ? (
-              <CampaignAdminCursorPager
-                pageIndex={currentPageIndex}
-                pageSize={normalizedSearch.limit}
-                itemCount={items.length}
-                canPrevious={canPreviousPage}
-                canNext={queueQuery.data?.page.hasMore ?? false}
-                isLoading={queueQuery.isFetching}
-                onPrevious={handlePreviousPage}
-                onNext={handleNextPage}
-              />
-            ) : null}
 
             {bulkReviewFooter ? (
               <div className="rounded-3xl border border-border/70 bg-card/80 px-4 py-4 shadow-none">
@@ -1568,36 +1387,14 @@ export function CampaignAdminUserInteractionsPage({
 
 function CampaignAdminSummarySkeleton() {
   return (
-    <div
-      role="status"
-      aria-label={t`Loading campaign queue summary`}
-      className="overflow-hidden rounded-3xl border border-border/70 bg-card/80"
-    >
-      <div className="grid divide-y divide-border/60 md:grid-cols-3 md:divide-x md:divide-y-0">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <div key={index} className="flex flex-col gap-1 px-5 py-4">
-            <Skeleton className="h-3 w-16" />
-            <Skeleton className="h-9 w-20" />
-          </div>
-        ))}
-      </div>
-      <div className="grid gap-2 border-t border-border/60 px-5 py-3 lg:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <div key={index} className="space-y-1">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <Skeleton className="h-3 w-14" />
-              <Skeleton className="h-4 w-12" />
-              <Skeleton className="h-4 w-10" />
-              <Skeleton className="h-4 w-14" />
-            </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-4 w-10" />
-              <Skeleton className="h-4 w-12" />
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+      {Array.from({ length: 5 }).map((_, index) => (
+        <div key={index} className="flex items-baseline gap-1.5">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-6 w-12" />
+        </div>
+      ))}
+      <Skeleton className="h-3 w-28" />
     </div>
   );
 }
@@ -1720,17 +1517,17 @@ function CampaignAdminTableSkeleton() {
         ))}
       </div>
 
-      <div className="flex flex-col gap-3 rounded-3xl border border-border/70 bg-card/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <Skeleton className="h-4 w-16" />
-          <div className="flex gap-2">
-            <Skeleton className="h-3 w-24" />
-            <Skeleton className="h-3 w-16" />
+      {/* Connected footer skeleton */}
+      <div className="border-t border-border/60 bg-muted/30 px-4 py-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-3 w-32" />
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Skeleton className="h-9 w-24 rounded-md" />
-          <Skeleton className="h-9 w-20 rounded-md" />
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-9 w-20" />
+          </div>
         </div>
       </div>
     </div>

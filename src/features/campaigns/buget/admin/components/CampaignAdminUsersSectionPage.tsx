@@ -6,8 +6,6 @@ import {
 } from "react";
 import { Link } from "@tanstack/react-router";
 import {
-  ChevronLeft,
-  ChevronRight,
   ClipboardList,
   LockKeyhole,
   RefreshCw,
@@ -26,16 +24,21 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { AuthSignInButton, useAuth } from "@/lib/auth";
 import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components/AdminCampaignLayout";
+import { CampaignAdminCursorPager } from "@/features/campaigns/buget/admin/components/CampaignAdminCursorPager";
 import { CampaignAdminUsersTable } from "@/features/campaigns/buget/admin/components/CampaignAdminUsersTable";
+import { CompactStat } from "@/features/campaigns/buget/admin/components/CompactStat";
 import {
   DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
   getCampaignAdminCampaignLabel,
 } from "@/features/campaigns/buget/admin/constants";
-import { useCampaignAdminUsersQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-users";
-import { normalizeCampaignAdminUsersSearch } from "@/features/campaigns/buget/admin/schemas/search-schema";
+import { useCampaignAdminUsersQuery, useCampaignAdminUsersMetaQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-users";
+import {
+  hasActiveCampaignAdminUsersFilters,
+  normalizeCampaignAdminUsersSearch,
+} from "@/features/campaigns/buget/admin/schemas/search-schema";
 import type {
   CampaignAdminCampaignKey,
   CampaignAdminSortOrder,
@@ -85,6 +88,57 @@ function createPaginationStateSignature(search: CampaignAdminUsersSearch): strin
   return JSON.stringify(search);
 }
 
+function UsersSummarySkeleton() {
+  return (
+    <>
+      <div className="flex items-baseline gap-1.5">
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-6 w-12" />
+      </div>
+      <div className="flex items-baseline gap-1.5">
+        <Skeleton className="h-3 w-28" />
+        <Skeleton className="h-6 w-12" />
+      </div>
+    </>
+  );
+}
+
+function UsersTableSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Skeleton className="h-10 w-full max-w-md rounded-lg" />
+        <Skeleton className="h-6 w-28 rounded-full" />
+      </div>
+
+      <div className="overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-none">
+        <div className="border-b border-border/60 px-4 py-3">
+          <Skeleton className="h-4 w-20" />
+        </div>
+
+        <div className="divide-y divide-border/60">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Skeleton key={index} className="h-14 w-full rounded-none" />
+          ))}
+        </div>
+
+        <div className="border-t border-border/60 bg-background/40 px-4 py-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-24" />
+              <Skeleton className="h-9 w-20" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function CampaignAdminUsersSectionPage({
   campaignKey,
   search,
@@ -123,8 +177,23 @@ export function CampaignAdminUsersSectionPage({
     enabled: isLoaded && isSignedIn,
   });
 
+  const usersMetaQuery = useCampaignAdminUsersMetaQuery({
+    campaignKey,
+    enabled: isLoaded && isSignedIn,
+  });
+
   const items = usersQuery.data?.items ?? [];
   const hasMore = usersQuery.data?.page.hasMore ?? false;
+  const meta = usersMetaQuery.data;
+  const totalCount = usersQuery.data?.page.totalCount ?? 0;
+  const hasActiveFilters =
+    usersQuery.data !== undefined &&
+    hasActiveCampaignAdminUsersFilters(normalizedSearch);
+  const isFilteredEmpty = items.length === 0 && hasActiveFilters;
+  const isTrulyEmptyDataset =
+    items.length === 0 && !hasActiveFilters && totalCount === 0;
+  const isEmptyPage =
+    items.length === 0 && !isFilteredEmpty && !isTrulyEmptyDataset;
 
   useEffect(() => {
     setSearchDraft(normalizedSearch.query ?? "");
@@ -289,77 +358,35 @@ export function CampaignAdminUsersSectionPage({
           </Button>
         </>
       )}
-      details={(
-        <>
-          <div className="relative w-full max-w-md grow">
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden="true"
-            />
-            <Input
-              value={searchDraft}
-              onChange={(event) => handleQueryChange(event.target.value)}
-              placeholder={t`Search by User ID`}
-              aria-label={t`Search users`}
-              className="pl-9"
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className="text-xs text-muted-foreground">
-              {t`${items.length} users`}
-            </span>
-            {normalizedSearch.entityCui !== undefined ? (
-              <>
-                <span
-                  className="hidden h-4 w-px bg-border/60 md:block"
-                  aria-hidden="true"
-                />
-                <Badge variant="outline" className="font-mono text-[11px]">
-                  {t`Entity ${normalizedSearch.entityCui}`}
-                </Badge>
-              </>
-            ) : null}
-            <span className="hidden h-4 w-px bg-border/60 md:block" aria-hidden="true" />
-            <span className="text-xs text-muted-foreground">
-              {t`Page ${currentPageIndex}`}
-            </span>
-          </div>
-        </>
-      )}
     >
+      {/* Stats bar - at the top, above search */}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pb-4" aria-label={t`Users summary`}>
+        {!isLoaded || (usersMetaQuery.isLoading && meta === undefined) ? (
+          <UsersSummarySkeleton />
+        ) : meta ? (
+          <>
+            <CompactStat label={t`Total users`} value={meta.totalUsers} />
+            {meta.usersWithPendingReviews > 0 ? (
+              <CompactStat
+                label={t`Pending reviews`}
+                value={meta.usersWithPendingReviews}
+                className="text-amber-600 dark:text-amber-400"
+              />
+            ) : (
+              <CompactStat label={t`Pending reviews`} value={meta.usersWithPendingReviews} />
+            )}
+          </>
+        ) : (
+          <span className="text-sm text-muted-foreground">
+            {t`Summary unavailable`}
+          </span>
+        )}
+      </div>
 
-      <section>
-        <div className="flex justify-end py-1">
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handlePreviousPage}
-              disabled={!canPreviousPage || usersQuery.isLoading || usersQuery.isFetching}
-              className="gap-2"
-            >
-              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-              {t`Previous`}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleNextPage}
-              disabled={!hasMore || usersQuery.isLoading || usersQuery.isFetching}
-              className="gap-2"
-            >
-              {t`Next`}
-              <ChevronRight className="h-4 w-4" aria-hidden="true" />
-            </Button>
-          </div>
-        </div>
+      <section className="space-y-4">
 
         {!isLoaded ? (
-          <div className="flex min-h-40 items-center justify-center py-6">
-            <LoadingSpinner />
-          </div>
+          <UsersTableSkeleton />
         ) : !isSignedIn ? (
           <div className="py-6">
             <p className="text-sm font-medium text-foreground">
@@ -416,31 +443,97 @@ export function CampaignAdminUsersSectionPage({
             </p>
           </div>
         ) : usersQuery.isLoading ? (
-          <div className="flex min-h-40 items-center justify-center py-6">
-            <LoadingSpinner />
-          </div>
-        ) : items.length === 0 ? (
+          <UsersTableSkeleton />
+        ) : isTrulyEmptyDataset ? (
           <div className="py-6">
             <p className="text-sm font-medium text-foreground">
-              {normalizedSearch.query !== undefined
-                ? t`No users match this search`
-                : t`No users yet`}
+              {t`No users yet`}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              {normalizedSearch.query !== undefined
-                ? t`Try adjusting the search query.`
-                : t`Users will appear here after the campaign records interaction activity.`}
+              {t`Users will appear here after the campaign records interaction activity.`}
             </p>
           </div>
         ) : (
-          <CampaignAdminUsersTable
-            campaignKey={campaignKey}
-            entityCui={normalizedSearch.entityCui}
-            items={items}
-            sortBy={usersQuery.data?.page.sortBy ?? normalizedSearch.sortBy}
-            sortOrder={usersQuery.data?.page.sortOrder ?? normalizedSearch.sortOrder}
-            onSortChange={handleSortChange}
-          />
+          <>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="relative w-full max-w-md">
+                <Search
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <Input
+                  value={searchDraft}
+                  onChange={(event) => handleQueryChange(event.target.value)}
+                  placeholder={t`Search by User ID`}
+                  aria-label={t`Search users`}
+                  className="pl-9"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                {normalizedSearch.entityCui !== undefined ? (
+                  <Badge variant="outline" className="font-mono text-[11px]">
+                    {t`Entity ${normalizedSearch.entityCui}`}
+                  </Badge>
+                ) : null}
+              </div>
+            </div>
+
+            {isFilteredEmpty ? (
+              <div className="py-6">
+                <p className="text-sm font-medium text-foreground">
+                  {t`No users matched the current filters`}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {t`Try broadening the current search or clear the current filters.`}
+                </p>
+              </div>
+            ) : isEmptyPage ? (
+              <div className="space-y-4 py-6">
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {t`No users are available on this page.`}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {t`Try going back a page or refresh the directory.`}
+                  </p>
+                </div>
+                <CampaignAdminCursorPager
+                  pageIndex={currentPageIndex}
+                  pageSize={normalizedSearch.limit}
+                  itemCount={items.length}
+                  totalCount={totalCount}
+                  canPrevious={canPreviousPage}
+                  canNext={hasMore}
+                  isLoading={usersQuery.isFetching}
+                  onPrevious={handlePreviousPage}
+                  onNext={handleNextPage}
+                />
+              </div>
+            ) : (
+              <CampaignAdminUsersTable
+                campaignKey={campaignKey}
+                entityCui={normalizedSearch.entityCui}
+                items={items}
+                sortBy={usersQuery.data?.page.sortBy ?? normalizedSearch.sortBy}
+                sortOrder={usersQuery.data?.page.sortOrder ?? normalizedSearch.sortOrder}
+                onSortChange={handleSortChange}
+                footer={
+                  <CampaignAdminCursorPager
+                    variant="connected"
+                    pageIndex={currentPageIndex}
+                    pageSize={normalizedSearch.limit}
+                    itemCount={items.length}
+                    totalCount={usersQuery.data?.page.totalCount}
+                    canPrevious={canPreviousPage}
+                    canNext={hasMore}
+                    isLoading={usersQuery.isFetching}
+                    onPrevious={handlePreviousPage}
+                    onNext={handleNextPage}
+                  />
+                }
+              />
+            )}
+          </>
         )}
       </section>
     </AdminCampaignLayout>

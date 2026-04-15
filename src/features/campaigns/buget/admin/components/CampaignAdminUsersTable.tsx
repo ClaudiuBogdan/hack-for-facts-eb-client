@@ -245,6 +245,8 @@ type CampaignAdminUsersTableProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
   readonly entityCui?: string;
   readonly items: readonly CampaignAdminUserListItem[];
+  readonly header?: ReactNode;
+  readonly footer?: ReactNode;
   readonly sortBy?: CampaignAdminUsersSortKey;
   readonly sortOrder?: CampaignAdminSortOrder;
   readonly onSortChange?: (
@@ -257,86 +259,102 @@ export function CampaignAdminUsersTable({
   campaignKey,
   entityCui,
   items,
+  header,
+  footer,
   sortBy,
   sortOrder,
   onSortChange,
 }: CampaignAdminUsersTableProps) {
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>
-            {onSortChange ? (
-              <SortableHeaderButton
-                sortKey="userId"
-                sortBy={sortBy}
-                sortOrder={sortOrder}
-                onSortChange={onSortChange}
-              >
-                {t`User ID`}
-              </SortableHeaderButton>
-            ) : (
-              <StaticHeaderLabel>{t`User ID`}</StaticHeaderLabel>
-            )}
-          </TableHead>
-          <TableHead>
-            {onSortChange ? (
-              <SortableHeaderButton
-                sortKey="latestUpdatedAt"
-                sortBy={sortBy}
-                sortOrder={sortOrder}
-                onSortChange={onSortChange}
-              >
-                {t`Last Updated`}
-              </SortableHeaderButton>
-            ) : (
-              <StaticHeaderLabel>{t`Last Updated`}</StaticHeaderLabel>
-            )}
-          </TableHead>
-          <TableHead>
-            {onSortChange ? (
-              <SortableHeaderButton
-                sortKey="interactionCount"
-                sortBy={sortBy}
-                sortOrder={sortOrder}
-                onSortChange={onSortChange}
-              >
-                {t`Interactions`}
-              </SortableHeaderButton>
-            ) : (
-              <StaticHeaderLabel>{t`Interactions`}</StaticHeaderLabel>
-            )}
-          </TableHead>
-          <TableHead>
-            {onSortChange ? (
-              <SortableHeaderButton
-                sortKey="pendingReviewCount"
-                sortBy={sortBy}
-                sortOrder={sortOrder}
-                onSortChange={onSortChange}
-              >
-                {t`Pending Reviews`}
-              </SortableHeaderButton>
-            ) : (
-              <StaticHeaderLabel>{t`Pending Reviews`}</StaticHeaderLabel>
-            )}
-          </TableHead>
-          <TableHead>
-            <StaticHeaderLabel>{t`Latest Interaction`}</StaticHeaderLabel>
-          </TableHead>
-          <TableHead className="w-10" />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {items.map((item) => (
-          <UserDirectoryRow
-            key={item.userId}
-            campaignKey={campaignKey}
-            entityCui={entityCui}
-            item={item}
-          />
-        ))}
-      </TableBody>
-    </Table>
+    <div className="overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-none">
+      {header ? (
+        <div className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3">
+          {header}
+        </div>
+      ) : null}
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>
+                {onSortChange ? (
+                  <SortableHeaderButton
+                    sortKey="userId"
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSortChange={onSortChange}
+                  >
+                    {t`User ID`}
+                  </SortableHeaderButton>
+                ) : (
+                  <StaticHeaderLabel>{t`User ID`}</StaticHeaderLabel>
+                )}
+              </TableHead>
+              <TableHead>
+                {onSortChange ? (
+                  <SortableHeaderButton
+                    sortKey="latestUpdatedAt"
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSortChange={onSortChange}
+                  >
+                    {t`Last Updated`}
+                  </SortableHeaderButton>
+                ) : (
+                  <StaticHeaderLabel>{t`Last Updated`}</StaticHeaderLabel>
+                )}
+              </TableHead>
+              <TableHead>
+                {onSortChange ? (
+                  <SortableHeaderButton
+                    sortKey="interactionCount"
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSortChange={onSortChange}
+                  >
+                    {t`Interactions`}
+                  </SortableHeaderButton>
+                ) : (
+                  <StaticHeaderLabel>{t`Interactions`}</StaticHeaderLabel>
+                )}
+              </TableHead>
+              <TableHead>
+                {onSortChange ? (
+                  <SortableHeaderButton
+                    sortKey="pendingReviewCount"
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    onSortChange={onSortChange}
+                  >
+                    {t`Pending Reviews`}
+                  </SortableHeaderButton>
+                ) : (
+                  <StaticHeaderLabel>{t`Pending Reviews`}</StaticHeaderLabel>
+                )}
+              </TableHead>
+              <TableHead>
+                <StaticHeaderLabel>{t`Latest Interaction`}</StaticHeaderLabel>
+              </TableHead>
+              <TableHead className="w-10" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {items.map((item) => (
+              <UserDirectoryRow
+                key={item.userId}
+                campaignKey={campaignKey}
+                entityCui={entityCui}
+                item={item}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      {footer ? (
+        <div className="border-t border-border/60 bg-background/40 px-4 py-4">
+          {footer}
+        </div>
+      ) : null}
+    </div>
   );
 }

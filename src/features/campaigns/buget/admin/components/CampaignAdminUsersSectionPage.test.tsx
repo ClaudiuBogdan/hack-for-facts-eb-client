@@ -9,6 +9,7 @@ import type {
 
 const useAuthMock = vi.fn();
 const useCampaignAdminUsersQueryMock = vi.fn();
+const useCampaignAdminUsersMetaQueryMock = vi.fn();
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
@@ -55,6 +56,8 @@ vi.mock("@/lib/auth", () => ({
 vi.mock("@/features/campaigns/buget/admin/hooks/use-campaign-admin-users", () => ({
   useCampaignAdminUsersQuery: (...args: unknown[]) =>
     useCampaignAdminUsersQueryMock(...args),
+  useCampaignAdminUsersMetaQuery: (...args: unknown[]) =>
+    useCampaignAdminUsersMetaQueryMock(...args),
 }));
 
 function createItem(
@@ -79,6 +82,7 @@ function createResponse(
   return {
     items,
     page: {
+      totalCount: items.length,
       hasMore: false,
       nextCursor: null,
       sortBy: "latestUpdatedAt",
@@ -94,6 +98,7 @@ describe("CampaignAdminUsersSectionPage", () => {
   beforeEach(() => {
     useAuthMock.mockReset();
     useCampaignAdminUsersQueryMock.mockReset();
+    useCampaignAdminUsersMetaQueryMock.mockReset();
     onSearchChangeMock.mockReset();
 
     useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
@@ -103,6 +108,12 @@ describe("CampaignAdminUsersSectionPage", () => {
       isLoading: false,
       isFetching: false,
       refetch: vi.fn(),
+    });
+    useCampaignAdminUsersMetaQueryMock.mockReturnValue({
+      data: { totalUsers: 0, usersWithPendingReviews: 0 },
+      error: null,
+      isLoading: false,
+      isFetching: false,
     });
   });
 
@@ -119,7 +130,7 @@ describe("CampaignAdminUsersSectionPage", () => {
           latestEntityCui: "87654321",
           latestEntityName: null,
         }),
-      ]),
+      ], { totalCount: 23 }),
       error: null,
       isLoading: false,
       isFetching: false,
@@ -151,6 +162,7 @@ describe("CampaignAdminUsersSectionPage", () => {
     expect(screen.getByText("City hall contact")).toBeInTheDocument();
     expect(screen.getByText("Oras Test · 12345678")).toBeInTheDocument();
     expect(screen.getByText("87654321")).toBeInTheDocument();
+    expect(screen.getByText("Showing 2 of 23")).toBeInTheDocument();
   });
 
   it("renders a fallback label for subscription-only users", () => {
@@ -180,6 +192,66 @@ describe("CampaignAdminUsersSectionPage", () => {
     expect(screen.getByText("subscriber-only")).toBeInTheDocument();
     expect(screen.getByText("No interactions yet")).toBeInTheDocument();
     expect(screen.getByText("Oras Test · 12345678")).toBeInTheDocument();
+  });
+
+  it("renders the global empty state when the campaign has no users", () => {
+    render(
+      <CampaignAdminUsersSectionPage
+        campaignKey="funky"
+        search={{ limit: 50 }}
+        onSearchChange={onSearchChangeMock}
+      />,
+    );
+
+    expect(screen.getByText("No users yet")).toBeInTheDocument();
+    expect(screen.getByText("Users will appear here after the campaign records interaction activity.")).toBeInTheDocument();
+  });
+
+  it("renders the filtered empty state for entity-scoped results", () => {
+    render(
+      <CampaignAdminUsersSectionPage
+        campaignKey="funky"
+        search={{ entityCui: "12345678", limit: 50 }}
+        onSearchChange={onSearchChangeMock}
+      />,
+    );
+
+    expect(
+      screen.getByText("No users matched the current filters"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Try broadening the current search or clear the current filters.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Entity 12345678")).toBeInTheDocument();
+  });
+
+  it("keeps the pager reachable for an empty page with remaining results", () => {
+    useCampaignAdminUsersQueryMock.mockReturnValue({
+      data: createResponse([], {
+        totalCount: 5,
+        nextCursor: null,
+        hasMore: false,
+      }),
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+
+    render(
+      <CampaignAdminUsersSectionPage
+        campaignKey="funky"
+        search={{ pageIndex: 2, cursor: "cursor-2", limit: 50 }}
+        onSearchChange={onSearchChangeMock}
+      />,
+    );
+
+    expect(
+      screen.getByText("No users are available on this page."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Previous" })).toBeEnabled();
   });
 
   it("resets cursor paging and applies trimmed query text when searching", async () => {

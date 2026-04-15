@@ -45,6 +45,7 @@ function createEntitiesListPayload() {
         },
       ],
       page: {
+        totalCount: 1,
         hasMore: true,
         nextCursor: "cursor-1",
         sortBy: "latestInteractionAt",
@@ -108,6 +109,7 @@ describe("campaign-admin-entities api", () => {
     });
 
     expect(result.items).toHaveLength(1);
+    expect(result.page.totalCount).toBe(1);
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining(
         "/api/v1/admin/campaigns/funky/entities?query=12345678&interactionId=funky%3Ainteraction%3Apublic_debate_request&hasPendingReviews=true&hasSubscribers=true&hasNotificationActivity=true&hasFailedNotifications=false&latestNotificationType=funky%3Aoutbox%3Aentity_update&latestNotificationStatus=failed_permanent&sortBy=userCount&sortOrder=asc&cursor=cursor-0&limit=25",

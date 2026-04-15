@@ -74,6 +74,7 @@ function createListResponsePayload() {
       ],
       page: {
         limit: 50,
+        totalCount: 1,
         hasMore: true,
         nextCursor: 'cursor-1',
         sortBy: 'updatedAt',
@@ -161,6 +162,7 @@ describe('campaign-admin-user-interactions api', () => {
     })
 
     expect(result.items).toHaveLength(1)
+    expect(result.page.totalCount).toBe(1)
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining(
         '/api/v1/admin/campaigns/funky/user-interactions?reviewStatus=pending&entityCui=12345678&hasInstitutionThread=true&sortBy=updatedAt&sortOrder=desc&cursor=cursor-0&limit=50'
@@ -272,6 +274,7 @@ describe('campaign-admin-user-interactions api', () => {
             ],
             page: {
               limit: 50,
+              totalCount: 1,
               hasMore: false,
               nextCursor: null,
             },
@@ -521,6 +524,7 @@ describe('campaign-admin-user-interactions api', () => {
             items: createListResponsePayload().data.items,
             page: {
               limit: 1,
+              totalCount: 1,
               hasMore: true,
               nextCursor: `cursor-${callCount}`,
             },

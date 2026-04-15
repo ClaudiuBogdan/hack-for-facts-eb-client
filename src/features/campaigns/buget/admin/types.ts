@@ -403,6 +403,7 @@ export type CampaignAdminListResponse = {
   readonly items: readonly CampaignAdminUserInteractionListItem[];
   readonly page: {
     readonly limit: number;
+    readonly totalCount: number;
     readonly hasMore: boolean;
     readonly nextCursor: string | null;
     readonly sortBy?: CampaignAdminUserInteractionsSortKey;
@@ -423,6 +424,7 @@ export type CampaignAdminUserListItem = {
 export type CampaignAdminUsersListResponse = {
   readonly items: readonly CampaignAdminUserListItem[];
   readonly page: {
+    readonly totalCount: number;
     readonly hasMore: boolean;
     readonly nextCursor: string | null;
     readonly sortBy?: CampaignAdminUsersSortKey;
@@ -561,6 +563,7 @@ export type CampaignAdminEntityListItem = {
 export type CampaignAdminEntitiesListResponse = {
   readonly items: readonly CampaignAdminEntityListItem[];
   readonly page: {
+    readonly totalCount: number;
     readonly hasMore: boolean;
     readonly nextCursor: string | null;
     readonly sortBy: CampaignAdminEntitiesSortKey;
@@ -676,6 +679,7 @@ export type CampaignAdminNotificationListItem = {
 export type CampaignAdminNotificationsListResponse = {
   readonly items: readonly CampaignAdminNotificationListItem[];
   readonly page: {
+    readonly totalCount: number;
     readonly hasMore: boolean;
     readonly nextCursor: string | null;
   };
@@ -870,6 +874,7 @@ export type CampaignAdminNotificationPlanResponse = {
   readonly summary: CampaignAdminNotificationPlanSummary;
   readonly rows: readonly CampaignAdminNotificationPlanRow[];
   readonly page: {
+    readonly totalCount: number;
     readonly nextCursor: string | null;
     readonly hasMore: boolean;
   };

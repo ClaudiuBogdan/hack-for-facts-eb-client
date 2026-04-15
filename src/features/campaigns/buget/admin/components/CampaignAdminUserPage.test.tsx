@@ -303,6 +303,53 @@ describe("CampaignAdminUserPage", () => {
     );
   });
 
+  it("preserves the active user-page filters in the filtered queue link", () => {
+    render(
+      <CampaignAdminUserPage
+        campaignKey="funky"
+        userId="user-1"
+        search={{
+          reviewStatus: "approved",
+          interactionId: "funky:interaction:budget_status",
+          entityCui: '"4270740"',
+          hasInstitutionThread: true,
+          threadPhase: "manual_follow_up_needed",
+          updatedAtFrom: "2026-04-01T00:00:00.000Z",
+          sortBy: "reviewStatus",
+          sortOrder: "asc",
+          reviewSelectionKey: "user-1::record-1",
+        }}
+        onSearchChange={() => {}}
+      />,
+    );
+
+    const filteredQueueLink = screen
+      .getByText("Open interactions with filters")
+      .closest("a");
+    const href = filteredQueueLink?.getAttribute("href");
+    expect(href).not.toBeNull();
+
+    const searchParams = new URL(
+      href!,
+      "https://transparanta.example",
+    ).searchParams;
+
+    expect(searchParams.get("userId")).toBe("user-1");
+    expect(searchParams.get("reviewStatus")).toBe("approved");
+    expect(searchParams.get("interactionId")).toBe(
+      "funky:interaction:budget_status",
+    );
+    expect(searchParams.get("entityCui")).toBe("4270740");
+    expect(searchParams.get("hasInstitutionThread")).toBe("true");
+    expect(searchParams.get("threadPhase")).toBe("manual_follow_up_needed");
+    expect(searchParams.get("updatedAtFrom")).toBe(
+      "2026-04-01T00:00:00.000Z",
+    );
+    expect(searchParams.get("sortBy")).toBe("reviewStatus");
+    expect(searchParams.get("sortOrder")).toBe("asc");
+    expect(searchParams.has("reviewSelectionKey")).toBe(false);
+  });
+
   it("does not clear staged drafts before the first query result arrives", () => {
     const stagedStorageKey = getCampaignAdminStagedReviewDraftsStorageKey(
       "funky",

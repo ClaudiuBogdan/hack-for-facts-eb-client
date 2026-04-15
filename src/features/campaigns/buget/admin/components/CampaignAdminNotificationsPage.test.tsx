@@ -100,21 +100,32 @@ function createRunnableTemplate(
 }
 
 function createPlanResponse(
-  overrides: Partial<CampaignAdminNotificationPlanResponse> = {},
+  overrides: Omit<
+    Partial<CampaignAdminNotificationPlanResponse>,
+    "page" | "summary"
+  > & {
+    page?: Partial<CampaignAdminNotificationPlanResponse["page"]>;
+    summary?: Partial<CampaignAdminNotificationPlanResponse["summary"]>;
+  } = {},
 ): CampaignAdminNotificationPlanResponse {
+  const { page: pageOverrides, summary: summaryOverrides, ...restOverrides } =
+    overrides;
+  const summary = {
+    totalRowCount: 4,
+    willSendCount: 2,
+    alreadySentCount: 1,
+    alreadyPendingCount: 0,
+    ineligibleCount: 1,
+    missingDataCount: 0,
+    ...summaryOverrides,
+  };
+
   return {
     planId: "plan-1",
     runnableId: "admin_reviewed_user_interaction",
     templateId: "admin_reviewed_user_interaction",
     watermark: "2026-04-14T12:00:00.000Z",
-    summary: {
-      totalRowCount: 4,
-      willSendCount: 2,
-      alreadySentCount: 1,
-      alreadyPendingCount: 0,
-      ineligibleCount: 1,
-      missingDataCount: 0,
-    },
+    summary,
     rows: [
       {
         rowKey: "row-1",
@@ -152,10 +163,12 @@ function createPlanResponse(
       },
     ],
     page: {
+      totalCount: summary.totalRowCount,
       nextCursor: "cursor-2",
       hasMore: true,
+      ...pageOverrides,
     },
-    ...overrides,
+    ...restOverrides,
   };
 }
 
@@ -191,15 +204,21 @@ function createTemplatePreview(): CampaignAdminNotificationTemplatePreview {
 }
 
 function createAuditResponse(
-  overrides: Partial<CampaignAdminNotificationsListResponse> = {},
+  overrides: Omit<Partial<CampaignAdminNotificationsListResponse>, "page"> & {
+    page?: Partial<CampaignAdminNotificationsListResponse["page"]>;
+  } = {},
 ): CampaignAdminNotificationsListResponse {
+  const { page: pageOverrides, ...restOverrides } = overrides;
+
   return {
     items: [],
     page: {
+      totalCount: 0,
       nextCursor: null,
       hasMore: false,
+      ...pageOverrides,
     },
-    ...overrides,
+    ...restOverrides,
   };
 }
 
@@ -305,6 +324,14 @@ describe("CampaignAdminNotificationsPage", () => {
     expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
   });
 
+  it("renders the audit tab for an empty result set", async () => {
+    renderStatefulPage({ tab: "audit" });
+
+    expect(await screen.findByText("Audit log")).toBeInTheDocument();
+    // Verify the empty state toolbar is rendered (no pager for empty results)
+    expect(await screen.findByRole("button", { name: /refresh/i })).toBeInTheDocument();
+  });
+
   it("renders the forbidden run state from the backend", async () => {
     listCampaignAdminRunnableTemplatesMock.mockRejectedValue(
       new CampaignAdminApiError("Forbidden", 403),
@@ -386,6 +413,7 @@ describe("CampaignAdminNotificationsPage", () => {
     expect(
       screen.getByRole("heading", { name: "Preview matches" }),
     ).toBeInTheDocument();
+    expect(screen.getByText("Showing 2 of 4")).toBeInTheDocument();
     expect(screen.getAllByText("Ready to send").length).toBeGreaterThan(0);
     expect(screen.getByText("Entity One")).toBeInTheDocument();
     expect(

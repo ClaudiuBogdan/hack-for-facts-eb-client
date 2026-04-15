@@ -34,7 +34,6 @@ import { CampaignAdminNotificationsToolbar } from "@/features/campaigns/buget/ad
 import { CampaignAdminTemplatePreviewDialog } from "@/features/campaigns/buget/admin/components/CampaignAdminTemplatePreviewDialog";
 import {
   getCampaignAdminCampaignLabel,
-  getCampaignAdminNotificationTabLabel,
 } from "@/features/campaigns/buget/admin/constants";
 import {
   useCampaignAdminNotificationsAuditQuery,
@@ -63,21 +62,6 @@ type CampaignAdminNotificationsPageProps = {
     options?: { readonly replace?: boolean },
   ) => void;
 };
-
-function InlineStat({
-  label,
-  value,
-}: {
-  readonly label: string;
-  readonly value: number;
-}) {
-  return (
-    <span className="inline-flex items-baseline gap-1 text-sm tabular-nums">
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <span className="font-semibold text-foreground">{value}</span>
-    </span>
-  );
-}
 
 function NotificationsCardsSkeleton({
   count = 3,
@@ -126,7 +110,7 @@ function NotificationsTableSkeleton() {
           <Skeleton className="h-8 w-20 rounded-full" />
         </div>
       </div>
-      <div className="rounded-2xl border border-border/70 bg-card/80 shadow-none">
+      <div className="overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-none">
         <div className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3">
           <Skeleton className="h-4 w-20" />
         </div>
@@ -134,6 +118,18 @@ function NotificationsTableSkeleton() {
           {Array.from({ length: 5 }).map((_, index) => (
             <Skeleton key={index} className="h-12 w-full rounded-none" />
           ))}
+        </div>
+        <div className="border-t border-border/60 bg-muted/30 px-4 py-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-3 w-32" />
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-24" />
+              <Skeleton className="h-9 w-20" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -548,27 +544,6 @@ export function CampaignAdminNotificationsPage({
           {t`Refresh`}
         </Button>
       }
-      details={
-        <>
-          <InlineStat
-            label={getCampaignAdminNotificationTabLabel(
-              normalizedSearch.tab ?? "audit",
-            )}
-            value={
-              normalizedSearch.tab === "audit"
-                ? auditItems.length
-                : normalizedSearch.tab === "run"
-                  ? (runnableTemplatesQuery.data?.length ?? 0)
-                  : (templatesQuery.data?.length ?? 0)
-            }
-          />
-          {normalizedSearch.tab === "audit" ? (
-            <span className="text-xs text-muted-foreground">
-              {t`Page ${currentPageIndex}`}
-            </span>
-          ) : null}
-        </>
-      }
     >
       <Tabs
         value={normalizedSearch.tab}
@@ -668,6 +643,22 @@ export function CampaignAdminNotificationsPage({
                       )
                     : undefined
                 }
+                footer={
+                  auditItems.length > 0 ? (
+                    <CampaignAdminCursorPager
+                      variant="connected"
+                      pageIndex={currentPageIndex}
+                      pageSize={normalizedSearch.limit}
+                      itemCount={auditItems.length}
+                      totalCount={auditQuery.data?.page.totalCount}
+                      canPrevious={canPreviousPage}
+                      canNext={auditQuery.data?.page.hasMore ?? false}
+                      isLoading={auditQuery.isFetching}
+                      onPrevious={handlePreviousPage}
+                      onNext={handleNextPage}
+                    />
+                  ) : null
+                }
                 onClearFilters={() => {
                   handleAuditSearchChange(
                     createEmptyCampaignAdminNotificationsSearch({
@@ -680,19 +671,6 @@ export function CampaignAdminNotificationsPage({
                   setActiveTemplateId(templateId);
                 }}
               />
-
-              {auditItems.length > 0 ? (
-                <CampaignAdminCursorPager
-                  pageIndex={currentPageIndex}
-                  pageSize={normalizedSearch.limit}
-                  itemCount={auditItems.length}
-                  canPrevious={canPreviousPage}
-                  canNext={auditQuery.data?.page.hasMore ?? false}
-                  isLoading={auditQuery.isFetching}
-                  onPrevious={handlePreviousPage}
-                  onNext={handleNextPage}
-                />
-              ) : null}
             </div>
           )}
         </section>
