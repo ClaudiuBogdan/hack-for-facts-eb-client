@@ -63,7 +63,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       cookieLocale,
       storedLocale,
     });
-    await dynamicActivate(locale);
+    await dynamicActivate(locale, { pathname: location.pathname });
 
     // Read theme from cookie for SSR (prevents FOUC)
     const themeCookie = await readThemeCookie();

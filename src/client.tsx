@@ -15,7 +15,9 @@ async function bootstrap() {
   if (hasWindow) {
     registerChunkErrorHandler();
     try {
-      await dynamicActivate(userLocale);
+      await dynamicActivate(userLocale, {
+        pathname: window.location.pathname,
+      });
     } catch (error) {
       i18n.load(userLocale, {});
       i18n.activate(userLocale);
