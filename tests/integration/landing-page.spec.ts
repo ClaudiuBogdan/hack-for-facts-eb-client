@@ -126,6 +126,7 @@ test.describe('Landing Page', () => {
   test('footer contains expected links', async ({ page }) => {
     // Scroll to footer
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+    const legalNav = page.getByLabel('Legal')
 
     // Check footer links
     await expect(
@@ -137,11 +138,11 @@ test.describe('Landing Page', () => {
     ).toBeVisible({ timeout: 5000 })
 
     await expect(
-      page.getByRole('link', { name: /confidențialitate|privacy/i })
+      legalNav.getByRole('link', { name: /confidențialitate|privacy/i })
     ).toBeVisible({ timeout: 5000 })
 
     await expect(
-      page.getByRole('link', { name: /termeni|terms/i })
+      legalNav.getByRole('link', { name: /termeni|terms/i })
     ).toBeVisible({ timeout: 5000 })
   })
 

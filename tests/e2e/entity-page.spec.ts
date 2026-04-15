@@ -203,12 +203,11 @@ test.describe('Map Page', () => {
   test('loads map visualization', async ({ page }) => {
     await page.goto('/map')
 
-    // Verify map container loads (try leaflet container or page heading)
+    // Verify the page heading and map container both load.
     const mapContainer = page.locator('.leaflet-container').first()
     const mapHeading = page.getByRole('heading', { name: /map|hartă/i }).first()
 
-    await expect(
-      mapContainer.or(mapHeading)
-    ).toBeVisible({ timeout: 15000 })
+    await expect(mapHeading).toBeVisible({ timeout: 15000 })
+    await expect(mapContainer).toBeVisible({ timeout: 15000 })
   })
 })
