@@ -1,4 +1,4 @@
-import { render, screen } from "@/test/test-utils";
+import { fireEvent, render, screen, waitFor } from "@/test/test-utils";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CampaignAdminEntitiesPage } from "./CampaignAdminEntitiesPage";
@@ -10,6 +10,9 @@ import type {
 const useAuthMock = vi.fn();
 const useCampaignAdminEntitiesQueryMock = vi.fn();
 const useCampaignAdminEntitiesMetaQueryMock = vi.fn();
+const downloadCampaignAdminEntitiesCsvMock = vi.fn();
+const toastSuccessMock = vi.fn();
+const toastErrorMock = vi.fn();
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
@@ -55,6 +58,13 @@ vi.mock("@/lib/auth", () => ({
   ),
 }));
 
+vi.mock("sonner", () => ({
+  toast: {
+    success: (...args: unknown[]) => toastSuccessMock(...args),
+    error: (...args: unknown[]) => toastErrorMock(...args),
+  },
+}));
+
 vi.mock(
   "@/features/campaigns/buget/admin/hooks/use-campaign-admin-entities",
   () => ({
@@ -64,6 +74,11 @@ vi.mock(
       useCampaignAdminEntitiesMetaQueryMock(...args),
   }),
 );
+
+vi.mock("@/features/campaigns/buget/admin/api/campaign-admin-entities", () => ({
+  downloadCampaignAdminEntitiesCsv: (...args: unknown[]) =>
+    downloadCampaignAdminEntitiesCsvMock(...args),
+}));
 
 function createEntityItem(
   overrides: Partial<CampaignAdminEntityListItem> = {},
@@ -143,6 +158,9 @@ describe("CampaignAdminEntitiesPage", () => {
     useAuthMock.mockReset();
     useCampaignAdminEntitiesQueryMock.mockReset();
     useCampaignAdminEntitiesMetaQueryMock.mockReset();
+    downloadCampaignAdminEntitiesCsvMock.mockReset();
+    toastSuccessMock.mockReset();
+    toastErrorMock.mockReset();
 
     useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
     mockEntitiesState({ items: [] });
@@ -167,6 +185,77 @@ describe("CampaignAdminEntitiesPage", () => {
     );
 
     expect(screen.getByText("Sign in required")).toBeInTheDocument();
+  });
+
+  it("exports CSV with the current entity filters", async () => {
+    mockEntitiesState({ items: [createEntityItem()] });
+    downloadCampaignAdminEntitiesCsvMock.mockResolvedValue({
+      blob: new Blob(["csv"]),
+      filename: "entities.csv",
+    });
+
+    const createObjectURLMock = vi.fn(() => "blob:entities");
+    const revokeObjectURLMock = vi.fn();
+    const originalCreateObjectURL = URL.createObjectURL;
+    const originalRevokeObjectURL = URL.revokeObjectURL;
+    const clickMock = vi
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(() => {});
+
+    Object.defineProperty(URL, "createObjectURL", {
+      configurable: true,
+      value: createObjectURLMock,
+    });
+    Object.defineProperty(URL, "revokeObjectURL", {
+      configurable: true,
+      value: revokeObjectURLMock,
+    });
+
+    try {
+      render(
+        <CampaignAdminEntitiesPage
+          campaignKey="funky"
+          search={{
+            query: "12345678",
+            hasPendingReviews: true,
+            sortBy: "userCount",
+            sortOrder: "asc",
+            limit: 25,
+          }}
+          onSearchChange={vi.fn()}
+        />,
+      );
+
+      fireEvent.pointerDown(screen.getAllByRole("button", { name: "Table actions" })[0]);
+      fireEvent.click(await screen.findByRole("menuitem", { name: "Export CSV" }));
+
+      await waitFor(() => {
+        expect(downloadCampaignAdminEntitiesCsvMock).toHaveBeenCalledWith({
+          campaignKey: "funky",
+          filters: {
+            query: "12345678",
+            hasPendingReviews: true,
+            sortBy: "userCount",
+            sortOrder: "asc",
+          },
+        });
+      });
+
+      expect(createObjectURLMock).toHaveBeenCalledTimes(1);
+      expect(clickMock).toHaveBeenCalledTimes(1);
+      expect(revokeObjectURLMock).toHaveBeenCalledWith("blob:entities");
+      expect(toastSuccessMock).toHaveBeenCalledWith("CSV exported");
+    } finally {
+      clickMock.mockRestore();
+      Object.defineProperty(URL, "createObjectURL", {
+        configurable: true,
+        value: originalCreateObjectURL,
+      });
+      Object.defineProperty(URL, "revokeObjectURL", {
+        configurable: true,
+        value: originalRevokeObjectURL,
+      });
+    }
   });
 
   it("renders the loading skeleton state", () => {

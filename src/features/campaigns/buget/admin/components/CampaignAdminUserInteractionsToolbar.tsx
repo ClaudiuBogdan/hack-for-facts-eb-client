@@ -45,7 +45,9 @@ import {
   campaignAdminPayloadKindValues,
   campaignAdminReviewStatusValues,
   campaignAdminScopeTypeValues,
+  campaignAdminSubmissionPathValues,
   campaignAdminThreadPhaseValues,
+  type CampaignAdminSubmissionPath,
   type CampaignAdminAvailableInteractionType,
   type CampaignAdminFilterDraft,
   type CampaignAdminQueueSearch,
@@ -145,6 +147,23 @@ function getScopeTypeLabel(
       return t`Single entity`;
     default:
       return scopeType;
+  }
+}
+
+function getSubmissionPathLabel(
+  submissionPath: CampaignAdminSubmissionPath,
+): string {
+  switch (submissionPath) {
+    case "request_platform":
+      return t`Platform submission`;
+    case "send_yourself":
+      return t`Open email client`;
+    case "send_email":
+      return t`Send email`;
+    case "download_text":
+      return t`Download text`;
+    default:
+      return submissionPath;
   }
 }
 
@@ -251,6 +270,14 @@ export function CampaignAdminUserInteractionsToolbar({
       filters.push({
         label: t`Payload`,
         value: getCampaignAdminPayloadKindLabel(search.payloadKind),
+        section: "advanced",
+      });
+    }
+
+    if (search.submissionPath) {
+      filters.push({
+        label: t`Submission path`,
+        value: getSubmissionPathLabel(search.submissionPath),
         section: "advanced",
       });
     }
@@ -637,6 +664,35 @@ export function CampaignAdminUserInteractionsToolbar({
                 {campaignAdminPayloadKindValues.map((payloadKind) => (
                   <SelectItem key={payloadKind} value={payloadKind}>
                     {getCampaignAdminPayloadKindLabel(payloadKind)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </ToolbarField>
+
+          <ToolbarField
+            label={t`Submission path`}
+            htmlFor="campaign-admin-submission-path"
+          >
+            <Select
+              value={draft.submissionPath || ALL_VALUE}
+              onValueChange={(value) =>
+                updateDraft({
+                  submissionPath:
+                    value === ALL_VALUE
+                      ? ""
+                      : (value as CampaignAdminFilterDraft["submissionPath"]),
+                })
+              }
+            >
+              <SelectTrigger id="campaign-admin-submission-path">
+                <SelectValue placeholder={t`Any submission path`} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_VALUE}>{t`Any submission path`}</SelectItem>
+                {campaignAdminSubmissionPathValues.map((submissionPath) => (
+                  <SelectItem key={submissionPath} value={submissionPath}>
+                    {getSubmissionPathLabel(submissionPath)}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  downloadCampaignAdminUserInteractionsCsv,
   getCampaignAdminUserInteractionsMeta,
   listAllCampaignAdminUserInteractions,
   listCampaignAdminUserInteractions,
@@ -174,6 +175,82 @@ describe('campaign-admin-user-interactions api', () => {
         }),
       })
     )
+  })
+
+  it('downloads the queue csv with auth, export filters, and server sort', async () => {
+    getAuthTokenMock.mockResolvedValue('token-123')
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('csv', {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/csv; charset=utf-8',
+          'Content-Disposition': 'attachment; filename="queue.csv"',
+        },
+      })
+    )
+
+    const result = await downloadCampaignAdminUserInteractionsCsv({
+      campaignKey: 'funky',
+      filters: {
+        reviewStatus: 'pending',
+        submissionPath: 'request_platform',
+        sortBy: 'updatedAt',
+        sortOrder: 'desc',
+      },
+    })
+
+    expect(result.filename).toBe('queue.csv')
+    expect(await result.blob.text()).toBe('csv')
+    expect(fetchMock).toHaveBeenCalledWith(
+      'http://localhost:3000/api/v1/admin/campaigns/funky/user-interactions/export?reviewStatus=pending&submissionPath=request_platform&sortBy=updatedAt&sortOrder=desc',
+      expect.objectContaining({
+        method: 'GET',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer token-123',
+        }),
+      })
+    )
+  })
+
+  it('uses RFC 5987 filenames for queue csv downloads', async () => {
+    getAuthTokenMock.mockResolvedValue('token-123')
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('csv', {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/csv; charset=utf-8',
+          'Content-Disposition':
+            "attachment; filename*=UTF-8''queue%20export.csv",
+        },
+      })
+    )
+
+    const result = await downloadCampaignAdminUserInteractionsCsv({
+      campaignKey: 'funky',
+      filters: {},
+    })
+
+    expect(result.filename).toBe('queue export.csv')
+  })
+
+  it('accepts unquoted filenames for queue csv downloads', async () => {
+    getAuthTokenMock.mockResolvedValue('token-123')
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('csv', {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/csv; charset=utf-8',
+          'Content-Disposition': 'attachment; filename=queue.csv',
+        },
+      })
+    )
+
+    const result = await downloadCampaignAdminUserInteractionsCsv({
+      campaignKey: 'funky',
+      filters: {},
+    })
+
+    expect(result.filename).toBe('queue.csv')
   })
 
   it('fails with 401 before fetching when auth is missing', async () => {

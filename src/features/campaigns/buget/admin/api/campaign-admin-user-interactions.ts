@@ -174,11 +174,43 @@ function parseCampaignAdminSuccessPayload<T>(input: {
   }
 }
 
-async function authorizedRequest(
+function getDownloadFilename(
+  contentDisposition: string | null,
+  fallbackFilename: string
+): string {
+  if (contentDisposition === null) {
+    return fallbackFilename
+  }
+
+  const filenameStarMatch = contentDisposition.match(
+    /filename\*\s*=\s*(?:"([^"]+)"|([^;]+))/i
+  )
+  const encodedFilename = filenameStarMatch?.[1] ?? filenameStarMatch?.[2]
+  if (encodedFilename !== undefined) {
+    const normalizedFilename = encodedFilename
+      .replace(/^UTF-8''/i, '')
+      .trim()
+
+    try {
+      return decodeURIComponent(normalizedFilename)
+    } catch {
+      return normalizedFilename
+    }
+  }
+
+  const filenameMatch = contentDisposition.match(
+    /filename\s*=\s*(?:"([^"]+)"|([^;]+))/i
+  )
+  const filename = filenameMatch?.[1] ?? filenameMatch?.[2]?.trim()
+
+  return filename || fallbackFilename
+}
+
+async function authorizedResponse(
   campaignKey: CampaignAdminCampaignKey,
   pathname: string,
   init: RequestInit
-): Promise<unknown> {
+): Promise<Response> {
   const token = await getAuthToken()
   if (token === null || token.trim().length === 0) {
     throw new CampaignAdminApiError(
@@ -187,7 +219,7 @@ async function authorizedRequest(
     )
   }
 
-  const response = await fetch(getCampaignAdminEndpoint(campaignKey, pathname), {
+  return fetch(getCampaignAdminEndpoint(campaignKey, pathname), {
     ...init,
     referrerPolicy: API_FETCH_REFERRER_POLICY,
     headers: {
@@ -195,6 +227,14 @@ async function authorizedRequest(
       Authorization: `Bearer ${token}`,
     },
   })
+}
+
+async function authorizedRequest(
+  campaignKey: CampaignAdminCampaignKey,
+  pathname: string,
+  init: RequestInit
+): Promise<unknown> {
+  const response = await authorizedResponse(campaignKey, pathname, init)
 
   const rawText = await response.text()
   const { payload, invalidJson } = parseJsonSafely(rawText)
@@ -261,6 +301,39 @@ function buildCampaignAdminQueueQueryString(
   appendOptionalSearchParam(searchParams, 'sortOrder', filters.sortOrder)
   appendOptionalSearchParam(searchParams, 'cursor', cursor ?? undefined)
   appendOptionalSearchParam(searchParams, 'limit', limit)
+
+  const nextSearch = searchParams.toString()
+  return nextSearch.length > 0 ? `?${nextSearch}` : ''
+}
+
+function buildCampaignAdminExportQueryString(
+  filters: CampaignAdminQueueFilters
+): string {
+  const searchParams = new URLSearchParams()
+
+  appendOptionalSearchParam(searchParams, 'phase', filters.phase)
+  appendOptionalSearchParam(searchParams, 'reviewStatus', filters.reviewStatus)
+  appendOptionalSearchParam(searchParams, 'interactionId', filters.interactionId)
+  appendOptionalSearchParam(searchParams, 'lessonId', filters.lessonId)
+  appendOptionalSearchParam(searchParams, 'entityCui', filters.entityCui)
+  appendOptionalSearchParam(searchParams, 'scopeType', filters.scopeType)
+  appendOptionalSearchParam(searchParams, 'payloadKind', filters.payloadKind)
+  appendOptionalSearchParam(searchParams, 'submissionPath', filters.submissionPath)
+  appendOptionalSearchParam(searchParams, 'userId', filters.userId)
+  appendOptionalSearchParam(searchParams, 'recordKey', filters.recordKey)
+  appendOptionalSearchParam(searchParams, 'recordKeyPrefix', filters.recordKeyPrefix)
+  appendOptionalSearchParam(searchParams, 'submittedAtFrom', filters.submittedAtFrom)
+  appendOptionalSearchParam(searchParams, 'submittedAtTo', filters.submittedAtTo)
+  appendOptionalSearchParam(searchParams, 'updatedAtFrom', filters.updatedAtFrom)
+  appendOptionalSearchParam(searchParams, 'updatedAtTo', filters.updatedAtTo)
+  appendOptionalSearchParam(
+    searchParams,
+    'hasInstitutionThread',
+    filters.hasInstitutionThread
+  )
+  appendOptionalSearchParam(searchParams, 'threadPhase', filters.threadPhase)
+  appendOptionalSearchParam(searchParams, 'sortBy', filters.sortBy)
+  appendOptionalSearchParam(searchParams, 'sortOrder', filters.sortOrder)
 
   const nextSearch = searchParams.toString()
   return nextSearch.length > 0 ? `?${nextSearch}` : ''
@@ -370,6 +443,33 @@ export async function getCampaignAdminUserInteractionsMeta(input: {
     errorMessage: t`Campaign admin metadata response was invalid.`,
     logMessage: 'Campaign admin metadata response did not match the expected schema',
   })
+}
+
+export async function downloadCampaignAdminUserInteractionsCsv(input: {
+  readonly campaignKey: CampaignAdminCampaignKey
+  readonly filters: CampaignAdminQueueFilters
+}): Promise<{ readonly blob: Blob; readonly filename: string }> {
+  const response = await authorizedResponse(
+    input.campaignKey,
+    `/user-interactions/export${buildCampaignAdminExportQueryString(input.filters)}`,
+    {
+      method: 'GET',
+    }
+  )
+
+  if (!response.ok) {
+    const rawText = await response.text()
+    const { payload } = parseJsonSafely(rawText)
+    throw buildCampaignAdminApiError(response.status, payload)
+  }
+
+  return {
+    blob: await response.blob(),
+    filename: getDownloadFilename(
+      response.headers.get('Content-Disposition'),
+      'campaign-admin-user-interactions.csv'
+    ),
+  }
 }
 
 export async function submitCampaignAdminReviews(input: {

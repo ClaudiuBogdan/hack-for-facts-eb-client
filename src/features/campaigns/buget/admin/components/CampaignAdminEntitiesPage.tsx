@@ -26,6 +26,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { AuthSignInButton, useAuth } from "@/lib/auth";
+import { toast } from "sonner";
 import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components/AdminCampaignLayout";
 import { CampaignAdminCursorPager } from "@/features/campaigns/buget/admin/components/CampaignAdminCursorPager";
 import { CampaignAdminEntitiesTable } from "@/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable";
@@ -36,6 +37,7 @@ import {
   useCampaignAdminEntitiesMetaQuery,
   useCampaignAdminEntitiesQuery,
 } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-entities";
+import { downloadCampaignAdminEntitiesCsv } from "@/features/campaigns/buget/admin/api/campaign-admin-entities";
 import {
   createCampaignAdminEntitiesPaginationSignature,
   createEmptyCampaignAdminEntitiesSearch,
@@ -320,6 +322,87 @@ export function CampaignAdminEntitiesPage({
   const handleRefresh = () => {
     void Promise.allSettled([entitiesQuery.refetch(), metaQuery.refetch()]);
   };
+
+  const handleCopyRows = useCallback(async () => {
+    if (
+      typeof navigator === "undefined" ||
+      navigator.clipboard?.writeText === undefined
+    ) {
+      toast.error(t`Clipboard copy is not available in this browser.`);
+      return;
+    }
+
+    const lines = [
+      [
+        "Entity Name",
+        "Entity CUI",
+        "Users",
+        "Interactions",
+        "Pending reviews",
+        "Subscribers",
+        "Outbox notifications",
+        "Failed notifications",
+        "Latest interaction at",
+        "Latest notification at",
+        "Latest notification type",
+        "Latest notification status",
+        "Public page",
+      ].join("\t"),
+      ...items.map((item) =>
+        [
+          item.entityName?.trim() || item.entityCui,
+          item.entityCui,
+          String(item.userCount),
+          String(item.interactionCount),
+          String(item.pendingReviewCount),
+          String(item.notificationSubscriberCount),
+          String(item.notificationOutboxCount),
+          String(item.failedNotificationCount),
+          item.latestInteractionAt ?? "",
+          item.latestNotificationAt ?? "",
+          item.latestNotificationType ?? "",
+          item.latestNotificationStatus ?? "",
+          `${window.location.origin}/primarie/${encodeURIComponent(item.entityCui)}`,
+        ]
+          .map((value) =>
+            /^[=+\-@]/.test(value) ? `'${value}` : value.replace(/\r?\n/g, " "),
+          )
+          .join("\t"),
+      ),
+    ];
+
+    try {
+      await navigator.clipboard.writeText(`${lines.join("\n")}\n`);
+      toast.success(
+        items.length === 1
+          ? t`Copied 1 row to the clipboard.`
+          : t`Copied ${items.length} rows to the clipboard.`,
+      );
+    } catch {
+      toast.error(t`Failed to copy the rows.`);
+    }
+  }, [items]);
+
+  const handleExportCsv = useCallback(async () => {
+    try {
+      const { blob, filename } = await downloadCampaignAdminEntitiesCsv({
+        campaignKey,
+        filters,
+      });
+
+      const blobUrl = URL.createObjectURL(blob);
+      const downloadAnchor = document.createElement("a");
+      downloadAnchor.href = blobUrl;
+      downloadAnchor.download = filename;
+      downloadAnchor.click();
+      URL.revokeObjectURL(blobUrl);
+      toast.success(t`CSV exported`);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t`Failed to export CSV.`,
+      );
+    }
+  }, [campaignKey, filters]);
 
   useEffect(() => {
     const shouldRecoverStaleCursor =
@@ -614,6 +697,8 @@ export function CampaignAdminEntitiesPage({
               items={items}
               sortBy={normalizedSearch.sortBy}
               sortOrder={normalizedSearch.sortOrder}
+              onCopyRows={handleCopyRows}
+              onExportCsv={handleExportCsv}
               onSortChange={handleSortChange}
               header={
                 items.length > 0

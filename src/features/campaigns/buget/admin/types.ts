@@ -1015,6 +1015,7 @@ export type CampaignAdminFilterDraft = {
   readonly entityCui: string;
   readonly scopeType: CampaignAdminScopeType | "";
   readonly payloadKind: CampaignAdminPayloadKind | "";
+  readonly submissionPath: CampaignAdminSubmissionPath | "";
   readonly userId: string;
   readonly recordKey: string;
   readonly recordKeyPrefix: string;

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  downloadCampaignAdminEntitiesCsv,
   getCampaignAdminEntitiesMeta,
   listCampaignAdminEntities,
 } from "./campaign-admin-entities";
@@ -121,6 +122,82 @@ describe("campaign-admin-entities api", () => {
         }),
       }),
     );
+  });
+
+  it("downloads the entities csv with auth and export filters", async () => {
+    getAuthTokenMock.mockResolvedValue("token-123");
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("csv", {
+        status: 200,
+        headers: {
+          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Disposition": 'attachment; filename="entities.csv"',
+        },
+      }),
+    );
+
+    const result = await downloadCampaignAdminEntitiesCsv({
+      campaignKey: "funky",
+      filters: {
+        query: "12345678",
+        hasPendingReviews: true,
+        sortBy: "userCount",
+        sortOrder: "asc",
+      },
+    });
+
+    expect(result.filename).toBe("entities.csv");
+    expect(await result.blob.text()).toBe("csv");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:3000/api/v1/admin/campaigns/funky/entities/export?query=12345678&hasPendingReviews=true&sortBy=userCount&sortOrder=asc",
+      expect.objectContaining({
+        method: "GET",
+        headers: expect.objectContaining({
+          Authorization: "Bearer token-123",
+        }),
+      }),
+    );
+  });
+
+  it("accepts unquoted filenames for entity csv downloads", async () => {
+    getAuthTokenMock.mockResolvedValue("token-123");
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("csv", {
+        status: 200,
+        headers: {
+          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Disposition": "attachment; filename=entities.csv",
+        },
+      }),
+    );
+
+    const result = await downloadCampaignAdminEntitiesCsv({
+      campaignKey: "funky",
+      filters: {},
+    });
+
+    expect(result.filename).toBe("entities.csv");
+  });
+
+  it("prefers RFC 5987 filenames for entity csv downloads", async () => {
+    getAuthTokenMock.mockResolvedValue("token-123");
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("csv", {
+        status: 200,
+        headers: {
+          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Disposition":
+            "attachment; filename*=UTF-8''entities%20export.csv",
+        },
+      }),
+    );
+
+    const result = await downloadCampaignAdminEntitiesCsv({
+      campaignKey: "funky",
+      filters: {},
+    });
+
+    expect(result.filename).toBe("entities export.csv");
   });
 
   it("loads entities metadata from the dedicated meta endpoint", async () => {

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpDown, ChevronDown, ChevronUp, SearchX } from "lucide-react";
+import { ArrowUpDown, ChevronDown, ChevronUp, MoreHorizontal, SearchX } from "lucide-react";
 import { t } from "@lingui/core/macro";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -49,6 +50,8 @@ type CampaignAdminEntitiesTableProps = {
   readonly defaultVisibleColumnIds?: readonly OptionalColumnId[];
   readonly sortBy?: CampaignAdminEntitiesSortKey;
   readonly sortOrder?: CampaignAdminSortOrder;
+  readonly onCopyRows?: () => Promise<void> | void;
+  readonly onExportCsv?: () => Promise<void> | void;
   readonly onSortChange?: (
     sortBy: CampaignAdminEntitiesSortKey,
     sortOrder: CampaignAdminSortOrder,
@@ -330,6 +333,8 @@ export function CampaignAdminEntitiesTable({
   defaultVisibleColumnIds = DEFAULT_VISIBLE_COLUMN_IDS,
   sortBy,
   sortOrder,
+  onCopyRows,
+  onExportCsv,
   onSortChange,
   onClearFilters,
 }: CampaignAdminEntitiesTableProps) {
@@ -359,6 +364,7 @@ export function CampaignAdminEntitiesTable({
 
   const isColumnVisible = (columnId: OptionalColumnId): boolean =>
     columnVisibility[columnId] ?? defaultVisibleColumnIds.includes(columnId);
+  const tableMenuLabel = t`Table actions`;
 
   const toggleColumn = (columnId: OptionalColumnId, checked: boolean) => {
     setColumnVisibility((current: Record<string, boolean>) => ({
@@ -418,7 +424,34 @@ export function CampaignAdminEntitiesTable({
                   </DropdownMenuContent>
                 </DropdownMenu>
               ),
-              trailingActions: null,
+              trailingActions:
+                onCopyRows || onExportCsv ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full"
+                        aria-label={tableMenuLabel}
+                      >
+                        <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {onCopyRows ? (
+                        <DropdownMenuItem onSelect={() => { void onCopyRows(); }}>
+                          {t`Copy rows`}
+                        </DropdownMenuItem>
+                      ) : null}
+                      {onExportCsv ? (
+                        <DropdownMenuItem onSelect={() => { void onExportCsv(); }}>
+                          {t`Export CSV`}
+                        </DropdownMenuItem>
+                      ) : null}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : null,
             })}
           </div>
         ) : null}
@@ -432,31 +465,60 @@ export function CampaignAdminEntitiesTable({
             {t`${items.length} visible`}
           </p>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="rounded-full px-3"
-              >
-                {t`Columns`}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              {columnOptions.map((column) => (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  checked={isColumnVisible(column.id)}
-                  onCheckedChange={(checked) =>
-                    toggleColumn(column.id, checked === true)
-                  }
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full px-3"
                 >
-                  {column.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  {t`Columns`}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {columnOptions.map((column) => (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={isColumnVisible(column.id)}
+                    onCheckedChange={(checked) =>
+                      toggleColumn(column.id, checked === true)
+                    }
+                  >
+                    {column.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {onCopyRows || onExportCsv ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full"
+                    aria-label={tableMenuLabel}
+                  >
+                    <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {onCopyRows ? (
+                    <DropdownMenuItem onSelect={() => { void onCopyRows(); }}>
+                      {t`Copy rows`}
+                    </DropdownMenuItem>
+                  ) : null}
+                  {onExportCsv ? (
+                    <DropdownMenuItem onSelect={() => { void onExportCsv(); }}>
+                      {t`Export CSV`}
+                    </DropdownMenuItem>
+                  ) : null}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
+          </div>
         </div>
 
         <div className="overflow-x-auto">

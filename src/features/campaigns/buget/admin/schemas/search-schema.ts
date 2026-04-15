@@ -721,6 +721,7 @@ export function createCampaignAdminFilterDraft(
     entityCui: search.entityCui ?? "",
     scopeType: search.scopeType ?? "",
     payloadKind: search.payloadKind ?? "",
+    submissionPath: search.submissionPath ?? "",
     userId: search.userId ?? "",
     recordKey: search.recordKey ?? "",
     recordKeyPrefix: search.recordKeyPrefix ?? "",
@@ -753,6 +754,7 @@ export function buildCampaignAdminQueueSearchFromDraft(
       entityCui: draft.entityCui || undefined,
       scopeType: draft.scopeType || undefined,
       payloadKind: draft.payloadKind || undefined,
+      submissionPath: draft.submissionPath || undefined,
       userId: draft.userId || undefined,
       recordKey: draft.recordKey || undefined,
       recordKeyPrefix:

@@ -16,6 +16,7 @@ const mutateAsyncMock = vi.fn()
 const toastSuccessMock = vi.fn()
 const toastErrorMock = vi.fn()
 const clipboardWriteTextMock = vi.fn()
+const downloadCampaignAdminUserInteractionsCsvMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children }: { children: ReactNode }) => <a>{children}</a>,
@@ -41,6 +42,11 @@ vi.mock('@/features/campaigns/buget/admin/hooks/use-campaign-admin-user-interact
   useCampaignAdminQueueQuery: (...args: unknown[]) => useCampaignAdminQueueQueryMock(...args),
   useSubmitCampaignAdminReviewsMutation: (...args: unknown[]) =>
     useSubmitCampaignAdminReviewsMutationMock(...args),
+}))
+
+vi.mock('@/features/campaigns/buget/admin/api/campaign-admin-user-interactions', () => ({
+  downloadCampaignAdminUserInteractionsCsv: (...args: unknown[]) =>
+    downloadCampaignAdminUserInteractionsCsvMock(...args),
 }))
 
 vi.mock('sonner', () => ({
@@ -227,6 +233,7 @@ describe('CampaignAdminUserInteractionsPage', () => {
     useCampaignAdminInteractionMetaQueryMock.mockReset()
     useCampaignAdminQueueQueryMock.mockReset()
     useSubmitCampaignAdminReviewsMutationMock.mockReset()
+    downloadCampaignAdminUserInteractionsCsvMock.mockReset()
     mutateAsyncMock.mockReset()
     toastSuccessMock.mockReset()
     toastErrorMock.mockReset()
@@ -265,6 +272,69 @@ describe('CampaignAdminUserInteractionsPage', () => {
     )
 
     expect(screen.getByText('Sign in required')).toBeInTheDocument()
+  })
+
+  it('exports CSV with the current filters and preserves server sort state', async () => {
+    mockQueueState({ items: [createItem()] })
+    downloadCampaignAdminUserInteractionsCsvMock.mockResolvedValue({
+      blob: new Blob(['csv']),
+      filename: 'queue.csv',
+    })
+
+    const createObjectURLMock = vi.fn(() => 'blob:queue')
+    const revokeObjectURLMock = vi.fn()
+    const originalCreateObjectURL = URL.createObjectURL
+    const originalRevokeObjectURL = URL.revokeObjectURL
+    const clickMock = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {})
+
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: createObjectURLMock,
+    })
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: revokeObjectURLMock,
+    })
+
+    try {
+      renderStatefulPage({
+        limit: 50,
+        submissionPath: 'request_platform',
+        sortBy: 'updatedAt',
+        sortOrder: 'desc',
+      })
+
+      fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Copy all rows' })[0])
+      fireEvent.click(await screen.findByRole('menuitem', { name: 'Export CSV' }))
+
+      await waitFor(() => {
+        expect(downloadCampaignAdminUserInteractionsCsvMock).toHaveBeenCalledWith({
+          campaignKey: 'funky',
+          filters: {
+            submissionPath: 'request_platform',
+            sortBy: 'updatedAt',
+            sortOrder: 'desc',
+          },
+        })
+      })
+
+      expect(createObjectURLMock).toHaveBeenCalledTimes(1)
+      expect(clickMock).toHaveBeenCalledTimes(1)
+      expect(revokeObjectURLMock).toHaveBeenCalledWith('blob:queue')
+      expect(toastSuccessMock).toHaveBeenCalledWith('CSV exported')
+    } finally {
+      clickMock.mockRestore()
+      Object.defineProperty(URL, 'createObjectURL', {
+        configurable: true,
+        value: originalCreateObjectURL,
+      })
+      Object.defineProperty(URL, 'revokeObjectURL', {
+        configurable: true,
+        value: originalRevokeObjectURL,
+      })
+    }
   })
 
   it('renders forbidden state when the server denies access', () => {

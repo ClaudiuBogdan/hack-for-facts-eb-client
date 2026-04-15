@@ -62,6 +62,7 @@ import {
   useCampaignAdminQueueQuery,
   useSubmitCampaignAdminReviewsMutation,
 } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-user-interactions";
+import { downloadCampaignAdminUserInteractionsCsv } from "@/features/campaigns/buget/admin/api/campaign-admin-user-interactions";
 import {
   useCampaignAdminInteractionSelection,
   type CampaignAdminToggleUserInteractionSelectionInput,
@@ -908,6 +909,27 @@ export function CampaignAdminUserInteractionsPage({
     }
   };
 
+  const handleExportCsv = useEffectEvent(async () => {
+    try {
+      const { blob, filename } = await downloadCampaignAdminUserInteractionsCsv({
+        campaignKey,
+        filters: queueFilters,
+      });
+
+      const blobUrl = URL.createObjectURL(blob);
+      const downloadAnchor = document.createElement("a");
+      downloadAnchor.href = blobUrl;
+      downloadAnchor.download = filename;
+      downloadAnchor.click();
+      URL.revokeObjectURL(blobUrl);
+      toast.success(t`CSV exported`);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t`Failed to export CSV.`,
+      );
+    }
+  });
+
   const handleImportBulkReviewText = useEffectEvent((rawText: string) => {
     const result = parseCampaignAdminBulkReviewClipboardText({
       rawText,
@@ -1267,6 +1289,7 @@ export function CampaignAdminUserInteractionsPage({
               sortBy={effectiveSortBy}
               sortOrder={effectiveSortOrder}
               onCopyRows={handleCopySelectedRows}
+              onExportCsv={handleExportCsv}
               onSortChange={handleSortChange}
               onToggleSelectAll={handleToggleSelectAll}
               onToggleSelection={handleToggleSelection}

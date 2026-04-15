@@ -78,6 +78,7 @@ type CampaignAdminUserInteractionsTableProps = {
   readonly sortBy?: CampaignAdminUserInteractionsSortKey;
   readonly sortOrder?: CampaignAdminSortOrder;
   readonly onCopyRows: () => Promise<void> | void;
+  readonly onExportCsv?: () => Promise<void> | void;
   readonly onSortChange: (
     sortBy: CampaignAdminUserInteractionsSortKey,
     sortOrder: CampaignAdminSortOrder,
@@ -452,6 +453,7 @@ export function CampaignAdminUserInteractionsTable({
   sortBy,
   sortOrder,
   onCopyRows,
+  onExportCsv,
   onSortChange,
   onToggleSelectAll,
   onToggleSelection,
@@ -648,17 +650,27 @@ export function CampaignAdminUserInteractionsTable({
                       <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onSelect={() => {
-                        void onCopyRows();
-                      }}
-                      disabled={items.length === 0 || isLoading}
-                    >
-                      {copyButtonLabel}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onSelect={() => {
+                          void onCopyRows();
+                        }}
+                        disabled={items.length === 0 || isLoading}
+                      >
+                        {copyButtonLabel}
+                      </DropdownMenuItem>
+                      {onExportCsv ? (
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            void onExportCsv();
+                          }}
+                          disabled={items.length === 0 || isLoading}
+                        >
+                          {t`Export CSV`}
+                        </DropdownMenuItem>
+                      ) : null}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
               ),
             })}
           </div>
@@ -694,6 +706,16 @@ export function CampaignAdminUserInteractionsTable({
                 >
                   {copyButtonLabel}
                 </DropdownMenuItem>
+                {onExportCsv ? (
+                  <DropdownMenuItem
+                    onSelect={() => {
+                      void onExportCsv();
+                    }}
+                    disabled={items.length === 0 || isLoading}
+                  >
+                    {t`Export CSV`}
+                  </DropdownMenuItem>
+                ) : null}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -1208,6 +1230,16 @@ export function CampaignAdminUserInteractionsTable({
               >
                 {copyButtonLabel}
               </DropdownMenuItem>
+              {onExportCsv ? (
+                <DropdownMenuItem
+                  onSelect={() => {
+                    void onExportCsv();
+                  }}
+                  disabled={items.length === 0 || isLoading}
+                >
+                  {t`Export CSV`}
+                </DropdownMenuItem>
+              ) : null}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

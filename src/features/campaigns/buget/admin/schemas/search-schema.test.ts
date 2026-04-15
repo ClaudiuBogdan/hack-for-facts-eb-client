@@ -31,6 +31,7 @@ describe("campaign admin search schema", () => {
         entityCui: "12345678",
         scopeType: "",
         payloadKind: "",
+        submissionPath: "",
         userId: "",
         recordKey: "",
         recordKeyPrefix: "funky:interaction:",
@@ -127,7 +128,7 @@ describe("campaign admin search schema", () => {
     });
   });
 
-  it("does not preserve an inherited submission path when applying visible filters", () => {
+  it("preserves an inherited submission path when applying visible filters", () => {
     expect(
       buildCampaignAdminQueueSearchFromDraft(
         {
@@ -138,6 +139,7 @@ describe("campaign admin search schema", () => {
           entityCui: "12345678",
           scopeType: "",
           payloadKind: "",
+          submissionPath: "send_email",
           userId: "",
           recordKey: "",
           recordKeyPrefix: "",
@@ -158,6 +160,7 @@ describe("campaign admin search schema", () => {
     ).toEqual({
       reviewStatusMode: "all",
       entityCui: "12345678",
+      submissionPath: "send_email",
       limit: 50,
     });
   });

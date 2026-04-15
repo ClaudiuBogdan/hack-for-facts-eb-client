@@ -142,11 +142,43 @@ function parseCampaignAdminSuccessPayload<T>(input: {
   }
 }
 
-async function authorizedRequest(
+function getDownloadFilename(
+  contentDisposition: string | null,
+  fallbackFilename: string,
+): string {
+  if (contentDisposition === null) {
+    return fallbackFilename;
+  }
+
+  const filenameStarMatch = contentDisposition.match(
+    /filename\*\s*=\s*(?:"([^"]+)"|([^;]+))/i,
+  );
+  const encodedFilename = filenameStarMatch?.[1] ?? filenameStarMatch?.[2];
+  if (encodedFilename !== undefined) {
+    const normalizedFilename = encodedFilename
+      .replace(/^UTF-8''/i, "")
+      .trim();
+
+    try {
+      return decodeURIComponent(normalizedFilename);
+    } catch {
+      return normalizedFilename;
+    }
+  }
+
+  const filenameMatch = contentDisposition.match(
+    /filename\s*=\s*(?:"([^"]+)"|([^;]+))/i,
+  );
+  const filename = filenameMatch?.[1] ?? filenameMatch?.[2]?.trim();
+
+  return filename || fallbackFilename;
+}
+
+async function authorizedResponse(
   campaignKey: CampaignAdminCampaignKey,
   pathname: string,
   init: RequestInit,
-): Promise<unknown> {
+): Promise<Response> {
   const token = await getAuthToken();
   if (token === null || token.trim().length === 0) {
     throw new CampaignAdminApiError(
@@ -155,7 +187,7 @@ async function authorizedRequest(
     );
   }
 
-  const response = await fetch(getCampaignAdminEndpoint(campaignKey, pathname), {
+  return fetch(getCampaignAdminEndpoint(campaignKey, pathname), {
     ...init,
     referrerPolicy: API_FETCH_REFERRER_POLICY,
     headers: {
@@ -163,6 +195,14 @@ async function authorizedRequest(
       Authorization: `Bearer ${token}`,
     },
   });
+}
+
+async function authorizedRequest(
+  campaignKey: CampaignAdminCampaignKey,
+  pathname: string,
+  init: RequestInit,
+): Promise<unknown> {
+  const response = await authorizedResponse(campaignKey, pathname, init);
 
   const rawText = await response.text();
   const { payload, invalidJson } = parseJsonSafely(rawText);
@@ -245,6 +285,50 @@ function buildCampaignAdminEntitiesQueryString(
   return nextSearch.length > 0 ? `?${nextSearch}` : "";
 }
 
+function buildCampaignAdminEntitiesExportQueryString(
+  filters: CampaignAdminEntitiesFilters,
+): string {
+  const searchParams = new URLSearchParams();
+
+  appendOptionalSearchParam(searchParams, "query", filters.query);
+  appendOptionalSearchParam(searchParams, "interactionId", filters.interactionId);
+  appendOptionalSearchParam(
+    searchParams,
+    "hasPendingReviews",
+    filters.hasPendingReviews,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "hasSubscribers",
+    filters.hasSubscribers,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "hasNotificationActivity",
+    filters.hasNotificationActivity,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "hasFailedNotifications",
+    filters.hasFailedNotifications,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "latestNotificationType",
+    filters.latestNotificationType,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "latestNotificationStatus",
+    filters.latestNotificationStatus,
+  );
+  appendOptionalSearchParam(searchParams, "sortBy", filters.sortBy);
+  appendOptionalSearchParam(searchParams, "sortOrder", filters.sortOrder);
+
+  const nextSearch = searchParams.toString();
+  return nextSearch.length > 0 ? `?${nextSearch}` : "";
+}
+
 export async function listCampaignAdminEntities(input: {
   readonly campaignKey: CampaignAdminCampaignKey;
   readonly filters: CampaignAdminEntitiesFilters;
@@ -286,4 +370,31 @@ export async function getCampaignAdminEntitiesMeta(input: {
     logMessage:
       "Campaign admin entities metadata response did not match the expected schema",
   });
+}
+
+export async function downloadCampaignAdminEntitiesCsv(input: {
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly filters: CampaignAdminEntitiesFilters;
+}): Promise<{ readonly blob: Blob; readonly filename: string }> {
+  const response = await authorizedResponse(
+    input.campaignKey,
+    `/entities/export${buildCampaignAdminEntitiesExportQueryString(input.filters)}`,
+    {
+      method: "GET",
+    },
+  );
+
+  if (!response.ok) {
+    const rawText = await response.text();
+    const { payload } = parseJsonSafely(rawText);
+    throw buildCampaignAdminApiError(response.status, payload);
+  }
+
+  return {
+    blob: await response.blob(),
+    filename: getDownloadFilename(
+      response.headers.get("Content-Disposition"),
+      "campaign-admin-entities.csv",
+    ),
+  };
 }
