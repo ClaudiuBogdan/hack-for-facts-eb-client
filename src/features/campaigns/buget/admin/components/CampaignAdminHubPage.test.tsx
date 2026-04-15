@@ -8,6 +8,7 @@ const useCampaignAdminInteractionMetaQueryMock = vi.fn();
 const useCampaignAdminUsersMetaQueryMock = vi.fn();
 const useCampaignAdminEntitiesMetaQueryMock = vi.fn();
 const useCampaignAdminNotificationsMetaQueryMock = vi.fn();
+const useCampaignAdminStatsOverviewQueryMock = vi.fn();
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
@@ -82,6 +83,11 @@ vi.mock(
   }),
 );
 
+vi.mock("@/features/campaigns/buget/admin/hooks/use-campaign-admin-stats", () => ({
+  useCampaignAdminStatsOverviewQuery: (...args: unknown[]) =>
+    useCampaignAdminStatsOverviewQueryMock(...args),
+}));
+
 describe("CampaignAdminHubPage", () => {
   beforeEach(() => {
     useAuthMock.mockReset();
@@ -89,6 +95,7 @@ describe("CampaignAdminHubPage", () => {
     useCampaignAdminUsersMetaQueryMock.mockReset();
     useCampaignAdminEntitiesMetaQueryMock.mockReset();
     useCampaignAdminNotificationsMetaQueryMock.mockReset();
+    useCampaignAdminStatsOverviewQueryMock.mockReset();
 
     useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
     useCampaignAdminInteractionMetaQueryMock.mockReturnValue({
@@ -155,6 +162,63 @@ describe("CampaignAdminHubPage", () => {
       error: null,
       isLoading: false,
     });
+    useCampaignAdminStatsOverviewQueryMock.mockReturnValue({
+      data: {
+        coverage: {
+          hasClientTelemetry: false,
+          hasNotificationAttribution: false,
+        },
+        users: {
+          totalUsers: 9,
+          usersWithPendingReviews: 3,
+        },
+        interactions: {
+          totalInteractions: 12,
+          interactionsWithInstitutionThread: 6,
+          reviewStatusCounts: {
+            pending: 4,
+            approved: 6,
+            rejected: 2,
+            notReviewed: 0,
+          },
+          phaseCounts: {
+            idle: 0,
+            draft: 0,
+            pending: 4,
+            resolved: 8,
+            failed: 0,
+          },
+          threadPhaseCounts: {
+            sending: 0,
+            awaitingReply: 2,
+            replyReceivedUnreviewed: 1,
+            manualFollowUpNeeded: 0,
+            resolvedPositive: 3,
+            resolvedNegative: 1,
+            closedNoResponse: 1,
+            failed: 0,
+            none: 4,
+          },
+        },
+        entities: {
+          totalEntities: 18,
+          entitiesWithPendingReviews: 5,
+          entitiesWithSubscribers: 7,
+          entitiesWithNotificationActivity: 9,
+          entitiesWithFailedNotifications: 2,
+        },
+        notifications: {
+          pendingDeliveryCount: 3,
+          failedDeliveryCount: 1,
+          deliveredCount: 10,
+          openedCount: 7,
+          clickedCount: 2,
+          suppressedCount: 1,
+        },
+      },
+      error: null,
+      isLoading: false,
+    });
   });
 
   it("renders the notifications hub card with the notifications route search", () => {
@@ -181,11 +245,30 @@ describe("CampaignAdminHubPage", () => {
     expect(screen.getByText("9 users · 3 need review")).toBeInTheDocument();
   });
 
+  it("renders campaign analytics as a featured block with the dedicated analytics link", () => {
+    render(<CampaignAdminHubPage campaignKey="funky" />);
+
+    const analyticsLink = screen.getByRole("link", {
+      name: /Campaign analytics/i,
+    });
+
+    expect(screen.getByText("Campaign analytics")).toBeInTheDocument();
+    expect(analyticsLink).toHaveAttribute(
+      "href",
+      "/admin/campaigns/funky/analytics",
+    );
+    expect(
+      screen.getByText(
+        "18 entities · 10 delivered · 7 opened · 3 users need review",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("renders the entities hub card with the entities route search", () => {
     render(<CampaignAdminHubPage campaignKey="funky" />);
 
     const entitiesLink = screen.getByRole("link", {
-      name: /Entities/i,
+      name: /^Entities/i,
     });
 
     expect(entitiesLink).toBeInTheDocument();
@@ -213,6 +296,11 @@ describe("CampaignAdminHubPage", () => {
       error: { status: 404 },
       isLoading: false,
     });
+    useCampaignAdminStatsOverviewQueryMock.mockReturnValue({
+      data: undefined,
+      error: { status: 404 },
+      isLoading: false,
+    });
 
     render(<CampaignAdminHubPage campaignKey="funky" />);
 
@@ -227,6 +315,11 @@ describe("CampaignAdminHubPage", () => {
     expect(
       screen.getByText(
         "Audit campaign notification activity, preview matches, and send notifications",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "View campaign totals and current distributions across users, interactions, entities, and notifications",
       ),
     ).toBeInTheDocument();
   });

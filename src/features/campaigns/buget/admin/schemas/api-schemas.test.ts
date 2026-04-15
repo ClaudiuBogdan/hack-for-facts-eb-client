@@ -11,6 +11,9 @@ import {
   parseCampaignAdminNotificationsMetaResponse,
   parseCampaignAdminListResponse,
   parseCampaignAdminMetaResponse,
+  parseCampaignAdminStatsInteractionsByTypeResponse,
+  parseCampaignAdminStatsOverviewResponse,
+  parseCampaignAdminStatsTopEntitiesResponse,
   parseCampaignAdminSubmitReviewsBody,
   parseCampaignAdminUsersListResponse,
   parseCampaignAdminUsersMetaResponse,
@@ -261,6 +264,119 @@ function createNotificationsMetaResponsePayload() {
       pendingDeliveryCount: 3,
       failedDeliveryCount: 2,
       replyReceivedCount: 6,
+    },
+  };
+}
+
+function createStatsOverviewResponsePayload() {
+  return {
+    ok: true,
+    data: {
+      coverage: {
+        hasClientTelemetry: false,
+        hasNotificationAttribution: false,
+      },
+      users: {
+        totalUsers: 14,
+        usersWithPendingReviews: 4,
+      },
+      interactions: {
+        totalInteractions: 20,
+        interactionsWithInstitutionThread: 6,
+        reviewStatusCounts: {
+          pending: 5,
+          approved: 8,
+          rejected: 4,
+          notReviewed: 3,
+        },
+        phaseCounts: {
+          idle: 1,
+          draft: 2,
+          pending: 5,
+          resolved: 10,
+          failed: 2,
+        },
+        threadPhaseCounts: {
+          sending: 1,
+          awaitingReply: 2,
+          replyReceivedUnreviewed: 1,
+          manualFollowUpNeeded: 1,
+          resolvedPositive: 2,
+          resolvedNegative: 1,
+          closedNoResponse: 1,
+          failed: 1,
+          none: 10,
+        },
+      },
+      entities: {
+        totalEntities: 12,
+        entitiesWithPendingReviews: 4,
+        entitiesWithSubscribers: 6,
+        entitiesWithNotificationActivity: 7,
+        entitiesWithFailedNotifications: 2,
+      },
+      notifications: {
+        pendingDeliveryCount: 3,
+        failedDeliveryCount: 2,
+        deliveredCount: 18,
+        openedCount: 11,
+        clickedCount: 5,
+        suppressedCount: 1,
+      },
+    },
+  };
+}
+
+function createStatsInteractionsByTypeResponsePayload() {
+  return {
+    ok: true,
+    data: {
+      items: [
+        {
+          interactionId: "funky:interaction:public_debate_request",
+          label: "Public debate request",
+          total: 12,
+          pending: 3,
+          approved: 5,
+          rejected: 2,
+          notReviewed: 2,
+        },
+        {
+          interactionId: "funky:interaction:budget_document",
+          label: null,
+          total: 7,
+          pending: 2,
+          approved: 3,
+          rejected: 1,
+          notReviewed: 1,
+        },
+      ],
+    },
+  };
+}
+
+function createStatsTopEntitiesResponsePayload() {
+  return {
+    ok: true,
+    data: {
+      sortBy: "interactionCount",
+      limit: 10,
+      items: [
+        {
+          entityCui: "12345678",
+          entityName: "Oras Test",
+          interactionCount: 12,
+          userCount: 6,
+          pendingReviewCount: 3,
+        },
+        {
+          entityCui: "87654321",
+          entityName: null,
+          interactionCount: 9,
+          userCount: 5,
+          pendingReviewCount: 2,
+        },
+      ],
     },
   };
 }
@@ -557,6 +673,183 @@ describe("campaign admin api schemas", () => {
 
     expect(parseCampaignAdminNotificationsMetaResponse(payload)).toEqual(
       payload.data,
+    );
+  });
+
+  it("accepts only the strict stats overview shape", () => {
+    const payload = createStatsOverviewResponsePayload();
+
+    expect(parseCampaignAdminStatsOverviewResponse(payload)).toEqual(
+      payload.data,
+    );
+  });
+
+  it.each([
+    ["email", (payload: ReturnType<typeof createStatsOverviewResponsePayload>) => {
+      payload.data.users = {
+        ...payload.data.users,
+        email: "user@example.com",
+      } as typeof payload.data.users;
+    }],
+    [
+      "institutionEmail",
+      (payload: ReturnType<typeof createStatsOverviewResponsePayload>) => {
+        payload.data.interactions = {
+          ...payload.data.interactions,
+          institutionEmail: "contact@example.com",
+        } as typeof payload.data.interactions;
+      },
+    ],
+    ["subject", (payload: ReturnType<typeof createStatsOverviewResponsePayload>) => {
+      payload.data.notifications = {
+        ...payload.data.notifications,
+        subject: "Secret",
+      } as typeof payload.data.notifications;
+    }],
+    ["html", (payload: ReturnType<typeof createStatsOverviewResponsePayload>) => {
+      payload.data.notifications = {
+        ...payload.data.notifications,
+        html: "<p>Private</p>",
+      } as typeof payload.data.notifications;
+    }],
+    [
+      "clickedUrl",
+      (payload: ReturnType<typeof createStatsOverviewResponsePayload>) => {
+        payload.data.notifications = {
+          ...payload.data.notifications,
+          clickedUrl: "https://example.com/private",
+        } as typeof payload.data.notifications;
+      },
+    ],
+    [
+      "payloadSummary",
+      (payload: ReturnType<typeof createStatsOverviewResponsePayload>) => {
+        payload.data.interactions = {
+          ...payload.data.interactions,
+          payloadSummary: {
+            kind: "private",
+          },
+        } as typeof payload.data.interactions;
+      },
+    ],
+  ])("rejects unexpected %s fields in the overview response", (_, mutatePayload) => {
+    const payload = createStatsOverviewResponsePayload();
+    mutatePayload(payload);
+
+    expect(() => parseCampaignAdminStatsOverviewResponse(payload)).toThrowError(
+      "Invalid campaign admin stats overview response.",
+    );
+  });
+
+  it("rejects non-integer count fields in the overview response", () => {
+    const payload = createStatsOverviewResponsePayload();
+    payload.data.notifications.openedCount = 1.5;
+
+    expect(() => parseCampaignAdminStatsOverviewResponse(payload)).toThrowError(
+      "Invalid campaign admin stats overview response.",
+    );
+  });
+
+  it("parses interactions-by-type analytics payloads", () => {
+    const payload = createStatsInteractionsByTypeResponsePayload();
+
+    expect(parseCampaignAdminStatsInteractionsByTypeResponse(payload)).toEqual(
+      payload.data,
+    );
+  });
+
+  it("parses top-entities analytics payloads", () => {
+    const payload = createStatsTopEntitiesResponsePayload();
+
+    expect(parseCampaignAdminStatsTopEntitiesResponse(payload)).toEqual(
+      payload.data,
+    );
+  });
+
+  it.each([
+    [
+      "email",
+      (
+        payload: ReturnType<typeof createStatsInteractionsByTypeResponsePayload>,
+      ) => {
+        payload.data.items[0] = {
+          ...payload.data.items[0],
+          email: "user@example.com",
+        } as unknown as typeof payload.data.items[0];
+      },
+    ],
+    [
+      "payloadSummary",
+      (
+        payload: ReturnType<typeof createStatsInteractionsByTypeResponsePayload>,
+      ) => {
+        payload.data.items[0] = {
+          ...payload.data.items[0],
+          payloadSummary: {
+            kind: "private",
+          },
+        } as unknown as typeof payload.data.items[0];
+      },
+    ],
+    [
+      "clickedUrl",
+      (
+        payload: ReturnType<typeof createStatsInteractionsByTypeResponsePayload>,
+      ) => {
+        payload.data.items[0] = {
+          ...payload.data.items[0],
+          clickedUrl: "https://example.com/private",
+        } as unknown as typeof payload.data.items[0];
+      },
+    ],
+  ])(
+    "rejects unexpected %s fields in interactions-by-type analytics payloads",
+    (_, mutatePayload) => {
+      const payload = createStatsInteractionsByTypeResponsePayload();
+      mutatePayload(payload);
+
+      expect(() =>
+        parseCampaignAdminStatsInteractionsByTypeResponse(payload),
+      ).toThrowError(
+        "Invalid campaign admin stats interactions-by-type response.",
+      );
+    },
+  );
+
+  it.each([
+    [
+      "institutionEmail",
+      (payload: ReturnType<typeof createStatsTopEntitiesResponsePayload>) => {
+        payload.data.items[0] = {
+          ...payload.data.items[0],
+          institutionEmail: "contact@example.com",
+        } as unknown as typeof payload.data.items[0];
+      },
+    ],
+    [
+      "subject",
+      (payload: ReturnType<typeof createStatsTopEntitiesResponsePayload>) => {
+        payload.data.items[0] = {
+          ...payload.data.items[0],
+          subject: "Secret",
+        } as unknown as typeof payload.data.items[0];
+      },
+    ],
+  ])("rejects unexpected %s fields in top-entities analytics payloads", (_, mutatePayload) => {
+    const payload = createStatsTopEntitiesResponsePayload();
+    mutatePayload(payload);
+
+    expect(() => parseCampaignAdminStatsTopEntitiesResponse(payload)).toThrowError(
+      "Invalid campaign admin stats top entities response.",
+    );
+  });
+
+  it("rejects non-integer count fields in top-entities analytics payloads", () => {
+    const payload = createStatsTopEntitiesResponsePayload();
+    payload.data.items[0].interactionCount = 1.5;
+
+    expect(() => parseCampaignAdminStatsTopEntitiesResponse(payload)).toThrowError(
+      "Invalid campaign admin stats top entities response.",
     );
   });
 

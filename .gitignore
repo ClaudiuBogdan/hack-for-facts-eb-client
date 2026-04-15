@@ -48,8 +48,7 @@ Thumbs.db
 .Trash-
 
 #i18n
-src/locales/ro/messages.js
-src/locales/en/messages.js
+src/locales/*/*.js
 
 #SSL
 localhost-key.pem

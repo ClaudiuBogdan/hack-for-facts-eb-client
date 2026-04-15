@@ -69,6 +69,7 @@ import { Route as AdminCampaignsCampaignKeyUsersRouteImport } from './routes/adm
 import { Route as AdminCampaignsCampaignKeyUserInteractionsRouteImport } from './routes/admin/campaigns/$campaignKey/user-interactions'
 import { Route as AdminCampaignsCampaignKeyNotificationsRouteImport } from './routes/admin/campaigns/$campaignKey/notifications'
 import { Route as AdminCampaignsCampaignKeyEntitiesRouteImport } from './routes/admin/campaigns/$campaignKey/entities'
+import { Route as AdminCampaignsCampaignKeyAnalyticsRouteImport } from './routes/admin/campaigns/$campaignKey/analytics'
 import { Route as LangLearningCertificatesIdRouteImport } from './routes/$lang/learning/certificates.$id'
 import { Route as PrimarieCuiBugetProvocariRouteRouteImport } from './routes/primarie/$cui/buget/provocari/route'
 import { Route as PrimarieCuiBugetProvocariIndexRouteImport } from './routes/primarie/$cui/buget/provocari/index'
@@ -503,6 +504,16 @@ const AdminCampaignsCampaignKeyEntitiesRoute =
       (d) => d.Route,
     ),
   )
+const AdminCampaignsCampaignKeyAnalyticsRoute =
+  AdminCampaignsCampaignKeyAnalyticsRouteImport.update({
+    id: '/analytics',
+    path: '/analytics',
+    getParentRoute: () => AdminCampaignsCampaignKeyRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/admin/campaigns/$campaignKey/analytics.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const LangLearningCertificatesIdRoute =
   LangLearningCertificatesIdRouteImport.update({
     id: '/certificates/$id',
@@ -636,6 +647,7 @@ export interface FileRoutesByFullPath {
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
+  '/admin/campaigns/$campaignKey/analytics': typeof AdminCampaignsCampaignKeyAnalyticsRoute
   '/admin/campaigns/$campaignKey/entities': typeof AdminCampaignsCampaignKeyEntitiesRouteWithChildren
   '/admin/campaigns/$campaignKey/notifications': typeof AdminCampaignsCampaignKeyNotificationsRoute
   '/admin/campaigns/$campaignKey/user-interactions': typeof AdminCampaignsCampaignKeyUserInteractionsRoute
@@ -703,6 +715,7 @@ export interface FileRoutesByTo {
   '/alerts/$alertId': typeof AlertsAlertIdIndexLazyRoute
   '/charts/$chartId': typeof ChartsChartIdIndexLazyRoute
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
+  '/admin/campaigns/$campaignKey/analytics': typeof AdminCampaignsCampaignKeyAnalyticsRoute
   '/admin/campaigns/$campaignKey/entities': typeof AdminCampaignsCampaignKeyEntitiesRouteWithChildren
   '/admin/campaigns/$campaignKey/notifications': typeof AdminCampaignsCampaignKeyNotificationsRoute
   '/admin/campaigns/$campaignKey/user-interactions': typeof AdminCampaignsCampaignKeyUserInteractionsRoute
@@ -777,6 +790,7 @@ export interface FileRoutesById {
   '/charts/$chartId/': typeof ChartsChartIdIndexLazyRoute
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
+  '/admin/campaigns/$campaignKey/analytics': typeof AdminCampaignsCampaignKeyAnalyticsRoute
   '/admin/campaigns/$campaignKey/entities': typeof AdminCampaignsCampaignKeyEntitiesRouteWithChildren
   '/admin/campaigns/$campaignKey/notifications': typeof AdminCampaignsCampaignKeyNotificationsRoute
   '/admin/campaigns/$campaignKey/user-interactions': typeof AdminCampaignsCampaignKeyUserInteractionsRoute
@@ -852,6 +866,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId/'
     | '/primarie/$cui/buget/provocari'
     | '/$lang/learning/certificates/$id'
+    | '/admin/campaigns/$campaignKey/analytics'
     | '/admin/campaigns/$campaignKey/entities'
     | '/admin/campaigns/$campaignKey/notifications'
     | '/admin/campaigns/$campaignKey/user-interactions'
@@ -919,6 +934,7 @@ export interface FileRouteTypes {
     | '/alerts/$alertId'
     | '/charts/$chartId'
     | '/$lang/learning/certificates/$id'
+    | '/admin/campaigns/$campaignKey/analytics'
     | '/admin/campaigns/$campaignKey/entities'
     | '/admin/campaigns/$campaignKey/notifications'
     | '/admin/campaigns/$campaignKey/user-interactions'
@@ -992,6 +1008,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId/'
     | '/primarie/$cui/buget/provocari'
     | '/$lang/learning/certificates/$id'
+    | '/admin/campaigns/$campaignKey/analytics'
     | '/admin/campaigns/$campaignKey/entities'
     | '/admin/campaigns/$campaignKey/notifications'
     | '/admin/campaigns/$campaignKey/user-interactions'
@@ -1501,6 +1518,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCampaignsCampaignKeyEntitiesRouteImport
       parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
     }
+    '/admin/campaigns/$campaignKey/analytics': {
+      id: '/admin/campaigns/$campaignKey/analytics'
+      path: '/analytics'
+      fullPath: '/admin/campaigns/$campaignKey/analytics'
+      preLoaderRoute: typeof AdminCampaignsCampaignKeyAnalyticsRouteImport
+      parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
+    }
     '/$lang/learning/certificates/$id': {
       id: '/$lang/learning/certificates/$id'
       path: '/certificates/$id'
@@ -1719,6 +1743,7 @@ const AdminCampaignsCampaignKeyUsersRouteWithChildren =
   )
 
 interface AdminCampaignsCampaignKeyRouteRouteChildren {
+  AdminCampaignsCampaignKeyAnalyticsRoute: typeof AdminCampaignsCampaignKeyAnalyticsRoute
   AdminCampaignsCampaignKeyEntitiesRoute: typeof AdminCampaignsCampaignKeyEntitiesRouteWithChildren
   AdminCampaignsCampaignKeyNotificationsRoute: typeof AdminCampaignsCampaignKeyNotificationsRoute
   AdminCampaignsCampaignKeyUserInteractionsRoute: typeof AdminCampaignsCampaignKeyUserInteractionsRoute
@@ -1728,6 +1753,8 @@ interface AdminCampaignsCampaignKeyRouteRouteChildren {
 
 const AdminCampaignsCampaignKeyRouteRouteChildren: AdminCampaignsCampaignKeyRouteRouteChildren =
   {
+    AdminCampaignsCampaignKeyAnalyticsRoute:
+      AdminCampaignsCampaignKeyAnalyticsRoute,
     AdminCampaignsCampaignKeyEntitiesRoute:
       AdminCampaignsCampaignKeyEntitiesRouteWithChildren,
     AdminCampaignsCampaignKeyNotificationsRoute:

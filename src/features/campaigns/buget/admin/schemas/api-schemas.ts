@@ -25,10 +25,14 @@ import {
   type CampaignAdminNotificationsListResponse,
   type CampaignAdminNotificationsMetaResponse,
   type CampaignAdminMetaResponse,
+  type CampaignAdminStatsInteractionsByTypeResponse,
+  type CampaignAdminStatsOverview,
+  type CampaignAdminStatsTopEntitiesResponse,
   campaignAdminReviewSourceValues,
   campaignAdminReviewStatusValues,
   campaignAdminRiskFlagValues,
   campaignAdminScopeTypeValues,
+  campaignAdminStatsTopEntitiesSortByValues,
   campaignAdminSubmissionPathValues,
   type CampaignAdminUsersMetaResponse,
   campaignAdminThreadPhaseValues,
@@ -274,6 +278,129 @@ const campaignAdminUsersMetaResponseSchema = z
       .object({
         totalUsers: campaignAdminCountSchema,
         usersWithPendingReviews: campaignAdminCountSchema,
+      })
+      .strict(),
+  })
+  .strict();
+
+const campaignAdminStatsOverviewResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        coverage: z
+          .object({
+            hasClientTelemetry: z.boolean(),
+            hasNotificationAttribution: z.boolean(),
+          })
+          .strict(),
+        users: z
+          .object({
+            totalUsers: campaignAdminCountSchema,
+            usersWithPendingReviews: campaignAdminCountSchema,
+          })
+          .strict(),
+        interactions: z
+          .object({
+            totalInteractions: campaignAdminCountSchema,
+            interactionsWithInstitutionThread: campaignAdminCountSchema,
+            reviewStatusCounts: z
+              .object({
+                pending: campaignAdminCountSchema,
+                approved: campaignAdminCountSchema,
+                rejected: campaignAdminCountSchema,
+                notReviewed: campaignAdminCountSchema,
+              })
+              .strict(),
+            phaseCounts: z
+              .object({
+                idle: campaignAdminCountSchema,
+                draft: campaignAdminCountSchema,
+                pending: campaignAdminCountSchema,
+                resolved: campaignAdminCountSchema,
+                failed: campaignAdminCountSchema,
+              })
+              .strict(),
+            threadPhaseCounts: z
+              .object({
+                sending: campaignAdminCountSchema,
+                awaitingReply: campaignAdminCountSchema,
+                replyReceivedUnreviewed: campaignAdminCountSchema,
+                manualFollowUpNeeded: campaignAdminCountSchema,
+                resolvedPositive: campaignAdminCountSchema,
+                resolvedNegative: campaignAdminCountSchema,
+                closedNoResponse: campaignAdminCountSchema,
+                failed: campaignAdminCountSchema,
+                none: campaignAdminCountSchema,
+              })
+              .strict(),
+          })
+          .strict(),
+        entities: z
+          .object({
+            totalEntities: campaignAdminCountSchema,
+            entitiesWithPendingReviews: campaignAdminCountSchema,
+            entitiesWithSubscribers: campaignAdminCountSchema,
+            entitiesWithNotificationActivity: campaignAdminCountSchema,
+            entitiesWithFailedNotifications: campaignAdminCountSchema,
+          })
+          .strict(),
+        notifications: z
+          .object({
+            pendingDeliveryCount: campaignAdminCountSchema,
+            failedDeliveryCount: campaignAdminCountSchema,
+            deliveredCount: campaignAdminCountSchema,
+            openedCount: campaignAdminCountSchema,
+            clickedCount: campaignAdminCountSchema,
+            suppressedCount: campaignAdminCountSchema,
+          })
+          .strict(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const campaignAdminStatsInteractionsByTypeResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        items: z.array(
+          z
+            .object({
+              interactionId: z.string().min(1),
+              label: z.string().min(1).nullable(),
+              total: campaignAdminCountSchema,
+              pending: campaignAdminCountSchema,
+              approved: campaignAdminCountSchema,
+              rejected: campaignAdminCountSchema,
+              notReviewed: campaignAdminCountSchema,
+            })
+            .strict(),
+        ),
+      })
+      .strict(),
+  })
+  .strict();
+
+const campaignAdminStatsTopEntitiesResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        sortBy: z.enum(campaignAdminStatsTopEntitiesSortByValues),
+        limit: z.number().int().min(1).max(25),
+        items: z.array(
+          z
+            .object({
+              entityCui: z.string().min(1),
+              entityName: z.string().min(1).nullable(),
+              interactionCount: campaignAdminCountSchema,
+              userCount: campaignAdminCountSchema,
+              pendingReviewCount: campaignAdminCountSchema,
+            })
+            .strict(),
+        ),
       })
       .strict(),
   })
@@ -852,6 +979,44 @@ export function parseCampaignAdminUsersMetaResponse(
   const parsedPayload = campaignAdminUsersMetaResponseSchema.safeParse(payload);
   if (!parsedPayload.success) {
     throw new Error("Invalid campaign admin users metadata response.");
+  }
+
+  return parsedPayload.data.data;
+}
+
+export function parseCampaignAdminStatsOverviewResponse(
+  payload: unknown,
+): CampaignAdminStatsOverview {
+  const parsedPayload =
+    campaignAdminStatsOverviewResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin stats overview response.");
+  }
+
+  return parsedPayload.data.data;
+}
+
+export function parseCampaignAdminStatsInteractionsByTypeResponse(
+  payload: unknown,
+): CampaignAdminStatsInteractionsByTypeResponse {
+  const parsedPayload =
+    campaignAdminStatsInteractionsByTypeResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error(
+      "Invalid campaign admin stats interactions-by-type response.",
+    );
+  }
+
+  return parsedPayload.data.data;
+}
+
+export function parseCampaignAdminStatsTopEntitiesResponse(
+  payload: unknown,
+): CampaignAdminStatsTopEntitiesResponse {
+  const parsedPayload =
+    campaignAdminStatsTopEntitiesResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin stats top entities response.");
   }
 
   return parsedPayload.data.data;

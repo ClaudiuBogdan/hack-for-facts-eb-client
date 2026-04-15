@@ -186,6 +186,12 @@ export const campaignAdminNotificationTriggerModeValues = [
   "bulk",
 ] as const;
 
+export const campaignAdminStatsTopEntitiesSortByValues = [
+  "interactionCount",
+  "userCount",
+  "pendingReviewCount",
+] as const;
+
 export type CampaignAdminPhase = (typeof campaignAdminPhaseValues)[number];
 export type CampaignAdminReviewStatus =
   (typeof campaignAdminReviewStatusValues)[number];
@@ -233,6 +239,8 @@ export type CampaignAdminNotificationTriggerExecutionStatus =
   (typeof campaignAdminNotificationTriggerExecutionStatusValues)[number];
 export type CampaignAdminNotificationTriggerMode =
   (typeof campaignAdminNotificationTriggerModeValues)[number];
+export type CampaignAdminStatsTopEntitiesSortBy =
+  (typeof campaignAdminStatsTopEntitiesSortByValues)[number];
 export type CampaignAdminSortOrder = "asc" | "desc";
 export type CampaignAdminCampaignKey = "funky";
 export type CampaignAdminReviewDecision = Exclude<
@@ -430,6 +438,104 @@ export type CampaignAdminUsersMetaResponse = {
 export type CampaignAdminMetaResponse = {
   readonly availableInteractionTypes: readonly CampaignAdminAvailableInteractionType[];
   readonly stats: CampaignAdminInteractionMetaStats;
+};
+
+export type CampaignAdminStatsOverviewCoverage = {
+  readonly hasClientTelemetry: boolean;
+  readonly hasNotificationAttribution: boolean;
+};
+
+export type CampaignAdminStatsOverviewUsers = {
+  readonly totalUsers: number;
+  readonly usersWithPendingReviews: number;
+};
+
+export type CampaignAdminStatsOverviewInteractionReviewStatusCounts = {
+  readonly pending: number;
+  readonly approved: number;
+  readonly rejected: number;
+  readonly notReviewed: number;
+};
+
+export type CampaignAdminStatsOverviewInteractionPhaseCounts = {
+  readonly idle: number;
+  readonly draft: number;
+  readonly pending: number;
+  readonly resolved: number;
+  readonly failed: number;
+};
+
+export type CampaignAdminStatsOverviewInteractionThreadPhaseCounts = {
+  readonly sending: number;
+  readonly awaitingReply: number;
+  readonly replyReceivedUnreviewed: number;
+  readonly manualFollowUpNeeded: number;
+  readonly resolvedPositive: number;
+  readonly resolvedNegative: number;
+  readonly closedNoResponse: number;
+  readonly failed: number;
+  readonly none: number;
+};
+
+export type CampaignAdminStatsOverviewInteractions = {
+  readonly totalInteractions: number;
+  readonly interactionsWithInstitutionThread: number;
+  readonly reviewStatusCounts: CampaignAdminStatsOverviewInteractionReviewStatusCounts;
+  readonly phaseCounts: CampaignAdminStatsOverviewInteractionPhaseCounts;
+  readonly threadPhaseCounts: CampaignAdminStatsOverviewInteractionThreadPhaseCounts;
+};
+
+export type CampaignAdminStatsOverviewEntities = {
+  readonly totalEntities: number;
+  readonly entitiesWithPendingReviews: number;
+  readonly entitiesWithSubscribers: number;
+  readonly entitiesWithNotificationActivity: number;
+  readonly entitiesWithFailedNotifications: number;
+};
+
+export type CampaignAdminStatsOverviewNotifications = {
+  readonly pendingDeliveryCount: number;
+  readonly failedDeliveryCount: number;
+  readonly deliveredCount: number;
+  readonly openedCount: number;
+  readonly clickedCount: number;
+  readonly suppressedCount: number;
+};
+
+export type CampaignAdminStatsOverview = {
+  readonly coverage: CampaignAdminStatsOverviewCoverage;
+  readonly users: CampaignAdminStatsOverviewUsers;
+  readonly interactions: CampaignAdminStatsOverviewInteractions;
+  readonly entities: CampaignAdminStatsOverviewEntities;
+  readonly notifications: CampaignAdminStatsOverviewNotifications;
+};
+
+export type CampaignAdminStatsInteractionsByTypeItem = {
+  readonly interactionId: string;
+  readonly label: string | null;
+  readonly total: number;
+  readonly pending: number;
+  readonly approved: number;
+  readonly rejected: number;
+  readonly notReviewed: number;
+};
+
+export type CampaignAdminStatsInteractionsByTypeResponse = {
+  readonly items: readonly CampaignAdminStatsInteractionsByTypeItem[];
+};
+
+export type CampaignAdminStatsTopEntityItem = {
+  readonly entityCui: string;
+  readonly entityName: string | null;
+  readonly interactionCount: number;
+  readonly userCount: number;
+  readonly pendingReviewCount: number;
+};
+
+export type CampaignAdminStatsTopEntitiesResponse = {
+  readonly sortBy: CampaignAdminStatsTopEntitiesSortBy;
+  readonly limit: number;
+  readonly items: readonly CampaignAdminStatsTopEntityItem[];
 };
 
 export type CampaignAdminEntityListItem = {

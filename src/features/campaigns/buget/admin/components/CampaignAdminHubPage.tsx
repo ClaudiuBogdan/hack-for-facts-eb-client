@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
+  BarChart3,
   Building2,
   ClipboardList,
   Mail,
@@ -15,12 +16,14 @@ import { useCampaignAdminEntitiesMetaQuery } from "@/features/campaigns/buget/ad
 import {
   useCampaignAdminNotificationsMetaQuery,
 } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-notifications";
+import { useCampaignAdminStatsOverviewQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-stats";
 import { useCampaignAdminInteractionMetaQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-user-interactions";
 import { useCampaignAdminUsersMetaQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-users";
 import type {
   CampaignAdminCampaignKey,
   CampaignAdminEntitiesMetaResponse,
   CampaignAdminNotificationsMetaResponse,
+  CampaignAdminStatsOverview,
   CampaignAdminUsersMetaResponse,
 } from "@/features/campaigns/buget/admin/types";
 
@@ -195,6 +198,66 @@ function NotificationsHubCardSummary({
   );
 }
 
+function AnalyticsFeaturedBlock({
+  campaignKey,
+  overview,
+  isLoading,
+}: {
+  readonly campaignKey: string;
+  readonly overview?: CampaignAdminStatsOverview;
+  readonly isLoading: boolean;
+}) {
+  if (overview === undefined) {
+    return (
+      <Link
+        to="/admin/campaigns/$campaignKey/analytics"
+        params={{ campaignKey }}
+        className="group flex items-center gap-4 rounded-xl border border-border/70 bg-card/80 p-5 transition-colors hover:border-border hover:bg-muted/20"
+      >
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+          <BarChart3 className="h-5 w-5" aria-hidden="true" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-foreground">
+            {isLoading ? t`Loading campaign analytics…` : t`Campaign analytics`}
+          </p>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            {t`View campaign totals and current distributions across users, interactions, entities, and notifications`}
+          </p>
+        </div>
+        <ArrowRight
+          className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+          aria-hidden="true"
+        />
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      to="/admin/campaigns/$campaignKey/analytics"
+      params={{ campaignKey }}
+      className="group flex items-center gap-4 rounded-xl border border-border/70 bg-card/80 p-5 transition-colors hover:border-border hover:bg-muted/20"
+    >
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+        <BarChart3 className="h-5 w-5" aria-hidden="true" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-foreground">
+          {t`Campaign analytics`}
+        </p>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          {t`${overview.entities.totalEntities} entities · ${overview.notifications.deliveredCount} delivered · ${overview.notifications.openedCount} opened · ${overview.users.usersWithPendingReviews} users need review`}
+        </p>
+      </div>
+      <ArrowRight
+        className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+        aria-hidden="true"
+      />
+    </Link>
+  );
+}
+
 export function CampaignAdminHubPage({
   campaignKey,
 }: CampaignAdminHubPageProps) {
@@ -213,6 +276,10 @@ export function CampaignAdminHubPage({
     enabled: isHubQueriesEnabled,
   });
   const notificationsMetaQuery = useCampaignAdminNotificationsMetaQuery({
+    campaignKey,
+    enabled: isHubQueriesEnabled,
+  });
+  const statsOverviewQuery = useCampaignAdminStatsOverviewQuery({
     campaignKey,
     enabled: isHubQueriesEnabled,
   });
@@ -309,7 +376,13 @@ export function CampaignAdminHubPage({
             ) : null}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <AnalyticsFeaturedBlock
+            campaignKey={campaignKey}
+            overview={statsOverviewQuery.data}
+            isLoading={statsOverviewQuery.isLoading}
+          />
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <Link
               to="/admin/campaigns/$campaignKey/users"
               params={{ campaignKey }}
