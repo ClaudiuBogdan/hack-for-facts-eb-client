@@ -18,6 +18,7 @@ import {
   type CampaignAdminStatsTopEntitiesResponse,
   type CampaignAdminStatsTopEntitiesSortBy,
 } from "@/features/campaigns/buget/admin/types";
+import { AnalyticsSectionHeader } from "./AnalyticsSectionHeader";
 import { CampaignAdminStatsMetricCard } from "./CampaignAdminStatsMetricCard";
 
 type CampaignAdminStatsOverviewPanelProps = {
@@ -176,23 +177,29 @@ function sortDistributionItems(
   });
 }
 
+type AnalyticsSectionProps = {
+  readonly title: string;
+  readonly description: string;
+  readonly actionHref?: string;
+  readonly actionLabel?: string;
+  readonly children: ReactNode;
+};
+
 function AnalyticsSection({
   title,
   description,
+  actionHref,
+  actionLabel,
   children,
-}: {
-  readonly title: string;
-  readonly description: string;
-  readonly children: ReactNode;
-}) {
+}: AnalyticsSectionProps) {
   return (
     <section className="space-y-3" aria-label={title}>
-      <div className="space-y-1">
-        <h2 className="text-base font-semibold tracking-tight text-foreground">
-          {title}
-        </h2>
-        <p className="text-sm text-muted-foreground">{description}</p>
-      </div>
+      <AnalyticsSectionHeader
+        title={title}
+        description={description}
+        actionHref={actionHref}
+        actionLabel={actionLabel}
+      />
       {children}
     </section>
   );
@@ -720,6 +727,8 @@ export function CampaignAdminStatsOverviewPanel({
       <AnalyticsSection
         title={t`Current totals`}
         description={t`A compact snapshot of campaign scale, review load, and notification reach.`}
+        actionHref={`/admin/campaigns/${campaignKey}/users`}
+        actionLabel={t`Users`}
       >
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <Link
@@ -780,6 +789,8 @@ export function CampaignAdminStatsOverviewPanel({
       <AnalyticsSection
         title={t`Top interaction elements`}
         description={t`Use the dedicated ranked stats route to see which interaction elements drive the most activity and where review load is concentrated.`}
+        actionHref={`/admin/campaigns/${campaignKey}/user-interactions`}
+        actionLabel={t`Interactions`}
       >
         {isInteractionsByTypeLoading && interactionsByType === undefined ? (
           <SectionMessage
@@ -802,6 +813,8 @@ export function CampaignAdminStatsOverviewPanel({
       <AnalyticsSection
         title={t`Top entities`}
         description={t`Rank entities by interactions, users, or pending reviews without reusing the operational entity endpoints.`}
+        actionHref={`/admin/campaigns/${campaignKey}/entities`}
+        actionLabel={t`Entities`}
       >
         <div className="space-y-3"
         >
@@ -844,6 +857,8 @@ export function CampaignAdminStatsOverviewPanel({
       <AnalyticsSection
         title={t`Operational distributions`}
         description={t`These aggregates remain useful for understanding current review pressure and notification outcomes at a glance.`}
+        actionHref={`/admin/campaigns/${campaignKey}/user-interactions`}
+        actionLabel={t`Review queue`}
       >
         <div className="grid gap-6 xl:grid-cols-2">
           <div className="space-y-3">
@@ -871,6 +886,8 @@ export function CampaignAdminStatsOverviewPanel({
       <AnalyticsSection
         title={t`Coverage`}
         description={t`These capability flags clarify which analytics dimensions exist today and which are still unavailable.`}
+        actionHref={`/admin/campaigns/${campaignKey}/notifications`}
+        actionLabel={t`Notifications`}
       >
         <div className="flex flex-wrap gap-2">
           <Badge
