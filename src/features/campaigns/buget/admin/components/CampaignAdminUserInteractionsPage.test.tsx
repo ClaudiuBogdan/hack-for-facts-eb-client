@@ -520,6 +520,64 @@ describe('CampaignAdminUserInteractionsPage', () => {
     expect(toastSuccessMock).toHaveBeenCalledWith('Copied 1 review row to the clipboard.')
   })
 
+  it('round-trips send notification through the table clipboard format and paste handler', async () => {
+    mockQueueState({ items: [createItem()] })
+
+    renderStatefulPage()
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Review' })[0])
+    await screen.findByText('Staged decision')
+    fireEvent.click(screen.getByRole('radio', { name: /^Approved/ }))
+    fireEvent.click(getSheetFooterCloseButton('contact@primarie.ro'))
+
+    fireEvent.click(screen.getAllByLabelText('Select row')[0])
+    fireEvent.click(screen.getAllByLabelText('Send notification')[0])
+
+    fireEvent.pointerDown(screen.getAllByRole('button', { name: 'Copy selected rows' })[0])
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Copy selected rows' }))
+
+    await waitFor(() => {
+      expect(clipboardWriteTextMock).toHaveBeenCalledTimes(1)
+    })
+
+    const clipboardText = clipboardWriteTextMock.mock.calls[0]?.[0]
+    expect(clipboardText).toContain('\tapproved\tyes\t')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear staged' }))
+    fireEvent.click(
+      within(getAlertDialog('Clear staged data for 1 row?')).getByRole('button', {
+        name: 'Clear staged',
+      })
+    )
+    await waitFor(() => {
+      expect(screen.queryByText('1 row staged')).not.toBeInTheDocument()
+    })
+
+    await dispatchWindowPaste(String(clipboardText))
+
+    expect(await screen.findByText('1 row staged')).toBeInTheDocument()
+    expect(screen.getAllByText('Notify').length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Submit selected' }))
+    fireEvent.click(
+      within(getAlertDialog('Submit 1 review?')).getByRole('button', {
+        name: 'Submit selected',
+      })
+    )
+
+    expect(mutateAsyncMock).toHaveBeenCalledWith({
+      items: [
+        {
+          userId: 'user-1',
+          recordKey: 'funky:interaction:public_debate_request::entity:12345678',
+          expectedUpdatedAt: '2026-04-10T10:00:00.000Z',
+          status: 'approved',
+        },
+      ],
+      send_notification: true,
+    })
+  })
+
   it('copies all visible rows when no row is selected', async () => {
     mockQueueState({
       items: [

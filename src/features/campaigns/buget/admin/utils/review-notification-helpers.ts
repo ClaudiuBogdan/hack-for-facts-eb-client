@@ -2,31 +2,60 @@ import type {
   CampaignAdminCampaignKey,
   CampaignAdminUserInteractionListItem,
 } from "@/features/campaigns/buget/admin/types";
+import { serializeCampaignAdminNotificationConditions } from "@/features/campaigns/buget/admin/utils/campaign-admin-notification-run-utils";
 
 export function buildCampaignAdminNotificationsTriggerHref(input: {
   readonly campaignKey: CampaignAdminCampaignKey;
   readonly item: CampaignAdminUserInteractionListItem;
 }): string {
+  const runConditions = serializeCampaignAdminNotificationConditions([
+    {
+      id: "userId",
+      fieldKey: "userId",
+      operator: "is",
+      value: input.item.userId,
+    },
+    {
+      id: "recordKey",
+      fieldKey: "recordKey",
+      operator: "is",
+      value: input.item.recordKey,
+    },
+    {
+      id: "interactionId",
+      fieldKey: "interactionId",
+      operator: "is",
+      value: input.item.interactionId,
+    },
+    ...(input.item.entityCui
+      ? [
+          {
+            id: "entityCui",
+            fieldKey: "entityCui",
+            operator: "is" as const,
+            value: input.item.entityCui,
+          },
+        ]
+      : []),
+    ...(input.item.reviewStatus === "approved" ||
+    input.item.reviewStatus === "rejected"
+      ? [
+          {
+            id: "reviewStatus",
+            fieldKey: "reviewStatus",
+            operator: "is" as const,
+            value: input.item.reviewStatus,
+          },
+        ]
+      : []),
+  ]);
   const searchParams = new URLSearchParams({
-    tab: "triggers",
-    triggerId: "admin_reviewed_user_interaction",
-    triggerMode: "single",
-    triggerUserId: input.item.userId,
-    triggerRecordKey: input.item.recordKey,
-    triggerLimit: "50",
+    tab: "run",
+    runNotificationType: "admin_reviewed_user_interaction",
   });
 
-  if (input.item.entityCui) {
-    searchParams.set("triggerEntityCui", input.item.entityCui);
-  }
-
-  searchParams.set("triggerInteractionId", input.item.interactionId);
-
-  if (
-    input.item.reviewStatus === "approved" ||
-    input.item.reviewStatus === "rejected"
-  ) {
-    searchParams.set("triggerReviewStatus", input.item.reviewStatus);
+  if (runConditions !== undefined) {
+    searchParams.set("runConditions", runConditions);
   }
 
   return `/admin/campaigns/${input.campaignKey}/notifications?${searchParams.toString()}`;

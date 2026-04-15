@@ -31,7 +31,14 @@ const notificationsPageMock = vi.fn(
         onClick={() => {
           onSearchChange(
             {
-              tab: "templates",
+              tab: "run",
+              runNotificationType: "admin_reviewed_user_interaction",
+              runConditions: "userId:is:user-1",
+              previewId: "plan-1",
+              previewCursor: "cursor-2",
+              previewPageIndex: 2,
+              previewTrail: "%5Bnull%2C%22cursor-1%22%5D",
+              previewFilter: "ready",
               sortBy: "createdAt",
               sortOrder: "desc",
               limit: 50,
@@ -87,7 +94,7 @@ describe("campaign notifications lazy route", () => {
 
     expect(navigateMock).toHaveBeenCalledWith({
       search: {
-        tab: "templates",
+        tab: "run",
         notificationType: undefined,
         templateId: undefined,
         userId: undefined,
@@ -98,6 +105,13 @@ describe("campaign notifications lazy route", () => {
         source: undefined,
         sortBy: "createdAt",
         sortOrder: "desc",
+        runNotificationType: "admin_reviewed_user_interaction",
+        runConditions: "userId:is:user-1",
+        previewId: "plan-1",
+        previewCursor: "cursor-2",
+        previewPageIndex: 2,
+        previewTrail: "%5Bnull%2C%22cursor-1%22%5D",
+        previewFilter: "ready",
         cursor: undefined,
         pageIndex: undefined,
         limit: 50,

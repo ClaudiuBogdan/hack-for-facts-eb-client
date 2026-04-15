@@ -139,6 +139,37 @@ describe('campaign-admin bulk review clipboard', () => {
     ])
   })
 
+  it('round-trips send notification values from exported rows', () => {
+    const items = [createItem()]
+    const rawText = serializeCampaignAdminBulkReviewRowsToClipboardTsv({
+      items,
+      stagedDraftsByKey: {
+        'user-1::funky:interaction:public_debate_request::entity:12345678': createDraft({
+          status: 'approved',
+          feedbackText: 'Ready to notify',
+          sendNotification: true,
+        }),
+      },
+    })
+
+    const parsed = parseCampaignAdminBulkReviewClipboardText({
+      rawText,
+      items,
+    })
+
+    expect(parsed.issues).toEqual([])
+    expect(parsed.importedCount).toBe(1)
+    expect(parsed.drafts).toEqual([
+      {
+        userId: 'user-1',
+        recordKey: 'funky:interaction:public_debate_request::entity:12345678',
+        status: 'approved',
+        feedbackText: 'Ready to notify',
+        sendNotification: true,
+      },
+    ])
+  })
+
   it('accepts common header aliases for decision and feedback columns', () => {
     const items = [createItem()]
     const parsed = parseCampaignAdminBulkReviewClipboardText({

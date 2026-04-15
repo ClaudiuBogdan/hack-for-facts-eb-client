@@ -5,6 +5,8 @@ import { getAuthToken } from "@/lib/auth";
 import { createLogger } from "@/lib/logger";
 import {
   parseCampaignAdminErrorEnvelope,
+  parseCampaignAdminNotificationPlanResponse,
+  parseCampaignAdminNotificationPlanSendResponse,
   parseCampaignAdminNotificationTriggerBulkExecutionBody,
   parseCampaignAdminNotificationTriggerBulkExecutionResponse,
   parseCampaignAdminNotificationTemplatePreviewResponse,
@@ -14,9 +16,13 @@ import {
   parseCampaignAdminNotificationTriggersResponse,
   parseCampaignAdminNotificationsListResponse,
   parseCampaignAdminNotificationsMetaResponse,
+  parseCampaignAdminRunnableTemplateDryRunBody,
+  parseCampaignAdminRunnableTemplatesResponse,
 } from "@/features/campaigns/buget/admin/schemas/api-schemas";
 import type {
   CampaignAdminCampaignKey,
+  CampaignAdminNotificationPlanResponse,
+  CampaignAdminNotificationPlanSendResponse,
   CampaignAdminNotificationsAuditFilters,
   CampaignAdminNotificationsListResponse,
   CampaignAdminNotificationsMetaResponse,
@@ -27,6 +33,8 @@ import type {
   CampaignAdminNotificationTriggerDescriptor,
   CampaignAdminNotificationTriggerExecutionBody,
   CampaignAdminNotificationTriggerExecutionResponse,
+  CampaignAdminRunnableTemplateDescriptor,
+  CampaignAdminRunnableTemplateDryRunBody,
 } from "@/features/campaigns/buget/admin/types";
 import { CampaignAdminApiError } from "./campaign-admin-user-interactions";
 
@@ -39,7 +47,11 @@ type CampaignAdminNotificationsRequestKind =
   | "triggerExecution"
   | "triggerBulkExecution"
   | "templateCatalog"
-  | "templatePreview";
+  | "templatePreview"
+  | "runnableTemplateCatalog"
+  | "dryRunPlan"
+  | "planPage"
+  | "planSend";
 
 function getCampaignAdminEndpoint(
   campaignKey: CampaignAdminCampaignKey,
@@ -101,6 +113,14 @@ function getFallbackErrorMessage(
         return t`Campaign admin notification templates request was invalid.`;
       case "templatePreview":
         return t`Campaign admin notification template preview request was invalid.`;
+      case "runnableTemplateCatalog":
+        return t`Campaign admin runnable notification templates request was invalid.`;
+      case "dryRunPlan":
+        return t`Campaign admin notification dry-run request was invalid.`;
+      case "planPage":
+        return t`Campaign admin notification plan request was invalid.`;
+      case "planSend":
+        return t`Campaign admin notification send request was invalid.`;
       default:
         return t`Campaign admin notifications request was invalid.`;
     }
@@ -122,6 +142,14 @@ function getFallbackErrorMessage(
         return t`This campaign notification trigger is unavailable on this server or the campaign key is not supported.`;
       case "triggerBulkExecution":
         return t`This campaign bulk notification trigger is unavailable on this server or the campaign key is not supported.`;
+      case "runnableTemplateCatalog":
+        return t`Campaign admin runnable notification templates are unavailable on this server or the campaign key is not supported.`;
+      case "dryRunPlan":
+        return t`This campaign runnable notification template is unavailable on this server or the campaign key is not supported.`;
+      case "planPage":
+        return t`This campaign notification plan is unavailable on this server or no longer exists.`;
+      case "planSend":
+        return t`This campaign notification plan is unavailable on this server or can no longer be sent.`;
       default:
         return t`The campaign notifications admin is unavailable on this server or the campaign key is not supported.`;
     }
@@ -147,6 +175,14 @@ function getFallbackErrorMessage(
         return t`Campaign notification templates could not be loaded right now.`;
       case "templatePreview":
         return t`Campaign notification template preview could not be loaded right now.`;
+      case "runnableTemplateCatalog":
+        return t`Runnable notification templates could not be loaded right now.`;
+      case "dryRunPlan":
+        return t`Campaign notification dry run could not be completed right now.`;
+      case "planPage":
+        return t`Campaign notification plan rows could not be loaded right now.`;
+      case "planSend":
+        return t`Campaign notification plan could not be sent right now.`;
       default:
         return t`Campaign admin notifications request failed.`;
     }
@@ -167,6 +203,14 @@ function getFallbackErrorMessage(
       return t`Campaign notification templates request failed.`;
     case "templatePreview":
       return t`Campaign notification template preview request failed.`;
+    case "runnableTemplateCatalog":
+      return t`Runnable notification templates request failed.`;
+    case "dryRunPlan":
+      return t`Campaign notification dry-run request failed.`;
+    case "planPage":
+      return t`Campaign notification plan request failed.`;
+    case "planSend":
+      return t`Campaign notification send request failed.`;
     default:
       return t`Campaign admin notifications request failed.`;
   }
@@ -471,6 +515,27 @@ export async function listCampaignAdminNotificationTemplates(input: {
   });
 }
 
+export async function listCampaignAdminRunnableTemplates(input: {
+  readonly campaignKey: CampaignAdminCampaignKey;
+}): Promise<readonly CampaignAdminRunnableTemplateDescriptor[]> {
+  const payload = await authorizedRequest({
+    campaignKey: input.campaignKey,
+    pathname: "/notifications/runnable-templates",
+    init: {
+      method: "GET",
+    },
+    requestKind: "runnableTemplateCatalog",
+  });
+
+  return parseCampaignAdminSuccessPayload({
+    payload,
+    parse: parseCampaignAdminRunnableTemplatesResponse,
+    errorMessage: t`Campaign runnable notification templates response was invalid.`,
+    logMessage:
+      "Campaign runnable notification templates response did not match the expected schema",
+  });
+}
+
 export async function getCampaignAdminNotificationTemplatePreview(input: {
   readonly campaignKey: CampaignAdminCampaignKey;
   readonly templateId: string;
@@ -490,5 +555,94 @@ export async function getCampaignAdminNotificationTemplatePreview(input: {
     errorMessage: t`Campaign notification template preview response was invalid.`,
     logMessage:
       "Campaign notification template preview response did not match the expected schema",
+  });
+}
+
+function buildPlanPageQueryString(
+  cursor: string | null,
+  limit: number | undefined,
+): string {
+  const searchParams = new URLSearchParams();
+  appendOptionalSearchParam(searchParams, "cursor", cursor ?? undefined);
+  appendOptionalSearchParam(searchParams, "limit", limit);
+
+  const nextSearch = searchParams.toString();
+  return nextSearch.length > 0 ? `?${nextSearch}` : "";
+}
+
+export async function createCampaignAdminNotificationDryRunPlan(input: {
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly runnableId: string;
+  readonly body: CampaignAdminRunnableTemplateDryRunBody;
+}): Promise<CampaignAdminNotificationPlanResponse> {
+  const body = parseCampaignAdminRunnableTemplateDryRunBody(input.body);
+  const payload = await authorizedRequest({
+    campaignKey: input.campaignKey,
+    pathname: `/notifications/runnable-templates/${encodeURIComponent(input.runnableId)}/dry-run`,
+    init: {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    },
+    requestKind: "dryRunPlan",
+  });
+
+  return parseCampaignAdminSuccessPayload({
+    payload,
+    parse: parseCampaignAdminNotificationPlanResponse,
+    errorMessage: t`Campaign notification dry-run response was invalid.`,
+    logMessage:
+      "Campaign notification dry-run response did not match the expected schema",
+  });
+}
+
+export async function getCampaignAdminNotificationPlanPage(input: {
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly planId: string;
+  readonly cursor?: string | null;
+  readonly limit?: number;
+}): Promise<CampaignAdminNotificationPlanResponse> {
+  const payload = await authorizedRequest({
+    campaignKey: input.campaignKey,
+    pathname: `/notifications/plans/${encodeURIComponent(input.planId)}${buildPlanPageQueryString(
+      input.cursor ?? null,
+      input.limit,
+    )}`,
+    init: {
+      method: "GET",
+    },
+    requestKind: "planPage",
+  });
+
+  return parseCampaignAdminSuccessPayload({
+    payload,
+    parse: parseCampaignAdminNotificationPlanResponse,
+    errorMessage: t`Campaign notification plan response was invalid.`,
+    logMessage:
+      "Campaign notification plan response did not match the expected schema",
+  });
+}
+
+export async function sendCampaignAdminNotificationPlan(input: {
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly planId: string;
+}): Promise<CampaignAdminNotificationPlanSendResponse> {
+  const payload = await authorizedRequest({
+    campaignKey: input.campaignKey,
+    pathname: `/notifications/plans/${encodeURIComponent(input.planId)}/send`,
+    init: {
+      method: "POST",
+    },
+    requestKind: "planSend",
+  });
+
+  return parseCampaignAdminSuccessPayload({
+    payload,
+    parse: parseCampaignAdminNotificationPlanSendResponse,
+    errorMessage: t`Campaign notification send response was invalid.`,
+    logMessage:
+      "Campaign notification send response did not match the expected schema",
   });
 }

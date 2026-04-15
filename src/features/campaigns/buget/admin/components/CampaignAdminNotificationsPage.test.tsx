@@ -1,27 +1,37 @@
-import { fireEvent, render, screen, waitFor, within } from "@/test/test-utils";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@/test/test-utils";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { CampaignAdminNotificationsPage } from "./CampaignAdminNotificationsPage";
+import { CampaignAdminApiError } from "@/features/campaigns/buget/admin/api/campaign-admin-user-interactions";
 import type {
+  CampaignAdminNotificationPlanResponse,
+  CampaignAdminNotificationPlanSendResponse,
+  CampaignAdminNotificationTemplatePreview,
+  CampaignAdminNotificationsListResponse,
   CampaignAdminNotificationsSearch,
-  CampaignAdminNotificationListItem,
-  CampaignAdminNotificationTemplateDescriptor,
-  CampaignAdminNotificationTriggerDescriptor,
-  CampaignAdminNotificationTriggerExecutionResponse,
+  CampaignAdminRunnableTemplateDescriptor,
 } from "@/features/campaigns/buget/admin/types";
+import { createTestQueryClient } from "@/test/test-utils";
+import { CampaignAdminNotificationsPage } from "./CampaignAdminNotificationsPage";
 
 const useAuthMock = vi.fn();
-const useCampaignAdminNotificationsAuditQueryMock = vi.fn();
-const useCampaignAdminNotificationTriggersQueryMock = vi.fn();
-const useCampaignAdminNotificationTemplatesQueryMock = vi.fn();
-const useCampaignAdminNotificationTemplatePreviewQueryMock = vi.fn();
-const useExecuteCampaignAdminNotificationTriggerMutationMock = vi.fn();
-const useExecuteCampaignAdminNotificationTriggerBulkMutationMock = vi.fn();
-const mutateAsyncMock = vi.fn();
-const bulkMutateAsyncMock = vi.fn();
-const toastSuccessMock = vi.fn();
-const toastErrorMock = vi.fn();
+const listCampaignAdminNotificationsMock = vi.fn();
+const getCampaignAdminNotificationsMetaMock = vi.fn();
+const listCampaignAdminNotificationTemplatesMock = vi.fn();
+const getCampaignAdminNotificationTemplatePreviewMock = vi.fn();
+const listCampaignAdminNotificationTriggersMock = vi.fn();
+const executeCampaignAdminNotificationTriggerMock = vi.fn();
+const executeCampaignAdminNotificationTriggerBulkMock = vi.fn();
+const listCampaignAdminRunnableTemplatesMock = vi.fn();
+const createCampaignAdminNotificationDryRunPlanMock = vi.fn();
+const getCampaignAdminNotificationPlanPageMock = vi.fn();
+const sendCampaignAdminNotificationPlanMock = vi.fn();
 
 vi.mock("@/lib/auth", () => ({
   useAuth: () => useAuthMock(),
@@ -31,148 +41,177 @@ vi.mock("@/lib/auth", () => ({
 }));
 
 vi.mock(
-  "@/features/campaigns/buget/admin/hooks/use-campaign-admin-notifications",
+  "@/features/campaigns/buget/admin/api/campaign-admin-notifications",
   () => ({
-    useCampaignAdminNotificationsAuditQuery: (...args: unknown[]) =>
-      useCampaignAdminNotificationsAuditQueryMock(...args),
-    useCampaignAdminNotificationTriggersQuery: (...args: unknown[]) =>
-      useCampaignAdminNotificationTriggersQueryMock(...args),
-    useCampaignAdminNotificationTemplatesQuery: (...args: unknown[]) =>
-      useCampaignAdminNotificationTemplatesQueryMock(...args),
-    useCampaignAdminNotificationTemplatePreviewQuery: (...args: unknown[]) =>
-      useCampaignAdminNotificationTemplatePreviewQueryMock(...args),
-    useExecuteCampaignAdminNotificationTriggerMutation: (...args: unknown[]) =>
-      useExecuteCampaignAdminNotificationTriggerMutationMock(...args),
-    useExecuteCampaignAdminNotificationTriggerBulkMutation: (...args: unknown[]) =>
-      useExecuteCampaignAdminNotificationTriggerBulkMutationMock(...args),
+    listCampaignAdminNotifications: (...args: unknown[]) =>
+      listCampaignAdminNotificationsMock(...args),
+    getCampaignAdminNotificationsMeta: (...args: unknown[]) =>
+      getCampaignAdminNotificationsMetaMock(...args),
+    listCampaignAdminNotificationTemplates: (...args: unknown[]) =>
+      listCampaignAdminNotificationTemplatesMock(...args),
+    getCampaignAdminNotificationTemplatePreview: (...args: unknown[]) =>
+      getCampaignAdminNotificationTemplatePreviewMock(...args),
+    listCampaignAdminNotificationTriggers: (...args: unknown[]) =>
+      listCampaignAdminNotificationTriggersMock(...args),
+    executeCampaignAdminNotificationTrigger: (...args: unknown[]) =>
+      executeCampaignAdminNotificationTriggerMock(...args),
+    executeCampaignAdminNotificationTriggerBulk: (...args: unknown[]) =>
+      executeCampaignAdminNotificationTriggerBulkMock(...args),
+    listCampaignAdminRunnableTemplates: (...args: unknown[]) =>
+      listCampaignAdminRunnableTemplatesMock(...args),
+    createCampaignAdminNotificationDryRunPlan: (...args: unknown[]) =>
+      createCampaignAdminNotificationDryRunPlanMock(...args),
+    getCampaignAdminNotificationPlanPage: (...args: unknown[]) =>
+      getCampaignAdminNotificationPlanPageMock(...args),
+    sendCampaignAdminNotificationPlan: (...args: unknown[]) =>
+      sendCampaignAdminNotificationPlanMock(...args),
   }),
 );
 
-vi.mock("sonner", () => ({
-  toast: {
-    success: (...args: unknown[]) => toastSuccessMock(...args),
-    error: (...args: unknown[]) => toastErrorMock(...args),
-  },
-}));
-
-function createAuditItem(
-  overrides: Partial<CampaignAdminNotificationListItem> = {},
-): CampaignAdminNotificationListItem {
+function createRunnableTemplate(
+  overrides: Partial<CampaignAdminRunnableTemplateDescriptor> = {},
+): CampaignAdminRunnableTemplateDescriptor {
   return {
-    outboxId: "outbox-1",
+    runnableId: "admin_reviewed_user_interaction",
     campaignKey: "funky",
-    notificationType: "funky:outbox:entity_update",
-    templateId: "public_debate_entity_update",
-    templateName: "Entity update",
-    templateVersion: "3",
-    status: "delivered",
-    createdAt: "2026-04-12T08:00:00.000Z",
-    sentAt: "2026-04-12T08:02:00.000Z",
-    attemptCount: 1,
-    safeError: {
-      category: null,
-      code: null,
-    },
-    projection: {
-      kind: "public_debate_entity_update",
-      userId: "user-1",
-      entityCui: "12345678",
-      entityName: "Oras Test",
-      threadId: "thread-1",
-      threadKey: "thread-key-1",
-      eventType: "reply_received",
-      phase: "awaiting_reply",
-      replyEntryId: null,
-      basedOnEntryId: null,
-      resolutionCode: null,
-      triggerSource: "campaign_admin",
-    },
+    templateId: "admin_reviewed_user_interaction",
+    templateVersion: "1",
+    description: "Reviewed interaction admin email",
+    targetKind: "user",
+    selectors: [
+      { name: "userId", type: "string", required: false },
+      { name: "entityCui", type: "string", required: false },
+      { name: "recordKey", type: "string", required: false },
+    ],
+    filters: [
+      { name: "reviewStatus", type: "enum", required: false },
+      { name: "interactionId", type: "string", required: false },
+      { name: "updatedAtFrom", type: "datetime", required: false },
+      { name: "updatedAtTo", type: "datetime", required: false },
+      { name: "submittedAtFrom", type: "datetime", required: false },
+      { name: "submittedAtTo", type: "datetime", required: false },
+    ],
+    dryRunRequired: true,
+    maxPlanRowCount: 500,
+    defaultPageSize: 25,
+    maxPageSize: 100,
     ...overrides,
   };
 }
 
-function createTrigger(
-  overrides: Partial<CampaignAdminNotificationTriggerDescriptor> = {},
-): CampaignAdminNotificationTriggerDescriptor {
+function createPlanResponse(
+  overrides: Partial<CampaignAdminNotificationPlanResponse> = {},
+): CampaignAdminNotificationPlanResponse {
   return {
-    triggerId: "public_debate_entity_update.reply_received",
-    campaignKey: "funky",
-    templateId: "public_debate_entity_update",
-    description: "Queue the reply received notification.",
-    inputFields: [
+    planId: "plan-1",
+    runnableId: "admin_reviewed_user_interaction",
+    templateId: "admin_reviewed_user_interaction",
+    watermark: "2026-04-14T12:00:00.000Z",
+    summary: {
+      totalRowCount: 4,
+      willSendCount: 2,
+      alreadySentCount: 1,
+      alreadyPendingCount: 0,
+      ineligibleCount: 1,
+      missingDataCount: 0,
+    },
+    rows: [
       {
-        name: "threadId",
-        type: "string",
-        required: true,
+        rowKey: "row-1",
+        userId: "user-1",
+        entityCui: "12345678",
+        entityName: "Entity One",
+        recordKey: "record-1",
+        interactionId: "budget_document",
+        interactionLabel: "Budget document",
+        reviewStatus: "approved",
+        reviewedAt: "2026-04-12T08:00:00.000Z",
+        status: "will_send",
+        reasonCode: "eligible",
+        statusMessage: "Matches all conditions and is ready to send.",
+        hasExistingDelivery: false,
+        existingDeliveryStatus: null,
+        sendMode: "create",
+      },
+      {
+        rowKey: "row-2",
+        userId: "user-2",
+        entityCui: "87654321",
+        entityName: "Entity Two",
+        recordKey: "record-2",
+        interactionId: "budget_status",
+        interactionLabel: "Budget status",
+        reviewStatus: "rejected",
+        reviewedAt: "2026-04-13T08:00:00.000Z",
+        status: "already_sent",
+        reasonCode: "already_sent",
+        statusMessage: "This notification was already sent before.",
+        hasExistingDelivery: true,
+        existingDeliveryStatus: "delivered",
+        sendMode: null,
       },
     ],
-    targetKind: "thread",
-    ...overrides,
-  };
-}
-
-function createTemplate(
-  overrides: Partial<CampaignAdminNotificationTemplateDescriptor> = {},
-): CampaignAdminNotificationTemplateDescriptor {
-  return {
-    templateId: "public_debate_entity_update",
-    name: "Entity update",
-    version: "3",
-    description: "Entity update email",
-    requiredFields: [
-      {
-        name: "threadId",
-        type: "string",
-        required: true,
-      },
-    ],
-    ...overrides,
-  };
-}
-
-function createTriggerExecutionResponse(): CampaignAdminNotificationTriggerExecutionResponse {
-  return {
-    triggerId: "public_debate_entity_update.reply_received",
-    campaignKey: "funky",
-    templateId: "public_debate_entity_update",
-    result: {
-      status: "queued",
-      createdOutboxIds: ["outbox-1"],
-      reusedOutboxIds: [],
-      queuedOutboxIds: ["outbox-1"],
-      enqueueFailedOutboxIds: [],
+    page: {
+      nextCursor: "cursor-2",
+      hasMore: true,
     },
+    ...overrides,
   };
 }
 
-function mockAuditState(input: {
-  readonly items?: readonly CampaignAdminNotificationListItem[];
-  readonly error?: { status: number; message: string } | null;
-  readonly isLoading?: boolean;
-  readonly isFetching?: boolean;
-}) {
-  useCampaignAdminNotificationsAuditQueryMock.mockReturnValue({
-    data:
-      input.isLoading && input.items === undefined
-        ? undefined
-        : {
-            items: input.items ?? [],
-            page: {
-              hasMore: false,
-              nextCursor: null,
-            },
-          },
-    error: input.error ?? null,
-    isLoading: input.isLoading ?? false,
-    isFetching: input.isFetching ?? false,
-    refetch: vi.fn(),
-  });
+function createSendResponse(
+  overrides: Partial<CampaignAdminNotificationPlanSendResponse> = {},
+): CampaignAdminNotificationPlanSendResponse {
+  return {
+    planId: "plan-1",
+    runnableId: "admin_reviewed_user_interaction",
+    templateId: "admin_reviewed_user_interaction",
+    evaluatedCount: 4,
+    queuedCount: 2,
+    alreadySentCount: 1,
+    alreadyPendingCount: 0,
+    ineligibleCount: 1,
+    missingDataCount: 0,
+    enqueueFailedCount: 1,
+    ...overrides,
+  };
 }
 
-function renderStatefulPage(initialSearch: CampaignAdminNotificationsSearch) {
+function createTemplatePreview(): CampaignAdminNotificationTemplatePreview {
+  return {
+    templateId: "admin_reviewed_user_interaction",
+    name: "Admin reviewed interaction",
+    version: "1",
+    description: "Preview",
+    requiredFields: [],
+    exampleSubject: "Subject preview",
+    html: "<html><body><h1>Preview</h1></body></html>",
+    text: "Preview text body",
+  };
+}
+
+function createAuditResponse(
+  overrides: Partial<CampaignAdminNotificationsListResponse> = {},
+): CampaignAdminNotificationsListResponse {
+  return {
+    items: [],
+    page: {
+      nextCursor: null,
+      hasMore: false,
+    },
+    ...overrides,
+  };
+}
+
+function renderStatefulPage(initialSearch?: Partial<CampaignAdminNotificationsSearch>) {
   function StatefulPage() {
-    const [search, setSearch] =
-      useState<CampaignAdminNotificationsSearch>(initialSearch);
+    const [search, setSearch] = useState<CampaignAdminNotificationsSearch>({
+      tab: "run",
+      sortBy: "createdAt",
+      sortOrder: "desc",
+      limit: 50,
+      ...initialSearch,
+    });
 
     return (
       <CampaignAdminNotificationsPage
@@ -185,378 +224,539 @@ function renderStatefulPage(initialSearch: CampaignAdminNotificationsSearch) {
     );
   }
 
-  return render(<StatefulPage />);
+  return render(<StatefulPage />, {
+    queryClient: createTestQueryClient(),
+  });
 }
 
 describe("CampaignAdminNotificationsPage", () => {
   beforeEach(() => {
     useAuthMock.mockReset();
-    useCampaignAdminNotificationsAuditQueryMock.mockReset();
-    useCampaignAdminNotificationTriggersQueryMock.mockReset();
-    useCampaignAdminNotificationTemplatesQueryMock.mockReset();
-    useCampaignAdminNotificationTemplatePreviewQueryMock.mockReset();
-    useExecuteCampaignAdminNotificationTriggerMutationMock.mockReset();
-    useExecuteCampaignAdminNotificationTriggerBulkMutationMock.mockReset();
-    mutateAsyncMock.mockReset();
-    bulkMutateAsyncMock.mockReset();
-    toastSuccessMock.mockReset();
-    toastErrorMock.mockReset();
+    listCampaignAdminNotificationsMock.mockReset();
+    getCampaignAdminNotificationsMetaMock.mockReset();
+    listCampaignAdminNotificationTemplatesMock.mockReset();
+    getCampaignAdminNotificationTemplatePreviewMock.mockReset();
+    listCampaignAdminNotificationTriggersMock.mockReset();
+    executeCampaignAdminNotificationTriggerMock.mockReset();
+    executeCampaignAdminNotificationTriggerBulkMock.mockReset();
+    listCampaignAdminRunnableTemplatesMock.mockReset();
+    createCampaignAdminNotificationDryRunPlanMock.mockReset();
+    getCampaignAdminNotificationPlanPageMock.mockReset();
+    sendCampaignAdminNotificationPlanMock.mockReset();
 
     useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
-    mockAuditState({ items: [] });
-    useCampaignAdminNotificationTriggersQueryMock.mockReturnValue({
-      data: [createTrigger()],
-      error: null,
-      isLoading: false,
-      isFetching: false,
-      refetch: vi.fn(),
+    listCampaignAdminNotificationsMock.mockResolvedValue(createAuditResponse());
+    getCampaignAdminNotificationsMetaMock.mockResolvedValue({
+      pendingDeliveryCount: 0,
+      failedDeliveryCount: 0,
+      replyReceivedCount: 0,
     });
-    useCampaignAdminNotificationTemplatesQueryMock.mockReturnValue({
-      data: [createTemplate()],
-      error: null,
-      isLoading: false,
-      isFetching: false,
-      refetch: vi.fn(),
-    });
-    useCampaignAdminNotificationTemplatePreviewQueryMock.mockReturnValue({
-      data: {
-        templateId: "public_debate_entity_update",
-        name: "Entity update",
-        version: "3",
-        description: "Entity update email",
-        requiredFields: [
+    listCampaignAdminNotificationTemplatesMock.mockResolvedValue([]);
+    getCampaignAdminNotificationTemplatePreviewMock.mockResolvedValue(
+      createTemplatePreview(),
+    );
+    listCampaignAdminNotificationTriggersMock.mockResolvedValue([]);
+    executeCampaignAdminNotificationTriggerMock.mockResolvedValue({});
+    executeCampaignAdminNotificationTriggerBulkMock.mockResolvedValue({});
+    listCampaignAdminRunnableTemplatesMock.mockResolvedValue([
+      createRunnableTemplate(),
+    ]);
+    createCampaignAdminNotificationDryRunPlanMock.mockResolvedValue(
+      createPlanResponse(),
+    );
+    getCampaignAdminNotificationPlanPageMock.mockResolvedValue(
+      createPlanResponse({
+        rows: [
           {
-            name: "threadId",
-            type: "string",
-            required: true,
+            rowKey: "row-3",
+            userId: "user-3",
+            entityCui: "44556677",
+            entityName: "Entity Three",
+            recordKey: "record-3",
+            interactionId: "budget_status",
+            interactionLabel: "Budget status",
+            reviewStatus: "approved",
+            reviewedAt: "2026-04-14T08:00:00.000Z",
+            status: "missing_data",
+            reasonCode: "missing_subject",
+            statusMessage: "Missing subject data for this notification.",
+            hasExistingDelivery: false,
+            existingDeliveryStatus: null,
+            sendMode: null,
           },
         ],
-        exampleSubject: "Reply received for Oras Test",
-        html: "<html><body><h1>Preview</h1></body></html>",
-        text: "Preview",
-      },
-      error: null,
-      isLoading: false,
-      isFetching: false,
-      refetch: vi.fn(),
-    });
-    useExecuteCampaignAdminNotificationTriggerMutationMock.mockReturnValue({
-      mutateAsync: mutateAsyncMock,
-      isPending: false,
-    });
-    useExecuteCampaignAdminNotificationTriggerBulkMutationMock.mockReturnValue({
-      mutateAsync: bulkMutateAsyncMock,
-      isPending: false,
-    });
+        page: {
+          nextCursor: null,
+          hasMore: false,
+        },
+      }),
+    );
+    sendCampaignAdminNotificationPlanMock.mockResolvedValue(
+      createSendResponse(),
+    );
   });
 
-  it("renders the sign-in gate when the user is signed out", () => {
+  it("renders the sign-in gate when signed out", () => {
     useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: false });
 
-    render(
-      <CampaignAdminNotificationsPage
-        campaignKey="funky"
-        search={{
-          tab: "audit",
-          sortBy: "createdAt",
-          sortOrder: "desc",
-          limit: 50,
-        }}
-        onSearchChange={vi.fn()}
-      />,
-    );
+    renderStatefulPage();
 
     expect(screen.getByText("Sign in required")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sign in" })).toBeInTheDocument();
   });
 
-  it("renders the audit loading skeleton state", () => {
-    mockAuditState({
-      isLoading: true,
-    });
-
-    const { container } = render(
-      <CampaignAdminNotificationsPage
-        campaignKey="funky"
-        search={{
-          tab: "audit",
-          sortBy: "createdAt",
-          sortOrder: "desc",
-          limit: 50,
-        }}
-        onSearchChange={vi.fn()}
-      />,
+  it("renders the forbidden run state from the backend", async () => {
+    listCampaignAdminRunnableTemplatesMock.mockRejectedValue(
+      new CampaignAdminApiError("Forbidden", 403),
     );
 
-    expect(container.querySelectorAll(".animate-pulse").length).toBeGreaterThan(
-      0,
-    );
-  });
+    renderStatefulPage();
 
-  it("renders the audit empty state", () => {
-    render(
-      <CampaignAdminNotificationsPage
-        campaignKey="funky"
-        search={{
-          tab: "audit",
-          sortBy: "createdAt",
-          sortOrder: "desc",
-          limit: 50,
-        }}
-        onSearchChange={vi.fn()}
-      />,
-    );
-
-    expect(screen.getByText("No data available")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Clear filters" }),
+      await screen.findByText("You do not have access to notifications"),
     ).toBeInTheDocument();
   });
 
-  it("renders the audit error state", () => {
-    mockAuditState({
-      items: [],
-      error: {
-        status: 500,
-        message: "Audit failed",
-      },
-    });
-
-    render(
-      <CampaignAdminNotificationsPage
-        campaignKey="funky"
-        search={{
-          tab: "audit",
-          sortBy: "createdAt",
-          sortOrder: "desc",
-          limit: 50,
-        }}
-        onSearchChange={vi.fn()}
-      />,
+  it("renders a sign-in recovery action when runnable templates return 401", async () => {
+    listCampaignAdminRunnableTemplatesMock.mockRejectedValue(
+      new CampaignAdminApiError("Session expired", 401),
     );
 
+    renderStatefulPage();
+
+    expect(await screen.findByText("Session expired")).toBeInTheDocument();
     expect(
-      screen.getByText("Failed to load notifications"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Audit failed")).toBeInTheDocument();
-  });
-
-  it("renders the audit success table", () => {
-    mockAuditState({
-      items: [createAuditItem()],
-    });
-
-    render(
-      <CampaignAdminNotificationsPage
-        campaignKey="funky"
-        search={{
-          tab: "audit",
-          sortBy: "createdAt",
-          sortOrder: "desc",
-          limit: 50,
-        }}
-        onSearchChange={vi.fn()}
-      />,
-    );
-
-    expect(screen.getByText("Audit log")).toBeInTheDocument();
-    expect(screen.getAllByText("Entity update").length).toBeGreaterThan(0);
-    expect(screen.getByText("Oras Test")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "user-1" })).toHaveAttribute(
-      "href",
-      "/admin/campaigns/funky/users/user-1",
-    );
-    expect(
-      screen.getByRole("button", { name: "Preview template" }),
+      screen.getByRole("button", { name: "Sign in again" }),
     ).toBeInTheDocument();
   });
 
-  it("executes a trigger from the trigger dialog and shows the result summary", async () => {
-    mutateAsyncMock.mockResolvedValue(createTriggerExecutionResponse());
+  it("loads the redesigned notification type and conditions surface and opens template preview", async () => {
+    renderStatefulPage();
 
-    renderStatefulPage({
-      tab: "triggers",
-      sortBy: "createdAt",
-      sortOrder: "desc",
-      limit: 50,
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: "Open trigger" }));
-
-    const dialog = await screen.findByRole("dialog", {
-      name: "Queue the reply received notification.",
-    });
-
-    fireEvent.change(within(dialog).getByLabelText("Thread ID"), {
-      target: { value: "thread-1" },
-    });
-    fireEvent.click(
-      within(dialog).getByRole("button", { name: "Execute single" }),
-    );
-
-    await waitFor(() => {
-      expect(mutateAsyncMock).toHaveBeenCalledWith({
-        triggerId: "public_debate_entity_update.reply_received",
-        body: {
-          threadId: "thread-1",
-        },
-      });
-    });
-
-    expect(toastSuccessMock).toHaveBeenCalled();
-    expect(await screen.findByText("Created")).toBeInTheDocument();
-    expect(within(dialog).getAllByText("Queued").length).toBeGreaterThan(0);
-  });
-
-  it("omits blank optional trigger fields from the execution payload", async () => {
-    useCampaignAdminNotificationTriggersQueryMock.mockReturnValue({
-      data: [
-        createTrigger({
-          inputFields: [
-            {
-              name: "threadId",
-              type: "string",
-              required: true,
-            },
-            {
-              name: "replyEntryId",
-              type: "string",
-              required: false,
-            },
-            {
-              name: "retryCount",
-              type: "number",
-              required: false,
-            },
-            {
-              name: "forceSend",
-              type: "boolean",
-              required: false,
-            },
-          ],
-        }),
-      ],
-      error: null,
-      isLoading: false,
-      isFetching: false,
-      refetch: vi.fn(),
-    });
-    mutateAsyncMock.mockResolvedValue(createTriggerExecutionResponse());
-
-    renderStatefulPage({
-      tab: "triggers",
-      sortBy: "createdAt",
-      sortOrder: "desc",
-      limit: 50,
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: "Open trigger" }));
-
-    const dialog = await screen.findByRole("dialog", {
-      name: "Queue the reply received notification.",
-    });
-
-    fireEvent.change(within(dialog).getByLabelText("Thread ID"), {
-      target: { value: "thread-1" },
-    });
-    fireEvent.click(
-      within(dialog).getByRole("button", { name: "Execute single" }),
-    );
-
-    await waitFor(() => {
-      expect(mutateAsyncMock).toHaveBeenCalledWith({
-        triggerId: "public_debate_entity_update.reply_received",
-        body: {
-          threadId: "thread-1",
-        },
-      });
-    });
-  });
-
-  it("opens the template preview dialog and renders the isolated preview details", async () => {
-    renderStatefulPage({
-      tab: "templates",
-      sortBy: "createdAt",
-      sortOrder: "desc",
-      limit: 50,
-    });
-
-    fireEvent.click(screen.getByRole("button", { name: "Preview" }));
-
-    expect(
-      await screen.findByText("Reply received for Oras Test"),
-    ).toBeInTheDocument();
-    expect(screen.getByTitle("Entity update HTML preview")).toBeInTheDocument();
-    expect(screen.getByText("Text preview")).toBeInTheDocument();
-  });
-
-  it("opens the template preview dialog from a trigger item", async () => {
-    renderStatefulPage({
-      tab: "triggers",
-      sortBy: "createdAt",
-      sortOrder: "desc",
-      limit: 50,
-    });
+    expect(await screen.findByText("Send notifications")).toBeInTheDocument();
+    expect(screen.getByText("Notification type")).toBeInTheDocument();
+    expect(screen.getByText("Conditions")).toBeInTheDocument();
+    expect(screen.getByText("All conditions must match.")).toBeInTheDocument();
+    expect(screen.getAllByText("Reviewed interaction").length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole("button", { name: "Preview template" }));
 
     expect(
-      await screen.findByText("Reply received for Oras Test"),
+      await screen.findByText("Subject preview"),
     ).toBeInTheDocument();
-    expect(screen.getByTitle("Entity update HTML preview")).toBeInTheDocument();
+    expect(getCampaignAdminNotificationTemplatePreviewMock).toHaveBeenCalledWith(
+      {
+        campaignKey: "funky",
+        templateId: "admin_reviewed_user_interaction",
+      },
+    );
   });
 
-  it("lets admins type a template ID outside the current page suggestions", async () => {
-    const auditQueryCalls: Array<{
-      readonly filters: Record<string, unknown>;
-    }> = [];
+  it("builds a preview payload from conditions and renders preview results", async () => {
+    renderStatefulPage();
 
-    useCampaignAdminNotificationsAuditQueryMock.mockImplementation((args) => {
-      auditQueryCalls.push({
-        filters: args.filters as Record<string, unknown>,
-      });
+    await screen.findByText("Send notifications");
 
-      return {
-        data: {
-          items: [createAuditItem()],
-          page: {
-            hasMore: false,
-            nextCursor: null,
+    fireEvent.click(screen.getByRole("button", { name: "Add condition" }));
+    fireEvent.change(screen.getByLabelText("Condition value"), {
+      target: { value: "user-99" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Preview matches" }));
+
+    await waitFor(() => {
+      expect(createCampaignAdminNotificationDryRunPlanMock).toHaveBeenCalledWith(
+        {
+          campaignKey: "funky",
+          runnableId: "admin_reviewed_user_interaction",
+          body: {
+            selectors: {
+              userId: "user-99",
+            },
           },
         },
-        error: null,
-        isLoading: false,
-        isFetching: false,
-        refetch: vi.fn(),
-      };
+      );
     });
+
+    expect(
+      await screen.findByRole("generic", {
+        name: "Notification preview summary",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Preview matches" }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("Ready to send").length).toBeGreaterThan(0);
+    expect(screen.getByText("Entity One")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Ready\s*1/ }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("Already sent").length).toBeGreaterThan(0);
+  });
+
+  it("allows a preview with no conditions", async () => {
+    renderStatefulPage();
+
+    await screen.findByText("Send notifications");
+
+    fireEvent.click(screen.getByRole("button", { name: "Preview matches" }));
+
+    await waitFor(() => {
+      expect(createCampaignAdminNotificationDryRunPlanMock).toHaveBeenCalledWith(
+        {
+          campaignKey: "funky",
+          runnableId: "admin_reviewed_user_interaction",
+          body: {},
+        },
+      );
+    });
+  });
+
+  it("invalidates the visible preview when conditions change", async () => {
+    renderStatefulPage();
+
+    await screen.findByText("Send notifications");
+    fireEvent.click(screen.getByRole("button", { name: "Preview matches" }));
+    expect(await screen.findByText("Entity One")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Add condition" }));
+    fireEvent.change(screen.getByLabelText("Condition value"), {
+      target: { value: "user-2" },
+    });
+
+    expect(screen.queryByText("Entity One")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Send 2 notifications" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("ignores a stale preview response after the conditions change", async () => {
+    let resolvePreview:
+      | ((value: CampaignAdminNotificationPlanResponse) => void)
+      | undefined;
+
+    createCampaignAdminNotificationDryRunPlanMock.mockImplementation(
+      () =>
+        new Promise<CampaignAdminNotificationPlanResponse>((resolve) => {
+          resolvePreview = resolve;
+        }),
+    );
+
+    renderStatefulPage();
+
+    await screen.findByText("Send notifications");
+    fireEvent.click(screen.getByRole("button", { name: "Add condition" }));
+    fireEvent.change(screen.getByLabelText("Condition value"), {
+      target: { value: "user-1" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Preview matches" }));
+
+    fireEvent.change(screen.getByLabelText("Condition value"), {
+      target: { value: "user-2" },
+    });
+
+    resolvePreview?.(createPlanResponse());
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("user-2")).toBeInTheDocument();
+    });
+    expect(screen.queryByText("Entity One")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Send 2 notifications" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows invalid condition payload failures from preview", async () => {
+    createCampaignAdminNotificationDryRunPlanMock.mockRejectedValue(
+      new CampaignAdminApiError("Invalid filter payload", 400),
+    );
+
+    renderStatefulPage();
+
+    await screen.findByText("Send notifications");
+    fireEvent.click(screen.getByRole("button", { name: "Preview matches" }));
+
+    expect(await screen.findByText("Preview failed")).toBeInTheDocument();
+    expect(screen.getByText("Invalid filter payload")).toBeInTheDocument();
+  });
+
+  it("restores preview state from URL and clears an invalid preview id gracefully", async () => {
+    getCampaignAdminNotificationPlanPageMock.mockRejectedValue(
+      new CampaignAdminApiError("Preview expired for this actor", 400),
+    );
 
     renderStatefulPage({
-      tab: "audit",
-      sortBy: "createdAt",
-      sortOrder: "desc",
-      limit: 50,
+      runNotificationType: "admin_reviewed_user_interaction",
+      runConditions: "userId:is:user-1",
+      previewId: "stale-preview",
+      previewCursor: "cursor-2",
+      previewPageIndex: 2,
+      previewTrail: "%5Bnull%5D",
+      previewFilter: "ready",
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Advanced" }));
+    expect(getCampaignAdminNotificationPlanPageMock).toHaveBeenCalledWith({
+      campaignKey: "funky",
+      planId: "stale-preview",
+      cursor: "cursor-2",
+      limit: 25,
+    });
+    expect(
+      await screen.findByText(
+        "Preview expired for this actor Run preview again to refresh the matches.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Entity One")).not.toBeInTheDocument();
+  });
 
-    const advancedFiltersDialog = await screen.findByRole("dialog", {
-      name: "Advanced filters",
+  it("restores preview page and result filter state from the URL", async () => {
+    getCampaignAdminNotificationPlanPageMock.mockResolvedValue(createPlanResponse());
+
+    renderStatefulPage({
+      runNotificationType: "admin_reviewed_user_interaction",
+      runConditions: "userId:is:user-1",
+      previewId: "plan-1",
+      previewCursor: "cursor-2",
+      previewPageIndex: 2,
+      previewTrail: "%5Bnull%2C%22cursor-1%22%5D",
+      previewFilter: "ready",
     });
-    fireEvent.change(within(advancedFiltersDialog).getByLabelText("Template ID"), {
-      target: { value: "rare-template-id" },
+
+    expect(await screen.findByText("Entity One")).toBeInTheDocument();
+    expect(screen.queryByText("Entity Two")).not.toBeInTheDocument();
+    expect(screen.getByText("Page 2")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Ready\s*1/ })).toBeInTheDocument();
+  });
+
+  it("restores preview state from URL and clears it when conditions change", async () => {
+    getCampaignAdminNotificationPlanPageMock.mockResolvedValue(
+      createPlanResponse(),
+    );
+
+    renderStatefulPage({
+      runNotificationType: "admin_reviewed_user_interaction",
+      runConditions: "userId:is:user-1",
+      previewId: "plan-1",
     });
-    fireEvent.click(
-      within(advancedFiltersDialog).getByRole("button", {
-        name: "Apply filters",
+
+    expect(await screen.findByText("Entity One")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Add condition" }));
+
+    expect(screen.queryByText("Entity One")).not.toBeInTheDocument();
+  });
+
+  it("shows a retryable preview-page error without dropping preview state", async () => {
+    getCampaignAdminNotificationPlanPageMock
+      .mockRejectedValueOnce(
+        new CampaignAdminApiError("Temporary backend failure", 503),
+      )
+      .mockResolvedValueOnce(createPlanResponse());
+
+    renderStatefulPage({
+      runNotificationType: "admin_reviewed_user_interaction",
+      runConditions: "userId:is:user-1",
+      previewId: "plan-1",
+    });
+
+    expect(await screen.findByText("Server error")).toBeInTheDocument();
+    expect(
+      screen.getByText("Temporary backend failure"),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+
+    await waitFor(() => {
+      expect(getCampaignAdminNotificationPlanPageMock).toHaveBeenCalledTimes(2);
+    });
+    expect(await screen.findByText("Entity One")).toBeInTheDocument();
+  });
+
+  it("disables send when no notifications are ready and shows status-message explanations", async () => {
+    createCampaignAdminNotificationDryRunPlanMock.mockResolvedValue(
+      createPlanResponse({
+        summary: {
+          totalRowCount: 2,
+          willSendCount: 0,
+          alreadySentCount: 0,
+          alreadyPendingCount: 1,
+          ineligibleCount: 1,
+          missingDataCount: 0,
+        },
+        rows: [
+          {
+            rowKey: "row-10",
+            userId: "user-10",
+            entityCui: "12345678",
+            entityName: "Entity Ten",
+            recordKey: "record-10",
+            interactionId: "budget_document",
+            interactionLabel: "Budget document",
+            reviewStatus: "approved",
+            reviewedAt: "2026-04-12T08:00:00.000Z",
+            status: "ineligible",
+            reasonCode: "missing_preference",
+            statusMessage: "The user has not opted in to this notification.",
+            hasExistingDelivery: false,
+            existingDeliveryStatus: null,
+            sendMode: null,
+          },
+          {
+            rowKey: "row-11",
+            userId: "user-11",
+            entityCui: "87654321",
+            entityName: "Entity Eleven",
+            recordKey: "record-11",
+            interactionId: "budget_status",
+            interactionLabel: "Budget status",
+            reviewStatus: "approved",
+            reviewedAt: "2026-04-12T08:00:00.000Z",
+            status: "already_pending",
+            reasonCode: "already_pending",
+            statusMessage: "This notification is already queued to send.",
+            hasExistingDelivery: true,
+            existingDeliveryStatus: "pending",
+            sendMode: "reuse_claimable",
+          },
+        ],
+        page: {
+          nextCursor: null,
+          hasMore: false,
+        },
       }),
     );
 
-    await waitFor(() => {
-      expect(auditQueryCalls[auditQueryCalls.length - 1]).toMatchObject({
-        filters: {
-          templateId: "rare-template-id",
-        },
-      });
+    renderStatefulPage();
+
+    await screen.findByText("Send notifications");
+    fireEvent.click(screen.getByRole("button", { name: "Preview matches" }));
+
+    expect(
+      (await screen.findAllByText(
+        "The user has not opted in to this notification.",
+      )).length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText("This notification is already queued to send.").length,
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getByRole("button", { name: "Send 0 notifications" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByText("No notifications in this preview are ready to send."),
+    ).toBeInTheDocument();
+  });
+
+  it("sends notifications from the preview and renders mixed outcome counts", async () => {
+    renderStatefulPage();
+
+    await screen.findByText("Send notifications");
+    fireEvent.click(screen.getByRole("button", { name: "Preview matches" }));
+
+    expect(await screen.findByText("Entity One")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Send 2 notifications" }));
+    const sendDialog = await screen.findByRole("alertdialog");
+    fireEvent.click(
+      within(sendDialog).getByRole("button", { name: "Send 2 notifications" }),
+    );
+
+    expect(
+      await screen.findByText("Notification send completed"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Queued 2, already sent 1, already pending 0, not eligible 1, missing data 0, enqueue failed 1.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "This preview is now consumed. Run preview again before sending anything else.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Run preview again to create a fresh result set before sending.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("prevents duplicate send submissions from the confirmation dialog", async () => {
+    let resolveSend:
+      | ((value: CampaignAdminNotificationPlanSendResponse) => void)
+      | undefined;
+
+    sendCampaignAdminNotificationPlanMock.mockImplementation(
+      () =>
+        new Promise<CampaignAdminNotificationPlanSendResponse>((resolve) => {
+          resolveSend = resolve;
+        }),
+    );
+
+    renderStatefulPage();
+
+    await screen.findByText("Send notifications");
+    fireEvent.click(screen.getByRole("button", { name: "Preview matches" }));
+    expect(await screen.findByText("Entity One")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Send 2 notifications" }));
+    const sendDialog = await screen.findByRole("alertdialog");
+    const dialogSendButton = within(sendDialog).getByRole("button", {
+      name: "Send 2 notifications",
     });
+
+    fireEvent.click(dialogSendButton);
+    fireEvent.click(dialogSendButton);
+
+    await waitFor(() => {
+      expect(sendCampaignAdminNotificationPlanMock).toHaveBeenCalledTimes(1);
+    });
+
+    resolveSend?.(createSendResponse());
+
+    expect(
+      await screen.findByText("Notification send completed"),
+    ).toBeInTheDocument();
+  });
+
+  it("clears the preview when send fails because the preview is no longer valid", async () => {
+    sendCampaignAdminNotificationPlanMock.mockRejectedValue(
+      new CampaignAdminApiError("Preview consumed by another admin", 400),
+    );
+
+    renderStatefulPage();
+
+    await screen.findByText("Send notifications");
+    fireEvent.click(screen.getByRole("button", { name: "Preview matches" }));
+    expect(await screen.findByText("Entity One")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Send 2 notifications" }));
+    const sendDialog = await screen.findByRole("alertdialog");
+    fireEvent.click(
+      within(sendDialog).getByRole("button", { name: "Send 2 notifications" }),
+    );
+
+    expect(
+      await screen.findByText(
+        "Preview consumed by another admin Run preview again to refresh the matches.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Entity One")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Send 2 notifications" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows notification type server failures clearly", async () => {
+    listCampaignAdminRunnableTemplatesMock.mockRejectedValue(
+      new CampaignAdminApiError("Database unavailable", 500),
+    );
+
+    renderStatefulPage();
+
+    expect(
+      await screen.findByText("Failed to load notification types"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Database unavailable")).toBeInTheDocument();
   });
 });

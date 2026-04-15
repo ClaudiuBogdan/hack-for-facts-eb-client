@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  executeCampaignAdminNotificationTrigger,
-  getCampaignAdminNotificationsMeta,
+  createCampaignAdminNotificationDryRunPlan,
+  getCampaignAdminNotificationPlanPage,
   getCampaignAdminNotificationTemplatePreview,
-  listCampaignAdminNotificationTriggers,
   listCampaignAdminNotifications,
+  listCampaignAdminNotificationTemplates,
+  listCampaignAdminRunnableTemplates,
+  sendCampaignAdminNotificationPlan,
 } from "./campaign-admin-notifications";
 
 const getAuthTokenMock = vi.fn<() => Promise<string | null>>();
@@ -26,95 +28,108 @@ function createNotificationsListPayload() {
   return {
     ok: true,
     data: {
+      items: [],
+      page: {
+        hasMore: false,
+        nextCursor: null,
+      },
+    },
+  };
+}
+
+function createRunnableTemplatesPayload() {
+  return {
+    ok: true,
+    data: {
       items: [
         {
-          outboxId: "outbox-1",
+          runnableId: "admin_reviewed_user_interaction",
           campaignKey: "funky",
-          notificationType: "funky:outbox:entity_update",
-          templateId: "public_debate_entity_update",
-          templateName: "Entity update",
-          templateVersion: "3",
-          status: "delivered",
-          createdAt: "2026-04-12T08:00:00.000Z",
-          sentAt: "2026-04-12T08:02:00.000Z",
-          attemptCount: 1,
-          safeError: {
-            category: null,
-            code: null,
-          },
-          projection: {
-            kind: "public_debate_entity_update",
-            userId: "user-1",
-            entityCui: "12345678",
-            entityName: "Oras Test",
-            threadId: "thread-1",
-            threadKey: "thread-key-1",
-            eventType: "reply_received",
-            phase: "awaiting_reply",
-            replyEntryId: null,
-            basedOnEntryId: null,
-            resolutionCode: null,
-            triggerSource: "campaign_admin",
-          },
+          templateId: "admin_reviewed_user_interaction",
+          templateVersion: "1",
+          description: "Reviewed interaction admin email",
+          targetKind: "user",
+          selectors: [
+            {
+              name: "userId",
+              type: "string",
+              required: false,
+            },
+          ],
+          filters: [
+            {
+              name: "reviewStatus",
+              type: "enum",
+              required: false,
+            },
+          ],
+          dryRunRequired: true,
+          maxPlanRowCount: 500,
+          defaultPageSize: 25,
+          maxPageSize: 100,
+        },
+      ],
+    },
+  };
+}
+
+function createPlanPayload() {
+  return {
+    ok: true,
+    data: {
+      planId: "plan-1",
+      runnableId: "admin_reviewed_user_interaction",
+      templateId: "admin_reviewed_user_interaction",
+      watermark: "2026-04-14T12:00:00.000Z",
+      summary: {
+        totalRowCount: 2,
+        willSendCount: 1,
+        alreadySentCount: 1,
+        alreadyPendingCount: 0,
+        ineligibleCount: 0,
+        missingDataCount: 0,
+      },
+      rows: [
+        {
+          rowKey: "row-1",
+          userId: "user-1",
+          entityCui: "12345678",
+          entityName: "Entity One",
+          recordKey: "record-1",
+          interactionId: "budget_document",
+          interactionLabel: "Budget document",
+          reviewStatus: "approved",
+          reviewedAt: "2026-04-12T08:00:00.000Z",
+          status: "will_send",
+          reasonCode: "eligible",
+          statusMessage: "Matches all conditions and is ready to send.",
+          hasExistingDelivery: false,
+          existingDeliveryStatus: null,
+          sendMode: "create",
         },
       ],
       page: {
         hasMore: true,
-        nextCursor: "cursor-1",
+        nextCursor: "cursor-2",
       },
     },
   };
 }
 
-function createNotificationsMetaPayload() {
+function createSendPayload() {
   return {
     ok: true,
     data: {
-      pendingDeliveryCount: 3,
-      failedDeliveryCount: 2,
-      replyReceivedCount: 6,
-    },
-  };
-}
-
-function createTriggerCatalogPayload() {
-  return {
-    ok: true,
-    data: {
-      items: [
-        {
-          triggerId: "public_debate_entity_update.reply_received",
-          campaignKey: "funky",
-          templateId: "public_debate_entity_update",
-          description: "Queue the reply received notification.",
-          inputFields: [
-            {
-              name: "threadId",
-              type: "string",
-              required: true,
-            },
-          ],
-          targetKind: "thread",
-        },
-      ],
-    },
-  };
-}
-
-function createTriggerExecutionPayload() {
-  return {
-    ok: true,
-    data: {
-      triggerId: "public_debate_entity_update.reply_received",
-      campaignKey: "funky",
-      templateId: "public_debate_entity_update",
-      result: {
-        status: "queued",
-        createdOutboxIds: ["outbox-1"],
-        reusedOutboxIds: [],
-        queuedOutboxIds: ["outbox-1"],
-        enqueueFailedOutboxIds: [],
-      },
+      planId: "plan-1",
+      runnableId: "admin_reviewed_user_interaction",
+      templateId: "admin_reviewed_user_interaction",
+      evaluatedCount: 2,
+      queuedCount: 1,
+      alreadySentCount: 1,
+      alreadyPendingCount: 0,
+      ineligibleCount: 0,
+      missingDataCount: 0,
+      enqueueFailedCount: 0,
     },
   };
 }
@@ -123,18 +138,12 @@ function createTemplatePreviewPayload() {
   return {
     ok: true,
     data: {
-      templateId: "public_debate_entity_update",
-      name: "Entity update",
-      version: "3",
-      description: "Entity update email",
-      requiredFields: [
-        {
-          name: "threadId",
-          type: "string",
-          required: true,
-        },
-      ],
-      exampleSubject: "Reply received for Oras Test",
+      templateId: "admin_reviewed_user_interaction",
+      name: "Admin reviewed interaction",
+      version: "1",
+      description: "Reviewed interaction admin email",
+      requiredFields: [],
+      exampleSubject: "Reviewed interaction",
       html: "<html><body><h1>Preview</h1></body></html>",
       text: "Preview",
     },
@@ -156,16 +165,11 @@ describe("campaign-admin-notifications api", () => {
       }),
     );
 
-    const result = await listCampaignAdminNotifications({
+    await listCampaignAdminNotifications({
       campaignKey: "funky",
       filters: {
-        notificationType: "funky:outbox:entity_update",
-        userId: "user-1",
         status: "delivered",
-        eventType: "reply_received",
         entityCui: "12345678",
-        threadId: "thread-1",
-        source: "campaign_admin",
         sortBy: "createdAt",
         sortOrder: "desc",
       },
@@ -173,10 +177,9 @@ describe("campaign-admin-notifications api", () => {
       limit: 25,
     });
 
-    expect(result.items).toHaveLength(1);
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining(
-        "/api/v1/admin/campaigns/funky/notifications?notificationType=funky%3Aoutbox%3Aentity_update&userId=user-1&status=delivered&eventType=reply_received&entityCui=12345678&threadId=thread-1&source=campaign_admin&sortBy=createdAt&sortOrder=desc&cursor=cursor-0&limit=25",
+        "/api/v1/admin/campaigns/funky/notifications?status=delivered&entityCui=12345678&sortBy=createdAt&sortOrder=desc&cursor=cursor-0&limit=25",
       ),
       expect.objectContaining({
         method: "GET",
@@ -203,22 +206,22 @@ describe("campaign-admin-notifications api", () => {
     });
   });
 
-  it("loads notification metadata from the dedicated meta endpoint", async () => {
+  it("loads runnable templates from the new runnable endpoint", async () => {
     getAuthTokenMock.mockResolvedValue("token-123");
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify(createNotificationsMetaPayload()), {
+      new Response(JSON.stringify(createRunnableTemplatesPayload()), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       }),
     );
 
-    const result = await getCampaignAdminNotificationsMeta({
+    const result = await listCampaignAdminRunnableTemplates({
       campaignKey: "funky",
     });
 
-    expect(result).toEqual(createNotificationsMetaPayload().data);
+    expect(result).toEqual(createRunnableTemplatesPayload().data.items);
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3000/api/v1/admin/campaigns/funky/notifications/meta",
+      "http://localhost:3000/api/v1/admin/campaigns/funky/notifications/runnable-templates",
       expect.objectContaining({
         method: "GET",
         headers: expect.objectContaining({
@@ -228,27 +231,32 @@ describe("campaign-admin-notifications api", () => {
     );
   });
 
-  it("posts trigger execution bodies with JSON headers", async () => {
+  it("posts dry-run payloads and parses the stored plan response", async () => {
     getAuthTokenMock.mockResolvedValue("token-123");
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify(createTriggerExecutionPayload()), {
+      new Response(JSON.stringify(createPlanPayload()), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       }),
     );
 
-    const result = await executeCampaignAdminNotificationTrigger({
+    const result = await createCampaignAdminNotificationDryRunPlan({
       campaignKey: "funky",
-      triggerId: "public_debate_entity_update.reply_received",
+      runnableId: "admin_reviewed_user_interaction",
       body: {
-        threadId: "thread-1",
+        selectors: {
+          userId: "user-1",
+        },
+        filters: {
+          reviewStatus: "approved",
+        },
       },
     });
 
-    expect(result.result.status).toBe("queued");
+    expect(result.planId).toBe("plan-1");
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining(
-        "/api/v1/admin/campaigns/funky/notifications/triggers/public_debate_entity_update.reply_received",
+        "/api/v1/admin/campaigns/funky/notifications/runnable-templates/admin_reviewed_user_interaction/dry-run",
       ),
       expect.objectContaining({
         method: "POST",
@@ -257,7 +265,66 @@ describe("campaign-admin-notifications api", () => {
           "Content-Type": "application/json",
         }),
         body: JSON.stringify({
-          threadId: "thread-1",
+          selectors: {
+            userId: "user-1",
+          },
+          filters: {
+            reviewStatus: "approved",
+          },
+        }),
+      }),
+    );
+  });
+
+  it("loads stored plan pages with cursor and limit query parameters", async () => {
+    getAuthTokenMock.mockResolvedValue("token-123");
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify(createPlanPayload()), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    await getCampaignAdminNotificationPlanPage({
+      campaignKey: "funky",
+      planId: "plan-1",
+      cursor: "cursor-2",
+      limit: 25,
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "/api/v1/admin/campaigns/funky/notifications/plans/plan-1?cursor=cursor-2&limit=25",
+      ),
+      expect.objectContaining({
+        method: "GET",
+      }),
+    );
+  });
+
+  it("posts plan sends without a request body and parses mixed send counts", async () => {
+    getAuthTokenMock.mockResolvedValue("token-123");
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify(createSendPayload()), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const result = await sendCampaignAdminNotificationPlan({
+      campaignKey: "funky",
+      planId: "plan-1",
+    });
+
+    expect(result.queuedCount).toBe(1);
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining(
+        "/api/v1/admin/campaigns/funky/notifications/plans/plan-1/send",
+      ),
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          Authorization: "Bearer token-123",
         }),
       }),
     );
@@ -273,7 +340,7 @@ describe("campaign-admin-notifications api", () => {
     );
 
     await expect(
-      listCampaignAdminNotificationTriggers({
+      listCampaignAdminRunnableTemplates({
         campaignKey: "funky",
       }),
     ).rejects.toMatchObject({
@@ -282,7 +349,61 @@ describe("campaign-admin-notifications api", () => {
     });
   });
 
-  it("maps error envelopes for template preview failures", async () => {
+  it("loads preview templates separately from runnable templates", async () => {
+    getAuthTokenMock.mockResolvedValue("token-123");
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            ok: true,
+            data: {
+              items: [
+                {
+                  templateId: "admin_reviewed_user_interaction",
+                  name: "Admin reviewed interaction",
+                  version: "1",
+                  description: "Reviewed interaction admin email",
+                  requiredFields: [],
+                },
+              ],
+            },
+          }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(createTemplatePreviewPayload()), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+
+    const templates = await listCampaignAdminNotificationTemplates({
+      campaignKey: "funky",
+    });
+    const preview = await getCampaignAdminNotificationTemplatePreview({
+      campaignKey: "funky",
+      templateId: "admin_reviewed_user_interaction",
+    });
+
+    expect(templates).toEqual([
+      {
+        templateId: "admin_reviewed_user_interaction",
+        name: "Admin reviewed interaction",
+        version: "1",
+        description: "Reviewed interaction admin email",
+        requiredFields: [],
+      },
+    ]);
+    expect(preview).toEqual(createTemplatePreviewPayload().data);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("maps error envelopes for preview failures", async () => {
     getAuthTokenMock.mockResolvedValue("token-123");
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(
@@ -309,35 +430,5 @@ describe("campaign-admin-notifications api", () => {
       message: "Template preview not found",
       retryable: false,
     });
-  });
-
-  it("loads the trigger catalog and template preview shapes", async () => {
-    getAuthTokenMock.mockResolvedValue("token-123");
-    const fetchMock = vi
-      .spyOn(globalThis, "fetch")
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify(createTriggerCatalogPayload()), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }),
-      )
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify(createTemplatePreviewPayload()), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }),
-      );
-
-    const triggers = await listCampaignAdminNotificationTriggers({
-      campaignKey: "funky",
-    });
-    const preview = await getCampaignAdminNotificationTemplatePreview({
-      campaignKey: "funky",
-      templateId: "public_debate_entity_update",
-    });
-
-    expect(triggers).toEqual(createTriggerCatalogPayload().data.items);
-    expect(preview).toEqual(createTemplatePreviewPayload().data);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

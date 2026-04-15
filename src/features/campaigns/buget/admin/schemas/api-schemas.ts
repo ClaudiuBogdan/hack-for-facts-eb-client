@@ -11,11 +11,15 @@ import {
   campaignAdminPhaseValues,
   type CampaignAdminNotificationTemplateDescriptor,
   type CampaignAdminNotificationTemplatePreview,
+  type CampaignAdminNotificationPlanResponse,
+  type CampaignAdminNotificationPlanSendResponse,
   type CampaignAdminNotificationTriggerBulkExecutionBody,
   type CampaignAdminNotificationTriggerBulkExecutionResponse,
   type CampaignAdminNotificationTriggerDescriptor,
   type CampaignAdminNotificationTriggerExecutionBody,
   type CampaignAdminNotificationTriggerExecutionResponse,
+  type CampaignAdminRunnableTemplateDescriptor,
+  type CampaignAdminRunnableTemplateDryRunBody,
   type CampaignAdminEntitiesListResponse,
   type CampaignAdminEntitiesMetaResponse,
   type CampaignAdminNotificationsListResponse,
@@ -634,6 +638,120 @@ const campaignAdminNotificationTemplatePreviewResponseSchema = z
   })
   .strict();
 
+const campaignAdminRunnableTemplateDescriptorSchema = z
+  .object({
+    runnableId: z.string().min(1),
+    campaignKey: z.literal("funky"),
+    templateId: z.string().min(1),
+    templateVersion: z.string().min(1),
+    description: z.string().min(1),
+    targetKind: z.string().min(1),
+    selectors: z.array(campaignAdminNotificationFieldDescriptorSchema),
+    filters: z.array(campaignAdminNotificationFieldDescriptorSchema),
+    dryRunRequired: z.boolean(),
+    maxPlanRowCount: z.number().int().nonnegative(),
+    defaultPageSize: z.number().int().min(1),
+    maxPageSize: z.number().int().min(1),
+  })
+  .strict();
+
+const campaignAdminRunnableTemplatesResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        items: z.array(campaignAdminRunnableTemplateDescriptorSchema),
+      })
+      .strict(),
+  })
+  .strict();
+
+export const campaignAdminRunnableTemplateDryRunBodySchema = z
+  .object({
+    selectors: z.record(z.string(), z.string()).optional(),
+    filters: z.record(z.string(), z.string()).optional(),
+  })
+  .strict();
+
+const campaignAdminNotificationPlanSummarySchema = z
+  .object({
+    totalRowCount: campaignAdminCountSchema,
+    willSendCount: campaignAdminCountSchema,
+    alreadySentCount: campaignAdminCountSchema,
+    alreadyPendingCount: campaignAdminCountSchema,
+    ineligibleCount: campaignAdminCountSchema,
+    missingDataCount: campaignAdminCountSchema,
+  })
+  .strict();
+
+const campaignAdminNotificationPlanRowSchema = z
+  .object({
+    rowKey: z.string().min(1),
+    userId: z.string().min(1),
+    entityCui: z.string().min(1).nullable(),
+    entityName: z.string().nullable(),
+    recordKey: z.string().min(1).nullable(),
+    interactionId: z.string().min(1).nullable(),
+    interactionLabel: z.string().nullable(),
+    reviewStatus: z.enum(["approved", "rejected"]).nullable(),
+    reviewedAt: z.string().datetime().nullable(),
+    status: z.enum([
+      "will_send",
+      "already_sent",
+      "already_pending",
+      "ineligible",
+      "missing_data",
+    ]),
+    reasonCode: z.string().min(1),
+    statusMessage: z.string().min(1),
+    hasExistingDelivery: z.boolean(),
+    existingDeliveryStatus: z.string().min(1).nullable(),
+    sendMode: z.enum(["create", "reuse_claimable"]).nullable(),
+  })
+  .strict();
+
+const campaignAdminNotificationPlanResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        planId: z.string().min(1),
+        runnableId: z.string().min(1),
+        templateId: z.string().min(1),
+        watermark: z.string().min(1),
+        summary: campaignAdminNotificationPlanSummarySchema,
+        rows: z.array(campaignAdminNotificationPlanRowSchema),
+        page: z
+          .object({
+            nextCursor: z.string().min(1).nullable(),
+            hasMore: z.boolean(),
+          })
+          .strict(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const campaignAdminNotificationPlanSendResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        planId: z.string().min(1),
+        runnableId: z.string().min(1),
+        templateId: z.string().min(1),
+        evaluatedCount: campaignAdminCountSchema,
+        queuedCount: campaignAdminCountSchema,
+        alreadySentCount: campaignAdminCountSchema,
+        alreadyPendingCount: campaignAdminCountSchema,
+        ineligibleCount: campaignAdminCountSchema,
+        missingDataCount: campaignAdminCountSchema,
+        enqueueFailedCount: campaignAdminCountSchema,
+      })
+      .strict(),
+  })
+  .strict();
+
 const campaignAdminSubmitReviewsResponseSchema = z
   .object({
     ok: z.literal(true),
@@ -775,6 +893,18 @@ export function parseCampaignAdminEntitiesListResponse(
   return parsedPayload.data.data;
 }
 
+export function parseCampaignAdminRunnableTemplatesResponse(
+  payload: unknown,
+): readonly CampaignAdminRunnableTemplateDescriptor[] {
+  const parsedPayload =
+    campaignAdminRunnableTemplatesResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin runnable templates response.");
+  }
+
+  return parsedPayload.data.data.items;
+}
+
 export function parseCampaignAdminNotificationTriggersResponse(
   payload: unknown,
 ): readonly CampaignAdminNotificationTriggerDescriptor[] {
@@ -834,6 +964,43 @@ export function parseCampaignAdminNotificationTemplatePreviewResponse(
     throw new Error(
       "Invalid campaign admin notification template preview response.",
     );
+  }
+
+  return parsedPayload.data.data;
+}
+
+export function parseCampaignAdminRunnableTemplateDryRunBody(
+  payload: unknown,
+): CampaignAdminRunnableTemplateDryRunBody {
+  const parsedPayload = campaignAdminRunnableTemplateDryRunBodySchema.safeParse(
+    payload,
+  );
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin runnable template dry-run body.");
+  }
+
+  return parsedPayload.data;
+}
+
+export function parseCampaignAdminNotificationPlanResponse(
+  payload: unknown,
+): CampaignAdminNotificationPlanResponse {
+  const parsedPayload =
+    campaignAdminNotificationPlanResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin notification plan response.");
+  }
+
+  return parsedPayload.data.data;
+}
+
+export function parseCampaignAdminNotificationPlanSendResponse(
+  payload: unknown,
+): CampaignAdminNotificationPlanSendResponse {
+  const parsedPayload =
+    campaignAdminNotificationPlanSendResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin notification plan send response.");
   }
 
   return parsedPayload.data.data;

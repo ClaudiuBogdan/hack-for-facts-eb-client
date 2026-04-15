@@ -170,7 +170,7 @@ export const campaignAdminNotificationSortKeyValues = [
 
 export const campaignAdminNotificationsTabValues = [
   "audit",
-  "triggers",
+  "run",
   "templates",
 ] as const;
 
@@ -698,6 +698,90 @@ export type CampaignAdminNotificationTemplatePreview = {
   readonly text: string;
 };
 
+export type CampaignAdminRunnableTemplateDescriptor = {
+  readonly runnableId: string;
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly templateId: string;
+  readonly templateVersion: string;
+  readonly description: string;
+  readonly targetKind: string;
+  readonly selectors: readonly CampaignAdminNotificationFieldDescriptor[];
+  readonly filters: readonly CampaignAdminNotificationFieldDescriptor[];
+  readonly dryRunRequired: boolean;
+  readonly maxPlanRowCount: number;
+  readonly defaultPageSize: number;
+  readonly maxPageSize: number;
+};
+
+export type CampaignAdminRunnableTemplateDryRunInput = Readonly<
+  Record<string, string>
+>;
+
+export type CampaignAdminRunnableTemplateDryRunBody = {
+  readonly selectors?: CampaignAdminRunnableTemplateDryRunInput;
+  readonly filters?: CampaignAdminRunnableTemplateDryRunInput;
+};
+
+export type CampaignAdminNotificationPlanSummary = {
+  readonly totalRowCount: number;
+  readonly willSendCount: number;
+  readonly alreadySentCount: number;
+  readonly alreadyPendingCount: number;
+  readonly ineligibleCount: number;
+  readonly missingDataCount: number;
+};
+
+export type CampaignAdminNotificationPlanRowStatus =
+  | "will_send"
+  | "already_sent"
+  | "already_pending"
+  | "ineligible"
+  | "missing_data";
+
+export type CampaignAdminNotificationPlanRow = {
+  readonly rowKey: string;
+  readonly userId: string;
+  readonly entityCui: string | null;
+  readonly entityName: string | null;
+  readonly recordKey: string | null;
+  readonly interactionId: string | null;
+  readonly interactionLabel: string | null;
+  readonly reviewStatus: Exclude<CampaignAdminReviewStatus, "pending"> | null;
+  readonly reviewedAt: string | null;
+  readonly status: CampaignAdminNotificationPlanRowStatus;
+  readonly reasonCode: string;
+  readonly statusMessage: string;
+  readonly hasExistingDelivery: boolean;
+  readonly existingDeliveryStatus: string | null;
+  readonly sendMode: "create" | "reuse_claimable" | null;
+};
+
+export type CampaignAdminNotificationPlanResponse = {
+  readonly planId: string;
+  readonly runnableId: string;
+  readonly templateId: string;
+  readonly watermark: string;
+  readonly summary: CampaignAdminNotificationPlanSummary;
+  readonly rows: readonly CampaignAdminNotificationPlanRow[];
+  readonly page: {
+    readonly nextCursor: string | null;
+    readonly hasMore: boolean;
+  };
+};
+
+export type CampaignAdminNotificationPlanSendResponse = {
+  readonly planId: string;
+  readonly runnableId: string;
+  readonly templateId: string;
+  readonly evaluatedCount: number;
+  readonly queuedCount: number;
+  readonly alreadySentCount: number;
+  readonly alreadyPendingCount: number;
+  readonly ineligibleCount: number;
+  readonly missingDataCount: number;
+  readonly enqueueFailedCount: number;
+};
+
 export type CampaignAdminStagedReviewDraft = {
   readonly userId: string;
   readonly recordKey: string;
@@ -787,46 +871,30 @@ export type CampaignAdminNotificationsSearch = {
   readonly source?: CampaignAdminNotificationSource;
   readonly sortBy?: CampaignAdminNotificationSortKey;
   readonly sortOrder?: CampaignAdminSortOrder;
-  readonly triggerId?: string;
-  readonly triggerMode?: CampaignAdminNotificationTriggerMode;
-  readonly triggerDryRun?: boolean;
-  readonly triggerLimit?: number;
-  readonly triggerUserId?: string;
-  readonly triggerRecordKey?: string;
-  readonly triggerEntityCui?: string;
-  readonly triggerInteractionId?: string;
-  readonly triggerInteractionIds?: string;
-  readonly triggerReviewStatus?: Exclude<CampaignAdminReviewStatus, "pending">;
-  readonly triggerUpdatedAtFrom?: string;
-  readonly triggerUpdatedAtTo?: string;
-  readonly triggerSubmittedAtFrom?: string;
-  readonly triggerSubmittedAtTo?: string;
+  readonly runNotificationType?: string;
+  readonly runConditions?: string;
+  readonly previewId?: string;
+  readonly previewCursor?: string;
+  readonly previewPageIndex?: number;
+  readonly previewTrail?: string;
+  readonly previewFilter?: "all" | "ready" | "already_sent" | "not_ready";
   readonly cursor?: string;
   readonly pageIndex?: number;
   readonly limit: number;
 };
 
-export type CampaignAdminNotificationsAuditFilters = Omit<
-  CampaignAdminNotificationsSearch,
-  | "tab"
-  | "triggerId"
-  | "triggerMode"
-  | "triggerDryRun"
-  | "triggerLimit"
-  | "triggerUserId"
-  | "triggerRecordKey"
-  | "triggerEntityCui"
-  | "triggerInteractionId"
-  | "triggerInteractionIds"
-  | "triggerReviewStatus"
-  | "triggerUpdatedAtFrom"
-  | "triggerUpdatedAtTo"
-  | "triggerSubmittedAtFrom"
-  | "triggerSubmittedAtTo"
-  | "cursor"
-  | "pageIndex"
-  | "limit"
->;
+export type CampaignAdminNotificationsAuditFilters = {
+  readonly notificationType?: string;
+  readonly templateId?: string;
+  readonly userId?: string;
+  readonly status?: CampaignAdminNotificationStatus;
+  readonly eventType?: CampaignAdminNotificationEventType;
+  readonly entityCui?: string;
+  readonly threadId?: string;
+  readonly source?: CampaignAdminNotificationSource;
+  readonly sortBy?: CampaignAdminNotificationSortKey;
+  readonly sortOrder?: CampaignAdminSortOrder;
+};
 
 export type CampaignAdminFilterDraft = {
   readonly phase: CampaignAdminPhase | "";

@@ -226,7 +226,7 @@ describe("CampaignAdminHubPage", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Audit campaign notification activity, run manual triggers, and preview templates",
+        "Audit campaign notification activity, preview matches, and send notifications",
       ),
     ).toBeInTheDocument();
   });

@@ -3,27 +3,37 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createTestQueryClient } from "@/test/test-utils";
-import type { CampaignAdminNotificationTriggerExecutionResponse } from "@/features/campaigns/buget/admin/types";
+import type {
+  CampaignAdminNotificationPlanResponse,
+  CampaignAdminNotificationPlanSendResponse,
+} from "@/features/campaigns/buget/admin/types";
 import {
-  campaignAdminNotificationTemplatePreviewQueryOptions,
-  campaignAdminNotificationsAuditQueryOptions,
+  campaignAdminNotificationPlanPageQueryOptions,
   campaignAdminNotificationsKeys,
-  campaignAdminNotificationsMetaQueryOptions,
-  useExecuteCampaignAdminNotificationTriggerMutation,
+  campaignAdminRunnableTemplatesQueryOptions,
+  useCreateCampaignAdminNotificationDryRunPlanMutation,
+  useSendCampaignAdminNotificationPlanMutation,
 } from "./use-campaign-admin-notifications";
 
-const executeCampaignAdminNotificationTriggerMock = vi.fn();
+const createCampaignAdminNotificationDryRunPlanMock = vi.fn();
+const sendCampaignAdminNotificationPlanMock = vi.fn();
 
 vi.mock(
   "@/features/campaigns/buget/admin/api/campaign-admin-notifications",
   () => ({
-    executeCampaignAdminNotificationTrigger: (input: unknown) =>
-      executeCampaignAdminNotificationTriggerMock(input),
-    getCampaignAdminNotificationsMeta: vi.fn(),
+    createCampaignAdminNotificationDryRunPlan: (input: unknown) =>
+      createCampaignAdminNotificationDryRunPlanMock(input),
+    sendCampaignAdminNotificationPlan: (input: unknown) =>
+      sendCampaignAdminNotificationPlanMock(input),
+    executeCampaignAdminNotificationTrigger: vi.fn(),
+    executeCampaignAdminNotificationTriggerBulk: vi.fn(),
+    getCampaignAdminNotificationPlanPage: vi.fn(),
     getCampaignAdminNotificationTemplatePreview: vi.fn(),
+    getCampaignAdminNotificationsMeta: vi.fn(),
+    listCampaignAdminNotifications: vi.fn(),
     listCampaignAdminNotificationTemplates: vi.fn(),
     listCampaignAdminNotificationTriggers: vi.fn(),
-    listCampaignAdminNotifications: vi.fn(),
+    listCampaignAdminRunnableTemplates: vi.fn(),
   }),
 );
 
@@ -35,115 +45,162 @@ function createWrapper(queryClient: ReturnType<typeof createTestQueryClient>) {
   };
 }
 
-function createTriggerExecutionResponse(): CampaignAdminNotificationTriggerExecutionResponse {
+function createPlanResponse(): CampaignAdminNotificationPlanResponse {
   return {
-    triggerId: "public_debate_entity_update.reply_received",
-    campaignKey: "funky",
-    templateId: "public_debate_entity_update",
-    result: {
-      status: "queued",
-      createdOutboxIds: ["outbox-1"],
-      reusedOutboxIds: [],
-      queuedOutboxIds: ["outbox-1"],
-      enqueueFailedOutboxIds: [],
+    planId: "plan-1",
+    runnableId: "admin_reviewed_user_interaction",
+    templateId: "admin_reviewed_user_interaction",
+    watermark: "2026-04-14T12:00:00.000Z",
+    summary: {
+      totalRowCount: 2,
+      willSendCount: 1,
+      alreadySentCount: 1,
+      alreadyPendingCount: 0,
+      ineligibleCount: 0,
+      missingDataCount: 0,
     },
+    rows: [],
+    page: {
+      hasMore: false,
+      nextCursor: null,
+    },
+  };
+}
+
+function createSendResponse(): CampaignAdminNotificationPlanSendResponse {
+  return {
+    planId: "plan-1",
+    runnableId: "admin_reviewed_user_interaction",
+    templateId: "admin_reviewed_user_interaction",
+    evaluatedCount: 2,
+    queuedCount: 1,
+    alreadySentCount: 1,
+    alreadyPendingCount: 0,
+    ineligibleCount: 0,
+    missingDataCount: 0,
+    enqueueFailedCount: 0,
   };
 }
 
 describe("use-campaign-admin-notifications", () => {
   beforeEach(() => {
-    executeCampaignAdminNotificationTriggerMock.mockReset();
+    createCampaignAdminNotificationDryRunPlanMock.mockReset();
+    sendCampaignAdminNotificationPlanMock.mockReset();
   });
 
-  it("builds audit query options with the expected key and enabled flag", () => {
-    const options = campaignAdminNotificationsAuditQueryOptions({
+  it("builds runnable-templates query options with the expected key", () => {
+    const options = campaignAdminRunnableTemplatesQueryOptions({
       campaignKey: "funky",
-      filters: {
-        status: "pending",
-      },
-      cursor: "cursor-1",
-      limit: 25,
       enabled: false,
     });
 
     expect(options.queryKey).toEqual(
-      campaignAdminNotificationsKeys.audit(
-        "funky",
-        { status: "pending" },
-        "cursor-1",
-        25,
-      ),
+      campaignAdminNotificationsKeys.runnableTemplates("funky"),
     );
     expect(options.enabled).toBe(false);
   });
 
-  it("disables the template preview query when no template id is selected", () => {
-    const options = campaignAdminNotificationTemplatePreviewQueryOptions({
+  it("disables the plan page query when no plan id is selected", () => {
+    const options = campaignAdminNotificationPlanPageQueryOptions({
       campaignKey: "funky",
-      templateId: null,
+      planId: null,
+      cursor: null,
+      limit: 25,
       enabled: true,
     });
 
     expect(options.enabled).toBe(false);
     expect(options.queryKey).toEqual(
-      campaignAdminNotificationsKeys.templatePreview("funky", null),
+      campaignAdminNotificationsKeys.planPage("funky", null, null, 25),
     );
   });
 
-  it("builds the notifications meta query options with retries disabled", () => {
-    const options = campaignAdminNotificationsMetaQueryOptions({
-      campaignKey: "funky",
-      enabled: false,
-    });
-
-    expect(options.queryKey).toEqual(
-      campaignAdminNotificationsKeys.meta("funky"),
-    );
-    expect(options.enabled).toBe(false);
-    expect(options.retry).toBe(false);
-  });
-
-  it("invalidates the notifications subtree after executing a trigger", async () => {
+  it("invalidates the notifications subtree after creating a dry-run plan", async () => {
     const queryClient = createTestQueryClient();
     const invalidateQueriesSpy = vi
       .spyOn(queryClient, "invalidateQueries")
       .mockResolvedValue(undefined);
 
-    executeCampaignAdminNotificationTriggerMock.mockResolvedValue(
-      createTriggerExecutionResponse(),
+    createCampaignAdminNotificationDryRunPlanMock.mockResolvedValue(
+      createPlanResponse(),
     );
 
     const { result } = renderHook(
-      () => useExecuteCampaignAdminNotificationTriggerMutation("funky"),
+      () => useCreateCampaignAdminNotificationDryRunPlanMutation("funky"),
       {
         wrapper: createWrapper(queryClient),
       },
     );
 
-    let mutationResult:
-      | CampaignAdminNotificationTriggerExecutionResponse
-      | undefined;
+    let mutationResult: CampaignAdminNotificationPlanResponse | undefined;
 
     await act(async () => {
       mutationResult = await result.current.mutateAsync({
-        triggerId: "public_debate_entity_update.reply_received",
+        runnableId: "admin_reviewed_user_interaction",
         body: {
-          threadId: "thread-1",
+          selectors: {
+            userId: "user-1",
+          },
         },
       });
     });
 
-    expect(mutationResult).toEqual(createTriggerExecutionResponse());
-    expect(executeCampaignAdminNotificationTriggerMock).toHaveBeenCalledWith({
+    expect(mutationResult).toEqual(createPlanResponse());
+    expect(createCampaignAdminNotificationDryRunPlanMock).toHaveBeenCalledWith({
       campaignKey: "funky",
-      triggerId: "public_debate_entity_update.reply_received",
+      runnableId: "admin_reviewed_user_interaction",
       body: {
-        threadId: "thread-1",
+        selectors: {
+          userId: "user-1",
+        },
       },
     });
     expect(invalidateQueriesSpy).toHaveBeenCalledWith({
       queryKey:
         campaignAdminNotificationsKeys.notificationsForCampaign("funky"),
+    });
+  });
+
+  it("invalidates notification and plan queries after sending a plan", async () => {
+    const queryClient = createTestQueryClient();
+    const invalidateQueriesSpy = vi
+      .spyOn(queryClient, "invalidateQueries")
+      .mockResolvedValue(undefined);
+
+    sendCampaignAdminNotificationPlanMock.mockResolvedValue(createSendResponse());
+
+    const { result } = renderHook(
+      () => useSendCampaignAdminNotificationPlanMutation("funky"),
+      {
+        wrapper: createWrapper(queryClient),
+      },
+    );
+
+    let mutationResult: CampaignAdminNotificationPlanSendResponse | undefined;
+
+    await act(async () => {
+      mutationResult = await result.current.mutateAsync({
+        planId: "plan-1",
+      });
+    });
+
+    expect(mutationResult).toEqual(createSendResponse());
+    expect(sendCampaignAdminNotificationPlanMock).toHaveBeenCalledWith({
+      campaignKey: "funky",
+      planId: "plan-1",
+    });
+    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+      queryKey:
+        campaignAdminNotificationsKeys.notificationsForCampaign("funky"),
+    });
+    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+      queryKey: [
+        "campaign-admin",
+        "funky",
+        "notifications",
+        "plans",
+        "plan-1",
+      ],
     });
   });
 });

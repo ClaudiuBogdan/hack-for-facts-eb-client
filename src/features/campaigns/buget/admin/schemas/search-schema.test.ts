@@ -285,6 +285,34 @@ describe("campaign admin search schema", () => {
     });
   });
 
+  it("normalizes run-state URL params for notification previews", () => {
+    expect(
+      normalizeCampaignAdminNotificationsSearch({
+        tab: "run",
+        runNotificationType: "  admin_reviewed_user_interaction  ",
+        runConditions: " userId:is:user-1 ",
+        previewId: " plan-1 ",
+        previewCursor: " cursor-2 ",
+        previewPageIndex: "2",
+        previewTrail: "%5Bnull%2C%22cursor-1%22%5D",
+        previewFilter: "ready",
+        limit: "25",
+      }),
+    ).toEqual({
+      tab: "run",
+      runNotificationType: "admin_reviewed_user_interaction",
+      runConditions: "userId:is:user-1",
+      previewId: "plan-1",
+      previewCursor: "cursor-2",
+      previewPageIndex: 2,
+      previewTrail: "%5Bnull%2C%22cursor-1%22%5D",
+      previewFilter: "ready",
+      sortBy: "createdAt",
+      sortOrder: "desc",
+      limit: 25,
+    });
+  });
+
   it("creates an empty notifications search while preserving tab and sort defaults", () => {
     expect(
       createEmptyCampaignAdminNotificationsSearch({

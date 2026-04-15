@@ -311,8 +311,8 @@ export function getCampaignAdminNotificationTabLabel(
   switch (tab) {
     case "audit":
       return t`Audit`;
-    case "triggers":
-      return t`Triggers`;
+    case "run":
+      return t`Run`;
     case "templates":
       return t`Templates`;
     default:

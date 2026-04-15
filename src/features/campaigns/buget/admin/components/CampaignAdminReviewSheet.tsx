@@ -808,7 +808,7 @@ export function CampaignAdminReviewSheet({
                   {notificationAdminHref ? (
                     <p className="text-xs text-muted-foreground">
                       <a href={notificationAdminHref} className="underline-offset-4 hover:underline">
-                        {t`Open notifications admin for manual trigger operations`}
+                        {t`Open notifications admin for this review`}
                       </a>
                     </p>
                   ) : null}

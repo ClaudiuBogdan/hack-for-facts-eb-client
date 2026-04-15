@@ -5,13 +5,17 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import {
+  createCampaignAdminNotificationDryRunPlan,
   executeCampaignAdminNotificationTriggerBulk,
   executeCampaignAdminNotificationTrigger,
+  getCampaignAdminNotificationPlanPage,
   getCampaignAdminNotificationsMeta,
   getCampaignAdminNotificationTemplatePreview,
+  listCampaignAdminRunnableTemplates,
   listCampaignAdminNotificationTemplates,
   listCampaignAdminNotificationTriggers,
   listCampaignAdminNotifications,
+  sendCampaignAdminNotificationPlan,
 } from "@/features/campaigns/buget/admin/api/campaign-admin-notifications";
 import { CampaignAdminApiError } from "@/features/campaigns/buget/admin/api/campaign-admin-user-interactions";
 import type {
@@ -19,6 +23,8 @@ import type {
   CampaignAdminNotificationsAuditFilters,
   CampaignAdminNotificationsListResponse,
   CampaignAdminNotificationsMetaResponse,
+  CampaignAdminNotificationPlanResponse,
+  CampaignAdminNotificationPlanSendResponse,
   CampaignAdminNotificationTemplateDescriptor,
   CampaignAdminNotificationTemplatePreview,
   CampaignAdminNotificationTriggerBulkExecutionBody,
@@ -26,6 +32,8 @@ import type {
   CampaignAdminNotificationTriggerDescriptor,
   CampaignAdminNotificationTriggerExecutionBody,
   CampaignAdminNotificationTriggerExecutionResponse,
+  CampaignAdminRunnableTemplateDescriptor,
+  CampaignAdminRunnableTemplateDryRunBody,
 } from "@/features/campaigns/buget/admin/types";
 
 export const campaignAdminNotificationsKeys = {
@@ -53,6 +61,8 @@ export const campaignAdminNotificationsKeys = {
     ] as const,
   triggers: (campaignKey: CampaignAdminCampaignKey) =>
     ["campaign-admin", campaignKey, "notifications", "triggers"] as const,
+  runnableTemplates: (campaignKey: CampaignAdminCampaignKey) =>
+    ["campaign-admin", campaignKey, "notifications", "runnable-templates"] as const,
   templates: (campaignKey: CampaignAdminCampaignKey) =>
     ["campaign-admin", campaignKey, "notifications", "templates"] as const,
   templatePreview: (
@@ -66,6 +76,21 @@ export const campaignAdminNotificationsKeys = {
       "templates",
       templateId ?? null,
       "preview",
+    ] as const,
+  planPage: (
+    campaignKey: CampaignAdminCampaignKey,
+    planId: string | null,
+    cursor: string | null,
+    limit: number,
+  ) =>
+    [
+      "campaign-admin",
+      campaignKey,
+      "notifications",
+      "plans",
+      planId ?? null,
+      cursor ?? null,
+      limit,
     ] as const,
 };
 
@@ -157,6 +182,27 @@ export function campaignAdminNotificationTemplatesQueryOptions(input: {
   });
 }
 
+export function campaignAdminRunnableTemplatesQueryOptions(input: {
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly enabled?: boolean;
+}) {
+  return queryOptions<
+    readonly CampaignAdminRunnableTemplateDescriptor[],
+    CampaignAdminApiError
+  >({
+    queryKey: campaignAdminNotificationsKeys.runnableTemplates(
+      input.campaignKey,
+    ),
+    queryFn: async () =>
+      listCampaignAdminRunnableTemplates({
+        campaignKey: input.campaignKey,
+      }),
+    enabled: input.enabled ?? true,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+}
+
 export function campaignAdminNotificationTemplatePreviewQueryOptions(input: {
   readonly campaignKey: CampaignAdminCampaignKey;
   readonly templateId: string | null;
@@ -193,6 +239,48 @@ export function campaignAdminNotificationTemplatePreviewQueryOptions(input: {
   });
 }
 
+export function campaignAdminNotificationPlanPageQueryOptions(input: {
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly planId: string | null;
+  readonly cursor: string | null;
+  readonly limit: number;
+  readonly enabled?: boolean;
+}) {
+  return queryOptions<CampaignAdminNotificationPlanResponse, CampaignAdminApiError>(
+    {
+      queryKey: campaignAdminNotificationsKeys.planPage(
+        input.campaignKey,
+        input.planId,
+        input.cursor,
+        input.limit,
+      ),
+      queryFn: async () => {
+        if (input.planId === null) {
+          throw new CampaignAdminApiError(
+            "Campaign notification plan request requires a plan ID.",
+            400,
+            {
+              code: "missing_plan_id",
+              retryable: false,
+            },
+          );
+        }
+
+        return getCampaignAdminNotificationPlanPage({
+          campaignKey: input.campaignKey,
+          planId: input.planId,
+          cursor: input.cursor,
+          limit: input.limit,
+        });
+      },
+      enabled: (input.enabled ?? true) && input.planId !== null,
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+      retry: false,
+    },
+  );
+}
+
 export function useCampaignAdminNotificationsAuditQuery(input: {
   readonly campaignKey: CampaignAdminCampaignKey;
   readonly filters: CampaignAdminNotificationsAuditFilters;
@@ -224,12 +312,94 @@ export function useCampaignAdminNotificationTemplatesQuery(input: {
   return useQuery(campaignAdminNotificationTemplatesQueryOptions(input));
 }
 
+export function useCampaignAdminRunnableTemplatesQuery(input: {
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly enabled?: boolean;
+}) {
+  return useQuery(campaignAdminRunnableTemplatesQueryOptions(input));
+}
+
 export function useCampaignAdminNotificationTemplatePreviewQuery(input: {
   readonly campaignKey: CampaignAdminCampaignKey;
   readonly templateId: string | null;
   readonly enabled?: boolean;
 }) {
   return useQuery(campaignAdminNotificationTemplatePreviewQueryOptions(input));
+}
+
+export function useCampaignAdminNotificationPlanPageQuery(input: {
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly planId: string | null;
+  readonly cursor: string | null;
+  readonly limit: number;
+  readonly enabled?: boolean;
+}) {
+  return useQuery(campaignAdminNotificationPlanPageQueryOptions(input));
+}
+
+export function useCreateCampaignAdminNotificationDryRunPlanMutation(
+  campaignKey: CampaignAdminCampaignKey,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    CampaignAdminNotificationPlanResponse,
+    CampaignAdminApiError,
+    {
+      readonly runnableId: string;
+      readonly body: CampaignAdminRunnableTemplateDryRunBody;
+    }
+  >({
+    mutationFn: async (input) =>
+      createCampaignAdminNotificationDryRunPlan({
+        campaignKey,
+        runnableId: input.runnableId,
+        body: input.body,
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey:
+          campaignAdminNotificationsKeys.notificationsForCampaign(campaignKey),
+      });
+    },
+  });
+}
+
+export function useSendCampaignAdminNotificationPlanMutation(
+  campaignKey: CampaignAdminCampaignKey,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    CampaignAdminNotificationPlanSendResponse,
+    CampaignAdminApiError,
+    {
+      readonly planId: string;
+    }
+  >({
+    mutationFn: async (input) =>
+      sendCampaignAdminNotificationPlan({
+        campaignKey,
+        planId: input.planId,
+      }),
+    onSuccess: async (_, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey:
+            campaignAdminNotificationsKeys.notificationsForCampaign(campaignKey),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: [
+            "campaign-admin",
+            campaignKey,
+            "notifications",
+            "plans",
+            variables.planId,
+          ],
+        }),
+      ]);
+    },
+  });
 }
 
 export function useExecuteCampaignAdminNotificationTriggerMutation(

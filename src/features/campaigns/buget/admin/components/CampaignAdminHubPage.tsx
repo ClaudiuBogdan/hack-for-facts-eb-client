@@ -82,20 +82,13 @@ function createCampaignAdminNotificationsRouteSearch() {
     source: undefined,
     sortBy: "createdAt" as const,
     sortOrder: "desc" as const,
-    triggerId: undefined,
-    triggerMode: undefined,
-    triggerDryRun: undefined,
-    triggerLimit: undefined,
-    triggerUserId: undefined,
-    triggerRecordKey: undefined,
-    triggerEntityCui: undefined,
-    triggerInteractionId: undefined,
-    triggerInteractionIds: undefined,
-    triggerReviewStatus: undefined,
-    triggerUpdatedAtFrom: undefined,
-    triggerUpdatedAtTo: undefined,
-    triggerSubmittedAtFrom: undefined,
-    triggerSubmittedAtTo: undefined,
+    runNotificationType: undefined,
+    runConditions: undefined,
+    previewId: undefined,
+    previewCursor: undefined,
+    previewPageIndex: undefined,
+    previewTrail: undefined,
+    previewFilter: undefined,
     cursor: undefined,
     pageIndex: undefined,
     limit: 50,
@@ -183,7 +176,7 @@ function NotificationsHubCardSummary({
   if (meta === undefined) {
     return (
       <p className="mt-0.5 text-sm text-muted-foreground">
-        {t`Audit campaign notification activity, run manual triggers, and preview templates`}
+        {t`Audit campaign notification activity, preview matches, and send notifications`}
       </p>
     );
   }
