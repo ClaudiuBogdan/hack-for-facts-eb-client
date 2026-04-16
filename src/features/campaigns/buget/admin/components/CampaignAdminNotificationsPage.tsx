@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useEffectEvent, useMemo, useState } from "react";
 import {
   AlertTriangle,
+  ChevronDown,
+  ChevronRight,
   LockKeyhole,
   RefreshCw,
   SearchX,
@@ -15,6 +17,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,6 +26,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -48,8 +56,9 @@ import {
 } from "@/features/campaigns/buget/admin/schemas/search-schema";
 import type {
   CampaignAdminCampaignKey,
-  CampaignAdminNotificationsSearch,
   CampaignAdminNotificationSortKey,
+  CampaignAdminNotificationTemplateDescriptor,
+  CampaignAdminNotificationsSearch,
   CampaignAdminSortOrder,
 } from "@/features/campaigns/buget/admin/types";
 import { AuthSignInButton, useAuth } from "@/lib/auth";
@@ -73,19 +82,18 @@ function NotificationsCardsSkeleton({
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className="space-y-4 rounded-2xl border border-border/70 bg-card/80 p-5 shadow-none"
+          className="rounded-2xl border border-border/70 bg-card/80 p-5 shadow-none"
         >
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex-1 space-y-3">
-              <Skeleton className="h-5 w-2/3" />
-              <Skeleton className="h-4 w-full" />
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-5 w-48" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
+              <Skeleton className="h-4 max-w-md" />
             </div>
-            <div className="flex gap-2">
-              <Skeleton className="h-6 w-24 rounded-full" />
-              <Skeleton className="h-6 w-28 rounded-full" />
-            </div>
+            <Skeleton className="h-9 w-24 shrink-0 rounded-lg" />
           </div>
-          <Skeleton className="h-9 w-28 rounded-lg" />
         </div>
       ))}
     </div>
@@ -207,6 +215,86 @@ function NotificationsTabErrorState({
         ) : null}
       </AlertDescription>
     </Alert>
+  );
+}
+
+function TemplateCard({
+  template,
+  onPreview,
+}: {
+  readonly template: CampaignAdminNotificationTemplateDescriptor;
+  readonly onPreview: () => void;
+}) {
+  const [fieldsOpen, setFieldsOpen] = useState(false);
+
+  return (
+    <article className="rounded-2xl border border-border/70 bg-card/80 p-5 shadow-none">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-foreground">
+              {template.name}
+            </h3>
+            <Badge variant="secondary" className="shrink-0 font-mono text-[11px]">
+              {t`v${template.version}`}
+            </Badge>
+          </div>
+          {template.description ? (
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {template.description}
+            </p>
+          ) : null}
+
+          {template.requiredFields.length > 0 ? (
+            <Collapsible open={fieldsOpen} onOpenChange={setFieldsOpen}>
+              <CollapsibleTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto gap-1 px-0 text-xs text-muted-foreground"
+                >
+                  {fieldsOpen ? (
+                    <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+                  ) : (
+                    <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  )}
+                  {fieldsOpen
+                    ? t`Hide fields`
+                    : t`${template.requiredFields.length} required field${template.requiredFields.length !== 1 ? "s" : ""}`}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="mt-2 flex flex-wrap gap-1.5 pt-1">
+                  {template.requiredFields.map((field) => (
+                    <span
+                      key={`${template.templateId}:${field.name}`}
+                      className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted/50 px-2 py-0.5 font-mono text-xs text-foreground"
+                    >
+                      {field.name}
+                      <span className="text-muted-foreground">{field.type}</span>
+                      {field.required ? (
+                        <span className="text-destructive">*</span>
+                      ) : null}
+                    </span>
+                  ))}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          ) : null}
+        </div>
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="shrink-0"
+          onClick={onPreview}
+        >
+          {t`Preview`}
+        </Button>
+      </div>
+    </article>
   );
 }
 
@@ -730,77 +818,13 @@ export function CampaignAdminNotificationsPage({
           ) : templatesQuery.data && templatesQuery.data.length > 0 ? (
             <div className="space-y-3">
               {templatesQuery.data.map((template) => (
-                <article
+                <TemplateCard
                   key={template.templateId}
-                  className="rounded-2xl border border-border/70 bg-card/80 shadow-none"
-                >
-                  <div className="flex flex-col gap-0 lg:flex-row">
-                    <div className="flex-1 space-y-4 p-5">
-                      <div className="space-y-1">
-                        <h3 className="text-base font-semibold text-foreground">
-                          {template.name}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {template.description}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 font-mono text-xs font-medium text-foreground">
-                          {template.templateId}
-                        </span>
-                        <span className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-                          {t`Version ${template.version}`}
-                        </span>
-                      </div>
-
-                      {template.requiredFields.length > 0 ? (
-                        <div className="space-y-2">
-                          <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                            {t`Required fields`}
-                          </p>
-                          <div className="flex flex-wrap gap-1.5">
-                            {template.requiredFields.map((field) => (
-                              <span
-                                key={`${template.templateId}:${field.name}`}
-                                className="inline-flex items-center gap-1 rounded-full border border-border/70 px-2.5 py-1 text-xs text-foreground"
-                              >
-                                <span className="font-mono font-medium">
-                                  {field.name}
-                                </span>
-                                <span className="text-muted-foreground">
-                                  {field.type}
-                                </span>
-                                {field.required ? (
-                                  <span className="text-destructive">*</span>
-                                ) : null}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          {t`No required fields.`}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex items-stretch border-t border-border/60 lg:border-l lg:border-t-0">
-                      <div className="flex w-full items-center justify-center p-5 lg:w-auto lg:min-w-[12rem]">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="w-full lg:w-auto"
-                          onClick={() => {
-                            setActiveTemplateId(template.templateId);
-                          }}
-                        >
-                          {t`Preview`}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </article>
+                  template={template}
+                  onPreview={() => {
+                    setActiveTemplateId(template.templateId);
+                  }}
+                />
               ))}
             </div>
           ) : (
