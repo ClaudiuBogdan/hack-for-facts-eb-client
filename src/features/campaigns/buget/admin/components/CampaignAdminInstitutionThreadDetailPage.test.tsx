@@ -218,4 +218,32 @@ describe("CampaignAdminInstitutionThreadDetailPage", () => {
       expect(screen.getByText("Thread already changed")).toBeInTheDocument();
     });
   });
+
+  it("renders an unavailable state when the detail lookup returns 404", () => {
+    useCampaignAdminInstitutionThreadDetailQueryMock.mockReturnValue({
+      data: undefined,
+      error: {
+        status: 404,
+        message: "The requested institution thread was not found.",
+      },
+      isLoading: false,
+      refetch: vi.fn(),
+    });
+
+    render(
+      <CampaignAdminInstitutionThreadDetailPage
+        campaignKey="funky"
+        threadId="thread-404"
+        search={{ stateGroup: "open", limit: 50 }}
+      />,
+    );
+
+    expect(screen.getByText("Institution thread unavailable")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "This thread is not available in the current campaign-admin institution-thread surface.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Back to institution threads")).toBeInTheDocument();
+  });
 });

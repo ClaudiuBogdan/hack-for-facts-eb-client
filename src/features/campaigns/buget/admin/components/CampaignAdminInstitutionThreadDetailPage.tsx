@@ -16,6 +16,7 @@ import {
   Paperclip,
   Pencil,
   RefreshCw,
+  SearchX,
   Send,
   User,
 } from "lucide-react";
@@ -36,6 +37,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Tooltip,
   TooltipContent,
@@ -572,6 +574,26 @@ export function CampaignAdminInstitutionThreadDetailPage({
         ) : detailQuery.isLoading ? (
           <div className="flex min-h-40 items-center justify-center py-6">
             <LoadingSpinner />
+          </div>
+        ) : detailQuery.error?.status === 404 ? (
+          <div className="space-y-4">
+            <EmptyState
+              icon={<SearchX className="h-6 w-6" aria-hidden="true" />}
+              title={t`Institution thread unavailable`}
+              description={t`This thread is not available in the current campaign-admin institution-thread surface.`}
+              className="max-w-xl rounded-3xl border border-border/70 bg-card/80"
+            />
+            <div>
+              <Button asChild type="button" variant="outline">
+                <Link
+                  to="/admin/campaigns/$campaignKey/institution-threads"
+                  params={{ campaignKey }}
+                  search={backSearch as never}
+                >
+                  {t`Back to institution threads`}
+                </Link>
+              </Button>
+            </div>
           </div>
         ) : detailQuery.error ? (
           <Alert variant="destructive">

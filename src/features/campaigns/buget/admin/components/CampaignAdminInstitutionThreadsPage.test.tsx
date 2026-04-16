@@ -341,6 +341,63 @@ describe("CampaignAdminInstitutionThreadsPage", () => {
     expect(await screen.findByText("Thread already changed")).toBeInTheDocument();
   });
 
+  it("clears a selected thread when the detail lookup returns 404", async () => {
+    useCampaignAdminInstitutionThreadDetailQueryMock.mockImplementation((args) => ({
+      data: undefined,
+      error:
+        args.threadId !== ""
+          ? { status: 404, message: "The requested institution thread was not found." }
+          : null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    }));
+    const onSearchChange = vi.fn();
+
+    render(
+      <CampaignAdminInstitutionThreadsPage
+        campaignKey="funky"
+        search={{ limit: 50, stateGroup: "open", selectedThreadId: "thread-404" }}
+        onSearchChange={onSearchChange}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(onSearchChange).toHaveBeenCalledWith(
+        expect.objectContaining({
+          limit: 50,
+          stateGroup: "open",
+          selectedThreadId: undefined,
+        }),
+        { replace: true },
+      );
+    });
+  });
+
+  it("does not clear a selected thread while a 404 detail lookup is still refetching", () => {
+    useCampaignAdminInstitutionThreadDetailQueryMock.mockImplementation((args) => ({
+      data: undefined,
+      error:
+        args.threadId !== ""
+          ? { status: 404, message: "The requested institution thread was not found." }
+          : null,
+      isLoading: false,
+      isFetching: true,
+      refetch: vi.fn(),
+    }));
+    const onSearchChange = vi.fn();
+
+    render(
+      <CampaignAdminInstitutionThreadsPage
+        campaignKey="funky"
+        search={{ limit: 50, stateGroup: "open", selectedThreadId: "thread-404" }}
+        onSearchChange={onSearchChange}
+      />,
+    );
+
+    expect(onSearchChange).not.toHaveBeenCalled();
+  });
+
   it("resets append-response mutation state when the selected thread changes or closes", () => {
     const onSearchChange = vi.fn();
     const { rerender } = render(

@@ -254,6 +254,32 @@ export function CampaignAdminInstitutionThreadsPage({
     );
   };
 
+  useEffect(() => {
+    if (
+      selectedThreadId === null ||
+      detailQuery.isLoading ||
+      detailQuery.isFetching ||
+      detailQuery.error?.status !== 404
+    ) {
+      return;
+    }
+
+    onSearchChange(
+      normalizeCampaignAdminInstitutionThreadsSearch({
+        ...normalizedSearch,
+        selectedThreadId: undefined,
+      }),
+      { replace: true },
+    );
+  }, [
+    detailQuery.error?.status,
+    detailQuery.isFetching,
+    detailQuery.isLoading,
+    normalizedSearch,
+    onSearchChange,
+    selectedThreadId,
+  ]);
+
   const openSelectedThread = (threadId: string) => {
     if (normalizedSearch.selectedThreadId === threadId) {
       return;
