@@ -1,5 +1,5 @@
 import { forwardRef, type ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useSearch } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { EntitySearchNode } from "@/schemas/entities";
 import { ExternalLink, MapPin } from "lucide-react";
@@ -19,6 +19,7 @@ interface SearchResultItemProps {
 
 export const SearchResultItem = forwardRef<HTMLAnchorElement, SearchResultItemProps>(
     function SearchResultItem({ entity, isActive, id, selectionBehavior, onClick, trailingContent }, ref) {
+        const currentSearch = useSearch({ strict: false }) as Record<string, unknown>;
         const destination = buildEntitySelectionPath({
             cui: entity.cui,
             entityType: entity.entity_type,
@@ -30,8 +31,8 @@ export const SearchResultItem = forwardRef<HTMLAnchorElement, SearchResultItemPr
                 <Link
                     ref={ref}
                     to={destination as '/'}
+                    search={currentSearch as never}
                     preload="intent"
-                    search={(prev) => ({ ...prev })}
                     onClick={onClick}
                     className={cn(
                         "block w-full px-6 py-4 transition-colors group focus:outline-none",

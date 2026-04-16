@@ -11,7 +11,13 @@ import {
 } from "@/components/ui/sidebar";
 import { Trans } from "@lingui/react/macro";
 
-const mainItems = [
+type MainItemUrl = "/" | "/map" | "/charts" | "/budget-explorer" | "/entity-analytics";
+
+const mainItems: ReadonlyArray<{
+  title: React.ReactNode;
+  url: MainItemUrl;
+  icon: typeof LayoutDashboard;
+}> = [
   {
     title: <Trans>Dashboard</Trans>,
     url: "/",

@@ -4,7 +4,7 @@ import { acceptAll, declineAll } from "@/lib/consent";
 import { hasStoredConsentDecision, onConsentChange } from "@/lib/consent";
 import { Analytics } from "@/lib/analytics";
 import { Trans } from "@lingui/react/macro";
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useSearch } from "@tanstack/react-router";
 import { ToastProvider } from "@/components/ui/toast";
 import * as ToastPrimitives from "@radix-ui/react-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -19,12 +19,15 @@ export function CookieConsentBanner(): ReactElement | null {
   const [isMounted, setMounted] = useState(false);
   const [isBannerVisible, setBannerVisible] = useState(false);
   const location = useLocation();
+  const search = useSearch({ strict: false }) as Readonly<{
+    notificationModal?: string;
+  }>;
   const isMobile = useIsMobile();
 
   const showBanner = useCallback(() => {
     if (typeof window === "undefined") return;
     const isCookiesPage = location.pathname.includes("/cookies");
-    const isNotificationModalOpen = location.search.notificationModal === "open";
+    const isNotificationModalOpen = search.notificationModal === "open";
 
     const shouldHideBanner =
       isCookiesPage || (isMobile && isNotificationModalOpen) || hasStoredConsentDecision();
@@ -32,7 +35,7 @@ export function CookieConsentBanner(): ReactElement | null {
     if (shouldHideBanner) return;
 
     setMounted(true);
-  }, [location.pathname, location.search, isMobile]);
+  }, [location.pathname, search.notificationModal, isMobile]);
 
   useEffect(() => {
     if (isMounted) {

@@ -11,12 +11,17 @@ type ClassificationInfoProps = {
   readonly node: ClassificationNode
 }
 
+function getClassificationRoutes(type: ClassificationType) {
+  return type === 'functional'
+    ? { list: '/classifications/functional' as const, detail: '/classifications/functional/$code' as const }
+    : { list: '/classifications/economic' as const, detail: '/classifications/economic/$code' as const }
+}
+
 export function ClassificationInfo({ type, node }: ClassificationInfoProps) {
   const { getByCode } = useClassificationData(type)
   const parentInfo = node.parent ? getByCode(node.parent) : undefined
-  const basePath = `/classifications/${type}`
+  const routes = getClassificationRoutes(type)
   
-  // Check if description exists to determine whether to show the title
   const { data: descriptionData, isLoading: isDescriptionLoading } = useClassificationDescription(type, node.code)
   const hasDescription = !isDescriptionLoading && descriptionData && descriptionData.trim().length > 0
   
@@ -27,7 +32,8 @@ export function ClassificationInfo({ type, node }: ClassificationInfoProps) {
           <div className="flex items-center gap-3">
             {node.parent ? (
               <Link
-                to={`${basePath}/${node.parent}` as any}
+                to={routes.detail}
+                params={{ code: node.parent }}
                 className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
               >
                 <span className="font-medium"><Trans>Parent</Trans>:</span>
@@ -41,7 +47,7 @@ export function ClassificationInfo({ type, node }: ClassificationInfoProps) {
               </Link>
             ) : (
               <Link
-                to={basePath}
+                to={routes.list}
                 className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
               >
                 <span className="font-medium"><Trans>All Classifications</Trans></span>
@@ -52,7 +58,6 @@ export function ClassificationInfo({ type, node }: ClassificationInfoProps) {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Show title only when there's no description */}
         {!hasDescription && (
           <div className="flex items-baseline gap-3">
             <span className="font-mono text-2xl font-bold text-foreground">{node.code}</span>

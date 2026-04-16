@@ -31,8 +31,23 @@ vi.mock('@lingui/core/macro', () => ({
 
 // Mock TanStack Router
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to }: { children: React.ReactNode; to: string }) => (
-    <a href={to} data-testid="router-link">
+  Link: ({
+    children,
+    to,
+    params,
+  }: {
+    children: React.ReactNode
+    to: string
+    params?: Record<string, string>
+  }) => (
+    <a
+      href={Object.entries(params ?? {}).reduce(
+        (currentValue, [key, value]) =>
+          currentValue.replace(`$${key}`, encodeURIComponent(String(value))),
+        to,
+      )}
+      data-testid="router-link"
+    >
       {children}
     </a>
   ),

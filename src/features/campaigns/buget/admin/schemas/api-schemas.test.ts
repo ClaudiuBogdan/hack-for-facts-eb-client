@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  parseCampaignAdminAppendInstitutionThreadResponse,
+  parseCampaignAdminAppendInstitutionThreadResponseBody,
   parseCampaignAdminEntitiesListResponse,
   parseCampaignAdminEntitiesMetaResponse,
+  parseCampaignAdminInstitutionThreadDetailResponse,
+  parseCampaignAdminInstitutionThreadsListResponse,
   parseCampaignAdminNotificationTemplatePreviewResponse,
   parseCampaignAdminNotificationTemplatesResponse,
   parseCampaignAdminNotificationTriggerExecutionBody,
@@ -120,6 +124,89 @@ function createListResponsePayload() {
         hasMore: false,
         nextCursor: null,
       },
+    },
+  };
+}
+
+function createInstitutionThreadsListPayload() {
+  return {
+    ok: true,
+    data: {
+      items: [
+        {
+          id: "thread-1",
+          entityCui: "12345678",
+          entityName: "Oras Test",
+          campaignKey: "funky",
+          submissionPath: "platform_send",
+          ownerUserId: "user-1",
+          institutionEmail: "contact@primarie.ro",
+          subject: "Public debate request",
+          threadState: "pending",
+          currentResponseStatus: "registration_number_received",
+          createdAt: "2026-04-10T10:00:00.000Z",
+          updatedAt: "2026-04-12T10:00:00.000Z",
+          latestResponseAt: "2026-04-12T09:00:00.000Z",
+          responseEventCount: 1,
+        },
+      ],
+      page: {
+        limit: 50,
+        totalCount: 1,
+        hasMore: false,
+        nextCursor: null,
+        sortBy: "updatedAt",
+        sortOrder: "desc",
+      },
+    },
+  };
+}
+
+function createInstitutionThreadDetailPayload() {
+  return {
+    ok: true,
+    data: {
+      id: "thread-1",
+      entityCui: "12345678",
+      entityName: "Oras Test",
+      campaignKey: "funky",
+      submissionPath: "platform_send",
+      ownerUserId: "user-1",
+      institutionEmail: "contact@primarie.ro",
+      subject: "Public debate request",
+      threadState: "pending",
+      currentResponseStatus: "registration_number_received",
+      createdAt: "2026-04-10T10:00:00.000Z",
+      updatedAt: "2026-04-12T10:00:00.000Z",
+      latestResponseAt: "2026-04-12T09:00:00.000Z",
+      responseEventCount: 1,
+      requesterOrganizationName: "Asociatia Test",
+      budgetPublicationDate: "2026-03-20",
+      consentCapturedAt: "2026-04-10T08:00:00.000Z",
+      contestationDeadlineAt: "2026-04-20T00:00:00.000Z",
+      responseEvents: [
+        {
+          id: "event-1",
+          responseDate: "2026-04-12T09:00:00.000Z",
+          messageContent: "Received registration number",
+          responseStatus: "registration_number_received",
+          actorUserId: "admin-1",
+          createdAt: "2026-04-12T09:05:00.000Z",
+          source: "campaign_admin_api",
+        },
+      ],
+      correspondence: [
+        {
+          id: "corr-1",
+          direction: "inbound",
+          source: "institution_reply",
+          fromAddress: "contact@primarie.ro",
+          subject: "Reply",
+          textBody: "Text body",
+          attachments: [],
+          occurredAt: "2026-04-12T09:00:00.000Z",
+        },
+      ],
     },
   };
 }
@@ -910,5 +997,47 @@ describe("campaign admin api schemas", () => {
     expect(parseCampaignAdminEntitiesListResponse(nextPayload)).toEqual(
       nextPayload.data,
     );
+  });
+
+  it("parses institution thread list and detail payloads", () => {
+    expect(
+      parseCampaignAdminInstitutionThreadsListResponse(
+        createInstitutionThreadsListPayload(),
+      ),
+    ).toEqual(createInstitutionThreadsListPayload().data);
+    expect(
+      parseCampaignAdminInstitutionThreadDetailResponse(
+        createInstitutionThreadDetailPayload(),
+      ),
+    ).toEqual(createInstitutionThreadDetailPayload().data);
+  });
+
+  it("parses append-response request and response payloads for institution threads", () => {
+    expect(
+      parseCampaignAdminAppendInstitutionThreadResponseBody({
+        expectedUpdatedAt: "2026-04-12T10:00:00.000Z",
+        responseDate: "2026-04-13T10:00:00.000Z",
+        messageContent: "Confirmed request",
+        responseStatus: "request_confirmed",
+      }),
+    ).toEqual({
+      expectedUpdatedAt: "2026-04-12T10:00:00.000Z",
+      responseDate: "2026-04-13T10:00:00.000Z",
+      messageContent: "Confirmed request",
+      responseStatus: "request_confirmed",
+    });
+
+    expect(
+      parseCampaignAdminAppendInstitutionThreadResponse({
+        ...createInstitutionThreadDetailPayload(),
+        data: {
+          ...createInstitutionThreadDetailPayload().data,
+          createdResponseEventId: "event-2",
+        },
+      }),
+    ).toEqual({
+      ...createInstitutionThreadDetailPayload().data,
+      createdResponseEventId: "event-2",
+    });
   });
 });

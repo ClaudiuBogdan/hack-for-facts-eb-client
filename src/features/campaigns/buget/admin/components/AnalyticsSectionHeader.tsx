@@ -1,5 +1,5 @@
-import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 type AnalyticsSectionHeaderProps = {
   readonly title: string;
@@ -24,7 +24,7 @@ export function AnalyticsSectionHeader({
       </div>
       {actionHref && actionLabel ? (
         <Link
-          to={actionHref}
+          to={actionHref as '/'}
           className="group flex shrink-0 items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
         >
           <span className="text-xs font-medium uppercase tracking-[0.12em]">

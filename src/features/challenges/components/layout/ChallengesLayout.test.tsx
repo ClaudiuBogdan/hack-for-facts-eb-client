@@ -61,6 +61,7 @@ vi.mock('@tanstack/react-router', () => ({
   ),
   Outlet: () => <div data-testid="outlet" />,
   useLocation: () => mockLocation,
+  useSearch: () => mockLocation.search,
 }))
 
 vi.mock('@/features/learning/hooks/use-learning-progress', () => ({

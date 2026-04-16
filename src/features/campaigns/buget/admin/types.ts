@@ -61,6 +61,27 @@ export const campaignAdminThreadPhaseValues = [
   "failed",
 ] as const;
 
+export const campaignAdminInstitutionThreadStateValues = [
+  "started",
+  "pending",
+  "resolved",
+] as const;
+
+export const campaignAdminInstitutionThreadStateGroupValues = [
+  "open",
+  "closed",
+] as const;
+
+export const campaignAdminInstitutionThreadResponseStatusValues = [
+  "registration_number_received",
+  "request_confirmed",
+  "request_denied",
+] as const;
+
+export const campaignAdminInstitutionThreadSubmissionPathValues = [
+  "platform_send",
+] as const;
+
 export const campaignAdminMetaReviewStatusCountValues = [
   ...campaignAdminReviewStatusValues,
   "notReviewed",
@@ -209,6 +230,14 @@ export type CampaignAdminReviewSource =
   (typeof campaignAdminReviewSourceValues)[number];
 export type CampaignAdminThreadPhase =
   (typeof campaignAdminThreadPhaseValues)[number];
+export type CampaignAdminInstitutionThreadState =
+  (typeof campaignAdminInstitutionThreadStateValues)[number];
+export type CampaignAdminInstitutionThreadStateGroup =
+  (typeof campaignAdminInstitutionThreadStateGroupValues)[number];
+export type CampaignAdminInstitutionThreadResponseStatus =
+  (typeof campaignAdminInstitutionThreadResponseStatusValues)[number];
+export type CampaignAdminInstitutionThreadSubmissionPath =
+  (typeof campaignAdminInstitutionThreadSubmissionPathValues)[number];
 export type CampaignAdminMetaReviewStatusCountKey =
   (typeof campaignAdminMetaReviewStatusCountValues)[number];
 export type CampaignAdminMetaThreadPhaseCountKey =
@@ -691,6 +720,99 @@ export type CampaignAdminNotificationsMetaResponse = {
   readonly replyReceivedCount: number;
 };
 
+export type CampaignAdminInstitutionThreadListItem = {
+  readonly id: string;
+  readonly entityCui: string;
+  readonly entityName: string | null;
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly submissionPath: CampaignAdminInstitutionThreadSubmissionPath;
+  readonly ownerUserId: string | null;
+  readonly institutionEmail: string;
+  readonly subject: string;
+  readonly threadState: CampaignAdminInstitutionThreadState;
+  readonly currentResponseStatus: CampaignAdminInstitutionThreadResponseStatus | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly latestResponseAt: string | null;
+  readonly responseEventCount: number;
+};
+
+export type CampaignAdminInstitutionThreadsListResponse = {
+  readonly items: readonly CampaignAdminInstitutionThreadListItem[];
+  readonly page: {
+    readonly limit: number;
+    readonly totalCount: number;
+    readonly hasMore: boolean;
+    readonly nextCursor: string | null;
+    readonly sortBy: "updatedAt";
+    readonly sortOrder: "desc";
+  };
+};
+
+export type CampaignAdminInstitutionThreadResponseEvent = {
+  readonly id: string;
+  readonly responseDate: string;
+  readonly messageContent: string;
+  readonly responseStatus: CampaignAdminInstitutionThreadResponseStatus;
+  readonly actorUserId: string;
+  readonly createdAt: string;
+  readonly source: "campaign_admin_api";
+};
+
+export type CampaignAdminInstitutionThreadCorrespondenceAttachment = {
+  readonly id: string;
+  readonly filename: string;
+  readonly contentType: string;
+  readonly contentDisposition: string | null;
+  readonly contentId: string | null;
+};
+
+export type CampaignAdminInstitutionThreadCorrespondenceEntry = {
+  readonly id: string;
+  readonly direction: "outbound" | "inbound";
+  readonly source: "platform_send" | "self_send_cc" | "institution_reply";
+  readonly fromAddress: string;
+  readonly subject: string;
+  readonly textBody: string | null;
+  readonly attachments: readonly CampaignAdminInstitutionThreadCorrespondenceAttachment[];
+  readonly occurredAt: string;
+};
+
+export type CampaignAdminInstitutionThreadDetail = {
+  readonly id: string;
+  readonly entityCui: string;
+  readonly entityName: string | null;
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly submissionPath: CampaignAdminInstitutionThreadSubmissionPath;
+  readonly ownerUserId: string | null;
+  readonly institutionEmail: string;
+  readonly subject: string;
+  readonly threadState: CampaignAdminInstitutionThreadState;
+  readonly currentResponseStatus: CampaignAdminInstitutionThreadResponseStatus | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+  readonly latestResponseAt: string | null;
+  readonly responseEventCount: number;
+  readonly requesterOrganizationName: string | null;
+  readonly budgetPublicationDate: string | null;
+  readonly consentCapturedAt: string | null;
+  readonly contestationDeadlineAt: string | null;
+  readonly responseEvents: readonly CampaignAdminInstitutionThreadResponseEvent[];
+  readonly correspondence: readonly CampaignAdminInstitutionThreadCorrespondenceEntry[];
+};
+
+export type CampaignAdminAppendInstitutionThreadResponseBody = {
+  readonly expectedUpdatedAt: string;
+  readonly responseDate: string;
+  readonly messageContent: string;
+  readonly responseStatus: CampaignAdminInstitutionThreadResponseStatus;
+};
+
+export type CampaignAdminAppendInstitutionThreadResponseResult =
+  CampaignAdminInstitutionThreadDetail & {
+    readonly createdResponseEventId: string;
+  };
+
 export type CampaignAdminNotificationFieldDescriptor = {
   readonly name: string;
   readonly type: string;
@@ -1007,6 +1129,27 @@ export type CampaignAdminNotificationsAuditFilters = {
   readonly sortOrder?: CampaignAdminSortOrder;
 };
 
+export type CampaignAdminInstitutionThreadsSearch = {
+  readonly stateGroup?: CampaignAdminInstitutionThreadStateGroup;
+  readonly threadState?: CampaignAdminInstitutionThreadState;
+  readonly responseStatus?: CampaignAdminInstitutionThreadResponseStatus;
+  readonly query?: string;
+  readonly entityCui?: string;
+  readonly updatedAtFrom?: string;
+  readonly updatedAtTo?: string;
+  readonly latestResponseAtFrom?: string;
+  readonly latestResponseAtTo?: string;
+  readonly selectedThreadId?: string;
+  readonly cursor?: string;
+  readonly pageIndex?: number;
+  readonly limit: number;
+};
+
+export type CampaignAdminInstitutionThreadsFilters = Omit<
+  CampaignAdminInstitutionThreadsSearch,
+  "selectedThreadId" | "cursor" | "pageIndex" | "limit"
+>;
+
 export type CampaignAdminFilterDraft = {
   readonly phase: CampaignAdminPhase | "";
   readonly reviewStatus: CampaignAdminReviewStatus | "";
@@ -1025,5 +1168,18 @@ export type CampaignAdminFilterDraft = {
   readonly updatedAtTo: string;
   readonly hasInstitutionThread: "" | "true" | "false";
   readonly threadPhase: CampaignAdminThreadPhase | "";
+  readonly limit: number;
+};
+
+export type CampaignAdminInstitutionThreadFilterDraft = {
+  readonly stateGroup: CampaignAdminInstitutionThreadStateGroup;
+  readonly threadState: CampaignAdminInstitutionThreadState | "";
+  readonly responseStatus: CampaignAdminInstitutionThreadResponseStatus | "";
+  readonly query: string;
+  readonly entityCui: string;
+  readonly updatedAtFrom: string;
+  readonly updatedAtTo: string;
+  readonly latestResponseAtFrom: string;
+  readonly latestResponseAtTo: string;
   readonly limit: number;
 };

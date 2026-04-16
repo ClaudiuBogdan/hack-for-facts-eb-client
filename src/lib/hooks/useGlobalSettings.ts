@@ -61,7 +61,7 @@ export function useGlobalSettings(
   ssrSettings: SSRSettings,
   forcedOverrides?: ForcedOverrides
 ) {
-  const search = useSearch({ strict: false })
+  const search = useSearch({ strict: false }) as Record<string, unknown>
   const router = useRouter()
   const [isHydrated, setIsHydrated] = useState(false)
   const [hasSyncedPrefs, setHasSyncedPrefs] = useState(false)
@@ -85,8 +85,8 @@ export function useGlobalSettings(
   }, [])
 
   // Parse URL params
-  const urlCurrency = parseCurrencyParam(search?.currency)
-  const urlInflation = parseBooleanParam(search?.inflation_adjusted)
+  const urlCurrency = parseCurrencyParam(search.currency)
+  const urlInflation = parseBooleanParam(search.inflation_adjusted)
 
   // On mount: read client prefs and sync to URL if params are absent (and not forced)
   // This triggers a refetch with the user's preferred currency
@@ -136,7 +136,7 @@ export function useGlobalSettings(
         search: (prev: Record<string, unknown>) => ({ ...prev, ...searchUpdates }),
         replace: true,
         resetScroll: false,
-      })
+      } as any)
     }
   }, [isHydrated, hasSyncedPrefs, urlCurrency, urlInflation, forcedOverrides, router])
 
@@ -229,7 +229,7 @@ export function useGlobalSettings(
         search: (prev: Record<string, unknown>) => ({ ...prev, currency: value }),
         replace: true,
         resetScroll: false,
-      })
+      } as any)
     },
     [router, forcedOverrides?.currency, persistSettings]
   )
@@ -246,7 +246,7 @@ export function useGlobalSettings(
         search: (prev: Record<string, unknown>) => ({ ...prev, inflation_adjusted: value }),
         replace: true,
         resetScroll: false,
-      })
+      } as any)
     },
     [router, forcedOverrides?.inflationAdjusted, persistSettings]
   )
@@ -277,7 +277,7 @@ export function useGlobalSettings(
           search: (prev: Record<string, unknown>) => ({ ...prev, ...searchUpdates }),
           replace: true,
           resetScroll: false,
-        })
+        } as any)
       }
     },
     [router, forcedOverrides, persistSettings]

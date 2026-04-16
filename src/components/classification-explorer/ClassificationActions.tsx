@@ -43,9 +43,6 @@ export function ClassificationActions({ type, code }: ClassificationActionsProps
     report_type: 'Executie bugetara agregata la nivel de ordonator principal' as const,
   })
 
-  // Create a link to entity analytics with line items view
-  const entityAnalyticsLink = `/entity-analytics?view=line-items&filter=${encodeURIComponent(JSON.stringify(filter))}`
-
   return (
     <div className="flex items-center gap-1">
       <CopyButton onCopy={handleCopy} />
@@ -54,7 +51,13 @@ export function ClassificationActions({ type, code }: ClassificationActionsProps
         <Tooltip>
           <TooltipTrigger asChild>
             <Button variant="ghost" size="icon" asChild>
-              <Link to={entityAnalyticsLink}>
+              <Link
+                to="/entity-analytics"
+                search={{
+                  view: 'line-items',
+                  filter,
+                }}
+              >
                 <ExternalLink className="h-4 w-4" />
               </Link>
             </Button>

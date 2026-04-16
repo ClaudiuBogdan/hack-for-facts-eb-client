@@ -1,6 +1,9 @@
 import { t } from "@lingui/core/macro";
 import type {
   CampaignAdminCampaignKey,
+  CampaignAdminInstitutionThreadResponseStatus,
+  CampaignAdminInstitutionThreadState,
+  CampaignAdminInstitutionThreadStateGroup,
   CampaignAdminNotificationEventType,
   CampaignAdminNotificationProjectionKind,
   CampaignAdminNotificationsTab,
@@ -599,6 +602,51 @@ export function getCampaignAdminThreadPhaseLabel(
       return t`No thread`;
     default:
       return t`Unknown`;
+  }
+}
+
+export function getCampaignAdminInstitutionThreadStateLabel(
+  value: CampaignAdminInstitutionThreadState,
+): string {
+  switch (value) {
+    case "started":
+      return t`Started`;
+    case "pending":
+      return t`Pending`;
+    case "resolved":
+      return t`Resolved`;
+    default:
+      return value;
+  }
+}
+
+export function getCampaignAdminInstitutionThreadStateGroupLabel(
+  value: CampaignAdminInstitutionThreadStateGroup,
+): string {
+  switch (value) {
+    case "open":
+      return t`Open`;
+    case "closed":
+      return t`Closed`;
+    default:
+      return value;
+  }
+}
+
+export function getCampaignAdminInstitutionThreadResponseStatusLabel(
+  value: CampaignAdminInstitutionThreadResponseStatus | null,
+): string {
+  switch (value) {
+    case "registration_number_received":
+      return t`Registration number received`;
+    case "request_confirmed":
+      return t`Request confirmed`;
+    case "request_denied":
+      return t`Request denied`;
+    case null:
+      return t`No response status`;
+    default:
+      return value;
   }
 }
 

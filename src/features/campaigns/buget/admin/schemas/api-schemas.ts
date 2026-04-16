@@ -9,6 +9,9 @@ import {
   campaignAdminPayloadKindValues,
   campaignAdminPendingReasonValues,
   campaignAdminPhaseValues,
+  campaignAdminInstitutionThreadResponseStatusValues,
+  campaignAdminInstitutionThreadStateValues,
+  campaignAdminInstitutionThreadSubmissionPathValues,
   type CampaignAdminNotificationTemplateDescriptor,
   type CampaignAdminNotificationTemplatePreview,
   type CampaignAdminNotificationPlanResponse,
@@ -22,6 +25,10 @@ import {
   type CampaignAdminRunnableTemplateDryRunBody,
   type CampaignAdminEntitiesListResponse,
   type CampaignAdminEntitiesMetaResponse,
+  type CampaignAdminAppendInstitutionThreadResponseBody,
+  type CampaignAdminAppendInstitutionThreadResponseResult,
+  type CampaignAdminInstitutionThreadDetail,
+  type CampaignAdminInstitutionThreadsListResponse,
   type CampaignAdminNotificationsListResponse,
   type CampaignAdminNotificationsMetaResponse,
   type CampaignAdminMetaResponse,
@@ -592,6 +599,141 @@ const campaignAdminNotificationsMetaResponseSchema = z
   })
   .strict();
 
+const campaignAdminInstitutionThreadListItemSchema = z
+  .object({
+    id: z.string().min(1),
+    entityCui: z.string().min(1),
+    entityName: z.string().nullable(),
+    campaignKey: z.literal("funky"),
+    submissionPath: z.enum(campaignAdminInstitutionThreadSubmissionPathValues),
+    ownerUserId: z.string().min(1).nullable(),
+    institutionEmail: z.string().min(1),
+    subject: z.string(),
+    threadState: z.enum(campaignAdminInstitutionThreadStateValues),
+    currentResponseStatus: z
+      .enum(campaignAdminInstitutionThreadResponseStatusValues)
+      .nullable(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+    latestResponseAt: z.string().datetime().nullable(),
+    responseEventCount: campaignAdminCountSchema,
+  })
+  .strict();
+
+const campaignAdminInstitutionThreadsListResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        items: z.array(campaignAdminInstitutionThreadListItemSchema),
+        page: z
+          .object({
+            limit: z.number().int().min(1).max(100),
+            totalCount: campaignAdminCountSchema,
+            hasMore: z.boolean(),
+            nextCursor: z.string().min(1).nullable(),
+            sortBy: z.literal("updatedAt"),
+            sortOrder: z.literal("desc"),
+          })
+          .strict(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const campaignAdminInstitutionThreadResponseEventSchema = z
+  .object({
+    id: z.string().min(1),
+    responseDate: z.string().datetime(),
+    messageContent: z.string(),
+    responseStatus: z.enum(campaignAdminInstitutionThreadResponseStatusValues),
+    actorUserId: z.string().min(1),
+    createdAt: z.string().datetime(),
+    source: z.literal("campaign_admin_api"),
+  })
+  .strict();
+
+const campaignAdminInstitutionThreadCorrespondenceAttachmentSchema = z
+  .object({
+    id: z.string().min(1),
+    filename: z.string().min(1),
+    contentType: z.string().min(1),
+    contentDisposition: z.string().nullable(),
+    contentId: z.string().nullable(),
+  })
+  .strict();
+
+const campaignAdminInstitutionThreadCorrespondenceEntrySchema = z
+  .object({
+    id: z.string().min(1),
+    direction: z.enum(["outbound", "inbound"]),
+    source: z.enum(["platform_send", "self_send_cc", "institution_reply"]),
+    fromAddress: z.string().min(1),
+    subject: z.string(),
+    textBody: z.string().nullable(),
+    attachments: z.array(
+      campaignAdminInstitutionThreadCorrespondenceAttachmentSchema,
+    ),
+    occurredAt: z.string().datetime(),
+  })
+  .strict();
+
+const campaignAdminInstitutionThreadDetailSchema = z
+  .object({
+    id: z.string().min(1),
+    entityCui: z.string().min(1),
+    entityName: z.string().nullable(),
+    campaignKey: z.literal("funky"),
+    submissionPath: z.enum(campaignAdminInstitutionThreadSubmissionPathValues),
+    ownerUserId: z.string().min(1).nullable(),
+    institutionEmail: z.string().min(1),
+    subject: z.string(),
+    threadState: z.enum(campaignAdminInstitutionThreadStateValues),
+    currentResponseStatus: z
+      .enum(campaignAdminInstitutionThreadResponseStatusValues)
+      .nullable(),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+    latestResponseAt: z.string().datetime().nullable(),
+    responseEventCount: campaignAdminCountSchema,
+    requesterOrganizationName: z.string().nullable(),
+    budgetPublicationDate: z.string().nullable(),
+    consentCapturedAt: z.string().datetime().nullable(),
+    contestationDeadlineAt: z.string().datetime().nullable(),
+    responseEvents: z.array(campaignAdminInstitutionThreadResponseEventSchema),
+    correspondence: z.array(
+      campaignAdminInstitutionThreadCorrespondenceEntrySchema,
+    ),
+  })
+  .strict();
+
+const campaignAdminInstitutionThreadDetailResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: campaignAdminInstitutionThreadDetailSchema,
+  })
+  .strict();
+
+const campaignAdminAppendInstitutionThreadResponseBodySchema = z
+  .object({
+    expectedUpdatedAt: z.string().datetime(),
+    responseDate: z.string().datetime(),
+    messageContent: z.string().min(1),
+    responseStatus: z.enum(campaignAdminInstitutionThreadResponseStatusValues),
+  })
+  .strict();
+
+const campaignAdminAppendInstitutionThreadResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: campaignAdminInstitutionThreadDetailSchema
+      .extend({
+        createdResponseEventId: z.string().min(1),
+      })
+      .strict(),
+  })
+  .strict();
+
 const campaignAdminNotificationFieldDescriptorSchema = z
   .object({
     name: z.string().min(1),
@@ -1051,6 +1193,44 @@ export function parseCampaignAdminNotificationsMetaResponse(
   return parsedPayload.data.data;
 }
 
+export function parseCampaignAdminInstitutionThreadsListResponse(
+  payload: unknown,
+): CampaignAdminInstitutionThreadsListResponse {
+  const parsedPayload =
+    campaignAdminInstitutionThreadsListResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin institution threads response.");
+  }
+
+  return parsedPayload.data.data;
+}
+
+export function parseCampaignAdminInstitutionThreadDetailResponse(
+  payload: unknown,
+): CampaignAdminInstitutionThreadDetail {
+  const parsedPayload =
+    campaignAdminInstitutionThreadDetailResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin institution thread detail response.");
+  }
+
+  return parsedPayload.data.data;
+}
+
+export function parseCampaignAdminAppendInstitutionThreadResponse(
+  payload: unknown,
+): CampaignAdminAppendInstitutionThreadResponseResult {
+  const parsedPayload =
+    campaignAdminAppendInstitutionThreadResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error(
+      "Invalid campaign admin institution thread response append result.",
+    );
+  }
+
+  return parsedPayload.data.data;
+}
+
 export function parseCampaignAdminEntitiesListResponse(
   payload: unknown,
 ): CampaignAdminEntitiesListResponse {
@@ -1224,6 +1404,12 @@ export function parseCampaignAdminSubmitReviewsBody(
   payload: unknown,
 ): CampaignAdminSubmitReviewsBody {
   return campaignAdminSubmitReviewsBodySchema.parse(payload);
+}
+
+export function parseCampaignAdminAppendInstitutionThreadResponseBody(
+  payload: unknown,
+): CampaignAdminAppendInstitutionThreadResponseBody {
+  return campaignAdminAppendInstitutionThreadResponseBodySchema.parse(payload);
 }
 
 export function parseCampaignAdminNotificationTriggerExecutionBody(

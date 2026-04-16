@@ -23,7 +23,6 @@ import { NotificationLegalNotice } from '@/features/notifications/components/Not
 
 import {
   CAMPAIGN_ENTITY_SELECTOR_PATH,
-  buildCampaignBudgetPath,
 } from '../constants'
 import type { Notification } from '@/features/notifications/types'
 
@@ -371,7 +370,8 @@ function NotificationPreferencesContent({
                     <Building2 className={`h-4 w-4 ${notification.isActive ? 'text-muted-foreground' : 'text-red-500'}`} aria-hidden="true" />
                   </div>
                   <Link
-                    to={buildCampaignBudgetPath(cui)}
+                    to="/primarie/$cui/buget"
+                    params={{ cui }}
                     search={localeSearch}
                     className="flex-1 min-w-0 group"
                   >

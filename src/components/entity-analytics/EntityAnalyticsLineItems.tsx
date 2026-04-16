@@ -117,7 +117,11 @@ export const EntityAnalyticsLineItems: React.FC<
       groupBy,
       filterHash
     );
-    navigate({ to: `/charts/${newChart.id}`, search: { chart: newChart, view: 'overview' } });
+    navigate({
+      to: '/charts/$chartId',
+      params: { chartId: newChart.id },
+      search: { chart: newChart, view: 'overview' },
+    });
   };
 
   const groupsToDisplay = groupBy === 'ec' ? filteredEconomicGroups : filter.account_category === 'vn' ? filteredIncomeGroups : filteredExpenseGroups;

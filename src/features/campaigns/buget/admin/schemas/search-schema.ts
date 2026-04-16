@@ -9,6 +9,9 @@ import {
 } from "@/features/campaigns/buget/admin/utils/date-inputs";
 import {
   campaignAdminEntityNotificationTypeValues,
+  campaignAdminInstitutionThreadResponseStatusValues,
+  campaignAdminInstitutionThreadStateGroupValues,
+  campaignAdminInstitutionThreadStateValues,
   campaignAdminEntitiesSortKeyValues,
   campaignAdminNotificationEventTypeValues,
   campaignAdminNotificationsTabValues,
@@ -30,9 +33,12 @@ import {
   type CampaignAdminEntitiesFilters,
   type CampaignAdminEntitiesSearch,
   type CampaignAdminEntitiesSortKey,
+  type CampaignAdminInstitutionThreadsFilters,
+  type CampaignAdminInstitutionThreadsSearch,
   type CampaignAdminUserInteractionsSortKey,
   type CampaignAdminUsersSortKey,
   type CampaignAdminFilterDraft,
+  type CampaignAdminInstitutionThreadFilterDraft,
   type CampaignAdminQueueFilters,
   type CampaignAdminQueueSearch,
   type CampaignAdminUsersSearch,
@@ -508,6 +514,54 @@ export const campaignAdminNotificationsRouteSearchSchema = z.object({
     .transform((value) => value ?? DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT),
 });
 
+export const campaignAdminInstitutionThreadsRouteSearchSchema = z.object({
+  stateGroup: z.preprocess(
+    toTrimmedOptionalString,
+    z.enum(campaignAdminInstitutionThreadStateGroupValues).optional(),
+  ),
+  threadState: z.preprocess(
+    toTrimmedOptionalString,
+    z.enum(campaignAdminInstitutionThreadStateValues).optional(),
+  ),
+  responseStatus: z.preprocess(
+    toTrimmedOptionalString,
+    z.enum(campaignAdminInstitutionThreadResponseStatusValues).optional(),
+  ),
+  query: z.preprocess(toTrimmedOptionalString, z.string().min(1).optional()),
+  entityCui: z.preprocess(
+    toOptionalEntityCui,
+    z.string().min(1).optional(),
+  ),
+  updatedAtFrom: z.preprocess(
+    toOptionalIsoDateTime,
+    z.string().datetime().optional(),
+  ),
+  updatedAtTo: z.preprocess(
+    toOptionalIsoDateTime,
+    z.string().datetime().optional(),
+  ),
+  latestResponseAtFrom: z.preprocess(
+    toOptionalIsoDateTime,
+    z.string().datetime().optional(),
+  ),
+  latestResponseAtTo: z.preprocess(
+    toOptionalIsoDateTime,
+    z.string().datetime().optional(),
+  ),
+  selectedThreadId: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().min(1).optional(),
+  ),
+  cursor: z.preprocess(toTrimmedOptionalString, z.string().min(1).optional()),
+  pageIndex: z.preprocess(
+    toOptionalPositiveInt,
+    z.number().int().min(1).optional(),
+  ),
+  limit: z
+    .preprocess(toOptionalLimit, z.number().int().min(1).max(100).optional())
+    .transform((value) => value ?? DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT),
+});
+
 export type CampaignAdminRouteSearch = z.infer<
   typeof campaignAdminUserInteractionsRouteSearchSchema
 >;
@@ -527,6 +581,15 @@ export type CampaignAdminEntitiesRouteSearch = z.infer<
 export type CampaignAdminNotificationsRouteSearch = z.infer<
   typeof campaignAdminNotificationsRouteSearchSchema
 >;
+
+export type CampaignAdminInstitutionThreadsRouteSearch = z.infer<
+  typeof campaignAdminInstitutionThreadsRouteSearchSchema
+>;
+
+export type CampaignAdminInstitutionThreadsSearchConflictCode =
+  | "closed_started"
+  | "closed_pending"
+  | "open_resolved";
 
 export function normalizeCampaignAdminQueueSearch(
   input: unknown,
@@ -638,6 +701,18 @@ export function normalizeCampaignAdminNotificationsSearch(
   };
 }
 
+export function normalizeCampaignAdminInstitutionThreadsSearch(
+  input: unknown,
+): CampaignAdminInstitutionThreadsSearch {
+  const parsedSearch =
+    campaignAdminInstitutionThreadsRouteSearchSchema.parse(input);
+
+  return {
+    ...parsedSearch,
+    stateGroup: parsedSearch.stateGroup ?? "open",
+  };
+}
+
 export function getCampaignAdminQueueFilters(
   search: CampaignAdminQueueSearch,
 ): CampaignAdminQueueFilters {
@@ -675,6 +750,36 @@ export function getCampaignAdminEntitiesFilters(
   void limit;
 
   return filters;
+}
+
+export function getCampaignAdminInstitutionThreadsFilters(
+  search: CampaignAdminInstitutionThreadsSearch,
+): CampaignAdminInstitutionThreadsFilters {
+  const { selectedThreadId, cursor, pageIndex, limit, ...filters } = search;
+  void selectedThreadId;
+  void cursor;
+  void pageIndex;
+  void limit;
+
+  return filters;
+}
+
+export function getCampaignAdminInstitutionThreadsSearchConflictCode(
+  search: CampaignAdminInstitutionThreadsSearch,
+): CampaignAdminInstitutionThreadsSearchConflictCode | null {
+  if (search.stateGroup === "closed" && search.threadState === "started") {
+    return "closed_started";
+  }
+
+  if (search.stateGroup === "closed" && search.threadState === "pending") {
+    return "closed_pending";
+  }
+
+  if (search.stateGroup === "open" && search.threadState === "resolved") {
+    return "open_resolved";
+  }
+
+  return null;
 }
 
 export function getCampaignAdminNotificationsAuditFilters(
@@ -740,6 +845,50 @@ export function createCampaignAdminFilterDraft(
   };
 }
 
+export function createCampaignAdminInstitutionThreadFilterDraft(
+  search: CampaignAdminInstitutionThreadsSearch,
+): CampaignAdminInstitutionThreadFilterDraft {
+  return {
+    stateGroup: search.stateGroup ?? "open",
+    threadState: search.threadState ?? "",
+    responseStatus: search.responseStatus ?? "",
+    query: search.query ?? "",
+    entityCui: search.entityCui ?? "",
+    updatedAtFrom: toDateInputValue(search.updatedAtFrom),
+    updatedAtTo: toDateInputValue(search.updatedAtTo),
+    latestResponseAtFrom: toDateInputValue(search.latestResponseAtFrom),
+    latestResponseAtTo: toDateInputValue(search.latestResponseAtTo),
+    limit: search.limit,
+  };
+}
+
+export function buildCampaignAdminInstitutionThreadsSearchFromDraft(
+  draft: CampaignAdminInstitutionThreadFilterDraft,
+  currentSearch?: CampaignAdminInstitutionThreadsSearch,
+): CampaignAdminInstitutionThreadsSearch {
+  return normalizeCampaignAdminInstitutionThreadsSearch(
+    omitUndefinedValues({
+      stateGroup: draft.stateGroup,
+      threadState: draft.threadState || undefined,
+      responseStatus: draft.responseStatus || undefined,
+      query: draft.query.trim() || undefined,
+      entityCui: draft.entityCui.trim() || undefined,
+      updatedAtFrom: toUtcRangeBoundary(draft.updatedAtFrom, "start"),
+      updatedAtTo: toUtcRangeBoundary(draft.updatedAtTo, "end"),
+      latestResponseAtFrom: toUtcRangeBoundary(
+        draft.latestResponseAtFrom,
+        "start",
+      ),
+      latestResponseAtTo: toUtcRangeBoundary(
+        draft.latestResponseAtTo,
+        "end",
+      ),
+      selectedThreadId: currentSearch?.selectedThreadId,
+      limit: draft.limit,
+    }),
+  );
+}
+
 export function buildCampaignAdminQueueSearchFromDraft(
   draft: CampaignAdminFilterDraft,
   currentSearch?: CampaignAdminQueueSearch,
@@ -797,6 +946,22 @@ export function createEmptyCampaignAdminQueueSearch(
       limit,
     }),
   );
+}
+
+export function createCampaignAdminInstitutionThreadsPaginationSignature(
+  search: CampaignAdminInstitutionThreadsSearch,
+): string {
+  const {
+    selectedThreadId,
+    cursor,
+    pageIndex,
+    ...searchWithoutPagination
+  } = search;
+  void selectedThreadId;
+  void cursor;
+  void pageIndex;
+
+  return JSON.stringify(searchWithoutPagination);
 }
 
 export function createCampaignAdminNotificationsPaginationSignature(
@@ -870,4 +1035,14 @@ export function createEmptyCampaignAdminEntitiesSearch(input?: {
       limit: input?.limit ?? input?.currentSearch?.limit,
     }),
   );
+}
+
+export function createEmptyCampaignAdminInstitutionThreadsSearch(input?: {
+  readonly limit?: number;
+  readonly currentSearch?: CampaignAdminInstitutionThreadsSearch;
+}): CampaignAdminInstitutionThreadsSearch {
+  return normalizeCampaignAdminInstitutionThreadsSearch({
+    stateGroup: "open",
+    limit: input?.limit ?? input?.currentSearch?.limit,
+  });
 }

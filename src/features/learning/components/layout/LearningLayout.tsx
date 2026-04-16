@@ -206,14 +206,14 @@ function LearningSidebar({ pathname }: { readonly pathname: string }) {
             >
               {paths.map((p) => {
                 const isActive = p.id === activePath?.id
-                const pathUrl = `/${locale}/learning/${p.id}`
 
                 return (
                   <DropdownMenuItem key={p.id} asChild className={cn(
                     isActive && "bg-foreground text-background focus:bg-foreground focus:text-background data-highlighted:bg-foreground data-highlighted:text-background"
                   )}>
                     <Link
-                      to={pathUrl}
+                      to="/$lang/learning/$pathId"
+                      params={{ lang: locale, pathId: p.id }}
                       onClick={() => setActivePathId(p.id)}
                       className="flex flex-col items-start gap-0 py-2 px-2.5 rounded-md w-full"
                     >

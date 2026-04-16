@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
 import { searchEntities } from "@/lib/api/entities";
 import { EntitySearchNode } from "@/schemas/entities";
@@ -29,6 +29,7 @@ export function useEntitySearch({
     entitySearchFilter,
 }: UseEntitySearchProps = {}) {
     const navigate = useNavigate();
+    const currentSearch = useSearch({ strict: false }) as Record<string, unknown>;
     const [searchTerm, setSearchTerm] = useState("");
     const [isDropdownOpen, setDropdownOpen] = useState(false);
     const [activeIndex, setActiveIndex] = useState(-1);
@@ -96,18 +97,30 @@ export function useEntitySearch({
                     entityType: selectedEntity.entity_type,
                     isUat: selectedEntity.is_uat,
                 }, selectionBehavior);
-                navigate({
-                    to: destination as '/',
-                    search: (prev) => ({
-                        ...prev,
-                        ...(openNotificationModal && { notificationModal: 'open' as const })
-                    })
-                });
+                const nextSearch = openNotificationModal
+                    ? {
+                        ...currentSearch,
+                        notificationModal: 'open' as const,
+                    }
+                    : currentSearch;
+
+                if (openNotificationModal) {
+                    navigate({
+                        to: '/entities/$cui',
+                        params: { cui: selectedEntity.cui },
+                        search: nextSearch as never,
+                    } as never);
+                } else {
+                    navigate({
+                        to: destination as '/',
+                        search: nextSearch as never,
+                    });
+                }
             }
             handleClearSearch();
             onSelect?.(selectedEntity);
         }
-    }, [results, selectionBehavior, navigate, handleClearSearch, onSelect, openNotificationModal]);
+    }, [results, selectionBehavior, navigate, handleClearSearch, onSelect, openNotificationModal, currentSearch]);
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         if (!isDropdownOpen || results.length === 0) return;

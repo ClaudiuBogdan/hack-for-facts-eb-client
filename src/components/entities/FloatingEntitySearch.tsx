@@ -57,11 +57,10 @@ export function FloatingEntitySearch({ className, externalOpen, showButton, onOp
             navigate({
                 to: "/entities/$cui",
                 params: { cui: entity.cui },
-                search: (prev) => ({
-                    ...prev,
-                    notificationModal: 'open' as const
-                })
-            });
+                search: {
+                    notificationModal: 'open' as const,
+                },
+            } as never);
         }
         setIsOpen(false);
     };

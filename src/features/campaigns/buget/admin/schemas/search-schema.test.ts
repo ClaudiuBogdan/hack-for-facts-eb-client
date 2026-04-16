@@ -2,11 +2,17 @@ import { describe, expect, it } from "vitest";
 import {
   createEmptyCampaignAdminNotificationsSearch,
   createEmptyCampaignAdminEntitiesSearch,
+  createEmptyCampaignAdminInstitutionThreadsSearch,
+  createCampaignAdminInstitutionThreadsPaginationSignature,
   buildCampaignAdminQueueSearchFromDraft,
+  buildCampaignAdminInstitutionThreadsSearchFromDraft,
   createEmptyCampaignAdminQueueSearch,
+  getCampaignAdminInstitutionThreadsFilters,
+  getCampaignAdminInstitutionThreadsSearchConflictCode,
   hasActiveCampaignAdminUsersFilters,
   isCampaignAdminFilterDraftEqual,
   normalizeCampaignAdminEntitiesSearch,
+  normalizeCampaignAdminInstitutionThreadsSearch,
   normalizeCampaignAdminNotificationsSearch,
   normalizeCampaignAdminQueueSearch,
   normalizeCampaignAdminUserPageSearch,
@@ -259,6 +265,98 @@ describe("campaign admin search schema", () => {
     ).toEqual({
       sortBy: "userCount",
       sortOrder: "asc",
+      limit: 25,
+    });
+  });
+
+  it("normalizes institution thread search defaults", () => {
+    expect(normalizeCampaignAdminInstitutionThreadsSearch({})).toEqual({
+      stateGroup: "open",
+      limit: 50,
+    });
+  });
+
+  it("builds institution-thread search from the filter draft and preserves selectedThreadId", () => {
+    expect(
+      buildCampaignAdminInstitutionThreadsSearchFromDraft(
+        {
+          stateGroup: "open",
+          threadState: "pending",
+          responseStatus: "registration_number_received",
+          query: "  contact  ",
+          entityCui: "12345678",
+          updatedAtFrom: "2026-04-10",
+          updatedAtTo: "2026-04-12",
+          latestResponseAtFrom: "2026-04-11",
+          latestResponseAtTo: "2026-04-12",
+          limit: 25,
+        },
+        {
+          stateGroup: "open",
+          selectedThreadId: "thread-1",
+          limit: 25,
+        },
+      ),
+    ).toEqual({
+      stateGroup: "open",
+      threadState: "pending",
+      responseStatus: "registration_number_received",
+      query: "contact",
+      entityCui: "12345678",
+      updatedAtFrom: "2026-04-10T00:00:00.000Z",
+      updatedAtTo: "2026-04-12T23:59:59.999Z",
+      latestResponseAtFrom: "2026-04-11T00:00:00.000Z",
+      latestResponseAtTo: "2026-04-12T23:59:59.999Z",
+      selectedThreadId: "thread-1",
+      limit: 25,
+    });
+  });
+
+  it("ignores selectedThreadId and pagination when computing institution-thread filter state", () => {
+    const search = normalizeCampaignAdminInstitutionThreadsSearch({
+      stateGroup: "open",
+      selectedThreadId: "thread-1",
+      cursor: "cursor-1",
+      pageIndex: "2",
+      limit: 50,
+    });
+
+    expect(getCampaignAdminInstitutionThreadsFilters(search)).toEqual({
+      stateGroup: "open",
+    });
+    expect(
+      createCampaignAdminInstitutionThreadsPaginationSignature(search),
+    ).toBe(JSON.stringify({ stateGroup: "open", limit: 50 }));
+  });
+
+  it("flags contradictory institution-thread filter combinations", () => {
+    expect(
+      getCampaignAdminInstitutionThreadsSearchConflictCode({
+        stateGroup: "closed",
+        threadState: "pending",
+        limit: 50,
+      }),
+    ).toBe("closed_pending");
+    expect(
+      getCampaignAdminInstitutionThreadsSearchConflictCode({
+        stateGroup: "open",
+        threadState: "resolved",
+        limit: 50,
+      }),
+    ).toBe("open_resolved");
+  });
+
+  it("creates an empty institution-thread search with the open default", () => {
+    expect(
+      createEmptyCampaignAdminInstitutionThreadsSearch({
+        currentSearch: {
+          stateGroup: "closed",
+          threadState: "resolved",
+          limit: 25,
+        },
+      }),
+    ).toEqual({
+      stateGroup: "open",
       limit: 25,
     });
   });

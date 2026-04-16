@@ -6,7 +6,6 @@ import { toast } from 'sonner';
 import { createNotification, updateNotification } from '../api/notifications';
 import { useToggleNotification } from '../hooks/useToggleNotification';
 import { useAllNotifications } from '../hooks/useAllNotifications';
-import { Link } from '@tanstack/react-router';
 import { Trans } from '@lingui/react/macro';
 import { ArrowRight } from 'lucide-react';
 import type { Notification, NotificationType } from '../types';
@@ -32,6 +31,16 @@ interface Props {
   managePath?: string;
   manageSearch?: Record<string, string>;
   onClose?: () => void;
+}
+
+function buildHref(path: string, search?: Record<string, string>): string {
+  if (!search || Object.keys(search).length === 0) {
+    return path
+  }
+
+  const params = new URLSearchParams(search)
+  const query = params.toString()
+  return query ? `${path}?${query}` : path
 }
 
 export function NotificationQuickMenu({
@@ -109,6 +118,7 @@ export function NotificationQuickMenu({
     const config = getNotificationTypeConfig(type);
     return config ? [{ type, config }] : [];
   });
+  const manageHref = buildHref(managePath, manageSearch)
 
   return (
     <div className="flex w-full min-h-[24rem] flex-col space-y-5 p-2">
@@ -160,7 +170,7 @@ export function NotificationQuickMenu({
         showGeneralTerms={showGeneralTerms}
       />
 
-      <Link to={managePath} search={manageSearch} onClick={onClose} className="block">
+      <a href={manageHref} onClick={onClose} className="block">
         <Button
           variant="default"
           size="lg"
@@ -169,7 +179,7 @@ export function NotificationQuickMenu({
           <Trans>Manage all notifications</Trans>
           <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
         </Button>
-      </Link>
+      </a>
     </div>
   );
 }

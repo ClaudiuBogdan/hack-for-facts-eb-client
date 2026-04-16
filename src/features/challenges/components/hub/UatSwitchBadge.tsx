@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from 'react'
-import { Link, useLocation } from '@tanstack/react-router'
+import { Link, useLocation, useSearch } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { ArrowLeftRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -21,6 +21,7 @@ function toTitleCase(text: string): string {
 
 export function UatSwitchBadge({ entityCui, className, labelSlot }: UatSwitchBadgeProps) {
   const location = useLocation()
+  const search = useSearch({ strict: false }) as Readonly<{ lang?: unknown }>
   const entityIds = useMemo(() => [entityCui], [entityCui])
   const entityLabelStore = useEntityLabel(entityIds)
   const rawLabel = entityLabelStore.map(entityCui)
@@ -32,7 +33,7 @@ export function UatSwitchBadge({ entityCui, className, labelSlot }: UatSwitchBad
   })
 
   const selectorSearch = buildSelectorSearchState({
-    languageQuery: location.search?.lang === 'en' ? 'en' : undefined,
+    languageQuery: search.lang === 'en' ? 'en' : undefined,
     redirectUri,
   })
 

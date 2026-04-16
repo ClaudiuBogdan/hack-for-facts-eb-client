@@ -15,6 +15,7 @@ vi.mock('@tanstack/react-router', () => ({
     searchStr: '',
     search: {},
   }),
+  useSearch: () => ({}),
 }))
 
 vi.mock('@/lib/api/labels', () => ({

@@ -16,42 +16,54 @@ type ClassificationBreadcrumbProps = {
   readonly current: ClassificationNode
 }
 
+function getClassificationRoutes(type: ClassificationType) {
+  return type === 'functional'
+    ? { list: '/classifications/functional' as const, detail: '/classifications/functional/$code' as const }
+    : { list: '/classifications/economic' as const, detail: '/classifications/economic/$code' as const }
+}
+
 export function ClassificationBreadcrumb({
   type,
   parents,
   current,
 }: ClassificationBreadcrumbProps) {
-  const basePath = `/classifications/${type}`
+  const routes = getClassificationRoutes(type)
 
   return (
     <Breadcrumb className="max-w-[60vw] overflow-hidden">
       <BreadcrumbList className="flex-wrap">
         <BreadcrumbItem className="shrink-0">
           <BreadcrumbLink asChild>
-            <Link to={basePath} className="text-xs font-medium whitespace-nowrap">
+            <Link to={routes.list} className="text-xs font-medium whitespace-nowrap">
               <Trans>All Classifications</Trans>
             </Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
 
-        {parents.map((parent) => (
-          <div key={parent.code} className="contents">
-            <BreadcrumbSeparator className="shrink-0" />
-            <BreadcrumbItem className="shrink-0">
-              <BreadcrumbLink asChild>
-                <Link to={`${basePath}/${parent.code}` as any} className="text-xs font-medium whitespace-nowrap inline-flex items-center gap-1">
-                  <span className="font-mono font-bold">{parent.code}</span>
-                  {parent.name && (
-                    <>
-                      <span className="text-muted-foreground">-</span>
-                      <span className="max-w-[150px] md:max-w-full truncate">{parent.name}</span>
-                    </>
-                  )}
-                </Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-          </div>
-        ))}
+        {parents.map((parent) => {
+          return (
+            <div key={parent.code} className="contents">
+              <BreadcrumbSeparator className="shrink-0" />
+              <BreadcrumbItem className="shrink-0">
+                <BreadcrumbLink asChild>
+                  <Link
+                    to={routes.detail}
+                    params={{ code: parent.code }}
+                    className="text-xs font-medium whitespace-nowrap inline-flex items-center gap-1"
+                  >
+                    <span className="font-mono font-bold">{parent.code}</span>
+                    {parent.name && (
+                      <>
+                        <span className="text-muted-foreground">-</span>
+                        <span className="max-w-[150px] md:max-w-full truncate">{parent.name}</span>
+                      </>
+                    )}
+                  </Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            </div>
+          )
+        })}
 
         <BreadcrumbSeparator className="shrink-0" />
         <BreadcrumbItem className="shrink-0 max-w-full">

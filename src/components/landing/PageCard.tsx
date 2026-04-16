@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 export type PageCardProps = {
   readonly title: string;
   readonly description: string;
-  readonly to: string;
+  readonly to: "/" | "/map" | "/charts" | "/budget-explorer" | "/entity-analytics";
   readonly image: string;
   readonly imageAlt?: string;
   /**

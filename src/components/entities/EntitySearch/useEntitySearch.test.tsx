@@ -7,9 +7,11 @@ import { useEntitySearch } from './useEntitySearch'
 
 const navigateMock = vi.fn()
 const searchEntitiesMock = vi.fn()
+let currentSearchState: Record<string, unknown> = {}
 
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigateMock,
+  useSearch: () => currentSearchState,
 }))
 
 vi.mock('@/lib/api/entities', () => ({
@@ -48,6 +50,7 @@ describe('useEntitySearch', () => {
   beforeEach(() => {
     navigateMock.mockReset()
     searchEntitiesMock.mockReset()
+    currentSearchState = {}
     searchEntitiesMock.mockResolvedValue([
       { cui: '4305857', name: 'Cluj-Napoca' },
     ])
@@ -152,7 +155,49 @@ describe('useEntitySearch', () => {
 
     expect(navigateMock).toHaveBeenCalledWith({
       to: '/primarie/4305857',
-      search: expect.any(Function),
+      search: {},
+    })
+  })
+
+  it('preserves route search state when switching entities', async () => {
+    currentSearchState = {
+      view: 'map',
+      lang: 'en',
+      currency: 'EUR',
+      inflation_adjusted: true,
+    }
+    searchEntitiesMock.mockResolvedValue([
+      {
+        cui: '4305857',
+        name: 'Cluj-Napoca',
+        entity_type: 'admin_municipality',
+        is_uat: false,
+      },
+    ])
+
+    const { Wrapper } = createWrapper()
+    const { result } = renderHook(() => useEntitySearch(), { wrapper: Wrapper })
+
+    act(() => {
+      result.current.setSearchTerm('Cluj')
+    })
+
+    await waitFor(() => {
+      expect(result.current.results).toHaveLength(1)
+    })
+
+    act(() => {
+      result.current.handleSelection(0)
+    })
+
+    expect(navigateMock).toHaveBeenCalledWith({
+      to: '/entities/4305857',
+      search: {
+        view: 'map',
+        lang: 'en',
+        currency: 'EUR',
+        inflation_adjusted: true,
+      },
     })
   })
 })

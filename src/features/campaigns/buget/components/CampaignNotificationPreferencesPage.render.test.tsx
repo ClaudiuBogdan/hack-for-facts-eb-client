@@ -94,15 +94,23 @@ vi.mock('@tanstack/react-router', () => ({
   Link: ({
     children,
     to,
+    params,
     search,
     ...props
   }: {
     readonly children: ReactNode
     readonly to?: string
+    readonly params?: Record<string, string>
     readonly search?: Record<string, string>
     readonly [key: string]: unknown
   }) => {
-    const href = typeof to === 'string' ? to : ''
+    const href = typeof to === 'string'
+      ? Object.entries(params ?? {}).reduce(
+          (currentValue, [key, value]) =>
+            currentValue.replace(`$${key}`, encodeURIComponent(String(value))),
+          to,
+        )
+      : ''
     const query = search ? new URLSearchParams(search).toString() : ''
     const nextHref = query ? `${href}?${query}` : href
     return <a href={nextHref} {...props}>{children}</a>

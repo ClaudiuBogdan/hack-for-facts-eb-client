@@ -110,7 +110,7 @@ export const MapView: React.FC<MapViewProps> = ({ entity, mapFilters, updateMapF
     const cui = targetEntity && ('uat_code' in targetEntity ? targetEntity.uat_code : targetEntity.county_entity?.cui);
 
     if (cui) {
-      navigate({ to: `/entities/${cui}` });
+      navigate({ to: '/entities/$cui', params: { cui } });
     }
   };
 

@@ -1,5 +1,5 @@
-import { Link } from "@tanstack/react-router";
 import { ChevronRight, X } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -45,7 +45,7 @@ export function FilterPill({ label, value, href, onRemove, variant = "default" }
   if (isInteractive) {
     return (
       <Link
-        to={href}
+        to={href as '/'}
         className={cn(baseClasses, interactiveClasses)}
       >
         {commonContent}
