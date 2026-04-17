@@ -526,6 +526,21 @@ const campaignAdminNotificationProjectionSchema = z.discriminatedUnion("kind", [
     .strict(),
   z
     .object({
+      kind: z.literal("public_debate_admin_response"),
+      userId: z.string().min(1).nullable(),
+      entityCui: z.string().min(1),
+      entityName: z.string().min(1).nullable(),
+      threadId: z.string().min(1),
+      threadKey: z.string().min(1).nullable(),
+      responseEventId: z.string().min(1),
+      responseStatus: z.enum(campaignAdminInstitutionThreadResponseStatusValues),
+      recipientRole: z.enum(["requester", "subscriber"]),
+      responseDate: z.string().min(1),
+      triggerSource: z.enum(campaignAdminNotificationSourceValues).nullable(),
+    })
+    .strict(),
+  z
+    .object({
       kind: z.literal("public_debate_admin_failure"),
       entityCui: z.string().min(1),
       entityName: z.string().min(1).nullable(),
@@ -599,6 +614,15 @@ const campaignAdminNotificationsMetaResponseSchema = z
   })
   .strict();
 
+const campaignAdminInstitutionThreadNotificationAudienceSchema = z
+  .object({
+    requesterCount: campaignAdminCountSchema,
+    subscriberCount: campaignAdminCountSchema,
+    eligibleRequesterCount: campaignAdminCountSchema,
+    eligibleSubscriberCount: campaignAdminCountSchema,
+  })
+  .strict();
+
 const campaignAdminInstitutionThreadListItemSchema = z
   .object({
     id: z.string().min(1),
@@ -617,6 +641,7 @@ const campaignAdminInstitutionThreadListItemSchema = z
     updatedAt: z.string().datetime(),
     latestResponseAt: z.string().datetime().nullable(),
     responseEventCount: campaignAdminCountSchema,
+    notificationAudience: campaignAdminInstitutionThreadNotificationAudienceSchema,
   })
   .strict();
 
@@ -696,6 +721,7 @@ const campaignAdminInstitutionThreadDetailSchema = z
     updatedAt: z.string().datetime(),
     latestResponseAt: z.string().datetime().nullable(),
     responseEventCount: campaignAdminCountSchema,
+    notificationAudience: campaignAdminInstitutionThreadNotificationAudienceSchema,
     requesterOrganizationName: z.string().nullable(),
     budgetPublicationDate: z.string().nullable(),
     consentCapturedAt: z.string().datetime().nullable(),
@@ -720,6 +746,31 @@ const campaignAdminAppendInstitutionThreadResponseBodySchema = z
     responseDate: z.string().datetime(),
     messageContent: z.string().min(1),
     responseStatus: z.enum(campaignAdminInstitutionThreadResponseStatusValues),
+    sendNotification: z.boolean().optional(),
+  })
+  .strict();
+
+const campaignAdminInstitutionThreadNotificationExecutionSchema = z
+  .object({
+    requested: z.literal(true),
+    status: z.enum(["queued", "skipped", "partial"]),
+    reason: z
+      .enum([
+        "no_subscribers",
+        "no_eligible_recipients",
+        "already_processed",
+        "enqueue_failed",
+        "admin_response_not_found",
+      ])
+      .optional(),
+    requesterCount: campaignAdminCountSchema,
+    subscriberCount: campaignAdminCountSchema,
+    eligibleRequesterCount: campaignAdminCountSchema,
+    eligibleSubscriberCount: campaignAdminCountSchema,
+    createdOutboxIds: z.array(z.string().min(1)),
+    reusedOutboxIds: z.array(z.string().min(1)),
+    queuedOutboxIds: z.array(z.string().min(1)),
+    enqueueFailedOutboxIds: z.array(z.string().min(1)),
   })
   .strict();
 
@@ -729,6 +780,8 @@ const campaignAdminAppendInstitutionThreadResponseSchema = z
     data: campaignAdminInstitutionThreadDetailSchema
       .extend({
         createdResponseEventId: z.string().min(1),
+        notificationExecution:
+          campaignAdminInstitutionThreadNotificationExecutionSchema.optional(),
       })
       .strict(),
   })

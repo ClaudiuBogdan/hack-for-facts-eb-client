@@ -283,7 +283,7 @@ msgstr "O nouă versiune a aplicației este disponibilă. Vă rugăm să reînc�
 msgid "A platform for exploring public financial data for citizens, journalists, public figures, and other interested parties."
 msgstr "Platformă de explorare a datelor financiare publice pentru cetățeni, jurnaliști, persoane publice și alte persoane interesate."
 
-#: src/components/privacy/CookieConsentBanner.tsx:121
+#: src/components/privacy/CookieConsentBanner.tsx:124
 msgid "Accept All"
 msgstr "Acceptă tot"
 
@@ -469,7 +469,7 @@ msgstr "Adresă"
 msgid "Adjust for inflation (constant 2024 prices)"
 msgstr "Ajustare la inflație (prețuri constante 2024)"
 
-#: src/components/privacy/CookieConsentBanner.tsx:115
+#: src/components/privacy/CookieConsentBanner.tsx:118
 msgid "Advanced"
 msgstr "Avansat"
 
@@ -595,8 +595,8 @@ msgstr "Alerte când apar modificări importante"
 #: src/components/entities/LineItemsBadgeFilters.tsx:172
 #: src/components/entities/LineItemsGroupedSection.tsx:173
 #: src/components/entities/LineItemsGroupedSection.tsx:175
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:150
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:168
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:154
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:172
 #: src/features/learning/components/interactive/DocumentLibrary.tsx:147
 #: src/routes/charts/index.lazy.tsx:244
 msgid "All"
@@ -610,8 +610,8 @@ msgstr "Toate cheltuielile bugetare"
 msgid "All changes saved"
 msgstr "Toate modificările au fost salvate"
 
-#: src/components/classification-explorer/ClassificationBreadcrumb.tsx:32
-#: src/components/classification-explorer/ClassificationInfo.tsx:47
+#: src/components/classification-explorer/ClassificationBreadcrumb.tsx:38
+#: src/components/classification-explorer/ClassificationInfo.tsx:53
 msgid "All Classifications"
 msgstr "Toate clasificările"
 
@@ -653,7 +653,7 @@ msgstr "Permite toate cookie-urile"
 msgid "Allow essential cookies only"
 msgstr "Permite doar cookie-urile esențiale"
 
-#: src/components/privacy/CookieConsentBanner.tsx:106
+#: src/components/privacy/CookieConsentBanner.tsx:109
 msgid "Allow essential only"
 msgstr "Permite doar esențiale"
 
@@ -685,7 +685,7 @@ msgstr "Sumă pe cap de locuitor"
 msgid "Amount Range"
 msgstr "Interval sumă"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:123
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:122
 msgid "An unexpected error occurred"
 msgstr "A apărut o eroare neașteptată"
 
@@ -1278,7 +1278,7 @@ msgstr "Calcul"
 msgid "Calculations assume a basket of 40% essential goods (11% VAT) and 60% general goods (21% VAT)."
 msgstr "Calculele presupun un coș de bunuri esențiale de 40% (TVA 11%) și bunuri generale de 60% (TVA 21%)."
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:323
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:322
 msgid "Campaign notifications"
 msgstr "Notificari campanie"
 
@@ -1422,7 +1422,7 @@ msgid "Chart view"
 msgstr "Vizualizare grafică"
 
 #: src/components/footer/AppFooter.tsx:103
-#: src/components/sidebar/nav-main.tsx:31
+#: src/components/sidebar/nav-main.tsx:37
 #: src/components/ui/shortcuts.tsx:38
 #: src/hooks/useEntityViews.tsx:40
 #: src/routes/charts/index.lazy.tsx:170
@@ -2419,7 +2419,7 @@ msgstr "Zonă de pericol"
 msgid "Dark"
 msgstr "Întunecat"
 
-#: src/components/sidebar/nav-main.tsx:16
+#: src/components/sidebar/nav-main.tsx:22
 msgid "Dashboard"
 msgstr "Tablou de bord"
 
@@ -3131,7 +3131,7 @@ msgstr "Email"
 msgid "Email address copied to clipboard!"
 msgstr "Adresa de email a fost copiată în clipboard!"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:326
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:325
 msgid "Email updates for all entities in this campaign"
 msgstr "Actualizari prin email pentru toate entitatile din aceasta campanie"
 
@@ -3288,7 +3288,7 @@ msgstr "Entitate"
 #: src/components/entity-analytics/EntityAnalyticsLayout.tsx:15
 #: src/components/entity-analytics/EntityAnalyticsLayout.tsx:46
 #: src/components/footer/AppFooter.tsx:93
-#: src/components/sidebar/nav-main.tsx:41
+#: src/components/sidebar/nav-main.tsx:47
 msgid "Entity Analytics"
 msgstr "Analiza entităților"
 
@@ -3304,7 +3304,7 @@ msgstr "Notificări entitate"
 msgid "Entity Search"
 msgstr "Căutare Entitate"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:355
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:354
 msgid "Entity subscriptions"
 msgstr "Abonamente entitati"
 
@@ -3358,7 +3358,7 @@ msgstr "Eroare la încărcarea analizei"
 msgid "Error Loading Chart Data"
 msgstr "Eroare la încărcarea datelor graficului"
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:180
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:184
 msgid "Error loading data"
 msgstr "Eroare la încărcarea datelor"
 
@@ -3860,8 +3860,8 @@ msgstr "Eroare la salvarea instantaneului"
 msgid "Failed to update map visibility"
 msgstr "Eroare la actualizarea vizibilității hărții"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:209
-#: src/features/notifications/components/NotificationQuickMenu.tsx:96
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:208
+#: src/features/notifications/components/NotificationQuickMenu.tsx:105
 msgid "Failed to update notification"
 msgstr "Eroare la actualizarea notificarii"
 
@@ -3927,7 +3927,7 @@ msgid "Filter Reports"
 msgstr "Filtrare rapoarte"
 
 #: src/components/entities/EntityLineItemsTabs.tsx:145
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:160
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:164
 msgid "Filter Transfers"
 msgstr "Filtrare transferuri"
 
@@ -4229,7 +4229,7 @@ msgstr "Primiți actualizări lunare prin e-mail despre această instituție. Pr
 msgid "Get Started"
 msgstr "Începe acum"
 
-#: src/features/notifications/components/NotificationQuickMenu.tsx:117
+#: src/features/notifications/components/NotificationQuickMenu.tsx:127
 msgid "Get updates about"
 msgstr "Primiți actualizări despre"
 
@@ -5442,7 +5442,7 @@ msgstr "Faci privată"
 msgid "Make public"
 msgstr "Faci publică"
 
-#: src/features/notifications/components/NotificationQuickMenu.tsx:169
+#: src/features/notifications/components/NotificationQuickMenu.tsx:179
 msgid "Manage all notifications"
 msgstr "Gestionează toate notificările"
 
@@ -5498,7 +5498,7 @@ msgstr "Manual"
 
 #: src/components/filters/MapFilter.tsx:212
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:106
-#: src/components/sidebar/nav-main.tsx:26
+#: src/components/sidebar/nav-main.tsx:32
 #: src/components/ui/shortcuts.tsx:44
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1335
 #: src/hooks/useEntityViews.tsx:37
@@ -5760,7 +5760,7 @@ msgstr "Lipsește ID-ul parcursului"
 
 #: src/components/classification-explorer/ClassificationChildren.tsx:46
 #: src/components/classification-explorer/ClassificationGrid.tsx:99
-#: src/components/classification-explorer/ClassificationInfo.tsx:60
+#: src/components/classification-explorer/ClassificationInfo.tsx:65
 #: src/components/classification-explorer/ClassificationSiblings.tsx:51
 msgid "Missing title"
 msgstr "Titlu lipsă"
@@ -5954,7 +5954,7 @@ msgstr "N/A"
 msgid "Name"
 msgstr "Nume"
 
-#: src/components/sidebar/nav-main.tsx:36
+#: src/components/sidebar/nav-main.tsx:42
 #: src/routes/budget-explorer.lazy.tsx:579
 #: src/routes/index.tsx:79
 msgid "National Budget"
@@ -6600,7 +6600,7 @@ msgid "Notification preferences"
 msgstr "Preferinte notificari"
 
 #. placeholder {0}: String(entityTotalCount)
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:343
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:342
 msgid "Notifications are paused. Your {0} entity subscriptions are preserved."
 msgstr "Notificarile sunt in pauza. Cele {0} abonamente pentru entitati sunt pastrate."
 
@@ -6984,7 +6984,7 @@ msgstr "Pagina nu a fost găsită"
 msgid "Paragraph"
 msgstr "Paragraf"
 
-#: src/components/classification-explorer/ClassificationInfo.tsx:33
+#: src/components/classification-explorer/ClassificationInfo.tsx:39
 msgid "Parent"
 msgstr "Părinte"
 
@@ -7501,7 +7501,7 @@ msgstr "Cerere de dezbatere publică"
 msgid "Public explorer"
 msgstr "Explorator public"
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:162
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:166
 msgid "Public institutions often transfer funds between each other (e.g., from the state budget to local budgets). These transfers can double-count spending if not filtered."
 msgstr "Instituțiile publice transferă adesea fonduri între ele (de exemplu, de la bugetul de stat la bugetele locale). Aceste transferuri pot duce la dublarea cheltuielilor dacă nu sunt filtrate."
 
@@ -8096,7 +8096,7 @@ msgstr "Căutare"
 msgid "Search {0}..."
 msgstr "Caută {0}..."
 
-#: src/components/entities/FloatingEntitySearch.tsx:89
+#: src/components/entities/FloatingEntitySearch.tsx:88
 msgid "Search and select an entity to navigate to its page."
 msgstr "Căutați și selectați o entitate pentru a naviga la pagina ei."
 
@@ -8172,8 +8172,8 @@ msgstr "Caută numele entității"
 msgid "Search entity types (ex: Hospital)"
 msgstr "Caută tipuri de entități (ex: Spital)"
 
-#: src/components/entities/FloatingEntitySearch.tsx:75
-#: src/components/entities/FloatingEntitySearch.tsx:87
+#: src/components/entities/FloatingEntitySearch.tsx:74
+#: src/components/entities/FloatingEntitySearch.tsx:86
 msgid "Search for another entity"
 msgstr "Caută o altă entitate"
 
@@ -8677,11 +8677,11 @@ msgstr "Arată top categorii funcționale"
 msgid "Shows all items, including transfers between institutions."
 msgstr "Afișează toate elementele, inclusiv transferurile între instituții."
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:168
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:172
 msgid "Shows all spending, including both direct payments and transfers to other institutions."
 msgstr "Afișează toate cheltuielile, incluzând atât plățile directe, cât și transferurile către alte instituții."
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:167
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:171
 msgid "Shows only direct spending by this entity. Excludes funds moved to other institutions (codes 51 and 55)."
 msgstr "Afișează doar cheltuielile directe ale acestei entități. Exclude fondurile transferate către alte instituții (codurile 51 și 55)."
 
@@ -8693,7 +8693,7 @@ msgstr "Afișează doar cheltuielile/veniturile directe. Exclude transferurile i
 msgid "Shows only the funds transferred between public administration units."
 msgstr "Afișează doar fondurile transferate între unitățile administrației publice."
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:169
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:173
 msgid "Shows only the funds transferred to other public administration units."
 msgstr "Afișează doar fondurile transferate către alte unități ale administrației publice."
 
@@ -9089,7 +9089,7 @@ msgstr "Dezabonare reușită"
 msgid "Sum"
 msgstr "Sumă"
 
-#: src/features/challenges/components/hub/UatSwitchBadge.tsx:47
+#: src/features/challenges/components/hub/UatSwitchBadge.tsx:48
 msgid "Switch city hall"
 msgstr "Schimbă primăria"
 
@@ -9515,7 +9515,7 @@ msgstr "De Plată"
 msgid "Toggle analytics cookies"
 msgstr "Comutare cookie-uri de analiză"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:337
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:336
 msgid "Toggle campaign notifications"
 msgstr "Comută notificările campaniei"
 
@@ -9657,8 +9657,8 @@ msgstr "Tur Complet!"
 
 #: src/components/entities/EntityLineItemsTabs.tsx:130
 #: src/components/entities/EntityLineItemsTabs.tsx:154
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:151
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:169
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:155
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:173
 msgid "Transfers Only"
 msgstr "Doar transferuri"
 
@@ -10218,7 +10218,7 @@ msgstr "Vezi Graficul"
 #: src/components/charts/components/views/AnnotationConfigView.tsx:76
 #: src/components/charts/components/views/ChartConfigView.tsx:45
 #: src/components/charts/components/views/SeriesConfigView.tsx:279
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:135
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:139
 msgid "View Chart"
 msgstr "Vezi graficul"
 
@@ -10232,7 +10232,7 @@ msgstr "Vezi detalii"
 msgid "View full details"
 msgstr "Vizualizați detaliile complete"
 
-#: src/components/classification-explorer/ClassificationActions.tsx:63
+#: src/components/classification-explorer/ClassificationActions.tsx:66
 msgid "View in Entity Analytics"
 msgstr "Vizualizați în Analiza Entităților"
 
@@ -10319,11 +10319,11 @@ msgstr "Nu am putut afișa această pagină din cauza unei probleme de validare 
 msgid "error.invalidUrlIssue"
 msgstr "Nu am putut afișa această pagină din cauza unei probleme de validare a datelor. Parametrii URL nu sunt validați. Deschideți din nou pagina cu un link valid sau folosiți butonul „Pagina principală”."
 
-#: src/components/privacy/CookieConsentBanner.tsx:93
+#: src/components/privacy/CookieConsentBanner.tsx:96
 msgid "We use essential cookies and browser storage to run the service. With your permission, we also use PostHog for analytics and Sentry for enhanced error reporting. You can choose essential-only, accept all, or manage your preferences at any time. For more information, please see our <0>Privacy Policy</0>."
 msgstr "Folosim cookie-uri esențiale și stocarea din browser pentru a furniza serviciul. Cu permisiunea dvs., folosim și PostHog pentru analiză și Sentry pentru raportare avansată a erorilor. Puteți alege doar cookie-urile esențiale, puteți accepta tot sau vă puteți gestiona preferințele în orice moment. Pentru mai multe informații, consultați <0>Politica de confidențialitate</0>."
 
-#: src/components/privacy/CookieConsentBanner.tsx:89
+#: src/components/privacy/CookieConsentBanner.tsx:92
 msgid "We value your privacy"
 msgstr "Confidențialitatea dumneavoastră este importantă pentru noi"
 
@@ -10444,8 +10444,8 @@ msgstr "Ștergi toate datele?"
 
 #: src/components/entities/EntityLineItemsTabs.tsx:124
 #: src/components/entities/EntityLineItemsTabs.tsx:152
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:149
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:167
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:153
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:171
 msgid "Without Transfers"
 msgstr "Fără transferuri"
 

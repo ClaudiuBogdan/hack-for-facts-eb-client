@@ -465,7 +465,7 @@ export function CampaignAdminInstitutionThreadsPage({
           }
         }}
         onSubmitResponse={async (body) => {
-          await appendResponse(body);
+          return appendResponse(body);
         }}
       />
     </AdminCampaignLayout>

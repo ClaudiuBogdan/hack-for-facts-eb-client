@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { t } from "@lingui/core/macro";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -355,12 +356,14 @@ export function CampaignAdminNotificationTriggerDialog({
     buildInitialBulkDraft(trigger, initialBulkBody),
   );
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   useEffect(() => {
     setLocalMode(resolvedMode);
     setSingleValues(buildInitialSingleValues(trigger, initialSingleBody));
     setBulkDraft(buildInitialBulkDraft(trigger, initialBulkBody));
     setFieldErrors({});
+    setSubmissionError(null);
   }, [resolvedMode, trigger, initialSingleBody, initialBulkBody, open]);
 
   const singleResultCounts = useMemo(
@@ -390,6 +393,7 @@ export function CampaignAdminNotificationTriggerDialog({
     setLocalMode(nextMode);
     onModeChange(nextMode);
     setFieldErrors({});
+    setSubmissionError(null);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -419,7 +423,16 @@ export function CampaignAdminNotificationTriggerDialog({
         return;
       }
 
-      await onSubmitBulk(buildBulkExecutionBody(trigger, bulkDraft));
+      try {
+        setSubmissionError(null);
+        await onSubmitBulk(buildBulkExecutionBody(trigger, bulkDraft));
+      } catch (error) {
+        setSubmissionError(
+          error instanceof Error
+            ? error.message
+            : t`Unable to execute this trigger right now.`,
+        );
+      }
       return;
     }
 
@@ -430,7 +443,16 @@ export function CampaignAdminNotificationTriggerDialog({
       return;
     }
 
-    await onSubmitSingle(buildSingleExecutionBody(trigger, singleValues));
+    try {
+      setSubmissionError(null);
+      await onSubmitSingle(buildSingleExecutionBody(trigger, singleValues));
+    } catch (error) {
+      setSubmissionError(
+        error instanceof Error
+          ? error.message
+          : t`Unable to execute this trigger right now.`,
+      );
+    }
   };
 
   const showModeTabs = supportsSingleExecution && supportsBulkExecution;
@@ -652,6 +674,13 @@ export function CampaignAdminNotificationTriggerDialog({
                   <Skeleton className="h-10 w-3/4" />
                 </div>
               )}
+
+              {submissionError ? (
+                <Alert variant="destructive">
+                  <AlertTitle>{t`Trigger execution failed`}</AlertTitle>
+                  <AlertDescription>{submissionError}</AlertDescription>
+                </Alert>
+              ) : null}
 
               {singleResult ? (
                 <div className="space-y-3 rounded-xl border border-border/70 bg-muted/30 p-4">

@@ -13,6 +13,7 @@ import type {
   CampaignAdminNotificationPlanResponse,
   CampaignAdminNotificationPlanSendResponse,
   CampaignAdminNotificationTemplatePreview,
+  CampaignAdminNotificationTriggerDescriptor,
   CampaignAdminNotificationsListResponse,
   CampaignAdminNotificationsSearch,
   CampaignAdminRunnableTemplateDescriptor,
@@ -203,6 +204,27 @@ function createTemplatePreview(): CampaignAdminNotificationTemplatePreview {
   };
 }
 
+function createTriggerDescriptor(
+  overrides: Partial<CampaignAdminNotificationTriggerDescriptor> = {},
+): CampaignAdminNotificationTriggerDescriptor {
+  return {
+    triggerId: "public_debate_admin_response.latest",
+    campaignKey: "funky",
+    familyId: "public_debate_admin_response",
+    templateId: "public_debate_admin_response_requester",
+    description:
+      "Manually enqueue the latest admin response notification for a public debate thread.",
+    inputFields: [{ name: "threadId", type: "string", required: true }],
+    targetKind: "thread",
+    capabilities: {
+      supportsSingleExecution: true,
+      supportsBulkExecution: false,
+      supportsDryRun: false,
+    },
+    ...overrides,
+  };
+}
+
 function createAuditResponse(
   overrides: Omit<Partial<CampaignAdminNotificationsListResponse>, "page"> & {
     page?: Partial<CampaignAdminNotificationsListResponse["page"]>;
@@ -377,6 +399,31 @@ describe("CampaignAdminNotificationsPage", () => {
         templateId: "admin_reviewed_user_interaction",
       },
     );
+  });
+
+  it("renders manual server triggers on the run tab and opens the trigger dialog", async () => {
+    listCampaignAdminNotificationTriggersMock.mockResolvedValue([
+      createTriggerDescriptor(),
+    ]);
+
+    renderStatefulPage();
+
+    expect(await screen.findByText("Server triggers")).toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        "Manually enqueue the latest admin response notification for a public debate thread.",
+      ),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Open trigger" }));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(
+      within(dialog).getByText("public_debate_admin_response.latest"),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByText("public_debate_admin_response_requester"),
+    ).toBeInTheDocument();
   });
 
   it("builds a preview payload from conditions and renders preview results", async () => {

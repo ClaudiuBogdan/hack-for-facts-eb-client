@@ -55,6 +55,12 @@ function createThreadDetail(): CampaignAdminInstitutionThreadDetail {
     updatedAt: "2026-04-12T10:00:00.000Z",
     latestResponseAt: "2026-04-12T09:00:00.000Z",
     responseEventCount: 1,
+    notificationAudience: {
+      requesterCount: 1,
+      subscriberCount: 2,
+      eligibleRequesterCount: 1,
+      eligibleSubscriberCount: 1,
+    },
     requesterOrganizationName: "Asociatia Test",
     budgetPublicationDate: "2026-03-20",
     consentCapturedAt: "2026-04-10T08:00:00.000Z",
@@ -82,6 +88,12 @@ function createListResponse(): CampaignAdminInstitutionThreadsListResponse {
         updatedAt: "2026-04-12T10:00:00.000Z",
         latestResponseAt: "2026-04-12T09:00:00.000Z",
         responseEventCount: 1,
+        notificationAudience: {
+          requesterCount: 1,
+          subscriberCount: 2,
+          eligibleRequesterCount: 1,
+          eligibleSubscriberCount: 1,
+        },
       },
     ],
     page: {

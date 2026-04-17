@@ -47,6 +47,7 @@ import {
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { AuthSignInButton, useAuth } from "@/lib/auth";
 import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components/AdminCampaignLayout";
+import { CampaignAdminInstitutionThreadAudienceSummary } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadAudienceSummary";
 import { CampaignAdminInstitutionThreadResponseForm } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadResponseForm";
 import {
   getCampaignAdminCampaignLabel,
@@ -285,6 +286,12 @@ function SidebarMetadata({
           </p>
         </div>
       ) : null}
+
+      <CampaignAdminInstitutionThreadAudienceSummary
+        audience={detail.notificationAudience}
+        title={t`Notification reach`}
+        showDefinitions
+      />
     </aside>
   );
 }
@@ -722,9 +729,7 @@ function DetailContent({
                       appendResponseMutation.error?.message ?? null
                     }
                     submitLabel={t`Record response`}
-                    onSubmit={async (body) => {
-                      await appendResponseMutation.mutateAsync(body);
-                    }}
+                    onSubmit={(body) => appendResponseMutation.mutateAsync(body)}
                   />
                 </div>
               </CollapsibleContent>

@@ -1,6 +1,8 @@
 import { t } from "@lingui/core/macro";
 import type {
   CampaignAdminCampaignKey,
+  CampaignAdminInstitutionThreadNotificationExecutionReason,
+  CampaignAdminInstitutionThreadNotificationExecutionStatus,
   CampaignAdminInstitutionThreadResponseStatus,
   CampaignAdminInstitutionThreadState,
   CampaignAdminInstitutionThreadStateGroup,
@@ -402,6 +404,8 @@ export function getCampaignAdminNotificationProjectionLabel(
       return t`Entity subscription`;
     case "public_debate_entity_update":
       return t`Entity update`;
+    case "public_debate_admin_response":
+      return t`Admin response`;
     case "public_debate_admin_failure":
       return t`Admin failure`;
     case "admin_reviewed_interaction":
@@ -477,6 +481,42 @@ export function getCampaignAdminNotificationTriggerExecutionStatusLabel(
       return t`Delegated`;
     default:
       return status;
+  }
+}
+
+export function getCampaignAdminInstitutionThreadNotificationExecutionStatusLabel(
+  status: CampaignAdminInstitutionThreadNotificationExecutionStatus,
+): string {
+  switch (status) {
+    case "queued":
+      return t`Queued`;
+    case "skipped":
+      return t`Skipped`;
+    case "partial":
+      return t`Partial`;
+    default:
+      return status;
+  }
+}
+
+export function getCampaignAdminInstitutionThreadNotificationExecutionReasonLabel(
+  reason: CampaignAdminInstitutionThreadNotificationExecutionReason | undefined,
+): string | null {
+  switch (reason) {
+    case "no_subscribers":
+      return t`Nobody is subscribed to receive admin-response updates for this thread yet.`;
+    case "no_eligible_recipients":
+      return t`Subscriptions exist, but nobody is currently eligible to receive this notification.`;
+    case "already_processed":
+      return t`This admin response was already processed for notification delivery, so existing outbox rows were reused.`;
+    case "enqueue_failed":
+      return t`The response was saved, but the notification jobs could not be queued cleanly.`;
+    case "admin_response_not_found":
+      return t`The response was saved, but the server could not resolve the admin response for notification delivery.`;
+    case undefined:
+      return null;
+    default:
+      return reason;
   }
 }
 

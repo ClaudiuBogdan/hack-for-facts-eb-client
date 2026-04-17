@@ -44,6 +44,12 @@ function createThreadItem(
     updatedAt: "2026-04-12T10:00:00.000Z",
     latestResponseAt: "2026-04-12T09:00:00.000Z",
     responseEventCount: 1,
+    notificationAudience: {
+      requesterCount: 1,
+      subscriberCount: 2,
+      eligibleRequesterCount: 1,
+      eligibleSubscriberCount: 1,
+    },
     ...overrides,
   };
 }

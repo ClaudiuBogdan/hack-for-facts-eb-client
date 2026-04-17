@@ -4,6 +4,12 @@ import { type ReactNode } from "react";
 import { CampaignAdminInstitutionThreadDetailPage } from "./CampaignAdminInstitutionThreadDetailPage";
 import type { CampaignAdminInstitutionThreadDetail } from "@/features/campaigns/buget/admin/types";
 
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
 const useAuthMock = vi.fn();
 const useCampaignAdminInstitutionThreadDetailQueryMock = vi.fn();
 const useAppendCampaignAdminInstitutionThreadResponseMutationMock = vi.fn();
@@ -46,6 +52,12 @@ function createThreadDetail(
     updatedAt: "2026-04-12T10:00:00.000Z",
     latestResponseAt: "2026-04-12T09:00:00.000Z",
     responseEventCount: 1,
+    notificationAudience: {
+      requesterCount: 1,
+      subscriberCount: 2,
+      eligibleRequesterCount: 1,
+      eligibleSubscriberCount: 1,
+    },
     requesterOrganizationName: "Asociatia Test",
     budgetPublicationDate: "2026-03-20",
     consentCapturedAt: "2026-04-10T08:00:00.000Z",
@@ -87,6 +99,8 @@ function createThreadDetail(
 
 describe("CampaignAdminInstitutionThreadDetailPage", () => {
   beforeEach(() => {
+    global.ResizeObserver =
+      ResizeObserverMock as unknown as typeof ResizeObserver;
     useAuthMock.mockReset();
     useCampaignAdminInstitutionThreadDetailQueryMock.mockReset();
     useAppendCampaignAdminInstitutionThreadResponseMutationMock.mockReset();

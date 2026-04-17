@@ -178,6 +178,7 @@ export const campaignAdminNotificationProjectionKindValues = [
   "public_debate_campaign_welcome",
   "public_debate_entity_subscription",
   "public_debate_entity_update",
+  "public_debate_admin_response",
   "public_debate_admin_failure",
   "admin_reviewed_interaction",
 ] as const;
@@ -669,6 +670,19 @@ export type CampaignAdminNotificationProjection =
       readonly triggerSource: CampaignAdminNotificationSource | null;
     }
   | {
+      readonly kind: "public_debate_admin_response";
+      readonly userId: string | null;
+      readonly entityCui: string;
+      readonly entityName: string | null;
+      readonly threadId: string;
+      readonly threadKey: string | null;
+      readonly responseEventId: string;
+      readonly responseStatus: CampaignAdminInstitutionThreadResponseStatus;
+      readonly recipientRole: "requester" | "subscriber";
+      readonly responseDate: string;
+      readonly triggerSource: CampaignAdminNotificationSource | null;
+    }
+  | {
       readonly kind: "public_debate_admin_failure";
       readonly entityCui: string;
       readonly entityName: string | null;
@@ -735,6 +749,7 @@ export type CampaignAdminInstitutionThreadListItem = {
   readonly updatedAt: string;
   readonly latestResponseAt: string | null;
   readonly responseEventCount: number;
+  readonly notificationAudience: CampaignAdminInstitutionThreadNotificationAudience;
 };
 
 export type CampaignAdminInstitutionThreadsListResponse = {
@@ -793,6 +808,7 @@ export type CampaignAdminInstitutionThreadDetail = {
   readonly updatedAt: string;
   readonly latestResponseAt: string | null;
   readonly responseEventCount: number;
+  readonly notificationAudience: CampaignAdminInstitutionThreadNotificationAudience;
   readonly requesterOrganizationName: string | null;
   readonly budgetPublicationDate: string | null;
   readonly consentCapturedAt: string | null;
@@ -801,16 +817,51 @@ export type CampaignAdminInstitutionThreadDetail = {
   readonly correspondence: readonly CampaignAdminInstitutionThreadCorrespondenceEntry[];
 };
 
+export type CampaignAdminInstitutionThreadNotificationAudience = {
+  readonly requesterCount: number;
+  readonly subscriberCount: number;
+  readonly eligibleRequesterCount: number;
+  readonly eligibleSubscriberCount: number;
+};
+
+export type CampaignAdminInstitutionThreadNotificationExecutionStatus =
+  | "queued"
+  | "skipped"
+  | "partial";
+
+export type CampaignAdminInstitutionThreadNotificationExecutionReason =
+  | "no_subscribers"
+  | "no_eligible_recipients"
+  | "already_processed"
+  | "enqueue_failed"
+  | "admin_response_not_found";
+
+export type CampaignAdminInstitutionThreadNotificationExecution = {
+  readonly requested: true;
+  readonly status: CampaignAdminInstitutionThreadNotificationExecutionStatus;
+  readonly reason?: CampaignAdminInstitutionThreadNotificationExecutionReason;
+  readonly requesterCount: number;
+  readonly subscriberCount: number;
+  readonly eligibleRequesterCount: number;
+  readonly eligibleSubscriberCount: number;
+  readonly createdOutboxIds: readonly string[];
+  readonly reusedOutboxIds: readonly string[];
+  readonly queuedOutboxIds: readonly string[];
+  readonly enqueueFailedOutboxIds: readonly string[];
+};
+
 export type CampaignAdminAppendInstitutionThreadResponseBody = {
   readonly expectedUpdatedAt: string;
   readonly responseDate: string;
   readonly messageContent: string;
   readonly responseStatus: CampaignAdminInstitutionThreadResponseStatus;
+  readonly sendNotification?: boolean;
 };
 
 export type CampaignAdminAppendInstitutionThreadResponseResult =
   CampaignAdminInstitutionThreadDetail & {
     readonly createdResponseEventId: string;
+    readonly notificationExecution?: CampaignAdminInstitutionThreadNotificationExecution;
   };
 
 export type CampaignAdminNotificationFieldDescriptor = {

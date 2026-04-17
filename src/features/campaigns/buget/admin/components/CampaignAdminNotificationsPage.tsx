@@ -38,6 +38,7 @@ import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components
 import { CampaignAdminCursorPager } from "@/features/campaigns/buget/admin/components/CampaignAdminCursorPager";
 import { CampaignAdminNotificationsRunTab } from "@/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab";
 import { CampaignAdminNotificationsTable } from "@/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable";
+import { CampaignAdminNotificationTriggersSection } from "@/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggersSection";
 import { CampaignAdminNotificationsToolbar } from "@/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar";
 import { CampaignAdminTemplatePreviewDialog } from "@/features/campaigns/buget/admin/components/CampaignAdminTemplatePreviewDialog";
 import {
@@ -765,14 +766,17 @@ export function CampaignAdminNotificationsPage({
       ) : null}
 
       {normalizedSearch.tab === "run" ? (
-        <CampaignAdminNotificationsRunTab
-          campaignKey={campaignKey}
-          search={normalizedSearch}
-          onSearchChange={handleSearchStateChange}
-          onPreviewTemplate={(templateId) => {
-            setActiveTemplateId(templateId);
-          }}
-        />
+        <div className="space-y-6">
+          <CampaignAdminNotificationsRunTab
+            campaignKey={campaignKey}
+            search={normalizedSearch}
+            onSearchChange={handleSearchStateChange}
+            onPreviewTemplate={(templateId) => {
+              setActiveTemplateId(templateId);
+            }}
+          />
+          <CampaignAdminNotificationTriggersSection campaignKey={campaignKey} />
+        </div>
       ) : null}
 
       {normalizedSearch.tab === "templates" ? (

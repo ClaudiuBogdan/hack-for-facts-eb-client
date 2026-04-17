@@ -8,6 +8,12 @@ import type {
   CampaignAdminInstitutionThreadsSearch,
 } from "@/features/campaigns/buget/admin/types";
 
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
 const useAuthMock = vi.fn();
 const useCampaignAdminInstitutionThreadsListQueryMock = vi.fn();
 const useCampaignAdminInstitutionThreadDetailQueryMock = vi.fn();
@@ -60,6 +66,12 @@ function createThreadItem(
     updatedAt: "2026-04-12T10:00:00.000Z",
     latestResponseAt: "2026-04-12T09:00:00.000Z",
     responseEventCount: 1,
+    notificationAudience: {
+      requesterCount: 1,
+      subscriberCount: 2,
+      eligibleRequesterCount: 1,
+      eligibleSubscriberCount: 1,
+    },
     ...overrides,
   };
 }
@@ -82,6 +94,12 @@ function createThreadDetail(
     updatedAt: "2026-04-12T10:00:00.000Z",
     latestResponseAt: "2026-04-12T09:00:00.000Z",
     responseEventCount: 1,
+    notificationAudience: {
+      requesterCount: 1,
+      subscriberCount: 2,
+      eligibleRequesterCount: 1,
+      eligibleSubscriberCount: 1,
+    },
     requesterOrganizationName: "Asociatia Test",
     budgetPublicationDate: "2026-03-20",
     consentCapturedAt: "2026-04-10T08:00:00.000Z",
@@ -135,6 +153,8 @@ function renderStatefulPage(
 
 describe("CampaignAdminInstitutionThreadsPage", () => {
   beforeEach(() => {
+    global.ResizeObserver =
+      ResizeObserverMock as unknown as typeof ResizeObserver;
     useAuthMock.mockReset();
     useCampaignAdminInstitutionThreadsListQueryMock.mockReset();
     useCampaignAdminInstitutionThreadDetailQueryMock.mockReset();
@@ -322,6 +342,51 @@ describe("CampaignAdminInstitutionThreadsPage", () => {
         }),
       );
     });
+  });
+
+  it("sends notification when the side-sheet checkbox is enabled", async () => {
+    mutateAsyncMock.mockResolvedValue({
+      ...createThreadDetail(),
+      createdResponseEventId: "event-2",
+      notificationExecution: {
+        requested: true,
+        status: "queued",
+        requesterCount: 1,
+        subscriberCount: 2,
+        eligibleRequesterCount: 1,
+        eligibleSubscriberCount: 1,
+        createdOutboxIds: ["outbox-1", "outbox-2"],
+        reusedOutboxIds: [],
+        queuedOutboxIds: ["outbox-1", "outbox-2"],
+        enqueueFailedOutboxIds: [],
+      },
+    });
+
+    renderStatefulPage({
+      limit: 50,
+      stateGroup: "open",
+      selectedThreadId: "thread-1",
+    });
+
+    fireEvent.click(
+      screen.getByLabelText("Notify requester and subscribers now"),
+    );
+    fireEvent.change(screen.getByLabelText("Message content"), {
+      target: { value: "Confirmed request" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Record response" }));
+
+    await waitFor(() => {
+      expect(mutateAsyncMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sendNotification: true,
+        }),
+      );
+    });
+
+    expect(
+      await screen.findByText("Response saved and notifications queued."),
+    ).toBeInTheDocument();
   });
 
   it("surfaces append-response conflicts from the side sheet", async () => {

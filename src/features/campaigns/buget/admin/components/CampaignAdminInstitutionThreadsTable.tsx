@@ -17,6 +17,7 @@ import {
   getCampaignAdminInstitutionThreadResponseStatusLabel,
   getCampaignAdminInstitutionThreadStateLabel,
 } from "@/features/campaigns/buget/admin/constants";
+import { CampaignAdminInstitutionThreadAudienceSummary } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadAudienceSummary";
 import type {
   CampaignAdminCampaignKey,
   CampaignAdminInstitutionThreadListItem,
@@ -131,6 +132,7 @@ export function CampaignAdminInstitutionThreadsTable({
               <TableHead>{t`Latest response`}</TableHead>
               <TableHead>{t`Updated`}</TableHead>
               <TableHead>{t`Responses`}</TableHead>
+              <TableHead>{t`Audience`}</TableHead>
               <TableHead className="text-right">{t`Actions`}</TableHead>
             </TableRow>
           </TableHeader>
@@ -188,6 +190,12 @@ export function CampaignAdminInstitutionThreadsTable({
                 <TableCell>{formatDateTime(item.latestResponseAt)}</TableCell>
                 <TableCell>{formatDateTime(item.updatedAt)}</TableCell>
                 <TableCell>{item.responseEventCount}</TableCell>
+                <TableCell className="min-w-56">
+                  <CampaignAdminInstitutionThreadAudienceSummary
+                    audience={item.notificationAudience}
+                    variant="compact"
+                  />
+                </TableCell>
                 <TableCell>
                   <div className="flex justify-end gap-2">
                     <Button asChild variant="outline" size="sm" className="rounded-full">

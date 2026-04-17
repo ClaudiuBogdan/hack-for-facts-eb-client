@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/table";
 import {
   CAMPAIGN_ADMIN_NOTIFICATION_SORTABLE_COLUMNS,
+  getCampaignAdminInstitutionThreadResponseStatusLabel,
   getCampaignAdminNotificationEventTypeLabel,
   getCampaignAdminNotificationProjectionLabel,
   getCampaignAdminNotificationSafeErrorCategoryLabel,
@@ -291,6 +292,34 @@ function ThreadEventCell({
               {item.projection.phase}
             </p>
           ) : null}
+          {item.projection.triggerSource ? (
+            <p className="text-xs text-muted-foreground">
+              {getCampaignAdminNotificationSourceLabel(
+                item.projection.triggerSource,
+              )}
+            </p>
+          ) : null}
+        </div>
+      );
+    case "public_debate_admin_response":
+      return (
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-foreground">
+            {getCampaignAdminInstitutionThreadResponseStatusLabel(
+              item.projection.responseStatus,
+            )}
+          </p>
+          <p className="font-mono text-xs text-muted-foreground">
+            {item.projection.threadId}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {item.projection.recipientRole === "requester"
+              ? t`Requester audience`
+              : t`Subscriber audience`}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {formatDateTime(item.projection.responseDate)}
+          </p>
           {item.projection.triggerSource ? (
             <p className="text-xs text-muted-foreground">
               {getCampaignAdminNotificationSourceLabel(

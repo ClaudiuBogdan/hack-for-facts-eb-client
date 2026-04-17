@@ -13,9 +13,11 @@ import {
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCampaignAdminInstitutionThreadResponseStatusLabel, getCampaignAdminInstitutionThreadStateLabel } from "@/features/campaigns/buget/admin/constants";
+import { CampaignAdminInstitutionThreadAudienceSummary } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadAudienceSummary";
 import { CampaignAdminInstitutionThreadResponseForm } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadResponseForm";
 import type {
   CampaignAdminAppendInstitutionThreadResponseBody,
+  CampaignAdminAppendInstitutionThreadResponseResult,
   CampaignAdminCampaignKey,
   CampaignAdminInstitutionThreadDetail,
   CampaignAdminInstitutionThreadsSearch,
@@ -34,7 +36,10 @@ type CampaignAdminInstitutionThreadSheetProps = {
   readonly onOpenChange: (open: boolean) => void;
   readonly onSubmitResponse: (
     body: CampaignAdminAppendInstitutionThreadResponseBody,
-  ) => Promise<void> | void;
+  ) =>
+    | Promise<CampaignAdminAppendInstitutionThreadResponseResult | void>
+    | CampaignAdminAppendInstitutionThreadResponseResult
+    | void;
 };
 
 const PREVIEW_LIMIT = 3;
@@ -169,6 +174,11 @@ export function CampaignAdminInstitutionThreadSheet({
                     </dd>
                   </div>
                 </dl>
+                <CampaignAdminInstitutionThreadAudienceSummary
+                  audience={thread.notificationAudience}
+                  title={t`Notification reach`}
+                  showDefinitions
+                />
                 {threadId ? (
                   <div className="flex justify-end">
                     <Button asChild variant="outline" size="sm">

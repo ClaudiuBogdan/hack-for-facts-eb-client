@@ -283,7 +283,7 @@ msgstr "A new version of the app is available. Please reload the page to get the
 msgid "A platform for exploring public financial data for citizens, journalists, public figures, and other interested parties."
 msgstr "Platformă de explorare a datelor financiare publice pentru cetățeni, jurnaliști, persoane publice, și alte persoane interesate."
 
-#: src/components/privacy/CookieConsentBanner.tsx:121
+#: src/components/privacy/CookieConsentBanner.tsx:124
 msgid "Accept All"
 msgstr "Accept All"
 
@@ -469,7 +469,7 @@ msgstr "Address"
 msgid "Adjust for inflation (constant 2024 prices)"
 msgstr "Adjust for inflation (constant 2024 prices)"
 
-#: src/components/privacy/CookieConsentBanner.tsx:115
+#: src/components/privacy/CookieConsentBanner.tsx:118
 msgid "Advanced"
 msgstr "Advanced"
 
@@ -595,8 +595,8 @@ msgstr "Alerts when important changes occur"
 #: src/components/entities/LineItemsBadgeFilters.tsx:172
 #: src/components/entities/LineItemsGroupedSection.tsx:173
 #: src/components/entities/LineItemsGroupedSection.tsx:175
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:150
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:168
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:154
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:172
 #: src/features/learning/components/interactive/DocumentLibrary.tsx:147
 #: src/routes/charts/index.lazy.tsx:244
 msgid "All"
@@ -610,8 +610,8 @@ msgstr "All budget expenditures"
 msgid "All changes saved"
 msgstr "All changes saved"
 
-#: src/components/classification-explorer/ClassificationBreadcrumb.tsx:32
-#: src/components/classification-explorer/ClassificationInfo.tsx:47
+#: src/components/classification-explorer/ClassificationBreadcrumb.tsx:38
+#: src/components/classification-explorer/ClassificationInfo.tsx:53
 msgid "All Classifications"
 msgstr "All Classifications"
 
@@ -653,7 +653,7 @@ msgstr "Allow all cookies"
 msgid "Allow essential cookies only"
 msgstr "Allow essential cookies only"
 
-#: src/components/privacy/CookieConsentBanner.tsx:106
+#: src/components/privacy/CookieConsentBanner.tsx:109
 msgid "Allow essential only"
 msgstr "Allow essential only"
 
@@ -685,7 +685,7 @@ msgstr "Amount Per Capita"
 msgid "Amount Range"
 msgstr "Amount Range"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:123
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:122
 msgid "An unexpected error occurred"
 msgstr "An unexpected error occurred"
 
@@ -1278,7 +1278,7 @@ msgstr "Calculation"
 msgid "Calculations assume a basket of 40% essential goods (11% VAT) and 60% general goods (21% VAT)."
 msgstr "Calculations assume a basket of 40% essential goods (11% VAT) and 60% general goods (21% VAT)."
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:323
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:322
 msgid "Campaign notifications"
 msgstr "Campaign notifications"
 
@@ -1422,7 +1422,7 @@ msgid "Chart view"
 msgstr "Chart view"
 
 #: src/components/footer/AppFooter.tsx:103
-#: src/components/sidebar/nav-main.tsx:31
+#: src/components/sidebar/nav-main.tsx:37
 #: src/components/ui/shortcuts.tsx:38
 #: src/hooks/useEntityViews.tsx:40
 #: src/routes/charts/index.lazy.tsx:170
@@ -2419,7 +2419,7 @@ msgstr "Danger Zone"
 msgid "Dark"
 msgstr "Dark"
 
-#: src/components/sidebar/nav-main.tsx:16
+#: src/components/sidebar/nav-main.tsx:22
 msgid "Dashboard"
 msgstr "Dashboard"
 
@@ -3131,7 +3131,7 @@ msgstr "Email"
 msgid "Email address copied to clipboard!"
 msgstr "Email address copied to clipboard!"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:326
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:325
 msgid "Email updates for all entities in this campaign"
 msgstr "Email updates for all entities in this campaign"
 
@@ -3288,7 +3288,7 @@ msgstr "Entity"
 #: src/components/entity-analytics/EntityAnalyticsLayout.tsx:15
 #: src/components/entity-analytics/EntityAnalyticsLayout.tsx:46
 #: src/components/footer/AppFooter.tsx:93
-#: src/components/sidebar/nav-main.tsx:41
+#: src/components/sidebar/nav-main.tsx:47
 msgid "Entity Analytics"
 msgstr "Entity Analytics"
 
@@ -3304,7 +3304,7 @@ msgstr "Entity Notifications"
 msgid "Entity Search"
 msgstr "Entity Search"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:355
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:354
 msgid "Entity subscriptions"
 msgstr "Entity subscriptions"
 
@@ -3358,7 +3358,7 @@ msgstr "Error loading analytics"
 msgid "Error Loading Chart Data"
 msgstr "Error Loading Chart Data"
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:180
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:184
 msgid "Error loading data"
 msgstr "Error loading data"
 
@@ -3860,8 +3860,8 @@ msgstr "Failed to save snapshot"
 msgid "Failed to update map visibility"
 msgstr "Failed to update map visibility"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:209
-#: src/features/notifications/components/NotificationQuickMenu.tsx:96
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:208
+#: src/features/notifications/components/NotificationQuickMenu.tsx:105
 msgid "Failed to update notification"
 msgstr "Failed to update notification"
 
@@ -3927,7 +3927,7 @@ msgid "Filter Reports"
 msgstr "Filter Reports"
 
 #: src/components/entities/EntityLineItemsTabs.tsx:145
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:160
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:164
 msgid "Filter Transfers"
 msgstr "Filter Transfers"
 
@@ -4229,7 +4229,7 @@ msgstr "Get monthly email updates about this institution. Receive alerts when ne
 msgid "Get Started"
 msgstr "Get Started"
 
-#: src/features/notifications/components/NotificationQuickMenu.tsx:117
+#: src/features/notifications/components/NotificationQuickMenu.tsx:127
 msgid "Get updates about"
 msgstr "Get updates about"
 
@@ -5447,7 +5447,7 @@ msgstr "Make private"
 msgid "Make public"
 msgstr "Make public"
 
-#: src/features/notifications/components/NotificationQuickMenu.tsx:169
+#: src/features/notifications/components/NotificationQuickMenu.tsx:179
 msgid "Manage all notifications"
 msgstr "Manage all notifications"
 
@@ -5503,7 +5503,7 @@ msgstr "Manual"
 
 #: src/components/filters/MapFilter.tsx:212
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:106
-#: src/components/sidebar/nav-main.tsx:26
+#: src/components/sidebar/nav-main.tsx:32
 #: src/components/ui/shortcuts.tsx:44
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1335
 #: src/hooks/useEntityViews.tsx:37
@@ -5765,7 +5765,7 @@ msgstr "Missing path id"
 
 #: src/components/classification-explorer/ClassificationChildren.tsx:46
 #: src/components/classification-explorer/ClassificationGrid.tsx:99
-#: src/components/classification-explorer/ClassificationInfo.tsx:60
+#: src/components/classification-explorer/ClassificationInfo.tsx:65
 #: src/components/classification-explorer/ClassificationSiblings.tsx:51
 msgid "Missing title"
 msgstr "Missing title"
@@ -5959,7 +5959,7 @@ msgstr "N/A"
 msgid "Name"
 msgstr "Name"
 
-#: src/components/sidebar/nav-main.tsx:36
+#: src/components/sidebar/nav-main.tsx:42
 #: src/routes/budget-explorer.lazy.tsx:579
 #: src/routes/index.tsx:79
 msgid "National Budget"
@@ -6605,7 +6605,7 @@ msgid "Notification preferences"
 msgstr "Notification preferences"
 
 #. placeholder {0}: String(entityTotalCount)
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:343
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:342
 msgid "Notifications are paused. Your {0} entity subscriptions are preserved."
 msgstr "Notifications are paused. Your {0} entity subscriptions are preserved."
 
@@ -6989,7 +6989,7 @@ msgstr "Page not found"
 msgid "Paragraph"
 msgstr "Paragraph"
 
-#: src/components/classification-explorer/ClassificationInfo.tsx:33
+#: src/components/classification-explorer/ClassificationInfo.tsx:39
 msgid "Parent"
 msgstr "Parent"
 
@@ -7506,7 +7506,7 @@ msgstr "Public debate request"
 msgid "Public explorer"
 msgstr "Public explorer"
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:162
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:166
 msgid "Public institutions often transfer funds between each other (e.g., from the state budget to local budgets). These transfers can double-count spending if not filtered."
 msgstr "Public institutions often transfer funds between each other (e.g., from the state budget to local budgets). These transfers can double-count spending if not filtered."
 
@@ -8101,7 +8101,7 @@ msgstr "Search"
 msgid "Search {0}..."
 msgstr "Search {0}..."
 
-#: src/components/entities/FloatingEntitySearch.tsx:89
+#: src/components/entities/FloatingEntitySearch.tsx:88
 msgid "Search and select an entity to navigate to its page."
 msgstr "Search and select an entity to navigate to its page."
 
@@ -8177,8 +8177,8 @@ msgstr "Search entity name"
 msgid "Search entity types (ex: Hospital)"
 msgstr "Search entity types (ex: Hospital)"
 
-#: src/components/entities/FloatingEntitySearch.tsx:75
-#: src/components/entities/FloatingEntitySearch.tsx:87
+#: src/components/entities/FloatingEntitySearch.tsx:74
+#: src/components/entities/FloatingEntitySearch.tsx:86
 msgid "Search for another entity"
 msgstr "Search for another entity"
 
@@ -8682,11 +8682,11 @@ msgstr "Show top functional categories"
 msgid "Shows all items, including transfers between institutions."
 msgstr "Shows all items, including transfers between institutions."
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:168
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:172
 msgid "Shows all spending, including both direct payments and transfers to other institutions."
 msgstr "Shows all spending, including both direct payments and transfers to other institutions."
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:167
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:171
 msgid "Shows only direct spending by this entity. Excludes funds moved to other institutions (codes 51 and 55)."
 msgstr "Shows only direct spending by this entity. Excludes funds moved to other institutions (codes 51 and 55)."
 
@@ -8698,7 +8698,7 @@ msgstr "Shows only direct spending/revenue. Excludes internal transfers."
 msgid "Shows only the funds transferred between public administration units."
 msgstr "Shows only the funds transferred between public administration units."
 
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:169
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:173
 msgid "Shows only the funds transferred to other public administration units."
 msgstr "Shows only the funds transferred to other public administration units."
 
@@ -9094,7 +9094,7 @@ msgstr "Successfully unsubscribed"
 msgid "Sum"
 msgstr "Sum"
 
-#: src/features/challenges/components/hub/UatSwitchBadge.tsx:47
+#: src/features/challenges/components/hub/UatSwitchBadge.tsx:48
 msgid "Switch city hall"
 msgstr "Switch city hall"
 
@@ -9520,7 +9520,7 @@ msgstr "To Pay"
 msgid "Toggle analytics cookies"
 msgstr "Toggle analytics cookies"
 
-#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:337
+#: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:336
 msgid "Toggle campaign notifications"
 msgstr "Toggle campaign notifications"
 
@@ -9662,8 +9662,8 @@ msgstr "Tour Complete!"
 
 #: src/components/entities/EntityLineItemsTabs.tsx:130
 #: src/components/entities/EntityLineItemsTabs.tsx:154
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:151
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:169
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:155
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:173
 msgid "Transfers Only"
 msgstr "Transfers Only"
 
@@ -10223,7 +10223,7 @@ msgstr "View as Chart"
 #: src/components/charts/components/views/AnnotationConfigView.tsx:76
 #: src/components/charts/components/views/ChartConfigView.tsx:45
 #: src/components/charts/components/views/SeriesConfigView.tsx:279
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:135
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:139
 msgid "View Chart"
 msgstr "View Chart"
 
@@ -10237,7 +10237,7 @@ msgstr "View Details"
 msgid "View full details"
 msgstr "View full details"
 
-#: src/components/classification-explorer/ClassificationActions.tsx:63
+#: src/components/classification-explorer/ClassificationActions.tsx:66
 msgid "View in Entity Analytics"
 msgstr "View in Entity Analytics"
 
@@ -10324,11 +10324,11 @@ msgstr "We couldn't display this page due to a data validation issue."
 msgid "error.invalidUrlIssue"
 msgstr "We couldn't display this page due to a data validation issue. The URL parameters are invalid. Open this page again with a valid link or use the homepage button."
 
-#: src/components/privacy/CookieConsentBanner.tsx:93
+#: src/components/privacy/CookieConsentBanner.tsx:96
 msgid "We use essential cookies and browser storage to run the service. With your permission, we also use PostHog for analytics and Sentry for enhanced error reporting. You can choose essential-only, accept all, or manage your preferences at any time. For more information, please see our <0>Privacy Policy</0>."
 msgstr "We use essential cookies and browser storage to run the service. With your permission, we also use PostHog for analytics and Sentry for enhanced error reporting. You can choose essential-only, accept all, or manage your preferences at any time. For more information, please see our <0>Privacy Policy</0>."
 
-#: src/components/privacy/CookieConsentBanner.tsx:89
+#: src/components/privacy/CookieConsentBanner.tsx:92
 msgid "We value your privacy"
 msgstr "We value your privacy"
 
@@ -10449,8 +10449,8 @@ msgstr "Wipe All Data?"
 
 #: src/components/entities/EntityLineItemsTabs.tsx:124
 #: src/components/entities/EntityLineItemsTabs.tsx:152
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:149
-#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:167
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:153
+#: src/components/entity-analytics/EntityAnalyticsLineItems.tsx:171
 msgid "Without Transfers"
 msgstr "Without Transfers"
 
