@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   resolveEntityPageCanonicalPathname,
   resolveEntityPageIndexability,
+  resolveEntityPageRouteHeadContract,
   resolveEntityPageRoutePolicy,
   resolveEntityPageShareImagePathname,
 } from './entity-page-route-policy'
@@ -60,6 +61,34 @@ describe('entity-page-route-policy', () => {
       canonicalPathname: '/entities/12%2F34',
       shareImagePathname: '/entities/12%2F34/share-image.png',
       isIndexable: false,
+    })
+  })
+
+  it('builds an explicit route-head contract from route policy and caller context', () => {
+    const seoSnapshot = {
+      cui: '4305857',
+      name: 'MUNICIPIUL CLUJ-NAPOCA',
+    }
+
+    expect(
+      resolveEntityPageRouteHeadContract({
+        routeId: 'primarie',
+        cui: '4305857',
+        requestOrigin: 'https://transparenta.eu',
+        localeSearchContext: { lang: 'en' },
+        seoSnapshot,
+      }),
+    ).toEqual({
+      cui: '4305857',
+      routePolicy: {
+        routeId: 'primarie',
+        canonicalPathname: '/entities/4305857',
+        shareImagePathname: '/entities/4305857/share-image.png',
+        isIndexable: false,
+      },
+      requestOrigin: 'https://transparenta.eu',
+      localeSearchContext: { lang: 'en' },
+      seoSnapshot,
     })
   })
 })

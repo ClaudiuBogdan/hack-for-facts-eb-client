@@ -22,10 +22,8 @@ import {
   type EntityPageBlockingQueryId,
   type EntityPageLoaderPayload,
 } from '@/features/entities/page-core'
-import {
-  buildEntityRouteHead,
-  type EntitySeoSnapshot,
-} from '@/features/entities/seo/entity-share-seo'
+import { resolveEntityPageRouteHeadContract } from '@/features/entities/page-core/seo/entity-page-route-policy'
+import { buildEntityRouteHead } from '@/features/entities/seo/entity-share-seo'
 import {
   applyPrimarieEntityCanonicalSearchPatch,
   filterPrimarieEntityRedirectSearchPatch,
@@ -35,10 +33,6 @@ import {
 import { advancedMapAnalyticsSeriesDataQueryOptions } from '@/hooks/useAdvancedMapAnalyticsSeriesData'
 import { geoJsonQueryOptions } from '@/hooks/useGeoJson'
 import type { EntityDetailsData } from '@/lib/api/entities'
-import {
-  entityDetailsQueryOptions,
-  entityExecutionLineItemsQueryOptions,
-} from '@/lib/hooks/useEntityDetails'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { toReportTypeValue } from '@/schemas/reporting'
 
@@ -54,12 +48,6 @@ type EntityPageBootstrapPayload = {
 type PrimarieLoaderData = {
   readonly entityPageBootstrap: EntityPageBootstrapPayload
   readonly initialSettings: ChallengeEntityInitialSettings
-  readonly entitySeoSnapshot: EntitySeoSnapshot
-  readonly ssrEntityDetailsParams: Parameters<typeof entityDetailsQueryOptions>[0]
-  readonly ssrEntityExecutionLineItemsParams?: Parameters<
-    typeof entityExecutionLineItemsQueryOptions
-  >[0]
-  readonly requestSiteUrl?: string
 }
 
 const ENTITY_DETAILS_STEP_ID = 'entity-details' as const
@@ -91,6 +79,13 @@ function resolveBlockingQueryIds(
   }
 
   return blockingQueryIds
+}
+
+function resolvePrimarieHeadLoaderPayload(
+  loaderData: PrimarieLoaderData | undefined,
+): EntityPageLoaderPayload | undefined {
+  // Integration seam until page-core exports a shared head payload helper.
+  return loaderData?.entityPageBootstrap.loaderPayload
 }
 
 export const Route = createFileRoute('/primarie/$cui/')({
@@ -126,14 +121,21 @@ export const Route = createFileRoute('/primarie/$cui/')({
       replace: true,
     })
   },
-  head: ({ params, match }: any) =>
-    buildEntityRouteHead({
+  head: ({ params, match }: any) => {
+    const loaderPayload = resolvePrimarieHeadLoaderPayload(
+      match.loaderData as PrimarieLoaderData | undefined,
+    )
+
+    return buildEntityRouteHead(resolveEntityPageRouteHeadContract({
       routeId: 'primarie',
       cui: params.cui,
-      snapshot: (match.loaderData as PrimarieLoaderData | undefined)?.entitySeoSnapshot,
-      searchLang: (match.search as ChallengeEntityAnalysisRouteSearch | undefined)?.lang,
-      siteUrl: (match.loaderData as PrimarieLoaderData | undefined)?.requestSiteUrl,
-    }),
+      seoSnapshot: loaderPayload?.entitySeoSnapshot,
+      requestOrigin: loaderPayload?.requestSiteUrl,
+      localeSearchContext: {
+        lang: (match.search as ChallengeEntityAnalysisRouteSearch | undefined)?.lang,
+      },
+    }))
+  },
   loader: async ({ context, params, location }: any) => {
     const queryClient = context.queryClient
     const requestSiteUrl = await readEntityPageRequestOrigin()
@@ -213,7 +215,6 @@ export const Route = createFileRoute('/primarie/$cui/')({
     return {
       entityPageBootstrap,
       initialSettings,
-      ...bootstrapResult.payload,
     } satisfies PrimarieLoaderData
   },
   pendingComponent: ChallengeEntityAnalysisLoadingShell,

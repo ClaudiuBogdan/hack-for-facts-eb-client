@@ -124,19 +124,11 @@ async function importRoute() {
           clientOnly: ReadonlyArray<Record<string, unknown>>
         }
       }
-      entityPageLoaderPayload: {
-        entitySeoSnapshot: Record<string, unknown>
-        ssrEntityDetailsParams: Record<string, unknown>
-        requestSiteUrl?: string
-      }
-      ssrParams: Record<string, unknown>
       ssrSettings: {
         currency: string
         inflationAdjusted: boolean
       }
       forcedOverrides: Record<string, unknown>
-      entitySeoSnapshot: Record<string, unknown>
-      requestSiteUrl?: string
     }>
   }
 }
@@ -218,10 +210,17 @@ describe('entities route', () => {
   it('uses the shared entity SEO builder for entities metadata', async () => {
     const route = await importRoute()
     const loaderData = {
-      entitySeoSnapshot: {
-        cui: '4305857',
+      entityPageBootstrap: {
+        loaderPayload: {
+          entitySeoSnapshot: {
+            cui: '4305857',
+          },
+          ssrEntityDetailsParams: {
+            cui: '4305857',
+          },
+          requestSiteUrl: 'https://transparenta.eu',
+        },
       },
-      requestSiteUrl: 'https://transparenta.eu',
     }
 
     route.head({
@@ -233,11 +232,14 @@ describe('entities route', () => {
     })
 
     expect(buildEntityRouteHeadMock).toHaveBeenCalledWith({
-      routeId: 'entities',
       cui: '4305857',
-      snapshot: loaderData.entitySeoSnapshot,
-      searchLang: 'en',
-      siteUrl: 'https://transparenta.eu',
+      routePolicy: expect.objectContaining({
+        routeId: 'entities',
+        canonicalPathname: '/entities/4305857',
+      }),
+      seoSnapshot: loaderData.entityPageBootstrap.loaderPayload.entitySeoSnapshot,
+      requestOrigin: 'https://transparenta.eu',
+      localeSearchContext: { lang: 'en' },
     })
   })
 
@@ -323,13 +325,10 @@ describe('entities route', () => {
         requestSiteUrl: 'https://transparenta.eu',
       },
     })
-    expect(loaderResult.entityPageLoaderPayload).toEqual(
-      loaderResult.entityPageBootstrap.loaderPayload,
+    expect(loaderResult.entityPageBootstrap.loaderPayload.ssrEntityDetailsParams).toEqual(
+      loaderResult.entityPageBootstrap.exactQueryInputs.entityDetails,
     )
-    expect(loaderResult.ssrParams).toEqual(
-      loaderResult.entityPageLoaderPayload.ssrEntityDetailsParams,
-    )
-    expect(loaderResult.entitySeoSnapshot).toMatchObject({
+    expect(loaderResult.entityPageBootstrap.loaderPayload.entitySeoSnapshot).toMatchObject({
       cui: '4267117',
       name: 'TEST ENTITY',
       entityType: 'admin_county_council',
@@ -343,9 +342,8 @@ describe('entities route', () => {
         showPeriodGrowth: false,
       },
     })
-    expect(loaderResult.requestSiteUrl).toBe('https://transparenta.eu')
-    expect(loaderResult.entityPageLoaderPayload.entitySeoSnapshot).toEqual(
-      loaderResult.entitySeoSnapshot,
+    expect(loaderResult.entityPageBootstrap.loaderPayload.requestSiteUrl).toBe(
+      'https://transparenta.eu',
     )
     expect(ensureQueryData).toHaveBeenCalledTimes(1)
     expect(prefetchQuery).not.toHaveBeenCalled()
@@ -385,7 +383,9 @@ describe('entities route', () => {
       },
     })
 
-    expect(loaderResult.requestSiteUrl).toBe('https://client.transparenta.eu')
+    expect(loaderResult.entityPageBootstrap.loaderPayload.requestSiteUrl).toBe(
+      'https://client.transparenta.eu',
+    )
     expect(loaderResult.entityPageBootstrap.queryPlan.clientOnly).toHaveLength(2)
     expect(geoJsonQueryOptionsMock).toHaveBeenCalledWith('UAT')
     expect(heatmapUATQueryOptionsMock).toHaveBeenCalledTimes(1)

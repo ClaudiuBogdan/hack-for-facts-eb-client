@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { resolveEntityPageRouteHeadContract } from '../page-core/seo/entity-page-route-policy'
 import { buildEntityRouteHead, buildEntityShareImageUrl, type EntitySeoSnapshot } from './entity-share-seo'
 
 type HeadMetaEntry = {
@@ -18,6 +19,22 @@ function getMetaContent(
     return false
   })
   return entry?.content
+}
+
+function createEntityRouteHeadContract(params: {
+  readonly cui: string
+  readonly snapshot?: EntitySeoSnapshot | null
+  readonly searchLang?: string
+  readonly requestOrigin?: string
+  readonly routeId?: 'entities' | 'primarie'
+}) {
+  return resolveEntityPageRouteHeadContract({
+    routeId: params.routeId ?? 'entities',
+    cui: params.cui,
+    requestOrigin: params.requestOrigin,
+    localeSearchContext: { lang: params.searchLang },
+    seoSnapshot: params.snapshot,
+  })
 }
 
 describe('entity-share-seo', () => {
@@ -42,7 +59,12 @@ describe('entity-share-seo', () => {
       },
     }
 
-    const head = buildEntityRouteHead({
+    const head = buildEntityRouteHead(createEntityRouteHeadContract({
+      cui: snapshot.cui,
+      snapshot,
+      searchLang: 'ro',
+    }))
+    const legacyHead = buildEntityRouteHead({
       cui: snapshot.cui,
       snapshot,
       searchLang: 'ro',
@@ -55,6 +77,7 @@ describe('entity-share-seo', () => {
     const description = getMetaContent(head.meta, { name: 'description' })
     expect(description).toContain('MUNICIPIUL CLUJ-NAPOCA')
     expect(description).toContain('Venituri')
+    expect(head).toEqual(legacyHead)
   })
 
   it('builds dynamic image URL with preserved context query', () => {
@@ -111,11 +134,11 @@ describe('entity-share-seo', () => {
   })
 
   it('falls back to generic text when entity snapshot is missing', () => {
-    const head = buildEntityRouteHead({
+    const head = buildEntityRouteHead(createEntityRouteHeadContract({
       cui: '9999999',
       snapshot: null,
       searchLang: 'en',
-    })
+    }))
 
     const titleTag = head.meta.find((entry) => typeof entry.title === 'string')
     expect(titleTag?.title).toContain('Entity 9999999')
@@ -128,7 +151,14 @@ describe('entity-share-seo', () => {
   })
 
   it('uses transitional route policy for primarie metadata', () => {
-    const head = buildEntityRouteHead({
+    const head = buildEntityRouteHead(createEntityRouteHeadContract({
+      cui: '4305857',
+      snapshot: null,
+      searchLang: 'ro',
+      routeId: 'primarie',
+      requestOrigin: 'https://transparenta.eu',
+    }))
+    const legacyHead = buildEntityRouteHead({
       cui: '4305857',
       snapshot: null,
       searchLang: 'ro',
@@ -152,5 +182,6 @@ describe('entity-share-seo', () => {
     expect(head.links).toEqual([
       { rel: 'canonical', href: 'https://transparenta.eu/entities/4305857' },
     ])
+    expect(head).toEqual(legacyHead)
   })
 })

@@ -10,11 +10,9 @@ import {
   type EntityPageExecutionContext,
   type EntityPageLoaderPayload,
 } from '@/features/entities/page-core'
+import { resolveEntityPageRouteHeadContract } from '@/features/entities/page-core/seo/entity-page-route-policy'
 import { resolveEntitiesEntityRouteAdapter } from '@/features/entities/page-core/route-adapters/entities-entity-route-adapter'
-import {
-  buildEntityRouteHead,
-  type EntitySeoSnapshot,
-} from '@/features/entities/seo/entity-share-seo'
+import { buildEntityRouteHead } from '@/features/entities/seo/entity-share-seo'
 import { geoJsonQueryOptions } from '@/hooks/useGeoJson'
 import { heatmapJudetQueryOptions, heatmapUATQueryOptions } from '@/hooks/useHeatmapData'
 import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES, DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES } from '@/lib/analytics-defaults'
@@ -27,7 +25,6 @@ import {
   parseCurrencyParam,
   resolveNormalizationSettings,
 } from '@/lib/globalSettings/params'
-import { entityDetailsQueryOptions } from '@/lib/hooks/useEntityDetails'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { readClientCurrencyPreference, readClientInflationAdjustedPreference } from '@/lib/user-preferences'
 import { generateHash } from '@/lib/utils'
@@ -56,15 +53,11 @@ type EntityPageBootstrapPayload = {
 
 type EntityRouteLoaderData = {
   readonly entityPageBootstrap: EntityPageBootstrapPayload
-  readonly entityPageLoaderPayload: EntityPageLoaderPayload
-  readonly ssrParams: Parameters<typeof entityDetailsQueryOptions>[0]
   readonly ssrSettings: {
     readonly currency: 'RON' | 'EUR' | 'USD'
     readonly inflationAdjusted: boolean
   }
   readonly forcedOverrides: ReturnType<typeof resolveNormalizationSettings>['forcedOverrides']
-  readonly entitySeoSnapshot: EntitySeoSnapshot
-  readonly requestSiteUrl?: string
 }
 
 const ENTITY_DETAILS_STEP_ID = 'entity-details' as const
@@ -336,14 +329,20 @@ export const Route = createFileRoute('/entities/$cui')({
       staleWhileRevalidateSeconds: 86400,
     }),
   validateSearch: entitySearchSchema,
-  head: ({ params, match }: any) =>
-    buildEntityRouteHead({
+  head: ({ params, match }: any) => {
+    const loaderData = match.loaderData as EntityRouteLoaderData | undefined
+    const loaderPayload = loaderData?.entityPageBootstrap?.loaderPayload
+
+    return buildEntityRouteHead(resolveEntityPageRouteHeadContract({
       routeId: 'entities',
       cui: params.cui,
-      snapshot: (match.loaderData as EntityRouteLoaderData | undefined)?.entitySeoSnapshot,
-      searchLang: (match.search as EntitySearchSchema | undefined)?.lang,
-      siteUrl: (match.loaderData as EntityRouteLoaderData | undefined)?.requestSiteUrl,
-    }),
+      seoSnapshot: loaderPayload?.entitySeoSnapshot,
+      requestOrigin: loaderPayload?.requestSiteUrl,
+      localeSearchContext: {
+        lang: (match.search as EntitySearchSchema | undefined)?.lang,
+      },
+    }))
+  },
   loader: (async ({ context, params, location }: any) => {
     const queryClient = context.queryClient
     const requestSiteUrl = await readEntityPageRequestOrigin()
@@ -383,12 +382,8 @@ export const Route = createFileRoute('/entities/$cui')({
       if (!bootstrapResult.entityDetails) {
         return {
           entityPageBootstrap,
-          entityPageLoaderPayload: bootstrapResult.payload,
-          ssrParams: bootstrapResult.payload.ssrEntityDetailsParams,
           ssrSettings,
           forcedOverrides,
-          entitySeoSnapshot: bootstrapResult.payload.entitySeoSnapshot,
-          requestSiteUrl,
         } satisfies EntityRouteLoaderData
       }
 
@@ -408,12 +403,8 @@ export const Route = createFileRoute('/entities/$cui')({
 
       return {
         entityPageBootstrap,
-        entityPageLoaderPayload: bootstrapResult.payload,
-        ssrParams: bootstrapResult.payload.ssrEntityDetailsParams,
         ssrSettings,
         forcedOverrides,
-        entitySeoSnapshot: bootstrapResult.payload.entitySeoSnapshot,
-        requestSiteUrl,
       } satisfies EntityRouteLoaderData
     } catch (error) {
       if (!import.meta.env.DEV) {
@@ -427,12 +418,8 @@ export const Route = createFileRoute('/entities/$cui')({
 
       return {
         entityPageBootstrap,
-        entityPageLoaderPayload: entityPageBootstrap.loaderPayload,
-        ssrParams: entityPageBootstrap.loaderPayload.ssrEntityDetailsParams,
         ssrSettings,
         forcedOverrides,
-        entitySeoSnapshot: entityPageBootstrap.loaderPayload.entitySeoSnapshot,
-        requestSiteUrl,
       } satisfies EntityRouteLoaderData
     }
   }) as any,

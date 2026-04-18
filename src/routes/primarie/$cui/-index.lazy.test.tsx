@@ -4,6 +4,7 @@ import { DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY } from '@/features/challenges/
 
 const navigateMock = vi.fn()
 const setSelectedEntityMock = vi.fn()
+const challengeEntityAnalysisPagePropsMock = vi.fn()
 let mockedParams = { cui: '12345678' }
 let mockedSearch: Record<string, unknown> = {}
 let mockedLoaderData:
@@ -22,12 +23,6 @@ let mockedLoaderData:
         }
       }
     }
-    ssrEntityDetailsParams?: {
-      cui?: string
-    }
-    ssrEntityExecutionLineItemsParams?: {
-      cui?: string
-    }
   }
   | undefined = {
     initialSettings: {
@@ -43,12 +38,6 @@ let mockedLoaderData:
           cui: '12345678',
         },
       },
-    },
-    ssrEntityDetailsParams: {
-      cui: '12345678',
-    },
-    ssrEntityExecutionLineItemsParams: {
-      cui: '12345678',
     },
   }
 let campaignProgressState = {
@@ -97,25 +86,27 @@ vi.mock(
       analyticsTarget,
       initialSettings,
       ssrLoaderPayload,
-      ssrEntityDetailsParams,
-      ssrEntityExecutionLineItemsParams,
       onStateChange,
       onCommitmentsViewStateChange,
       onAnalyticsTargetChange,
       onEntityCuiChange,
       onEntityResolved,
       belowHeader,
-    }: any) => (
-      <>
-        {belowHeader}
-        {(() => {
-          const effectiveSsrEntityDetailsParams =
-            ssrLoaderPayload?.ssrEntityDetailsParams ?? ssrEntityDetailsParams
-          const effectiveSsrEntityExecutionLineItemsParams =
-            ssrLoaderPayload?.ssrEntityExecutionLineItemsParams ??
-            ssrEntityExecutionLineItemsParams
+    }: any) => {
+      challengeEntityAnalysisPagePropsMock({
+        entityCui,
+        languageQuery,
+        state,
+        commitmentsGrouping,
+        commitmentsDetailLevel,
+        analyticsTarget,
+        initialSettings,
+        ssrLoaderPayload,
+      })
 
-          return (
+      return (
+        <>
+          {belowHeader}
         <div data-testid="analysis-page">
           {entityCui}:{languageQuery ?? 'ro'}:{state.selectedYear}:
           {state.reportType}:{state.activeView}:{state.treemapAccountCategory}:{state.expenseType ?? 'all'}:{state.treemapPrimary}:
@@ -125,8 +116,8 @@ vi.mock(
           {commitmentsGrouping ?? 'none'}:{commitmentsDetailLevel ?? 'none'}:
           {initialSettings?.currency ?? 'none'}:
           {String(initialSettings?.inflationAdjusted)}:
-          {effectiveSsrEntityDetailsParams?.cui ?? 'none'}:
-          {effectiveSsrEntityExecutionLineItemsParams?.cui ?? 'none'}
+          {ssrLoaderPayload?.ssrEntityDetailsParams?.cui ?? 'none'}:
+          {ssrLoaderPayload?.ssrEntityExecutionLineItemsParams?.cui ?? 'none'}
           <button type="button" onClick={() => onEntityResolved?.()}>
             Resolve entity
           </button>
@@ -228,10 +219,9 @@ vi.mock(
             Select entity from map
           </button>
         </div>
-          )
-        })()}
-      </>
-    ),
+        </>
+      )
+    },
   }),
 )
 
@@ -254,12 +244,6 @@ describe('PrimarieEntityIndexRoutePage', () => {
           },
         },
       },
-      ssrEntityDetailsParams: {
-        cui: '12345678',
-      },
-      ssrEntityExecutionLineItemsParams: {
-        cui: '12345678',
-      },
     }
     campaignProgressState = {
       isReady: true,
@@ -271,6 +255,7 @@ describe('PrimarieEntityIndexRoutePage', () => {
     }
     navigateMock.mockReset()
     setSelectedEntityMock.mockReset()
+    challengeEntityAnalysisPagePropsMock.mockReset()
     window.history.replaceState({}, '', '/')
   })
 
@@ -398,7 +383,7 @@ describe('PrimarieEntityIndexRoutePage', () => {
     expect(navigateMock).not.toHaveBeenCalled()
   })
 
-  it('prefers shared bootstrap SSR params over duplicated top-level fields', async () => {
+  it('passes SSR params through the shared bootstrap loader payload', async () => {
     mockedLoaderData = {
       initialSettings: {
         currency: 'RON',
@@ -414,12 +399,6 @@ describe('PrimarieEntityIndexRoutePage', () => {
           },
         },
       },
-      ssrEntityDetailsParams: {
-        cui: 'legacy-details',
-      },
-      ssrEntityExecutionLineItemsParams: {
-        cui: 'legacy-line-items',
-      },
     }
 
     const { PrimarieEntityRoutePage } = await import('./index.lazy')
@@ -429,9 +408,24 @@ describe('PrimarieEntityIndexRoutePage', () => {
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
       'shared-details:shared-line-items',
     )
-    expect(screen.getByTestId('analysis-page')).not.toHaveTextContent(
-      'legacy-details:legacy-line-items',
+    expect(challengeEntityAnalysisPagePropsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ssrLoaderPayload: {
+          ssrEntityDetailsParams: {
+            cui: 'shared-details',
+          },
+          ssrEntityExecutionLineItemsParams: {
+            cui: 'shared-line-items',
+          },
+        },
+      }),
     )
+    const lastProps =
+      challengeEntityAnalysisPagePropsMock.mock.calls[
+        challengeEntityAnalysisPagePropsMock.mock.calls.length - 1
+      ]?.[0]
+    expect(lastProps).not.toHaveProperty('ssrEntityDetailsParams')
+    expect(lastProps).not.toHaveProperty('ssrEntityExecutionLineItemsParams')
   })
 
   it('does not write shared selected entity state when the entity resolves successfully', async () => {

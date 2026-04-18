@@ -152,10 +152,6 @@ async function importRoute() {
         currency: string
         inflationAdjusted: boolean
       }
-      ssrEntityDetailsParams: Record<string, unknown>
-      ssrEntityExecutionLineItemsParams?: Record<string, unknown>
-      entitySeoSnapshot: Record<string, unknown>
-      requestSiteUrl?: string
     }>
   }
 }
@@ -288,10 +284,14 @@ describe('primarie index route', () => {
   it('uses the shared entity SEO builder for primarie metadata', async () => {
     const route = await importRoute()
     const loaderData = {
-      entitySeoSnapshot: {
-        cui: '4305857',
+      entityPageBootstrap: {
+        loaderPayload: {
+          entitySeoSnapshot: {
+            cui: '4305857',
+          },
+          requestSiteUrl: 'https://transparenta.eu',
+        },
       },
-      requestSiteUrl: 'https://transparenta.eu',
     }
 
     route.head({
@@ -303,11 +303,14 @@ describe('primarie index route', () => {
     })
 
     expect(buildEntityRouteHeadMock).toHaveBeenCalledWith({
-      routeId: 'primarie',
       cui: '4305857',
-      snapshot: loaderData.entitySeoSnapshot,
-      searchLang: 'en',
-      siteUrl: 'https://transparenta.eu',
+      routePolicy: expect.objectContaining({
+        routeId: 'primarie',
+        canonicalPathname: '/entities/4305857',
+      }),
+      seoSnapshot: loaderData.entityPageBootstrap.loaderPayload.entitySeoSnapshot,
+      requestOrigin: loaderData.entityPageBootstrap.loaderPayload.requestSiteUrl,
+      localeSearchContext: { lang: 'en' },
     })
   })
 
@@ -418,16 +421,8 @@ describe('primarie index route', () => {
         currency: 'RON',
         inflationAdjusted: false,
       },
-      ssrEntityDetailsParams: expect.objectContaining({
-        cui: '4267117',
-        currency: 'RON',
-        inflation_adjusted: false,
-      }),
-      ssrEntityExecutionLineItemsParams: expect.objectContaining({
-        cui: '4267117',
-        currency: 'RON',
-        inflation_adjusted: false,
-      }),
+    })
+    expect(loaderResult.entityPageBootstrap.loaderPayload).toMatchObject({
       entitySeoSnapshot: {
         cui: '4267117',
         name: 'CONSILIUL JUDETEAN TEST',
@@ -442,19 +437,24 @@ describe('primarie index route', () => {
           showPeriodGrowth: false,
         },
       },
+      ssrEntityDetailsParams: expect.objectContaining({
+        cui: '4267117',
+        currency: 'RON',
+        inflation_adjusted: false,
+      }),
+      ssrEntityExecutionLineItemsParams: expect.objectContaining({
+        cui: '4267117',
+        currency: 'RON',
+        inflation_adjusted: false,
+      }),
       requestSiteUrl: 'https://transparenta.eu',
     })
-    expect(loaderResult.entityPageBootstrap.loaderPayload).toMatchObject({
-      entitySeoSnapshot: loaderResult.entitySeoSnapshot,
-      ssrEntityDetailsParams: loaderResult.ssrEntityDetailsParams,
-      ssrEntityExecutionLineItemsParams:
-        loaderResult.ssrEntityExecutionLineItemsParams,
-      requestSiteUrl: loaderResult.requestSiteUrl,
-    })
-    expect(loaderResult.ssrEntityDetailsParams).toEqual(
+    expect(loaderResult.entityPageBootstrap.loaderPayload.ssrEntityDetailsParams).toEqual(
       loaderResult.entityPageBootstrap.exactQueryInputs.entityDetails,
     )
-    expect(loaderResult.ssrEntityExecutionLineItemsParams).toEqual(
+    expect(
+      loaderResult.entityPageBootstrap.loaderPayload.ssrEntityExecutionLineItemsParams,
+    ).toEqual(
       loaderResult.entityPageBootstrap.exactQueryInputs.entityExecutionLineItems,
     )
 
@@ -611,7 +611,9 @@ describe('primarie index route', () => {
       },
     })
 
-    expect(loaderResult.requestSiteUrl).toBe('https://client.transparenta.eu')
+    expect(
+      loaderResult.entityPageBootstrap.loaderPayload.requestSiteUrl,
+    ).toBe('https://client.transparenta.eu')
     expect(geoJsonQueryOptionsMock).toHaveBeenCalledWith('UAT')
     expect(geoJsonQueryOptionsMock).toHaveBeenCalledWith('County')
     expect(prefetchQuery).toHaveBeenCalledTimes(4)

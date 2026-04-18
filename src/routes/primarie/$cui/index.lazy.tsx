@@ -38,6 +38,16 @@ export const Route = createLazyFileRoute('/primarie/$cui/')({
   component: PrimarieEntityRoutePage,
 })
 
+type PrimarieEntityRouteLoaderData = {
+  readonly initialSettings?: ChallengeEntityInitialSettings
+  readonly entityPageBootstrap?: {
+    readonly loaderPayload?: Pick<
+      EntityPageLoaderPayload,
+      'ssrEntityDetailsParams' | 'ssrEntityExecutionLineItemsParams'
+    >
+  }
+}
+
 function mergeWindowManagedSearchState(
   previousSearch: Record<string, unknown>,
 ): Record<string, unknown> {
@@ -165,21 +175,7 @@ export function PrimarieEntityRoutePage() {
   const { cui } = Route.useParams()
   const search = Route.useSearch()
   const loaderData = Route.useLoaderData() as
-    | {
-      initialSettings?: ChallengeEntityInitialSettings
-      entityPageBootstrap?: {
-        loaderPayload?: Pick<
-          EntityPageLoaderPayload,
-          'ssrEntityDetailsParams' | 'ssrEntityExecutionLineItemsParams'
-        >
-      }
-      ssrEntityDetailsParams?: Parameters<
-        typeof import('@/lib/hooks/useEntityDetails').entityDetailsQueryOptions
-      >[0]
-      ssrEntityExecutionLineItemsParams?: Parameters<
-        typeof import('@/lib/hooks/useEntityDetails').entityExecutionLineItemsQueryOptions
-      >[0]
-    }
+    | PrimarieEntityRouteLoaderData
     | undefined
   const navigate = useNavigate({
     from: '/primarie/$cui',
@@ -418,10 +414,6 @@ export function PrimarieEntityRoutePage() {
         analyticsTarget={normalizedSearch.analytics}
         initialSettings={loaderData?.initialSettings}
         ssrLoaderPayload={ssrLoaderPayload}
-        ssrEntityDetailsParams={loaderData?.ssrEntityDetailsParams}
-        ssrEntityExecutionLineItemsParams={
-          loaderData?.ssrEntityExecutionLineItemsParams
-        }
         onStateChange={handleStateChange}
         onCommitmentsViewStateChange={handleCommitmentsViewStateChange}
         onAnalyticsTargetChange={handleAnalyticsTargetChange}

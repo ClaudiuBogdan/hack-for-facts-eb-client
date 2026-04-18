@@ -121,8 +121,9 @@ function EntityDetailsPage() {
   const navigate = useNavigate({ from: '/entities/$cui' })
   const queryClient = useQueryClient()
   const loaderData = Route.useLoaderData() as {
-    entityPageLoaderPayload?: Pick<EntityPageLoaderPayload, 'ssrEntityDetailsParams'>
-    ssrParams?: Parameters<typeof entityDetailsQueryOptions>[0]
+    entityPageBootstrap?: {
+      loaderPayload?: Pick<EntityPageLoaderPayload, 'ssrEntityDetailsParams'>
+    }
     ssrSettings?: {
       currency?: 'RON' | 'EUR' | 'USD'
       inflationAdjusted?: boolean
@@ -193,9 +194,8 @@ function EntityDetailsPage() {
   const reportPeriod = useMemo(() => getInitialFilterState(period, selectedYear, month, quarter), [period, selectedYear, month, quarter])
   const trendPeriod = useMemo(() => makeTrendPeriod(period, selectedYear, START_YEAR, END_YEAR), [period, selectedYear])
   const years = useMemo(() => Array.from({ length: END_YEAR - START_YEAR + 1 }, (_, idx) => END_YEAR - idx), [])
-  const ssrEntityDetailsParams =
-    loaderData?.entityPageLoaderPayload?.ssrEntityDetailsParams ??
-    loaderData?.ssrParams
+  const ssrLoaderPayload = loaderData?.entityPageBootstrap?.loaderPayload
+  const ssrEntityDetailsParams = ssrLoaderPayload?.ssrEntityDetailsParams
 
   // Derive SSR entity from rehydrated cache using SSR params (once on mount)
   // This provides immediate data even if client params differ from SSR params

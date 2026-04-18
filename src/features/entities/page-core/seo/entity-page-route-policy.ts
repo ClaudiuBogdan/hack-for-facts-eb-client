@@ -5,6 +5,26 @@ export type ResolveEntityPageRoutePolicyInput = {
   readonly cui: string
 }
 
+export type EntityPageRouteHeadSearchContext = {
+  readonly lang?: string
+}
+
+export type EntityPageRouteHeadContract<TSeoSnapshot = unknown> = {
+  readonly cui: string
+  readonly routePolicy: EntityPageRoutePolicy
+  readonly requestOrigin?: string
+  readonly localeSearchContext: EntityPageRouteHeadSearchContext
+  readonly seoSnapshot?: TSeoSnapshot | null
+}
+
+export type ResolveEntityPageRouteHeadContractInput<TSeoSnapshot = unknown> = {
+  readonly routeId: EntityPageRouteId
+  readonly cui: string
+  readonly requestOrigin?: string
+  readonly localeSearchContext?: EntityPageRouteHeadSearchContext
+  readonly seoSnapshot?: TSeoSnapshot | null
+}
+
 type EntityPageRoutePolicyDefinition = {
   readonly pathnameSegment: string
   readonly canonicalOwnerRouteId: EntityPageRouteId
@@ -73,5 +93,17 @@ export function resolveEntityPageRoutePolicy(
     canonicalPathname: resolveEntityPageCanonicalPathname(input),
     shareImagePathname: resolveEntityPageShareImagePathname(input),
     isIndexable: resolveEntityPageIndexability(input),
+  }
+}
+
+export function resolveEntityPageRouteHeadContract<TSeoSnapshot = unknown>(
+  input: ResolveEntityPageRouteHeadContractInput<TSeoSnapshot>,
+): EntityPageRouteHeadContract<TSeoSnapshot> {
+  return {
+    cui: input.cui,
+    routePolicy: resolveEntityPageRoutePolicy(input),
+    ...(input.requestOrigin ? { requestOrigin: input.requestOrigin } : {}),
+    ...(input.seoSnapshot !== undefined ? { seoSnapshot: input.seoSnapshot } : {}),
+    localeSearchContext: input.localeSearchContext ?? {},
   }
 }
