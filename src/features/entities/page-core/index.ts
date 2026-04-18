@@ -1,5 +1,6 @@
 export * from './types'
 export * from './request/entity-page-public-settings'
 export * from './request/entity-page-query-inputs'
+export * from './bootstrap/entity-page-bootstrap'
 export * from './seo/entity-page-route-policy'
 export * from './query-plan/entity-page-query-plan'

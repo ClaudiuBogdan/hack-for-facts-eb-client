@@ -130,6 +130,24 @@ async function importRoute() {
     beforeLoad: (input: Record<string, unknown>) => unknown
     head: (input: Record<string, unknown>) => unknown
     loader: (input: Record<string, unknown>) => Promise<{
+      entityPageBootstrap: {
+        executionContext: Record<string, unknown>
+        exactQueryInputs: {
+          entityDetails: Record<string, unknown>
+          entityExecutionLineItems?: Record<string, unknown>
+        }
+        loaderPayload: {
+          entitySeoSnapshot: Record<string, unknown>
+          ssrEntityDetailsParams: Record<string, unknown>
+          ssrEntityExecutionLineItemsParams?: Record<string, unknown>
+          requestSiteUrl?: string
+        }
+        queryPlan: {
+          blocking: ReadonlyArray<Record<string, unknown>>
+          backgroundPrefetch: ReadonlyArray<Record<string, unknown>>
+          clientOnly: ReadonlyArray<Record<string, unknown>>
+        }
+      }
       initialSettings: {
         currency: string
         inflationAdjusted: boolean
@@ -339,7 +357,63 @@ describe('primarie index route', () => {
       ]),
     ).resolves.not.toBe('timeout')
 
-    await expect(loaderPromise).resolves.toMatchObject({
+    const loaderResult = await loaderPromise
+
+    expect(loaderResult).toMatchObject({
+      entityPageBootstrap: {
+        executionContext: {
+          routeId: 'primarie',
+          cui: '4267117',
+          activeView: 'main-info',
+          year: 2024,
+          reportType: 'DETAILED',
+          effectiveReportType: 'DETAILED',
+          publicSettings: {
+            normalization: 'per_capita',
+            currency: 'RON',
+            inflationAdjusted: false,
+            showPeriodGrowth: false,
+          },
+        },
+        exactQueryInputs: {
+          entityDetails: expect.objectContaining({
+            cui: '4267117',
+            reportType: 'DETAILED',
+            normalization: 'per_capita',
+            currency: 'RON',
+            inflation_adjusted: false,
+          }),
+          entityExecutionLineItems: expect.objectContaining({
+            cui: '4267117',
+            reportType: 'DETAILED',
+            normalization: 'per_capita',
+            currency: 'RON',
+            inflation_adjusted: false,
+          }),
+        },
+        queryPlan: {
+          blocking: [
+            expect.objectContaining({
+              id: 'entity-details',
+              executionClass: 'blocking',
+            }),
+          ],
+          backgroundPrefetch: [],
+          clientOnly: [],
+        },
+        loaderPayload: {
+          entitySeoSnapshot: expect.objectContaining({
+            cui: '4267117',
+          }),
+          ssrEntityDetailsParams: expect.objectContaining({
+            cui: '4267117',
+          }),
+          ssrEntityExecutionLineItemsParams: expect.objectContaining({
+            cui: '4267117',
+          }),
+          requestSiteUrl: 'https://transparenta.eu',
+        },
+      },
       initialSettings: {
         currency: 'RON',
         inflationAdjusted: false,
@@ -370,6 +444,19 @@ describe('primarie index route', () => {
       },
       requestSiteUrl: 'https://transparenta.eu',
     })
+    expect(loaderResult.entityPageBootstrap.loaderPayload).toMatchObject({
+      entitySeoSnapshot: loaderResult.entitySeoSnapshot,
+      ssrEntityDetailsParams: loaderResult.ssrEntityDetailsParams,
+      ssrEntityExecutionLineItemsParams:
+        loaderResult.ssrEntityExecutionLineItemsParams,
+      requestSiteUrl: loaderResult.requestSiteUrl,
+    })
+    expect(loaderResult.ssrEntityDetailsParams).toEqual(
+      loaderResult.entityPageBootstrap.exactQueryInputs.entityDetails,
+    )
+    expect(loaderResult.ssrEntityExecutionLineItemsParams).toEqual(
+      loaderResult.entityPageBootstrap.exactQueryInputs.entityExecutionLineItems,
+    )
 
     expect(entityDetailsQueryOptionsMock).toHaveBeenCalledWith(
       expect.objectContaining({
