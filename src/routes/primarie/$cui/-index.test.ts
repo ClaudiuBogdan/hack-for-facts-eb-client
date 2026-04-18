@@ -1,9 +1,36 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const routeStub = vi.fn((options: Record<string, unknown>) => options)
+const redirectMock = vi.fn((options: Record<string, unknown>) => ({
+  __redirect: true,
+  ...options,
+}))
+const createIsomorphicFnMock = vi.fn(() => {
+  let clientImpl: (() => unknown) | undefined
+  let serverImpl: (() => unknown | Promise<unknown>) | undefined
+
+  const isomorphicFn = async () => {
+    if (typeof window === 'undefined') {
+      return serverImpl?.()
+    }
+
+    return clientImpl?.()
+  }
+
+  return Object.assign(isomorphicFn, {
+    client(implementation: () => unknown) {
+      clientImpl = implementation
+      return this
+    },
+    server(implementation: () => unknown | Promise<unknown>) {
+      serverImpl = implementation
+      return this
+    },
+  })
+})
+const getRequestUrlMock = vi.fn(() => new URL('https://transparenta.eu/primarie/4305857'))
 const entityDetailsQueryOptionsMock = vi.fn()
 const entityExecutionLineItemsQueryOptionsMock = vi.fn()
-const reportsConnectionQueryOptionsMock = vi.fn()
 const buildChallengeEntityAnalysisReportPeriodMock = vi.fn()
 const buildChallengeEntityAnalysisTrendPeriodMock = vi.fn()
 const challengeEntitySubordinateRankingQueryOptionsMock = vi.fn()
@@ -11,23 +38,29 @@ const getChallengeEntityMapPreviewDefinitionMock = vi.fn()
 const applyMapRuntimeConfigMock = vi.fn()
 const advancedMapAnalyticsSeriesDataQueryOptionsMock = vi.fn()
 const geoJsonQueryOptionsMock = vi.fn()
-const readClientCurrencyPreferenceMock = vi.fn()
-const readClientInflationAdjustedPreferenceMock = vi.fn()
+const buildEntityRouteHeadMock = vi.fn(() => ({ meta: [] }))
+const readClientCurrencyPreferenceMock = vi.fn(() => {
+  throw new Error('persisted currency preference should not be read')
+})
+const readClientInflationAdjustedPreferenceMock = vi.fn(() => {
+  throw new Error('persisted inflation preference should not be read')
+})
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => routeStub,
+  redirect: redirectMock,
+}))
+
+vi.mock('@tanstack/react-start', () => ({
+  createIsomorphicFn: createIsomorphicFnMock,
+}))
+
+vi.mock('@tanstack/react-start/server', () => ({
+  getRequestUrl: getRequestUrlMock,
 }))
 
 vi.mock('@/lib/http-cache', () => ({
   createPublicPageCacheHeaders: vi.fn(() => ({})),
-}))
-
-vi.mock('@/features/campaigns/buget/schemas/campaign-route-search-schema', () => ({
-  resolveCampaignLocale: vi.fn(() => 'ro'),
-}))
-
-vi.mock('@/features/campaigns/buget/seo/campaign-seo', () => ({
-  buildCampaignRouteHead: vi.fn(() => ({ meta: [] })),
 }))
 
 vi.mock(
@@ -65,6 +98,10 @@ vi.mock('@/features/advanced-map-analytics/map-runtime-config', () => ({
   applyMapRuntimeConfig: applyMapRuntimeConfigMock,
 }))
 
+vi.mock('@/features/entities/seo/entity-share-seo', () => ({
+  buildEntityRouteHead: buildEntityRouteHeadMock,
+}))
+
 vi.mock('@/hooks/useAdvancedMapAnalyticsSeriesData', () => ({
   advancedMapAnalyticsSeriesDataQueryOptions:
     advancedMapAnalyticsSeriesDataQueryOptionsMock,
@@ -78,7 +115,6 @@ vi.mock('@/lib/hooks/useEntityDetails', () => ({
   entityDetailsQueryOptions: entityDetailsQueryOptionsMock,
   entityExecutionLineItemsQueryOptions:
     entityExecutionLineItemsQueryOptionsMock,
-  reportsConnectionQueryOptions: reportsConnectionQueryOptionsMock,
 }))
 
 vi.mock('@/lib/user-preferences', () => ({
@@ -86,13 +122,35 @@ vi.mock('@/lib/user-preferences', () => ({
   readClientInflationAdjustedPreference: readClientInflationAdjustedPreferenceMock,
 }))
 
-describe('primarie index route loader', () => {
+async function importRoute() {
+  const { Route } = await import('./index')
+
+  return Route as unknown as {
+    ssr: boolean
+    beforeLoad: (input: Record<string, unknown>) => unknown
+    head: (input: Record<string, unknown>) => unknown
+    loader: (input: Record<string, unknown>) => Promise<{
+      initialSettings: {
+        currency: string
+        inflationAdjusted: boolean
+      }
+      ssrEntityDetailsParams: Record<string, unknown>
+      ssrEntityExecutionLineItemsParams?: Record<string, unknown>
+      entitySeoSnapshot: Record<string, unknown>
+      requestSiteUrl?: string
+    }>
+  }
+}
+
+describe('primarie index route', () => {
   beforeEach(() => {
     vi.resetModules()
     routeStub.mockClear()
+    redirectMock.mockClear()
+    createIsomorphicFnMock.mockClear()
+    getRequestUrlMock.mockReset()
     entityDetailsQueryOptionsMock.mockReset()
     entityExecutionLineItemsQueryOptionsMock.mockReset()
-    reportsConnectionQueryOptionsMock.mockReset()
     buildChallengeEntityAnalysisReportPeriodMock.mockReset()
     buildChallengeEntityAnalysisTrendPeriodMock.mockReset()
     challengeEntitySubordinateRankingQueryOptionsMock.mockReset()
@@ -100,9 +158,16 @@ describe('primarie index route loader', () => {
     applyMapRuntimeConfigMock.mockReset()
     advancedMapAnalyticsSeriesDataQueryOptionsMock.mockReset()
     geoJsonQueryOptionsMock.mockReset()
-    readClientCurrencyPreferenceMock.mockReset()
-    readClientInflationAdjustedPreferenceMock.mockReset()
+    buildEntityRouteHeadMock.mockReset()
+    readClientCurrencyPreferenceMock.mockClear()
+    readClientInflationAdjustedPreferenceMock.mockClear()
 
+    delete (globalThis as { window?: unknown }).window
+
+    getRequestUrlMock.mockReturnValue(
+      new URL('https://transparenta.eu/primarie/4305857'),
+    )
+    buildEntityRouteHeadMock.mockReturnValue({ meta: [] })
     buildChallengeEntityAnalysisReportPeriodMock.mockImplementation((input) => ({
       type: 'report-period',
       input,
@@ -116,9 +181,6 @@ describe('primarie index route loader', () => {
     }))
     entityExecutionLineItemsQueryOptionsMock.mockImplementation((input) => ({
       queryKey: ['entity-line-items', input],
-    }))
-    reportsConnectionQueryOptionsMock.mockImplementation((input) => ({
-      queryKey: ['reports', input],
     }))
     challengeEntitySubordinateRankingQueryOptionsMock.mockImplementation(
       (input) => ({
@@ -141,26 +203,117 @@ describe('primarie index route loader', () => {
     }))
   })
 
-  it('warms only the core queries before returning and starts the secondary prefetches in the background', async () => {
-    readClientCurrencyPreferenceMock.mockReturnValue('EUR')
-    readClientInflationAdjustedPreferenceMock.mockReturnValue(true)
+  it('enables SSR and redirects canonicalized search on the same primarie route', async () => {
+    const route = await importRoute()
 
+    expect(route.ssr).toBe(true)
+
+    let thrown: unknown
+
+    try {
+      route.beforeLoad({
+        params: { cui: '4305857' },
+        search: {
+          period: 'YEAR',
+          month: '03',
+          quarter: 'Q4',
+          public_map: 'legacy-preview',
+          commitments_grouping: 'invalid',
+          commitments_detail_level: 'invalid',
+          insSearch: 'drumuri',
+          notificationModal: 'open',
+        },
+      })
+    } catch (error) {
+      thrown = error
+    }
+
+    expect(redirectMock).toHaveBeenCalledTimes(1)
+    expect(thrown).toMatchObject({
+      __redirect: true,
+      to: '/primarie/$cui',
+      params: { cui: '4305857' },
+      replace: true,
+      search: expect.objectContaining({
+        period: 'YEAR',
+        public_map: 'expenses',
+        insSearch: 'drumuri',
+        notificationModal: 'open',
+      }),
+    })
+    expect((thrown as { search: Record<string, unknown> }).search).not.toHaveProperty(
+      'month',
+    )
+    expect((thrown as { search: Record<string, unknown> }).search).not.toHaveProperty(
+      'quarter',
+    )
+    expect((thrown as { search: Record<string, unknown> }).search).not.toHaveProperty(
+      'commitments_grouping',
+    )
+    expect((thrown as { search: Record<string, unknown> }).search).not.toHaveProperty(
+      'commitments_detail_level',
+    )
+  })
+
+  it('does not redirect clean primarie URLs that omit default search params', async () => {
+    const route = await importRoute()
+
+    expect(
+      route.beforeLoad({
+        params: { cui: '4305857' },
+        search: {},
+      }),
+    ).toBeUndefined()
+    expect(redirectMock).not.toHaveBeenCalled()
+  })
+
+  it('uses the shared entity SEO builder for primarie metadata', async () => {
+    const route = await importRoute()
+    const loaderData = {
+      entitySeoSnapshot: {
+        cui: '4305857',
+      },
+      requestSiteUrl: 'https://transparenta.eu',
+    }
+
+    route.head({
+      params: { cui: '4305857' },
+      match: {
+        search: { lang: 'en' },
+        loaderData,
+      },
+    })
+
+    expect(buildEntityRouteHeadMock).toHaveBeenCalledWith({
+      routeId: 'primarie',
+      cui: '4305857',
+      snapshot: loaderData.entitySeoSnapshot,
+      searchLang: 'en',
+      siteUrl: 'https://transparenta.eu',
+    })
+  })
+
+  it('warms blocking queries and background prefetches without waiting on them, and skips GeoJSON on the server', async () => {
     const ensureQueryData = vi.fn().mockResolvedValue(undefined)
     const prefetchQuery = vi.fn().mockImplementation(
       () => new Promise(() => {}),
     )
     const getQueryData = vi.fn().mockReturnValue({
       cui: '4267117',
+      name: 'CONSILIUL JUDETEAN TEST',
       entity_type: 'admin_county_council',
+      default_report_type: 'DETAILED',
+      uat: {
+        county_name: 'Cluj',
+        population: 123456,
+      },
+      totalIncome: 10,
+      totalExpenses: 9,
+      budgetBalance: 1,
     })
 
-    const { Route } = await import('./index')
-    const routeWithLoader = Route as unknown as {
-      loader: (input: Record<string, unknown>) => Promise<unknown>
-    }
-    expect(routeWithLoader.loader).toBeTypeOf('function')
-    const loader = routeWithLoader.loader
-    const loaderPromise = loader({
+    const route = await importRoute()
+    const loaderPromise = route.loader({
       context: {
         queryClient: {
           ensureQueryData,
@@ -186,39 +339,61 @@ describe('primarie index route loader', () => {
       ]),
     ).resolves.not.toBe('timeout')
 
-    await expect(loaderPromise).resolves.toEqual({
+    await expect(loaderPromise).resolves.toMatchObject({
       initialSettings: {
-        currency: 'EUR',
-        inflationAdjusted: true,
+        currency: 'RON',
+        inflationAdjusted: false,
       },
+      ssrEntityDetailsParams: expect.objectContaining({
+        cui: '4267117',
+        currency: 'RON',
+        inflation_adjusted: false,
+      }),
+      ssrEntityExecutionLineItemsParams: expect.objectContaining({
+        cui: '4267117',
+        currency: 'RON',
+        inflation_adjusted: false,
+      }),
+      entitySeoSnapshot: {
+        cui: '4267117',
+        name: 'CONSILIUL JUDETEAN TEST',
+        entityType: 'admin_county_council',
+        filterContext: {
+          year: 2024,
+          period: 'YEAR',
+          reportType: 'DETAILED',
+          normalization: 'per_capita',
+          currency: 'RON',
+          inflationAdjusted: false,
+          showPeriodGrowth: false,
+        },
+      },
+      requestSiteUrl: 'https://transparenta.eu',
     })
 
-    expect(buildChallengeEntityAnalysisReportPeriodMock).toHaveBeenCalledWith(
-      {
-        periodType: 'YEAR',
-        selectedYear: 2024,
-        month: '01',
-        quarter: 'Q1',
-      },
-    )
-    expect(buildChallengeEntityAnalysisTrendPeriodMock).toHaveBeenCalledWith(
-      {
-        periodType: 'YEAR',
-        selectedYear: 2024,
-      },
-    )
     expect(entityDetailsQueryOptionsMock).toHaveBeenCalledWith(
       expect.objectContaining({
         cui: '4267117',
         reportType: 'DETAILED',
         normalization: 'per_capita',
-        currency: 'EUR',
-        inflation_adjusted: true,
+        currency: 'RON',
+        inflation_adjusted: false,
+        reportPeriod: {
+          type: 'YEAR',
+          selection: {
+            interval: {
+              start: '2024',
+              end: '2024',
+            },
+          },
+        },
         trendPeriod: {
-          type: 'trend-period',
-          input: {
-            periodType: 'YEAR',
-            selectedYear: 2024,
+          type: 'YEAR',
+          selection: {
+            interval: {
+              start: '2016',
+              end: '2026',
+            },
           },
         },
       }),
@@ -228,18 +403,17 @@ describe('primarie index route loader', () => {
         cui: '4267117',
         reportType: 'DETAILED',
         normalization: 'per_capita',
-        currency: 'EUR',
-        inflation_adjusted: true,
+        currency: 'RON',
+        inflation_adjusted: false,
       }),
     )
     expect(ensureQueryData).toHaveBeenCalledTimes(2)
-    expect(reportsConnectionQueryOptionsMock).not.toHaveBeenCalled()
     expect(challengeEntitySubordinateRankingQueryOptionsMock).toHaveBeenCalledWith(
       expect.objectContaining({
         entityCui: '4267117',
         normalizationOptions: {
-          currency: 'EUR',
-          inflation_adjusted: true,
+          currency: 'RON',
+          inflation_adjusted: false,
         },
       }),
     )
@@ -251,22 +425,18 @@ describe('primarie index route loader', () => {
         selectedYearOverride: 2024,
         reportTypeOverride: 'Executie bugetara detaliata',
         normalizationOverride: 'per_capita',
-        currencyOverride: 'EUR',
-        inflationAdjustedOverride: true,
+        currencyOverride: 'RON',
+        inflationAdjustedOverride: false,
       }),
     )
     expect(advancedMapAnalyticsSeriesDataQueryOptionsMock).toHaveBeenCalledWith({
       series: [{ id: 'preview-series', enabled: true }],
     })
-    expect(geoJsonQueryOptionsMock).toHaveBeenCalledWith('UAT')
-    expect(geoJsonQueryOptionsMock).toHaveBeenCalledWith('County')
-    expect(prefetchQuery).toHaveBeenCalledTimes(4)
+    expect(geoJsonQueryOptionsMock).not.toHaveBeenCalled()
+    expect(prefetchQuery).toHaveBeenCalledTimes(2)
   })
 
-  it('prefers URL currency settings over persisted preferences', async () => {
-    readClientCurrencyPreferenceMock.mockReturnValue('EUR')
-    readClientInflationAdjustedPreferenceMock.mockReturnValue(true)
-
+  it('uses URL settings when present and otherwise falls back to URL-only defaults without reading persisted preferences', async () => {
     const ensureQueryData = vi.fn().mockResolvedValue(undefined)
     const prefetchQuery = vi.fn().mockResolvedValue(undefined)
     const getQueryData = vi.fn().mockReturnValue({
@@ -274,13 +444,8 @@ describe('primarie index route loader', () => {
       entity_type: 'admin_municipality',
     })
 
-    const { Route } = await import('./index')
-    const routeWithLoader = Route as unknown as {
-      loader: (input: Record<string, unknown>) => Promise<unknown>
-    }
-    expect(routeWithLoader.loader).toBeTypeOf('function')
-    const loader = routeWithLoader.loader
-    const loaderResult = await loader({
+    const route = await importRoute()
+    const loaderResult = await route.loader({
       context: {
         queryClient: {
           ensureQueryData,
@@ -292,24 +457,76 @@ describe('primarie index route loader', () => {
       location: {
         search: {
           currency: 'USD',
-          inflation_adjusted: false,
+          inflation_adjusted: true,
         },
       },
     })
 
-    expect(loaderResult).toEqual({
-      initialSettings: {
-        currency: 'USD',
-        inflationAdjusted: false,
-      },
+    expect(loaderResult.initialSettings).toEqual({
+      currency: 'USD',
+      inflationAdjusted: true,
     })
     expect(entityDetailsQueryOptionsMock).toHaveBeenCalledWith(
       expect.objectContaining({
         currency: 'USD',
-        inflation_adjusted: false,
+        inflation_adjusted: true,
       }),
     )
-    expect(geoJsonQueryOptionsMock).toHaveBeenCalledTimes(1)
+
+    const defaultResult = await route.loader({
+      context: {
+        queryClient: {
+          ensureQueryData,
+          prefetchQuery,
+          getQueryData,
+        },
+      },
+      params: { cui: '12345678' },
+      location: {
+        search: {},
+      },
+    })
+
+    expect(defaultResult.initialSettings).toEqual({
+      currency: 'RON',
+      inflationAdjusted: false,
+    })
+    expect(readClientCurrencyPreferenceMock).not.toHaveBeenCalled()
+    expect(readClientInflationAdjustedPreferenceMock).not.toHaveBeenCalled()
+  })
+
+  it('prefetches GeoJSON only during client-side execution', async () => {
+    ;(globalThis as { window?: { location: { origin: string } } }).window = {
+      location: {
+        origin: 'https://client.transparenta.eu',
+      },
+    }
+
+    const ensureQueryData = vi.fn().mockResolvedValue(undefined)
+    const prefetchQuery = vi.fn().mockResolvedValue(undefined)
+    const getQueryData = vi.fn().mockReturnValue({
+      cui: '4267117',
+      entity_type: 'admin_county_council',
+    })
+
+    const route = await importRoute()
+    const loaderResult = await route.loader({
+      context: {
+        queryClient: {
+          ensureQueryData,
+          prefetchQuery,
+          getQueryData,
+        },
+      },
+      params: { cui: '4267117' },
+      location: {
+        search: {},
+      },
+    })
+
+    expect(loaderResult.requestSiteUrl).toBe('https://client.transparenta.eu')
     expect(geoJsonQueryOptionsMock).toHaveBeenCalledWith('UAT')
+    expect(geoJsonQueryOptionsMock).toHaveBeenCalledWith('County')
+    expect(prefetchQuery).toHaveBeenCalledTimes(4)
   })
 })

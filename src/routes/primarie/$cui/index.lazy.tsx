@@ -166,6 +166,12 @@ export function PrimarieEntityRoutePage() {
   const loaderData = Route.useLoaderData() as
     | {
       initialSettings?: ChallengeEntityInitialSettings
+      ssrEntityDetailsParams?: Parameters<
+        typeof import('@/lib/hooks/useEntityDetails').entityDetailsQueryOptions
+      >[0]
+      ssrEntityExecutionLineItemsParams?: Parameters<
+        typeof import('@/lib/hooks/useEntityDetails').entityExecutionLineItemsQueryOptions
+      >[0]
     }
     | undefined
   const navigate = useNavigate({
@@ -192,26 +198,6 @@ export function PrimarieEntityRoutePage() {
     setPendingMapEntitySelection(null)
     setIsConfirmingMapEntitySelection(false)
   }, [cui])
-
-  useEffect(() => {
-    const canonicalPatch = buildChallengeEntityAnalysisCanonicalSearchPatch(
-      search as ChallengeEntityAnalysisRouteSearch,
-      normalizedSearch,
-    )
-
-    if (isSearchPatchEmpty(canonicalPatch)) {
-      return
-    }
-
-    void navigate({
-      search: (previousSearch) =>
-        applySearchPatch(
-          previousSearch as Record<string, unknown>,
-          canonicalPatch,
-        ),
-      replace: true,
-    })
-  }, [navigate, normalizedSearch, search])
 
   const updateSearch = useCallback(
     (
@@ -423,6 +409,10 @@ export function PrimarieEntityRoutePage() {
         commitmentsDetailLevel={normalizedSearch.commitments_detail_level}
         analyticsTarget={normalizedSearch.analytics}
         initialSettings={loaderData?.initialSettings}
+        ssrEntityDetailsParams={loaderData?.ssrEntityDetailsParams}
+        ssrEntityExecutionLineItemsParams={
+          loaderData?.ssrEntityExecutionLineItemsParams
+        }
         onStateChange={handleStateChange}
         onCommitmentsViewStateChange={handleCommitmentsViewStateChange}
         onAnalyticsTargetChange={handleAnalyticsTargetChange}

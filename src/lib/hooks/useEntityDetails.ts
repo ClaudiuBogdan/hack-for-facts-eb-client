@@ -93,14 +93,16 @@ export function useEntityExecutionLineItems(params: {
   reportType?: GqlReportType;
   enabled?: boolean;
   mainCreditorCui?: string;
-} & NormalizationOptions) {
+} & NormalizationOptions, options?: {
+  ssrPlaceholder?: Awaited<ReturnType<typeof getEntityExecutionLineItems>>;
+}) {
   const queryOpts = entityExecutionLineItemsQueryOptions(params);
   const { enabled = true } = params;
 
   return useQuery({
     ...queryOpts,
     enabled: queryOpts.enabled && enabled,
-    placeholderData: (previousData) => previousData,
+    placeholderData: (previousData) => previousData ?? options?.ssrPlaceholder,
   });
 }
 

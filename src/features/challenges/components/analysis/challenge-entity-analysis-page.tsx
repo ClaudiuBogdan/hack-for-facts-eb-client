@@ -29,10 +29,16 @@ import {
   DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES,
   DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES,
 } from '@/lib/analytics-defaults'
-import type { EntityDetailsData, ExecutionLineItem } from '@/lib/api/entities'
+import type {
+  EntityDetailsData,
+  ExecutionLineItem,
+  FundingSourceOption,
+} from '@/lib/api/entities'
 import { DEFAULT_CURRENCY, DEFAULT_INFLATION_ADJUSTED } from '@/lib/globalSettings/params'
 import { useGlobalSettings } from '@/lib/hooks/useGlobalSettings'
 import {
+  entityDetailsQueryOptions,
+  entityExecutionLineItemsQueryOptions,
   useEntityDetails,
   useEntityExecutionLineItems,
   useEntityRelationships,
@@ -113,6 +119,10 @@ type ChallengeEntityAnalysisPageProps = {
   readonly commitmentsDetailLevel?: ChallengeEntityAnalysisCommitmentsDetailLevel
   readonly analyticsTarget?: BudgetItemAnalyticsSearchState
   readonly initialSettings?: ChallengeEntityInitialSettings
+  readonly ssrEntityDetailsParams?: Parameters<typeof entityDetailsQueryOptions>[0]
+  readonly ssrEntityExecutionLineItemsParams?: Parameters<
+    typeof entityExecutionLineItemsQueryOptions
+  >[0]
   readonly onStateChange: (
     patch: Partial<ChallengeEntityAnalysisPageState>,
   ) => void
@@ -126,6 +136,11 @@ type ChallengeEntityAnalysisPageProps = {
   readonly onEntityCuiChange?: (selection: MapEntitySelection) => void
   readonly onEntityResolved?: () => void
   readonly belowHeader?: ReactNode
+}
+
+type EntityExecutionLineItemsData = {
+  readonly nodes: ExecutionLineItem[]
+  readonly fundingSources: FundingSourceOption[]
 }
 
 export type ChallengeTreemapAccountCategory = 'ch' | 'vn'
@@ -914,6 +929,8 @@ export function ChallengeEntityAnalysisPage({
   commitmentsDetailLevel,
   analyticsTarget,
   initialSettings,
+  ssrEntityDetailsParams,
+  ssrEntityExecutionLineItemsParams,
   onStateChange,
   onCommitmentsViewStateChange,
   onAnalyticsTargetChange,
@@ -983,6 +1000,28 @@ export function ChallengeEntityAnalysisPage({
     currency: DEFAULT_CURRENCY,
     inflationAdjusted: DEFAULT_INFLATION_ADJUSTED,
   })
+  const ssrEntityDetailsPlaceholder = useMemo(() => {
+    if (!ssrEntityDetailsParams) {
+      return undefined
+    }
+
+    const ssrQueryOptions = entityDetailsQueryOptions(ssrEntityDetailsParams)
+
+    return queryClient.getQueryData<EntityDetailsData>(ssrQueryOptions.queryKey)
+  }, [queryClient, ssrEntityDetailsParams])
+  const ssrEntityExecutionLineItemsPlaceholder = useMemo(() => {
+    if (!ssrEntityExecutionLineItemsParams) {
+      return undefined
+    }
+
+    const ssrQueryOptions = entityExecutionLineItemsQueryOptions(
+      ssrEntityExecutionLineItemsParams,
+    )
+
+    return queryClient.getQueryData<EntityExecutionLineItemsData>(
+      ssrQueryOptions.queryKey,
+    )
+  }, [queryClient, ssrEntityExecutionLineItemsParams])
   const reportPeriod = useMemo(
     () =>
       buildChallengeEntityAnalysisReportPeriod({
@@ -1054,6 +1093,8 @@ export function ChallengeEntityAnalysisPage({
     trendPeriod,
     mainCreditorCui,
     ...queryNormalizationOptions,
+  }, {
+    ssrPlaceholder: ssrEntityDetailsPlaceholder,
   })
   const entityLineItemsQuery = useEntityExecutionLineItems({
     cui: entityCui,
@@ -1061,6 +1102,8 @@ export function ChallengeEntityAnalysisPage({
     reportType: selectedReportType,
     mainCreditorCui,
     ...queryNormalizationOptions,
+  }, {
+    ssrPlaceholder: ssrEntityExecutionLineItemsPlaceholder,
   })
   const entityMapViewType = useMemo<'UAT' | 'County'>(() => {
     if (

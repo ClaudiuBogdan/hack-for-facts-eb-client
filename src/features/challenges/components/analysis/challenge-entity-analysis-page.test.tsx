@@ -18,6 +18,8 @@ const useEntityDetailsMock = vi.fn()
 const useEntityRelationshipsMock = vi.fn()
 const useEntityExecutionLineItemsMock = vi.fn()
 const useReportsConnectionMock = vi.fn()
+const entityDetailsQueryOptionsMock = vi.fn()
+const entityExecutionLineItemsQueryOptionsMock = vi.fn()
 const useTreemapDrilldownMock = vi.fn()
 const useTreemapChartLinkMock = vi.fn()
 const useChartDataMock = vi.fn()
@@ -113,6 +115,10 @@ vi.mock('@/hooks/filters/useFilterLabels', () => ({
 }))
 
 vi.mock('@/lib/hooks/useEntityDetails', () => ({
+  entityDetailsQueryOptions: (...args: unknown[]) =>
+    entityDetailsQueryOptionsMock(...args),
+  entityExecutionLineItemsQueryOptions: (...args: unknown[]) =>
+    entityExecutionLineItemsQueryOptionsMock(...args),
   useEntityDetails: (...args: unknown[]) => useEntityDetailsMock(...args),
   useEntityRelationships: (...args: unknown[]) =>
     useEntityRelationshipsMock(...args),
@@ -749,6 +755,12 @@ describe('ChallengeEntityAnalysisPage', () => {
         refetch: vi.fn(),
       }),
     )
+    entityDetailsQueryOptionsMock.mockImplementation((params: unknown) => ({
+      queryKey: ['entityDetails', params],
+    }))
+    entityExecutionLineItemsQueryOptionsMock.mockImplementation((params: unknown) => ({
+      queryKey: ['entityLineItems', params],
+    }))
     useEntityRelationshipsMock.mockReturnValue({
       data: {
         children: [],
@@ -844,6 +856,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
     useQueryClientMock.mockReturnValue({
       prefetchQuery: prefetchQueryMock,
+      getQueryData: vi.fn(),
     })
     budgetTreemapMock.mockReset()
     challengeGroupedLineItemsMock.mockReset()
@@ -1310,12 +1323,18 @@ describe('ChallengeEntityAnalysisPage', () => {
         currency: 'EUR',
         inflation_adjusted: true,
       }),
+      {
+        ssrPlaceholder: undefined,
+      },
     )
     expect(useEntityExecutionLineItemsMock).toHaveBeenCalledWith(
       expect.objectContaining({
         currency: 'EUR',
         inflation_adjusted: true,
       }),
+      {
+        ssrPlaceholder: undefined,
+      },
     )
     await waitFor(() => {
       expect(getLatestPublicPreviewCardProps()).toMatchObject({
@@ -2039,11 +2058,17 @@ describe('ChallengeEntityAnalysisPage', () => {
       expect.objectContaining({
         reportType: 'DETAILED',
       }),
+      {
+        ssrPlaceholder: undefined,
+      },
     )
     expect(useEntityExecutionLineItemsMock).toHaveBeenLastCalledWith(
       expect.objectContaining({
         reportType: 'DETAILED',
       }),
+      {
+        ssrPlaceholder: undefined,
+      },
     )
     await waitFor(() => {
       expect(screen.getByTestId('category-evolution')).toHaveTextContent('year:2025')
@@ -2790,6 +2815,9 @@ describe('ChallengeEntityAnalysisPage', () => {
           },
         },
       }),
+      {
+        ssrPlaceholder: undefined,
+      },
     )
     expect(useEntityExecutionLineItemsMock).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -2804,6 +2832,9 @@ describe('ChallengeEntityAnalysisPage', () => {
           },
         },
       }),
+      {
+        ssrPlaceholder: undefined,
+      },
     )
   })
 
@@ -2836,6 +2867,9 @@ describe('ChallengeEntityAnalysisPage', () => {
           },
         },
       }),
+      {
+        ssrPlaceholder: undefined,
+      },
     )
     expect(getLatestPublicPreviewCardProps()).toMatchObject({
       reportPeriodOverride: {
@@ -2879,6 +2913,9 @@ describe('ChallengeEntityAnalysisPage', () => {
           },
         },
       }),
+      {
+        ssrPlaceholder: undefined,
+      },
     )
   })
 
@@ -2917,6 +2954,9 @@ describe('ChallengeEntityAnalysisPage', () => {
           },
         },
       }),
+      {
+        ssrPlaceholder: undefined,
+      },
     )
     expect(getLatestPublicPreviewCardProps()).toMatchObject({
       reportPeriodOverride: {
@@ -2960,6 +3000,9 @@ describe('ChallengeEntityAnalysisPage', () => {
           },
         },
       }),
+      {
+        ssrPlaceholder: undefined,
+      },
     )
   })
 
@@ -2990,6 +3033,97 @@ describe('ChallengeEntityAnalysisPage', () => {
           },
         },
       }),
+      {
+        ssrPlaceholder: undefined,
+      },
+    )
+  })
+
+  it('passes SSR placeholders through to both blocking data hooks when query params are provided', () => {
+    const getQueryDataMock = vi.fn()
+      .mockReturnValueOnce(entityDetails)
+      .mockReturnValueOnce({
+        nodes: lineItems,
+        fundingSources: [],
+      })
+
+    useQueryClientMock.mockReturnValue({
+      prefetchQuery: prefetchQueryMock,
+      getQueryData: getQueryDataMock,
+    })
+
+    render(
+      <ChallengeEntityAnalysisPage
+        entityCui="12345678"
+        state={DEFAULT_PAGE_STATE}
+        initialSettings={{
+          currency: 'RON',
+          inflationAdjusted: false,
+        }}
+        ssrEntityDetailsParams={{
+          cui: '12345678',
+          reportPeriod: {
+            type: 'YEAR',
+            selection: {
+              interval: {
+                start: '2025',
+                end: '2025',
+              },
+            },
+          },
+          trendPeriod: {
+            type: 'YEAR',
+            selection: {
+              interval: {
+                start: '2016',
+                end: '2026',
+              },
+            },
+          },
+          normalization: 'total',
+          currency: 'RON',
+          inflation_adjusted: false,
+          show_period_growth: false,
+        }}
+        ssrEntityExecutionLineItemsParams={{
+          cui: '12345678',
+          reportPeriod: {
+            type: 'YEAR',
+            selection: {
+              interval: {
+                start: '2025',
+                end: '2025',
+              },
+            },
+          },
+          normalization: 'total',
+          currency: 'RON',
+          inflation_adjusted: false,
+        }}
+        onStateChange={vi.fn()}
+      />
+    )
+
+    expect(useEntityDetailsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        cui: '12345678',
+        currency: 'RON',
+      }),
+      {
+        ssrPlaceholder: entityDetails,
+      },
+    )
+    expect(useEntityExecutionLineItemsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        cui: '12345678',
+        currency: 'RON',
+      }),
+      {
+        ssrPlaceholder: {
+          nodes: lineItems,
+          fundingSources: [],
+        },
+      },
     )
   })
 

@@ -12,11 +12,23 @@ let mockedLoaderData:
       currency: string
       inflationAdjusted: boolean
     }
+    ssrEntityDetailsParams?: {
+      cui?: string
+    }
+    ssrEntityExecutionLineItemsParams?: {
+      cui?: string
+    }
   }
   | undefined = {
     initialSettings: {
       currency: 'RON',
       inflationAdjusted: false,
+    },
+    ssrEntityDetailsParams: {
+      cui: '12345678',
+    },
+    ssrEntityExecutionLineItemsParams: {
+      cui: '12345678',
     },
   }
 let campaignProgressState = {
@@ -64,6 +76,8 @@ vi.mock(
       commitmentsDetailLevel,
       analyticsTarget,
       initialSettings,
+      ssrEntityDetailsParams,
+      ssrEntityExecutionLineItemsParams,
       onStateChange,
       onCommitmentsViewStateChange,
       onAnalyticsTargetChange,
@@ -81,7 +95,9 @@ vi.mock(
           {JSON.stringify(analyticsTarget ?? null)}:
           {commitmentsGrouping ?? 'none'}:{commitmentsDetailLevel ?? 'none'}:
           {initialSettings?.currency ?? 'none'}:
-          {String(initialSettings?.inflationAdjusted)}
+          {String(initialSettings?.inflationAdjusted)}:
+          {ssrEntityDetailsParams?.cui ?? 'none'}:
+          {ssrEntityExecutionLineItemsParams?.cui ?? 'none'}
           <button type="button" onClick={() => onEntityResolved?.()}>
             Resolve entity
           </button>
@@ -197,6 +213,12 @@ describe('PrimarieEntityIndexRoutePage', () => {
         currency: 'RON',
         inflationAdjusted: false,
       },
+      ssrEntityDetailsParams: {
+        cui: '12345678',
+      },
+      ssrEntityExecutionLineItemsParams: {
+        cui: '12345678',
+      },
     }
     campaignProgressState = {
       isReady: true,
@@ -227,7 +249,7 @@ describe('PrimarieEntityIndexRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      `87654321:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:all:fn:chapter::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:null:none:none:RON:false`,
+      `87654321:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:all:fn:chapter::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:null:none:none:RON:false:12345678:12345678`,
     )
   })
 
@@ -244,7 +266,7 @@ describe('PrimarieEntityIndexRoutePage', () => {
     ).toHaveAttribute('href', '/primarie/4305857/buget/provocari?lang=en')
   })
 
-  it('normalizes invalid URL combinations before rendering the stable state', async () => {
+  it('renders a stable normalized state for invalid URL combinations without a client redirect', async () => {
     mockedSearch = {
       lang: 'en',
       view: 'not-a-view',
@@ -275,39 +297,9 @@ describe('PrimarieEntityIndexRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      `12345678:en:2024:DETAILED:main-info:vn:all:fn:chapter:51|51.01:vn:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:{"target":{"subjectLabel":"Education salaries","path":[{"type":"fn","code":"65.02"},{"type":"ec","code":"10.01"}]},"view":{"tab":"execution","timeframe":"selected","commitmentsMetric":"CREDITE_ANGAJAMENT"}}:none:none:RON:false`,
+      `12345678:en:2024:DETAILED:main-info:vn:all:fn:chapter:51|51.01:vn:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:{"target":{"subjectLabel":"Education salaries","path":[{"type":"fn","code":"65.02"},{"type":"ec","code":"10.01"}]},"view":{"tab":"execution","timeframe":"selected","commitmentsMetric":"CREDITE_ANGAJAMENT"}}:none:none:RON:false:12345678:12345678`,
     )
-
-    await waitFor(() => {
-      expect(navigateMock).toHaveBeenCalled()
-    })
-
-    const canonicalizeCall = navigateMock.mock.calls[0]?.[0]
-    const canonicalSearch = canonicalizeCall.search(mockedSearch)
-
-    expect(canonicalizeCall.resetScroll).toBeUndefined()
-    expect(canonicalSearch).toMatchObject({
-      view: 'main-info',
-      treemap_primary: 'fn',
-      evolution_primary: 'fn',
-      public_map: DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY,
-      analytics: {
-        target: {
-          subjectLabel: 'Education salaries',
-          path: [
-            { type: 'fn', code: '65.02' },
-            { type: 'ec', code: '10.01' },
-          ],
-        },
-        view: {
-          tab: 'execution',
-          timeframe: 'selected',
-          commitmentsMetric: 'CREDITE_ANGAJAMENT',
-        },
-      },
-    })
-    expect(canonicalSearch).not.toHaveProperty('commitments_grouping')
-    expect(canonicalSearch).not.toHaveProperty('commitments_detail_level')
+    expect(navigateMock).not.toHaveBeenCalled()
   })
 
   it('hydrates expense_type from the URL and writes it back through state changes', async () => {
@@ -320,7 +312,7 @@ describe('PrimarieEntityIndexRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      `12345678:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:functionare:fn:chapter::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:null:none:none:RON:false`,
+      `12345678:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:functionare:fn:chapter::ch:fn:${DEFAULT_CHALLENGE_ENTITY_MAP_PREVIEW_KEY}:null:none:none:RON:false:12345678:12345678`,
     )
 
     fireEvent.click(screen.getByRole('button', { name: 'Change expense type' }))
@@ -350,7 +342,7 @@ describe('PrimarieEntityIndexRoutePage', () => {
     expect(clearExpenseTypeSearch).not.toHaveProperty('expense_type')
   })
 
-  it('canonicalizes legacy public map ids to local preview keys', async () => {
+  it('renders legacy public map ids using the local preview key without a client redirect', async () => {
     mockedSearch = {
       public_map: 'gxnEfLoy3EqI',
     }
@@ -360,21 +352,9 @@ describe('PrimarieEntityIndexRoutePage', () => {
     render(<PrimarieEntityRoutePage />)
 
     expect(screen.getByTestId('analysis-page')).toHaveTextContent(
-      '12345678:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:all:fn:chapter::ch:fn:local-taxes:null:none:none:RON:false',
+      '12345678:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:all:fn:chapter::ch:fn:local-taxes:null:none:none:RON:false:12345678:12345678',
     )
-
-    await waitFor(() => {
-      expect(navigateMock).toHaveBeenCalled()
-    })
-
-    const canonicalizeCall = navigateMock.mock.calls[0]?.[0]
-    const canonicalSearch = canonicalizeCall.search(mockedSearch)
-
-    expect(canonicalizeCall.resetScroll).toBeUndefined()
-    expect(canonicalSearch).toMatchObject({
-      view: 'main-info',
-      public_map: 'local-taxes',
-    })
+    expect(navigateMock).not.toHaveBeenCalled()
   })
 
   it('does not write shared selected entity state when the entity resolves successfully', async () => {

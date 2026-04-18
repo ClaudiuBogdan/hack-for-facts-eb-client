@@ -1,15 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createIsomorphicFn } from '@tanstack/react-start'
 import { applyMapRuntimeConfig } from '@/features/advanced-map-analytics/map-runtime-config'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import { resolveCampaignLocale } from '@/features/campaigns/buget/schemas/campaign-route-search-schema'
-import { buildCampaignRouteHead } from '@/features/campaigns/buget/seo/campaign-seo'
-import type { CampaignRouteSearch } from '@/features/campaigns/buget/types'
 import {
   ChallengeEntityAnalysisLoadingShell,
 } from '@/features/challenges/components/analysis/challenge-entity-analysis-loading-shell'
 import {
-  buildChallengeEntityAnalysisReportPeriod,
-  buildChallengeEntityAnalysisTrendPeriod,
   challengeEntitySubordinateRankingQueryOptions,
   type ChallengeEntityInitialSettings,
 } from '@/features/challenges/components/analysis/challenge-entity-analysis-queries'
@@ -17,51 +13,48 @@ import {
   getChallengeEntityMapPreviewDefinition,
 } from '@/features/challenges/components/analysis/challenge-entity-public-maps'
 import { ChallengeEntityAnalysisRouteSearchSchema } from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
-import {
-  normalizeChallengeEntityAnalysisSearch,
-  type ChallengeEntityAnalysisRouteSearch,
-} from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
+import type { ChallengeEntityAnalysisRouteSearch } from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
 import { advancedMapAnalyticsSeriesDataQueryOptions } from '@/hooks/useAdvancedMapAnalyticsSeriesData'
 import { geoJsonQueryOptions } from '@/hooks/useGeoJson'
 import type { EntityDetailsData } from '@/lib/api/entities'
+import { buildEntityRouteHead, type EntitySeoSnapshot } from '@/features/entities/seo/entity-share-seo'
+import {
+  applyPrimarieEntityCanonicalSearchPatch,
+  filterPrimarieEntityRedirectSearchPatch,
+  hasPrimarieEntityCanonicalSearchPatch,
+  resolvePrimarieEntityRouteAdapter,
+} from '@/features/entities/page-core/route-adapters/primarie-entity-route-adapter'
 import {
   entityDetailsQueryOptions,
   entityExecutionLineItemsQueryOptions,
 } from '@/lib/hooks/useEntityDetails'
-import {
-  DEFAULT_CURRENCY,
-  DEFAULT_INFLATION_ADJUSTED,
-  parseBooleanParam,
-  parseCurrencyParam,
-} from '@/lib/globalSettings/params'
-import {
-  readClientCurrencyPreference,
-  readClientInflationAdjustedPreference,
-} from '@/lib/user-preferences'
 import { toReportTypeValue } from '@/schemas/reporting'
 
-type PrimarieSearchWithGlobalSettings = ChallengeEntityAnalysisRouteSearch & {
-  currency?: unknown
-  inflation_adjusted?: unknown
+type PrimarieLoaderData = {
+  initialSettings: ChallengeEntityInitialSettings
+  entitySeoSnapshot: EntitySeoSnapshot
+  ssrEntityDetailsParams: Parameters<typeof entityDetailsQueryOptions>[0]
+  ssrEntityExecutionLineItemsParams?: Parameters<
+    typeof entityExecutionLineItemsQueryOptions
+  >[0]
+  requestSiteUrl?: string
 }
 
-function resolveChallengeEntityInitialSettings(
-  search: PrimarieSearchWithGlobalSettings | undefined,
-): ChallengeEntityInitialSettings {
-  const urlCurrency = parseCurrencyParam(search?.currency)
-  const urlInflation = parseBooleanParam(search?.inflation_adjusted)
-  const persistedCurrency = readClientCurrencyPreference()
-  const persistedInflationAdjusted = readClientInflationAdjustedPreference()
+const readRequestOrigin = createIsomorphicFn()
+  .client(() => {
+    if (typeof window === 'undefined') {
+      return undefined
+    }
 
-  return {
-    currency: urlCurrency ?? persistedCurrency ?? DEFAULT_CURRENCY,
-    inflationAdjusted:
-      urlInflation ?? persistedInflationAdjusted ?? DEFAULT_INFLATION_ADJUSTED,
-  }
-}
+    return window.location.origin
+  })
+  .server(async (): Promise<string | undefined> => {
+    const { getRequestUrl } = await import('@tanstack/react-start/server')
+      return getRequestUrl().origin
+  })
 
 export const Route = createFileRoute('/primarie/$cui/')({
-  ssr: false,
+  ssr: true,
   validateSearch: ChallengeEntityAnalysisRouteSearchSchema,
   headers: () =>
     createPublicPageCacheHeaders({
@@ -69,57 +62,77 @@ export const Route = createFileRoute('/primarie/$cui/')({
       sharedMaxAgeSeconds: 600,
       staleWhileRevalidateSeconds: 3600,
     }),
-  head: ({ match }) => {
-    const locale = resolveCampaignLocale(match.search as CampaignRouteSearch)
-    return buildCampaignRouteHead({
-      pageKind: 'primarie',
-      locale,
-      entityCui: match.params.cui,
+  beforeLoad: ({ params, search }) => {
+    const primarieRoute = resolvePrimarieEntityRouteAdapter({
+      cui: params.cui,
+      search: search as ChallengeEntityAnalysisRouteSearch | undefined,
+    })
+    const redirectSearchPatch = filterPrimarieEntityRedirectSearchPatch(
+      search as Record<string, unknown> | undefined,
+      primarieRoute.canonicalSearchPatch,
+    )
+
+    if (!hasPrimarieEntityCanonicalSearchPatch(redirectSearchPatch)) {
+      return
+    }
+
+    throw redirect({
+      to: '/primarie/$cui',
+      params,
+      search: applyPrimarieEntityCanonicalSearchPatch(
+        search as Record<string, unknown>,
+        redirectSearchPatch,
+      ),
+      replace: true,
     })
   },
+  head: ({ params, match }: any) =>
+    buildEntityRouteHead({
+      routeId: 'primarie',
+      cui: params.cui,
+      snapshot: (match.loaderData as PrimarieLoaderData | undefined)?.entitySeoSnapshot,
+      searchLang: (match.search as ChallengeEntityAnalysisRouteSearch | undefined)?.lang,
+      siteUrl: (match.loaderData as PrimarieLoaderData | undefined)?.requestSiteUrl,
+    }),
   loader: async ({ context, params, location }: any) => {
     const queryClient = context.queryClient
-    const search = location.search as PrimarieSearchWithGlobalSettings | undefined
-    const normalizedSearch = normalizeChallengeEntityAnalysisSearch(search)
-    const initialSettings = resolveChallengeEntityInitialSettings(search)
-    const reportPeriod = buildChallengeEntityAnalysisReportPeriod({
-      periodType: normalizedSearch.period,
-      selectedYear: normalizedSearch.year,
-      month: normalizedSearch.month,
-      quarter: normalizedSearch.quarter,
+    const requestSiteUrl = await readRequestOrigin()
+    const primarieRoute = resolvePrimarieEntityRouteAdapter({
+      cui: params.cui,
+      search: location.search as ChallengeEntityAnalysisRouteSearch | undefined,
     })
-    const trendPeriod = buildChallengeEntityAnalysisTrendPeriod({
-      periodType: normalizedSearch.period,
-      selectedYear: normalizedSearch.year,
-    })
-    const queryNormalizationOptions = {
-      normalization: normalizedSearch.normalization,
-      show_period_growth: false,
-      currency: initialSettings.currency,
-      inflation_adjusted: initialSettings.inflationAdjusted,
-    } as const
+    const { normalizedSearch, initialSettings, executionContext, exactQueryInputs } =
+      primarieRoute
+    const reportPeriod = exactQueryInputs.entityDetails.reportPeriod
 
-    const entityDetailsOptions = entityDetailsQueryOptions({
-      cui: params.cui,
-      reportPeriod,
-      reportType: normalizedSearch.report_type,
-      trendPeriod,
-      mainCreditorCui: normalizedSearch.main_creditor_cui,
-      ...queryNormalizationOptions,
-    })
-    const entityLineItemsOptions = entityExecutionLineItemsQueryOptions({
-      cui: params.cui,
-      reportPeriod,
-      reportType: normalizedSearch.report_type,
-      mainCreditorCui: normalizedSearch.main_creditor_cui,
-      ...queryNormalizationOptions,
-    })
+    const entityDetailsOptions = entityDetailsQueryOptions(
+      exactQueryInputs.entityDetails,
+    )
+    const entityLineItemsOptions = entityExecutionLineItemsQueryOptions(
+      exactQueryInputs.entityExecutionLineItems!,
+    )
 
     await Promise.all([
       queryClient.ensureQueryData(entityDetailsOptions),
       queryClient.ensureQueryData(entityLineItemsOptions),
     ])
 
+    const entitySeoSnapshotBase: EntitySeoSnapshot = {
+      cui: params.cui,
+      filterContext: {
+        year: normalizedSearch.year,
+        period: normalizedSearch.period,
+        month: normalizedSearch.month,
+        quarter: normalizedSearch.quarter,
+        reportType: normalizedSearch.report_type,
+        mainCreditorCui: normalizedSearch.main_creditor_cui,
+        normalization: executionContext.publicSettings.normalization,
+        currency: executionContext.publicSettings.currency,
+        inflationAdjusted: executionContext.publicSettings.inflationAdjusted,
+        showPeriodGrowth: executionContext.publicSettings.showPeriodGrowth,
+        lang: normalizedSearch.lang,
+      },
+    }
     const entity = queryClient.getQueryData(
       entityDetailsOptions.queryKey,
     ) as EntityDetailsData | undefined
@@ -135,8 +148,8 @@ export const Route = createFileRoute('/primarie/$cui/')({
         selectedYearOverride: normalizedSearch.year,
         reportTypeOverride: toReportTypeValue(normalizedSearch.report_type),
         normalizationOverride: normalizedSearch.normalization,
-        currencyOverride: initialSettings.currency,
-        inflationAdjustedOverride: initialSettings.inflationAdjusted,
+        currencyOverride: executionContext.publicSettings.currency,
+        inflationAdjustedOverride: executionContext.publicSettings.inflationAdjusted,
         forceMapActiveView: true,
       },
     )
@@ -146,14 +159,16 @@ export const Route = createFileRoute('/primarie/$cui/')({
         entityCui: normalizedSearch.main_creditor_cui ?? params.cui,
         reportPeriod,
         normalizationOptions: {
-          currency: initialSettings.currency,
-          inflation_adjusted: initialSettings.inflationAdjusted,
+          currency: executionContext.publicSettings.currency,
+          inflation_adjusted: executionContext.publicSettings.inflationAdjusted,
         },
       }),
     )
-    void queryClient.prefetchQuery(geoJsonQueryOptions('UAT'))
-    if (isCountyEntity) {
-      void queryClient.prefetchQuery(geoJsonQueryOptions('County'))
+    if (typeof window !== 'undefined') {
+      void queryClient.prefetchQuery(geoJsonQueryOptions('UAT'))
+      if (isCountyEntity) {
+        void queryClient.prefetchQuery(geoJsonQueryOptions('County'))
+      }
     }
     void queryClient.prefetchQuery(
       advancedMapAnalyticsSeriesDataQueryOptions({
@@ -163,6 +178,22 @@ export const Route = createFileRoute('/primarie/$cui/')({
 
     return {
       initialSettings,
+      entitySeoSnapshot: entity
+        ? {
+          ...entitySeoSnapshotBase,
+          name: entity.name,
+          entityType: entity.entity_type,
+          defaultReportType: entity.default_report_type,
+          countyName: entity.uat?.county_name,
+          population: entity.uat?.population,
+          totalIncome: entity.totalIncome,
+          totalExpenses: entity.totalExpenses,
+          budgetBalance: entity.budgetBalance,
+        }
+        : entitySeoSnapshotBase,
+      ssrEntityDetailsParams: exactQueryInputs.entityDetails,
+      ssrEntityExecutionLineItemsParams: exactQueryInputs.entityExecutionLineItems,
+      requestSiteUrl,
     }
   },
   pendingComponent: ChallengeEntityAnalysisLoadingShell,
