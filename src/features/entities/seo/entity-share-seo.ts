@@ -156,8 +156,9 @@ export function buildEntityShareImageUrl(params: {
 }): string {
   const siteUrl = params.siteUrl ?? getSiteUrl();
   const query = new URLSearchParams();
+  const routeId = params.routeId ?? "entities";
   const routePolicy = resolveEntityPageRoutePolicy({
-    routeId: params.routeId ?? "entities",
+    routeId,
     cui: params.cui,
   });
 
@@ -201,8 +202,9 @@ export function buildEntityRouteHead(params: {
   const locale = normalizeShareLocale(params.snapshot?.filterContext.lang ?? params.searchLang);
   const site = params.siteUrl ?? getSiteUrl();
   const context = params.snapshot?.filterContext ?? getDefaultFilterContext(locale);
+  const routeId = params.routeId ?? "entities";
   const routePolicy = resolveEntityPageRoutePolicy({
-    routeId: params.routeId ?? "entities",
+    routeId,
     cui: params.cui,
   });
   const canonical = `${site}${routePolicy.canonicalPathname}`;
@@ -212,7 +214,7 @@ export function buildEntityRouteHead(params: {
     siteUrl: site,
     cui: params.cui,
     context: { ...context, lang: locale },
-    routeId: params.routeId,
+    routeId,
   });
 
   const entityName = params.snapshot?.name ?? `Entity ${params.cui}`;

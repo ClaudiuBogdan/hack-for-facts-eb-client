@@ -29,6 +29,7 @@ import {
   DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES,
   DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES,
 } from '@/lib/analytics-defaults'
+import type { EntityPageLoaderPayload } from '@/features/entities/page-core'
 import type {
   EntityDetailsData,
   ExecutionLineItem,
@@ -46,7 +47,7 @@ import {
 } from '@/lib/hooks/useEntityDetails'
 import type { NormalizationOptions } from '@/lib/normalization'
 import { getReportDateRange } from '@/lib/period-utils'
-import { DEFAULT_SELECTED_YEAR, defaultYearRange } from '@/schemas/charts'
+import { defaultYearRange } from '@/schemas/charts'
 import {
   type GqlReportType,
   type ReportPeriodInput,
@@ -119,6 +120,10 @@ type ChallengeEntityAnalysisPageProps = {
   readonly commitmentsDetailLevel?: ChallengeEntityAnalysisCommitmentsDetailLevel
   readonly analyticsTarget?: BudgetItemAnalyticsSearchState
   readonly initialSettings?: ChallengeEntityInitialSettings
+  readonly ssrLoaderPayload?: Pick<
+    EntityPageLoaderPayload,
+    'ssrEntityDetailsParams' | 'ssrEntityExecutionLineItemsParams'
+  >
   readonly ssrEntityDetailsParams?: Parameters<typeof entityDetailsQueryOptions>[0]
   readonly ssrEntityExecutionLineItemsParams?: Parameters<
     typeof entityExecutionLineItemsQueryOptions
@@ -172,8 +177,8 @@ const CHALLENGE_ADMINISTRATIVE_EXPENSE_SEARCH_TERM =
   `fn:${CHALLENGE_ADMINISTRATIVE_EXPENSE_PATH[CHALLENGE_ADMINISTRATIVE_EXPENSE_PATH.length - 1]}` as const
 const CHALLENGE_SHOW_PERIOD_GROWTH = false
 const CHALLENGE_AVAILABLE_YEARS = Array.from(
-  { length: DEFAULT_SELECTED_YEAR - defaultYearRange.start + 1 },
-  (_, index) => DEFAULT_SELECTED_YEAR - index,
+  { length: defaultYearRange.end - defaultYearRange.start + 1 },
+  (_, index) => defaultYearRange.end - index,
 )
 const CHALLENGE_ENTITY_EXPENSE_TYPE_ORDER = [
   undefined,
@@ -929,6 +934,7 @@ export function ChallengeEntityAnalysisPage({
   commitmentsDetailLevel,
   analyticsTarget,
   initialSettings,
+  ssrLoaderPayload,
   ssrEntityDetailsParams,
   ssrEntityExecutionLineItemsParams,
   onStateChange,
@@ -1000,28 +1006,35 @@ export function ChallengeEntityAnalysisPage({
     currency: DEFAULT_CURRENCY,
     inflationAdjusted: DEFAULT_INFLATION_ADJUSTED,
   })
+  const resolvedSsrEntityDetailsParams =
+    ssrLoaderPayload?.ssrEntityDetailsParams ?? ssrEntityDetailsParams
+  const resolvedSsrEntityExecutionLineItemsParams =
+    ssrLoaderPayload?.ssrEntityExecutionLineItemsParams ??
+    ssrEntityExecutionLineItemsParams
   const ssrEntityDetailsPlaceholder = useMemo(() => {
-    if (!ssrEntityDetailsParams) {
+    if (!resolvedSsrEntityDetailsParams) {
       return undefined
     }
 
-    const ssrQueryOptions = entityDetailsQueryOptions(ssrEntityDetailsParams)
+    const ssrQueryOptions = entityDetailsQueryOptions(
+      resolvedSsrEntityDetailsParams,
+    )
 
     return queryClient.getQueryData<EntityDetailsData>(ssrQueryOptions.queryKey)
-  }, [queryClient, ssrEntityDetailsParams])
+  }, [queryClient, resolvedSsrEntityDetailsParams])
   const ssrEntityExecutionLineItemsPlaceholder = useMemo(() => {
-    if (!ssrEntityExecutionLineItemsParams) {
+    if (!resolvedSsrEntityExecutionLineItemsParams) {
       return undefined
     }
 
     const ssrQueryOptions = entityExecutionLineItemsQueryOptions(
-      ssrEntityExecutionLineItemsParams,
+      resolvedSsrEntityExecutionLineItemsParams,
     )
 
     return queryClient.getQueryData<EntityExecutionLineItemsData>(
       ssrQueryOptions.queryKey,
     )
-  }, [queryClient, ssrEntityExecutionLineItemsParams])
+  }, [queryClient, resolvedSsrEntityExecutionLineItemsParams])
   const reportPeriod = useMemo(
     () =>
       buildChallengeEntityAnalysisReportPeriod({

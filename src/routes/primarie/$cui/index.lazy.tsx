@@ -32,6 +32,7 @@ import {
   encodeChallengeTreemapPath,
   normalizeChallengeEntityAnalysisSearch,
 } from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
+import type { EntityPageLoaderPayload } from '@/features/entities/page-core'
 
 export const Route = createLazyFileRoute('/primarie/$cui/')({
   component: PrimarieEntityRoutePage,
@@ -166,6 +167,12 @@ export function PrimarieEntityRoutePage() {
   const loaderData = Route.useLoaderData() as
     | {
       initialSettings?: ChallengeEntityInitialSettings
+      entityPageBootstrap?: {
+        loaderPayload?: Pick<
+          EntityPageLoaderPayload,
+          'ssrEntityDetailsParams' | 'ssrEntityExecutionLineItemsParams'
+        >
+      }
       ssrEntityDetailsParams?: Parameters<
         typeof import('@/lib/hooks/useEntityDetails').entityDetailsQueryOptions
       >[0]
@@ -375,6 +382,7 @@ export function PrimarieEntityRoutePage() {
   )
 
   const dialogLanguage = normalizedSearch.lang === 'en' ? 'en' : 'ro'
+  const ssrLoaderPayload = loaderData?.entityPageBootstrap?.loaderPayload
   const selectedEntityName = normalizeSelectionText(
     pendingMapEntitySelection?.entityName,
   )
@@ -409,6 +417,7 @@ export function PrimarieEntityRoutePage() {
         commitmentsDetailLevel={normalizedSearch.commitments_detail_level}
         analyticsTarget={normalizedSearch.analytics}
         initialSettings={loaderData?.initialSettings}
+        ssrLoaderPayload={ssrLoaderPayload}
         ssrEntityDetailsParams={loaderData?.ssrEntityDetailsParams}
         ssrEntityExecutionLineItemsParams={
           loaderData?.ssrEntityExecutionLineItemsParams

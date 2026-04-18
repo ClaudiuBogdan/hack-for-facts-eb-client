@@ -147,7 +147,7 @@ export const ChallengeEntityAnalysisRouteSearchSchema = z.object({
     .number()
     .int()
     .min(defaultYearRange.start)
-    .max(DEFAULT_SELECTED_YEAR)
+    .max(defaultYearRange.end)
     .optional(),
   month: z.string().optional(),
   quarter: z.string().optional(),

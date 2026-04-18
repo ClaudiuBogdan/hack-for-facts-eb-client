@@ -16,6 +16,7 @@ import { getInitialFilterState, GqlReportTypeEnum, toExecutionReportType, type G
 import { normalizeLocale } from '@/lib/i18n'
 import type { EntitySeoSnapshot, EntityShareFilterContext, ShareLocale } from '@/features/entities/seo/entity-share-seo'
 import { resolveEntityPageRoutePolicy } from '@/features/entities/page-core/seo/entity-page-route-policy'
+import type { EntityPageRouteId } from '@/features/entities/page-core/types'
 
 const redactCui = (cui: string | undefined | null): string => {
   if (!cui || cui.length < 4) return '***'
@@ -87,6 +88,7 @@ type ShareRenderWorkerData = {
   readonly context: EntityShareFilterContext
   readonly locale: ShareLocale
   readonly siteUrl: string
+  readonly routeId: EntityPageRouteId
 }
 
 type ShareImageCacheEntry = {
@@ -100,6 +102,7 @@ type ShareRenderQueueTask = {
   readonly context: EntityShareFilterContext
   readonly locale: ShareLocale
   readonly siteUrl: string
+  readonly routeId: EntityPageRouteId
   readonly resolve: (png: Uint8Array) => void
   readonly reject: (error: Error) => void
 }
@@ -135,6 +138,7 @@ async function bootstrapShareRenderWorkerThread(): Promise<void> {
       snapshot,
       locale: data.locale,
       siteUrl: data.siteUrl,
+      routeId: data.routeId,
     })
     const pngBuffer = await renderShareCardPng(viewModel)
     parentPort.postMessage(new Uint8Array(pngBuffer))
@@ -317,11 +321,13 @@ function buildShareImageCacheKey(params: {
   readonly context: EntityShareFilterContext
   readonly locale: ShareLocale
   readonly siteUrl: string
+  readonly routeId: EntityPageRouteId
 }): string {
-  const { cui, context, locale, siteUrl } = params
+  const { cui, context, locale, siteUrl, routeId } = params
 
   return [
     cui,
+    routeId,
     locale,
     siteUrl,
     String(context.year),
@@ -371,6 +377,7 @@ async function processShareRenderTask(task: ShareRenderQueueTask): Promise<void>
       context: task.context,
       locale: task.locale,
       siteUrl: task.siteUrl,
+      routeId: task.routeId,
     })
     storeCachedShareImage(task.cacheKey, pngBuffer)
     shareRenderCooldownUntil.delete(task.cacheKey)
@@ -587,8 +594,13 @@ export function buildEntityShareImageViewModel(params: {
   readonly snapshot: EntitySeoSnapshot
   readonly locale: ShareLocale
   readonly siteUrl: string
+  readonly routeId?: EntityPageRouteId
 }): EntityShareImageViewModel {
   const { snapshot, locale, siteUrl } = params
+  const routePolicy = resolveEntityPageRoutePolicy({
+    routeId: params.routeId ?? 'entities',
+    cui: snapshot.cui,
+  })
 
   const fallbackName = locale === 'en'
     ? `Entity ${snapshot.cui}`
@@ -657,10 +669,7 @@ export function buildEntityShareImageViewModel(params: {
     metaItems,
     kpis,
     footerBrand: 'Transparenta.eu',
-    footerLink: `${siteUrl}${resolveEntityPageRoutePolicy({
-      routeId: 'entities',
-      cui: snapshot.cui,
-    }).canonicalPathname}`,
+    footerLink: `${siteUrl}${routePolicy.canonicalPathname}`,
   }
 }
 
@@ -1027,6 +1036,7 @@ async function generateShareCardPngOffThread(params: {
   readonly context: EntityShareFilterContext
   readonly locale: ShareLocale
   readonly siteUrl: string
+  readonly routeId: EntityPageRouteId
 }): Promise<Buffer> {
   if (!isMainThread) {
     const { entity, dataFetchFailed } = await fetchEntityForShareSnapshot(params.cui, params.context)
@@ -1039,6 +1049,7 @@ async function generateShareCardPngOffThread(params: {
       snapshot,
       locale: params.locale,
       siteUrl: params.siteUrl,
+      routeId: params.routeId,
     })
     return renderShareCardPng(viewModel)
   }
@@ -1049,6 +1060,7 @@ async function generateShareCardPngOffThread(params: {
     context: params.context,
     locale: params.locale,
     siteUrl: params.siteUrl,
+    routeId: params.routeId,
   })
 }
 
@@ -1130,9 +1142,11 @@ async function fetchEntityForShareSnapshot(
 export async function handleEntityShareImageRequest(params: {
   readonly request: Request
   readonly cui?: string
+  readonly routeId?: EntityPageRouteId
 }): Promise<Response> {
   const { request } = params
   const cui = params.cui
+  const routeId = params.routeId ?? 'entities'
 
   if (!cui) {
     return new Response('Missing CUI parameter', {
@@ -1176,6 +1190,7 @@ export async function handleEntityShareImageRequest(params: {
     context,
     locale,
     siteUrl,
+    routeId,
   })
 
   const cachedImage = getCachedShareImage(cacheKey)
@@ -1195,6 +1210,7 @@ export async function handleEntityShareImageRequest(params: {
       context,
       locale,
       siteUrl,
+      routeId,
     })
 
     return new Response(Buffer.from(generatedPng), {
@@ -1217,6 +1233,7 @@ export async function handleEntityShareImageRequest(params: {
       snapshot: fallbackSnapshot,
       locale,
       siteUrl,
+      routeId,
     })
 
     try {

@@ -12,6 +12,16 @@ let mockedLoaderData:
       currency: string
       inflationAdjusted: boolean
     }
+    entityPageBootstrap?: {
+      loaderPayload?: {
+        ssrEntityDetailsParams?: {
+          cui?: string
+        }
+        ssrEntityExecutionLineItemsParams?: {
+          cui?: string
+        }
+      }
+    }
     ssrEntityDetailsParams?: {
       cui?: string
     }
@@ -23,6 +33,16 @@ let mockedLoaderData:
     initialSettings: {
       currency: 'RON',
       inflationAdjusted: false,
+    },
+    entityPageBootstrap: {
+      loaderPayload: {
+        ssrEntityDetailsParams: {
+          cui: '12345678',
+        },
+        ssrEntityExecutionLineItemsParams: {
+          cui: '12345678',
+        },
+      },
     },
     ssrEntityDetailsParams: {
       cui: '12345678',
@@ -76,6 +96,7 @@ vi.mock(
       commitmentsDetailLevel,
       analyticsTarget,
       initialSettings,
+      ssrLoaderPayload,
       ssrEntityDetailsParams,
       ssrEntityExecutionLineItemsParams,
       onStateChange,
@@ -87,6 +108,14 @@ vi.mock(
     }: any) => (
       <>
         {belowHeader}
+        {(() => {
+          const effectiveSsrEntityDetailsParams =
+            ssrLoaderPayload?.ssrEntityDetailsParams ?? ssrEntityDetailsParams
+          const effectiveSsrEntityExecutionLineItemsParams =
+            ssrLoaderPayload?.ssrEntityExecutionLineItemsParams ??
+            ssrEntityExecutionLineItemsParams
+
+          return (
         <div data-testid="analysis-page">
           {entityCui}:{languageQuery ?? 'ro'}:{state.selectedYear}:
           {state.reportType}:{state.activeView}:{state.treemapAccountCategory}:{state.expenseType ?? 'all'}:{state.treemapPrimary}:
@@ -96,8 +125,8 @@ vi.mock(
           {commitmentsGrouping ?? 'none'}:{commitmentsDetailLevel ?? 'none'}:
           {initialSettings?.currency ?? 'none'}:
           {String(initialSettings?.inflationAdjusted)}:
-          {ssrEntityDetailsParams?.cui ?? 'none'}:
-          {ssrEntityExecutionLineItemsParams?.cui ?? 'none'}
+          {effectiveSsrEntityDetailsParams?.cui ?? 'none'}:
+          {effectiveSsrEntityExecutionLineItemsParams?.cui ?? 'none'}
           <button type="button" onClick={() => onEntityResolved?.()}>
             Resolve entity
           </button>
@@ -199,6 +228,8 @@ vi.mock(
             Select entity from map
           </button>
         </div>
+          )
+        })()}
       </>
     ),
   }),
@@ -212,6 +243,16 @@ describe('PrimarieEntityIndexRoutePage', () => {
       initialSettings: {
         currency: 'RON',
         inflationAdjusted: false,
+      },
+      entityPageBootstrap: {
+        loaderPayload: {
+          ssrEntityDetailsParams: {
+            cui: '12345678',
+          },
+          ssrEntityExecutionLineItemsParams: {
+            cui: '12345678',
+          },
+        },
       },
       ssrEntityDetailsParams: {
         cui: '12345678',
@@ -355,6 +396,42 @@ describe('PrimarieEntityIndexRoutePage', () => {
       '12345678:ro:2025:PRINCIPAL_AGGREGATED:main-info:ch:all:fn:chapter::ch:fn:local-taxes:null:none:none:RON:false:12345678:12345678',
     )
     expect(navigateMock).not.toHaveBeenCalled()
+  })
+
+  it('prefers shared bootstrap SSR params over duplicated top-level fields', async () => {
+    mockedLoaderData = {
+      initialSettings: {
+        currency: 'RON',
+        inflationAdjusted: false,
+      },
+      entityPageBootstrap: {
+        loaderPayload: {
+          ssrEntityDetailsParams: {
+            cui: 'shared-details',
+          },
+          ssrEntityExecutionLineItemsParams: {
+            cui: 'shared-line-items',
+          },
+        },
+      },
+      ssrEntityDetailsParams: {
+        cui: 'legacy-details',
+      },
+      ssrEntityExecutionLineItemsParams: {
+        cui: 'legacy-line-items',
+      },
+    }
+
+    const { PrimarieEntityRoutePage } = await import('./index.lazy')
+
+    render(<PrimarieEntityRoutePage />)
+
+    expect(screen.getByTestId('analysis-page')).toHaveTextContent(
+      'shared-details:shared-line-items',
+    )
+    expect(screen.getByTestId('analysis-page')).not.toHaveTextContent(
+      'legacy-details:legacy-line-items',
+    )
   })
 
   it('does not write shared selected entity state when the entity resolves successfully', async () => {

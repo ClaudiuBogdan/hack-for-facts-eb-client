@@ -24,6 +24,7 @@ import { useEntityViews } from '@/hooks/useEntityViews'
 import { useRecentEntities } from '@/hooks/useRecentEntities'
 import { useEntityMapFilter } from '@/components/entities/hooks/useEntityMapFilter'
 import { useEntityDetails, entityDetailsQueryOptions } from '@/lib/hooks/useEntityDetails'
+import type { EntityPageLoaderPayload } from '@/features/entities/page-core'
 
 import { Overview } from '@/components/entities/views/Overview'
 import { EntityDetailsData } from '@/lib/api/entities'
@@ -120,6 +121,7 @@ function EntityDetailsPage() {
   const navigate = useNavigate({ from: '/entities/$cui' })
   const queryClient = useQueryClient()
   const loaderData = Route.useLoaderData() as {
+    entityPageLoaderPayload?: Pick<EntityPageLoaderPayload, 'ssrEntityDetailsParams'>
     ssrParams?: Parameters<typeof entityDetailsQueryOptions>[0]
     ssrSettings?: {
       currency?: 'RON' | 'EUR' | 'USD'
@@ -191,15 +193,18 @@ function EntityDetailsPage() {
   const reportPeriod = useMemo(() => getInitialFilterState(period, selectedYear, month, quarter), [period, selectedYear, month, quarter])
   const trendPeriod = useMemo(() => makeTrendPeriod(period, selectedYear, START_YEAR, END_YEAR), [period, selectedYear])
   const years = useMemo(() => Array.from({ length: END_YEAR - START_YEAR + 1 }, (_, idx) => END_YEAR - idx), [])
+  const ssrEntityDetailsParams =
+    loaderData?.entityPageLoaderPayload?.ssrEntityDetailsParams ??
+    loaderData?.ssrParams
 
   // Derive SSR entity from rehydrated cache using SSR params (once on mount)
   // This provides immediate data even if client params differ from SSR params
   const ssrPlaceholder = useMemo(() => {
-    if (!loaderData?.ssrParams) return undefined
-    const ssrQueryOptions = entityDetailsQueryOptions(loaderData.ssrParams)
+    if (!ssrEntityDetailsParams) return undefined
+    const ssrQueryOptions = entityDetailsQueryOptions(ssrEntityDetailsParams)
     return queryClient.getQueryData<EntityDetailsData>(ssrQueryOptions.queryKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loaderData?.ssrParams])
+  }, [ssrEntityDetailsParams])
 
   const { data: entity, isLoading, isFetching, isError, error } = useEntityDetails({
     cui,

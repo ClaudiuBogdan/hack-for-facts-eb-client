@@ -3,7 +3,7 @@ import { queryOptions } from '@tanstack/react-query'
 import { fetchEntityAnalytics } from '@/lib/api/entity-analytics'
 import type { EntityAnalyticsConnection } from '@/schemas/entity-analytics'
 import type { Currency } from '@/schemas/charts'
-import { DEFAULT_SELECTED_YEAR, defaultYearRange } from '@/schemas/charts'
+import { defaultYearRange } from '@/schemas/charts'
 import type { NormalizationOptions } from '@/lib/normalization'
 import {
   getInitialFilterState,
@@ -49,7 +49,7 @@ export function buildChallengeEntityAnalysisTrendPeriod(
     params.periodType,
     params.selectedYear,
     defaultYearRange.start,
-    DEFAULT_SELECTED_YEAR,
+    defaultYearRange.end,
   ) as ReportPeriodInput
 }
 

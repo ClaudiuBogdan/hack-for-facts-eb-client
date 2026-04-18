@@ -73,6 +73,7 @@ describe('entity-share-seo', () => {
         showPeriodGrowth: true,
         lang: 'en',
       },
+      routeId: 'entities',
     })
 
     const parsedUrl = new URL(imageUrl)
@@ -87,6 +88,26 @@ describe('entity-share-seo', () => {
     expect(parsedUrl.searchParams.get('inflation_adjusted')).toBe('true')
     expect(parsedUrl.searchParams.get('show_period_growth')).toBe('true')
     expect(parsedUrl.searchParams.get('lang')).toBe('en')
+  })
+
+  it('resolves primarie share image URLs using the current route policy', () => {
+    const imageUrl = buildEntityShareImageUrl({
+      siteUrl: 'https://transparenta.eu',
+      cui: '4305857',
+      context: {
+        year: 2024,
+        period: 'YEAR',
+        normalization: 'total',
+        currency: 'RON',
+        inflationAdjusted: false,
+        showPeriodGrowth: false,
+        lang: 'ro',
+      },
+      routeId: 'primarie',
+    })
+
+    const parsedUrl = new URL(imageUrl)
+    expect(parsedUrl.pathname).toBe('/entities/4305857/share-image.png')
   })
 
   it('falls back to generic text when entity snapshot is missing', () => {
@@ -123,6 +144,9 @@ describe('entity-share-seo', () => {
       'https://transparenta.eu/entities/4305857',
     )
     expect(getMetaContent(head.meta, { property: 'og:image' })).toContain(
+      '/entities/4305857/share-image.png?',
+    )
+    expect(getMetaContent(head.meta, { name: 'twitter:image' })).toContain(
       '/entities/4305857/share-image.png?',
     )
     expect(head.links).toEqual([

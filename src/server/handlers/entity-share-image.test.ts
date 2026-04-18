@@ -112,6 +112,27 @@ describe('entity-share-image', () => {
     expect(viewModel.subtitle).toBe('Budget execution secondary')
   })
 
+  it('derives rendered footer links from route policy for both route ids', () => {
+    const snapshot = makeBaseSnapshot()
+
+    const entitiesViewModel = buildEntityShareImageViewModel({
+      snapshot,
+      locale: 'ro',
+      siteUrl: 'https://transparenta.eu',
+      routeId: 'entities',
+    })
+
+    const primarieViewModel = buildEntityShareImageViewModel({
+      snapshot,
+      locale: 'ro',
+      siteUrl: 'https://transparenta.eu',
+      routeId: 'primarie',
+    })
+
+    expect(entitiesViewModel.footerLink).toBe('https://transparenta.eu/entities/4305857')
+    expect(primarieViewModel.footerLink).toBe('https://transparenta.eu/entities/4305857')
+  })
+
   it('uses no-store headers for non-cacheable image responses', () => {
     const noStoreHeaders = buildShareImageResponseHeaders({
       cacheable: false,

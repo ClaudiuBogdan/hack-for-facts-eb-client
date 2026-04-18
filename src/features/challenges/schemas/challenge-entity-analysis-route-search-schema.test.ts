@@ -214,6 +214,20 @@ describe('challenge entity analytics search normalization', () => {
     })
   })
 
+  it('accepts 2026 while keeping 2025 as the default selected year', () => {
+    expect(
+      ChallengeEntityAnalysisRouteSearchSchema.parse({
+        year: 2026,
+      }),
+    ).toMatchObject({
+      year: 2026,
+    })
+
+    expect(normalizeChallengeEntityAnalysisSearch(undefined)).toMatchObject({
+      year: 2025,
+    })
+  })
+
   it('normalizes invalid period anchors and clears stale month and quarter values in the canonical patch', () => {
     const rawSearch = {
       period: 'invalid',

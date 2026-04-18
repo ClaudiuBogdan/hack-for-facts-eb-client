@@ -49,6 +49,7 @@ import { Route as MapsDatasetsIndexRouteImport } from './routes/maps/datasets/in
 import { Route as ClassificationsFunctionalIndexRouteImport } from './routes/classifications/functional/index'
 import { Route as ClassificationsEconomicIndexRouteImport } from './routes/classifications/economic/index'
 import { Route as LangLearningIndexRouteImport } from './routes/$lang/learning/index'
+import { Route as PrimarieCuiShareImageDotpngRouteImport } from './routes/primarie/$cui/share-image[.]png'
 import { Route as MapsPublicMapIdRouteImport } from './routes/maps/public/$mapId'
 import { Route as MapsEditorNewRouteImport } from './routes/maps/editor/new'
 import { Route as MapsEditorMapIdRouteImport } from './routes/maps/editor/$mapId'
@@ -347,6 +348,12 @@ const LangLearningIndexRoute = LangLearningIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/$lang/learning/index.lazy').then((d) => d.Route),
 )
+const PrimarieCuiShareImageDotpngRoute =
+  PrimarieCuiShareImageDotpngRouteImport.update({
+    id: '/share-image.png',
+    path: '/share-image.png',
+    getParentRoute: () => PrimarieCuiRouteRoute,
+  } as any)
 const MapsPublicMapIdRoute = MapsPublicMapIdRouteImport.update({
   id: '/maps/public/$mapId',
   path: '/maps/public/$mapId',
@@ -658,6 +665,7 @@ export interface FileRoutesByFullPath {
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
+  '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
@@ -729,6 +737,7 @@ export interface FileRoutesByTo {
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
+  '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/$lang/learning': typeof LangLearningIndexRoute
   '/classifications/economic': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional': typeof ClassificationsFunctionalIndexRoute
@@ -805,6 +814,7 @@ export interface FileRoutesById {
   '/maps/editor/$mapId': typeof MapsEditorMapIdRoute
   '/maps/editor/new': typeof MapsEditorNewRoute
   '/maps/public/$mapId': typeof MapsPublicMapIdRoute
+  '/primarie/$cui/share-image.png': typeof PrimarieCuiShareImageDotpngRoute
   '/$lang/learning/': typeof LangLearningIndexRoute
   '/classifications/economic/': typeof ClassificationsEconomicIndexRoute
   '/classifications/functional/': typeof ClassificationsFunctionalIndexRoute
@@ -883,6 +893,7 @@ export interface FileRouteTypes {
     | '/maps/editor/$mapId'
     | '/maps/editor/new'
     | '/maps/public/$mapId'
+    | '/primarie/$cui/share-image.png'
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
@@ -954,6 +965,7 @@ export interface FileRouteTypes {
     | '/maps/editor/$mapId'
     | '/maps/editor/new'
     | '/maps/public/$mapId'
+    | '/primarie/$cui/share-image.png'
     | '/$lang/learning'
     | '/classifications/economic'
     | '/classifications/functional'
@@ -1029,6 +1041,7 @@ export interface FileRouteTypes {
     | '/maps/editor/$mapId'
     | '/maps/editor/new'
     | '/maps/public/$mapId'
+    | '/primarie/$cui/share-image.png'
     | '/$lang/learning/'
     | '/classifications/economic/'
     | '/classifications/functional/'
@@ -1412,6 +1425,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangLearningIndexRouteImport
       parentRoute: typeof LangLearningRouteRoute
     }
+    '/primarie/$cui/share-image.png': {
+      id: '/primarie/$cui/share-image.png'
+      path: '/share-image.png'
+      fullPath: '/primarie/$cui/share-image.png'
+      preLoaderRoute: typeof PrimarieCuiShareImageDotpngRouteImport
+      parentRoute: typeof PrimarieCuiRouteRoute
+    }
     '/maps/public/$mapId': {
       id: '/maps/public/$mapId'
       path: '/maps/public/$mapId'
@@ -1729,6 +1749,7 @@ const PrimarieCuiBugetProvocariRouteRouteWithChildren =
   )
 
 interface PrimarieCuiRouteRouteChildren {
+  PrimarieCuiShareImageDotpngRoute: typeof PrimarieCuiShareImageDotpngRoute
   PrimarieCuiIndexRoute: typeof PrimarieCuiIndexRoute
   PrimarieCuiBugetProvocariRouteRoute: typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
   PrimarieCuiBugetCalendarRoute: typeof PrimarieCuiBugetCalendarRoute
@@ -1737,6 +1758,7 @@ interface PrimarieCuiRouteRouteChildren {
 }
 
 const PrimarieCuiRouteRouteChildren: PrimarieCuiRouteRouteChildren = {
+  PrimarieCuiShareImageDotpngRoute: PrimarieCuiShareImageDotpngRoute,
   PrimarieCuiIndexRoute: PrimarieCuiIndexRoute,
   PrimarieCuiBugetProvocariRouteRoute:
     PrimarieCuiBugetProvocariRouteRouteWithChildren,

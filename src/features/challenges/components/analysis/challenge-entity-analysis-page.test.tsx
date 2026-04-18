@@ -3127,6 +3127,145 @@ describe('ChallengeEntityAnalysisPage', () => {
     )
   })
 
+  it('prefers SSR placeholder params from the shared loader payload', () => {
+    const sharedEntityDetailsParams = {
+      cui: 'shared-details',
+      reportPeriod: {
+        type: 'YEAR',
+        selection: {
+          interval: {
+            start: '2025',
+            end: '2025',
+          },
+        },
+      },
+      trendPeriod: {
+        type: 'YEAR',
+        selection: {
+          interval: {
+            start: '2016',
+            end: '2026',
+          },
+        },
+      },
+      normalization: 'total',
+      currency: 'RON',
+      inflation_adjusted: false,
+      show_period_growth: false,
+    } as const
+    const sharedEntityExecutionLineItemsParams = {
+      cui: 'shared-line-items',
+      reportPeriod: {
+        type: 'YEAR',
+        selection: {
+          interval: {
+            start: '2025',
+            end: '2025',
+          },
+        },
+      },
+      normalization: 'total',
+      currency: 'RON',
+      inflation_adjusted: false,
+    } as const
+    const getQueryDataMock = vi.fn()
+      .mockReturnValueOnce(entityDetails)
+      .mockReturnValueOnce({
+        nodes: lineItems,
+        fundingSources: [],
+      })
+
+    useQueryClientMock.mockReturnValue({
+      prefetchQuery: prefetchQueryMock,
+      getQueryData: getQueryDataMock,
+    })
+
+    render(
+      <ChallengeEntityAnalysisPage
+        entityCui="12345678"
+        state={DEFAULT_PAGE_STATE}
+        initialSettings={{
+          currency: 'RON',
+          inflationAdjusted: false,
+        }}
+        ssrLoaderPayload={{
+          ssrEntityDetailsParams: sharedEntityDetailsParams,
+          ssrEntityExecutionLineItemsParams:
+            sharedEntityExecutionLineItemsParams,
+        }}
+        ssrEntityDetailsParams={{
+          cui: 'legacy-details',
+          reportPeriod: {
+            type: 'YEAR',
+            selection: {
+              interval: {
+                start: '2024',
+                end: '2024',
+              },
+            },
+          },
+          trendPeriod: {
+            type: 'YEAR',
+            selection: {
+              interval: {
+                start: '2015',
+                end: '2025',
+              },
+            },
+          },
+          normalization: 'per_capita',
+          currency: 'EUR',
+          inflation_adjusted: true,
+          show_period_growth: false,
+        }}
+        ssrEntityExecutionLineItemsParams={{
+          cui: 'legacy-line-items',
+          reportPeriod: {
+            type: 'YEAR',
+            selection: {
+              interval: {
+                start: '2024',
+                end: '2024',
+              },
+            },
+          },
+          normalization: 'per_capita',
+          currency: 'EUR',
+          inflation_adjusted: true,
+        }}
+        onStateChange={vi.fn()}
+      />,
+    )
+
+    expect(entityDetailsQueryOptionsMock).toHaveBeenCalledWith(
+      sharedEntityDetailsParams,
+    )
+    expect(entityExecutionLineItemsQueryOptionsMock).toHaveBeenCalledWith(
+      sharedEntityExecutionLineItemsParams,
+    )
+    expect(useEntityDetailsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        cui: '12345678',
+        currency: 'RON',
+      }),
+      {
+        ssrPlaceholder: entityDetails,
+      },
+    )
+    expect(useEntityExecutionLineItemsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        cui: '12345678',
+        currency: 'RON',
+      }),
+      {
+        ssrPlaceholder: {
+          nodes: lineItems,
+          fundingSources: [],
+        },
+      },
+    )
+  })
+
   it('changes the selected quarter when the spending and income chart requests a different quarter', async () => {
     renderAnalysisPage({
       state: {
