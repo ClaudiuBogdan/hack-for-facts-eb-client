@@ -15,6 +15,7 @@ import { defaultYearRange, DEFAULT_SELECTED_YEAR, type Currency, type Normalizat
 import { getInitialFilterState, GqlReportTypeEnum, toExecutionReportType, type GqlReportType } from '@/schemas/reporting'
 import { normalizeLocale } from '@/lib/i18n'
 import type { EntitySeoSnapshot, EntityShareFilterContext, ShareLocale } from '@/features/entities/seo/entity-share-seo'
+import { resolveEntityPageRoutePolicy } from '@/features/entities/page-core/seo/entity-page-route-policy'
 
 const redactCui = (cui: string | undefined | null): string => {
   if (!cui || cui.length < 4) return '***'
@@ -656,7 +657,10 @@ export function buildEntityShareImageViewModel(params: {
     metaItems,
     kpis,
     footerBrand: 'Transparenta.eu',
-    footerLink: `${siteUrl}/entities/${encodeURIComponent(snapshot.cui)}`,
+    footerLink: `${siteUrl}${resolveEntityPageRoutePolicy({
+      routeId: 'entities',
+      cui: snapshot.cui,
+    }).canonicalPathname}`,
   }
 }
 

@@ -4,13 +4,13 @@ import { ViewLoading } from '@/components/ui/ViewLoading';
 import { z } from 'zod';
 import { entityDetailsQueryOptions } from '@/lib/hooks/useEntityDetails';
 import { entitySearchSchema } from '@/components/entities/validation';
-import { AnalyticsFilterType, AnalyticsInput, Currency, DEFAULT_SELECTED_YEAR, defaultYearRange } from '@/schemas/charts';
+import { AnalyticsFilterType, AnalyticsInput, DEFAULT_SELECTED_YEAR, defaultYearRange } from '@/schemas/charts';
 import { geoJsonQueryOptions } from '@/hooks/useGeoJson';
 import { heatmapJudetQueryOptions, heatmapUATQueryOptions } from '@/hooks/useHeatmapData';
 import { getTopFunctionalGroupCodes } from '@/lib/analytics-utils';
 import { getChartAnalytics } from '@/lib/api/charts';
 import { generateHash } from '@/lib/utils';
-import { GqlReportType, toExecutionReportType, toReportTypeValue } from '@/schemas/reporting';
+import { GqlReportType, TMonth, TQuarter, toExecutionReportType, toReportTypeValue } from '@/schemas/reporting';
 import { getInitialFilterState, makeTrendPeriod } from '@/schemas/reporting';
 import { prepareFilterForServer, withDefaultExcludes } from '@/lib/filterUtils';
 // NOTE: We intentionally do NOT read cookies during SSR for data fetching.
@@ -24,6 +24,13 @@ import type { EntityDetailsData } from '@/lib/api/entities';
 import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES, DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES } from '@/lib/analytics-defaults';
 import { createPublicPageCacheHeaders } from '@/lib/http-cache';
 import { buildEntityRouteHead, type EntitySeoSnapshot } from '@/features/entities/seo/entity-share-seo';
+import type { EntityPageExecutionContext } from '@/features/entities/page-core/types';
+import {
+    resolveEntityPagePublicSettings,
+} from '@/features/entities/page-core/request/entity-page-public-settings';
+import {
+    resolveEntityPageQueryInputs,
+} from '@/features/entities/page-core/request/entity-page-query-inputs';
 
 export type EntitySearchSchema = z.infer<typeof entitySearchSchema>;
 
@@ -44,6 +51,7 @@ export const Route = createFileRoute('/entities/$cui')({
     }),
     validateSearch: entitySearchSchema,
     head: ({ params, match }: any) => buildEntityRouteHead({
+        routeId: 'entities',
         cui: params.cui,
         snapshot: match.loaderData?.entitySeoSnapshot,
         searchLang: (match.search as EntitySearchSchema | undefined)?.lang,
@@ -56,38 +64,61 @@ export const Route = createFileRoute('/entities/$cui')({
         const search = entitySearchSchema.parse(location.search);
         const START_YEAR = defaultYearRange.start;
         const END_YEAR = defaultYearRange.end;
+        const desiredView = (search?.view as string | undefined) ?? 'overview';
         const year = (search?.year as number | undefined) ?? DEFAULT_SELECTED_YEAR;
         const period = search.period ?? 'YEAR';
-        const month = period === 'MONTH' ? (search.month ?? '01') : undefined;
-        const quarter = period === 'QUARTER' ? (search.quarter ?? 'Q1') : undefined;
-
-        // 1. Parse URL params for data fetching
-        // NOTE: We use URL params only (no cookies) to ensure CDN cacheability.
-        // Same URL = same cache entry. Client syncs user prefs to URL after hydration.
-        const urlCurrency = parseCurrencyParam(search?.currency);
-        const urlInflation = parseBooleanParam((search as { inflation_adjusted?: unknown })?.inflation_adjusted);
-
-        // 2. Parse normalization and compute forced overrides
-        const normalizationRaw = (search?.normalization as NormalizationInput | undefined) ?? 'total';
-        const showPeriodGrowth = Boolean((search as { show_period_growth?: unknown }).show_period_growth);
-
-        const { normalization, forcedOverrides: { currency: forcedCurrency, inflationAdjusted: forcedInflation } } =
-            resolveNormalizationSettings(normalizationRaw);
-
-        // 3. Effective values for data fetching: Forced > URL > Client Preference > Default
-        // On client (navigation/prefetch): read user preference for correct prefetch cache hits
-        // On server (SSR): use default for CDN cacheability (same URL = same cache entry)
-        const isClient = typeof globalThis.window !== 'undefined';
-        const clientCurrency = isClient ? readClientCurrencyPreference() : null;
-        const clientInflation = isClient ? readClientInflationAdjustedPreference() : null;
-        const currency: Currency = forcedCurrency ?? urlCurrency ?? clientCurrency ?? DEFAULT_CURRENCY;
-        const inflationAdjusted: boolean = forcedInflation ?? urlInflation ?? clientInflation ?? DEFAULT_INFLATION_ADJUSTED;
-
-        const reportPeriod = getInitialFilterState(period, year, month ?? '01', quarter ?? 'Q1');
-        const trendPeriod = makeTrendPeriod(period, year, START_YEAR, END_YEAR);
+        const month = period === 'MONTH' ? ((search.month ?? '01') as TMonth) : undefined;
+        const quarter = period === 'QUARTER' ? ((search.quarter ?? 'Q1') as TQuarter) : undefined;
         const reportTypeRaw = (search?.report_type as GqlReportType | undefined);
         const reportType = toExecutionReportType(reportTypeRaw);
         const mainCreditorCui = (search?.main_creditor_cui as string | undefined);
+
+        const normalizationRaw = (search?.normalization as NormalizationInput | undefined) ?? 'total';
+        const urlPublicSettings = resolveEntityPagePublicSettings({
+            normalizationRaw,
+            currencyParam: search?.currency,
+            inflationAdjustedParam: (search as { inflation_adjusted?: unknown })?.inflation_adjusted,
+            showPeriodGrowthParam: (search as { show_period_growth?: unknown })?.show_period_growth,
+        });
+        const {
+            forcedOverrides: {
+                currency: forcedCurrency,
+                inflationAdjusted: forcedInflation,
+            },
+        } = resolveNormalizationSettings(normalizationRaw);
+        const isClient = typeof globalThis.window !== 'undefined';
+        const clientCurrency = isClient ? readClientCurrencyPreference() : null;
+        const clientInflation = isClient ? readClientInflationAdjustedPreference() : null;
+        const effectivePublicSettings = {
+            normalization: urlPublicSettings.normalization,
+            currency: forcedCurrency
+                ?? parseCurrencyParam(search?.currency)
+                ?? clientCurrency
+                ?? DEFAULT_CURRENCY,
+            inflationAdjusted: forcedInflation
+                ?? parseBooleanParam((search as { inflation_adjusted?: unknown })?.inflation_adjusted)
+                ?? clientInflation
+                ?? DEFAULT_INFLATION_ADJUSTED,
+            showPeriodGrowth: urlPublicSettings.showPeriodGrowth,
+        } as const;
+
+        const executionContext: EntityPageExecutionContext = {
+            routeId: 'entities',
+            cui: params.cui,
+            lang: search.lang,
+            period,
+            year,
+            month,
+            quarter,
+            reportType: reportTypeRaw,
+            effectiveReportType: reportType,
+            mainCreditorCui,
+            activeView: desiredView,
+            publicSettings: effectivePublicSettings,
+        };
+        const exactQueryInputs = resolveEntityPageQueryInputs({
+            context: executionContext,
+        });
 
         const entitySeoSnapshotBase: EntitySeoSnapshot = {
             cui: params.cui,
@@ -98,32 +129,21 @@ export const Route = createFileRoute('/entities/$cui')({
                 quarter,
                 reportType: reportTypeRaw,
                 mainCreditorCui,
-                normalization,
-                currency,
-                inflationAdjusted,
-                showPeriodGrowth,
+                normalization: effectivePublicSettings.normalization,
+                currency: effectivePublicSettings.currency,
+                inflationAdjusted: effectivePublicSettings.inflationAdjusted,
+                showPeriodGrowth: effectivePublicSettings.showPeriodGrowth,
                 lang: search.lang,
             },
         };
 
-        // Build SSR params to return to client for placeholder derivation
-        const ssrParams = {
-            cui: params.cui,
-            normalization,
-            currency,
-            inflation_adjusted: inflationAdjusted,
-            show_period_growth: showPeriodGrowth,
-            reportPeriod,
-            reportType,
-            trendPeriod,
-            mainCreditorCui,
-        };
+        const ssrParams = exactQueryInputs.entityDetails;
 
         // SSR settings for useGlobalSettings hook
         // Must match the actual currency used for data fetching so display label matches data values
         const ssrSettings = {
-            currency,
-            inflationAdjusted,
+            currency: effectivePublicSettings.currency,
+            inflationAdjusted: effectivePublicSettings.inflationAdjusted,
         };
 
         // Forced overrides for useGlobalSettings hook
@@ -155,7 +175,6 @@ export const Route = createFileRoute('/entities/$cui')({
             };
         }
 
-        const desiredView = (search?.view as string | undefined) ?? 'overview';
         const entity = queryClient.getQueryData(detailsOptions.queryKey) as EntityDetailsData | undefined;
 
         if (!entity) {
@@ -186,13 +205,13 @@ export const Route = createFileRoute('/entities/$cui')({
             if (typeof window !== 'undefined') {
                 void queryClient.prefetchQuery(geoJsonQueryOptions(mapViewType));
             }
-            const filters = (search?.mapFilters as AnalyticsFilterType) || withDefaultExcludes({
-                account_category: 'ch',
-                normalization: 'per_capita',
-                currency,
-                inflation_adjusted: inflationAdjusted,
-                report_period: getInitialFilterState('YEAR', year, '12', 'Q4'),
-            });
+                const filters = (search?.mapFilters as AnalyticsFilterType) || withDefaultExcludes({
+                    account_category: 'ch',
+                    normalization: 'per_capita',
+                    currency: effectivePublicSettings.currency,
+                    inflation_adjusted: effectivePublicSettings.inflationAdjusted,
+                    report_period: getInitialFilterState('YEAR', year, '12', 'Q4'),
+                });
             if (mapViewType === 'UAT') {
                 void queryClient.prefetchQuery(heatmapUATQueryOptions(filters));
             } else {
@@ -217,10 +236,10 @@ export const Route = createFileRoute('/entities/$cui')({
                         functional_prefixes: [prefix],
                         account_category: accountCategory,
                         report_type: toReportTypeValue(toExecutionReportType(entity.default_report_type) ?? 'PRINCIPAL_AGGREGATED'),
-                        normalization,
-                        currency,
-                        inflation_adjusted: inflationAdjusted,
-                        show_period_growth: showPeriodGrowth,
+                        normalization: effectivePublicSettings.normalization,
+                        currency: effectivePublicSettings.currency,
+                        inflation_adjusted: effectivePublicSettings.inflationAdjusted,
+                        show_period_growth: effectivePublicSettings.showPeriodGrowth,
                         exclude: defaultExclude,
                     },
                 }));

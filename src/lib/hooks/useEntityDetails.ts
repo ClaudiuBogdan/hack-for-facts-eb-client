@@ -15,24 +15,47 @@ import type { NormalizationOptions } from '@/lib/normalization';
 import { ReportPeriodInput, GqlReportType } from '@/schemas/reporting';
 import { generateHash } from '../utils';
 
-export const entityDetailsQueryOptions = (
-  params: {
-    cui: string
-    reportPeriod: ReportPeriodInput
-    reportType?: GqlReportType
-    trendPeriod?: ReportPeriodInput
-    mainCreditorCui?: string
-  } & NormalizationOptions,
-) => {
+type EntityDetailsQueryParams = {
+  cui: string
+  reportPeriod: ReportPeriodInput
+  reportType?: GqlReportType
+  trendPeriod?: ReportPeriodInput
+  mainCreditorCui?: string
+} & NormalizationOptions
 
-  const payloadString = JSON.stringify(params);
+function normalizeEntityDetailsQueryParams(
+  params: EntityDetailsQueryParams,
+): EntityDetailsQueryParams {
+  const normalizedTrendPeriod = params.trendPeriod ?? params.reportPeriod
+
+  return {
+    cui: params.cui,
+    normalization: params.normalization,
+    currency: params.currency,
+    inflation_adjusted: params.inflation_adjusted,
+    show_period_growth: params.show_period_growth,
+    reportPeriod: params.reportPeriod,
+    reportType: params.reportType,
+    trendPeriod: normalizedTrendPeriod,
+    mainCreditorCui: params.mainCreditorCui,
+  };
+}
+
+export const entityDetailsQueryOptions = (
+  params: EntityDetailsQueryParams,
+) => {
+  // Keep the hash stable even when callers construct equivalent params with a
+  // different top-level property order (for example SSR vs. client hydration).
+  const normalizedParams = normalizeEntityDetailsQueryParams(params);
+
+  const payloadString = JSON.stringify(normalizedParams);
   const hash = generateHash(payloadString);
 
   return queryOptions({
     queryKey: ['entityDetails', hash],
-    queryFn: () => getEntityDetails(params),
+    queryFn: () => getEntityDetails(normalizedParams),
     staleTime: 1000 * 60 * 5, // 5 minutes
-    enabled: !!params.cui,
+    enabled: !!normalizedParams.cui,
   });
 
 }

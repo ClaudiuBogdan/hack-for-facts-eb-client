@@ -105,4 +105,28 @@ describe('entity-share-seo', () => {
     const ogImage = getMetaContent(head.meta, { property: 'og:image' })
     expect(ogImage).toContain('/entities/9999999/share-image.png?')
   })
+
+  it('uses transitional route policy for primarie metadata', () => {
+    const head = buildEntityRouteHead({
+      cui: '4305857',
+      snapshot: null,
+      searchLang: 'ro',
+      routeId: 'primarie',
+      siteUrl: 'https://transparenta.eu',
+    })
+
+    expect(getMetaContent(head.meta, { name: 'robots' })).toBe('noindex,follow')
+    expect(getMetaContent(head.meta, { name: 'canonical' })).toBe(
+      'https://transparenta.eu/entities/4305857',
+    )
+    expect(getMetaContent(head.meta, { property: 'og:url' })).toBe(
+      'https://transparenta.eu/entities/4305857',
+    )
+    expect(getMetaContent(head.meta, { property: 'og:image' })).toContain(
+      '/entities/4305857/share-image.png?',
+    )
+    expect(head.links).toEqual([
+      { rel: 'canonical', href: 'https://transparenta.eu/entities/4305857' },
+    ])
+  })
 })

@@ -2,6 +2,10 @@ import entityCategoriesEn from "@/assets/entity-categories-en.json";
 import entityCategoriesRo from "@/assets/entity-categories-ro.json";
 import { getSiteUrl } from "@/config/env";
 import { DEFAULT_SELECTED_YEAR, type Currency, type Normalization } from "@/schemas/charts";
+import {
+  resolveEntityPageRoutePolicy,
+} from "@/features/entities/page-core/seo/entity-page-route-policy";
+import type { EntityPageRouteId } from "@/features/entities/page-core/types";
 
 export type ShareLocale = "ro" | "en";
 
@@ -148,9 +152,14 @@ export function buildEntityShareImageUrl(params: {
   readonly siteUrl?: string;
   readonly cui: string;
   readonly context: EntityShareFilterContext;
+  readonly routeId?: EntityPageRouteId;
 }): string {
   const siteUrl = params.siteUrl ?? getSiteUrl();
   const query = new URLSearchParams();
+  const routePolicy = resolveEntityPageRoutePolicy({
+    routeId: params.routeId ?? "entities",
+    cui: params.cui,
+  });
 
   query.set("year", String(params.context.year));
   query.set("period", params.context.period);
@@ -167,7 +176,7 @@ export function buildEntityShareImageUrl(params: {
   }
   if (params.context.lang) query.set("lang", params.context.lang);
 
-  return `${siteUrl}/entities/${encodeURIComponent(params.cui)}/share-image.png?${query.toString()}`;
+  return `${siteUrl}${routePolicy.shareImagePathname}?${query.toString()}`;
 }
 
 function getDefaultFilterContext(locale: ShareLocale): EntityShareFilterContext {
@@ -187,17 +196,23 @@ export function buildEntityRouteHead(params: {
   readonly snapshot?: EntitySeoSnapshot | null;
   readonly searchLang?: string;
   readonly siteUrl?: string;
+  readonly routeId?: EntityPageRouteId;
 }) {
   const locale = normalizeShareLocale(params.snapshot?.filterContext.lang ?? params.searchLang);
   const site = params.siteUrl ?? getSiteUrl();
   const context = params.snapshot?.filterContext ?? getDefaultFilterContext(locale);
-  const canonical = `${site}/entities/${encodeURIComponent(params.cui)}`;
+  const routePolicy = resolveEntityPageRoutePolicy({
+    routeId: params.routeId ?? "entities",
+    cui: params.cui,
+  });
+  const canonical = `${site}${routePolicy.canonicalPathname}`;
   const title = buildEntityTitle(params.snapshot, locale, params.cui);
   const description = buildEntityDescription(params.snapshot, locale, params.cui);
   const shareImageUrl = buildEntityShareImageUrl({
     siteUrl: site,
     cui: params.cui,
     context: { ...context, lang: locale },
+    routeId: params.routeId,
   });
 
   const entityName = params.snapshot?.name ?? `Entity ${params.cui}`;
@@ -225,7 +240,7 @@ export function buildEntityRouteHead(params: {
     meta: [
       { title },
       { name: "description", content: description },
-      { name: "robots", content: "index,follow" },
+      { name: "robots", content: routePolicy.isIndexable ? "index,follow" : "noindex,follow" },
       { name: "canonical", content: canonical },
       { property: "og:type", content: "website" },
       { property: "og:title", content: title },
