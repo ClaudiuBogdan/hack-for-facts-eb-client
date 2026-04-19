@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react";
+import { useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
@@ -62,6 +62,7 @@ import {
   campaignAdminEntityHubTabsListClassName,
   campaignAdminEntityHubTabsTriggerClassName,
 } from "@/features/campaigns/buget/admin/components/campaign-admin-entity-hub-tabs-styles";
+import { CampaignAdminSectionShell } from "@/features/campaigns/buget/admin/components/campaign-admin-section-shell";
 import { CampaignAdminNotificationsTable } from "@/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable";
 import { CampaignAdminEntityConfigEditor } from "@/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet";
 import { CompactStat } from "@/features/campaigns/buget/admin/components/CompactStat";
@@ -293,37 +294,6 @@ function EntitySummaryStat({
         {t`Unavailable`}
       </span>
     </div>
-  );
-}
-
-function SectionShell({
-  id,
-  title,
-  description,
-  fullPageLink,
-  children,
-}: {
-  readonly id: string;
-  readonly title: string;
-  readonly description: string;
-  readonly fullPageLink: ReactNode;
-  readonly children: ReactNode;
-}) {
-  return (
-    <section id={id} className="scroll-mt-24">
-      <Card className="border-border/70 bg-card/80 shadow-none">
-        <CardHeader className="gap-3 border-b border-border/60">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div className="space-y-1">
-              <CardTitle>{title}</CardTitle>
-              <CardDescription>{description}</CardDescription>
-            </div>
-            <div className="lg:shrink-0">{fullPageLink}</div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-4">{children}</CardContent>
-      </Card>
-    </section>
   );
 }
 
@@ -953,7 +923,7 @@ export function CampaignAdminEntityDetailPage({
             </TabsList>
 
             <TabsContent value="users" className="mt-0 space-y-4 pt-4">
-                  <SectionShell
+                  <CampaignAdminSectionShell
                     id="users"
                     title={t`Users associated with this entity`}
                     description={t`Preview the users currently returned by the campaign users directory for this entity.`}
@@ -995,14 +965,14 @@ export function CampaignAdminEntityDetailPage({
                         items={users}
                       />
                     )}
-                  </SectionShell>
+                  </CampaignAdminSectionShell>
                 </TabsContent>
 
                 <TabsContent
                   value="notifications"
                   className="mt-0 space-y-4 pt-4"
                 >
-                  <SectionShell
+                  <CampaignAdminSectionShell
                     id="notifications"
                     title={t`Notifications related to this entity`}
                     description={t`Preview the most recent notification audit entries filtered to this entity.`}
@@ -1049,14 +1019,14 @@ export function CampaignAdminEntityDetailPage({
                         onPreviewTemplate={() => undefined}
                       />
                     )}
-                  </SectionShell>
+                  </CampaignAdminSectionShell>
                 </TabsContent>
 
                 <TabsContent
                   value="interactions"
                   className="mt-0 space-y-4 pt-4"
                 >
-                  <SectionShell
+                  <CampaignAdminSectionShell
                     id="user-interactions"
                     title={t`User interactions for this entity`}
                     description={t`Preview the latest interaction records currently filtered to this entity.`}
@@ -1098,7 +1068,7 @@ export function CampaignAdminEntityDetailPage({
                         items={interactions}
                       />
                     )}
-                  </SectionShell>
+                  </CampaignAdminSectionShell>
                 </TabsContent>
 
             <TabsContent value="threads" className="mt-0 space-y-4 pt-4">

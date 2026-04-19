@@ -204,6 +204,16 @@ function createTemplatePreview(): CampaignAdminNotificationTemplatePreview {
   };
 }
 
+function createTemplateDescriptor() {
+  return {
+    templateId: "admin_reviewed_user_interaction",
+    name: "Admin reviewed interaction",
+    version: "1",
+    description: "Reviewed interaction admin email",
+    requiredFields: [],
+  };
+}
+
 function createTriggerDescriptor(
   overrides: Partial<CampaignAdminNotificationTriggerDescriptor> = {},
 ): CampaignAdminNotificationTriggerDescriptor {
@@ -349,9 +359,27 @@ describe("CampaignAdminNotificationsPage", () => {
   it("renders the audit tab for an empty result set", async () => {
     renderStatefulPage({ tab: "audit" });
 
-    expect(await screen.findByText("Audit log")).toBeInTheDocument();
-    // Verify the empty state toolbar is rendered (no pager for empty results)
-    expect(await screen.findByRole("button", { name: /refresh/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Audit log" }),
+    ).toBeInTheDocument();
+    // Layout header Refresh; audit toolbar omits duplicate Refresh (hideRefresh).
+    expect(await screen.findByRole("button", { name: "Refresh" })).toBeInTheDocument();
+  });
+
+  it("renders the templates tab with a section heading", async () => {
+    listCampaignAdminNotificationTemplatesMock.mockResolvedValue([
+      createTemplateDescriptor(),
+    ]);
+
+    renderStatefulPage({ tab: "templates" });
+
+    expect(
+      await screen.findByRole("heading", {
+        level: 2,
+        name: "Previewable templates",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Admin reviewed interaction")).toBeInTheDocument();
   });
 
   it("renders the forbidden run state from the backend", async () => {

@@ -3,9 +3,12 @@ import {
   AlertTriangle,
   ChevronDown,
   ChevronRight,
+  LayoutTemplate,
   LockKeyhole,
   RefreshCw,
+  ScrollText,
   SearchX,
+  Send,
 } from "lucide-react";
 import { t } from "@lingui/core/macro";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -33,8 +36,18 @@ import {
 } from "@/components/ui/collapsible";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components/AdminCampaignLayout";
+import {
+  campaignAdminEntityHubTabsListClassName,
+  campaignAdminEntityHubTabsTriggerClassName,
+} from "@/features/campaigns/buget/admin/components/campaign-admin-entity-hub-tabs-styles";
+import { CampaignAdminSectionShell } from "@/features/campaigns/buget/admin/components/campaign-admin-section-shell";
 import { CampaignAdminCursorPager } from "@/features/campaigns/buget/admin/components/CampaignAdminCursorPager";
 import { CampaignAdminNotificationsRunTab } from "@/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab";
 import { CampaignAdminNotificationsTable } from "@/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable";
@@ -73,19 +86,23 @@ type CampaignAdminNotificationsPageProps = {
   ) => void;
 };
 
-function NotificationsCardsSkeleton({
+function NotificationsTemplatesSkeleton({
   count = 3,
 }: {
   readonly count?: number;
 }) {
   return (
-    <div className="space-y-3">
-      {Array.from({ length: count }).map((_, index) => (
-        <div
-          key={index}
-          className="rounded-2xl border border-border/70 bg-card/80 p-5 shadow-none"
-        >
-          <div className="flex items-start justify-between gap-4">
+    <div className="rounded-2xl border border-border/70 bg-card/80 shadow-none">
+      <div className="space-y-1 border-b border-border/60 px-4 pb-4 pt-4">
+        <Skeleton className="h-5 w-48" />
+        <Skeleton className="h-4 w-full max-w-xl" />
+      </div>
+      <div className="divide-y divide-border/50 px-4 py-0">
+        {Array.from({ length: count }).map((_, index) => (
+          <div
+            key={index}
+            className="flex items-start justify-between gap-4 py-5"
+          >
             <div className="min-w-0 flex-1 space-y-2">
               <div className="flex items-center gap-2">
                 <Skeleton className="h-5 w-48" />
@@ -95,16 +112,20 @@ function NotificationsCardsSkeleton({
             </div>
             <Skeleton className="h-9 w-24 shrink-0 rounded-lg" />
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
 
 function NotificationsTableSkeleton() {
   return (
-    <div className="space-y-4">
-      <div className="rounded-2xl border border-border/70 bg-card/80 p-4 shadow-none">
+    <div className="rounded-2xl border border-border/70 bg-card/80 shadow-none">
+      <div className="space-y-1 border-b border-border/60 px-4 pb-4 pt-4">
+        <Skeleton className="h-5 w-40" />
+        <Skeleton className="h-4 w-full max-w-xl" />
+      </div>
+      <div className="space-y-3 p-4">
         <div className="grid gap-3 xl:grid-cols-5">
           {Array.from({ length: 5 }).map((_, index) => (
             <div key={index} className="space-y-2">
@@ -113,22 +134,19 @@ function NotificationsTableSkeleton() {
             </div>
           ))}
         </div>
-        <div className="mt-3 flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Skeleton className="h-8 w-24 rounded-full" />
           <Skeleton className="h-8 w-20 rounded-full" />
           <Skeleton className="h-8 w-20 rounded-full" />
         </div>
-      </div>
-      <div className="overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-none">
-        <div className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3">
-          <Skeleton className="h-4 w-20" />
+        <div className="overflow-hidden border-t border-border/50 pt-4">
+          <div className="space-y-0">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <Skeleton key={index} className="h-12 w-full rounded-none" />
+            ))}
+          </div>
         </div>
-        <div className="space-y-0">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <Skeleton key={index} className="h-12 w-full rounded-none" />
-          ))}
-        </div>
-        <div className="border-t border-border/60 bg-muted/30 px-4 py-3">
+        <div className="border-t border-border/50 pt-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
               <Skeleton className="h-4 w-16" />
@@ -219,7 +237,7 @@ function NotificationsTabErrorState({
   );
 }
 
-function TemplateCard({
+function TemplateListRow({
   template,
   onPreview,
 }: {
@@ -229,73 +247,71 @@ function TemplateCard({
   const [fieldsOpen, setFieldsOpen] = useState(false);
 
   return (
-    <article className="rounded-2xl border border-border/70 bg-card/80 p-5 shadow-none">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0 flex-1 space-y-2">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold text-foreground">
-              {template.name}
-            </h3>
-            <Badge variant="secondary" className="shrink-0 font-mono text-[11px]">
-              {t`v${template.version}`}
-            </Badge>
-          </div>
-          {template.description ? (
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              {template.description}
-            </p>
-          ) : null}
-
-          {template.requiredFields.length > 0 ? (
-            <Collapsible open={fieldsOpen} onOpenChange={setFieldsOpen}>
-              <CollapsibleTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-auto gap-1 px-0 text-xs text-muted-foreground"
-                >
-                  {fieldsOpen ? (
-                    <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
-                  ) : (
-                    <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-                  )}
-                  {fieldsOpen
-                    ? t`Hide fields`
-                    : t`${template.requiredFields.length} required field${template.requiredFields.length !== 1 ? "s" : ""}`}
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="mt-2 flex flex-wrap gap-1.5 pt-1">
-                  {template.requiredFields.map((field) => (
-                    <span
-                      key={`${template.templateId}:${field.name}`}
-                      className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted/50 px-2 py-0.5 font-mono text-xs text-foreground"
-                    >
-                      {field.name}
-                      <span className="text-muted-foreground">{field.type}</span>
-                      {field.required ? (
-                        <span className="text-destructive">*</span>
-                      ) : null}
-                    </span>
-                  ))}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          ) : null}
+    <div className="flex flex-col gap-4 py-5 sm:flex-row sm:items-start sm:justify-between">
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-sm font-semibold text-foreground">
+            {template.name}
+          </h3>
+          <Badge variant="secondary" className="shrink-0 font-mono text-[11px]">
+            {t`v${template.version}`}
+          </Badge>
         </div>
+        {template.description ? (
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {template.description}
+          </p>
+        ) : null}
 
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="shrink-0"
-          onClick={onPreview}
-        >
-          {t`Preview`}
-        </Button>
+        {template.requiredFields.length > 0 ? (
+          <Collapsible open={fieldsOpen} onOpenChange={setFieldsOpen}>
+            <CollapsibleTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-auto gap-1 px-0 text-xs text-muted-foreground"
+              >
+                {fieldsOpen ? (
+                  <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+                ) : (
+                  <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+                )}
+                {fieldsOpen
+                  ? t`Hide fields`
+                  : t`${template.requiredFields.length} required field${template.requiredFields.length !== 1 ? "s" : ""}`}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <div className="mt-2 flex flex-wrap gap-1.5 pt-1">
+                {template.requiredFields.map((field) => (
+                  <span
+                    key={`${template.templateId}:${field.name}`}
+                    className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted/50 px-2 py-0.5 font-mono text-xs text-foreground"
+                  >
+                    {field.name}
+                    <span className="text-muted-foreground">{field.type}</span>
+                    {field.required ? (
+                      <span className="text-destructive">*</span>
+                    ) : null}
+                  </span>
+                ))}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        ) : null}
       </div>
-    </article>
+
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="w-full shrink-0 sm:w-auto"
+        onClick={onPreview}
+      >
+        {t`Preview`}
+      </Button>
+    </div>
   );
 }
 
@@ -637,32 +653,33 @@ export function CampaignAdminNotificationsPage({
       <Tabs
         value={normalizedSearch.tab}
         onValueChange={handleTabChange}
-        className="space-y-4"
+        className="-mt-2 space-y-4"
       >
-        <TabsList className="grid w-full max-w-md grid-cols-3 rounded-full p-1">
-          <TabsTrigger value="audit">{t`Audit`}</TabsTrigger>
-          <TabsTrigger value="run">{t`Run`}</TabsTrigger>
-          <TabsTrigger value="templates">{t`Templates`}</TabsTrigger>
+        <TabsList className={campaignAdminEntityHubTabsListClassName}>
+          <TabsTrigger
+            value="audit"
+            className={campaignAdminEntityHubTabsTriggerClassName}
+          >
+            <ScrollText className="size-4 shrink-0" aria-hidden="true" />
+            {t`Audit`}
+          </TabsTrigger>
+          <TabsTrigger
+            value="run"
+            className={campaignAdminEntityHubTabsTriggerClassName}
+          >
+            <Send className="size-4 shrink-0" aria-hidden="true" />
+            {t`Run`}
+          </TabsTrigger>
+          <TabsTrigger
+            value="templates"
+            className={campaignAdminEntityHubTabsTriggerClassName}
+          >
+            <LayoutTemplate className="size-4 shrink-0" aria-hidden="true" />
+            {t`Templates`}
+          </TabsTrigger>
         </TabsList>
-      </Tabs>
 
-      {normalizedSearch.tab === "audit" ? (
-        <section
-          className="space-y-4"
-          aria-labelledby="notifications-audit-title"
-        >
-          <div className="space-y-1">
-            <h2
-              id="notifications-audit-title"
-              className="text-base font-semibold tracking-tight text-foreground"
-            >
-              {t`Audit log`}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {t`Inspect durable notification activity without exposing raw provider or recipient data.`}
-            </p>
-          </div>
-
+        <TabsContent value="audit" className="mt-0 space-y-4 pt-4">
           {auditQuery.error &&
           !shouldHideAuditErrorBecauseCursorWillRecover ? (
             <NotificationsTabErrorState
@@ -688,114 +705,108 @@ export function CampaignAdminNotificationsPage({
           ) : auditQuery.isLoading && auditQuery.data === undefined ? (
             <NotificationsTableSkeleton />
           ) : (
-            <div className="space-y-4">
-              {auditItems.length === 0 ? (
-                <CampaignAdminNotificationsToolbar
-                  embedded
-                  search={normalizedSearch}
-                  isLoading={auditQuery.isLoading || auditQuery.isFetching}
-                  notificationTypeOptions={notificationTypeOptions}
-                  templateIdOptions={templateIdOptions}
-                  onApply={handleAuditSearchChange}
-                  onReset={handleAuditSearchChange}
-                  onRefresh={() => {
-                    void auditQuery.refetch();
+            <CampaignAdminSectionShell
+              id="notifications-audit"
+              title={t`Audit log`}
+              description={t`Inspect durable notification activity without exposing raw provider or recipient data.`}
+            >
+              <div className="space-y-4">
+                {auditItems.length === 0 ? (
+                  <CampaignAdminNotificationsToolbar
+                    embedded
+                    hideRefresh
+                    search={normalizedSearch}
+                    isLoading={auditQuery.isLoading || auditQuery.isFetching}
+                    notificationTypeOptions={notificationTypeOptions}
+                    templateIdOptions={templateIdOptions}
+                    onApply={handleAuditSearchChange}
+                    onReset={handleAuditSearchChange}
+                    onRefresh={() => {
+                      void auditQuery.refetch();
+                    }}
+                  />
+                ) : null}
+
+                <CampaignAdminNotificationsTable
+                  campaignKey={campaignKey}
+                  flushChrome
+                  items={auditItems}
+                  sortBy={normalizedSearch.sortBy}
+                  sortOrder={normalizedSearch.sortOrder}
+                  onSortChange={handleAuditSortChange}
+                  header={
+                    auditItems.length > 0
+                      ? ({ actions, trailingActions }) => (
+                          <CampaignAdminNotificationsToolbar
+                            embedded
+                            hideRefresh
+                            actions={actions}
+                            trailingActions={trailingActions}
+                            search={normalizedSearch}
+                            isLoading={
+                              auditQuery.isLoading || auditQuery.isFetching
+                            }
+                            notificationTypeOptions={notificationTypeOptions}
+                            templateIdOptions={templateIdOptions}
+                            onApply={handleAuditSearchChange}
+                            onReset={handleAuditSearchChange}
+                            onRefresh={() => {
+                              void auditQuery.refetch();
+                            }}
+                          />
+                        )
+                      : undefined
+                  }
+                  footer={
+                    auditItems.length > 0 ? (
+                      <CampaignAdminCursorPager
+                        variant="connected"
+                        pageIndex={currentPageIndex}
+                        pageSize={normalizedSearch.limit}
+                        itemCount={auditItems.length}
+                        totalCount={auditQuery.data?.page.totalCount}
+                        canPrevious={canPreviousPage}
+                        canNext={auditQuery.data?.page.hasMore ?? false}
+                        isLoading={auditQuery.isFetching}
+                        onPrevious={handlePreviousPage}
+                        onNext={handleNextPage}
+                      />
+                    ) : null
+                  }
+                  onClearFilters={() => {
+                    handleAuditSearchChange(
+                      createEmptyCampaignAdminNotificationsSearch({
+                        tab: "audit",
+                        currentSearch: normalizedSearch,
+                      }),
+                    );
+                  }}
+                  onPreviewTemplate={(templateId) => {
+                    setActiveTemplateId(templateId);
                   }}
                 />
-              ) : null}
-
-              <CampaignAdminNotificationsTable
-                campaignKey={campaignKey}
-                items={auditItems}
-                sortBy={normalizedSearch.sortBy}
-                sortOrder={normalizedSearch.sortOrder}
-                onSortChange={handleAuditSortChange}
-                header={
-                  auditItems.length > 0
-                    ? ({ actions, trailingActions }) => (
-                        <CampaignAdminNotificationsToolbar
-                          embedded
-                          actions={actions}
-                          trailingActions={trailingActions}
-                          search={normalizedSearch}
-                          isLoading={
-                            auditQuery.isLoading || auditQuery.isFetching
-                          }
-                          notificationTypeOptions={notificationTypeOptions}
-                          templateIdOptions={templateIdOptions}
-                          onApply={handleAuditSearchChange}
-                          onReset={handleAuditSearchChange}
-                          onRefresh={() => {
-                            void auditQuery.refetch();
-                          }}
-                        />
-                      )
-                    : undefined
-                }
-                footer={
-                  auditItems.length > 0 ? (
-                    <CampaignAdminCursorPager
-                      variant="connected"
-                      pageIndex={currentPageIndex}
-                      pageSize={normalizedSearch.limit}
-                      itemCount={auditItems.length}
-                      totalCount={auditQuery.data?.page.totalCount}
-                      canPrevious={canPreviousPage}
-                      canNext={auditQuery.data?.page.hasMore ?? false}
-                      isLoading={auditQuery.isFetching}
-                      onPrevious={handlePreviousPage}
-                      onNext={handleNextPage}
-                    />
-                  ) : null
-                }
-                onClearFilters={() => {
-                  handleAuditSearchChange(
-                    createEmptyCampaignAdminNotificationsSearch({
-                      tab: "audit",
-                      currentSearch: normalizedSearch,
-                    }),
-                  );
-                }}
-                onPreviewTemplate={(templateId) => {
-                  setActiveTemplateId(templateId);
-                }}
-              />
-            </div>
+              </div>
+            </CampaignAdminSectionShell>
           )}
-        </section>
-      ) : null}
+        </TabsContent>
 
-      {normalizedSearch.tab === "run" ? (
-        <div className="space-y-6">
-          <CampaignAdminNotificationsRunTab
-            campaignKey={campaignKey}
-            search={normalizedSearch}
-            onSearchChange={handleSearchStateChange}
-            onPreviewTemplate={(templateId) => {
-              setActiveTemplateId(templateId);
-            }}
-          />
-          <CampaignAdminNotificationTriggersSection campaignKey={campaignKey} />
-        </div>
-      ) : null}
-
-      {normalizedSearch.tab === "templates" ? (
-        <section
-          className="space-y-4"
-          aria-labelledby="notifications-templates-title"
-        >
-          <div className="space-y-1">
-            <h2
-              id="notifications-templates-title"
-              className="text-base font-semibold tracking-tight text-foreground"
-            >
-              {t`Previewable templates`}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {t`Inspect example-driven subject, HTML, and text previews through the authenticated admin boundary.`}
-            </p>
+        <TabsContent value="run" className="mt-0 space-y-4 pt-4">
+          <div className="space-y-6">
+            <CampaignAdminNotificationsRunTab
+              campaignKey={campaignKey}
+              search={normalizedSearch}
+              onSearchChange={handleSearchStateChange}
+              onPreviewTemplate={(templateId) => {
+                setActiveTemplateId(templateId);
+              }}
+            />
+            <CampaignAdminNotificationTriggersSection
+              campaignKey={campaignKey}
+            />
           </div>
+        </TabsContent>
 
+        <TabsContent value="templates" className="mt-0 space-y-4 pt-4">
           {templatesQuery.error ? (
             <NotificationsTabErrorState
               status={templatesQuery.error.status}
@@ -818,19 +829,25 @@ export function CampaignAdminNotificationsPage({
               }}
             />
           ) : templatesQuery.isLoading && templatesQuery.data === undefined ? (
-            <NotificationsCardsSkeleton />
+            <NotificationsTemplatesSkeleton />
           ) : templatesQuery.data && templatesQuery.data.length > 0 ? (
-            <div className="space-y-3">
-              {templatesQuery.data.map((template) => (
-                <TemplateCard
-                  key={template.templateId}
-                  template={template}
-                  onPreview={() => {
-                    setActiveTemplateId(template.templateId);
-                  }}
-                />
-              ))}
-            </div>
+            <CampaignAdminSectionShell
+              id="notifications-templates"
+              title={t`Previewable templates`}
+              description={t`Inspect example-driven subject, HTML, and text previews through the authenticated admin boundary.`}
+            >
+              <div className="divide-y divide-border/50">
+                {templatesQuery.data.map((template) => (
+                  <TemplateListRow
+                    key={template.templateId}
+                    template={template}
+                    onPreview={() => {
+                      setActiveTemplateId(template.templateId);
+                    }}
+                  />
+                ))}
+              </div>
+            </CampaignAdminSectionShell>
           ) : (
             <EmptyState
               icon={<AlertTriangle className="h-6 w-6" />}
@@ -839,8 +856,8 @@ export function CampaignAdminNotificationsPage({
               className="rounded-2xl border border-border/70 bg-card/80"
             />
           )}
-        </section>
-      ) : null}
+        </TabsContent>
+      </Tabs>
 
       <CampaignAdminTemplatePreviewDialog
         campaignKey={campaignKey}

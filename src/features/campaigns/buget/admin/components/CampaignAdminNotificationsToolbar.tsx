@@ -53,6 +53,8 @@ type CampaignAdminNotificationsToolbarProps = {
   readonly notificationTypeOptions: readonly string[];
   readonly templateIdOptions: readonly string[];
   readonly embedded?: boolean;
+  /** When true, omit the Refresh control (e.g. layout header already refreshes). */
+  readonly hideRefresh?: boolean;
   readonly actions?: ReactNode;
   readonly trailingActions?: ReactNode;
   readonly onApply: (search: CampaignAdminNotificationsSearch) => void;
@@ -193,6 +195,7 @@ export function CampaignAdminNotificationsToolbar({
   notificationTypeOptions,
   templateIdOptions,
   embedded = false,
+  hideRefresh = false,
   actions,
   trailingActions,
   onApply,
@@ -692,17 +695,19 @@ export function CampaignAdminNotificationsToolbar({
             <RotateCcw className="h-4 w-4" aria-hidden="true" />
             {t`Reset`}
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="gap-2 rounded-full"
-            onClick={onRefresh}
-            disabled={isLoading}
-          >
-            <RefreshCw className="h-4 w-4" aria-hidden="true" />
-            {t`Refresh`}
-          </Button>
+          {hideRefresh ? null : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2 rounded-full"
+              onClick={onRefresh}
+              disabled={isLoading}
+            >
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              {t`Refresh`}
+            </Button>
+          )}
           <Button
             type="button"
             size="sm"

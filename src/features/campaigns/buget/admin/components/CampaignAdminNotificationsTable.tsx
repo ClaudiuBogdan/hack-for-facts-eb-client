@@ -99,6 +99,7 @@ function SortableHeaderButton({
   sortBy,
   sortOrder,
   onSortChange,
+  align = "start",
   children,
 }: {
   readonly sortKey: CampaignAdminNotificationSortKey;
@@ -108,6 +109,7 @@ function SortableHeaderButton({
     sortBy: CampaignAdminNotificationSortKey,
     sortOrder: CampaignAdminSortOrder,
   ) => void;
+  readonly align?: "start" | "end";
   readonly children: ReactNode;
 }) {
   const columnConfig = CAMPAIGN_ADMIN_NOTIFICATION_SORTABLE_COLUMNS[sortKey];
@@ -129,7 +131,10 @@ function SortableHeaderButton({
     <button
       type="button"
       onClick={handleClick}
-      className="flex w-full items-center gap-1 text-left text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+      className={cn(
+        "flex w-full items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground",
+        align === "end" ? "justify-end text-right" : "text-left",
+      )}
       aria-label={t`${sortLabel} sort`}
     >
       <span className="flex min-w-0 items-center gap-1">{children}</span>
@@ -155,6 +160,7 @@ function SortableTableHead({
   sortOrder,
   onSortChange,
   stickyHeaderClassName,
+  align = "start",
   children,
 }: {
   readonly sortKey: CampaignAdminNotificationSortKey;
@@ -165,6 +171,7 @@ function SortableTableHead({
     sortOrder: CampaignAdminSortOrder,
   ) => void;
   readonly stickyHeaderClassName: string;
+  readonly align?: "start" | "end";
   readonly children: ReactNode;
 }) {
   return (
@@ -172,6 +179,7 @@ function SortableTableHead({
       className={cn(
         "sticky top-0 z-10 h-auto py-3 text-xs font-medium text-muted-foreground backdrop-blur-sm",
         stickyHeaderClassName,
+        align === "end" ? "text-right" : undefined,
       )}
     >
       {onSortChange ? (
@@ -180,6 +188,7 @@ function SortableTableHead({
           sortBy={sortBy}
           sortOrder={sortOrder}
           onSortChange={onSortChange}
+          align={align}
         >
           {children}
         </SortableHeaderButton>
@@ -597,11 +606,12 @@ export function CampaignAdminNotificationsTable({
   if (items.length === 0) {
     return (
       <div
-        className={
+        className={cn(
+          "space-y-4",
           flushChrome
-            ? "space-y-4 p-0 shadow-none"
-            : "space-y-4 rounded-2xl border border-border/70 bg-card/80 p-6 shadow-none"
-        }
+            ? "p-0"
+            : "rounded-2xl border border-border/70 bg-card/80 p-6 shadow-none",
+        )}
       >
         <EmptyState
           icon={<SearchX className="h-6 w-6" />}
@@ -609,7 +619,7 @@ export function CampaignAdminNotificationsTable({
           description={t`No campaign notification events matched the current filters.`}
           className={
             flushChrome
-              ? "rounded-2xl border border-border/50 bg-muted/20"
+              ? "border-0 bg-transparent p-0"
               : "rounded-2xl border-border/70 bg-background/30"
           }
         />
@@ -708,7 +718,7 @@ export function CampaignAdminNotificationsTable({
 
         <div className="overflow-x-auto">
           <Table
-            containerClassName="max-h-[min(70vh,42rem)]"
+            containerClassName="max-h-[min(55vh,28rem)]"
             className="min-w-[1080px] [&_td]:px-3 [&_td]:py-3"
           >
             <TableHeader>
@@ -788,6 +798,7 @@ export function CampaignAdminNotificationsTable({
                     sortOrder={sortOrder}
                     onSortChange={onSortChange}
                     stickyHeaderClassName={stickyHeaderClassName}
+                    align="end"
                   >
                     {t`Attempts`}
                   </SortableTableHead>
@@ -853,7 +864,7 @@ export function CampaignAdminNotificationsTable({
                     </TableCell>
                   ) : null}
                   {isColumnVisible("attempts") ? (
-                    <TableCell className="align-top">
+                    <TableCell className="align-top text-right tabular-nums">
                       <div className="space-y-1">
                         <p className="text-sm font-semibold text-foreground tabular-nums">
                           {item.attemptCount}
