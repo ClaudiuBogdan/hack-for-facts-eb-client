@@ -88,9 +88,15 @@ describe("CampaignAdminEntitiesTable", () => {
 
     const rowQueries = within(row!);
 
+    expect(
+      rowQueries.getByRole("link", { name: /Oras Test/i }),
+    ).toHaveAttribute(
+      "href",
+      "/admin/campaigns/funky/entities/12345678?tab=users&limit=50",
+    );
     expect(rowQueries.getByRole("link", { name: "Details" })).toHaveAttribute(
       "href",
-      "/admin/campaigns/funky/entities/12345678?tab=overview&limit=50",
+      "/admin/campaigns/funky/entities/12345678?tab=users&limit=50",
     );
     expect(rowQueries.getByRole("link", { name: "Users" })).toHaveAttribute(
       "href",

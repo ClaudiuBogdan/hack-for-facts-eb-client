@@ -170,97 +170,141 @@ function SidebarMetadata({
 }: {
   readonly detail: CampaignAdminInstitutionThreadDetail;
 }) {
+  const [moreDetailsOpen, setMoreDetailsOpen] = useState(false);
   const entityDisplay = detail.entityName?.trim() || detail.entityCui;
+  const fieldLabelClass =
+    "text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground";
+
+  const hasScheduleFields =
+    detail.contestationDeadlineAt !== null || detail.budgetPublicationDate !== null;
 
   return (
-    <aside className="grid gap-4 rounded-xl border border-border/60 bg-background/50 p-4 sm:grid-cols-2 xl:grid-cols-3">
-      <div className="space-y-1">
-        <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-          {t`Entity`}
-        </p>
-        <p className="text-sm font-semibold text-foreground">{entityDisplay}</p>
-        <p className="font-mono text-xs text-muted-foreground">
-          {detail.entityCui}
-        </p>
-      </div>
-
-      <div className="space-y-1">
-        <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-          {t`Institution email`}
-        </p>
-        <p className="font-mono text-xs text-foreground">
-          {detail.institutionEmail}
-        </p>
-      </div>
-
-      {detail.ownerUserId ? (
+    <aside className="border-t border-border/60 pt-4">
+      <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-            {t`Owner user`}
+          <p className={fieldLabelClass}>{t`Entity`}</p>
+          <p className="text-base font-semibold leading-snug text-foreground">
+            {entityDisplay}
           </p>
-          <p className="font-mono text-xs text-foreground">
-            {detail.ownerUserId}
+          <p className="font-mono text-xs text-muted-foreground">
+            {detail.entityCui}
           </p>
         </div>
-      ) : null}
 
-      {detail.requesterOrganizationName ? (
         <div className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
-            {t`Requester organization`}
-          </p>
-          <p className="text-sm text-foreground">
-            {detail.requesterOrganizationName}
+          <p className={fieldLabelClass}>{t`Institution email`}</p>
+          <p className="break-all font-mono text-sm text-foreground">
+            {detail.institutionEmail}
           </p>
         </div>
-      ) : null}
+      </div>
 
-      <div className="space-y-0.5">
-        <p className="text-xs text-muted-foreground">{t`Updated`}</p>
-        <p className="text-xs text-foreground">
-          {formatDateTime(detail.updatedAt)}
-        </p>
-      </div>
-      <div className="space-y-0.5">
-        <p className="text-xs text-muted-foreground">{t`Created`}</p>
-        <p className="text-xs text-foreground">
-          {formatDateTime(detail.createdAt)}
-        </p>
-      </div>
-      <div className="space-y-0.5">
-        <p className="text-xs text-muted-foreground">{t`Latest response`}</p>
-        <p className="text-xs text-foreground">
-          {formatDateTime(detail.latestResponseAt)}
-        </p>
-      </div>
-      {detail.contestationDeadlineAt ? (
-        <div className="space-y-0.5">
-          <p className="text-xs text-muted-foreground">
-            {t`Contestation deadline`}
-          </p>
-          <p className="text-xs text-foreground">
-            {formatDateTime(detail.contestationDeadlineAt)}
-          </p>
-        </div>
-      ) : null}
-      {detail.budgetPublicationDate ? (
-        <div className="space-y-0.5">
-          <p className="text-xs text-muted-foreground">
-            {t`Budget publication`}
-          </p>
-          <p className="text-xs text-foreground">
-            {detail.budgetPublicationDate}
-          </p>
-        </div>
-      ) : null}
+      <Collapsible
+        open={moreDetailsOpen}
+        onOpenChange={setMoreDetailsOpen}
+        className="mt-4"
+      >
+        <CollapsibleTrigger asChild>
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 rounded-md py-2 text-left text-sm font-medium text-muted-foreground underline-offset-4 transition-colors hover:bg-transparent hover:font-bold hover:text-foreground hover:underline"
+          >
+            {moreDetailsOpen ? t`Show less` : t`More details`}
+            {moreDetailsOpen ? (
+              <ChevronUp className="h-4 w-4 shrink-0 opacity-70" />
+            ) : (
+              <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
+            )}
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="space-y-5 border-t border-border/50 pt-4">
+            <div className="space-y-3">
+              <p className={fieldLabelClass}>{t`Activity`}</p>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-1">
+                  <p className={fieldLabelClass}>{t`Created`}</p>
+                  <p className="text-sm text-foreground">
+                    {formatDateTime(detail.createdAt)}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className={fieldLabelClass}>{t`Updated`}</p>
+                  <p className="text-sm text-foreground">
+                    {formatDateTime(detail.updatedAt)}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className={fieldLabelClass}>{t`Latest response`}</p>
+                  <p className="text-sm text-foreground">
+                    {formatDateTime(detail.latestResponseAt)}
+                  </p>
+                </div>
+              </div>
+            </div>
 
-      <div className="sm:col-span-2 xl:col-span-3">
-        <CampaignAdminInstitutionThreadAudienceSummary
-          audience={detail.notificationAudience}
-          title={t`Notification reach`}
-          showDefinitions
-        />
-      </div>
+            {detail.requesterOrganizationName ? (
+              <div className="space-y-1 border-t border-border/40 pt-5">
+                <p className={fieldLabelClass}>{t`Requester organization`}</p>
+                <p className="text-sm text-foreground">
+                  {detail.requesterOrganizationName}
+                </p>
+              </div>
+            ) : null}
+
+            {hasScheduleFields ? (
+              <div className="space-y-3 border-t border-border/40 pt-5">
+                <p className={fieldLabelClass}>{t`Schedule`}</p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {detail.contestationDeadlineAt ? (
+                    <div className="space-y-1">
+                      <p className={fieldLabelClass}>{t`Contestation deadline`}</p>
+                      <p className="text-sm text-foreground">
+                        {formatDateTime(detail.contestationDeadlineAt)}
+                      </p>
+                    </div>
+                  ) : null}
+                  {detail.budgetPublicationDate ? (
+                    <div className="space-y-1">
+                      <p className={fieldLabelClass}>{t`Budget publication`}</p>
+                      <p className="text-sm text-foreground">
+                        {detail.budgetPublicationDate}
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
+
+            {detail.ownerUserId ? (
+              <div className="space-y-1 border-t border-border/40 pt-5">
+                <p className={fieldLabelClass}>{t`Owner user`}</p>
+                <p className="break-all font-mono text-xs text-foreground">
+                  {detail.ownerUserId}
+                </p>
+              </div>
+            ) : null}
+
+            {detail.consentCapturedAt ? (
+              <div className="space-y-1 border-t border-border/40 pt-5">
+                <p className={fieldLabelClass}>{t`Consent recorded`}</p>
+                <p className="text-sm text-foreground">
+                  {formatDateTime(detail.consentCapturedAt)}
+                </p>
+              </div>
+            ) : null}
+
+            <div className="border-t border-border/40 pt-5">
+              <CampaignAdminInstitutionThreadAudienceSummary
+                audience={detail.notificationAudience}
+                variant="detailed"
+                title={t`Notification reach`}
+                showDefinitions
+              />
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
     </aside>
   );
 }
@@ -461,9 +505,6 @@ export function CampaignAdminInstitutionThreadDetailContent({
               <h2 className="text-lg font-semibold text-foreground">
                 {detail.subject}
               </h2>
-              <p className="text-sm text-muted-foreground">
-                {t`Inspect the full correspondence history and record manual institution response events from the same entity workflow.`}
-              </p>
             </div>
           </div>
           {headerAction ? <div className="lg:shrink-0">{headerAction}</div> : null}

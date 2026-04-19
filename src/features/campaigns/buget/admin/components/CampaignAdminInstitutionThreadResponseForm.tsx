@@ -197,8 +197,10 @@ export function CampaignAdminInstitutionThreadResponseForm({
 
       <div className="space-y-3">
         <Label>{t`Notification delivery`}</Label>
-        <label className="flex items-start gap-3 rounded-xl border border-border/70 bg-background/60 px-4 py-3 text-sm text-foreground">
+        <div className="flex items-start gap-3 text-sm text-foreground">
           <Checkbox
+            id={`notify-now-${thread.id}`}
+            className="mt-0.5"
             checked={sendNotification}
             onCheckedChange={(checked) => {
               setSendNotification(Boolean(checked));
@@ -206,20 +208,24 @@ export function CampaignAdminInstitutionThreadResponseForm({
             disabled={isDisabled}
             aria-label={t`Notify requester and subscribers now`}
           />
-          <span className="space-y-1">
-            <span className="block font-medium">
+          <div className="min-w-0 flex-1 space-y-2">
+            <label
+              htmlFor={`notify-now-${thread.id}`}
+              className="block cursor-pointer font-medium"
+            >
               {t`Notify requester and subscribers now`}
-            </span>
-            <span className="block text-xs text-muted-foreground">
+            </label>
+            <p className="text-xs text-muted-foreground">
               {t`Leave this unchecked to record the response without sending notifications.`}
-            </span>
-          </span>
-        </label>
-        <CampaignAdminInstitutionThreadAudienceSummary
-          audience={thread.notificationAudience}
-          variant="compact"
-          className="rounded-xl border border-border/60 bg-muted/20 px-4 py-3"
-        />
+            </p>
+            <div className="border-t border-border/40 pt-2">
+              <CampaignAdminInstitutionThreadAudienceSummary
+                audience={thread.notificationAudience}
+                variant="compact"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       {lastRequestedNotification ? (

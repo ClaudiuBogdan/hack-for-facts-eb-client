@@ -34,6 +34,7 @@ import type {
   CampaignAdminNotificationStatus,
   CampaignAdminSortOrder,
 } from "@/features/campaigns/buget/admin/types";
+import { createCampaignAdminEntityDetailRouteSearch } from "@/features/campaigns/buget/admin/utils/create-campaign-admin-entity-detail-route-search";
 import { buildCampaignPrimariePath } from "@/features/challenges/constants";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { getUserLocale } from "@/lib/utils";
@@ -233,7 +234,9 @@ function EntityCell({
 
   return (
     <div className="space-y-1">
-      <p className="text-sm font-medium text-foreground">{displayName}</p>
+      <p className="text-sm font-medium text-foreground transition-colors group-hover:text-primary group-hover:underline group-hover:underline-offset-2 group-hover:decoration-primary/80">
+        {displayName}
+      </p>
       <p className="font-mono text-xs text-muted-foreground">{item.entityCui}</p>
     </div>
   );
@@ -303,48 +306,6 @@ function createEntityUsersRouteSearch(entityCui: string) {
     cursor: undefined,
     pageIndex: undefined,
     limit: DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
-  };
-}
-
-function createEntityDetailsRouteSearch() {
-  return {
-    tab: "overview" as const,
-    query: undefined,
-    interactionId: undefined,
-    hasPendingReviews: undefined,
-    hasSubscribers: undefined,
-    hasNotificationActivity: undefined,
-    hasFailedNotifications: undefined,
-    latestNotificationType: undefined,
-    latestNotificationStatus: undefined,
-    sortBy: undefined,
-    sortOrder: undefined,
-    cursor: undefined,
-    pageIndex: undefined,
-    limit: DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
-    configEntityCui: undefined,
-    configUpdatedAtFrom: undefined,
-    configUpdatedAtTo: undefined,
-    configSortBy: undefined,
-    configSortOrder: undefined,
-    configCursor: undefined,
-    configPageIndex: undefined,
-    configLimit: undefined,
-    selectedEntityCui: undefined,
-    configCreate: undefined,
-    threadsStateGroup: undefined,
-    threadsThreadState: undefined,
-    threadsResponseStatus: undefined,
-    threadsQuery: undefined,
-    threadsEntityCui: undefined,
-    threadsUpdatedAtFrom: undefined,
-    threadsUpdatedAtTo: undefined,
-    threadsLatestResponseAtFrom: undefined,
-    threadsLatestResponseAtTo: undefined,
-    threadsSelectedThreadId: undefined,
-    threadsCursor: undefined,
-    threadsPageIndex: undefined,
-    threadsLimit: undefined,
   };
 }
 
@@ -623,8 +584,18 @@ export function CampaignAdminEntitiesTable({
             <TableBody>
               {items.map((item) => (
                 <TableRow key={item.entityCui}>
-                  <TableCell>
-                    <EntityCell item={item} />
+                  <TableCell className="p-0">
+                    <Link
+                      to="/admin/campaigns/$campaignKey/entities/$entityCui"
+                      params={{
+                        campaignKey,
+                        entityCui: item.entityCui,
+                      }}
+                      search={createCampaignAdminEntityDetailRouteSearch()}
+                      className="group block px-3 py-3 text-inherit no-underline outline-none transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background rounded-sm"
+                    >
+                      <EntityCell item={item} />
+                    </Link>
                   </TableCell>
                   {isColumnVisible("users") ? (
                     <TableCell className="tabular-nums text-sm">
@@ -708,7 +679,7 @@ export function CampaignAdminEntitiesTable({
                             campaignKey,
                             entityCui: item.entityCui,
                           }}
-                          search={createEntityDetailsRouteSearch()}
+                          search={createCampaignAdminEntityDetailRouteSearch()}
                         >
                           {t`Details`}
                         </Link>

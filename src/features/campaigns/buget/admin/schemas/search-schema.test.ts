@@ -220,6 +220,22 @@ describe("campaign admin search schema", () => {
     });
   });
 
+  it("normalizes entity detail table tab search param", () => {
+    expect(
+      normalizeCampaignAdminEntitiesSearch({
+        tab: "notifications",
+      }),
+    ).toEqual({
+      tab: "notifications",
+      limit: 50,
+      sortBy: "latestInteractionAt",
+      sortOrder: "desc",
+      configSortBy: "updatedAt",
+      configSortOrder: "desc",
+      configLimit: 50,
+    });
+  });
+
   it("trims entities search values and preserves paging state", () => {
     expect(
       normalizeCampaignAdminEntitiesSearch({

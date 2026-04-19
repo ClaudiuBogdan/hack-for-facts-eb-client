@@ -1,12 +1,17 @@
-import { useMemo, type ReactNode, useState } from "react";
+import { useMemo, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
   Ban,
-  ChevronDown,
+  Bell,
+  ClipboardList,
+  ExternalLink,
   LockKeyhole,
   MessageSquare,
+  MoreHorizontal,
   RefreshCw,
+  Settings2,
+  Users,
 } from "lucide-react";
 import { t } from "@lingui/core/macro";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -20,6 +25,13 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Card,
   CardContent,
@@ -37,11 +49,6 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
   Table,
   TableBody,
   TableCell,
@@ -51,8 +58,13 @@ import {
 } from "@/components/ui/table";
 import { AuthSignInButton, useAuth } from "@/lib/auth";
 import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components/AdminCampaignLayout";
+import {
+  campaignAdminEntityHubTabsListClassName,
+  campaignAdminEntityHubTabsTriggerClassName,
+} from "@/features/campaigns/buget/admin/components/campaign-admin-entity-hub-tabs-styles";
 import { CampaignAdminNotificationsTable } from "@/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable";
 import { CampaignAdminEntityConfigEditor } from "@/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet";
+import { CompactStat } from "@/features/campaigns/buget/admin/components/CompactStat";
 import { CampaignAdminInstitutionThreadsSection } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsSection";
 import { CampaignAdminUsersTable } from "@/features/campaigns/buget/admin/components/CampaignAdminUsersTable";
 import {
@@ -258,36 +270,27 @@ function formatDateTime(value: string | null): string {
   return parsedDate.toLocaleString();
 }
 
-function InlineStat({
+function EntitySummaryStat({
   label,
   value,
+  className,
 }: {
   readonly label: string;
-  readonly value: number;
+  readonly value: number | null;
+  readonly className?: string;
 }) {
-  return (
-    <span className="inline-flex items-baseline gap-1 text-sm tabular-nums">
-      <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <span className="font-semibold text-foreground">{value}</span>
-    </span>
-  );
-}
+  if (value !== null) {
+    return <CompactStat label={label} value={value} className={className} />;
+  }
 
-function SummaryCard({
-  label,
-  value,
-}: {
-  readonly label: string;
-  readonly value: number;
-}) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-background/40 p-4">
-      <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground/80">
+    <div className="flex items-baseline gap-1.5">
+      <span className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
         {label}
-      </p>
-      <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground tabular-nums">
-        {value}
-      </p>
+      </span>
+      <span className="text-sm font-medium text-muted-foreground">
+        {t`Unavailable`}
+      </span>
     </div>
   );
 }
@@ -467,30 +470,16 @@ function EntityInteractionsPreviewTable({
 function EntityDetailSkeleton() {
   return (
     <div className="space-y-4">
-      <Card className="border-border/70 bg-card/80 shadow-none">
-        <CardHeader className="space-y-3">
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-64" />
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            <Skeleton className="h-8 w-24 rounded-full" />
-            <Skeleton className="h-8 w-28 rounded-full" />
-            <Skeleton className="h-8 w-36 rounded-full" />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div
-                key={index}
-                className="rounded-2xl border border-border/60 bg-background/40 p-4"
-              >
-                <Skeleton className="h-3 w-20" />
-                <Skeleton className="mt-3 h-8 w-16" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-wrap gap-3">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <Skeleton key={index} className="h-8 w-28 rounded-md" />
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-2 border-b border-border pb-2">
+        {Array.from({ length: 5 }).map((_, index) => (
+          <Skeleton key={index} className="h-9 w-28 rounded-none" />
+        ))}
+      </div>
 
       {Array.from({ length: 3 }).map((_, index) => (
         <Card
@@ -510,6 +499,29 @@ function EntityDetailSkeleton() {
       ))}
     </div>
   );
+}
+
+type EntityDetailMainTab =
+  | "users"
+  | "notifications"
+  | "interactions"
+  | "threads"
+  | "config";
+
+function resolveEntityDetailMainTab(
+  tab: CampaignAdminEntitiesSearch["tab"],
+): EntityDetailMainTab {
+  if (
+    tab === "users" ||
+    tab === "notifications" ||
+    tab === "interactions" ||
+    tab === "threads" ||
+    tab === "config"
+  ) {
+    return tab;
+  }
+
+  return "users";
 }
 
 function findCachedEntitySummary(
@@ -564,9 +576,8 @@ export function CampaignAdminEntityDetailPage({
 }: CampaignAdminEntityDetailPageProps) {
   const { isLoaded, isSignedIn } = useAuth();
   const queryClient = useQueryClient();
-  const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
   const normalizedSearch = normalizeCampaignAdminEntitiesSearch(search);
-  const activeTab = normalizedSearch.tab ?? "overview";
+  const activeTab = resolveEntityDetailMainTab(normalizedSearch.tab);
   const threadsSearch = useMemo(
     () =>
       getCampaignAdminInstitutionThreadsSearchFromEntitiesSearch(
@@ -648,7 +659,11 @@ export function CampaignAdminEntityDetailPage({
       }),
     [cachedEntitySummary, entityCui, interactions, notifications, users],
   );
-  const allSectionQueriesFailed =
+  const isPreviewTab =
+    activeTab === "users" ||
+    activeTab === "notifications" ||
+    activeTab === "interactions";
+  const allPreviewSectionQueriesFailed =
     isLoaded &&
     isSignedIn &&
     usersQuery.error != null &&
@@ -657,32 +672,10 @@ export function CampaignAdminEntityDetailPage({
     usersQuery.data === undefined &&
     notificationsQuery.data === undefined &&
     interactionsQuery.data === undefined;
+  const showGlobalPreviewError = isPreviewTab && allPreviewSectionQueriesFailed;
   const title = entityName ?? entityCui;
-  const summaryStats =
-    cachedEntitySummary === null
-      ? []
-      : [
-          {
-            label: t`Users`,
-            value: cachedEntitySummary.userCount,
-          },
-          {
-            label: t`Interactions`,
-            value: cachedEntitySummary.interactionCount,
-          },
-          {
-            label: t`Pending reviews`,
-            value: cachedEntitySummary.pendingReviewCount,
-          },
-          {
-            label: t`Subscribers`,
-            value: cachedEntitySummary.notificationSubscriberCount,
-          },
-          {
-            label: t`Notifications`,
-            value: cachedEntitySummary.notificationOutboxCount,
-          },
-        ];
+
+  const hasEntityListCache = cachedEntitySummary !== null;
 
   const refreshAll = () => {
     void Promise.all([
@@ -741,92 +734,134 @@ export function CampaignAdminEntityDetailPage({
       )}
       actions={(
         <>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              onSearchChange({
-                ...normalizedSearch,
-                tab: "overview",
-                selectedEntityCui: undefined,
-              })
-            }
-          >
-            {t`Overview`}
+          <Button asChild type="button" variant="outline" size="sm" className="gap-2">
+            <Link to="/primarie/$cui" params={{ cui: entityCui }}>
+              <ExternalLink className="h-4 w-4" aria-hidden="true" />
+              {t`Open entity page`}
+            </Link>
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              onSearchChange({
-                ...normalizedSearch,
-                tab: "threads",
-                selectedEntityCui: undefined,
-              })
-            }
-          >
-            {t`Threads`}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() =>
-              onSearchChange({
-                ...normalizedSearch,
-                tab: "config",
-              })
-            }
-          >
-            {t`Config`}
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <a href="#users">{t`Users`}</a>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <a href="#notifications">{t`Notifications`}</a>
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <a href="#user-interactions">{t`User interactions`}</a>
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={refreshAll}
-            disabled={!isLoaded || !isSignedIn}
-          >
-            <RefreshCw className="h-4 w-4" aria-hidden="true" />
-            {t`Refresh`}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                disabled={!isLoaded}
+              >
+                <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+                {t`Actions`}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem asChild>
+                <Link
+                  to="/admin/campaigns/$campaignKey/users"
+                  params={{ campaignKey }}
+                  search={createEntityUsersRouteSearch(entityCui)}
+                >
+                  {t`Go to users`}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link
+                  to="/admin/campaigns/$campaignKey/notifications"
+                  params={{ campaignKey }}
+                  search={createEntityNotificationsRouteSearch(entityCui)}
+                >
+                  {t`Go to notifications`}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link
+                  to="/admin/campaigns/$campaignKey/user-interactions"
+                  params={{ campaignKey }}
+                  search={createEntityInteractionsRouteSearch(entityCui)}
+                >
+                  {t`Go to user interactions`}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={!isLoaded || !isSignedIn}
+                onSelect={() => {
+                  refreshAll();
+                }}
+              >
+                <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                {t`Refresh`}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </>
       )}
       details={(
-        <>
-          <Badge variant="outline" className="font-mono">
-            {t`CUI ${entityCui}`}
-          </Badge>
-          {cachedEntitySummary !== null ? (
-            <>
-              <InlineStat label={t`Users`} value={cachedEntitySummary.userCount} />
-              <InlineStat
-                label={t`Interactions`}
-                value={cachedEntitySummary.interactionCount}
-              />
-              <InlineStat
-                label={t`Pending reviews`}
-                value={cachedEntitySummary.pendingReviewCount}
-              />
-              <InlineStat
-                label={t`Notifications`}
-                value={cachedEntitySummary.notificationOutboxCount}
-              />
-            </>
-          ) : null}
-        </>
+        <div className="w-full -mt-1">
+          <section
+            className="flex flex-wrap items-center gap-x-6 gap-y-2"
+            aria-label={t`Entity summary`}
+          >
+            <Badge variant="outline" className="font-mono">
+              {t`CUI ${entityCui}`}
+            </Badge>
+            {isLoaded && isSignedIn ? (
+              <>
+                <CompactStat
+                  label={t`Users`}
+                  value={
+                    cachedEntitySummary?.userCount ??
+                    usersQuery.data?.page.totalCount ??
+                    0
+                  }
+                  isLoading={
+                    !hasEntityListCache &&
+                    usersQuery.isLoading &&
+                    usersQuery.data === undefined
+                  }
+                />
+                <CompactStat
+                  label={t`Interactions`}
+                  value={
+                    cachedEntitySummary?.interactionCount ??
+                    interactionsQuery.data?.page.totalCount ??
+                    0
+                  }
+                  isLoading={
+                    !hasEntityListCache &&
+                    interactionsQuery.isLoading &&
+                    interactionsQuery.data === undefined
+                  }
+                />
+                <EntitySummaryStat
+                  label={t`Pending reviews`}
+                  value={cachedEntitySummary?.pendingReviewCount ?? null}
+                  className="text-amber-600 dark:text-amber-400"
+                />
+                <EntitySummaryStat
+                  label={t`Subscribers`}
+                  value={
+                    cachedEntitySummary?.notificationSubscriberCount ?? null
+                  }
+                  className="text-emerald-600 dark:text-emerald-400"
+                />
+                <CompactStat
+                  label={t`Notifications`}
+                  value={
+                    cachedEntitySummary?.notificationOutboxCount ??
+                    notificationsQuery.data?.page.totalCount ??
+                    0
+                  }
+                  isLoading={
+                    !hasEntityListCache &&
+                    notificationsQuery.isLoading &&
+                    notificationsQuery.data === undefined
+                  }
+                  className="text-blue-600 dark:text-blue-400"
+                />
+              </>
+            ) : null}
+          </section>
+        </div>
       )}
     >
       {!isLoaded ? (
@@ -855,233 +890,217 @@ export function CampaignAdminEntityDetailPage({
         </Card>
       ) : (
         <div className="space-y-4">
-          <Card className="border-border/70 bg-card/80 shadow-none">
-            <CardHeader className="gap-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <CardTitle>{title}</CardTitle>
-                <Badge variant="outline" className="font-mono">
-                  {entityCui}
-                </Badge>
-              </div>
-              <CardDescription>
-                {entityName
-                  ? t`Use the preview sections below to inspect associated users, delivery activity, and review queue signals for this entity.`
-                  : t`Use the preview sections below to inspect the campaign activity currently associated with this entity.`}
-              </CardDescription>
-            </CardHeader>
-            {summaryStats.length > 0 ? (
-              <CardContent className="space-y-3">
-                <Collapsible
-                  open={isSummaryExpanded}
-                  onOpenChange={setIsSummaryExpanded}
-                >
-                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                    {summaryStats.slice(0, 2).map((stat) => (
-                      <SummaryCard
-                        key={stat.label}
-                        label={stat.label}
-                        value={stat.value}
-                      />
-                    ))}
-                    <CollapsibleContent className="contents">
-                      {summaryStats.slice(2).map((stat) => (
-                        <SummaryCard
-                          key={stat.label}
-                          label={stat.label}
-                          value={stat.value}
-                        />
-                      ))}
-                    </CollapsibleContent>
-                  </div>
-                  {summaryStats.length > 2 ? (
-                    <CollapsibleTrigger asChild>
-                      <button
-                        type="button"
-                        className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        <ChevronDown
-                          className={`h-3.5 w-3.5 transition-transform ${isSummaryExpanded ? "rotate-180" : ""}`}
-                          aria-hidden="true"
-                        />
-                        {isSummaryExpanded ? t`Show less` : t`Show more stats`}
-                      </button>
-                    </CollapsibleTrigger>
-                  ) : null}
-                </Collapsible>
-              </CardContent>
-            ) : null}
-          </Card>
-
+          {showGlobalPreviewError ? (
+            <SectionError
+              title={t`Failed to load entity detail`}
+              description={t`All entity sections failed to load. Retry the requests or open the filtered full pages below once the admin services recover.`}
+              onRetry={refreshAll}
+            />
+          ) : null}
           <Tabs
             value={activeTab}
             onValueChange={(value) =>
               onSearchChange({
                 ...normalizedSearch,
-                tab: value as "overview" | "threads" | "config",
+                tab: value as EntityDetailMainTab,
                 ...(value !== "config"
                   ? { selectedEntityCui: undefined }
                   : undefined),
               })
             }
-            className="space-y-4"
+            className="-mt-2 space-y-4"
           >
-            <TabsList>
-              <TabsTrigger value="overview">{t`Overview`}</TabsTrigger>
-              <TabsTrigger value="threads">
-                <span className="inline-flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                  {t`Threads`}
-                </span>
+            <TabsList className={campaignAdminEntityHubTabsListClassName}>
+              <TabsTrigger
+                value="users"
+                className={campaignAdminEntityHubTabsTriggerClassName}
+              >
+                <Users className="size-4 shrink-0" aria-hidden="true" />
+                {t`Users`}
               </TabsTrigger>
-              <TabsTrigger value="config">{t`Config`}</TabsTrigger>
+              <TabsTrigger
+                value="notifications"
+                className={campaignAdminEntityHubTabsTriggerClassName}
+              >
+                <Bell className="size-4 shrink-0" aria-hidden="true" />
+                {t`Notifications`}
+              </TabsTrigger>
+              <TabsTrigger
+                value="interactions"
+                className={campaignAdminEntityHubTabsTriggerClassName}
+              >
+                <ClipboardList
+                  className="size-4 shrink-0"
+                  aria-hidden="true"
+                />
+                {t`User interactions`}
+              </TabsTrigger>
+              <TabsTrigger
+                value="threads"
+                className={campaignAdminEntityHubTabsTriggerClassName}
+              >
+                <MessageSquare className="size-4 shrink-0" aria-hidden="true" />
+                {t`Threads`}
+              </TabsTrigger>
+              <TabsTrigger
+                value="config"
+                className={campaignAdminEntityHubTabsTriggerClassName}
+              >
+                <Settings2 className="size-4 shrink-0" aria-hidden="true" />
+                {t`Config`}
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="overview" className="space-y-4">
-              {allSectionQueriesFailed ? (
-                <SectionError
-                  title={t`Failed to load entity detail`}
-                  description={t`All entity sections failed to load. Retry the requests or open the filtered full pages below once the admin services recover.`}
-                  onRetry={refreshAll}
-                />
-              ) : null}
+            <TabsContent value="users" className="mt-0 space-y-4 pt-4">
+                  <SectionShell
+                    id="users"
+                    title={t`Users associated with this entity`}
+                    description={t`Preview the users currently returned by the campaign users directory for this entity.`}
+                    fullPageLink={(
+                      <Button asChild variant="outline" size="sm">
+                        <Link
+                          to="/admin/campaigns/$campaignKey/users"
+                          params={{ campaignKey }}
+                          search={createEntityUsersRouteSearch(entityCui)}
+                        >
+                          {t`View full page`}
+                        </Link>
+                      </Button>
+                    )}
+                  >
+                    {usersQuery.error ? (
+                      <SectionError
+                        title={t`Failed to load users`}
+                        description={usersQuery.error.message}
+                        onRetry={() => {
+                          void usersQuery.refetch();
+                        }}
+                      />
+                    ) : usersQuery.isLoading && usersQuery.data === undefined ? (
+                      <div className="flex min-h-[12rem] items-center justify-center rounded-3xl border border-border/70 bg-background/30">
+                        <LoadingSpinner />
+                      </div>
+                    ) : users.length === 0 ? (
+                      <EmptyState
+                        title={t`No users found for this entity`}
+                        description={t`No users are currently returned for this entity in the campaign users directory.`}
+                        className="rounded-3xl border border-border/70 bg-background/30 p-10"
+                      />
+                    ) : (
+                      <CampaignAdminUsersTable
+                        campaignKey={campaignKey}
+                        entityCui={entityCui}
+                        flushChrome
+                        items={users}
+                      />
+                    )}
+                  </SectionShell>
+                </TabsContent>
 
-              <SectionShell
-                id="users"
-                title={t`Users associated with this entity`}
-                description={t`Preview the users currently returned by the campaign users directory for this entity.`}
-                fullPageLink={(
-                  <Button asChild variant="outline" size="sm">
-                    <Link
-                      to="/admin/campaigns/$campaignKey/users"
-                      params={{ campaignKey }}
-                      search={createEntityUsersRouteSearch(entityCui)}
-                    >
-                      {t`View full page`}
-                    </Link>
-                  </Button>
-                )}
-              >
-                {usersQuery.error ? (
-                  <SectionError
-                    title={t`Failed to load users`}
-                    description={usersQuery.error.message}
-                    onRetry={() => {
-                      void usersQuery.refetch();
-                    }}
-                  />
-                ) : usersQuery.isLoading && usersQuery.data === undefined ? (
-                  <div className="flex min-h-[12rem] items-center justify-center rounded-3xl border border-border/70 bg-background/30">
-                    <LoadingSpinner />
-                  </div>
-                ) : users.length === 0 ? (
-                  <EmptyState
-                    title={t`No users found for this entity`}
-                    description={t`No users are currently returned for this entity in the campaign users directory.`}
-                    className="rounded-3xl border border-border/70 bg-background/30 p-10"
-                  />
-                ) : (
-                  <div className="overflow-x-auto">
-                    <CampaignAdminUsersTable
-                      campaignKey={campaignKey}
-                      entityCui={entityCui}
-                      items={users}
-                    />
-                  </div>
-                )}
-              </SectionShell>
+                <TabsContent
+                  value="notifications"
+                  className="mt-0 space-y-4 pt-4"
+                >
+                  <SectionShell
+                    id="notifications"
+                    title={t`Notifications related to this entity`}
+                    description={t`Preview the most recent notification audit entries filtered to this entity.`}
+                    fullPageLink={(
+                      <Button asChild variant="outline" size="sm">
+                        <Link
+                          to="/admin/campaigns/$campaignKey/notifications"
+                          params={{ campaignKey }}
+                          search={createEntityNotificationsRouteSearch(
+                            entityCui,
+                          )}
+                        >
+                          {t`View full page`}
+                        </Link>
+                      </Button>
+                    )}
+                  >
+                    {notificationsQuery.error ? (
+                      <SectionError
+                        title={t`Failed to load notifications`}
+                        description={notificationsQuery.error.message}
+                        onRetry={() => {
+                          void notificationsQuery.refetch();
+                        }}
+                      />
+                    ) : notificationsQuery.isLoading &&
+                      notificationsQuery.data === undefined ? (
+                      <div className="flex min-h-[12rem] items-center justify-center rounded-3xl border border-border/70 bg-background/30">
+                        <LoadingSpinner />
+                      </div>
+                    ) : notifications.length === 0 ? (
+                      <EmptyState
+                        title={t`No notifications found for this entity`}
+                        description={t`No campaign notification audit entries were recorded for this entity in the current admin projection.`}
+                        className="rounded-3xl border border-border/70 bg-background/30 p-10"
+                      />
+                    ) : (
+                      <CampaignAdminNotificationsTable
+                        campaignKey={campaignKey}
+                        flushChrome
+                        items={notifications}
+                        defaultVisibleColumnIds={NOTIFICATION_PREVIEW_COLUMNS}
+                        onClearFilters={() => undefined}
+                        onPreviewTemplate={() => undefined}
+                      />
+                    )}
+                  </SectionShell>
+                </TabsContent>
 
-              <SectionShell
-                id="notifications"
-                title={t`Notifications related to this entity`}
-                description={t`Preview the most recent notification audit entries filtered to this entity.`}
-                fullPageLink={(
-                  <Button asChild variant="outline" size="sm">
-                    <Link
-                      to="/admin/campaigns/$campaignKey/notifications"
-                      params={{ campaignKey }}
-                      search={createEntityNotificationsRouteSearch(entityCui)}
-                    >
-                      {t`View full page`}
-                    </Link>
-                  </Button>
-                )}
-              >
-                {notificationsQuery.error ? (
-                  <SectionError
-                    title={t`Failed to load notifications`}
-                    description={notificationsQuery.error.message}
-                    onRetry={() => {
-                      void notificationsQuery.refetch();
-                    }}
-                  />
-                ) : notificationsQuery.isLoading &&
-                  notificationsQuery.data === undefined ? (
-                  <div className="flex min-h-[12rem] items-center justify-center rounded-3xl border border-border/70 bg-background/30">
-                    <LoadingSpinner />
-                  </div>
-                ) : notifications.length === 0 ? (
-                  <EmptyState
-                    title={t`No notifications found for this entity`}
-                    description={t`No campaign notification audit entries were recorded for this entity in the current admin projection.`}
-                    className="rounded-3xl border border-border/70 bg-background/30 p-10"
-                  />
-                ) : (
-                  <CampaignAdminNotificationsTable
-                    campaignKey={campaignKey}
-                    items={notifications}
-                    defaultVisibleColumnIds={NOTIFICATION_PREVIEW_COLUMNS}
-                    onClearFilters={() => undefined}
-                    onPreviewTemplate={() => undefined}
-                  />
-                )}
-              </SectionShell>
+                <TabsContent
+                  value="interactions"
+                  className="mt-0 space-y-4 pt-4"
+                >
+                  <SectionShell
+                    id="user-interactions"
+                    title={t`User interactions for this entity`}
+                    description={t`Preview the latest interaction records currently filtered to this entity.`}
+                    fullPageLink={(
+                      <Button asChild variant="outline" size="sm">
+                        <Link
+                          to="/admin/campaigns/$campaignKey/user-interactions"
+                          params={{ campaignKey }}
+                          search={createEntityInteractionsRouteSearch(entityCui)}
+                        >
+                          {t`View full page`}
+                        </Link>
+                      </Button>
+                    )}
+                  >
+                    {interactionsQuery.error ? (
+                      <SectionError
+                        title={t`Failed to load interactions`}
+                        description={interactionsQuery.error.message}
+                        onRetry={() => {
+                          void interactionsQuery.refetch();
+                        }}
+                      />
+                    ) : interactionsQuery.isLoading &&
+                      interactionsQuery.data === undefined ? (
+                      <div className="flex min-h-[12rem] items-center justify-center rounded-3xl border border-border/70 bg-background/30">
+                        <LoadingSpinner />
+                      </div>
+                    ) : interactions.length === 0 ? (
+                      <EmptyState
+                        title={t`No interactions found for this entity`}
+                        description={t`No interaction records currently match this entity in the campaign review queue.`}
+                        className="rounded-3xl border border-border/70 bg-background/30 p-10"
+                      />
+                    ) : (
+                      <EntityInteractionsPreviewTable
+                        campaignKey={campaignKey}
+                        entityCui={entityCui}
+                        items={interactions}
+                      />
+                    )}
+                  </SectionShell>
+                </TabsContent>
 
-              <SectionShell
-                id="user-interactions"
-                title={t`User interactions for this entity`}
-                description={t`Preview the latest interaction records currently filtered to this entity.`}
-                fullPageLink={(
-                  <Button asChild variant="outline" size="sm">
-                    <Link
-                      to="/admin/campaigns/$campaignKey/user-interactions"
-                      params={{ campaignKey }}
-                      search={createEntityInteractionsRouteSearch(entityCui)}
-                    >
-                      {t`View full page`}
-                    </Link>
-                  </Button>
-                )}
-              >
-                {interactionsQuery.error ? (
-                  <SectionError
-                    title={t`Failed to load interactions`}
-                    description={interactionsQuery.error.message}
-                    onRetry={() => {
-                      void interactionsQuery.refetch();
-                    }}
-                  />
-                ) : interactionsQuery.isLoading &&
-                  interactionsQuery.data === undefined ? (
-                  <div className="flex min-h-[12rem] items-center justify-center rounded-3xl border border-border/70 bg-background/30">
-                    <LoadingSpinner />
-                  </div>
-                ) : interactions.length === 0 ? (
-                  <EmptyState
-                    title={t`No interactions found for this entity`}
-                    description={t`No interaction records currently match this entity in the campaign review queue.`}
-                    className="rounded-3xl border border-border/70 bg-background/30 p-10"
-                  />
-                ) : (
-                  <EntityInteractionsPreviewTable
-                    campaignKey={campaignKey}
-                    entityCui={entityCui}
-                    items={interactions}
-                  />
-                )}
-              </SectionShell>
-            </TabsContent>
-
-            <TabsContent value="threads" className="space-y-4">
+            <TabsContent value="threads" className="mt-0 space-y-4 pt-4">
               <Card className="border-border/70 bg-card/80 shadow-none">
                 <CardHeader>
                   <CardTitle>{t`Institution threads for this entity`}</CardTitle>
@@ -1111,7 +1130,7 @@ export function CampaignAdminEntityDetailPage({
               </Card>
             </TabsContent>
 
-            <TabsContent value="config" className="space-y-4">
+            <TabsContent value="config" className="mt-0 space-y-4 pt-4">
               <Card className="border-border/70 bg-card/80 shadow-none">
                 <CardHeader>
                   <CardTitle>{t`Entity config`}</CardTitle>

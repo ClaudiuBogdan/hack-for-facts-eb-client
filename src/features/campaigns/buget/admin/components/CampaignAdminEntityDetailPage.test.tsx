@@ -538,6 +538,14 @@ describeIfEntityDetailPageExists("CampaignAdminEntityDetailPage", () => {
     expect(screen.getAllByRole("button", { name: "Retry" }).length).toBeGreaterThan(0);
   });
 
+  it("links to the public primarie page for this entity", async () => {
+    await renderEntityDetailPage();
+
+    expect(
+      screen.getByRole("link", { name: "Open entity page" }),
+    ).toHaveAttribute("href", "/primarie/12345678");
+  });
+
   it("renders the three preview sections and filtered full-page links", async () => {
     await renderEntityDetailPage();
 
@@ -708,10 +716,35 @@ describeIfEntityDetailPageExists("CampaignAdminEntityDetailPage", () => {
       threadsLimit: 15,
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+    fireEvent.click(screen.getByRole("button", { name: "Actions" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Refresh" }));
 
     expect(invalidateQueriesMock).toHaveBeenCalledWith({
       queryKey: ["campaign-admin", "funky", "institution-threads"],
     });
+  });
+
+  it("lists go-to links in the actions menu with the same entity filters as the full-page previews", async () => {
+    await renderEntityDetailPage();
+
+    fireEvent.click(screen.getByRole("button", { name: "Actions" }));
+
+    const goToUsers = screen.getByRole("menuitem", { name: "Go to users" });
+    const goToNotifications = screen.getByRole("menuitem", {
+      name: "Go to notifications",
+    });
+    const goToInteractions = screen.getByRole("menuitem", {
+      name: "Go to user interactions",
+    });
+
+    expect(goToUsers.getAttribute("href")).toMatch(
+      /^\/admin\/campaigns\/funky\/users\?.*entityCui=12345678/,
+    );
+    expect(goToNotifications.getAttribute("href")).toMatch(
+      /^\/admin\/campaigns\/funky\/notifications\?.*entityCui=12345678/,
+    );
+    expect(goToInteractions.getAttribute("href")).toMatch(
+      /^\/admin\/campaigns\/funky\/user-interactions\?.*entityCui=12345678/,
+    );
   });
 });

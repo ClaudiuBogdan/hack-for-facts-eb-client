@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
 import { ArrowUpDown, ChevronDown, ChevronUp, SearchX } from "lucide-react";
 import { t } from "@lingui/core/macro";
 import { Badge } from "@/components/ui/badge";
@@ -34,13 +35,16 @@ import type {
   CampaignAdminNotificationSortKey,
   CampaignAdminSortOrder,
 } from "@/features/campaigns/buget/admin/types";
+import { createCampaignAdminEntityDetailRouteSearch } from "@/features/campaigns/buget/admin/utils/create-campaign-admin-entity-detail-route-search";
 import { formatCampaignAdminUserIdPreview } from "@/features/campaigns/buget/admin/utils/format-user-id-preview";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
-import { getUserLocale } from "@/lib/utils";
+import { cn, getUserLocale } from "@/lib/utils";
 
 type CampaignAdminNotificationsTableProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
   readonly items: readonly CampaignAdminNotificationListItem[];
+  /** When true, omit outer border/background for use inside another card (e.g. entity detail). */
+  readonly flushChrome?: boolean;
   readonly header?: (input: {
     readonly actions: ReactNode;
     readonly trailingActions: ReactNode;
@@ -150,6 +154,7 @@ function SortableTableHead({
   sortBy,
   sortOrder,
   onSortChange,
+  stickyHeaderClassName,
   children,
 }: {
   readonly sortKey: CampaignAdminNotificationSortKey;
@@ -159,10 +164,16 @@ function SortableTableHead({
     sortBy: CampaignAdminNotificationSortKey,
     sortOrder: CampaignAdminSortOrder,
   ) => void;
+  readonly stickyHeaderClassName: string;
   readonly children: ReactNode;
 }) {
   return (
-    <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+    <TableHead
+      className={cn(
+        "sticky top-0 z-10 h-auto py-3 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+        stickyHeaderClassName,
+      )}
+    >
       {onSortChange ? (
         <SortableHeaderButton
           sortKey={sortKey}
@@ -252,21 +263,33 @@ function SafeErrorCell({
 }
 
 function EntityCell({
+  campaignKey,
   item,
 }: {
+  readonly campaignKey: CampaignAdminCampaignKey;
   readonly item: CampaignAdminNotificationListItem;
 }) {
-  const entityName =
-    "entityName" in item.projection ? item.projection.entityName?.trim() : null;
+  const entityName = item.projection.entityName?.trim() ?? null;
   const entityCui = item.projection.entityCui;
+  const title = entityName || entityCui;
 
   return (
-    <div className="space-y-1">
-      <p className="text-sm font-medium text-foreground">
-        {entityName || entityCui}
-      </p>
-      <p className="font-mono text-xs text-muted-foreground">{entityCui}</p>
-    </div>
+    <Link
+      to="/admin/campaigns/$campaignKey/entities/$entityCui"
+      params={{ campaignKey, entityCui }}
+      search={createCampaignAdminEntityDetailRouteSearch()}
+      aria-label={t`Open entity admin page for ${entityCui}`}
+      className="group/ent block max-w-[18rem] rounded-sm text-inherit no-underline outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background"
+    >
+      <div className="space-y-1">
+        <p className="text-sm font-medium text-foreground transition-colors group-hover/ent:text-primary group-hover/ent:underline group-hover/ent:underline-offset-2 group-hover/ent:decoration-primary/80">
+          {title}
+        </p>
+        <p className="font-mono text-xs text-muted-foreground transition-colors group-hover/ent:text-foreground/80">
+          {entityCui}
+        </p>
+      </div>
+    </Link>
   );
 }
 
@@ -523,6 +546,7 @@ function DetailsCell({
 export function CampaignAdminNotificationsTable({
   campaignKey,
   items,
+  flushChrome = false,
   header,
   footer,
   tablePreferencesKey,
@@ -533,6 +557,7 @@ export function CampaignAdminNotificationsTable({
   onClearFilters,
   onPreviewTemplate,
 }: CampaignAdminNotificationsTableProps) {
+  const stickyHeaderClassName = flushChrome ? "bg-card/80" : "bg-card";
   const { columnVisibility, setColumnVisibility } = useTablePreferences(
     tablePreferencesKey ?? `campaign-admin-notifications:${campaignKey}`,
     {
@@ -589,9 +614,15 @@ export function CampaignAdminNotificationsTable({
 
   return (
     <>
-      <div className="overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-none">
+      <div
+        className={
+          flushChrome
+            ? "overflow-hidden"
+            : "overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-none"
+        }
+      >
         {header ? (
-          <div className="px-4 py-4">
+          <div className={flushChrome ? "px-0 py-4" : "px-4 py-4"}>
             {header({
               actions: (
                 <DropdownMenu>
@@ -626,9 +657,11 @@ export function CampaignAdminNotificationsTable({
         ) : null}
 
         <div
-          className={`flex items-center justify-between gap-3 px-4 py-3 ${
-            header ? "hidden" : ""
-          }`}
+          className={cn(
+            "flex items-center justify-between gap-3 py-3",
+            header ? "hidden" : "",
+            flushChrome ? "px-0" : "px-4",
+          )}
         >
           <p className="text-sm text-muted-foreground" aria-live="polite">
             {t`${items.length} visible`}
@@ -675,6 +708,7 @@ export function CampaignAdminNotificationsTable({
                   sortBy={sortBy}
                   sortOrder={sortOrder}
                   onSortChange={onSortChange}
+                  stickyHeaderClassName={stickyHeaderClassName}
                 >
                   {t`Created`}
                 </SortableTableHead>
@@ -683,31 +717,57 @@ export function CampaignAdminNotificationsTable({
                   sortBy={sortBy}
                   sortOrder={sortOrder}
                   onSortChange={onSortChange}
+                  stickyHeaderClassName={stickyHeaderClassName}
                 >
                   {t`Status`}
                 </SortableTableHead>
                 {isColumnVisible("notificationKind") ? (
-                  <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                  <TableHead
+                    className={cn(
+                      "sticky top-0 z-10 h-auto py-3 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                      stickyHeaderClassName,
+                    )}
+                  >
                     {t`Notification kind`}
                   </TableHead>
                 ) : null}
                 {isColumnVisible("template") ? (
-                  <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                  <TableHead
+                    className={cn(
+                      "sticky top-0 z-10 h-auto py-3 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                      stickyHeaderClassName,
+                    )}
+                  >
                     {t`Template`}
                   </TableHead>
                 ) : null}
                 {isColumnVisible("entity") ? (
-                  <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                  <TableHead
+                    className={cn(
+                      "sticky top-0 z-10 h-auto py-3 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                      stickyHeaderClassName,
+                    )}
+                  >
                     {t`Entity`}
                   </TableHead>
                 ) : null}
                 {isColumnVisible("user") ? (
-                  <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                  <TableHead
+                    className={cn(
+                      "sticky top-0 z-10 h-auto py-3 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                      stickyHeaderClassName,
+                    )}
+                  >
                     {t`User`}
                   </TableHead>
                 ) : null}
                 {isColumnVisible("threadEvent") ? (
-                  <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                  <TableHead
+                    className={cn(
+                      "sticky top-0 z-10 h-auto py-3 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                      stickyHeaderClassName,
+                    )}
+                  >
                     {t`Thread / event`}
                   </TableHead>
                 ) : null}
@@ -717,12 +777,18 @@ export function CampaignAdminNotificationsTable({
                     sortBy={sortBy}
                     sortOrder={sortOrder}
                     onSortChange={onSortChange}
+                    stickyHeaderClassName={stickyHeaderClassName}
                   >
                     {t`Attempts`}
                   </SortableTableHead>
                 ) : null}
                 {isColumnVisible("safeError") ? (
-                  <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                  <TableHead
+                    className={cn(
+                      "sticky top-0 z-10 h-auto py-3 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                      stickyHeaderClassName,
+                    )}
+                  >
                     {t`Safe error`}
                   </TableHead>
                 ) : null}
@@ -732,6 +798,7 @@ export function CampaignAdminNotificationsTable({
                     sortBy={sortBy}
                     sortOrder={sortOrder}
                     onSortChange={onSortChange}
+                    stickyHeaderClassName={stickyHeaderClassName}
                   >
                     {t`Details`}
                   </SortableTableHead>
@@ -761,8 +828,8 @@ export function CampaignAdminNotificationsTable({
                     </TableCell>
                   ) : null}
                   {isColumnVisible("entity") ? (
-                    <TableCell>
-                      <EntityCell item={item} />
+                    <TableCell className="align-top">
+                      <EntityCell campaignKey={campaignKey} item={item} />
                     </TableCell>
                   ) : null}
                   {isColumnVisible("user") ? (
@@ -807,7 +874,13 @@ export function CampaignAdminNotificationsTable({
         </div>
 
         {footer ? (
-          <div className="border-t border-border/60 bg-background/40 px-4 py-4">
+          <div
+            className={
+              flushChrome
+                ? "border-t border-border/50 px-0 py-3"
+                : "border-t border-border/60 bg-background/40 px-4 py-4"
+            }
+          >
             {footer}
           </div>
         ) : null}

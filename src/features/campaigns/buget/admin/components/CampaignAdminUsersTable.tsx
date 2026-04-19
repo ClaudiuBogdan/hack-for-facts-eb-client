@@ -35,6 +35,7 @@ import type {
   CampaignAdminUserListItem,
   CampaignAdminUsersSortKey,
 } from "@/features/campaigns/buget/admin/types";
+import { createCampaignAdminEntityDetailRouteSearch } from "@/features/campaigns/buget/admin/utils/create-campaign-admin-entity-detail-route-search";
 
 function createCampaignAdminUserPageRouteSearch(entityCui?: string) {
   return {
@@ -72,23 +73,6 @@ function formatDateTime(value: string): string {
   return parsedDate.toLocaleString();
 }
 
-function getLatestEntityPreview(item: CampaignAdminUserListItem): string {
-  const latestEntityName = item.latestEntityName?.trim();
-  if (latestEntityName && item.latestEntityCui) {
-    return `${latestEntityName} · ${item.latestEntityCui}`;
-  }
-
-  if (latestEntityName) {
-    return latestEntityName;
-  }
-
-  if (item.latestEntityCui) {
-    return item.latestEntityCui;
-  }
-
-  return t`No entity`;
-}
-
 function getLatestInteractionPreview(item: CampaignAdminUserListItem): string {
   if (item.latestInteractionId === null) {
     return t`No interactions yet`;
@@ -103,11 +87,57 @@ function StaticHeaderLabel({ children }: { readonly children: ReactNode }) {
   );
 }
 
+function LatestInteractionCell({
+  campaignKey,
+  item,
+}: {
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly item: CampaignAdminUserListItem;
+}) {
+  const interactionLabel = getLatestInteractionPreview(item);
+  const entityCui = item.latestEntityCui;
+  const entityName = item.latestEntityName?.trim();
+  const entityLine =
+    entityName && entityCui
+      ? `${entityName} · ${entityCui}`
+      : entityName ?? entityCui ?? null;
+
+  return (
+    <div className="min-w-0 max-w-[22rem] space-y-1">
+      <p className="text-sm font-medium leading-snug text-foreground">
+        {interactionLabel}
+      </p>
+      {entityCui && entityLine ? (
+        <p className="min-w-0 text-xs leading-snug text-muted-foreground">
+          <Link
+            to="/admin/campaigns/$campaignKey/entities/$entityCui"
+            params={{ campaignKey, entityCui }}
+            search={createCampaignAdminEntityDetailRouteSearch()}
+            aria-label={t`Open entity admin page for ${entityCui}`}
+            className="group/ent inline-flex max-w-full rounded-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background"
+          >
+            <span className="min-w-0 truncate transition-colors group-hover/ent:text-primary group-hover/ent:underline group-hover/ent:underline-offset-2 group-hover/ent:decoration-primary/80">
+              {entityLine}
+            </span>
+          </Link>
+        </p>
+      ) : entityLine ? (
+        <p className="min-w-0 truncate text-xs leading-snug text-muted-foreground">
+          {entityLine}
+        </p>
+      ) : (
+        <p className="text-xs text-muted-foreground">{t`No entity`}</p>
+      )}
+    </div>
+  );
+}
+
 function SortableHeaderButton({
   sortKey,
   sortBy,
   sortOrder,
   onSortChange,
+  align = "start",
   children,
 }: {
   readonly sortKey: CampaignAdminUsersSortKey;
@@ -117,6 +147,7 @@ function SortableHeaderButton({
     sortBy: CampaignAdminUsersSortKey,
     sortOrder: CampaignAdminSortOrder,
   ) => void;
+  readonly align?: "start" | "end";
   readonly children: ReactNode;
 }) {
   const columnConfig = CAMPAIGN_ADMIN_USERS_SORTABLE_COLUMNS[sortKey];
@@ -138,7 +169,11 @@ function SortableHeaderButton({
     <button
       type="button"
       onClick={handleClick}
-      className="flex w-full items-center gap-1 text-left text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+      className={
+        align === "end"
+          ? "flex w-full items-center justify-end gap-1 text-right text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+          : "flex w-full items-center gap-1 text-left text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+      }
       aria-label={t`${sortLabel} sort`}
     >
       <span className="flex min-w-0 items-center gap-1">{children}</span>
@@ -167,12 +202,10 @@ function UserDirectoryRow({
   readonly entityCui?: string;
   readonly item: CampaignAdminUserListItem;
 }) {
-  const latestEntityPreview = getLatestEntityPreview(item);
-
   return (
-    <TableRow className="group">
-      <TableCell>
-        <div className="flex items-center gap-1.5">
+    <TableRow className="group border-border/50">
+      <TableCell className="align-top">
+        <div className="flex max-w-[18rem] items-start gap-1.5">
           <TooltipProvider delayDuration={300}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -180,7 +213,7 @@ function UserDirectoryRow({
                   to="/admin/campaigns/$campaignKey/users/$userId"
                   params={{ campaignKey, userId: item.userId }}
                   search={createCampaignAdminUserPageRouteSearch(entityCui)}
-                  className="block max-w-[20rem] break-all font-mono text-xs text-foreground hover:underline"
+                  className="block break-all font-mono text-xs leading-relaxed text-foreground underline-offset-2 transition-colors hover:text-primary hover:underline"
                 >
                   {item.userId}
                 </Link>
@@ -194,17 +227,17 @@ function UserDirectoryRow({
             onCopy={() => {
               void navigator.clipboard.writeText(item.userId);
             }}
-            className="h-6 w-6 p-1 opacity-0 transition-opacity group-hover:opacity-100"
+            className="mt-0.5 h-6 w-6 shrink-0 p-1 opacity-0 transition-opacity group-hover:opacity-100"
           />
         </div>
       </TableCell>
-      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+      <TableCell className="whitespace-nowrap align-top text-sm text-muted-foreground">
         {formatDateTime(item.latestUpdatedAt)}
       </TableCell>
-      <TableCell className="tabular-nums text-sm">
+      <TableCell className="align-top text-right tabular-nums text-sm text-foreground">
         {item.interactionCount}
       </TableCell>
-      <TableCell className="text-sm">
+      <TableCell className="align-top text-right text-sm">
         {item.pendingReviewCount > 0 ? (
           <Badge variant="warning" className="tabular-nums">
             {item.pendingReviewCount}
@@ -215,26 +248,18 @@ function UserDirectoryRow({
           </span>
         )}
       </TableCell>
-      <TableCell className="min-w-0 text-sm">
-        <p className="truncate text-foreground">{getLatestInteractionPreview(item)}</p>
-        <p
-          className="truncate text-xs text-muted-foreground"
-          title={latestEntityPreview}
-        >
-          {latestEntityPreview}
-        </p>
+      <TableCell className="min-w-0 align-top">
+        <LatestInteractionCell campaignKey={campaignKey} item={item} />
       </TableCell>
-      <TableCell className="w-10 text-right">
+      <TableCell className="w-12 align-top text-right">
         <Link
           to="/admin/campaigns/$campaignKey/users/$userId"
           params={{ campaignKey, userId: item.userId }}
           search={createCampaignAdminUserPageRouteSearch(entityCui)}
           aria-label={t`Open user ${item.userId}`}
+          className="inline-flex rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
-          <ArrowRight
-            className="ml-auto h-4 w-4 text-muted-foreground transition-colors hover:text-foreground"
-            aria-hidden="true"
-          />
+          <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </TableCell>
     </TableRow>
@@ -245,6 +270,8 @@ type CampaignAdminUsersTableProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
   readonly entityCui?: string;
   readonly items: readonly CampaignAdminUserListItem[];
+  /** When true, omit outer border/background so the table can sit inside another card without double chrome. */
+  readonly flushChrome?: boolean;
   readonly header?: ReactNode;
   readonly footer?: ReactNode;
   readonly sortBy?: CampaignAdminUsersSortKey;
@@ -259,24 +286,46 @@ export function CampaignAdminUsersTable({
   campaignKey,
   entityCui,
   items,
+  flushChrome = false,
   header,
   footer,
   sortBy,
   sortOrder,
   onSortChange,
 }: CampaignAdminUsersTableProps) {
+  const stickyHeaderBg = flushChrome
+    ? "bg-card/80"
+    : "bg-card/95";
+
   return (
-    <div className="overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-none">
+    <div
+      className={
+        flushChrome
+          ? "overflow-hidden"
+          : "overflow-hidden rounded-xl border border-border/60 bg-card/90 shadow-none"
+      }
+    >
       {header ? (
-        <div className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3">
+        <div
+          className={
+            flushChrome
+              ? "flex items-center justify-between gap-3 border-b border-border/50 px-0 py-3"
+              : "flex items-center justify-between gap-3 border-b border-border/50 px-4 py-3"
+          }
+        >
           {header}
         </div>
       ) : null}
       <div className="overflow-x-auto">
-        <Table>
+        <Table
+          containerClassName="max-h-[min(55vh,28rem)]"
+          className="min-w-[56rem] [&_td]:px-3 [&_td]:py-2.5 [&_th]:px-3"
+        >
           <TableHeader>
-            <TableRow>
-              <TableHead>
+            <TableRow className="border-border/50 hover:bg-transparent">
+              <TableHead
+                className={`sticky top-0 z-10 h-auto ${stickyHeaderBg} py-3 backdrop-blur-sm`}
+              >
                 {onSortChange ? (
                   <SortableHeaderButton
                     sortKey="userId"
@@ -290,7 +339,9 @@ export function CampaignAdminUsersTable({
                   <StaticHeaderLabel>{t`User ID`}</StaticHeaderLabel>
                 )}
               </TableHead>
-              <TableHead>
+              <TableHead
+                className={`sticky top-0 z-10 h-auto ${stickyHeaderBg} py-3 backdrop-blur-sm`}
+              >
                 {onSortChange ? (
                   <SortableHeaderButton
                     sortKey="latestUpdatedAt"
@@ -304,38 +355,52 @@ export function CampaignAdminUsersTable({
                   <StaticHeaderLabel>{t`Last Updated`}</StaticHeaderLabel>
                 )}
               </TableHead>
-              <TableHead>
+              <TableHead
+                className={`sticky top-0 z-10 h-auto ${stickyHeaderBg} py-3 text-right backdrop-blur-sm`}
+              >
                 {onSortChange ? (
                   <SortableHeaderButton
                     sortKey="interactionCount"
                     sortBy={sortBy}
                     sortOrder={sortOrder}
                     onSortChange={onSortChange}
+                    align="end"
                   >
                     {t`Interactions`}
                   </SortableHeaderButton>
                 ) : (
-                  <StaticHeaderLabel>{t`Interactions`}</StaticHeaderLabel>
+                  <div className="flex justify-end">
+                    <StaticHeaderLabel>{t`Interactions`}</StaticHeaderLabel>
+                  </div>
                 )}
               </TableHead>
-              <TableHead>
+              <TableHead
+                className={`sticky top-0 z-10 h-auto ${stickyHeaderBg} py-3 text-right backdrop-blur-sm`}
+              >
                 {onSortChange ? (
                   <SortableHeaderButton
                     sortKey="pendingReviewCount"
                     sortBy={sortBy}
                     sortOrder={sortOrder}
                     onSortChange={onSortChange}
+                    align="end"
                   >
                     {t`Pending Reviews`}
                   </SortableHeaderButton>
                 ) : (
-                  <StaticHeaderLabel>{t`Pending Reviews`}</StaticHeaderLabel>
+                  <div className="flex justify-end">
+                    <StaticHeaderLabel>{t`Pending Reviews`}</StaticHeaderLabel>
+                  </div>
                 )}
               </TableHead>
-              <TableHead>
+              <TableHead
+                className={`sticky top-0 z-10 h-auto min-w-[12rem] ${stickyHeaderBg} py-3 backdrop-blur-sm`}
+              >
                 <StaticHeaderLabel>{t`Latest Interaction`}</StaticHeaderLabel>
               </TableHead>
-              <TableHead className="w-10" />
+              <TableHead
+                className={`sticky top-0 z-10 h-auto w-12 ${stickyHeaderBg} py-3 backdrop-blur-sm`}
+              />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -351,7 +416,13 @@ export function CampaignAdminUsersTable({
         </Table>
       </div>
       {footer ? (
-        <div className="border-t border-border/60 bg-background/40 px-4 py-4">
+        <div
+          className={
+            flushChrome
+              ? "border-t border-border/50 px-0 py-3"
+              : "border-t border-border/50 bg-muted/20 px-4 py-3"
+          }
+        >
           {footer}
         </div>
       ) : null}

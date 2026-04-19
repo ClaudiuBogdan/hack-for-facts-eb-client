@@ -1174,7 +1174,13 @@ export type CampaignAdminUsersSearch = {
 };
 
 export type CampaignAdminEntitiesSearch = {
-  readonly tab?: "overview" | "threads" | "config";
+  readonly tab?:
+    | "overview"
+    | "users"
+    | "notifications"
+    | "interactions"
+    | "threads"
+    | "config";
   readonly query?: string;
   readonly interactionId?: string;
   readonly hasPendingReviews?: boolean;

@@ -426,7 +426,16 @@ export const campaignAdminUsersRouteSearchSchema = z.object({
 export const campaignAdminEntitiesRouteSearchSchema = z.object({
   tab: z.preprocess(
     toTrimmedOptionalString,
-    z.enum(["overview", "threads", "config"]).optional(),
+    z
+      .enum([
+        "overview",
+        "users",
+        "notifications",
+        "interactions",
+        "threads",
+        "config",
+      ])
+      .optional(),
   ),
   query: z.preprocess(toTrimmedOptionalString, z.string().min(1).optional()),
   interactionId: z.preprocess(

@@ -55,6 +55,10 @@ import { CampaignAdminEntityConfigToolbar } from "@/features/campaigns/buget/adm
 import { CampaignAdminEntitiesTable } from "@/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable";
 import { CampaignAdminEntitiesToolbar } from "@/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar";
 import { CampaignAdminInstitutionThreadsSection } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsSection";
+import {
+  campaignAdminEntityHubTabsListClassName,
+  campaignAdminEntityHubTabsTriggerClassName,
+} from "@/features/campaigns/buget/admin/components/campaign-admin-entity-hub-tabs-styles";
 import { CompactStat } from "@/features/campaigns/buget/admin/components/CompactStat";
 import { getCampaignAdminCampaignLabel } from "@/features/campaigns/buget/admin/constants";
 import { downloadCampaignAdminEntityConfigCsv } from "@/features/campaigns/buget/admin/api/campaign-admin-entity-config";
@@ -87,7 +91,6 @@ import {
   campaignAdminEntityNotificationTypeValues,
   campaignAdminNotificationStatusValues,
 } from "@/features/campaigns/buget/admin/types";
-import { cn } from "@/lib/utils";
 import type {
   CampaignAdminCampaignKey,
   CampaignAdminEntitiesSearch,
@@ -185,14 +188,6 @@ function EntitiesTableSkeleton() {
   );
 }
 
-const campaignAdminEntitiesGithubTabTriggerClassName = cn(
-  "relative -mb-px gap-2 rounded-none border-0 border-b-2 border-transparent bg-transparent px-4 py-2.5 text-sm font-normal shadow-none",
-  "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
-  "focus-visible:ring-offset-0",
-  "data-[state=active]:border-orange-500 data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=active]:shadow-none",
-  "dark:data-[state=active]:border-orange-400",
-);
-
 export function CampaignAdminEntitiesPage({
   campaignKey,
   search,
@@ -202,7 +197,12 @@ export function CampaignAdminEntitiesPage({
   const pageTitle = t`Entities`;
   const pageDescription = t`Review entity-level campaign state across users, interaction review pressure, and notification delivery activity.`;
   const normalizedSearch = normalizeCampaignAdminEntitiesSearch(search);
-  const activeTab = normalizedSearch.tab ?? "overview";
+  const activeTab =
+    normalizedSearch.tab === "users" ||
+    normalizedSearch.tab === "notifications" ||
+    normalizedSearch.tab === "interactions"
+      ? "overview"
+      : (normalizedSearch.tab ?? "overview");
   const filters = useMemo(
     () => getCampaignAdminEntitiesFilters(normalizedSearch),
     [normalizedSearch],
@@ -1003,29 +1003,24 @@ export function CampaignAdminEntitiesPage({
         }}
         className="-mt-2 space-y-4"
       >
-        <TabsList
-          className={cn(
-            "flex h-auto w-full items-end justify-start gap-1 rounded-none border-b border-border bg-transparent p-0",
-            "text-muted-foreground",
-          )}
-        >
+        <TabsList className={campaignAdminEntityHubTabsListClassName}>
           <TabsTrigger
             value="overview"
-            className={campaignAdminEntitiesGithubTabTriggerClassName}
+            className={campaignAdminEntityHubTabsTriggerClassName}
           >
             <LayoutGrid className="size-4 shrink-0" aria-hidden="true" />
             {t`Overview`}
           </TabsTrigger>
           <TabsTrigger
             value="config"
-            className={campaignAdminEntitiesGithubTabTriggerClassName}
+            className={campaignAdminEntityHubTabsTriggerClassName}
           >
             <Settings2 className="size-4 shrink-0" aria-hidden="true" />
             {t`Config`}
           </TabsTrigger>
           <TabsTrigger
             value="threads"
-            className={campaignAdminEntitiesGithubTabTriggerClassName}
+            className={campaignAdminEntityHubTabsTriggerClassName}
           >
             <MessageSquare className="size-4 shrink-0" aria-hidden="true" />
             {t`Threads`}
