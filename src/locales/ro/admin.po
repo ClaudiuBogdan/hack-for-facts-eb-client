@@ -20,8 +20,8 @@ msgstr ""
 #. placeholder {0}: getCampaignAdminEntityConfigSortLabel(sortBy)
 #. placeholder {0}: getCampaignAdminNotificationSortLabel(sortBy)
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:227
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:173
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:186
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:198
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:188
 msgid "{0} (ascending)"
 msgstr "{0} (crescător)"
 
@@ -29,8 +29,8 @@ msgstr "{0} (crescător)"
 #. placeholder {0}: getCampaignAdminEntityConfigSortLabel(sortBy)
 #. placeholder {0}: getCampaignAdminNotificationSortLabel(sortBy)
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:228
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:174
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:187
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:199
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:189
 msgid "{0} (descending)"
 msgstr "{0} (descrescător)"
 
@@ -58,7 +58,7 @@ msgstr ""
 #~ msgstr "{0} livrate · {1} utilizatori necesită revizuire"
 
 #. placeholder {0}: meta.entitiesWithFailedNotifications
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:190
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:194
 msgid "{0} delivery issues"
 msgstr "{0} probleme de livrare"
 
@@ -79,14 +79,14 @@ msgid "{0} events"
 msgstr ""
 
 #. placeholder {0}: meta.failedDeliveryCount
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:217
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:221
 msgid "{0} failed deliveries"
 msgstr "{0} livrări eșuate"
 
 #. placeholder {0}: activeFilters.length
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:802
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:469
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:482
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:485
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:800
 msgid "{0} filters applied"
 msgstr "{0} filtre aplicate"
@@ -111,7 +111,7 @@ msgid "{0} more issues"
 msgstr "Încă {0} probleme"
 
 #. placeholder {0}: item.projection.nextStepCount
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:521
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:530
 msgid "{0} next step links"
 msgstr "{0} linkuri pentru pașii următori"
 
@@ -127,7 +127,7 @@ msgstr "{0} în așteptare"
 
 #. placeholder {0}: meta.pendingDeliveryCount
 #. placeholder {1}: meta.replyReceivedCount
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:213
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:217
 msgid "{0} pending delivery · {1} replies"
 msgstr "{0} în așteptare la livrare · {1} răspunsuri"
 
@@ -141,7 +141,7 @@ msgstr ""
 
 #. placeholder {0}: template.requiredFields.length
 #. placeholder {1}: template.requiredFields.length !== 1 ? "s" : ""
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:265
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:282
 msgid "{0} required field{1}"
 msgstr ""
 
@@ -150,11 +150,18 @@ msgstr ""
 msgid "{0} rows ready"
 msgstr ""
 
+#. placeholder {0}: selectedConfigItems.length
 #. placeholder {0}: selectedItems.length
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1132
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:703
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1393
 msgid "{0} rows selected"
 msgstr "{0} rânduri selectate"
+
+#. placeholder {0}: selectedConfigSendValidationIssues.length
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1146
+msgid "{0} rows still need config data"
+msgstr ""
 
 #. placeholder {0}: selectedSendValidationIssues.length
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:717
@@ -163,7 +170,7 @@ msgid "{0} rows still need review data"
 msgstr "{0} rânduri încă au nevoie de date de revizuire"
 
 #. placeholder {0}: item.projection.selectedEntitiesCount
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:396
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:405
 msgid "{0} selected entities"
 msgstr "{0} entități selectate"
 
@@ -192,7 +199,7 @@ msgstr "{0} abonați"
 
 #. placeholder {0}: meta.totalEntities
 #. placeholder {1}: meta.entitiesWithPendingReviews
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:186
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:190
 msgid "{0} tracked · {1} pending"
 msgstr "{0} urmărite · {1} în așteptare"
 
@@ -202,18 +209,19 @@ msgstr "{0} urmărite · {1} în așteptare"
 
 #. placeholder {0}: meta.totalUsers
 #. placeholder {1}: meta.usersWithPendingReviews
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:164
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:168
 msgid "{0} users · {1} need review"
 msgstr "{0} utilizatori · {1} necesită revizuire"
 
 #. placeholder {0}: issues.length
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSendValidationDialog.tsx:50
 #: src/features/campaigns/buget/admin/components/CampaignAdminSendValidationDialog.tsx:56
 msgid "{0} validation issues"
 msgstr "{0} probleme de validare"
 
 #. placeholder {0}: items.length
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:450
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:677
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:687
 msgid "{0} visible"
 msgstr "{0} vizibile"
 
@@ -249,11 +257,11 @@ msgstr ""
 msgid "{message} Run preview again to refresh the matches."
 msgstr "{message} Rulează din nou previzualizarea pentru a reîmprospăta potrivirile."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:464
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:468
 msgid "{pendingCount} pending · {approvedCount} approved · {rejectedCount} rejected"
 msgstr "{pendingCount} în așteptare · {approvedCount} aprobate · {rejectedCount} respinse"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:469
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:473
 msgid "{riskFlaggedCount} flagged for review"
 msgstr "{riskFlaggedCount} marcate pentru revizuire"
 
@@ -261,13 +269,17 @@ msgstr "{riskFlaggedCount} marcate pentru revizuire"
 msgid "{selectedHiddenCount} selected rows are hidden by the current filters"
 msgstr "{selectedHiddenCount} rânduri selectate sunt ascunse de filtrele curente"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1139
+msgid "{selectedStagedConfigDraftCount} rows staged"
+msgstr ""
+
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:710
 msgid "{selectedStagedDraftCount} rows staged"
 msgstr "{selectedStagedDraftCount} rânduri pregătite"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:144
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:114
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:133
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:122
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:138
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:199
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersTable.tsx:178
 msgid "{sortLabel} sort"
@@ -313,7 +325,7 @@ msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:801
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:468
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:481
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:484
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:799
 msgid "1 filter applied"
 msgstr "1 filtru aplicat"
@@ -326,18 +338,24 @@ msgstr ""
 msgid "1 item selected"
 msgstr "1 element selectat"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:520
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:529
 msgid "1 next step link"
 msgstr "1 link pentru pasul următor"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1131
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:702
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1392
 msgid "1 row selected"
 msgstr "1 rând selectat"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1138
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:709
 msgid "1 row staged"
 msgstr "1 rând pregătit"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1145
+msgid "1 row still needs config data"
+msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:716
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1405
@@ -348,17 +366,18 @@ msgstr "1 rând încă are nevoie de date de revizuire"
 msgid "1 selected row is hidden by the current filters"
 msgstr "1 rând selectat este ascuns de filtrele curente"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSendValidationDialog.tsx:49
 #: src/features/campaigns/buget/admin/components/CampaignAdminSendValidationDialog.tsx:55
 msgid "1 validation issue"
 msgstr "1 problemă de validare"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:377
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:587
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:360
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:363
 msgid "12345678"
 msgstr "12345678"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:753
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:757
 msgid "A compact snapshot of campaign scale, review load, and notification reach."
 msgstr "Un rezumat compact al dimensiunii campaniei, al încărcării de revizuire și al acoperirii notificărilor."
 
@@ -375,8 +394,8 @@ msgid "Access denied"
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:580
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:290
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:754
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:336
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:728
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsTable.tsx:122
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:998
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1104
@@ -416,39 +435,39 @@ msgstr ""
 msgid "Adjust the filters to inspect a broader slice of this user’s activity."
 msgstr "Ajustați filtrele pentru a inspecta o porțiune mai amplă a activității acestui utilizator."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:358
-#: src/features/campaigns/buget/admin/constants.ts:441
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:367
+#: src/features/campaigns/buget/admin/constants.ts:460
 msgid "Admin failure"
 msgstr "Eșec de administrare"
 
-#: src/features/campaigns/buget/admin/constants.ts:439
+#: src/features/campaigns/buget/admin/constants.ts:458
 msgid "Admin response"
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:550
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:348
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:383
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:629
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:682
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:685
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:966
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:482
 msgid "Advanced"
 msgstr "Avansat"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:347
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:382
 msgid "Advanced ({advancedCount})"
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:549
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:628
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:681
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:684
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:965
 msgid "Advanced ({appliedAdvancedFiltersCount})"
 msgstr "Avansat ({appliedAdvancedFiltersCount})"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:609
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:392
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:427
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:692
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:741
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:746
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:1029
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:537
 msgid "Advanced filters"
@@ -477,12 +496,12 @@ msgstr "Toate condițiile trebuie să se potrivească."
 msgid "All entities"
 msgstr "Toate entitățile"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:897
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:871
 msgid "All entity sections failed to load. Retry the requests or open the filtered full pages below once the admin services recover."
 msgstr "Nu s-au putut încărca toate secțiunile entității. Reîncearcă cererile sau deschide paginile complete filtrate de mai jos după ce serviciile de administrare își revin."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:599
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:602
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:605
 msgid "All event types"
 msgstr "Toate tipurile de evenimente"
 
@@ -504,8 +523,8 @@ msgstr "Toate interacțiunile"
 msgid "All listed recipients can receive a notification when you send."
 msgstr "Toți destinatarii listați pot primi o notificare la trimitere."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:526
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:530
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:529
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:533
 msgid "All notification types"
 msgstr "Toate tipurile de notificări"
 
@@ -513,8 +532,8 @@ msgstr "Toate tipurile de notificări"
 msgid "All response statuses"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:633
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:636
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:639
 msgid "All sources"
 msgstr "Toate sursele"
 
@@ -525,8 +544,8 @@ msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:717
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:721
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:555
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:558
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:561
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:401
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:404
 msgid "All statuses"
@@ -537,7 +556,7 @@ msgstr "Toate stările"
 msgid "All types"
 msgstr "Toate tipurile"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:646
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:650
 msgid "Already approved by admins."
 msgstr "Deja aprobate de administratori."
 
@@ -549,7 +568,7 @@ msgstr "Deja în coadă"
 msgid "Already queued, not eligible, or missing data for sending."
 msgstr "Deja în coadă, neeligibil sau lipsesc date pentru trimitere."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:657
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:661
 msgid "Already rejected by admins."
 msgstr "Deja respinse de administratori."
 
@@ -563,8 +582,15 @@ msgstr "Deja trimis"
 msgid "Ambiguous selected interactive element id: {recordKey}"
 msgstr "ID element interactiv selectat ambiguu: {recordKey}"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:382
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:386
 msgid "Analytics"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:525
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:528
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:552
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:555
+msgid "Any"
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:660
@@ -613,14 +639,39 @@ msgstr "Orice cale de trimitere"
 msgid "Any thread phase"
 msgstr "Orice fază de fir"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:965
+msgid "Applied {appliedCount} entity config updates before the remaining batch failed."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:939
+msgid "Applied {appliedCount} entity config updates."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:964
+msgid "Applied 1 entity config update before the remaining batch failed."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:938
+msgid "Applied 1 entity config update."
+msgstr ""
+
+#. placeholder {0}: selectedConfigItems.length
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1846
+msgid "Apply {0} config updates?"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1845
+msgid "Apply 1 config update?"
+msgstr ""
+
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:582
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:850
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:380
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:572
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:415
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:703
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:662
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:731
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:714
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:781
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:719
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:786
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:999
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:1068
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:514
@@ -628,10 +679,16 @@ msgstr "Orice fază de fir"
 msgid "Apply filters"
 msgstr "Apply filters"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1182
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1864
+msgid "Apply selected"
+msgstr ""
+
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigPasteDialog.tsx:305
 msgid "Apply updates"
 msgstr ""
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1864
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigPasteDialog.tsx:305
 msgid "Applying…"
 msgstr ""
@@ -640,16 +697,16 @@ msgstr ""
 msgid "Approval requires explicit confirmation"
 msgstr "Aprobarea necesită confirmare explicită"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:343
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:347
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:142
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:191
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:683
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:338
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:644
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:342
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:648
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1201
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1217
 #: src/features/campaigns/buget/admin/components/InteractionsSummaryPanel.tsx:104
-#: src/features/campaigns/buget/admin/constants.ts:596
+#: src/features/campaigns/buget/admin/constants.ts:615
 msgid "Approved"
 msgstr "Aprobat"
 
@@ -669,21 +726,22 @@ msgstr "Rândurile aprobate cu marcaje de risc pentru emailul instituției neces
 msgid "Approximate attendees"
 msgstr "Participanți aproximativi"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:416
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:390
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:543
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:833
-#: src/features/campaigns/buget/admin/constants.ts:247
+#: src/features/campaigns/buget/admin/constants.ts:262
 msgid "Association"
 msgstr "Asociație"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:140
+#: src/features/campaigns/buget/admin/utils/entity-config-workspace.ts:34
 msgid "At least one config value is required."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:582
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:792
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:862
-#: src/features/campaigns/buget/admin/constants.ts:460
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:591
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:803
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:873
+#: src/features/campaigns/buget/admin/constants.ts:479
 msgid "Attempts"
 msgstr "Încercări"
 
@@ -691,16 +749,16 @@ msgstr "Încercări"
 msgid "Audience"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:643
-#: src/features/campaigns/buget/admin/constants.ts:349
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:664
+#: src/features/campaigns/buget/admin/constants.ts:368
 msgid "Audit"
 msgstr "Audit"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:205
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:209
 msgid "Audit campaign notification activity, preview matches, and send notifications"
 msgstr "Auditează activitatea notificărilor campaniei, previzualizează potrivirile și trimite notificări"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:308
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:324
 msgid "Audit campaign notification activity, preview notification matches, and send notifications."
 msgstr "Auditează activitatea notificărilor campaniei, previzualizează potrivirile notificărilor și trimite notificări."
 
@@ -708,11 +766,11 @@ msgstr "Auditează activitatea notificărilor campaniei, previzualizează potriv
 msgid "Audit counters"
 msgstr "Contoare de audit"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:659
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:710
 msgid "Audit log"
 msgstr "Jurnal de audit"
 
-#: src/features/campaigns/buget/admin/constants.ts:659
+#: src/features/campaigns/buget/admin/constants.ts:678
 msgid "Awaiting reply"
 msgstr "Se așteaptă răspuns"
 
@@ -728,7 +786,7 @@ msgstr "Revizuire în lot"
 msgid "Batch review, filters, and notifications for one campaign user."
 msgstr "Revizuire în lot, filtre și notificări pentru un singur utilizator al campaniei."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:156
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:160
 msgid "Browse {totalInteractions} interactions across all users"
 msgstr "Navigați {totalInteractions} interacțiuni pentru toți utilizatorii"
 
@@ -736,11 +794,11 @@ msgstr "Navigați {totalInteractions} interacțiuni pentru toți utilizatorii"
 msgid "Browse and manage user workspaces. Inspect individual campaign interactions and continue review work."
 msgstr "Navigați și gestionați spațiile de lucru ale utilizatorilor. Inspectați interacțiunile individuale ale campaniei și continuați lucrul de revizuire."
 
-#: src/features/campaigns/buget/admin/constants.ts:625
+#: src/features/campaigns/buget/admin/constants.ts:644
 msgid "Budget contestation"
 msgstr "Contestație bugetară"
 
-#: src/features/campaigns/buget/admin/constants.ts:615
+#: src/features/campaigns/buget/admin/constants.ts:634
 msgid "Budget document"
 msgstr "Document buget"
 
@@ -750,8 +808,10 @@ msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigPasteDialog.tsx:261
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:279
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:280
-#: src/features/campaigns/buget/admin/constants.ts:617
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:318
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:469
+#: src/features/campaigns/buget/admin/constants.ts:335
+#: src/features/campaigns/buget/admin/constants.ts:636
 msgid "Budget publication date"
 msgstr "Data publicării bugetului"
 
@@ -763,9 +823,17 @@ msgstr ""
 msgid "Budget stage"
 msgstr "Etapa bugetului"
 
-#: src/features/campaigns/buget/admin/constants.ts:619
+#: src/features/campaigns/buget/admin/constants.ts:638
 msgid "Budget status"
 msgstr "Stadiul bugetului"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:500
+msgid "Budget URL"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:487
+msgid "Budget URL contains"
+msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggerDialog.tsx:515
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggerDialog.tsx:537
@@ -777,6 +845,10 @@ msgstr "În masă"
 msgid "Bulk edit workflow"
 msgstr ""
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1127
+msgid "Bulk entity config"
+msgstr ""
+
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggerDialog.tsx:546
 msgid "Bulk filters"
 msgstr "Filtre pentru rularea în masă"
@@ -785,7 +857,7 @@ msgstr "Filtre pentru rularea în masă"
 msgid "Bulk review"
 msgstr "Revizuire în masă"
 
-#: src/features/campaigns/buget/admin/constants.ts:414
+#: src/features/campaigns/buget/admin/constants.ts:433
 msgid "Campaign admin"
 msgstr "Administrare campanie"
 
@@ -940,7 +1012,7 @@ msgstr "Cererea utilizatorilor de administrare a campaniei a fost invalidă."
 msgid "Campaign admin users response was invalid."
 msgstr "Răspunsul utilizatorilor de administrare a campaniei a fost invalid."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:266
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:270
 msgid "Campaign Admin: {campaignLabel}"
 msgstr "Administrare campanie: {campaignLabel}"
 
@@ -988,15 +1060,15 @@ msgstr "Răspunsul declanșatorului în masă al notificărilor campaniei a fost
 msgid "Campaign entities could not be loaded right now."
 msgstr "Entitățile campaniei nu au putut fi încărcate acum."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:884
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1282
 msgid "Campaign entities unavailable"
 msgstr "Entitățile campaniei nu sunt disponibile"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1215
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1613
 msgid "Campaign entity config"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/api/campaign-admin-entity-config.ts:330
+#: src/features/campaigns/buget/admin/api/campaign-admin-entity-config.ts:370
 msgid "Campaign entity config detail response was invalid."
 msgstr ""
 
@@ -1012,15 +1084,15 @@ msgstr ""
 msgid "Campaign entity config request was invalid."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/api/campaign-admin-entity-config.ts:310
+#: src/features/campaigns/buget/admin/api/campaign-admin-entity-config.ts:350
 msgid "Campaign entity config response was invalid."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1246
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1644
 msgid "Campaign entity config unavailable"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/api/campaign-admin-entity-config.ts:356
+#: src/features/campaigns/buget/admin/api/campaign-admin-entity-config.ts:396
 msgid "Campaign entity config update response was invalid."
 msgstr ""
 
@@ -1136,7 +1208,7 @@ msgstr "Cererea pentru declanșatoarele notificărilor campaniei a eșuat."
 msgid "Campaign notification triggers response was invalid."
 msgstr "Răspunsul pentru declanșatoarele notificărilor campaniei a fost invalid."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:674
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:691
 msgid "Campaign notifications unavailable"
 msgstr "Notificările campaniei nu sunt disponibile"
 
@@ -1168,11 +1240,13 @@ msgstr "Utilizatorii campaniei nu au putut fi încărcați în acest moment."
 msgid "Campaign users unavailable"
 msgstr "Utilizatorii campaniei nu sunt disponibili"
 
-#: src/features/campaigns/buget/admin/constants.ts:330
-#: src/features/campaigns/buget/admin/constants.ts:433
+#: src/features/campaigns/buget/admin/constants.ts:349
+#: src/features/campaigns/buget/admin/constants.ts:452
 msgid "Campaign welcome"
 msgstr "Mesaj de bun venit în campanie"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1856
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1886
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:1163
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1370
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1400
@@ -1193,7 +1267,7 @@ msgstr "Capabilități"
 msgid "Check who matches and what the send result would be before sending anything."
 msgstr "Verifică cine se potrivește și care ar fi rezultatul trimiterii înainte de a trimite ceva."
 
-#: src/features/campaigns/buget/admin/constants.ts:636
+#: src/features/campaigns/buget/admin/constants.ts:655
 msgid "Choice"
 msgstr "Opțiune"
 
@@ -1236,12 +1310,12 @@ msgstr ""
 msgid "Citizens allowed to speak"
 msgstr "Cetățeni care au luat cuvântul"
 
-#: src/features/campaigns/buget/admin/constants.ts:621
+#: src/features/campaigns/buget/admin/constants.ts:640
 msgid "City hall contact"
 msgstr "Contact primărie"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:202
-#: src/features/campaigns/buget/admin/constants.ts:613
+#: src/features/campaigns/buget/admin/constants.ts:632
 msgid "City hall website"
 msgstr "Site-ul primăriei"
 
@@ -1250,20 +1324,23 @@ msgid "Clear advanced"
 msgstr "Șterge avansate"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:372
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:247
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:561
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:269
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:692
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsSection.tsx:438
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsTable.tsx:99
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:618
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:628
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:623
 msgid "Clear filters"
 msgstr "Șterge filtrele"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1173
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:750
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1438
 msgid "Clear selection"
 msgstr "Golește selecția"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1163
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1888
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:872
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:740
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1402
@@ -1277,10 +1354,15 @@ msgstr "Șterge datele pregătite"
 msgid "Clear staged data for {0} rows?"
 msgstr "Ștergeți datele pregătite pentru {0} rânduri?"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1879
+msgid "Clear staged data for {selectedStagedConfigDraftCount} rows?"
+msgstr ""
+
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1393
 msgid "Clear staged data for {selectedStagedDraftCount} rows?"
 msgstr "Ștergi datele pregătite pentru {selectedStagedDraftCount} rânduri?"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1878
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1392
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1641
 msgid "Clear staged data for 1 row?"
@@ -1290,7 +1372,7 @@ msgstr "Ștergi datele pregătite pentru 1 rând?"
 msgid "Clear staged rows"
 msgstr "Șterge rândurile pregătite"
 
-#: src/features/campaigns/buget/admin/constants.ts:420
+#: src/features/campaigns/buget/admin/constants.ts:439
 msgid "Clerk webhook"
 msgstr "Webhook Clerk"
 
@@ -1298,20 +1380,21 @@ msgstr "Webhook Clerk"
 msgid "Click to copy full user ID"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:625
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:700
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:629
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:704
 msgid "Clicked"
 msgstr "Clicuri"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:924
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:928
 msgid "Client telemetry available"
 msgstr "Telemetria client este disponibilă"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:925
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:929
 msgid "Client telemetry not available yet"
 msgstr "Telemetria client nu este încă disponibilă"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:618
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:681
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:830
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:888
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:771
 msgid "Clipboard copy is not available in this browser."
@@ -1320,9 +1403,10 @@ msgstr "Copierea în clipboard nu este disponibilă în acest browser."
 #: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:324
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:829
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigPasteDialog.tsx:302
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:569
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSendValidationDialog.tsx:84
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:700
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:711
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:760
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:765
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggerDialog.tsx:769
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:863
 #: src/features/campaigns/buget/admin/components/CampaignAdminSendValidationDialog.tsx:84
@@ -1331,7 +1415,7 @@ msgstr "Copierea în clipboard nu este disponibilă în acest browser."
 msgid "Close"
 msgstr "Închide"
 
-#: src/features/campaigns/buget/admin/constants.ts:701
+#: src/features/campaigns/buget/admin/constants.ts:720
 msgid "Closed"
 msgstr ""
 
@@ -1343,14 +1427,14 @@ msgstr ""
 msgid "Closed threads cannot be filtered together with the started thread state."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/constants.ts:669
+#: src/features/campaigns/buget/admin/constants.ts:688
 msgid "Closed without reply"
 msgstr "Închis fără răspuns"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:394
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:462
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:646
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:689
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:656
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:699
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:661
 msgid "Columns"
 msgstr "Coloane"
@@ -1363,11 +1447,11 @@ msgstr "Combină data actualizării, data trimiterii și faza firului atunci câ
 msgid "Combine updated date, submitted date, and thread phase when the user workspace needs a narrower review slice."
 msgstr "Combinați data actualizării, data trimiterii și faza firului atunci când spațiul de lucru necesită o porțiune mai restrânsă de revizuire."
 
-#: src/features/campaigns/buget/admin/constants.ts:479
+#: src/features/campaigns/buget/admin/constants.ts:498
 msgid "Compose validation"
 msgstr "Validare compunere"
 
-#: src/features/campaigns/buget/admin/constants.ts:366
+#: src/features/campaigns/buget/admin/constants.ts:385
 msgid "Composing"
 msgstr "În compunere"
 
@@ -1388,8 +1472,8 @@ msgstr "Valoare condiție"
 msgid "Conditions"
 msgstr "Condiții"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1019
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:951
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1417
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:925
 msgid "Config"
 msgstr ""
 
@@ -1398,13 +1482,13 @@ msgid "Config already exists"
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:244
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:177
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:185
 msgid "Configured"
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:242
-msgid "Configured rows only are listed here. Clear the current filters or open a specific entity to create new config."
-msgstr ""
+#~ msgid "Configured rows only are listed here. Clear the current filters or open a specific entity to create new config."
+#~ msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:836
 msgid "Confirm approval warning"
@@ -1426,17 +1510,22 @@ msgstr "Element contestat"
 msgid "Contributions recorded"
 msgstr "Contribuții înregistrate"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:395
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:398
 msgid "Control how the audit table is sorted and paginated."
 msgstr "Controlează cum este sortat și paginat tabelul de audit."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:480
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:611
 msgid "Control how the config table is sorted and paginated."
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:742
 msgid "Control how the entity table is sorted and paginated."
 msgstr "Controlează cum este sortat și paginat tabelul entităților."
+
+#. placeholder {0}: bulkConfigItems.length
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:843
+msgid "Copied {0} entity config rows to the clipboard."
+msgstr ""
 
 #. placeholder {0}: bulkReviewItems.length
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:905
@@ -1445,8 +1534,12 @@ msgid "Copied {0} review rows to the clipboard."
 msgstr "{0} rânduri de revizuire au fost copiate în clipboard."
 
 #. placeholder {0}: items.length
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:666
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:729
 msgid "Copied {0} rows to the clipboard."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:842
+msgid "Copied 1 entity config row to the clipboard."
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:904
@@ -1454,7 +1547,7 @@ msgstr ""
 msgid "Copied 1 review row to the clipboard."
 msgstr "1 rând de revizuire a fost copiat în clipboard."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:665
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:728
 msgid "Copied 1 row to the clipboard."
 msgstr ""
 
@@ -1462,6 +1555,7 @@ msgstr ""
 #~ msgid "Copied!"
 #~ msgstr ""
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:213
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:536
 msgid "Copy all rows"
 msgstr "Copiază toate rândurile"
@@ -1472,6 +1566,7 @@ msgid "Copy rows"
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:176
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:213
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:536
 msgid "Copy selected rows"
 msgstr "Copiază rândurile selectate"
@@ -1496,11 +1591,11 @@ msgstr ""
 #~ msgid "Correspondence is rendered as plain text only."
 #~ msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:911
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:915
 msgid "Coverage"
 msgstr "Acoperire"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:322
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:357
 msgid "Create config"
 msgstr ""
 
@@ -1508,27 +1603,27 @@ msgstr ""
 msgid "Create entity config"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1139
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1113
 msgid "Create or update the campaign entity config for this municipality. The values are saved with optimistic concurrency protection."
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadDetailContent.tsx:226
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:723
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:733
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggerDialog.tsx:374
-#: src/features/campaigns/buget/admin/constants.ts:454
+#: src/features/campaigns/buget/admin/constants.ts:473
 msgid "Created"
 msgstr "Creat"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:686
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:749
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:925
 msgid "CSV exported"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:806
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:780
 msgid "CUI {entityCui}"
 msgstr "CUI {entityCui}"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:475
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:478
 msgid "Current audit view"
 msgstr "Vederea curentă a auditului"
 
@@ -1536,7 +1631,7 @@ msgstr "Vederea curentă a auditului"
 msgid "Current entity view"
 msgstr "Vederea curentă a entităților"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:607
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:611
 msgid "Current interaction records returned by the campaign workspace."
 msgstr "Înregistrările curente de interacțiune returnate de spațiul de lucru al campaniei."
 
@@ -1544,11 +1639,11 @@ msgstr "Înregistrările curente de interacțiune returnate de spațiul de lucru
 msgid "Current queue view"
 msgstr "Vizualizarea curentă a cozii"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:752
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:756
 msgid "Current totals"
 msgstr "Totaluri curente"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:602
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:606
 msgid "Current users visible inside campaign admin."
 msgstr "Utilizatorii curenți vizibili în administrarea campaniei."
 
@@ -1571,7 +1666,7 @@ msgid "Default {0}{1}"
 msgstr "Implicit: {0}{1}"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggerDialog.tsx:743
-#: src/features/campaigns/buget/admin/constants.ts:512
+#: src/features/campaigns/buget/admin/constants.ts:531
 msgid "Delegated"
 msgstr "Delegat"
 
@@ -1580,23 +1675,23 @@ msgstr "Delegat"
 msgid "Delegated to {0}"
 msgstr "Delegat către {0}"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:358
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:364
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:620
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:680
-#: src/features/campaigns/buget/admin/constants.ts:372
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:362
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:368
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:624
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:684
+#: src/features/campaigns/buget/admin/constants.ts:391
 msgid "Delivered"
 msgstr "Livrat"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:702
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:706
 msgid "Delivered notifications with a click event."
 msgstr "Notificări livrate cu un eveniment de clic."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:693
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:697
 msgid "Delivered notifications with an open event."
 msgstr "Notificări livrate cu un eveniment de deschidere."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:627
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:631
 msgid "Delivered notifications with at least one click event."
 msgstr "Notificări livrate cu cel puțin un eveniment de clic."
 
@@ -1604,20 +1699,20 @@ msgstr "Notificări livrate cu cel puțin un eveniment de clic."
 msgid "Delivery path"
 msgstr "Modalitate de trimitere"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1188
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1586
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:684
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:584
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:813
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:593
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:824
 msgid "Details"
 msgstr "Detalii"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:739
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:477
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:392
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:608
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:395
 msgid "Display options"
 msgstr "Opțiuni de afișare"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:940
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1338
 msgid "Distinct campaign entities available in this admin view."
 msgstr "Entități distincte ale campaniei disponibile în această vedere de administrare."
 
@@ -1636,7 +1731,7 @@ msgid "Download text"
 msgstr "Descarcă text"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:189
-#: src/features/campaigns/buget/admin/constants.ts:577
+#: src/features/campaigns/buget/admin/constants.ts:596
 msgid "Draft"
 msgstr "Ciornă"
 
@@ -1678,7 +1773,7 @@ msgstr "Eligibili acum: {0} · {1}"
 msgid "Email"
 msgstr "Email"
 
-#: src/features/campaigns/buget/admin/constants.ts:483
+#: src/features/campaigns/buget/admin/constants.ts:502
 msgid "Email lookup"
 msgstr "Căutare email"
 
@@ -1695,56 +1790,56 @@ msgstr "Introdu un număr valid."
 msgid "Enter a value"
 msgstr "Introdu o valoare"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:197
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:725
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:312
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:315
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:436
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:841
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:223
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:699
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:316
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:319
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:440
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:845
 msgid "Entities"
 msgstr "Entități"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:612
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:616
 msgid "Entities currently represented in campaign admin state."
 msgstr "Entitățile reprezentate în prezent în starea administrării campaniei."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:902
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1300
 msgid "Entities summary"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:945
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1343
 msgid "Entities that currently surface review work."
 msgstr "Entități care evidențiază în prezent activitate de revizuire."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:960
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1358
 msgid "Entities with any recent failed notification signal."
 msgstr "Entități cu orice semnal recent de notificare eșuată."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:950
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1348
 msgid "Entities with notification subscribers."
 msgstr "Entități cu abonați la notificări."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:955
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1353
 msgid "Entities with queued or sent notification activity."
 msgstr "Entități cu activitate de notificare în coadă sau trimisă."
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:522
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:278
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:310
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadDetailContent.tsx:185
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsTable.tsx:113
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:218
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationPlanTable.tsx:143
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:579
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:761
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:267
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:588
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:771
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:270
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:488
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:476
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:480
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:849
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:1282
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:235
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:292
-#: src/features/campaigns/buget/admin/constants.ts:249
-#: src/features/campaigns/buget/admin/constants.ts:291
+#: src/features/campaigns/buget/admin/constants.ts:264
+#: src/features/campaigns/buget/admin/constants.ts:306
 msgid "Entity"
 msgstr "Entitate"
 
@@ -1754,30 +1849,30 @@ msgid "Entity {0}"
 msgstr "Entitatea {0}"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:363
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1137
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1111
 msgid "Entity config"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:707
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:770
 msgid "Entity config CSV downloaded."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:722
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1001
 msgid "Entity config saved."
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigPasteDialog.tsx:260
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:236
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:249
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:413
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:284
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:448
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:368
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:578
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:348
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:351
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:492
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:437
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:887
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:456
-#: src/features/campaigns/buget/admin/constants.ts:318
+#: src/features/campaigns/buget/admin/constants.ts:333
 #: src/features/campaigns/buget/admin/utils/campaign-admin-notification-run-utils.ts:100
 msgid "Entity CUI"
 msgstr "CUI entitate"
@@ -1786,12 +1881,12 @@ msgstr "CUI entitate"
 msgid "Entity CUI or entity name"
 msgstr "CUI entitate sau nume entitate"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1204
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1602
 msgid "Entity details"
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:621
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:404
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:439
 msgid "Entity filters"
 msgstr "Filtre pentru entități"
 
@@ -1799,35 +1894,39 @@ msgstr "Filtre pentru entități"
 msgid "Entity name"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1060
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1458
 msgid "Entity overview"
 msgstr "Prezentare generală a entităților"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:391
-#: src/features/campaigns/buget/admin/constants.ts:333
-#: src/features/campaigns/buget/admin/constants.ts:435
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:400
+#: src/features/campaigns/buget/admin/constants.ts:352
+#: src/features/campaigns/buget/admin/constants.ts:454
 msgid "Entity subscription"
 msgstr "Abonare la entitate"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:803
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:777
 msgid "Entity summary"
 msgstr "Rezumat entitate"
 
-#: src/features/campaigns/buget/admin/constants.ts:336
-#: src/features/campaigns/buget/admin/constants.ts:437
+#: src/features/campaigns/buget/admin/constants.ts:355
+#: src/features/campaigns/buget/admin/constants.ts:456
 msgid "Entity update"
 msgstr "Actualizare entitate"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:237
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:240
 msgid "Event"
 msgstr "Eveniment"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:583
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:586
 msgid "Event type"
 msgstr "Tip eveniment"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:262
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:426
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSendValidationDialog.tsx:53
+msgid "Every selected row needs staged config values and a current optimistic-concurrency value before bulk apply."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:297
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:461
 msgid "Exact entity CUI"
 msgstr ""
 
@@ -1857,8 +1956,8 @@ msgstr "Livrare existentă"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:434
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:500
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:220
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:332
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:242
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:367
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:709
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:758
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:1400
@@ -1868,24 +1967,28 @@ msgstr ""
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadResponseForm.tsx:313
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggerDialog.tsx:378
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggerDialog.tsx:747
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:720
-#: src/features/campaigns/buget/admin/constants.ts:583
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:724
+#: src/features/campaigns/buget/admin/constants.ts:602
 msgid "Failed"
 msgstr "Eșuat"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:917
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:958
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1315
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1356
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:317
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:484
 msgid "Failed notifications"
 msgstr "Notificări eșuate"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:846
+msgid "Failed to copy the entity config rows."
+msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:908
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:788
 msgid "Failed to copy the review rows."
 msgstr "Copierea rândurilor de revizuire a eșuat."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:669
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:732
 msgid "Failed to copy the rows."
 msgstr ""
 
@@ -1893,8 +1996,8 @@ msgstr ""
 #~ msgid "Failed to copy user ID."
 #~ msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:689
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:710
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:752
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:773
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:928
 msgid "Failed to export CSV."
 msgstr ""
@@ -1903,20 +2006,20 @@ msgstr ""
 msgid "Failed to load analytics"
 msgstr "Încărcarea analizelor a eșuat"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:290
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:294
 msgid "Failed to load campaign data"
 msgstr "Nu s-au putut încărca datele campaniei"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1037
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1435
 msgid "Failed to load entities"
 msgstr "Nu s-au putut încărca entitățile"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1253
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1651
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:209
 msgid "Failed to load entity config"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:896
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:870
 msgid "Failed to load entity detail"
 msgstr "Nu s-au putut încărca detaliile entității"
 
@@ -1932,7 +2035,7 @@ msgstr ""
 msgid "Failed to load interaction metadata"
 msgstr "Nu s-au putut încărca metadatele interacțiunii"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1077
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1051
 msgid "Failed to load interactions"
 msgstr "Nu s-au putut încărca interacțiunile"
 
@@ -1940,8 +2043,8 @@ msgstr "Nu s-au putut încărca interacțiunile"
 msgid "Failed to load notification types"
 msgstr "Nu s-au putut încărca tipurile de notificări"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1025
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:675
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:999
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:692
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1512
 msgid "Failed to load notifications"
 msgstr "Nu s-au putut încărca notificările"
@@ -1950,7 +2053,7 @@ msgstr "Nu s-au putut încărca notificările"
 msgid "Failed to load template preview"
 msgstr "Nu s-a putut încărca previzualizarea șablonului"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:807
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:818
 msgid "Failed to load templates"
 msgstr "Nu s-au putut încărca șabloanele"
 
@@ -1970,7 +2073,7 @@ msgstr "Nu s-a putut încărca spațiul de lucru al utilizatorului"
 msgid "Failed to load triggers"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:974
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:948
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:439
 msgid "Failed to load users"
 msgstr "Nu s-au putut încărca utilizatorii"
@@ -1996,7 +2099,7 @@ msgstr ""
 msgid "Field"
 msgstr "Câmp"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1063
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1461
 msgid "Filter by entity name, review pressure, and notification signals, then jump directly into the existing admin workflows for that entity."
 msgstr "Filtrează după numele entității, presiunea de revizuire și semnalele notificărilor, apoi intră direct în fluxurile existente de administrare pentru acea entitate."
 
@@ -2013,7 +2116,7 @@ msgstr "Filtrează o entitate…"
 msgid "Filter the campaign-wide queue, stage decisions, and keep the existing review workflow moving."
 msgstr "Filtrează coada la nivel de campanie, pregătește deciziile și menține fluxul de revizuire existent."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:337
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:341
 #: src/features/campaigns/buget/admin/components/InteractionsSummaryPanel.tsx:107
 msgid "Flagged"
 msgstr "Marcate"
@@ -2034,7 +2137,7 @@ msgstr "ID complet în detaliile tehnice"
 msgid "Full user ID"
 msgstr "ID complet al utilizatorului"
 
-#: src/features/campaigns/buget/admin/constants.ts:566
+#: src/features/campaigns/buget/admin/constants.ts:585
 msgid "Funky Citizens"
 msgstr "Funky Citizens"
 
@@ -2047,19 +2150,23 @@ msgstr "Global"
 msgid "Go to interactions queue"
 msgstr "Mergi la coada de interacțiuni"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:773
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:747
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1114
 msgid "Go to notifications"
 msgstr "Mergi la notificări"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:782
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:756
 msgid "Go to user interactions"
 msgstr "Mergi la interacțiuni utilizatori"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:764
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:738
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1097
 msgid "Go to users"
 msgstr "Mergi la utilizatori"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:536
+msgid "Has budget URL"
+msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:505
 msgid "Has failed notifications"
@@ -2073,11 +2180,15 @@ msgstr "Are activitate de notificare"
 msgid "Has pending reviews"
 msgstr "Are revizuiri în așteptare"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:509
+msgid "Has publication date"
+msgstr ""
+
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:446
 msgid "Has subscribers"
 msgstr "Are abonați"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:264
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:281
 msgid "Hide fields"
 msgstr ""
 
@@ -2107,7 +2218,7 @@ msgstr "Înțeleg riscul și doresc să continui cu aprobarea."
 msgid "Identifiers"
 msgstr "Identificatori"
 
-#: src/features/campaigns/buget/admin/constants.ts:575
+#: src/features/campaigns/buget/admin/constants.ts:594
 msgid "Idle"
 msgstr "Inactiv"
 
@@ -2123,6 +2234,15 @@ msgstr "Probleme la import"
 #: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:214
 msgid "Import pasted rows"
 msgstr "Importă rândurile lipite"
+
+#. placeholder {0}: result.drafts.length
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:867
+msgid "Imported staged entity config values for {0} rows."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:866
+msgid "Imported staged entity config values for 1 row."
+msgstr ""
 
 #. placeholder {0}: result.drafts.length
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:963
@@ -2148,7 +2268,7 @@ msgstr "În curs"
 msgid "Inbound"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:515
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:524
 msgid "Includes review feedback"
 msgstr "Include feedback de revizuire"
 
@@ -2168,11 +2288,11 @@ msgstr "Inspectează"
 msgid "Inspect and review all campaign interactions submitted by a single user."
 msgstr "Inspectați și revizuiți toate interacțiunile campaniei trimise de un singur utilizator."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:662
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:711
 msgid "Inspect durable notification activity without exposing raw provider or recipient data."
 msgstr "Inspectează activitatea persistentă a notificărilor fără a expune date brute despre furnizor sau destinatar."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:795
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:837
 msgid "Inspect example-driven subject, HTML, and text previews through the authenticated admin boundary."
 msgstr "Inspectează previzualizări bazate pe exemple pentru subiect, HTML și text prin limita autentificată de administrare."
 
@@ -2180,7 +2300,7 @@ msgstr "Inspectează previzualizări bazate pe exemple pentru subiect, HTML și 
 #~ msgid "Inspect full correspondence history and append manual institution response events."
 #~ msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1159
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1557
 msgid "Inspect institution correspondence next to the entity admin workflows, or jump into the scoped entity thread surface for a selected row."
 msgstr ""
 
@@ -2204,7 +2324,7 @@ msgstr ""
 msgid "Inspect the most recent notification audit entries tied to this user and jump to the full notifications view when you need the broader log."
 msgstr "Inspectează cele mai recente înregistrări din auditul notificărilor asociate acestui utilizator și mergi la vederea completă a notificărilor când ai nevoie de jurnalul extins."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:706
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:680
 msgid "Inspect the users, notifications, and interaction review activity associated with this entity."
 msgstr "Inspectează utilizatorii, notificările și activitatea de revizuire a interacțiunilor asociate cu această entitate."
 
@@ -2215,7 +2335,7 @@ msgstr "Inspectează utilizatorii, notificările și activitatea de revizuire a 
 msgid "Institution email"
 msgstr "Email instituție"
 
-#: src/features/campaigns/buget/admin/constants.ts:731
+#: src/features/campaigns/buget/admin/constants.ts:750
 msgid "Institution email mismatch"
 msgstr "Neconcordanță email instituție"
 
@@ -2227,7 +2347,7 @@ msgstr ""
 #~ msgid "Institution Thread"
 #~ msgstr ""
 
-#: src/features/campaigns/buget/admin/constants.ts:735
+#: src/features/campaigns/buget/admin/constants.ts:754
 msgid "Institution thread failed"
 msgstr "Eșuare conversație instituție"
 
@@ -2235,7 +2355,7 @@ msgstr "Eșuare conversație instituție"
 #~ msgid "Institution thread unavailable"
 #~ msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1156
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1554
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsPage.tsx:50
 msgid "Institution threads"
 msgstr ""
@@ -2244,7 +2364,7 @@ msgstr ""
 msgid "Institution Threads"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1107
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1081
 msgid "Institution threads for this entity"
 msgstr ""
 
@@ -2254,14 +2374,14 @@ msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:324
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:630
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:419
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:393
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationPlanTable.tsx:144
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:547
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:917
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:1290
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:243
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:285
-#: src/features/campaigns/buget/admin/constants.ts:257
+#: src/features/campaigns/buget/admin/constants.ts:272
 #: src/features/campaigns/buget/admin/utils/campaign-admin-notification-run-utils.ts:106
 msgid "Interaction"
 msgstr "Interacțiune"
@@ -2272,7 +2392,7 @@ msgid "Interaction details"
 msgstr "Detalii interacțiune"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:501
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:335
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:339
 msgid "Interaction element"
 msgstr "Element de interacțiune"
 
@@ -2284,7 +2404,7 @@ msgstr "ID interacțiune"
 msgid "Interaction labels are using local fallbacks right now. The user workspace still works."
 msgstr "Etichetele de interacțiune folosesc fallback-uri locale în acest moment. Spațiul de lucru funcționează în continuare."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:617
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:621
 msgid "Interaction records still waiting on admin review."
 msgstr "Înregistrările de interacțiune care încă așteaptă revizuirea administratorului."
 
@@ -2301,15 +2421,15 @@ msgstr "Tip de interacțiune"
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:343
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:541
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:704
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:824
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:323
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:483
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:817
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:798
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:327
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:487
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:821
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersTable.tsx:370
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersTable.tsx:374
 #: src/features/campaigns/buget/admin/components/InteractionsSummaryPanel.tsx:102
-#: src/features/campaigns/buget/admin/constants.ts:278
-#: src/features/campaigns/buget/admin/constants.ts:295
+#: src/features/campaigns/buget/admin/constants.ts:293
+#: src/features/campaigns/buget/admin/constants.ts:310
 msgid "Interactions"
 msgstr "Interacțiuni"
 
@@ -2317,7 +2437,7 @@ msgstr "Interacțiuni"
 msgid "Interactions queue"
 msgstr "Coada interacțiunilor"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:459
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:463
 msgid "Interactions Queue"
 msgstr "Coada interacțiunilor"
 
@@ -2329,7 +2449,7 @@ msgstr "Valoare de decizie invalidă: {decisionValue}"
 msgid "Invalid filter combination"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/constants.ts:729
+#: src/features/campaigns/buget/admin/constants.ts:748
 msgid "Invalid institution email"
 msgstr "Email instituție invalid"
 
@@ -2367,7 +2487,7 @@ msgstr "Ultimul răspuns"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersTable.tsx:353
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersTable.tsx:356
-#: src/features/campaigns/buget/admin/constants.ts:276
+#: src/features/campaigns/buget/admin/constants.ts:291
 msgid "Last Updated"
 msgstr "Ultima actualizare"
 
@@ -2376,7 +2496,7 @@ msgstr "Ultima actualizare"
 msgid "Latest activity"
 msgstr "Activitate recentă"
 
-#: src/features/campaigns/buget/admin/constants.ts:303
+#: src/features/campaigns/buget/admin/constants.ts:318
 msgid "Latest interaction"
 msgstr "Ultima interacțiune"
 
@@ -2386,7 +2506,7 @@ msgstr "Cea mai recentă interacțiune"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:346
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:571
-#: src/features/campaigns/buget/admin/constants.ts:305
+#: src/features/campaigns/buget/admin/constants.ts:320
 msgid "Latest notification"
 msgstr "Ultima notificare"
 
@@ -2458,7 +2578,7 @@ msgstr "Limită {0} · marcaj {1}"
 msgid "Limit cannot exceed {0}."
 msgstr "Limita nu poate depăși {0}."
 
-#: src/features/campaigns/buget/admin/constants.ts:640
+#: src/features/campaigns/buget/admin/constants.ts:659
 msgid "Link"
 msgstr "Link"
 
@@ -2490,11 +2610,11 @@ msgstr ""
 msgid "Loading queue filters"
 msgstr "Se încarcă filtrele cozii"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:865
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:869
 msgid "Loading ranked entity analytics…"
 msgstr "Se încarcă analizele ierarhizate pentru entități…"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:821
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:825
 msgid "Loading ranked interaction analytics…"
 msgstr "Se încarcă analizele ierarhizate pentru interacțiuni…"
 
@@ -2502,8 +2622,8 @@ msgstr "Se încarcă analizele ierarhizate pentru interacțiuni…"
 msgid "Loading review queue"
 msgstr "Se încarcă coada de revizuire"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:155
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:463
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:159
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:467
 msgid "Loading…"
 msgstr "Se încarcă…"
 
@@ -2511,7 +2631,7 @@ msgstr "Se încarcă…"
 msgid "Local press"
 msgstr "Presă locală"
 
-#: src/features/campaigns/buget/admin/constants.ts:663
+#: src/features/campaigns/buget/admin/constants.ts:682
 msgid "Manual follow-up"
 msgstr "Urmărire manuală"
 
@@ -2519,7 +2639,7 @@ msgstr "Urmărire manuală"
 msgid "Matches that already received this notification."
 msgstr "Potriviri care au primit deja această notificare."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:418
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:392
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:546
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:900
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:1294
@@ -2527,7 +2647,7 @@ msgstr "Potriviri care au primit deja această notificare."
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:411
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:904
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:299
-#: src/features/campaigns/buget/admin/constants.ts:255
+#: src/features/campaigns/buget/admin/constants.ts:270
 msgid "Message"
 msgstr "Mesaj"
 
@@ -2551,7 +2671,7 @@ msgstr "Date lipsă"
 msgid "Missing decision value for imported review row."
 msgstr "Lipsește valoarea deciziei pentru rândul de revizuire importat."
 
-#: src/features/campaigns/buget/admin/constants.ts:733
+#: src/features/campaigns/buget/admin/constants.ts:752
 msgid "Missing official email"
 msgstr "Lipsește email-ul oficial"
 
@@ -2563,6 +2683,10 @@ msgstr "Lipsesc coloanele necesare: {0}"
 #: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:292
 msgid "Missing review note"
 msgstr "Lipsește nota de revizuire"
+
+#: src/features/campaigns/buget/admin/utils/entity-config-workspace.ts:27
+msgid "Missing staged config values. Paste spreadsheet rows with matching entity CUIs first."
+msgstr ""
 
 #: src/features/campaigns/buget/admin/utils/review-workspace.ts:80
 msgid "Missing staged review decision. Set approved or rejected before submitting."
@@ -2576,7 +2700,7 @@ msgstr "Lipsesc valorile de revizuire pregătite. Lipește mai întâi rânduril
 msgid "Missing user interaction id for imported review row."
 msgstr "Lipsește ID-ul interacțiunii utilizatorului pentru rândul de revizuire importat."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:316
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:351
 msgid "More"
 msgstr ""
 
@@ -2606,6 +2730,8 @@ msgstr "Expeditor ONG"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:212
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:247
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:530
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:557
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:176
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:219
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:234
@@ -2617,7 +2743,7 @@ msgstr "Expeditor ONG"
 msgid "No"
 msgstr "Nu"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1039
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1013
 msgid "No campaign notification audit entries were recorded for this entity in the current admin projection."
 msgstr "Nu au fost înregistrate intrări de audit pentru notificările campaniei pentru această entitate în proiecția curentă de administrare."
 
@@ -2625,7 +2751,7 @@ msgstr "Nu au fost înregistrate intrări de audit pentru notificările campanie
 msgid "No campaign notification audit entries were recorded for this user in the current admin projection."
 msgstr "Nu au fost înregistrate intrări de audit pentru notificările campaniei pentru acest utilizator în proiecția curentă de administrare."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:609
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:619
 msgid "No campaign notification events matched the current filters."
 msgstr "Niciun eveniment de notificare al campaniei nu s-a potrivit cu filtrele curente."
 
@@ -2634,14 +2760,14 @@ msgid "No conditions yet. Leave it empty to include all eligible matches, or add
 msgstr "Nu există încă condiții. Lasă câmpul gol pentru a include toate potrivirile eligibile sau adaugă condiții pentru a restrânge previzualizarea."
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:241
-msgid "No configured rows matched the current filters"
-msgstr ""
+#~ msgid "No configured rows matched the current filters"
+#~ msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:245
 #~ msgid "No correspondence available"
 #~ msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:608
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:618
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:622
 msgid "No data available"
 msgstr "Nu există date disponibile"
@@ -2653,6 +2779,14 @@ msgstr "Nicio entitate nu s-a potrivit cu filtrele curente"
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersTable.tsx:130
 msgid "No entity"
 msgstr "Fără entitate"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:822
+msgid "No entity config rows are available to copy."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:263
+msgid "No entity config rows matched the current filters"
+msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationPlanTable.tsx:176
 msgid "No entity CUI"
@@ -2675,11 +2809,11 @@ msgstr ""
 msgid "No institution threads matched these filters"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1091
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1065
 msgid "No interaction records currently match this entity in the campaign review queue."
 msgstr "În prezent, niciun raport de interacțiune nu se potrivește cu această entitate în coada de revizuire a campaniei."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1090
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1064
 msgid "No interactions found for this entity"
 msgstr "Nu s-au găsit interacțiuni pentru această entitate"
 
@@ -2719,7 +2853,7 @@ msgstr "Fără activitate de notificare"
 msgid "No notification types available"
 msgstr "Nu există tipuri de notificări disponibile"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1038
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1012
 msgid "No notifications found for this entity"
 msgstr "Nu s-au găsit notificări pentru această entitate"
 
@@ -2735,11 +2869,11 @@ msgstr "Nu au fost încă înregistrate notificări"
 msgid "No pending reviews"
 msgstr "Fără revizuiri în așteptare"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:875
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:879
 msgid "No ranked entity analytics are available for this campaign yet."
 msgstr "Nu există încă analize ierarhizate pentru entități disponibile pentru această campanie."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:832
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:836
 msgid "No ranked interaction analytics are available for this campaign yet."
 msgstr "Nu există încă analize ierarhizate pentru interacțiuni disponibile pentru această campanie."
 
@@ -2755,11 +2889,11 @@ msgstr "Nu există câmpuri obligatorii."
 #~ msgid "No response events yet"
 #~ msgstr ""
 
-#: src/features/campaigns/buget/admin/constants.ts:718
+#: src/features/campaigns/buget/admin/constants.ts:737
 msgid "No response status"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:516
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:525
 msgid "No review feedback"
 msgstr "Fără feedback de revizuire"
 
@@ -2775,6 +2909,10 @@ msgstr "Nu există rânduri de revizuire disponibile pentru copiere."
 #: src/features/campaigns/buget/admin/components/CampaignAdminBulkReviewDialog.tsx:285
 msgid "No staged decision"
 msgstr "Nicio decizie pregătită"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:870
+msgid "No staged entity config values were imported."
+msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:966
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:825
@@ -2797,15 +2935,15 @@ msgstr "Fără abonați"
 msgid "No tabular review rows were found in the pasted data."
 msgstr "Nu s-au găsit rânduri de revizuire tabulare în datele lipite."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:489
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:498
 msgid "No template ID"
 msgstr "Fără ID de șablon"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:837
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:854
 msgid "No templates available"
 msgstr "Nu există șabloane disponibile"
 
-#: src/features/campaigns/buget/admin/constants.ts:673
+#: src/features/campaigns/buget/admin/constants.ts:692
 msgid "No thread"
 msgstr "Fără conversație"
 
@@ -2825,11 +2963,11 @@ msgstr "Încă fără interacțiuni de utilizator"
 msgid "No users are available on this page."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:987
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:961
 msgid "No users are currently returned for this entity in the campaign users directory."
 msgstr "În prezent, niciun utilizator nu este returnat pentru această entitate în directorul utilizatorilor campaniei."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:986
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:960
 msgid "No users found for this entity"
 msgstr "Nu s-au găsit utilizatori pentru această entitate"
 
@@ -2845,20 +2983,20 @@ msgstr ""
 msgid "No users yet"
 msgstr "Încă fără utilizatori"
 
-#: src/features/campaigns/buget/admin/constants.ts:538
+#: src/features/campaigns/buget/admin/constants.ts:557
 msgid "Nobody is subscribed to receive admin-response updates for this thread yet."
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationPlanTable.tsx:274
-#: src/features/campaigns/buget/admin/constants.ts:495
+#: src/features/campaigns/buget/admin/constants.ts:514
 msgid "None"
 msgstr "Niciunul"
 
-#: src/features/campaigns/buget/admin/constants.ts:403
+#: src/features/campaigns/buget/admin/constants.ts:422
 msgid "Not applicable"
 msgstr "Nu se aplică"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:180
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:188
 msgid "Not configured"
 msgstr ""
 
@@ -2878,11 +3016,11 @@ msgstr "Nu este gata de trimitere"
 msgid "Not replayable"
 msgstr "Nu pot fi relansate"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:340
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:666
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:344
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:670
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:1145
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:1337
-#: src/features/campaigns/buget/admin/constants.ts:600
+#: src/features/campaigns/buget/admin/constants.ts:619
 msgid "Not reviewed"
 msgstr "Nerevizuit"
 
@@ -2891,23 +3029,23 @@ msgstr "Nerevizuit"
 msgid "Not staged"
 msgstr "Fără date pregătite"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:223
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:226
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:779
 msgid "Notification"
 msgstr "Notificare"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:915
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:953
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1313
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1351
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:310
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:453
 msgid "Notification activity"
 msgstr "Activitate de notificare"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:936
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:940
 msgid "Notification attribution available"
 msgstr "Atribuirea notificărilor este disponibilă"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:937
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:941
 msgid "Notification attribution not available yet"
 msgstr "Atribuirea notificărilor nu este încă disponibilă"
 
@@ -2923,16 +3061,16 @@ msgstr ""
 msgid "Notification delivery"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:308
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:311
 msgid "Notification filters"
 msgstr "Filtre pentru notificări"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:900
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:904
 msgid "Notification funnel"
 msgstr "Pâlnie de notificări"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:577
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:741
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:586
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:751
 msgid "Notification kind"
 msgstr "Categoria notificării"
 
@@ -2958,7 +3096,7 @@ msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:829
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:856
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:513
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:516
 msgid "Notification type"
 msgstr "Tip de notificare"
 
@@ -2975,33 +3113,33 @@ msgstr "Tipurile de notificări nu sunt disponibile"
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:344
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:551
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:715
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:849
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:927
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:491
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:307
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:914
-#: src/features/campaigns/buget/admin/constants.ts:301
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:823
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:901
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:495
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:323
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:918
+#: src/features/campaigns/buget/admin/constants.ts:316
 msgid "Notifications"
 msgstr "Notificări"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:622
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:682
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:626
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:686
 msgid "Notifications confirmed as delivered."
 msgstr "Notificări confirmate ca livrate."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1007
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:981
 msgid "Notifications related to this entity"
 msgstr "Notificări legate de această entitate"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:711
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:715
 msgid "Notifications still waiting to be delivered."
 msgstr "Notificări care încă așteaptă să fie livrate."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:731
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:735
 msgid "Notifications suppressed before delivery."
 msgstr "Notificări suprimate înainte de livrare."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:722
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:726
 msgid "Notifications that failed delivery."
 msgstr "Notificări a căror livrare a eșuat."
 
@@ -3035,7 +3173,7 @@ msgstr "Notifică persoanele după ce un administrator le revizuiește una dintr
 msgid "Notify requester and subscribers now"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/constants.ts:642
+#: src/features/campaigns/buget/admin/constants.ts:661
 msgid "Number"
 msgstr "Număr"
 
@@ -3045,7 +3183,8 @@ msgstr "Observații"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigPasteDialog.tsx:262
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:297
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:281
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:326
+#: src/features/campaigns/buget/admin/constants.ts:337
 msgid "Official budget URL"
 msgstr ""
 
@@ -3054,8 +3193,8 @@ msgid "Official budget URL must be an absolute http(s) URL."
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:668
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:338
-#: src/features/campaigns/buget/admin/constants.ts:699
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:393
+#: src/features/campaigns/buget/admin/constants.ts:718
 msgid "Open"
 msgstr "Deschide"
 
@@ -3075,17 +3214,17 @@ msgstr "Deschideți un declanșator expus de server pentru a-l executa manual."
 msgid "Open email client"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:303
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:338
 msgid "Open entity"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:281
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:290
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:391
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersTable.tsx:117
 msgid "Open entity admin page for {entityCui}"
 msgstr "Deschide pagina admin a entității pentru {entityCui}"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:741
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:715
 msgid "Open entity page"
 msgstr "Deschide pagina entității"
 
@@ -3126,6 +3265,7 @@ msgstr ""
 msgid "Open public municipality page for {entityCui}"
 msgstr "Deschide pagina publică a primăriei pentru {entityCui}"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSendValidationDialog.tsx:70
 #: src/features/campaigns/buget/admin/components/CampaignAdminSendValidationDialog.tsx:73
 msgid "Open row"
 msgstr "Deschide rândul"
@@ -3147,13 +3287,13 @@ msgstr "Deschide utilizatorul {0}"
 msgid "Open users"
 msgstr "Deschide utilizatori"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:359
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:369
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:691
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:363
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:373
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:695
 msgid "Opened"
 msgstr "Deschise"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:882
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:886
 msgid "Operational distributions"
 msgstr "Distribuții operaționale"
 
@@ -3181,11 +3321,11 @@ msgstr "Altă sursă"
 msgid "Outbound"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1012
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1410
 msgid "Overview"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:267
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:271
 msgid "Overview of the {campaignLabel} campaign workspace. Inspect user activity, review pending interactions, or manage campaign notifications."
 msgstr "Prezentare generală a spațiului de lucru pentru campania {campaignLabel}. Inspectează activitatea utilizatorilor, revizuiește interacțiunile în așteptare sau gestionează notificările campaniei."
 
@@ -3208,8 +3348,8 @@ msgstr "Pagina {pageIndex}"
 msgid "Parsing…"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/constants.ts:510
-#: src/features/campaigns/buget/admin/constants.ts:527
+#: src/features/campaigns/buget/admin/constants.ts:529
+#: src/features/campaigns/buget/admin/constants.ts:546
 msgid "Partial"
 msgstr "Parțial"
 
@@ -3217,7 +3357,7 @@ msgstr "Parțial"
 msgid "Partially"
 msgstr "Parțial"
 
-#: src/features/campaigns/buget/admin/constants.ts:623
+#: src/features/campaigns/buget/admin/constants.ts:642
 msgid "Participation report"
 msgstr "Raport de participare"
 
@@ -3233,8 +3373,8 @@ msgstr ""
 msgid "Paste rows"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:215
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:327
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:237
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:362
 msgid "Paste spreadsheet"
 msgstr ""
 
@@ -3258,40 +3398,40 @@ msgstr "Payload"
 msgid "Payload kind"
 msgstr "Tip de încărcătură"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:330
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:337
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:633
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:334
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:341
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:637
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1200
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1210
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1215
 #: src/features/campaigns/buget/admin/components/InteractionsSummaryPanel.tsx:103
-#: src/features/campaigns/buget/admin/constants.ts:364
-#: src/features/campaigns/buget/admin/constants.ts:579
-#: src/features/campaigns/buget/admin/constants.ts:594
-#: src/features/campaigns/buget/admin/constants.ts:686
+#: src/features/campaigns/buget/admin/constants.ts:383
+#: src/features/campaigns/buget/admin/constants.ts:598
+#: src/features/campaigns/buget/admin/constants.ts:613
+#: src/features/campaigns/buget/admin/constants.ts:705
 msgid "Pending"
 msgstr "În așteptare"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:709
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:713
 msgid "Pending delivery"
 msgstr "În așteptare la livrare"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:913
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:943
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1311
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1341
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:296
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:402
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:837
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:499
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:615
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:811
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:503
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:619
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:371
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:376
-#: src/features/campaigns/buget/admin/constants.ts:297
+#: src/features/campaigns/buget/admin/constants.ts:312
 msgid "Pending reviews"
 msgstr "Revizuiri în așteptare"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersTable.tsx:389
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersTable.tsx:393
-#: src/features/campaigns/buget/admin/constants.ts:280
+#: src/features/campaigns/buget/admin/constants.ts:295
 msgid "Pending Reviews"
 msgstr "Revizuiri în așteptare"
 
@@ -3299,11 +3439,11 @@ msgstr "Revizuiri în așteptare"
 msgid "People or records that matched the current conditions."
 msgstr "Persoane sau înregistrări care s-au potrivit cu condițiile curente."
 
-#: src/features/campaigns/buget/admin/constants.ts:378
+#: src/features/campaigns/buget/admin/constants.ts:397
 msgid "Permanent failure"
 msgstr "Eșec permanent"
 
-#: src/features/campaigns/buget/admin/constants.ts:487
+#: src/features/campaigns/buget/admin/constants.ts:506
 msgid "Permanent send failure"
 msgstr "Eșec permanent la trimitere"
 
@@ -3337,7 +3477,7 @@ msgstr "Trimitere platformă"
 msgid "Platform submission"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:295
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:312
 msgid "Preview"
 msgstr "Previzualizare"
 
@@ -3368,19 +3508,19 @@ msgid "Preview result filters"
 msgstr "Filtre pentru rezultatele previzualizării"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:881
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:539
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:548
 msgid "Preview template"
 msgstr "Previzualizează șablonul"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:806
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:817
 msgid "Preview templates unavailable"
 msgstr "Șabloanele de previzualizare nu sunt disponibile"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1062
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1036
 msgid "Preview the latest interaction records currently filtered to this entity."
 msgstr "Previzualizează cele mai recente înregistrări de interacțiune filtrate în prezent pentru această entitate."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1008
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:982
 msgid "Preview the most recent notification audit entries filtered to this entity."
 msgstr "Previzualizează cele mai recente intrări de audit ale notificărilor filtrate pentru această entitate."
 
@@ -3388,7 +3528,7 @@ msgstr "Previzualizează cele mai recente intrări de audit ale notificărilor f
 msgid "Preview the pasted rows first. If Updated At is missing, the dialog fetches the current entity detail before saving so optimistic concurrency still applies."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:959
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:933
 msgid "Preview the users currently returned by the campaign users directory for this entity."
 msgstr "Previzualizează utilizatorii returnați în prezent de directorul utilizatorilor campaniei pentru această entitate."
 
@@ -3396,7 +3536,7 @@ msgstr "Previzualizează utilizatorii returnați în prezent de directorul utili
 msgid "Preview unavailable"
 msgstr "Previzualizare indisponibilă"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:792
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:836
 msgid "Previewable templates"
 msgstr "Șabloane previzualizabile"
 
@@ -3416,26 +3556,26 @@ msgstr "Progres"
 msgid "Proposed change"
 msgstr "Modificare propusă"
 
-#: src/features/campaigns/buget/admin/constants.ts:489
+#: src/features/campaigns/buget/admin/constants.ts:508
 msgid "Provider bounce"
 msgstr "Bounce de la furnizor"
 
-#: src/features/campaigns/buget/admin/constants.ts:491
+#: src/features/campaigns/buget/admin/constants.ts:510
 msgid "Provider suppressed"
 msgstr "Suprimat de furnizor"
 
-#: src/features/campaigns/buget/admin/constants.ts:611
+#: src/features/campaigns/buget/admin/constants.ts:630
 msgid "Public debate request"
 msgstr "Cerere de dezbatere publică"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:347
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:576
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:342
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:397
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:406
 msgid "Public page"
 msgstr "Pagină publică"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:329
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:332
 msgid "public_debate_campaign_welcome"
 msgstr "public_debate_campaign_welcome"
 
@@ -3458,8 +3598,8 @@ msgstr "Totalurile cozii și numerele de avertismente nu sunt disponibile în ac
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadResponseForm.tsx:305
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggerDialog.tsx:376
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggerDialog.tsx:740
-#: src/features/campaigns/buget/admin/constants.ts:506
-#: src/features/campaigns/buget/admin/constants.ts:523
+#: src/features/campaigns/buget/admin/constants.ts:525
+#: src/features/campaigns/buget/admin/constants.ts:542
 msgid "Queued"
 msgstr "În coadă"
 
@@ -3473,7 +3613,7 @@ msgstr "În coadă"
 msgid "Queued {0}, already sent {1}, already pending {2}, not eligible {3}, missing data {4}, enqueue failed {5}."
 msgstr "Puse în coadă {0}, deja trimise {1}, deja în așteptare {2}, neeligibile {3}, date lipsă {4}, eșec la punerea în coadă {5}."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:839
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:843
 msgid "Rank entities by interactions, users, or pending reviews without reusing the operational entity endpoints."
 msgstr "Clasează entitățile după interacțiuni, utilizatori sau revizuiri în așteptare, fără a reutiliza endpointurile operaționale pentru entități."
 
@@ -3484,6 +3624,10 @@ msgstr "Revizuire doar pentru citire"
 #: src/features/campaigns/buget/admin/utils/campaign-admin-notification-run-utils.ts:550
 msgid "Ready"
 msgstr "Gata"
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1149
+msgid "Ready to apply selected config rows."
+msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationPlanSummary.tsx:48
 #: src/features/campaigns/buget/admin/utils/campaign-admin-notification-run-utils.ts:503
@@ -3558,7 +3702,7 @@ msgstr ""
 msgid "Recorded"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:395
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:430
 msgid "Refine the campaign entity config list with exact entity and update-date criteria."
 msgstr ""
 
@@ -3575,13 +3719,13 @@ msgid "Refine the user workspace by timeline, payload, and record identifiers."
 msgstr "Rafinați spațiul de lucru al utilizatorului după cronologie, încărcătură și identificatori de înregistrare."
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminAnalyticsPage.tsx:255
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:988
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1386
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:572
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:370
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:793
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:405
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:767
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:652
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:633
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:704
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:649
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:708
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1143
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:989
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1139
@@ -3602,15 +3746,15 @@ msgstr "Reîmprospătează sesiunea de autentificare, apoi reîncarcă tipurile 
 msgid "Refresh your authentication session, then try loading analytics again."
 msgstr "Reîmprospătează sesiunea de autentificare, apoi încearcă din nou să încarci analizele."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:843
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1241
 msgid "Refresh your authentication session, then try loading entities again."
 msgstr "Reîmprospătează sesiunea de autentificare, apoi încearcă din nou să încarci entitățile."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1227
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1625
 msgid "Refresh your authentication session, then try loading entity config again."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:165
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:183
 msgid "Refresh your authentication session, then try loading notifications again."
 msgstr "Reîmprospătează sesiunea de autentificare, apoi încearcă din nou să încarci notificările."
 
@@ -3622,19 +3766,19 @@ msgstr "Reîmprospătați sesiunea de autentificare, apoi încercați să încă
 msgid "Refresh your authentication session, then try loading the user workspace again."
 msgstr "Reîmprospătați sesiunea de autentificare, apoi încercați să încărcați din nou spațiul de lucru al utilizatorului."
 
-#: src/features/campaigns/buget/admin/constants.ts:712
+#: src/features/campaigns/buget/admin/constants.ts:731
 msgid "Registration number received"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:349
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:353
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:143
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:723
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:339
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:655
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:343
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:659
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1203
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1227
 #: src/features/campaigns/buget/admin/components/InteractionsSummaryPanel.tsx:105
-#: src/features/campaigns/buget/admin/constants.ts:598
+#: src/features/campaigns/buget/admin/constants.ts:617
 msgid "Rejected"
 msgstr "Respins"
 
@@ -3651,7 +3795,7 @@ msgstr "Rândurile respinse necesită o notă de revizuire înainte de salvare."
 msgid "Remove condition"
 msgstr "Elimină condiția"
 
-#: src/features/campaigns/buget/admin/constants.ts:481
+#: src/features/campaigns/buget/admin/constants.ts:500
 msgid "Render error"
 msgstr "Eroare de randare"
 
@@ -3659,20 +3803,20 @@ msgstr "Eroare de randare"
 #~ msgid "Rendered in an isolated iframe using preview-safe example props."
 #~ msgstr "Randat într-un iframe izolat folosind exemple de props sigure pentru previzualizare."
 
-#: src/features/campaigns/buget/admin/constants.ts:399
-#: src/features/campaigns/buget/admin/constants.ts:661
+#: src/features/campaigns/buget/admin/constants.ts:418
+#: src/features/campaigns/buget/admin/constants.ts:680
 msgid "Reply received"
 msgstr "Răspuns primit"
 
-#: src/features/campaigns/buget/admin/constants.ts:401
+#: src/features/campaigns/buget/admin/constants.ts:420
 msgid "Reply reviewed"
 msgstr "Răspuns revizuit"
 
-#: src/features/campaigns/buget/admin/constants.ts:714
+#: src/features/campaigns/buget/admin/constants.ts:733
 msgid "Request confirmed"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/constants.ts:716
+#: src/features/campaigns/buget/admin/constants.ts:735
 msgid "Request denied"
 msgstr ""
 
@@ -3680,7 +3824,7 @@ msgstr ""
 msgid "Requester"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:340
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:349
 msgid "Requester audience"
 msgstr ""
 
@@ -3706,9 +3850,9 @@ msgid "Required fields"
 msgstr "Câmpuri obligatorii"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:561
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:359
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:394
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:641
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:693
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:696
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:978
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:494
 msgid "Reset"
@@ -3716,22 +3860,22 @@ msgstr "Resetează"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:840
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:721
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:771
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:776
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:1058
 msgid "Reset all"
 msgstr "Resetează tot"
 
 #: src/features/campaigns/buget/admin/components/InteractionsSummaryPanel.tsx:77
-#: src/features/campaigns/buget/admin/constants.ts:581
-#: src/features/campaigns/buget/admin/constants.ts:688
+#: src/features/campaigns/buget/admin/constants.ts:600
+#: src/features/campaigns/buget/admin/constants.ts:707
 msgid "Resolved"
 msgstr "Rezolvat"
 
-#: src/features/campaigns/buget/admin/constants.ts:667
+#: src/features/campaigns/buget/admin/constants.ts:686
 msgid "Resolved negative"
 msgstr "Rezolvat negativ"
 
-#: src/features/campaigns/buget/admin/constants.ts:665
+#: src/features/campaigns/buget/admin/constants.ts:684
 msgid "Resolved positive"
 msgstr "Rezolvat pozitiv"
 
@@ -3781,11 +3925,11 @@ msgstr ""
 msgid "Result"
 msgstr "Rezultat"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1048
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1264
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:353
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1446
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1662
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:327
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsSection.tsx:412
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:214
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:232
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:796
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:1032
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggersSection.tsx:213
@@ -3804,7 +3948,7 @@ msgstr "Reîncearcă metadate"
 msgid "Retry summary"
 msgstr "Reîncearcă rezumat"
 
-#: src/features/campaigns/buget/admin/constants.ts:485
+#: src/features/campaigns/buget/admin/constants.ts:504
 msgid "Retryable send failure"
 msgstr "Eșec de trimitere cu reîncercare"
 
@@ -3824,7 +3968,7 @@ msgstr "Recapitulare"
 msgid "Review and thread state"
 msgstr "Stare revizuire și fir"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:410
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:419
 msgid "Review approved"
 msgstr "Revizuire aprobată"
 
@@ -3842,7 +3986,7 @@ msgstr "Revizuirea a fost aprobată."
 msgid "Review campaign interactions with the existing operator workflow and durable reviewer attribution."
 msgstr "Revizuiește interacțiunile campaniei cu fluxul operator existent și atribuirea durabilă a revizorilor."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:198
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:224
 msgid "Review entity-level campaign state across users, interaction review pressure, and notification delivery activity."
 msgstr "Revizuiește starea campaniei la nivel de entitate, pe utilizatori, presiunea revizuirilor de interacțiune și activitatea de livrare a notificărilor."
 
@@ -3869,7 +4013,7 @@ msgstr "Notă de revizuire obligatorie"
 #~ msgid "Review one user’s campaign activity with batch selection and the existing operator review workflow."
 #~ msgstr "Revizuiți activitatea de campanie a unui utilizator cu selecție în lot și fluxul de revizuire existent al operatorului."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:885
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:889
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1219
 msgid "Review queue"
 msgstr "Coada de revizuire"
@@ -3878,7 +4022,7 @@ msgstr "Coada de revizuire"
 msgid "Review ranked interaction and entity analytics for {campaignLabel} using the dedicated campaign stats endpoints."
 msgstr "Examinează analizele ierarhizate pentru interacțiuni și entități din {campaignLabel} folosind endpointurile dedicate de statistici ale campaniei."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:411
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:420
 msgid "Review rejected"
 msgstr "Revizuire respinsă"
 
@@ -3904,18 +4048,18 @@ msgstr "Rezultatul revizuirii: {0}"
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:549
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:951
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:1298
-#: src/features/campaigns/buget/admin/constants.ts:261
+#: src/features/campaigns/buget/admin/constants.ts:276
 msgid "Review state"
 msgstr "Stare revizuire"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:414
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:890
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:388
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:894
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:800
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:382
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:829
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:387
 #: src/features/campaigns/buget/admin/components/InteractionsSummaryPanel.tsx:132
-#: src/features/campaigns/buget/admin/constants.ts:243
+#: src/features/campaigns/buget/admin/constants.ts:258
 msgid "Review status"
 msgstr "Status revizuire"
 
@@ -3927,7 +4071,7 @@ msgstr "Trimiterea revizuirii salvează întotdeauna decizia. Efectele secundare
 #~ msgid "Review the latest correspondence and record a manual institution response."
 #~ msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1109
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1083
 msgid "Review thread activity for this entity without leaving the entity detail workflow. The entity scope is fixed here."
 msgstr ""
 
@@ -3940,11 +4084,11 @@ msgstr "Revizuit la"
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:552
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:988
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:1336
-#: src/features/campaigns/buget/admin/constants.ts:263
+#: src/features/campaigns/buget/admin/constants.ts:278
 msgid "Reviewed by"
 msgstr "Revizuit de"
 
-#: src/features/campaigns/buget/admin/constants.ts:443
+#: src/features/campaigns/buget/admin/constants.ts:462
 #: src/features/campaigns/buget/admin/utils/campaign-admin-notification-run-utils.ts:126
 msgid "Reviewed interaction"
 msgstr "Interacțiune revizuită"
@@ -3958,7 +4102,7 @@ msgstr "Risc"
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:545
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:882
 #: src/features/campaigns/buget/admin/components/InteractionsSummaryPanel.tsx:147
-#: src/features/campaigns/buget/admin/constants.ts:253
+#: src/features/campaigns/buget/admin/constants.ts:268
 msgid "Risk flags"
 msgstr "Indicatori de risc"
 
@@ -3969,16 +4113,16 @@ msgstr "Rând"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminCursorPager.tsx:56
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:514
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:268
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:530
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:303
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:661
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:595
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:443
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:446
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:930
 msgid "Rows per page"
 msgstr "Rânduri pe pagină"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:644
-#: src/features/campaigns/buget/admin/constants.ts:351
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:671
+#: src/features/campaigns/buget/admin/constants.ts:370
 msgid "Run"
 msgstr "Rulare"
 
@@ -4026,8 +4170,8 @@ msgstr "Se rulează previzualizarea…"
 msgid "Running…"
 msgstr "Se rulează…"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:583
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:802
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:592
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:813
 msgid "Safe error"
 msgstr "Eroare sigură"
 
@@ -4118,12 +4262,25 @@ msgstr ""
 msgid "Select all pending rows"
 msgstr "Selectează toate rândurile în așteptare"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:297
+msgid "Select all visible rows"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:345
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:1042
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:1256
 msgid "Select row"
 msgstr "Selectează rând"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:395
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:893
+msgid "Selected config rows changed before bulk apply. Review the staged data and try again."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSendValidationDialog.tsx:35
+msgid "Selected config rows need fixes"
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:404
 msgid "Selected entities unavailable"
 msgstr "Entitățile selectate nu sunt disponibile"
 
@@ -4199,8 +4356,8 @@ msgstr "Trimite către tine"
 msgid "Sender"
 msgstr "Expeditor"
 
-#: src/features/campaigns/buget/admin/constants.ts:368
-#: src/features/campaigns/buget/admin/constants.ts:657
+#: src/features/campaigns/buget/admin/constants.ts:387
+#: src/features/campaigns/buget/admin/constants.ts:676
 msgid "Sending"
 msgstr "Se trimite"
 
@@ -4212,13 +4369,13 @@ msgstr "Trimiterea se aplică tuturor potrivirilor gata din această previzualiz
 msgid "Sending…"
 msgstr "Se trimite…"
 
-#: src/features/campaigns/buget/admin/constants.ts:370
-#: src/features/campaigns/buget/admin/constants.ts:456
+#: src/features/campaigns/buget/admin/constants.ts:389
+#: src/features/campaigns/buget/admin/constants.ts:475
 msgid "Sent"
 msgstr "Trimis"
 
 #. placeholder {0}: formatDateTime(item.sentAt)
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:527
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:536
 msgid "Sent {0}"
 msgstr "Trimis {0}"
 
@@ -4231,9 +4388,9 @@ msgid "Server triggers"
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminAnalyticsPage.tsx:170
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:841
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1225
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:163
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1239
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1623
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:181
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:743
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1073
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:923
@@ -4241,7 +4398,7 @@ msgstr ""
 msgid "Session expired"
 msgstr "Sesiune expirată"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:925
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1323
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadDetailContent.tsx:212
 #: src/features/campaigns/buget/admin/components/InteractionsSummaryPanel.tsx:118
 msgid "Show less"
@@ -4251,7 +4408,7 @@ msgstr "Afișează mai puțin"
 msgid "Show more"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:925
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1323
 msgid "Show more stats"
 msgstr "Arată mai multe statistici"
 
@@ -4271,7 +4428,7 @@ msgstr ""
 msgid "Showing the full thread queue by last update."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:479
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:482
 msgid "Showing the latest audit entries by creation date."
 msgstr "Se afișează cele mai recente intrări de audit după data creării."
 
@@ -4284,20 +4441,20 @@ msgid "Showing the latest review queue by last update."
 msgstr "Se afișează cea mai recentă coadă de revizuire după ultima actualizare."
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminAnalyticsPage.tsx:152
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:823
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:283
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1221
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:287
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsSection.tsx:369
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:609
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:625
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1055
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:906
 msgid "Sign in"
 msgstr "Conectează-te"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminAnalyticsPage.tsx:177
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:848
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1232
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:888
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:170
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1246
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1630
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:862
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:188
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:750
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1080
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:930
@@ -4306,11 +4463,11 @@ msgid "Sign in again"
 msgstr "Autentificați-vă din nou"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminAnalyticsPage.tsx:145
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:816
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:880
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:276
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1214
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:854
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:280
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsSection.tsx:363
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:602
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:618
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1048
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:899
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:393
@@ -4364,18 +4521,18 @@ msgid "Single entity"
 msgstr "Entitate unică"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggerDialog.tsx:742
-#: src/features/campaigns/buget/admin/constants.ts:508
-#: src/features/campaigns/buget/admin/constants.ts:525
+#: src/features/campaigns/buget/admin/constants.ts:527
+#: src/features/campaigns/buget/admin/constants.ts:544
 msgid "Skipped"
 msgstr "Omis"
 
-#: src/features/campaigns/buget/admin/constants.ts:384
-#: src/features/campaigns/buget/admin/constants.ts:473
+#: src/features/campaigns/buget/admin/constants.ts:403
+#: src/features/campaigns/buget/admin/constants.ts:492
 msgid "Skipped: no email"
 msgstr "Omis: fără email"
 
-#: src/features/campaigns/buget/admin/constants.ts:382
-#: src/features/campaigns/buget/admin/constants.ts:471
+#: src/features/campaigns/buget/admin/constants.ts:401
+#: src/features/campaigns/buget/admin/constants.ts:490
 msgid "Skipped: unsubscribed"
 msgstr "Omis: dezabonat"
 
@@ -4383,18 +4540,22 @@ msgstr "Omis: dezabonat"
 msgid "Social media"
 msgstr "Rețele sociale"
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSendValidationDialog.tsx:40
+msgid "Some selected config rows cannot be applied yet. Fix the issues below."
+msgstr ""
+
 #: src/features/campaigns/buget/admin/components/CampaignAdminSendValidationDialog.tsx:46
 msgid "Some selected rows cannot be sent yet. Fix the issues below."
 msgstr "Unele rânduri selectate nu pot fi trimise încă. Corectează problemele de mai jos."
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:747
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:485
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:400
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:616
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:403
 msgid "Sort"
 msgstr "Sortare"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:246
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:619
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:249
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:622
 msgid "Source"
 msgstr "Sursă"
 
@@ -4418,7 +4579,7 @@ msgstr "Decizie pregătită"
 msgid "Stale"
 msgstr "Perimate"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:311
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:314
 msgid "Start with the core filters above, then use these fields for exact identifiers and template details."
 msgstr "Începe cu filtrele de bază de mai sus, apoi folosește aceste câmpuri pentru identificatori exacți și detalii despre șabloane."
 
@@ -4426,7 +4587,7 @@ msgstr "Începe cu filtrele de bază de mai sus, apoi folosește aceste câmpuri
 msgid "Start with the core review filters, then open advanced filters for exact identifiers and thread details."
 msgstr "Începe cu filtrele principale de revizuire, apoi deschide filtrele avansate pentru identificatori exacți și detalii ale firului."
 
-#: src/features/campaigns/buget/admin/constants.ts:684
+#: src/features/campaigns/buget/admin/constants.ts:703
 msgid "Started"
 msgstr ""
 
@@ -4436,20 +4597,20 @@ msgstr ""
 msgid "State group"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:732
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:230
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:541
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:742
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:233
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:544
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:227
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:560
-#: src/features/campaigns/buget/admin/constants.ts:458
+#: src/features/campaigns/buget/admin/constants.ts:477
 msgid "Status"
 msgstr "Stare"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:635
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:639
 msgid "Still waiting on admin review."
 msgstr "Încă așteaptă revizuirea administratorului."
 
-#: src/features/campaigns/buget/admin/constants.ts:644
+#: src/features/campaigns/buget/admin/constants.ts:663
 msgid "Structured"
 msgstr "Structurat"
 
@@ -4536,7 +4697,11 @@ msgstr "Trimis către"
 msgid "Submitting…"
 msgstr "Se trimite…"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:341
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:264
+msgid "Subscribed entities and saved config rows are listed here. Clear the current filters or open a specific entity to create new config."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:350
 msgid "Subscriber audience"
 msgstr ""
 
@@ -4544,21 +4709,21 @@ msgstr ""
 msgid "Subscriber eligible"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:914
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:948
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1312
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1346
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:303
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:428
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:842
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:816
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadAudienceSummary.tsx:87
-#: src/features/campaigns/buget/admin/constants.ts:299
+#: src/features/campaigns/buget/admin/constants.ts:314
 msgid "Subscribers"
 msgstr "Abonați"
 
-#: src/features/campaigns/buget/admin/constants.ts:540
+#: src/features/campaigns/buget/admin/constants.ts:559
 msgid "Subscriptions exist, but nobody is currently eligible to receive this notification."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:967
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1365
 msgid "Summary data is unavailable right now. You can still use the entity table below."
 msgstr "Datele rezumatului nu sunt disponibile acum. Poți folosi în continuare tabelul entităților de mai jos."
 
@@ -4566,19 +4731,19 @@ msgstr "Datele rezumatului nu sunt disponibile acum. Poți folosi în continuare
 msgid "Summary unavailable"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:729
-#: src/features/campaigns/buget/admin/constants.ts:380
-#: src/features/campaigns/buget/admin/constants.ts:475
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:733
+#: src/features/campaigns/buget/admin/constants.ts:399
+#: src/features/campaigns/buget/admin/constants.ts:494
 msgid "Suppressed"
 msgstr "Suprimat"
 
-#: src/features/campaigns/buget/admin/constants.ts:418
+#: src/features/campaigns/buget/admin/constants.ts:437
 msgid "System"
 msgstr "Sistem"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:352
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:196
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:190
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:208
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:215
 msgid "Table actions"
 msgstr ""
 
@@ -4586,9 +4751,9 @@ msgstr ""
 msgid "Target"
 msgstr "Țintă"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:578
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:751
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:253
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:587
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:761
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:256
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggerDialog.tsx:492
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggersSection.tsx:67
 msgid "Template"
@@ -4600,7 +4765,7 @@ msgstr "Șablon"
 msgid "Template {0} · {1}"
 msgstr "Șablon {0} · {1}"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:317
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:320
 msgid "Template ID"
 msgstr "ID șablon"
 
@@ -4608,16 +4773,16 @@ msgstr "ID șablon"
 msgid "Template preview"
 msgstr "Previzualizare șablon"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:645
-#: src/features/campaigns/buget/admin/constants.ts:353
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:678
+#: src/features/campaigns/buget/admin/constants.ts:372
 msgid "Templates"
 msgstr "Șabloane"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:373
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:382
 msgid "Terms accepted"
 msgstr "Termeni acceptați"
 
-#: src/features/campaigns/buget/admin/constants.ts:638
+#: src/features/campaigns/buget/admin/constants.ts:657
 msgid "Text"
 msgstr "Text"
 
@@ -4665,16 +4830,20 @@ msgstr ""
 msgid "The requested institution thread was not found."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/constants.ts:544
+#: src/features/campaigns/buget/admin/constants.ts:563
 msgid "The response was saved, but the notification jobs could not be queued cleanly."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/constants.ts:546
+#: src/features/campaigns/buget/admin/constants.ts:565
 msgid "The response was saved, but the server could not resolve the admin response for notification delivery."
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadResponseForm.tsx:102
 msgid "The response will be appended with the latest thread version for conflict protection."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSendValidationDialog.tsx:39
+msgid "The selected config row cannot be applied yet. Fix the issue below."
 msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminSendValidationDialog.tsx:45
@@ -4694,15 +4863,15 @@ msgstr ""
 msgid "The server denied access to the current campaign analytics permission boundary."
 msgstr "Serverul a refuzat accesul la limita curentă de permisiuni pentru analizele campaniei."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:867
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1265
 msgid "The server denied access to the current campaign entities admin permission boundary."
 msgstr "Serverul a refuzat accesul la limita curentă de permisiuni pentru administrarea entităților campaniei."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1240
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1638
 msgid "The server denied access to the current campaign entity config admin permission boundary."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:811
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:822
 msgid "The server denied access to the current campaign notification template previews."
 msgstr "Serverul a refuzat accesul la previzualizările curente ale șabloanelor de notificare ale campaniei."
 
@@ -4712,7 +4881,7 @@ msgstr "Serverul a refuzat accesul la previzualizările curente ale șabloanelor
 msgid "The server denied access to the current campaign-admin permission boundary."
 msgstr "Serverul a refuzat accesul la limita curentă de permisiuni de administrare a campaniei."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:679
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:696
 msgid "The server denied access to the current campaign-notifications admin permission boundary."
 msgstr "Serverul a refuzat accesul la limita curentă de permisiuni pentru administrarea notificărilor campaniei."
 
@@ -4728,7 +4897,7 @@ msgstr "Serverul a refuzat accesul la această acțiune de notificare."
 msgid "The server did not expose any notification types for this campaign."
 msgstr "Serverul nu a expus niciun tip de notificare pentru această campanie."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:838
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:855
 msgid "The server did not expose any previewable notification templates for this campaign."
 msgstr "Serverul nu a expus niciun șablon de notificare previzualizabil pentru această campanie."
 
@@ -4740,9 +4909,13 @@ msgstr "Serverul a respins aceste condiții."
 msgid "The server returned no trigger definitions for this campaign."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1218
-msgid "The table shows configured rows only. CSV export includes all entities, including unconfigured ones, and spreadsheet paste updates only the pasted rows."
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1616
+msgid "The table includes subscribed entities and any saved config rows. Unconfigured rows can be filled here, CSV export uses the same scope, and spreadsheet paste updates only the pasted rows."
 msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1218
+#~ msgid "The table shows configured rows only. CSV export includes all entities, including unconfigured ones, and spreadsheet paste updates only the pasted rows."
+#~ msgstr ""
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadSheet.tsx:247
 #~ msgid "The thread detail endpoint did not return correspondence entries."
@@ -4752,11 +4925,11 @@ msgstr ""
 msgid "The user workspace is available, but the server denied access to the campaign notifications admin boundary."
 msgstr "Spațiul de lucru al utilizatorului este disponibil, dar serverul a refuzat accesul la limita de administrare a notificărilor campaniei."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:883
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:887
 msgid "These aggregates remain useful for understanding current review pressure and notification outcomes at a glance."
 msgstr "Aceste agregări rămân utile pentru a înțelege rapid presiunea curentă de revizuire și rezultatele notificărilor."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:912
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:916
 msgid "These capability flags clarify which analytics dimensions exist today and which are still unavailable."
 msgstr "Aceste indicatoare de capabilitate clarifică ce dimensiuni analitice există astăzi și care sunt încă indisponibile."
 
@@ -4768,7 +4941,7 @@ msgstr "Aceste filtre sunt trimise către endpointul real de declanșare în mas
 msgid "These results show what would happen if you send notifications now."
 msgstr "Aceste rezultate arată ce s-ar întâmpla dacă ai trimite notificările acum."
 
-#: src/features/campaigns/buget/admin/constants.ts:542
+#: src/features/campaigns/buget/admin/constants.ts:561
 msgid "This admin response was already processed for notification delivery, so existing outbox rows were reused."
 msgstr ""
 
@@ -4788,11 +4961,11 @@ msgstr "Această suprafață de analize a campaniei fie nu este activată pe ser
 msgid "This campaign bulk notification trigger is unavailable on this server or the campaign key is not supported."
 msgstr "Acest declanșator în masă al notificărilor campaniei nu este disponibil pe acest server sau cheia campaniei nu este acceptată."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:885
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1283
 msgid "This campaign entities admin surface is either not enabled on the current server or the campaign key is not supported."
 msgstr "Această suprafață de administrare a entităților campaniei fie nu este activată pe serverul curent, fie cheia campaniei nu este acceptată."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1247
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1645
 msgid "This campaign entity config admin surface is either not enabled on the current server or the campaign key is not supported."
 msgstr ""
 
@@ -4816,7 +4989,7 @@ msgstr "Acest declanșator de notificare al campaniei nu a putut fi finalizat de
 msgid "This campaign notification trigger is unavailable on this server or the campaign key is not supported."
 msgstr "Acest declanșator de notificare al campaniei nu este disponibil pe acest server sau cheia campaniei nu este acceptată."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:681
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:698
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1506
 msgid "This campaign notifications admin surface is either not enabled on the current server or the campaign key is not supported."
 msgstr "Această suprafață de administrare a notificărilor campaniei fie nu este activată pe serverul curent, fie cheia campaniei nu este acceptată."
@@ -4889,6 +5062,10 @@ msgstr "Această previzualizare nu se mai potrivește cu niciun tip de notificar
 msgid "This preview page did not include any matching rows."
 msgstr "Această pagină de previzualizare nu a inclus niciun rând potrivit."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1882
+msgid "This removes the staged config values for the currently selected rows."
+msgstr ""
+
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1396
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1645
 msgid "This removes the staged review decision and note for the currently selected rows."
@@ -4901,6 +5078,10 @@ msgstr "Această revizuire va fi salvată și apoi va permite efecte secundare c
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:804
 msgid "This review will save without notification side effects."
 msgstr "Această revizuire va fi salvată fără efecte secundare de notificare."
+
+#: src/features/campaigns/buget/admin/utils/entity-config-workspace.ts:38
+msgid "This row changed before your bulk update was saved. Refresh the table and paste again."
+msgstr ""
 
 #: src/features/campaigns/buget/admin/utils/review-workspace.ts:72
 msgid "This row is no longer pending. Refresh the queue before sending."
@@ -4922,7 +5103,7 @@ msgstr ""
 msgid "This server does not expose notification types for the current campaign."
 msgstr "Acest server nu expune tipuri de notificări pentru campania curentă."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:813
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:824
 msgid "This server does not expose previewable notification templates for the current campaign."
 msgstr "Acest server nu expune șabloane de notificare previzualizabile pentru campania curentă."
 
@@ -4950,6 +5131,14 @@ msgstr "Acest declanșator nu acceptă simularea."
 msgid "This user has not submitted any campaign interactions through the current admin projection."
 msgstr "Acest utilizator nu a trimis nicio interacțiune de campanie prin proiecția administrativă curentă."
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1850
+msgid "This will apply the staged entity config values for the selected row."
+msgstr ""
+
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1851
+msgid "This will apply the staged entity config values for the selected rows."
+msgstr ""
+
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1364
 msgid "This will save the staged review for the selected row and apply each row's notification setting."
 msgstr "Aceasta va salva revizuirea pregătită pentru rândul selectat și va aplica setarea lui de notificare."
@@ -4963,19 +5152,19 @@ msgstr "Aceasta va salva revizuirea pregătită pentru rândul selectat și va a
 msgid "This will save the staged reviews for the selected rows and preserve mixed notification settings."
 msgstr "Aceasta va salva revizuirile pregătite pentru rândurile selectate și va păstra setările mixte de notificare."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:274
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:277
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:303
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:328
 msgid "Thread"
 msgstr "Fir"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:581
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:781
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:590
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:791
 msgid "Thread / event"
 msgstr "Fir / eveniment"
 
-#: src/features/campaigns/buget/admin/constants.ts:397
-#: src/features/campaigns/buget/admin/constants.ts:671
+#: src/features/campaigns/buget/admin/constants.ts:416
+#: src/features/campaigns/buget/admin/constants.ts:690
 msgid "Thread failed"
 msgstr "Conversație eșuată"
 
@@ -4983,7 +5172,7 @@ msgstr "Conversație eșuată"
 msgid "Thread filters"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:367
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:370
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:545
 msgid "Thread ID"
 msgstr "ID fir"
@@ -4996,7 +5185,7 @@ msgstr "Fază fir"
 msgid "Thread resolved — no further responses"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/constants.ts:395
+#: src/features/campaigns/buget/admin/constants.ts:414
 msgid "Thread started"
 msgstr "Fir pornit"
 
@@ -5007,12 +5196,12 @@ msgstr "Fir pornit"
 msgid "Thread state"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:379
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:382
 msgid "thread-123"
 msgstr "thread-123"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1026
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:944
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1424
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:918
 #: src/features/campaigns/buget/admin/components/InteractionsSummaryPanel.tsx:142
 msgid "Threads"
 msgstr "Fire"
@@ -5036,26 +5225,26 @@ msgstr "Top după revizuiri în așteptare"
 msgid "Top by users"
 msgstr "Top după utilizatori"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:838
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:842
 msgid "Top entities"
 msgstr "Entități de top"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:814
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:818
 msgid "Top interaction elements"
 msgstr "Elemente de interacțiune de top"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:336
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:340
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1199
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1207
 msgid "Total"
 msgstr "Total"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:912
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:938
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1310
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1336
 msgid "Total entities"
 msgstr "Total entități"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:605
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:609
 msgid "Total interactions"
 msgstr "Total interacțiuni"
 
@@ -5071,11 +5260,11 @@ msgstr ""
 #~ msgid "Totals for every interaction loaded for this user in the admin workspace."
 #~ msgstr "Totaluri pentru toate interacțiunile încărcate pentru acest utilizator în spațiul de lucru admin."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:610
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:614
 msgid "Tracked entities"
 msgstr "Entități urmărite"
 
-#: src/features/campaigns/buget/admin/constants.ts:376
+#: src/features/campaigns/buget/admin/constants.ts:395
 msgid "Transient failure"
 msgstr "Eșec tranzitoriu"
 
@@ -5115,6 +5304,10 @@ msgstr "Încearcă să lărgești căutarea entităților sau să ștergi filtre
 msgid "Try going back a page or refresh the directory."
 msgstr ""
 
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:971
+msgid "Unable to apply the selected entity config rows."
+msgstr ""
+
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggerDialog.tsx:433
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationTriggerDialog.tsx:453
 msgid "Unable to execute this trigger right now."
@@ -5137,15 +5330,15 @@ msgstr ""
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:204
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:255
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:263
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:60
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:65
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:306
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:319
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:263
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:68
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:73
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:361
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:374
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:268
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:293
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:445
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:460
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:273
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:298
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:419
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:434
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadDetailContent.tsx:62
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadDetailContent.tsx:67
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsTable.tsx:36
@@ -5155,10 +5348,10 @@ msgstr ""
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationPlanTable.tsx:173
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationPlanTable.tsx:185
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationPlanTable.tsx:282
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:195
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:200
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:378
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:486
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:204
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:209
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:387
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:495
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:72
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:77
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:112
@@ -5185,25 +5378,30 @@ msgstr ""
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:1230
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:1233
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersTable.tsx:71
-#: src/features/campaigns/buget/admin/constants.ts:338
+#: src/features/campaigns/buget/admin/constants.ts:357
 #: src/features/campaigns/buget/admin/utils/campaign-admin-notification-run-utils.ts:585
 msgid "Unavailable"
 msgstr "Indisponibil"
 
-#: src/features/campaigns/buget/admin/constants.ts:405
-#: src/features/campaigns/buget/admin/constants.ts:422
 #: src/features/campaigns/buget/admin/constants.ts:424
-#: src/features/campaigns/buget/admin/constants.ts:493
-#: src/features/campaigns/buget/admin/constants.ts:497
-#: src/features/campaigns/buget/admin/constants.ts:602
-#: src/features/campaigns/buget/admin/constants.ts:646
-#: src/features/campaigns/buget/admin/constants.ts:648
-#: src/features/campaigns/buget/admin/constants.ts:675
+#: src/features/campaigns/buget/admin/constants.ts:441
+#: src/features/campaigns/buget/admin/constants.ts:443
+#: src/features/campaigns/buget/admin/constants.ts:512
+#: src/features/campaigns/buget/admin/constants.ts:516
+#: src/features/campaigns/buget/admin/constants.ts:621
+#: src/features/campaigns/buget/admin/constants.ts:665
+#: src/features/campaigns/buget/admin/constants.ts:667
+#: src/features/campaigns/buget/admin/constants.ts:694
 msgid "Unknown"
 msgstr "Necunoscut"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:327
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:382
 msgid "Unknown editor"
+msgstr ""
+
+#. placeholder {0}: row.entityCui
+#: src/features/campaigns/buget/admin/utils/entity-config-clipboard.ts:321
+msgid "Unknown selected entity CUI: {0}"
 msgstr ""
 
 #: src/features/campaigns/buget/admin/utils/bulk-review-clipboard.ts:438
@@ -5222,8 +5420,8 @@ msgstr "Rând de revizuire selectat necunoscut: {selectionKeyValue}"
 msgid "Unset"
 msgstr "Nesetat"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:288
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:417
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigTable.tsx:334
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:391
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadDetailContent.tsx:232
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsTable.tsx:119
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:230
@@ -5232,8 +5430,8 @@ msgstr "Nesetat"
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:1286
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:263
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:310
-#: src/features/campaigns/buget/admin/constants.ts:251
-#: src/features/campaigns/buget/admin/constants.ts:316
+#: src/features/campaigns/buget/admin/constants.ts:266
+#: src/features/campaigns/buget/admin/constants.ts:331
 msgid "Updated"
 msgstr "Actualizat"
 
@@ -5247,14 +5445,14 @@ msgstr "Actualizat la"
 msgid "Updated At"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:434
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:565
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:398
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:529
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:555
 msgid "Updated from"
 msgstr "Actualizat de la"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:452
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:583
 #: src/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsToolbar.tsx:413
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsToolbar.tsx:545
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPageFilters.tsx:571
@@ -5265,7 +5463,7 @@ msgstr "Actualizat către"
 msgid "Use date ranges and secondary fields when the quick filters are not enough."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:744
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:749
 msgid "Use exact identifiers and display options when the quick filters are not enough."
 msgstr "Folosește identificatori exacți și opțiuni de afișare când filtrele rapide nu sunt suficiente."
 
@@ -5277,7 +5475,7 @@ msgstr "Folosește identificatori exacți și câmpuri secundare ale cozii atunc
 #~ msgid "Use the append-only admin response workflow. The resulting thread state always comes from the server."
 #~ msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:815
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:819
 msgid "Use the dedicated ranked stats route to see which interaction elements drive the most activity and where review load is concentrated."
 msgstr "Folosește ruta dedicată de statistici ierarhizate pentru a vedea ce elemente de interacțiune generează cea mai multă activitate și unde este concentrată încărcarea de revizuire."
 
@@ -5297,7 +5495,7 @@ msgstr "Folosește ruta dedicată de statistici ierarhizate pentru a vedea ce el
 msgid "Use the search above to choose an entity for the new config."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:407
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:442
 msgid "Use these controls when the main header controls are not specific enough."
 msgstr ""
 
@@ -5321,20 +5519,20 @@ msgstr "Util când cunoașteți deja lecția, încărcătura sau domeniul pe car
 msgid "Useful when you already know the lesson, payload, scope, or submission path you need to inspect."
 msgstr "Util când cunoașteți deja lecția, încărcătura, domeniul sau calea de trimitere pe care trebuie să le inspectați."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:415
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:389
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationPlanTable.tsx:142
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:580
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:771
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:260
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:589
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:781
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:263
 #: src/features/campaigns/buget/admin/utils/campaign-admin-notification-run-utils.ts:98
 msgid "User"
 msgstr "Utilizator"
 
-#: src/features/campaigns/buget/admin/constants.ts:416
+#: src/features/campaigns/buget/admin/constants.ts:435
 msgid "User event worker"
 msgstr "Worker pentru evenimentele utilizatorilor"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:653
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:656
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:515
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:542
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:816
@@ -5344,8 +5542,8 @@ msgstr "Worker pentru evenimentele utilizatorilor"
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1028
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersTable.tsx:337
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersTable.tsx:340
-#: src/features/campaigns/buget/admin/constants.ts:245
-#: src/features/campaigns/buget/admin/constants.ts:274
+#: src/features/campaigns/buget/admin/constants.ts:260
+#: src/features/campaigns/buget/admin/constants.ts:289
 msgid "User ID"
 msgstr "ID Utilizator"
 
@@ -5361,13 +5559,13 @@ msgstr "ID copiat"
 msgid "User Interaction ID"
 msgstr "ID interacțiune utilizator"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:937
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:911
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1254
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1274
 msgid "User interactions"
 msgstr "Interacțiuni utilizator"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1061
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1035
 msgid "User interactions for this entity"
 msgstr "Interacțiuni ale utilizatorilor pentru această entitate"
 
@@ -5396,32 +5594,32 @@ msgstr "Secțiuni spațiu utilizator"
 msgid "User workspace unavailable"
 msgstr "Spațiul de lucru al utilizatorului nu este disponibil"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:663
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsToolbar.tsx:666
 msgid "user-123"
 msgstr "user-123"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:342
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:531
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable.tsx:693
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:811
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:920
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:301
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:304
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:409
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:491
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:755
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:785
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:894
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:305
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:308
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:413
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:495
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:759
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:1077
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:310
 #: src/features/campaigns/buget/admin/components/CampaignAdminUsersSectionPage.tsx:327
-#: src/features/campaigns/buget/admin/constants.ts:293
+#: src/features/campaigns/buget/admin/constants.ts:308
 msgid "Users"
 msgstr "Utilizatori"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:958
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:932
 msgid "Users associated with this entity"
 msgstr "Utilizatori asociați acestei entități"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:600
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:604
 msgid "Users in scope"
 msgstr "Utilizatori în scop"
 
@@ -5434,7 +5632,7 @@ msgid "Users will appear here after the campaign records interaction activity."
 msgstr "Utilizatorii vor apărea aici după ce campania înregistrează activitate de interacțiune."
 
 #. placeholder {0}: template.version
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:240
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:257
 #: src/features/campaigns/buget/admin/components/CampaignAdminTemplatePreviewDialog.tsx:158
 msgid "v{0}"
 msgstr ""
@@ -5442,14 +5640,14 @@ msgstr ""
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:240
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:548
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsTable.tsx:934
-#: src/features/campaigns/buget/admin/constants.ts:259
+#: src/features/campaigns/buget/admin/constants.ts:274
 msgid "Value"
 msgstr "Valoare"
 
 #. placeholder {0}: item.templateVersion
 #. placeholder {0}: selectedNotificationType.templateVersion
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:893
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:493
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable.tsx:502
 msgid "Version {0}"
 msgstr "Versiunea {0}"
 
@@ -5457,7 +5655,7 @@ msgstr "Versiunea {0}"
 #~ msgid "View campaign totals and current distributions across users, interactions, entities, and notifications"
 #~ msgstr "Vezi totalurile campaniei și distribuțiile curente pentru utilizatori, interacțiuni, entități și notificări"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:178
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:182
 msgid "View entity-level campaign state across users, interactions, and delivery activity"
 msgstr "Vezi starea campaniei la nivel de entitate, pe utilizatori, interacțiuni și activitate de livrare."
 
@@ -5465,9 +5663,9 @@ msgstr "Vezi starea campaniei la nivel de entitate, pe utilizatori, interacțiun
 msgid "View full notifications"
 msgstr "Vezi toate notificările"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:967
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1018
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1070
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:941
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:992
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:1044
 msgid "View full page"
 msgstr "Vezi pagina completă"
 
@@ -5479,7 +5677,7 @@ msgstr "Vezi coada completă cu filtre"
 #~ msgid "Visible"
 #~ msgstr "Vizibile"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:668
+#: src/features/campaigns/buget/admin/components/CampaignAdminStatsOverviewPanel.tsx:672
 msgid "Visible but not yet reviewable."
 msgstr "Vizibile, dar încă nerevizuibile."
 
@@ -5487,8 +5685,8 @@ msgstr "Vizibile, dar încă nerevizuibile."
 #~ msgid "Warnings"
 #~ msgstr "Avertismente"
 
-#: src/features/campaigns/buget/admin/constants.ts:374
-#: src/features/campaigns/buget/admin/constants.ts:477
+#: src/features/campaigns/buget/admin/constants.ts:393
+#: src/features/campaigns/buget/admin/constants.ts:496
 msgid "Webhook timeout"
 msgstr "Timeout webhook"
 
@@ -5506,6 +5704,8 @@ msgstr "De ce"
 
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar.tsx:212
 #: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet.tsx:247
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:529
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar.tsx:556
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:174
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:217
 #: src/features/campaigns/buget/admin/components/CampaignAdminReviewSheet.tsx:232
@@ -5529,21 +5729,21 @@ msgstr ""
 msgid "You do not have access to campaign entity config admin."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:866
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1264
 msgid "You do not have access to entities"
 msgstr "Nu ai acces la entități"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1239
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1637
 msgid "You do not have access to entity config"
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:672
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:689
 #: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsRunTab.tsx:761
 #: src/features/campaigns/buget/admin/utils/campaign-admin-notification-run-utils.ts:715
 msgid "You do not have access to notifications"
 msgstr "Nu ai acces la notificări"
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:804
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:815
 msgid "You do not have access to templates"
 msgstr "Nu ai acces la șabloane"
 
@@ -5591,11 +5791,11 @@ msgstr ""
 msgid "You need an authenticated admin session to access institution threads."
 msgstr ""
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:279
+#: src/features/campaigns/buget/admin/components/CampaignAdminHubPage.tsx:283
 msgid "You need an authenticated admin session to access the campaign workspace."
 msgstr "Aveți nevoie de o sesiune de administrare autentificată pentru a accesa spațiul de lucru al campaniei."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:883
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntityDetailPage.tsx:857
 msgid "You need an authenticated admin session to inspect entity-level campaign activity."
 msgstr "Ai nevoie de o sesiune de administrare autentificată pentru a inspecta activitatea campaniei la nivel de entitate."
 
@@ -5607,8 +5807,8 @@ msgstr "Aveți nevoie de o sesiune de administrare autentificată pentru a inspe
 msgid "You need an authenticated session before the server can evaluate your campaign analytics permission."
 msgstr "Ai nevoie de o sesiune autentificată înainte ca serverul să poată evalua permisiunea ta pentru analizele campaniei."
 
-#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:818
-#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:604
+#: src/features/campaigns/buget/admin/components/CampaignAdminEntitiesPage.tsx:1216
+#: src/features/campaigns/buget/admin/components/CampaignAdminNotificationsPage.tsx:620
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserInteractionsPage.tsx:1050
 #: src/features/campaigns/buget/admin/components/CampaignAdminUserPage.tsx:901
 msgid "You need an authenticated session before the server can evaluate your campaign-admin permission."

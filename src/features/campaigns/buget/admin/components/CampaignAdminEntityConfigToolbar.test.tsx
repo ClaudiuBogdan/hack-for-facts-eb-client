@@ -27,11 +27,19 @@ describe("CampaignAdminEntityConfigToolbar", () => {
     fireEvent.change(screen.getByLabelText("Updated to"), {
       target: { value: "2026-04-12" },
     });
+    fireEvent.change(screen.getByLabelText("Budget publication date"), {
+      target: { value: "2026-03-20" },
+    });
+    fireEvent.change(screen.getByLabelText("Budget URL contains"), {
+      target: { value: "buget.pdf" },
+    });
     const applyButtons = screen.getAllByRole("button", { name: "Apply filters" });
     fireEvent.click(applyButtons[applyButtons.length - 1]!);
 
     expect(onApply).toHaveBeenCalledWith({
       entityCui: "12345678",
+      budgetPublicationDate: "2026-03-20",
+      officialBudgetUrl: "buget.pdf",
       updatedAtFrom: "2026-04-10T00:00:00.000Z",
       updatedAtTo: "2026-04-12T23:59:59.999Z",
       sortBy: "updatedAt",

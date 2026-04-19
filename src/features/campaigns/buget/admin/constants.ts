@@ -31,6 +31,13 @@ export const FUNKY_CAMPAIGN_KEY = "funky" as const;
 export const DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT = 50;
 
 export const CAMPAIGN_ADMIN_PAGE_LIMIT_VALUES = [25, 50, 100] as const;
+export const CAMPAIGN_ADMIN_ENTITY_CONFIG_PAGE_LIMIT_VALUES = [
+  25,
+  50,
+  100,
+  250,
+  500,
+] as const;
 
 export const CAMPAIGN_ADMIN_COLUMN_IDS = [
   "reviewStatus",
@@ -208,6 +215,14 @@ export const CAMPAIGN_ADMIN_ENTITY_CONFIG_SORTABLE_COLUMNS: Record<
     dataType: "string",
     defaultOrder: "asc",
   },
+  budgetPublicationDate: {
+    dataType: "date",
+    defaultOrder: "desc",
+  },
+  officialBudgetUrl: {
+    dataType: "string",
+    defaultOrder: "asc",
+  },
 };
 
 export const CAMPAIGN_ADMIN_NOTIFICATION_SORTABLE_COLUMNS: Record<
@@ -316,6 +331,10 @@ export function getCampaignAdminEntityConfigSortLabel(
       return t`Updated`;
     case "entityCui":
       return t`Entity CUI`;
+    case "budgetPublicationDate":
+      return t`Budget publication date`;
+    case "officialBudgetUrl":
+      return t`Official budget URL`;
     default:
       return sortKey;
   }

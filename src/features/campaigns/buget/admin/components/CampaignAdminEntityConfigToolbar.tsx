@@ -32,8 +32,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import {
+  CAMPAIGN_ADMIN_ENTITY_CONFIG_PAGE_LIMIT_VALUES,
   CAMPAIGN_ADMIN_ENTITY_CONFIG_SORTABLE_COLUMNS,
-  CAMPAIGN_ADMIN_PAGE_LIMIT_VALUES,
   getCampaignAdminEntityConfigSortLabel,
 } from "@/features/campaigns/buget/admin/constants";
 import {
@@ -53,6 +53,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const SORT_SEPARATOR = "::";
+const ANY_FILTER_VALUE = "__any__";
 
 type CampaignAdminEntityConfigToolbarProps = {
   readonly search: CampaignAdminEntityConfigSearch;
@@ -83,6 +84,10 @@ type ToolbarFieldProps = {
 
 type EntityConfigDraft = {
   readonly entityCui: string;
+  readonly budgetPublicationDate: string;
+  readonly hasBudgetPublicationDate: "" | "true" | "false";
+  readonly officialBudgetUrl: string;
+  readonly hasOfficialBudgetUrl: "" | "true" | "false";
   readonly updatedAtFrom: string;
   readonly updatedAtTo: string;
   readonly sortBy: CampaignAdminEntityConfigSortKey;
@@ -116,6 +121,16 @@ function createDraftFromSearch(
 
   return {
     entityCui: search.entityCui ?? "",
+    budgetPublicationDate: search.budgetPublicationDate ?? "",
+    hasBudgetPublicationDate:
+      search.hasBudgetPublicationDate === undefined
+        ? ""
+        : String(search.hasBudgetPublicationDate) as "true" | "false",
+    officialBudgetUrl: search.officialBudgetUrl ?? "",
+    hasOfficialBudgetUrl:
+      search.hasOfficialBudgetUrl === undefined
+        ? ""
+        : String(search.hasOfficialBudgetUrl) as "true" | "false",
     updatedAtFrom: toDateInputValue(search.updatedAtFrom),
     updatedAtTo: toDateInputValue(search.updatedAtTo),
     sortBy,
@@ -131,6 +146,16 @@ function buildSearchFromDraft(
 ): CampaignAdminEntityConfigSearch {
   return normalizeCampaignAdminEntityConfigSearch({
     entityCui: draft.entityCui.trim() || undefined,
+    budgetPublicationDate: draft.budgetPublicationDate.trim() || undefined,
+    hasBudgetPublicationDate:
+      draft.hasBudgetPublicationDate === ""
+        ? undefined
+        : draft.hasBudgetPublicationDate === "true",
+    officialBudgetUrl: draft.officialBudgetUrl.trim() || undefined,
+    hasOfficialBudgetUrl:
+      draft.hasOfficialBudgetUrl === ""
+        ? undefined
+        : draft.hasOfficialBudgetUrl === "true",
     updatedAtFrom: toUtcRangeBoundary(draft.updatedAtFrom, "start"),
     updatedAtTo: toUtcRangeBoundary(draft.updatedAtTo, "end"),
     sortBy: draft.sortBy,
@@ -201,9 +226,19 @@ export function CampaignAdminEntityConfigToolbar({
   const isDirty =
     createCampaignAdminEntityConfigPaginationSignature(search) !==
     createCampaignAdminEntityConfigPaginationSignature(nextSearch);
+  const hasPayloadFilters =
+    search.budgetPublicationDate !== undefined ||
+    search.hasBudgetPublicationDate !== undefined ||
+    search.officialBudgetUrl !== undefined ||
+    search.hasOfficialBudgetUrl !== undefined;
   const hasUpdatedRangeFilter =
     summarizeDateRange(search.updatedAtFrom, search.updatedAtTo) !== null;
-  const advancedCount = Number(hasUpdatedRangeFilter);
+  const advancedCount =
+    Number(hasUpdatedRangeFilter) +
+    Number(search.budgetPublicationDate !== undefined) +
+    Number(search.hasBudgetPublicationDate !== undefined) +
+    Number(search.officialBudgetUrl !== undefined) +
+    Number(search.hasOfficialBudgetUrl !== undefined);
 
   const handleReset = () => {
     const resetSearch = createEmptyCampaignAdminEntityConfigSearch({
@@ -279,7 +314,7 @@ export function CampaignAdminEntityConfigToolbar({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {CAMPAIGN_ADMIN_PAGE_LIMIT_VALUES.map((limit) => (
+                {CAMPAIGN_ADMIN_ENTITY_CONFIG_PAGE_LIMIT_VALUES.map((limit) => (
                   <SelectItem key={limit} value={String(limit)}>
                     {limit}
                   </SelectItem>
@@ -353,7 +388,7 @@ export function CampaignAdminEntityConfigToolbar({
             size="sm"
             className="gap-2 rounded-full"
             onClick={handleReset}
-            disabled={!isDirty && !hasUpdatedRangeFilter && !search.entityCui}
+            disabled={!isDirty && !hasUpdatedRangeFilter && !hasPayloadFilters && !search.entityCui}
           >
             <RotateCcw className="h-4 w-4" aria-hidden="true" />
             {t`Reset`}
@@ -428,6 +463,102 @@ export function CampaignAdminEntityConfigToolbar({
                       spellCheck={false}
                     />
                   </ToolbarField>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <ToolbarField
+                      label={t`Budget publication date`}
+                      htmlFor="entity-config-budget-publication-date"
+                    >
+                      <Input
+                        id="entity-config-budget-publication-date"
+                        type="date"
+                        value={draft.budgetPublicationDate}
+                        onChange={(event) => {
+                          const nextValue = event.currentTarget.value;
+                          setDraft((currentDraft) => ({
+                            ...currentDraft,
+                            budgetPublicationDate: nextValue,
+                          }));
+                        }}
+                      />
+                    </ToolbarField>
+
+                    <ToolbarField
+                      label={t`Budget URL contains`}
+                      htmlFor="entity-config-budget-url"
+                    >
+                      <Input
+                        id="entity-config-budget-url"
+                        value={draft.officialBudgetUrl}
+                        onChange={(event) => {
+                          const nextValue = event.currentTarget.value;
+                          setDraft((currentDraft) => ({
+                            ...currentDraft,
+                            officialBudgetUrl: nextValue,
+                          }));
+                        }}
+                        placeholder={t`Budget URL`}
+                        autoComplete="off"
+                        spellCheck={false}
+                      />
+                    </ToolbarField>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <ToolbarField
+                      label={t`Has publication date`}
+                      htmlFor="entity-config-has-publication-date"
+                    >
+                      <Select
+                        value={draft.hasBudgetPublicationDate || ANY_FILTER_VALUE}
+                        onValueChange={(value) =>
+                          setDraft((currentDraft) => ({
+                            ...currentDraft,
+                            hasBudgetPublicationDate:
+                              value === ANY_FILTER_VALUE
+                                ? ""
+                                : (value as "true" | "false"),
+                          }))
+                        }
+                      >
+                        <SelectTrigger id="entity-config-has-publication-date">
+                          <SelectValue placeholder={t`Any`} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={ANY_FILTER_VALUE}>{t`Any`}</SelectItem>
+                          <SelectItem value="true">{t`Yes`}</SelectItem>
+                          <SelectItem value="false">{t`No`}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </ToolbarField>
+
+                    <ToolbarField
+                      label={t`Has budget URL`}
+                      htmlFor="entity-config-has-budget-url"
+                    >
+                      <Select
+                        value={draft.hasOfficialBudgetUrl || ANY_FILTER_VALUE}
+                        onValueChange={(value) =>
+                          setDraft((currentDraft) => ({
+                            ...currentDraft,
+                            hasOfficialBudgetUrl:
+                              value === ANY_FILTER_VALUE
+                                ? ""
+                                : (value as "true" | "false"),
+                          }))
+                        }
+                      >
+                        <SelectTrigger id="entity-config-has-budget-url">
+                          <SelectValue placeholder={t`Any`} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={ANY_FILTER_VALUE}>{t`Any`}</SelectItem>
+                          <SelectItem value="true">{t`Yes`}</SelectItem>
+                          <SelectItem value="false">{t`No`}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </ToolbarField>
+                  </div>
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <ToolbarField
@@ -543,7 +674,7 @@ export function CampaignAdminEntityConfigToolbar({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {CAMPAIGN_ADMIN_PAGE_LIMIT_VALUES.map((limit) => (
+                        {CAMPAIGN_ADMIN_ENTITY_CONFIG_PAGE_LIMIT_VALUES.map((limit) => (
                           <SelectItem key={limit} value={String(limit)}>
                             {limit}
                           </SelectItem>

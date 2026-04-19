@@ -487,6 +487,22 @@ export const campaignAdminEntitiesRouteSearchSchema = z.object({
     toOptionalEntityCui,
     z.string().min(1).optional(),
   ),
+  configBudgetPublicationDate: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  ),
+  configHasBudgetPublicationDate: z.preprocess(
+    toOptionalBoolean,
+    z.boolean().optional(),
+  ),
+  configOfficialBudgetUrl: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().min(1).optional(),
+  ),
+  configHasOfficialBudgetUrl: z.preprocess(
+    toOptionalBoolean,
+    z.boolean().optional(),
+  ),
   configUpdatedAtFrom: z.preprocess(
     toOptionalIsoDateTime,
     z.string().datetime().optional(),
@@ -513,7 +529,7 @@ export const campaignAdminEntitiesRouteSearchSchema = z.object({
   ),
   configLimit: z.preprocess(
     toOptionalLimit,
-    z.number().int().min(1).max(100).optional(),
+    z.number().int().min(1).max(500).optional(),
   ),
   selectedEntityCui: z.preprocess(
     toOptionalEntityCui,
@@ -576,6 +592,22 @@ export const campaignAdminEntitiesRouteSearchSchema = z.object({
 
 export const campaignAdminEntityConfigRouteSearchSchema = z.object({
   entityCui: z.preprocess(toOptionalEntityCui, z.string().min(1).optional()),
+  budgetPublicationDate: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  ),
+  hasBudgetPublicationDate: z.preprocess(
+    toOptionalBoolean,
+    z.boolean().optional(),
+  ),
+  officialBudgetUrl: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().min(1).optional(),
+  ),
+  hasOfficialBudgetUrl: z.preprocess(
+    toOptionalBoolean,
+    z.boolean().optional(),
+  ),
   updatedAtFrom: z.preprocess(
     toOptionalIsoDateTime,
     z.string().datetime().optional(),
@@ -598,7 +630,7 @@ export const campaignAdminEntityConfigRouteSearchSchema = z.object({
     z.number().int().min(1).optional(),
   ),
   limit: z
-    .preprocess(toOptionalLimit, z.number().int().min(1).max(100).optional())
+    .preprocess(toOptionalLimit, z.number().int().min(1).max(500).optional())
     .transform((value) => value ?? DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT),
   selectedEntityCui: z.preprocess(
     toOptionalEntityCui,
@@ -949,6 +981,10 @@ export function getCampaignAdminEntitiesFilters(
     pageIndex,
     limit,
     configEntityCui,
+    configBudgetPublicationDate,
+    configHasBudgetPublicationDate,
+    configOfficialBudgetUrl,
+    configHasOfficialBudgetUrl,
     configUpdatedAtFrom,
     configUpdatedAtTo,
     configSortBy,
@@ -978,6 +1014,10 @@ export function getCampaignAdminEntitiesFilters(
   void pageIndex;
   void limit;
   void configEntityCui;
+  void configBudgetPublicationDate;
+  void configHasBudgetPublicationDate;
+  void configOfficialBudgetUrl;
+  void configHasOfficialBudgetUrl;
   void configUpdatedAtFrom;
   void configUpdatedAtTo;
   void configSortBy;
@@ -1022,6 +1062,10 @@ export function getCampaignAdminEntityConfigSearchFromEntitiesSearch(
 ): CampaignAdminEntityConfigSearch {
   return normalizeCampaignAdminEntityConfigSearch({
     entityCui: search.configEntityCui,
+    budgetPublicationDate: search.configBudgetPublicationDate,
+    hasBudgetPublicationDate: search.configHasBudgetPublicationDate,
+    officialBudgetUrl: search.configOfficialBudgetUrl,
+    hasOfficialBudgetUrl: search.configHasOfficialBudgetUrl,
     updatedAtFrom: search.configUpdatedAtFrom,
     updatedAtTo: search.configUpdatedAtTo,
     sortBy: search.configSortBy,
@@ -1062,6 +1106,10 @@ export function mergeCampaignAdminEntityConfigSearchIntoEntitiesSearch(
     ...entitiesSearch,
     tab: "config",
     configEntityCui: configSearch.entityCui,
+    configBudgetPublicationDate: configSearch.budgetPublicationDate,
+    configHasBudgetPublicationDate: configSearch.hasBudgetPublicationDate,
+    configOfficialBudgetUrl: configSearch.officialBudgetUrl,
+    configHasOfficialBudgetUrl: configSearch.hasOfficialBudgetUrl,
     configUpdatedAtFrom: configSearch.updatedAtFrom,
     configUpdatedAtTo: configSearch.updatedAtTo,
     configSortBy: configSearch.sortBy,
@@ -1107,6 +1155,10 @@ export function getCampaignAdminEntityConfigExportFilters(
     pageIndex,
     limit,
     entityCui,
+    budgetPublicationDate,
+    hasBudgetPublicationDate,
+    officialBudgetUrl,
+    hasOfficialBudgetUrl,
     updatedAtFrom,
     updatedAtTo,
   } = search;
@@ -1118,6 +1170,10 @@ export function getCampaignAdminEntityConfigExportFilters(
   return omitUndefinedValues({
     query,
     entityCui,
+    budgetPublicationDate,
+    hasBudgetPublicationDate,
+    officialBudgetUrl,
+    hasOfficialBudgetUrl,
     updatedAtFrom,
     updatedAtTo,
   });

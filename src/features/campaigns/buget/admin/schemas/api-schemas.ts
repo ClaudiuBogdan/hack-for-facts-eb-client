@@ -237,7 +237,7 @@ const campaignAdminListResponseSchema = z
         items: z.array(campaignAdminInteractionListItemSchema),
         page: z
           .object({
-            limit: z.number().int().min(1).max(100),
+            limit: z.number().int().min(1).max(500),
             totalCount: campaignAdminCountSchema,
             hasMore: z.boolean(),
             nextCursor: z.string().min(1).nullable(),
@@ -531,7 +531,7 @@ const campaignAdminEntityConfigListResponseSchema = z
         items: z.array(campaignAdminEntityConfigItemSchema),
         page: z
           .object({
-            limit: z.number().int().min(1).max(100),
+            limit: z.number().int().min(1).max(500),
             totalCount: campaignAdminCountSchema,
             hasMore: z.boolean(),
             nextCursor: z.string().min(1).nullable(),

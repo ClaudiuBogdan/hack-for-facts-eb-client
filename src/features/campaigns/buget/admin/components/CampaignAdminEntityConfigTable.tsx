@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -48,9 +49,16 @@ type CampaignAdminEntityConfigTableProps = {
     sortBy: CampaignAdminEntityConfigSortKey,
     sortOrder: CampaignAdminSortOrder,
   ) => void;
+  readonly selectedEntityCuis?: ReadonlySet<string>;
+  readonly onToggleSelectAll?: (checked: boolean) => void;
+  readonly onToggleSelection?: (
+    item: CampaignAdminEntityConfigListItem,
+    checked: boolean,
+  ) => void;
   readonly onOpenItem: (item: CampaignAdminEntityConfigListItem) => void;
   readonly onClearFilters: () => void;
   readonly footer?: ReactNode;
+  readonly onCopyRows?: () => Promise<void> | void;
   readonly onOpenPasteDialog?: () => Promise<void> | void;
   readonly onExportCsv?: () => Promise<void> | void;
 };
@@ -187,16 +195,25 @@ export function CampaignAdminEntityConfigTable({
   sortBy,
   sortOrder,
   onSortChange,
+  selectedEntityCuis = new Set(),
+  onToggleSelectAll,
+  onToggleSelection,
   onOpenItem,
   onClearFilters,
   footer,
+  onCopyRows,
   onOpenPasteDialog,
   onExportCsv,
 }: CampaignAdminEntityConfigTableProps) {
   const tableMenuLabel = t`Table actions`;
+  const allVisibleSelected =
+    items.length > 0 &&
+    items.every((item) => selectedEntityCuis.has(item.entityCui));
+  const copyRowsLabel =
+    selectedEntityCuis.size > 0 ? t`Copy selected rows` : t`Copy all rows`;
 
   const trailingActions =
-    onOpenPasteDialog || onExportCsv ? (
+    onCopyRows || onOpenPasteDialog || onExportCsv ? (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -210,6 +227,11 @@ export function CampaignAdminEntityConfigTable({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          {onCopyRows ? (
+            <DropdownMenuItem onSelect={() => { void onCopyRows(); }}>
+              {copyRowsLabel}
+            </DropdownMenuItem>
+          ) : null}
           {onOpenPasteDialog ? (
             <DropdownMenuItem onSelect={() => { void onOpenPasteDialog(); }}>
               {t`Paste spreadsheet`}
@@ -238,8 +260,8 @@ export function CampaignAdminEntityConfigTable({
         <div className="space-y-4 p-6">
           <EmptyState
             icon={<SearchX className="h-6 w-6" />}
-            title={t`No configured rows matched the current filters`}
-            description={t`Configured rows only are listed here. Clear the current filters or open a specific entity to create new config.`}
+            title={t`No entity config rows matched the current filters`}
+            description={t`Subscribed entities and saved config rows are listed here. Clear the current filters or open a specific entity to create new config.`}
             className="rounded-2xl border-border/70 bg-background/30"
           />
           <div className="flex justify-center">
@@ -269,6 +291,16 @@ export function CampaignAdminEntityConfigTable({
         >
           <TableHeader>
             <TableRow className="hover:bg-transparent">
+              <TableHead className="w-12">
+                <Checkbox
+                  checked={allVisibleSelected}
+                  aria-label={t`Select all visible rows`}
+                  onCheckedChange={(checked) => {
+                    onToggleSelectAll?.(Boolean(checked));
+                  }}
+                  disabled={items.length === 0}
+                />
+              </TableHead>
               <SortableTableHead
                 sortKey="entityCui"
                 sortBy={sortBy}
@@ -277,8 +309,22 @@ export function CampaignAdminEntityConfigTable({
               >
                 {t`Entity`}
               </SortableTableHead>
-              <TableHead>{t`Budget publication date`}</TableHead>
-              <TableHead>{t`Official budget URL`}</TableHead>
+              <SortableTableHead
+                sortKey="budgetPublicationDate"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSortChange={onSortChange}
+              >
+                {t`Budget publication date`}
+              </SortableTableHead>
+              <SortableTableHead
+                sortKey="officialBudgetUrl"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSortChange={onSortChange}
+              >
+                {t`Official budget URL`}
+              </SortableTableHead>
               <SortableTableHead
                 sortKey="updatedAt"
                 sortBy={sortBy}
@@ -293,6 +339,15 @@ export function CampaignAdminEntityConfigTable({
           <TableBody>
             {items.map((item) => (
               <TableRow key={item.entityCui}>
+                <TableCell className="align-top">
+                  <Checkbox
+                    checked={selectedEntityCuis.has(item.entityCui)}
+                    aria-label={t`Select row`}
+                    onCheckedChange={(checked) => {
+                      onToggleSelection?.(item, Boolean(checked));
+                    }}
+                  />
+                </TableCell>
                 <TableCell className="space-y-1">
                   <p className="text-sm font-medium text-foreground">
                     {item.entityName?.trim() || item.entityCui}

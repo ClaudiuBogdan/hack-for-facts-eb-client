@@ -14,6 +14,16 @@ import {
 import { t } from "@lingui/core/macro";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -61,12 +71,17 @@ import {
 } from "@/features/campaigns/buget/admin/components/campaign-admin-entity-hub-tabs-styles";
 import { CompactStat } from "@/features/campaigns/buget/admin/components/CompactStat";
 import { getCampaignAdminCampaignLabel } from "@/features/campaigns/buget/admin/constants";
-import { downloadCampaignAdminEntityConfigCsv } from "@/features/campaigns/buget/admin/api/campaign-admin-entity-config";
+import {
+  downloadCampaignAdminEntityConfigCsv,
+  updateCampaignAdminEntityConfig,
+} from "@/features/campaigns/buget/admin/api/campaign-admin-entity-config";
+import { CampaignAdminEntityConfigSendValidationDialog } from "@/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSendValidationDialog";
 import {
   useCampaignAdminEntitiesMetaQuery,
   useCampaignAdminEntitiesQuery,
 } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-entities";
 import {
+  campaignAdminEntityConfigKeys,
   useCampaignAdminEntityConfigDetailQuery,
   useCampaignAdminEntityConfigListQuery,
   useUpdateCampaignAdminEntityConfigMutation,
@@ -93,9 +108,20 @@ import {
 } from "@/features/campaigns/buget/admin/types";
 import type {
   CampaignAdminCampaignKey,
+  CampaignAdminEntityConfigListItem,
   CampaignAdminEntitiesSearch,
+  CampaignAdminStagedEntityConfigDraft,
   CampaignAdminUpdateEntityConfigBody,
 } from "@/features/campaigns/buget/admin/types";
+import {
+  looksLikeCampaignAdminEntityConfigClipboardText,
+  parseCampaignAdminEntityConfigClipboardText,
+  serializeCampaignAdminEntityConfigRowsToClipboardTsv,
+} from "@/features/campaigns/buget/admin/utils/entity-config-clipboard";
+import {
+  getCampaignAdminEntityConfigSelectedSendValidationIssues,
+} from "@/features/campaigns/buget/admin/utils/entity-config-workspace";
+import { isCampaignAdminEditablePasteTarget } from "@/features/campaigns/buget/admin/utils/review-workspace";
 
 type CampaignAdminEntitiesPageProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
@@ -240,6 +266,18 @@ export function CampaignAdminEntitiesPage({
     useState(configPaginationStateSignatureFromSearch);
   const [isEntitySummaryExpanded, setIsEntitySummaryExpanded] = useState(false);
   const [isPasteDialogOpen, setIsPasteDialogOpen] = useState(false);
+  const [selectedConfigEntityCuis, setSelectedConfigEntityCuis] = useState<
+    ReadonlySet<string>
+  >(new Set());
+  const [stagedEntityConfigDraftsByEntityCui, setStagedEntityConfigDraftsByEntityCui] =
+    useState<Readonly<Record<string, CampaignAdminStagedEntityConfigDraft>>>({});
+  const [isConfigSendValidationOpen, setIsConfigSendValidationOpen] =
+    useState(false);
+  const [isConfigSendConfirmOpen, setIsConfigSendConfirmOpen] = useState(false);
+  const [isConfigClearStagedConfirmOpen, setIsConfigClearStagedConfirmOpen] =
+    useState(false);
+  const [isApplyingSelectedEntityConfigs, setIsApplyingSelectedEntityConfigs] =
+    useState(false);
   const { isLoaded, isSignedIn } = useAuth();
 
   const entitiesQuery = useCampaignAdminEntitiesQuery({
@@ -278,6 +316,31 @@ export function CampaignAdminEntitiesPage({
 
   const items = entitiesQuery.data?.items ?? [];
   const configItems = entityConfigQuery.data?.items ?? [];
+  const selectedConfigItems = useMemo(
+    () =>
+      configItems.filter((item) => selectedConfigEntityCuis.has(item.entityCui)),
+    [configItems, selectedConfigEntityCuis],
+  );
+  const bulkConfigItems =
+    selectedConfigItems.length > 0 ? selectedConfigItems : configItems;
+  const selectedStagedConfigDraftCount = useMemo(
+    () =>
+      selectedConfigItems.filter(
+        (item) => stagedEntityConfigDraftsByEntityCui[item.entityCui] !== undefined,
+      ).length,
+    [selectedConfigItems, stagedEntityConfigDraftsByEntityCui],
+  );
+  const selectedConfigSendValidationIssues = useMemo(
+    () =>
+      getCampaignAdminEntityConfigSelectedSendValidationIssues({
+        items: selectedConfigItems,
+        stagedDraftsByEntityCui: stagedEntityConfigDraftsByEntityCui,
+      }),
+    [selectedConfigItems, stagedEntityConfigDraftsByEntityCui],
+  );
+  const canApplySelectedEntityConfigs =
+    selectedConfigItems.length > 0 &&
+    selectedConfigSendValidationIssues.length === 0;
   const currentPageIndex = normalizedSearch.pageIndex ?? 1;
   const currentConfigPageIndex = configSearch.pageIndex ?? 1;
   const canPreviousPage =
@@ -712,6 +775,213 @@ export function CampaignAdminEntitiesPage({
     }
   }, [campaignKey, configSearch]);
 
+  const handleToggleSelectAllConfigRows = useCallback(
+    (checked: boolean) => {
+      setSelectedConfigEntityCuis((currentSelection) => {
+        const nextSelection = new Set(currentSelection);
+
+        if (checked) {
+          configItems.forEach((item) => {
+            nextSelection.add(item.entityCui);
+          });
+        } else {
+          configItems.forEach((item) => {
+            nextSelection.delete(item.entityCui);
+          });
+        }
+
+        return nextSelection;
+      });
+    },
+    [configItems],
+  );
+
+  const handleToggleConfigSelection = useCallback(
+    (item: CampaignAdminEntityConfigListItem, checked: boolean) => {
+      setSelectedConfigEntityCuis((currentSelection) => {
+        const nextSelection = new Set(currentSelection);
+
+        if (checked) {
+          nextSelection.add(item.entityCui);
+        } else {
+          nextSelection.delete(item.entityCui);
+        }
+
+        return nextSelection;
+      });
+    },
+    [],
+  );
+
+  const clearConfigSelection = useCallback(() => {
+    setSelectedConfigEntityCuis(new Set());
+  }, []);
+
+  const handleCopyEntityConfigRows = useCallback(async () => {
+    if (bulkConfigItems.length === 0) {
+      toast.error(t`No entity config rows are available to copy.`);
+      return;
+    }
+
+    if (
+      typeof navigator === "undefined" ||
+      navigator.clipboard?.writeText === undefined
+    ) {
+      toast.error(t`Clipboard copy is not available in this browser.`);
+      return;
+    }
+
+    try {
+      const serializedRows = serializeCampaignAdminEntityConfigRowsToClipboardTsv(
+        bulkConfigItems,
+        stagedEntityConfigDraftsByEntityCui,
+      );
+      await navigator.clipboard.writeText(serializedRows);
+      toast.success(
+        bulkConfigItems.length === 1
+          ? t`Copied 1 entity config row to the clipboard.`
+          : t`Copied ${bulkConfigItems.length} entity config rows to the clipboard.`,
+      );
+    } catch {
+      toast.error(t`Failed to copy the entity config rows.`);
+    }
+  }, [bulkConfigItems, stagedEntityConfigDraftsByEntityCui]);
+
+  const handleImportEntityConfigText = useCallback(
+    (rawText: string) => {
+      const result = parseCampaignAdminEntityConfigClipboardText({
+        rawText,
+        items: bulkConfigItems,
+      });
+
+      if (result.drafts.length > 0) {
+        setStagedEntityConfigDraftsByEntityCui((currentDrafts) => ({
+          ...currentDrafts,
+          ...Object.fromEntries(
+            result.drafts.map((draft) => [draft.entityCui, draft] as const),
+          ),
+        }));
+        toast.success(
+          result.drafts.length === 1
+            ? t`Imported staged entity config values for 1 row.`
+            : t`Imported staged entity config values for ${result.drafts.length} rows.`,
+        );
+      } else if (result.issues.length > 0) {
+        toast.error(t`No staged entity config values were imported.`);
+      }
+
+      return result;
+    },
+    [bulkConfigItems],
+  );
+
+  const handleApplySelectedEntityConfigs = useCallback(async () => {
+    if (!canApplySelectedEntityConfigs) {
+      return;
+    }
+
+    const latestValidationIssues =
+      getCampaignAdminEntityConfigSelectedSendValidationIssues({
+        items: selectedConfigItems,
+        stagedDraftsByEntityCui: stagedEntityConfigDraftsByEntityCui,
+      });
+
+    if (latestValidationIssues.length > 0) {
+      setIsConfigSendConfirmOpen(false);
+      setIsConfigSendValidationOpen(true);
+      toast.error(
+        t`Selected config rows changed before bulk apply. Review the staged data and try again.`,
+      );
+      return;
+    }
+
+    const appliedEntityCuis = new Set<string>();
+    let appliedCount = 0;
+
+    setIsApplyingSelectedEntityConfigs(true);
+
+    try {
+      for (const item of selectedConfigItems) {
+        const stagedDraft = stagedEntityConfigDraftsByEntityCui[item.entityCui];
+        if (stagedDraft === undefined) {
+          continue;
+        }
+
+        await updateCampaignAdminEntityConfig({
+          campaignKey,
+          entityCui: item.entityCui,
+          body: {
+            expectedUpdatedAt: stagedDraft.expectedUpdatedAt,
+            values: stagedDraft.values,
+          },
+        });
+
+        appliedEntityCuis.add(item.entityCui);
+        appliedCount += 1;
+      }
+
+      setStagedEntityConfigDraftsByEntityCui((currentDrafts) => {
+        const nextDrafts = { ...currentDrafts };
+        appliedEntityCuis.forEach((entityCui) => {
+          delete nextDrafts[entityCui];
+        });
+        return nextDrafts;
+      });
+      setSelectedConfigEntityCuis(new Set());
+      setIsConfigSendConfirmOpen(false);
+      setIsConfigSendValidationOpen(false);
+      await queryClient.invalidateQueries({
+        queryKey: campaignAdminEntityConfigKeys.allForCampaign(campaignKey),
+      });
+      toast.success(
+        appliedCount === 1
+          ? t`Applied 1 entity config update.`
+          : t`Applied ${appliedCount} entity config updates.`,
+      );
+    } catch (error) {
+      setIsConfigSendConfirmOpen(false);
+
+      if (appliedEntityCuis.size > 0) {
+        setStagedEntityConfigDraftsByEntityCui((currentDrafts) => {
+          const nextDrafts = { ...currentDrafts };
+          appliedEntityCuis.forEach((entityCui) => {
+            delete nextDrafts[entityCui];
+          });
+          return nextDrafts;
+        });
+        setSelectedConfigEntityCuis((currentSelection) => {
+          const nextSelection = new Set(currentSelection);
+          appliedEntityCuis.forEach((entityCui) => {
+            nextSelection.delete(entityCui);
+          });
+          return nextSelection;
+        });
+        await queryClient.invalidateQueries({
+          queryKey: campaignAdminEntityConfigKeys.allForCampaign(campaignKey),
+        });
+        toast.error(
+          appliedCount === 1
+            ? t`Applied 1 entity config update before the remaining batch failed.`
+            : t`Applied ${appliedCount} entity config updates before the remaining batch failed.`,
+        );
+      } else {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : t`Unable to apply the selected entity config rows.`,
+        );
+      }
+    } finally {
+      setIsApplyingSelectedEntityConfigs(false);
+    }
+  }, [
+    campaignKey,
+    canApplySelectedEntityConfigs,
+    queryClient,
+    selectedConfigItems,
+    stagedEntityConfigDraftsByEntityCui,
+  ]);
+
   const handleSubmitEntityConfig = useCallback(
     async (body: CampaignAdminUpdateEntityConfigBody) => {
       if (selectedEntityCui === null) {
@@ -719,10 +989,43 @@ export function CampaignAdminEntitiesPage({
       }
 
       await updateEntityConfigMutation.mutateAsync(body);
+      setStagedEntityConfigDraftsByEntityCui((currentDrafts) => {
+        if (currentDrafts[selectedEntityCui] === undefined) {
+          return currentDrafts;
+        }
+
+        const nextDrafts = { ...currentDrafts };
+        delete nextDrafts[selectedEntityCui];
+        return nextDrafts;
+      });
       toast.success(t`Entity config saved.`);
     },
     [selectedEntityCui, updateEntityConfigMutation],
   );
+
+  const handleApplySelectedEntityConfigButtonClick = useCallback(() => {
+    if (canApplySelectedEntityConfigs) {
+      setIsConfigSendConfirmOpen(true);
+      return;
+    }
+
+    setIsConfigSendValidationOpen(true);
+  }, [canApplySelectedEntityConfigs]);
+
+  const handleClearSelectedStagedEntityConfigDrafts = useCallback(() => {
+    if (selectedConfigItems.length === 0) {
+      return;
+    }
+
+    setStagedEntityConfigDraftsByEntityCui((currentDrafts) => {
+      const nextDrafts = { ...currentDrafts };
+      selectedConfigItems.forEach((item) => {
+        delete nextDrafts[item.entityCui];
+      });
+      return nextDrafts;
+    });
+    setIsConfigClearStagedConfirmOpen(false);
+  }, [selectedConfigItems]);
 
   useEffect(() => {
     const shouldRecoverStaleCursor =
@@ -786,6 +1089,101 @@ export function CampaignAdminEntitiesPage({
     normalizedSearch,
     onSearchChange,
   ]);
+
+  useEffect(() => {
+    if (activeTab !== "config" || bulkConfigItems.length === 0) {
+      return;
+    }
+
+    const handleWindowPaste = (event: ClipboardEvent) => {
+      if (isCampaignAdminEditablePasteTarget(event.target)) {
+        return;
+      }
+
+      const clipboardText = event.clipboardData?.getData("text/plain") ?? "";
+      if (!looksLikeCampaignAdminEntityConfigClipboardText(clipboardText)) {
+        return;
+      }
+
+      event.preventDefault();
+      handleImportEntityConfigText(clipboardText);
+    };
+
+    window.addEventListener("paste", handleWindowPaste);
+
+    return () => {
+      window.removeEventListener("paste", handleWindowPaste);
+    };
+  }, [activeTab, bulkConfigItems, handleImportEntityConfigText]);
+
+  const bulkEntityConfigFooter =
+    selectedConfigItems.length > 0 ? (
+      <div
+        className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
+        aria-live="polite"
+      >
+        <div className="min-w-0 space-y-1">
+          <p className="text-sm font-semibold text-foreground">
+            {t`Bulk entity config`}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {selectedConfigItems.length === 1
+              ? t`1 row selected`
+              : t`${selectedConfigItems.length} rows selected`}
+          </p>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+            {selectedStagedConfigDraftCount > 0 ? (
+              <span>
+                {selectedStagedConfigDraftCount === 1
+                  ? t`1 row staged`
+                  : t`${selectedStagedConfigDraftCount} rows staged`}
+              </span>
+            ) : null}
+            {!canApplySelectedEntityConfigs ? (
+              <span>
+                {selectedConfigSendValidationIssues.length === 1
+                  ? t`1 row still needs config data`
+                  : t`${selectedConfigSendValidationIssues.length} rows still need config data`}
+              </span>
+            ) : (
+              <span>{t`Ready to apply selected config rows.`}</span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 lg:justify-end">
+          {selectedStagedConfigDraftCount > 0 ? (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setIsConfigClearStagedConfirmOpen(true)}
+              className="rounded-full"
+            >
+              {t`Clear staged`}
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={clearConfigSelection}
+            className="rounded-full"
+          >
+            {t`Clear selection`}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleApplySelectedEntityConfigButtonClick}
+            className="rounded-full"
+            disabled={isApplyingSelectedEntityConfigs}
+          >
+            {t`Apply selected`}
+          </Button>
+        </div>
+      </div>
+    ) : null;
 
   if (!isLoaded) {
     return (
@@ -1215,7 +1613,7 @@ export function CampaignAdminEntitiesPage({
               {t`Campaign entity config`}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {t`The table shows configured rows only. CSV export includes all entities, including unconfigured ones, and spreadsheet paste updates only the pasted rows.`}
+              {t`The table includes subscribed entities and any saved config rows. Unconfigured rows can be filled here, CSV export uses the same scope, and spreadsheet paste updates only the pasted rows.`}
             </p>
           </section>
 
@@ -1272,6 +1670,7 @@ export function CampaignAdminEntitiesPage({
             <div className="space-y-4">
               <CampaignAdminEntityConfigTable
                 items={configItems}
+                selectedEntityCuis={selectedConfigEntityCuis}
                 header={
                   ({ actions, trailingActions: _trailingActions }) => (
                     <CampaignAdminEntityConfigToolbar
@@ -1316,6 +1715,7 @@ export function CampaignAdminEntitiesPage({
                 }
                 sortBy={configSearch.sortBy}
                 sortOrder={configSearch.sortOrder}
+                onCopyRows={handleCopyEntityConfigRows}
                 onSortChange={(sortBy, sortOrder) => {
                   handleConfigSearchChange(
                     {
@@ -1342,6 +1742,8 @@ export function CampaignAdminEntitiesPage({
                     }),
                   );
                 }}
+                onToggleSelectAll={handleToggleSelectAllConfigRows}
+                onToggleSelection={handleToggleConfigSelection}
                 footer={
                   configItems.length > 0 ? (
                     <CampaignAdminCursorPager
@@ -1359,6 +1761,11 @@ export function CampaignAdminEntitiesPage({
                   ) : null
                 }
               />
+              {bulkEntityConfigFooter ? (
+                <div className="rounded-3xl border border-border/70 bg-card/80 px-4 py-4 shadow-none">
+                  {bulkEntityConfigFooter}
+                </div>
+              ) : null}
             </div>
           )}
         </TabsContent>
@@ -1409,6 +1816,80 @@ export function CampaignAdminEntitiesPage({
         onOpenChange={setIsPasteDialogOpen}
         onApplied={handleRefresh}
       />
+
+      <CampaignAdminEntityConfigSendValidationDialog
+        open={isConfigSendValidationOpen}
+        issues={selectedConfigSendValidationIssues}
+        selectedCount={selectedConfigItems.length}
+        onOpenChange={setIsConfigSendValidationOpen}
+        onSelectIssue={(entityCui) => {
+          setIsConfigSendValidationOpen(false);
+          handleConfigSheetStateChange(
+            {
+              ...configSearch,
+              selectedEntityCui: entityCui,
+            },
+            { replace: true },
+          );
+        }}
+      />
+
+      <AlertDialog
+        open={isConfigSendConfirmOpen}
+        onOpenChange={setIsConfigSendConfirmOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {selectedConfigItems.length === 1
+                ? t`Apply 1 config update?`
+                : t`Apply ${selectedConfigItems.length} config updates?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedConfigItems.length === 1
+                ? t`This will apply the staged entity config values for the selected row.`
+                : t`This will apply the staged entity config values for the selected rows.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isApplyingSelectedEntityConfigs}>
+              {t`Cancel`}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                void handleApplySelectedEntityConfigs();
+              }}
+              disabled={isApplyingSelectedEntityConfigs}
+            >
+              {isApplyingSelectedEntityConfigs ? t`Applying…` : t`Apply selected`}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={isConfigClearStagedConfirmOpen}
+        onOpenChange={setIsConfigClearStagedConfirmOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {selectedStagedConfigDraftCount === 1
+                ? t`Clear staged data for 1 row?`
+                : t`Clear staged data for ${selectedStagedConfigDraftCount} rows?`}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t`This removes the staged config values for the currently selected rows.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t`Cancel`}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleClearSelectedStagedEntityConfigDrafts}>
+              {t`Clear staged`}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminCampaignLayout>
   );
 }

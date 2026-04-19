@@ -290,23 +290,31 @@ describe("campaign admin search schema", () => {
     expect(
       normalizeCampaignAdminEntityConfigSearch({
         entityCui: ' "12345678" ',
+        budgetPublicationDate: "2026-03-20",
+        hasBudgetPublicationDate: "false",
+        officialBudgetUrl: "  buget.pdf  ",
+        hasOfficialBudgetUrl: "true",
         updatedAtFrom: "2026-04-10T00:00:00.000Z",
         updatedAtTo: "2026-04-12T23:59:59.999Z",
         sortBy: "entityCui",
         cursor: "cursor-1",
         pageIndex: "2",
-        limit: "25",
+        limit: "500",
         selectedEntityCui: " 12345678 ",
       }),
     ).toEqual({
       entityCui: "12345678",
+      budgetPublicationDate: "2026-03-20",
+      hasBudgetPublicationDate: false,
+      officialBudgetUrl: "buget.pdf",
+      hasOfficialBudgetUrl: true,
       updatedAtFrom: "2026-04-10T00:00:00.000Z",
       updatedAtTo: "2026-04-12T23:59:59.999Z",
       sortBy: "entityCui",
       sortOrder: "asc",
       cursor: "cursor-1",
       pageIndex: 2,
-      limit: 25,
+      limit: 500,
       selectedEntityCui: "12345678",
     });
   });

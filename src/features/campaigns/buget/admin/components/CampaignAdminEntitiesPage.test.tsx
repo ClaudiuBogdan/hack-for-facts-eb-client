@@ -21,6 +21,7 @@ const useCampaignAdminEntityConfigDetailQueryMock = vi.fn();
 const useUpdateCampaignAdminEntityConfigMutationMock = vi.fn();
 const downloadCampaignAdminEntitiesCsvMock = vi.fn();
 const downloadCampaignAdminEntityConfigCsvMock = vi.fn();
+const updateCampaignAdminEntityConfigApiMock = vi.fn();
 const toastSuccessMock = vi.fn();
 const toastErrorMock = vi.fn();
 const institutionThreadsSectionMock = vi.fn(
@@ -136,6 +137,8 @@ vi.mock("@/features/campaigns/buget/admin/api/campaign-admin-entities", () => ({
 vi.mock("@/features/campaigns/buget/admin/api/campaign-admin-entity-config", () => ({
   downloadCampaignAdminEntityConfigCsv: (...args: unknown[]) =>
     downloadCampaignAdminEntityConfigCsvMock(...args),
+  updateCampaignAdminEntityConfig: (...args: unknown[]) =>
+    updateCampaignAdminEntityConfigApiMock(...args),
 }));
 
 vi.mock(
@@ -248,6 +251,7 @@ describe("CampaignAdminEntitiesPage", () => {
     useUpdateCampaignAdminEntityConfigMutationMock.mockReset();
     downloadCampaignAdminEntitiesCsvMock.mockReset();
     downloadCampaignAdminEntityConfigCsvMock.mockReset();
+    updateCampaignAdminEntityConfigApiMock.mockReset();
     toastSuccessMock.mockReset();
     toastErrorMock.mockReset();
     institutionThreadsSectionMock.mockClear();
@@ -598,6 +602,37 @@ describe("CampaignAdminEntitiesPage", () => {
   });
 
   it("renders the config tab and exports config CSV with supported filters only", async () => {
+    useCampaignAdminEntityConfigListQueryMock.mockReturnValue({
+      data: {
+        items: [
+          createEntityConfigDetail(),
+          createEntityConfigDetail({
+            entityCui: "87654321",
+            entityName: "Comuna Test",
+            configured: false,
+            isConfigured: false,
+            values: {
+              budgetPublicationDate: null,
+              officialBudgetUrl: null,
+            },
+            updatedAt: null,
+            updatedByUserId: null,
+          }),
+        ],
+        page: {
+          limit: 25,
+          totalCount: 2,
+          hasMore: false,
+          nextCursor: null,
+          sortBy: "updatedAt",
+          sortOrder: "desc",
+        },
+      },
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
     downloadCampaignAdminEntityConfigCsvMock.mockResolvedValue({
       blob: new Blob(["csv"]),
       filename: "entity-config.csv",
@@ -637,8 +672,15 @@ describe("CampaignAdminEntitiesPage", () => {
         "active",
       );
       expect(screen.getByText("Campaign entity config")).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "The table includes subscribed entities and any saved config rows. Unconfigured rows can be filled here, CSV export uses the same scope, and spreadsheet paste updates only the pasted rows.",
+        ),
+      ).toBeInTheDocument();
       expect(screen.getByText("Oras Test")).toBeInTheDocument();
+      expect(screen.getByText("Comuna Test")).toBeInTheDocument();
       expect(screen.getByText("Budget publication date")).toBeInTheDocument();
+      expect(screen.getByText("Not configured")).toBeInTheDocument();
 
       fireEvent.pointerDown(
         screen.getByRole("button", { name: "Table actions" }),
@@ -700,6 +742,32 @@ describe("CampaignAdminEntitiesPage", () => {
     );
   });
 
+  it("shows config validation issues before bulk apply when selected rows have no staged spreadsheet data", async () => {
+    render(
+      <CampaignAdminEntitiesPage
+        campaignKey="funky"
+        search={{
+          tab: "config",
+          limit: 50,
+        }}
+        onSearchChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: "Config" }));
+    fireEvent.click(screen.getAllByRole("checkbox", { name: "Select row" })[0]!);
+    fireEvent.click(screen.getByRole("button", { name: "Apply selected" }));
+
+    expect(
+      await screen.findByText("Selected config rows need fixes"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Missing staged config values. Paste spreadsheet rows with matching entity CUIs first.",
+      ),
+    ).toBeInTheDocument();
+  });
+
   it.each([
     {
       status: 401,
@@ -743,7 +811,7 @@ describe("CampaignAdminEntitiesPage", () => {
 
       expect(screen.getByText(title)).toBeInTheDocument();
       expect(
-        screen.queryByText("No configured rows matched the current filters"),
+        screen.queryByText("No entity config rows matched the current filters"),
       ).not.toBeInTheDocument();
     },
   );

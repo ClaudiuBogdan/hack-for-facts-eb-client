@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   parseCampaignAdminEntityConfigClipboard,
+  parseCampaignAdminEntityConfigClipboardText,
   serializeCampaignAdminEntityConfigRowsToClipboardTsv,
 } from "./entity-config-clipboard";
 import type { CampaignAdminEntityConfigListItem } from "@/features/campaigns/buget/admin/types";
@@ -62,6 +63,7 @@ describe("entity-config-clipboard", () => {
     expect(parsed.issues).toEqual([]);
     expect(parsed.rows).toEqual([
       {
+        rowNumber: 2,
         entityCui: "12345678",
         entityName: null,
         values: {
@@ -84,6 +86,7 @@ describe("entity-config-clipboard", () => {
 
     expect(parsed.rows).toEqual([
       {
+        rowNumber: 5,
         entityCui: "12345678",
         entityName: null,
         values: {
@@ -99,6 +102,28 @@ describe("entity-config-clipboard", () => {
       {
         rowNumber: 4,
         message: "Invalid official budget URL. Use an absolute http(s) URL.",
+      },
+    ]);
+  });
+
+  it("parses staged bulk drafts against visible config rows", () => {
+    const parsed = parseCampaignAdminEntityConfigClipboardText({
+      rawText:
+        "Entity CUI\tBudget Publication Date\tOfficial Budget URL\tUpdated At\n"
+        + "12345678\t2026-04-20\thttps://oras.test/final.pdf\t2026-04-18T09:00:00.000Z\n",
+      items: [createItem()],
+    });
+
+    expect(parsed.issues).toEqual([]);
+    expect(parsed.drafts).toEqual([
+      {
+        entityCui: "12345678",
+        entityName: "Oras Test",
+        values: {
+          budgetPublicationDate: "2026-04-20",
+          officialBudgetUrl: "https://oras.test/final.pdf",
+        },
+        expectedUpdatedAt: "2026-04-18T09:00:00.000Z",
       },
     ]);
   });

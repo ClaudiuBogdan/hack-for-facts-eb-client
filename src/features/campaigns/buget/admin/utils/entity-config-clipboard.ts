@@ -1,6 +1,8 @@
 import Papa from "papaparse";
+import { t } from "@lingui/core/macro";
 import type {
   CampaignAdminEntityConfigListItem,
+  CampaignAdminStagedEntityConfigDraft,
   CampaignAdminEntityConfigValues,
 } from "@/features/campaigns/buget/admin/types";
 
@@ -18,6 +20,7 @@ export type CampaignAdminEntityConfigClipboardIssue = {
 };
 
 export type CampaignAdminEntityConfigClipboardRow = {
+  readonly rowNumber?: number;
   readonly entityCui: string;
   readonly entityName: string | null;
   readonly values: CampaignAdminEntityConfigValues;
@@ -26,6 +29,13 @@ export type CampaignAdminEntityConfigClipboardRow = {
 
 export type CampaignAdminEntityConfigClipboardParseResult = {
   readonly rows: readonly CampaignAdminEntityConfigClipboardRow[];
+  readonly importedCount: number;
+  readonly skippedCount: number;
+  readonly issues: readonly CampaignAdminEntityConfigClipboardIssue[];
+};
+
+export type CampaignAdminEntityConfigBulkClipboardParseResult = {
+  readonly drafts: readonly CampaignAdminStagedEntityConfigDraft[];
   readonly importedCount: number;
   readonly skippedCount: number;
   readonly issues: readonly CampaignAdminEntityConfigClipboardIssue[];
@@ -105,17 +115,26 @@ function isValidHttpUrl(value: string): boolean {
 
 export function serializeCampaignAdminEntityConfigRowsToClipboardTsv(
   items: readonly CampaignAdminEntityConfigListItem[],
+  stagedDraftsByEntityCui?: Readonly<
+    Record<string, CampaignAdminStagedEntityConfigDraft>
+  >,
 ): string {
   const lines = [CAMPAIGN_ADMIN_ENTITY_CONFIG_CLIPBOARD_HEADERS.join("\t")];
 
   for (const item of items) {
+    const stagedDraft = stagedDraftsByEntityCui?.[item.entityCui];
+
     lines.push(
       [
         escapeTabularCell(item.entityCui),
         escapeTabularCell(item.entityName),
-        escapeTabularCell(item.values.budgetPublicationDate),
-        escapeTabularCell(item.values.officialBudgetUrl),
-        escapeTabularCell(item.updatedAt),
+        escapeTabularCell(
+          stagedDraft?.values.budgetPublicationDate ?? item.values.budgetPublicationDate,
+        ),
+        escapeTabularCell(
+          stagedDraft?.values.officialBudgetUrl ?? item.values.officialBudgetUrl,
+        ),
+        escapeTabularCell(stagedDraft?.expectedUpdatedAt ?? item.updatedAt),
       ].join("\t"),
     );
   }
@@ -241,6 +260,7 @@ export function parseCampaignAdminEntityConfigClipboard(
 
     seenEntityCuis.add(entityCui);
     importedRows.push({
+      rowNumber,
       entityCui,
       entityName: entityName || null,
       values: {
@@ -259,3 +279,63 @@ export function parseCampaignAdminEntityConfigClipboard(
   };
 }
 
+export function looksLikeCampaignAdminEntityConfigClipboardText(
+  rawText: string,
+): boolean {
+  const parsed = Papa.parse<string[]>(rawText, {
+    preview: 1,
+    skipEmptyLines: "greedy",
+    delimitersToGuess: ["\t", ",", ";"],
+  });
+  const headerRow = parsed.data.find((cells) => Array.isArray(cells));
+  if (!Array.isArray(headerRow) || headerRow.length === 0) {
+    return false;
+  }
+
+  const headers = headerRow.map((cell) => normalizeHeaderCell(cell));
+  const hasEntityCuiColumn = findHeaderIndex(headers, HEADER_ALIASES.entityCui) >= 0;
+  const hasConfigValueColumn =
+    findHeaderIndex(headers, HEADER_ALIASES.budgetPublicationDate) >= 0 ||
+    findHeaderIndex(headers, HEADER_ALIASES.officialBudgetUrl) >= 0;
+
+  return hasEntityCuiColumn && hasConfigValueColumn;
+}
+
+export function parseCampaignAdminEntityConfigClipboardText(input: {
+  readonly rawText: string;
+  readonly items: readonly CampaignAdminEntityConfigListItem[];
+}): CampaignAdminEntityConfigBulkClipboardParseResult {
+  const parsed = parseCampaignAdminEntityConfigClipboard(input.rawText);
+  const itemsByEntityCui = new Map(
+    input.items.map((item) => [item.entityCui, item] as const),
+  );
+  const issues = [...parsed.issues];
+  const drafts: CampaignAdminStagedEntityConfigDraft[] = [];
+  let skippedCount = parsed.skippedCount;
+
+  for (const row of parsed.rows) {
+    const item = itemsByEntityCui.get(row.entityCui);
+    if (item === undefined) {
+      issues.push({
+        rowNumber: row.rowNumber ?? 1,
+        message: t`Unknown selected entity CUI: ${row.entityCui}`,
+      });
+      skippedCount += 1;
+      continue;
+    }
+
+    drafts.push({
+      entityCui: row.entityCui,
+      entityName: item.entityName ?? row.entityName ?? null,
+      values: row.values,
+      expectedUpdatedAt: row.expectedUpdatedAt ?? item.updatedAt ?? null,
+    });
+  }
+
+  return {
+    drafts,
+    importedCount: drafts.length,
+    skippedCount,
+    issues,
+  };
+}

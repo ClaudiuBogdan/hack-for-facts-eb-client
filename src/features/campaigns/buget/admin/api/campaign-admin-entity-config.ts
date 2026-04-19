@@ -232,7 +232,7 @@ async function authorizedRequest(
 function appendOptionalSearchParam(
   searchParams: URLSearchParams,
   key: string,
-  value: string | number | undefined,
+  value: string | number | boolean | undefined,
 ) {
   if (value === undefined) {
     return;
@@ -249,6 +249,26 @@ function buildCampaignAdminEntityConfigQueryString(
   const searchParams = new URLSearchParams();
 
   appendOptionalSearchParam(searchParams, "entityCui", filters.entityCui);
+  appendOptionalSearchParam(
+    searchParams,
+    "budgetPublicationDate",
+    filters.budgetPublicationDate,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "hasBudgetPublicationDate",
+    filters.hasBudgetPublicationDate,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "officialBudgetUrl",
+    filters.officialBudgetUrl,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "hasOfficialBudgetUrl",
+    filters.hasOfficialBudgetUrl,
+  );
   appendOptionalSearchParam(
     searchParams,
     "updatedAtFrom",
@@ -271,6 +291,26 @@ function buildCampaignAdminEntityConfigExportQueryString(input: {
 
   appendOptionalSearchParam(searchParams, "query", input.filters.query);
   appendOptionalSearchParam(searchParams, "entityCui", input.filters.entityCui);
+  appendOptionalSearchParam(
+    searchParams,
+    "budgetPublicationDate",
+    input.filters.budgetPublicationDate,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "hasBudgetPublicationDate",
+    input.filters.hasBudgetPublicationDate,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "officialBudgetUrl",
+    input.filters.officialBudgetUrl,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "hasOfficialBudgetUrl",
+    input.filters.hasOfficialBudgetUrl,
+  );
   appendOptionalSearchParam(
     searchParams,
     "updatedAtFrom",

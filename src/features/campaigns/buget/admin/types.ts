@@ -127,6 +127,8 @@ export const campaignAdminEntitiesSortKeyValues = [
 export const campaignAdminEntityConfigSortKeyValues = [
   "updatedAt",
   "entityCui",
+  "budgetPublicationDate",
+  "officialBudgetUrl",
 ] as const;
 
 export const campaignAdminEntityNotificationTypeValues = [
@@ -1126,6 +1128,13 @@ export type CampaignAdminStagedReviewDraft = {
   readonly sendNotification?: boolean;
 };
 
+export type CampaignAdminStagedEntityConfigDraft = {
+  readonly entityCui: string;
+  readonly entityName: string | null;
+  readonly values: CampaignAdminEntityConfigValues;
+  readonly expectedUpdatedAt: string | null;
+};
+
 export type CampaignAdminQueueSearch = {
   readonly phase?: CampaignAdminPhase;
   readonly reviewStatus?: CampaignAdminReviewStatus;
@@ -1197,6 +1206,10 @@ export type CampaignAdminEntitiesSearch = {
   readonly pageIndex?: number;
   readonly limit: number;
   readonly configEntityCui?: string;
+  readonly configBudgetPublicationDate?: string;
+  readonly configHasBudgetPublicationDate?: boolean;
+  readonly configOfficialBudgetUrl?: string;
+  readonly configHasOfficialBudgetUrl?: boolean;
   readonly configUpdatedAtFrom?: string;
   readonly configUpdatedAtTo?: string;
   readonly configSortBy?: CampaignAdminEntityConfigSortKey;
@@ -1228,6 +1241,10 @@ export type CampaignAdminEntitiesFilters = Omit<
   | "pageIndex"
   | "limit"
   | "configEntityCui"
+  | "configBudgetPublicationDate"
+  | "configHasBudgetPublicationDate"
+  | "configOfficialBudgetUrl"
+  | "configHasOfficialBudgetUrl"
   | "configUpdatedAtFrom"
   | "configUpdatedAtTo"
   | "configSortBy"
@@ -1254,6 +1271,10 @@ export type CampaignAdminEntitiesFilters = Omit<
 
 export type CampaignAdminEntityConfigSearch = {
   readonly entityCui?: string;
+  readonly budgetPublicationDate?: string;
+  readonly hasBudgetPublicationDate?: boolean;
+  readonly officialBudgetUrl?: string;
+  readonly hasOfficialBudgetUrl?: boolean;
   readonly updatedAtFrom?: string;
   readonly updatedAtTo?: string;
   readonly sortBy?: CampaignAdminEntityConfigSortKey;
@@ -1273,6 +1294,10 @@ export type CampaignAdminEntityConfigFilters = Omit<
 export type CampaignAdminEntityConfigExportFilters = {
   readonly query?: string;
   readonly entityCui?: string;
+  readonly budgetPublicationDate?: string;
+  readonly hasBudgetPublicationDate?: boolean;
+  readonly officialBudgetUrl?: string;
+  readonly hasOfficialBudgetUrl?: boolean;
   readonly updatedAtFrom?: string;
   readonly updatedAtTo?: string;
 };
