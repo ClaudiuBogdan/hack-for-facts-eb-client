@@ -1,6 +1,7 @@
 import { t } from "@lingui/core/macro";
 import type {
   CampaignAdminCampaignKey,
+  CampaignAdminEntityConfigSortKey,
   CampaignAdminInstitutionThreadNotificationExecutionReason,
   CampaignAdminInstitutionThreadNotificationExecutionStatus,
   CampaignAdminInstitutionThreadResponseStatus,
@@ -192,6 +193,23 @@ export const CAMPAIGN_ADMIN_ENTITIES_SORTABLE_COLUMNS: Record<
   },
 };
 
+export const CAMPAIGN_ADMIN_ENTITY_CONFIG_SORTABLE_COLUMNS: Record<
+  CampaignAdminEntityConfigSortKey,
+  {
+    readonly dataType: "string" | "date";
+    readonly defaultOrder: CampaignAdminSortOrder;
+  }
+> = {
+  updatedAt: {
+    dataType: "date",
+    defaultOrder: "desc",
+  },
+  entityCui: {
+    dataType: "string",
+    defaultOrder: "asc",
+  },
+};
+
 export const CAMPAIGN_ADMIN_NOTIFICATION_SORTABLE_COLUMNS: Record<
   CampaignAdminNotificationSortKey,
   {
@@ -285,6 +303,19 @@ export function getCampaignAdminEntitiesSortLabel(
       return t`Latest interaction`;
     case "latestNotificationAt":
       return t`Latest notification`;
+    default:
+      return sortKey;
+  }
+}
+
+export function getCampaignAdminEntityConfigSortLabel(
+  sortKey: CampaignAdminEntityConfigSortKey,
+): string {
+  switch (sortKey) {
+    case "updatedAt":
+      return t`Updated`;
+    case "entityCui":
+      return t`Entity CUI`;
     default:
       return sortKey;
   }

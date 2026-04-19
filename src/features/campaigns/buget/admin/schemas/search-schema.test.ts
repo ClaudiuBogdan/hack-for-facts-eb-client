@@ -2,15 +2,20 @@ import { describe, expect, it } from "vitest";
 import {
   createEmptyCampaignAdminNotificationsSearch,
   createEmptyCampaignAdminEntitiesSearch,
+  createEmptyCampaignAdminEntityConfigSearch,
   createEmptyCampaignAdminInstitutionThreadsSearch,
+  createCampaignAdminEntityConfigPaginationSignature,
   createCampaignAdminInstitutionThreadsPaginationSignature,
   buildCampaignAdminQueueSearchFromDraft,
   buildCampaignAdminInstitutionThreadsSearchFromDraft,
   createEmptyCampaignAdminQueueSearch,
+  getCampaignAdminEntityConfigExportFilters,
+  getCampaignAdminEntityConfigFilters,
   getCampaignAdminInstitutionThreadsFilters,
   getCampaignAdminInstitutionThreadsSearchConflictCode,
   hasActiveCampaignAdminUsersFilters,
   isCampaignAdminFilterDraftEqual,
+  normalizeCampaignAdminEntityConfigSearch,
   normalizeCampaignAdminEntitiesSearch,
   normalizeCampaignAdminInstitutionThreadsSearch,
   normalizeCampaignAdminNotificationsSearch,
@@ -203,9 +208,13 @@ describe("campaign admin search schema", () => {
 
   it("normalizes entities route search defaults", () => {
     expect(normalizeCampaignAdminEntitiesSearch({})).toEqual({
+      tab: "overview",
       limit: 50,
       sortBy: "latestInteractionAt",
       sortOrder: "desc",
+      configSortBy: "updatedAt",
+      configSortOrder: "desc",
+      configLimit: 50,
     });
   });
 
@@ -223,6 +232,7 @@ describe("campaign admin search schema", () => {
         limit: "25",
       }),
     ).toEqual({
+      tab: "overview",
       query: "12345678",
       interactionId: "funky:interaction:public_debate_request",
       hasPendingReviews: true,
@@ -234,6 +244,9 @@ describe("campaign admin search schema", () => {
       sortBy: "latestInteractionAt",
       sortOrder: "desc",
       limit: 25,
+      configSortBy: "updatedAt",
+      configSortOrder: "desc",
+      configLimit: 50,
     });
   });
 
@@ -245,9 +258,90 @@ describe("campaign admin search schema", () => {
           "public_debate_entity_update" as unknown as never,
       }),
     ).toEqual({
+      tab: "overview",
       sortBy: "entityCui",
       sortOrder: "asc",
       limit: 50,
+      configSortBy: "updatedAt",
+      configSortOrder: "desc",
+      configLimit: 50,
+    });
+  });
+
+  it("normalizes entity config route search defaults and trims filter values", () => {
+    expect(
+      normalizeCampaignAdminEntityConfigSearch({
+        entityCui: ' "12345678" ',
+        updatedAtFrom: "2026-04-10T00:00:00.000Z",
+        updatedAtTo: "2026-04-12T23:59:59.999Z",
+        sortBy: "entityCui",
+        cursor: "cursor-1",
+        pageIndex: "2",
+        limit: "25",
+        selectedEntityCui: " 12345678 ",
+      }),
+    ).toEqual({
+      entityCui: "12345678",
+      updatedAtFrom: "2026-04-10T00:00:00.000Z",
+      updatedAtTo: "2026-04-12T23:59:59.999Z",
+      sortBy: "entityCui",
+      sortOrder: "asc",
+      cursor: "cursor-1",
+      pageIndex: 2,
+      limit: 25,
+      selectedEntityCui: "12345678",
+    });
+  });
+
+  it("separates entity config list filters from export-only search state", () => {
+    const search = normalizeCampaignAdminEntityConfigSearch({
+      entityCui: "12345678",
+      updatedAtFrom: "2026-04-10T00:00:00.000Z",
+      selectedEntityCui: "12345678",
+    });
+
+    expect(getCampaignAdminEntityConfigFilters(search)).toEqual({
+      entityCui: "12345678",
+      updatedAtFrom: "2026-04-10T00:00:00.000Z",
+      sortBy: "updatedAt",
+      sortOrder: "desc",
+    });
+    expect(
+      getCampaignAdminEntityConfigExportFilters({
+        ...search,
+        query: "Oras Test",
+      }),
+    ).toEqual({
+      query: "Oras Test",
+      entityCui: "12345678",
+      updatedAtFrom: "2026-04-10T00:00:00.000Z",
+    });
+    expect(
+      JSON.parse(createCampaignAdminEntityConfigPaginationSignature(search)),
+    ).toEqual({
+      entityCui: "12345678",
+      updatedAtFrom: "2026-04-10T00:00:00.000Z",
+      limit: 50,
+      sortBy: "updatedAt",
+      sortOrder: "desc",
+    });
+  });
+
+  it("creates an empty entity config search while preserving display options", () => {
+    expect(
+      createEmptyCampaignAdminEntityConfigSearch({
+        currentSearch: {
+          entityCui: "12345678",
+          sortBy: "entityCui",
+          sortOrder: "asc",
+          limit: 25,
+          selectedEntityCui: "12345678",
+        },
+      }),
+    ).toEqual({
+      sortBy: "entityCui",
+      sortOrder: "asc",
+      limit: 25,
     });
   });
 
@@ -263,9 +357,13 @@ describe("campaign admin search schema", () => {
         },
       }),
     ).toEqual({
+      tab: "overview",
       sortBy: "userCount",
       sortOrder: "asc",
       limit: 25,
+      configSortBy: "updatedAt",
+      configSortOrder: "desc",
+      configLimit: 50,
     });
   });
 

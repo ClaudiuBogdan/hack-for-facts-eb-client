@@ -3,14 +3,20 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CampaignAdminEntitiesPage } from "./CampaignAdminEntitiesPage";
 import type {
+  CampaignAdminEntityConfigDetail,
   CampaignAdminEntitiesMetaResponse,
+  CampaignAdminEntitiesSearch,
   CampaignAdminEntityListItem,
 } from "@/features/campaigns/buget/admin/types";
 
 const useAuthMock = vi.fn();
 const useCampaignAdminEntitiesQueryMock = vi.fn();
 const useCampaignAdminEntitiesMetaQueryMock = vi.fn();
+const useCampaignAdminEntityConfigListQueryMock = vi.fn();
+const useCampaignAdminEntityConfigDetailQueryMock = vi.fn();
+const useUpdateCampaignAdminEntityConfigMutationMock = vi.fn();
 const downloadCampaignAdminEntitiesCsvMock = vi.fn();
+const downloadCampaignAdminEntityConfigCsvMock = vi.fn();
 const toastSuccessMock = vi.fn();
 const toastErrorMock = vi.fn();
 
@@ -75,9 +81,26 @@ vi.mock(
   }),
 );
 
+vi.mock(
+  "@/features/campaigns/buget/admin/hooks/use-campaign-admin-entity-config",
+  () => ({
+    useCampaignAdminEntityConfigListQuery: (...args: unknown[]) =>
+      useCampaignAdminEntityConfigListQueryMock(...args),
+    useCampaignAdminEntityConfigDetailQuery: (...args: unknown[]) =>
+      useCampaignAdminEntityConfigDetailQueryMock(...args),
+    useUpdateCampaignAdminEntityConfigMutation: (...args: unknown[]) =>
+      useUpdateCampaignAdminEntityConfigMutationMock(...args),
+  }),
+);
+
 vi.mock("@/features/campaigns/buget/admin/api/campaign-admin-entities", () => ({
   downloadCampaignAdminEntitiesCsv: (...args: unknown[]) =>
     downloadCampaignAdminEntitiesCsvMock(...args),
+}));
+
+vi.mock("@/features/campaigns/buget/admin/api/campaign-admin-entity-config", () => ({
+  downloadCampaignAdminEntityConfigCsv: (...args: unknown[]) =>
+    downloadCampaignAdminEntityConfigCsvMock(...args),
 }));
 
 function createEntityItem(
@@ -125,6 +148,25 @@ function createEntitiesMetaResponse(
   };
 }
 
+function createEntityConfigDetail(
+  overrides: Partial<CampaignAdminEntityConfigDetail> = {},
+): CampaignAdminEntityConfigDetail {
+  return {
+    campaignKey: "funky",
+    entityCui: "12345678",
+    entityName: "Oras Test",
+    configured: true,
+    isConfigured: true,
+    values: {
+      budgetPublicationDate: "2026-03-20",
+      officialBudgetUrl: "https://oras.test/buget.pdf",
+    },
+    updatedAt: "2026-04-12T10:00:00.000Z",
+    updatedByUserId: "admin-1",
+    ...overrides,
+  };
+}
+
 function mockEntitiesState(input: {
   readonly items?: readonly CampaignAdminEntityListItem[];
   readonly error?: { status: number; message: string } | null;
@@ -158,7 +200,11 @@ describe("CampaignAdminEntitiesPage", () => {
     useAuthMock.mockReset();
     useCampaignAdminEntitiesQueryMock.mockReset();
     useCampaignAdminEntitiesMetaQueryMock.mockReset();
+    useCampaignAdminEntityConfigListQueryMock.mockReset();
+    useCampaignAdminEntityConfigDetailQueryMock.mockReset();
+    useUpdateCampaignAdminEntityConfigMutationMock.mockReset();
     downloadCampaignAdminEntitiesCsvMock.mockReset();
+    downloadCampaignAdminEntityConfigCsvMock.mockReset();
     toastSuccessMock.mockReset();
     toastErrorMock.mockReset();
 
@@ -170,6 +216,35 @@ describe("CampaignAdminEntitiesPage", () => {
       isLoading: false,
       isFetching: false,
       refetch: vi.fn(),
+    });
+    useCampaignAdminEntityConfigListQueryMock.mockReturnValue({
+      data: {
+        items: [createEntityConfigDetail()],
+        page: {
+          limit: 50,
+          totalCount: 1,
+          hasMore: false,
+          nextCursor: null,
+          sortBy: "updatedAt",
+          sortOrder: "desc",
+        },
+      },
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+    useCampaignAdminEntityConfigDetailQueryMock.mockReturnValue({
+      data: createEntityConfigDetail(),
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+    useUpdateCampaignAdminEntityConfigMutationMock.mockReturnValue({
+      mutateAsync: vi.fn(),
+      error: null,
+      isPending: false,
     });
   });
 
@@ -384,4 +459,155 @@ describe("CampaignAdminEntitiesPage", () => {
       "/admin/campaigns/funky/notifications?tab=audit&entityCui=12345678&sortBy=createdAt&sortOrder=desc&limit=50",
     );
   });
+
+  it("renders the config tab and exports config CSV with supported filters only", async () => {
+    downloadCampaignAdminEntityConfigCsvMock.mockResolvedValue({
+      blob: new Blob(["csv"]),
+      filename: "entity-config.csv",
+    });
+    const clickMock = vi
+      .spyOn(HTMLAnchorElement.prototype, "click")
+      .mockImplementation(() => {});
+    const originalCreateObjectURL = URL.createObjectURL;
+    const originalRevokeObjectURL = URL.revokeObjectURL;
+    Object.defineProperty(URL, "createObjectURL", {
+      configurable: true,
+      value: vi.fn(() => "blob:entity-config"),
+    });
+    Object.defineProperty(URL, "revokeObjectURL", {
+      configurable: true,
+      value: vi.fn(),
+    });
+
+    try {
+      render(
+        <CampaignAdminEntitiesPage
+          campaignKey="funky"
+          search={{
+            tab: "config",
+            configEntityCui: "12345678",
+            configUpdatedAtFrom: "2026-04-10T00:00:00.000Z",
+            configUpdatedAtTo: "2026-04-12T23:59:59.999Z",
+            configLimit: 25,
+            limit: 50,
+          }}
+          onSearchChange={vi.fn()}
+        />,
+      );
+
+      expect(screen.getByRole("tab", { name: "Config" })).toHaveAttribute(
+        "data-state",
+        "active",
+      );
+      expect(screen.getByText("Campaign entity config")).toBeInTheDocument();
+      expect(screen.getByText("Oras Test")).toBeInTheDocument();
+      expect(screen.getByText("Budget publication date")).toBeInTheDocument();
+
+      fireEvent.pointerDown(
+        screen.getByRole("button", { name: "Table actions" }),
+      );
+      fireEvent.click(await screen.findByRole("menuitem", { name: "Export CSV" }));
+
+      await waitFor(() => {
+        expect(downloadCampaignAdminEntityConfigCsvMock).toHaveBeenCalledWith({
+          campaignKey: "funky",
+          filters: {
+            entityCui: "12345678",
+            updatedAtFrom: "2026-04-10T00:00:00.000Z",
+            updatedAtTo: "2026-04-12T23:59:59.999Z",
+          },
+        });
+      });
+    } finally {
+      clickMock.mockRestore();
+      Object.defineProperty(URL, "createObjectURL", {
+        configurable: true,
+        value: originalCreateObjectURL,
+      });
+      Object.defineProperty(URL, "revokeObjectURL", {
+        configurable: true,
+        value: originalRevokeObjectURL,
+      });
+    }
+  });
+
+  it("preserves the typed entity CUI when opening create mode from the config toolbar", async () => {
+    const onSearchChange = vi.fn();
+
+    render(
+      <CampaignAdminEntitiesPage
+        campaignKey="funky"
+        search={{
+          tab: "config",
+          limit: 50,
+          configLimit: 25,
+        }}
+        onSearchChange={onSearchChange}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Entity CUI"), {
+      target: { value: "12345678" },
+    });
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Table actions" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "Create config" }));
+
+    expect(onSearchChange).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<CampaignAdminEntitiesSearch>>({
+        tab: "config",
+        configEntityCui: "12345678",
+        selectedEntityCui: "12345678",
+        configCreate: true,
+      }),
+      { replace: true },
+    );
+  });
+
+  it.each([
+    {
+      status: 401,
+      message: "Config auth expired",
+      title: "Session expired",
+    },
+    {
+      status: 403,
+      message: "Forbidden",
+      title: "You do not have access to entity config",
+    },
+    {
+      status: 404,
+      message: "Unavailable",
+      title: "Campaign entity config unavailable",
+    },
+  ])(
+    "renders the config-specific unavailable state for status $status",
+    ({ status, message, title }) => {
+      useCampaignAdminEntityConfigListQueryMock.mockReturnValue({
+        data: undefined,
+        error: {
+          status,
+          message,
+        },
+        isLoading: false,
+        isFetching: false,
+        refetch: vi.fn(),
+      });
+
+      render(
+        <CampaignAdminEntitiesPage
+          campaignKey="funky"
+          search={{
+            tab: "config",
+            limit: 50,
+          }}
+          onSearchChange={vi.fn()}
+        />,
+      );
+
+      expect(screen.getByText(title)).toBeInTheDocument();
+      expect(
+        screen.queryByText("No configured rows matched the current filters"),
+      ).not.toBeInTheDocument();
+    },
+  );
 });

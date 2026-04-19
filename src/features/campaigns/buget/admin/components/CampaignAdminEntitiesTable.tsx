@@ -308,6 +308,7 @@ function createEntityUsersRouteSearch(entityCui: string) {
 
 function createEntityDetailsRouteSearch() {
   return {
+    tab: "overview" as const,
     query: undefined,
     interactionId: undefined,
     hasPendingReviews: undefined,
@@ -321,6 +322,16 @@ function createEntityDetailsRouteSearch() {
     cursor: undefined,
     pageIndex: undefined,
     limit: DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
+    configEntityCui: undefined,
+    configUpdatedAtFrom: undefined,
+    configUpdatedAtTo: undefined,
+    configSortBy: undefined,
+    configSortOrder: undefined,
+    configCursor: undefined,
+    configPageIndex: undefined,
+    configLimit: undefined,
+    selectedEntityCui: undefined,
+    configCreate: undefined,
   };
 }
 

@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const navigateMock = vi.fn();
 const useParamsMock = vi.fn(() => ({ campaignKey: "funky" }));
 const useSearchMock = vi.fn(() => ({
+  tab: "overview",
   sortBy: "latestInteractionAt",
   sortOrder: "desc",
   limit: 50,
@@ -33,10 +34,16 @@ const entitiesPageMock = vi.fn(
         onClick={() => {
           onSearchChange(
             {
+              tab: "config",
               query: "Oras Test",
               sortBy: "userCount",
               sortOrder: "asc",
               limit: 25,
+              configEntityCui: "12345678",
+              configSortBy: "updatedAt",
+              configSortOrder: "desc",
+              configLimit: 25,
+              selectedEntityCui: "12345678",
             },
             { replace: true },
           );
@@ -109,11 +116,21 @@ describe("campaign entities lazy route", () => {
         hasFailedNotifications: undefined,
         latestNotificationType: undefined,
         latestNotificationStatus: undefined,
+        tab: "config",
         sortBy: "userCount",
         sortOrder: "asc",
         cursor: undefined,
         pageIndex: undefined,
         limit: 25,
+        configEntityCui: "12345678",
+        configUpdatedAtFrom: undefined,
+        configUpdatedAtTo: undefined,
+        configSortBy: "updatedAt",
+        configSortOrder: "desc",
+        configCursor: undefined,
+        configPageIndex: undefined,
+        configLimit: 25,
+        selectedEntityCui: "12345678",
       },
       replace: true,
     });

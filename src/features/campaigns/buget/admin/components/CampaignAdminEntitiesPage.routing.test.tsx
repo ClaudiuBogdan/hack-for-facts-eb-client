@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CampaignAdminEntitiesPage } from "./CampaignAdminEntitiesPage";
 import type {
+  CampaignAdminEntityConfigDetail,
   CampaignAdminEntitiesMetaResponse,
   CampaignAdminEntitiesSearch,
   CampaignAdminEntityListItem,
@@ -12,6 +13,9 @@ import type {
 const useAuthMock = vi.fn();
 const useCampaignAdminEntitiesQueryMock = vi.fn();
 const useCampaignAdminEntitiesMetaQueryMock = vi.fn();
+const useCampaignAdminEntityConfigListQueryMock = vi.fn();
+const useCampaignAdminEntityConfigDetailQueryMock = vi.fn();
+const useUpdateCampaignAdminEntityConfigMutationMock = vi.fn();
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
@@ -37,6 +41,18 @@ vi.mock(
       useCampaignAdminEntitiesQueryMock(...args),
     useCampaignAdminEntitiesMetaQuery: (...args: unknown[]) =>
       useCampaignAdminEntitiesMetaQueryMock(...args),
+  }),
+);
+
+vi.mock(
+  "@/features/campaigns/buget/admin/hooks/use-campaign-admin-entity-config",
+  () => ({
+    useCampaignAdminEntityConfigListQuery: (...args: unknown[]) =>
+      useCampaignAdminEntityConfigListQueryMock(...args),
+    useCampaignAdminEntityConfigDetailQuery: (...args: unknown[]) =>
+      useCampaignAdminEntityConfigDetailQueryMock(...args),
+    useUpdateCampaignAdminEntityConfigMutation: (...args: unknown[]) =>
+      useUpdateCampaignAdminEntityConfigMutationMock(...args),
   }),
 );
 
@@ -85,11 +101,33 @@ function createMetaResponse(
   };
 }
 
+function createEntityConfigDetail(
+  overrides: Partial<CampaignAdminEntityConfigDetail> = {},
+): CampaignAdminEntityConfigDetail {
+  return {
+    campaignKey: "funky",
+    entityCui: "12345678",
+    entityName: "Oras Test",
+    configured: true,
+    isConfigured: true,
+    values: {
+      budgetPublicationDate: "2026-03-20",
+      officialBudgetUrl: "https://oras.test/buget.pdf",
+    },
+    updatedAt: "2026-04-12T10:00:00.000Z",
+    updatedByUserId: "admin-1",
+    ...overrides,
+  };
+}
+
 describe("CampaignAdminEntitiesPage routing", () => {
   beforeEach(() => {
     useAuthMock.mockReset();
     useCampaignAdminEntitiesQueryMock.mockReset();
     useCampaignAdminEntitiesMetaQueryMock.mockReset();
+    useCampaignAdminEntityConfigListQueryMock.mockReset();
+    useCampaignAdminEntityConfigDetailQueryMock.mockReset();
+    useUpdateCampaignAdminEntityConfigMutationMock.mockReset();
 
     useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
     useCampaignAdminEntitiesMetaQueryMock.mockReturnValue({
@@ -98,6 +136,35 @@ describe("CampaignAdminEntitiesPage routing", () => {
       isLoading: false,
       isFetching: false,
       refetch: vi.fn(),
+    });
+    useCampaignAdminEntityConfigListQueryMock.mockReturnValue({
+      data: {
+        items: [],
+        page: {
+          limit: 50,
+          totalCount: 0,
+          hasMore: false,
+          nextCursor: null,
+          sortBy: "updatedAt",
+          sortOrder: "desc",
+        },
+      },
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+    useCampaignAdminEntityConfigDetailQueryMock.mockReturnValue({
+      data: null,
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+    useUpdateCampaignAdminEntityConfigMutationMock.mockReturnValue({
+      mutateAsync: vi.fn(),
+      error: null,
+      isPending: false,
     });
   });
 
@@ -283,6 +350,109 @@ describe("CampaignAdminEntitiesPage routing", () => {
           sortBy: "userCount",
           sortOrder: "desc",
         },
+        limit: 50,
+      });
+    });
+  });
+
+  it("preserves config pagination when opening and closing a config sheet", async () => {
+    const entityConfigQueryCalls: Array<{
+      readonly filters: Record<string, unknown>;
+      readonly cursor: string | null;
+      readonly limit: number;
+    }> = [];
+
+    useCampaignAdminEntitiesQueryMock.mockReturnValue({
+      data: {
+        items: [],
+        page: {
+          totalCount: 0,
+          hasMore: false,
+          nextCursor: null,
+          sortBy: "latestInteractionAt",
+          sortOrder: "desc",
+        },
+      },
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+
+    useCampaignAdminEntityConfigListQueryMock.mockImplementation((args) => {
+      entityConfigQueryCalls.push({
+        filters: args.filters as Record<string, unknown>,
+        cursor: args.cursor as string | null,
+        limit: args.limit as number,
+      });
+
+      return {
+        data: {
+          items: [createEntityConfigDetail()],
+          page: {
+            limit: 50,
+            totalCount: 1,
+            hasMore: false,
+            nextCursor: null,
+            sortBy: "updatedAt",
+            sortOrder: "desc",
+          },
+        },
+        error: null,
+        isLoading: false,
+        isFetching: false,
+        refetch: vi.fn(),
+      };
+    });
+
+    useCampaignAdminEntityConfigDetailQueryMock.mockReturnValue({
+      data: createEntityConfigDetail(),
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+
+    function StatefulPage() {
+      const [search, setSearch] = useState<CampaignAdminEntitiesSearch>({
+        tab: "config",
+        configCursor: "cursor-1",
+        configPageIndex: 2,
+        configLimit: 50,
+        limit: 50,
+      });
+
+      return (
+        <CampaignAdminEntitiesPage
+          campaignKey="funky"
+          search={search}
+          onSearchChange={(nextSearch) => {
+            setSearch(nextSearch);
+          }}
+        />
+      );
+    }
+
+    render(<StatefulPage />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Open" }));
+
+    await waitFor(() => {
+      expect(
+        entityConfigQueryCalls[entityConfigQueryCalls.length - 1],
+      ).toMatchObject({
+        cursor: "cursor-1",
+        limit: 50,
+      });
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    await waitFor(() => {
+      expect(
+        entityConfigQueryCalls[entityConfigQueryCalls.length - 1],
+      ).toMatchObject({
+        cursor: "cursor-1",
         limit: 50,
       });
     });

@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   parseCampaignAdminAppendInstitutionThreadResponse,
   parseCampaignAdminAppendInstitutionThreadResponseBody,
+  parseCampaignAdminEntityConfigDetailResponse,
+  parseCampaignAdminEntityConfigListResponse,
+  parseCampaignAdminUpdateEntityConfigBody,
   parseCampaignAdminEntitiesListResponse,
   parseCampaignAdminEntitiesMetaResponse,
   parseCampaignAdminInstitutionThreadDetailResponse,
@@ -345,6 +348,57 @@ function createEntitiesMetaResponsePayload() {
           reviewable: true,
         },
       ],
+    },
+  };
+}
+
+function createEntityConfigResponsePayload() {
+  return {
+    ok: true,
+    data: {
+      campaignKey: "funky",
+      entityCui: "12345678",
+      entityName: "Oras Test",
+      isConfigured: true,
+      values: {
+        budgetPublicationDate: "2026-03-20",
+        officialBudgetUrl: "https://primarie.ro/buget.pdf",
+      },
+      updatedAt: "2026-04-12T10:00:00.000Z",
+      updatedByUserId: "admin-1",
+    },
+  };
+}
+
+function createExpectedEntityConfigResponse() {
+  return {
+    campaignKey: "funky",
+    entityCui: "12345678",
+    entityName: "Oras Test",
+    configured: true,
+    isConfigured: true,
+    values: {
+      budgetPublicationDate: "2026-03-20",
+      officialBudgetUrl: "https://primarie.ro/buget.pdf",
+    },
+    updatedAt: "2026-04-12T10:00:00.000Z",
+    updatedByUserId: "admin-1",
+  };
+}
+
+function createEntityConfigListResponsePayload() {
+  return {
+    ok: true,
+    data: {
+      items: [createEntityConfigResponsePayload().data],
+      page: {
+        limit: 50,
+        totalCount: 1,
+        hasMore: false,
+        nextCursor: null,
+        sortBy: "updatedAt",
+        sortOrder: "desc",
+      },
     },
   };
 }
@@ -757,6 +811,64 @@ describe("campaign admin api schemas", () => {
     const payload = createEntitiesListResponsePayload();
 
     expect(parseCampaignAdminEntitiesListResponse(payload)).toEqual(payload.data);
+  });
+
+  it("parses entity config list payloads", () => {
+    const payload = createEntityConfigListResponsePayload();
+
+    expect(parseCampaignAdminEntityConfigListResponse(payload)).toEqual(
+      {
+        ...payload.data,
+        items: [createExpectedEntityConfigResponse()],
+      },
+    );
+  });
+
+  it("parses entity config detail payloads", () => {
+    const payload = createEntityConfigResponsePayload();
+
+    expect(parseCampaignAdminEntityConfigDetailResponse(payload)).toEqual(
+      createExpectedEntityConfigResponse(),
+    );
+  });
+
+  it("accepts only configured entity config update bodies", () => {
+    const payload = {
+      expectedUpdatedAt: "2026-04-11T09:00:00.000Z",
+      values: {
+        budgetPublicationDate: "2026-03-20",
+        officialBudgetUrl: null,
+      },
+    };
+
+    expect(parseCampaignAdminUpdateEntityConfigBody(payload)).toEqual(payload);
+    expect(() =>
+      parseCampaignAdminUpdateEntityConfigBody({
+        expectedUpdatedAt: null,
+        values: {
+          budgetPublicationDate: null,
+          officialBudgetUrl: null,
+        },
+      }),
+    ).toThrowError("Invalid campaign admin entity config update body.");
+    expect(() =>
+      parseCampaignAdminUpdateEntityConfigBody({
+        expectedUpdatedAt: null,
+        values: {
+          budgetPublicationDate: "2026/03/20",
+          officialBudgetUrl: null,
+        },
+      }),
+    ).toThrowError("Invalid campaign admin entity config update body.");
+    expect(() =>
+      parseCampaignAdminUpdateEntityConfigBody({
+        expectedUpdatedAt: null,
+        values: {
+          budgetPublicationDate: null,
+          officialBudgetUrl: "ftp://primarie.ro/buget.pdf",
+        },
+      }),
+    ).toThrowError("Invalid campaign admin entity config update body.");
   });
 
   it("parses entities metadata payloads", () => {

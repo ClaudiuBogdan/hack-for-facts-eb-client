@@ -64,6 +64,7 @@ function toCampaignAdminEntitiesRouteSearch(
   search: CampaignAdminEntitiesSearch,
 ) {
   return {
+    tab: search.tab,
     query: search.query,
     interactionId: search.interactionId,
     hasPendingReviews: search.hasPendingReviews,
@@ -77,5 +78,15 @@ function toCampaignAdminEntitiesRouteSearch(
     cursor: search.cursor,
     pageIndex: search.pageIndex,
     limit: search.limit,
+    configEntityCui: search.configEntityCui,
+    configUpdatedAtFrom: search.configUpdatedAtFrom,
+    configUpdatedAtTo: search.configUpdatedAtTo,
+    configSortBy: search.configSortBy,
+    configSortOrder: search.configSortOrder,
+    configCursor: search.configCursor,
+    configPageIndex: search.configPageIndex,
+    configLimit: search.configLimit,
+    selectedEntityCui: search.selectedEntityCui,
+    configCreate: search.configCreate,
   };
 }

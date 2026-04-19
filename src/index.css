@@ -39,6 +39,9 @@
 
   html,
   :root {
+    /* Reserve scrollbar gutter on the viewport so content width stays stable when
+       overflow toggles (e.g. short vs long pages, dialogs that lock body scroll). */
+    scrollbar-gutter: stable;
     overscroll-behavior: auto;
     /* Base colors */
     --background: 0 0% 99%;

@@ -283,7 +283,7 @@ describe("CampaignAdminHubPage", () => {
     expect(entitiesLink).toBeInTheDocument();
     expect(entitiesLink).toHaveAttribute(
       "href",
-      "/admin/campaigns/funky/entities?limit=50",
+      "/admin/campaigns/funky/entities?tab=overview&limit=50",
     );
     expect(screen.getByText("18 tracked · 5 pending")).toBeInTheDocument();
     expect(screen.getByText("2 delivery issues")).toBeInTheDocument();

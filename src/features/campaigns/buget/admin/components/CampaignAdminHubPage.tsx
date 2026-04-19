@@ -100,6 +100,7 @@ function createCampaignAdminNotificationsRouteSearch() {
 
 function createCampaignAdminEntitiesRouteSearch() {
   return {
+    tab: "overview" as const,
     query: undefined,
     interactionId: undefined,
     hasPendingReviews: undefined,
@@ -113,6 +114,16 @@ function createCampaignAdminEntitiesRouteSearch() {
     cursor: undefined,
     pageIndex: undefined,
     limit: 50,
+    configEntityCui: undefined,
+    configUpdatedAtFrom: undefined,
+    configUpdatedAtTo: undefined,
+    configSortBy: undefined,
+    configSortOrder: undefined,
+    configCursor: undefined,
+    configPageIndex: undefined,
+    configLimit: undefined,
+    selectedEntityCui: undefined,
+    configCreate: undefined,
   };
 }
 

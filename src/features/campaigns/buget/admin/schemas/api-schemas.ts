@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  campaignAdminEntityConfigSortKeyValues,
   campaignAdminEntitiesSortKeyValues,
   campaignAdminNotificationEventTypeValues,
   campaignAdminNotificationSafeErrorCategoryValues,
@@ -23,6 +24,9 @@ import {
   type CampaignAdminNotificationTriggerExecutionResponse,
   type CampaignAdminRunnableTemplateDescriptor,
   type CampaignAdminRunnableTemplateDryRunBody,
+  type CampaignAdminEntityConfigDetail,
+  type CampaignAdminEntityConfigListResponse,
+  type CampaignAdminUpdateEntityConfigBody,
   type CampaignAdminEntitiesListResponse,
   type CampaignAdminEntitiesMetaResponse,
   type CampaignAdminAppendInstitutionThreadResponseBody,
@@ -476,6 +480,120 @@ const campaignAdminEntitiesMetaResponseSchema = z
       .strict(),
   })
   .strict();
+
+const campaignAdminEntityConfigValuesSchema = z
+  .object({
+    budgetPublicationDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
+    officialBudgetUrl: z
+      .string()
+      .url()
+      .refine((value) => {
+        try {
+          const url = new URL(value);
+          return url.protocol === "http:" || url.protocol === "https:";
+        } catch {
+          return false;
+        }
+      })
+      .nullable(),
+  })
+  .strict();
+
+const campaignAdminRawEntityConfigItemSchema = z
+  .object({
+    campaignKey: z.literal("funky"),
+    entityCui: z.string().min(1),
+    entityName: z.string().nullable(),
+    isConfigured: z.boolean(),
+    values: campaignAdminEntityConfigValuesSchema,
+    updatedAt: z.string().datetime().nullable(),
+    updatedByUserId: z.string().min(1).nullable(),
+  })
+  .strict();
+
+const campaignAdminEntityConfigItemSchema =
+  campaignAdminRawEntityConfigItemSchema.transform((item) => {
+    const { isConfigured, ...rest } = item;
+
+    return {
+      ...rest,
+      entityName: item.entityName ?? null,
+      configured: isConfigured,
+      isConfigured,
+    };
+  });
+
+const campaignAdminEntityConfigListResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: z
+      .object({
+        items: z.array(campaignAdminEntityConfigItemSchema),
+        page: z
+          .object({
+            limit: z.number().int().min(1).max(100),
+            totalCount: campaignAdminCountSchema,
+            hasMore: z.boolean(),
+            nextCursor: z.string().min(1).nullable(),
+            sortBy: z.enum(campaignAdminEntityConfigSortKeyValues),
+            sortOrder: z.enum(["asc", "desc"]),
+          })
+          .strict(),
+      })
+      .strict(),
+  })
+  .strict();
+
+const campaignAdminEntityConfigDetailResponseSchema = z
+  .object({
+    ok: z.literal(true),
+    data: campaignAdminEntityConfigItemSchema,
+  })
+  .strict();
+
+const campaignAdminUpdateEntityConfigBodySchema = z
+  .object({
+    expectedUpdatedAt: z.string().datetime().nullable(),
+    values: campaignAdminEntityConfigValuesSchema,
+  })
+  .strict()
+  .refine(
+    (body) =>
+      body.values.budgetPublicationDate !== null ||
+      body.values.officialBudgetUrl !== null,
+    {
+      message: "At least one campaign entity config value must be configured.",
+      path: ["values"],
+    },
+  )
+  .refine(
+    (body) =>
+      body.values.budgetPublicationDate === null ||
+      /^\d{4}-\d{2}-\d{2}$/.test(body.values.budgetPublicationDate),
+    {
+      message: "Budget publication date must use YYYY-MM-DD.",
+      path: ["values", "budgetPublicationDate"],
+    },
+  )
+  .refine(
+    (body) => {
+      const url = body.values.officialBudgetUrl;
+      if (url === null) {
+        return true;
+      }
+
+      try {
+        const parsedUrl = new URL(url);
+        return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
+      } catch {
+        return false;
+      }
+    },
+    {
+      message: "Official budget URL must be an absolute http(s) URL.",
+      path: ["values", "officialBudgetUrl"],
+    },
+  );
 
 const campaignAdminNotificationSafeErrorSchema = z
   .object({
@@ -1296,6 +1414,30 @@ export function parseCampaignAdminEntitiesListResponse(
   return parsedPayload.data.data;
 }
 
+export function parseCampaignAdminEntityConfigListResponse(
+  payload: unknown,
+): CampaignAdminEntityConfigListResponse {
+  const parsedPayload =
+    campaignAdminEntityConfigListResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin entity config response.");
+  }
+
+  return parsedPayload.data.data;
+}
+
+export function parseCampaignAdminEntityConfigDetailResponse(
+  payload: unknown,
+): CampaignAdminEntityConfigDetail {
+  const parsedPayload =
+    campaignAdminEntityConfigDetailResponseSchema.safeParse(payload);
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin entity config detail response.");
+  }
+
+  return parsedPayload.data.data;
+}
+
 export function parseCampaignAdminRunnableTemplatesResponse(
   payload: unknown,
 ): readonly CampaignAdminRunnableTemplateDescriptor[] {
@@ -1442,6 +1584,19 @@ export function parseCampaignAdminEntitiesMetaResponse(
   }
 
   return parsedPayload.data.data;
+}
+
+export function parseCampaignAdminUpdateEntityConfigBody(
+  payload: unknown,
+): CampaignAdminUpdateEntityConfigBody {
+  const parsedPayload = campaignAdminUpdateEntityConfigBodySchema.safeParse(
+    payload,
+  );
+  if (!parsedPayload.success) {
+    throw new Error("Invalid campaign admin entity config update body.");
+  }
+
+  return parsedPayload.data;
 }
 
 export function parseCampaignAdminErrorEnvelope(payload: unknown) {

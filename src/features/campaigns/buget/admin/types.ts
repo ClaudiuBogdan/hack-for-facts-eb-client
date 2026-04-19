@@ -124,6 +124,11 @@ export const campaignAdminEntitiesSortKeyValues = [
   "latestNotificationAt",
 ] as const;
 
+export const campaignAdminEntityConfigSortKeyValues = [
+  "updatedAt",
+  "entityCui",
+] as const;
+
 export const campaignAdminEntityNotificationTypeValues = [
   "funky:outbox:welcome",
   "funky:outbox:entity_subscription",
@@ -249,6 +254,8 @@ export type CampaignAdminUsersSortKey =
   (typeof campaignAdminUsersSortKeyValues)[number];
 export type CampaignAdminEntitiesSortKey =
   (typeof campaignAdminEntitiesSortKeyValues)[number];
+export type CampaignAdminEntityConfigSortKey =
+  (typeof campaignAdminEntityConfigSortKeyValues)[number];
 export type CampaignAdminEntityNotificationType =
   (typeof campaignAdminEntityNotificationTypeValues)[number];
 export type CampaignAdminNotificationStatus =
@@ -608,6 +615,50 @@ export type CampaignAdminEntitiesMetaResponse = {
   readonly entitiesWithNotificationActivity: number;
   readonly entitiesWithFailedNotifications: number;
   readonly availableInteractionTypes: readonly CampaignAdminAvailableInteractionType[];
+};
+
+export type CampaignAdminEntityConfigValues = {
+  readonly budgetPublicationDate: string | null;
+  readonly officialBudgetUrl: string | null;
+};
+
+export type CampaignAdminEntityConfigListItem = {
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly entityCui: string;
+  readonly entityName: string | null;
+  readonly configured: boolean;
+  readonly isConfigured: boolean;
+  readonly values: CampaignAdminEntityConfigValues;
+  readonly updatedAt: string | null;
+  readonly updatedByUserId: string | null;
+};
+
+export type CampaignAdminEntityConfigListResponse = {
+  readonly items: readonly CampaignAdminEntityConfigListItem[];
+  readonly page: {
+    readonly limit: number;
+    readonly totalCount: number;
+    readonly hasMore: boolean;
+    readonly nextCursor: string | null;
+    readonly sortBy: CampaignAdminEntityConfigSortKey;
+    readonly sortOrder: CampaignAdminSortOrder;
+  };
+};
+
+export type CampaignAdminEntityConfigDetail = {
+  readonly campaignKey: CampaignAdminCampaignKey;
+  readonly entityCui: string;
+  readonly entityName: string | null;
+  readonly configured: boolean;
+  readonly isConfigured: boolean;
+  readonly values: CampaignAdminEntityConfigValues;
+  readonly updatedAt: string | null;
+  readonly updatedByUserId: string | null;
+};
+
+export type CampaignAdminUpdateEntityConfigBody = {
+  readonly expectedUpdatedAt: string | null;
+  readonly values: CampaignAdminEntityConfigValues;
 };
 
 export type CampaignAdminSubmitReviewItem =
@@ -1123,6 +1174,7 @@ export type CampaignAdminUsersSearch = {
 };
 
 export type CampaignAdminEntitiesSearch = {
+  readonly tab?: "overview" | "config";
   readonly query?: string;
   readonly interactionId?: string;
   readonly hasPendingReviews?: boolean;
@@ -1136,12 +1188,60 @@ export type CampaignAdminEntitiesSearch = {
   readonly cursor?: string;
   readonly pageIndex?: number;
   readonly limit: number;
+  readonly configEntityCui?: string;
+  readonly configUpdatedAtFrom?: string;
+  readonly configUpdatedAtTo?: string;
+  readonly configSortBy?: CampaignAdminEntityConfigSortKey;
+  readonly configSortOrder?: CampaignAdminSortOrder;
+  readonly configCursor?: string;
+  readonly configPageIndex?: number;
+  readonly configLimit?: number;
+  readonly selectedEntityCui?: string;
+  readonly configCreate?: boolean;
 };
 
 export type CampaignAdminEntitiesFilters = Omit<
   CampaignAdminEntitiesSearch,
-  "cursor" | "pageIndex" | "limit"
+  | "tab"
+  | "cursor"
+  | "pageIndex"
+  | "limit"
+  | "configEntityCui"
+  | "configUpdatedAtFrom"
+  | "configUpdatedAtTo"
+  | "configSortBy"
+  | "configSortOrder"
+  | "configCursor"
+  | "configPageIndex"
+  | "configLimit"
+  | "selectedEntityCui"
+  | "configCreate"
 >;
+
+export type CampaignAdminEntityConfigSearch = {
+  readonly entityCui?: string;
+  readonly updatedAtFrom?: string;
+  readonly updatedAtTo?: string;
+  readonly sortBy?: CampaignAdminEntityConfigSortKey;
+  readonly sortOrder?: CampaignAdminSortOrder;
+  readonly cursor?: string;
+  readonly pageIndex?: number;
+  readonly limit: number;
+  readonly selectedEntityCui?: string;
+  readonly createMode?: boolean;
+};
+
+export type CampaignAdminEntityConfigFilters = Omit<
+  CampaignAdminEntityConfigSearch,
+  "cursor" | "pageIndex" | "limit" | "selectedEntityCui" | "createMode"
+>;
+
+export type CampaignAdminEntityConfigExportFilters = {
+  readonly query?: string;
+  readonly entityCui?: string;
+  readonly updatedAtFrom?: string;
+  readonly updatedAtTo?: string;
+};
 
 export type CampaignAdminNotificationsSearch = {
   readonly tab?: CampaignAdminNotificationsTab;

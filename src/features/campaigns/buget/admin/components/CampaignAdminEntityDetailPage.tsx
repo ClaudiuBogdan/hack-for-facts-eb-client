@@ -25,6 +25,12 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
@@ -40,6 +46,7 @@ import {
 import { AuthSignInButton, useAuth } from "@/lib/auth";
 import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components/AdminCampaignLayout";
 import { CampaignAdminNotificationsTable } from "@/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable";
+import { CampaignAdminEntityConfigEditor } from "@/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet";
 import { CampaignAdminUsersTable } from "@/features/campaigns/buget/admin/components/CampaignAdminUsersTable";
 import {
   DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
@@ -49,6 +56,10 @@ import {
   getCampaignAdminThreadPhaseLabel,
 } from "@/features/campaigns/buget/admin/constants";
 import { campaignAdminEntitiesKeys } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-entities";
+import {
+  useCampaignAdminEntityConfigDetailQuery,
+  useUpdateCampaignAdminEntityConfigMutation,
+} from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-entity-config";
 import { useCampaignAdminNotificationsAuditQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-notifications";
 import { useCampaignAdminQueueQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-user-interactions";
 import { useCampaignAdminUsersQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-users";
@@ -57,6 +68,7 @@ import type {
   CampaignAdminEntitiesListResponse,
   CampaignAdminEntityListItem,
   CampaignAdminNotificationListItem,
+  CampaignAdminUpdateEntityConfigBody,
   CampaignAdminUserInteractionListItem,
 } from "@/features/campaigns/buget/admin/types";
 import { formatCampaignAdminUserIdPreview } from "@/features/campaigns/buget/admin/utils/format-user-id-preview";
@@ -147,6 +159,7 @@ function createEntityNotificationsRouteSearch(entityCui: string) {
 
 function createEntitiesRouteSearch() {
   return {
+    tab: "overview" as const,
     query: undefined,
     interactionId: undefined,
     hasPendingReviews: undefined,
@@ -160,6 +173,16 @@ function createEntitiesRouteSearch() {
     cursor: undefined,
     pageIndex: undefined,
     limit: DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
+    configEntityCui: undefined,
+    configUpdatedAtFrom: undefined,
+    configUpdatedAtTo: undefined,
+    configSortBy: undefined,
+    configSortOrder: undefined,
+    configCursor: undefined,
+    configPageIndex: undefined,
+    configLimit: undefined,
+    selectedEntityCui: undefined,
+    configCreate: undefined,
   };
 }
 
@@ -506,6 +529,7 @@ export function CampaignAdminEntityDetailPage({
   const { isLoaded, isSignedIn } = useAuth();
   const queryClient = useQueryClient();
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState<"overview" | "config">("overview");
   const usersQuery = useCampaignAdminUsersQuery({
     campaignKey,
     search: {
@@ -540,6 +564,15 @@ export function CampaignAdminEntityDetailPage({
     limit: ENTITY_DETAIL_PREVIEW_LIMIT,
     enabled: isLoaded && isSignedIn,
   });
+  const entityConfigDetailQuery = useCampaignAdminEntityConfigDetailQuery({
+    campaignKey,
+    entityCui,
+    enabled: isLoaded && isSignedIn,
+  });
+  const updateEntityConfigMutation = useUpdateCampaignAdminEntityConfigMutation(
+    campaignKey,
+    entityCui,
+  );
 
   const users = usersQuery.data?.items ?? [];
   const notifications = notificationsQuery.data?.items ?? [];
@@ -612,7 +645,14 @@ export function CampaignAdminEntityDetailPage({
       usersQuery.refetch(),
       notificationsQuery.refetch(),
       interactionsQuery.refetch(),
+      entityConfigDetailQuery.refetch(),
     ]);
+  };
+
+  const handleSubmitEntityConfig = async (
+    body: CampaignAdminUpdateEntityConfigBody,
+  ) => {
+    await updateEntityConfigMutation.mutateAsync(body);
   };
 
   return (
@@ -651,6 +691,22 @@ export function CampaignAdminEntityDetailPage({
       )}
       actions={(
         <>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setActiveTab("overview")}
+          >
+            {t`Overview`}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setActiveTab("config")}
+          >
+            {t`Config`}
+          </Button>
           <Button asChild variant="outline" size="sm">
             <a href="#users">{t`Users`}</a>
           </Button>
@@ -781,148 +837,182 @@ export function CampaignAdminEntityDetailPage({
             ) : null}
           </Card>
 
-          {allSectionQueriesFailed ? (
-            <SectionError
-              title={t`Failed to load entity detail`}
-              description={t`All entity sections failed to load. Retry the requests or open the filtered full pages below once the admin services recover.`}
-              onRetry={refreshAll}
-            />
-          ) : null}
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "overview" | "config")} className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="overview">{t`Overview`}</TabsTrigger>
+              <TabsTrigger value="config">{t`Config`}</TabsTrigger>
+            </TabsList>
 
-          <SectionShell
-            id="users"
-            title={t`Users associated with this entity`}
-            description={t`Preview the users currently returned by the campaign users directory for this entity.`}
-            fullPageLink={(
-              <Button asChild variant="outline" size="sm">
-                <Link
-                  to="/admin/campaigns/$campaignKey/users"
-                  params={{ campaignKey }}
-                  search={createEntityUsersRouteSearch(entityCui)}
-                >
-                  {t`View full page`}
-                </Link>
-              </Button>
-            )}
-          >
-            {usersQuery.error ? (
-              <SectionError
-                title={t`Failed to load users`}
-                description={usersQuery.error.message}
-                onRetry={() => {
-                  void usersQuery.refetch();
-                }}
-              />
-            ) : usersQuery.isLoading && usersQuery.data === undefined ? (
-              <div className="flex min-h-[12rem] items-center justify-center rounded-3xl border border-border/70 bg-background/30">
-                <LoadingSpinner />
-              </div>
-            ) : users.length === 0 ? (
-              <EmptyState
-                title={t`No users found for this entity`}
-                description={t`No users are currently returned for this entity in the campaign users directory.`}
-                className="rounded-3xl border border-border/70 bg-background/30 p-10"
-              />
-            ) : (
-              <div className="overflow-x-auto">
-                <CampaignAdminUsersTable
-                  campaignKey={campaignKey}
-                  entityCui={entityCui}
-                  items={users}
+            <TabsContent value="overview" className="space-y-4">
+              {allSectionQueriesFailed ? (
+                <SectionError
+                  title={t`Failed to load entity detail`}
+                  description={t`All entity sections failed to load. Retry the requests or open the filtered full pages below once the admin services recover.`}
+                  onRetry={refreshAll}
                 />
-              </div>
-            )}
-          </SectionShell>
+              ) : null}
 
-          <SectionShell
-            id="notifications"
-            title={t`Notifications related to this entity`}
-            description={t`Preview the most recent notification audit entries filtered to this entity.`}
-            fullPageLink={(
-              <Button asChild variant="outline" size="sm">
-                <Link
-                  to="/admin/campaigns/$campaignKey/notifications"
-                  params={{ campaignKey }}
-                  search={createEntityNotificationsRouteSearch(entityCui)}
-                >
-                  {t`View full page`}
-                </Link>
-              </Button>
-            )}
-          >
-            {notificationsQuery.error ? (
-              <SectionError
-                title={t`Failed to load notifications`}
-                description={notificationsQuery.error.message}
-                onRetry={() => {
-                  void notificationsQuery.refetch();
-                }}
-              />
-            ) : notificationsQuery.isLoading &&
-              notificationsQuery.data === undefined ? (
-              <div className="flex min-h-[12rem] items-center justify-center rounded-3xl border border-border/70 bg-background/30">
-                <LoadingSpinner />
-              </div>
-            ) : notifications.length === 0 ? (
-              <EmptyState
-                title={t`No notifications found for this entity`}
-                description={t`No campaign notification audit entries were recorded for this entity in the current admin projection.`}
-                className="rounded-3xl border border-border/70 bg-background/30 p-10"
-              />
-            ) : (
-              <CampaignAdminNotificationsTable
-                campaignKey={campaignKey}
-                items={notifications}
-                defaultVisibleColumnIds={NOTIFICATION_PREVIEW_COLUMNS}
-                onClearFilters={() => undefined}
-                onPreviewTemplate={() => undefined}
-              />
-            )}
-          </SectionShell>
+              <SectionShell
+                id="users"
+                title={t`Users associated with this entity`}
+                description={t`Preview the users currently returned by the campaign users directory for this entity.`}
+                fullPageLink={(
+                  <Button asChild variant="outline" size="sm">
+                    <Link
+                      to="/admin/campaigns/$campaignKey/users"
+                      params={{ campaignKey }}
+                      search={createEntityUsersRouteSearch(entityCui)}
+                    >
+                      {t`View full page`}
+                    </Link>
+                  </Button>
+                )}
+              >
+                {usersQuery.error ? (
+                  <SectionError
+                    title={t`Failed to load users`}
+                    description={usersQuery.error.message}
+                    onRetry={() => {
+                      void usersQuery.refetch();
+                    }}
+                  />
+                ) : usersQuery.isLoading && usersQuery.data === undefined ? (
+                  <div className="flex min-h-[12rem] items-center justify-center rounded-3xl border border-border/70 bg-background/30">
+                    <LoadingSpinner />
+                  </div>
+                ) : users.length === 0 ? (
+                  <EmptyState
+                    title={t`No users found for this entity`}
+                    description={t`No users are currently returned for this entity in the campaign users directory.`}
+                    className="rounded-3xl border border-border/70 bg-background/30 p-10"
+                  />
+                ) : (
+                  <div className="overflow-x-auto">
+                    <CampaignAdminUsersTable
+                      campaignKey={campaignKey}
+                      entityCui={entityCui}
+                      items={users}
+                    />
+                  </div>
+                )}
+              </SectionShell>
 
-          <SectionShell
-            id="user-interactions"
-            title={t`User interactions for this entity`}
-            description={t`Preview the latest interaction records currently filtered to this entity.`}
-            fullPageLink={(
-              <Button asChild variant="outline" size="sm">
-                <Link
-                  to="/admin/campaigns/$campaignKey/user-interactions"
-                  params={{ campaignKey }}
-                  search={createEntityInteractionsRouteSearch(entityCui)}
-                >
-                  {t`View full page`}
-                </Link>
-              </Button>
-            )}
-          >
-            {interactionsQuery.error ? (
-              <SectionError
-                title={t`Failed to load interactions`}
-                description={interactionsQuery.error.message}
-                onRetry={() => {
-                  void interactionsQuery.refetch();
-                }}
-              />
-            ) : interactionsQuery.isLoading &&
-              interactionsQuery.data === undefined ? (
-              <div className="flex min-h-[12rem] items-center justify-center rounded-3xl border border-border/70 bg-background/30">
-                <LoadingSpinner />
-              </div>
-            ) : interactions.length === 0 ? (
-              <EmptyState
-                title={t`No interactions found for this entity`}
-                description={t`No interaction records currently match this entity in the campaign review queue.`}
-                className="rounded-3xl border border-border/70 bg-background/30 p-10"
-              />
-            ) : (
-              <EntityInteractionsPreviewTable
-                campaignKey={campaignKey}
-                entityCui={entityCui}
-                items={interactions}
-              />
-            )}
-          </SectionShell>
+              <SectionShell
+                id="notifications"
+                title={t`Notifications related to this entity`}
+                description={t`Preview the most recent notification audit entries filtered to this entity.`}
+                fullPageLink={(
+                  <Button asChild variant="outline" size="sm">
+                    <Link
+                      to="/admin/campaigns/$campaignKey/notifications"
+                      params={{ campaignKey }}
+                      search={createEntityNotificationsRouteSearch(entityCui)}
+                    >
+                      {t`View full page`}
+                    </Link>
+                  </Button>
+                )}
+              >
+                {notificationsQuery.error ? (
+                  <SectionError
+                    title={t`Failed to load notifications`}
+                    description={notificationsQuery.error.message}
+                    onRetry={() => {
+                      void notificationsQuery.refetch();
+                    }}
+                  />
+                ) : notificationsQuery.isLoading &&
+                  notificationsQuery.data === undefined ? (
+                  <div className="flex min-h-[12rem] items-center justify-center rounded-3xl border border-border/70 bg-background/30">
+                    <LoadingSpinner />
+                  </div>
+                ) : notifications.length === 0 ? (
+                  <EmptyState
+                    title={t`No notifications found for this entity`}
+                    description={t`No campaign notification audit entries were recorded for this entity in the current admin projection.`}
+                    className="rounded-3xl border border-border/70 bg-background/30 p-10"
+                  />
+                ) : (
+                  <CampaignAdminNotificationsTable
+                    campaignKey={campaignKey}
+                    items={notifications}
+                    defaultVisibleColumnIds={NOTIFICATION_PREVIEW_COLUMNS}
+                    onClearFilters={() => undefined}
+                    onPreviewTemplate={() => undefined}
+                  />
+                )}
+              </SectionShell>
+
+              <SectionShell
+                id="user-interactions"
+                title={t`User interactions for this entity`}
+                description={t`Preview the latest interaction records currently filtered to this entity.`}
+                fullPageLink={(
+                  <Button asChild variant="outline" size="sm">
+                    <Link
+                      to="/admin/campaigns/$campaignKey/user-interactions"
+                      params={{ campaignKey }}
+                      search={createEntityInteractionsRouteSearch(entityCui)}
+                    >
+                      {t`View full page`}
+                    </Link>
+                  </Button>
+                )}
+              >
+                {interactionsQuery.error ? (
+                  <SectionError
+                    title={t`Failed to load interactions`}
+                    description={interactionsQuery.error.message}
+                    onRetry={() => {
+                      void interactionsQuery.refetch();
+                    }}
+                  />
+                ) : interactionsQuery.isLoading &&
+                  interactionsQuery.data === undefined ? (
+                  <div className="flex min-h-[12rem] items-center justify-center rounded-3xl border border-border/70 bg-background/30">
+                    <LoadingSpinner />
+                  </div>
+                ) : interactions.length === 0 ? (
+                  <EmptyState
+                    title={t`No interactions found for this entity`}
+                    description={t`No interaction records currently match this entity in the campaign review queue.`}
+                    className="rounded-3xl border border-border/70 bg-background/30 p-10"
+                  />
+                ) : (
+                  <EntityInteractionsPreviewTable
+                    campaignKey={campaignKey}
+                    entityCui={entityCui}
+                    items={interactions}
+                  />
+                )}
+              </SectionShell>
+            </TabsContent>
+
+            <TabsContent value="config" className="space-y-4">
+              <Card className="border-border/70 bg-card/80 shadow-none">
+                <CardHeader>
+                  <CardTitle>{t`Entity config`}</CardTitle>
+                  <CardDescription>
+                    {t`Create or update the campaign entity config for this municipality. The values are saved with optimistic concurrency protection.`}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <CampaignAdminEntityConfigEditor
+                    entityCui={entityCui}
+                    entity={entityConfigDetailQuery.data ?? null}
+                    isLoading={
+                      entityConfigDetailQuery.isLoading ||
+                      entityConfigDetailQuery.isFetching
+                    }
+                    errorMessage={entityConfigDetailQuery.error?.message}
+                    submitErrorMessage={updateEntityConfigMutation.error?.message}
+                    isSubmitting={updateEntityConfigMutation.isPending}
+                    onSubmit={handleSubmitEntityConfig}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       )}
     </AdminCampaignLayout>

@@ -1,8 +1,9 @@
 import { existsSync } from "node:fs";
 import type { ComponentType, ReactNode } from "react";
-import { render, screen } from "@/test/test-utils";
+import { fireEvent, render, screen } from "@/test/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type {
+  CampaignAdminEntityConfigDetail,
   CampaignAdminNotificationListItem,
   CampaignAdminUserInteractionListItem,
   CampaignAdminUserListItem,
@@ -18,6 +19,8 @@ const useAuthMock = vi.fn();
 const useCampaignAdminUsersQueryMock = vi.fn();
 const useCampaignAdminNotificationsAuditQueryMock = vi.fn();
 const useCampaignAdminQueueQueryMock = vi.fn();
+const useCampaignAdminEntityConfigDetailQueryMock = vi.fn();
+const useUpdateCampaignAdminEntityConfigMutationMock = vi.fn();
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
@@ -91,6 +94,16 @@ vi.mock(
   () => ({
     useCampaignAdminQueueQuery: (...args: unknown[]) =>
       useCampaignAdminQueueQueryMock(...args),
+  }),
+);
+
+vi.mock(
+  "@/features/campaigns/buget/admin/hooks/use-campaign-admin-entity-config",
+  () => ({
+    useCampaignAdminEntityConfigDetailQuery: (...args: unknown[]) =>
+      useCampaignAdminEntityConfigDetailQueryMock(...args),
+    useUpdateCampaignAdminEntityConfigMutation: (...args: unknown[]) =>
+      useUpdateCampaignAdminEntityConfigMutationMock(...args),
   }),
 );
 
@@ -243,6 +256,25 @@ function createInteractionItem(
   };
 }
 
+function createEntityConfigDetail(
+  overrides: Partial<CampaignAdminEntityConfigDetail> = {},
+): CampaignAdminEntityConfigDetail {
+  return {
+    campaignKey: "funky",
+    entityCui: "12345678",
+    entityName: "Oras Test",
+    configured: true,
+    isConfigured: true,
+    values: {
+      budgetPublicationDate: "2026-03-20",
+      officialBudgetUrl: "https://oras.test/buget.pdf",
+    },
+    updatedAt: "2026-04-18T09:00:00.000Z",
+    updatedByUserId: "admin-1",
+    ...overrides,
+  };
+}
+
 function mockUsersState(input: {
   readonly items?: readonly CampaignAdminUserListItem[];
   readonly error?: { status: number; message: string } | null;
@@ -341,11 +373,25 @@ describeIfEntityDetailPageExists("CampaignAdminEntityDetailPage", () => {
     useCampaignAdminUsersQueryMock.mockReset();
     useCampaignAdminNotificationsAuditQueryMock.mockReset();
     useCampaignAdminQueueQueryMock.mockReset();
+    useCampaignAdminEntityConfigDetailQueryMock.mockReset();
+    useUpdateCampaignAdminEntityConfigMutationMock.mockReset();
 
     useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
     mockUsersState({ items: [createUserItem()] });
     mockNotificationsState({ items: [createNotificationItem()] });
     mockInteractionsState({ items: [createInteractionItem()] });
+    useCampaignAdminEntityConfigDetailQueryMock.mockReturnValue({
+      data: createEntityConfigDetail(),
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+    useUpdateCampaignAdminEntityConfigMutationMock.mockReturnValue({
+      mutateAsync: vi.fn(),
+      error: null,
+      isPending: false,
+    });
   });
 
   it("renders the sign-in gate when the user is signed out", async () => {
@@ -491,5 +537,19 @@ describeIfEntityDetailPageExists("CampaignAdminEntityDetailPage", () => {
           href.includes("entityCui=12345678"),
       ),
     ).toBe(true);
+  });
+
+  it("renders the config tab and inline entity config editor", async () => {
+    await renderEntityDetailPage();
+
+    fireEvent.click(screen.getByRole("tab", { name: "Config" }));
+
+    expect(screen.getByText("Entity config")).toBeInTheDocument();
+    expect(screen.getByLabelText("Budget publication date")).toHaveValue(
+      "2026-03-20",
+    );
+    expect(screen.getByLabelText("Official budget URL")).toHaveValue(
+      "https://oras.test/buget.pdf",
+    );
   });
 });

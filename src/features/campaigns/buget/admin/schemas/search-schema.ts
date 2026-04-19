@@ -9,6 +9,7 @@ import {
 } from "@/features/campaigns/buget/admin/utils/date-inputs";
 import {
   campaignAdminEntityNotificationTypeValues,
+  campaignAdminEntityConfigSortKeyValues,
   campaignAdminInstitutionThreadResponseStatusValues,
   campaignAdminInstitutionThreadStateGroupValues,
   campaignAdminInstitutionThreadStateValues,
@@ -31,6 +32,10 @@ import {
   campaignAdminUsersSortKeyValues,
   campaignAdminUserInteractionsSortKeyValues,
   type CampaignAdminEntitiesFilters,
+  type CampaignAdminEntityConfigExportFilters,
+  type CampaignAdminEntityConfigFilters,
+  type CampaignAdminEntityConfigSearch,
+  type CampaignAdminEntityConfigSortKey,
   type CampaignAdminEntitiesSearch,
   type CampaignAdminEntitiesSortKey,
   type CampaignAdminInstitutionThreadsFilters,
@@ -60,6 +65,10 @@ const campaignAdminUsersSortKeySet = new Set<string>(
 
 const campaignAdminEntitiesSortKeySet = new Set<string>(
   campaignAdminEntitiesSortKeyValues,
+);
+
+const campaignAdminEntityConfigSortKeySet = new Set<string>(
+  campaignAdminEntityConfigSortKeyValues,
 );
 
 const campaignAdminEntityNotificationTypeSet = new Set<string>(
@@ -196,6 +205,19 @@ function toOptionalCampaignAdminEntitiesSortKey(
     : undefined;
 }
 
+function toOptionalCampaignAdminEntityConfigSortKey(
+  value: unknown,
+): CampaignAdminEntityConfigSortKey | undefined {
+  const nextValue = toTrimmedOptionalString(value);
+  if (nextValue === undefined) {
+    return undefined;
+  }
+
+  return campaignAdminEntityConfigSortKeySet.has(nextValue)
+    ? (nextValue as CampaignAdminEntityConfigSortKey)
+    : undefined;
+}
+
 function toOptionalCampaignAdminEntityNotificationType(
   value: unknown,
 ) {
@@ -211,6 +233,12 @@ function toOptionalCampaignAdminEntityNotificationType(
 
 function getDefaultCampaignAdminEntitiesSortOrder(
   sortBy: CampaignAdminEntitiesSortKey,
+) {
+  return sortBy === "entityCui" ? "asc" : "desc";
+}
+
+function getDefaultCampaignAdminEntityConfigSortOrder(
+  sortBy: CampaignAdminEntityConfigSortKey,
 ) {
   return sortBy === "entityCui" ? "asc" : "desc";
 }
@@ -396,6 +424,10 @@ export const campaignAdminUsersRouteSearchSchema = z.object({
 });
 
 export const campaignAdminEntitiesRouteSearchSchema = z.object({
+  tab: z.preprocess(
+    toTrimmedOptionalString,
+    z.enum(["overview", "config"]).optional(),
+  ),
   query: z.preprocess(toTrimmedOptionalString, z.string().min(1).optional()),
   interactionId: z.preprocess(
     toTrimmedOptionalString,
@@ -435,6 +467,76 @@ export const campaignAdminEntitiesRouteSearchSchema = z.object({
   limit: z
     .preprocess(toOptionalLimit, z.number().int().min(1).max(100).optional())
     .transform((value) => value ?? DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT),
+  configEntityCui: z.preprocess(
+    toOptionalEntityCui,
+    z.string().min(1).optional(),
+  ),
+  configUpdatedAtFrom: z.preprocess(
+    toOptionalIsoDateTime,
+    z.string().datetime().optional(),
+  ),
+  configUpdatedAtTo: z.preprocess(
+    toOptionalIsoDateTime,
+    z.string().datetime().optional(),
+  ),
+  configSortBy: z.preprocess(
+    toOptionalCampaignAdminEntityConfigSortKey,
+    z.enum(campaignAdminEntityConfigSortKeyValues).optional(),
+  ),
+  configSortOrder: z.preprocess(
+    toTrimmedOptionalString,
+    z.enum(["asc", "desc"]).optional(),
+  ),
+  configCursor: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().min(1).optional(),
+  ),
+  configPageIndex: z.preprocess(
+    toOptionalPositiveInt,
+    z.number().int().min(1).optional(),
+  ),
+  configLimit: z.preprocess(
+    toOptionalLimit,
+    z.number().int().min(1).max(100).optional(),
+  ),
+  selectedEntityCui: z.preprocess(
+    toOptionalEntityCui,
+    z.string().min(1).optional(),
+  ),
+  configCreate: z.preprocess(toOptionalBoolean, z.boolean().optional()),
+});
+
+export const campaignAdminEntityConfigRouteSearchSchema = z.object({
+  entityCui: z.preprocess(toOptionalEntityCui, z.string().min(1).optional()),
+  updatedAtFrom: z.preprocess(
+    toOptionalIsoDateTime,
+    z.string().datetime().optional(),
+  ),
+  updatedAtTo: z.preprocess(
+    toOptionalIsoDateTime,
+    z.string().datetime().optional(),
+  ),
+  sortBy: z.preprocess(
+    toOptionalCampaignAdminEntityConfigSortKey,
+    z.enum(campaignAdminEntityConfigSortKeyValues).optional(),
+  ),
+  sortOrder: z.preprocess(
+    toTrimmedOptionalString,
+    z.enum(["asc", "desc"]).optional(),
+  ),
+  cursor: z.preprocess(toTrimmedOptionalString, z.string().min(1).optional()),
+  pageIndex: z.preprocess(
+    toOptionalPositiveInt,
+    z.number().int().min(1).optional(),
+  ),
+  limit: z
+    .preprocess(toOptionalLimit, z.number().int().min(1).max(100).optional())
+    .transform((value) => value ?? DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT),
+  selectedEntityCui: z.preprocess(
+    toOptionalEntityCui,
+    z.string().min(1).optional(),
+  ),
+  createMode: z.preprocess(toOptionalBoolean, z.boolean().optional()),
 });
 
 export const campaignAdminNotificationsRouteSearchSchema = z.object({
@@ -577,6 +679,9 @@ export type CampaignAdminUsersRouteSearch = z.infer<
 export type CampaignAdminEntitiesRouteSearch = z.infer<
   typeof campaignAdminEntitiesRouteSearchSchema
 >;
+export type CampaignAdminEntityConfigRouteSearch = z.infer<
+  typeof campaignAdminEntityConfigRouteSearchSchema
+>;
 
 export type CampaignAdminNotificationsRouteSearch = z.infer<
   typeof campaignAdminNotificationsRouteSearchSchema
@@ -679,13 +784,38 @@ export function normalizeCampaignAdminEntitiesSearch(
 ): CampaignAdminEntitiesSearch {
   const parsedSearch = campaignAdminEntitiesRouteSearchSchema.parse(input);
   const sortBy = parsedSearch.sortBy ?? "latestInteractionAt";
+  const configSortBy = parsedSearch.configSortBy ?? "updatedAt";
 
-  return {
+  return omitUndefinedValues({
     ...parsedSearch,
+    tab: parsedSearch.tab ?? "overview",
     sortBy,
     sortOrder:
       parsedSearch.sortOrder ?? getDefaultCampaignAdminEntitiesSortOrder(sortBy),
-  };
+    configSortBy,
+    configSortOrder:
+      parsedSearch.configSortOrder ??
+      getDefaultCampaignAdminEntityConfigSortOrder(configSortBy),
+    configLimit:
+      parsedSearch.configLimit ?? DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
+    configCreate: parsedSearch.configCreate === true ? true : undefined,
+  }) as CampaignAdminEntitiesSearch;
+}
+
+export function normalizeCampaignAdminEntityConfigSearch(
+  input: unknown,
+): CampaignAdminEntityConfigSearch {
+  const parsedSearch = campaignAdminEntityConfigRouteSearchSchema.parse(input);
+  const sortBy = parsedSearch.sortBy ?? "updatedAt";
+
+  return omitUndefinedValues({
+    ...parsedSearch,
+    sortBy,
+    sortOrder:
+      parsedSearch.sortOrder ??
+      getDefaultCampaignAdminEntityConfigSortOrder(sortBy),
+    createMode: parsedSearch.createMode === true ? true : undefined,
+  }) as CampaignAdminEntityConfigSearch;
 }
 
 export function normalizeCampaignAdminNotificationsSearch(
@@ -744,12 +874,115 @@ export function getCampaignAdminQueueFilters(
 export function getCampaignAdminEntitiesFilters(
   search: CampaignAdminEntitiesSearch,
 ): CampaignAdminEntitiesFilters {
-  const { cursor, pageIndex, limit, ...filters } = search;
+  const {
+    tab,
+    cursor,
+    pageIndex,
+    limit,
+    configEntityCui,
+    configUpdatedAtFrom,
+    configUpdatedAtTo,
+    configSortBy,
+    configSortOrder,
+    configCursor,
+    configPageIndex,
+    configLimit,
+    selectedEntityCui,
+    configCreate,
+    ...filters
+  } = search;
+  void tab;
+  void cursor;
+  void pageIndex;
+  void limit;
+  void configEntityCui;
+  void configUpdatedAtFrom;
+  void configUpdatedAtTo;
+  void configSortBy;
+  void configSortOrder;
+  void configCursor;
+  void configPageIndex;
+  void configLimit;
+  void selectedEntityCui;
+  void configCreate;
+
+  return filters;
+}
+
+export function getCampaignAdminEntityConfigFilters(
+  search: CampaignAdminEntityConfigSearch,
+): CampaignAdminEntityConfigFilters {
+  const { selectedEntityCui, createMode, cursor, pageIndex, limit, ...filters } = search;
+  void selectedEntityCui;
+  void createMode;
   void cursor;
   void pageIndex;
   void limit;
 
   return filters;
+}
+
+export function getCampaignAdminEntityConfigSearchFromEntitiesSearch(
+  search: CampaignAdminEntitiesSearch,
+): CampaignAdminEntityConfigSearch {
+  return normalizeCampaignAdminEntityConfigSearch({
+    entityCui: search.configEntityCui,
+    updatedAtFrom: search.configUpdatedAtFrom,
+    updatedAtTo: search.configUpdatedAtTo,
+    sortBy: search.configSortBy,
+    sortOrder: search.configSortOrder,
+    cursor: search.configCursor,
+    pageIndex: search.configPageIndex,
+    limit: search.configLimit ?? DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
+    selectedEntityCui: search.selectedEntityCui,
+    createMode: search.configCreate,
+  });
+}
+
+export function mergeCampaignAdminEntityConfigSearchIntoEntitiesSearch(
+  entitiesSearch: CampaignAdminEntitiesSearch,
+  configSearch: CampaignAdminEntityConfigSearch,
+): CampaignAdminEntitiesSearch {
+  return normalizeCampaignAdminEntitiesSearch({
+    ...entitiesSearch,
+    tab: "config",
+    configEntityCui: configSearch.entityCui,
+    configUpdatedAtFrom: configSearch.updatedAtFrom,
+    configUpdatedAtTo: configSearch.updatedAtTo,
+    configSortBy: configSearch.sortBy,
+    configSortOrder: configSearch.sortOrder,
+    configCursor: configSearch.cursor,
+    configPageIndex: configSearch.pageIndex,
+    configLimit: configSearch.limit,
+    selectedEntityCui: configSearch.selectedEntityCui,
+    configCreate: configSearch.createMode,
+  });
+}
+
+export function getCampaignAdminEntityConfigExportFilters(
+  search: CampaignAdminEntityConfigSearch & { readonly query?: string },
+): CampaignAdminEntityConfigExportFilters {
+  const {
+    query,
+    selectedEntityCui,
+    cursor,
+    pageIndex,
+    limit,
+    entityCui,
+    updatedAtFrom,
+    updatedAtTo,
+  } = search;
+  void selectedEntityCui;
+  void cursor;
+  void pageIndex;
+  void limit;
+
+  return omitUndefinedValues({
+    query,
+    entityCui,
+    updatedAtFrom,
+    updatedAtTo,
+  });
 }
 
 export function getCampaignAdminInstitutionThreadsFilters(
@@ -995,7 +1228,38 @@ export function createCampaignAdminNotificationsPaginationSignature(
 export function createCampaignAdminEntitiesPaginationSignature(
   search: CampaignAdminEntitiesSearch,
 ): string {
-  const { cursor, pageIndex, ...searchWithoutPagination } = search;
+  const {
+    cursor,
+    pageIndex,
+    configCursor,
+    configPageIndex,
+    selectedEntityCui,
+    configCreate,
+    ...searchWithoutPagination
+  } = search;
+  void cursor;
+  void pageIndex;
+  void configCursor;
+  void configPageIndex;
+  void selectedEntityCui;
+  void configCreate;
+
+  return JSON.stringify(searchWithoutPagination);
+}
+
+export function createCampaignAdminEntityConfigPaginationSignature(
+  search: CampaignAdminEntityConfigSearch,
+): string {
+  const {
+    selectedEntityCui,
+    createMode,
+    cursor,
+    pageIndex,
+    ...searchWithoutPagination
+  } =
+    search;
+  void selectedEntityCui;
+  void createMode;
   void cursor;
   void pageIndex;
 
@@ -1029,6 +1293,23 @@ export function createEmptyCampaignAdminEntitiesSearch(input?: {
   readonly currentSearch?: CampaignAdminEntitiesSearch;
 }): CampaignAdminEntitiesSearch {
   return normalizeCampaignAdminEntitiesSearch(
+    omitUndefinedValues({
+      tab: input?.currentSearch?.tab,
+      sortBy: input?.currentSearch?.sortBy,
+      sortOrder: input?.currentSearch?.sortOrder,
+      limit: input?.limit ?? input?.currentSearch?.limit,
+      configSortBy: input?.currentSearch?.configSortBy,
+      configSortOrder: input?.currentSearch?.configSortOrder,
+      configLimit: input?.currentSearch?.configLimit,
+    }),
+  );
+}
+
+export function createEmptyCampaignAdminEntityConfigSearch(input?: {
+  readonly limit?: number;
+  readonly currentSearch?: CampaignAdminEntityConfigSearch;
+}): CampaignAdminEntityConfigSearch {
+  return normalizeCampaignAdminEntityConfigSearch(
     omitUndefinedValues({
       sortBy: input?.currentSearch?.sortBy,
       sortOrder: input?.currentSearch?.sortOrder,
