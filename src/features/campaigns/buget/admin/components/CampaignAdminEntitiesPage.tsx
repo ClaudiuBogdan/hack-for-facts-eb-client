@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import {
   Ban,
   ChevronDown,
   LayoutGrid,
   LockKeyhole,
+  MessageSquare,
   RefreshCw,
   SearchX,
   Settings2,
@@ -51,6 +54,7 @@ import { CampaignAdminEntityConfigTable } from "@/features/campaigns/buget/admin
 import { CampaignAdminEntityConfigToolbar } from "@/features/campaigns/buget/admin/components/CampaignAdminEntityConfigToolbar";
 import { CampaignAdminEntitiesTable } from "@/features/campaigns/buget/admin/components/CampaignAdminEntitiesTable";
 import { CampaignAdminEntitiesToolbar } from "@/features/campaigns/buget/admin/components/CampaignAdminEntitiesToolbar";
+import { CampaignAdminInstitutionThreadsSection } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsSection";
 import { CompactStat } from "@/features/campaigns/buget/admin/components/CompactStat";
 import { getCampaignAdminCampaignLabel } from "@/features/campaigns/buget/admin/constants";
 import { downloadCampaignAdminEntityConfigCsv } from "@/features/campaigns/buget/admin/api/campaign-admin-entity-config";
@@ -73,9 +77,12 @@ import {
   getCampaignAdminEntityConfigFilters,
   getCampaignAdminEntityConfigSearchFromEntitiesSearch,
   getCampaignAdminEntitiesFilters,
+  getCampaignAdminInstitutionThreadsSearchFromEntitiesSearch,
   mergeCampaignAdminEntityConfigSearchIntoEntitiesSearch,
+  mergeCampaignAdminInstitutionThreadsSearchIntoEntitiesSearch,
   normalizeCampaignAdminEntitiesSearch,
 } from "@/features/campaigns/buget/admin/schemas/search-schema";
+import { campaignAdminInstitutionThreadsKeys } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-institution-threads";
 import {
   campaignAdminEntityNotificationTypeValues,
   campaignAdminNotificationStatusValues,
@@ -191,6 +198,7 @@ export function CampaignAdminEntitiesPage({
   search,
   onSearchChange,
 }: CampaignAdminEntitiesPageProps) {
+  const queryClient = useQueryClient();
   const pageTitle = t`Entities`;
   const pageDescription = t`Review entity-level campaign state across users, interaction review pressure, and notification delivery activity.`;
   const normalizedSearch = normalizeCampaignAdminEntitiesSearch(search);
@@ -201,6 +209,10 @@ export function CampaignAdminEntitiesPage({
   );
   const configSearch = useMemo(
     () => getCampaignAdminEntityConfigSearchFromEntitiesSearch(normalizedSearch),
+    [normalizedSearch],
+  );
+  const threadsSearch = useMemo(
+    () => getCampaignAdminInstitutionThreadsSearchFromEntitiesSearch(normalizedSearch),
     [normalizedSearch],
   );
   const configFilters = useMemo(
@@ -420,6 +432,23 @@ export function CampaignAdminEntitiesPage({
     );
   };
 
+  const createEntityThreadsRouteSearch = (
+    entityCui: string,
+    threadId?: string,
+  ) =>
+    mergeCampaignAdminInstitutionThreadsSearchIntoEntitiesSearch(
+      createEmptyCampaignAdminEntitiesSearch({
+        currentSearch: normalizedSearch,
+      }),
+      {
+        ...threadsSearch,
+        entityCui,
+        selectedThreadId: threadId,
+        cursor: undefined,
+        pageIndex: undefined,
+      },
+    );
+
   const handleSortChange = (
     sortBy: CampaignAdminEntitiesSearch["sortBy"],
     sortOrder: CampaignAdminEntitiesSearch["sortOrder"],
@@ -571,6 +600,12 @@ export function CampaignAdminEntitiesPage({
       activeTab === "config" ? entityConfigQuery.refetch() : Promise.resolve(),
       activeTab === "config" && selectedEntityCui
         ? entityConfigDetailQuery.refetch()
+        : Promise.resolve(),
+      activeTab === "threads"
+        ? queryClient.invalidateQueries({
+            queryKey:
+              campaignAdminInstitutionThreadsKeys.allForCampaign(campaignKey),
+          })
         : Promise.resolve(),
     ]);
   };
@@ -960,8 +995,8 @@ export function CampaignAdminEntitiesPage({
         onValueChange={(nextTab) => {
           handleSearchStateChange({
             ...normalizedSearch,
-            tab: nextTab as "overview" | "config",
-            ...(nextTab === "overview"
+            tab: nextTab as "overview" | "threads" | "config",
+            ...(nextTab !== "config"
               ? { selectedEntityCui: undefined }
               : undefined),
           });
@@ -987,6 +1022,13 @@ export function CampaignAdminEntitiesPage({
           >
             <Settings2 className="size-4 shrink-0" aria-hidden="true" />
             {t`Config`}
+          </TabsTrigger>
+          <TabsTrigger
+            value="threads"
+            className={campaignAdminEntitiesGithubTabTriggerClassName}
+          >
+            <MessageSquare className="size-4 shrink-0" aria-hidden="true" />
+            {t`Threads`}
           </TabsTrigger>
         </TabsList>
 
@@ -1111,6 +1153,65 @@ export function CampaignAdminEntitiesPage({
               </div>
             )}
           </section>
+        </TabsContent>
+
+        <TabsContent value="threads" className="mt-0 space-y-4 pt-4">
+          <section className="space-y-1">
+            <h2 className="text-base font-semibold tracking-tight text-foreground">
+              {t`Institution threads`}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {t`Inspect institution correspondence next to the entity admin workflows, or jump into the scoped entity thread surface for a selected row.`}
+            </p>
+          </section>
+
+          {activeTab === "threads" ? (
+            <CampaignAdminInstitutionThreadsSection
+              campaignKey={campaignKey}
+              search={threadsSearch}
+              onSearchChange={(nextThreadSearch, options) => {
+                handleSearchStateChange(
+                  mergeCampaignAdminInstitutionThreadsSearchIntoEntitiesSearch(
+                    normalizedSearch,
+                    nextThreadSearch,
+                  ),
+                  options,
+                );
+              }}
+              detailAction={(item) => (
+                <Button asChild variant="outline" size="sm" className="rounded-full">
+                  <Link
+                    to="/admin/campaigns/$campaignKey/entities/$entityCui"
+                    params={{ campaignKey, entityCui: item.entityCui }}
+                    search={
+                      createEntityThreadsRouteSearch(
+                        item.entityCui,
+                        item.id,
+                      ) as never
+                    }
+                  >
+                    {t`Details`}
+                  </Link>
+                </Button>
+              )}
+              drawerHeaderAction={(detail) => (
+                <Button asChild variant="outline" size="sm">
+                  <Link
+                    to="/admin/campaigns/$campaignKey/entities/$entityCui"
+                    params={{ campaignKey, entityCui: detail.entityCui }}
+                    search={
+                      createEntityThreadsRouteSearch(
+                        detail.entityCui,
+                        detail.id,
+                      ) as never
+                    }
+                  >
+                    {t`Entity details`}
+                  </Link>
+                </Button>
+              )}
+            />
+          ) : null}
         </TabsContent>
 
         <TabsContent value="config" className="mt-0 space-y-4 pt-4">

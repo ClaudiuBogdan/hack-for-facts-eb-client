@@ -19,6 +19,8 @@ describe("campaign entities route", () => {
       Route.options.validateSearch as { parse: (value: unknown) => unknown }
     ).parse({
       limit: "25",
+      threadsLimit: "10",
+      threadsSelectedThreadId: "thread-1",
     });
     const head = (
       Route.options.head as (input: { params: { campaignKey: string } }) => {
@@ -33,6 +35,8 @@ describe("campaign entities route", () => {
     expect(Route.options.ssr).toBe(false);
     expect(search).toEqual({
       limit: 25,
+      threadsLimit: 10,
+      threadsSelectedThreadId: "thread-1",
     });
     expect(head.meta).toEqual(
       expect.arrayContaining([

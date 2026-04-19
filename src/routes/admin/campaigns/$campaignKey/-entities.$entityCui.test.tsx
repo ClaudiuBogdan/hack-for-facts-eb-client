@@ -12,8 +12,15 @@ vi.mock("@/config/env", () => ({
 }));
 
 describe("campaign entity detail route", () => {
-  it("defines no-store route metadata without detail search state", async () => {
+  it("defines no-store route metadata and validates detail search state", async () => {
     const { Route } = await import("./entities.$entityCui");
+    const search = (
+      Route.options.validateSearch as { parse: (value: unknown) => unknown }
+    ).parse({
+      tab: "threads",
+      threadsSelectedThreadId: "thread-1",
+      threadsLimit: "20",
+    });
 
     const head = (
       Route.options.head as (input: {
@@ -29,7 +36,12 @@ describe("campaign entity detail route", () => {
     });
 
     expect(Route.options.ssr).toBe(false);
-    expect(Route.options.validateSearch).toBeUndefined();
+    expect(search).toEqual({
+      tab: "threads",
+      limit: 50,
+      threadsSelectedThreadId: "thread-1",
+      threadsLimit: 20,
+    });
     expect(head.meta).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

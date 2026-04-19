@@ -88,5 +88,18 @@ function toCampaignAdminEntitiesRouteSearch(
     configLimit: search.configLimit,
     selectedEntityCui: search.selectedEntityCui,
     configCreate: search.configCreate,
+    threadsStateGroup: search.threadsStateGroup,
+    threadsThreadState: search.threadsThreadState,
+    threadsResponseStatus: search.threadsResponseStatus,
+    threadsQuery: search.threadsQuery,
+    threadsEntityCui: search.threadsEntityCui,
+    threadsUpdatedAtFrom: search.threadsUpdatedAtFrom,
+    threadsUpdatedAtTo: search.threadsUpdatedAtTo,
+    threadsLatestResponseAtFrom: search.threadsLatestResponseAtFrom,
+    threadsLatestResponseAtTo: search.threadsLatestResponseAtTo,
+    threadsSelectedThreadId: search.threadsSelectedThreadId,
+    threadsCursor: search.threadsCursor,
+    threadsPageIndex: search.threadsPageIndex,
+    threadsLimit: search.threadsLimit,
   };
 }

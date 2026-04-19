@@ -4,7 +4,6 @@ import {
   Building2,
   ClipboardList,
   Mail,
-  MessageSquare,
   Users,
 } from "lucide-react";
 import { t } from "@lingui/core/macro";
@@ -124,24 +123,19 @@ function createCampaignAdminEntitiesRouteSearch() {
     configLimit: undefined,
     selectedEntityCui: undefined,
     configCreate: undefined,
-  };
-}
-
-function createCampaignAdminInstitutionThreadsRouteSearch() {
-  return {
-    stateGroup: "open" as const,
-    threadState: undefined,
-    responseStatus: undefined,
-    query: undefined,
-    entityCui: undefined,
-    updatedAtFrom: undefined,
-    updatedAtTo: undefined,
-    latestResponseAtFrom: undefined,
-    latestResponseAtTo: undefined,
-    selectedThreadId: undefined,
-    cursor: undefined,
-    pageIndex: undefined,
-    limit: 50,
+    threadsStateGroup: undefined,
+    threadsThreadState: undefined,
+    threadsResponseStatus: undefined,
+    threadsQuery: undefined,
+    threadsEntityCui: undefined,
+    threadsUpdatedAtFrom: undefined,
+    threadsUpdatedAtTo: undefined,
+    threadsLatestResponseAtFrom: undefined,
+    threadsLatestResponseAtTo: undefined,
+    threadsSelectedThreadId: undefined,
+    threadsCursor: undefined,
+    threadsPageIndex: undefined,
+    threadsLimit: undefined,
   };
 }
 
@@ -475,31 +469,6 @@ export function CampaignAdminHubPage({
                   {t`${riskFlaggedCount} flagged for review`}
                 </p>
               )}
-            </Link>
-
-            <Link
-              to="/admin/campaigns/$campaignKey/institution-threads"
-              params={{ campaignKey }}
-              search={createCampaignAdminInstitutionThreadsRouteSearch()}
-              className="group flex flex-col gap-3 rounded-xl border border-border/70 bg-card/80 p-5 transition-colors hover:border-border hover:bg-muted/20"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-                  <MessageSquare className="h-5 w-5" aria-hidden="true" />
-                </div>
-                <ArrowRight
-                  className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-                  aria-hidden="true"
-                />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">
-                  {t`Institution Threads`}
-                </p>
-                <p className="mt-0.5 text-sm text-muted-foreground">
-                  {t`Review institution email threads and append manual response events.`}
-                </p>
-              </div>
             </Link>
 
             <Link

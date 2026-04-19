@@ -426,7 +426,7 @@ export const campaignAdminUsersRouteSearchSchema = z.object({
 export const campaignAdminEntitiesRouteSearchSchema = z.object({
   tab: z.preprocess(
     toTrimmedOptionalString,
-    z.enum(["overview", "config"]).optional(),
+    z.enum(["overview", "threads", "config"]).optional(),
   ),
   query: z.preprocess(toTrimmedOptionalString, z.string().min(1).optional()),
   interactionId: z.preprocess(
@@ -504,6 +504,58 @@ export const campaignAdminEntitiesRouteSearchSchema = z.object({
     z.string().min(1).optional(),
   ),
   configCreate: z.preprocess(toOptionalBoolean, z.boolean().optional()),
+  threadsStateGroup: z.preprocess(
+    toTrimmedOptionalString,
+    z.enum(campaignAdminInstitutionThreadStateGroupValues).optional(),
+  ),
+  threadsThreadState: z.preprocess(
+    toTrimmedOptionalString,
+    z.enum(campaignAdminInstitutionThreadStateValues).optional(),
+  ),
+  threadsResponseStatus: z.preprocess(
+    toTrimmedOptionalString,
+    z.enum(campaignAdminInstitutionThreadResponseStatusValues).optional(),
+  ),
+  threadsQuery: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().min(1).optional(),
+  ),
+  threadsEntityCui: z.preprocess(
+    toOptionalEntityCui,
+    z.string().min(1).optional(),
+  ),
+  threadsUpdatedAtFrom: z.preprocess(
+    toOptionalIsoDateTime,
+    z.string().datetime().optional(),
+  ),
+  threadsUpdatedAtTo: z.preprocess(
+    toOptionalIsoDateTime,
+    z.string().datetime().optional(),
+  ),
+  threadsLatestResponseAtFrom: z.preprocess(
+    toOptionalIsoDateTime,
+    z.string().datetime().optional(),
+  ),
+  threadsLatestResponseAtTo: z.preprocess(
+    toOptionalIsoDateTime,
+    z.string().datetime().optional(),
+  ),
+  threadsSelectedThreadId: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().min(1).optional(),
+  ),
+  threadsCursor: z.preprocess(
+    toTrimmedOptionalString,
+    z.string().min(1).optional(),
+  ),
+  threadsPageIndex: z.preprocess(
+    toOptionalPositiveInt,
+    z.number().int().min(1).optional(),
+  ),
+  threadsLimit: z.preprocess(
+    toOptionalLimit,
+    z.number().int().min(1).max(100).optional(),
+  ),
 });
 
 export const campaignAdminEntityConfigRouteSearchSchema = z.object({
@@ -889,6 +941,19 @@ export function getCampaignAdminEntitiesFilters(
     configLimit,
     selectedEntityCui,
     configCreate,
+    threadsStateGroup,
+    threadsThreadState,
+    threadsResponseStatus,
+    threadsQuery,
+    threadsEntityCui,
+    threadsUpdatedAtFrom,
+    threadsUpdatedAtTo,
+    threadsLatestResponseAtFrom,
+    threadsLatestResponseAtTo,
+    threadsSelectedThreadId,
+    threadsCursor,
+    threadsPageIndex,
+    threadsLimit,
     ...filters
   } = search;
   void tab;
@@ -905,6 +970,19 @@ export function getCampaignAdminEntitiesFilters(
   void configLimit;
   void selectedEntityCui;
   void configCreate;
+  void threadsStateGroup;
+  void threadsThreadState;
+  void threadsResponseStatus;
+  void threadsQuery;
+  void threadsEntityCui;
+  void threadsUpdatedAtFrom;
+  void threadsUpdatedAtTo;
+  void threadsLatestResponseAtFrom;
+  void threadsLatestResponseAtTo;
+  void threadsSelectedThreadId;
+  void threadsCursor;
+  void threadsPageIndex;
+  void threadsLimit;
 
   return filters;
 }
@@ -939,6 +1017,26 @@ export function getCampaignAdminEntityConfigSearchFromEntitiesSearch(
   });
 }
 
+export function getCampaignAdminInstitutionThreadsSearchFromEntitiesSearch(
+  search: CampaignAdminEntitiesSearch,
+): CampaignAdminInstitutionThreadsSearch {
+  return normalizeCampaignAdminInstitutionThreadsSearch({
+    stateGroup: search.threadsStateGroup,
+    threadState: search.threadsThreadState,
+    responseStatus: search.threadsResponseStatus,
+    query: search.threadsQuery,
+    entityCui: search.threadsEntityCui,
+    updatedAtFrom: search.threadsUpdatedAtFrom,
+    updatedAtTo: search.threadsUpdatedAtTo,
+    latestResponseAtFrom: search.threadsLatestResponseAtFrom,
+    latestResponseAtTo: search.threadsLatestResponseAtTo,
+    selectedThreadId: search.threadsSelectedThreadId,
+    cursor: search.threadsCursor,
+    pageIndex: search.threadsPageIndex,
+    limit: search.threadsLimit ?? DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
+  });
+}
+
 export function mergeCampaignAdminEntityConfigSearchIntoEntitiesSearch(
   entitiesSearch: CampaignAdminEntitiesSearch,
   configSearch: CampaignAdminEntityConfigSearch,
@@ -956,6 +1054,29 @@ export function mergeCampaignAdminEntityConfigSearchIntoEntitiesSearch(
     configLimit: configSearch.limit,
     selectedEntityCui: configSearch.selectedEntityCui,
     configCreate: configSearch.createMode,
+  });
+}
+
+export function mergeCampaignAdminInstitutionThreadsSearchIntoEntitiesSearch(
+  entitiesSearch: CampaignAdminEntitiesSearch,
+  threadSearch: CampaignAdminInstitutionThreadsSearch,
+): CampaignAdminEntitiesSearch {
+  return normalizeCampaignAdminEntitiesSearch({
+    ...entitiesSearch,
+    tab: "threads",
+    threadsStateGroup: threadSearch.stateGroup,
+    threadsThreadState: threadSearch.threadState,
+    threadsResponseStatus: threadSearch.responseStatus,
+    threadsQuery: threadSearch.query,
+    threadsEntityCui: threadSearch.entityCui,
+    threadsUpdatedAtFrom: threadSearch.updatedAtFrom,
+    threadsUpdatedAtTo: threadSearch.updatedAtTo,
+    threadsLatestResponseAtFrom: threadSearch.latestResponseAtFrom,
+    threadsLatestResponseAtTo: threadSearch.latestResponseAtTo,
+    threadsSelectedThreadId: threadSearch.selectedThreadId,
+    threadsCursor: threadSearch.cursor,
+    threadsPageIndex: threadSearch.pageIndex,
+    threadsLimit: threadSearch.limit,
   });
 }
 

@@ -271,7 +271,11 @@ describe("CampaignAdminInstitutionThreadsPage", () => {
     fireEvent.click(screen.getByText("Oras Test"));
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText("Review the latest correspondence and record a manual institution response.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Inspect the full correspondence history and record a manual institution response from the same entity workflow.",
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByText(/<script>alert\(1\)<\/script>/)).toBeInTheDocument();
   });
 

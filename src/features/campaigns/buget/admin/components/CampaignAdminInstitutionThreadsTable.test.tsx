@@ -1,30 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import type {
-  KeyboardEventHandler,
-  MouseEventHandler,
-  ReactNode,
-} from "react";
 import { describe, expect, it, vi } from "vitest";
+import { Button } from "@/components/ui/button";
 import { CampaignAdminInstitutionThreadsTable } from "./CampaignAdminInstitutionThreadsTable";
 import type { CampaignAdminInstitutionThreadListItem } from "@/features/campaigns/buget/admin/types";
-
-vi.mock("@tanstack/react-router", () => ({
-  Link: ({
-    children,
-    to,
-    onClick,
-    onKeyDown,
-  }: {
-    readonly children: ReactNode;
-    readonly to?: string;
-    readonly onClick?: MouseEventHandler<HTMLAnchorElement>;
-    readonly onKeyDown?: KeyboardEventHandler<HTMLAnchorElement>;
-  }) => (
-    <a href={to} onClick={onClick} onKeyDown={onKeyDown}>
-      {children}
-    </a>
-  ),
-}));
 
 function createThreadItem(
   overrides: Partial<CampaignAdminInstitutionThreadListItem> = {},
@@ -60,9 +38,7 @@ describe("CampaignAdminInstitutionThreadsTable", () => {
 
     render(
       <CampaignAdminInstitutionThreadsTable
-        campaignKey="funky"
         items={[createThreadItem()]}
-        search={{ limit: 50, stateGroup: "open" }}
         onOpenThread={onOpenThread}
         onClearFilters={vi.fn()}
       />,
@@ -75,12 +51,16 @@ describe("CampaignAdminInstitutionThreadsTable", () => {
 
   it("keeps explicit row actions from triggering the row click handler twice", () => {
     const onOpenThread = vi.fn();
+    const detailAction = vi.fn(() => (
+      <Button type="button" variant="outline" size="sm">
+        Details
+      </Button>
+    ));
 
     render(
       <CampaignAdminInstitutionThreadsTable
-        campaignKey="funky"
         items={[createThreadItem()]}
-        search={{ limit: 50, stateGroup: "open" }}
+        detailAction={detailAction}
         onOpenThread={onOpenThread}
         onClearFilters={vi.fn()}
       />,
@@ -93,8 +73,9 @@ describe("CampaignAdminInstitutionThreadsTable", () => {
 
     onOpenThread.mockClear();
 
-    fireEvent.click(screen.getByRole("link", { name: "Open details" }));
+    fireEvent.click(screen.getByRole("button", { name: "Details" }));
 
+    expect(detailAction).toHaveBeenCalledTimes(1);
     expect(onOpenThread).not.toHaveBeenCalled();
   });
 });

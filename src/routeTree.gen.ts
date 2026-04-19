@@ -69,14 +69,12 @@ import { Route as MapsDatasetsPublicPublicIdRouteImport } from './routes/maps/da
 import { Route as AdminCampaignsCampaignKeyUsersRouteImport } from './routes/admin/campaigns/$campaignKey/users'
 import { Route as AdminCampaignsCampaignKeyUserInteractionsRouteImport } from './routes/admin/campaigns/$campaignKey/user-interactions'
 import { Route as AdminCampaignsCampaignKeyNotificationsRouteImport } from './routes/admin/campaigns/$campaignKey/notifications'
-import { Route as AdminCampaignsCampaignKeyInstitutionThreadsRouteImport } from './routes/admin/campaigns/$campaignKey/institution-threads'
 import { Route as AdminCampaignsCampaignKeyEntitiesRouteImport } from './routes/admin/campaigns/$campaignKey/entities'
 import { Route as AdminCampaignsCampaignKeyAnalyticsRouteImport } from './routes/admin/campaigns/$campaignKey/analytics'
 import { Route as LangLearningCertificatesIdRouteImport } from './routes/$lang/learning/certificates.$id'
 import { Route as PrimarieCuiBugetProvocariRouteRouteImport } from './routes/primarie/$cui/buget/provocari/route'
 import { Route as PrimarieCuiBugetProvocariIndexRouteImport } from './routes/primarie/$cui/buget/provocari/index'
 import { Route as AdminCampaignsCampaignKeyUsersUserIdRouteImport } from './routes/admin/campaigns/$campaignKey/users.$userId'
-import { Route as AdminCampaignsCampaignKeyInstitutionThreadsThreadIdRouteImport } from './routes/admin/campaigns/$campaignKey/institution-threads.$threadId'
 import { Route as AdminCampaignsCampaignKeyEntitiesEntityCuiRouteImport } from './routes/admin/campaigns/$campaignKey/entities.$entityCui'
 import { Route as LangLearningPathIdModuleIdLessonIdRouteImport } from './routes/$lang/learning/$pathId/$moduleId/$lessonId'
 import { Route as PrimarieCuiBugetProvocariModuleSlugIndexRouteImport } from './routes/primarie/$cui/buget/provocari/$moduleSlug/index'
@@ -503,16 +501,6 @@ const AdminCampaignsCampaignKeyNotificationsRoute =
       (d) => d.Route,
     ),
   )
-const AdminCampaignsCampaignKeyInstitutionThreadsRoute =
-  AdminCampaignsCampaignKeyInstitutionThreadsRouteImport.update({
-    id: '/institution-threads',
-    path: '/institution-threads',
-    getParentRoute: () => AdminCampaignsCampaignKeyRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/admin/campaigns/$campaignKey/institution-threads.lazy').then(
-      (d) => d.Route,
-    ),
-  )
 const AdminCampaignsCampaignKeyEntitiesRoute =
   AdminCampaignsCampaignKeyEntitiesRouteImport.update({
     id: '/entities',
@@ -566,16 +554,6 @@ const AdminCampaignsCampaignKeyUsersUserIdRoute =
     getParentRoute: () => AdminCampaignsCampaignKeyUsersRoute,
   } as any).lazy(() =>
     import('./routes/admin/campaigns/$campaignKey/users.$userId.lazy').then(
-      (d) => d.Route,
-    ),
-  )
-const AdminCampaignsCampaignKeyInstitutionThreadsThreadIdRoute =
-  AdminCampaignsCampaignKeyInstitutionThreadsThreadIdRouteImport.update({
-    id: '/$threadId',
-    path: '/$threadId',
-    getParentRoute: () => AdminCampaignsCampaignKeyInstitutionThreadsRoute,
-  } as any).lazy(() =>
-    import('./routes/admin/campaigns/$campaignKey/institution-threads.$threadId.lazy').then(
       (d) => d.Route,
     ),
   )
@@ -679,7 +657,6 @@ export interface FileRoutesByFullPath {
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
   '/admin/campaigns/$campaignKey/analytics': typeof AdminCampaignsCampaignKeyAnalyticsRoute
   '/admin/campaigns/$campaignKey/entities': typeof AdminCampaignsCampaignKeyEntitiesRouteWithChildren
-  '/admin/campaigns/$campaignKey/institution-threads': typeof AdminCampaignsCampaignKeyInstitutionThreadsRouteWithChildren
   '/admin/campaigns/$campaignKey/notifications': typeof AdminCampaignsCampaignKeyNotificationsRoute
   '/admin/campaigns/$campaignKey/user-interactions': typeof AdminCampaignsCampaignKeyUserInteractionsRoute
   '/admin/campaigns/$campaignKey/users': typeof AdminCampaignsCampaignKeyUsersRouteWithChildren
@@ -691,7 +668,6 @@ export interface FileRoutesByFullPath {
   '/primarie/$cui/buget/': typeof PrimarieCuiBugetIndexRoute
   '/$lang/learning/$pathId/$moduleId/$lessonId': typeof LangLearningPathIdModuleIdLessonIdRoute
   '/admin/campaigns/$campaignKey/entities/$entityCui': typeof AdminCampaignsCampaignKeyEntitiesEntityCuiRoute
-  '/admin/campaigns/$campaignKey/institution-threads/$threadId': typeof AdminCampaignsCampaignKeyInstitutionThreadsThreadIdRoute
   '/admin/campaigns/$campaignKey/users/$userId': typeof AdminCampaignsCampaignKeyUsersUserIdRoute
   '/primarie/$cui/buget/provocari/': typeof PrimarieCuiBugetProvocariIndexRoute
   '/primarie/$cui/buget/provocari/$moduleSlug/': typeof PrimarieCuiBugetProvocariModuleSlugIndexRoute
@@ -750,7 +726,6 @@ export interface FileRoutesByTo {
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
   '/admin/campaigns/$campaignKey/analytics': typeof AdminCampaignsCampaignKeyAnalyticsRoute
   '/admin/campaigns/$campaignKey/entities': typeof AdminCampaignsCampaignKeyEntitiesRouteWithChildren
-  '/admin/campaigns/$campaignKey/institution-threads': typeof AdminCampaignsCampaignKeyInstitutionThreadsRouteWithChildren
   '/admin/campaigns/$campaignKey/notifications': typeof AdminCampaignsCampaignKeyNotificationsRoute
   '/admin/campaigns/$campaignKey/user-interactions': typeof AdminCampaignsCampaignKeyUserInteractionsRoute
   '/admin/campaigns/$campaignKey/users': typeof AdminCampaignsCampaignKeyUsersRouteWithChildren
@@ -762,7 +737,6 @@ export interface FileRoutesByTo {
   '/primarie/$cui/buget': typeof PrimarieCuiBugetIndexRoute
   '/$lang/learning/$pathId/$moduleId/$lessonId': typeof LangLearningPathIdModuleIdLessonIdRoute
   '/admin/campaigns/$campaignKey/entities/$entityCui': typeof AdminCampaignsCampaignKeyEntitiesEntityCuiRoute
-  '/admin/campaigns/$campaignKey/institution-threads/$threadId': typeof AdminCampaignsCampaignKeyInstitutionThreadsThreadIdRoute
   '/admin/campaigns/$campaignKey/users/$userId': typeof AdminCampaignsCampaignKeyUsersUserIdRoute
   '/primarie/$cui/buget/provocari': typeof PrimarieCuiBugetProvocariIndexRoute
   '/primarie/$cui/buget/provocari/$moduleSlug': typeof PrimarieCuiBugetProvocariModuleSlugIndexRoute
@@ -828,7 +802,6 @@ export interface FileRoutesById {
   '/$lang/learning/certificates/$id': typeof LangLearningCertificatesIdRoute
   '/admin/campaigns/$campaignKey/analytics': typeof AdminCampaignsCampaignKeyAnalyticsRoute
   '/admin/campaigns/$campaignKey/entities': typeof AdminCampaignsCampaignKeyEntitiesRouteWithChildren
-  '/admin/campaigns/$campaignKey/institution-threads': typeof AdminCampaignsCampaignKeyInstitutionThreadsRouteWithChildren
   '/admin/campaigns/$campaignKey/notifications': typeof AdminCampaignsCampaignKeyNotificationsRoute
   '/admin/campaigns/$campaignKey/user-interactions': typeof AdminCampaignsCampaignKeyUserInteractionsRoute
   '/admin/campaigns/$campaignKey/users': typeof AdminCampaignsCampaignKeyUsersRouteWithChildren
@@ -840,7 +813,6 @@ export interface FileRoutesById {
   '/primarie/$cui/buget/': typeof PrimarieCuiBugetIndexRoute
   '/$lang/learning/$pathId/$moduleId/$lessonId': typeof LangLearningPathIdModuleIdLessonIdRoute
   '/admin/campaigns/$campaignKey/entities/$entityCui': typeof AdminCampaignsCampaignKeyEntitiesEntityCuiRoute
-  '/admin/campaigns/$campaignKey/institution-threads/$threadId': typeof AdminCampaignsCampaignKeyInstitutionThreadsThreadIdRoute
   '/admin/campaigns/$campaignKey/users/$userId': typeof AdminCampaignsCampaignKeyUsersUserIdRoute
   '/primarie/$cui/buget/provocari/': typeof PrimarieCuiBugetProvocariIndexRoute
   '/primarie/$cui/buget/provocari/$moduleSlug/': typeof PrimarieCuiBugetProvocariModuleSlugIndexRoute
@@ -907,7 +879,6 @@ export interface FileRouteTypes {
     | '/$lang/learning/certificates/$id'
     | '/admin/campaigns/$campaignKey/analytics'
     | '/admin/campaigns/$campaignKey/entities'
-    | '/admin/campaigns/$campaignKey/institution-threads'
     | '/admin/campaigns/$campaignKey/notifications'
     | '/admin/campaigns/$campaignKey/user-interactions'
     | '/admin/campaigns/$campaignKey/users'
@@ -919,7 +890,6 @@ export interface FileRouteTypes {
     | '/primarie/$cui/buget/'
     | '/$lang/learning/$pathId/$moduleId/$lessonId'
     | '/admin/campaigns/$campaignKey/entities/$entityCui'
-    | '/admin/campaigns/$campaignKey/institution-threads/$threadId'
     | '/admin/campaigns/$campaignKey/users/$userId'
     | '/primarie/$cui/buget/provocari/'
     | '/primarie/$cui/buget/provocari/$moduleSlug/'
@@ -978,7 +948,6 @@ export interface FileRouteTypes {
     | '/$lang/learning/certificates/$id'
     | '/admin/campaigns/$campaignKey/analytics'
     | '/admin/campaigns/$campaignKey/entities'
-    | '/admin/campaigns/$campaignKey/institution-threads'
     | '/admin/campaigns/$campaignKey/notifications'
     | '/admin/campaigns/$campaignKey/user-interactions'
     | '/admin/campaigns/$campaignKey/users'
@@ -990,7 +959,6 @@ export interface FileRouteTypes {
     | '/primarie/$cui/buget'
     | '/$lang/learning/$pathId/$moduleId/$lessonId'
     | '/admin/campaigns/$campaignKey/entities/$entityCui'
-    | '/admin/campaigns/$campaignKey/institution-threads/$threadId'
     | '/admin/campaigns/$campaignKey/users/$userId'
     | '/primarie/$cui/buget/provocari'
     | '/primarie/$cui/buget/provocari/$moduleSlug'
@@ -1055,7 +1023,6 @@ export interface FileRouteTypes {
     | '/$lang/learning/certificates/$id'
     | '/admin/campaigns/$campaignKey/analytics'
     | '/admin/campaigns/$campaignKey/entities'
-    | '/admin/campaigns/$campaignKey/institution-threads'
     | '/admin/campaigns/$campaignKey/notifications'
     | '/admin/campaigns/$campaignKey/user-interactions'
     | '/admin/campaigns/$campaignKey/users'
@@ -1067,7 +1034,6 @@ export interface FileRouteTypes {
     | '/primarie/$cui/buget/'
     | '/$lang/learning/$pathId/$moduleId/$lessonId'
     | '/admin/campaigns/$campaignKey/entities/$entityCui'
-    | '/admin/campaigns/$campaignKey/institution-threads/$threadId'
     | '/admin/campaigns/$campaignKey/users/$userId'
     | '/primarie/$cui/buget/provocari/'
     | '/primarie/$cui/buget/provocari/$moduleSlug/'
@@ -1565,13 +1531,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCampaignsCampaignKeyNotificationsRouteImport
       parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
     }
-    '/admin/campaigns/$campaignKey/institution-threads': {
-      id: '/admin/campaigns/$campaignKey/institution-threads'
-      path: '/institution-threads'
-      fullPath: '/admin/campaigns/$campaignKey/institution-threads'
-      preLoaderRoute: typeof AdminCampaignsCampaignKeyInstitutionThreadsRouteImport
-      parentRoute: typeof AdminCampaignsCampaignKeyRouteRoute
-    }
     '/admin/campaigns/$campaignKey/entities': {
       id: '/admin/campaigns/$campaignKey/entities'
       path: '/entities'
@@ -1613,13 +1572,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/campaigns/$campaignKey/users/$userId'
       preLoaderRoute: typeof AdminCampaignsCampaignKeyUsersUserIdRouteImport
       parentRoute: typeof AdminCampaignsCampaignKeyUsersRoute
-    }
-    '/admin/campaigns/$campaignKey/institution-threads/$threadId': {
-      id: '/admin/campaigns/$campaignKey/institution-threads/$threadId'
-      path: '/$threadId'
-      fullPath: '/admin/campaigns/$campaignKey/institution-threads/$threadId'
-      preLoaderRoute: typeof AdminCampaignsCampaignKeyInstitutionThreadsThreadIdRouteImport
-      parentRoute: typeof AdminCampaignsCampaignKeyInstitutionThreadsRoute
     }
     '/admin/campaigns/$campaignKey/entities/$entityCui': {
       id: '/admin/campaigns/$campaignKey/entities/$entityCui'
@@ -1797,21 +1749,6 @@ const AdminCampaignsCampaignKeyEntitiesRouteWithChildren =
     AdminCampaignsCampaignKeyEntitiesRouteChildren,
   )
 
-interface AdminCampaignsCampaignKeyInstitutionThreadsRouteChildren {
-  AdminCampaignsCampaignKeyInstitutionThreadsThreadIdRoute: typeof AdminCampaignsCampaignKeyInstitutionThreadsThreadIdRoute
-}
-
-const AdminCampaignsCampaignKeyInstitutionThreadsRouteChildren: AdminCampaignsCampaignKeyInstitutionThreadsRouteChildren =
-  {
-    AdminCampaignsCampaignKeyInstitutionThreadsThreadIdRoute:
-      AdminCampaignsCampaignKeyInstitutionThreadsThreadIdRoute,
-  }
-
-const AdminCampaignsCampaignKeyInstitutionThreadsRouteWithChildren =
-  AdminCampaignsCampaignKeyInstitutionThreadsRoute._addFileChildren(
-    AdminCampaignsCampaignKeyInstitutionThreadsRouteChildren,
-  )
-
 interface AdminCampaignsCampaignKeyUsersRouteChildren {
   AdminCampaignsCampaignKeyUsersUserIdRoute: typeof AdminCampaignsCampaignKeyUsersUserIdRoute
 }
@@ -1830,7 +1767,6 @@ const AdminCampaignsCampaignKeyUsersRouteWithChildren =
 interface AdminCampaignsCampaignKeyRouteRouteChildren {
   AdminCampaignsCampaignKeyAnalyticsRoute: typeof AdminCampaignsCampaignKeyAnalyticsRoute
   AdminCampaignsCampaignKeyEntitiesRoute: typeof AdminCampaignsCampaignKeyEntitiesRouteWithChildren
-  AdminCampaignsCampaignKeyInstitutionThreadsRoute: typeof AdminCampaignsCampaignKeyInstitutionThreadsRouteWithChildren
   AdminCampaignsCampaignKeyNotificationsRoute: typeof AdminCampaignsCampaignKeyNotificationsRoute
   AdminCampaignsCampaignKeyUserInteractionsRoute: typeof AdminCampaignsCampaignKeyUserInteractionsRoute
   AdminCampaignsCampaignKeyUsersRoute: typeof AdminCampaignsCampaignKeyUsersRouteWithChildren
@@ -1843,8 +1779,6 @@ const AdminCampaignsCampaignKeyRouteRouteChildren: AdminCampaignsCampaignKeyRout
       AdminCampaignsCampaignKeyAnalyticsRoute,
     AdminCampaignsCampaignKeyEntitiesRoute:
       AdminCampaignsCampaignKeyEntitiesRouteWithChildren,
-    AdminCampaignsCampaignKeyInstitutionThreadsRoute:
-      AdminCampaignsCampaignKeyInstitutionThreadsRouteWithChildren,
     AdminCampaignsCampaignKeyNotificationsRoute:
       AdminCampaignsCampaignKeyNotificationsRoute,
     AdminCampaignsCampaignKeyUserInteractionsRoute:

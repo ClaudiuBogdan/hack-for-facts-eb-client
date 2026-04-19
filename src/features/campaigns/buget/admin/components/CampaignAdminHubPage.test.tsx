@@ -289,23 +289,14 @@ describe("CampaignAdminHubPage", () => {
     expect(screen.getByText("2 delivery issues")).toBeInTheDocument();
   });
 
-  it("renders the institution threads hub card with the default route search", () => {
+  it("does not render a standalone institution threads hub card", () => {
     render(<CampaignAdminHubPage campaignKey="funky" />);
 
-    const institutionThreadsLink = screen.getByRole("link", {
+    const institutionThreadsLink = screen.queryByRole("link", {
       name: /Institution Threads/i,
     });
 
-    expect(institutionThreadsLink).toBeInTheDocument();
-    expect(institutionThreadsLink).toHaveAttribute(
-      "href",
-      "/admin/campaigns/funky/institution-threads?stateGroup=open&limit=50",
-    );
-    expect(
-      screen.getByText(
-        "Review institution email threads and append manual response events.",
-      ),
-    ).toBeInTheDocument();
+    expect(institutionThreadsLink).not.toBeInTheDocument();
   });
 
   it("falls back to the existing descriptive copy when optional hub stats are unavailable", () => {

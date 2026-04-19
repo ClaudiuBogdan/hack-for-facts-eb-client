@@ -54,6 +54,7 @@ type CampaignAdminInstitutionThreadsToolbarProps = {
   readonly search: CampaignAdminInstitutionThreadsSearch;
   readonly isLoading: boolean;
   readonly embedded?: boolean;
+  readonly showEntityFilter?: boolean;
   readonly actions?: ReactNode;
   readonly trailingActions?: ReactNode;
   readonly onApply: (search: CampaignAdminInstitutionThreadsSearch) => void;
@@ -133,6 +134,7 @@ export function CampaignAdminInstitutionThreadsToolbar({
   search,
   isLoading,
   embedded = false,
+  showEntityFilter = true,
   actions,
   trailingActions,
   onApply,
@@ -211,7 +213,7 @@ export function CampaignAdminInstitutionThreadsToolbar({
       });
     }
 
-    if (search.entityCui) {
+    if (showEntityFilter && search.entityCui) {
       filters.push({
         label: t`Entity`,
         value: search.entityCui,
@@ -244,7 +246,7 @@ export function CampaignAdminInstitutionThreadsToolbar({
     }
 
     return filters;
-  }, [search]);
+  }, [search, showEntityFilter]);
 
   const appliedAdvancedFiltersCount = activeFilters.filter(
     (filter) => filter.section === "advanced",
@@ -361,19 +363,23 @@ export function CampaignAdminInstitutionThreadsToolbar({
             </Select>
           </ToolbarField>
 
-          <ToolbarField
-            label={t`Entity CUI`}
-            htmlFor="institution-threads-entity-cui-sheet"
-          >
-            <Input
-              id="institution-threads-entity-cui-sheet"
-              value={draft.entityCui}
-              onChange={(event) => updateDraft({ entityCui: event.target.value })}
-              placeholder={t`12345678`}
-              autoComplete="off"
-              spellCheck={false}
-            />
-          </ToolbarField>
+          {showEntityFilter ? (
+            <ToolbarField
+              label={t`Entity CUI`}
+              htmlFor="institution-threads-entity-cui-sheet"
+            >
+              <Input
+                id="institution-threads-entity-cui-sheet"
+                value={draft.entityCui}
+                onChange={(event) =>
+                  updateDraft({ entityCui: event.target.value })
+                }
+                placeholder={t`12345678`}
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </ToolbarField>
+          ) : null}
         </div>
       </section>
 
@@ -567,21 +573,23 @@ export function CampaignAdminInstitutionThreadsToolbar({
             </Select>
           </ToolbarField>
 
-          <ToolbarField
-            label={t`Entity CUI`}
-            htmlFor="institution-threads-entity-cui"
-          >
-            <Input
-              id="institution-threads-entity-cui"
-              value={draft.entityCui}
-              onChange={(event) =>
-                updateDraft({ entityCui: event.target.value })
-              }
-              placeholder={t`12345678`}
-              autoComplete="off"
-              spellCheck={false}
-            />
-          </ToolbarField>
+          {showEntityFilter ? (
+            <ToolbarField
+              label={t`Entity CUI`}
+              htmlFor="institution-threads-entity-cui"
+            >
+              <Input
+                id="institution-threads-entity-cui"
+                value={draft.entityCui}
+                onChange={(event) =>
+                  updateDraft({ entityCui: event.target.value })
+                }
+                placeholder={t`12345678`}
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </ToolbarField>
+          ) : null}
 
           <ToolbarField
             label={t`Rows per page`}

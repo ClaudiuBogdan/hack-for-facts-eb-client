@@ -332,6 +332,19 @@ function createEntityDetailsRouteSearch() {
     configLimit: undefined,
     selectedEntityCui: undefined,
     configCreate: undefined,
+    threadsStateGroup: undefined,
+    threadsThreadState: undefined,
+    threadsResponseStatus: undefined,
+    threadsQuery: undefined,
+    threadsEntityCui: undefined,
+    threadsUpdatedAtFrom: undefined,
+    threadsUpdatedAtTo: undefined,
+    threadsLatestResponseAtFrom: undefined,
+    threadsLatestResponseAtTo: undefined,
+    threadsSelectedThreadId: undefined,
+    threadsCursor: undefined,
+    threadsPageIndex: undefined,
+    threadsLimit: undefined,
   };
 }
 

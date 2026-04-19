@@ -1980,7 +1980,7 @@ msgstr "Interval continuu"
 msgid "Contracts"
 msgstr "Contracte"
 
-#: src/routes/entities.$cui.lazy.tsx:79
+#: src/routes/entities.$cui.lazy.tsx:80
 msgid "Contracts view unavailable"
 msgstr "Vizualizarea contractelor nu este disponibilă"
 
@@ -2772,7 +2772,7 @@ msgstr "Detalii"
 msgid "Details about excluded items and amount filters used in this view."
 msgstr "Detalii despre elementele excluse și filtrele de sumă utilizate în această vizualizare."
 
-#: src/routes/entities.$cui.lazy.tsx:464
+#: src/routes/entities.$cui.lazy.tsx:469
 msgid "Details:"
 msgstr "Detalii:"
 
@@ -3159,7 +3159,7 @@ msgstr "Salariați (FOM104D)"
 msgid "Employees per 1,000 inhabitants is a simple proxy for local labor-market intensity."
 msgstr "Salariații la 1.000 de locuitori reprezintă un indicator simplu al intensității pieței locale a muncii."
 
-#: src/routes/entities.$cui.lazy.tsx:67
+#: src/routes/entities.$cui.lazy.tsx:68
 msgid "Employees view unavailable"
 msgstr "Vizualizarea pentru angajați nu este disponibilă"
 
@@ -3346,7 +3346,7 @@ msgstr "este egal cu"
 msgid "Error"
 msgstr "Eroare"
 
-#: src/routes/entities.$cui.lazy.tsx:461
+#: src/routes/entities.$cui.lazy.tsx:466
 msgid "Error Fetching Entity Details"
 msgstr "Eroare la preluarea detaliilor entității"
 
@@ -5239,7 +5239,7 @@ msgstr "Se încarcă editorul de hărți..."
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1962
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2127
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2134
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:861
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:881
 #: src/routes/map.lazy.tsx:303
 #: src/routes/map.lazy.tsx:304
 msgid "Loading map..."
@@ -5270,7 +5270,7 @@ msgstr "Se încarcă seturile de date partajate..."
 msgid "Loading table data..."
 msgstr "Se încarcă datele tabelului..."
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:903
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:923
 msgid "Loading view…"
 msgstr "Se încarcă vizualizarea…"
 
@@ -6212,7 +6212,7 @@ msgstr "Nu sunt date disponibile pentru afișarea evoluției angajamentelor."
 msgid "No data available to display financial evolution."
 msgstr "Nu sunt date disponibile pentru afișarea evoluției financiare."
 
-#: src/routes/entities.$cui.lazy.tsx:476
+#: src/routes/entities.$cui.lazy.tsx:481
 msgid "No Data Found"
 msgstr "Nu s-au găsit date"
 
@@ -6297,7 +6297,7 @@ msgstr "Nu există date disponibile în seriile activate pentru a fi afișate."
 msgid "No enabled series."
 msgstr "Nicio serie activată."
 
-#: src/routes/entities.$cui.lazy.tsx:478
+#: src/routes/entities.$cui.lazy.tsx:483
 msgid "No entity details found for CUI: <0>{cui}</0>. It's possible this entity does not exist or has no associated data."
 msgstr "Nu s-au găsit detalii despre entitate pentru CUI: <0>{cui}</0>. Este posibil ca această entitate să nu existe sau să nu aibă date asociate."
 
@@ -7815,7 +7815,7 @@ msgstr "Entitate raportoare"
 msgid "Reporting filters"
 msgstr "Filtre de raportare"
 
-#: src/routes/entities.$cui.lazy.tsx:507
+#: src/routes/entities.$cui.lazy.tsx:512
 msgid "Reporting period"
 msgstr "Perioada de raportare"
 
@@ -9314,7 +9314,7 @@ msgstr "Există {warningCount} avertismente care pot afecta modul în care este 
 msgid "There is 1 warning that may affect how your map is displayed."
 msgstr "Există 1 avertisment care poate afecta modul în care este afișată harta ta."
 
-#: src/routes/entities.$cui.lazy.tsx:463
+#: src/routes/entities.$cui.lazy.tsx:468
 msgid "There was a problem fetching the details for CUI: <0>{cui}</0>."
 msgstr "A apărut o problemă la preluarea detaliilor pentru CUI: <0>{cui}</0>."
 
@@ -9700,13 +9700,13 @@ msgid "Try again"
 msgstr "Încearcă din nou"
 
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:492
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1919
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1975
 #: src/features/learning/components/assessment/Quiz.tsx:188
 #: src/routes/settings/notifications.tsx:198
 msgid "Try Again"
 msgstr "Încercați din nou"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:580
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:600
 msgid "Try again in a few moments."
 msgstr "Încearcă din nou peste câteva momente."
 
@@ -10300,12 +10300,12 @@ msgstr "Indicatori proxy pentru apă, gaze și rețele de servicii."
 msgid "Way off!"
 msgstr "Departe!"
 
-#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1909
+#: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:1965
 msgid "We could not load the analysis."
 msgstr "Nu am putut încărca analiza."
 
-#: src/routes/entities.$cui.lazy.tsx:69
-#: src/routes/entities.$cui.lazy.tsx:81
+#: src/routes/entities.$cui.lazy.tsx:70
+#: src/routes/entities.$cui.lazy.tsx:82
 msgid "We could not load this section right now. Please refresh and try again."
 msgstr "Nu am putut încărca această secțiune acum. Vă rugăm să reîmprospătați pagina și să încercați din nou."
 

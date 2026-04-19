@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getSiteUrl } from "@/config/env";
+import { campaignAdminEntitiesRouteSearchSchema } from "@/features/campaigns/buget/admin/schemas/search-schema";
 import { createNoStoreHeaders } from "@/lib/http-cache";
 
 export const Route = createFileRoute(
@@ -7,6 +8,7 @@ export const Route = createFileRoute(
 )({
   ssr: false,
   headers: () => createNoStoreHeaders(),
+  validateSearch: campaignAdminEntitiesRouteSearchSchema,
   head: ({ params }) =>
     buildCampaignAdminEntityDetailHead(params.campaignKey, params.entityCui),
 });

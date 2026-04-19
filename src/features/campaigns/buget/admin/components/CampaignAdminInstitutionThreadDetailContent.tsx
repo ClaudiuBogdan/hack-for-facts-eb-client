@@ -1,78 +1,40 @@
-import { useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   ArrowDown,
   ArrowUp,
-  Ban,
   ChevronDown,
   ChevronUp,
   Clock,
-  Copy,
   FileText,
   Inbox,
-  LockKeyhole,
   Mail,
   MessageSquare,
   Paperclip,
   Pencil,
-  RefreshCw,
-  SearchX,
-  Send,
   User,
 } from "lucide-react";
 import { t } from "@lingui/core/macro";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { EmptyState } from "@/components/ui/empty-state";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { AuthSignInButton, useAuth } from "@/lib/auth";
-import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components/AdminCampaignLayout";
 import { CampaignAdminInstitutionThreadAudienceSummary } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadAudienceSummary";
 import { CampaignAdminInstitutionThreadResponseForm } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadResponseForm";
 import {
-  getCampaignAdminCampaignLabel,
   getCampaignAdminInstitutionThreadResponseStatusLabel,
   getCampaignAdminInstitutionThreadStateLabel,
 } from "@/features/campaigns/buget/admin/constants";
-import {
-  useAppendCampaignAdminInstitutionThreadResponseMutation,
-  useCampaignAdminInstitutionThreadDetailQuery,
-} from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-institution-threads";
 import type {
-  CampaignAdminCampaignKey,
+  CampaignAdminAppendInstitutionThreadResponseBody,
+  CampaignAdminAppendInstitutionThreadResponseResult,
   CampaignAdminInstitutionThreadCorrespondenceEntry,
   CampaignAdminInstitutionThreadDetail,
   CampaignAdminInstitutionThreadResponseEvent,
   CampaignAdminInstitutionThreadResponseStatus,
-  CampaignAdminInstitutionThreadsSearch,
   CampaignAdminInstitutionThreadState,
 } from "@/features/campaigns/buget/admin/types";
-
-type CampaignAdminInstitutionThreadDetailPageProps = {
-  readonly campaignKey: CampaignAdminCampaignKey;
-  readonly threadId: string;
-  readonly search: CampaignAdminInstitutionThreadsSearch;
-};
 
 type TimelineItem = {
   readonly id: string;
@@ -82,14 +44,27 @@ type TimelineItem = {
   readonly responseEvent?: CampaignAdminInstitutionThreadResponseEvent;
 };
 
+type CampaignAdminInstitutionThreadDetailContentProps = {
+  readonly detail: CampaignAdminInstitutionThreadDetail;
+  readonly isSubmitting: boolean;
+  readonly submitErrorMessage?: string | null;
+  readonly onSubmitResponse: (
+    body: CampaignAdminAppendInstitutionThreadResponseBody,
+  ) =>
+    | Promise<CampaignAdminAppendInstitutionThreadResponseResult | void>
+    | CampaignAdminAppendInstitutionThreadResponseResult
+    | void;
+  readonly headerAction?: ReactNode;
+};
+
 function formatDateTime(value: string | null): string {
   if (value === null) {
-    return "—";
+    return t`Unavailable`;
   }
 
   const parsedDate = new Date(value);
   if (Number.isNaN(parsedDate.getTime())) {
-    return "—";
+    return t`Unavailable`;
   }
 
   return parsedDate.toLocaleString();
@@ -107,11 +82,6 @@ function formatDateShort(value: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function truncateId(value: string, maxLen = 10): string {
-  if (value.length <= maxLen) return value;
-  return `${value.slice(0, maxLen)}…`;
 }
 
 function getThreadStateBadgeClassName(
@@ -148,7 +118,7 @@ function getResponseStatusBadgeClassName(
 
 function getDirectionBadge(
   direction: "outbound" | "inbound",
-): { label: string; className: string; icon: typeof Send } {
+): { label: string; className: string; icon: typeof ArrowUp } {
   if (direction === "inbound") {
     return {
       label: t`Inbound`,
@@ -182,15 +152,14 @@ function buildTimeline(
     items.push({
       id: `resp-${event.id}`,
       kind: "response_event",
-      // Preserve append order for backfilled responses by sorting on record time.
       occurredAt: event.createdAt,
       responseEvent: event,
     });
   }
 
   items.sort(
-    (a, b) =>
-      new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime(),
+    (left, right) =>
+      new Date(left.occurredAt).getTime() - new Date(right.occurredAt).getTime(),
   );
 
   return items;
@@ -204,7 +173,7 @@ function SidebarMetadata({
   const entityDisplay = detail.entityName?.trim() || detail.entityCui;
 
   return (
-    <aside className="space-y-3">
+    <aside className="grid gap-4 rounded-xl border border-border/60 bg-background/50 p-4 sm:grid-cols-2 xl:grid-cols-3">
       <div className="space-y-1">
         <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
           {t`Entity`}
@@ -246,8 +215,6 @@ function SidebarMetadata({
         </div>
       ) : null}
 
-      <div className="h-px bg-border/60" />
-
       <div className="space-y-0.5">
         <p className="text-xs text-muted-foreground">{t`Updated`}</p>
         <p className="text-xs text-foreground">
@@ -287,11 +254,13 @@ function SidebarMetadata({
         </div>
       ) : null}
 
-      <CampaignAdminInstitutionThreadAudienceSummary
-        audience={detail.notificationAudience}
-        title={t`Notification reach`}
-        showDefinitions
-      />
+      <div className="sm:col-span-2 xl:col-span-3">
+        <CampaignAdminInstitutionThreadAudienceSummary
+          audience={detail.notificationAudience}
+          title={t`Notification reach`}
+          showDefinitions
+        />
+      </div>
     </aside>
   );
 }
@@ -304,7 +273,6 @@ function TimelineCorrespondenceNode({
   const { label, className, icon: DirectionIcon } = getDirectionBadge(
     entry.direction,
   );
-  const DirectionIconRef = DirectionIcon;
 
   return (
     <div className="flex gap-3">
@@ -317,12 +285,10 @@ function TimelineCorrespondenceNode({
       <div className="min-w-0 flex-1 pb-6">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline" className={className}>
-            <DirectionIconRef className="mr-1 h-3 w-3" />
+            <DirectionIcon className="mr-1 h-3 w-3" />
             {label}
           </Badge>
-          <span className="text-xs text-muted-foreground">
-            {entry.source}
-          </span>
+          <span className="text-xs text-muted-foreground">{entry.source}</span>
           <span className="text-xs text-muted-foreground">
             {formatDateShort(entry.occurredAt)}
           </span>
@@ -456,286 +422,103 @@ function ThreadTimeline({
   );
 }
 
-function stripSelectedThreadId(
-  search: CampaignAdminInstitutionThreadsSearch,
-): CampaignAdminInstitutionThreadsSearch {
-  return {
-    ...search,
-    selectedThreadId: undefined,
-  };
-}
-
-function CopyableThreadId({ threadId }: { readonly threadId: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(threadId);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      void 0;
-    }
-  };
-
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            onClick={handleCopy}
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <span className="font-mono">{truncateId(threadId)}</span>
-            <Copy className="h-3 w-3" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>
-          {copied ? t`Copied!` : t`Copy thread ID`}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-}
-
-export function CampaignAdminInstitutionThreadDetailPage({
-  campaignKey,
-  threadId,
-  search,
-}: CampaignAdminInstitutionThreadDetailPageProps) {
-  const { isLoaded, isSignedIn } = useAuth();
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const detailQuery = useCampaignAdminInstitutionThreadDetailQuery({
-    campaignKey,
-    threadId,
-    enabled: isLoaded && isSignedIn,
-  });
-  const appendResponseMutation =
-    useAppendCampaignAdminInstitutionThreadResponseMutation(
-      campaignKey,
-      threadId,
-    );
-  const backSearch = stripSelectedThreadId(search);
-
-  const timelineItems = useMemo(() => {
-    if (!detailQuery.data) return [];
-    return buildTimeline(detailQuery.data);
-  }, [detailQuery.data]);
-
-  return (
-    <AdminCampaignLayout
-      campaignKey={campaignKey}
-      title={t`Institution Thread`}
-      description={t`Inspect full correspondence history and append manual institution response events.`}
-    >
-      <div className="space-y-6">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link
-                  to="/admin/campaigns/$campaignKey"
-                  params={{ campaignKey }}
-                >
-                  {getCampaignAdminCampaignLabel(campaignKey)}
-                </Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link
-                  to="/admin/campaigns/$campaignKey/institution-threads"
-                  params={{ campaignKey }}
-                  search={backSearch as never}
-                >
-                  {t`Institution threads`}
-                </Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>
-                <CopyableThreadId threadId={threadId} />
-              </BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-
-        {!isLoaded ? (
-          <div className="flex min-h-40 items-center justify-center py-6">
-            <LoadingSpinner />
-          </div>
-        ) : !isSignedIn ? (
-          <Alert>
-            <LockKeyhole className="h-4 w-4" aria-hidden="true" />
-            <AlertTitle>{t`Sign in required`}</AlertTitle>
-            <AlertDescription className="space-y-3">
-              <p>{t`You need an authenticated admin session to access institution threads.`}</p>
-              <AuthSignInButton>
-                <Button type="button">{t`Sign in`}</Button>
-              </AuthSignInButton>
-            </AlertDescription>
-          </Alert>
-        ) : detailQuery.isLoading ? (
-          <div className="flex min-h-40 items-center justify-center py-6">
-            <LoadingSpinner />
-          </div>
-        ) : detailQuery.error?.status === 404 ? (
-          <div className="space-y-4">
-            <EmptyState
-              icon={<SearchX className="h-6 w-6" aria-hidden="true" />}
-              title={t`Institution thread unavailable`}
-              description={t`This thread is not available in the current campaign-admin institution-thread surface.`}
-              className="max-w-xl rounded-3xl border border-border/70 bg-card/80"
-            />
-            <div>
-              <Button asChild type="button" variant="outline">
-                <Link
-                  to="/admin/campaigns/$campaignKey/institution-threads"
-                  params={{ campaignKey }}
-                  search={backSearch as never}
-                >
-                  {t`Back to institution threads`}
-                </Link>
-              </Button>
-            </div>
-          </div>
-        ) : detailQuery.error ? (
-          <Alert variant="destructive">
-            <Ban className="h-4 w-4" aria-hidden="true" />
-            <AlertTitle>{t`Failed to load institution thread`}</AlertTitle>
-            <AlertDescription className="space-y-3">
-              <p>{detailQuery.error.message}</p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => void detailQuery.refetch()}
-              >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                {t`Retry`}
-              </Button>
-            </AlertDescription>
-          </Alert>
-        ) : detailQuery.data ? (
-          <DetailContent
-            detail={detailQuery.data}
-            timelineItems={timelineItems}
-            isFormOpen={isFormOpen}
-            onFormOpenChange={setIsFormOpen}
-            appendResponseMutation={appendResponseMutation}
-          />
-        ) : null}
-      </div>
-    </AdminCampaignLayout>
-  );
-}
-
-function DetailContent({
+export function CampaignAdminInstitutionThreadDetailContent({
   detail,
-  timelineItems,
-  isFormOpen,
-  onFormOpenChange,
-  appendResponseMutation,
-}: {
-  readonly detail: CampaignAdminInstitutionThreadDetail;
-  readonly timelineItems: readonly TimelineItem[];
-  readonly isFormOpen: boolean;
-  readonly onFormOpenChange: (open: boolean) => void;
-  readonly appendResponseMutation: ReturnType<
-    typeof useAppendCampaignAdminInstitutionThreadResponseMutation
-  >;
-}) {
+  isSubmitting,
+  submitErrorMessage = null,
+  onSubmitResponse,
+  headerAction,
+}: CampaignAdminInstitutionThreadDetailContentProps) {
+  const [isFormOpen, setIsFormOpen] = useState(true);
+  const timelineItems = useMemo(() => buildTimeline(detail), [detail]);
   const isFormDisabled = detail.threadState === "resolved";
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border border-border/70 bg-card shadow-sm">
-        <div className="border-b border-border/60 px-6 py-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              variant="outline"
-              className={getThreadStateBadgeClassName(detail.threadState)}
-            >
-              <Clock className="mr-1 h-3 w-3" />
-              {getCampaignAdminInstitutionThreadStateLabel(detail.threadState)}
-            </Badge>
-            <Badge
-              variant="outline"
-              className={getResponseStatusBadgeClassName(
-                detail.currentResponseStatus,
-              )}
-            >
-              {getCampaignAdminInstitutionThreadResponseStatusLabel(
-                detail.currentResponseStatus,
-              )}
-            </Badge>
-          </div>
-          <h1 className="mt-2 text-lg font-semibold text-foreground">
-            {detail.subject}
-          </h1>
-        </div>
-
-        <div className="px-6 py-5">
-          <SidebarMetadata detail={detail} />
-        </div>
-
-        <div className="border-t border-border/60" />
-
-        <div className="px-6 py-5 space-y-6">
-            <div>
-              <div className="mb-4 flex items-center gap-2">
-                <h2 className="text-sm font-semibold text-foreground">
-                  {t`Timeline`}
-                </h2>
-                <span className="text-xs text-muted-foreground">
-                  {timelineItems.length === 1
-                    ? t`1 event`
-                    : t`${timelineItems.length} events`}
-                </span>
-              </div>
-              <ThreadTimeline items={timelineItems} />
+      <section className="space-y-4 rounded-xl border border-border/70 bg-card/80 p-5 shadow-none">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                variant="outline"
+                className={getThreadStateBadgeClassName(detail.threadState)}
+              >
+                <Clock className="mr-1 h-3 w-3" />
+                {getCampaignAdminInstitutionThreadStateLabel(detail.threadState)}
+              </Badge>
+              <Badge
+                variant="outline"
+                className={getResponseStatusBadgeClassName(
+                  detail.currentResponseStatus,
+                )}
+              >
+                {getCampaignAdminInstitutionThreadResponseStatusLabel(
+                  detail.currentResponseStatus,
+                )}
+              </Badge>
             </div>
-
-            <Collapsible open={isFormOpen} onOpenChange={onFormOpenChange}>
-              <CollapsibleTrigger asChild>
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-2 rounded-lg border border-dashed border-border px-4 py-3 text-left transition-colors hover:bg-muted/50"
-                >
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-foreground">
-                    {isFormDisabled
-                      ? t`Thread resolved — no further responses`
-                      : t`Record institution response`}
-                  </span>
-                  <span className="ml-auto text-muted-foreground">
-                    {isFormOpen ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </span>
-                </button>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="mt-3 rounded-lg border border-border/60 bg-muted/20 p-4">
-                  <CampaignAdminInstitutionThreadResponseForm
-                    thread={detail}
-                    isPending={appendResponseMutation.isPending}
-                    errorMessage={
-                      appendResponseMutation.error?.message ?? null
-                    }
-                    submitLabel={t`Record response`}
-                    onSubmit={(body) => appendResponseMutation.mutateAsync(body)}
-                  />
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
+            <div className="space-y-1">
+              <h2 className="text-lg font-semibold text-foreground">
+                {detail.subject}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                {t`Inspect the full correspondence history and record manual institution response events from the same entity workflow.`}
+              </p>
+            </div>
           </div>
-      </div>
+          {headerAction ? <div className="lg:shrink-0">{headerAction}</div> : null}
+        </div>
+
+        <SidebarMetadata detail={detail} />
+      </section>
+
+      <section className="space-y-4 rounded-xl border border-border/70 bg-card/80 p-5 shadow-none">
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-foreground">{t`Timeline`}</h3>
+          <span className="text-xs text-muted-foreground">
+            {timelineItems.length === 1
+              ? t`1 event`
+              : t`${timelineItems.length} events`}
+          </span>
+        </div>
+        <ThreadTimeline items={timelineItems} />
+      </section>
+
+      <section className="space-y-3 rounded-xl border border-border/70 bg-card/80 p-5 shadow-none">
+        <Collapsible open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="flex w-full items-center gap-2 rounded-lg border border-dashed border-border px-4 py-3 text-left transition-colors hover:bg-muted/50"
+            >
+              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground">
+                {isFormDisabled
+                  ? t`Thread resolved — no further responses`
+                  : t`Record institution response`}
+              </span>
+              <span className="ml-auto text-muted-foreground">
+                {isFormOpen ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </span>
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="mt-3 rounded-lg border border-border/60 bg-muted/20 p-4">
+              <CampaignAdminInstitutionThreadResponseForm
+                thread={detail}
+                isPending={isSubmitting}
+                errorMessage={submitErrorMessage}
+                submitLabel={t`Record response`}
+                onSubmit={onSubmitResponse}
+              />
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      </section>
     </div>
   );
 }

@@ -11,10 +11,12 @@ import {
   createEmptyCampaignAdminQueueSearch,
   getCampaignAdminEntityConfigExportFilters,
   getCampaignAdminEntityConfigFilters,
+  getCampaignAdminInstitutionThreadsSearchFromEntitiesSearch,
   getCampaignAdminInstitutionThreadsFilters,
   getCampaignAdminInstitutionThreadsSearchConflictCode,
   hasActiveCampaignAdminUsersFilters,
   isCampaignAdminFilterDraftEqual,
+  mergeCampaignAdminInstitutionThreadsSearchIntoEntitiesSearch,
   normalizeCampaignAdminEntityConfigSearch,
   normalizeCampaignAdminEntitiesSearch,
   normalizeCampaignAdminInstitutionThreadsSearch,
@@ -456,6 +458,57 @@ describe("campaign admin search schema", () => {
     ).toEqual({
       stateGroup: "open",
       limit: 25,
+    });
+  });
+
+  it("maps namespaced thread route state from entities search", () => {
+    const search = normalizeCampaignAdminEntitiesSearch({
+      tab: "threads",
+      limit: 50,
+      threadsStateGroup: "closed",
+      threadsThreadState: "resolved",
+      threadsSelectedThreadId: "thread-1",
+      threadsLimit: 15,
+    });
+
+    expect(getCampaignAdminInstitutionThreadsSearchFromEntitiesSearch(search)).toEqual({
+      stateGroup: "closed",
+      threadState: "resolved",
+      selectedThreadId: "thread-1",
+      limit: 15,
+    });
+  });
+
+  it("merges institution thread search into entities search without losing thread paging state", () => {
+    expect(
+      mergeCampaignAdminInstitutionThreadsSearchIntoEntitiesSearch(
+        normalizeCampaignAdminEntitiesSearch({
+          tab: "overview",
+          limit: 50,
+        }),
+        {
+          stateGroup: "open",
+          query: "contact",
+          cursor: "cursor-1",
+          pageIndex: 2,
+          selectedThreadId: "thread-9",
+          limit: 10,
+        },
+      ),
+    ).toEqual({
+      tab: "threads",
+      sortBy: "latestInteractionAt",
+      sortOrder: "desc",
+      limit: 50,
+      configSortBy: "updatedAt",
+      configSortOrder: "desc",
+      configLimit: 50,
+      threadsStateGroup: "open",
+      threadsQuery: "contact",
+      threadsCursor: "cursor-1",
+      threadsPageIndex: 2,
+      threadsSelectedThreadId: "thread-9",
+      threadsLimit: 10,
     });
   });
 

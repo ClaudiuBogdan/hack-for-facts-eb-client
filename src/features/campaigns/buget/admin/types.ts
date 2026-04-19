@@ -1174,7 +1174,7 @@ export type CampaignAdminUsersSearch = {
 };
 
 export type CampaignAdminEntitiesSearch = {
-  readonly tab?: "overview" | "config";
+  readonly tab?: "overview" | "threads" | "config";
   readonly query?: string;
   readonly interactionId?: string;
   readonly hasPendingReviews?: boolean;
@@ -1198,6 +1198,19 @@ export type CampaignAdminEntitiesSearch = {
   readonly configLimit?: number;
   readonly selectedEntityCui?: string;
   readonly configCreate?: boolean;
+  readonly threadsStateGroup?: CampaignAdminInstitutionThreadStateGroup;
+  readonly threadsThreadState?: CampaignAdminInstitutionThreadState;
+  readonly threadsResponseStatus?: CampaignAdminInstitutionThreadResponseStatus;
+  readonly threadsQuery?: string;
+  readonly threadsEntityCui?: string;
+  readonly threadsUpdatedAtFrom?: string;
+  readonly threadsUpdatedAtTo?: string;
+  readonly threadsLatestResponseAtFrom?: string;
+  readonly threadsLatestResponseAtTo?: string;
+  readonly threadsSelectedThreadId?: string;
+  readonly threadsCursor?: string;
+  readonly threadsPageIndex?: number;
+  readonly threadsLimit?: number;
 };
 
 export type CampaignAdminEntitiesFilters = Omit<
@@ -1216,6 +1229,19 @@ export type CampaignAdminEntitiesFilters = Omit<
   | "configLimit"
   | "selectedEntityCui"
   | "configCreate"
+  | "threadsStateGroup"
+  | "threadsThreadState"
+  | "threadsResponseStatus"
+  | "threadsQuery"
+  | "threadsEntityCui"
+  | "threadsUpdatedAtFrom"
+  | "threadsUpdatedAtTo"
+  | "threadsLatestResponseAtFrom"
+  | "threadsLatestResponseAtTo"
+  | "threadsSelectedThreadId"
+  | "threadsCursor"
+  | "threadsPageIndex"
+  | "threadsLimit"
 >;
 
 export type CampaignAdminEntityConfigSearch = {

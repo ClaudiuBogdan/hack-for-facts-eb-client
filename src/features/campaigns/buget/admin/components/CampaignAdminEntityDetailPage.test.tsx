@@ -15,12 +15,45 @@ const describeIfEntityDetailPageExists = existsSync(componentFileUrl)
   ? describe
   : describe.skip;
 
+const getQueriesDataMock = vi.fn(() => []);
+const invalidateQueriesMock = vi.fn(() => Promise.resolve());
+const useQueryClientMock = vi.fn(() => ({
+  getQueriesData: getQueriesDataMock,
+  invalidateQueries: invalidateQueriesMock,
+}));
 const useAuthMock = vi.fn();
 const useCampaignAdminUsersQueryMock = vi.fn();
 const useCampaignAdminNotificationsAuditQueryMock = vi.fn();
 const useCampaignAdminQueueQueryMock = vi.fn();
 const useCampaignAdminEntityConfigDetailQueryMock = vi.fn();
 const useUpdateCampaignAdminEntityConfigMutationMock = vi.fn();
+const institutionThreadsSectionMock = vi.fn(
+  ({
+    search,
+    lockedEntityCui,
+    showEntityFilter,
+  }: {
+    readonly search: Record<string, unknown>;
+    readonly lockedEntityCui?: string;
+    readonly showEntityFilter?: boolean;
+  }) => (
+    <div data-testid="institution-threads-section">
+      {String(search.stateGroup)}:{String(search.limit)}:{String(lockedEntityCui)}:
+      {String(showEntityFilter)}
+    </div>
+  ),
+);
+
+vi.mock("@tanstack/react-query", async () => {
+  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
+    "@tanstack/react-query",
+  );
+
+  return {
+    ...actual,
+    useQueryClient: () => useQueryClientMock(),
+  };
+});
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
@@ -138,6 +171,20 @@ vi.mock(
         ))}
       </div>
     ),
+  }),
+);
+
+vi.mock(
+  "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsSection",
+  () => ({
+    CampaignAdminInstitutionThreadsSection: (props: unknown) =>
+      institutionThreadsSectionMock(
+        props as {
+          readonly search: Record<string, unknown>;
+          readonly lockedEntityCui?: string;
+          readonly showEntityFilter?: boolean;
+        },
+      ),
   }),
 );
 
@@ -351,18 +398,22 @@ function getLinkHrefs() {
     .filter((href): href is string => typeof href === "string");
 }
 
-async function renderEntityDetailPage() {
+async function renderEntityDetailPage(search: { readonly limit: number; readonly tab?: string; readonly threadsStateGroup?: string; readonly threadsLimit?: number } = { limit: 50, tab: "overview" }) {
   const module = await import("./CampaignAdminEntityDetailPage");
   const CampaignAdminEntityDetailPage =
     module.CampaignAdminEntityDetailPage as ComponentType<{
       readonly campaignKey: string;
       readonly entityCui: string;
+      readonly search: { readonly limit: number; readonly tab?: string };
+      readonly onSearchChange: (search: Record<string, unknown>) => void;
     }>;
 
   return render(
     <CampaignAdminEntityDetailPage
       campaignKey="funky"
       entityCui="12345678"
+      search={search}
+      onSearchChange={vi.fn()}
     />,
   );
 }
@@ -375,6 +426,10 @@ describeIfEntityDetailPageExists("CampaignAdminEntityDetailPage", () => {
     useCampaignAdminQueueQueryMock.mockReset();
     useCampaignAdminEntityConfigDetailQueryMock.mockReset();
     useUpdateCampaignAdminEntityConfigMutationMock.mockReset();
+    institutionThreadsSectionMock.mockClear();
+    getQueriesDataMock.mockClear();
+    invalidateQueriesMock.mockClear();
+    useQueryClientMock.mockClear();
 
     useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
     mockUsersState({ items: [createUserItem()] });
@@ -551,5 +606,43 @@ describeIfEntityDetailPageExists("CampaignAdminEntityDetailPage", () => {
     expect(screen.getByLabelText("Official budget URL")).toHaveValue(
       "https://oras.test/buget.pdf",
     );
+  });
+
+  it("renders the migrated threads tab with a locked entity scope", async () => {
+    await renderEntityDetailPage({
+      tab: "threads",
+      limit: 50,
+      threadsStateGroup: "open",
+      threadsLimit: 15,
+    });
+
+    expect(
+      screen.getByTestId("institution-threads-section"),
+    ).toHaveTextContent("open:15:12345678:false");
+    expect(institutionThreadsSectionMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lockedEntityCui: "12345678",
+        showEntityFilter: false,
+        search: expect.objectContaining({
+          stateGroup: "open",
+          limit: 15,
+        }),
+      }),
+    );
+  });
+
+  it("invalidates institution thread queries from the detail refresh button on the threads tab", async () => {
+    await renderEntityDetailPage({
+      tab: "threads",
+      limit: 50,
+      threadsStateGroup: "open",
+      threadsLimit: 15,
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+
+    expect(invalidateQueriesMock).toHaveBeenCalledWith({
+      queryKey: ["campaign-admin", "funky", "institution-threads"],
+    });
   });
 });

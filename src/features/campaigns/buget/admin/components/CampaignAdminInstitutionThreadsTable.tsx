@@ -1,5 +1,4 @@
 import { type ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
 import { SearchX } from "lucide-react";
 import { t } from "@lingui/core/macro";
 import { Badge } from "@/components/ui/badge";
@@ -18,19 +17,16 @@ import {
   getCampaignAdminInstitutionThreadStateLabel,
 } from "@/features/campaigns/buget/admin/constants";
 import { CampaignAdminInstitutionThreadAudienceSummary } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadAudienceSummary";
-import type {
-  CampaignAdminCampaignKey,
-  CampaignAdminInstitutionThreadListItem,
-  CampaignAdminInstitutionThreadsSearch,
-} from "@/features/campaigns/buget/admin/types";
+import type { CampaignAdminInstitutionThreadListItem } from "@/features/campaigns/buget/admin/types";
 
 type CampaignAdminInstitutionThreadsTableProps = {
-  readonly campaignKey: CampaignAdminCampaignKey;
   readonly items: readonly CampaignAdminInstitutionThreadListItem[];
-  readonly search: CampaignAdminInstitutionThreadsSearch;
   readonly selectedThreadId?: string | null;
   readonly header?: ReactNode;
   readonly footer?: ReactNode;
+  readonly detailAction?: (
+    item: CampaignAdminInstitutionThreadListItem,
+  ) => ReactNode;
   readonly onOpenThread: (threadId: string) => void;
   readonly onClearFilters: () => void;
 };
@@ -80,22 +76,12 @@ function getResponseStatusBadgeClassName(
   }
 }
 
-function toDetailSearch(
-  search: CampaignAdminInstitutionThreadsSearch,
-) {
-  return {
-    ...search,
-    selectedThreadId: undefined,
-  };
-}
-
 export function CampaignAdminInstitutionThreadsTable({
-  campaignKey,
   items,
-  search,
   selectedThreadId = null,
   header,
   footer,
+  detailAction,
   onOpenThread,
   onClearFilters,
 }: CampaignAdminInstitutionThreadsTableProps) {
@@ -198,11 +184,8 @@ export function CampaignAdminInstitutionThreadsTable({
                 </TableCell>
                 <TableCell>
                   <div className="flex justify-end gap-2">
-                    <Button asChild variant="outline" size="sm" className="rounded-full">
-                      <Link
-                        to="/admin/campaigns/$campaignKey/institution-threads/$threadId"
-                        params={{ campaignKey, threadId: item.id }}
-                        search={toDetailSearch(search) as never}
+                    {detailAction ? (
+                      <span
                         onClick={(event) => {
                           event.stopPropagation();
                         }}
@@ -210,9 +193,9 @@ export function CampaignAdminInstitutionThreadsTable({
                           event.stopPropagation();
                         }}
                       >
-                        {t`Open details`}
-                      </Link>
-                    </Button>
+                        {detailAction(item)}
+                      </span>
+                    ) : null}
                     <Button
                       type="button"
                       variant="outline"

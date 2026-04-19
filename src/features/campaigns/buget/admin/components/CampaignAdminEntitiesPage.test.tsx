@@ -9,6 +9,10 @@ import type {
   CampaignAdminEntityListItem,
 } from "@/features/campaigns/buget/admin/types";
 
+const invalidateQueriesMock = vi.fn(() => Promise.resolve());
+const useQueryClientMock = vi.fn(() => ({
+  invalidateQueries: invalidateQueriesMock,
+}));
 const useAuthMock = vi.fn();
 const useCampaignAdminEntitiesQueryMock = vi.fn();
 const useCampaignAdminEntitiesMetaQueryMock = vi.fn();
@@ -19,6 +23,37 @@ const downloadCampaignAdminEntitiesCsvMock = vi.fn();
 const downloadCampaignAdminEntityConfigCsvMock = vi.fn();
 const toastSuccessMock = vi.fn();
 const toastErrorMock = vi.fn();
+const institutionThreadsSectionMock = vi.fn(
+  ({
+    search,
+    detailAction,
+  }: {
+    readonly search: Record<string, unknown>;
+    readonly detailAction?: (item: {
+      readonly id: string;
+      readonly entityCui: string;
+    }) => ReactNode;
+  }) => (
+    <div data-testid="institution-threads-section">
+      {String(search.stateGroup)}:{String(search.limit)}
+      {detailAction?.({
+        id: "thread-7",
+        entityCui: "87654321",
+      })}
+    </div>
+  ),
+);
+
+vi.mock("@tanstack/react-query", async () => {
+  const actual = await vi.importActual<typeof import("@tanstack/react-query")>(
+    "@tanstack/react-query",
+  );
+
+  return {
+    ...actual,
+    useQueryClient: () => useQueryClientMock(),
+  };
+});
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({
@@ -102,6 +137,14 @@ vi.mock("@/features/campaigns/buget/admin/api/campaign-admin-entity-config", () 
   downloadCampaignAdminEntityConfigCsv: (...args: unknown[]) =>
     downloadCampaignAdminEntityConfigCsvMock(...args),
 }));
+
+vi.mock(
+  "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsSection",
+  () => ({
+    CampaignAdminInstitutionThreadsSection: (props: unknown) =>
+      institutionThreadsSectionMock(props as { readonly search: Record<string, unknown> }),
+  }),
+);
 
 function createEntityItem(
   overrides: Partial<CampaignAdminEntityListItem> = {},
@@ -207,6 +250,9 @@ describe("CampaignAdminEntitiesPage", () => {
     downloadCampaignAdminEntityConfigCsvMock.mockReset();
     toastSuccessMock.mockReset();
     toastErrorMock.mockReset();
+    institutionThreadsSectionMock.mockClear();
+    invalidateQueriesMock.mockClear();
+    useQueryClientMock.mockClear();
 
     useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
     mockEntitiesState({ items: [] });
@@ -260,6 +306,97 @@ describe("CampaignAdminEntitiesPage", () => {
     );
 
     expect(screen.getByText("Sign in required")).toBeInTheDocument();
+  });
+
+  it("renders the migrated threads tab with the mapped thread search state", () => {
+    render(
+      <CampaignAdminEntitiesPage
+        campaignKey="funky"
+        search={{
+          tab: "threads",
+          limit: 50,
+          threadsStateGroup: "open",
+          threadsLimit: 20,
+        }}
+        onSearchChange={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByTestId("institution-threads-section"),
+    ).toHaveTextContent("open:20");
+    expect(institutionThreadsSectionMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        campaignKey: "funky",
+        search: expect.objectContaining({
+          stateGroup: "open",
+          limit: 20,
+        }),
+      }),
+    );
+  });
+
+  it("clears thread pagination when building entity thread detail links", () => {
+    render(
+      <CampaignAdminEntitiesPage
+        campaignKey="funky"
+        search={{
+          tab: "threads",
+          limit: 50,
+          threadsStateGroup: "open",
+          threadsLimit: 20,
+          threadsCursor: "cursor-9",
+          threadsPageIndex: 3,
+        }}
+        onSearchChange={vi.fn()}
+      />,
+    );
+
+    const detailLink = screen.getByRole("link", { name: "Details" });
+
+    expect(detailLink).toHaveAttribute(
+      "href",
+      expect.stringContaining(
+        "/admin/campaigns/funky/entities/87654321?tab=threads",
+      ),
+    );
+    expect(detailLink).toHaveAttribute(
+      "href",
+      expect.stringContaining("threadsSelectedThreadId=thread-7"),
+    );
+    expect(detailLink).toHaveAttribute(
+      "href",
+      expect.stringContaining("threadsLimit=20"),
+    );
+    expect(detailLink).not.toHaveAttribute(
+      "href",
+      expect.stringContaining("threadsCursor="),
+    );
+    expect(detailLink).not.toHaveAttribute(
+      "href",
+      expect.stringContaining("threadsPageIndex="),
+    );
+  });
+
+  it("invalidates institution thread queries from the page refresh button on the threads tab", () => {
+    render(
+      <CampaignAdminEntitiesPage
+        campaignKey="funky"
+        search={{
+          tab: "threads",
+          limit: 50,
+          threadsStateGroup: "open",
+          threadsLimit: 20,
+        }}
+        onSearchChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+
+    expect(invalidateQueriesMock).toHaveBeenCalledWith({
+      queryKey: ["campaign-admin", "funky", "institution-threads"],
+    });
   });
 
   it("exports CSV with the current entity filters", async () => {

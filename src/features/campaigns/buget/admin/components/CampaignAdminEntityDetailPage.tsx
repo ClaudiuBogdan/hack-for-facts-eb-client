@@ -1,7 +1,13 @@
 import { useMemo, type ReactNode, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Ban, ChevronDown, LockKeyhole, RefreshCw } from "lucide-react";
+import {
+  Ban,
+  ChevronDown,
+  LockKeyhole,
+  MessageSquare,
+  RefreshCw,
+} from "lucide-react";
 import { t } from "@lingui/core/macro";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +53,7 @@ import { AuthSignInButton, useAuth } from "@/lib/auth";
 import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components/AdminCampaignLayout";
 import { CampaignAdminNotificationsTable } from "@/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable";
 import { CampaignAdminEntityConfigEditor } from "@/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet";
+import { CampaignAdminInstitutionThreadsSection } from "@/features/campaigns/buget/admin/components/CampaignAdminInstitutionThreadsSection";
 import { CampaignAdminUsersTable } from "@/features/campaigns/buget/admin/components/CampaignAdminUsersTable";
 import {
   DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
@@ -60,12 +67,19 @@ import {
   useCampaignAdminEntityConfigDetailQuery,
   useUpdateCampaignAdminEntityConfigMutation,
 } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-entity-config";
+import { campaignAdminInstitutionThreadsKeys } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-institution-threads";
 import { useCampaignAdminNotificationsAuditQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-notifications";
 import { useCampaignAdminQueueQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-user-interactions";
 import { useCampaignAdminUsersQuery } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-users";
+import {
+  getCampaignAdminInstitutionThreadsSearchFromEntitiesSearch,
+  mergeCampaignAdminInstitutionThreadsSearchIntoEntitiesSearch,
+  normalizeCampaignAdminEntitiesSearch,
+} from "@/features/campaigns/buget/admin/schemas/search-schema";
 import type {
   CampaignAdminCampaignKey,
   CampaignAdminEntitiesListResponse,
+  CampaignAdminEntitiesSearch,
   CampaignAdminEntityListItem,
   CampaignAdminNotificationListItem,
   CampaignAdminUpdateEntityConfigBody,
@@ -88,6 +102,11 @@ const NOTIFICATION_PREVIEW_COLUMNS = [
 type CampaignAdminEntityDetailPageProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
   readonly entityCui: string;
+  readonly search: CampaignAdminEntitiesSearch;
+  readonly onSearchChange: (
+    search: CampaignAdminEntitiesSearch,
+    options?: { readonly replace?: boolean },
+  ) => void;
 };
 
 function createEntityUsersRouteSearch(entityCui: string) {
@@ -183,6 +202,19 @@ function createEntitiesRouteSearch() {
     configLimit: undefined,
     selectedEntityCui: undefined,
     configCreate: undefined,
+    threadsStateGroup: undefined,
+    threadsThreadState: undefined,
+    threadsResponseStatus: undefined,
+    threadsQuery: undefined,
+    threadsEntityCui: undefined,
+    threadsUpdatedAtFrom: undefined,
+    threadsUpdatedAtTo: undefined,
+    threadsLatestResponseAtFrom: undefined,
+    threadsLatestResponseAtTo: undefined,
+    threadsSelectedThreadId: undefined,
+    threadsCursor: undefined,
+    threadsPageIndex: undefined,
+    threadsLimit: undefined,
   };
 }
 
@@ -525,11 +557,21 @@ function resolveEntityName({
 export function CampaignAdminEntityDetailPage({
   campaignKey,
   entityCui,
+  search,
+  onSearchChange,
 }: CampaignAdminEntityDetailPageProps) {
   const { isLoaded, isSignedIn } = useAuth();
   const queryClient = useQueryClient();
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
-  const [activeTab, setActiveTab] = useState<"overview" | "config">("overview");
+  const normalizedSearch = normalizeCampaignAdminEntitiesSearch(search);
+  const activeTab = normalizedSearch.tab ?? "overview";
+  const threadsSearch = useMemo(
+    () =>
+      getCampaignAdminInstitutionThreadsSearchFromEntitiesSearch(
+        normalizedSearch,
+      ),
+    [normalizedSearch],
+  );
   const usersQuery = useCampaignAdminUsersQuery({
     campaignKey,
     search: {
@@ -646,6 +688,12 @@ export function CampaignAdminEntityDetailPage({
       notificationsQuery.refetch(),
       interactionsQuery.refetch(),
       entityConfigDetailQuery.refetch(),
+      activeTab === "threads"
+        ? queryClient.invalidateQueries({
+            queryKey:
+              campaignAdminInstitutionThreadsKeys.allForCampaign(campaignKey),
+          })
+        : Promise.resolve(),
     ]);
   };
 
@@ -695,7 +743,13 @@ export function CampaignAdminEntityDetailPage({
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => setActiveTab("overview")}
+            onClick={() =>
+              onSearchChange({
+                ...normalizedSearch,
+                tab: "overview",
+                selectedEntityCui: undefined,
+              })
+            }
           >
             {t`Overview`}
           </Button>
@@ -703,7 +757,26 @@ export function CampaignAdminEntityDetailPage({
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => setActiveTab("config")}
+            onClick={() =>
+              onSearchChange({
+                ...normalizedSearch,
+                tab: "threads",
+                selectedEntityCui: undefined,
+              })
+            }
+          >
+            {t`Threads`}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              onSearchChange({
+                ...normalizedSearch,
+                tab: "config",
+              })
+            }
           >
             {t`Config`}
           </Button>
@@ -837,9 +910,27 @@ export function CampaignAdminEntityDetailPage({
             ) : null}
           </Card>
 
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "overview" | "config")} className="space-y-4">
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) =>
+              onSearchChange({
+                ...normalizedSearch,
+                tab: value as "overview" | "threads" | "config",
+                ...(value !== "config"
+                  ? { selectedEntityCui: undefined }
+                  : undefined),
+              })
+            }
+            className="space-y-4"
+          >
             <TabsList>
               <TabsTrigger value="overview">{t`Overview`}</TabsTrigger>
+              <TabsTrigger value="threads">
+                <span className="inline-flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" aria-hidden="true" />
+                  {t`Threads`}
+                </span>
+              </TabsTrigger>
               <TabsTrigger value="config">{t`Config`}</TabsTrigger>
             </TabsList>
 
@@ -986,6 +1077,36 @@ export function CampaignAdminEntityDetailPage({
                   />
                 )}
               </SectionShell>
+            </TabsContent>
+
+            <TabsContent value="threads" className="space-y-4">
+              <Card className="border-border/70 bg-card/80 shadow-none">
+                <CardHeader>
+                  <CardTitle>{t`Institution threads for this entity`}</CardTitle>
+                  <CardDescription>
+                    {t`Review thread activity for this entity without leaving the entity detail workflow. The entity scope is fixed here.`}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {activeTab === "threads" ? (
+                    <CampaignAdminInstitutionThreadsSection
+                      campaignKey={campaignKey}
+                      search={threadsSearch}
+                      onSearchChange={(nextThreadSearch, options) => {
+                        onSearchChange(
+                          mergeCampaignAdminInstitutionThreadsSearchIntoEntitiesSearch(
+                            normalizedSearch,
+                            nextThreadSearch,
+                          ),
+                          options,
+                        );
+                      }}
+                      showEntityFilter={false}
+                      lockedEntityCui={entityCui}
+                    />
+                  ) : null}
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="config" className="space-y-4">
