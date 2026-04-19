@@ -48,7 +48,12 @@ function createEntityConfigListPayload() {
   return {
     ok: true,
     data: {
-      items: [createEntityConfigPayload().data],
+      items: [
+        {
+          ...createEntityConfigPayload().data,
+          usersCount: 4,
+        },
+      ],
       page: {
         limit: 250,
         totalCount: 1,
@@ -191,13 +196,15 @@ describe("campaign-admin-entity-config api", () => {
         hasOfficialBudgetUrl: true,
         updatedAtFrom: "2026-04-10T00:00:00.000Z",
         updatedAtTo: "2026-04-12T23:59:59.999Z",
+        sortBy: "usersCount",
+        sortOrder: "desc",
       },
     });
 
     expect(result.filename).toBe("entity-config.csv");
     expect(await result.blob.text()).toBe("csv");
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3000/api/v1/admin/campaigns/funky/entity-config/export?query=Oras+Test&entityCui=12345678&budgetPublicationDate=2026-03-20&hasBudgetPublicationDate=false&officialBudgetUrl=buget.pdf&hasOfficialBudgetUrl=true&updatedAtFrom=2026-04-10T00%3A00%3A00.000Z&updatedAtTo=2026-04-12T23%3A59%3A59.999Z",
+      "http://localhost:3000/api/v1/admin/campaigns/funky/entity-config/export?query=Oras+Test&entityCui=12345678&budgetPublicationDate=2026-03-20&hasBudgetPublicationDate=false&officialBudgetUrl=buget.pdf&hasOfficialBudgetUrl=true&updatedAtFrom=2026-04-10T00%3A00%3A00.000Z&updatedAtTo=2026-04-12T23%3A59%3A59.999Z&sortBy=usersCount&sortOrder=desc",
       expect.objectContaining({
         method: "GET",
         headers: expect.objectContaining({

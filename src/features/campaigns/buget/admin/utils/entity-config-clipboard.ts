@@ -9,6 +9,7 @@ import type {
 export const CAMPAIGN_ADMIN_ENTITY_CONFIG_CLIPBOARD_HEADERS = [
   "Entity CUI",
   "Entity Name",
+  "Users",
   "Budget Publication Date",
   "Official Budget URL",
   "Updated At",
@@ -128,6 +129,7 @@ export function serializeCampaignAdminEntityConfigRowsToClipboardTsv(
       [
         escapeTabularCell(item.entityCui),
         escapeTabularCell(item.entityName),
+        String(item.usersCount),
         escapeTabularCell(
           stagedDraft?.values.budgetPublicationDate ?? item.values.budgetPublicationDate,
         ),

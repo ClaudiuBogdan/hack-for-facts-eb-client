@@ -13,6 +13,7 @@ function createItem(
     campaignKey: "funky",
     entityCui: "12345678",
     entityName: "Oras Test",
+    usersCount: 4,
     configured: true,
     isConfigured: true,
     values: {
@@ -36,7 +37,9 @@ describe("entity-config-clipboard", () => {
       }),
     ]);
 
-    expect(tsv).toContain("Entity CUI\tEntity Name\tBudget Publication Date\tOfficial Budget URL\tUpdated At");
+    expect(tsv).toContain(
+      "Entity CUI\tEntity Name\tUsers\tBudget Publication Date\tOfficial Budget URL\tUpdated At",
+    );
     expect(tsv).toContain("\t'=HYPERLINK(\"https://bad.test\")\t");
   });
 
@@ -66,6 +69,27 @@ describe("entity-config-clipboard", () => {
         rowNumber: 2,
         entityCui: "12345678",
         entityName: null,
+        values: {
+          budgetPublicationDate: "2026-04-20",
+          officialBudgetUrl: "https://oras.test/final.pdf",
+        },
+        expectedUpdatedAt: "2026-04-18T09:00:00.000Z",
+      },
+    ]);
+  });
+
+  it("ignores copied users-count columns when parsing pasted rows", () => {
+    const parsed = parseCampaignAdminEntityConfigClipboard(
+      "Entity CUI\tEntity Name\tUsers\tBudget Publication Date\tOfficial Budget URL\tUpdated At\n"
+        + "12345678\tOras Test\t4\t2026-04-20\thttps://oras.test/final.pdf\t2026-04-18T09:00:00.000Z\n",
+    );
+
+    expect(parsed.issues).toEqual([]);
+    expect(parsed.rows).toEqual([
+      {
+        rowNumber: 2,
+        entityCui: "12345678",
+        entityName: "Oras Test",
         values: {
           budgetPublicationDate: "2026-04-20",
           officialBudgetUrl: "https://oras.test/final.pdf",

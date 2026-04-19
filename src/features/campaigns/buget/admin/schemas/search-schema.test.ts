@@ -341,6 +341,8 @@ describe("campaign admin search schema", () => {
       query: "Oras Test",
       entityCui: "12345678",
       updatedAtFrom: "2026-04-10T00:00:00.000Z",
+      sortBy: "updatedAt",
+      sortOrder: "desc",
     });
     expect(
       JSON.parse(createCampaignAdminEntityConfigPaginationSignature(search)),
@@ -350,6 +352,19 @@ describe("campaign admin search schema", () => {
       limit: 50,
       sortBy: "updatedAt",
       sortOrder: "desc",
+    });
+  });
+
+  it("defaults entity config users-count sorting to descending", () => {
+    expect(
+      normalizeCampaignAdminEntityConfigSearch({
+        sortBy: "usersCount",
+        limit: "250",
+      }),
+    ).toEqual({
+      sortBy: "usersCount",
+      sortOrder: "desc",
+      limit: 250,
     });
   });
 

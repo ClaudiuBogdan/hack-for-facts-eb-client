@@ -54,7 +54,12 @@ function createEntityConfig(): CampaignAdminEntityConfigDetail {
 
 function createListResponse(): CampaignAdminEntityConfigListResponse {
   return {
-    items: [createEntityConfig()],
+    items: [
+      {
+        ...createEntityConfig(),
+        usersCount: 4,
+      },
+    ],
     page: {
       limit: 50,
       totalCount: 1,

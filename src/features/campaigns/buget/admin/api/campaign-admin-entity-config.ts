@@ -321,6 +321,8 @@ function buildCampaignAdminEntityConfigExportQueryString(input: {
     "updatedAtTo",
     input.filters.updatedAtTo,
   );
+  appendOptionalSearchParam(searchParams, "sortBy", input.filters.sortBy);
+  appendOptionalSearchParam(searchParams, "sortOrder", input.filters.sortOrder);
 
   const query = searchParams.toString();
   return query.length > 0 ? `?${query}` : "";

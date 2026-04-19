@@ -287,7 +287,7 @@ export function CampaignAdminEntityConfigTable({
       <div className="overflow-x-auto">
         <Table
           containerClassName="max-h-[min(70vh,42rem)]"
-          className="min-w-[960px] [&_td]:px-3 [&_td]:py-3"
+          className="min-w-[1040px] [&_td]:px-3 [&_td]:py-3"
         >
           <TableHeader>
             <TableRow className="hover:bg-transparent">
@@ -308,6 +308,14 @@ export function CampaignAdminEntityConfigTable({
                 onSortChange={onSortChange}
               >
                 {t`Entity`}
+              </SortableTableHead>
+              <SortableTableHead
+                sortKey="usersCount"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSortChange={onSortChange}
+              >
+                {t`Users`}
               </SortableTableHead>
               <SortableTableHead
                 sortKey="budgetPublicationDate"
@@ -356,6 +364,9 @@ export function CampaignAdminEntityConfigTable({
                     {item.entityCui}
                   </p>
                   <ConfiguredBadge configured={item.configured} />
+                </TableCell>
+                <TableCell className="tabular-nums text-sm text-foreground">
+                  {item.usersCount}
                 </TableCell>
                 <TableCell className="text-sm text-foreground">
                   {item.values.budgetPublicationDate ?? t`Unavailable`}

@@ -203,7 +203,7 @@ export const CAMPAIGN_ADMIN_ENTITIES_SORTABLE_COLUMNS: Record<
 export const CAMPAIGN_ADMIN_ENTITY_CONFIG_SORTABLE_COLUMNS: Record<
   CampaignAdminEntityConfigSortKey,
   {
-    readonly dataType: "string" | "date";
+    readonly dataType: "string" | "date" | "number";
     readonly defaultOrder: CampaignAdminSortOrder;
   }
 > = {
@@ -222,6 +222,10 @@ export const CAMPAIGN_ADMIN_ENTITY_CONFIG_SORTABLE_COLUMNS: Record<
   officialBudgetUrl: {
     dataType: "string",
     defaultOrder: "asc",
+  },
+  usersCount: {
+    dataType: "number",
+    defaultOrder: "desc",
   },
 };
 
@@ -335,6 +339,8 @@ export function getCampaignAdminEntityConfigSortLabel(
       return t`Budget publication date`;
     case "officialBudgetUrl":
       return t`Official budget URL`;
+    case "usersCount":
+      return t`Users`;
     default:
       return sortKey;
   }

@@ -390,7 +390,12 @@ function createEntityConfigListResponsePayload() {
   return {
     ok: true,
     data: {
-      items: [createEntityConfigResponsePayload().data],
+      items: [
+        {
+          ...createEntityConfigResponsePayload().data,
+          usersCount: 4,
+        },
+      ],
       page: {
         limit: 50,
         totalCount: 1,
@@ -819,7 +824,12 @@ describe("campaign admin api schemas", () => {
     expect(parseCampaignAdminEntityConfigListResponse(payload)).toEqual(
       {
         ...payload.data,
-        items: [createExpectedEntityConfigResponse()],
+        items: [
+          {
+            ...createExpectedEntityConfigResponse(),
+            usersCount: 4,
+          },
+        ],
       },
     );
   });

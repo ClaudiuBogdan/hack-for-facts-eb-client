@@ -129,6 +129,7 @@ export const campaignAdminEntityConfigSortKeyValues = [
   "entityCui",
   "budgetPublicationDate",
   "officialBudgetUrl",
+  "usersCount",
 ] as const;
 
 export const campaignAdminEntityNotificationTypeValues = [
@@ -628,6 +629,7 @@ export type CampaignAdminEntityConfigListItem = {
   readonly campaignKey: CampaignAdminCampaignKey;
   readonly entityCui: string;
   readonly entityName: string | null;
+  readonly usersCount: number;
   readonly configured: boolean;
   readonly isConfigured: boolean;
   readonly values: CampaignAdminEntityConfigValues;
@@ -1300,6 +1302,8 @@ export type CampaignAdminEntityConfigExportFilters = {
   readonly hasOfficialBudgetUrl?: boolean;
   readonly updatedAtFrom?: string;
   readonly updatedAtTo?: string;
+  readonly sortBy?: CampaignAdminEntityConfigSortKey;
+  readonly sortOrder?: CampaignAdminSortOrder;
 };
 
 export type CampaignAdminNotificationsSearch = {

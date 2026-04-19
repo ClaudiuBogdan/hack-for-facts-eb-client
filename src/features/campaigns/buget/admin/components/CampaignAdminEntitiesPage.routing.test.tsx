@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CampaignAdminEntitiesPage } from "./CampaignAdminEntitiesPage";
 import type {
   CampaignAdminEntityConfigDetail,
+  CampaignAdminEntityConfigListItem,
   CampaignAdminEntitiesMetaResponse,
   CampaignAdminEntitiesSearch,
   CampaignAdminEntityListItem,
@@ -116,6 +117,16 @@ function createEntityConfigDetail(
     },
     updatedAt: "2026-04-12T10:00:00.000Z",
     updatedByUserId: "admin-1",
+    ...overrides,
+  };
+}
+
+function createEntityConfigListItem(
+  overrides: Partial<CampaignAdminEntityConfigListItem> = {},
+): CampaignAdminEntityConfigListItem {
+  return {
+    ...createEntityConfigDetail(),
+    usersCount: 4,
     ...overrides,
   };
 }
@@ -388,7 +399,7 @@ describe("CampaignAdminEntitiesPage routing", () => {
 
       return {
         data: {
-          items: [createEntityConfigDetail()],
+          items: [createEntityConfigListItem()],
           page: {
             limit: 50,
             totalCount: 1,

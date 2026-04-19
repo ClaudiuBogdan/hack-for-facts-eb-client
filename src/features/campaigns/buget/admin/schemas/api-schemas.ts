@@ -511,7 +511,7 @@ const campaignAdminRawEntityConfigItemSchema = z
   })
   .strict();
 
-const campaignAdminEntityConfigItemSchema =
+const campaignAdminEntityConfigDetailItemSchema =
   campaignAdminRawEntityConfigItemSchema.transform((item) => {
     const { isConfigured, ...rest } = item;
 
@@ -522,6 +522,23 @@ const campaignAdminEntityConfigItemSchema =
       isConfigured,
     };
   });
+
+const campaignAdminEntityConfigItemSchema =
+  campaignAdminRawEntityConfigItemSchema
+    .extend({
+      usersCount: campaignAdminCountSchema,
+    })
+    .strict()
+    .transform((item) => {
+      const { isConfigured, ...rest } = item;
+
+      return {
+        ...rest,
+        entityName: item.entityName ?? null,
+        configured: isConfigured,
+        isConfigured,
+      };
+    });
 
 const campaignAdminEntityConfigListResponseSchema = z
   .object({
@@ -547,7 +564,7 @@ const campaignAdminEntityConfigListResponseSchema = z
 const campaignAdminEntityConfigDetailResponseSchema = z
   .object({
     ok: z.literal(true),
-    data: campaignAdminEntityConfigItemSchema,
+    data: campaignAdminEntityConfigDetailItemSchema,
   })
   .strict();
 

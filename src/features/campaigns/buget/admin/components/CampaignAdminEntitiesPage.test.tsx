@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CampaignAdminEntitiesPage } from "./CampaignAdminEntitiesPage";
 import type {
   CampaignAdminEntityConfigDetail,
+  CampaignAdminEntityConfigListItem,
   CampaignAdminEntitiesMetaResponse,
   CampaignAdminEntitiesSearch,
   CampaignAdminEntityListItem,
@@ -213,6 +214,16 @@ function createEntityConfigDetail(
   };
 }
 
+function createEntityConfigListItem(
+  overrides: Partial<CampaignAdminEntityConfigListItem> = {},
+): CampaignAdminEntityConfigListItem {
+  return {
+    ...createEntityConfigDetail(),
+    usersCount: 4,
+    ...overrides,
+  };
+}
+
 function mockEntitiesState(input: {
   readonly items?: readonly CampaignAdminEntityListItem[];
   readonly error?: { status: number; message: string } | null;
@@ -269,7 +280,7 @@ describe("CampaignAdminEntitiesPage", () => {
     });
     useCampaignAdminEntityConfigListQueryMock.mockReturnValue({
       data: {
-        items: [createEntityConfigDetail()],
+        items: [createEntityConfigListItem()],
         page: {
           limit: 50,
           totalCount: 1,
@@ -605,10 +616,11 @@ describe("CampaignAdminEntitiesPage", () => {
     useCampaignAdminEntityConfigListQueryMock.mockReturnValue({
       data: {
         items: [
-          createEntityConfigDetail(),
-          createEntityConfigDetail({
+          createEntityConfigListItem(),
+          createEntityConfigListItem({
             entityCui: "87654321",
             entityName: "Comuna Test",
+            usersCount: 1,
             configured: false,
             isConfigured: false,
             values: {
@@ -679,6 +691,8 @@ describe("CampaignAdminEntitiesPage", () => {
       ).toBeInTheDocument();
       expect(screen.getByText("Oras Test")).toBeInTheDocument();
       expect(screen.getByText("Comuna Test")).toBeInTheDocument();
+      expect(screen.getByText("Users")).toBeInTheDocument();
+      expect(screen.getByText("4")).toBeInTheDocument();
       expect(screen.getByText("Budget publication date")).toBeInTheDocument();
       expect(screen.getByText("Not configured")).toBeInTheDocument();
 
@@ -694,6 +708,8 @@ describe("CampaignAdminEntitiesPage", () => {
             entityCui: "12345678",
             updatedAtFrom: "2026-04-10T00:00:00.000Z",
             updatedAtTo: "2026-04-12T23:59:59.999Z",
+            sortBy: "updatedAt",
+            sortOrder: "desc",
           },
         });
       });

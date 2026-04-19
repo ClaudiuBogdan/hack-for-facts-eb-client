@@ -1161,6 +1161,8 @@ export function getCampaignAdminEntityConfigExportFilters(
     hasOfficialBudgetUrl,
     updatedAtFrom,
     updatedAtTo,
+    sortBy,
+    sortOrder,
   } = search;
   void selectedEntityCui;
   void cursor;
@@ -1176,6 +1178,8 @@ export function getCampaignAdminEntityConfigExportFilters(
     hasOfficialBudgetUrl,
     updatedAtFrom,
     updatedAtTo,
+    sortBy,
+    sortOrder,
   });
 }
 
