@@ -3,6 +3,8 @@ import type { ComponentType, ReactNode } from "react";
 import { fireEvent, render, screen } from "@/test/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type {
+  CampaignAdminEntitiesListResponse,
+  CampaignAdminEntityListItem,
   CampaignAdminEntityConfigDetail,
   CampaignAdminNotificationListItem,
   CampaignAdminUserInteractionListItem,
@@ -15,7 +17,7 @@ const describeIfEntityDetailPageExists = existsSync(componentFileUrl)
   ? describe
   : describe.skip;
 
-const getQueriesDataMock = vi.fn(() => []);
+const getQueriesDataMock = vi.fn((): Array<[unknown, unknown]> => []);
 const invalidateQueriesMock = vi.fn(() => Promise.resolve());
 const useQueryClientMock = vi.fn(() => ({
   getQueriesData: getQueriesDataMock,
@@ -319,6 +321,46 @@ function createEntityConfigDetail(
     updatedAt: "2026-04-18T09:00:00.000Z",
     updatedByUserId: "admin-1",
     ...overrides,
+  };
+}
+
+function createEntitySummaryItem(
+  overrides: Partial<CampaignAdminEntityListItem> = {},
+): CampaignAdminEntityListItem {
+  return {
+    entityCui: "12345678",
+    entityName: "Cached Oras Test",
+    userCount: 4,
+    interactionCount: 7,
+    pendingReviewCount: 2,
+    notificationSubscriberCount: 3,
+    notificationOutboxCount: 5,
+    failedNotificationCount: 1,
+    latestInteractionAt: "2026-04-18T10:00:00.000Z",
+    latestInteractionId: "funky:interaction:public_debate_request",
+    latestNotificationAt: "2026-04-18T10:05:00.000Z",
+    latestNotificationType: "funky:outbox:entity_update",
+    latestNotificationStatus: "delivered",
+    hasPendingReviews: true,
+    hasSubscribers: true,
+    hasNotificationActivity: true,
+    hasFailedNotifications: true,
+    ...overrides,
+  };
+}
+
+function createEntitiesResponse(
+  items: readonly CampaignAdminEntityListItem[],
+): CampaignAdminEntitiesListResponse {
+  return {
+    items,
+    page: {
+      totalCount: items.length,
+      hasMore: false,
+      nextCursor: null,
+      sortBy: "latestInteractionAt",
+      sortOrder: "desc",
+    },
   };
 }
 
@@ -629,6 +671,33 @@ describeIfEntityDetailPageExists("CampaignAdminEntityDetailPage", () => {
         }),
       }),
     );
+  });
+
+  it("ignores non-list cache entries while resolving cached entity summaries", async () => {
+    getQueriesDataMock.mockReturnValue([
+      [
+        ["campaign-admin", "funky", "entities", "meta"],
+        {
+          totalEntities: 1,
+        },
+      ],
+      [
+        ["campaign-admin", "funky", "entities", "list", {}, null, 50],
+        createEntitiesResponse([createEntitySummaryItem()]),
+      ],
+    ]);
+
+    await renderEntityDetailPage({
+      tab: "threads",
+      limit: 50,
+      threadsStateGroup: "open",
+      threadsLimit: 15,
+    });
+
+    expect(getQueriesDataMock).toHaveBeenCalledWith({
+      queryKey: ["campaign-admin", "funky", "entities", "list"],
+    });
+    expect(screen.getByText("Cached Oras Test")).toBeInTheDocument();
   });
 
   it("invalidates institution thread queries from the detail refresh button on the threads tab", async () => {

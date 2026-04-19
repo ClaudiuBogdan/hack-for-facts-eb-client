@@ -516,11 +516,13 @@ function findCachedEntitySummary(
   response: CampaignAdminEntitiesListResponse | undefined,
   entityCui: string,
 ): CampaignAdminEntityListItem | null {
-  if (response === undefined) {
+  const items = response?.items;
+
+  if (!Array.isArray(items)) {
     return null;
   }
 
-  return response.items.find((item) => item.entityCui === entityCui) ?? null;
+  return items.find((item) => item.entityCui === entityCui) ?? null;
 }
 
 function resolveEntityName({
@@ -622,7 +624,7 @@ export function CampaignAdminEntityDetailPage({
   const cachedEntitySummary = useMemo(() => {
     const cachedResponses = queryClient.getQueriesData<CampaignAdminEntitiesListResponse>(
       {
-        queryKey: campaignAdminEntitiesKeys.entitiesForCampaign(campaignKey),
+        queryKey: campaignAdminEntitiesKeys.listsForCampaign(campaignKey),
       },
     );
 

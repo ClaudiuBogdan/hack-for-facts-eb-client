@@ -17,6 +17,8 @@ export const campaignAdminEntitiesKeys = {
     ["campaign-admin", campaignKey] as const,
   entitiesForCampaign: (campaignKey: CampaignAdminCampaignKey) =>
     ["campaign-admin", campaignKey, "entities"] as const,
+  listsForCampaign: (campaignKey: CampaignAdminCampaignKey) =>
+    ["campaign-admin", campaignKey, "entities", "list"] as const,
   list: (
     campaignKey: CampaignAdminCampaignKey,
     filters: CampaignAdminEntitiesFilters,
