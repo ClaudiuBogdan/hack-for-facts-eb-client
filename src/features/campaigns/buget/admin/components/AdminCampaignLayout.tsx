@@ -23,7 +23,7 @@ export function AdminCampaignLayout({
 }: AdminCampaignLayoutProps) {
   return (
     <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4 px-4 py-5 sm:px-6 lg:px-8">
-      <header className="space-y-4 border-b border-border/70 pb-4">
+      <header className="space-y-4 border-b border-border/70 pb-4" role="banner">
         {eyebrow ? <div>{eyebrow}</div> : null}
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 space-y-1.5">

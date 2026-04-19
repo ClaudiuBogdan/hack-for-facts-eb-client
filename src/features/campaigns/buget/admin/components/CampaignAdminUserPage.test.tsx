@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useState, type ReactNode } from "react";
 import { CampaignAdminUserPage } from "./CampaignAdminUserPage";
@@ -15,8 +16,61 @@ const useCampaignAdminUserPageItemsQueryMock = vi.fn();
 const useCampaignAdminNotificationsAuditQueryMock = vi.fn();
 const useSubmitCampaignAdminReviewsMutationMock = vi.fn();
 
+function resolveRouterPath(
+  to: string,
+  params?: Record<string, string>,
+): string {
+  if (!params) {
+    return to;
+  }
+
+  let result = to;
+  for (const [key, value] of Object.entries(params)) {
+    result = result.replace(`$${key}`, value);
+  }
+
+  return result;
+}
+
+function serializeRouterSearch(search?: Record<string, unknown>): string {
+  if (!search) {
+    return "";
+  }
+
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(search)) {
+    if (value === undefined || value === null) {
+      continue;
+    }
+
+    params.set(key, String(value));
+  }
+
+  const query = params.toString();
+  return query ? `?${query}` : "";
+}
+
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children }: { children: ReactNode }) => <a>{children}</a>,
+  Link: ({
+    children,
+    to,
+    params,
+    search,
+    ...rest
+  }: {
+    readonly children: ReactNode;
+    readonly to: string;
+    readonly params?: Record<string, string>;
+    readonly search?: Record<string, unknown>;
+  }) => (
+    <a
+      href={`${resolveRouterPath(to, params)}${serializeRouterSearch(search)}`}
+      {...rest}
+    >
+      {children}
+    </a>
+  ),
+  useNavigate: () => vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -233,7 +287,8 @@ describe("CampaignAdminUserPage", () => {
     expect(screen.getByText("3 rows selected")).toBeInTheDocument();
   });
 
-  it("renders the restored user workspace header and notification actions", () => {
+  it("renders the restored user workspace header and notification actions", async () => {
+    const user = userEvent.setup();
     render(
       <CampaignAdminUserPage
         campaignKey="funky"
@@ -246,20 +301,18 @@ describe("CampaignAdminUserPage", () => {
     expect(
       screen.getByRole("heading", { name: "User workspace" }),
     ).toBeInTheDocument();
+    const banner = screen.getByRole("banner");
     expect(
-      screen.getByRole("link", { name: "Open notifications" }),
-    ).toHaveAttribute(
-      "href",
-      "/admin/campaigns/funky/notifications?tab=audit&userId=user-1&sortBy=createdAt&sortOrder=desc&limit=50&entityCui=4270740",
-    );
-    expect(
-      screen.getByRole("link", { name: "Open interactions queue" }),
+      within(banner).getByRole("link", { name: "Go to users" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "User interactions" }),
+      screen.getByRole("tab", { name: "User interactions" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "User notifications" }),
+      screen.getByRole("tab", { name: "User notifications" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: "User interactions" }),
     ).toBeInTheDocument();
     expect(useCampaignAdminNotificationsAuditQueryMock).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -272,9 +325,27 @@ describe("CampaignAdminUserPage", () => {
         },
       }),
     );
+
+    await user.click(within(banner).getByRole("button", { name: "Actions" }));
+    const notificationsItem = await screen.findByRole("menuitem", {
+      name: "Go to notifications",
+    });
+    const notificationsUrl = new URL(
+      notificationsItem.getAttribute("href")!,
+      "https://example.com",
+    );
+    expect(notificationsUrl.pathname).toBe("/admin/campaigns/funky/notifications");
+    expect(notificationsUrl.searchParams.get("tab")).toBe("audit");
+    expect(notificationsUrl.searchParams.get("userId")).toBe("user-1");
+    expect(notificationsUrl.searchParams.get("entityCui")).toBe("4270740");
+
+    expect(
+      await screen.findByRole("menuitem", { name: "Go to interactions queue" }),
+    ).toBeInTheDocument();
   });
 
-  it("keeps the user notifications preview scoped when no entity filter is present", () => {
+  it("keeps the user notifications preview scoped when no entity filter is present", async () => {
+    const user = userEvent.setup();
     render(
       <CampaignAdminUserPage
         campaignKey="funky"
@@ -295,12 +366,22 @@ describe("CampaignAdminUserPage", () => {
         },
       }),
     );
-    expect(
-      screen.getByRole("link", { name: "Open notifications" }),
-    ).toHaveAttribute(
-      "href",
-      "/admin/campaigns/funky/notifications?tab=audit&userId=user-1&sortBy=createdAt&sortOrder=desc&limit=50",
+    await user.click(
+      within(screen.getByRole("banner")).getByRole("button", {
+        name: "Actions",
+      }),
     );
+    const notificationsItem = await screen.findByRole("menuitem", {
+      name: "Go to notifications",
+    });
+    const notificationsUrl = new URL(
+      notificationsItem.getAttribute("href")!,
+      "https://example.com",
+    );
+    expect(notificationsUrl.pathname).toBe("/admin/campaigns/funky/notifications");
+    expect(notificationsUrl.searchParams.get("tab")).toBe("audit");
+    expect(notificationsUrl.searchParams.get("userId")).toBe("user-1");
+    expect(notificationsUrl.searchParams.has("entityCui")).toBe(false);
   });
 
   it("preserves the active user-page filters in the filtered queue link", () => {
@@ -324,7 +405,7 @@ describe("CampaignAdminUserPage", () => {
     );
 
     const filteredQueueLink = screen
-      .getByText("Open interactions with filters")
+      .getByText("View full queue with filters")
       .closest("a");
     const href = filteredQueueLink?.getAttribute("href");
     expect(href).not.toBeNull();

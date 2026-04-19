@@ -1,14 +1,19 @@
-import { useEffect, useEffectEvent, useMemo, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
   AlertTriangle,
   Ban,
+  Bell,
+  Check,
   ClipboardList,
   Copy,
   LockKeyhole,
   Mail,
+  MoreHorizontal,
   Plus,
   RefreshCw,
   SearchX,
+  Users,
 } from "lucide-react";
 import { t } from "@lingui/core/macro";
 import { toast } from "sonner";
@@ -33,6 +38,13 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -41,8 +53,10 @@ import {
 } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AuthSignInButton, useAuth } from "@/lib/auth";
 import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components/AdminCampaignLayout";
+import { CompactStat } from "@/features/campaigns/buget/admin/components/CompactStat";
 import { CampaignAdminNotificationsTable } from "@/features/campaigns/buget/admin/components/CampaignAdminNotificationsTable";
 import { CampaignAdminReviewSheet } from "@/features/campaigns/buget/admin/components/CampaignAdminReviewSheet";
 import { CampaignAdminSendValidationDialog } from "@/features/campaigns/buget/admin/components/CampaignAdminSendValidationDialog";
@@ -64,7 +78,12 @@ import {
   useCampaignAdminInteractionSelection,
   type CampaignAdminToggleUserInteractionSelectionInput,
 } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-interaction-selection";
-import { normalizeCampaignAdminUserPageSearch } from "@/features/campaigns/buget/admin/schemas/search-schema";
+import {
+  normalizeCampaignAdminNotificationsSearch,
+  normalizeCampaignAdminQueueSearch,
+  normalizeCampaignAdminUserPageSearch,
+  normalizeCampaignAdminUsersSearch,
+} from "@/features/campaigns/buget/admin/schemas/search-schema";
 import type {
   CampaignAdminCampaignKey,
   CampaignAdminReviewDecision,
@@ -102,7 +121,11 @@ import {
   readCampaignAdminStagedReviewDraftsFromSessionStorage,
   writeCampaignAdminStagedReviewDraftsToSessionStorage,
 } from "@/features/campaigns/buget/admin/utils/staged-review-session-storage";
-import { CompactStat } from "@/features/campaigns/buget/admin/components/CompactStat";
+import {
+  campaignAdminEntityHubTabsListClassName,
+  campaignAdminEntityHubTabsTriggerClassName,
+} from "@/features/campaigns/buget/admin/components/campaign-admin-entity-hub-tabs-styles";
+import { cn } from "@/lib/utils";
 
 const USER_NOTIFICATION_PREVIEW_LIMIT = 10;
 
@@ -116,66 +139,6 @@ type CampaignAdminUserPageProps = {
   ) => void;
 };
 
-function createCampaignAdminQueryString(
-  entries: ReadonlyArray<readonly [string, string | boolean | undefined]>,
-): string {
-  const searchParams = new URLSearchParams();
-
-  for (const [key, value] of entries) {
-    if (value !== undefined) {
-      searchParams.set(key, String(value));
-    }
-  }
-
-  return searchParams.toString();
-}
-
-function createFilteredQueueHref(
-  campaignKey: CampaignAdminCampaignKey,
-  userId: string,
-  search: CampaignAdminUserPageSearch,
-): string {
-  const queryString = createCampaignAdminQueryString([
-    ["userId", userId],
-    ["reviewStatus", search.reviewStatus],
-    ["interactionId", search.interactionId],
-    ["lessonId", search.lessonId],
-    ["entityCui", search.entityCui],
-    ["scopeType", search.scopeType],
-    ["payloadKind", search.payloadKind],
-    ["submissionPath", search.submissionPath],
-    ["recordKey", search.recordKey],
-    ["recordKeyPrefix", search.recordKeyPrefix],
-    ["submittedAtFrom", search.submittedAtFrom],
-    ["submittedAtTo", search.submittedAtTo],
-    ["updatedAtFrom", search.updatedAtFrom],
-    ["updatedAtTo", search.updatedAtTo],
-    ["hasInstitutionThread", search.hasInstitutionThread],
-    ["threadPhase", search.threadPhase],
-    ["sortBy", search.sortBy],
-    ["sortOrder", search.sortOrder],
-  ]);
-
-  return `/admin/campaigns/${campaignKey}/user-interactions?${queryString}`;
-}
-
-function createNotificationsHref(
-  campaignKey: CampaignAdminCampaignKey,
-  userId: string,
-  entityCui?: string,
-): string {
-  const queryString = createCampaignAdminQueryString([
-    ["tab", "audit"],
-    ["userId", userId],
-    ["sortBy", "createdAt"],
-    ["sortOrder", "desc"],
-    ["limit", String(DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT)],
-    ["entityCui", entityCui],
-  ]);
-
-  return `/admin/campaigns/${campaignKey}/notifications?${queryString}`;
-}
-
 export function CampaignAdminUserPage({
   campaignKey,
   userId,
@@ -183,6 +146,7 @@ export function CampaignAdminUserPage({
   onSearchChange,
 }: CampaignAdminUserPageProps) {
   const normalizedSearch = normalizeCampaignAdminUserPageSearch(search);
+  const navigate = useNavigate();
   const { isLoaded, isSignedIn } = useAuth();
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
   const [isSendValidationOpen, setIsSendValidationOpen] = useState(false);
@@ -329,20 +293,31 @@ export function CampaignAdminUserPage({
       flagged,
     };
   }, [allItems]);
-  const queueHref = `/admin/campaigns/${campaignKey}/user-interactions?userId=${encodeURIComponent(userId)}`;
-  const filteredQueueHref = useMemo(() => {
-    return createFilteredQueueHref(campaignKey, userId, {
-      ...normalizedSearch,
-      reviewSelectionKey: undefined,
-    });
-  }, [campaignKey, normalizedSearch, userId]);
-  const notificationsHref = useMemo(() => {
-    return createNotificationsHref(
-      campaignKey,
-      userId,
-      normalizedSearch.entityCui,
-    );
-  }, [campaignKey, normalizedSearch.entityCui, userId]);
+  const queueLinkSearch = useMemo(
+    () => normalizeCampaignAdminQueueSearch({ userId }),
+    [userId],
+  );
+  const filteredQueueLinkSearch = useMemo(
+    () =>
+      normalizeCampaignAdminQueueSearch({
+        userId,
+        ...normalizedSearch,
+        reviewSelectionKey: undefined,
+      }),
+    [userId, normalizedSearch],
+  );
+  const notificationsLinkSearch = useMemo(
+    () =>
+      normalizeCampaignAdminNotificationsSearch({
+        tab: "audit",
+        userId,
+        sortBy: "createdAt",
+        sortOrder: "desc",
+        limit: DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,
+        entityCui: normalizedSearch.entityCui,
+      }),
+    [userId, normalizedSearch.entityCui],
+  );
   const userIdPreview = formatCampaignAdminUserIdPreview(userId, {
     maxLength: 20,
     prefixLength: 12,
@@ -994,52 +969,113 @@ export function CampaignAdminUserPage({
     );
   }
 
+  const [userIdCopied, setUserIdCopied] = useState(false);
+  const userIdCopyResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  useEffect(() => {
+    return () => {
+      if (userIdCopyResetTimeoutRef.current !== null) {
+        clearTimeout(userIdCopyResetTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleCopyUserId = async () => {
     if (typeof navigator === "undefined" || navigator.clipboard?.writeText === undefined) {
-      toast.error(t`Clipboard copy is not available in this browser.`);
       return;
     }
 
     try {
       await navigator.clipboard.writeText(userId);
-      toast.success(t`User ID copied to clipboard.`);
+      setUserIdCopied(true);
+      if (userIdCopyResetTimeoutRef.current !== null) {
+        clearTimeout(userIdCopyResetTimeoutRef.current);
+      }
+      userIdCopyResetTimeoutRef.current = setTimeout(() => {
+        setUserIdCopied(false);
+        userIdCopyResetTimeoutRef.current = null;
+      }, 2000);
     } catch {
-      toast.error(t`Failed to copy user ID.`);
+      setUserIdCopied(false);
     }
   };
+
+  const handleRefreshWorkspace = () => {
+    void interactionsQuery.refetch();
+    void notificationsQuery.refetch();
+    void metaQuery.refetch();
+  };
+
+  const isWorkspaceRefreshing =
+    interactionsQuery.isFetching ||
+    notificationsQuery.isFetching ||
+    metaQuery.isFetching;
 
   return (
     <AdminCampaignLayout
       campaignKey={campaignKey}
-      title={(
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-xl font-semibold tracking-tight text-foreground text-pretty sm:text-2xl">
-            {t`User workspace`}
-          </h1>
-          <button
-            type="button"
-            onClick={handleCopyUserId}
-            className="inline-flex max-w-[12rem] items-center gap-1.5 rounded-full border border-border/60 bg-background px-2.5 py-1 font-mono text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            title={t`Click to copy full user ID`}
+      title={t`User workspace`}
+      description={t`Batch review, filters, and notifications for one campaign user.`}
+      details={(
+        <div className="w-full -mt-1">
+          <div
+            className="flex flex-wrap items-center gap-x-3 gap-y-2"
+            aria-label={t`Campaign user identifier`}
           >
-            <Copy className="h-3 w-3 shrink-0" aria-hidden="true" />
-            <span className="truncate">{userId}</span>
-          </button>
+            <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {t`User ID`}
+            </span>
+            <button
+              type="button"
+              onClick={handleCopyUserId}
+              className={cn(
+                "inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-xs text-foreground ring-offset-background transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:max-w-[min(100%,min(28rem,90vw))]",
+                userIdCopied
+                  ? "border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/15"
+                  : "border-border/60 bg-muted/30 hover:bg-muted",
+              )}
+              title={t`Click to copy full user ID`}
+              aria-label={
+                userIdCopied
+                  ? t`User ID copied`
+                  : t`Copy user ID: ${userId}`
+              }
+            >
+              {userIdCopied ? (
+                <Check
+                  className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-500"
+                  aria-hidden="true"
+                />
+              ) : (
+                <Copy className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+              )}
+              <span className="truncate">{userId}</span>
+            </button>
+          </div>
         </div>
       )}
-      description={t`Review one user's campaign activity with batch selection and the existing operator review workflow.`}
       eyebrow={(
         <Breadcrumb className="py-0">
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <a href={`/admin/campaigns/${campaignKey}`}>{getCampaignAdminCampaignLabel(campaignKey)}</a>
+                <Link to="/admin/campaigns/$campaignKey" params={{ campaignKey }}>
+                  {getCampaignAdminCampaignLabel(campaignKey)}
+                </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <a href={`/admin/campaigns/${campaignKey}/users`}>{t`Users`}</a>
+                <Link
+                  to="/admin/campaigns/$campaignKey/users"
+                  params={{ campaignKey }}
+                  search={normalizeCampaignAdminUsersSearch({}) as never}
+                >
+                  {t`Users`}
+                </Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
@@ -1050,20 +1086,61 @@ export function CampaignAdminUserPage({
         </Breadcrumb>
       )}
       actions={(
-        <div className="flex flex-wrap gap-2">
+        <>
           <Button asChild type="button" variant="outline" size="sm" className="gap-2">
-            <a href={notificationsHref}>
-              <Mail className="h-4 w-4" aria-hidden="true" />
-              {t`Open notifications`}
-            </a>
+            <Link
+              to="/admin/campaigns/$campaignKey/users"
+              params={{ campaignKey }}
+              search={normalizeCampaignAdminUsersSearch({}) as never}
+            >
+              <Users className="h-4 w-4 shrink-0" aria-hidden="true" />
+              {t`Go to users`}
+            </Link>
           </Button>
-          <Button asChild type="button" variant="outline" size="sm" className="gap-2">
-            <a href={queueHref}>
-              <ClipboardList className="h-4 w-4" aria-hidden="true" />
-              {t`Open interactions queue`}
-            </a>
-          </Button>
-        </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button type="button" variant="outline" size="sm" className="gap-2">
+                <MoreHorizontal className="h-4 w-4 shrink-0" aria-hidden="true" />
+                {t`Actions`}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem asChild>
+                <Link
+                  to="/admin/campaigns/$campaignKey/notifications"
+                  params={{ campaignKey }}
+                  search={notificationsLinkSearch as never}
+                >
+                  {t`Go to notifications`}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link
+                  to="/admin/campaigns/$campaignKey/user-interactions"
+                  params={{ campaignKey }}
+                  search={queueLinkSearch as never}
+                >
+                  {t`Go to interactions queue`}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onSelect={() => {
+                  handleRefreshWorkspace();
+                }}
+              >
+                <RefreshCw
+                  className={cn(
+                    "h-4 w-4 shrink-0",
+                    isWorkspaceRefreshing && "animate-spin",
+                  )}
+                  aria-hidden="true"
+                />
+                {t`Refresh`}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
       )}
     >
       {metaQuery.error && metaQuery.data === undefined ? (
@@ -1152,273 +1229,335 @@ export function CampaignAdminUserPage({
         )}
       </div>
 
-      <section className="space-y-4" aria-labelledby="user-interactions-section-title">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-1">
-            <h2
-              id="user-interactions-section-title"
-              className="text-base font-semibold tracking-tight text-foreground"
-            >
-              {t`User interactions`}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {t`Inspect submitted records, filter the workspace, and stage review decisions for this user.`}
-            </p>
-          </div>
-          <Button asChild type="button" variant="outline" size="sm" className="gap-2 shrink-0">
-            <a href={filteredQueueHref}>
-              <ClipboardList className="h-4 w-4" aria-hidden="true" />
-              {t`Open interactions with filters`}
-            </a>
-          </Button>
-        </div>
+      <Tabs
+        value={normalizedSearch.workspaceTab ?? "interactions"}
+        onValueChange={(value) => {
+          handleSearchStateChange(
+            {
+              ...normalizedSearch,
+              workspaceTab: value as "interactions" | "notifications",
+            },
+            { replace: true },
+          );
+        }}
+        className="space-y-4"
+      >
+        <TabsList
+          className={campaignAdminEntityHubTabsListClassName}
+          aria-label={t`User workspace sections`}
+        >
+          <TabsTrigger
+            value="interactions"
+            className={campaignAdminEntityHubTabsTriggerClassName}
+          >
+            <ClipboardList className="size-4 shrink-0" aria-hidden="true" />
+            {t`User interactions`}
+          </TabsTrigger>
+          <TabsTrigger
+            value="notifications"
+            className={campaignAdminEntityHubTabsTriggerClassName}
+          >
+            <Bell className="size-4 shrink-0" aria-hidden="true" />
+            {t`User notifications`}
+          </TabsTrigger>
+        </TabsList>
 
-        {interactionsQuery.isLoading ? (
-          <div className="flex min-h-[18rem] items-center justify-center rounded-3xl border border-border/70 bg-card/80">
-            <LoadingSpinner />
-          </div>
-        ) : items.length === 0 ? (
-          <EmptyState
-            title={
-              allItems.length === 0
-                ? t`No user interactions yet`
-                : t`No interactions match the current filters`
-            }
-            description={
-              allItems.length === 0
-                ? t`This user has not submitted any campaign interactions through the current admin projection.`
-                : t`Adjust the filters to inspect a broader slice of this user’s activity.`
-            }
-            className="rounded-3xl border border-border/70 bg-card/80 p-10"
-          />
-        ) : (
-          <div className="space-y-4">
-            <CampaignAdminUserInteractionsTable
-              campaignKey={campaignKey}
-              items={items}
-              stagedDraftsByKey={stagedReviewDraftsByKey}
-              selectedKeys={selectedKeys}
-              isLoading={interactionsQuery.isFetching || submitReviewsMutation.isPending}
-              header={({ actions, trailingActions }) => (
-                <CampaignAdminUserPageFilters
-                  embedded
-                  actions={actions}
-                  trailingActions={trailingActions}
-                  availableInteractionTypes={metaQuery.data?.availableInteractionTypes ?? []}
-                  search={normalizedSearch}
-                  isLoading={interactionsQuery.isLoading || interactionsQuery.isFetching}
-                  onApply={(nextSearch) => handleSearchStateChange(nextSearch)}
-                  onReset={(nextSearch) => handleSearchStateChange(nextSearch)}
-                  onRefresh={() => {
-                    void interactionsQuery.refetch();
+        <TabsContent
+          value="interactions"
+          className="mt-0 space-y-4 pt-4 focus-visible:outline-none"
+        >
+        <section className="scroll-mt-24" aria-labelledby="user-interactions-section-title">
+        <Card className="border-border/70 bg-card/80 shadow-none">
+          <CardHeader className="gap-3 border-b border-border/60">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="space-y-1">
+                <CardTitle id="user-interactions-section-title">{t`User interactions`}</CardTitle>
+                <CardDescription>
+                  {t`Inspect submitted records, filter the workspace, and stage review decisions for this user.`}
+                </CardDescription>
+              </div>
+              <div className="lg:shrink-0">
+                <Button asChild type="button" variant="outline" size="sm" className="gap-2">
+                  <Link
+                    to="/admin/campaigns/$campaignKey/user-interactions"
+                    params={{ campaignKey }}
+                    search={filteredQueueLinkSearch as never}
+                  >
+                    <ClipboardList className="h-4 w-4" aria-hidden="true" />
+                    {t`View full queue with filters`}
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4 p-4">
+            {interactionsQuery.isLoading ? (
+              <div className="flex min-h-[18rem] items-center justify-center rounded-2xl border border-border/50 bg-muted/10">
+                <LoadingSpinner />
+              </div>
+            ) : items.length === 0 ? (
+              <EmptyState
+                title={
+                  allItems.length === 0
+                    ? t`No user interactions yet`
+                    : t`No interactions match the current filters`
+                }
+                description={
+                  allItems.length === 0
+                    ? t`This user has not submitted any campaign interactions through the current admin projection.`
+                    : t`Adjust the filters to inspect a broader slice of this user’s activity.`
+                }
+                className="rounded-2xl border border-border/50 bg-muted/20 p-10"
+              />
+            ) : (
+              <>
+                <CampaignAdminUserInteractionsTable
+                  campaignKey={campaignKey}
+                  flushChrome
+                  items={items}
+                  stagedDraftsByKey={stagedReviewDraftsByKey}
+                  selectedKeys={selectedKeys}
+                  isLoading={interactionsQuery.isFetching || submitReviewsMutation.isPending}
+                  header={({ actions, trailingActions }) => (
+                    <CampaignAdminUserPageFilters
+                      embedded
+                      actions={actions}
+                      trailingActions={trailingActions}
+                      availableInteractionTypes={metaQuery.data?.availableInteractionTypes ?? []}
+                      search={normalizedSearch}
+                      isLoading={interactionsQuery.isLoading || interactionsQuery.isFetching}
+                      onApply={(nextSearch) => handleSearchStateChange(nextSearch)}
+                      onReset={(nextSearch) => handleSearchStateChange(nextSearch)}
+                      onRefresh={() => {
+                        void interactionsQuery.refetch();
+                      }}
+                    />
+                  )}
+                  tablePreferencesKey={`campaign-admin-user-page:${campaignKey}:${userId}`}
+                  defaultVisibleColumnIds={[
+                    "association",
+                    "updated",
+                    "riskFlags",
+                    "message",
+                    "interaction",
+                    "value",
+                    "reviewState",
+                    "reviewNote",
+                  ]}
+                  sortBy={normalizedSearch.sortBy}
+                  sortOrder={normalizedSearch.sortOrder}
+                  renderItemActions={(item) => {
+                    const selectionKey = buildCampaignAdminSelectionKey(
+                      item.userId,
+                      item.recordKey,
+                    );
+                    const isSelected = selectedKeys.has(selectionKey);
+
+                    return (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAddToSelection(item)}
+                        disabled={isSelected || !isCampaignAdminPendingReview(item)}
+                        className="rounded-full px-3"
+                      >
+                        <Plus className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                        {isSelected ? t`Added` : t`Add`}
+                      </Button>
+                    );
                   }}
+                  onCopyRows={handleCopyRows}
+                  onSortChange={handleSortChange}
+                  onToggleSelectAll={handleToggleSelectAll}
+                  onToggleSelection={handleToggleSelection}
+                  onToggleSendNotification={stageReviewSendNotification}
+                  onOpenItem={(item) =>
+                    openReviewSidebar(
+                      buildCampaignAdminSelectionKey(item.userId, item.recordKey),
+                    )
+                  }
                 />
-              )}
-              tablePreferencesKey={`campaign-admin-user-page:${campaignKey}:${userId}`}
-              defaultVisibleColumnIds={[
-                "association",
-                "updated",
-                "riskFlags",
-                "message",
-                "interaction",
-                "value",
-                "reviewState",
-                "reviewNote",
-              ]}
-              sortBy={normalizedSearch.sortBy}
-              sortOrder={normalizedSearch.sortOrder}
-              renderItemActions={(item) => {
-                const selectionKey = buildCampaignAdminSelectionKey(
-                  item.userId,
-                  item.recordKey,
-                );
-                const isSelected = selectedKeys.has(selectionKey);
 
-                return (
+                {selectedItems.length > 0 ? (
+                  <div className="border-t border-border/50 bg-muted/20 px-4 py-4">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="space-y-1">
+                        <p className="text-sm font-semibold text-foreground">
+                          {t`Batch review`}
+                        </p>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                          <span>
+                            {selectedItems.length === 1
+                              ? t`1 row selected`
+                              : t`${selectedItems.length} rows selected`}
+                          </span>
+                          {selectedHiddenCount > 0 ? (
+                            <span>
+                              {selectedHiddenCount === 1
+                                ? t`1 selected row is hidden by the current filters`
+                                : t`${selectedHiddenCount} selected rows are hidden by the current filters`}
+                            </span>
+                          ) : null}
+                          {selectedSendValidationIssues.length > 0 ? (
+                            <span>
+                              {selectedSendValidationIssues.length === 1
+                                ? t`1 row still needs review data`
+                                : t`${selectedSendValidationIssues.length} rows still need review data`}
+                            </span>
+                          ) : (
+                            <span>
+                              {selectedNotifyingDraftCount > 0
+                                ? selectedNotifyingDraftCount === selectedStagedDraftCount
+                                  ? t`Ready to submit: all staged rows will notify.`
+                                  : t`Ready to submit: ${selectedNotifyingDraftCount} notify, ${selectedStagedDraftCount - selectedNotifyingDraftCount} save only.`
+                                : t`Ready to submit selected reviews without notifications.`}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 lg:justify-end">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="rounded-full"
+                          onClick={() => setIsClearStagedConfirmOpen(true)}
+                          disabled={selectedItems.length === 0}
+                        >
+                          {t`Clear staged`}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="rounded-full"
+                          onClick={clearSelection}
+                        >
+                          {t`Clear selection`}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="rounded-full"
+                          onClick={() => {
+                            if (canSendSelectedReviews) {
+                              setIsSendConfirmOpen(true);
+                              return;
+                            }
+
+                            setIsSendValidationOpen(true);
+                          }}
+                        >
+                          {t`Submit selected`}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+              </>
+            )}
+          </CardContent>
+        </Card>
+        </section>
+        </TabsContent>
+
+        <TabsContent
+          value="notifications"
+          className="mt-0 space-y-4 pt-4 focus-visible:outline-none"
+        >
+        <section className="scroll-mt-24" aria-labelledby="user-notifications-section-title">
+        <Card className="border-border/70 bg-card/80 shadow-none">
+          <CardHeader className="gap-3 border-b border-border/60">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="space-y-1">
+                <CardTitle id="user-notifications-section-title">{t`User notifications`}</CardTitle>
+                <CardDescription>
+                  {t`Inspect the most recent notification audit entries tied to this user and jump to the full notifications view when you need the broader log.`}
+                </CardDescription>
+              </div>
+              <div className="lg:shrink-0">
+                <Button asChild type="button" variant="outline" size="sm" className="gap-2">
+                  <Link
+                    to="/admin/campaigns/$campaignKey/notifications"
+                    params={{ campaignKey }}
+                    search={notificationsLinkSearch as never}
+                  >
+                    <Mail className="h-4 w-4" aria-hidden="true" />
+                    {t`View full notifications`}
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4">
+            {notificationsQuery.error?.status === 403 ? (
+              <EmptyState
+                icon={<LockKeyhole className="h-6 w-6" />}
+                title={t`Notifications unavailable in this workspace`}
+                description={t`The user workspace is available, but the server denied access to the campaign notifications admin boundary.`}
+                className="rounded-2xl border border-border/50 bg-muted/20"
+              />
+            ) : notificationsQuery.error?.status === 404 ? (
+              <EmptyState
+                icon={<SearchX className="h-6 w-6" />}
+                title={t`Notifications unavailable`}
+                description={t`This campaign notifications admin surface is either not enabled on the current server or the campaign key is not supported.`}
+                className="rounded-2xl border border-border/50 bg-muted/20"
+              />
+            ) : notificationsQuery.error ? (
+              <Alert variant="destructive" aria-live="polite">
+                <Ban className="h-4 w-4" aria-hidden="true" />
+                <AlertTitle>{t`Failed to load notifications`}</AlertTitle>
+                <AlertDescription className="space-y-3">
+                  <p>{notificationsQuery.error.message}</p>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => handleAddToSelection(item)}
-                    disabled={isSelected || !isCampaignAdminPendingReview(item)}
-                    className="rounded-full px-3"
+                    className="gap-2"
+                    onClick={() => {
+                      void notificationsQuery.refetch();
+                    }}
                   >
-                    <Plus className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-                    {isSelected ? t`Added` : t`Add`}
+                    <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                    {t`Retry`}
                   </Button>
-                );
-              }}
-              onCopyRows={handleCopyRows}
-              onSortChange={handleSortChange}
-              onToggleSelectAll={handleToggleSelectAll}
-              onToggleSelection={handleToggleSelection}
-              onToggleSendNotification={stageReviewSendNotification}
-              onOpenItem={(item) =>
-                openReviewSidebar(
-                  buildCampaignAdminSelectionKey(item.userId, item.recordKey),
-                )
-              }
-            />
-
-            {selectedItems.length > 0 ? (
-              <div className="rounded-3xl border border-border/70 bg-card/80 px-4 py-4">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold text-foreground">
-                      {t`Batch review`}
-                    </p>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                      <span>
-                        {selectedItems.length === 1
-                          ? t`1 row selected`
-                          : t`${selectedItems.length} rows selected`}
-                      </span>
-                      {selectedHiddenCount > 0 ? (
-                        <span>
-                          {selectedHiddenCount === 1
-                            ? t`1 selected row is hidden by the current filters`
-                            : t`${selectedHiddenCount} selected rows are hidden by the current filters`}
-                        </span>
-                      ) : null}
-                      {selectedSendValidationIssues.length > 0 ? (
-                        <span>
-                          {selectedSendValidationIssues.length === 1
-                            ? t`1 row still needs review data`
-                            : t`${selectedSendValidationIssues.length} rows still need review data`}
-                        </span>
-                      ) : (
-                        <span>
-                          {selectedNotifyingDraftCount > 0
-                            ? selectedNotifyingDraftCount === selectedStagedDraftCount
-                              ? t`Ready to submit: all staged rows will notify.`
-                              : t`Ready to submit: ${selectedNotifyingDraftCount} notify, ${selectedStagedDraftCount - selectedNotifyingDraftCount} save only.`
-                            : t`Ready to submit selected reviews without notifications.`}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 lg:justify-end">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full"
-                      onClick={() => setIsClearStagedConfirmOpen(true)}
-                      disabled={selectedItems.length === 0}
-                    >
-                      {t`Clear staged`}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full"
-                      onClick={clearSelection}
-                    >
-                      {t`Clear selection`}
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="rounded-full"
-                      onClick={() => {
-                        if (canSendSelectedReviews) {
-                          setIsSendConfirmOpen(true);
-                          return;
-                        }
-
-                        setIsSendValidationOpen(true);
-                      }}
-                    >
-                      {t`Submit selected`}
-                    </Button>
-                  </div>
-                </div>
+                </AlertDescription>
+              </Alert>
+            ) : notificationsQuery.isLoading && notificationsQuery.data === undefined ? (
+              <div className="flex min-h-[18rem] items-center justify-center rounded-2xl border border-border/50 bg-muted/10">
+                <LoadingSpinner />
               </div>
-            ) : null}
-          </div>
-        )}
-      </section>
-
-      <section className="space-y-4" aria-labelledby="user-notifications-section-title">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div className="space-y-1">
-            <h2
-              id="user-notifications-section-title"
-              className="text-base font-semibold tracking-tight text-foreground"
-            >
-              {t`User notifications`}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {t`Inspect the most recent notification audit entries tied to this user and jump to the full notifications view when you need the broader log.`}
-            </p>
-          </div>
-          <Button asChild type="button" variant="outline" size="sm" className="gap-2">
-            <a href={notificationsHref}>
-              <Mail className="h-4 w-4" aria-hidden="true" />
-              {t`Open full notifications view`}
-            </a>
-          </Button>
-        </div>
-
-        {notificationsQuery.error?.status === 403 ? (
-          <EmptyState
-            icon={<LockKeyhole className="h-6 w-6" />}
-            title={t`Notifications unavailable in this workspace`}
-            description={t`The user workspace is available, but the server denied access to the campaign notifications admin boundary.`}
-            className="rounded-3xl border border-border/70 bg-card/80"
-          />
-        ) : notificationsQuery.error?.status === 404 ? (
-          <EmptyState
-            icon={<SearchX className="h-6 w-6" />}
-            title={t`Notifications unavailable`}
-            description={t`This campaign notifications admin surface is either not enabled on the current server or the campaign key is not supported.`}
-            className="rounded-3xl border border-border/70 bg-card/80"
-          />
-        ) : notificationsQuery.error ? (
-          <Alert variant="destructive" aria-live="polite">
-            <Ban className="h-4 w-4" aria-hidden="true" />
-            <AlertTitle>{t`Failed to load notifications`}</AlertTitle>
-            <AlertDescription className="space-y-3">
-              <p>{notificationsQuery.error.message}</p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={() => {
-                  void notificationsQuery.refetch();
+            ) : userNotificationItems.length === 0 ? (
+              <EmptyState
+                title={t`No notifications recorded yet`}
+                description={t`No campaign notification audit entries were recorded for this user in the current admin projection.`}
+                className="rounded-2xl border border-border/50 bg-muted/20 p-10"
+              />
+            ) : (
+              <CampaignAdminNotificationsTable
+                campaignKey={campaignKey}
+                flushChrome
+                items={userNotificationItems}
+                onClearFilters={() => {
+                  void navigate({
+                    to: "/admin/campaigns/$campaignKey/notifications",
+                    params: { campaignKey },
+                    search: notificationsLinkSearch as never,
+                  });
                 }}
-              >
-                <RefreshCw className="h-4 w-4" aria-hidden="true" />
-                {t`Retry`}
-              </Button>
-            </AlertDescription>
-          </Alert>
-        ) : notificationsQuery.isLoading && notificationsQuery.data === undefined ? (
-          <div className="flex min-h-[18rem] items-center justify-center rounded-3xl border border-border/70 bg-card/80">
-            <LoadingSpinner />
-          </div>
-        ) : userNotificationItems.length === 0 ? (
-          <EmptyState
-            title={t`No notifications recorded yet`}
-            description={t`No campaign notification audit entries were recorded for this user in the current admin projection.`}
-            className="rounded-3xl border border-border/70 bg-card/80 p-10"
-          />
-        ) : (
-          <CampaignAdminNotificationsTable
-            campaignKey={campaignKey}
-            items={userNotificationItems}
-            onClearFilters={() => {
-              window.location.href = notificationsHref;
-            }}
-            onPreviewTemplate={(templateId) => {
-              setActiveTemplateId(templateId);
-            }}
-          />
-        )}
-      </section>
+                onPreviewTemplate={(templateId) => {
+                  setActiveTemplateId(templateId);
+                }}
+              />
+            )}
+          </CardContent>
+        </Card>
+        </section>
+        </TabsContent>
+      </Tabs>
 
       <CampaignAdminReviewSheet
         open={activeItem !== null}

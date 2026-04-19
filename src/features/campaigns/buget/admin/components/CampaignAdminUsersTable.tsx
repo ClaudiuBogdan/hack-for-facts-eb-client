@@ -58,6 +58,7 @@ function createCampaignAdminUserPageRouteSearch(entityCui?: string) {
     sortBy: "updatedAt" as const,
     sortOrder: "desc" as const,
     reviewSelectionKey: undefined,
+    workspaceTab: undefined,
     cursor: undefined,
     pageIndex: undefined,
     limit: DEFAULT_CAMPAIGN_ADMIN_PAGE_LIMIT,

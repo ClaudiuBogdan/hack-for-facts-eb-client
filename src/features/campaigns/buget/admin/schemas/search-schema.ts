@@ -390,14 +390,21 @@ export const campaignAdminUserInteractionsRouteSearchSchema = z.object({
 });
 
 export const campaignAdminUserPageRouteSearchSchema =
-  campaignAdminUserInteractionsRouteSearchSchema.omit({
-    phase: true,
-    reviewStatusMode: true,
-    userId: true,
-    cursor: true,
-    pageIndex: true,
-    limit: true,
-  });
+  campaignAdminUserInteractionsRouteSearchSchema
+    .omit({
+      phase: true,
+      reviewStatusMode: true,
+      userId: true,
+      cursor: true,
+      pageIndex: true,
+      limit: true,
+    })
+    .extend({
+      workspaceTab: z.preprocess(
+        toTrimmedOptionalString,
+        z.enum(["interactions", "notifications"]).optional(),
+      ),
+    });
 
 export const campaignAdminUsersRouteSearchSchema = z.object({
   query: z.preprocess(toTrimmedOptionalString, z.string().min(1).optional()),
@@ -806,6 +813,7 @@ export function normalizeCampaignAdminUserPageSearch(
     ...parsedSearch,
     sortBy: parsedSearch.sortBy ?? "updatedAt",
     sortOrder: parsedSearch.sortOrder ?? "desc",
+    workspaceTab: parsedSearch.workspaceTab ?? "interactions",
   };
 }
 

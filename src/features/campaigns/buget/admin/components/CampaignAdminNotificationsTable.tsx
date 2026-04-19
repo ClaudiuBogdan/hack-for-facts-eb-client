@@ -596,12 +596,22 @@ export function CampaignAdminNotificationsTable({
 
   if (items.length === 0) {
     return (
-      <div className="space-y-4 rounded-2xl border border-border/70 bg-card/80 p-6 shadow-none">
+      <div
+        className={
+          flushChrome
+            ? "space-y-4 p-0 shadow-none"
+            : "space-y-4 rounded-2xl border border-border/70 bg-card/80 p-6 shadow-none"
+        }
+      >
         <EmptyState
           icon={<SearchX className="h-6 w-6" />}
           title={t`No data available`}
           description={t`No campaign notification events matched the current filters.`}
-          className="rounded-2xl border-border/70 bg-background/30"
+          className={
+            flushChrome
+              ? "rounded-2xl border border-border/50 bg-muted/20"
+              : "rounded-2xl border-border/70 bg-background/30"
+          }
         />
         <div className="flex justify-center">
           <Button type="button" variant="outline" onClick={onClearFilters}>

@@ -42,6 +42,8 @@ import {
   isCampaignAdminUserInteractionsLocalSortKey,
 } from "@/features/campaigns/buget/admin/constants";
 import type { CampaignAdminToggleUserInteractionSelectionInput } from "@/features/campaigns/buget/admin/hooks/use-campaign-admin-interaction-selection";
+import { normalizeCampaignAdminUserPageSearch } from "@/features/campaigns/buget/admin/schemas/search-schema";
+import { createCampaignAdminEntityDetailRouteSearch } from "@/features/campaigns/buget/admin/utils/create-campaign-admin-entity-detail-route-search";
 import { formatCampaignAdminUserIdPreview } from "@/features/campaigns/buget/admin/utils/format-user-id-preview";
 import { getCampaignAdminPrimaryValue } from "@/features/campaigns/buget/admin/utils/payload-summary";
 import { resolveSafeCampaignAdminHref } from "@/features/campaigns/buget/admin/utils/resolve-safe-campaign-admin-href";
@@ -57,8 +59,13 @@ import type {
 import { useTablePreferences } from "@/hooks/useTablePreferences";
 import { cn, getUserLocale } from "@/lib/utils";
 
+const campaignAdminUserWorkspaceDefaultLinkSearch =
+  normalizeCampaignAdminUserPageSearch({});
+
 type CampaignAdminUserInteractionsTableProps = {
   readonly campaignKey: CampaignAdminCampaignKey;
+  /** When true, omit outer border/rounded panel for use inside a parent Card (e.g. user workspace). */
+  readonly flushChrome?: boolean;
   readonly items: readonly CampaignAdminUserInteractionListItem[];
   readonly stagedDraftsByKey: Readonly<
     Record<string, CampaignAdminStagedReviewDraft>
@@ -362,8 +369,10 @@ function renderNotifyPreview(
 }
 
 function EntityLink({
+  campaignKey,
   item,
 }: {
+  readonly campaignKey: CampaignAdminCampaignKey;
   readonly item: CampaignAdminUserInteractionListItem;
 }) {
   if (item.entityCui === null) {
@@ -371,18 +380,31 @@ function EntityLink({
   }
 
   const entityLabel = item.entityName?.trim() || item.entityCui;
+  const entityCui = item.entityCui;
 
   return (
-    <div className="min-w-0">
+    <div className="group/ent min-w-0">
       <Link
-        to={buildCampaignPrimariePath(item.entityCui) as "/"}
-        className="truncate font-medium text-foreground underline-offset-4 hover:underline"
+        to="/admin/campaigns/$campaignKey/entities/$entityCui"
+        params={{ campaignKey, entityCui }}
+        search={createCampaignAdminEntityDetailRouteSearch()}
+        aria-label={t`Open entity admin page for ${entityCui}`}
+        className="group/line block max-w-[18rem] rounded-sm text-inherit no-underline outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background"
       >
-        {entityLabel}
+        <p className="truncate text-sm font-medium text-foreground transition-colors group-hover/line:text-primary group-hover/line:underline group-hover/line:underline-offset-2 group-hover/line:decoration-primary/80">
+          {entityLabel}
+        </p>
       </Link>
-      <p className="font-mono text-xs text-muted-foreground">
-        {item.entityCui}
+      <p className="font-mono text-xs text-muted-foreground transition-colors group-hover/ent:text-foreground/80">
+        {entityCui}
       </p>
+      <Link
+        to={buildCampaignPrimariePath(entityCui) as "/"}
+        className="mt-1 inline-block text-xs text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
+        aria-label={t`Open public municipality page for ${entityCui}`}
+      >
+        {t`Public page`}
+      </Link>
     </div>
   );
 }
@@ -441,6 +463,7 @@ function isCheckboxToggleKey(eventKey: string): boolean {
 
 export function CampaignAdminUserInteractionsTable({
   campaignKey,
+  flushChrome = false,
   items,
   stagedDraftsByKey,
   selectedKeys,
@@ -460,6 +483,7 @@ export function CampaignAdminUserInteractionsTable({
   onToggleSendNotification,
   onOpenItem,
 }: CampaignAdminUserInteractionsTableProps) {
+  const stickyBg = flushChrome ? "bg-card/80" : "bg-card";
   const pendingSelectionShiftKeyRef = useRef(false);
   const suppressNextSelectionCheckedChangeRef = useRef(false);
   const selectedKeysRef = useRef(selectedKeys);
@@ -597,16 +621,32 @@ export function CampaignAdminUserInteractionsTable({
       <EmptyState
         title={t`No data available`}
         description={t`Clear filters`}
-        className="rounded-3xl border border-border/70 bg-card/80 p-10"
+        className={
+          flushChrome
+            ? "rounded-2xl border border-border/50 bg-muted/20 p-10"
+            : "rounded-3xl border border-border/70 bg-card/80 p-10"
+        }
       />
     );
   }
 
   return (
     <>
-      <div className="hidden overflow-hidden rounded-3xl border border-border/70 bg-card/80 lg:block">
+      <div
+        className={
+          flushChrome
+            ? "hidden overflow-hidden lg:block"
+            : "hidden overflow-hidden rounded-3xl border border-border/70 bg-card/80 lg:block"
+        }
+      >
         {header ? (
-          <div className="border-b border-border/60 px-4 py-4">
+          <div
+            className={
+              flushChrome
+                ? "border-b border-border/50 px-0 py-4"
+                : "border-b border-border/60 px-4 py-4"
+            }
+          >
             {header({
               actions: (
                 <>
@@ -676,9 +716,11 @@ export function CampaignAdminUserInteractionsTable({
           </div>
         ) : null}
         <div
-          className={`flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3 ${
-            header ? "hidden" : ""
-          }`}
+          className={cn(
+            "flex items-center justify-between gap-3 border-b py-3",
+            flushChrome ? "border-border/50 px-0" : "border-border/60 px-4",
+            header ? "hidden" : "",
+          )}
         >
           <p className="text-sm text-muted-foreground" aria-live="polite">
             {t`${visibleRowCount} visible`}
@@ -727,7 +769,12 @@ export function CampaignAdminUserInteractionsTable({
         >
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className="sticky left-0 top-0 z-20 w-12 bg-card pl-4 text-xs font-medium text-muted-foreground">
+              <TableHead
+                className={cn(
+                  "sticky left-0 top-0 z-20 w-12 pl-4 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                  stickyBg,
+                )}
+              >
                 <Checkbox
                   checked={allSelectableChecked}
                   onCheckedChange={(checked) =>
@@ -738,7 +785,12 @@ export function CampaignAdminUserInteractionsTable({
                   className="h-5 w-5"
                 />
               </TableHead>
-              <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+              <TableHead
+                  className={cn(
+                    "sticky top-0 z-10 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                    stickyBg,
+                  )}
+                >
                 <SortableHeaderButton
                   sortKey="reviewStatus"
                   sortBy={sortBy}
@@ -749,7 +801,12 @@ export function CampaignAdminUserInteractionsTable({
                 </SortableHeaderButton>
               </TableHead>
               {isColumnVisible("userId") ? (
-                <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                <TableHead
+                  className={cn(
+                    "sticky top-0 z-10 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                    stickyBg,
+                  )}
+                >
                   <SortableHeaderButton
                     sortKey="userId"
                     sortBy={sortBy}
@@ -761,7 +818,12 @@ export function CampaignAdminUserInteractionsTable({
                 </TableHead>
               ) : null}
               {isColumnVisible("association") ? (
-                <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                <TableHead
+                  className={cn(
+                    "sticky top-0 z-10 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                    stickyBg,
+                  )}
+                >
                   <SortableHeaderButton
                     sortKey="organizationName"
                     sortBy={sortBy}
@@ -772,7 +834,12 @@ export function CampaignAdminUserInteractionsTable({
                   </SortableHeaderButton>
                 </TableHead>
               ) : null}
-              <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+              <TableHead
+                  className={cn(
+                    "sticky top-0 z-10 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                    stickyBg,
+                  )}
+                >
                 <SortableHeaderButton
                   sortKey="entity"
                   sortBy={sortBy}
@@ -783,7 +850,12 @@ export function CampaignAdminUserInteractionsTable({
                 </SortableHeaderButton>
               </TableHead>
               {isColumnVisible("updated") ? (
-                <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                <TableHead
+                  className={cn(
+                    "sticky top-0 z-10 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                    stickyBg,
+                  )}
+                >
                   <SortableHeaderButton
                     sortKey="updatedAt"
                     sortBy={sortBy}
@@ -795,7 +867,12 @@ export function CampaignAdminUserInteractionsTable({
                 </TableHead>
               ) : null}
               {isColumnVisible("riskFlags") ? (
-                <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                <TableHead
+                  className={cn(
+                    "sticky top-0 z-10 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                    stickyBg,
+                  )}
+                >
                   <SortableHeaderButton
                     sortKey="riskFlagCount"
                     sortBy={sortBy}
@@ -807,7 +884,12 @@ export function CampaignAdminUserInteractionsTable({
                 </TableHead>
               ) : null}
               {isColumnVisible("message") ? (
-                <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                <TableHead
+                  className={cn(
+                    "sticky top-0 z-10 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                    stickyBg,
+                  )}
+                >
                   <SortableHeaderButton
                     sortKey="threadPhase"
                     sortBy={sortBy}
@@ -820,7 +902,12 @@ export function CampaignAdminUserInteractionsTable({
                 </TableHead>
               ) : null}
               {isColumnVisible("interaction") ? (
-                <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                <TableHead
+                  className={cn(
+                    "sticky top-0 z-10 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                    stickyBg,
+                  )}
+                >
                   <SortableHeaderButton
                     sortKey="interactionType"
                     sortBy={sortBy}
@@ -832,7 +919,12 @@ export function CampaignAdminUserInteractionsTable({
                 </TableHead>
               ) : null}
               {isColumnVisible("value") ? (
-                <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                <TableHead
+                  className={cn(
+                    "sticky top-0 z-10 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                    stickyBg,
+                  )}
+                >
                   <SortableHeaderButton
                     sortKey="value"
                     sortBy={sortBy}
@@ -844,7 +936,12 @@ export function CampaignAdminUserInteractionsTable({
                 </TableHead>
               ) : null}
               {isColumnVisible("reviewState") ? (
-                <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                <TableHead
+                  className={cn(
+                    "sticky top-0 z-10 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                    stickyBg,
+                  )}
+                >
                   <SortableHeaderButton
                     sortKey="reviewState"
                     sortBy={sortBy}
@@ -856,17 +953,32 @@ export function CampaignAdminUserInteractionsTable({
                 </TableHead>
               ) : null}
               {isColumnVisible("notify") ? (
-                <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                <TableHead
+                  className={cn(
+                    "sticky top-0 z-10 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                    stickyBg,
+                  )}
+                >
                   {t`Notify`}
                 </TableHead>
               ) : null}
               {isColumnVisible("reviewNote") ? (
-                <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                <TableHead
+                  className={cn(
+                    "sticky top-0 z-10 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                    stickyBg,
+                  )}
+                >
                   {t`Review note`}
                 </TableHead>
               ) : null}
               {isColumnVisible("reviewedBy") ? (
-                <TableHead className="sticky top-0 z-10 bg-card text-xs font-medium text-muted-foreground">
+                <TableHead
+                  className={cn(
+                    "sticky top-0 z-10 text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                    stickyBg,
+                  )}
+                >
                   <SortableHeaderButton
                     sortKey="reviewedByUserId"
                     sortBy={sortBy}
@@ -877,7 +989,12 @@ export function CampaignAdminUserInteractionsTable({
                   </SortableHeaderButton>
                 </TableHead>
               ) : null}
-              <TableHead className="sticky right-0 top-0 z-20 bg-card pr-4 text-right text-xs font-medium text-muted-foreground">
+              <TableHead
+                className={cn(
+                  "sticky right-0 top-0 z-20 pr-4 text-right text-xs font-medium text-muted-foreground backdrop-blur-sm",
+                  stickyBg,
+                )}
+              >
                 {t`Actions`}
               </TableHead>
             </TableRow>
@@ -897,7 +1014,12 @@ export function CampaignAdminUserInteractionsTable({
                   key={selectionKey}
                   className="group hover:bg-muted/30"
                 >
-                  <TableCell className="sticky left-0 z-10 bg-card pl-4 group-hover:bg-muted/30">
+                  <TableCell
+                    className={cn(
+                      "sticky left-0 z-10 pl-4 group-hover:bg-muted/30",
+                      stickyBg,
+                    )}
+                  >
                     <Checkbox
                       checked={selectedKeys.has(selectionKey)}
                       onPointerDown={(event) =>
@@ -927,13 +1049,18 @@ export function CampaignAdminUserInteractionsTable({
                   </TableCell>
                   {isColumnVisible("userId") ? (
                     <TableCell className="max-w-[9rem]">
-                      <a
-                        href={`/admin/campaigns/${campaignKey}/users/${encodeURIComponent(item.userId)}`}
-                        className="block truncate font-mono text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                      <Link
+                        to="/admin/campaigns/$campaignKey/users/$userId"
+                        params={{
+                          campaignKey,
+                          userId: item.userId,
+                        }}
+                        search={campaignAdminUserWorkspaceDefaultLinkSearch as never}
                         title={item.userId}
+                        className="block max-w-full truncate font-mono text-xs text-muted-foreground underline-offset-4 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background hover:text-foreground hover:underline"
                       >
                         {formatCampaignAdminUserIdPreview(item.userId)}
-                      </a>
+                      </Link>
                     </TableCell>
                   ) : null}
                   {isColumnVisible("association") ? (
@@ -942,7 +1069,7 @@ export function CampaignAdminUserInteractionsTable({
                     </TableCell>
                   ) : null}
                   <TableCell className="min-w-[12rem]">
-                    <EntityLink item={item} />
+                    <EntityLink campaignKey={campaignKey} item={item} />
                   </TableCell>
                   {isColumnVisible("updated") ? (
                     <TableCell className="whitespace-nowrap tabular-nums">
@@ -1018,7 +1145,12 @@ export function CampaignAdminUserInteractionsTable({
                       {item.reviewedByUserId ?? t`Not reviewed`}
                     </TableCell>
                   ) : null}
-                  <TableCell className="sticky right-0 z-10 bg-card pr-4 text-right group-hover:bg-muted/30">
+                  <TableCell
+                    className={cn(
+                      "sticky right-0 z-10 pr-4 text-right group-hover:bg-muted/30",
+                      stickyBg,
+                    )}
+                  >
                     <div className="flex justify-end gap-2">
                       {renderItemActions ? renderItemActions(item) : null}
                       <Button
@@ -1039,7 +1171,14 @@ export function CampaignAdminUserInteractionsTable({
         </Table>
 
         {footer ? (
-          <div className="border-t border-border/60 bg-background/40 px-4 py-4">
+          <div
+            className={cn(
+              "border-t",
+              flushChrome
+                ? "border-border/50 px-0 py-4"
+                : "border-border/60 bg-background/40 px-4 py-4",
+            )}
+          >
             {footer}
           </div>
         ) : null}
@@ -1047,7 +1186,13 @@ export function CampaignAdminUserInteractionsTable({
 
       <div className="space-y-3 lg:hidden">
         {header ? (
-          <div className="rounded-3xl border border-border/70 bg-card/80 p-4">
+          <div
+            className={
+              flushChrome
+                ? "rounded-2xl border border-border/50 bg-muted/10 p-4"
+                : "rounded-3xl border border-border/70 bg-card/80 p-4"
+            }
+          >
             {header({ actions: null, trailingActions: null })}
           </div>
         ) : null}
@@ -1062,7 +1207,11 @@ export function CampaignAdminUserInteractionsTable({
           return (
             <article
               key={selectionKey}
-              className="rounded-3xl border border-border/70 bg-card/80 p-4"
+              className={
+                flushChrome
+                  ? "rounded-2xl border border-border/50 bg-muted/10 p-4"
+                  : "rounded-3xl border border-border/70 bg-card/80 p-4"
+              }
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 space-y-2">
@@ -1115,18 +1264,23 @@ export function CampaignAdminUserInteractionsTable({
                   <MobileInfoRow
                     label={t`User ID`}
                     value={
-                      <a
-                        href={`/admin/campaigns/${campaignKey}/users/${encodeURIComponent(item.userId)}`}
-                        className="font-mono text-xs underline-offset-4 hover:underline"
+                      <Link
+                        to="/admin/campaigns/$campaignKey/users/$userId"
+                        params={{
+                          campaignKey,
+                          userId: item.userId,
+                        }}
+                        search={campaignAdminUserWorkspaceDefaultLinkSearch as never}
+                        className="font-mono text-xs underline-offset-4 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background hover:underline"
                         title={item.userId}
                       >
                         {formatCampaignAdminUserIdPreview(item.userId)}
-                      </a>
+                      </Link>
                     }
                   />
                   <MobileInfoRow
                     label={t`Entity`}
-                    value={<EntityLink item={item} />}
+                    value={<EntityLink campaignKey={campaignKey} item={item} />}
                   />
                   <MobileInfoRow
                     label={t`Updated`}
@@ -1203,7 +1357,13 @@ export function CampaignAdminUserInteractionsTable({
         })}
 
         {footer ? (
-          <div className="rounded-3xl border border-border/70 bg-card/80 p-4">
+          <div
+            className={
+              flushChrome
+                ? "rounded-2xl border border-border/50 bg-muted/10 p-4"
+                : "rounded-3xl border border-border/70 bg-card/80 p-4"
+            }
+          >
             {footer}
           </div>
         ) : null}

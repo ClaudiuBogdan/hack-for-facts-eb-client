@@ -1161,7 +1161,9 @@ export type CampaignAdminQueueFilters = Omit<
 export type CampaignAdminUserPageSearch = Omit<
   CampaignAdminQueueSearch,
   "phase" | "reviewStatusMode" | "userId" | "cursor" | "pageIndex" | "limit"
->;
+> & {
+  readonly workspaceTab?: "interactions" | "notifications";
+};
 
 export type CampaignAdminUsersSearch = {
   readonly query?: string;

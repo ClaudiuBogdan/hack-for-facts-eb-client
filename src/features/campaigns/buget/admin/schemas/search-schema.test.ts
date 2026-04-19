@@ -647,6 +647,7 @@ describe("campaign admin search schema", () => {
       entityCui: "4270740",
       sortBy: "updatedAt",
       sortOrder: "desc",
+      workspaceTab: "interactions",
     });
   });
 
@@ -711,6 +712,7 @@ describe("campaign admin search schema", () => {
     ).toEqual({
       sortBy: "updatedAt",
       sortOrder: "desc",
+      workspaceTab: "interactions",
     });
   });
 
@@ -723,6 +725,7 @@ describe("campaign admin search schema", () => {
     ).toEqual({
       sortBy: "updatedAt",
       sortOrder: "asc",
+      workspaceTab: "interactions",
     });
   });
 });

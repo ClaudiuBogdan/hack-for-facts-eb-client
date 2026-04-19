@@ -65,6 +65,10 @@ function toCampaignAdminUserPageRouteSearch(search: CampaignAdminUserPageSearch)
     sortBy: search.sortBy,
     sortOrder: search.sortOrder,
     reviewSelectionKey: search.reviewSelectionKey,
+    workspaceTab:
+      search.workspaceTab === undefined || search.workspaceTab === "interactions"
+        ? undefined
+        : search.workspaceTab,
     cursor: undefined,
     pageIndex: undefined,
     limit: 50,
