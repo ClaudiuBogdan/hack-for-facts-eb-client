@@ -196,7 +196,7 @@ export function resolveSectionFooterState(params: {
         primaryLabel: advanceLabel,
         primaryAction: 'advance',
         primaryDisabled: false,
-        showSkip: true,
+        showSkip: false,
       }
     }
 
@@ -211,7 +211,7 @@ export function resolveSectionFooterState(params: {
         primaryLabel: advanceLabel,
         primaryAction: 'advance',
         primaryDisabled: false,
-        showSkip: true,
+        showSkip: false,
       }
     }
 
@@ -221,7 +221,7 @@ export function resolveSectionFooterState(params: {
       primaryLabel: advanceLabel,
       primaryAction: 'advance',
       primaryDisabled: false,
-      showSkip: true,
+      showSkip: false,
     }
   }
 
@@ -243,7 +243,7 @@ export function resolveSectionFooterState(params: {
       primaryLabel: advanceLabel,
       primaryAction: 'advance',
       primaryDisabled: params.isLastSection && !params.isAccessGranted,
-      showSkip: true,
+      showSkip: false,
     }
   }
 
@@ -288,7 +288,7 @@ export function resolveSectionFooterState(params: {
         primaryLabel: advanceLabel,
         primaryAction: 'advance',
         primaryDisabled: false,
-        showSkip: params.isLastSection,
+        showSkip: false,
       }
     }
 

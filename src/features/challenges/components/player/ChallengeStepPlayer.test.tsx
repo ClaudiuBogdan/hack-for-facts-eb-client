@@ -430,7 +430,7 @@ describe('ChallengeStepPlayer', () => {
     expect(screen.getByText('Intro copy')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Switch to article view/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^Next$/i })).toBeEnabled()
-    expect(screen.getByRole('button', { name: /^Skip$/i })).toBeEnabled()
+    expect(screen.queryByRole('button', { name: /^Skip$/i })).not.toBeInTheDocument()
     expect(screen.getByTestId('challenge-sectioned-step-layout')).toHaveClass(
       'min-h-screen',
       'min-h-[100svh]',
@@ -1421,6 +1421,7 @@ describe('ChallengeStepPlayer', () => {
     })
 
     expect(screen.getByText('Your response was sent. You can continue.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Skip$/i })).not.toBeInTheDocument()
   })
 
   it('uses generic completion copy for incomplete immediate custom widgets', () => {
@@ -1564,7 +1565,7 @@ describe('ChallengeStepPlayer', () => {
       ),
     ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^Finish$/i })).toBeEnabled()
-    expect(screen.getByRole('button', { name: /^Skip$/i })).toBeEnabled()
+    expect(screen.queryByRole('button', { name: /^Skip$/i })).not.toBeInTheDocument()
   })
 
   it('uses the quiz question as the progress label for titleless quiz sections', () => {

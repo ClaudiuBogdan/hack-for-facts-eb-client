@@ -99,7 +99,7 @@ describe('challenge-step-player.utils', () => {
       primaryLabel: 'Finish',
       primaryAction: 'advance',
       primaryDisabled: false,
-      showSkip: true,
+      showSkip: false,
     })
   })
 
@@ -154,7 +154,7 @@ describe('challenge-step-player.utils', () => {
       primaryLabel: 'Finish',
       primaryAction: 'advance',
       primaryDisabled: false,
-      showSkip: true,
+      showSkip: false,
     })
   })
 
@@ -194,6 +194,42 @@ describe('challenge-step-player.utils', () => {
     })
   })
 
+  it('hides skip once a custom-interaction section can advance', () => {
+    expect(
+      resolveSectionFooterState({
+        interactive: null,
+        customInteractionLifecycles: [
+          {
+            mode: 'async_review',
+            status: 'pending',
+            reviewStatus: 'pending',
+            feedbackText: null,
+            outcome: null,
+            isSubmitted: true,
+            isSuccessful: false,
+            isFailure: false,
+            isPending: true,
+            canRetry: false,
+          },
+        ],
+        isLastSection: true,
+        isAccessGranted: true,
+        isQuizPending: false,
+        quizState: {
+          isAnswered: false,
+          isCorrect: false,
+        },
+      }),
+    ).toEqual({
+      tone: 'success',
+      message: 'Your response was sent. You can continue.',
+      primaryLabel: 'Finish',
+      primaryAction: 'advance',
+      primaryDisabled: false,
+      showSkip: false,
+    })
+  })
+
   it('preserves the current-section success state when earlier tracked sections are incomplete', () => {
     expect(
       applySectionedStepProgressGate({
@@ -230,7 +266,7 @@ describe('challenge-step-player.utils', () => {
           primaryLabel: 'Finish',
           primaryAction: 'advance',
           primaryDisabled: false,
-          showSkip: true,
+          showSkip: false,
         },
         isLastSection: true,
         isAccessGranted: true,
@@ -244,7 +280,7 @@ describe('challenge-step-player.utils', () => {
       primaryLabel: 'Finish',
       primaryAction: 'advance',
       primaryDisabled: false,
-      showSkip: true,
+      showSkip: false,
     })
   })
 
@@ -257,7 +293,7 @@ describe('challenge-step-player.utils', () => {
           primaryLabel: 'Finish',
           primaryAction: 'advance',
           primaryDisabled: false,
-          showSkip: true,
+          showSkip: false,
         },
         isLastSection: true,
         isAccessGranted: true,
@@ -276,7 +312,7 @@ describe('challenge-step-player.utils', () => {
       primaryLabel: 'Finish',
       primaryAction: 'advance',
       primaryDisabled: false,
-      showSkip: true,
+      showSkip: false,
     })
   })
 
