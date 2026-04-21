@@ -8792,11 +8792,11 @@ msgstr "SIRUTA"
 
 #: src/features/challenges/components/player/sectioned-step-footer.tsx:63
 msgid "Skip"
-msgstr "Sari peste"
+msgstr "Sări peste"
 
 #: src/features/learning/components/interactive/GuidedPlatformTour.tsx:345
 msgid "Skip tour"
-msgstr "Sari peste tur"
+msgstr "Sări peste tur"
 
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:77
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:105
