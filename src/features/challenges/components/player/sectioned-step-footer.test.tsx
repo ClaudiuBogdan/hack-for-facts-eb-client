@@ -51,6 +51,40 @@ describe('SectionedStepFooter', () => {
     expect(screen.getByRole('button', { name: /Next/i })).toBeDisabled()
   })
 
+  it('renders the skip button with an amber border and shadow when the primary action is disabled', () => {
+    render(
+      <SectionedStepFooter
+        footerState={{ ...baseFooterState, primaryDisabled: true }}
+        onSkip={vi.fn()}
+        onPrimaryAction={vi.fn()}
+      />,
+    )
+
+    const skip = screen.getByTestId('sectioned-footer-skip')
+    expect(skip).toHaveClass('border-amber-400/70')
+    expect(skip).toHaveClass('shadow-[0_0_14px_rgba(245,158,11,0.40)]')
+  })
+
+  it('renders the primary button as an outline when disabled for a check action', () => {
+    render(
+      <SectionedStepFooter
+        footerState={{
+          ...baseFooterState,
+          primaryLabel: 'Choose an answer',
+          primaryAction: 'check',
+          primaryDisabled: true,
+        }}
+        onSkip={vi.fn()}
+        onPrimaryAction={vi.fn()}
+      />,
+    )
+
+    const primary = screen.getByRole('button', { name: /Choose an answer/i })
+    expect(primary).toBeDisabled()
+    expect(primary).toHaveClass('border-border/80')
+    expect(primary).toHaveClass('shadow-none')
+  })
+
   it('shows a success message with the correct tone', () => {
     render(
       <SectionedStepFooter

@@ -1,5 +1,6 @@
 import { t } from '@lingui/core/macro'
 import type { QuizOption } from '@/features/learning/components/assessment/Quiz'
+import type { DerivedInteractiveLifecycleState } from '@/features/learning/utils/interactive-state'
 import { cn } from '@/lib/utils'
 import {
   buildCampaignProvocariModulePath,
@@ -137,6 +138,7 @@ export function resolveSectionedBackTarget(params: {
 
 export function resolveSectionFooterState(params: {
   readonly interactive: ChallengeStepSectionInteractive | null
+  readonly customInteractionLifecycles?: readonly DerivedInteractiveLifecycleState[]
   readonly isLastSection: boolean
   readonly isAccessGranted: boolean
   readonly hasLessonChallenges?: boolean
@@ -144,6 +146,85 @@ export function resolveSectionFooterState(params: {
   readonly isQuizPending: boolean
   readonly quizState: SectionQuizStateSnapshot
 }): SectionFooterState {
+  const advanceLabel = params.isLastSection ? t`Finish` : t`Next`
+
+  if (
+    !params.interactive &&
+    (params.customInteractionLifecycles?.length ?? 0) > 0
+  ) {
+    if (!params.isAccessGranted) {
+      return {
+        tone: 'neutral',
+        message: t`Sign in to answer this section and save your progress.`,
+        primaryLabel: advanceLabel,
+        primaryAction: 'advance',
+        primaryDisabled: true,
+        showSkip: true,
+      }
+    }
+
+    const feedbackText =
+      params.customInteractionLifecycles
+        ?.map((lifecycle) => lifecycle.feedbackText?.trim() ?? null)
+        .find((text) => text && text.length > 0) ?? null
+
+    if (
+      params.customInteractionLifecycles?.some(
+        (lifecycle) => !lifecycle.isSubmitted,
+      )
+    ) {
+      return {
+        tone: 'neutral',
+        message: t`Complete this section before continuing.`,
+        primaryLabel: advanceLabel,
+        primaryAction: 'advance',
+        primaryDisabled: true,
+        showSkip: true,
+      }
+    }
+
+    if (
+      params.customInteractionLifecycles?.some(
+        (lifecycle) => lifecycle.isFailure,
+      )
+    ) {
+      return {
+        tone: 'error',
+        message:
+          feedbackText ??
+          t`Your response was sent. You can continue or update it below.`,
+        primaryLabel: advanceLabel,
+        primaryAction: 'advance',
+        primaryDisabled: false,
+        showSkip: true,
+      }
+    }
+
+    if (
+      params.customInteractionLifecycles?.some(
+        (lifecycle) => lifecycle.isPending,
+      )
+    ) {
+      return {
+        tone: 'success',
+        message: feedbackText ?? t`Your response was sent. You can continue.`,
+        primaryLabel: advanceLabel,
+        primaryAction: 'advance',
+        primaryDisabled: false,
+        showSkip: true,
+      }
+    }
+
+    return {
+      tone: 'success',
+      message: feedbackText ?? t`Completed.`,
+      primaryLabel: advanceLabel,
+      primaryAction: 'advance',
+      primaryDisabled: false,
+      showSkip: true,
+    }
+  }
+
   if (!params.interactive) {
     if (params.isLastSection && !params.isAccessGranted) {
       return {
@@ -152,17 +233,17 @@ export function resolveSectionFooterState(params: {
         primaryLabel: t`Finish`,
         primaryAction: 'advance',
         primaryDisabled: true,
-        showSkip: false,
+        showSkip: true,
       }
     }
 
     return {
       tone: 'neutral',
       message: null,
-      primaryLabel: params.isLastSection ? t`Finish` : t`Next`,
+      primaryLabel: advanceLabel,
       primaryAction: 'advance',
       primaryDisabled: params.isLastSection && !params.isAccessGranted,
-      showSkip: !params.isLastSection,
+      showSkip: true,
     }
   }
 
@@ -173,7 +254,7 @@ export function resolveSectionFooterState(params: {
       primaryLabel: t`Check`,
       primaryAction: 'check',
       primaryDisabled: true,
-      showSkip: !params.isLastSection,
+      showSkip: true,
     }
   }
 
@@ -192,11 +273,11 @@ export function resolveSectionFooterState(params: {
 
       return {
         tone: 'neutral',
-        message: t`Tap an answer to continue.`,
+        message: null,
         primaryLabel: t`Choose an answer`,
         primaryAction: 'check',
         primaryDisabled: true,
-        showSkip: !params.isLastSection,
+        showSkip: true,
       }
     }
 
@@ -204,10 +285,10 @@ export function resolveSectionFooterState(params: {
       return {
         tone: 'success',
         message: params.interactive.explanation || t`Correct.`,
-        primaryLabel: params.isLastSection ? t`Finish` : t`Next`,
+        primaryLabel: advanceLabel,
         primaryAction: 'advance',
         primaryDisabled: false,
-        showSkip: false,
+        showSkip: params.isLastSection,
       }
     }
 
@@ -217,7 +298,7 @@ export function resolveSectionFooterState(params: {
       primaryLabel: t`Try again`,
       primaryAction: 'retry',
       primaryDisabled: false,
-      showSkip: !params.isLastSection,
+      showSkip: true,
     }
   }
 
@@ -227,7 +308,7 @@ export function resolveSectionFooterState(params: {
     primaryLabel: t`Try again`,
     primaryAction: 'retry',
     primaryDisabled: false,
-    showSkip: !params.isLastSection,
+    showSkip: true,
   }
 }
 
@@ -341,7 +422,8 @@ export function applySectionedStepProgressGate(params: {
   if (
     !params.isLastSection ||
     !params.isAccessGranted ||
-    params.baseFooterState.primaryAction !== 'advance'
+    params.baseFooterState.primaryAction !== 'advance' ||
+    params.baseFooterState.primaryDisabled
   ) {
     return params.baseFooterState
   }
@@ -364,7 +446,7 @@ export function applySectionedStepProgressGate(params: {
       tone: 'neutral',
       message: t`You can continue, but this step will not be marked complete yet.`,
       primaryDisabled: false,
-      showSkip: false,
+      showSkip: params.baseFooterState.showSkip,
     }
   }
 
@@ -378,7 +460,7 @@ export function applySectionedStepProgressGate(params: {
       tone: 'neutral',
       message: t`You can continue, but this step will not be marked complete yet.`,
       primaryDisabled: false,
-      showSkip: false,
+      showSkip: params.baseFooterState.showSkip,
     }
   }
 

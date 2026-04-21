@@ -26,6 +26,9 @@ describe('ChallengeSectionedQuiz', () => {
     )
 
     expect(screen.getByRole('heading', { name: 'What is 2+2?' })).toBeInTheDocument()
+    const instruction = screen.getByRole('status')
+    expect(instruction).toHaveTextContent('Tap an answer to continue.')
+    expect(instruction).toHaveAttribute('aria-live', 'polite')
     expect(screen.getByRole('button', { name: /Answer A/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Answer B/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Answer C/i })).toBeInTheDocument()
@@ -53,7 +56,7 @@ describe('ChallengeSectionedQuiz', () => {
     expect(onSelect).toHaveBeenCalledWith('b')
   })
 
-  it('disables option buttons when the quiz is answered', () => {
+  it('hides the instruction when the quiz is answered', () => {
     render(
       <ChallengeSectionedQuiz
         id="quiz-1"
@@ -69,6 +72,7 @@ describe('ChallengeSectionedQuiz', () => {
       />,
     )
 
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Answer A/i })).toBeDisabled()
     expect(screen.getByRole('button', { name: /Answer B/i })).toBeDisabled()
     expect(screen.getByRole('button', { name: /Answer C/i })).toBeDisabled()

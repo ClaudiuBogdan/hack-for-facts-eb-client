@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createInteractiveStateRecord } from '@/features/learning/utils/interactive-state'
 import { ChallengeStepPlayer } from './ChallengeStepPlayer'
 
 const mockUseChallengeAccess = vi.fn()
@@ -9,6 +10,7 @@ const mockUseChallengeStepContent = vi.fn()
 const mockUseQuizInteraction = vi.fn()
 const mockUseLessonChallenges = vi.fn()
 const mockGetAdjacentSteps = vi.fn()
+const mockGetInteractiveRecord = vi.fn()
 const markCompleteMock = vi.fn()
 const navigateMock = vi.fn()
 let lessonCompletionState = {
@@ -120,6 +122,7 @@ vi.mock('@/features/learning/hooks/use-learning-progress', () => ({
     progress: {
       content: {},
     },
+    getInteractiveRecord: (...args: unknown[]) => mockGetInteractiveRecord(...args),
   }),
 }))
 
@@ -181,6 +184,8 @@ describe('ChallengeStepPlayer', () => {
       completedChallenges: 0,
       allChallengesCompleted: false,
     })
+    mockGetInteractiveRecord.mockReset()
+    mockGetInteractiveRecord.mockReturnValue(null)
   })
 
   it('does not resolve the entity label outside the register access state', () => {
@@ -1321,6 +1326,245 @@ describe('ChallengeStepPlayer', () => {
     )
 
     expect(markCompleteMock).not.toHaveBeenCalled()
+  })
+
+  it('keeps next disabled for tracked custom interactions until a response is submitted', async () => {
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'submit-request',
+            title: 'Submit request',
+            bodySource: '<DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" />',
+            lessonChallengeDescriptors: [
+              {
+                kind: 'fixed',
+                interactionId: 'funky:interaction:public_debate_request',
+                interactionKind: 'custom',
+                scopePolicy: 'entity',
+              },
+            ],
+            interactive: null,
+            Component: () => <p>Submit the request below.</p>,
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    const submittedRecord = createInteractiveStateRecord({
+      definition: {
+        id: 'funky:interaction:public_debate_request',
+        lessonId: 'civic-monitor-and-request',
+        kind: 'custom',
+        scopePolicy: 'entity',
+        completionRule: { type: 'resolved' },
+        lifecycleMode: 'async_review',
+      },
+      scope: {
+        type: 'entity',
+        entityCui: '12345678',
+      },
+      phase: 'pending',
+      value: {
+        kind: 'json',
+        json: {
+          value: {
+            primariaEmail: 'primaria@example.ro',
+            submissionPath: 'request_platform',
+          },
+        },
+      },
+      result: null,
+      updatedAt: '2026-04-21T07:00:00.000Z',
+      submittedAt: '2026-04-21T07:00:00.000Z',
+    })
+
+    const { rerender } = render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: /^Finish$/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /^Skip$/i })).toBeEnabled()
+
+    mockGetInteractiveRecord.mockReturnValue(submittedRecord)
+
+    rerender(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /^Finish$/i })).toBeEnabled()
+    })
+
+    expect(screen.getByText('Your response was sent. You can continue.')).toBeInTheDocument()
+  })
+
+  it('uses generic completion copy for incomplete immediate custom widgets', () => {
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'compare',
+            title: 'Compare',
+            bodySource: '<LessonAggregateDetailedCompare />',
+            lessonChallengeDescriptors: [
+              {
+                kind: 'step',
+                prefix: 'lesson-aggregate-detailed-compare',
+                interactionKind: 'custom',
+                scopePolicy: 'entity',
+              },
+            ],
+            interactive: null,
+            Component: () => <p>Compare copy</p>,
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+      />,
+    )
+
+    expect(
+      screen.getByText('Complete this section before continuing.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByText('Submit this section before continuing.'),
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Finish$/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /^Skip$/i })).toBeEnabled()
+  })
+
+  it('keeps skip visible on the final section after the progress gate warning', async () => {
+    const compareChallengeId = 'step-1:lesson-aggregate-detailed-compare'
+
+    mockUseChallengeAccess.mockReturnValue({
+      accessCardVariant: null,
+      isAccessGranted: true,
+      isSubmitting: false,
+      register: vi.fn(),
+    })
+
+    mockUseLessonChallenges.mockImplementation(() => ({
+      challenges: {
+        [compareChallengeId]: false,
+      },
+      hasChallenges: true,
+      totalChallenges: 1,
+      completedChallenges: 0,
+      allChallengesCompleted: false,
+    }))
+
+    mockUseChallengeStepContent.mockReturnValue({
+      content: {
+        kind: 'sectioned',
+        Component: () => null,
+        frontmatter: { stepType: 'sectioned' },
+        sections: [
+          {
+            id: 'compare',
+            title: 'Compare',
+            bodySource: '<LessonAggregateDetailedCompare />',
+            lessonChallengeDescriptors: [
+              {
+                kind: 'step',
+                prefix: 'lesson-aggregate-detailed-compare',
+                interactionKind: 'custom',
+                scopePolicy: 'entity',
+              },
+            ],
+            interactive: null,
+            Component: () => <p>Compare copy</p>,
+          },
+          {
+            id: 'summary',
+            title: 'Summary',
+            bodySource: 'Summary copy',
+            interactive: null,
+            Component: () => <p>Summary copy</p>,
+          },
+        ],
+      },
+      isLoading: false,
+      error: null,
+    })
+
+    const { rerender } = render(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeSectionId="compare"
+      />,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('Compare copy')).toBeInTheDocument()
+    })
+
+    rerender(
+      <ChallengeStepPlayer
+        entityCui="12345678"
+        locale="ro"
+        moduleSlug="test-module"
+        challengeSlug="test-challenge"
+        stepSlug="test-step"
+        activeSectionId="summary"
+      />,
+    )
+
+    expect(
+      screen.getByText(
+        'You can continue, but this step will not be marked complete yet.',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^Finish$/i })).toBeEnabled()
+    expect(screen.getByRole('button', { name: /^Skip$/i })).toBeEnabled()
   })
 
   it('uses the quiz question as the progress label for titleless quiz sections', () => {

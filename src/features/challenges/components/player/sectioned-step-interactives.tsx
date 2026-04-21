@@ -44,6 +44,15 @@ export function ChallengeSectionedQuiz({
         <h3 className="text-xl font-black tracking-tight text-foreground md:text-2xl">
           {question}
         </h3>
+        {!isAnswered && !isPending ? (
+          <p
+            role="status"
+            aria-live="polite"
+            className="text-sm text-muted-foreground"
+          >
+            {t`Tap an answer to continue.`}
+          </p>
+        ) : null}
       </div>
 
       <div className="space-y-3">

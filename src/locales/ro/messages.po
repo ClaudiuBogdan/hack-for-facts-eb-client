@@ -1430,7 +1430,7 @@ msgstr "Vizualizare grafică"
 msgid "Charts"
 msgstr "Grafice"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:173
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:254
 msgid "Check"
 msgstr "Verifică"
 
@@ -1438,11 +1438,11 @@ msgstr "Verifică"
 msgid "Check your series filters and try again."
 msgstr "Verificați filtrele seriei și încercați din nou."
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:185
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:266
 msgid "Checking your answer..."
 msgstr "Se verifică răspunsul tău..."
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:186
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:267
 msgid "Checking..."
 msgstr "Se verifică..."
 
@@ -1450,7 +1450,7 @@ msgstr "Se verifică..."
 msgid "Choose a disabled view to enable it in this map."
 msgstr "Alege o vizualizare dezactivată pentru a o activa pe această hartă."
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:196
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:277
 msgid "Choose an answer"
 msgstr "Alege un răspuns"
 
@@ -1802,6 +1802,10 @@ msgstr "Completează toate datele juridice ale ONG-ului pentru a genera modelul 
 msgid "Complete path"
 msgstr "Finalizează parcursul"
 
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:178
+msgid "Complete this section before continuing."
+msgstr "Completează această secțiune înainte de a continua."
+
 #: src/features/learning/components/interactive/FlashCardDeck.tsx:270
 msgid "Complete!"
 msgstr "Complet!"
@@ -1809,6 +1813,10 @@ msgstr "Complet!"
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:92
 msgid "Completed"
 msgstr "Finalizat"
+
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:220
+msgid "Completed."
+msgstr "Finalizat."
 
 #: src/features/learning/components/cards/LearningPathCard.tsx:114
 #: src/routes/certificates.$id.tsx:64
@@ -2103,7 +2111,7 @@ msgstr "Alegere corectă"
 msgid "Correct!"
 msgstr "Corect!"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:206
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:287
 msgid "Correct."
 msgstr "Corect."
 
@@ -4005,9 +4013,8 @@ msgid "Find resources, report issues, or get in touch."
 msgstr "Găsește resurse, raportează probleme sau ia legătura cu noi."
 
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:144
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:152
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:162
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:207
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:149
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:233
 msgid "Finish"
 msgstr "Finalizează"
 
@@ -6049,8 +6056,7 @@ msgstr "Cele mai noi primele"
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:549
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:211
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:127
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:162
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:207
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:149
 #: src/features/learning/components/player/LessonPlayer.tsx:574
 msgid "Next"
 msgstr "Următorul"
@@ -6958,7 +6964,7 @@ msgstr "Valori extreme"
 msgid "Outliers series"
 msgstr "Serie de valori extreme"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:134
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:135
 #: src/hooks/useEntityViews.tsx:14
 msgid "Overview"
 msgstr "Prezentare generală"
@@ -7392,11 +7398,11 @@ msgstr "Previzualizare:"
 msgid "Previous"
 msgstr "Anterior"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:114
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:115
 msgid "Previous section"
 msgstr "Secțiunea anterioară"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:127
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:128
 msgid "Previous step"
 msgstr "Pasul anterior"
 
@@ -8737,7 +8743,8 @@ msgstr "Autentificare necesară"
 msgid "Sign in required to manage notifications"
 msgstr "Este necesară autentificarea pentru a gestiona notificările"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:172
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:158
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:253
 msgid "Sign in to answer this section and save your progress."
 msgstr "Conectează-te pentru a răspunde la această secțiune și a-ți salva progresul."
 
@@ -8766,7 +8773,7 @@ msgstr "Autentificați-vă pentru a primi actualizări despre <0>{entityName}</0
 msgid "Sign in to receive updates about the entities you care about."
 msgstr "Autentificați-vă pentru a primi actualizări despre entitățile care vă interesează."
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:151
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:232
 msgid "Sign in to save this step as completed."
 msgstr "Conectează-te pentru a salva acest pas ca finalizat."
 
@@ -8783,7 +8790,7 @@ msgstr "Autentifică-te pentru a-ți urmări progresul de învățare."
 msgid "SIRUTA"
 msgstr "SIRUTA"
 
-#: src/features/challenges/components/player/sectioned-step-footer.tsx:59
+#: src/features/challenges/components/player/sectioned-step-footer.tsx:63
 msgid "Skip"
 msgstr "Sari peste"
 
@@ -9155,7 +9162,7 @@ msgstr "Vizualizare tabel"
 msgid "Tap"
 msgstr "Apasă"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:195
+#: src/features/challenges/components/player/sectioned-step-interactives.tsx:53
 msgid "Tap an answer to continue."
 msgstr "Apasă pe un răspuns pentru a continua."
 
@@ -9691,8 +9698,8 @@ msgstr "Încercați un alt termen de căutare sau o altă sortare."
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:489
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:249
 #: src/features/challenges/components/analysis/challenge-entity-subordinates-section.tsx:197
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:217
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:227
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:298
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:308
 #: src/features/learning/components/interactive/HandsOnExplorer.tsx:218
 #: src/routes/alerts/$alertId/index.lazy.tsx:192
 #: src/routes/unsubscribe.$token.tsx:77
@@ -9718,8 +9725,8 @@ msgstr "Încearcă Alt An"
 msgid "Try guessing again"
 msgstr "Încearcă să ghicești din nou"
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:216
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:226
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:297
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:307
 msgid "Try once more before moving on."
 msgstr "Mai încearcă o dată înainte de a continua."
 
@@ -10527,8 +10534,8 @@ msgstr "Vizualizezi o hartă partajată. Doar proprietarul poate edita numele."
 msgid "You asked the platform to send the public debate request on your behalf."
 msgstr "Ai solicitat platformei să trimită cererea de dezbatere publică în numele tău."
 
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:365
-#: src/features/challenges/components/player/challenge-step-player.utils.ts:379
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:447
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:461
 msgid "You can continue, but this step will not be marked complete yet."
 msgstr "Poți continua, dar acest pas nu va fi marcat ca finalizat încă."
 
@@ -10708,6 +10715,14 @@ msgstr "Progresul tău a fost salvat. Poți continua la pasul următor."
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:435
 msgid "Your public debate request was recorded."
 msgstr "Cererea ta de dezbatere publică a fost înregistrată."
+
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:195
+msgid "Your response was sent. You can continue or update it below."
+msgstr "Răspunsul tău a fost trimis. Poți continua sau îl poți actualiza mai jos."
+
+#: src/features/challenges/components/player/challenge-step-player.utils.ts:210
+msgid "Your response was sent. You can continue."
+msgstr "Răspunsul tău a fost trimis. Poți continua."
 
 #: src/features/campaigns/buget/components/interactive/campaign-challenge-review-state.tsx:133
 msgid "Your submission has been reviewed and accepted."

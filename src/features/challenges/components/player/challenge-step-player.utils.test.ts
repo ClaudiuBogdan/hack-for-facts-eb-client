@@ -99,7 +99,7 @@ describe('challenge-step-player.utils', () => {
       primaryLabel: 'Finish',
       primaryAction: 'advance',
       primaryDisabled: false,
-      showSkip: false,
+      showSkip: true,
     })
   })
 
@@ -126,7 +126,7 @@ describe('challenge-step-player.utils', () => {
       }),
     ).toEqual({
       tone: 'neutral',
-      message: 'Tap an answer to continue.',
+      message: null,
       primaryLabel: 'Choose an answer',
       primaryAction: 'check',
       primaryDisabled: true,
@@ -154,7 +154,43 @@ describe('challenge-step-player.utils', () => {
       primaryLabel: 'Finish',
       primaryAction: 'advance',
       primaryDisabled: false,
-      showSkip: false,
+      showSkip: true,
+    })
+  })
+
+  it('uses generic completion copy for incomplete custom-interaction sections', () => {
+    expect(
+      resolveSectionFooterState({
+        interactive: null,
+        customInteractionLifecycles: [
+          {
+            mode: 'immediate',
+            status: 'draft',
+            reviewStatus: null,
+            feedbackText: null,
+            outcome: null,
+            isSubmitted: false,
+            isSuccessful: false,
+            isFailure: false,
+            isPending: false,
+            canRetry: false,
+          },
+        ],
+        isLastSection: false,
+        isAccessGranted: true,
+        isQuizPending: false,
+        quizState: {
+          isAnswered: false,
+          isCorrect: false,
+        },
+      }),
+    ).toEqual({
+      tone: 'neutral',
+      message: 'Complete this section before continuing.',
+      primaryLabel: 'Next',
+      primaryAction: 'advance',
+      primaryDisabled: true,
+      showSkip: true,
     })
   })
 
@@ -194,7 +230,7 @@ describe('challenge-step-player.utils', () => {
           primaryLabel: 'Finish',
           primaryAction: 'advance',
           primaryDisabled: false,
-          showSkip: false,
+          showSkip: true,
         },
         isLastSection: true,
         isAccessGranted: true,
@@ -208,7 +244,7 @@ describe('challenge-step-player.utils', () => {
       primaryLabel: 'Finish',
       primaryAction: 'advance',
       primaryDisabled: false,
-      showSkip: false,
+      showSkip: true,
     })
   })
 
@@ -221,7 +257,7 @@ describe('challenge-step-player.utils', () => {
           primaryLabel: 'Finish',
           primaryAction: 'advance',
           primaryDisabled: false,
-          showSkip: false,
+          showSkip: true,
         },
         isLastSection: true,
         isAccessGranted: true,
@@ -240,7 +276,7 @@ describe('challenge-step-player.utils', () => {
       primaryLabel: 'Finish',
       primaryAction: 'advance',
       primaryDisabled: false,
-      showSkip: false,
+      showSkip: true,
     })
   })
 

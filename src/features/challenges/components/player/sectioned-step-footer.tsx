@@ -52,9 +52,13 @@ export function SectionedStepFooter({
           {footerState.showSkip ? (
             <Button
               type="button"
+              data-testid="sectioned-footer-skip"
               variant="ghost"
               onClick={onSkip}
-              className="rounded-full px-5 select-none"
+              className={cn(
+                'h-12 rounded-full px-7 text-base font-semibold select-none transition-all',
+                footerState.primaryDisabled && 'border border-amber-400/70 shadow-[0_0_14px_rgba(245,158,11,0.40)] hover:bg-amber-500/10 hover:border-amber-400',
+              )}
             >
               {t`Skip`}
             </Button>
@@ -64,16 +68,19 @@ export function SectionedStepFooter({
 
           <Button
             type="button"
+            variant={footerState.primaryDisabled ? 'outline' : 'default'}
             onClick={onPrimaryAction}
             disabled={footerState.primaryDisabled}
             className={cn(
-              'h-14 min-w-[12rem] rounded-full px-8 text-base font-bold shadow-lg select-none',
-              footerState.tone === 'success' && 'bg-emerald-600 hover:bg-emerald-700',
-              footerState.tone === 'error' && 'bg-rose-600 hover:bg-rose-700',
+              'h-12 min-w-[10rem] rounded-full px-7 text-base font-semibold select-none transition-all',
+              !footerState.primaryDisabled && 'shadow-lg',
+              !footerState.primaryDisabled && footerState.tone === 'success' && 'bg-emerald-600 hover:bg-emerald-700',
+              !footerState.primaryDisabled && footerState.tone === 'error' && 'bg-rose-600 hover:bg-rose-700',
+              footerState.primaryDisabled && 'border-border/80 text-muted-foreground shadow-none',
             )}
           >
             {footerState.primaryLabel}
-            {footerState.primaryAction === 'advance' ? (
+            {footerState.primaryAction === 'advance' && !footerState.primaryDisabled ? (
               <ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" />
             ) : null}
           </Button>

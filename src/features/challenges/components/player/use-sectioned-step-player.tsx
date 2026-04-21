@@ -13,10 +13,14 @@ import {
   useQuizInteraction,
 } from '@/features/learning/hooks/use-learning-interactions'
 import { useLessonChallenges } from '@/features/learning/components/player/lesson-challenges-context'
+import { useLearningProgress } from '@/features/learning/hooks/use-learning-progress'
+import { deriveInteractiveLifecycleState } from '@/features/learning/utils/interactive-state'
+import { getCampaignInteractiveDefinitionByInteractionId } from '@/features/campaigns/buget/civic-interaction-definitions'
 import { logger } from '@/lib/logger'
 import type { ChallengeLocale, ChallengeStepDefinition } from '../../types'
 import type { ChallengeAccessCardVariant } from '../../hooks/use-challenge-access'
 import {
+  resolveChallengeStepTrackedInteractions,
   resolveChallengeStepLessonChallengeIds,
   type ChallengeStepSection,
 } from '../../utils/sectioned-step-markdown'
@@ -121,6 +125,7 @@ export function useSectionedStepPlayer({
     useState<Record<string, SectionLessonChallengeProgress>>({})
   const { markComplete } = useLessonCompletion({ contentId: stepId, contentVersion: 'v1' })
   const { challenges: currentLessonChallenges } = useLessonChallenges()
+  const { getInteractiveRecord } = useLearningProgress()
   const resolvedSectionId = currentSearchSectionId ?? fallbackSectionId
 
   const currentSectionIndex = useMemo(() => {
@@ -218,6 +223,32 @@ export function useSectionedStepPlayer({
       requiredVisitedSectionIds,
     ],
   )
+  const currentSectionCustomInteractionLifecycles = useMemo(() => {
+    if (!currentSection) {
+      return []
+    }
+
+    return resolveChallengeStepTrackedInteractions({
+      descriptors: currentSection.lessonChallengeDescriptors,
+      stepId,
+    })
+      .filter((interaction) => interaction.interactionKind === 'custom')
+      .map((interaction) => {
+        const record = getInteractiveRecord(
+          {
+            id: interaction.interactionId,
+            scopePolicy: interaction.scopePolicy,
+          },
+          interaction.scopePolicy === 'entity' ? entityCui : undefined,
+        )
+        const lifecycleMode =
+          getCampaignInteractiveDefinitionByInteractionId(
+            interaction.interactionId,
+          )?.lifecycleMode ?? 'immediate'
+
+        return deriveInteractiveLifecycleState(record, lifecycleMode)
+      })
+  }, [currentSection, entityCui, getInteractiveRecord, stepId])
 
   const changeSection = useCallback(
     (sectionId: string, options?: { readonly replace?: boolean }) => {
@@ -396,6 +427,8 @@ export function useSectionedStepPlayer({
       applySectionedStepProgressGate({
         baseFooterState: resolveSectionFooterState({
           interactive: effectiveInteractive,
+          customInteractionLifecycles:
+            currentSectionCustomInteractionLifecycles,
           isLastSection,
           isAccessGranted,
           hasLessonChallenges: currentSectionHasLessonChallenges,
@@ -413,6 +446,7 @@ export function useSectionedStepPlayer({
       }),
     [
       currentSectionAllLessonChallengesCompleted,
+      currentSectionCustomInteractionLifecycles,
       currentSectionHasLessonChallenges,
       effectiveStepProgress.sectionChallengeProgressById,
       effectiveStepProgress.visitedSectionIds,
@@ -487,10 +521,35 @@ export function useSectionedStepPlayer({
     stepHasTrackedLessonChallenges,
   ])
 
-  const handleSkip = useCallback(() => {
-    if (!nextSection) return
-    changeSection(nextSection.id)
-  }, [changeSection, nextSection])
+  const handleSkip = useCallback(async () => {
+    if (nextSection) {
+      changeSection(nextSection.id)
+      return
+    }
+
+    const destination = next
+      ? buildAdjacentStepHref({
+          entityCui,
+          moduleSlug,
+          step: next,
+          findChallengeSlugForAdjacentStep,
+        })
+      : buildCampaignProvocariPath(entityCui)
+
+    await navigate({
+      to: destination as '/',
+      search: (previousSearch) => clearChallengeStepSearch(previousSearch),
+      resetScroll: true,
+    })
+  }, [
+    changeSection,
+    entityCui,
+    findChallengeSlugForAdjacentStep,
+    moduleSlug,
+    navigate,
+    next,
+    nextSection,
+  ])
 
   const handleProgressSectionSelect = useCallback(
     (sectionId: string) => {
