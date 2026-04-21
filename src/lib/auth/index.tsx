@@ -60,6 +60,17 @@ export function resolveClerkLocalization(locale: SupportedLocale) {
   return locale === 'ro' ? roRO : undefined
 }
 
+function createNoopAuthContextValue(isSSR = false): AuthContextValue {
+  return {
+    isEnabled: false,
+    // SSR: false to match Clerk's initial state, Client without key: true (auth disabled)
+    isLoaded: !isSSR,
+    isSignedIn: false,
+    user: null,
+    signOut: () => Promise.resolve(),
+  }
+}
+
 function isAuthRoutePath(pathname: string): boolean {
   return pathname === AUTH_SIGN_IN_PATH || pathname === AUTH_SIGN_UP_PATH
 }
@@ -170,17 +181,7 @@ function ClerkAuthBridge({ children }: PropsWithChildren) {
  * - On client without auth key: isLoaded=true because auth is disabled (nothing to load)
  */
 function NoopAuthProvider({ children, isSSR = false }: PropsWithChildren<{ isSSR?: boolean }>) {
-  const value = useMemo<AuthContextValue>(
-    () => ({
-      isEnabled: false,
-      // SSR: false to match Clerk's initial state, Client without key: true (auth disabled)
-      isLoaded: !isSSR,
-      isSignedIn: false,
-      user: null,
-      signOut: () => Promise.resolve(),
-    }),
-    [isSSR],
-  )
+  const value = useMemo<AuthContextValue>(() => createNoopAuthContextValue(isSSR), [isSSR])
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
@@ -206,7 +207,13 @@ export function AuthProvider({ publishableKey, children }: PropsWithChildren<{ p
 
 export function useAuth() {
   const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used within <AuthProvider>')
+  if (!ctx) {
+    if (typeof window === 'undefined') {
+      return createNoopAuthContextValue(true)
+    }
+
+    throw new Error('useAuth must be used within <AuthProvider>')
+  }
   return ctx
 }
 

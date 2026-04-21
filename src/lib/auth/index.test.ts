@@ -1,5 +1,6 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
+import { renderToString } from 'react-dom/server'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { roRO } from '@clerk/localizations'
 
@@ -55,6 +56,7 @@ let markClerkReady: typeof import('./index').markClerkReady
 let buildAuthNavigationTarget: typeof import('./index').buildAuthNavigationTarget
 let resolveClerkLocalization: typeof import('./index').resolveClerkLocalization
 let AuthProvider: typeof import('./index').AuthProvider
+let useAuth: typeof import('./index').useAuth
 
 beforeEach(async () => {
   vi.useFakeTimers()
@@ -67,6 +69,7 @@ beforeEach(async () => {
   buildAuthNavigationTarget = mod.buildAuthNavigationTarget
   resolveClerkLocalization = mod.resolveClerkLocalization
   AuthProvider = mod.AuthProvider
+  useAuth = mod.useAuth
   mockLocale.value = 'ro'
   capturedClerkProviderProps.length = 0
 })
@@ -197,6 +200,29 @@ describe('AuthProvider localization', () => {
       signInUrl: '/sign-in',
       signUpUrl: '/sign-up',
     })
+  })
+})
+
+describe('useAuth', () => {
+  it('falls back to disabled auth during SSR when no provider is mounted', () => {
+    function Probe() {
+      const auth = useAuth()
+      return React.createElement('div', null, auth.isLoaded ? 'loaded' : 'loading')
+    }
+
+    const originalWindow = (globalThis as { window?: Window }).window
+
+    try {
+      // Simulate the server path where no browser globals exist.
+      delete (globalThis as { window?: Window }).window
+
+      expect(() => renderToString(React.createElement(Probe))).not.toThrow()
+      expect(renderToString(React.createElement(Probe))).toContain('loading')
+    } finally {
+      if (originalWindow) {
+        ;(globalThis as { window?: Window }).window = originalWindow
+      }
+    }
   })
 })
 
