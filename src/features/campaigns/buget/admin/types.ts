@@ -188,6 +188,7 @@ export const campaignAdminNotificationProjectionKindValues = [
   "public_debate_entity_update",
   "public_debate_admin_response",
   "public_debate_admin_failure",
+  "public_debate_announcement",
   "admin_reviewed_interaction",
 ] as const;
 
@@ -623,6 +624,14 @@ export type CampaignAdminEntitiesMetaResponse = {
 export type CampaignAdminEntityConfigValues = {
   readonly budgetPublicationDate: string | null;
   readonly officialBudgetUrl: string | null;
+  readonly public_debate: {
+    readonly date: string;
+    readonly time: string;
+    readonly location: string;
+    readonly announcement_link: string;
+    readonly online_participation_link?: string;
+    readonly description?: string;
+  } | null;
 };
 
 export type CampaignAdminEntityConfigListItem = {
@@ -743,6 +752,17 @@ export type CampaignAdminNotificationProjection =
       readonly entityName: string | null;
       readonly threadId: string;
       readonly phase: string | null;
+    }
+  | {
+      readonly kind: "public_debate_announcement";
+      readonly userId: string | null;
+      readonly entityCui: string;
+      readonly entityName: string | null;
+      readonly date: string;
+      readonly time: string;
+      readonly location: string;
+      readonly hasOnlineParticipationLink: boolean;
+      readonly triggerSource: CampaignAdminNotificationSource | null;
     }
   | {
       readonly kind: "admin_reviewed_interaction";
@@ -1212,6 +1232,7 @@ export type CampaignAdminEntitiesSearch = {
   readonly configHasBudgetPublicationDate?: boolean;
   readonly configOfficialBudgetUrl?: string;
   readonly configHasOfficialBudgetUrl?: boolean;
+  readonly configHasPublicDebate?: boolean;
   readonly configUpdatedAtFrom?: string;
   readonly configUpdatedAtTo?: string;
   readonly configSortBy?: CampaignAdminEntityConfigSortKey;
@@ -1277,6 +1298,7 @@ export type CampaignAdminEntityConfigSearch = {
   readonly hasBudgetPublicationDate?: boolean;
   readonly officialBudgetUrl?: string;
   readonly hasOfficialBudgetUrl?: boolean;
+  readonly hasPublicDebate?: boolean;
   readonly updatedAtFrom?: string;
   readonly updatedAtTo?: string;
   readonly sortBy?: CampaignAdminEntityConfigSortKey;
@@ -1300,6 +1322,7 @@ export type CampaignAdminEntityConfigExportFilters = {
   readonly hasBudgetPublicationDate?: boolean;
   readonly officialBudgetUrl?: string;
   readonly hasOfficialBudgetUrl?: boolean;
+  readonly hasPublicDebate?: boolean;
   readonly updatedAtFrom?: string;
   readonly updatedAtTo?: string;
   readonly sortBy?: CampaignAdminEntityConfigSortKey;

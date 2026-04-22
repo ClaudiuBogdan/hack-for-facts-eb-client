@@ -4,6 +4,23 @@ import type {
   CampaignAdminStagedEntityConfigDraft,
 } from "@/features/campaigns/buget/admin/types";
 
+function isValidDateInput(value: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+function isValidTimeInput(value: string): boolean {
+  return /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
+}
+
+function isValidHttpUrl(value: string): boolean {
+  try {
+    const parsedUrl = new URL(value);
+    return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export type CampaignAdminEntityConfigSendValidationIssueData = {
   readonly selectionKey: string;
   readonly primaryValue: string;
@@ -29,9 +46,24 @@ export function getCampaignAdminEntityConfigSendValidationMessage(input: {
 
   if (
     stagedDraft.values.budgetPublicationDate === null &&
-    stagedDraft.values.officialBudgetUrl === null
+    stagedDraft.values.officialBudgetUrl === null &&
+    stagedDraft.values.public_debate === null
   ) {
     return t`At least one config value is required.`;
+  }
+
+  const publicDebate = stagedDraft.values.public_debate;
+  if (publicDebate !== null) {
+    if (
+      !isValidDateInput(publicDebate.date) ||
+      !isValidTimeInput(publicDebate.time) ||
+      publicDebate.location.trim() === "" ||
+      !isValidHttpUrl(publicDebate.announcement_link) ||
+      (publicDebate.online_participation_link !== undefined &&
+        !isValidHttpUrl(publicDebate.online_participation_link))
+    ) {
+      return t`Public debate values are incomplete or invalid.`;
+    }
   }
 
   if (stagedDraft.expectedUpdatedAt !== item.updatedAt) {

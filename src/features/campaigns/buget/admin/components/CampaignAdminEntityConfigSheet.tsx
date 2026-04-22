@@ -55,6 +55,10 @@ function isValidDateInput(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
+function isValidTimeInput(value: string): boolean {
+  return /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
+}
+
 function isValidHttpUrl(value: string): boolean {
   try {
     const parsedUrl = new URL(value);
@@ -78,14 +82,41 @@ export function CampaignAdminEntityConfigEditor({
 }: CampaignAdminEntityConfigEditorProps) {
   const [budgetPublicationDate, setBudgetPublicationDate] = useState("");
   const [officialBudgetUrl, setOfficialBudgetUrl] = useState("");
+  const [publicDebateDate, setPublicDebateDate] = useState("");
+  const [publicDebateTime, setPublicDebateTime] = useState("");
+  const [publicDebateLocation, setPublicDebateLocation] = useState("");
+  const [publicDebateAnnouncementLink, setPublicDebateAnnouncementLink] = useState("");
+  const [publicDebateOnlineParticipationLink, setPublicDebateOnlineParticipationLink] =
+    useState("");
+  const [publicDebateDescription, setPublicDebateDescription] = useState("");
   const [clientError, setClientError] = useState<string | null>(null);
   const entityLabelStore = useEntityLabel(entityCui ? [entityCui] : []);
 
   useEffect(() => {
     setBudgetPublicationDate(entity?.values.budgetPublicationDate ?? "");
     setOfficialBudgetUrl(entity?.values.officialBudgetUrl ?? "");
+    setPublicDebateDate(entity?.values.public_debate?.date ?? "");
+    setPublicDebateTime(entity?.values.public_debate?.time ?? "");
+    setPublicDebateLocation(entity?.values.public_debate?.location ?? "");
+    setPublicDebateAnnouncementLink(
+      entity?.values.public_debate?.announcement_link ?? "",
+    );
+    setPublicDebateOnlineParticipationLink(
+      entity?.values.public_debate?.online_participation_link ?? "",
+    );
+    setPublicDebateDescription(entity?.values.public_debate?.description ?? "");
     setClientError(null);
-  }, [entity?.entityCui, entity?.values.budgetPublicationDate, entity?.values.officialBudgetUrl]);
+  }, [
+    entity?.entityCui,
+    entity?.values.budgetPublicationDate,
+    entity?.values.officialBudgetUrl,
+    entity?.values.public_debate?.announcement_link,
+    entity?.values.public_debate?.date,
+    entity?.values.public_debate?.description,
+    entity?.values.public_debate?.location,
+    entity?.values.public_debate?.online_participation_link,
+    entity?.values.public_debate?.time,
+  ]);
 
   const effectiveErrorMessage = clientError ?? submitErrorMessage ?? errorMessage ?? null;
   const resolvedEntityName = useMemo(() => {
@@ -116,6 +147,20 @@ export function CampaignAdminEntityConfigEditor({
 
     const nextBudgetPublicationDate = budgetPublicationDate.trim();
     const nextOfficialBudgetUrl = officialBudgetUrl.trim();
+    const nextPublicDebateDate = publicDebateDate.trim();
+    const nextPublicDebateTime = publicDebateTime.trim();
+    const nextPublicDebateLocation = publicDebateLocation.trim();
+    const nextPublicDebateAnnouncementLink = publicDebateAnnouncementLink.trim();
+    const nextPublicDebateOnlineParticipationLink =
+      publicDebateOnlineParticipationLink.trim();
+    const nextPublicDebateDescription = publicDebateDescription.trim();
+    const hasAnyPublicDebateValue =
+      nextPublicDebateDate.length > 0 ||
+      nextPublicDebateTime.length > 0 ||
+      nextPublicDebateLocation.length > 0 ||
+      nextPublicDebateAnnouncementLink.length > 0 ||
+      nextPublicDebateOnlineParticipationLink.length > 0 ||
+      nextPublicDebateDescription.length > 0;
 
     if (
       nextBudgetPublicationDate.length > 0 &&
@@ -133,9 +178,41 @@ export function CampaignAdminEntityConfigEditor({
       return;
     }
 
+    if (hasAnyPublicDebateValue && !isValidDateInput(nextPublicDebateDate)) {
+      setClientError(t`Public debate date must use YYYY-MM-DD.`);
+      return;
+    }
+
+    if (hasAnyPublicDebateValue && !isValidTimeInput(nextPublicDebateTime)) {
+      setClientError(t`Public debate time must use HH:MM.`);
+      return;
+    }
+
+    if (hasAnyPublicDebateValue && nextPublicDebateLocation.length === 0) {
+      setClientError(t`Public debate location is required when public debate is configured.`);
+      return;
+    }
+
+    if (
+      hasAnyPublicDebateValue &&
+      !isValidHttpUrl(nextPublicDebateAnnouncementLink)
+    ) {
+      setClientError(t`Public debate announcement link must be an absolute http(s) URL.`);
+      return;
+    }
+
+    if (
+      nextPublicDebateOnlineParticipationLink.length > 0 &&
+      !isValidHttpUrl(nextPublicDebateOnlineParticipationLink)
+    ) {
+      setClientError(t`Public debate online participation link must be an absolute http(s) URL.`);
+      return;
+    }
+
     if (
       nextBudgetPublicationDate.length === 0 &&
-      nextOfficialBudgetUrl.length === 0
+      nextOfficialBudgetUrl.length === 0 &&
+      !hasAnyPublicDebateValue
     ) {
       setClientError(t`At least one config value is required.`);
       return;
@@ -147,6 +224,23 @@ export function CampaignAdminEntityConfigEditor({
       values: {
         budgetPublicationDate: nextBudgetPublicationDate || null,
         officialBudgetUrl: nextOfficialBudgetUrl || null,
+        public_debate: hasAnyPublicDebateValue
+          ? {
+              date: nextPublicDebateDate,
+              time: nextPublicDebateTime,
+              location: nextPublicDebateLocation,
+              announcement_link: nextPublicDebateAnnouncementLink,
+              ...(nextPublicDebateOnlineParticipationLink.length > 0
+                ? {
+                    online_participation_link:
+                      nextPublicDebateOnlineParticipationLink,
+                  }
+                : {}),
+              ...(nextPublicDebateDescription.length > 0
+                ? { description: nextPublicDebateDescription }
+                : {}),
+            }
+          : null,
       },
     });
   };
@@ -309,6 +403,127 @@ export function CampaignAdminEntityConfigEditor({
                 placeholder="https://"
                 disabled={isSubmitting}
               />
+            </div>
+
+            <div className="space-y-3 rounded-xl border border-border/60 bg-background/60 p-4">
+              <div className="space-y-1">
+                <h4 className="text-sm font-medium text-foreground">
+                  {t`Public debate`}
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  {t`Leave all fields empty to keep public debate unset. If you fill any field, date, time, location, and announcement link become required.`}
+                </p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor={`entity-config-public-debate-date-${entityCui}`}>
+                    {t`Public debate date`}
+                  </Label>
+                  <Input
+                    id={`entity-config-public-debate-date-${entityCui}`}
+                    type="date"
+                    value={publicDebateDate}
+                    onChange={(event) => {
+                      setPublicDebateDate(event.target.value);
+                      if (clientError !== null) {
+                        setClientError(null);
+                      }
+                    }}
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor={`entity-config-public-debate-time-${entityCui}`}>
+                    {t`Public debate time`}
+                  </Label>
+                  <Input
+                    id={`entity-config-public-debate-time-${entityCui}`}
+                    type="time"
+                    value={publicDebateTime}
+                    onChange={(event) => {
+                      setPublicDebateTime(event.target.value);
+                      if (clientError !== null) {
+                        setClientError(null);
+                      }
+                    }}
+                    disabled={isSubmitting}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor={`entity-config-public-debate-location-${entityCui}`}>
+                  {t`Public debate location`}
+                </Label>
+                <Input
+                  id={`entity-config-public-debate-location-${entityCui}`}
+                  value={publicDebateLocation}
+                  onChange={(event) => {
+                    setPublicDebateLocation(event.target.value);
+                    if (clientError !== null) {
+                      setClientError(null);
+                    }
+                  }}
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor={`entity-config-public-debate-announcement-link-${entityCui}`}>
+                  {t`Public debate announcement link`}
+                </Label>
+                <Input
+                  id={`entity-config-public-debate-announcement-link-${entityCui}`}
+                  type="url"
+                  value={publicDebateAnnouncementLink}
+                  onChange={(event) => {
+                    setPublicDebateAnnouncementLink(event.target.value);
+                    if (clientError !== null) {
+                      setClientError(null);
+                    }
+                  }}
+                  placeholder="https://"
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor={`entity-config-public-debate-online-link-${entityCui}`}>
+                  {t`Public debate online participation link`}
+                </Label>
+                <Input
+                  id={`entity-config-public-debate-online-link-${entityCui}`}
+                  type="url"
+                  value={publicDebateOnlineParticipationLink}
+                  onChange={(event) => {
+                    setPublicDebateOnlineParticipationLink(event.target.value);
+                    if (clientError !== null) {
+                      setClientError(null);
+                    }
+                  }}
+                  placeholder="https://"
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor={`entity-config-public-debate-description-${entityCui}`}>
+                  {t`Public debate description`}
+                </Label>
+                <Input
+                  id={`entity-config-public-debate-description-${entityCui}`}
+                  value={publicDebateDescription}
+                  onChange={(event) => {
+                    setPublicDebateDescription(event.target.value);
+                    if (clientError !== null) {
+                      setClientError(null);
+                    }
+                  }}
+                  disabled={isSubmitting}
+                />
+              </div>
             </div>
 
             <div className="flex items-center gap-4">

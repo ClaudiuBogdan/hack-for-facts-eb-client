@@ -363,6 +363,7 @@ function createEntityConfigResponsePayload() {
       values: {
         budgetPublicationDate: "2026-03-20",
         officialBudgetUrl: "https://primarie.ro/buget.pdf",
+        public_debate: null,
       },
       updatedAt: "2026-04-12T10:00:00.000Z",
       updatedByUserId: "admin-1",
@@ -380,6 +381,7 @@ function createExpectedEntityConfigResponse() {
     values: {
       budgetPublicationDate: "2026-03-20",
       officialBudgetUrl: "https://primarie.ro/buget.pdf",
+      public_debate: null,
     },
     updatedAt: "2026-04-12T10:00:00.000Z",
     updatedByUserId: "admin-1",
@@ -848,6 +850,7 @@ describe("campaign admin api schemas", () => {
       values: {
         budgetPublicationDate: "2026-03-20",
         officialBudgetUrl: null,
+        public_debate: null,
       },
     };
 
@@ -858,6 +861,7 @@ describe("campaign admin api schemas", () => {
         values: {
           budgetPublicationDate: null,
           officialBudgetUrl: null,
+          public_debate: null,
         },
       }),
     ).toThrowError("Invalid campaign admin entity config update body.");
@@ -867,6 +871,7 @@ describe("campaign admin api schemas", () => {
         values: {
           budgetPublicationDate: "2026/03/20",
           officialBudgetUrl: null,
+          public_debate: null,
         },
       }),
     ).toThrowError("Invalid campaign admin entity config update body.");
@@ -876,9 +881,30 @@ describe("campaign admin api schemas", () => {
         values: {
           budgetPublicationDate: null,
           officialBudgetUrl: "ftp://primarie.ro/buget.pdf",
+          public_debate: null,
         },
       }),
     ).toThrowError("Invalid campaign admin entity config update body.");
+
+    const publicDebatePayload = {
+      expectedUpdatedAt: null,
+      values: {
+        budgetPublicationDate: null,
+        officialBudgetUrl: null,
+        public_debate: {
+          date: "2026-05-10",
+          time: "18:00",
+          location: "Council Hall",
+          announcement_link: "https://primarie.ro/public-debate",
+          online_participation_link: "https://primarie.ro/public-debate/live",
+          description: "Budget discussion",
+        },
+      },
+    };
+
+    expect(parseCampaignAdminUpdateEntityConfigBody(publicDebatePayload)).toEqual(
+      publicDebatePayload,
+    );
   });
 
   it("parses entities metadata payloads", () => {

@@ -30,6 +30,7 @@ function createEntityConfigPayload() {
       values: {
         budgetPublicationDate: "2026-03-20",
         officialBudgetUrl: "https://primarie.ro/buget.pdf",
+        public_debate: null,
       },
       updatedAt: "2026-04-12T10:00:00.000Z",
       updatedByUserId: "admin-1",
@@ -89,6 +90,7 @@ describe("campaign-admin-entity-config api", () => {
         hasBudgetPublicationDate: true,
         officialBudgetUrl: "buget.pdf",
         hasOfficialBudgetUrl: true,
+        hasPublicDebate: true,
         updatedAtFrom: "2026-04-10T00:00:00.000Z",
         updatedAtTo: "2026-04-12T23:59:59.999Z",
         sortBy: "updatedAt",
@@ -100,7 +102,7 @@ describe("campaign-admin-entity-config api", () => {
 
     expect(result.items).toHaveLength(1);
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3000/api/v1/admin/campaigns/funky/entity-config?entityCui=12345678&budgetPublicationDate=2026-03-20&hasBudgetPublicationDate=true&officialBudgetUrl=buget.pdf&hasOfficialBudgetUrl=true&updatedAtFrom=2026-04-10T00%3A00%3A00.000Z&updatedAtTo=2026-04-12T23%3A59%3A59.999Z&sortBy=updatedAt&sortOrder=desc&cursor=cursor-0&limit=250",
+      "http://localhost:3000/api/v1/admin/campaigns/funky/entity-config?entityCui=12345678&budgetPublicationDate=2026-03-20&hasBudgetPublicationDate=true&officialBudgetUrl=buget.pdf&hasOfficialBudgetUrl=true&hasPublicDebate=true&updatedAtFrom=2026-04-10T00%3A00%3A00.000Z&updatedAtTo=2026-04-12T23%3A59%3A59.999Z&sortBy=updatedAt&sortOrder=desc&cursor=cursor-0&limit=250",
       expect.objectContaining({
         method: "GET",
         headers: expect.objectContaining({
@@ -150,6 +152,7 @@ describe("campaign-admin-entity-config api", () => {
       values: {
         budgetPublicationDate: "2026-03-20",
         officialBudgetUrl: "https://primarie.ro/buget.pdf",
+        public_debate: null,
       },
     } as const;
 
@@ -194,6 +197,7 @@ describe("campaign-admin-entity-config api", () => {
         hasBudgetPublicationDate: false,
         officialBudgetUrl: "buget.pdf",
         hasOfficialBudgetUrl: true,
+        hasPublicDebate: false,
         updatedAtFrom: "2026-04-10T00:00:00.000Z",
         updatedAtTo: "2026-04-12T23:59:59.999Z",
         sortBy: "usersCount",
@@ -204,7 +208,7 @@ describe("campaign-admin-entity-config api", () => {
     expect(result.filename).toBe("entity-config.csv");
     expect(await result.blob.text()).toBe("csv");
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:3000/api/v1/admin/campaigns/funky/entity-config/export?query=Oras+Test&entityCui=12345678&budgetPublicationDate=2026-03-20&hasBudgetPublicationDate=false&officialBudgetUrl=buget.pdf&hasOfficialBudgetUrl=true&updatedAtFrom=2026-04-10T00%3A00%3A00.000Z&updatedAtTo=2026-04-12T23%3A59%3A59.999Z&sortBy=usersCount&sortOrder=desc",
+      "http://localhost:3000/api/v1/admin/campaigns/funky/entity-config/export?query=Oras+Test&entityCui=12345678&budgetPublicationDate=2026-03-20&hasBudgetPublicationDate=false&officialBudgetUrl=buget.pdf&hasOfficialBudgetUrl=true&hasPublicDebate=false&updatedAtFrom=2026-04-10T00%3A00%3A00.000Z&updatedAtTo=2026-04-12T23%3A59%3A59.999Z&sortBy=usersCount&sortOrder=desc",
       expect.objectContaining({
         method: "GET",
         headers: expect.objectContaining({

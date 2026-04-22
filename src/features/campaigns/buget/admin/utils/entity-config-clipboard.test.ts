@@ -19,6 +19,7 @@ function createItem(
     values: {
       budgetPublicationDate: "2026-03-20",
       officialBudgetUrl: "https://oras.test/buget.pdf",
+      public_debate: null,
     },
     updatedAt: "2026-04-18T09:00:00.000Z",
     updatedByUserId: "admin-1",
@@ -33,12 +34,13 @@ describe("entity-config-clipboard", () => {
         values: {
           budgetPublicationDate: "2026-03-20",
           officialBudgetUrl: "=HYPERLINK(\"https://bad.test\")",
+          public_debate: null,
         },
       }),
     ]);
 
     expect(tsv).toContain(
-      "Entity CUI\tEntity Name\tUsers\tBudget Publication Date\tOfficial Budget URL\tUpdated At",
+      "entityCui\tentityName\tusersCount\tbudgetPublicationDate\tofficialBudgetUrl\tpublic_debate.date\tpublic_debate.time\tpublic_debate.location\tpublic_debate.online_participation_link\tpublic_debate.announcement_link\tpublic_debate.description\tupdatedAt",
     );
     expect(tsv).toContain("\t'=HYPERLINK(\"https://bad.test\")\t");
   });
@@ -72,6 +74,7 @@ describe("entity-config-clipboard", () => {
         values: {
           budgetPublicationDate: "2026-04-20",
           officialBudgetUrl: "https://oras.test/final.pdf",
+          public_debate: null,
         },
         expectedUpdatedAt: "2026-04-18T09:00:00.000Z",
       },
@@ -93,6 +96,7 @@ describe("entity-config-clipboard", () => {
         values: {
           budgetPublicationDate: "2026-04-20",
           officialBudgetUrl: "https://oras.test/final.pdf",
+          public_debate: null,
         },
         expectedUpdatedAt: "2026-04-18T09:00:00.000Z",
       },
@@ -116,6 +120,7 @@ describe("entity-config-clipboard", () => {
         values: {
           budgetPublicationDate: "2026-04-20",
           officialBudgetUrl: "https://oras.test/b4.pdf",
+          public_debate: null,
         },
         expectedUpdatedAt: undefined,
       },
@@ -146,6 +151,36 @@ describe("entity-config-clipboard", () => {
         values: {
           budgetPublicationDate: "2026-04-20",
           officialBudgetUrl: "https://oras.test/final.pdf",
+          public_debate: null,
+        },
+        expectedUpdatedAt: "2026-04-18T09:00:00.000Z",
+      },
+    ]);
+  });
+
+  it("round-trips dotted public debate fields", () => {
+    const parsed = parseCampaignAdminEntityConfigClipboard(
+      "entityCui\tpublic_debate.date\tpublic_debate.time\tpublic_debate.location\tpublic_debate.announcement_link\tpublic_debate.online_participation_link\tpublic_debate.description\tupdatedAt\n"
+        + "12345678\t2026-05-10\t18:00\tCouncil Hall\thttps://oras.test/public-debate\thttps://oras.test/public-debate/live\tBudget discussion\t2026-04-18T09:00:00.000Z\n",
+    );
+
+    expect(parsed.issues).toEqual([]);
+    expect(parsed.rows).toEqual([
+      {
+        rowNumber: 2,
+        entityCui: "12345678",
+        entityName: null,
+        values: {
+          budgetPublicationDate: null,
+          officialBudgetUrl: null,
+          public_debate: {
+            date: "2026-05-10",
+            time: "18:00",
+            location: "Council Hall",
+            announcement_link: "https://oras.test/public-debate",
+            online_participation_link: "https://oras.test/public-debate/live",
+            description: "Budget discussion",
+          },
         },
         expectedUpdatedAt: "2026-04-18T09:00:00.000Z",
       },

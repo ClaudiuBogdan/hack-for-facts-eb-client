@@ -42,6 +42,7 @@ function createEntityDetail(
     values: {
       budgetPublicationDate: "2026-03-15",
       officialBudgetUrl: "https://oras.test/buget.pdf",
+      public_debate: null,
     },
     updatedAt: "2026-04-19T08:00:00.000Z",
     updatedByUserId: "admin-user",
@@ -79,6 +80,7 @@ describe("CampaignAdminEntityConfigSheet", () => {
         values: {
           budgetPublicationDate: "2026-04-20",
           officialBudgetUrl: "https://oras.test/updated.pdf",
+          public_debate: null,
         },
       });
     });
@@ -96,6 +98,7 @@ describe("CampaignAdminEntityConfigSheet", () => {
           values: {
             budgetPublicationDate: null,
             officialBudgetUrl: null,
+            public_debate: null,
           },
           updatedAt: null,
         })}
@@ -157,5 +160,68 @@ describe("CampaignAdminEntityConfigSheet", () => {
     expect(
       screen.getByText("Config already exists"),
     ).toBeInTheDocument();
+  });
+
+  it("submits nested public debate values when configured in the editor", async () => {
+    const onSubmit = vi.fn<() => Promise<void>>().mockResolvedValue(undefined);
+
+    render(
+      <CampaignAdminEntityConfigSheet
+        open
+        entityCui="12345678"
+        entity={createEntityDetail({
+          values: {
+            budgetPublicationDate: null,
+            officialBudgetUrl: null,
+            public_debate: null,
+          },
+        })}
+        isLoading={false}
+        isSubmitting={false}
+        onOpenChange={vi.fn()}
+        onSubmit={onSubmit}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Public debate date"), {
+      target: { value: "2026-05-10" },
+    });
+    fireEvent.change(screen.getByLabelText("Public debate time"), {
+      target: { value: "18:00" },
+    });
+    fireEvent.change(screen.getByLabelText("Public debate location"), {
+      target: { value: "Council Hall" },
+    });
+    fireEvent.change(screen.getByLabelText("Public debate announcement link"), {
+      target: { value: "https://oras.test/public-debate" },
+    });
+    fireEvent.change(
+      screen.getByLabelText("Public debate online participation link"),
+      {
+        target: { value: "https://oras.test/public-debate/live" },
+      },
+    );
+    fireEvent.change(screen.getByLabelText("Public debate description"), {
+      target: { value: "Budget discussion" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save config" }));
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith({
+        expectedUpdatedAt: "2026-04-19T08:00:00.000Z",
+        values: {
+          budgetPublicationDate: null,
+          officialBudgetUrl: null,
+          public_debate: {
+            date: "2026-05-10",
+            time: "18:00",
+            location: "Council Hall",
+            announcement_link: "https://oras.test/public-debate",
+            online_participation_link: "https://oras.test/public-debate/live",
+            description: "Budget discussion",
+          },
+        },
+      });
+    });
   });
 });

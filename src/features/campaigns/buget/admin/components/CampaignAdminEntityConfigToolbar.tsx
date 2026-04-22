@@ -88,6 +88,7 @@ type EntityConfigDraft = {
   readonly hasBudgetPublicationDate: "" | "true" | "false";
   readonly officialBudgetUrl: string;
   readonly hasOfficialBudgetUrl: "" | "true" | "false";
+  readonly hasPublicDebate: "" | "true" | "false";
   readonly updatedAtFrom: string;
   readonly updatedAtTo: string;
   readonly sortBy: CampaignAdminEntityConfigSortKey;
@@ -131,6 +132,10 @@ function createDraftFromSearch(
       search.hasOfficialBudgetUrl === undefined
         ? ""
         : String(search.hasOfficialBudgetUrl) as "true" | "false",
+    hasPublicDebate:
+      search.hasPublicDebate === undefined
+        ? ""
+        : String(search.hasPublicDebate) as "true" | "false",
     updatedAtFrom: toDateInputValue(search.updatedAtFrom),
     updatedAtTo: toDateInputValue(search.updatedAtTo),
     sortBy,
@@ -156,6 +161,10 @@ function buildSearchFromDraft(
       draft.hasOfficialBudgetUrl === ""
         ? undefined
         : draft.hasOfficialBudgetUrl === "true",
+    hasPublicDebate:
+      draft.hasPublicDebate === ""
+        ? undefined
+        : draft.hasPublicDebate === "true",
     updatedAtFrom: toUtcRangeBoundary(draft.updatedAtFrom, "start"),
     updatedAtTo: toUtcRangeBoundary(draft.updatedAtTo, "end"),
     sortBy: draft.sortBy,
@@ -230,7 +239,8 @@ export function CampaignAdminEntityConfigToolbar({
     search.budgetPublicationDate !== undefined ||
     search.hasBudgetPublicationDate !== undefined ||
     search.officialBudgetUrl !== undefined ||
-    search.hasOfficialBudgetUrl !== undefined;
+    search.hasOfficialBudgetUrl !== undefined ||
+    search.hasPublicDebate !== undefined;
   const hasUpdatedRangeFilter =
     summarizeDateRange(search.updatedAtFrom, search.updatedAtTo) !== null;
   const advancedCount =
@@ -238,7 +248,8 @@ export function CampaignAdminEntityConfigToolbar({
     Number(search.budgetPublicationDate !== undefined) +
     Number(search.hasBudgetPublicationDate !== undefined) +
     Number(search.officialBudgetUrl !== undefined) +
-    Number(search.hasOfficialBudgetUrl !== undefined);
+    Number(search.hasOfficialBudgetUrl !== undefined) +
+    Number(search.hasPublicDebate !== undefined);
 
   const handleReset = () => {
     const resetSearch = createEmptyCampaignAdminEntityConfigSearch({
@@ -549,6 +560,35 @@ export function CampaignAdminEntityConfigToolbar({
                         }
                       >
                         <SelectTrigger id="entity-config-has-budget-url">
+                          <SelectValue placeholder={t`Any`} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value={ANY_FILTER_VALUE}>{t`Any`}</SelectItem>
+                          <SelectItem value="true">{t`Yes`}</SelectItem>
+                          <SelectItem value="false">{t`No`}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </ToolbarField>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <ToolbarField
+                      label={t`Has public debate`}
+                      htmlFor="entity-config-has-public-debate"
+                    >
+                      <Select
+                        value={draft.hasPublicDebate || ANY_FILTER_VALUE}
+                        onValueChange={(value) =>
+                          setDraft((currentDraft) => ({
+                            ...currentDraft,
+                            hasPublicDebate:
+                              value === ANY_FILTER_VALUE
+                                ? ""
+                                : (value as "true" | "false"),
+                          }))
+                        }
+                      >
+                        <SelectTrigger id="entity-config-has-public-debate">
                           <SelectValue placeholder={t`Any`} />
                         </SelectTrigger>
                         <SelectContent>

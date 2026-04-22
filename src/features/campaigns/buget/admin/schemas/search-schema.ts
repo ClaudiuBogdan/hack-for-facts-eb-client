@@ -503,6 +503,10 @@ export const campaignAdminEntitiesRouteSearchSchema = z.object({
     toOptionalBoolean,
     z.boolean().optional(),
   ),
+  configHasPublicDebate: z.preprocess(
+    toOptionalBoolean,
+    z.boolean().optional(),
+  ),
   configUpdatedAtFrom: z.preprocess(
     toOptionalIsoDateTime,
     z.string().datetime().optional(),
@@ -605,6 +609,10 @@ export const campaignAdminEntityConfigRouteSearchSchema = z.object({
     z.string().min(1).optional(),
   ),
   hasOfficialBudgetUrl: z.preprocess(
+    toOptionalBoolean,
+    z.boolean().optional(),
+  ),
+  hasPublicDebate: z.preprocess(
     toOptionalBoolean,
     z.boolean().optional(),
   ),
@@ -1066,6 +1074,7 @@ export function getCampaignAdminEntityConfigSearchFromEntitiesSearch(
     hasBudgetPublicationDate: search.configHasBudgetPublicationDate,
     officialBudgetUrl: search.configOfficialBudgetUrl,
     hasOfficialBudgetUrl: search.configHasOfficialBudgetUrl,
+    hasPublicDebate: search.configHasPublicDebate,
     updatedAtFrom: search.configUpdatedAtFrom,
     updatedAtTo: search.configUpdatedAtTo,
     sortBy: search.configSortBy,
@@ -1110,6 +1119,7 @@ export function mergeCampaignAdminEntityConfigSearchIntoEntitiesSearch(
     configHasBudgetPublicationDate: configSearch.hasBudgetPublicationDate,
     configOfficialBudgetUrl: configSearch.officialBudgetUrl,
     configHasOfficialBudgetUrl: configSearch.hasOfficialBudgetUrl,
+    configHasPublicDebate: configSearch.hasPublicDebate,
     configUpdatedAtFrom: configSearch.updatedAtFrom,
     configUpdatedAtTo: configSearch.updatedAtTo,
     configSortBy: configSearch.sortBy,
@@ -1159,6 +1169,7 @@ export function getCampaignAdminEntityConfigExportFilters(
     hasBudgetPublicationDate,
     officialBudgetUrl,
     hasOfficialBudgetUrl,
+    hasPublicDebate,
     updatedAtFrom,
     updatedAtTo,
     sortBy,
@@ -1176,6 +1187,7 @@ export function getCampaignAdminEntityConfigExportFilters(
     hasBudgetPublicationDate,
     officialBudgetUrl,
     hasOfficialBudgetUrl,
+    hasPublicDebate,
     updatedAtFrom,
     updatedAtTo,
     sortBy,

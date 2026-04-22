@@ -496,6 +496,38 @@ const campaignAdminEntityConfigValuesSchema = z
         }
       })
       .nullable(),
+    public_debate: z
+      .object({
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/),
+        location: z.string().min(1),
+        announcement_link: z
+          .string()
+          .url()
+          .refine((value) => {
+            try {
+              const url = new URL(value);
+              return url.protocol === "http:" || url.protocol === "https:";
+            } catch {
+              return false;
+            }
+          }),
+        online_participation_link: z
+          .string()
+          .url()
+          .refine((value) => {
+            try {
+              const url = new URL(value);
+              return url.protocol === "http:" || url.protocol === "https:";
+            } catch {
+              return false;
+            }
+          })
+          .optional(),
+        description: z.string().min(1).optional(),
+      })
+      .strict()
+      .nullable(),
   })
   .strict();
 
@@ -577,7 +609,8 @@ const campaignAdminUpdateEntityConfigBodySchema = z
   .refine(
     (body) =>
       body.values.budgetPublicationDate !== null ||
-      body.values.officialBudgetUrl !== null,
+      body.values.officialBudgetUrl !== null ||
+      body.values.public_debate !== null,
     {
       message: "At least one campaign entity config value must be configured.",
       path: ["values"],
@@ -609,6 +642,25 @@ const campaignAdminUpdateEntityConfigBodySchema = z
     {
       message: "Official budget URL must be an absolute http(s) URL.",
       path: ["values", "officialBudgetUrl"],
+    },
+  )
+  .refine(
+    (body) => {
+      const publicDebate = body.values.public_debate;
+      if (publicDebate === null) {
+        return true;
+      }
+
+      return (
+        publicDebate.date.length > 0 &&
+        publicDebate.time.length > 0 &&
+        publicDebate.location.trim().length > 0 &&
+        publicDebate.announcement_link.length > 0
+      );
+    },
+    {
+      message: "Public debate requires date, time, location, and announcement link.",
+      path: ["values", "public_debate"],
     },
   );
 
@@ -681,6 +733,19 @@ const campaignAdminNotificationProjectionSchema = z.discriminatedUnion("kind", [
       entityName: z.string().min(1).nullable(),
       threadId: z.string().min(1),
       phase: z.string().min(1).nullable(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("public_debate_announcement"),
+      userId: z.string().min(1).nullable(),
+      entityCui: z.string().min(1),
+      entityName: z.string().min(1).nullable(),
+      date: z.string().min(1),
+      time: z.string().min(1),
+      location: z.string().min(1),
+      hasOnlineParticipationLink: z.boolean(),
+      triggerSource: z.enum(campaignAdminNotificationSourceValues).nullable(),
     })
     .strict(),
   z

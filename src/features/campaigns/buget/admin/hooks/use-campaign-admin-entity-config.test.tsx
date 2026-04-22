@@ -46,6 +46,7 @@ function createEntityConfig(): CampaignAdminEntityConfigDetail {
     values: {
       budgetPublicationDate: "2026-03-20",
       officialBudgetUrl: "https://primarie.ro/buget.pdf",
+      public_debate: null,
     },
     updatedAt: "2026-04-12T10:00:00.000Z",
     updatedByUserId: "admin-1",
@@ -168,6 +169,7 @@ describe("use-campaign-admin-entity-config", () => {
       values: {
         budgetPublicationDate: "2026-03-20",
         officialBudgetUrl: "https://primarie.ro/buget.pdf",
+        public_debate: null,
       },
     };
     const updatedConfig = createEntityConfig();

@@ -83,6 +83,7 @@ function toCampaignAdminEntitiesRouteSearch(
     configHasBudgetPublicationDate: search.configHasBudgetPublicationDate,
     configOfficialBudgetUrl: search.configOfficialBudgetUrl,
     configHasOfficialBudgetUrl: search.configHasOfficialBudgetUrl,
+    configHasPublicDebate: search.configHasPublicDebate,
     configUpdatedAtFrom: search.configUpdatedAtFrom,
     configUpdatedAtTo: search.configUpdatedAtTo,
     configSortBy: search.configSortBy,

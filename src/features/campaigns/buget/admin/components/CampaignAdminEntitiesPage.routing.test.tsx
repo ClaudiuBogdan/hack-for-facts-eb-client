@@ -114,6 +114,7 @@ function createEntityConfigDetail(
     values: {
       budgetPublicationDate: "2026-03-20",
       officialBudgetUrl: "https://oras.test/buget.pdf",
+      public_debate: null,
     },
     updatedAt: "2026-04-12T10:00:00.000Z",
     updatedByUserId: "admin-1",

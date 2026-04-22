@@ -333,6 +333,7 @@ export function CampaignAdminEntityConfigTable({
               >
                 {t`Official budget URL`}
               </SortableTableHead>
+              <TableHead>{t`Public debate`}</TableHead>
               <SortableTableHead
                 sortKey="updatedAt"
                 sortBy={sortBy}
@@ -381,6 +382,20 @@ export function CampaignAdminEntityConfigTable({
                     >
                       {item.values.officialBudgetUrl}
                     </a>
+                  ) : (
+                    <span className="text-muted-foreground">{t`Unavailable`}</span>
+                  )}
+                </TableCell>
+                <TableCell className="max-w-xs space-y-1 text-sm">
+                  {item.values.public_debate ? (
+                    <>
+                      <p className="text-foreground">
+                        {item.values.public_debate.date} · {item.values.public_debate.time}
+                      </p>
+                      <p className="text-muted-foreground">
+                        {item.values.public_debate.location}
+                      </p>
+                    </>
                   ) : (
                     <span className="text-muted-foreground">{t`Unavailable`}</span>
                   )}

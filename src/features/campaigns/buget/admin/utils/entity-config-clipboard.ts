@@ -7,12 +7,18 @@ import type {
 } from "@/features/campaigns/buget/admin/types";
 
 export const CAMPAIGN_ADMIN_ENTITY_CONFIG_CLIPBOARD_HEADERS = [
-  "Entity CUI",
-  "Entity Name",
-  "Users",
-  "Budget Publication Date",
-  "Official Budget URL",
-  "Updated At",
+  "entityCui",
+  "entityName",
+  "usersCount",
+  "budgetPublicationDate",
+  "officialBudgetUrl",
+  "public_debate.date",
+  "public_debate.time",
+  "public_debate.location",
+  "public_debate.online_participation_link",
+  "public_debate.announcement_link",
+  "public_debate.description",
+  "updatedAt",
 ] as const;
 
 export type CampaignAdminEntityConfigClipboardIssue = {
@@ -43,20 +49,37 @@ export type CampaignAdminEntityConfigBulkClipboardParseResult = {
 };
 
 const HEADER_ALIASES = {
-  entityCui: ["entity cui", "cui", "entity_cui"],
-  entityName: ["entity name", "name", "entity_name"],
+  entityCui: ["entity cui", "cui", "entity_cui", "entitycui"],
+  entityName: ["entity name", "name", "entity_name", "entityname"],
   budgetPublicationDate: [
     "budget publication date",
     "publication date",
     "budget_publication_date",
+    "budgetpublicationdate",
   ],
   officialBudgetUrl: [
     "official budget url",
     "budget url",
     "official_budget_url",
     "url",
+    "officialbudgeturl",
   ],
-  updatedAt: ["updated at", "updated_at"],
+  publicDebateDate: ["public_debate.date", "public debate date"],
+  publicDebateTime: ["public_debate.time", "public debate time"],
+  publicDebateLocation: ["public_debate.location", "public debate location"],
+  publicDebateOnlineParticipationLink: [
+    "public_debate.online_participation_link",
+    "public debate online participation link",
+  ],
+  publicDebateAnnouncementLink: [
+    "public_debate.announcement_link",
+    "public debate announcement link",
+  ],
+  publicDebateDescription: [
+    "public_debate.description",
+    "public debate description",
+  ],
+  updatedAt: ["updated at", "updated_at", "updatedat"],
 } as const;
 
 function normalizeHeaderCell(value: unknown): string {
@@ -136,6 +159,32 @@ export function serializeCampaignAdminEntityConfigRowsToClipboardTsv(
         escapeTabularCell(
           stagedDraft?.values.officialBudgetUrl ?? item.values.officialBudgetUrl,
         ),
+        escapeTabularCell(
+          stagedDraft?.values.public_debate?.date ?? item.values.public_debate?.date ?? null,
+        ),
+        escapeTabularCell(
+          stagedDraft?.values.public_debate?.time ?? item.values.public_debate?.time ?? null,
+        ),
+        escapeTabularCell(
+          stagedDraft?.values.public_debate?.location ??
+            item.values.public_debate?.location ??
+            null,
+        ),
+        escapeTabularCell(
+          stagedDraft?.values.public_debate?.online_participation_link ??
+            item.values.public_debate?.online_participation_link ??
+            null,
+        ),
+        escapeTabularCell(
+          stagedDraft?.values.public_debate?.announcement_link ??
+            item.values.public_debate?.announcement_link ??
+            null,
+        ),
+        escapeTabularCell(
+          stagedDraft?.values.public_debate?.description ??
+            item.values.public_debate?.description ??
+            null,
+        ),
         escapeTabularCell(stagedDraft?.expectedUpdatedAt ?? item.updatedAt),
       ].join("\t"),
     );
@@ -171,6 +220,30 @@ export function parseCampaignAdminEntityConfigClipboard(
     headerCells,
     HEADER_ALIASES.officialBudgetUrl,
   );
+  const publicDebateDateIndex = findHeaderIndex(
+    headerCells,
+    HEADER_ALIASES.publicDebateDate,
+  );
+  const publicDebateTimeIndex = findHeaderIndex(
+    headerCells,
+    HEADER_ALIASES.publicDebateTime,
+  );
+  const publicDebateLocationIndex = findHeaderIndex(
+    headerCells,
+    HEADER_ALIASES.publicDebateLocation,
+  );
+  const publicDebateOnlineParticipationLinkIndex = findHeaderIndex(
+    headerCells,
+    HEADER_ALIASES.publicDebateOnlineParticipationLink,
+  );
+  const publicDebateAnnouncementLinkIndex = findHeaderIndex(
+    headerCells,
+    HEADER_ALIASES.publicDebateAnnouncementLink,
+  );
+  const publicDebateDescriptionIndex = findHeaderIndex(
+    headerCells,
+    HEADER_ALIASES.publicDebateDescription,
+  );
   const updatedAtIndex = findHeaderIndex(headerCells, HEADER_ALIASES.updatedAt);
 
   const issues: CampaignAdminEntityConfigClipboardIssue[] = [];
@@ -205,13 +278,41 @@ export function parseCampaignAdminEntityConfigClipboard(
       officialBudgetUrlIndex === -1
         ? ""
         : normalizeCell(row[officialBudgetUrlIndex]);
+    const publicDebateDate =
+      publicDebateDateIndex === -1 ? "" : normalizeCell(row[publicDebateDateIndex]);
+    const publicDebateTime =
+      publicDebateTimeIndex === -1 ? "" : normalizeCell(row[publicDebateTimeIndex]);
+    const publicDebateLocation =
+      publicDebateLocationIndex === -1
+        ? ""
+        : normalizeCell(row[publicDebateLocationIndex]);
+    const publicDebateOnlineParticipationLink =
+      publicDebateOnlineParticipationLinkIndex === -1
+        ? ""
+        : normalizeCell(row[publicDebateOnlineParticipationLinkIndex]);
+    const publicDebateAnnouncementLink =
+      publicDebateAnnouncementLinkIndex === -1
+        ? ""
+        : normalizeCell(row[publicDebateAnnouncementLinkIndex]);
+    const publicDebateDescription =
+      publicDebateDescriptionIndex === -1
+        ? ""
+        : normalizeCell(row[publicDebateDescriptionIndex]);
     const updatedAt =
       updatedAtIndex === -1 ? "" : normalizeCell(row[updatedAtIndex]);
+    const hasAnyPublicDebateValue =
+      publicDebateDate !== "" ||
+      publicDebateTime !== "" ||
+      publicDebateLocation !== "" ||
+      publicDebateOnlineParticipationLink !== "" ||
+      publicDebateAnnouncementLink !== "" ||
+      publicDebateDescription !== "";
 
     if (
       entityCui === "" &&
       budgetPublicationDate === "" &&
       officialBudgetUrl === "" &&
+      !hasAnyPublicDebateValue &&
       updatedAt === ""
     ) {
       skippedCount += 1;
@@ -245,7 +346,58 @@ export function parseCampaignAdminEntityConfigClipboard(
       return;
     }
 
-    if (budgetPublicationDate === "" && officialBudgetUrl === "") {
+    if (hasAnyPublicDebateValue && !isValidDateInput(publicDebateDate)) {
+      issues.push({ rowNumber, message: "Invalid public debate date." });
+      skippedCount += 1;
+      return;
+    }
+
+    if (
+      hasAnyPublicDebateValue &&
+      !/^([01]\d|2[0-3]):([0-5]\d)$/.test(publicDebateTime)
+    ) {
+      issues.push({ rowNumber, message: "Invalid public debate time." });
+      skippedCount += 1;
+      return;
+    }
+
+    if (hasAnyPublicDebateValue && publicDebateLocation === "") {
+      issues.push({ rowNumber, message: "Missing public debate location." });
+      skippedCount += 1;
+      return;
+    }
+
+    if (
+      hasAnyPublicDebateValue &&
+      !isValidHttpUrl(publicDebateAnnouncementLink)
+    ) {
+      issues.push({
+        rowNumber,
+        message:
+          "Invalid public debate announcement link. Use an absolute http(s) URL.",
+      });
+      skippedCount += 1;
+      return;
+    }
+
+    if (
+      publicDebateOnlineParticipationLink !== "" &&
+      !isValidHttpUrl(publicDebateOnlineParticipationLink)
+    ) {
+      issues.push({
+        rowNumber,
+        message:
+          "Invalid public debate online participation link. Use an absolute http(s) URL.",
+      });
+      skippedCount += 1;
+      return;
+    }
+
+    if (
+      budgetPublicationDate === "" &&
+      officialBudgetUrl === "" &&
+      !hasAnyPublicDebateValue
+    ) {
       issues.push({
         rowNumber,
         message: "At least one config value is required.",
@@ -268,6 +420,23 @@ export function parseCampaignAdminEntityConfigClipboard(
       values: {
         budgetPublicationDate: budgetPublicationDate || null,
         officialBudgetUrl: officialBudgetUrl || null,
+        public_debate: hasAnyPublicDebateValue
+          ? {
+              date: publicDebateDate,
+              time: publicDebateTime,
+              location: publicDebateLocation,
+              announcement_link: publicDebateAnnouncementLink,
+              ...(publicDebateOnlineParticipationLink !== ""
+                ? {
+                    online_participation_link:
+                      publicDebateOnlineParticipationLink,
+                  }
+                : {}),
+              ...(publicDebateDescription !== ""
+                ? { description: publicDebateDescription }
+                : {}),
+            }
+          : null,
       },
       expectedUpdatedAt: updatedAt || undefined,
     });
@@ -298,7 +467,9 @@ export function looksLikeCampaignAdminEntityConfigClipboardText(
   const hasEntityCuiColumn = findHeaderIndex(headers, HEADER_ALIASES.entityCui) >= 0;
   const hasConfigValueColumn =
     findHeaderIndex(headers, HEADER_ALIASES.budgetPublicationDate) >= 0 ||
-    findHeaderIndex(headers, HEADER_ALIASES.officialBudgetUrl) >= 0;
+    findHeaderIndex(headers, HEADER_ALIASES.officialBudgetUrl) >= 0 ||
+    findHeaderIndex(headers, HEADER_ALIASES.publicDebateDate) >= 0 ||
+    findHeaderIndex(headers, HEADER_ALIASES.publicDebateAnnouncementLink) >= 0;
 
   return hasEntityCuiColumn && hasConfigValueColumn;
 }

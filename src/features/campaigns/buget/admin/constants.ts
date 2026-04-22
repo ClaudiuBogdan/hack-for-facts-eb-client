@@ -359,6 +359,9 @@ export function getCampaignAdminEntityNotificationTypeLabel(
     case "funky:outbox:entity_update":
     case "public_debate_entity_update":
       return t`Entity update`;
+    case "funky:outbox:public_debate_announcement":
+    case "public_debate_announcement":
+      return t`Public debate announcement`;
     case null:
       return t`Unavailable`;
     default:
@@ -464,6 +467,8 @@ export function getCampaignAdminNotificationProjectionLabel(
       return t`Admin response`;
     case "public_debate_admin_failure":
       return t`Admin failure`;
+    case "public_debate_announcement":
+      return t`Public debate announcement`;
     case "admin_reviewed_interaction":
       return t`Reviewed interaction`;
     default:

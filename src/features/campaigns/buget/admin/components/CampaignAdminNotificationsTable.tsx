@@ -411,6 +411,29 @@ function ThreadEventCell({
           </p>
         </div>
       );
+    case "public_debate_announcement":
+      return (
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-foreground">
+            {item.projection.date} · {item.projection.time}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {item.projection.location}
+          </p>
+          {item.projection.hasOnlineParticipationLink ? (
+            <p className="text-xs text-muted-foreground">
+              {t`Includes online participation link`}
+            </p>
+          ) : null}
+          {item.projection.triggerSource ? (
+            <p className="text-xs text-muted-foreground">
+              {getCampaignAdminNotificationSourceLabel(
+                item.projection.triggerSource,
+              )}
+            </p>
+          ) : null}
+        </div>
+      );
     case "admin_reviewed_interaction":
       return (
         <div className="space-y-1">

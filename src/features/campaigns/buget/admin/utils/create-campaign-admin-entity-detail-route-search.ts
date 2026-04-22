@@ -22,6 +22,7 @@ export function createCampaignAdminEntityDetailRouteSearch() {
     configHasBudgetPublicationDate: undefined,
     configOfficialBudgetUrl: undefined,
     configHasOfficialBudgetUrl: undefined,
+    configHasPublicDebate: undefined,
     configUpdatedAtFrom: undefined,
     configUpdatedAtTo: undefined,
     configSortBy: undefined,

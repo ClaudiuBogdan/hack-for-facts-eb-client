@@ -271,6 +271,11 @@ function buildCampaignAdminEntityConfigQueryString(
   );
   appendOptionalSearchParam(
     searchParams,
+    "hasPublicDebate",
+    filters.hasPublicDebate,
+  );
+  appendOptionalSearchParam(
+    searchParams,
     "updatedAtFrom",
     filters.updatedAtFrom,
   );
@@ -310,6 +315,11 @@ function buildCampaignAdminEntityConfigExportQueryString(input: {
     searchParams,
     "hasOfficialBudgetUrl",
     input.filters.hasOfficialBudgetUrl,
+  );
+  appendOptionalSearchParam(
+    searchParams,
+    "hasPublicDebate",
+    input.filters.hasPublicDebate,
   );
   appendOptionalSearchParam(
     searchParams,
