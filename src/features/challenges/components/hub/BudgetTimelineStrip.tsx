@@ -1,15 +1,12 @@
-import { useMemo } from 'react'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { ArrowRight } from 'lucide-react'
 import {
   buildCampaignCalendarPath,
 } from '@/features/campaigns/buget/constants'
-import { BUDGET_PUBLICATION_DATE_INTERACTION } from '@/features/campaigns/buget/civic-interaction-definitions'
-import { useCustomInteraction } from '@/features/learning/hooks/interactions/use-custom-interaction'
+import { useCampaignCalendarOverride } from '@/features/campaigns/buget/hooks/use-campaign-calendar-override'
 import { useCampaignTimeline } from '@/features/campaigns/buget/hooks/use-campaign-timeline'
-import { getCampaignText, getCampaignUatOverrideForCui } from '@/features/campaigns/buget/hooks/use-campaign-content'
-import type { BudgetPublicationDateValue } from '@/features/campaigns/buget/components/interactive/types'
+import { getCampaignText } from '@/features/campaigns/buget/hooks/use-campaign-content'
 import { CHALLENGE_SELECTED_ENTITY_PICKER_PATH } from '../../constants'
 import type { ChallengeLocale } from '../../types'
 
@@ -19,29 +16,7 @@ type BudgetTimelineStripProps = {
 }
 
 export function BudgetTimelineStrip({ locale, entityCui }: BudgetTimelineStripProps) {
-  const adminOverride = useMemo(
-    () => entityCui ? getCampaignUatOverrideForCui(entityCui) : undefined,
-    [entityCui],
-  )
-
-  const userPublicationDate = useCustomInteraction<BudgetPublicationDateValue>({
-    lessonId: BUDGET_PUBLICATION_DATE_INTERACTION.ownerChallengeSlug,
-    interactionId: BUDGET_PUBLICATION_DATE_INTERACTION.interactionId,
-    scopePolicy: 'entity',
-    entityCui,
-    kind: 'custom',
-    completionRule: { type: 'resolved' },
-  })
-
-  const mergedOverride = useMemo(() => {
-    const base = adminOverride ?? {}
-    // Only use user-submitted date if admin hasn't set one for this entry
-    if (!base['publicare-proiect-buget-local'] && userPublicationDate.savedValue?.publicationDate) {
-      return { ...base, 'publicare-proiect-buget-local': userPublicationDate.savedValue.publicationDate }
-    }
-    return Object.keys(base).length > 0 ? base : undefined
-  }, [adminOverride, userPublicationDate.savedValue?.publicationDate])
-
+  const mergedOverride = useCampaignCalendarOverride(entityCui)
   const timeline = useCampaignTimeline(mergedOverride)
   const { entries } = timeline
 

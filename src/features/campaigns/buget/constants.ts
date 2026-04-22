@@ -1,5 +1,6 @@
 export const CAMPAIGN_ID = 'buget'
 export const CAMPAIGN_SLUG = 'buget'
+export const CAMPAIGN_KEY = 'funky' as const
 export const CAMPAIGN_LANDING_PATH = '/provocare'
 export const CAMPAIGN_TERMS_PATH = '/provocare/termeni-si-conditii'
 export const CAMPAIGN_ENTITY_BASE_PATH = '/primarie'

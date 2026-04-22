@@ -162,6 +162,10 @@ vi.mock('./BudgetTimelineStrip', () => ({
   BudgetTimelineStrip: () => <div>Budget Timeline</div>,
 }))
 
+vi.mock('@/features/campaigns/buget/components/hub/campaign-entity-local-update-card', () => ({
+  CampaignEntityLocalUpdateCard: () => <div>Local Campaign Update</div>,
+}))
+
 vi.mock('./QuickResourcesPreview', () => ({
   QuickResourcesPreview: () => <div>Quick Resources</div>,
 }))
@@ -215,6 +219,7 @@ describe('ChallengesHubPage', () => {
     ).toBeInTheDocument()
     expect(screen.queryByTestId('module-card-active')).not.toBeInTheDocument()
     expect(screen.getByText('Budget Timeline')).toBeInTheDocument()
+    expect(screen.getByText('Local Campaign Update')).toBeInTheDocument()
     expect(screen.getByText('Quick Resources')).toBeInTheDocument()
     expect(screen.getAllByTestId('module-card-other').length).toBeGreaterThan(0)
   })

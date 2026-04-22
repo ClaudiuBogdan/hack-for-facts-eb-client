@@ -14,6 +14,7 @@ import { Analytics } from '@/lib/analytics'
 import { getEntityLabels } from '@/lib/api/labels'
 import { CampaignParticipantsMap } from '@/features/campaigns/buget/components/hub/campaign-participants-map'
 import { CampaignParticipantsRankedList } from '@/features/campaigns/buget/components/hub/campaign-participants-ranked-list'
+import { CampaignEntityLocalUpdateCard } from '@/features/campaigns/buget/components/hub/campaign-entity-local-update-card'
 import { FUNKY_CAMPAIGN_KEY } from '@/features/notifications/campaign-notification-keys'
 import { useSubscriptionStats } from '@/features/campaigns/buget/hooks/use-subscription-stats'
 import { useUatCuiMap } from '@/features/campaigns/buget/hooks/use-uat-cui-map'
@@ -355,6 +356,8 @@ export function ChallengesHubPage({
 
       {/* Budget Timeline */}
       <BudgetTimelineStrip locale={locale} entityCui={entityCui} />
+
+      <CampaignEntityLocalUpdateCard locale={locale} entityCui={entityCui} />
 
       {/* Quick Resources */}
       <QuickResourcesPreview locale={locale} entityCui={entityCui} />

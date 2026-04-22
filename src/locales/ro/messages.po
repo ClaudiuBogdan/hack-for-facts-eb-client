@@ -1120,7 +1120,7 @@ msgstr "Răsfoiți seturile dvs. de date sau pe cele partajate, apoi previzualiz
 msgid "Browser storage is unavailable. Opening the dataset copy in the current tab instead."
 msgstr "Stocarea din browser nu este disponibilă. Se deschide în schimb copia setului de date în fila curentă."
 
-#: src/features/challenges/components/hub/BudgetTimelineStrip.tsx:66
+#: src/features/challenges/components/hub/BudgetTimelineStrip.tsx:41
 msgid "Budget Calendar"
 msgstr "Calendar bugetar"
 
@@ -1176,6 +1176,14 @@ msgstr "Documente bugetare"
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:160
 msgid "Budget draft publication date"
 msgstr "Data publicării proiectului de buget"
+
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:258
+msgid "Budget draft published on"
+msgstr ""
+
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:348
+msgid "Budget draft update"
+msgstr ""
 
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:131
 msgid "Budget guides, request templates, and more."
@@ -2165,6 +2173,10 @@ msgstr "Nu s-au putut încărca datele INS"
 msgid "Could not load INS datasets"
 msgstr "Nu s-au putut încărca seturile de date INS"
 
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:292
+msgid "Could not load local details"
+msgstr "Nu s-au putut încărca detaliile locale"
+
 #: src/components/charts/components/series-config/ins-dimension-values-list.tsx:52
 msgid "Could not load localities"
 msgstr "Nu s-au putut încărca localitățile"
@@ -2543,6 +2555,10 @@ msgstr "Valoarea setului de date"
 #: src/features/advanced-map-datasets/components/dataset-editor-map-preview.tsx:31
 msgid "Dataset values"
 msgstr "Valorile setului de date"
+
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:213
+msgid "Date"
+msgstr ""
 
 #: src/components/filters/period-filter/PeriodFilter.tsx:417
 msgid "Dates"
@@ -4423,6 +4439,7 @@ msgid "Hide advanced settings"
 msgstr "Ascunde setările avansate"
 
 #: src/components/charts/components/ChartDataError.tsx:263
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:186
 msgid "Hide details"
 msgstr "Ascunde detaliile"
 
@@ -4839,6 +4856,10 @@ msgstr "Valoare element"
 #: src/components/entities/EntityFinancialTrends.tsx:171
 msgid "January"
 msgstr "Ianuarie"
+
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:243
+msgid "Join online"
+msgstr "Participă online"
 
 #: src/features/challenges/components/hub/challenge-hub-access-card.tsx:172
 msgid "Join the campaign"
@@ -5320,6 +5341,10 @@ msgstr "Contestație buget local"
 msgid "Local dataset snapshots will appear here after autosave or manual save."
 msgstr "Instantaneele locale ale setului de date vor apărea aici după salvarea automată sau manuală."
 
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:291
+msgid "Local details unavailable"
+msgstr "Detaliile locale nu sunt disponibile"
+
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:27
 #: src/features/campaigns/buget/components/interactive/BudgetPublicationDate.tsx:44
 msgid "Local press"
@@ -5357,9 +5382,20 @@ msgstr "Instantaneele locale sunt stocate doar în acest browser, pe acest dispo
 msgid "Local snapshots will appear here after autosave or manual save."
 msgstr "Instantaneele locale vor apărea aici după salvarea automată sau salvarea manuală."
 
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:175
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:288
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:332
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:344
+msgid "Local update"
+msgstr "Actualizare locală"
+
 #: src/components/charts/components/series-config/ins-dimension-values-list.tsx:59
 msgid "Locality options"
 msgstr "Opțiuni localitate"
+
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:223
+msgid "Location"
+msgstr "Locație"
 
 #: src/components/charts/components/chart-annotations/AnnotationItemMenu.tsx:42
 msgid "Lock annotation"
@@ -6344,6 +6380,10 @@ msgstr "Niciun link adăugat"
 msgid "No local snapshots yet"
 msgstr "Încă nu există instantanee locale"
 
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:333
+msgid "No local update yet"
+msgstr ""
+
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:343
 msgid "No maps yet"
 msgstr "Nu ai hărți încă"
@@ -6649,6 +6689,10 @@ msgstr "din bugetul anual plătit"
 msgid "of commitment authority"
 msgstr "din autorizarea de angajament"
 
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:367
+msgid "Official budget draft"
+msgstr ""
+
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:94
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:124
 msgid "Official city hall website"
@@ -6706,6 +6750,10 @@ msgstr "Deschide"
 #: src/components/maps/HeatmapDataTable.tsx:80
 msgid "Open {columnId} column menu"
 msgstr "Open {columnId} column menu"
+
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:237
+msgid "Open announcement"
+msgstr "Deschide anunțul"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-bins-preset-list-item.tsx:113
 msgid "Open bins preset menu"
@@ -6814,6 +6862,11 @@ msgstr "Open legend"
 #: src/features/advanced-map-analytics/components/map-analytics-public-preview-card.tsx:91
 msgid "Open map description"
 msgstr "Deschide descrierea hărții"
+
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:250
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:372
+msgid "Open official budget draft"
+msgstr ""
 
 #: src/components/entities/EntityHeader.tsx:113
 #: src/components/entities/EntityInfo.tsx:42
@@ -7493,6 +7546,14 @@ msgstr "Seturile de date publice sunt în continuare disponibile în lista parta
 msgid "Public datasets will appear here when shared by the community."
 msgstr "Seturile de date publice vor apărea aici când sunt partajate de comunitate."
 
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:179
+msgid "Public debate"
+msgstr "Dezbatere publică"
+
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:198
+msgid "Public debate announced"
+msgstr "Dezbatere publică anunțată"
+
 #: src/features/notifications/types.ts:52
 msgid "Public Debate Campaign"
 msgstr "Campania de dezbatere publică"
@@ -7544,6 +7605,10 @@ msgstr "Data publicării"
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:127
 msgid "Published"
 msgstr "Publicat"
+
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:360
+msgid "Published on"
+msgstr ""
 
 #: src/components/commitments/commitments-trends.tsx:201
 #: src/components/entities/EntityFinancialTrends.tsx:174
@@ -7832,6 +7897,10 @@ msgstr "Raportare:"
 #: src/hooks/useEntityViews.tsx:45
 msgid "Reports"
 msgstr "Rapoarte"
+
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:325
+msgid "Request a public debate"
+msgstr ""
 
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:90
 msgid "Request a public debate for the local budget."
@@ -8590,6 +8659,7 @@ msgid "Show Detailed"
 msgstr "Afișează detaliat"
 
 #: src/components/charts/components/ChartDataError.tsx:268
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:186
 msgid "Show details"
 msgstr "Afișează detaliile"
 
@@ -9407,6 +9477,18 @@ msgstr "Aceasta este persoana care semnează cererea în numele asociației."
 msgid "This name appears as the map title for viewers."
 msgstr "Acest nume apare ca titlu al hărții pentru vizitatori."
 
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:296
+msgid "This page cannot show budget or debate details for this city hall right now."
+msgstr "Această pagină nu poate afișa momentan detaliile despre buget sau dezbatere pentru această primărie."
+
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:334
+msgid "This page does not show a published budget draft or debate announcement for this city hall yet."
+msgstr ""
+
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:351
+msgid "This page includes the latest budget details we can show for this city hall."
+msgstr ""
+
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:343
 msgid "This preview uses the persisted dataset state from the server."
 msgstr "Această previzualizare folosește starea persistentă a setului de date de pe server."
@@ -9486,6 +9568,10 @@ msgstr "Tie-breaking is deterministic by value, then SIRUTA code."
 #: src/routes/certificates.$id.tsx:60
 msgid "Tier"
 msgstr "Nivel"
+
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:218
+msgid "Time"
+msgstr "Ora"
 
 #: src/components/charts/components/chart-config/SeriesToolbar.tsx:39
 msgid "Tip: Copy/Cut/Paste with ⌘/Ctrl+C, X, V. Duplicate with ⌘/Ctrl+D."
@@ -9716,6 +9802,10 @@ msgstr "Încercați din nou"
 #: src/features/challenges/components/analysis/challenge-entity-analysis-page.tsx:600
 msgid "Try again in a few moments."
 msgstr "Încearcă din nou peste câteva momente."
+
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:297
+msgid "Try again later to see the latest budget and debate details for this city hall."
+msgstr ""
 
 #: src/features/learning/components/interactive/PromiseTracker.tsx:417
 msgid "Try Another Year"
@@ -9963,7 +10053,7 @@ msgstr "Hartă fără titlu"
 msgid "Untitled Series"
 msgstr "Serie fără titlu"
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:366
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:369
 msgid "Up Next"
 msgstr "Următoarele"
 
@@ -10061,6 +10151,10 @@ msgstr "Folosește denumirea oficială completă exact așa cum apare în Regist
 #: src/components/charts/components/views/SeriesConfigView.tsx:54
 msgid "Use the mean value when multiple observations exist in the same period."
 msgstr "Folosiți valoarea medie când există mai multe observații în aceeași perioadă."
+
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:201
+msgid "Use the official details below to follow or join the public debate for this city hall."
+msgstr "Folosește detaliile oficiale de mai jos pentru a urmări sau pentru a participa la dezbaterea publică a acestei primării."
 
 #: src/routes/charts/index.lazy.tsx:301
 msgid "Use the tag menu on a chart card to add it to this category."
@@ -10189,7 +10283,7 @@ msgstr "Versiune restaurată"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:101
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-data-table.tsx:604
 #: src/components/maps/HeatmapDataTable.tsx:469
-#: src/features/challenges/components/hub/BudgetTimelineStrip.tsx:69
+#: src/features/challenges/components/hub/BudgetTimelineStrip.tsx:44
 #: src/routes/entity-analytics.lazy.tsx:221
 msgid "View"
 msgstr "Vizualizare"
@@ -10359,7 +10453,7 @@ msgstr "Website"
 msgid "Website link"
 msgstr "Link site web"
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:136
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:137
 #: src/routes/$lang/learning/index.lazy.tsx:185
 msgid "Welcome back."
 msgstr "Bine ai revenit."
@@ -10619,7 +10713,7 @@ msgstr "Ai deschis emailul pregătit și ai confirmat că ai trimis cererea de d
 msgid "You will no longer receive notifications via email."
 msgstr "Nu veți mai primi notificări prin e-mail."
 
-#: src/features/challenges/components/hub/ChallengesHubPage.tsx:143
+#: src/features/challenges/components/hub/ChallengesHubPage.tsx:144
 #: src/routes/$lang/learning/index.lazy.tsx:189
 msgid "You're doing great. Keep up the momentum."
 msgstr "Te descurci de minune. Menține ritmul."

@@ -2,19 +2,18 @@ import { render, screen } from '@/test/test-utils'
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { BugetCalendarPage } from './buget-calendar-page'
 
-const useCustomInteractionMock = vi.fn()
+const useCampaignCalendarOverrideMock = vi.fn()
 const useCampaignTimelineMock = vi.fn()
 const getCampaignTextMock = vi.fn((value: { en?: string; ro: string }, locale: 'en' | 'ro') => {
   return locale === 'en' ? (value.en ?? value.ro) : value.ro
 })
-const getCampaignUatOverrideForCuiMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
 }))
 
-vi.mock('@/features/learning/hooks/interactions/use-custom-interaction', () => ({
-  useCustomInteraction: (...args: unknown[]) => useCustomInteractionMock(...args),
+vi.mock('../../hooks/use-campaign-calendar-override', () => ({
+  useCampaignCalendarOverride: (...args: unknown[]) => useCampaignCalendarOverrideMock(...args),
 }))
 
 vi.mock('../../hooks/use-campaign-timeline', () => ({
@@ -23,8 +22,6 @@ vi.mock('../../hooks/use-campaign-timeline', () => ({
 
 vi.mock('../../hooks/use-campaign-content', () => ({
   getCampaignText: (...args: Parameters<typeof getCampaignTextMock>) => getCampaignTextMock(...args),
-  getCampaignUatOverrideForCui: (...args: Parameters<typeof getCampaignUatOverrideForCuiMock>) =>
-    getCampaignUatOverrideForCuiMock(...args),
 }))
 
 vi.mock('@/features/challenges/constants', () => ({
@@ -33,17 +30,13 @@ vi.mock('@/features/challenges/constants', () => ({
 
 describe('BugetCalendarPage', () => {
   beforeEach(() => {
-    useCustomInteractionMock.mockReset()
+    useCampaignCalendarOverrideMock.mockReset()
     useCampaignTimelineMock.mockReset()
     getCampaignTextMock.mockClear()
-    getCampaignUatOverrideForCuiMock.mockReset()
 
-    useCustomInteractionMock.mockReturnValue({
-      savedValue: {
-        publicationDate: '2026-01-20',
-      },
+    useCampaignCalendarOverrideMock.mockReturnValue({
+      'publicare-proiect-buget-local': '2026-01-20',
     })
-    getCampaignUatOverrideForCuiMock.mockReturnValue(undefined)
     useCampaignTimelineMock.mockReturnValue({
       entries: [
         {
@@ -73,6 +66,7 @@ describe('BugetCalendarPage', () => {
       <BugetCalendarPage locale="en" entityCui="4305857" />,
     )
 
+    expect(useCampaignCalendarOverrideMock).toHaveBeenCalledWith('4305857')
     expect(useCampaignTimelineMock).toHaveBeenCalledWith({
       'publicare-proiect-buget-local': '2026-01-20',
     })

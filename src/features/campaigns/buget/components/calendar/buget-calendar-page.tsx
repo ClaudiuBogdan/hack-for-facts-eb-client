@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
   Check,
@@ -10,13 +10,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import { BUDGET_PUBLICATION_DATE_INTERACTION } from '../../civic-interaction-definitions'
-import { useCustomInteraction } from '@/features/learning/hooks/interactions/use-custom-interaction'
 import { useCampaignTimeline } from '../../hooks/use-campaign-timeline'
-import { getCampaignText, getCampaignUatOverrideForCui } from '../../hooks/use-campaign-content'
+import { getCampaignText } from '../../hooks/use-campaign-content'
+import { useCampaignCalendarOverride } from '../../hooks/use-campaign-calendar-override'
 import { buildCampaignProvocariPath } from '@/features/challenges/constants'
 import type { CampaignLocale, CampaignTimelineEntry } from '../../types'
-import type { BudgetPublicationDateValue } from '../interactive/types'
 
 type BugetCalendarPageProps = {
   readonly locale: CampaignLocale
@@ -165,25 +163,7 @@ function formatDuration(days: number, locale: CampaignLocale): string {
 }
 
 export function BugetCalendarPage({ locale, entityCui }: BugetCalendarPageProps) {
-  const adminOverride = useMemo(() => getCampaignUatOverrideForCui(entityCui), [entityCui])
-
-  const userPublicationDate = useCustomInteraction<BudgetPublicationDateValue>({
-    lessonId: BUDGET_PUBLICATION_DATE_INTERACTION.ownerChallengeSlug,
-    interactionId: BUDGET_PUBLICATION_DATE_INTERACTION.interactionId,
-    scopePolicy: 'entity',
-    entityCui,
-    kind: 'custom',
-    completionRule: { type: 'resolved' },
-  })
-
-  const mergedOverride = useMemo(() => {
-    const base = adminOverride ?? {}
-    if (!base['publicare-proiect-buget-local'] && userPublicationDate.savedValue?.publicationDate) {
-      return { ...base, 'publicare-proiect-buget-local': userPublicationDate.savedValue.publicationDate }
-    }
-    return Object.keys(base).length > 0 ? base : undefined
-  }, [adminOverride, userPublicationDate.savedValue?.publicationDate])
-
+  const mergedOverride = useCampaignCalendarOverride(entityCui)
   const isPersonalized = Boolean(mergedOverride)
   const timeline = useCampaignTimeline(mergedOverride)
   const backLinkSearch: Record<string, string> = {}
