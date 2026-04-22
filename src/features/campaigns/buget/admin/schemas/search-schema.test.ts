@@ -286,6 +286,24 @@ describe("campaign admin search schema", () => {
     });
   });
 
+  it("preserves supported public debate announcement notification filters", () => {
+    expect(
+      normalizeCampaignAdminEntitiesSearch({
+        latestNotificationType:
+          "  funky:outbox:public_debate_announcement  ",
+      }),
+    ).toEqual({
+      tab: "overview",
+      latestNotificationType: "funky:outbox:public_debate_announcement",
+      sortBy: "latestInteractionAt",
+      sortOrder: "desc",
+      limit: 50,
+      configSortBy: "updatedAt",
+      configSortOrder: "desc",
+      configLimit: 50,
+    });
+  });
+
   it("normalizes entity config route search defaults and trims filter values", () => {
     expect(
       normalizeCampaignAdminEntityConfigSearch({

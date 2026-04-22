@@ -158,6 +158,51 @@ describe("entity-config-clipboard", () => {
     ]);
   });
 
+  it("preserves existing public debate values when legacy headers omit them", () => {
+    const parsed = parseCampaignAdminEntityConfigClipboardText({
+      rawText:
+        "Entity CUI\tBudget Publication Date\tOfficial Budget URL\tUpdated At\n"
+        + "12345678\t2026-04-20\thttps://oras.test/final.pdf\t2026-04-18T09:00:00.000Z\n",
+      items: [
+        createItem({
+          values: {
+            budgetPublicationDate: "2026-03-20",
+            officialBudgetUrl: "https://oras.test/original.pdf",
+            public_debate: {
+              date: "2026-05-10",
+              time: "18:00",
+              location: "Council Hall",
+              announcement_link: "https://oras.test/public-debate",
+              online_participation_link: "https://oras.test/public-debate/live",
+              description: "Budget discussion",
+            },
+          },
+        }),
+      ],
+    });
+
+    expect(parsed.issues).toEqual([]);
+    expect(parsed.drafts).toEqual([
+      {
+        entityCui: "12345678",
+        entityName: "Oras Test",
+        values: {
+          budgetPublicationDate: "2026-04-20",
+          officialBudgetUrl: "https://oras.test/final.pdf",
+          public_debate: {
+            date: "2026-05-10",
+            time: "18:00",
+            location: "Council Hall",
+            announcement_link: "https://oras.test/public-debate",
+            online_participation_link: "https://oras.test/public-debate/live",
+            description: "Budget discussion",
+          },
+        },
+        expectedUpdatedAt: "2026-04-18T09:00:00.000Z",
+      },
+    ]);
+  });
+
   it("round-trips dotted public debate fields", () => {
     const parsed = parseCampaignAdminEntityConfigClipboard(
       "entityCui\tpublic_debate.date\tpublic_debate.time\tpublic_debate.location\tpublic_debate.announcement_link\tpublic_debate.online_participation_link\tpublic_debate.description\tupdatedAt\n"

@@ -33,6 +33,7 @@ describe("CampaignAdminEntityConfigPasteDialog", () => {
       values: {
         budgetPublicationDate: null,
         officialBudgetUrl: null,
+        public_debate: null,
       },
       updatedAt: null,
       updatedByUserId: null,
@@ -77,6 +78,7 @@ describe("CampaignAdminEntityConfigPasteDialog", () => {
           values: {
             budgetPublicationDate: "2026-04-20",
             officialBudgetUrl: "https://oras.test/final.pdf",
+            public_debate: null,
           },
         },
       });
@@ -108,5 +110,74 @@ describe("CampaignAdminEntityConfigPasteDialog", () => {
     expect(screen.getByText(/Invalid budget publication date/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Apply updates" })).toBeDisabled();
   });
-});
 
+  it("preserves existing public debate config when pasted rows use legacy headers", async () => {
+    getCampaignAdminEntityConfigMock.mockResolvedValue({
+      campaignKey: "funky",
+      entityCui: "12345678",
+      entityName: "Oras Test",
+      configured: true,
+      values: {
+        budgetPublicationDate: "2026-03-20",
+        officialBudgetUrl: "https://oras.test/original.pdf",
+        public_debate: {
+          date: "2026-05-10",
+          time: "18:00",
+          location: "Council Hall",
+          announcement_link: "https://oras.test/public-debate",
+          online_participation_link: "https://oras.test/public-debate/live",
+          description: "Budget discussion",
+        },
+      },
+      updatedAt: "2026-04-18T09:00:00.000Z",
+      updatedByUserId: "admin-1",
+    });
+    updateCampaignAdminEntityConfigMock.mockResolvedValue(undefined);
+
+    renderDialog(
+      <CampaignAdminEntityConfigPasteDialog
+        open
+        campaignKey="funky"
+        onOpenChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Paste rows"), {
+      target: {
+        value:
+          "Entity CUI\tBudget Publication Date\tOfficial Budget URL\tUpdated At\n"
+          + "12345678\t2026-04-20\thttps://oras.test/final.pdf\t2026-04-18T09:00:00.000Z",
+      },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Preview pasted rows" }));
+    expect(await screen.findByText("1 rows ready")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Apply updates" }));
+
+    await waitFor(() => {
+      expect(getCampaignAdminEntityConfigMock).toHaveBeenCalledWith({
+        campaignKey: "funky",
+        entityCui: "12345678",
+      });
+      expect(updateCampaignAdminEntityConfigMock).toHaveBeenCalledWith({
+        campaignKey: "funky",
+        entityCui: "12345678",
+        body: {
+          expectedUpdatedAt: "2026-04-18T09:00:00.000Z",
+          values: {
+            budgetPublicationDate: "2026-04-20",
+            officialBudgetUrl: "https://oras.test/final.pdf",
+            public_debate: {
+              date: "2026-05-10",
+              time: "18:00",
+              location: "Council Hall",
+              announcement_link: "https://oras.test/public-debate",
+              online_participation_link: "https://oras.test/public-debate/live",
+              description: "Budget discussion",
+            },
+          },
+        },
+      });
+    });
+  });
+});

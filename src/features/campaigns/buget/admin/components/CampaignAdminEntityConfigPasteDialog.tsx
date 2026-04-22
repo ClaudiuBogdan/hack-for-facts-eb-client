@@ -72,6 +72,7 @@ export function CampaignAdminEntityConfigPasteDialog({
     () => applyResults.filter((result) => result.status === "success").length,
     [applyResults],
   );
+  const shouldPreserveExistingPublicDebate = preview?.hasPublicDebateColumns === false;
 
   const handleImportText = async (rawText: string) => {
     setPastedText(rawText);
@@ -101,19 +102,20 @@ export function CampaignAdminEntityConfigPasteDialog({
     void handleImportText(clipboardText);
   };
 
-  const resolveExpectedUpdatedAt = async (
+  const resolveEntityConfigDetail = async (
     row: CampaignAdminEntityConfigClipboardRow,
-  ): Promise<string | null> => {
-    if (row.expectedUpdatedAt !== undefined) {
-      return row.expectedUpdatedAt;
+  ): Promise<Awaited<ReturnType<typeof getCampaignAdminEntityConfig>> | null> => {
+    if (
+      row.expectedUpdatedAt !== undefined &&
+      !shouldPreserveExistingPublicDebate
+    ) {
+      return null;
     }
 
-    const detail = await getCampaignAdminEntityConfig({
+    return getCampaignAdminEntityConfig({
       campaignKey,
       entityCui: row.entityCui,
     });
-
-    return detail.updatedAt;
   };
 
   const handleApply = async () => {
@@ -127,14 +129,21 @@ export function CampaignAdminEntityConfigPasteDialog({
     try {
       for (const row of previewRows) {
         try {
-          const expectedUpdatedAt = await resolveExpectedUpdatedAt(row);
+          const detail = await resolveEntityConfigDetail(row);
+          const expectedUpdatedAt = row.expectedUpdatedAt ?? detail?.updatedAt ?? null;
+          const values = shouldPreserveExistingPublicDebate
+            ? {
+                ...row.values,
+                public_debate: detail?.values.public_debate ?? null,
+              }
+            : row.values;
 
           await updateCampaignAdminEntityConfig({
             campaignKey,
             entityCui: row.entityCui,
             body: {
               expectedUpdatedAt,
-              values: row.values,
+              values,
             },
           });
 

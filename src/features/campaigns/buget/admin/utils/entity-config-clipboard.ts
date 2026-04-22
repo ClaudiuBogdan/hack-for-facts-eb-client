@@ -39,6 +39,7 @@ export type CampaignAdminEntityConfigClipboardParseResult = {
   readonly importedCount: number;
   readonly skippedCount: number;
   readonly issues: readonly CampaignAdminEntityConfigClipboardIssue[];
+  readonly hasPublicDebateColumns: boolean;
 };
 
 export type CampaignAdminEntityConfigBulkClipboardParseResult = {
@@ -206,6 +207,7 @@ export function parseCampaignAdminEntityConfigClipboard(
       importedCount: 0,
       skippedCount: 0,
       issues: [],
+      hasPublicDebateColumns: false,
     };
   }
 
@@ -245,6 +247,13 @@ export function parseCampaignAdminEntityConfigClipboard(
     HEADER_ALIASES.publicDebateDescription,
   );
   const updatedAtIndex = findHeaderIndex(headerCells, HEADER_ALIASES.updatedAt);
+  const hasPublicDebateColumns =
+    publicDebateDateIndex !== -1 ||
+    publicDebateTimeIndex !== -1 ||
+    publicDebateLocationIndex !== -1 ||
+    publicDebateOnlineParticipationLinkIndex !== -1 ||
+    publicDebateAnnouncementLinkIndex !== -1 ||
+    publicDebateDescriptionIndex !== -1;
 
   const issues: CampaignAdminEntityConfigClipboardIssue[] = [];
   const importedRows: CampaignAdminEntityConfigClipboardRow[] = [];
@@ -262,6 +271,7 @@ export function parseCampaignAdminEntityConfigClipboard(
           message: "Missing Entity CUI header.",
         },
       ],
+      hasPublicDebateColumns,
     };
   }
 
@@ -447,6 +457,7 @@ export function parseCampaignAdminEntityConfigClipboard(
     importedCount: importedRows.length,
     skippedCount,
     issues,
+    hasPublicDebateColumns,
   };
 }
 
@@ -500,7 +511,12 @@ export function parseCampaignAdminEntityConfigClipboardText(input: {
     drafts.push({
       entityCui: row.entityCui,
       entityName: item.entityName ?? row.entityName ?? null,
-      values: row.values,
+      values: {
+        ...row.values,
+        public_debate: parsed.hasPublicDebateColumns
+          ? row.values.public_debate
+          : item.values.public_debate,
+      },
       expectedUpdatedAt: row.expectedUpdatedAt ?? item.updatedAt ?? null,
     });
   }

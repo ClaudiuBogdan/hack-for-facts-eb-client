@@ -136,6 +136,7 @@ export const campaignAdminEntityNotificationTypeValues = [
   "funky:outbox:welcome",
   "funky:outbox:entity_subscription",
   "funky:outbox:entity_update",
+  "funky:outbox:public_debate_announcement",
   "funky:outbox:admin_reviewed_interaction",
 ] as const;
 
