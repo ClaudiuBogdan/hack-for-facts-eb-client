@@ -2558,7 +2558,7 @@ msgstr "Valorile setului de date"
 
 #: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:213
 msgid "Date"
-msgstr ""
+msgstr "Dată"
 
 #: src/components/filters/period-filter/PeriodFilter.tsx:417
 msgid "Dates"

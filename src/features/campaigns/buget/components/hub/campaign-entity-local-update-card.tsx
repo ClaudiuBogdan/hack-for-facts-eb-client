@@ -174,19 +174,24 @@ function PublicDebateSection({
       onOpenChange={(isOpen) => setIsCollapsed(!isOpen)}
       className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/[0.04] via-background to-background p-5"
     >
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
-          {t`Local update`}
-        </span>
-        <div className="flex items-center gap-2">
-          <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-primary">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 space-y-2">
+          <h2 className="text-balance text-xl font-black tracking-tight text-foreground">
+            {t`Public debate announced`}
+          </h2>
+          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            {t`Use the official details below to follow or join the public debate for this city hall.`}
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center justify-start gap-2 sm:self-start sm:justify-end">
+          <span className="inline-flex shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-primary">
             {t`Public debate`}
           </span>
           <CollapsibleTrigger asChild>
             <button
               type="button"
               aria-label={isCollapsed ? t`Show details` : t`Hide details`}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background/80 text-foreground transition-colors hover:bg-muted/40"
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border/60 bg-background/80 text-foreground transition-colors hover:bg-muted/40"
             >
               <ChevronDown
                 className={`h-3.5 w-3.5 transition-transform ${isCollapsed ? '' : 'rotate-180'}`}
@@ -195,15 +200,6 @@ function PublicDebateSection({
             </button>
           </CollapsibleTrigger>
         </div>
-      </div>
-
-      <div className="mt-3 space-y-2">
-        <h2 className="text-xl font-black tracking-tight text-foreground">
-          {t`Public debate announced`}
-        </h2>
-        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-          {t`Use the official details below to follow or join the public debate for this city hall.`}
-        </p>
       </div>
 
       <p className="mt-3 text-sm font-medium text-foreground">

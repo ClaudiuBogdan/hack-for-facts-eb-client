@@ -59,6 +59,7 @@ import { Route as EntitiesCuiShareImageDotpngRouteImport } from './routes/entiti
 import { Route as ClassificationsFunctionalCodeRouteImport } from './routes/classifications/functional/$code'
 import { Route as ClassificationsEconomicCodeRouteImport } from './routes/classifications/economic/$code'
 import { Route as LangLearningOnboardingRouteImport } from './routes/$lang/learning/onboarding'
+import { Route as PrimarieCuiBugetRouteRouteImport } from './routes/primarie/$cui/buget/route'
 import { Route as AdminCampaignsCampaignKeyRouteRouteImport } from './routes/admin/campaigns/$campaignKey/route'
 import { Route as PrimarieCuiBugetIndexRouteImport } from './routes/primarie/$cui/buget/index'
 import { Route as AdminCampaignsCampaignKeyIndexRouteImport } from './routes/admin/campaigns/$campaignKey/index'
@@ -418,6 +419,11 @@ const LangLearningOnboardingRoute = LangLearningOnboardingRouteImport.update({
 } as any).lazy(() =>
   import('./routes/$lang/learning/onboarding.lazy').then((d) => d.Route),
 )
+const PrimarieCuiBugetRouteRoute = PrimarieCuiBugetRouteRouteImport.update({
+  id: '/buget',
+  path: '/buget',
+  getParentRoute: () => PrimarieCuiRouteRoute,
+} as any)
 const AdminCampaignsCampaignKeyRouteRoute =
   AdminCampaignsCampaignKeyRouteRouteImport.update({
     id: '/admin/campaigns/$campaignKey',
@@ -425,9 +431,9 @@ const AdminCampaignsCampaignKeyRouteRoute =
     getParentRoute: () => rootRouteImport,
   } as any)
 const PrimarieCuiBugetIndexRoute = PrimarieCuiBugetIndexRouteImport.update({
-  id: '/buget/',
-  path: '/buget/',
-  getParentRoute: () => PrimarieCuiRouteRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => PrimarieCuiBugetRouteRoute,
 } as any).lazy(() =>
   import('./routes/primarie/$cui/buget/index.lazy').then((d) => d.Route),
 )
@@ -449,17 +455,17 @@ const LangLearningPathIdIndexRoute = LangLearningPathIdIndexRouteImport.update({
   import('./routes/$lang/learning/$pathId/index.lazy').then((d) => d.Route),
 )
 const PrimarieCuiBugetResurseRoute = PrimarieCuiBugetResurseRouteImport.update({
-  id: '/buget/resurse',
-  path: '/buget/resurse',
-  getParentRoute: () => PrimarieCuiRouteRoute,
+  id: '/resurse',
+  path: '/resurse',
+  getParentRoute: () => PrimarieCuiBugetRouteRoute,
 } as any).lazy(() =>
   import('./routes/primarie/$cui/buget/resurse.lazy').then((d) => d.Route),
 )
 const PrimarieCuiBugetCalendarRoute =
   PrimarieCuiBugetCalendarRouteImport.update({
-    id: '/buget/calendar',
-    path: '/buget/calendar',
-    getParentRoute: () => PrimarieCuiRouteRoute,
+    id: '/calendar',
+    path: '/calendar',
+    getParentRoute: () => PrimarieCuiBugetRouteRoute,
   } as any).lazy(() =>
     import('./routes/primarie/$cui/buget/calendar.lazy').then((d) => d.Route),
   )
@@ -533,9 +539,9 @@ const LangLearningCertificatesIdRoute =
   )
 const PrimarieCuiBugetProvocariRouteRoute =
   PrimarieCuiBugetProvocariRouteRouteImport.update({
-    id: '/buget/provocari',
-    path: '/buget/provocari',
-    getParentRoute: () => PrimarieCuiRouteRoute,
+    id: '/provocari',
+    path: '/provocari',
+    getParentRoute: () => PrimarieCuiBugetRouteRoute,
   } as any)
 const PrimarieCuiBugetProvocariIndexRoute =
   PrimarieCuiBugetProvocariIndexRouteImport.update({
@@ -634,6 +640,7 @@ export interface FileRoutesByFullPath {
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
+  '/primarie/$cui/buget': typeof PrimarieCuiBugetRouteRouteWithChildren
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
@@ -779,6 +786,7 @@ export interface FileRoutesById {
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
+  '/primarie/$cui/buget': typeof PrimarieCuiBugetRouteRouteWithChildren
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
   '/classifications/economic/$code': typeof ClassificationsEconomicCodeRoute
   '/classifications/functional/$code': typeof ClassificationsFunctionalCodeRoute
@@ -856,6 +864,7 @@ export interface FileRouteTypes {
     | '/primarie/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
+    | '/primarie/$cui/buget'
     | '/$lang/learning/onboarding'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
@@ -1000,6 +1009,7 @@ export interface FileRouteTypes {
     | '/primarie/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
+    | '/primarie/$cui/buget'
     | '/$lang/learning/onboarding'
     | '/classifications/economic/$code'
     | '/classifications/functional/$code'
@@ -1461,6 +1471,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangLearningOnboardingRouteImport
       parentRoute: typeof LangLearningRouteRoute
     }
+    '/primarie/$cui/buget': {
+      id: '/primarie/$cui/buget'
+      path: '/buget'
+      fullPath: '/primarie/$cui/buget'
+      preLoaderRoute: typeof PrimarieCuiBugetRouteRouteImport
+      parentRoute: typeof PrimarieCuiRouteRoute
+    }
     '/admin/campaigns/$campaignKey': {
       id: '/admin/campaigns/$campaignKey'
       path: '/admin/campaigns/$campaignKey'
@@ -1470,10 +1487,10 @@ declare module '@tanstack/react-router' {
     }
     '/primarie/$cui/buget/': {
       id: '/primarie/$cui/buget/'
-      path: '/buget'
+      path: '/'
       fullPath: '/primarie/$cui/buget/'
       preLoaderRoute: typeof PrimarieCuiBugetIndexRouteImport
-      parentRoute: typeof PrimarieCuiRouteRoute
+      parentRoute: typeof PrimarieCuiBugetRouteRoute
     }
     '/admin/campaigns/$campaignKey/': {
       id: '/admin/campaigns/$campaignKey/'
@@ -1491,17 +1508,17 @@ declare module '@tanstack/react-router' {
     }
     '/primarie/$cui/buget/resurse': {
       id: '/primarie/$cui/buget/resurse'
-      path: '/buget/resurse'
+      path: '/resurse'
       fullPath: '/primarie/$cui/buget/resurse'
       preLoaderRoute: typeof PrimarieCuiBugetResurseRouteImport
-      parentRoute: typeof PrimarieCuiRouteRoute
+      parentRoute: typeof PrimarieCuiBugetRouteRoute
     }
     '/primarie/$cui/buget/calendar': {
       id: '/primarie/$cui/buget/calendar'
-      path: '/buget/calendar'
+      path: '/calendar'
       fullPath: '/primarie/$cui/buget/calendar'
       preLoaderRoute: typeof PrimarieCuiBugetCalendarRouteImport
-      parentRoute: typeof PrimarieCuiRouteRoute
+      parentRoute: typeof PrimarieCuiBugetRouteRoute
     }
     '/maps/datasets/public/$publicId': {
       id: '/maps/datasets/public/$publicId'
@@ -1554,10 +1571,10 @@ declare module '@tanstack/react-router' {
     }
     '/primarie/$cui/buget/provocari': {
       id: '/primarie/$cui/buget/provocari'
-      path: '/buget/provocari'
+      path: '/provocari'
       fullPath: '/primarie/$cui/buget/provocari'
       preLoaderRoute: typeof PrimarieCuiBugetProvocariRouteRouteImport
-      parentRoute: typeof PrimarieCuiRouteRoute
+      parentRoute: typeof PrimarieCuiBugetRouteRoute
     }
     '/primarie/$cui/buget/provocari/': {
       id: '/primarie/$cui/buget/provocari/'
@@ -1700,23 +1717,36 @@ const PrimarieCuiBugetProvocariRouteRouteWithChildren =
     PrimarieCuiBugetProvocariRouteRouteChildren,
   )
 
-interface PrimarieCuiRouteRouteChildren {
-  PrimarieCuiShareImageDotpngRoute: typeof PrimarieCuiShareImageDotpngRoute
-  PrimarieCuiIndexRoute: typeof PrimarieCuiIndexRoute
+interface PrimarieCuiBugetRouteRouteChildren {
   PrimarieCuiBugetProvocariRouteRoute: typeof PrimarieCuiBugetProvocariRouteRouteWithChildren
   PrimarieCuiBugetCalendarRoute: typeof PrimarieCuiBugetCalendarRoute
   PrimarieCuiBugetResurseRoute: typeof PrimarieCuiBugetResurseRoute
   PrimarieCuiBugetIndexRoute: typeof PrimarieCuiBugetIndexRoute
 }
 
-const PrimarieCuiRouteRouteChildren: PrimarieCuiRouteRouteChildren = {
-  PrimarieCuiShareImageDotpngRoute: PrimarieCuiShareImageDotpngRoute,
-  PrimarieCuiIndexRoute: PrimarieCuiIndexRoute,
+const PrimarieCuiBugetRouteRouteChildren: PrimarieCuiBugetRouteRouteChildren = {
   PrimarieCuiBugetProvocariRouteRoute:
     PrimarieCuiBugetProvocariRouteRouteWithChildren,
   PrimarieCuiBugetCalendarRoute: PrimarieCuiBugetCalendarRoute,
   PrimarieCuiBugetResurseRoute: PrimarieCuiBugetResurseRoute,
   PrimarieCuiBugetIndexRoute: PrimarieCuiBugetIndexRoute,
+}
+
+const PrimarieCuiBugetRouteRouteWithChildren =
+  PrimarieCuiBugetRouteRoute._addFileChildren(
+    PrimarieCuiBugetRouteRouteChildren,
+  )
+
+interface PrimarieCuiRouteRouteChildren {
+  PrimarieCuiBugetRouteRoute: typeof PrimarieCuiBugetRouteRouteWithChildren
+  PrimarieCuiShareImageDotpngRoute: typeof PrimarieCuiShareImageDotpngRoute
+  PrimarieCuiIndexRoute: typeof PrimarieCuiIndexRoute
+}
+
+const PrimarieCuiRouteRouteChildren: PrimarieCuiRouteRouteChildren = {
+  PrimarieCuiBugetRouteRoute: PrimarieCuiBugetRouteRouteWithChildren,
+  PrimarieCuiShareImageDotpngRoute: PrimarieCuiShareImageDotpngRoute,
+  PrimarieCuiIndexRoute: PrimarieCuiIndexRoute,
 }
 
 const PrimarieCuiRouteRouteWithChildren =
