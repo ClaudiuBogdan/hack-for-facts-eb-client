@@ -1177,14 +1177,6 @@ msgstr "Documente bugetare"
 msgid "Budget draft publication date"
 msgstr "Data publicării proiectului de buget"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:258
-msgid "Budget draft published on"
-msgstr ""
-
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:348
-msgid "Budget draft update"
-msgstr ""
-
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:131
 msgid "Budget guides, request templates, and more."
 msgstr "Ghiduri bugetare, modele de cereri si altele."
@@ -2173,7 +2165,7 @@ msgstr "Nu s-au putut încărca datele INS"
 msgid "Could not load INS datasets"
 msgstr "Nu s-au putut încărca seturile de date INS"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:292
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:304
 msgid "Could not load local details"
 msgstr "Nu s-au putut încărca detaliile locale"
 
@@ -2789,6 +2781,7 @@ msgid "Detailed warnings generated for map-series fetch and calculations."
 msgstr "Avertismente detaliate generate pentru obținerea și calculele seriilor de hărți."
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1541
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:235
 msgid "Details"
 msgstr "Detalii"
 
@@ -4439,7 +4432,7 @@ msgid "Hide advanced settings"
 msgstr "Ascunde setările avansate"
 
 #: src/components/charts/components/ChartDataError.tsx:263
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:186
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:193
 msgid "Hide details"
 msgstr "Ascunde detaliile"
 
@@ -4857,7 +4850,7 @@ msgstr "Valoare element"
 msgid "January"
 msgstr "Ianuarie"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:243
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:261
 msgid "Join online"
 msgstr "Participă online"
 
@@ -5341,7 +5334,7 @@ msgstr "Contestație buget local"
 msgid "Local dataset snapshots will appear here after autosave or manual save."
 msgstr "Instantaneele locale ale setului de date vor apărea aici după salvarea automată sau manuală."
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:291
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:303
 msgid "Local details unavailable"
 msgstr "Detaliile locale nu sunt disponibile"
 
@@ -5382,10 +5375,7 @@ msgstr "Instantaneele locale sunt stocate doar în acest browser, pe acest dispo
 msgid "Local snapshots will appear here after autosave or manual save."
 msgstr "Instantaneele locale vor apărea aici după salvarea automată sau salvarea manuală."
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:175
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:288
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:332
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:344
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:300
 msgid "Local update"
 msgstr "Actualizare locală"
 
@@ -5393,7 +5383,7 @@ msgstr "Actualizare locală"
 msgid "Locality options"
 msgstr "Opțiuni localitate"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:223
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:225
 msgid "Location"
 msgstr "Locație"
 
@@ -6380,10 +6370,6 @@ msgstr "Niciun link adăugat"
 msgid "No local snapshots yet"
 msgstr "Încă nu există instantanee locale"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:333
-msgid "No local update yet"
-msgstr ""
-
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:343
 msgid "No maps yet"
 msgstr "Nu ai hărți încă"
@@ -6689,10 +6675,6 @@ msgstr "din bugetul anual plătit"
 msgid "of commitment authority"
 msgstr "din autorizarea de angajament"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:367
-msgid "Official budget draft"
-msgstr ""
-
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:94
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:124
 msgid "Official city hall website"
@@ -6751,7 +6733,7 @@ msgstr "Deschide"
 msgid "Open {columnId} column menu"
 msgstr "Open {columnId} column menu"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:237
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:255
 msgid "Open announcement"
 msgstr "Deschide anunțul"
 
@@ -6863,10 +6845,9 @@ msgstr "Open legend"
 msgid "Open map description"
 msgstr "Deschide descrierea hărții"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:250
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:372
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:268
 msgid "Open official budget draft"
-msgstr ""
+msgstr "Deschide proiectul oficial de buget"
 
 #: src/components/entities/EntityHeader.tsx:113
 #: src/components/entities/EntityInfo.tsx:42
@@ -7546,11 +7527,11 @@ msgstr "Seturile de date publice sunt în continuare disponibile în lista parta
 msgid "Public datasets will appear here when shared by the community."
 msgstr "Seturile de date publice vor apărea aici când sunt partajate de comunitate."
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:179
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:188
 msgid "Public debate"
 msgstr "Dezbatere publică"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:198
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:180
 msgid "Public debate announced"
 msgstr "Dezbatere publică anunțată"
 
@@ -7605,10 +7586,6 @@ msgstr "Data publicării"
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:127
 msgid "Published"
 msgstr "Publicat"
-
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:360
-msgid "Published on"
-msgstr ""
 
 #: src/components/commitments/commitments-trends.tsx:201
 #: src/components/entities/EntityFinancialTrends.tsx:174
@@ -7897,10 +7874,6 @@ msgstr "Raportare:"
 #: src/hooks/useEntityViews.tsx:45
 msgid "Reports"
 msgstr "Rapoarte"
-
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:325
-msgid "Request a public debate"
-msgstr ""
 
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:90
 msgid "Request a public debate for the local budget."
@@ -8659,7 +8632,7 @@ msgid "Show Detailed"
 msgstr "Afișează detaliat"
 
 #: src/components/charts/components/ChartDataError.tsx:268
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:186
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:193
 msgid "Show details"
 msgstr "Afișează detaliile"
 
@@ -8701,6 +8674,7 @@ msgstr "Afișează legenda"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1077
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1574
 #: src/components/filters/base-filter/SelectedOptionsDisplay.tsx:63
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:244
 msgid "Show less"
 msgstr "Afișează puțin"
 
@@ -8714,6 +8688,7 @@ msgstr "Afișează controalele hărții"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:164
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1077
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:244
 msgid "Show more"
 msgstr "Afișează mai mult"
 
@@ -9477,17 +9452,9 @@ msgstr "Aceasta este persoana care semnează cererea în numele asociației."
 msgid "This name appears as the map title for viewers."
 msgstr "Acest nume apare ca titlu al hărții pentru vizitatori."
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:296
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:308
 msgid "This page cannot show budget or debate details for this city hall right now."
 msgstr "Această pagină nu poate afișa momentan detaliile despre buget sau dezbatere pentru această primărie."
-
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:334
-msgid "This page does not show a published budget draft or debate announcement for this city hall yet."
-msgstr ""
-
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:351
-msgid "This page includes the latest budget details we can show for this city hall."
-msgstr ""
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:343
 msgid "This preview uses the persisted dataset state from the server."
@@ -9569,7 +9536,7 @@ msgstr "Tie-breaking is deterministic by value, then SIRUTA code."
 msgid "Tier"
 msgstr "Nivel"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:218
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:219
 msgid "Time"
 msgstr "Ora"
 
@@ -9803,9 +9770,9 @@ msgstr "Încercați din nou"
 msgid "Try again in a few moments."
 msgstr "Încearcă din nou peste câteva momente."
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:297
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:309
 msgid "Try again later to see the latest budget and debate details for this city hall."
-msgstr ""
+msgstr "Încearcă din nou mai târziu pentru a vedea cele mai recente detalii despre buget și dezbatere pentru această primărie."
 
 #: src/features/learning/components/interactive/PromiseTracker.tsx:417
 msgid "Try Another Year"
@@ -10152,7 +10119,7 @@ msgstr "Folosește denumirea oficială completă exact așa cum apare în Regist
 msgid "Use the mean value when multiple observations exist in the same period."
 msgstr "Folosiți valoarea medie când există mai multe observații în aceeași perioadă."
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:201
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:183
 msgid "Use the official details below to follow or join the public debate for this city hall."
 msgstr "Folosește detaliile oficiale de mai jos pentru a urmări sau pentru a participa la dezbaterea publică a acestei primării."
 

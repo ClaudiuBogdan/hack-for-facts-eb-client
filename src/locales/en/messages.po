@@ -1177,14 +1177,6 @@ msgstr "Budget Documents"
 msgid "Budget draft publication date"
 msgstr "Budget draft publication date"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:258
-msgid "Budget draft published on"
-msgstr "Budget draft published on"
-
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:348
-msgid "Budget draft update"
-msgstr "Budget draft update"
-
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:131
 msgid "Budget guides, request templates, and more."
 msgstr "Budget guides, request templates, and more."
@@ -2173,7 +2165,7 @@ msgstr "Could not load INS data"
 msgid "Could not load INS datasets"
 msgstr "Could not load INS datasets"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:292
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:304
 msgid "Could not load local details"
 msgstr "Could not load local details"
 
@@ -2789,6 +2781,7 @@ msgid "Detailed warnings generated for map-series fetch and calculations."
 msgstr "Detailed warnings generated for map-series fetch and calculations."
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1541
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:235
 msgid "Details"
 msgstr "Details"
 
@@ -4444,7 +4437,7 @@ msgid "Hide advanced settings"
 msgstr "Hide advanced settings"
 
 #: src/components/charts/components/ChartDataError.tsx:263
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:186
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:193
 msgid "Hide details"
 msgstr "Hide details"
 
@@ -4862,7 +4855,7 @@ msgstr "Item Amount"
 msgid "January"
 msgstr "January"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:243
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:261
 msgid "Join online"
 msgstr "Join online"
 
@@ -5346,7 +5339,7 @@ msgstr "Local budget contestation"
 msgid "Local dataset snapshots will appear here after autosave or manual save."
 msgstr "Local dataset snapshots will appear here after autosave or manual save."
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:291
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:303
 msgid "Local details unavailable"
 msgstr "Local details unavailable"
 
@@ -5387,10 +5380,7 @@ msgstr "Local snapshots are stored only in this browser on this device."
 msgid "Local snapshots will appear here after autosave or manual save."
 msgstr "Local snapshots will appear here after autosave or manual save."
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:175
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:288
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:332
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:344
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:300
 msgid "Local update"
 msgstr "Local update"
 
@@ -5398,7 +5388,7 @@ msgstr "Local update"
 msgid "Locality options"
 msgstr "Locality options"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:223
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:225
 msgid "Location"
 msgstr "Location"
 
@@ -6385,10 +6375,6 @@ msgstr "No link added"
 msgid "No local snapshots yet"
 msgstr "No local snapshots yet"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:333
-msgid "No local update yet"
-msgstr "No local update yet"
-
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:343
 msgid "No maps yet"
 msgstr "No maps yet"
@@ -6694,10 +6680,6 @@ msgstr "of annual budget paid"
 msgid "of commitment authority"
 msgstr "of commitment authority"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:367
-msgid "Official budget draft"
-msgstr "Official budget draft"
-
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:94
 #: src/features/campaigns/buget/components/interactive/PrimarieWebsiteLink.tsx:124
 msgid "Official city hall website"
@@ -6756,7 +6738,7 @@ msgstr "Open"
 msgid "Open {columnId} column menu"
 msgstr "Open {columnId} column menu"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:237
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:255
 msgid "Open announcement"
 msgstr "Open announcement"
 
@@ -6868,8 +6850,7 @@ msgstr "Open legend"
 msgid "Open map description"
 msgstr "Open map description"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:250
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:372
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:268
 msgid "Open official budget draft"
 msgstr "Open official budget draft"
 
@@ -7551,11 +7532,11 @@ msgstr "Public datasets are still available in the shared list."
 msgid "Public datasets will appear here when shared by the community."
 msgstr "Public datasets will appear here when shared by the community."
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:179
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:188
 msgid "Public debate"
 msgstr "Public debate"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:198
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:180
 msgid "Public debate announced"
 msgstr "Public debate announced"
 
@@ -7610,10 +7591,6 @@ msgstr "Publication date"
 #: src/features/campaigns/buget/components/interactive/BudgetStatusReport.tsx:127
 msgid "Published"
 msgstr "Published"
-
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:360
-msgid "Published on"
-msgstr "Published on"
 
 #: src/components/commitments/commitments-trends.tsx:201
 #: src/components/entities/EntityFinancialTrends.tsx:174
@@ -7902,10 +7879,6 @@ msgstr "Reporting:"
 #: src/hooks/useEntityViews.tsx:45
 msgid "Reports"
 msgstr "Reports"
-
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:325
-msgid "Request a public debate"
-msgstr "Request a public debate"
 
 #: src/features/challenges/components/hub/QuickResourcesPreview.tsx:90
 msgid "Request a public debate for the local budget."
@@ -8664,7 +8637,7 @@ msgid "Show Detailed"
 msgstr "Show Detailed"
 
 #: src/components/charts/components/ChartDataError.tsx:268
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:186
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:193
 msgid "Show details"
 msgstr "Show details"
 
@@ -8706,6 +8679,7 @@ msgstr "Show Legend"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1077
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1574
 #: src/components/filters/base-filter/SelectedOptionsDisplay.tsx:63
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:244
 msgid "Show less"
 msgstr "Show less"
 
@@ -8719,6 +8693,7 @@ msgstr "Show Map Controls"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:164
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1077
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:244
 msgid "Show more"
 msgstr "Show more"
 
@@ -9482,17 +9457,9 @@ msgstr "This is the person who signs the request on behalf of the association."
 msgid "This name appears as the map title for viewers."
 msgstr "This name appears as the map title for viewers."
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:296
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:308
 msgid "This page cannot show budget or debate details for this city hall right now."
 msgstr "This page cannot show budget or debate details for this city hall right now."
-
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:334
-msgid "This page does not show a published budget draft or debate announcement for this city hall yet."
-msgstr "This page does not show a published budget draft or debate announcement for this city hall yet."
-
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:351
-msgid "This page includes the latest budget details we can show for this city hall."
-msgstr "This page includes the latest budget details we can show for this city hall."
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:343
 msgid "This preview uses the persisted dataset state from the server."
@@ -9574,7 +9541,7 @@ msgstr "Tie-breaking is deterministic by value, then SIRUTA code."
 msgid "Tier"
 msgstr "Tier"
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:218
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:219
 msgid "Time"
 msgstr "Time"
 
@@ -9808,7 +9775,7 @@ msgstr "Try Again"
 msgid "Try again in a few moments."
 msgstr "Try again in a few moments."
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:297
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:309
 msgid "Try again later to see the latest budget and debate details for this city hall."
 msgstr "Try again later to see the latest budget and debate details for this city hall."
 
@@ -10157,7 +10124,7 @@ msgstr "Use the full official name exactly as it appears in the Register of Asso
 msgid "Use the mean value when multiple observations exist in the same period."
 msgstr "Use the mean value when multiple observations exist in the same period."
 
-#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:201
+#: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:183
 msgid "Use the official details below to follow or join the public debate for this city hall."
 msgstr "Use the official details below to follow or join the public debate for this city hall."
 
