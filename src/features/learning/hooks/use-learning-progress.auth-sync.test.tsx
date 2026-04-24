@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@/test/test-utils'
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 import { LearningProgressProvider, useLearningProgress } from './use-learning-progress'
+import { useQuizInteraction } from './use-learning-interactions'
 import {
   createLearningActivePathRecord,
   createLearningOnboardingRecord,
@@ -581,6 +582,157 @@ describe('use-learning-progress auth sync behavior', () => {
     await waitFor(() => {
       expect(result.current.bootstrapPhase).toBe('ready')
     })
+  })
+
+  it('restores quiz answers from the remote snapshot after local storage is cleared', async () => {
+    authState.isEnabled = true
+    authState.isLoaded = true
+    authState.isSignedIn = true
+    authState.user = { id: 'user-1' }
+
+    const answeredAt = '2026-03-31T10:00:00.000Z'
+    const quizRecord = createInteractiveRecord({
+      key: 'ch-civic-06-when-contest-q1::global',
+      interactionId: 'ch-civic-06-when-contest-q1',
+      lessonId: 'ch-civic-06-contestation',
+      kind: 'quiz',
+      completionRule: { type: 'outcome', outcome: 'correct' },
+      phase: 'resolved',
+      value: {
+        kind: 'choice',
+        choice: { selectedId: 'b' },
+      },
+      result: {
+        outcome: 'correct',
+        score: 100,
+        evaluatedAt: answeredAt,
+      },
+      updatedAt: answeredAt,
+      submittedAt: answeredAt,
+    })
+
+    fetchLearningProgressMock.mockResolvedValueOnce(
+      createRemoteResponse({
+        snapshot: {
+          version: 1,
+          recordsByKey: {
+            [quizRecord.key]: quizRecord,
+          },
+          lastUpdated: answeredAt,
+        },
+        cursor: '42',
+      }),
+    )
+
+    const { wrapper } = createWrapper()
+    const { result } = renderHook(
+      () =>
+        useQuizInteraction({
+          contentId: 'ch-civic-06-contestation',
+          quizId: 'ch-civic-06-when-contest-q1',
+          options: [
+            { id: 'a', isCorrect: false },
+            { id: 'b', isCorrect: true },
+          ],
+          contentVersion: 'v1',
+          trackContentProgress: false,
+        }),
+      { wrapper },
+    )
+
+    await waitFor(() => {
+      expect(result.current.selectedOptionId).toBe('b')
+      expect(result.current.isAnswered).toBe(true)
+      expect(result.current.isCorrect).toBe(true)
+    })
+
+    const storedSnapshot = JSON.parse(
+      window.localStorage.getItem(getAuthSnapshotKey('user-1')) ?? '{}',
+    ) as LearningGuestProgress
+    expect(storedSnapshot.interactiveState.recordsByKey[quizRecord.key]).toEqual(quizRecord)
+  })
+
+  it('backfills local snapshot records when a previous failed sync removed the pending event', async () => {
+    authState.isEnabled = true
+    authState.isLoaded = true
+    authState.isSignedIn = true
+    authState.user = { id: 'user-1' }
+
+    const answeredAt = '2026-03-31T10:00:00.000Z'
+    const quizRecord = createInteractiveRecord({
+      key: 'quiz-backfill::global',
+      interactionId: 'quiz-backfill',
+      lessonId: 'lesson-backfill',
+      kind: 'quiz',
+      completionRule: { type: 'outcome', outcome: 'correct' },
+      phase: 'resolved',
+      value: {
+        kind: 'choice',
+        choice: { selectedId: 'b' },
+      },
+      result: {
+        outcome: 'correct',
+        score: 100,
+        evaluatedAt: answeredAt,
+      },
+      updatedAt: answeredAt,
+      submittedAt: answeredAt,
+    })
+
+    window.localStorage.setItem(getAuthSnapshotKey('user-1'), JSON.stringify(buildProgress({
+      interactiveState: {
+        recordsByKey: {
+          [quizRecord.key]: quizRecord,
+        },
+        eventLogByRecordKey: {},
+      },
+      lastUpdated: answeredAt,
+    })))
+    window.localStorage.setItem(getAuthEventsKey('user-1'), JSON.stringify([]))
+    window.localStorage.setItem(getAuthSyncKey('user-1'), JSON.stringify({
+      version: 1,
+      events: {
+        'failed-old-event': {
+          status: 'quarantined',
+          lastAttemptAt: answeredAt,
+          lastSyncedAt: null,
+          retryCount: 5,
+          errorMessage: 'Public progress sync cannot include non-user audit events.',
+        },
+      },
+      lastSuccessfulSyncAt: null,
+      lastSyncedCursor: null,
+    }))
+
+    fetchLearningProgressMock.mockResolvedValueOnce(createRemoteResponse())
+
+    const { wrapper } = createWrapper()
+    const { result } = renderHook(() => useLearningProgress(), { wrapper })
+
+    await waitFor(() => {
+      expect(result.current.bootstrapPhase).toBe('ready')
+    })
+
+    const backfillEvents = readStoredEvents(getAuthEventsKey('user-1'))
+    expect(backfillEvents).toHaveLength(1)
+    expect(backfillEvents[0]).toMatchObject({
+      type: 'interactive.updated',
+      payload: {
+        record: quizRecord,
+      },
+    })
+    expect(
+      (backfillEvents[0] as Extract<LearningProgressEvent, { type: 'interactive.updated' }>).payload.auditEvents,
+    ).toBeUndefined()
+
+    syncLearningProgressEventsMock.mockClear()
+
+    await act(async () => {
+      await result.current.sync()
+    })
+
+    expect(syncLearningProgressEventsMock).toHaveBeenCalledTimes(1)
+    expect(syncLearningProgressEventsMock.mock.calls[0]?.[0].events).toEqual(backfillEvents)
   })
 
   it('treats unsupported snapshot versions as bootstrap failures without wiping local state', async () => {

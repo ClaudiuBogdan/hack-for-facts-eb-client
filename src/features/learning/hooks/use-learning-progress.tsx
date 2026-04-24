@@ -300,6 +300,19 @@ function mergeEventLogs(...logs: LearningProgressEvent[][]): LearningProgressEve
   return Array.from(byId.values())
 }
 
+function compareIsoInstants(leftTimestamp: string, rightTimestamp: string): number {
+  const leftMilliseconds = Date.parse(leftTimestamp)
+  const rightMilliseconds = Date.parse(rightTimestamp)
+
+  if (!Number.isNaN(leftMilliseconds) && !Number.isNaN(rightMilliseconds)) {
+    if (leftMilliseconds < rightMilliseconds) return -1
+    if (leftMilliseconds > rightMilliseconds) return 1
+    return 0
+  }
+
+  return leftTimestamp.localeCompare(rightTimestamp)
+}
+
 function createEventId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return crypto.randomUUID()
@@ -426,6 +439,41 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       }
     },
     [getClientId],
+  )
+
+  const buildSnapshotBackfillEvents = useCallback(
+    (params: {
+      readonly localSnapshot: LearningGuestProgress
+      readonly remoteRecordsByKey: Readonly<Record<string, InteractiveStateRecord>>
+      readonly pendingEvents: readonly LearningProgressEvent[]
+    }): LearningProgressEvent[] => {
+      const pendingRecordKeys = new Set(
+        params.pendingEvents
+          .filter((event): event is Extract<LearningProgressEvent, { readonly type: 'interactive.updated' }> =>
+            event.type === 'interactive.updated')
+          .map((event) => event.payload.record.key),
+      )
+
+      return Object.values(params.localSnapshot.interactiveState.recordsByKey)
+        .filter((record) => {
+          if (pendingRecordKeys.has(record.key)) {
+            return false
+          }
+
+          if (record.review !== undefined) {
+            return false
+          }
+
+          const remoteRecord = params.remoteRecordsByKey[record.key]
+          if (!remoteRecord) {
+            return true
+          }
+
+          return compareIsoInstants(record.updatedAt, remoteRecord.updatedAt) > 0
+        })
+        .map((record) => createInteractiveUpdatedEvent({ record }))
+    },
+    [createInteractiveUpdatedEvent],
   )
 
   const canWriteToStorage = useCallback((): boolean => {
@@ -1058,6 +1106,12 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
       let nextSnapshot = localHydratedSnapshot
 
       if (remoteProgress) {
+        const backfillEvents = buildSnapshotBackfillEvents({
+          localSnapshot: localHydratedSnapshot,
+          remoteRecordsByKey: remoteProgress.snapshot.recordsByKey,
+          pendingEvents: finalPendingEvents,
+        })
+        finalPendingEvents = mergeEventLogs(finalPendingEvents, backfillEvents)
         nextSnapshot = reconcileLearningGuestProgressWithRemote(
           localHydratedSnapshot,
           remoteProgress.snapshot,
@@ -1115,6 +1169,7 @@ export function LearningProgressProvider({ children }: { readonly children: Reac
   }, [
     auth.isAuthenticated,
     auth.userId,
+    buildSnapshotBackfillEvents,
     getStorageKeys,
     isLoaded,
     loadEventsForKey,
