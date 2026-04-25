@@ -337,7 +337,6 @@ jobs:
       - name: Validate Extracted Sentry Assets
         run: |
           node scripts/validate-sentry-debug-ids.mjs ./sentry-artifacts/assets
-          find ./sentry-artifacts/assets \( -name "*.js" -o -name "*.mjs" -o -name "*.cjs" \) -exec node --check {} \;
 
       - name: Upload Sentry Sourcemaps (Prod)
         env:

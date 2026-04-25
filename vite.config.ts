@@ -258,8 +258,9 @@ export default defineConfig(({ mode }) => {
           deploy: false,
         },
         sourcemaps: {
-          // Docker runs sentry-cli inject after build so the paired map files can be stored in the image.
-          disable: true,
+          // Keep Sentry's bundler-time Debug ID injection, but upload the
+          // image-produced private artifacts in a later workflow step.
+          disable: "disable-upload",
           // TanStack Start + Nitro outputs assets under .output.
           assets: [
             "./.output/public/assets/**",

@@ -2,6 +2,7 @@
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
+import { spawnSync } from "node:child_process";
 
 const assetsDir = process.argv[2] ?? ".output/public/assets";
 const jsExtensions = [".js", ".mjs", ".cjs"];
@@ -33,6 +34,30 @@ function hasJavaScriptExtension(file) {
   return jsExtensions.some((extension) => file.endsWith(extension));
 }
 
+function writeLimitedOutput(stream, output) {
+  if (!output) return;
+  const maxLength = 4000;
+  stream.write(output.length > maxLength ? `${output.slice(0, maxLength)}\n... output truncated ...\n` : output);
+}
+
+function checkJavaScriptSyntax(file) {
+  const isModule = !file.endsWith(".cjs");
+  const result = spawnSync(
+    process.execPath,
+    isModule ? ["--input-type=module", "--check"] : ["--check", file],
+    {
+      encoding: "utf8",
+      input: isModule ? readFileSync(file, "utf8") : undefined,
+    },
+  );
+
+  if (result.status !== 0) {
+    writeLimitedOutput(process.stdout, result.stdout);
+    writeLimitedOutput(process.stderr, result.stderr);
+    fail(`JavaScript syntax validation failed for ${relative(assetsDir, file)}`);
+  }
+}
+
 if (!existsSync(assetsDir) || !statSync(assetsDir).isDirectory()) {
   fail(`Missing assets directory: ${assetsDir}`);
 }
@@ -52,6 +77,7 @@ const debugIdsByFile = new Map();
 
 for (const file of javascriptFiles) {
   const relativeFile = relative(assetsDir, file);
+  checkJavaScriptSyntax(file);
   const js = readFileSync(file, "utf8");
   const debugIdMatch = js.match(debugIdPattern) ?? js.match(sentryDebugIdPattern);
 

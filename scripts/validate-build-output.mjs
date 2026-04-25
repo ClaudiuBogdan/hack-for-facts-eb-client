@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { readdirSync, statSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { readdirSync, statSync, existsSync, readFileSync } from "node:fs";
+import { join, sep } from "node:path";
 import { spawnSync } from "node:child_process";
 
 const outputDir = process.argv[2] ?? ".output";
@@ -34,6 +34,29 @@ function hasJavaScriptExtension(file) {
   return [...jsExtensions].some((extension) => file.endsWith(extension));
 }
 
+function writeLimitedOutput(stream, output) {
+  if (!output) return;
+  const maxLength = 4000;
+  stream.write(output.length > maxLength ? `${output.slice(0, maxLength)}\n... output truncated ...\n` : output);
+}
+
+function checkJavaScriptSyntax(file) {
+  const isBrowserAsset = file.startsWith(`${assetsDir}${sep}`) && file.endsWith(".js");
+  const args = isBrowserAsset
+    ? ["--input-type=module", "--check"]
+    : ["--check", file];
+  const result = spawnSync(process.execPath, args, {
+    encoding: "utf8",
+    input: isBrowserAsset ? readFileSync(file, "utf8") : undefined,
+  });
+
+  if (result.status !== 0) {
+    writeLimitedOutput(process.stdout, result.stdout);
+    writeLimitedOutput(process.stderr, result.stderr);
+    fail(`JavaScript syntax validation failed for ${file}`);
+  }
+}
+
 if (!existsSync(serverEntry)) {
   fail(`Missing server entry: ${serverEntry}`);
 }
@@ -51,15 +74,7 @@ if (javascriptFiles.length === 0) {
 }
 
 for (const file of outputJavaScriptFiles) {
-  const result = spawnSync(process.execPath, ["--check", file], {
-    encoding: "utf8",
-  });
-
-  if (result.status !== 0) {
-    if (result.stdout) process.stdout.write(result.stdout);
-    if (result.stderr) process.stderr.write(result.stderr);
-    fail(`JavaScript syntax validation failed for ${file}`);
-  }
+  checkJavaScriptSyntax(file);
 }
 
 console.log(`Validated ${outputJavaScriptFiles.length} JavaScript files in ${outputDir}`);
