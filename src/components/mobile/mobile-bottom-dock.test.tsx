@@ -258,7 +258,7 @@ describe("MobileBottomDock", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Share").previousSibling).toHaveClass(
-        "text-green-600"
+        "text-green-400"
       );
     });
   });
@@ -275,7 +275,7 @@ describe("MobileBottomDock", () => {
     });
 
     expect(screen.getByText("Share").previousSibling).toHaveClass(
-      "text-green-600"
+      "text-green-400"
     );
 
     act(() => {
@@ -283,7 +283,7 @@ describe("MobileBottomDock", () => {
     });
 
     expect(screen.getByText("Share").previousSibling).not.toHaveClass(
-      "text-green-600"
+      "text-green-400"
     );
 
     vi.useRealTimers();

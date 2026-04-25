@@ -1,7 +1,8 @@
 import { t } from "@lingui/core/macro";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "@tanstack/react-router";
-import { Check, Link2, MenuIcon, MessageSquare, Search } from "lucide-react";
+import { Check, Link2, MessageSquare, Search } from "lucide-react";
+import logo from "@/assets/logo/logo.png";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { FloatingEntitySearch } from "@/components/entities/FloatingEntitySearch";
@@ -19,7 +20,7 @@ const MOBILE_DOCK_TOP_VISIBILITY_THRESHOLD = 16;
 const MOBILE_DOCK_SAFE_AREA_PADDING = "calc(env(safe-area-inset-bottom) + 0.375rem)";
 
 const MOBILE_DOCK_BUTTON_CLASS_NAME =
-  "flex min-h-10 w-full touch-manipulation flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-1.5 text-muted-foreground transition-colors hover:bg-secondary/70 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
+  "flex min-h-12 w-full touch-manipulation flex-col items-center justify-center gap-1 rounded-xl px-2 py-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 dark:text-zinc-900/80 dark:hover:bg-black/10 dark:hover:text-zinc-900 dark:focus-visible:ring-zinc-900/50";
 
 export function MobileBottomDock() {
   const isMobile = useIsMobile();
@@ -157,7 +158,7 @@ function MobileBottomDockContent() {
         aria-hidden={!isDockVisible}
         className={cn(
           "pointer-events-none fixed inset-x-0 bottom-0 z-40 md:hidden",
-          "transition-[transform,opacity] duration-200 ease-out will-change-[transform,opacity]",
+          "transition-[transform_450ms_cubic-bezier(0.34,1.56,0.64,1),opacity_350ms_ease-out] will-change-[transform,opacity]",
           "motion-reduce:transform-none motion-reduce:transition-opacity",
           isDockVisible
             ? "translate-y-0 opacity-100"
@@ -165,10 +166,10 @@ function MobileBottomDockContent() {
         )}
       >
         <div
-          className="pointer-events-auto w-full overflow-hidden rounded-t-[24px] shadow-[0_-16px_34px_-22px_rgba(15,23,42,0.32)] backdrop-blur-xl"
+          className="pointer-events-auto w-full overflow-hidden rounded-t-[24px] shadow-[0_-24px_50px_-16px_rgba(0,0,0,0.55)] backdrop-blur-xl dark:shadow-[0_-24px_50px_-16px_rgba(0,0,0,0.7)]"
         >
           <section
-            className="rounded-t-[24px] border-x border-t border-border/50 bg-linear-to-br from-background/92 via-background/88 to-primary/[0.08] px-2.5 pt-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.32)] supports-[backdrop-filter]:bg-background/78"
+            className="rounded-t-[24px] border-x border-t border-white/25 bg-zinc-900/90 px-2.5 pt-2 text-white/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] supports-[backdrop-filter]:bg-zinc-900/90 dark:border-white/20 dark:bg-white/90 dark:text-zinc-900/90 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] dark:supports-[backdrop-filter]:bg-white/90"
             style={{ paddingBottom: MOBILE_DOCK_SAFE_AREA_PADDING }}
           >
             <nav
@@ -187,8 +188,8 @@ function MobileBottomDockContent() {
                     data-testid="mobile-bottom-dock-help"
                     tabIndex={hiddenTabIndex}
                   >
-                    <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                    <span className="text-[10px] font-semibold leading-none">
+                    <MessageSquare className="h-6 w-6" aria-hidden="true" />
+                    <span className="text-xs font-semibold leading-none">
                       {t`Help`}
                     </span>
                   </button>
@@ -204,11 +205,11 @@ function MobileBottomDockContent() {
                 tabIndex={hiddenTabIndex}
               >
                 {isShareCopied ? (
-                  <Check className="h-4 w-4 text-green-600" aria-hidden="true" />
+                  <Check className="h-6 w-6 text-green-400 dark:text-green-600" aria-hidden="true" />
                 ) : (
-                  <Link2 className="h-4 w-4" aria-hidden="true" />
+                  <Link2 className="h-6 w-6" aria-hidden="true" />
                 )}
-                <span className="text-[10px] font-semibold leading-none">
+                <span className="text-xs font-semibold leading-none">
                   {t`Share`}
                 </span>
               </button>
@@ -221,8 +222,8 @@ function MobileBottomDockContent() {
                 onClick={() => setIsSearchOpen(true)}
                 tabIndex={hiddenTabIndex}
               >
-                <Search className="h-4 w-4" aria-hidden="true" />
-                <span className="text-[10px] font-semibold leading-none">
+                <Search className="h-6 w-6" aria-hidden="true" />
+                <span className="text-xs font-semibold leading-none">
                   {t`Search`}
                 </span>
               </button>
@@ -235,8 +236,8 @@ function MobileBottomDockContent() {
                 onClick={() => setOpenMobile(true)}
                 tabIndex={hiddenTabIndex}
               >
-                <MenuIcon className="h-4 w-4" aria-hidden="true" />
-                <span className="text-[10px] font-semibold leading-none">
+                <img src={logo} alt="" className="h-6 w-6 rounded-[4px]" aria-hidden="true" />
+                <span className="text-xs font-semibold leading-none">
                   {t`Menu`}
                 </span>
               </button>
