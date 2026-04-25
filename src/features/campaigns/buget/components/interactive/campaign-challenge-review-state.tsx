@@ -19,6 +19,7 @@ type CampaignChallengeReviewStateProps = {
   readonly feedbackText?: string | null
   readonly summaryItems?: readonly ReviewSummaryItem[]
   readonly summaryTitle?: string
+  readonly statusTextOverride?: string
   readonly onTryAgain?: () => void
   readonly onReset?: () => void
 }
@@ -164,6 +165,7 @@ export function CampaignChallengeReviewState({
   feedbackText,
   summaryItems,
   summaryTitle,
+  statusTextOverride,
   onTryAgain,
   onReset,
 }: CampaignChallengeReviewStateProps) {
@@ -172,6 +174,7 @@ export function CampaignChallengeReviewState({
   const showTryAgain = submittedVariant === 'rejected' && Boolean(onTryAgain)
   const showReset = submittedVariant !== 'rejected' && Boolean(onReset)
   const trimmedFeedback = submittedVariant === 'rejected' ? feedbackText?.trim() : null
+  const statusText = statusTextOverride ?? getReviewStatusText(submittedVariant)
 
   return (
     <div className={cn('relative overflow-hidden rounded-[28px] border p-6 shadow-sm md:p-8', tone.containerClassName)}>
@@ -196,14 +199,14 @@ export function CampaignChallengeReviewState({
             {title}
           </h3>
           <p className="text-sm font-medium leading-relaxed text-muted-foreground">
-            {description ?? getReviewStatusText(submittedVariant)}
+            {description ?? statusText}
           </p>
         </div>
 
         {/* Status note (only if description is also present, to avoid duplication) */}
         {description && (
           <p role="status" aria-live="polite" className="text-[13px] leading-relaxed text-muted-foreground/80">
-            {getReviewStatusText(submittedVariant)}
+            {statusText}
           </p>
         )}
 

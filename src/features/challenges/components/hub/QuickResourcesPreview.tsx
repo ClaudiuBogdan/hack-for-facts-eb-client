@@ -1,8 +1,12 @@
 import { Link, useLocation } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
-import { ArrowRight, Bell, BellOff, Building2, Library, MessageSquare, Send } from 'lucide-react'
+import { ArrowRight, Bell, BellOff, Building2, Library, Lock, MessageSquare, Send } from 'lucide-react'
 import { getCampaignDefinition } from '@/features/campaigns/buget/hooks/use-campaign-content'
 import { buildCampaignResourcesPath, CAMPAIGN_NOTIFICATIONS_PATH } from '@/features/campaigns/buget/constants'
+import {
+  useDebateRequestAvailability,
+  type UseDebateRequestAvailabilityResult,
+} from '@/features/campaigns/buget/hooks/use-debate-request-availability'
 import { useCampaignNotifications } from '@/features/notifications/hooks/useCampaignNotifications'
 import { FUNKY_NOTIFICATION_ENTITY_UPDATES } from '@/features/notifications/campaign-notification-keys'
 import {
@@ -16,6 +20,29 @@ type QuickResourcesPreviewProps = {
   readonly entityCui?: string
 }
 
+function getDebateRequestUnavailableDescription(
+  availabilityState: UseDebateRequestAvailabilityResult,
+): string {
+  if (availabilityState.state === 'loading') {
+    return t`Checking request availability.`
+  }
+
+  if (availabilityState.state === 'unavailable') {
+    return t`Request availability cannot be confirmed right now.`
+  }
+
+  switch (availabilityState.availability.status) {
+    case 'closed_debate_took_place':
+      return t`The local budget debate has already taken place.`
+    case 'closed_deadline_expired':
+      return t`The public debate request period has ended.`
+    case 'closed_global_period_expired':
+      return t`The campaign request period has ended.`
+    case 'open':
+      return t`Request a public debate for the local budget.`
+  }
+}
+
 export function QuickResourcesPreview({
   locale,
   entityCui,
@@ -23,6 +50,7 @@ export function QuickResourcesPreview({
   const campaign = getCampaignDefinition()
   const location = useLocation()
   const { data: campaignEntityNotifications, globalPreference } = useCampaignNotifications()
+  const debateRequestAvailability = useDebateRequestAvailability(entityCui)
   const entityNotifications = (campaignEntityNotifications ?? []).filter(
     (n) => n.entityCui === entityCui
   )
@@ -41,6 +69,9 @@ export function QuickResourcesPreview({
   const linkSearch: Record<string, string> = {}
   if (locale === 'en') linkSearch.lang = 'en'
   const currentUrl = `${location.pathname}${location.searchStr ?? ''}`
+  const isDebateRequestDisabled =
+    debateRequestAvailability.state !== 'ready'
+    || !debateRequestAvailability.isSubmittable
 
   return (
     <div className="rounded-2xl bg-muted/20 p-5 border border-border/30">
@@ -73,25 +104,45 @@ export function QuickResourcesPreview({
         </Link>
 
         {/* Send debate request */}
-        <Link
-          to={buildCampaignProvocariStepPath(entityCui, 'civic-campaign', 'civic-monitor-and-request', '04-debate-request') as '/'}
-          search={{ ...linkSearch, section: 'trimite-cererea', view: 'section' as const }}
-          preload="intent"
-          className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-        >
-          <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
-            <Send className="h-4 w-4 text-[#3565c4]" aria-hidden="true" />
+        {isDebateRequestDisabled ? (
+          <div
+            role="note"
+            aria-disabled="true"
+            className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 opacity-80"
+          >
+            <div className="h-8 w-8 rounded-xl bg-muted/60 flex items-center justify-center flex-shrink-0">
+              <Lock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-medium text-foreground/70">
+                {t`Debate request unavailable`}
+              </span>
+              <span className="block text-xs text-muted-foreground">
+                {getDebateRequestUnavailableDescription(debateRequestAvailability)}
+              </span>
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-medium text-foreground/80">
-              {t`Send debate request`}
-            </span>
-            <span className="block text-xs text-muted-foreground">
-              {t`Request a public debate for the local budget.`}
-            </span>
-          </div>
-          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 transition-colors flex-shrink-0" aria-hidden="true" />
-        </Link>
+        ) : (
+          <Link
+            to={buildCampaignProvocariStepPath(entityCui, 'civic-campaign', 'civic-monitor-and-request', '04-debate-request') as '/'}
+            search={{ ...linkSearch, section: 'trimite-cererea', view: 'section' as const }}
+            preload="intent"
+            className="flex items-center gap-3 rounded-xl p-2.5 -mx-1 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+          >
+            <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
+              <Send className="h-4 w-4 text-[#3565c4]" aria-hidden="true" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-medium text-foreground/80">
+                {t`Send debate request`}
+              </span>
+              <span className="block text-xs text-muted-foreground">
+                {t`Request a public debate for the local budget.`}
+              </span>
+            </div>
+            <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 transition-colors flex-shrink-0" aria-hidden="true" />
+          </Link>
+        )}
 
         <a
           href={campaign.forumUrl}

@@ -1,7 +1,8 @@
 import type { AnchorHTMLAttributes, ReactNode } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@/test/test-utils'
 import { FUNKY_NOTIFICATION_ENTITY_UPDATES } from '@/features/notifications/campaign-notification-keys'
+import type { UseDebateRequestAvailabilityResult } from '@/features/campaigns/buget/hooks/use-debate-request-availability'
 import { QuickResourcesPreview } from './QuickResourcesPreview'
 
 let mockLocation = {
@@ -20,6 +21,24 @@ let notificationsState: {
   data: [],
   globalPreference: null,
   isLoading: false,
+}
+let debateRequestAvailabilityState: UseDebateRequestAvailabilityResult
+
+function createDebateRequestAvailabilityState(
+  status: 'open' | 'closed_debate_took_place' | 'closed_deadline_expired' | 'closed_global_period_expired' = 'open',
+): UseDebateRequestAvailabilityResult {
+  return {
+    state: 'ready',
+    isSubmittable: status === 'open',
+    error: null,
+    availability: {
+      status,
+      publicationDate: null,
+      requestDeadlineDate: null,
+      globalDeadlineDate: '2026-04-26',
+      publicDebate: null,
+    },
+  }
 }
 
 type MockLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
@@ -54,6 +73,7 @@ vi.mock('lucide-react', () => {
     Bell: icon('bell-icon'),
     BellOff: icon('bell-off-icon'),
     Building2: icon('building2-icon'),
+    Lock: icon('lock-icon'),
     MessageSquare: icon('message-square-icon'),
     Send: icon('send-icon'),
     Library: icon('library-icon'),
@@ -70,7 +90,24 @@ vi.mock('@/features/notifications/hooks/useCampaignNotifications', () => ({
   useCampaignNotifications: () => notificationsState,
 }))
 
+vi.mock('@/features/campaigns/buget/hooks/use-debate-request-availability', () => ({
+  useDebateRequestAvailability: () => debateRequestAvailabilityState,
+}))
+
 describe('QuickResourcesPreview', () => {
+  beforeEach(() => {
+    mockLocation = {
+      pathname: '/primarie/12345678/buget/provocari',
+      searchStr: '',
+    }
+    notificationsState = {
+      data: [],
+      globalPreference: null,
+      isLoading: false,
+    }
+    debateRequestAvailabilityState = createDebateRequestAvailabilityState('open')
+  })
+
   it('shows the normal bell while notifications are loading', () => {
     notificationsState = {
       data: [],
@@ -172,6 +209,32 @@ describe('QuickResourcesPreview', () => {
       'href',
       expect.stringContaining('section=trimite-cererea'),
     )
+  })
+
+  it('shows a locked info row instead of the debate request link when requests are closed', () => {
+    debateRequestAvailabilityState = createDebateRequestAvailabilityState('closed_debate_took_place')
+
+    render(<QuickResourcesPreview locale="ro" entityCui="12345678" />)
+
+    expect(screen.queryByRole('link', { name: /Send debate request/i })).not.toBeInTheDocument()
+    expect(screen.getByText('Debate request unavailable')).toBeInTheDocument()
+    expect(screen.getByText('The local budget debate has already taken place.')).toBeInTheDocument()
+    expect(screen.getByTestId('lock-icon')).toBeInTheDocument()
+  })
+
+  it('shows a locked checking row while request availability is loading', () => {
+    debateRequestAvailabilityState = {
+      state: 'loading',
+      isSubmittable: false,
+      availability: null,
+      error: null,
+    }
+
+    render(<QuickResourcesPreview locale="ro" entityCui="12345678" />)
+
+    expect(screen.queryByRole('link', { name: /Send debate request/i })).not.toBeInTheDocument()
+    expect(screen.getByText('Debate request unavailable')).toBeInTheDocument()
+    expect(screen.getByText('Checking request availability.')).toBeInTheDocument()
   })
 
   it('shows the guides & templates link pointing to the resources page', () => {

@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DebateRequestForm } from './DebateRequestForm'
 import { PLATFORM_CC_EMAILS } from './mailto-utils'
+import type { UseDebateRequestAvailabilityResult } from '../../hooks/use-debate-request-availability'
 
 const saveDraftMock = vi.fn(async () => undefined)
 const submitMock = vi.fn(async () => undefined)
@@ -11,6 +12,26 @@ const windowOpenMock = vi.fn(() => ({
   close: vi.fn(),
 }))
 let customInteractionCalls: Array<Record<string, unknown>> = []
+let availabilityState: UseDebateRequestAvailabilityResult
+
+function createAvailabilityState(
+  status: 'open' | 'closed_debate_took_place' | 'closed_deadline_expired' | 'closed_global_period_expired' = 'open',
+  overrides: Partial<NonNullable<UseDebateRequestAvailabilityResult['availability']>> = {},
+): UseDebateRequestAvailabilityResult {
+  return {
+    state: 'ready',
+    isSubmittable: status === 'open',
+    error: null,
+    availability: {
+      status,
+      publicationDate: null,
+      requestDeadlineDate: null,
+      globalDeadlineDate: '2026-04-26',
+      publicDebate: null,
+      ...overrides,
+    },
+  }
+}
 
 const formState = {
   savedValue: null as null | {
@@ -54,6 +75,10 @@ vi.mock('@/features/learning/hooks/interactions/use-custom-interaction', () => (
   },
 }))
 
+vi.mock('../../hooks/use-debate-request-availability', () => ({
+  useDebateRequestAvailability: () => availabilityState,
+}))
+
 describe('DebateRequestForm', () => {
   beforeEach(() => {
     saveDraftMock.mockClear()
@@ -70,6 +95,7 @@ describe('DebateRequestForm', () => {
     formState.reviewStatus = null
     formState.reviewFeedbackText = null
     formState.submittedVariant = 'pending_review'
+    availabilityState = createAvailabilityState('open')
   })
 
   it('returns rejected submissions to step 1 while preserving the previous answers', () => {
@@ -462,5 +488,99 @@ describe('DebateRequestForm', () => {
     expect(
       screen.getByText('This is the person who signs the request on behalf of the association.'),
     ).toBeInTheDocument()
+  })
+
+  it('shows the exact closed debate banner without active submit controls', () => {
+    availabilityState = createAvailabilityState('closed_debate_took_place', {
+      publicDebate: {
+        date: '2026-04-10',
+        time: '14:30',
+        location: 'City hall meeting room',
+        announcement_link: 'https://example.com/announcement',
+        online_participation_link: 'https://example.com/online',
+      },
+    })
+
+    render(
+      <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
+    )
+
+    expect(screen.getByText('The local budget debate has already taken place.')).toBeInTheDocument()
+    expect(screen.getByText('City hall meeting room')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Official announcement/i })).toHaveAttribute(
+      'href',
+      'https://example.com/announcement',
+    )
+    expect(screen.queryByLabelText('City hall email')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Request submission' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument()
+  })
+
+  it('shows disabled UI for an expired known 15-day window', () => {
+    availabilityState = createAvailabilityState('closed_deadline_expired', {
+      publicationDate: '2026-04-01',
+      requestDeadlineDate: '2026-04-16',
+    })
+
+    render(
+      <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
+    )
+
+    expect(screen.getByText(/The 15-day public debate request period has expired/)).toBeInTheDocument()
+    expect(screen.getByText('Publication date')).toBeInTheDocument()
+    expect(screen.getByText('Request deadline')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Request submission' })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('City hall email')).not.toBeInTheDocument()
+  })
+
+  it('keeps the active form open when the publication date is unknown and the global period is open', () => {
+    availabilityState = createAvailabilityState('open', {
+      publicationDate: null,
+      requestDeadlineDate: null,
+      globalDeadlineDate: '2026-04-26',
+    })
+
+    render(
+      <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
+    )
+
+    expect(screen.getByLabelText('City hall email')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled()
+  })
+
+  it('does not allow try again or stale resend copy for a rejected submission after closure', () => {
+    availabilityState = createAvailabilityState('closed_deadline_expired', {
+      publicationDate: '2026-04-01',
+      requestDeadlineDate: '2026-04-16',
+    })
+    formState.savedValue = {
+      primariaEmail: 'primaria@example.ro',
+      isNgo: false,
+      organizationName: null,
+      organizationLegalAddress: null,
+      organizationRegistrationNumber: null,
+      organizationFiscalCode: null,
+      legalRepresentativeName: null,
+      legalRepresentativeRole: null,
+      ngoSenderEmail: null,
+      preparedSubject: null,
+      threadKey: null,
+      submissionPath: 'request_platform',
+      submittedAt: '2026-03-23T19:27:40.526Z',
+    }
+    formState.phase = 'resolved'
+    formState.isSubmitted = true
+    formState.reviewStatus = 'rejected'
+    formState.reviewFeedbackText = 'Please correct the destination email.'
+    formState.submittedVariant = 'rejected'
+
+    render(
+      <DebateRequestForm ownerChallengeSlug="civic-monitor-and-request" entityCui="4305857" />,
+    )
+
+    expect(screen.getByText('This submitted request was rejected, but new public debate requests are no longer available.')).toBeInTheDocument()
+    expect(screen.getByText('Requests are closed, so this submission cannot be updated and sent again.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Update the submission and send it again.')).not.toBeInTheDocument()
   })
 })

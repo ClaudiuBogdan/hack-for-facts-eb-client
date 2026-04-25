@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import { toast } from 'sonner'
-import { Copy, Check, ExternalLink, Loader2, Mail, Send } from 'lucide-react'
+import { AlertCircle, CalendarClock, Check, Copy, ExternalLink, Loader2, Lock, Mail, MapPin, Send } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -15,11 +15,18 @@ import {
   PRIMARIE_CONTACT_INFO_INTERACTION,
 } from '../../civic-interaction-definitions'
 import {
+  CampaignChallengeSummaryLink,
   CampaignChallengeReviewState,
   formatReviewDate,
   type ReviewSummaryItem,
 } from './campaign-challenge-review-state'
 import { useCampaignChallengeForm } from './use-campaign-challenge-form'
+import { useDebateRequestAvailability } from '../../hooks/use-debate-request-availability'
+import type { UseDebateRequestAvailabilityResult } from '../../hooks/use-debate-request-availability'
+import {
+  recheckDebateRequestAvailability,
+  type DebateRequestAvailability,
+} from '../../utils/debate-request-availability'
 import {
   buildMailtoUrl,
   buildPublicDebateEmailBody,
@@ -58,6 +65,10 @@ function isValidEmail(email: string): boolean {
 }
 
 type Step = 1 | 2 | 3
+
+function formatAvailabilityDate(date: string): string {
+  return formatReviewDate(date) ?? date
+}
 
 function applyDraftFieldChange<K extends keyof DebateRequestFormValue>(
   current: DebateRequestFormValue,
@@ -117,6 +128,222 @@ function CopyFieldButton({ text }: { readonly text: string }) {
         : <Copy className="h-3.5 w-3.5" />}
     </button>
   )
+}
+
+function DebateDetailsPanel({ availability }: { readonly availability: DebateRequestAvailability }) {
+  const debate = availability.publicDebate
+
+  if (!debate) {
+    return null
+  }
+
+  return (
+    <section className="rounded-2xl border border-border/50 bg-background/70 p-4">
+      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground">
+        <Trans>Public debate details</Trans>
+      </p>
+      <dl className="mt-3.5 space-y-3">
+        <div className="grid gap-1 border-t border-border/30 pt-3 first:border-t-0 first:pt-0 sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)] sm:gap-4">
+          <dt className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <CalendarClock className="size-3.5" aria-hidden="true" />
+            <Trans>Date and time</Trans>
+          </dt>
+          <dd className="text-sm font-medium text-foreground">
+            <time dateTime={`${debate.date}T${debate.time}`}>
+              {formatAvailabilityDate(debate.date)} - {debate.time}
+            </time>
+          </dd>
+        </div>
+        <div className="grid gap-1 border-t border-border/30 pt-3 sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)] sm:gap-4">
+          <dt className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <MapPin className="size-3.5" aria-hidden="true" />
+            <Trans>Location</Trans>
+          </dt>
+          <dd className="text-sm font-medium text-foreground">{debate.location}</dd>
+        </div>
+        <div className="grid gap-1 border-t border-border/30 pt-3 sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)] sm:gap-4">
+          <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <Trans>Announcement</Trans>
+          </dt>
+          <dd className="min-w-0 text-sm">
+            <CampaignChallengeSummaryLink url={debate.announcement_link}>
+              <Trans>Official announcement</Trans>
+            </CampaignChallengeSummaryLink>
+          </dd>
+        </div>
+        {debate.online_participation_link && (
+          <div className="grid gap-1 border-t border-border/30 pt-3 sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)] sm:gap-4">
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <Trans>Online link</Trans>
+            </dt>
+            <dd className="min-w-0 text-sm">
+              <CampaignChallengeSummaryLink url={debate.online_participation_link}>
+                <Trans>Join online</Trans>
+              </CampaignChallengeSummaryLink>
+            </dd>
+          </div>
+        )}
+        {debate.description && (
+          <div className="grid gap-1 border-t border-border/30 pt-3 sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)] sm:gap-4">
+            <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <Trans>Details</Trans>
+            </dt>
+            <dd className="text-sm font-medium leading-relaxed text-foreground">{debate.description}</dd>
+          </div>
+        )}
+      </dl>
+    </section>
+  )
+}
+
+function getAvailabilityNoticeCopy(availabilityState: UseDebateRequestAvailabilityResult): {
+  readonly title: string
+  readonly description: ReactNode
+} {
+  if (availabilityState.state === 'loading') {
+    return {
+      title: t`Checking request availability`,
+      description: <Trans>We are checking the campaign calendar before enabling public debate request submissions.</Trans>,
+    }
+  }
+
+  if (availabilityState.state === 'unavailable') {
+    return {
+      title: t`Request submissions are temporarily unavailable`,
+      description: <Trans>We cannot confirm whether requests are still open right now. Please try again later.</Trans>,
+    }
+  }
+
+  const { availability } = availabilityState
+  switch (availability.status) {
+    case 'closed_debate_took_place':
+      return {
+        title: t`Public debate request closed`,
+        description: <Trans>The local budget debate has already taken place.</Trans>,
+      }
+    case 'closed_deadline_expired':
+      return {
+        title: t`Public debate request closed`,
+        description: (
+          <Trans>
+            The 15-day public debate request period has expired. The draft budget was published on{' '}
+            <span className="font-semibold text-foreground">{formatAvailabilityDate(availability.publicationDate ?? '')}</span>
+            {' '}and requests were open through{' '}
+            <span className="font-semibold text-foreground">{formatAvailabilityDate(availability.requestDeadlineDate ?? '')}</span>.
+          </Trans>
+        ),
+      }
+    case 'closed_global_period_expired':
+      return {
+        title: t`Public debate request closed`,
+        description: (
+          <Trans>
+            The default campaign request period has ended. We do not have a confirmed budget publication date for this city hall, so requests are closed based on the campaign calendar.
+          </Trans>
+        ),
+      }
+    case 'open':
+      return {
+        title: t`Public debate request available`,
+        description: <Trans>Public debate request submissions are open.</Trans>,
+      }
+  }
+}
+
+function DebateRequestDisabledNotice({
+  availabilityState,
+}: {
+  readonly availabilityState: UseDebateRequestAvailabilityResult
+}) {
+  const copy = getAvailabilityNoticeCopy(availabilityState)
+  const availability = availabilityState.availability
+
+  return (
+    <div className="relative overflow-hidden rounded-[28px] border border-amber-200/70 bg-gradient-to-br from-amber-50/60 via-background to-background p-6 shadow-sm dark:border-amber-900/40 dark:from-amber-950/20 md:p-8">
+      <Send className="absolute right-4 top-4 h-20 w-20 rotate-6 opacity-[0.06] pointer-events-none" aria-hidden="true" />
+      <div className="space-y-5">
+        <div className="space-y-1.5">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+            <Trans>Debate request</Trans>
+          </p>
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200">
+              {availabilityState.state === 'loading'
+                ? <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                : availabilityState.state === 'ready'
+                  ? <Lock className="size-4" aria-hidden="true" />
+                  : <AlertCircle className="size-4" aria-hidden="true" />}
+            </span>
+            <div className="space-y-1.5">
+              <h3 className="text-lg font-black tracking-tight text-foreground">{copy.title}</h3>
+              <p className="text-sm font-medium leading-relaxed text-muted-foreground">
+                {copy.description}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {availability?.publicationDate && availability.requestDeadlineDate && availability.status === 'closed_deadline_expired' && (
+          <dl className="grid gap-3 rounded-2xl border border-border/50 bg-background/70 p-4 sm:grid-cols-2">
+            <div>
+              <dt className="text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">
+                <Trans>Publication date</Trans>
+              </dt>
+              <dd className="mt-1 text-sm font-semibold text-foreground">
+                <time dateTime={availability.publicationDate}>{formatAvailabilityDate(availability.publicationDate)}</time>
+              </dd>
+            </div>
+            <div>
+              <dt className="text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">
+                <Trans>Request deadline</Trans>
+              </dt>
+              <dd className="mt-1 text-sm font-semibold text-foreground">
+                <time dateTime={availability.requestDeadlineDate}>{formatAvailabilityDate(availability.requestDeadlineDate)}</time>
+              </dd>
+            </div>
+          </dl>
+        )}
+
+        {availability && <DebateDetailsPanel availability={availability} />}
+      </div>
+    </div>
+  )
+}
+
+function getUnavailableSubmitError(availabilityState: UseDebateRequestAvailabilityResult): string {
+  if (availabilityState.state === 'loading') {
+    return t`We are still checking whether public debate request submissions are open.`
+  }
+
+  if (availabilityState.state === 'unavailable') {
+    return t`Request submissions are temporarily unavailable. Please try again later.`
+  }
+
+  switch (availabilityState.availability.status) {
+    case 'closed_debate_took_place':
+      return t`The local budget debate has already taken place.`
+    case 'closed_deadline_expired':
+    case 'closed_global_period_expired':
+      return t`Public debate request submissions are closed.`
+    case 'open':
+      return t`Public debate request submissions are open.`
+  }
+}
+
+function recheckAvailabilityState(
+  availabilityState: UseDebateRequestAvailabilityResult,
+): UseDebateRequestAvailabilityResult {
+  if (availabilityState.state !== 'ready') {
+    return availabilityState
+  }
+
+  const availability = recheckDebateRequestAvailability(availabilityState.availability, new Date())
+  return {
+    state: 'ready',
+    isSubmittable: availability.status === 'open',
+    availability,
+    error: null,
+  }
 }
 
 function EmailPreviewPanel({
@@ -247,6 +474,8 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
     kind: 'custom',
     completionRule: { type: 'resolved' },
   })
+  const availabilityState = useDebateRequestAvailability(entityCui)
+  const canSubmitDebateRequest = availabilityState.state === 'ready' && availabilityState.isSubmittable
 
   const [step, setStep] = useState<Step>(1)
   const [draft, setDraft] = useState<DebateRequestFormValue>(
@@ -345,9 +574,18 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
   const emailCc = PLATFORM_CC_EMAILS
 
   const handleShowPreview = useCallback(() => {
-    if (!canUseAssociationSendFlow) return
+    const currentAvailabilityState = recheckAvailabilityState(availabilityState)
+    const isCurrentlySubmittable =
+      currentAvailabilityState.state === 'ready' && currentAvailabilityState.isSubmittable
+
+    if (!canUseAssociationSendFlow || !isCurrentlySubmittable) {
+      if (!isCurrentlySubmittable) {
+        setSubmitError(getUnavailableSubmitError(currentAvailabilityState))
+      }
+      return
+    }
     setShowEmailPreview(true)
-  }, [canUseAssociationSendFlow])
+  }, [availabilityState, canUseAssociationSendFlow])
 
   const handleOpenEmailClient = useCallback(() => {
     const mailtoUrl = buildMailtoUrl({
@@ -361,6 +599,12 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
 
   const handleConfirmSelfSend = useCallback(async () => {
     setSubmitError(null)
+    const currentAvailabilityState = recheckAvailabilityState(availabilityState)
+    if (currentAvailabilityState.state !== 'ready' || !currentAvailabilityState.isSubmittable) {
+      setShowEmailPreview(false)
+      setSubmitError(getUnavailableSubmitError(currentAvailabilityState))
+      return
+    }
     setIsSubmitting(true)
     try {
       const submittedValue: DebateRequestFormValue = {
@@ -386,10 +630,15 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
     } finally {
       setIsSubmitting(false)
     }
-  }, [draft, emailSubject, form])
+  }, [availabilityState, draft, emailSubject, form])
 
   const handleRequestPlatform = useCallback(async () => {
     setSubmitError(null)
+    const currentAvailabilityState = recheckAvailabilityState(availabilityState)
+    if (currentAvailabilityState.state !== 'ready' || !currentAvailabilityState.isSubmittable) {
+      setSubmitError(getUnavailableSubmitError(currentAvailabilityState))
+      return
+    }
     setIsSubmitting(true)
     try {
       const submittedValue: DebateRequestFormValue = {
@@ -416,7 +665,7 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
     } finally {
       setIsSubmitting(false)
     }
-  }, [draft, form])
+  }, [availabilityState, draft, form])
 
   const handleTryAgain = useCallback(() => {
     setStep(1)
@@ -427,8 +676,15 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
 
   if (form.isSubmitted) {
     const submittedPath = form.savedValue?.submissionPath
+    const isRejectedAndNotSubmittable =
+      form.submittedVariant === 'rejected'
+      && !canSubmitDebateRequest
     const submittedDescription =
-      submittedPath === 'send_yourself'
+      isRejectedAndNotSubmittable
+        ? availabilityState.state === 'ready'
+          ? t`This submitted request was rejected, but new public debate requests are no longer available.`
+          : t`This submitted request was rejected. Request availability must be confirmed before it can be updated.`
+        : submittedPath === 'send_yourself'
         ? t`You opened the prepared email and confirmed that you sent the public debate request.`
         : submittedPath === 'request_platform'
           ? t`You asked the platform to send the public debate request on your behalf.`
@@ -483,9 +739,20 @@ export function DebateRequestForm({ ownerChallengeSlug, entityCui }: CampaignInt
         submittedVariant={form.submittedVariant}
         feedbackText={form.reviewFeedbackText}
         summaryItems={submittedSummaryItems}
-        onTryAgain={handleTryAgain}
+        onTryAgain={isRejectedAndNotSubmittable ? undefined : handleTryAgain}
+        statusTextOverride={
+          isRejectedAndNotSubmittable
+            ? availabilityState.state === 'ready'
+              ? t`Requests are closed, so this submission cannot be updated and sent again.`
+              : t`Try again is unavailable while request availability is being checked.`
+            : undefined
+        }
       />
     )
+  }
+
+  if (!canSubmitDebateRequest) {
+    return <DebateRequestDisabledNotice availabilityState={availabilityState} />
   }
 
   return (
