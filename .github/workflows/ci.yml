@@ -231,6 +231,8 @@ jobs:
       - name: Build Docker Image
         run: |
           docker build \
+            --build-arg SENTRY_SOURCEMAPS=true \
+            --build-arg VITE_APP_VERSION=${{ github.sha }} \
             -t ${{ env.DOCKER_REGISTRY }}/hack-for-facts-eb-client:${{ github.sha }} \
             .
 
@@ -309,11 +311,15 @@ jobs:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ env.DOCKER_PASSWORD }}
 
-      - name: Verify Promoted Image Exists
+      - name: Extract Promoted Image Assets
         run: |
-          docker manifest inspect \
-            "${{ env.DOCKER_REGISTRY }}/hack-for-facts-eb-client:${{ steps.promoted-image.outputs.tag }}" \
-            > /dev/null
+          image="${{ env.DOCKER_REGISTRY }}/hack-for-facts-eb-client:${{ steps.promoted-image.outputs.tag }}"
+          docker pull "${image}"
+          container_id="$(docker create "${image}")"
+          trap 'docker rm -f "${container_id}" >/dev/null 2>&1 || true' EXIT
+          rm -rf ./sentry-artifacts
+          docker cp "${container_id}:/app/sentry-artifacts" ./sentry-artifacts
+          test -d ./sentry-artifacts/assets
 
       - name: Setup Node.js (Sentry Upload)
         uses: actions/setup-node@v6
@@ -328,15 +334,10 @@ jobs:
       - name: Install dependencies (Sentry Upload)
         run: yarn install --frozen-lockfile
 
-      - name: Extract Promoted Image Sourcemaps
+      - name: Validate Extracted Sentry Assets
         run: |
-          image="${{ env.DOCKER_REGISTRY }}/hack-for-facts-eb-client:${{ steps.promoted-image.outputs.tag }}"
-          docker pull "${image}"
-          container_id="$(docker create "${image}")"
-          trap 'docker rm -f "${container_id}" >/dev/null 2>&1 || true' EXIT
-          mkdir -p ./sentry-artifacts
-          docker cp "${container_id}:/app/.output/public/assets" "./sentry-artifacts/assets"
-          test -d ./sentry-artifacts/assets
+          node scripts/validate-sentry-debug-ids.mjs ./sentry-artifacts/assets
+          find ./sentry-artifacts/assets \( -name "*.js" -o -name "*.mjs" -o -name "*.cjs" \) -exec node --check {} \;
 
       - name: Upload Sentry Sourcemaps (Prod)
         env:
@@ -352,5 +353,6 @@ jobs:
             --release "$SENTRY_RELEASE" \
             --url-prefix "~/assets" \
             --validate \
+            --strict \
             --wait \
             "./sentry-artifacts/assets"

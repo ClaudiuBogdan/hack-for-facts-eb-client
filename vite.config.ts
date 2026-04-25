@@ -11,7 +11,7 @@ import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import remarkGfm from "remark-gfm";
 import checker from "vite-plugin-checker";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import { sentryVitePlugin } from "@sentry/vite-plugin";
+import { sentryTanstackStart } from "@sentry/tanstackstart-react/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { lingui, linguiTransformerBabelPreset } from "@lingui/vite-plugin";
 import { nitro } from "nitro/vite";
@@ -104,7 +104,7 @@ const getClientManualChunk = (id: string) => {
   if (id.includes('/node_modules/framer-motion/') || id.includes('/node_modules/motion/')) {
     return 'motion';
   }
-  if (id.includes('/node_modules/@sentry/react/')) {
+  if (id.includes('/node_modules/@sentry/')) {
     return 'sentry';
   }
   if (id.includes('/node_modules/posthog-js/')) {
@@ -127,11 +127,11 @@ export default defineConfig(({ mode }) => {
   // Cookie handling: https://github.com/sagemathinc/http-proxy-3
   // Origin header security: https://github.com/vitejs/vite/issues/17562
   const env = loadEnv(mode, process.cwd(), "");
-  const isSentryUploadEnabled =
-    mode === "production" &&
-    Boolean(process.env.SENTRY_ORG) &&
-    Boolean(process.env.SENTRY_PROJECT) &&
-    Boolean(process.env.SENTRY_AUTH_TOKEN);
+  const shouldPrepareSentrySourcemaps =
+    mode === "production" && process.env.SENTRY_SOURCEMAPS === "true";
+  const shouldGenerateSentrySourcemaps =
+    mode === "production" && shouldPrepareSentrySourcemaps;
+  const sentryRelease = process.env.SENTRY_RELEASE ?? process.env.VITE_APP_VERSION;
   const apiProxyTarget = env.VITE_API_PROXY_TARGET || env.VITE_API_URL;
 
   // Keep-alive agent for connection reuse (better performance)
@@ -241,21 +241,31 @@ export default defineConfig(({ mode }) => {
       checker({
         typescript: true,
       }),
-      // Sentry plugin will upload sourcemaps only on production builds when env vars are set
-      sentryVitePlugin({
+      ...(shouldPrepareSentrySourcemaps ? sentryTanstackStart({
         org: process.env.SENTRY_ORG,
         project: process.env.SENTRY_PROJECT,
         authToken: process.env.SENTRY_AUTH_TOKEN,
-        disable: !isSentryUploadEnabled,
+        // Upload and Debug ID source-map pairing are handled by Dockerfile steps.
+        // Keep the framework plugin active without noisy no-auth upload warnings.
+        silent: true,
         telemetry: false,
+        release: {
+          name: sentryRelease,
+          inject: false,
+          create: false,
+          finalize: false,
+          setCommits: false,
+          deploy: false,
+        },
         sourcemaps: {
+          // Docker runs sentry-cli inject after build so the paired map files can be stored in the image.
+          disable: true,
           // TanStack Start + Nitro outputs assets under .output.
           assets: [
             "./.output/public/assets/**",
-            "./.output/server/**/*.js.map",
           ],
         },
-      }),
+      }) : []),
     ],
     // Static assets will be fingerprinted by Vite and can be cached long-term by the browser/CDN
     resolve: {
@@ -276,8 +286,9 @@ export default defineConfig(({ mode }) => {
       proxy,
     },
     build: {
-      // Hidden sourcemaps are only needed for Sentry upload builds.
-      sourcemap: isSentryUploadEnabled ? 'hidden' : false,
+      // Sentry injection needs sourceMappingURL references to pair JS assets with maps.
+      // Docker copies maps into private upload artifacts and removes them from served output.
+      sourcemap: shouldGenerateSentrySourcemaps,
       chunkSizeWarningLimit: 1500,
       rollupOptions: {
         output: {

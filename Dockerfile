@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
 
-FROM node:24-alpine AS build
+FROM node:24-slim AS build
+ARG SENTRY_SOURCEMAPS=false
+ARG VITE_APP_VERSION
 WORKDIR /app
 
 RUN corepack enable
@@ -12,9 +14,19 @@ RUN yarn install --frozen-lockfile
 COPY . .
 
 ENV NODE_ENV=production
+ENV SENTRY_SOURCEMAPS=${SENTRY_SOURCEMAPS}
+ENV VITE_APP_VERSION=${VITE_APP_VERSION}
 
+RUN mkdir -p /tmp/sentry-artifacts
 RUN yarn build:app
-RUN test -f .output/server/index.mjs
+RUN yarn build:validate
+RUN if [ "${SENTRY_SOURCEMAPS}" = "true" ]; then \
+    yarn sentry:inject-debug-ids; \
+    yarn sentry:validate-debug-ids; \
+    cp -a .output/public/assets /tmp/sentry-artifacts/assets; \
+    find .output -name "*.map" -type f -delete; \
+    yarn build:validate; \
+  fi
 
 FROM node:24-alpine AS run
 WORKDIR /app
@@ -37,6 +49,7 @@ RUN yarn install --frozen-lockfile --production=true --ignore-scripts \
   && rm -rf "${YARN_CACHE_FOLDER}"
 
 COPY --from=build --chown=nodejs:nodejs /app/.output ./.output
+COPY --from=build --chown=nodejs:nodejs /tmp/sentry-artifacts ./sentry-artifacts
 
 USER nodejs
 
