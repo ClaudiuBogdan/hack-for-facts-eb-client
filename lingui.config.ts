@@ -1,4 +1,6 @@
-const config = {
+import { defineConfig } from "@lingui/cli";
+
+const config = defineConfig({
   sourceLocale: "en",
   locales: ["en", "ro"],
   catalogs: [
@@ -18,7 +20,6 @@ const config = {
       ],
     },
   ],
-  format: "po",
-};
+});
 
 export default config;

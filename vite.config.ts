@@ -13,7 +13,7 @@ import checker from "vite-plugin-checker";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
-import { lingui } from "@lingui/vite-plugin";
+import { lingui, linguiTransformerBabelPreset } from "@lingui/vite-plugin";
 import { nitro } from "nitro/vite";
 import fs from "fs";
 import { createChallengeStepSectionsPlugin } from "./config/challenge-step-sections-plugin";
@@ -234,7 +234,7 @@ export default defineConfig(({ mode }) => {
         }),
       },
       babel({
-        plugins: ["@lingui/babel-plugin-lingui-macro"],
+        presets: [linguiTransformerBabelPreset()],
       }),
       react(),
       tailwindcss(),
