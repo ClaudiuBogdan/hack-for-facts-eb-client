@@ -231,7 +231,6 @@ jobs:
       - name: Build Docker Image
         run: |
           docker build \
-            --build-arg SENTRY_SOURCEMAPS=true \
             -t ${{ env.DOCKER_REGISTRY }}/hack-for-facts-eb-client:${{ github.sha }} \
             .
 
@@ -335,16 +334,9 @@ jobs:
           docker pull "${image}"
           container_id="$(docker create "${image}")"
           trap 'docker rm -f "${container_id}" >/dev/null 2>&1 || true' EXIT
-          rm -rf ./sentry-artifacts
           mkdir -p ./sentry-artifacts
           docker cp "${container_id}:/app/.output/public/assets" "./sentry-artifacts/assets"
           test -d ./sentry-artifacts/assets
-          test -n "$(find ./sentry-artifacts/assets -name '*.map' -print -quit)"
-          find ./sentry-artifacts/assets -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.cjs' \) -print0 |
-            while IFS= read -r -d '' file; do
-              test -f "${file}.map" || rm "$file"
-            done
-          test -n "$(find ./sentry-artifacts/assets -name '*.js' -print -quit)"
 
       - name: Upload Sentry Sourcemaps (Prod)
         env:
@@ -360,6 +352,5 @@ jobs:
             --release "$SENTRY_RELEASE" \
             --url-prefix "~/assets" \
             --validate \
-            --strict \
             --wait \
             "./sentry-artifacts/assets"

@@ -12,13 +12,8 @@ RUN yarn install --frozen-lockfile
 COPY . .
 
 ENV NODE_ENV=production
-ARG SENTRY_SOURCEMAPS=false
-ENV SENTRY_SOURCEMAPS=${SENTRY_SOURCEMAPS}
 
 RUN yarn build:app
-RUN if [ "${SENTRY_SOURCEMAPS}" = "true" ]; then \
-  ./node_modules/.bin/sentry-cli sourcemaps inject .output/public/assets; \
-fi
 RUN test -f .output/server/index.mjs
 
 FROM node:24-alpine AS run

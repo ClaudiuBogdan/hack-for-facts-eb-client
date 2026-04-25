@@ -132,9 +132,6 @@ export default defineConfig(({ mode }) => {
     Boolean(process.env.SENTRY_ORG) &&
     Boolean(process.env.SENTRY_PROJECT) &&
     Boolean(process.env.SENTRY_AUTH_TOKEN);
-  const shouldGenerateSentrySourcemaps =
-    mode === "production" &&
-    (isSentryUploadEnabled || process.env.SENTRY_SOURCEMAPS === "true");
   const apiProxyTarget = env.VITE_API_PROXY_TARGET || env.VITE_API_URL;
 
   // Keep-alive agent for connection reuse (better performance)
@@ -279,8 +276,8 @@ export default defineConfig(({ mode }) => {
       proxy,
     },
     build: {
-      // Hidden sourcemaps are emitted for Sentry without making browsers load them.
-      sourcemap: shouldGenerateSentrySourcemaps ? 'hidden' : false,
+      // Hidden sourcemaps are only needed for Sentry upload builds.
+      sourcemap: isSentryUploadEnabled ? 'hidden' : false,
       chunkSizeWarningLimit: 1500,
       rollupOptions: {
         output: {
