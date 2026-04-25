@@ -3599,7 +3599,7 @@ cross-spawn@^7.0.6:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
-crossws@^0.4.4, crossws@^0.4.5:
+crossws@^0.4.4:
   version "0.4.5"
   resolved "https://registry.yarnpkg.com/crossws/-/crossws-0.4.5.tgz#e300fec909cd93fe377a1cee84f6813c9c786edf"
   integrity sha512-wUR89x/Rw7/8t+vn0CmGDYM9TD6VtARGb0LD5jq2wjtMy1vCP4M+sm6N6TigWeTYvnA8MoW29NqqXD0ep0rfBA==
@@ -3957,7 +3957,7 @@ entities@^8.0.0:
   resolved "https://registry.yarnpkg.com/entities/-/entities-8.0.0.tgz#c1df5fe3602429747fa233d0dd26f142f0ce4743"
   integrity sha512-zwfzJecQ/Uej6tusMqwAqU/6KL2XaB2VZ2Jg54Je6ahNBGNH6Ek6g3jjNCF0fG9EWQKGZNddNjU5F1ZQn/sBnA==
 
-env-runner@^0.1.7:
+env-runner@^0.1.6:
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/env-runner/-/env-runner-0.1.7.tgz#ab26aa711cf195c9d8e158b6e864291fbd8d202e"
   integrity sha512-i7h96jxETJYhXy5grgHNJ9xNzCzWIn9Ck/VkkYgOlE4gOqknsLX3CmlVb5LmwNex8sOoLFVZLz+TIw/+b5rktA==
@@ -4500,7 +4500,7 @@ gray-matter@^4.0.3:
     rou3 "^0.8.1"
     srvx "^0.11.13"
 
-h3@^2.0.1-rc.20:
+h3@^2.0.1-rc.16:
   version "2.0.1-rc.20"
   resolved "https://registry.yarnpkg.com/h3/-/h3-2.0.1-rc.20.tgz#51050db30afb0b6e69718d88cccc23666fbe8039"
   integrity sha512-28ljodXuUp0fZovdiSRq4G9OgrxCztrJe5VdYzXAB7ueRvI7pIUqLU14Xi3XqdYJ/khXjfpUOOD2EQa6CmBgsg==
@@ -4580,7 +4580,7 @@ hex-rgb@^4.1.0:
   resolved "https://registry.yarnpkg.com/hex-rgb/-/hex-rgb-4.3.0.tgz#af5e974e83bb2fefe44d55182b004ec818c07776"
   integrity sha512-Ox1pJVrDCyGHMG9CFg1tmrRUMRPRsAWYc/PinY0XzJU4K7y7vjNoLKIQ7BR5UJMCxNN8EM1MNDmHWA/B3aZUuw==
 
-hookable@^6.1.1:
+hookable@^6.0.1:
   version "6.1.1"
   resolved "https://registry.yarnpkg.com/hookable/-/hookable-6.1.1.tgz#825f966b4b426db2e622d94d7a31a70f196f9d2f"
   integrity sha512-U9LYDy1CwhMCnprUfeAZWZGByVbhd54hwepegYTK7Pi5NvqEj63ifz5z+xukznehT7i6NIZRu89Ay1AZmRsLEQ==
@@ -5835,30 +5835,30 @@ natural-compare@^1.4.0:
   resolved "https://registry.yarnpkg.com/natural-compare/-/natural-compare-1.4.0.tgz#4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7"
   integrity sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==
 
-nf3@^0.3.16:
+nf3@^0.3.11:
   version "0.3.16"
   resolved "https://registry.yarnpkg.com/nf3/-/nf3-0.3.16.tgz#36e3d1bb36d98ee78b47627b7967864c2ea01720"
   integrity sha512-Gs0xRPpUm2nDkqbi40NJ9g7qDIcjcJzgExiydnq6LAyqhI2jfno8wG3NKTL+IiJsx799UHOb1CnSd4Wg4SG4Pw==
 
-nitro@^3.0.260415-beta:
-  version "3.0.260415-beta"
-  resolved "https://registry.yarnpkg.com/nitro/-/nitro-3.0.260415-beta.tgz#2a40c38c9a2d6ae14b259ebe78e5ce1142d0c5e5"
-  integrity sha512-J0ntJERWtIdvweZdmkCiF8eOFvP9fIAJR2gpeIDrHbAlYavK41WQfADo/YoZ/LF7RMTZBiPaH/pt2s/nPru9Iw==
+nitro@^3.0.260311-beta:
+  version "3.0.260311-beta"
+  resolved "https://registry.yarnpkg.com/nitro/-/nitro-3.0.260311-beta.tgz#46860d42e6a412c7ea361fae525427c01b6ded3d"
+  integrity sha512-0o0fJ9LUh4WKUqJNX012jyieUOtMCnadkNDWr0mHzdraoHpJP/1CGNefjRyZyMXSpoJfwoWdNEZu2iGf35TUvQ==
   dependencies:
     consola "^3.4.2"
-    crossws "^0.4.5"
+    crossws "^0.4.4"
     db0 "^0.3.4"
-    env-runner "^0.1.7"
-    h3 "^2.0.1-rc.20"
-    hookable "^6.1.1"
-    nf3 "^0.3.16"
-    ocache "^0.1.4"
+    env-runner "^0.1.6"
+    h3 "^2.0.1-rc.16"
+    hookable "^6.0.1"
+    nf3 "^0.3.11"
+    ocache "^0.1.2"
     ofetch "^2.0.0-alpha.3"
     ohash "^2.0.11"
-    rolldown "^1.0.0-rc.15"
-    srvx "^0.11.15"
+    rolldown "^1.0.0-rc.8"
+    srvx "^0.11.9"
     unenv "^2.0.0-rc.24"
-    unstorage "^2.0.0-alpha.7"
+    unstorage "^2.0.0-alpha.6"
 
 node-fetch@^2.6.7:
   version "2.7.0"
@@ -5902,7 +5902,7 @@ obug@^2.1.1:
   resolved "https://registry.yarnpkg.com/obug/-/obug-2.1.1.tgz#2cba74ff241beb77d63055ddf4cd1e9f90b538be"
   integrity sha512-uTqF9MuPraAQ+IsnPf366RG4cP9RtUi7MLO1N3KEc+wb0a6yKpeL0lmk2IB1jY5KHPAlTc6T/JRdC/YqxHNwkQ==
 
-ocache@^0.1.4:
+ocache@^0.1.2:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/ocache/-/ocache-0.1.4.tgz#d4a71be84ceaeb5685cc0128c197d44713dda9a7"
   integrity sha512-e7geNdWjxSnvsSgvLuPvgKgu7ubM10ZmTPOgpr7mz2BXYtvjMKTiLhjFi/gWU8chkuP6hNkZBsa9LzOusyaqkQ==
@@ -6572,7 +6572,7 @@ retry@^0.12.0:
   resolved "https://registry.yarnpkg.com/retry/-/retry-0.12.0.tgz#1b42a6266a21f07421d1b0b54b7dc167b01c013b"
   integrity sha512-9LkiTwjUh6rT555DtE9rTX+BKByPfrMzEAtnlEtdEwr3Nkffwiihqe2bWADg+OQRjt9gl6ICdmB/ZFDCGAtSow==
 
-rolldown@1.0.0-rc.17, rolldown@^1.0.0-rc.15:
+rolldown@1.0.0-rc.17, rolldown@^1.0.0-rc.8:
   version "1.0.0-rc.17"
   resolved "https://registry.yarnpkg.com/rolldown/-/rolldown-1.0.0-rc.17.tgz#c524fc22f6bb37b5588aec862ab1ee11382610f3"
   integrity sha512-ZrT53oAKrtA4+YtBWPQbtPOxIbVDbxT0orcYERKd63VJTF13zPcgXTvD4843L8pcsI7M6MErt8QtON6lrB9tyA==
@@ -6729,7 +6729,7 @@ sprintf-js@~1.0.2:
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha512-D9cPgkvLlV3t3IzL0D0YLvGA9Ahk4PcvVwUbN0dSGr1aP0Nrt4AEnTUbuGvquEC0mA64Gqt1fzirlRs5ibXx8g==
 
-srvx@^0.11.13, srvx@^0.11.15, srvx@^0.11.9:
+srvx@^0.11.13, srvx@^0.11.9:
   version "0.11.15"
   resolved "https://registry.yarnpkg.com/srvx/-/srvx-0.11.15.tgz#51c08f993bb116f5821ec929a466a29e8d5c7b61"
   integrity sha512-iXsux0UcOjdvs0LCMa2Ws3WwcDUozA3JN3BquNXkaFPP7TpRqgunKdEgoZ/uwb1J6xaYHfxtz9Twlh6yzwM6Tg==
@@ -7131,7 +7131,7 @@ unplugin@^3.0.0:
     picomatch "^4.0.3"
     webpack-virtual-modules "^0.6.2"
 
-unstorage@^2.0.0-alpha.7:
+unstorage@^2.0.0-alpha.6:
   version "2.0.0-alpha.7"
   resolved "https://registry.yarnpkg.com/unstorage/-/unstorage-2.0.0-alpha.7.tgz#803ea90176683bf2175bb01065cb07df6d65280a"
   integrity sha512-ELPztchk2zgFJnakyodVY3vJWGW9jy//keJ32IOJVGUMyaPydwcA1FtVvWqT0TNRch9H+cMNEGllfVFfScImog==

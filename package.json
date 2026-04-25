@@ -107,7 +107,7 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^1.11.0",
     "motion": "^12.38.0",
-    "nitro": "^3.0.260415-beta",
+    "nitro": "^3.0.260311-beta",
     "papaparse": "^5.5.3",
     "posthog-js": "^1.372.1",
     "react": "^19.2.5",
