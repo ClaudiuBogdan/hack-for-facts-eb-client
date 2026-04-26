@@ -233,10 +233,47 @@ describe('MapAnalyticsOwnerConfigModal', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Edit description' }));
 
     expect(screen.getByText('Map description')).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Map description markdown editor'), {
+    const descriptionInput = screen.getByLabelText('Map description markdown editor');
+    fireEvent.change(descriptionInput, {
       target: { value: '## Updated description' },
     });
+    expect(onMapDescriptionChange).not.toHaveBeenCalled();
+    fireEvent.blur(descriptionInput);
     expect(onMapDescriptionChange).toHaveBeenCalledWith('## Updated description');
+  });
+
+  it('keeps map title typing local until the input commits', async () => {
+    const onMapNameChange = vi.fn();
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+
+    render(
+      <MapAnalyticsOwnerConfigModal
+        open
+        mapId="map_1"
+        currentMapState={baseMapState}
+        mapName="My map"
+        currentVisibility="private"
+        currentPublicId={null}
+        onOpenChange={vi.fn()}
+        onMapNameChange={onMapNameChange}
+        onRequestSaveSnapshot={vi.fn()}
+        onLoadSnapshot={vi.fn()}
+        onApplyImportedConfig={vi.fn()}
+        onDeleted={vi.fn()}
+      />
+    );
+
+    const titleInput = screen.getByLabelText('Map title');
+    fireEvent.change(titleInput, {
+      target: { value: 'Responsiveness check' },
+    });
+
+    expect(titleInput).toHaveValue('Responsiveness check');
+    expect(onMapNameChange).not.toHaveBeenCalled();
+
+    fireEvent.blur(titleInput);
+
+    expect(onMapNameChange).toHaveBeenCalledWith('Responsiveness check');
   });
 
   it('loads snapshot after confirmation and only replaces current config', async () => {
@@ -374,7 +411,8 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Paste config' }));
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Map configuration actions' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Paste config' }));
 
     await waitFor(() => {
       expect(onApplyImportedConfig).toHaveBeenCalledWith(
@@ -419,7 +457,8 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Export config' }));
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Map configuration actions' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Export config' }));
 
     await waitFor(() => {
       expect(onBeforeExportConfig).toHaveBeenCalledTimes(1);
@@ -460,7 +499,8 @@ describe('MapAnalyticsOwnerConfigModal', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Export config' }));
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Map configuration actions' }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: 'Export config' }));
 
     await waitFor(() => {
       expect(onBeforeExportConfig).toHaveBeenCalledTimes(1);

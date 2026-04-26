@@ -5,6 +5,7 @@ import { ModalHeader, ModalTitle } from '@/components/ui/modal-header';
 import { ModalSection } from '@/components/ui/modal-section';
 import { modalSizes } from '@/components/ui/modal-sizes';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useBufferedCommittedValue } from '@/lib/hooks/useBufferedCommittedValue';
 import { t } from '@lingui/core/macro';
 import type {
   AdvancedMapAnalyticsStatsFilterType,
@@ -175,11 +176,50 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
     return null;
   }
 
+  return (
+    <AdvancedMapAnalyticsValueFilterEditorDialog
+      open={open}
+      mode={mode}
+      rule={rule}
+      ruleIndex={ruleIndex}
+      series={series}
+      onOpenChange={onOpenChange}
+      onRuleChange={onRuleChange}
+    />
+  );
+}
+
+interface AdvancedMapAnalyticsValueFilterEditorDialogProps
+  extends Omit<AdvancedMapAnalyticsValueFilterEditorModalProps, 'rule'> {
+  readonly rule: AdvancedMapAnalyticsValueFilterRule;
+}
+
+function AdvancedMapAnalyticsValueFilterEditorDialog({
+  open,
+  mode,
+  rule,
+  ruleIndex,
+  series,
+  onOpenChange,
+  onRuleChange,
+}: Readonly<AdvancedMapAnalyticsValueFilterEditorDialogProps>) {
+  const bufferedRule = useBufferedCommittedValue({
+    value: rule,
+    onCommit: onRuleChange,
+  });
+  const draftRule = bufferedRule.value;
   const modalTitle = mode === 'add' ? t`Add Value Filter Rule` : t`Edit Value Filter Rule`;
   const modalDescription = t`Configure source series and filtering logic for this UAT-level value filter.`;
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      bufferedRule.commit();
+    }
+
+    onOpenChange(nextOpen);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className={modalSizes.lg} aria-describedby={undefined}>
         <ModalHeader align="default" variant="bordered">
           <DialogTitle asChild>
@@ -191,13 +231,14 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
           <FormField label={t`Rule name`} htmlFor="value-filter-name">
             <Input
               id="value-filter-name"
-              value={rule.name}
+              value={draftRule.name}
               onChange={(event) =>
-                onRuleChange({
-                  ...rule,
+                bufferedRule.setValue({
+                  ...draftRule,
                   name: event.currentTarget.value,
                 })
               }
+              onBlur={bufferedRule.commit}
               placeholder={t`Optional name`}
               autoComplete="off"
             />
@@ -206,11 +247,11 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
           {(ruleIndex ?? 0) > 0 ? (
             <FormField label={t`Join with previous`} htmlFor="value-filter-join">
               <Select
-                value={rule.joinWithPrevious}
+                value={draftRule.joinWithPrevious}
                 onValueChange={(value) => {
                   if (value === 'AND' || value === 'OR') {
-                    onRuleChange({
-                      ...rule,
+                    bufferedRule.setValue({
+                      ...draftRule,
                       joinWithPrevious: value,
                     });
                   }
@@ -229,10 +270,10 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
 
           <FormField label={t`Source series`} htmlFor="value-filter-source">
             <Select
-              value={getSeriesRefSelectValue(rule.seriesRef)}
+              value={getSeriesRefSelectValue(draftRule.seriesRef)}
               onValueChange={(value) =>
-                onRuleChange({
-                  ...rule,
+                bufferedRule.setValue({
+                  ...draftRule,
                   seriesRef: parseSeriesRefSelectValue(value),
                 })
               }
@@ -253,14 +294,14 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
 
           <FormField label={t`Rule kind`} htmlFor="value-filter-kind">
             <Select
-              value={rule.kind}
+              value={draftRule.kind}
               onValueChange={(value) => {
                 const nextKind = getRuleKindOptions().find((option) => option.value === value)?.value;
                 if (!nextKind) {
                   return;
                 }
 
-                onRuleChange(nextKind === 'threshold' ? toThresholdRule(rule) : toStatsRule(rule));
+                bufferedRule.setValue(nextKind === 'threshold' ? toThresholdRule(draftRule) : toStatsRule(draftRule));
               }}
             >
               <SelectTrigger id="value-filter-kind">
@@ -276,15 +317,17 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
             </Select>
           </FormField>
 
-          {rule.kind === 'threshold' ? (
+          {draftRule.kind === 'threshold' ? (
             <ThresholdEditor
-              rule={rule}
-              onRuleChange={onRuleChange}
+              rule={draftRule}
+              onRuleChange={bufferedRule.setValue}
+              onCommitRule={bufferedRule.commit}
             />
           ) : (
             <StatsEditor
-              rule={rule}
-              onRuleChange={onRuleChange}
+              rule={draftRule}
+              onRuleChange={bufferedRule.setValue}
+              onCommitRule={bufferedRule.commit}
             />
           )}
         </div>
@@ -296,9 +339,11 @@ export function AdvancedMapAnalyticsValueFilterEditorModal({
 function ThresholdEditor({
   rule,
   onRuleChange,
+  onCommitRule,
 }: Readonly<{
   rule: AdvancedMapAnalyticsThresholdValueFilterRule;
   onRuleChange: (nextRule: AdvancedMapAnalyticsValueFilterRule) => void;
+  onCommitRule: () => void;
 }>) {
   const operatorArity = getOperatorArity(rule.operator);
 
@@ -342,6 +387,7 @@ function ThresholdEditor({
                 value: parseNumericInput(event.currentTarget.value),
               })
             }
+            onBlur={onCommitRule}
             placeholder={t`e.g. 0`}
           />
         </FormField>
@@ -360,6 +406,7 @@ function ThresholdEditor({
                 secondValue: parseNumericInput(event.currentTarget.value),
               })
             }
+            onBlur={onCommitRule}
             placeholder={t`e.g. 1000`}
           />
         </FormField>
@@ -371,9 +418,11 @@ function ThresholdEditor({
 function StatsEditor({
   rule,
   onRuleChange,
+  onCommitRule,
 }: Readonly<{
   rule: AdvancedMapAnalyticsStatsValueFilterRule;
   onRuleChange: (nextRule: AdvancedMapAnalyticsValueFilterRule) => void;
+  onCommitRule: () => void;
 }>) {
   return (
     <>
@@ -418,6 +467,7 @@ function StatsEditor({
                   minPercentile: parseNumericInput(event.currentTarget.value) ?? 0,
                 })
               }
+              onBlur={onCommitRule}
               placeholder="0"
             />
           </FormField>
@@ -435,6 +485,7 @@ function StatsEditor({
                   maxPercentile: parseNumericInput(event.currentTarget.value) ?? 100,
                 })
               }
+              onBlur={onCommitRule}
               placeholder="100"
             />
           </FormField>
@@ -481,6 +532,7 @@ function StatsEditor({
                   count: nextCount,
                 });
               }}
+              onBlur={onCommitRule}
               placeholder="10"
             />
           </FormField>
@@ -550,6 +602,7 @@ function StatsEditor({
                   threshold: parsePositiveNumericInput(event.currentTarget.value, rule.threshold),
                 })
               }
+              onBlur={onCommitRule}
               placeholder="2"
             />
           </FormField>
@@ -593,6 +646,7 @@ function StatsEditor({
                   multiplier: parsePositiveNumericInput(event.currentTarget.value, rule.multiplier),
                 })
               }
+              onBlur={onCommitRule}
               placeholder="1.5"
             />
           </FormField>
@@ -613,6 +667,7 @@ function StatsEditor({
                 threshold: parsePositiveNumericInput(event.currentTarget.value, rule.threshold),
               })
             }
+            onBlur={onCommitRule}
             placeholder="3.5"
           />
         </FormField>

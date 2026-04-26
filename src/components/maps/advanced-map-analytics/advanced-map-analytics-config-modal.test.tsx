@@ -42,7 +42,7 @@ describe('AdvancedMapAnalyticsConfigModal', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
-  it('updates map name when input changes', () => {
+  it('buffers map name edits until the field commits', () => {
     const onMapNameChange = vi.fn();
 
     render(
@@ -59,6 +59,11 @@ describe('AdvancedMapAnalyticsConfigModal', () => {
     fireEvent.change(screen.getByLabelText('Map name'), {
       target: { value: 'Edited modal title' },
     });
+
+    expect(screen.getByLabelText('Map name')).toHaveValue('Edited modal title');
+    expect(onMapNameChange).not.toHaveBeenCalled();
+
+    fireEvent.blur(screen.getByLabelText('Map name'));
 
     expect(onMapNameChange).toHaveBeenCalledWith('Edited modal title');
   });

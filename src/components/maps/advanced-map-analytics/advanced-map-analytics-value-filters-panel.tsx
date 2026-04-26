@@ -82,11 +82,11 @@ export function AdvancedMapAnalyticsValueFiltersPanel({
   };
 
   return (
-    <section className="rounded-2xl border bg-card p-4 shadow-sm">
-      <div className="mb-4 flex items-start justify-between gap-3">
+    <section className="py-5 border-b border-border/40">
+      <div className="mb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-2xl font-bold tracking-tight">{t`Value Filters`}</h2>
+            <h2 className="text-lg font-bold tracking-tight">{t`Value Filters`}</h2>
             <Button
               variant="ghost"
               size="icon"
@@ -97,26 +97,33 @@ export function AdvancedMapAnalyticsValueFiltersPanel({
               <ChevronDown className={cn('h-4 w-4 transition-transform', !collapsed && 'rotate-180')} />
             </Button>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">{rulesConfiguredLabel}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{rulesConfiguredLabel}</p>
         </div>
 
         <Button
           size="icon"
-          className="h-10 w-10 shrink-0 rounded-full"
+          variant="ghost"
+          className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
           onClick={onAddRule}
           aria-label={t`Add value filter rule`}
           disabled={readOnly}
         >
-          <Plus className="h-5 w-5" />
+          <Plus className="h-4 w-4" />
         </Button>
       </div>
 
       <Collapsible open={!collapsed} onOpenChange={(open) => onToggleCollapsed(!open)}>
         <CollapsibleContent className="space-y-2 data-[state=open]:animate-in data-[state=closed]:animate-out">
           {rules.length === 0 ? (
-            <div className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
-              {t`No value filters configured yet.`}
-            </div>
+            <button
+              type="button"
+              onClick={onAddRule}
+              disabled={readOnly}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+            >
+              <Plus className="h-4 w-4" />
+              {t`Add new rule`}
+            </button>
           ) : (
             readOnly ? (
               <div className="space-y-2.5">

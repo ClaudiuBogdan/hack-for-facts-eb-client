@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ComponentProps } from 'react';
 import { Link } from '@tanstack/react-router';
 import type {
   CommitmentsSeriesConfiguration,
@@ -39,7 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { BarChart3, ExternalLink, Globe, MapPinned, Table2 } from 'lucide-react';
+import { BarChart3, Globe, MapPinned, Table2 } from 'lucide-react';
 import { SERIES_TYPE_LABELS } from './advanced-map-analytics-series-utils';
 import { i18n } from '@lingui/core';
 import { msg, t } from '@lingui/core/macro';
@@ -53,6 +53,7 @@ import {
   type UploadedMapDatasetReference,
 } from '@/features/advanced-map-analytics/uploaded-map-dataset';
 import type { AdvancedMapDatasetDetail } from '@/features/advanced-map-datasets/api/schemas';
+import { useBufferedCommittedValue } from '@/lib/hooks/useBufferedCommittedValue';
 
 const GEOJSON_DATASET_DEFAULT_LABEL = msg`GeoJSON dataset`;
 const COUNTY_FILTER_PREFIX_LABEL = msg`County`;
@@ -142,29 +143,26 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={`${largeModalClassName} max-w-5xl`}>
         <div className={modalHeaderClassName}>
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0 flex-1">
-                <DialogTitle>{title}</DialogTitle>
-                <DialogDescription className="mt-1.5">{description}</DialogDescription>
-              </div>
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <DialogTitle>{title}</DialogTitle>
+              <DialogDescription className="mt-1.5">{description}</DialogDescription>
             </div>
             {tableSearch && chartSearch && displayedSeriesType === series.type ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <Button asChild size="sm" variant="outline">
+              <div className="flex items-center gap-1 shrink-0 mr-8">
+                <Button asChild size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-foreground">
                   <Link
                     data-testid="advanced-map-analytics-open-table-link"
                     to="/entity-analytics"
                     search={tableSearch}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label={t`Open Table`}
                   >
                     <Table2 className="h-4 w-4" />
-                    {t`Open Table`}
-                    <ExternalLink className="h-3 w-3 opacity-50" />
                   </Link>
                 </Button>
-                <Button asChild size="sm" variant="outline">
+                <Button asChild size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-foreground">
                   <Link
                     data-testid="advanced-map-analytics-open-chart-link"
                     to="/charts/$chartId"
@@ -172,10 +170,9 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
                     search={chartSearch}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label={t`Open Chart`}
                   >
                     <BarChart3 className="h-4 w-4" />
-                    {t`Open Chart`}
-                    <ExternalLink className="h-3 w-3 opacity-50" />
                   </Link>
                 </Button>
               </div>
@@ -184,99 +181,117 @@ export function AdvancedMapAnalyticsSeriesEditorModal({
         </div>
 
         <div className={modalContentClassName}>
-          <div className="rounded-xl bg-muted/30 p-5">
-            <div className="grid gap-5 md:grid-cols-3">
-              <FormField label={t`Label`} htmlFor="advanced-map-analytics-series-label">
-                <Input
-                  id="advanced-map-analytics-series-label"
-                  name="advanced-map-analytics-series-label"
-                  value={series.label}
-                  onChange={(event) => {
-                    const nextValue = event.currentTarget.value;
-                    onUpdateSeries(series.id, (draft) => {
-                      draft.label = nextValue;
-                    });
-                  }}
-                  placeholder={t`Series label…`}
-                  autoComplete="off"
-                />
-              </FormField>
+          {/* Top inputs */}
+          <div className="space-y-4">
+            <FormField label={t`Label`} htmlFor="advanced-map-analytics-series-label">
+              <BufferedTextInput
+                id="advanced-map-analytics-series-label"
+                name="advanced-map-analytics-series-label"
+                value={series.label}
+                onCommit={(nextValue) => {
+                  onUpdateSeries(series.id, (draft) => {
+                    draft.label = nextValue;
+                  });
+                }}
+                placeholder={t`Series label…`}
+                autoComplete="off"
+              />
+            </FormField>
 
-              <FormField label={t`Unit override`} htmlFor="advanced-map-analytics-series-unit">
-                <Input
-                  id="advanced-map-analytics-series-unit"
-                  name="advanced-map-analytics-series-unit"
-                  value={series.unit ?? ''}
-                  onChange={(event) => {
-                    const nextValue = event.currentTarget.value;
-                    onUpdateSeries(series.id, (draft) => {
-                      draft.unit = nextValue;
-                    });
-                  }}
-                  placeholder={t`Optional unit override…`}
-                  autoComplete="off"
-                />
-              </FormField>
+            <FormField label={t`Unit override`} htmlFor="advanced-map-analytics-series-unit">
+              <BufferedTextInput
+                id="advanced-map-analytics-series-unit"
+                name="advanced-map-analytics-series-unit"
+                value={series.unit ?? ''}
+                onCommit={(nextValue) => {
+                  onUpdateSeries(series.id, (draft) => {
+                    draft.unit = nextValue;
+                  });
+                }}
+                placeholder={t`Optional unit override…`}
+                autoComplete="off"
+              />
+            </FormField>
 
-              <FormField label={t`Series type`} htmlFor="advanced-map-analytics-series-type">
-                <Select
-                  value={displayedSeriesType}
-                  onValueChange={(value) => {
-                    const nextType = value as MapSupportedSeries['type'];
-                    if (nextType === 'uploaded-map-dataset' && series.type !== 'uploaded-map-dataset') {
-                      setPendingSeriesType('uploaded-map-dataset');
-                      return;
-                    }
+            <FormField label={t`Series type`} htmlFor="advanced-map-analytics-series-type">
+              <Select
+                value={displayedSeriesType}
+                onValueChange={(value) => {
+                  const nextType = value as MapSupportedSeries['type'];
+                  if (nextType === 'uploaded-map-dataset' && series.type !== 'uploaded-map-dataset') {
+                    setPendingSeriesType('uploaded-map-dataset');
+                    return;
+                  }
 
-                    setPendingSeriesType(null);
-                    onChangeSeriesType(series.id, nextType);
-                  }}
-                >
-                  <SelectTrigger id="advanced-map-analytics-series-type">
-                    <SelectValue placeholder={t`Select series type`} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(Object.keys(SERIES_TYPE_LABELS) as Array<MapSupportedSeries['type']>).map(
-                      (seriesType) => (
-                        <SelectItem key={seriesType} value={seriesType}>
-                          {SERIES_TYPE_LABELS[seriesType]}
-                        </SelectItem>
-                      )
-                    )}
-                  </SelectContent>
-                </Select>
-              </FormField>
-            </div>
+                  setPendingSeriesType(null);
+                  onChangeSeriesType(series.id, nextType);
+                }}
+              >
+                <SelectTrigger id="advanced-map-analytics-series-type">
+                  <SelectValue placeholder={t`Select series type`} />
+                </SelectTrigger>
+                <SelectContent>
+                  {(Object.keys(SERIES_TYPE_LABELS) as Array<MapSupportedSeries['type']>).map(
+                    (seriesType) => (
+                      <SelectItem key={seriesType} value={seriesType}>
+                        {SERIES_TYPE_LABELS[seriesType]}
+                      </SelectItem>
+                    )
+                  )}
+                </SelectContent>
+              </Select>
+            </FormField>
           </div>
 
-          <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border">
-            <div className="flex items-center justify-between border-b px-4 py-3">
-              <h3 className="text-sm font-semibold">{configurationTitle}</h3>
-              {!isUploadedDatasetMode && (
-                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
-                  {t`Live apply`}
-                </span>
-              )}
-            </div>
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
-              <SeriesConfigEditor
-                series={series}
-                displayedSeriesType={displayedSeriesType}
-                open={open}
-                allSeries={allSeries}
-                geoJsonCountyOptions={geoJsonCountyOptions}
-                geoJsonRegionOptions={geoJsonRegionOptions}
-                onUpdateSeries={onUpdateSeries}
-                onAssignUploadedDatasetSeries={(selection, dataset) => {
-                  onAssignUploadedDatasetSeries(series.id, selection, dataset);
-                  setPendingSeriesType(null);
-                }}
-              />
-            </div>
-          </section>
+          {/* Filters section */}
+          <div className="space-y-3">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider border-b border-border pb-2">{configurationTitle}</p>
+            <SeriesConfigEditor
+              series={series}
+              displayedSeriesType={displayedSeriesType}
+              open={open}
+              allSeries={allSeries}
+              geoJsonCountyOptions={geoJsonCountyOptions}
+              geoJsonRegionOptions={geoJsonRegionOptions}
+              onUpdateSeries={onUpdateSeries}
+              onAssignUploadedDatasetSeries={(selection, dataset) => {
+                onAssignUploadedDatasetSeries(series.id, selection, dataset);
+                setPendingSeriesType(null);
+              }}
+            />
+          </div>
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+interface BufferedTextInputProps extends Omit<ComponentProps<typeof Input>, 'value' | 'onChange'> {
+  readonly value: string;
+  readonly onCommit: (nextValue: string) => void;
+}
+
+function BufferedTextInput({
+  value,
+  onCommit,
+  onBlur,
+  ...props
+}: Readonly<BufferedTextInputProps>) {
+  const bufferedValue = useBufferedCommittedValue({
+    value,
+    onCommit,
+  });
+
+  return (
+    <Input
+      {...props}
+      value={bufferedValue.value}
+      onChange={(event) => bufferedValue.setValue(event.currentTarget.value)}
+      onBlur={(event) => {
+        bufferedValue.commit();
+        onBlur?.(event);
+      }}
+    />
   );
 }
 

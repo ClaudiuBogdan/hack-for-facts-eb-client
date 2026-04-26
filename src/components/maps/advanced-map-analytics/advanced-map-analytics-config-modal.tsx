@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { ModalHeader, ModalTitle } from '@/components/ui/modal-header';
 import { ModalSection } from '@/components/ui/modal-section';
 import { modalSizes } from '@/components/ui/modal-sizes';
+import { useBufferedCommittedValue } from '@/lib/hooks/useBufferedCommittedValue';
 import { cn } from '@/lib/utils';
 import { t } from '@lingui/core/macro';
 
@@ -33,9 +34,22 @@ export function AdvancedMapAnalyticsConfigModal({
   const modalDescription = readOnly
     ? t`View map details and status.`
     : t`Configure the map name and review its status.`;
+  const mapNameDraft = useBufferedCommittedValue({
+    value: mapName,
+    onCommit: onMapNameChange,
+    enabled: !readOnly,
+  });
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      mapNameDraft.commit();
+    }
+
+    onOpenChange(nextOpen);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className={modalSizes.md} aria-describedby={undefined}>
         <ModalHeader align="default" variant="bordered">
           <DialogTitle asChild>
@@ -57,8 +71,9 @@ export function AdvancedMapAnalyticsConfigModal({
           >
             <Input
               id="advanced-map-analytics-name-modal"
-              value={mapName}
-              onChange={(event) => onMapNameChange(event.currentTarget.value)}
+              value={mapNameDraft.value}
+              onChange={(event) => mapNameDraft.setValue(event.currentTarget.value)}
+              onBlur={mapNameDraft.commit}
               placeholder={t`My interactive budget map…`}
               autoComplete="off"
               disabled={readOnly}

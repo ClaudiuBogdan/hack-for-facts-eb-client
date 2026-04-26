@@ -1,24 +1,20 @@
 import { useState } from 'react';
-import { AlertTriangle, BarChart3, ChevronDown, MapIcon, Settings2, TableIcon } from 'lucide-react';
+import { AlertTriangle, ChevronDown, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import type { AdvancedMapAnalyticsActiveView } from '@/schemas/advanced-map-analytics';
-import { ViewTypeRadioGroup } from '@/components/filters/ViewTypeRadioGroup';
 import { AdvancedMapAnalyticsDescriptionModal } from './advanced-map-analytics-description-modal';
 import { t } from '@lingui/core/macro';
 
 interface AdvancedMapAnalyticsConfigPanelProps {
   collapsed: boolean;
-  activeView: AdvancedMapAnalyticsActiveView;
   mapName: string;
   showCountyBoundaries: boolean;
   mapDescription?: string;
   warningCount: number;
   readOnly?: boolean;
   onToggleCollapsed: (collapsed: boolean) => void;
-  onActiveViewChange: (view: AdvancedMapAnalyticsActiveView) => void;
   onShowCountyBoundariesChange: (enabled: boolean) => void;
   onOpenConfig: () => void;
   onOpenWarnings: () => void;
@@ -26,14 +22,12 @@ interface AdvancedMapAnalyticsConfigPanelProps {
 
 export function AdvancedMapAnalyticsConfigPanel({
   collapsed,
-  activeView,
   mapName,
   showCountyBoundaries,
   mapDescription = '',
   warningCount,
   readOnly = false,
   onToggleCollapsed,
-  onActiveViewChange,
   onShowCountyBoundariesChange,
   onOpenConfig,
   onOpenWarnings,
@@ -44,11 +38,12 @@ export function AdvancedMapAnalyticsConfigPanel({
   const hasMapDescription = trimmedMapDescription.length > 0;
 
   return (
-    <section className="rounded-2xl border bg-card p-4 shadow-sm">
-      <div className="mb-4 flex items-start justify-between gap-3">
+    <section className="py-5 border-b border-border/40">
+      {/* Header */}
+      <div className="mb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-2xl font-bold tracking-tight">{t`Config`}</h2>
+            <h2 className="text-lg font-bold tracking-tight">{t`Config`}</h2>
             <Button
               variant="ghost"
               size="icon"
@@ -59,84 +54,67 @@ export function AdvancedMapAnalyticsConfigPanel({
               <ChevronDown className={cn('h-4 w-4 transition-transform', !collapsed && 'rotate-180')} />
             </Button>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">{t`Quick settings`}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t`Quick settings`}</p>
         </div>
 
-        {!readOnly ? (
-          <Button
-            type="button"
-            variant="outline"
-            className="shrink-0"
-            onClick={onOpenConfig}
-            aria-label={t`Open config modal`}
-          >
-            <Settings2 className="mr-2 h-4 w-4" />
-            {t`Open Config`}
-          </Button>
-        ) : null}
-      </div>
+        <div className="flex items-center gap-1">
+          {hasWarnings ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:text-amber-500 dark:hover:bg-amber-950/50"
+              onClick={onOpenWarnings}
+              aria-label={warningCount === 1 ? t`${warningCount} warning` : t`${warningCount} warnings`}
+            >
+              <AlertTriangle className="h-4 w-4" />
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[9px] font-bold text-white">
+                {warningCount}
+              </span>
+            </Button>
+          ) : null}
 
-      <div className="rounded-xl border bg-muted/20">
-        <div className="border-b px-3 py-2.5">
-          <p className="truncate text-sm font-medium" title={mapName}>
-            {mapName}
-          </p>
-        </div>
-        <div className="border-b px-3 py-2.5">
-          <Button
-            type="button"
-            className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
-            onClick={() => setIsDescriptionModalOpen(true)}
-            disabled={!hasMapDescription}
-          >
-            {t`Read more`}
-          </Button>
+          {!readOnly ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={onOpenConfig}
+              aria-label={t`Open config modal`}
+            >
+              <Settings2 className="h-4 w-4" />
+            </Button>
+          ) : null}
         </div>
       </div>
 
       <Collapsible open={!collapsed} onOpenChange={(open) => onToggleCollapsed(!open)}>
-        <CollapsibleContent className="space-y-2 data-[state=open]:animate-in data-[state=closed]:animate-out">
-          <div className="rounded-xl border bg-muted/20">
-            <div className="border-b px-3 py-2.5">
-              <div className="mb-2 text-sm font-medium">{t`View`}</div>
-              <ViewTypeRadioGroup
-                value={activeView}
-                onChange={onActiveViewChange}
-                viewOptions={[
-                  { id: 'map', label: t`Map`, icon: MapIcon },
-                  { id: 'table', label: t`Table`, icon: TableIcon },
-                  { id: 'analytics', label: t`Analytics`, icon: BarChart3 },
-                ]}
-                ariaLabel={t`Advanced map analytics active view`}
-              />
-            </div>
-            <div className="border-b px-3 py-2.5">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-sm font-medium">{t`County boundaries`}</span>
-                <Switch
-                  checked={showCountyBoundaries}
-                  onCheckedChange={onShowCountyBoundariesChange}
-                  aria-label={t`Toggle county boundaries`}
-                />
-              </div>
-            </div>
-            {hasWarnings ? (
-              <div className="flex items-center justify-between gap-3 px-3 py-2.5">
-                <span className="text-sm font-medium">{t`Warnings`}</span>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="h-8 border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100"
-                  onClick={onOpenWarnings}
-                >
-                  <AlertTriangle className="mr-1.5 h-3.5 w-3.5" />
-                  {warningCount === 1
-                    ? t`${warningCount} warning`
-                    : t`${warningCount} warnings`}
-                </Button>
-              </div>
+        <CollapsibleContent className="space-y-5 data-[state=open]:animate-in data-[state=closed]:animate-out">
+          {/* Map title */}
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t`Map name`}</p>
+            <p className="truncate text-lg font-semibold tracking-tight" title={mapName}>
+              {mapName}
+            </p>
+            {hasMapDescription ? (
+              <button
+                type="button"
+                onClick={() => setIsDescriptionModalOpen(true)}
+                className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors"
+              >
+                {t`Read more`}
+              </button>
             ) : null}
+          </div>
+
+          {/* County boundaries */}
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-medium">{t`County boundaries`}</span>
+            <Switch
+              checked={showCountyBoundaries}
+              onCheckedChange={onShowCountyBoundariesChange}
+              disabled={readOnly}
+              aria-label={t`Toggle county boundaries`}
+            />
           </div>
         </CollapsibleContent>
       </Collapsible>
@@ -147,7 +125,6 @@ export function AdvancedMapAnalyticsConfigPanel({
         description={mapDescription}
         mode="preview"
       />
-
     </section>
   );
 }

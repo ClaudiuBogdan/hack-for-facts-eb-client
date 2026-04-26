@@ -7,13 +7,11 @@ function renderConfigPanel(overrides: Partial<ComponentProps<typeof AdvancedMapA
   return render(
     <AdvancedMapAnalyticsConfigPanel
       collapsed={false}
-      activeView="map"
       mapName="Untitled map"
       showCountyBoundaries={true}
       mapDescription=""
       warningCount={0}
       onToggleCollapsed={vi.fn()}
-      onActiveViewChange={vi.fn()}
       onShowCountyBoundariesChange={vi.fn()}
       onOpenConfig={vi.fn()}
       onOpenWarnings={vi.fn()}
@@ -44,21 +42,19 @@ describe('AdvancedMapAnalyticsConfigPanel', () => {
     rerender(
       <AdvancedMapAnalyticsConfigPanel
         collapsed={true}
-        activeView="map"
         mapName="Untitled map"
         showCountyBoundaries={true}
         mapDescription=""
         warningCount={0}
         onToggleCollapsed={onToggleCollapsed}
-        onActiveViewChange={vi.fn()}
         onShowCountyBoundariesChange={vi.fn()}
         onOpenConfig={vi.fn()}
         onOpenWarnings={vi.fn()}
       />
     );
 
-    expect(screen.getByText('Untitled map')).toBeInTheDocument();
-    expect(screen.queryByText('View')).not.toBeInTheDocument();
+    // Map name is inside collapsible, so it should be hidden when collapsed
+    expect(screen.queryByText('Untitled map')).not.toBeInTheDocument();
   });
 
   it('shows warning count button and opens warnings modal callback', () => {
@@ -68,24 +64,6 @@ describe('AdvancedMapAnalyticsConfigPanel', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '3 warnings' }));
     expect(onOpenWarnings).toHaveBeenCalledTimes(1);
-  });
-
-  it('calls onActiveViewChange when the view selector changes', () => {
-    const onActiveViewChange = vi.fn();
-
-    renderConfigPanel({ onActiveViewChange });
-
-    fireEvent.click(screen.getByText('Table'));
-    expect(onActiveViewChange).toHaveBeenCalledWith('table');
-  });
-
-  it('calls onActiveViewChange when analytics view is selected', () => {
-    const onActiveViewChange = vi.fn();
-
-    renderConfigPanel({ onActiveViewChange });
-
-    fireEvent.click(screen.getByText('Analytics'));
-    expect(onActiveViewChange).toHaveBeenCalledWith('analytics');
   });
 
   it('calls onShowCountyBoundariesChange when county boundaries switch changes', () => {
@@ -103,8 +81,7 @@ describe('AdvancedMapAnalyticsConfigPanel', () => {
   it('does not render warnings section when warning count is zero', () => {
     renderConfigPanel();
 
-    expect(screen.queryByText('Warnings')).not.toBeInTheDocument();
-    expect(screen.queryByText('No warnings')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /warning/i })).not.toBeInTheDocument();
   });
 
   it('does not render description textarea in quick settings', () => {
@@ -113,25 +90,20 @@ describe('AdvancedMapAnalyticsConfigPanel', () => {
     expect(screen.queryByLabelText('Map description')).not.toBeInTheDocument();
   });
 
-  it('renders full-width accent Read more button in owner mode', () => {
+  it('renders Read more link when description exists', () => {
     renderConfigPanel({ mapDescription: '# Budget map' });
 
-    const readMoreButton = screen.getByRole('button', { name: 'Read more' });
-    expect(readMoreButton).toHaveClass('w-full');
-    expect(readMoreButton).toHaveClass('bg-accent');
-    expect(readMoreButton).toHaveClass('text-accent-foreground');
+    const readMoreLink = screen.getByRole('button', { name: 'Read more' });
+    expect(readMoreLink).toBeInTheDocument();
   });
 
-  it('renders full-width accent Read more button in public mode', () => {
+  it('does not render Read more link when description is empty', () => {
     renderConfigPanel({
       readOnly: true,
-      mapDescription: '# Public map',
+      mapDescription: '   ',
     });
 
-    const readMoreButton = screen.getByRole('button', { name: 'Read more' });
-    expect(readMoreButton).toHaveClass('w-full');
-    expect(readMoreButton).toHaveClass('bg-accent');
-    expect(readMoreButton).toHaveClass('text-accent-foreground');
+    expect(screen.queryByRole('button', { name: 'Read more' })).not.toBeInTheDocument();
   });
 
   it('opens preview markdown description modal from quick settings', () => {
@@ -146,14 +118,4 @@ describe('AdvancedMapAnalyticsConfigPanel', () => {
     expect(screen.queryByLabelText('Map description markdown editor')).not.toBeInTheDocument();
     expect(screen.queryByText('Rendered markdown description for this map.')).not.toBeInTheDocument();
   });
-
-  it('disables description modal button when public description is empty', () => {
-    renderConfigPanel({
-      readOnly: true,
-      mapDescription: '   ',
-    });
-
-    expect(screen.getByRole('button', { name: 'Read more' })).toBeDisabled();
-  });
-
 });

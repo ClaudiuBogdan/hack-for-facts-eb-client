@@ -12,8 +12,10 @@ import {
   verticalListSortingStrategy,
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
+import { Plus } from 'lucide-react';
 import type { MapSupportedSeries } from '@/schemas/advanced-map-analytics';
 import { AdvancedMapAnalyticsSeriesListItem } from './advanced-map-analytics-series-list-item';
+import { t } from '@lingui/core/macro';
 
 interface AdvancedMapAnalyticsSeriesListProps {
   series: MapSupportedSeries[];
@@ -30,6 +32,7 @@ interface AdvancedMapAnalyticsSeriesListProps {
   onCopy: (seriesId: string) => void;
   onDelete: (seriesId: string) => void;
   onReorder: (activeSeriesId: string, overSeriesId: string) => void;
+  onAddSeries?: () => void;
 }
 
 export function AdvancedMapAnalyticsSeriesList({
@@ -47,6 +50,7 @@ export function AdvancedMapAnalyticsSeriesList({
   onCopy,
   onDelete,
   onReorder,
+  onAddSeries,
 }: Readonly<AdvancedMapAnalyticsSeriesListProps>) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -71,9 +75,15 @@ export function AdvancedMapAnalyticsSeriesList({
 
   if (series.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed p-3 text-sm text-muted-foreground">
-        No series configured yet.
-      </div>
+      <button
+        type="button"
+        onClick={onAddSeries}
+        disabled={readOnly || !onAddSeries}
+        className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+      >
+        <Plus className="h-4 w-4" />
+        {t`Add new series`}
+      </button>
     );
   }
 

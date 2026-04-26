@@ -84,16 +84,21 @@ describe('AdvancedMapAnalyticsValueFilterEditorModal', () => {
       />
     );
 
-    fireEvent.change(screen.getByLabelText('Value'), {
+    const valueInput = screen.getByLabelText('Value');
+    fireEvent.change(valueInput, {
       target: {
         value: '12.5',
       },
     });
-    fireEvent.change(screen.getByLabelText('Second value'), {
+    fireEvent.blur(valueInput);
+
+    const secondValueInput = screen.getByLabelText('Second value');
+    fireEvent.change(secondValueInput, {
       target: {
         value: '30',
       },
     });
+    fireEvent.blur(secondValueInput);
 
     expect(onRuleChange).toHaveBeenCalledWith(expect.objectContaining({ value: 12.5 }));
     expect(onRuleChange).toHaveBeenCalledWith(expect.objectContaining({ secondValue: 30 }));
@@ -115,11 +120,13 @@ describe('AdvancedMapAnalyticsValueFilterEditorModal', () => {
       />
     );
 
-    fireEvent.change(screen.getByLabelText('Rule name'), {
+    const ruleNameInput = screen.getByLabelText('Rule name');
+    fireEvent.change(ruleNameInput, {
       target: {
         value: 'Population threshold',
       },
     });
+    fireEvent.blur(ruleNameInput);
 
     expect(onRuleChange).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -144,11 +151,13 @@ describe('AdvancedMapAnalyticsValueFilterEditorModal', () => {
       />
     );
 
-    fireEvent.change(screen.getByLabelText('Threshold'), {
+    const thresholdInput = screen.getByLabelText('Threshold');
+    fireEvent.change(thresholdInput, {
       target: {
         value: '0',
       },
     });
+    fireEvent.blur(thresholdInput);
 
     expect(onRuleChange).toHaveBeenCalledWith(expect.objectContaining({ threshold: 2 }));
   });
@@ -169,11 +178,13 @@ describe('AdvancedMapAnalyticsValueFilterEditorModal', () => {
       />
     );
 
-    fireEvent.change(screen.getByLabelText('Multiplier'), {
+    const multiplierInput = screen.getByLabelText('Multiplier');
+    fireEvent.change(multiplierInput, {
       target: {
         value: '0',
       },
     });
+    fireEvent.blur(multiplierInput);
 
     expect(onRuleChange).toHaveBeenCalledWith(expect.objectContaining({ multiplier: 1.5 }));
   });
@@ -194,11 +205,13 @@ describe('AdvancedMapAnalyticsValueFilterEditorModal', () => {
       />
     );
 
-    fireEvent.change(screen.getByLabelText('Threshold'), {
+    const thresholdInput = screen.getByLabelText('Threshold');
+    fireEvent.change(thresholdInput, {
       target: {
         value: '0',
       },
     });
+    fireEvent.blur(thresholdInput);
 
     expect(onRuleChange).toHaveBeenCalledWith(expect.objectContaining({ threshold: 3.5 }));
   });

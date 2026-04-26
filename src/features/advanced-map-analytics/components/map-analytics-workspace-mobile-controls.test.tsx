@@ -528,7 +528,7 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(screen.getByTestId('map-analytics-quick-actions')).toBeInTheDocument();
   });
 
-  it('shows GeoJSON source link only after expanding controls on mobile', async () => {
+  it('shows GeoJSON source link at the bottom of the sidebar', async () => {
     mockIsMobile.mockReturnValue(true);
     const setMapState = vi.fn();
     const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
@@ -542,10 +542,6 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
         mobileControlsDefaultCollapsed={true}
       />
     );
-
-    expect(screen.queryByTestId('map-geojson-source-link')).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Show Map Controls' }));
 
     const sourceLink = screen.getByTestId('map-geojson-source-link');
     expect(sourceLink).toHaveAttribute(

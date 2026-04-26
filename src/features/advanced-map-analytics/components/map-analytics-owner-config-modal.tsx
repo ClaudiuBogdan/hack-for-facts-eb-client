@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Copy, Download, EyeOff, FileText, Globe, Loader2, ClipboardPaste, Upload, Trash2 } from 'lucide-react';
+import { Copy, Download, EyeOff, Globe, Loader2, ClipboardPaste, MoreHorizontal, Upload, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,17 +13,28 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 
 import { ModalHeader, ModalTitle } from '@/components/ui/modal-header';
-import { ModalSection } from '@/components/ui/modal-section';
 import { modalHeaderClassName, modalSizes } from '@/components/ui/modal-sizes';
 import { Switch } from '@/components/ui/switch';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 import { AdvancedMapAnalyticsDescriptionModal } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal';
+import { useBufferedCommittedValue } from '@/lib/hooks/useBufferedCommittedValue';
 import {
   createMapConfigTransferEnvelope,
   parseMapConfigTransferInput,
@@ -88,6 +99,11 @@ export function MapAnalyticsOwnerConfigModal({
   const snapshotsQuery = useAdvancedMapAnalyticsSnapshotsQuery(mapId, page, 20, open);
   const updateMapMutation = useUpdateAdvancedMapAnalyticsMapMutation();
   const deleteMapMutation = useDeleteAdvancedMapAnalyticsMapMutation();
+  const isBusy = updateMapMutation.isPending || deleteMapMutation.isPending;
+  const mapTitleDraft = useBufferedCommittedValue({
+    value: mapName,
+    onCommit: onMapNameChange,
+  });
 
   useEffect(() => {
     if (!open) {
@@ -101,8 +117,6 @@ export function MapAnalyticsOwnerConfigModal({
     setIsDeleteConfirmOpen(false);
     setIsDescriptionEditorModalOpen(false);
   }, [open, currentVisibility]);
-
-  const isBusy = updateMapMutation.isPending || deleteMapMutation.isPending;
 
   const snapshots = snapshotsQuery.data?.snapshots ?? [];
   const canGoPrevious = page > 1;
@@ -126,6 +140,24 @@ export function MapAnalyticsOwnerConfigModal({
     return `${window.location.origin}${path}`;
   }, [normalizedPublicId, visibility]);
   const modalDescription = t`Manage your map settings, visibility, and version history.`;
+  const currentMapStateForActions = useMemo(
+    () =>
+      currentMapState.mapName === mapTitleDraft.value
+        ? currentMapState
+        : {
+            ...currentMapState,
+            mapName: mapTitleDraft.value,
+          },
+    [currentMapState, mapTitleDraft.value]
+  );
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      mapTitleDraft.commit();
+    }
+
+    onOpenChange(nextOpen);
+  };
 
   const handleRequestVisibilityToggle = (checked: boolean) => {
     const nextVisibility: AdvancedMapAnalyticsVisibility = checked ? 'public' : 'private';
@@ -164,6 +196,7 @@ export function MapAnalyticsOwnerConfigModal({
   };
 
   const handleRequestSaveCheckpoint = () => {
+    mapTitleDraft.commit();
     onRequestSaveSnapshot();
   };
 
@@ -212,18 +245,20 @@ export function MapAnalyticsOwnerConfigModal({
   };
 
   const getConfigExportFileName = () => {
-    const normalizedMapName = slugify(mapName) || 'untitled-map';
+    const normalizedMapName = slugify(mapTitleDraft.value) || 'untitled-map';
     const exportTimestamp = new Date().toISOString().replace(/[:.]/g, '-');
     return `map-config-${normalizedMapName}-${exportTimestamp}.json`;
   };
 
   const buildTransferPayload = () =>
     createMapConfigTransferEnvelope({
-      mapState: currentMapState,
+      mapState: currentMapStateForActions,
       mapDescription,
     });
 
   const handleExportConfigFile = async () => {
+    mapTitleDraft.commit();
+
     if (onBeforeExportConfig) {
       try {
         await onBeforeExportConfig();
@@ -252,6 +287,8 @@ export function MapAnalyticsOwnerConfigModal({
   };
 
   const handleCopyConfigToClipboard = async () => {
+    mapTitleDraft.commit();
+
     try {
       const transferPayload = buildTransferPayload();
       await navigator.clipboard.writeText(JSON.stringify(transferPayload, null, 2));
@@ -300,7 +337,7 @@ export function MapAnalyticsOwnerConfigModal({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent
           className={cn(modalSizes.xl, "max-h-[90dvh] overflow-y-auto p-0 gap-0")}
           aria-describedby={undefined}
@@ -314,81 +351,72 @@ export function MapAnalyticsOwnerConfigModal({
             </ModalHeader>
           </div>
 
+          <DialogDescription className="sr-only">{modalDescription}</DialogDescription>
+
           {/* Content */}
-          <div className="px-6 py-5 space-y-6">
+          <div className="px-6 py-5 space-y-8">
             {/* General Section */}
-            <ModalSection title={t`General`} variant="muted">
+            <div className="space-y-5">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t`General`}</p>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 -mr-1 text-muted-foreground"
+                      disabled={isBusy}
+                      aria-label={t`Map configuration actions`}
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onSelect={() => void handleExportConfigFile()}>
+                      <Download className="mr-2 h-4 w-4" />
+                      {t`Export config`}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => importConfigFileInputRef.current?.click()}>
+                      <Upload className="mr-2 h-4 w-4" />
+                      {t`Import file`}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => void handleCopyConfigToClipboard()}>
+                      <Copy className="mr-2 h-4 w-4" />
+                      {t`Copy config`}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => void handlePasteConfigFromClipboard()}>
+                      <ClipboardPaste className="mr-2 h-4 w-4" />
+                      {t`Paste config`}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
               <FormField label={t`Map title`} htmlFor="map-title-input">
                 <Input
                   id="map-title-input"
-                  value={mapName}
-                  onChange={(event) => onMapNameChange(event.currentTarget.value)}
+                  value={mapTitleDraft.value}
+                  onChange={(event) => mapTitleDraft.setValue(event.currentTarget.value)}
+                  onBlur={mapTitleDraft.commit}
                   disabled={isBusy}
                   placeholder={t`My Budget Analysis Map…`}
-
                 />
-                <p className="text-xs text-muted-foreground">
-                  {t`This title is displayed at the top of your map.`}
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">
+                    {t`This title is displayed at the top of your map.`}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="link"
+                    size="sm"
+                    onClick={() => setIsDescriptionEditorModalOpen(true)}
+                    disabled={isBusy}
+                    className="h-auto p-0 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                  >
+                    {t`Edit description`}
+                  </Button>
+                </div>
               </FormField>
-
-              <div className="flex gap-3 mt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsDescriptionEditorModalOpen(true)}
-                  disabled={isBusy}
-                  className="flex-1"
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  {t`Edit description`}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => void handleExportConfigFile()}
-                  disabled={isBusy}
-                  className="flex-1"
-                >
-                  <Download className="mr-2 h-4 w-4" />
-                  {t`Export config`}
-                </Button>
-              </div>
-
-              <div className="grid gap-2 mt-3 sm:grid-cols-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => importConfigFileInputRef.current?.click()}
-                  disabled={isBusy}
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  {t`Import file`}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => void handlePasteConfigFromClipboard()}
-                  disabled={isBusy}
-                >
-                  <ClipboardPaste className="mr-2 h-4 w-4" />
-                  {t`Paste config`}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => void handleCopyConfigToClipboard()}
-                  disabled={isBusy}
-                >
-                  <Copy className="mr-2 h-4 w-4" />
-                  {t`Copy config`}
-                </Button>
-              </div>
 
               <input
                 ref={importConfigFileInputRef}
@@ -399,11 +427,13 @@ export function MapAnalyticsOwnerConfigModal({
                   void handleImportConfigFile(event);
                 }}
               />
-            </ModalSection>
+            </div>
 
             {/* Visibility Section */}
-            <ModalSection title={t`Visibility`}>
-              <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-5">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t`Visibility`}</p>
+
+              <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   {visibility === 'public' ? (
                     <Globe className="h-5 w-5 text-emerald-700 shrink-0" />
@@ -411,12 +441,7 @@ export function MapAnalyticsOwnerConfigModal({
                     <EyeOff className="h-5 w-5 text-muted-foreground shrink-0" />
                   )}
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{visibility === 'public' ? t`Public` : t`Private`}</span>
-                      <Badge variant={visibility === 'public' ? 'success' : 'secondary'} className="text-xs">
-                        {visibility === 'public' ? t`Anyone with link` : t`Only you`}
-                      </Badge>
-                    </div>
+                    <span className="font-medium">{visibility === 'public' ? t`Public` : t`Private`}</span>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {visibility === 'public'
                         ? t`Anyone with the public link can view this map.`
@@ -434,13 +459,13 @@ export function MapAnalyticsOwnerConfigModal({
               </div>
 
               {publicVisibilityErrorMessage ? (
-                <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
                   {publicVisibilityErrorMessage}
                 </div>
               ) : null}
 
               {visibility === 'public' && normalizedPublicId && (
-                <FormField label={t`Public link`} htmlFor="public-map-url-input" className="mt-4">
+                <FormField label={t`Public link`} htmlFor="public-map-url-input">
                   <div className="flex items-center gap-2">
                     <Input
                       id="public-map-url-input"
@@ -460,22 +485,21 @@ export function MapAnalyticsOwnerConfigModal({
                   </div>
                 </FormField>
               )}
-            </ModalSection>
+            </div>
 
             {/* Version History Section */}
-            <ModalSection
-              title={t`Version history`}
-              actions={
+            <div className="space-y-5">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t`Version history`}</p>
                 <Button
                   onClick={handleRequestSaveCheckpoint}
                   disabled={isBusy}
                   size="sm"
-                  variant="default"
                 >
                   {t`Save snapshot`}
                 </Button>
-              }
-            >
+              </div>
+
               {snapshotsQuery.isLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -489,14 +513,13 @@ export function MapAnalyticsOwnerConfigModal({
                 <EmptyState
                   title={t`No saved versions yet`}
                   description={t`Save versions of your map to track changes over time.`}
-                  className="mt-4"
                 />
               ) : (
-                <div className="space-y-2 mt-4">
+                <div className="space-y-2">
                   {snapshots.map((snapshot) => (
-                    <article
+                    <div
                       key={snapshot.snapshotId}
-                      className="group flex items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/30"
+                      className="flex items-start gap-3 py-2 border-b border-border/40 last:border-0"
                     >
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{snapshot.title}</p>
@@ -516,14 +539,14 @@ export function MapAnalyticsOwnerConfigModal({
                       </div>
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="ghost"
                         disabled={isBusy}
                         onClick={() => setPendingLoadSnapshotId(snapshot.snapshotId)}
-                        className="shrink-0"
+                        className="shrink-0 h-7"
                       >
                         {t`Restore`}
                       </Button>
-                    </article>
+                    </div>
                   ))}
 
                   <div className="flex items-center justify-end gap-1 pt-2">
@@ -551,12 +574,13 @@ export function MapAnalyticsOwnerConfigModal({
                   </div>
                 </div>
               )}
-            </ModalSection>
+            </div>
 
             {/* Danger Zone */}
-            <ModalSection title={t`Danger zone`} variant="danger">
+            <div className="space-y-5">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t`Danger zone`}</p>
               <div className="space-y-3">
-                <p className="text-sm text-destructive">
+                <p className="text-sm text-muted-foreground">
                   {t`Permanently delete this map and all saved versions. This cannot be undone.`}
                 </p>
                 <Button
@@ -569,7 +593,7 @@ export function MapAnalyticsOwnerConfigModal({
                   {t`Delete map`}
                 </Button>
               </div>
-            </ModalSection>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

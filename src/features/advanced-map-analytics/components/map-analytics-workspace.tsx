@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react
 import { useNavigate } from '@tanstack/react-router';
 import { produce } from 'immer';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Loader2, Save } from 'lucide-react';
+import { BarChart3, Loader2, MapIcon, Save, TableIcon } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
 
@@ -16,7 +16,6 @@ import { useAdvancedMapAnalyticsTableBinsFilter } from '@/hooks/useAdvancedMapAn
 import { buildDiscretePaletteFromConfig, getContinuousGradientColor } from '@/lib/map-bins/bins';
 import { getHeatmapColor, getPercentileValues, normalizeValue } from '@/components/maps/utils';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
-import { Button } from '@/components/ui/button';
 import type { UatFeature, UatProperties } from '@/components/maps/interfaces';
 import type { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap';
 import { defaultMapFilters } from '@/schemas/map-filters';
@@ -48,6 +47,7 @@ import { useEntityProfile } from '@/lib/hooks/useEntityDetails';
 import { DEFAULT_FEATURE_STYLE } from '@/components/maps/constants';
 import type { GroupedSeriesDataResponse, MapSeriesVectorCache } from '@/lib/map-series/interfaces';
 import { AdvancedMapAnalyticsConfigPanel } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel';
+import { ViewTypeRadioGroup } from '@/components/filters/ViewTypeRadioGroup';
 import { AdvancedMapAnalyticsBinsModal } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal';
 import { AdvancedMapAnalyticsBinsPanel } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-bins-panel';
 import { AdvancedMapAnalyticsDiscreteLegend } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-discrete-legend';
@@ -1836,14 +1836,12 @@ export function MapAnalyticsWorkspace({
     <>
       <AdvancedMapAnalyticsConfigPanel
         collapsed={Boolean(mapState.configPanelCollapsed)}
-        activeView={mapState.activeView}
         mapName={mapName}
         showCountyBoundaries={mapState.showCountyBoundaries}
         mapDescription={mapDescription}
         warningCount={combinedWarnings.length}
         readOnly={isReadOnly}
         onToggleCollapsed={toggleConfigPanelCollapsed}
-        onActiveViewChange={setActiveView}
         onShowCountyBoundariesChange={setShowCountyBoundaries}
         onOpenConfig={() => {
           if (!isReadOnly && onOpenOwnerConfig) {
@@ -1900,7 +1898,7 @@ export function MapAnalyticsWorkspace({
   );
 
   const geoJsonSourceFooter = (
-    <footer className="border-t pt-3 text-xs text-muted-foreground">
+    <footer className="text-[11px] text-muted-foreground/60">
       <div className="flex items-center gap-1">
         <span>{t`GeoJSON source:`}</span>
         <a
@@ -1908,7 +1906,7 @@ export function MapAnalyticsWorkspace({
           target="_blank"
           rel="noopener noreferrer"
           data-testid="map-geojson-source-link"
-          className="rounded-sm underline underline-offset-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="hover:text-muted-foreground underline underline-offset-2 transition-colors"
         >
           {t`geo-spatial.org`}
         </a>
@@ -1917,22 +1915,21 @@ export function MapAnalyticsWorkspace({
   );
 
   const localSnapshotsFooter = canOpenLocalSnapshots ? (
-    <section className="rounded-xl border bg-muted/20 p-3">
-      <Button
+    <div className="space-y-1.5">
+      <button
         type="button"
-        variant="outline"
-        className="w-full"
         onClick={onOpenLocalSnapshots}
         disabled={isSavingSnapshot}
+        className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border p-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
       >
         {localSnapshotCount > 0
           ? t`Local snapshots (${localSnapshotCount})`
           : t`Local snapshots`}
-      </Button>
-      <p className="mt-2 text-xs text-muted-foreground">
+      </button>
+      <p className="text-[11px] text-muted-foreground/60">
         {t`Stored only in this browser on this device.`}
       </p>
-    </section>
+    </div>
   ) : null;
 
   if (isPreviewLayout) {
@@ -2057,13 +2054,27 @@ export function MapAnalyticsWorkspace({
         />
       ) : null}
       <aside
-        className={
+        className={cn(
           shouldOverlayMobileControls
             ? 'absolute inset-x-0 top-0 z-[650] max-h-[80vh] overflow-y-auto bg-card rounded-b-2xl shadow-lg'
-            : 'border-r border-border bg-card text-card-foreground overflow-y-auto md:w-[430px] md:min-w-[430px]'
-        }
+            : 'border-r border-border bg-background text-foreground overflow-y-auto md:w-[430px] md:min-w-[430px]',
+          'flex flex-col'
+        )}
       >
-        <div className="space-y-4 p-4">
+        <div className="flex-1 space-y-0 px-5 py-2">
+          <div className="pt-2 pb-4">
+            <ViewTypeRadioGroup
+              value={mapState.activeView}
+              onChange={setActiveView}
+              viewOptions={[
+                { id: 'map', label: t`Map`, icon: MapIcon },
+                { id: 'table', label: t`Table`, icon: TableIcon },
+                { id: 'analytics', label: t`Analytics`, icon: BarChart3 },
+              ]}
+              ariaLabel={t`Advanced map analytics active view`}
+            />
+          </div>
+
           {isMobileControlsCollapseEnabled ? (
             <>
               <section className="rounded-2xl border bg-card p-3 shadow-sm">
@@ -2092,7 +2103,6 @@ export function MapAnalyticsWorkspace({
                   className="space-y-4 data-[state=open]:animate-in data-[state=closed]:animate-out"
                 >
                   {controlsPanels}
-                  {geoJsonSourceFooter}
                   {localSnapshotsFooter}
                 </CollapsibleContent>
               </Collapsible>
@@ -2100,10 +2110,13 @@ export function MapAnalyticsWorkspace({
           ) : (
             <>
               {controlsPanels}
-              {geoJsonSourceFooter}
               {localSnapshotsFooter}
             </>
           )}
+        </div>
+
+        <div className="px-5 py-3 border-t border-border/40">
+          {geoJsonSourceFooter}
         </div>
       </aside>
 
@@ -2441,4 +2454,3 @@ function buildGeoJsonIdNameOptions(
       return left.id - right.id;
     });
 }
-

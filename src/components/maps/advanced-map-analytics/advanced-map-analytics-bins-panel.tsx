@@ -37,11 +37,11 @@ export function AdvancedMapAnalyticsBinsPanel({
       : t`${presets.length} presets configured`;
 
   return (
-    <section className="rounded-2xl border bg-card p-4 shadow-sm">
-      <div className="mb-4 flex items-start justify-between gap-3">
+    <section className="py-5 border-b border-border/40">
+      <div className="mb-3 flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-2xl font-bold tracking-tight">{t`Bins`}</h2>
+            <h2 className="text-lg font-bold tracking-tight">{t`Bins`}</h2>
             <Button
               variant="ghost"
               size="icon"
@@ -52,17 +52,18 @@ export function AdvancedMapAnalyticsBinsPanel({
               <ChevronDown className={cn('h-4 w-4 transition-transform', !collapsed && 'rotate-180')} />
             </Button>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">{presetsConfiguredLabel}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{presetsConfiguredLabel}</p>
         </div>
 
         <Button
           size="icon"
-          className="h-10 w-10 shrink-0 rounded-full"
+          variant="ghost"
+          className="h-8 w-8 shrink-0 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
           onClick={onAddPreset}
           aria-label={t`Add bins preset`}
           disabled={readOnly}
         >
-          <Plus className="h-5 w-5" />
+          <Plus className="h-4 w-4" />
         </Button>
       </div>
 
@@ -75,6 +76,7 @@ export function AdvancedMapAnalyticsBinsPanel({
             onEdit={onEditPreset}
             onDelete={onDeletePreset}
             onReorder={onReorderPresets}
+            onAddPreset={onAddPreset}
             readOnly={readOnly}
           />
         </CollapsibleContent>
