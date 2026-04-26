@@ -97,6 +97,7 @@ export function MapAnalyticsOwnerConfigModal({
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isDescriptionEditorModalOpen, setIsDescriptionEditorModalOpen] = useState(false);
   const importConfigFileInputRef = useRef<HTMLInputElement | null>(null);
+  const wasOpenRef = useRef(false);
 
   const snapshotsQuery = useAdvancedMapAnalyticsSnapshotsQuery(mapId, page, 20, open);
   const updateMapMutation = useUpdateAdvancedMapAnalyticsMapMutation();
@@ -109,11 +110,18 @@ export function MapAnalyticsOwnerConfigModal({
 
   useEffect(() => {
     if (!open) {
+      wasOpenRef.current = false;
       return;
     }
 
-    setPage(1);
     setVisibility(currentVisibility);
+
+    if (wasOpenRef.current) {
+      return;
+    }
+
+    wasOpenRef.current = true;
+    setPage(1);
     setPendingVisibilityTarget(null);
     setPendingLoadSnapshotId(null);
     setIsDeleteConfirmOpen(false);

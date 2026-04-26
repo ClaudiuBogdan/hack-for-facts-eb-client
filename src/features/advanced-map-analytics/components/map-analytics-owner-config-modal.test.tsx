@@ -242,6 +242,54 @@ describe('MapAnalyticsOwnerConfigModal', () => {
     expect(onMapDescriptionChange).toHaveBeenCalledWith('## Updated description');
   });
 
+  it('does not reopen inline-triggered description editor after visibility updates', async () => {
+    const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');
+    const modalProps = {
+      open: true,
+      mapId: 'map_1',
+      currentMapState: baseMapState,
+      mapName: 'My map',
+      mapDescription: '# Existing description',
+      currentPublicId: null,
+      openDescriptionEditor: true,
+      onOpenChange: vi.fn(),
+      onMapNameChange: vi.fn(),
+      onMapDescriptionChange: vi.fn(),
+      onRequestSaveSnapshot: vi.fn(),
+      onLoadSnapshot: vi.fn(),
+      onApplyImportedConfig: vi.fn(),
+      onDeleted: vi.fn(),
+    };
+
+    const { rerender } = render(
+      <MapAnalyticsOwnerConfigModal
+        {...modalProps}
+        currentVisibility="private"
+      />
+    );
+
+    expect(screen.getByLabelText('Map description markdown editor')).toBeInTheDocument();
+
+    const descriptionDialog = screen
+      .getAllByRole('dialog')
+      .find((dialog) => within(dialog).queryByLabelText('Map description markdown editor'));
+    expect(descriptionDialog).toBeDefined();
+    fireEvent.click(within(descriptionDialog!).getByRole('button', { name: 'Close' }));
+
+    await waitFor(() => {
+      expect(screen.queryByLabelText('Map description markdown editor')).not.toBeInTheDocument();
+    });
+
+    rerender(
+      <MapAnalyticsOwnerConfigModal
+        {...modalProps}
+        currentVisibility="public"
+      />
+    );
+
+    expect(screen.queryByLabelText('Map description markdown editor')).not.toBeInTheDocument();
+  });
+
   it('keeps map title typing local until the input commits', async () => {
     const onMapNameChange = vi.fn();
     const { MapAnalyticsOwnerConfigModal } = await import('./map-analytics-owner-config-modal');

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useBlocker, useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { UnsavedChangesDialog } from '@/components/alerts/components/UnsavedChangesDialog';
@@ -42,6 +42,7 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
   const [isSaveSnapshotDialogOpen, setIsSaveSnapshotDialogOpen] = useState(false);
   const [isLocalSnapshotsModalOpen, setIsLocalSnapshotsModalOpen] = useState(false);
   const [isInitialStateResolved, setIsInitialStateResolved] = useState(false);
+  const skipUnsavedChangesBlockerRef = useRef(false);
   const mapDescriptionDraft = useMapEditorDraftStore(mapId, (state) => state.mapDescription);
   const draftUpdatedAt = useMapEditorDraftStore(mapId, (state) => state.updatedAt);
   const setMapDescriptionDraft = useMapEditorDraftStore(mapId, (state) => state.updateMapDescription);
@@ -71,7 +72,14 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
   });
 
   const blocker = useBlocker({
-    shouldBlockFn: ({ current, next }) => isDirty && next.pathname !== current.pathname,
+    shouldBlockFn: ({ current, next }) => {
+      if (skipUnsavedChangesBlockerRef.current) {
+        skipUnsavedChangesBlockerRef.current = false;
+        return false;
+      }
+
+      return isDirty && next.pathname !== current.pathname;
+    },
     withResolver: true,
     enableBeforeUnload: false,
   });
@@ -320,6 +328,7 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
         }}
         onApplyImportedConfig={handleApplyImportedConfig}
         onDeleted={() => {
+          skipUnsavedChangesBlockerRef.current = true;
           navigate({ to: '/maps/editor', replace: true });
         }}
       />

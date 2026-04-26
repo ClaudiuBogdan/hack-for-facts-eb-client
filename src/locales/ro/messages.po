@@ -319,7 +319,7 @@ msgstr "Acceptati termenii si conditiile pentru o entitate din campanie pentru a
 msgid "Access"
 msgstr "Acces"
 
-#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:236
+#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:244
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:290
 msgid "Access denied"
 msgstr "Acces interzis"
@@ -424,7 +424,7 @@ msgstr "Adaugă serie de date"
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2096
 msgid "Add description"
-msgstr ""
+msgstr "Adaugă descriere"
 
 #: src/routes/settings/notifications.tsx:84
 #: src/routes/settings/notifications.tsx:85
@@ -817,7 +817,7 @@ msgstr "Modele anonime de utilizare, vizualizări de pagină, interacțiuni și 
 #~ msgid "Anyone with link"
 #~ msgstr "Oricine cu linkul"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:449
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:457
 msgid "Anyone with the public link can view this map."
 msgstr "Oricine cu linkul public poate vizualiza această hartă."
 
@@ -1037,11 +1037,11 @@ msgstr "Înapoi la bun venit"
 msgid "Backup"
 msgstr "Copie de rezervă"
 
-#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:197
+#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:205
 msgid "Backup before config export"
 msgstr "Backup înainte de exportul configurației"
 
-#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:177
+#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:185
 msgid "Backup before config import"
 msgstr "Backup înainte de importul configurației"
 
@@ -1350,9 +1350,9 @@ msgstr "Notificările de campanie sunt supuse <0>termenilor și condițiilor cam
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:235
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:255
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:276
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:624
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:641
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:658
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:632
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:649
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:666
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:133
 #: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:131
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:656
@@ -1911,11 +1911,11 @@ msgstr "Confidențial"
 msgid "Config"
 msgstr "Config"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:297
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:305
 msgid "Configuration copied"
 msgstr "Configurație copiată"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:285
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:293
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:145
 msgid "Configuration exported"
 msgstr "Configurație exportată"
@@ -2101,7 +2101,7 @@ msgstr "Copiază"
 msgid "Copy Annotation"
 msgstr "Copiază adnotarea"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:387
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:395
 msgid "Copy config"
 msgstr "Copiază configurația"
 
@@ -2129,7 +2129,7 @@ msgstr "Copierea a eșuat"
 msgid "Copy failed. You can still select and copy the link manually."
 msgstr "Copierea a eșuat. Poți în continuare să selectezi și să copiezi manual linkul."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:483
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:491
 #: src/features/challenges/components/interactive/CivicModuleShareCta.tsx:105
 msgid "Copy link"
 msgstr "Copiază linkul"
@@ -2488,7 +2488,7 @@ msgstr "Valoare serie personalizată"
 msgid "Daily Streak"
 msgstr "Serie zilnică"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:583
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:591
 msgid "Danger zone"
 msgstr "Zonă periculoasă"
 
@@ -2754,7 +2754,7 @@ msgstr "Șterge instantaneul local"
 msgid "Delete local snapshot?"
 msgstr "Ștergi instantaneul local?"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:595
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:603
 msgid "Delete map"
 msgstr "Șterge harta"
 
@@ -2762,7 +2762,7 @@ msgstr "Șterge harta"
 msgid "Delete notification"
 msgstr "Șterge notificarea"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:664
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:672
 msgid "Delete permanently"
 msgstr "Șterge definitiv"
 
@@ -2778,7 +2778,7 @@ msgstr "Șterge instantaneul"
 msgid "Delete this chart?"
 msgstr "Ștergeți acest grafic?"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:652
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:660
 msgid "Delete this map?"
 msgstr "Ștergi această hartă?"
 
@@ -3196,7 +3196,7 @@ msgstr "Editează serie de date"
 msgid "Edit dataset"
 msgstr "Editează setul de date"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:418
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:426
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2096
 msgid "Edit description"
 msgstr "Editează descrierea"
@@ -3770,7 +3770,7 @@ msgstr "Exportă ca imagine sau partajează printr-un link"
 msgid "Export as JSON"
 msgstr "Exportă ca JSON"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:379
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:387
 msgid "Export config"
 msgstr "Exportă configurația"
 
@@ -3818,7 +3818,7 @@ msgstr "Clonarea configurației hărții a eșuat"
 msgid "Failed to copy code"
 msgstr "Eroare la copierea codului"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:299
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:307
 msgid "Failed to copy configuration"
 msgstr "Copierea configurației a eșuat"
 
@@ -3836,7 +3836,7 @@ msgstr "Copierea adresei de email a eșuat."
 msgid "Failed to copy link"
 msgstr "Eroare la copierea linkului"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:245
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:253
 msgid "Failed to copy public map link"
 msgstr "Eroare la copierea linkului public al hărții"
 
@@ -3867,11 +3867,11 @@ msgstr "Ștergerea alertei a eșuat"
 msgid "Failed to delete local snapshot"
 msgstr "Nu s-a putut șterge instantaneul local"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:229
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:237
 msgid "Failed to delete map"
 msgstr "Eroare la ștergerea hărții"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:287
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:295
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:147
 msgid "Failed to export configuration"
 msgstr "Exportul configurației a eșuat"
@@ -3884,7 +3884,7 @@ msgstr "Exportul CSV a eșuat."
 msgid "Failed to export JSON."
 msgstr "Exportul JSON a eșuat."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:324
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:332
 msgid "Failed to import configuration file"
 msgstr "Importul fișierului de configurație a eșuat"
 
@@ -3892,7 +3892,7 @@ msgstr "Importul fișierului de configurație a eșuat"
 msgid "Failed to import map configuration"
 msgstr "Importul configurației hărții a eșuat"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:336
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:344
 msgid "Failed to import pasted configuration"
 msgstr "Importul configurației lipite a eșuat"
 
@@ -3942,7 +3942,7 @@ msgstr "Încărcarea seturilor de date a eșuat"
 msgid "Failed to load local snapshots"
 msgstr "Nu s-au putut încărca instantaneele locale"
 
-#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:249
+#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:257
 msgid "Failed to load map"
 msgstr "Eroare la încărcarea hărții"
 
@@ -3959,7 +3959,7 @@ msgstr "Încărcarea detaliilor profilului UAT a eșuat."
 msgid "Failed to restore local snapshot"
 msgstr "Nu s-a putut restaura instantaneul local"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:215
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:223
 msgid "Failed to restore version"
 msgstr "Eroare la restaurarea versiunii"
 
@@ -3980,11 +3980,11 @@ msgstr "Salvarea seriei de date a eșuat"
 msgid "Failed to save local snapshot"
 msgstr "Nu s-a putut salva instantaneul local"
 
-#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:156
+#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:164
 msgid "Failed to save snapshot"
 msgstr "Eroare la salvarea instantaneului"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:193
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:201
 msgid "Failed to update map visibility"
 msgstr "Eroare la actualizarea vizibilității hărții"
 
@@ -4320,7 +4320,7 @@ msgstr "Lungimea rețelei de gaze la 1.000 de locuitori arată acoperirea infras
 msgid "Gas volume per inhabitant indicates reliance on gas infrastructure and energy-use profile."
 msgstr "Volumul de gaze pe locuitor indică dependența de infrastructura de gaze și profilul de consum energetic."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:363
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:371
 msgid "General"
 msgstr "General"
 
@@ -4677,7 +4677,7 @@ msgstr "Importul a fost aplicat"
 msgid "Import dataset rows"
 msgstr "Importă rânduri dataset"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:383
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:391
 msgid "Import file"
 msgstr "Importă fișier"
 
@@ -4891,7 +4891,7 @@ msgstr "Date invalide detectate în seriile graficului"
 msgid "Invalid data series link"
 msgstr "Link de serie de date invalid"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:306
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:314
 msgid "Invalid map configuration"
 msgstr "Configurație de hartă invalidă"
 
@@ -5371,7 +5371,7 @@ msgstr "Se încarcă harta și datele pentru harta termică..."
 msgid "Loading map data..."
 msgstr "Se încarcă datele hărții..."
 
-#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:208
+#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:216
 msgid "Loading map editor..."
 msgstr "Se încarcă editorul de hărți..."
 
@@ -5431,13 +5431,13 @@ msgid "Loading..."
 msgstr "Se încarcă..."
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:117
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:508
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:516
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:124
 #: src/features/challenges/components/analysis/challenge-entity-analysis-loading-shell.tsx:10
 msgid "Loading…"
 msgstr "Se încarcă…"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:268
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:276
 #: src/features/advanced-map-analytics/components/map-analytics-quick-actions.tsx:125
 msgid "Local backup failed. Exporting configuration anyway."
 msgstr "Backupul local a eșuat. Exportăm configurația oricum."
@@ -5467,7 +5467,7 @@ msgstr "Detaliile locale nu sunt disponibile"
 msgid "Local press"
 msgstr "Presă locală"
 
-#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:170
+#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:178
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1012
 msgid "Local snapshot restored"
 msgstr "Instantaneul local a fost restaurat"
@@ -5582,19 +5582,19 @@ msgstr "Reformă majoră"
 msgid "Make main"
 msgstr "Setează ca principal"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:615
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:623
 msgid "Make map private?"
 msgstr "Faci harta privată?"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:615
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:623
 msgid "Make map public?"
 msgstr "Faci harta publică?"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:626
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:634
 msgid "Make private"
 msgstr "Faci privată"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:626
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:634
 msgid "Make public"
 msgstr "Faci publică"
 
@@ -5632,7 +5632,7 @@ msgstr "Gestionează hărțile"
 msgid "Manage notifications"
 msgstr "Gestionare notificări"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:144
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:152
 msgid "Manage your map settings, visibility, and version history."
 msgstr "Gestionează setările, vizibilitatea și istoricul versiunilor hărții tale."
 
@@ -5663,7 +5663,7 @@ msgstr "Manual"
 msgid "Map"
 msgstr "Hartă"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:371
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:379
 msgid "Map configuration actions"
 msgstr ""
 
@@ -5671,7 +5671,7 @@ msgstr ""
 msgid "Map configuration copied to clipboard"
 msgstr "Configurația hărții a fost copiată în clipboard"
 
-#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:187
+#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:195
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:549
 msgid "Map configuration imported"
 msgstr "Configurația hărții a fost importată"
@@ -5688,7 +5688,7 @@ msgstr "Date hartă"
 msgid "Map data not available."
 msgstr "Datele hărții nu sunt disponibile."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:225
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:233
 msgid "Map deleted"
 msgstr "Harta a fost ștearsă"
 
@@ -5725,11 +5725,11 @@ msgstr "Interacțiune hartă: Dezactivată"
 msgid "Map interaction: On"
 msgstr "Interacțiune hartă: Activată"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:191
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:199
 msgid "Map is now private"
 msgstr "Harta este acum privată"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:191
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:199
 msgid "Map is now public"
 msgstr "Harta este acum publică"
 
@@ -5738,7 +5738,7 @@ msgid "Map name"
 msgstr "Nume hartă"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-modal.tsx:60
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:351
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:359
 msgid "Map Settings"
 msgstr "Setări hartă"
 
@@ -5750,7 +5750,7 @@ msgstr "Sursa hărții"
 msgid "Map status"
 msgstr "Starea hărții"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:397
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:405
 msgid "Map title"
 msgstr "Titlul hărții"
 
@@ -6078,7 +6078,7 @@ msgstr "Multiplicator"
 msgid "Multiplier 1.5 is standard; use 3.0 for stricter outlier detection."
 msgstr "Multiplicatorul 1.5 este standard; folosește 3.0 pentru detectarea mai strictă a valorilor extreme."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:404
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:412
 msgid "My Budget Analysis Map…"
 msgstr "Harta mea de analiză bugetară…"
 
@@ -6216,7 +6216,7 @@ msgid "Newest first"
 msgstr "Cele mai noi primele"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:202
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:574
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:582
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:211
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:127
 #: src/features/challenges/components/player/challenge-step-player.utils.ts:149
@@ -6619,7 +6619,7 @@ msgstr "Nu există rânduri disponibile"
 msgid "No rows available."
 msgstr "Nu există rânduri disponibile."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:516
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:524
 msgid "No saved versions yet"
 msgstr "Nu există versiuni salvate încă"
 
@@ -6868,7 +6868,7 @@ msgstr "Doar observații cu valori"
 #~ msgid "Only you"
 #~ msgstr "Doar tu"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:450
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:458
 msgid "Only you can access this map."
 msgstr "Doar tu poți accesa această hartă."
 
@@ -7170,7 +7170,7 @@ msgstr "Prezentare generală"
 msgid "Owner dataset"
 msgstr "Set de date propriu"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:565
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:573
 msgid "Page {page}"
 msgstr "Pagina {page}"
 
@@ -7221,7 +7221,7 @@ msgstr "Raport de participare"
 msgid "Paste"
 msgstr "Lipește"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:391
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:399
 msgid "Paste config"
 msgstr "Lipește configurația"
 
@@ -7380,7 +7380,7 @@ msgstr "Perioadă:"
 msgid "Periodicity"
 msgstr "Periodicitate"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:586
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:594
 msgid "Permanently delete this map and all saved versions. This cannot be undone."
 msgstr "Șterge definitiv această hartă și toate versiunile salvate. Această acțiune nu poate fi anulată."
 
@@ -7597,7 +7597,7 @@ msgstr "Previzualizare indisponibilă"
 #~ msgstr "Previzualizare:"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:191
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:562
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:570
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:199
 #: src/features/challenges/components/player/challenge-step-article-layout.tsx:89
 #: src/features/learning/components/player/LessonPlayer.tsx:549
@@ -7626,8 +7626,8 @@ msgstr "Politica de confidențialitate"
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:63
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:142
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:446
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:533
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:454
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:541
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:110
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:101
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1349
@@ -7671,8 +7671,8 @@ msgstr "Propune o modificare specifică și realistă. De exemplu: «Redistribui
 
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:56
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:142
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:446
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:533
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:454
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:541
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:108
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:84
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1351
@@ -7750,7 +7750,7 @@ msgstr "Instituțiile publice transferă adesea fonduri între ele (de exemplu, 
 msgid "Public institutions often transfer funds between each other. These transfers can double-count spending or revenue if not filtered."
 msgstr "Instituțiile publice transferă adesea fonduri între ele. Aceste transferuri pot duce la dubla contabilizare a cheltuielilor sau veniturilor dacă nu sunt filtrate."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:470
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:478
 msgid "Public link"
 msgstr "Link public"
 
@@ -7758,7 +7758,7 @@ msgstr "Link public"
 msgid "Public map"
 msgstr ""
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:243
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:251
 msgid "Public map link copied"
 msgstr "Linkul public al hărții a fost copiat"
 
@@ -8157,12 +8157,12 @@ msgid "Restart Onboarding?"
 msgstr "Repornești procesul de inițiere?"
 
 #: src/components/charts/components/backup-restore/ChartsBackupRestore.tsx:185
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:549
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:643
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:557
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:651
 msgid "Restore"
 msgstr "Restaurează"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:635
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:643
 msgid "Restore this version?"
 msgstr "Restaurezi această versiune?"
 
@@ -8308,7 +8308,7 @@ msgstr "Salvează preferințele cookie"
 #~ msgid "Save current snapshot"
 #~ msgstr "Salvează instantaneul curent"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:501
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:509
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:142
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2228
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:116
@@ -8323,7 +8323,7 @@ msgstr "Salvează instantaneul"
 #~ msgid "Save the current map configuration as a new version."
 #~ msgstr "Salvează configurația curentă a hărții ca versiune nouă."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:517
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:525
 msgid "Save versions of your map to track changes over time."
 msgstr "Salvează versiuni ale hărții tale pentru a urmări schimbările în timp."
 
@@ -8992,7 +8992,7 @@ msgstr "Parte"
 msgid "Sign in"
 msgstr "Conectează-te"
 
-#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:223
+#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:231
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:277
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:418
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:544
@@ -9005,7 +9005,7 @@ msgstr "Conectează-te"
 msgid "Sign In"
 msgstr "Autentificare"
 
-#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:218
+#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:226
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:270
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1051
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:410
@@ -9083,7 +9083,7 @@ msgstr "Sări peste tur"
 msgid "Snapshot note"
 msgstr "Notă instantaneu"
 
-#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:154
+#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:162
 msgid "Snapshot saved"
 msgstr "Instantaneu salvat"
 
@@ -9747,7 +9747,7 @@ msgstr "Această cerere depusă a fost respinsă, dar nu mai sunt disponibile ce
 msgid "This submitted request was rejected. Request availability must be confirmed before it can be updated."
 msgstr "Această cerere depusă a fost respinsă. Disponibilitatea cererii trebuie confirmată înainte de a putea fi actualizată."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:408
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:416
 msgid "This title is displayed at the top of your map."
 msgstr "Acest titlu este afișat în partea de sus a hărții tale."
 
@@ -9768,7 +9768,7 @@ msgid "This will permanently delete all your learning progress, including comple
 msgstr "Această acțiune va șterge permanent tot progresul tău de învățare, inclusiv lecțiile finalizate, scorurile la chestionare și preferințele de inițiere. Această acțiune este ireversibilă."
 
 #. placeholder {0}: snapshots.length
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:654
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:662
 msgid "This will permanently delete the map and all {0} saved versions. This cannot be undone."
 msgstr "Această acțiune va șterge definitiv harta și toate cele {0} versiuni salvate. Nu poate fi anulată."
 
@@ -9874,7 +9874,7 @@ msgstr "Comutare raportare avansată a erorilor"
 msgid "Toggle map interaction"
 msgstr "Comută interacțiunea cu harta"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:459
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:467
 msgid "Toggle map visibility"
 msgstr "Comută vizibilitatea hărții"
 
@@ -10535,11 +10535,11 @@ msgstr "TVA, Venit, Profit"
 msgid "Verify a learning certificate (proof of concept)."
 msgstr "Verifică un certificat de învățare (proof of concept)."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:495
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:503
 msgid "Version history"
 msgstr "Istoricul versiunilor"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:213
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:221
 msgid "Version restored"
 msgstr "Versiune restaurată"
 
@@ -10612,7 +10612,7 @@ msgstr "Vizualizați scala de culori și valorile pentru vizualizarea hărții d
 msgid "Viewing:"
 msgstr "Vizualizare:"
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:436
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:444
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1331
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:160
 msgid "Visibility"
@@ -10939,7 +10939,7 @@ msgstr "Trebuie să accepți cookie-urile pentru a trimite un raport de eroare."
 msgid "You need to accept cookies to send feedback."
 msgstr "Trebuie să accepți cookie-urile pentru a trimite feedback."
 
-#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:219
+#: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:227
 msgid "You need to be signed in to access map editor."
 msgstr "Trebuie să fii autentificat pentru a accesa editorul de hărți."
 
@@ -11012,7 +11012,7 @@ msgstr "Modificările aduse acestei ciorne se vor pierde dacă părăsești pagi
 msgid "Your contestation has been recorded and will be checked before it counts toward the challenge."
 msgstr "Contestația ta a fost înregistrată și va fi verificată înainte de a conta pentru provocare."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:637
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:645
 msgid "Your current configuration will be replaced with this saved version. Unsaved changes will be lost."
 msgstr "Configurația curentă va fi înlocuită cu această versiune salvată. Modificările nesalvate vor fi pierdute."
 
@@ -11054,11 +11054,11 @@ msgstr "Estimarea ta"
 msgid "Your map configuration is valid and ready to display."
 msgstr "Configurația hărții tale este validă și gata de afișare."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:619
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:627
 msgid "Your map will be accessible to anyone with the link. You can change this back at any time."
 msgstr "Harta ta va fi accesibilă oricui cu linkul. Poți schimba acest lucru oricând."
 
-#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:620
+#: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:628
 msgid "Your map will only be visible to you. Public links will no longer work."
 msgstr "Harta ta va fi vizibilă doar pentru tine. Linkurile publice nu vor mai funcționa."
 

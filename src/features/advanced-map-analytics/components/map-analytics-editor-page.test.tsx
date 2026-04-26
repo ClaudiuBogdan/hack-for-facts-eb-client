@@ -868,4 +868,65 @@ describe('MapAnalyticsEditorPage', () => {
     });
     expect(proceedMock).toHaveBeenCalled();
   });
+
+  it('bypasses the unsaved changes blocker after delete succeeds', async () => {
+    useAuthMock.mockReturnValue({ isLoaded: true, isSignedIn: true });
+    useMapQueryMock.mockReturnValue({
+      isLoading: false,
+      error: null,
+      data: {
+        publicId: null,
+        title: 'Map one',
+        description: null,
+        state: 'private',
+        lastSnapshot: {
+          config: AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Map one snapshot' }),
+        },
+      },
+    });
+    useMapLocalSnapshotsMock.mockReturnValue({
+      snapshots: [],
+      isLoading: false,
+      isDirty: true,
+      createManualSnapshot: vi.fn(),
+      restoreSnapshot: vi.fn(),
+      deleteSnapshot: vi.fn(),
+      clearSnapshots: vi.fn(),
+      markCurrentAsSaved: vi.fn(),
+      setBaselineFromHash: vi.fn(),
+    });
+
+    const { MapAnalyticsEditorPage } = await import('./map-analytics-editor-page');
+    render(
+      <MapAnalyticsEditorPage
+        mapId="map1"
+        mapState={AdvancedMapAnalyticsUrlStateSchema.parse({})}
+        setMapState={vi.fn()}
+      />
+    );
+
+    const blockerOptions = useBlockerMock.mock.calls[0]?.[0] as
+      | {
+          shouldBlockFn: (args: {
+            current: { pathname: string };
+            next: { pathname: string };
+          }) => boolean;
+        }
+      | undefined;
+    expect(blockerOptions?.shouldBlockFn({
+      current: { pathname: '/maps/editor/map1' },
+      next: { pathname: '/maps/editor' },
+    })).toBe(true);
+
+    const ownerModalProps = ownerConfigModalMock.mock.calls[0]?.[0] as
+      | { onDeleted: () => void }
+      | undefined;
+    ownerModalProps?.onDeleted();
+
+    expect(navigateMock).toHaveBeenCalledWith({ to: '/maps/editor', replace: true });
+    expect(blockerOptions?.shouldBlockFn({
+      current: { pathname: '/maps/editor/map1' },
+      next: { pathname: '/maps/editor' },
+    })).toBe(false);
+  });
 });
