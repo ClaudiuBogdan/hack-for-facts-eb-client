@@ -103,6 +103,31 @@ describe("entity-config-clipboard", () => {
     ]);
   });
 
+  it("parses exported rows with an implicit configured column before config values", () => {
+    const parsed = parseCampaignAdminEntityConfigClipboard(
+      "Campaign Key\tEntity CUI\tEntity Name\tUsers Configured\tbudgetPublicationDate\tofficialBudgetUrl\tpublic_debate.date\tpublic_debate.time\tpublic_debate.location\tpublic_debate.online_participation_link\tpublic_debate.announcement_link\tpublic_debate.description\tUpdated At\tUpdated By\tUser ID\n"
+        + "funky\t14756536\tMUNICIPIUL TIMISOARA\t10\tFALSE\n"
+        + "funky\t15226406\tCOMUNA BARAGANU\t2\tFALSE\n"
+        + "funky\t2540813\tMUNICIPIUL RAMNICU VALCEA\t4\tTRUE\t2026-04-14\thttps://primariavl.ro/buget.pdf\t\t\t\t\t\t\t2026-04-23T13:24:50.979Z\tuser_1\n",
+    );
+
+    expect(parsed.issues).toEqual([]);
+    expect(parsed.skippedCount).toBe(2);
+    expect(parsed.rows).toEqual([
+      {
+        rowNumber: 4,
+        entityCui: "2540813",
+        entityName: "MUNICIPIUL RAMNICU VALCEA",
+        values: {
+          budgetPublicationDate: "2026-04-14",
+          officialBudgetUrl: "https://primariavl.ro/buget.pdf",
+          public_debate: null,
+        },
+        expectedUpdatedAt: "2026-04-23T13:24:50.979Z",
+      },
+    ]);
+  });
+
   it("reports duplicates, missing entity CUI, invalid dates, and invalid URLs", () => {
     const parsed = parseCampaignAdminEntityConfigClipboard(
       "Entity CUI\tBudget Publication Date\tOfficial Budget URL\n"

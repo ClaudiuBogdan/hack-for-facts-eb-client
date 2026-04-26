@@ -129,6 +129,10 @@ function isValidDateInput(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
+function isBooleanCell(value: string): boolean {
+  return /^(true|false)$/i.test(value);
+}
+
 function isValidHttpUrl(value: string): boolean {
   try {
     const parsedUrl = new URL(value);
@@ -277,39 +281,32 @@ export function parseCampaignAdminEntityConfigClipboard(
 
   rows.slice(1).forEach((row, rowIndex) => {
     const rowNumber = rowIndex + 2;
-    const entityCui = normalizeCell(row[entityCuiIndex]);
-    const entityName =
-      entityNameIndex === -1 ? "" : normalizeCell(row[entityNameIndex]);
-    const budgetPublicationDate =
+    const budgetPublicationDateCell =
       budgetPublicationDateIndex === -1
         ? ""
         : normalizeCell(row[budgetPublicationDateIndex]);
-    const officialBudgetUrl =
-      officialBudgetUrlIndex === -1
+    const hasImplicitConfiguredColumn =
+      budgetPublicationDateIndex !== -1 &&
+      officialBudgetUrlIndex === budgetPublicationDateIndex + 1 &&
+      isBooleanCell(budgetPublicationDateCell);
+    const getConfigCell = (columnIndex: number): string =>
+      columnIndex === -1
         ? ""
-        : normalizeCell(row[officialBudgetUrlIndex]);
-    const publicDebateDate =
-      publicDebateDateIndex === -1 ? "" : normalizeCell(row[publicDebateDateIndex]);
-    const publicDebateTime =
-      publicDebateTimeIndex === -1 ? "" : normalizeCell(row[publicDebateTimeIndex]);
-    const publicDebateLocation =
-      publicDebateLocationIndex === -1
-        ? ""
-        : normalizeCell(row[publicDebateLocationIndex]);
+        : normalizeCell(row[columnIndex + (hasImplicitConfiguredColumn ? 1 : 0)]);
+    const entityCui = normalizeCell(row[entityCuiIndex]);
+    const entityName =
+      entityNameIndex === -1 ? "" : normalizeCell(row[entityNameIndex]);
+    const budgetPublicationDate = getConfigCell(budgetPublicationDateIndex);
+    const officialBudgetUrl = getConfigCell(officialBudgetUrlIndex);
+    const publicDebateDate = getConfigCell(publicDebateDateIndex);
+    const publicDebateTime = getConfigCell(publicDebateTimeIndex);
+    const publicDebateLocation = getConfigCell(publicDebateLocationIndex);
     const publicDebateOnlineParticipationLink =
-      publicDebateOnlineParticipationLinkIndex === -1
-        ? ""
-        : normalizeCell(row[publicDebateOnlineParticipationLinkIndex]);
+      getConfigCell(publicDebateOnlineParticipationLinkIndex);
     const publicDebateAnnouncementLink =
-      publicDebateAnnouncementLinkIndex === -1
-        ? ""
-        : normalizeCell(row[publicDebateAnnouncementLinkIndex]);
-    const publicDebateDescription =
-      publicDebateDescriptionIndex === -1
-        ? ""
-        : normalizeCell(row[publicDebateDescriptionIndex]);
-    const updatedAt =
-      updatedAtIndex === -1 ? "" : normalizeCell(row[updatedAtIndex]);
+      getConfigCell(publicDebateAnnouncementLinkIndex);
+    const publicDebateDescription = getConfigCell(publicDebateDescriptionIndex);
+    const updatedAt = getConfigCell(updatedAtIndex);
     const hasAnyPublicDebateValue =
       publicDebateDate !== "" ||
       publicDebateTime !== "" ||
@@ -408,6 +405,14 @@ export function parseCampaignAdminEntityConfigClipboard(
       officialBudgetUrl === "" &&
       !hasAnyPublicDebateValue
     ) {
+      if (
+        hasImplicitConfiguredColumn &&
+        budgetPublicationDateCell.toLowerCase() === "false"
+      ) {
+        skippedCount += 1;
+        return;
+      }
+
       issues.push({
         rowNumber,
         message: "At least one config value is required.",
