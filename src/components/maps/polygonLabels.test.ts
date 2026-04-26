@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { formatAdvancedMapAnalyticsSeriesValue } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-formatting';
 import type { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap';
 import {
+  getZoomBucket,
   normalizeUatLabelName,
   processFeatureForLabel,
   type ProcessFeatureForLabelOptions,
@@ -89,6 +90,13 @@ function runActiveSeriesLabel(
 describe('normalizeUatLabelName', () => {
   it('keeps only the normal UAT name with normalized whitespace', () => {
     expect(normalizeUatLabelName('  București   Sectorul   2  ')).toBe('București Sectorul 2');
+  });
+});
+
+describe('getZoomBucket', () => {
+  it('does not reuse buckets across label visibility thresholds', () => {
+    expect(getZoomBucket(8.9)).not.toBe(getZoomBucket(9));
+    expect(getZoomBucket(9.4)).not.toBe(getZoomBucket(9.5));
   });
 });
 

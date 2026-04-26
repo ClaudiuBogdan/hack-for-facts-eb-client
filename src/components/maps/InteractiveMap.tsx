@@ -9,7 +9,6 @@ import {
   DEFAULT_MAP_CENTER,
   DEFAULT_MAP_ZOOM,
   DEFAULT_FEATURE_STYLE,
-  HIGHLIGHT_FEATURE_STYLE,
   DEFAULT_MIN_ZOOM,
   DEFAULT_MAX_ZOOM,
   DEFAULT_MAX_BOUNDS,
@@ -22,6 +21,8 @@ import { MapLabels } from './MapLabels';
 import { shouldUseCanvasRenderer } from './leaflet-renderer';
 import type { LabelMode } from './polygonLabels';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useSharedFeatureTooltip } from './hooks/use-shared-feature-tooltip';
+import { useFeatureHighlight } from './hooks/use-feature-highlight';
 import { t } from '@lingui/core/macro';
 
 const MAP_VIEW_EPSILON = 1e-6;
@@ -96,26 +97,12 @@ interface FeatureInteractionContext {
   onFeatureClick: (properties: UatProperties, event: LeafletMouseEvent) => void;
 }
 
-interface FeatureLayerRecord {
-  layer: Layer;
-  properties: UatProperties;
-}
-
 type TooltipContentBuilder = (context: {
   properties: UatProperties;
   heatmapData: HeatmapUATDataPoint[] | HeatmapCountyDataPoint[];
   mapViewType: 'UAT' | 'County';
   filters: AnalyticsFilterType;
 }) => string;
-
-type TooltipLayer = Layer & {
-  getTooltip: () => L.Tooltip | undefined;
-  bindTooltip: (content: string) => Layer;
-  unbindTooltip: () => Layer;
-  setTooltipContent: (content: string) => Layer;
-  openTooltip: () => Layer;
-  closeTooltip: () => Layer;
-};
 
 const COUNTY_BOUNDARY_STYLE: PathOptions = {
   color: '#6b7280',
@@ -176,9 +163,6 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
   preferCanvasRenderer,
 }) => {
   const geoJsonLayerRef = useRef<L.GeoJSON | null>(null);
-  const featureLayerRecordsRef = useRef<FeatureLayerRecord[]>([]);
-  const activeTooltipLayerRef = useRef<TooltipLayer | null>(null);
-  const highlightedLayerRef = useRef<Layer | null>(null);
   const shouldSuppressTooltipRef = useRef(false);
   const latestFeatureStyleRef = useRef<FeatureStyleResolver>(() => DEFAULT_FEATURE_STYLE);
   const useCanvasRenderer = useMemo(
@@ -198,36 +182,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
 
   const heatmapDataMap = useMemo(() => buildHeatmapDataMap(heatmapData), [heatmapData]);
 
-  const resetLayerHighlight = useCallback((layer: Layer) => {
-    if (!(layer instanceof L.Path)) return;
-    const feature = (layer as any).feature as Feature<Geometry, unknown> | undefined;
-    const nextStyle = latestFeatureStyleRef.current(feature);
-    layer.setStyle(nextStyle);
-  }, []);
-
-  const clearActiveHighlight = useCallback(() => {
-    if (highlightedLayerRef.current) {
-      resetLayerHighlight(highlightedLayerRef.current);
-      highlightedLayerRef.current = null;
-    }
-    if (activeTooltipLayerRef.current) {
-      activeTooltipLayerRef.current.unbindTooltip();
-      activeTooltipLayerRef.current = null;
-    }
-  }, [resetLayerHighlight]);
-
-  const highlightFeature = useCallback((layer: Layer) => {
-    if (layer instanceof L.Path) {
-      layer.setStyle(HIGHLIGHT_FEATURE_STYLE);
-      layer.bringToFront();
-    }
-  }, []);
-
   const resolveFeatureStyle = useCallback(
     (feature?: Feature<Geometry, unknown>): PathOptions =>
       getStyleForFeature(feature, { heatmapDataMap, getFeatureStyle, highlightedFeatureId }),
     [heatmapDataMap, getFeatureStyle, highlightedFeatureId]
   );
+
+  const featureHighlight = useFeatureHighlight(resolveFeatureStyle);
 
   // Keep a ref to the latest style function so event handlers always use fresh logic
   useEffect(() => {
@@ -266,47 +227,22 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       : createTooltipContent(properties, heatmapData, mapViewType, filters);
   }, []);
 
-  const unbindFeatureTooltip = useCallback((layer: Layer) => {
-    const tooltipLayer = layer as TooltipLayer;
-    if (!tooltipLayer.getTooltip()) {
-      return;
-    }
+  // The GeoJSON layer is keyed by mapViewType, so on a view-type swap every
+  // tooltip target is torn down; the hook tears the shared instance down too.
+  const sharedTooltip = useSharedFeatureTooltip<UatProperties>(
+    buildTooltipHtml,
+    mapViewType,
+  );
 
-    tooltipLayer.unbindTooltip();
-
-    if (activeTooltipLayerRef.current === tooltipLayer) {
-      activeTooltipLayerRef.current = null;
-    }
-  }, []);
-
-  const applyTooltipForFeature = useCallback((layer: Layer, properties: UatProperties) => {
-    const tooltipLayer = layer as TooltipLayer;
-    const tooltipHtml = buildTooltipHtml(properties);
-
-    if (
-      activeTooltipLayerRef.current &&
-      activeTooltipLayerRef.current !== tooltipLayer
-    ) {
-      activeTooltipLayerRef.current.unbindTooltip();
-    }
-
-    if (!tooltipLayer.getTooltip()) {
-      tooltipLayer.bindTooltip(tooltipHtml);
-    } else {
-      tooltipLayer.setTooltipContent(tooltipHtml);
-    }
-
-    tooltipLayer.openTooltip();
-    activeTooltipLayerRef.current = tooltipLayer;
-  }, [buildTooltipHtml]);
+  const clearActiveHighlight = useCallback(() => {
+    featureHighlight.clearActive();
+    sharedTooltip.close();
+  }, [featureHighlight, sharedTooltip]);
 
   const handleMapInteractionStart = useCallback(() => {
     shouldSuppressTooltipRef.current = true;
-    if (activeTooltipLayerRef.current) {
-      activeTooltipLayerRef.current.unbindTooltip();
-      activeTooltipLayerRef.current = null;
-    }
-  }, []);
+    sharedTooltip.close();
+  }, [sharedTooltip]);
 
   const handleMapInteractionEnd = useCallback(() => {
     window.requestAnimationFrame(() => {
@@ -319,38 +255,26 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
       if (!feature.properties) return;
 
       const uatProps = feature.properties as UatProperties;
-      const existingRecordIndex = featureLayerRecordsRef.current.findIndex((record) => record.layer === layer);
-      if (existingRecordIndex === -1) {
-        featureLayerRecordsRef.current.push({
-          layer,
-          properties: uatProps,
-        });
-      } else {
-        featureLayerRecordsRef.current[existingRecordIndex] = {
-          layer,
-          properties: uatProps,
-        };
-      }
 
-      // Lazy tooltip creation: create it only on mouseover for better initial performance.
       layer.on({
         mouseover: (e) => {
           if (shouldSuppressTooltipRef.current) {
             return;
           }
 
-          if (highlightedLayerRef.current && highlightedLayerRef.current !== e.target) {
-            resetLayerHighlight(highlightedLayerRef.current);
+          const previousActive = featureHighlight.getActive();
+          if (previousActive && previousActive !== e.target) {
+            featureHighlight.reset(previousActive);
           }
-          highlightFeature(e.target);
-          highlightedLayerRef.current = e.target;
-          applyTooltipForFeature(layer, uatProps);
+          featureHighlight.highlight(e.target);
+          featureHighlight.setActive(e.target);
+          sharedTooltip.applyTo(layer, uatProps, e.latlng ?? null);
         },
         mouseout: (e) => {
-          unbindFeatureTooltip(layer);
-          resetLayerHighlight(e.target);
-          if (highlightedLayerRef.current === e.target) {
-            highlightedLayerRef.current = null;
+          sharedTooltip.close();
+          featureHighlight.reset(e.target);
+          if (featureHighlight.getActive() === e.target) {
+            featureHighlight.setActive(null);
           }
         },
         click: (e) => {
@@ -363,7 +287,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
         },
       });
     },
-    [applyTooltipForFeature, unbindFeatureTooltip, highlightFeature]
+    [featureHighlight, sharedTooltip],
   );
 
   if (!geoJsonData) {

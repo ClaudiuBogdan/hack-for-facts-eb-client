@@ -56,6 +56,30 @@ const createFilterSummary = (filters: AnalyticsFilterType): string => {
 
 
 /**
+ * Builds an O(1) lookup keyed by the feature identifier the tooltip uses
+ * (`siruta_code` for UATs, `county_code` for counties).
+ */
+const buildHeatmapTooltipLookup = (
+  heatmapData: (HeatmapUATDataPoint | HeatmapCountyDataPoint)[] | undefined,
+): Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint> => {
+  const lookup = new Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>();
+  if (!heatmapData) {
+    return lookup;
+  }
+
+  for (const dataPoint of heatmapData) {
+    if ('siruta_code' in dataPoint && dataPoint.siruta_code) {
+      lookup.set(dataPoint.siruta_code, dataPoint);
+    }
+    if ('county_code' in dataPoint && dataPoint.county_code) {
+      lookup.set(dataPoint.county_code, dataPoint);
+    }
+  }
+
+  return lookup;
+};
+
+/**
  * Generates enhanced HTML content for a feature's tooltip.
  * The tooltip has a better design and includes a summary of active filters.
  * It prioritizes data from heatmapData if available for the UAT/Județ.
@@ -88,12 +112,18 @@ export const createTooltipContent = (
     noData: `font-style: italic; color: #666; margin-top: 4px; display: flex; flex-direction: column; `
   };
 
-  // Find the corresponding data point from the heatmap data
-  const dataPoint = heatmapData?.find(d => {
-    if (isUAT && 'siruta_code' in d) return d.siruta_code === featureIdentifier;
-    if (!isUAT && 'county_code' in d) return d.county_code === featureIdentifier;
-    return false;
-  });
+  // O(1) keyed lookup avoids re-scanning heatmapData on every hover.
+  const lookup = buildHeatmapTooltipLookup(heatmapData);
+  const candidateKey =
+    typeof featureIdentifier === 'string' || typeof featureIdentifier === 'number'
+      ? featureIdentifier
+      : undefined;
+  const candidate = candidateKey !== undefined ? lookup.get(candidateKey) : undefined;
+  const dataPoint = candidate
+    ? (isUAT
+        ? ('siruta_code' in candidate ? candidate : undefined)
+        : ('county_code' in candidate ? candidate : undefined))
+    : undefined;
 
   // --- Tooltip for features WITH data ---
   if (dataPoint) {
@@ -288,24 +318,38 @@ export const createHeatmapStyleFunction = (
   mapViewType: 'UAT' | 'County',
   valueKey: 'amount' | 'total_amount' | 'per_capita_amount'
 ): ((feature: UatFeature) => PathOptions) => {
+  // Build the lookup once per style-function instance. The previous
+  // implementation ran an O(n) `.find()` on every feature; since this style
+  // function is invoked once per feature on every restyle pass, that quickly
+  // dominates large GeoJSON renders.
+  const isUAT = mapViewType === 'UAT';
+  const lookup = new Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>();
+  if (heatmapData) {
+    for (const dataPoint of heatmapData) {
+      if (isUAT && 'siruta_code' in dataPoint && dataPoint.siruta_code) {
+        lookup.set(dataPoint.siruta_code, dataPoint);
+      }
+      if (!isUAT && 'county_code' in dataPoint && dataPoint.county_code) {
+        lookup.set(dataPoint.county_code, dataPoint);
+      }
+    }
+  }
 
   return (feature: UatFeature) => {
     if (!feature || !feature.properties) {
       return DEFAULT_FEATURE_STYLE;
     }
 
-    const isUAT = mapViewType === 'UAT';
-    const featureKey = isUAT ? feature.properties.natcode : feature.properties.mnemonic;
-
     if (!heatmapData) {
       return DEFAULT_FEATURE_STYLE;
     }
 
-    const dataPoint = heatmapData.find(d => {
-      if (isUAT && 'siruta_code' in d) return d.siruta_code === featureKey;
-      if (!isUAT && 'county_code' in d) return d.county_code === featureKey;
-      return false;
-    });
+    const rawFeatureKey = isUAT ? feature.properties.natcode : feature.properties.mnemonic;
+    const featureKey =
+      typeof rawFeatureKey === 'string' || typeof rawFeatureKey === 'number'
+        ? rawFeatureKey
+        : undefined;
+    const dataPoint = featureKey !== undefined ? lookup.get(featureKey) : undefined;
 
     if (!dataPoint) {
       return { ...DEFAULT_FEATURE_STYLE, fillOpacity: 0.1, fillColor: "#cccccc" };
@@ -390,9 +434,17 @@ export function buildHeatmapDataMap(
   return map;
 }
 
+type StyleFunctionTracker = LeafletGeoJSON & {
+  __lastAppliedStyleFn?: (feature?: Feature<Geometry, unknown>) => PathOptions;
+};
+
 /**
  * Re-applies styles to all features from the current GeoJSON layer group.
  * Note: This function is only safe to call on the client side.
+ *
+ * Bails out early when the layer is detached or when the same style function
+ * reference has already been applied since the last data change, avoiding a
+ * full per-feature `setStyle` pass on every render.
  */
 export function restyleAllFeatures(
   layerGroup: LeafletGeoJSON | null,
@@ -405,6 +457,13 @@ export function restyleAllFeatures(
   // Skip style updates while the layer is detached during map teardown.
   if (!map || !container || !container.isConnected) return;
 
+  // Fast bail: skip redundant restyles when the style function reference is
+  // unchanged since the last successful pass on this layer group.
+  const tracker = layerGroup as StyleFunctionTracker;
+  if (tracker.__lastAppliedStyleFn === styleFn) {
+    return;
+  }
+
   try {
     layerGroup.eachLayer((layer) => {
       const feature = (layer as unknown as { feature?: Feature<Geometry, unknown> }).feature;
@@ -416,6 +475,7 @@ export function restyleAllFeatures(
         layerWithStyle.setStyle(nextStyle);
       }
     });
+    tracker.__lastAppliedStyleFn = styleFn;
   } catch {
     // Silently ignore styling errors for resilience in production
   }

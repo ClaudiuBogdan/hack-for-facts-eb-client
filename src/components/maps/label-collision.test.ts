@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   resolveAdaptiveLabelBudget,
   selectNonOverlappingLabelCandidates,
+  selectNonOverlappingLabelCandidatesChunked,
   type LabelCollisionCandidate,
 } from './label-collision';
 
@@ -24,15 +25,15 @@ function createCandidate(
 
 describe('resolveAdaptiveLabelBudget', () => {
   it('returns low budget below 9.5 zoom', () => {
-    expect(resolveAdaptiveLabelBudget(8.5)).toBe(30);
+    expect(resolveAdaptiveLabelBudget(8.5)).toBe(60);
   });
 
   it('returns mid budget between 9.5 and 11.5 zoom', () => {
-    expect(resolveAdaptiveLabelBudget(10.2)).toBe(70);
+    expect(resolveAdaptiveLabelBudget(10.2)).toBe(160);
   });
 
   it('returns high budget at or above 11.5 zoom', () => {
-    expect(resolveAdaptiveLabelBudget(11.5)).toBe(130);
+    expect(resolveAdaptiveLabelBudget(11.5)).toBe(400);
   });
 });
 
@@ -85,7 +86,7 @@ describe('selectNonOverlappingLabelCandidates', () => {
   });
 
   it('enforces zoom-dependent label budget', () => {
-    const candidates = Array.from({ length: 150 }, (_, index) =>
+    const candidates = Array.from({ length: 500 }, (_, index) =>
       createCandidate(`feature-${index + 1}`, {
         x: index * 120,
         y: 10,
@@ -98,8 +99,29 @@ describe('selectNonOverlappingLabelCandidates', () => {
     const midZoomSelected = selectNonOverlappingLabelCandidates(candidates, 10.4);
     const highZoomSelected = selectNonOverlappingLabelCandidates(candidates, 12.1);
 
-    expect(lowZoomSelected).toHaveLength(30);
-    expect(midZoomSelected).toHaveLength(70);
-    expect(highZoomSelected).toHaveLength(130);
+    expect(lowZoomSelected).toHaveLength(60);
+    expect(midZoomSelected).toHaveLength(160);
+    expect(highZoomSelected).toHaveLength(400);
+  });
+
+  it('allows abort signals to run between chunks', async () => {
+    const candidates = Array.from({ length: 100 }, (_, index) =>
+      createCandidate(`feature-${index + 1}`, {
+        x: index * 120,
+        y: 10,
+        width: 18,
+        hasValue: true,
+      })
+    );
+    const abortController = new AbortController();
+
+    setTimeout(() => abortController.abort(), 0);
+
+    const selected = await selectNonOverlappingLabelCandidatesChunked(candidates, 10, {
+      chunkSize: 1,
+      signal: abortController.signal,
+    });
+
+    expect(selected.length).toBeLessThan(candidates.length);
   });
 });

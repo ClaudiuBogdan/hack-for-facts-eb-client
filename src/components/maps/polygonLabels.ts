@@ -10,6 +10,16 @@ export type LabelMode = 'legacy-heatmap' | 'active-series';
 export interface FeatureLabelGeometry {
   centroid: [number, number];
   bounds: L.LatLngBounds;
+  /**
+   * Cached, normalized identifier for this feature. Resolved once per GeoJSON
+   * load so per-zoom label processing can build cache keys cheaply.
+   */
+  featureId: string;
+  /**
+   * Cached normalized display name (whitespace-collapsed). Empty string if the
+   * feature has no usable name.
+   */
+  nameNormalized: string;
 }
 
 export interface PolygonLabelData {
@@ -24,6 +34,11 @@ export interface PolygonLabelData {
   featureId: string;
   hasValue: boolean;
   value?: number;
+  /**
+   * Stable cache key incorporating feature, zoom bucket, label mode and
+   * normalization signal so consumers can memoize per-zoom label results.
+   */
+  cacheKey: string;
 }
 
 export interface ProcessFeatureForLabelOptions {
@@ -49,6 +64,13 @@ export const ADVANCED_ZOOM_THRESHOLDS = {
 const MIN_FALLBACK_LABEL_FONT_SIZE = 8;
 const MIN_COUNTY_LABEL_FONT_SIZE = 9;
 const MIN_ADVANCED_LABEL_FONT_SIZE = 9;
+
+/**
+ * Tenth-step zoom bucket. Leaflet is configured with `zoomSnap={0.1}`, and
+ * these buckets keep label visibility/amount thresholds (8, 9, 9.5) from
+ * sharing cached records across opposite sides of a threshold.
+ */
+const ZOOM_CACHE_BUCKET_MULTIPLIER = 10;
 
 function normalizeWhitespace(value: string): string {
   return value.trim().replace(/\s+/g, ' ');
@@ -100,6 +122,29 @@ function resolveFeatureIdentifier(properties: Record<string, unknown>): string {
 }
 
 /**
+ * Quantize a continuous zoom value to a stable bucket so cache keys collapse
+ * imperceptibly-different zoom levels onto the same processed-label record.
+ */
+export function getZoomBucket(zoom: number): number {
+  if (!Number.isFinite(zoom)) {
+    return 0;
+  }
+  return Math.floor(zoom * ZOOM_CACHE_BUCKET_MULTIPLIER + Number.EPSILON);
+}
+
+/**
+ * Build a stable cache key for a processed label so the canvas layer can
+ * reuse computed font/truncation results across redraws at the same zoom.
+ */
+export function getLabelCacheKey(
+  featureId: string,
+  zoom: number,
+  labelMode: LabelMode,
+): string {
+  return `${labelMode}|${getZoomBucket(zoom)}|${featureId}`;
+}
+
+/**
  * Calculate the centroid of a polygon using the geometric center.
  */
 export function calculatePolygonCentroid(coordinates: number[][][]): [number, number] | null {
@@ -128,13 +173,8 @@ export function calculatePolygonCentroid(coordinates: number[][][]): [number, nu
  * Calculate the area of a polygon in screen pixels at current zoom level.
  */
 export function calculatePolygonScreenArea(bounds: L.LatLngBounds, map: L.Map): number {
-  const northEastPoint = map.latLngToContainerPoint(bounds.getNorthEast());
-  const southWestPoint = map.latLngToContainerPoint(bounds.getSouthWest());
-
-  const width = Math.abs(northEastPoint.x - southWestPoint.x);
-  const height = Math.abs(northEastPoint.y - southWestPoint.y);
-
-  return width * height;
+  const dimensions = getBoundsDimensions(bounds, map);
+  return dimensions.width * dimensions.height;
 }
 
 /**
@@ -185,16 +225,19 @@ export function doesLabelFit(
   map: L.Map,
   withAmount: boolean = false
 ): boolean {
+  const dimensions = getBoundsDimensions(bounds, map);
+  return doesLabelFitWithinDimensions(text, fontSize, dimensions, withAmount);
+}
+
+function doesLabelFitWithinDimensions(
+  text: string,
+  fontSize: number,
+  dimensions: { width: number; height: number },
+  withAmount: boolean,
+): boolean {
   const textWidth = estimateTextWidth(text, fontSize);
   const textHeight = fontSize * (withAmount ? 2.5 : 1.2);
-
-  const northEastPoint = map.latLngToContainerPoint(bounds.getNorthEast());
-  const southWestPoint = map.latLngToContainerPoint(bounds.getSouthWest());
-
-  const boundsWidth = Math.abs(northEastPoint.x - southWestPoint.x);
-  const boundsHeight = Math.abs(northEastPoint.y - southWestPoint.y);
-
-  return textWidth <= boundsWidth * 0.8 && textHeight <= boundsHeight * 0.8;
+  return textWidth <= dimensions.width * 0.8 && textHeight <= dimensions.height * 0.8;
 }
 
 /**
@@ -293,9 +336,15 @@ export function buildFeatureLabelGeometry(
     return null;
   }
 
+  const properties = feature.properties ?? {};
+  const featureId = resolveFeatureIdentifier(properties);
+  const nameNormalized = normalizeUatLabelName(properties.name ?? properties.mnemonic ?? '');
+
   return {
     centroid,
     bounds: L.latLngBounds(latLngs),
+    featureId,
+    nameNormalized,
   };
 }
 
@@ -340,6 +389,37 @@ function getBoundsDimensions(bounds: L.LatLngBounds, map: L.Map): { width: numbe
 }
 
 /**
+ * Closed-form replacement for the prior iterative font-size shrink loop.
+ *
+ * The loop searched for the largest fontSize <= initial that satisfies
+ * `text.length * fontSize * 0.6 <= width * 0.8` AND
+ * `fontSize * heightMult <= height * 0.8`. Both inequalities are linear in
+ * fontSize, so the largest fitting size is just `min(initial, maxByWidth, maxByHeight)`
+ * clamped at `minimumFontSize`.
+ */
+function solveLabelFontSize(
+  initialFontSize: number,
+  text: string,
+  dimensions: { width: number; height: number },
+  withAmount: boolean,
+  minimumFontSize: number,
+): number {
+  const safeTextLength = Math.max(1, text.length);
+  const heightMultiplier = withAmount ? 2.5 : 1.2;
+
+  const maxByWidth = (dimensions.width * 0.8) / (safeTextLength * 0.6);
+  const maxByHeight = (dimensions.height * 0.8) / heightMultiplier;
+  const maxFitFontSize = Math.min(maxByWidth, maxByHeight);
+
+  if (!Number.isFinite(maxFitFontSize)) {
+    return Math.max(minimumFontSize, initialFontSize);
+  }
+
+  const fittedFontSize = Math.min(initialFontSize, maxFitFontSize);
+  return Math.max(minimumFontSize, fittedFontSize);
+}
+
+/**
  * Process a feature to extract label data.
  */
 export function processFeatureForLabel(
@@ -359,13 +439,18 @@ export function processFeatureForLabel(
   }
 
   const labelMode = options?.labelMode ?? 'legacy-heatmap';
-  const rawName = properties.name ?? properties.mnemonic ?? '';
-  const name = normalizeUatLabelName(rawName);
+
+  const geometry = options?.precomputedGeometry ?? buildFeatureLabelGeometry(feature);
+  if (!geometry) {
+    return null;
+  }
+
+  const name = geometry.nameNormalized || normalizeUatLabelName(properties.name ?? properties.mnemonic ?? '');
   if (!name) {
     return null;
   }
 
-  const featureId = resolveFeatureIdentifier(properties) || name;
+  const featureId = geometry.featureId || resolveFeatureIdentifier(properties) || name;
   const isCounty = mapViewType === 'County';
   const isUat = mapViewType === 'UAT';
 
@@ -378,18 +463,21 @@ export function processFeatureForLabel(
     return null;
   }
 
-  const geometry = options?.precomputedGeometry ?? buildFeatureLabelGeometry(feature);
-  if (!geometry) {
-    return null;
-  }
+  // Project bounds once and reuse for area, font sizing and truncation. The
+  // previous implementation projected the same bounds 3+ times per feature.
+  const dimensions = getBoundsDimensions(geometry.bounds, map);
+  const screenArea = dimensions.width * dimensions.height;
 
-  const screenArea = calculatePolygonScreenArea(geometry.bounds, map);
+  const heatmapData =
+    labelMode === 'legacy-heatmap'
+      ? getFeatureHeatmapData(feature, heatmapDataMap)
+      : undefined;
+
   let value: number | undefined;
   let showAmount = false;
   let amountText: string | undefined;
 
   if (labelMode === 'legacy-heatmap') {
-    const heatmapData = getFeatureHeatmapData(feature, heatmapDataMap);
     if (!heatmapData) {
       return null;
     }
@@ -430,7 +518,6 @@ export function processFeatureForLabel(
 
   let fontSize: number;
   if (labelMode === 'legacy-heatmap') {
-    const heatmapData = getFeatureHeatmapData(feature, heatmapDataMap);
     const population = heatmapData
       ? isCounty
         ? Number((heatmapData as { county_population?: number }).county_population)
@@ -460,15 +547,9 @@ export function processFeatureForLabel(
       ? MIN_ADVANCED_LABEL_FONT_SIZE
       : (isCounty ? MIN_COUNTY_LABEL_FONT_SIZE : MIN_FALLBACK_LABEL_FONT_SIZE);
 
-  while (
-    fontSize > minimumFontSize &&
-    !doesLabelFit(displayText, fontSize, geometry.bounds, map, showAmount)
-  ) {
-    fontSize -= 0.5;
-  }
+  fontSize = solveLabelFontSize(fontSize, displayText, dimensions, showAmount, minimumFontSize);
 
-  if (!doesLabelFit(displayText, fontSize, geometry.bounds, map, showAmount)) {
-    const dimensions = getBoundsDimensions(geometry.bounds, map);
+  if (!doesLabelFitWithinDimensions(displayText, fontSize, dimensions, showAmount)) {
     const maxTextWidth = dimensions.width * 0.78;
     const estimatedCharacterWidth = Math.max(1, fontSize * 0.58);
     const maxCharacters = Math.max(4, Math.floor(maxTextWidth / estimatedCharacterWidth));
@@ -487,5 +568,6 @@ export function processFeatureForLabel(
     featureId,
     hasValue: value !== undefined && Number.isFinite(value),
     value,
+    cacheKey: getLabelCacheKey(featureId, zoom, labelMode),
   };
 }
