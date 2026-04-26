@@ -46,75 +46,71 @@ export function DatasetImportDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>{t`Import dataset rows`}</DialogTitle>
-          <DialogDescription>
-            {t`Paste spreadsheet rows or upload a CSV/XLSX file. Supported data columns are value, text, link, and markdown, and each row may set at most one payload column.`}
+          <DialogTitle className="text-lg font-semibold tracking-tight">{t`Import dataset rows`}</DialogTitle>
+          <DialogDescription className="text-sm">
+            {t`Paste spreadsheet rows or upload a CSV/XLSX file. Supported columns: value, text, link, markdown — at most one payload column per row.`}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
+        <div className="space-y-5">
+          <section className="space-y-2">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <ClipboardPaste className="h-4 w-4 text-muted-foreground" />
-              <p className="text-sm font-medium">{t`Paste data`}</p>
+              {t`Paste data`}
             </div>
             <Textarea
               value={pastedText}
               onChange={(event) => setPastedText(event.currentTarget.value)}
-              className="min-h-[200px] resize-none rounded-lg border-muted-foreground/20 font-mono text-sm focus-visible:border-primary"
+              className="min-h-[200px] resize-none rounded-lg border-border/60 font-mono text-sm focus-visible:border-primary"
               placeholder={t`Paste spreadsheet rows here…`}
               disabled={isBusy}
             />
-          </div>
+          </section>
 
-          <Separator />
+          <Separator className="bg-border/60" />
 
-          <div className="rounded-lg border border-dashed border-muted-foreground/25 bg-muted/30 p-6 transition-colors hover:border-muted-foreground/40 hover:bg-muted/50">
-            <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                <FileUp className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">{t`Upload file`}</p>
-                <p className="text-xs text-muted-foreground">
-                  {t`Accepted formats: .csv, .tsv, .xlsx, .xls`}
-                </p>
-              </div>
-              <Input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                accept=".csv,.tsv,.xlsx,.xls"
-                onChange={(event) => {
-                  const file = event.currentTarget.files?.[0];
-                  if (file) {
-                    void onImportFile(file);
-                  }
-                  event.currentTarget.value = '';
-                }}
-                disabled={isBusy}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isBusy}
-                className="gap-1.5"
-              >
-                <Upload className="h-4 w-4" />
-                {t`Choose file`}
-              </Button>
+          <section className="flex flex-col items-start gap-3 rounded-lg border border-dashed border-border/70 bg-muted/20 px-4 py-4 transition-colors hover:border-border hover:bg-muted/40 sm:flex-row sm:items-center">
+            <FileUp className="h-5 w-5 shrink-0 text-muted-foreground" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">{t`Upload file`}</p>
+              <p className="text-xs text-muted-foreground">
+                {t`.csv, .tsv, .xlsx, .xls`}
+              </p>
             </div>
-          </div>
+            <Input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              accept=".csv,.tsv,.xlsx,.xls"
+              onChange={(event) => {
+                const file = event.currentTarget.files?.[0];
+                if (file) {
+                  void onImportFile(file);
+                }
+                event.currentTarget.value = '';
+              }}
+              disabled={isBusy}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isBusy}
+              className="gap-1.5"
+            >
+              <Upload className="h-4 w-4" />
+              {t`Choose file`}
+            </Button>
+          </section>
 
           {issues.length > 0 ? (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800/40 dark:bg-amber-950/30">
-              <div className="flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-300">
+            <div className="rounded-lg border border-amber-200/70 bg-amber-50/60 px-4 py-3 text-sm dark:border-amber-800/40 dark:bg-amber-950/30">
+              <div className="flex items-center gap-2 font-medium text-amber-900 dark:text-amber-200">
                 <AlertTriangle className="h-4 w-4" />
                 {t`Import issues`}
               </div>
-              <ul className="mt-2 space-y-1 text-sm text-amber-700 dark:text-amber-400">
+              <ul className="mt-2 space-y-1 text-amber-800/90 dark:text-amber-200/80">
                 {issues.slice(0, 8).map((issue) => (
                   <li key={`${issue.rowNumber}-${issue.message}`} className="font-mono text-xs">
                     {t`Row`} {issue.rowNumber}: {issue.message}
@@ -134,7 +130,12 @@ export function DatasetImportDialog({
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isBusy}>
             {t`Cancel`}
           </Button>
-          <Button type="button" onClick={() => void handleImportText()} disabled={isBusy || pastedText.trim() === ''} className="gap-2">
+          <Button
+            type="button"
+            onClick={() => void handleImportText()}
+            disabled={isBusy || pastedText.trim() === ''}
+            className="gap-2"
+          >
             {isBusy ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />

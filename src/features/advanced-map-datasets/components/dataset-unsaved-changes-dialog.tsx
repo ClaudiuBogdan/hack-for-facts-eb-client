@@ -25,29 +25,29 @@ export function DatasetUnsavedChangesDialog({
 }: Readonly<DatasetUnsavedChangesDialogProps>) {
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onStay()}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader className="gap-4">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/30">
-            <AlertTriangle className="h-6 w-6 text-amber-600 dark:text-amber-500" />
-          </div>
-          <div className="space-y-2 text-center">
-            <DialogTitle className="text-xl font-semibold">
+      <DialogContent className="sm:max-w-[420px]">
+        <DialogHeader className="gap-2 text-left sm:text-left">
+          <div className="flex items-center gap-2 text-amber-600 dark:text-amber-500">
+            <AlertTriangle className="h-4 w-4" />
+            <span className="text-xs font-medium uppercase tracking-wider">
               <Trans>Unsaved changes</Trans>
-            </DialogTitle>
-            <DialogDescription className="text-base text-muted-foreground">
-              <Trans>You have unsaved dataset changes. Are you sure you want to leave this page?</Trans>
-            </DialogDescription>
+            </span>
           </div>
+          <DialogTitle className="text-lg font-semibold tracking-tight">
+            <Trans>Leave without saving?</Trans>
+          </DialogTitle>
+          <DialogDescription className="text-sm">
+            <Trans>Your changes to this dataset draft will be lost if you leave this page.</Trans>
+          </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="flex gap-2 sm:gap-2">
-          <Button variant="outline" onClick={onStay} className="flex-1 sm:flex-1" autoFocus>
+        <DialogFooter className="gap-2 sm:gap-2">
+          <Button variant="outline" onClick={onStay} autoFocus>
             <Trans>Stay here</Trans>
           </Button>
           <Button
             variant="destructive"
             onClick={onLeave}
             disabled={isSaving}
-            className="flex-1 sm:flex-1"
           >
             <Trans>Leave without saving</Trans>
           </Button>

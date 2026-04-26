@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '@lingui/core/macro';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -189,193 +188,190 @@ export function DatasetEditorUatDialog({
       }}
     >
       <DialogContent className="overflow-hidden p-0 sm:max-w-xl">
-        <div className="border-b bg-muted/20 px-6 py-5">
+        <div className="px-6 pb-4 pt-6">
           <DialogHeader className="text-left">
-            <DialogTitle className="pr-8">{buildDialogTitle(row) || t`UAT details`}</DialogTitle>
-            <DialogDescription className="mt-1.5">
+            <DialogTitle className="pr-8 text-lg font-semibold tracking-tight">
+              {buildDialogTitle(row) || t`UAT details`}
+            </DialogTitle>
+            <DialogDescription className="mt-1 text-sm">
               {row
-                ? t`Review the selected UAT metadata and update its dataset value here.`
+                ? t`Update this UAT’s dataset value and optional payload.`
                 : t`Select a UAT from the map to edit its value.`}
             </DialogDescription>
           </DialogHeader>
 
           {row ? (
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="bg-background/80">{typeLabel}</Badge>
-              <Badge variant="outline" className="bg-background/80">{countyLabel}</Badge>
-              <Badge variant="secondary" className="font-mono">{row.sirutaCode}</Badge>
+            <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+              <span>{typeLabel}</span>
+              <span aria-hidden className="h-1 w-1 rounded-full bg-muted-foreground/40" />
+              <span>{countyLabel}</span>
+              <span aria-hidden className="h-1 w-1 rounded-full bg-muted-foreground/40" />
+              <span className="font-mono">{t`SIRUTA`} {row.sirutaCode}</span>
             </div>
           ) : null}
         </div>
 
         {row ? (
-          <div className="px-5 py-4">
-            <div className="space-y-4">
-              <section className="space-y-2">
-                <div>
-                  <h3 className="text-sm font-semibold text-foreground">{t`Dataset value`}</h3>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {t`Press Enter to save and close.`}
-                  </p>
-                </div>
+          <div className="space-y-5 border-t border-border/60 px-6 pb-6 pt-5">
+            <section className="space-y-2">
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 className="text-sm font-medium text-foreground">{t`Value`}</h3>
+                <span className="text-xs text-muted-foreground">{t`Press Enter to save & close`}</span>
+              </div>
 
-                <div className="relative">
+              <div className="relative">
+                <Input
+                  id="dataset-editor-uat-value"
+                  value={valueDraft}
+                  onChange={(event) => {
+                    const nextValue = event.currentTarget.value;
+                    latestValueRef.current = nextValue;
+                    setValueDraft(nextValue);
+                    hasPendingValueCommitRef.current = true;
+                    clearPendingValueCommit();
+                    const rowSirutaCode = row?.sirutaCode ?? null;
+                    pendingValueCommitTimeoutRef.current = window.setTimeout(() => {
+                      flushPendingValueCommit(rowSirutaCode, nextValue);
+                    }, VALUE_COMMIT_DELAY_MS);
+                  }}
+                  onBlur={() => flushPendingValueCommit(row?.sirutaCode ?? null)}
+                  onKeyDown={(event) => {
+                    if (event.key !== 'Enter' || event.nativeEvent.isComposing) {
+                      return;
+                    }
+
+                    event.preventDefault();
+                    flushPendingValueCommit(row?.sirutaCode ?? null, latestValueRef.current);
+                    onOpenChange(false);
+                  }}
+                  placeholder={t`Value`}
+                  className="h-11 pr-28 text-right text-base tabular-nums"
+                  autoFocus
+                />
+                <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                  <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                    {unitLabel}
+                  </span>
+                </div>
+              </div>
+
+              {row.validationMessage ? (
+                <p className="text-xs text-destructive">{row.validationMessage}</p>
+              ) : null}
+            </section>
+
+            <Separator className="bg-border/60" />
+
+            <section className="space-y-3">
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 className="text-sm font-medium text-foreground">{t`Payload`}</h3>
+                <span className="text-xs text-muted-foreground">{t`Optional`}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {t`Optional content shown when users click this UAT on the map.`}
+              </p>
+
+              <Select
+                value={payloadDraft.type}
+                onValueChange={(value) => {
+                  if (value === 'none') {
+                    updatePayloadDraft(createEmptyAdvancedMapDatasetPayloadDraft());
+                    return;
+                  }
+
+                  updatePayloadDraft({
+                    ...payloadDraft,
+                    type: value as AdvancedMapDatasetPayloadDraft['type'],
+                    linkLabel: value === 'link' ? payloadDraft.linkLabel : '',
+                  });
+                }}
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t`No payload`}</SelectItem>
+                  <SelectItem value="text">{t`Plain text`}</SelectItem>
+                  <SelectItem value="link">{t`External link`}</SelectItem>
+                  <SelectItem value="markdown">{t`Markdown`}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {payloadDraft.type === 'text' ? (
+                <Textarea
+                  value={payloadDraft.value}
+                  onChange={(event) =>
+                    updatePayloadDraft({
+                      ...payloadDraft,
+                      value: event.currentTarget.value,
+                    })
+                  }
+                  onBlur={() => flushPendingPayloadCommit(row?.sirutaCode ?? null, payloadDraftRef.current)}
+                  placeholder={t`Enter text content…`}
+                  className="min-h-[80px] resize-none"
+                />
+              ) : null}
+
+              {payloadDraft.type === 'markdown' ? (
+                <Textarea
+                  value={payloadDraft.value}
+                  onChange={(event) =>
+                    updatePayloadDraft({
+                      ...payloadDraft,
+                      value: event.currentTarget.value,
+                    })
+                  }
+                  onBlur={() => flushPendingPayloadCommit(row?.sirutaCode ?? null, payloadDraftRef.current)}
+                  placeholder={t`Enter markdown content…`}
+                  className="min-h-[100px] resize-none font-mono text-sm"
+                />
+              ) : null}
+
+              {payloadDraft.type === 'link' ? (
+                <div className="space-y-2">
                   <Input
-                    id="dataset-editor-uat-value"
-                    value={valueDraft}
-                    onChange={(event) => {
-                      const nextValue = event.currentTarget.value;
-                      latestValueRef.current = nextValue;
-                      setValueDraft(nextValue);
-                      hasPendingValueCommitRef.current = true;
-                      clearPendingValueCommit();
-                      const rowSirutaCode = row?.sirutaCode ?? null;
-                      pendingValueCommitTimeoutRef.current = window.setTimeout(() => {
-                        flushPendingValueCommit(rowSirutaCode, nextValue);
-                      }, VALUE_COMMIT_DELAY_MS);
-                    }}
-                    onBlur={() => flushPendingValueCommit(row?.sirutaCode ?? null)}
-                    onKeyDown={(event) => {
-                      if (event.key !== 'Enter' || event.nativeEvent.isComposing) {
-                        return;
-                      }
-
-                      event.preventDefault();
-                      flushPendingValueCommit(row?.sirutaCode ?? null, latestValueRef.current);
-                      onOpenChange(false);
-                    }}
-                    placeholder={t`Value`}
-                    className="h-11 pr-32 text-right text-base tabular-nums"
-                    autoFocus
-                  />
-                  <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                    <span className="rounded border bg-muted/70 px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                      {unitLabel}
-                    </span>
-                  </div>
-                </div>
-
-                {row.validationMessage ? (
-                  <p className="text-xs text-destructive">{row.validationMessage}</p>
-                ) : (
-                  <p className="text-xs text-muted-foreground">
-                    {t`Changes apply immediately to the draft and are reflected in the table and map preview.`}
-                  </p>
-                )}
-              </section>
-
-              <Separator />
-
-              <section className="space-y-3">
-                <div>
-                  <h3 className="text-sm font-semibold text-foreground">{t`Payload`}</h3>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {t`Optional content displayed when users click this UAT on the map.`}
-                  </p>
-                </div>
-
-                <div className="space-y-3 rounded-lg border bg-background p-3">
-                  <Select
-                    value={payloadDraft.type}
-                    onValueChange={(value) => {
-                      if (value === 'none') {
-                        updatePayloadDraft(createEmptyAdvancedMapDatasetPayloadDraft());
-                        return;
-                      }
-
+                    value={payloadDraft.value}
+                    onChange={(event) =>
                       updatePayloadDraft({
                         ...payloadDraft,
-                        type: value as AdvancedMapDatasetPayloadDraft['type'],
-                        linkLabel: value === 'link' ? payloadDraft.linkLabel : '',
-                      });
-                    }}
-                  >
-                    <SelectTrigger className="h-9">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">{t`No payload`}</SelectItem>
-                      <SelectItem value="text">{t`Plain text`}</SelectItem>
-                      <SelectItem value="link">{t`External link`}</SelectItem>
-                      <SelectItem value="markdown">{t`Markdown`}</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  {payloadDraft.type === 'text' ? (
-                    <Textarea
-                      value={payloadDraft.value}
-                      onChange={(event) =>
-                        updatePayloadDraft({
-                          ...payloadDraft,
-                          value: event.currentTarget.value,
-                        })
-                      }
-                      onBlur={() => flushPendingPayloadCommit(row?.sirutaCode ?? null, payloadDraftRef.current)}
-                      placeholder={t`Enter text content...`}
-                      className="min-h-[80px] resize-none"
-                    />
-                  ) : null}
-
-                  {payloadDraft.type === 'markdown' ? (
-                    <Textarea
-                      value={payloadDraft.value}
-                      onChange={(event) =>
-                        updatePayloadDraft({
-                          ...payloadDraft,
-                          value: event.currentTarget.value,
-                        })
-                      }
-                      onBlur={() => flushPendingPayloadCommit(row?.sirutaCode ?? null, payloadDraftRef.current)}
-                      placeholder={t`Enter markdown content...`}
-                      className="min-h-[100px] resize-none font-mono text-sm"
-                    />
-                  ) : null}
-
-                  {payloadDraft.type === 'link' ? (
-                    <div className="space-y-2">
-                      <Input
-                        value={payloadDraft.value}
-                        onChange={(event) =>
-                          updatePayloadDraft({
-                            ...payloadDraft,
-                            value: event.currentTarget.value,
-                          })
-                        }
-                        onBlur={() => flushPendingPayloadCommit(row?.sirutaCode ?? null, payloadDraftRef.current)}
-                        placeholder={t`https://example.com`}
-                        className="h-9"
-                      />
-                      <Input
-                        value={payloadDraft.linkLabel}
-                        onChange={(event) =>
-                          updatePayloadDraft({
-                            ...payloadDraft,
-                            linkLabel: event.currentTarget.value,
-                          })
-                        }
-                        onBlur={() => flushPendingPayloadCommit(row?.sirutaCode ?? null, payloadDraftRef.current)}
-                        placeholder={t`Link label (optional)`}
-                        className="h-9"
-                      />
-                    </div>
-                  ) : null}
-
-                  {payloadDraft.type !== 'none' ? (
-                    <div className="rounded-md bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-                      <span className="font-medium text-foreground/70">{t`Preview:`}</span>{' '}
-                      {payloadPreview}
-                    </div>
-                  ) : null}
-
-                  {payloadValidationMessage && hasAdvancedMapDatasetPayloadDraftData(payloadDraft) ? (
-                    <p className="text-xs text-destructive">{payloadValidationMessage}</p>
-                  ) : null}
+                        value: event.currentTarget.value,
+                      })
+                    }
+                    onBlur={() => flushPendingPayloadCommit(row?.sirutaCode ?? null, payloadDraftRef.current)}
+                    placeholder={t`https://example.com`}
+                    className="h-9"
+                  />
+                  <Input
+                    value={payloadDraft.linkLabel}
+                    onChange={(event) =>
+                      updatePayloadDraft({
+                        ...payloadDraft,
+                        linkLabel: event.currentTarget.value,
+                      })
+                    }
+                    onBlur={() => flushPendingPayloadCommit(row?.sirutaCode ?? null, payloadDraftRef.current)}
+                    placeholder={t`Link label (optional)`}
+                    className="h-9"
+                  />
                 </div>
-              </section>
-            </div>
+              ) : null}
+
+              {payloadDraft.type !== 'none' ? (
+                <div className="rounded-md border border-border/60 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80">
+                    {t`Preview`}
+                  </span>
+                  <p className="mt-1 break-words text-foreground/80">{payloadPreview}</p>
+                </div>
+              ) : null}
+
+              {payloadValidationMessage && hasAdvancedMapDatasetPayloadDraftData(payloadDraft) ? (
+                <p className="text-xs text-destructive">{payloadValidationMessage}</p>
+              ) : null}
+            </section>
           </div>
         ) : (
-          <div className="px-6 py-5 text-sm text-muted-foreground">
+          <div className="border-t border-border/60 px-6 py-5 text-sm text-muted-foreground">
             {t`Select a UAT from the map to load its details here.`}
           </div>
         )}

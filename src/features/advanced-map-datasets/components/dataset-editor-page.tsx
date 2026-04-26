@@ -2,17 +2,23 @@ import { useBlocker, useNavigate } from '@tanstack/react-router';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type ClipboardEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertTriangle, Copy, Database, Download, FileJson, FileSpreadsheet, HardDrive, Loader2, Redo2, Save, Search, Undo2, Upload } from 'lucide-react';
+import { AlertTriangle, ChevronDown, Copy, Database, Download, FileJson, FileSpreadsheet, HardDrive, Loader2, Redo2, Save, Search, Undo2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { t } from '@lingui/core/macro';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
@@ -695,7 +701,7 @@ export function AdvancedMapDatasetEditorPage({
   );
 
   const isSaving = createDatasetMutation.isPending || replaceRowsMutation.isPending || updateDatasetMutation.isPending;
-  const shouldShowSaveDatasetCallToAction = isInitialStateResolved && isDirty;
+  const hasUnsavedChanges = isInitialStateResolved && isDirty;
 
   const updateRowValue = useCallback(
     (currentDraft: AdvancedMapDatasetDraft, sirutaCode: string, nextValue: string): AdvancedMapDatasetDraft => {
@@ -1036,24 +1042,20 @@ export function AdvancedMapDatasetEditorPage({
 
   if (!isSignedIn) {
     return (
-      <div className="container mx-auto max-w-md py-12">
-        <Card className="text-center">
-          <CardHeader className="space-y-4">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <Database className="h-8 w-8 text-primary" />
+      <div className="container mx-auto max-w-md py-16">
+        <Card>
+          <CardHeader className="items-center space-y-3 pb-3 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <Database className="h-5 w-5 text-primary" />
             </div>
-            <div>
-              <CardTitle className="text-xl">{t`Sign in required`}</CardTitle>
-              <CardDescription className="text-sm">
-                {t`You need to be signed in to edit custom data series.`}
-              </CardDescription>
-            </div>
+            <CardTitle className="text-base font-semibold">{t`Sign in required`}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {t`You need to be signed in to edit custom data series.`}
+            </p>
           </CardHeader>
           <CardContent>
             <AuthSignInButton>
-              <Button size="lg" className="w-full">
-                {t`Sign In`}
-              </Button>
+              <Button className="w-full">{t`Sign in`}</Button>
             </AuthSignInButton>
           </CardContent>
         </Card>
@@ -1063,18 +1065,16 @@ export function AdvancedMapDatasetEditorPage({
 
   if (mode === 'edit' && datasetQuery.error) {
     return (
-      <div className="container mx-auto max-w-md py-12">
-        <Card className="border-destructive/20">
-          <CardHeader className="space-y-4">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-              <Database className="h-8 w-8 text-destructive" />
+      <div className="container mx-auto max-w-md py-16">
+        <Card className="border-destructive/30">
+          <CardHeader className="items-center space-y-3 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+              <Database className="h-5 w-5 text-destructive" />
             </div>
-            <div className="text-center">
-              <CardTitle className="text-xl">{t`Failed to load data series`}</CardTitle>
-              <CardDescription className="text-sm">
-                {datasetQuery.error.message}
-              </CardDescription>
-            </div>
+            <CardTitle className="text-base font-semibold">{t`Failed to load data series`}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {datasetQuery.error.message}
+            </p>
           </CardHeader>
         </Card>
       </div>
@@ -1141,7 +1141,7 @@ export function AdvancedMapDatasetEditorPage({
       />
 
       <AnimatePresence>
-        {shouldShowSaveDatasetCallToAction ? (
+        {hasUnsavedChanges ? (
           <motion.div
             key="save-dataset-cta"
             initial={{ opacity: 0, y: 8, scale: 0.95 }}
@@ -1154,54 +1154,101 @@ export function AdvancedMapDatasetEditorPage({
               type="button"
               onClick={() => void handleSave()}
               disabled={isSaving}
-              className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-2 text-sm font-medium text-accent shadow-lg shadow-accent/10 backdrop-blur-md transition-colors hover:bg-accent/20 disabled:pointer-events-none disabled:opacity-50 dark:border-accent-foreground/20 dark:bg-accent dark:text-accent-foreground dark:shadow-accent/5 dark:hover:bg-accent/80"
+              className="pointer-events-auto rounded-full bg-[linear-gradient(90deg,#ef4444,#f59e0b,#22c55e,#06b6d4,#6366f1,#ec4899,#ef4444)] p-px shadow-lg shadow-accent/10 transition-opacity hover:opacity-90 disabled:pointer-events-none disabled:opacity-50 dark:shadow-accent/5"
             >
-              <Save className="h-3.5 w-3.5" />
-              {isSaving
-                ? t`Saving…`
-                : mode === 'new'
-                  ? t`Create data series`
-                  : t`Save changes`}
+              <span className="inline-flex items-center gap-2 rounded-full bg-background px-4 py-2 text-sm font-medium text-foreground backdrop-blur-md dark:bg-accent dark:text-accent-foreground">
+                <Save className="h-3.5 w-3.5" />
+                {isSaving
+                  ? t`Saving…`
+                  : mode === 'new'
+                    ? t`Create data series`
+                    : t`Save changes`}
+              </span>
             </button>
           </motion.div>
         ) : null}
       </AnimatePresence>
 
       <div className="space-y-6">
-        <div className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
+        <div className="sticky top-0 z-20 border-b border-border/60 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
           <div className="container mx-auto flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0">
-              <h1 className="text-2xl font-bold tracking-tight">
+              <h1 className="text-xl font-semibold tracking-tight">
                 {mode === 'new' ? t`Create data series` : t`Edit data series`}
               </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {mode === 'new'
-                  ? t`Build a custom dataset for use in the map editor.`
-                  : t`Update metadata and values for this custom dataset.`}
-              </p>
+              <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                <span className="truncate">
+                  {mode === 'new'
+                    ? t`Build a custom dataset for use in the map editor.`
+                    : t`Update metadata and values for this custom dataset.`}
+                </span>
+                {hasUnsavedChanges ? (
+                  <>
+                    <span aria-hidden className="hidden h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40 md:inline-block" />
+                    <span className="hidden items-center gap-1.5 whitespace-nowrap text-xs font-medium text-amber-600 dark:text-amber-500 md:inline-flex">
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden />
+                      {t`Unsaved changes`}
+                    </span>
+                  </>
+                ) : null}
+              </div>
             </div>
 
-            <div className="flex shrink-0 flex-wrap items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setIsImportDialogOpen(true)} disabled={isSaving || !uatDirectoryQuery.data} className="gap-1.5">
+            <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsImportDialogOpen(true)}
+                disabled={isSaving || !uatDirectoryQuery.data}
+                className="gap-1.5"
+              >
                 <Upload className="h-4 w-4" />
                 {t`Import`}
               </Button>
-              <Button variant="outline" size="sm" onClick={handleExportCsv} disabled={isSaving || !uatDirectoryQuery.data} className="gap-1.5">
-                <Download className="h-4 w-4" />
-                {t`CSV`}
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleExportJson} disabled={isSaving || !uatDirectoryQuery.data} className="gap-1.5">
-                <FileJson className="h-4 w-4" />
-                {t`JSON`}
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setIsSnapshotsModalOpen(true)} disabled={isSaving} className="gap-1.5">
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isSaving || !uatDirectoryQuery.data}
+                    className="gap-1.5"
+                  >
+                    <Download className="h-4 w-4" />
+                    {t`Export`}
+                    <ChevronDown className="ml-0.5 h-3.5 w-3.5 opacity-60" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52">
+                  <DropdownMenuItem onClick={handleExportCsv} disabled={isSaving || !uatDirectoryQuery.data}>
+                    <FileSpreadsheet className="h-4 w-4" />
+                    {t`Export as CSV`}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportJson} disabled={isSaving || !uatDirectoryQuery.data}>
+                    <FileJson className="h-4 w-4" />
+                    {t`Export as JSON`}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleCloneCurrentDraft} disabled={isSaving}>
+                    <Copy className="h-4 w-4" />
+                    {t`Create copy`}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsSnapshotsModalOpen(true)}
+                disabled={isSaving}
+                className="gap-1.5"
+              >
                 <HardDrive className="h-4 w-4" />
-                {t`Local snapshots`}
+                {t`Snapshots`}
               </Button>
-              <Button variant="outline" size="sm" onClick={handleCloneCurrentDraft} disabled={isSaving} className="gap-1.5">
-                <Copy className="h-4 w-4" />
-                {t`Create copy`}
-              </Button>
+
+              <Separator orientation="vertical" className="mx-1 hidden h-6 md:block" />
+
               <Button size="sm" onClick={() => void handleSave()} disabled={isSaving || !isInitialStateResolved}>
                 {isSaving ? (
                   <>
@@ -1218,41 +1265,49 @@ export function AdvancedMapDatasetEditorPage({
           </div>
         </div>
 
-        <div className="container mx-auto space-y-6">
+        <div className="container mx-auto space-y-5">
 
         {cloneResolutionError ? (
-          <Alert variant="default">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>{t`Copy link issue`}</AlertTitle>
-            <AlertDescription>{cloneResolutionError}</AlertDescription>
-          </Alert>
+          <div className="flex items-start gap-3 rounded-lg border border-amber-200/70 bg-amber-50/60 px-4 py-3 text-sm text-amber-900 dark:border-amber-800/40 dark:bg-amber-950/30 dark:text-amber-200">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-500" />
+            <div className="space-y-0.5">
+              <p className="font-medium">{t`Copy link issue`}</p>
+              <p className="text-amber-800/80 dark:text-amber-200/80">{cloneResolutionError}</p>
+            </div>
+          </div>
         ) : null}
 
         {mode === 'edit' ? (
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>{t`Live dataset warning`}</AlertTitle>
-            <AlertDescription>
-              {t`Changes to this dataset update every map and saved snapshot that references it. Create a copy first if you need to branch.`}
-            </AlertDescription>
-          </Alert>
+          <div className="flex items-start gap-3 rounded-lg border border-border/70 bg-muted/30 px-4 py-3 text-sm">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-500" />
+            <div className="space-y-0.5">
+              <p className="font-medium text-foreground">{t`This dataset is live`}</p>
+              <p className="text-muted-foreground">
+                {t`Changes update every map and snapshot that references it. Create a copy first if you need to branch.`}
+              </p>
+            </div>
+          </div>
         ) : null}
 
         {currentValidationIssues.length > 0 ? (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>{t`Validation issues`}</AlertTitle>
-            <AlertDescription>
-              {currentValidationIssues[0]?.validationMessage ?? currentValidationIssues[0]?.payloadValidationMessage}
-            </AlertDescription>
-          </Alert>
+          <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="space-y-0.5">
+              <p className="font-medium">{t`Validation issues`}</p>
+              <p className="text-destructive/90">
+                {currentValidationIssues[0]?.validationMessage ?? currentValidationIssues[0]?.payloadValidationMessage}
+              </p>
+            </div>
+          </div>
         ) : null}
 
-        <div className="grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
-          <Card className="lg:sticky lg:top-[88px] lg:self-start">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base">{t`Metadata`}</CardTitle>
-              <CardDescription>{t`Describe the dataset and control how it will be shared.`}</CardDescription>
+        <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+          <Card className="lg:sticky lg:top-[96px] lg:self-start">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold">{t`Details`}</CardTitle>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {t`Describe the dataset and control how it’s shared.`}
+              </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField label={t`Title`} htmlFor="dataset-title">
@@ -1320,20 +1375,39 @@ export function AdvancedMapDatasetEditorPage({
           </Card>
 
           <Card>
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base">{t`Values`}</CardTitle>
-              <CardDescription>{t`Start from the UAT list, then paste, import, or edit values manually.`}</CardDescription>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold">{t`Values`}</CardTitle>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {t`Start from the UAT list, then paste, import, or edit values manually.`}
+              </p>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-5">
               <Tabs
                 value={valuesView}
                 onValueChange={(value) => onValuesViewChange(value as DatasetEditorValuesView)}
-                className="space-y-4"
+                className="space-y-5"
               >
-                <TabsList className="grid w-full max-w-[240px] grid-cols-2">
-                  <TabsTrigger value="table">{t`Table`}</TabsTrigger>
-                  <TabsTrigger value="map">{t`Map`}</TabsTrigger>
-                </TabsList>
+                <div className="-mt-1 flex items-center justify-between border-b border-border/60">
+                  <TabsList className="h-auto justify-start gap-1 rounded-none border-0 bg-transparent p-0">
+                    <TabsTrigger
+                      value="table"
+                      className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2.5 pt-2 text-sm font-medium text-muted-foreground shadow-none data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                    >
+                      {t`Table`}
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="map"
+                      className="relative rounded-none border-b-2 border-transparent bg-transparent px-3 pb-2.5 pt-2 text-sm font-medium text-muted-foreground shadow-none data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                    >
+                      {t`Map`}
+                    </TabsTrigger>
+                  </TabsList>
+                  <span className="hidden text-xs text-muted-foreground sm:inline-block">
+                    {valuesView === 'table'
+                      ? t`${visibleRowCount} of ${totalRowCount} · ${editedRowCount} edited`
+                      : t`${totalRowCount} UATs · ${editedRowCount} edited`}
+                  </span>
+                </div>
 
                 <TabsContent
                   value="table"
@@ -1342,9 +1416,9 @@ export function AdvancedMapDatasetEditorPage({
                   className="mt-0 space-y-4"
                 >
                   <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-                    <div className="grid flex-1 gap-3 md:grid-cols-[minmax(0,1fr)_220px]">
+                    <div className="grid flex-1 gap-2 md:grid-cols-[minmax(0,1fr)_200px]">
                       <div className="relative">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                           value={searchTerm}
                           onChange={(event) => setSearchTerm(event.currentTarget.value)}
@@ -1367,42 +1441,46 @@ export function AdvancedMapDatasetEditorPage({
                       </Select>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2 xl:justify-end">
-                      <div className="flex items-center gap-2 pr-1">
+                    <div className="flex flex-wrap items-center gap-1 xl:justify-end">
+                      <label className="flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-md px-2 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground">
                         <Switch checked={showEditedOnly} onCheckedChange={setShowEditedOnly} />
-                        <span className="text-sm whitespace-nowrap">{t`Show edited only`}</span>
-                      </div>
+                        <span>{t`Edited only`}</span>
+                      </label>
+                      <Separator orientation="vertical" className="mx-1 hidden h-5 sm:block" />
                       <Button
                         type="button"
                         variant="ghost"
-                        size="sm"
+                        size="icon"
                         onClick={() => {
                           flushPendingMetadataCommit();
                           undo();
                         }}
                         disabled={!canUndo || isSaving}
-                        className="gap-1.5"
+                        aria-label={t`Undo`}
+                        title={t`Undo`}
+                        className="h-8 w-8"
                       >
                         <Undo2 className="h-4 w-4" />
-                        {t`Undo`}
                       </Button>
                       <Button
                         type="button"
                         variant="ghost"
-                        size="sm"
+                        size="icon"
                         onClick={() => {
                           flushPendingMetadataCommit();
                           redo();
                         }}
                         disabled={!canRedo || isSaving}
-                        className="gap-1.5"
+                        aria-label={t`Redo`}
+                        title={t`Redo`}
+                        className="h-8 w-8"
                       >
                         <Redo2 className="h-4 w-4" />
-                        {t`Redo`}
                       </Button>
+                      <Separator orientation="vertical" className="mx-1 hidden h-5 sm:block" />
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={() => void handleCopyVisibleRows()}
                         disabled={isSaving || visibleRowCount === 0}
@@ -1414,15 +1492,15 @@ export function AdvancedMapDatasetEditorPage({
                     </div>
                   </div>
 
-                  <div className="overflow-hidden rounded-lg border shadow-sm">
+                  <div className="overflow-hidden rounded-lg border border-border/60">
                     <div
-                      className={`${valuesGridClass} box-border border-b bg-muted/40 px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground`}
+                      className={`${valuesGridClass} box-border border-b border-border/60 bg-muted/30 px-5 py-2.5 text-xs font-medium text-muted-foreground`}
                     >
                       <div>{t`SIRUTA`}</div>
                       <div>{t`CUI`}</div>
                       <div>{t`Name`}</div>
                       <div>{t`County`}</div>
-                      <div>{t`Value`}</div>
+                      <div className="text-right">{t`Value`}</div>
                       <div>{t`Payload`}</div>
                       <div>{t`Unit`}</div>
                     </div>
@@ -1445,10 +1523,12 @@ export function AdvancedMapDatasetEditorPage({
                             return null;
                           }
 
+                          const hasData = hasDraftRowData(row);
+
                           return (
                             <div
                               key={row.sirutaCode}
-                              className="absolute inset-x-0 top-0 box-border border-b border-border/50 px-5 py-2.5 transition-colors hover:bg-muted/30"
+                              className="absolute inset-x-0 top-0 box-border border-b border-border/40 px-5 py-2.5 transition-colors hover:bg-muted/40"
                               style={{
                                 height: `${virtualItem.size}px`,
                                 transform: `translateY(${virtualItem.start}px)`,
@@ -1479,7 +1559,7 @@ export function AdvancedMapDatasetEditorPage({
                                     type="button"
                                     variant="ghost"
                                     size="sm"
-                                    className="h-9 w-full justify-start overflow-hidden px-2 text-left text-xs"
+                                    className={`h-9 w-full justify-start overflow-hidden px-2 text-left text-xs ${hasAdvancedMapDatasetPayloadDraftData(row.payloadDraft) || row.valueJson ? 'text-foreground' : 'text-muted-foreground'}`}
                                     onClick={() => setSelectedUatSirutaCode(row.sirutaCode)}
                                   >
                                     <span className="truncate">
@@ -1487,7 +1567,7 @@ export function AdvancedMapDatasetEditorPage({
                                     </span>
                                   </Button>
                                 </div>
-                                <div className="min-w-0 truncate text-sm text-muted-foreground">
+                                <div className={`min-w-0 truncate text-sm ${hasData ? 'text-foreground' : 'text-muted-foreground'}`}>
                                   {draft.unit.trim() === '' ? '—' : draft.unit}
                                 </div>
                               </div>
@@ -1496,12 +1576,13 @@ export function AdvancedMapDatasetEditorPage({
                         })}
                       </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-1.5 border-t bg-muted/20 px-5 py-3 text-sm">
-                      <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-                        <Badge variant="secondary" className="font-mono">{t`${visibleRowCount} visible`}</Badge>
-                        <Badge variant="outline" className="font-mono">{t`${totalRowCount} total`}</Badge>
-                        <Badge variant="secondary" className="font-mono">{t`${editedRowCount} edited`}</Badge>
-                      </div>
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 bg-muted/20 px-5 py-2.5 text-xs text-muted-foreground">
+                      <span className="tabular-nums">
+                        {t`${visibleRowCount} visible · ${totalRowCount} total · ${editedRowCount} edited`}
+                      </span>
+                      <span className="hidden tabular-nums text-muted-foreground/70 sm:inline">
+                        {t`Tip: paste tabular SIRUTA + value to update many rows at once.`}
+                      </span>
                     </div>
                   </div>
                 </TabsContent>
@@ -1511,11 +1592,6 @@ export function AdvancedMapDatasetEditorPage({
                   hidden={valuesView !== 'map'}
                   className="mt-0 space-y-4"
                 >
-                  <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-                    <Badge variant="outline" className="font-mono">{t`${totalRowCount} total`}</Badge>
-                    <Badge variant="secondary" className="font-mono">{t`${editedRowCount} edited`}</Badge>
-                  </div>
-
                   <DatasetEditorMapPreview
                     resourceKey={resourceKey}
                     title={draft.title}

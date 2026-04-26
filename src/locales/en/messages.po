@@ -29,6 +29,10 @@ msgstr " (active)"
 msgid " / capita"
 msgstr " / capita"
 
+#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:77
+msgid ".csv, .tsv, .xlsx, .xls"
+msgstr ".csv, .tsv, .xlsx, .xls"
+
 #: src/components/entities/views/ins-stats-view.derived.ts:126
 msgid "((Immigrants − Emigrants) / Population) × 1,000"
 msgstr "((Immigrants − Emigrants) / Population) × 1,000"
@@ -82,7 +86,7 @@ msgid "{0} enabled series"
 msgstr "{0} enabled series"
 
 #. placeholder {0}: issues.length - 8
-#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:125
+#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:121
 msgid "{0} more issues"
 msgstr "{0} more issues"
 
@@ -151,8 +155,8 @@ msgstr "{0} views enabled"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1503
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1516
-msgid "{editedRowCount} edited"
-msgstr "{editedRowCount} edited"
+#~ msgid "{editedRowCount} edited"
+#~ msgstr "{editedRowCount} edited"
 
 #: src/features/challenges/components/cards/ChallengeModuleCard.tsx:44
 #: src/features/challenges/components/hub/ChallengeModulePage.tsx:53
@@ -196,12 +200,24 @@ msgstr "{resultsCount} results found"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1502
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1515
-msgid "{totalRowCount} total"
-msgstr "{totalRowCount} total"
+#~ msgid "{totalRowCount} total"
+#~ msgstr "{totalRowCount} total"
+
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1378
+msgid "{totalRowCount} UATs · {editedRowCount} edited"
+msgstr "{totalRowCount} UATs · {editedRowCount} edited"
+
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1377
+msgid "{visibleRowCount} of {totalRowCount} · {editedRowCount} edited"
+msgstr "{visibleRowCount} of {totalRowCount} · {editedRowCount} edited"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1501
-msgid "{visibleRowCount} visible"
-msgstr "{visibleRowCount} visible"
+#~ msgid "{visibleRowCount} visible"
+#~ msgstr "{visibleRowCount} visible"
+
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1551
+msgid "{visibleRowCount} visible · {totalRowCount} total · {editedRowCount} edited"
+msgstr "{visibleRowCount} visible · {totalRowCount} total · {editedRowCount} edited"
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:135
 msgid "{warningCount} warning"
@@ -292,8 +308,8 @@ msgid "Accept the terms and conditions for an entity in the campaign to automati
 msgstr "Accept the terms and conditions for an entity in the campaign to automatically receive update notifications."
 
 #: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:80
-msgid "Accepted formats: .csv, .tsv, .xlsx, .xls"
-msgstr "Accepted formats: .csv, .tsv, .xlsx, .xls"
+#~ msgid "Accepted formats: .csv, .tsv, .xlsx, .xls"
+#~ msgstr "Accepted formats: .csv, .tsv, .xlsx, .xls"
 
 #: src/features/challenges/components/hub/challenge-hub-access-card.tsx:89
 msgid "Access"
@@ -615,7 +631,7 @@ msgstr "All changes saved"
 msgid "All Classifications"
 msgstr "All Classifications"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1360
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1404
 msgid "All counties"
 msgstr "All counties"
 
@@ -1224,7 +1240,7 @@ msgstr "Budget submitted for {0}"
 msgid "Budgetary Academy"
 msgstr "Budgetary Academy"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1179
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1152
 msgid "Build a custom dataset for use in the map editor."
 msgstr "Build a custom dataset for use in the map editor."
 
@@ -1311,11 +1327,11 @@ msgstr "Campaign notifications are subject to the <0>campaign terms and conditio
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:615
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:632
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:136
-#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:135
+#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:131
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:656
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:244
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:272
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:298
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:245
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:273
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:299
 #: src/features/notifications/components/alerts/AlertCard.tsx:122
 #: src/features/notifications/components/NotificationCard.tsx:129
 #: src/routes/$lang/learning/index.lazy.tsx:315
@@ -1374,12 +1390,16 @@ msgid "Challenges"
 msgstr "Challenges"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:262
-msgid "Changes apply immediately to the draft and are reflected in the table and map preview."
-msgstr "Changes apply immediately to the draft and are reflected in the table and map preview."
+#~ msgid "Changes apply immediately to the draft and are reflected in the table and map preview."
+#~ msgstr "Changes apply immediately to the draft and are reflected in the table and map preview."
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1236
-msgid "Changes to this dataset update every map and saved snapshot that references it. Create a copy first if you need to branch."
-msgstr "Changes to this dataset update every map and saved snapshot that references it. Create a copy first if you need to branch."
+#~ msgid "Changes to this dataset update every map and saved snapshot that references it. Create a copy first if you need to branch."
+#~ msgstr "Changes to this dataset update every map and saved snapshot that references it. Create a copy first if you need to branch."
+
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1256
+msgid "Changes update every map and snapshot that references it. Create a copy first if you need to branch."
+msgstr "Changes update every map and snapshot that references it. Create a copy first if you need to branch."
 
 #: src/routes/budget-explorer.lazy.tsx:601
 msgid "Chapter"
@@ -1474,7 +1494,7 @@ msgstr "Choose between essential-only or all cookies, then fine-tune individual 
 msgid "Choose dataset"
 msgstr "Choose dataset"
 
-#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:106
+#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:103
 msgid "Choose file"
 msgstr "Choose file"
 
@@ -1577,14 +1597,17 @@ msgid "Clear all filters"
 msgstr "Clear all filters"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:217
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:226
 msgid "Clear all local snapshots"
 msgstr "Clear all local snapshots"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:270
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:292
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:293
 msgid "Clear all local snapshots?"
 msgstr "Clear all local snapshots?"
+
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:226
+msgid "Clear all snapshots"
+msgstr "Clear all snapshots"
 
 #: src/components/filters/EntityAnalyticsFilter.tsx:426
 #: src/routes/entity-analytics.lazy.tsx:216
@@ -1603,7 +1626,7 @@ msgstr "Clear filters ({0})"
 msgid "Clear search"
 msgstr "Clear search"
 
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:307
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:308
 msgid "Clear snapshots"
 msgstr "Clear snapshots"
 
@@ -1616,7 +1639,7 @@ msgstr "Click a phase to explore details"
 msgid "Click the link below to explore all {type} classifications."
 msgstr "Click the link below to explore all {type} classifications."
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:828
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:833
 msgid "Clipboard data must contain SIRUTA and numeric values."
 msgstr "Clipboard data must contain SIRUTA and numeric values."
 
@@ -2022,7 +2045,7 @@ msgstr "Cookie Settings"
 msgid "Copied"
 msgstr "Copied"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:811
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:816
 msgid "Copied data to clipboard"
 msgstr "Copied data to clipboard"
 
@@ -2055,7 +2078,7 @@ msgstr "Copy config"
 msgid "Copy current page URL to clipboard"
 msgstr "Copy current page URL to clipboard"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1412
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1460
 msgid "Copy data"
 msgstr "Copy data"
 
@@ -2080,7 +2103,7 @@ msgstr "Copy failed. You can still select and copy the link manually."
 msgid "Copy link"
 msgstr "Copy link"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1226
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1244
 msgid "Copy link issue"
 msgstr "Copy link issue"
 
@@ -2238,7 +2261,7 @@ msgstr "Counties"
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:167
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1541
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:522
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1424
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1472
 #: src/routes/entity-analytics.lazy.tsx:236
 msgid "County"
 msgstr "County"
@@ -2314,14 +2337,13 @@ msgstr "Create chart"
 msgid "Create chart for this entity"
 msgstr "Create chart for this entity"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1203
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1204
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:184
 msgid "Create copy"
 msgstr "Create copy"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1163
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1175
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1212
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1147
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1229
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:462
 msgid "Create data series"
 msgstr "Create data series"
@@ -2373,17 +2395,17 @@ msgid "Creating…"
 msgstr "Creating…"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1191
-msgid "CSV"
-msgstr "CSV"
+#~ msgid "CSV"
+#~ msgstr "CSV"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:871
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:876
 msgid "CSV exported"
 msgstr "CSV exported"
 
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:169
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1550
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1620
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1422
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1470
 msgid "CUI"
 msgstr "CUI"
 
@@ -2488,7 +2510,7 @@ msgstr "Data series {0}"
 msgid "Data series alerts"
 msgstr "Data series alerts"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:925
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:930
 msgid "Data series created"
 msgstr "Data series created"
 
@@ -2500,7 +2522,7 @@ msgstr "Data series deleted"
 msgid "Data Series Filter"
 msgstr "Data Series Filter"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:991
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:996
 msgid "Data series saved"
 msgstr "Data series saved"
 
@@ -2553,8 +2575,8 @@ msgid "Dataset unavailable"
 msgstr "Dataset unavailable"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:216
-msgid "Dataset value"
-msgstr "Dataset value"
+#~ msgid "Dataset value"
+#~ msgstr "Dataset value"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-map-preview.tsx:31
 msgid "Dataset values"
@@ -2686,12 +2708,12 @@ msgid "Delete data series?"
 msgstr "Delete data series?"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:173
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:180
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:179
 msgid "Delete local snapshot"
 msgstr "Delete local snapshot"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:249
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:266
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:267
 msgid "Delete local snapshot?"
 msgstr "Delete local snapshot?"
 
@@ -2711,7 +2733,7 @@ msgstr "Delete permanently"
 msgid "Delete Series"
 msgstr "Delete Series"
 
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:283
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:284
 msgid "Delete snapshot"
 msgstr "Delete snapshot"
 
@@ -2751,8 +2773,12 @@ msgid "Derived indicators"
 msgstr "Derived indicators"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1255
-msgid "Describe the dataset and control how it will be shared."
-msgstr "Describe the dataset and control how it will be shared."
+#~ msgid "Describe the dataset and control how it will be shared."
+#~ msgstr "Describe the dataset and control how it will be shared."
+
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1279
+msgid "Describe the dataset and control how it’s shared."
+msgstr "Describe the dataset and control how it’s shared."
 
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:427
 msgid "Describe the impact on the community…"
@@ -2769,7 +2795,7 @@ msgstr "Describe what this map shows..."
 #: src/components/alerts/components/AlertEditorView.tsx:148
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1146
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:402
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1301
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1326
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:171
 msgid "Description"
 msgstr "Description"
@@ -2802,6 +2828,7 @@ msgid "Detailed warnings generated for map-series fetch and calculations."
 msgstr "Detailed warnings generated for map-series fetch and calculations."
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1541
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1277
 #: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:235
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:189
 msgid "Details"
@@ -2957,8 +2984,8 @@ msgstr "Download the formatted contestation as a text file."
 msgid "Downloaded as text"
 msgstr "Downloaded as text"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:303
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:307
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:308
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:312
 msgid "draft"
 msgstr "draft"
 
@@ -3120,7 +3147,7 @@ msgstr "Edit bins preset"
 msgid "Edit Bins Preset"
 msgstr "Edit Bins Preset"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1175
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1147
 msgid "Edit data series"
 msgstr "Edit data series"
 
@@ -3148,6 +3175,10 @@ msgstr "Edit Value Filter Rule"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel.tsx:234
 msgid "Edit value filter rule {0}"
 msgstr "Edit value filter rule {0}"
+
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1417
+msgid "Edited only"
+msgstr "Edited only"
 
 #: src/lib/ins/ins-dashboard-config.ts:141
 msgid "Education"
@@ -3202,15 +3233,15 @@ msgstr "Employees per 1,000 inhabitants is a simple proxy for local labor-market
 msgid "Employees view unavailable"
 msgstr "Employees view unavailable"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:161
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:160
 msgid "Empty link payload"
 msgstr "Empty link payload"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:155
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:154
 msgid "Empty markdown payload"
 msgstr "Empty markdown payload"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:151
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:150
 msgid "Empty text payload"
 msgstr "Empty text payload"
 
@@ -3287,8 +3318,12 @@ msgid "Enter entity name or CUI..."
 msgstr "Enter entity name or CUI..."
 
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:329
-msgid "Enter markdown content..."
-msgstr "Enter markdown content..."
+#~ msgid "Enter markdown content..."
+#~ msgstr "Enter markdown content..."
+
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:325
+msgid "Enter markdown content…"
+msgstr "Enter markdown content…"
 
 #: src/components/charts/components/chart-config/FilterBulkEdit.tsx:108
 msgid "Enter new value"
@@ -3299,8 +3334,12 @@ msgid "Enter series label..."
 msgstr "Enter series label..."
 
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:314
-msgid "Enter text content..."
-msgstr "Enter text content..."
+#~ msgid "Enter text content..."
+#~ msgstr "Enter text content..."
+
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:310
+msgid "Enter text content…"
+msgstr "Enter text content…"
 
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:890
 msgid "Enter the number under which the NGO is registered in the Register of Associations and Foundations."
@@ -3673,6 +3712,14 @@ msgstr "Explore national budget."
 msgid "explored"
 msgstr "explored"
 
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1188
+msgid "Export"
+msgstr "Export"
+
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1195
+msgid "Export as CSV"
+msgstr "Export as CSV"
+
 #: src/components/charts/components/chart-quick-config/components/ShareChart.tsx:209
 msgid "Export as Image"
 msgstr "Export as Image"
@@ -3680,6 +3727,10 @@ msgstr "Export as Image"
 #: src/components/charts/components/chart-quick-config/components/ShareChart.tsx:202
 msgid "Export as image or share with a link"
 msgstr "Export as image or share with a link"
+
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1199
+msgid "Export as JSON"
+msgstr "Export as JSON"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:356
 msgid "Export config"
@@ -3698,7 +3749,7 @@ msgstr "Exporting…"
 msgid "Exports, imports and trade balance."
 msgstr "Exports, imports and trade balance."
 
-#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:299
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:295
 msgid "External link"
 msgstr "External link"
 
@@ -3733,7 +3784,7 @@ msgstr "Failed to copy code"
 msgid "Failed to copy configuration"
 msgstr "Failed to copy configuration"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:813
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:818
 msgid "Failed to copy data"
 msgstr "Failed to copy data"
 
@@ -3787,11 +3838,11 @@ msgstr "Failed to delete map"
 msgid "Failed to export configuration"
 msgstr "Failed to export configuration"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:874
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:879
 msgid "Failed to export CSV."
 msgstr "Failed to export CSV."
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:897
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:902
 msgid "Failed to export JSON."
 msgstr "Failed to export JSON."
 
@@ -3882,7 +3933,7 @@ msgstr "Failed to save"
 msgid "Failed to save alert"
 msgstr "Failed to save alert"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:993
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:998
 msgid "Failed to save data series"
 msgstr "Failed to save data series"
 
@@ -3937,7 +3988,7 @@ msgstr "Feedback / Report an issue"
 msgid "Feedback is currently unavailable."
 msgstr "Feedback is currently unavailable."
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:797
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:802
 msgid "File imported"
 msgstr "File imported"
 
@@ -3949,7 +4000,7 @@ msgstr "Fill in the city hall's contact details and send the request to organize
 msgid "Filter"
 msgstr "Filter"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1357
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1401
 msgid "Filter by county"
 msgstr "Filter by county"
 
@@ -4521,7 +4572,7 @@ msgstr "How much stays <0/><1>in your wallet?</1>"
 msgid "How much was <0>built</0>?"
 msgstr "How much was <0>built</0>?"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:345
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:341
 msgid "https://example.com"
 msgstr "https://example.com"
 
@@ -4581,11 +4632,11 @@ msgstr "Immigrants (POP310E)"
 msgid "Immigrants − Emigrants"
 msgstr "Immigrants − Emigrants"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1187
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1176
 msgid "Import"
 msgstr "Import"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:775
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:780
 msgid "Import applied"
 msgstr "Import applied"
 
@@ -4597,15 +4648,15 @@ msgstr "Import dataset rows"
 msgid "Import file"
 msgstr "Import file"
 
-#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:115
+#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:111
 msgid "Import issues"
 msgstr "Import issues"
 
-#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:146
+#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:147
 msgid "Import pasted data"
 msgstr "Import pasted data"
 
-#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:141
+#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:142
 msgid "Importing…"
 msgstr "Importing…"
 
@@ -4815,7 +4866,7 @@ msgstr "Invalid map configuration"
 msgid "Invalid map link"
 msgstr "Invalid map link"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:707
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:712
 msgid "Invalid number"
 msgstr "Invalid number"
 
@@ -4895,10 +4946,10 @@ msgid "Joining…"
 msgstr "Joining…"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1195
-msgid "JSON"
-msgstr "JSON"
+#~ msgid "JSON"
+#~ msgstr "JSON"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:894
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:899
 msgid "JSON exported"
 msgstr "JSON exported"
 
@@ -5020,6 +5071,10 @@ msgstr "Learning Path"
 msgid "Leave without saving"
 msgstr "Leave without saving"
 
+#: src/features/advanced-map-datasets/components/dataset-unsaved-changes-dialog.tsx:37
+msgid "Leave without saving?"
+msgstr "Leave without saving?"
+
 #: src/components/footer/AppFooter.tsx:111
 msgid "Legal"
 msgstr "Legal"
@@ -5129,7 +5184,7 @@ msgstr "Link"
 msgid "Link copied to clipboard"
 msgstr "Link copied to clipboard"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:357
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:353
 msgid "Link label (optional)"
 msgstr "Link label (optional)"
 
@@ -5156,8 +5211,8 @@ msgid "Live births − Deaths"
 msgstr "Live births − Deaths"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1234
-msgid "Live dataset warning"
-msgstr "Live dataset warning"
+#~ msgid "Live dataset warning"
+#~ msgstr "Live dataset warning"
 
 #: src/components/entities/views/ins-stats-view.derived.ts:328
 msgid "Living area"
@@ -5172,17 +5227,17 @@ msgid "Living area per inhabitant measures residential space availability and ho
 msgstr "Living area per inhabitant measures residential space availability and housing quality pressure."
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:161
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:168
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:167
 msgid "Load"
 msgstr "Load"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:229
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:238
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:239
 msgid "Load local snapshot?"
 msgstr "Load local snapshot?"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:237
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:254
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:255
 msgid "Load snapshot"
 msgstr "Load snapshot"
 
@@ -5228,7 +5283,7 @@ msgstr "Loading comments..."
 msgid "Loading data series"
 msgstr "Loading data series"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1032
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1037
 msgid "Loading data series editor..."
 msgstr "Loading data series editor..."
 
@@ -5336,7 +5391,7 @@ msgstr "Loading..."
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:117
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:482
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:128
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:124
 #: src/features/challenges/components/analysis/challenge-entity-analysis-loading-shell.tsx:10
 msgid "Loading…"
 msgstr "Loading…"
@@ -5359,8 +5414,8 @@ msgid "Local budget contestation"
 msgstr "Local budget contestation"
 
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:135
-msgid "Local dataset snapshots will appear here after autosave or manual save."
-msgstr "Local dataset snapshots will appear here after autosave or manual save."
+#~ msgid "Local dataset snapshots will appear here after autosave or manual save."
+#~ msgstr "Local dataset snapshots will appear here after autosave or manual save."
 
 #: src/features/campaigns/buget/components/hub/campaign-entity-local-update-card.tsx:303
 msgid "Local details unavailable"
@@ -5372,17 +5427,16 @@ msgid "Local press"
 msgstr "Local press"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:162
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1006
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1011
 msgid "Local snapshot restored"
 msgstr "Local snapshot restored"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1013
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1018
 msgid "Local snapshot saved"
 msgstr "Local snapshot saved"
 
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1922
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1199
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:92
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:91
 msgid "Local snapshots"
 msgstr "Local snapshots"
 
@@ -5395,7 +5449,6 @@ msgid "Local snapshots ({localSnapshotCount})"
 msgstr "Local snapshots ({localSnapshotCount})"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:106
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:94
 msgid "Local snapshots are stored only in this browser on this device."
 msgstr "Local snapshots are stored only in this browser on this device."
 
@@ -5562,7 +5615,7 @@ msgstr "Manual"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:106
 #: src/components/sidebar/nav-main.tsx:32
 #: src/components/ui/shortcuts.tsx:44
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1335
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1372
 #: src/hooks/useEntityViews.tsx:37
 #: src/routes/index.tsx:72
 msgid "Map"
@@ -5682,11 +5735,11 @@ msgid "Mark this step as done to save your progress."
 msgstr "Mark this step as done to save your progress."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:57
-#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:300
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:296
 msgid "Markdown"
 msgstr "Markdown"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1310
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1335
 msgid "Markdown notes"
 msgstr "Markdown notes"
 
@@ -5755,7 +5808,6 @@ msgid "Message"
 msgstr "Message"
 
 #: src/components/alerts/components/AlertEditorView.tsx:265
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1254
 msgid "Metadata"
 msgstr "Metadata"
 
@@ -6011,7 +6063,7 @@ msgstr "N/A"
 
 #: src/components/maps/HeatmapDataTable.tsx:120
 #: src/components/maps/HeatmapDataTable.tsx:482
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1423
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1471
 #: src/routes/certificates.$id.tsx:52
 msgid "Name"
 msgstr "Name"
@@ -6193,7 +6245,7 @@ msgstr "No challenges available yet."
 msgid "No change"
 msgstr "No change"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:991
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:996
 msgid "No changes to save"
 msgstr "No changes to save"
 
@@ -6297,8 +6349,8 @@ msgstr "No data series yet"
 msgid "No data series yet."
 msgstr "No data series yet."
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:860
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:883
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:865
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:888
 msgid "No data to export."
 msgstr "No data to export."
 
@@ -6395,7 +6447,7 @@ msgid "No link added"
 msgstr "No link added"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:122
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:134
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:130
 msgid "No local snapshots yet"
 msgstr "No local snapshots yet"
 
@@ -6447,13 +6499,13 @@ msgstr "No owned datasets available."
 msgid "No owned datasets yet"
 msgstr "No owned datasets yet"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:296
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:312
-#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:297
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:301
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:317
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:293
 msgid "No payload"
 msgstr "No payload"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:147
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:146
 msgid "No payload configured"
 msgstr "No payload configured"
 
@@ -6523,7 +6575,7 @@ msgid "No steps available yet. Please check back later."
 msgstr "No steps available yet. Please check back later."
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:512
-#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:47
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:46
 msgid "No unit"
 msgstr "No unit"
 
@@ -6948,9 +7000,17 @@ msgstr "Operations"
 msgid "Operator"
 msgstr "Operator"
 
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:268
+msgid "Optional"
+msgstr "Optional"
+
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:273
-msgid "Optional content displayed when users click this UAT on the map."
-msgstr "Optional content displayed when users click this UAT on the map."
+#~ msgid "Optional content displayed when users click this UAT on the map."
+#~ msgstr "Optional content displayed when users click this UAT on the map."
+
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:271
+msgid "Optional content shown when users click this UAT on the map."
+msgstr "Optional content shown when users click this UAT on the map."
 
 #: src/components/alerts/components/AlertEditorView.tsx:154
 msgid "Optional context for the monthly newsletter"
@@ -6968,7 +7028,7 @@ msgstr "Optional legend title"
 msgid "Optional name"
 msgstr "Optional name"
 
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:110
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:105
 msgid "Optional note about this version"
 msgstr "Optional note about this version"
 
@@ -7116,10 +7176,14 @@ msgid "Paste spreadsheet rows here…"
 msgstr "Paste spreadsheet rows here…"
 
 #: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:51
-msgid "Paste spreadsheet rows or upload a CSV/XLSX file. Supported data columns are value, text, link, and markdown, and each row may set at most one payload column."
-msgstr "Paste spreadsheet rows or upload a CSV/XLSX file. Supported data columns are value, text, link, and markdown, and each row may set at most one payload column."
+msgid "Paste spreadsheet rows or upload a CSV/XLSX file. Supported columns: value, text, link, markdown — at most one payload column per row."
+msgstr "Paste spreadsheet rows or upload a CSV/XLSX file. Supported columns: value, text, link, markdown — at most one payload column per row."
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:838
+#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:51
+#~ msgid "Paste spreadsheet rows or upload a CSV/XLSX file. Supported data columns are value, text, link, and markdown, and each row may set at most one payload column."
+#~ msgstr "Paste spreadsheet rows or upload a CSV/XLSX file. Supported data columns are value, text, link, and markdown, and each row may set at most one payload column."
+
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:843
 msgid "Pasted values applied"
 msgstr "Pasted values applied"
 
@@ -7145,8 +7209,8 @@ msgid "Paused"
 msgstr "Paused"
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:525
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1426
-#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:271
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1474
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:267
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:193
 msgid "Payload"
 msgstr "Payload"
@@ -7295,7 +7359,7 @@ msgstr "Pick a dataset from the list above."
 msgid "Pie Chart (Aggregated)"
 msgstr "Pie Chart (Aggregated)"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:298
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:294
 msgid "Plain text"
 msgstr "Plain text"
 
@@ -7394,7 +7458,7 @@ msgstr "Prepared email"
 msgid "Preparing data series draft..."
 msgstr "Preparing data series draft..."
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1087
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1086
 msgid "Preparing data series editor..."
 msgstr "Preparing data series editor..."
 
@@ -7422,12 +7486,17 @@ msgstr "Present the arguments and evidence supporting the contestation…"
 msgid "Preset label"
 msgstr "Preset label"
 
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:219
+msgid "Press Enter to save & close"
+msgstr "Press Enter to save & close"
+
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:218
-msgid "Press Enter to save and close."
-msgstr "Press Enter to save and close."
+#~ msgid "Press Enter to save and close."
+#~ msgstr "Press Enter to save and close."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-description-modal.tsx:69
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:442
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:362
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:541
 #: src/features/campaigns/buget/components/interactive/DebateRequestForm.tsx:379
 #: src/routes/alerts/$alertId/index.lazy.tsx:237
@@ -7458,8 +7527,8 @@ msgid "Preview unavailable"
 msgstr "Preview unavailable"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:365
-msgid "Preview:"
-msgstr "Preview:"
+#~ msgid "Preview:"
+#~ msgstr "Preview:"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:191
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:537
@@ -7496,7 +7565,7 @@ msgstr "Privacy Policy"
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:99
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:110
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:101
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1294
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1319
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:93
 msgid "Private"
 msgstr "Private"
@@ -7542,7 +7611,7 @@ msgstr "Propose a specific and realistic change. For example: \"Redistribute 500
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:99
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:108
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:84
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1296
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1321
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:78
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:164
 msgid "Public"
@@ -7793,7 +7862,8 @@ msgstr "Recording..."
 msgid "Rectification History (2020-2024)"
 msgstr "Rectification History (2020-2024)"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1401
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1444
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1445
 msgid "Redo"
 msgstr "Redo"
 
@@ -8072,8 +8142,8 @@ msgid "Review Path"
 msgstr "Review Path"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:197
-msgid "Review the selected UAT metadata and update its dataset value here."
-msgstr "Review the selected UAT metadata and update its dataset value here."
+#~ msgid "Review the selected UAT metadata and update its dataset value here."
+#~ msgstr "Review the selected UAT metadata and update its dataset value here."
 
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:153
 msgid "Robust anomaly detection based on median absolute deviation (MAD), less sensitive to extreme outliers than z-score."
@@ -8093,7 +8163,7 @@ msgstr "Romanian"
 msgid "RON"
 msgstr "RON"
 
-#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:120
+#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:116
 msgid "Row"
 msgstr "Row"
 
@@ -8149,8 +8219,7 @@ msgstr "Sankey Chart (Aggregated)"
 msgid "Save"
 msgstr "Save"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1164
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1214
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1231
 msgid "Save changes"
 msgstr "Save changes"
 
@@ -8163,12 +8232,13 @@ msgid "Save cookie preferences"
 msgstr "Save cookie preferences"
 
 #: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:120
-msgid "Save current snapshot"
-msgstr "Save current snapshot"
+#~ msgid "Save current snapshot"
+#~ msgstr "Save current snapshot"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:475
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:145
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2184
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:116
 msgid "Save snapshot"
 msgstr "Save snapshot"
 
@@ -8188,10 +8258,13 @@ msgstr "Save versions of your map to track changes over time."
 msgid "Save your progress"
 msgstr "Save your progress"
 
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:93
+msgid "Saved only in this browser. Not synced to your account."
+msgstr "Saved only in this browser. Not synced to your account."
+
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:142
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:2184
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1161
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1209
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1226
 #: src/routes/alerts/$alertId/index.lazy.tsx:124
 msgid "Saving…"
 msgstr "Saving…"
@@ -8246,7 +8319,7 @@ msgstr "Search by name or code (ex: Agriculture, 43.00, ec:43.00)"
 msgid "Search by name or code (ex: Social assistance, 7.06, fn:7.06)"
 msgstr "Search by name or code (ex: Social assistance, 7.06, fn:7.06)"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1351
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1395
 msgid "Search by UAT name, CUI, or SIRUTA"
 msgstr "Search by UAT name, CUI, or SIRUTA"
 
@@ -8400,11 +8473,11 @@ msgstr "Select a snapshot to clone into a new map"
 msgid "Select a topic to begin"
 msgstr "Select a topic to begin"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:198
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:199
 msgid "Select a UAT from the map to edit its value."
 msgstr "Select a UAT from the map to edit its value."
 
-#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:379
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:375
 msgid "Select a UAT from the map to load its details here."
 msgstr "Select a UAT from the map to load its details here."
 
@@ -8728,8 +8801,8 @@ msgid "Show Diff"
 msgstr "Show Diff"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1373
-msgid "Show edited only"
-msgstr "Show edited only"
+#~ msgid "Show edited only"
+#~ msgstr "Show edited only"
 
 #: src/components/charts/components/chart-config/GlobalSettingsCard.tsx:61
 msgid "Show Grid Lines"
@@ -8835,13 +8908,13 @@ msgstr "Shows only the funds transferred to other public administration units."
 msgid "Side"
 msgstr "Side"
 
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1057
 #: src/features/challenges/components/hub/challenge-hub-access-card.tsx:108
 msgid "Sign in"
 msgstr "Sign in"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:215
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:277
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1055
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:418
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:544
 #: src/features/learning/components/layout/LoginBanner.tsx:28
@@ -8855,7 +8928,7 @@ msgstr "Sign In"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:210
 #: src/features/advanced-map-analytics/components/map-analytics-list-page.tsx:270
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1046
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1050
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:410
 #: src/features/campaigns/buget/components/CampaignNotificationPreferencesPage.tsx:529
 #: src/features/notifications/components/EntityNotificationBell.tsx:82
@@ -8912,7 +8985,8 @@ msgstr "Sign in to track your learning journey."
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-warnings-modal.tsx:48
 #: src/features/advanced-map-analytics/components/map-analytics-entity-details-panel.tsx:168
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:523
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1421
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1469
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:209
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:191
 msgid "SIRUTA"
 msgstr "SIRUTA"
@@ -8926,13 +9000,21 @@ msgid "Skip tour"
 msgstr "Skip tour"
 
 #: src/features/advanced-map-analytics/components/map-analytics-save-snapshot-dialog.tsx:77
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:105
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:100
 msgid "Snapshot note"
 msgstr "Snapshot note"
 
 #: src/features/advanced-map-analytics/components/map-analytics-editor-page.tsx:146
 msgid "Snapshot saved"
 msgstr "Snapshot saved"
+
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1217
+msgid "Snapshots"
+msgstr "Snapshots"
+
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:131
+msgid "Snapshots will appear here after autosave or manual save."
+msgstr "Snapshots will appear here after autosave or manual save."
 
 #: src/lib/ins/ins-metric-registry.ts:107
 msgid "Social"
@@ -9047,7 +9129,7 @@ msgstr "Start at 3.5, then lower gradually if you need more candidates."
 msgid "Start by entering your monthly Gross (Brut) income."
 msgstr "Start by entering your monthly Gross (Brut) income."
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1325
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1351
 msgid "Start from the UAT list, then paste, import, or edit values manually."
 msgstr "Start from the UAT list, then paste, import, or edit values manually."
 
@@ -9119,7 +9201,7 @@ msgid "Status by Budget Chapters"
 msgstr "Status by Budget Chapters"
 
 #: src/components/alerts/components/UnsavedChangesDialog.tsx:44
-#: src/features/advanced-map-datasets/components/dataset-unsaved-changes-dialog.tsx:44
+#: src/features/advanced-map-datasets/components/dataset-unsaved-changes-dialog.tsx:45
 msgid "Stay here"
 msgstr "Stay here"
 
@@ -9271,7 +9353,7 @@ msgstr "System status badge"
 #: src/components/filters/EntityAnalyticsFilter.tsx:439
 #: src/components/filters/MapFilter.tsx:213
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel.tsx:107
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1334
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1366
 msgid "Table"
 msgstr "Table"
 
@@ -9360,11 +9442,11 @@ msgstr "The content you're looking for doesn't exist or has been moved."
 msgid "The data is presented for informational purposes, based on government data available for September 2025. This temporary view is intended to simplify the Government's explanation of the simulated local administration reform."
 msgstr "The data is presented for informational purposes, based on government data available for September 2025. This temporary view is intended to simplify the Government's explanation of the simulated local administration reform."
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:582
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:587
 msgid "The dataset copy link is invalid or expired. Starting from an empty draft instead."
 msgstr "The dataset copy link is invalid or expired. Starting from an empty draft instead."
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:905
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:910
 msgid "The dataset draft is invalid."
 msgstr "The dataset draft is invalid."
 
@@ -9493,7 +9575,6 @@ msgid "These materials are part of the project"
 msgstr "These materials are part of the project"
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:111
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:99
 msgid "These snapshots are local only and are not synced to your account."
 msgstr "These snapshots are local only and are not synced to your account."
 
@@ -9502,7 +9583,7 @@ msgid "This action cannot be undone. It will permanently remove the chart and it
 msgstr "This action cannot be undone. It will permanently remove the chart and its configuration."
 
 #: src/features/advanced-map-analytics/components/map-analytics-local-snapshots-modal.tsx:251
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:268
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:269
 msgid "This action only deletes the local snapshot from this browser."
 msgstr "This action only deletes the local snapshot from this browser."
 
@@ -9525,6 +9606,10 @@ msgstr "This classification has no subcategories"
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:550
 msgid "This dataset does not currently expose any persisted rows."
 msgstr "This dataset does not currently expose any persisted rows."
+
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1254
+msgid "This dataset is live"
+msgstr "This dataset is live"
 
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1188
 msgid "This dataset is not available for the selected temporal split."
@@ -9611,7 +9696,7 @@ msgstr "This will permanently delete the map and all {0} saved versions. This ca
 msgid "This will remove all local snapshots for this map from this browser only."
 msgstr "This will remove all local snapshots for this map from this browser only."
 
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:294
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:295
 msgid "This will remove every local dataset snapshot saved in this browser for the current draft."
 msgstr "This will remove every local dataset snapshot saved in this browser for the current draft."
 
@@ -9658,13 +9743,17 @@ msgstr "Time"
 msgid "Tip: Copy/Cut/Paste with ⌘/Ctrl+C, X, V. Duplicate with ⌘/Ctrl+D."
 msgstr "Tip: Copy/Cut/Paste with ⌘/Ctrl+C, X, V. Duplicate with ⌘/Ctrl+D."
 
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1554
+msgid "Tip: paste tabular SIRUTA + value to update many rows at once."
+msgstr "Tip: paste tabular SIRUTA + value to update many rows at once."
+
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal.tsx:640
 msgid "Tips and tricks"
 msgstr "Tips and tricks"
 
 #: src/components/alerts/components/AlertEditorView.tsx:136
 #: src/components/charts/components/views/AnnotationConfigView.tsx:82
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1258
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1283
 msgid "Title"
 msgstr "Title"
 
@@ -9981,7 +10070,8 @@ msgstr "Under Law 52/2003, requests from legally established associations can tr
 msgid "Understanding the consolidated general budget spending"
 msgstr "Understanding the consolidated general budget spending"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1387
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1429
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1430
 msgid "Undo"
 msgstr "Undo"
 
@@ -10008,8 +10098,8 @@ msgstr "Unified"
 #: src/components/entities/views/ins-stats-view.presentation.tsx:1406
 #: src/components/entities/views/ins-stats-view.tsx:1180
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:383
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1267
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1427
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1292
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1475
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:156
 msgid "Unit"
 msgstr "Unit"
@@ -10037,7 +10127,7 @@ msgstr "Unknown"
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:894
 #: src/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view.tsx:1739
 #: src/features/advanced-map-analytics/components/map-analytics-workspace.tsx:1436
-#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:139
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:138
 msgid "Unknown county"
 msgstr "Unknown county"
 
@@ -10052,7 +10142,7 @@ msgstr "Unknown source"
 
 #: src/components/entities/LineItemsBadgeFilters.tsx:93
 #: src/components/entities/LineItemsGroupedSection.tsx:116
-#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:138
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:137
 msgid "Unknown type"
 msgstr "Unknown type"
 
@@ -10062,7 +10152,7 @@ msgstr "Unless it is still referenced by existing maps, it cannot be recovered."
 
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:109
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-dialog.tsx:93
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1295
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1320
 #: src/features/advanced-map-datasets/components/dataset-list-page.tsx:86
 msgid "Unlisted"
 msgstr "Unlisted"
@@ -10085,7 +10175,8 @@ msgid "Unreceived commitments"
 msgstr "Unreceived commitments"
 
 #: src/components/alerts/components/UnsavedChangesDialog.tsx:30
-#: src/features/advanced-map-datasets/components/dataset-unsaved-changes-dialog.tsx:35
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1160
+#: src/features/advanced-map-datasets/components/dataset-unsaved-changes-dialog.tsx:33
 #: src/routes/alerts/$alertId/index.lazy.tsx:127
 msgid "Unsaved changes"
 msgstr "Unsaved changes"
@@ -10124,7 +10215,7 @@ msgstr "Untitled alert"
 msgid "Untitled Chart"
 msgstr "Untitled Chart"
 
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:144
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:142
 msgid "Untitled data series"
 msgstr "Untitled data series"
 
@@ -10151,7 +10242,7 @@ msgstr "Update Available"
 msgid "Update Data"
 msgstr "Update Data"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1180
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1153
 msgid "Update metadata and values for this custom dataset."
 msgstr "Update metadata and values for this custom dataset."
 
@@ -10167,6 +10258,10 @@ msgstr "Update the selected series. Label and unit changes apply immediately, wh
 msgid "Update the submission and send it again."
 msgstr "Update the submission and send it again."
 
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:198
+msgid "Update this UAT’s dataset value and optional payload."
+msgstr "Update this UAT’s dataset value and optional payload."
+
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:134
 msgid "updated"
 msgstr "updated"
@@ -10175,7 +10270,7 @@ msgstr "updated"
 msgid "Updated"
 msgstr "Updated"
 
-#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:78
+#: src/features/advanced-map-datasets/components/dataset-import-dialog.tsx:75
 msgid "Upload file"
 msgstr "Upload file"
 
@@ -10289,7 +10384,7 @@ msgstr "Utilization"
 msgid "Validation errors"
 msgstr "Validation errors"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1244
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1266
 msgid "Validation issues"
 msgstr "Validation issues"
 
@@ -10302,8 +10397,9 @@ msgstr "Validation issues"
 #: src/components/maps/charts/UatTopNBarChart.tsx:111
 #: src/components/maps/charts/UatTopNBarChart.tsx:113
 #: src/features/advanced-map-analytics/components/uploaded-map-dataset-browser.tsx:524
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1425
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1470
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1473
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1520
+#: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:218
 #: src/features/advanced-map-datasets/components/dataset-editor-uat-dialog.tsx:247
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:192
 msgid "Value"
@@ -10327,7 +10423,7 @@ msgid "Value source"
 msgstr "Value source"
 
 #: src/features/advanced-map-datasets/components/dataset-editor-map-preview.tsx:32
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1324
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1349
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:183
 msgid "Values"
 msgstr "Values"
@@ -10435,7 +10531,7 @@ msgid "Viewing:"
 msgstr "Viewing:"
 
 #: src/features/advanced-map-analytics/components/map-analytics-owner-config-modal.tsx:405
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1276
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1301
 #: src/features/advanced-map-datasets/components/dataset-public-page.tsx:160
 msgid "Visibility"
 msgstr "Visibility"
@@ -10751,8 +10847,8 @@ msgid "You have unsaved changes. Are you sure you want to leave this page?"
 msgstr "You have unsaved changes. Are you sure you want to leave this page?"
 
 #: src/features/advanced-map-datasets/components/dataset-unsaved-changes-dialog.tsx:38
-msgid "You have unsaved dataset changes. Are you sure you want to leave this page?"
-msgstr "You have unsaved dataset changes. Are you sure you want to leave this page?"
+#~ msgid "You have unsaved dataset changes. Are you sure you want to leave this page?"
+#~ msgstr "You have unsaved dataset changes. Are you sure you want to leave this page?"
 
 #: src/hooks/useSendBugReport.ts:15
 msgid "You need to accept cookies to send an error report."
@@ -10782,7 +10878,7 @@ msgstr "You need to be signed in to create alerts"
 msgid "You need to be signed in to edit alerts"
 msgstr "You need to be signed in to edit alerts"
 
-#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1048
+#: src/features/advanced-map-datasets/components/dataset-editor-page.tsx:1052
 msgid "You need to be signed in to edit custom data series."
 msgstr "You need to be signed in to edit custom data series."
 
@@ -10827,6 +10923,10 @@ msgstr "You've explored all 6 phases of the budget cycle!"
 msgid "You've mastered the basics of the Budget Explorer. You're ready to investigate public spending on your own."
 msgstr "You've mastered the basics of the Budget Explorer. You're ready to investigate public spending on your own."
 
+#: src/features/advanced-map-datasets/components/dataset-unsaved-changes-dialog.tsx:40
+msgid "Your changes to this dataset draft will be lost if you leave this page."
+msgstr "Your changes to this dataset draft will be lost if you leave this page."
+
 #: src/features/campaigns/buget/components/interactive/ContestationBuilder.tsx:295
 msgid "Your contestation has been recorded and will be checked before it counts toward the challenge."
 msgstr "Your contestation has been recorded and will be checked before it counts toward the challenge."
@@ -10835,7 +10935,7 @@ msgstr "Your contestation has been recorded and will be checked before it counts
 msgid "Your current configuration will be replaced with this saved version. Unsaved changes will be lost."
 msgstr "Your current configuration will be replaced with this saved version. Unsaved changes will be lost."
 
-#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:240
+#: src/features/advanced-map-datasets/components/dataset-local-snapshots-modal.tsx:241
 msgid "Your current dataset draft will be replaced with this local snapshot. Unsaved changes will be lost."
 msgstr "Your current dataset draft will be replaced with this local snapshot. Unsaved changes will be lost."
 
