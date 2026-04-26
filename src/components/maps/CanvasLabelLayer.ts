@@ -47,6 +47,14 @@ interface LabelDrawCandidate extends LabelCollisionCandidate {
   amountY: number;
 }
 
+interface CanvasPaintLayout {
+  canvasSize: L.Point;
+  origin: L.Point;
+  devicePixelRatio: number;
+  zoom: number;
+  center: L.LatLng;
+}
+
 const referenceIds = new WeakMap<object, number>();
 let nextReferenceId = 1;
 
@@ -116,6 +124,31 @@ function buildLabelDrawCandidate(
   };
 }
 
+function resolveVisibleLabelLatLng(
+  label: PolygonLabelData,
+  viewportBounds: L.LatLngBounds,
+): L.LatLng | null {
+  const centroidLatLng = L.latLng(label.position[0], label.position[1]);
+  if (viewportBounds.contains(centroidLatLng)) {
+    return centroidLatLng;
+  }
+
+  if (!label.bounds.intersects(viewportBounds)) {
+    return null;
+  }
+
+  const south = Math.max(label.bounds.getSouth(), viewportBounds.getSouth());
+  const north = Math.min(label.bounds.getNorth(), viewportBounds.getNorth());
+  const west = Math.max(label.bounds.getWest(), viewportBounds.getWest());
+  const east = Math.min(label.bounds.getEast(), viewportBounds.getEast());
+
+  if (south > north || west > east) {
+    return null;
+  }
+
+  return L.latLng((south + north) / 2, (west + east) / 2);
+}
+
 /**
  * Threshold above which collision selection runs through the chunked,
  * abort-aware variant rather than the synchronous one.
@@ -123,11 +156,11 @@ function buildLabelDrawCandidate(
 const CHUNKED_COLLISION_THRESHOLD = 200;
 
 /**
- * Debounce window applied to label rebuilds after `zoomend`/`moveend`. Tuned
- * to feel snappy while collapsing rapid wheel-zoom or kinetic-pan bursts into
- * a single rebuild.
+ * Debounce window applied to label rebuilds after `zoomend`/`moveend`. The
+ * previous bitmap remains visible during this window, so this can stay short
+ * without reintroducing blank frames.
  */
-const LABEL_REBUILD_DEBOUNCE_MS = 120;
+const LABEL_REBUILD_DEBOUNCE_MS = 48;
 
 /**
  * Pan-anchor padding (as a fraction of viewport size) used when sizing the
@@ -191,13 +224,13 @@ const LABEL_HEIGHT_RATIO_WITHOUT_AMOUNT = 1.3;
 const LABEL_HEIGHT_RATIO_WITH_AMOUNT = 2.1;
 
 /**
- * Leaflet exposes a private helper to project a latLng to a *target* zoom's
- * layer-point coordinate system. Custom zoom-animated layers like ours rely
- * on it (the same way `L.Renderer`, `L.Canvas` and `L.GridLayer` do) to
- * compute the destination transform of an in-flight zoom animation.
+ * Leaflet exposes a private helper to project the map's top-left origin for a
+ * target center/zoom. Custom zoom-animated layers like ours use the same
+ * transform math as `L.Renderer` so the canvas stays locked to map geography
+ * during both animated and continuous pinch zooms.
  */
-type ZoomAnimAwareMap = L.Map & {
-  _latLngToNewLayerPoint(latlng: L.LatLng, zoom: number, center: L.LatLng): L.Point;
+type ZoomTransformAwareMap = L.Map & {
+  _getNewPixelOrigin(center: L.LatLng, zoom: number): L.Point;
 };
 
 /**
@@ -265,7 +298,7 @@ export class CanvasLabelLayer extends L.Layer {
   private labels: PolygonLabelData[] = [];
   private layerOptions: CanvasLabelLayerOptions;
   private animationFrameId: number | null = null;
-  private origin: L.Point = L.point(0, 0);
+  private pendingPaintLayout: CanvasPaintLayout | null = null;
   private geometryCache: CachedFeatureGeometryEntry[] = [];
   private geometryCacheGeoJsonReference: GeoJsonObject | null = null;
 
@@ -286,12 +319,12 @@ export class CanvasLabelLayer extends L.Layer {
 
   /**
    * Map state captured at the most recent draw. Required to compute the
-   * destination transform during a zoom animation: the canvas was drawn
-   * assuming `(lastDrawZoom, lastDrawOriginLatLng)`, and the new transform
-   * has to map that anchor to the in-progress zoom/center.
+   * destination transform during zoom: the canvas was drawn assuming
+   * `(lastDrawCenter, lastDrawZoom)`, and the new transform maps that drawn
+   * renderer bounds to the in-progress zoom/center.
    */
   private lastDrawZoom = 0;
-  private lastDrawOriginLatLng: L.LatLng = L.latLng(0, 0);
+  private lastDrawCenter: L.LatLng = L.latLng(0, 0);
 
   /**
    * CSS-pixel size the canvas is currently sized to (viewport + padding).
@@ -344,6 +377,7 @@ export class CanvasLabelLayer extends L.Layer {
     }
 
     map.on('zoomanim', this.handleZoomAnim, this);
+    map.on('zoom', this.handleZoom, this);
     map.on('zoomstart', this.handleInteractionStart, this);
     map.on('zoomend', this.handleZoomEnd, this);
     map.on('movestart', this.handleInteractionStart, this);
@@ -351,7 +385,6 @@ export class CanvasLabelLayer extends L.Layer {
     map.on('resize', this.handleResize, this);
     map.on('viewreset', this.handleViewReset, this);
 
-    this.reset();
     this.rebuildGeometryCache(true);
     this.runRebuildPipeline();
 
@@ -360,6 +393,7 @@ export class CanvasLabelLayer extends L.Layer {
 
   onRemove(map: L.Map): this {
     map.off('zoomanim', this.handleZoomAnim, this);
+    map.off('zoom', this.handleZoom, this);
     map.off('zoomstart', this.handleInteractionStart, this);
     map.off('zoomend', this.handleZoomEnd, this);
     map.off('movestart', this.handleInteractionStart, this);
@@ -374,6 +408,7 @@ export class CanvasLabelLayer extends L.Layer {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
     }
+    this.pendingPaintLayout = null;
 
     if (this.canvas && this.canvas.parentNode) {
       this.canvas.parentNode.removeChild(this.canvas);
@@ -394,15 +429,21 @@ export class CanvasLabelLayer extends L.Layer {
    */
   updateOptions(options: Partial<CanvasLabelLayerOptions>): void {
     const previousGeoJsonData = this.layerOptions.geoJsonData;
+    const previousSignature = this.computeCacheSignature();
     this.layerOptions = { ...this.layerOptions, ...options };
+    const nextSignature = this.computeCacheSignature();
 
     if (options.geoJsonData !== undefined && options.geoJsonData !== previousGeoJsonData) {
       this.rebuildGeometryCache(true);
     }
 
+    if (nextSignature === previousSignature) {
+      return;
+    }
+
     // Option changes invalidate any cached labels whose key depends on them.
     this.invalidateLabelCacheIfSignatureChanged();
-    this.runRebuildPipeline();
+    this.requestRebuild();
   }
 
   // ---------------------------------------------------------------------------
@@ -591,45 +632,24 @@ export class CanvasLabelLayer extends L.Layer {
   // Canvas geometry (size + position)
   // ---------------------------------------------------------------------------
 
-  /**
-   * Resize and reposition the canvas to cover the current viewport (plus
-   * padding so a small pan reveals already-drawn labels at the new edge).
-   * Also caches the anchor state used by the zoom-animation transform and
-   * resets `transform-origin` to the top-left so `setTransform`'s scale
-   * pivots correctly.
-   */
-  private reset(): void {
-    if (!this.canvas || !this._map || !this.ctx || !getOverlayPaneSafely(this._map)) {
-      return;
+  private createPaintLayout(): CanvasPaintLayout | null {
+    if (!this._map || !getOverlayPaneSafely(this._map)) {
+      return null;
     }
-
     const viewportSize = this._map.getSize();
-    const padding = L.point(
-      Math.round(viewportSize.x * VIEWPORT_PADDING_RATIO),
-      Math.round(viewportSize.y * VIEWPORT_PADDING_RATIO),
-    );
-    const canvasSize = viewportSize.add(padding.multiplyBy(2));
-    const topLeft = this._map.containerPointToLayerPoint([0, 0]).subtract(padding);
+    const canvasSize = viewportSize.multiplyBy(1 + VIEWPORT_PADDING_RATIO * 2).round();
+    const topLeft = this._map
+      .containerPointToLayerPoint(viewportSize.multiplyBy(-VIEWPORT_PADDING_RATIO))
+      .round();
     const devicePixelRatio = Math.min(window.devicePixelRatio || 1, MAX_DEVICE_PIXEL_RATIO);
 
-    this.canvas.width = canvasSize.x * devicePixelRatio;
-    this.canvas.height = canvasSize.y * devicePixelRatio;
-    this.canvas.style.width = `${canvasSize.x}px`;
-    this.canvas.style.height = `${canvasSize.y}px`;
-    this.canvas.style.transformOrigin = '0 0';
-
-    // setPosition writes a translate-only transform, overwriting any
-    // translate+scale set by the previous zoom animation.
-    L.DomUtil.setPosition(this.canvas, topLeft);
-
-    this.origin = topLeft.clone();
-    this.canvasSize = canvasSize;
-    this.lastDrawZoom = this._map.getZoom();
-    this.lastDrawOriginLatLng = this._map.layerPointToLatLng(topLeft);
-
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-    this.ctx.scale(devicePixelRatio, devicePixelRatio);
-    this.ctx.clearRect(0, 0, canvasSize.x, canvasSize.y);
+    return {
+      canvasSize,
+      origin: topLeft,
+      devicePixelRatio,
+      zoom: this._map.getZoom(),
+      center: this._map.getCenter(),
+    };
   }
 
   // ---------------------------------------------------------------------------
@@ -640,29 +660,50 @@ export class CanvasLabelLayer extends L.Layer {
     this.isInteracting = true;
     this.cancelPendingRebuild();
     this.cancelInflightCollision();
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+    this.pendingPaintLayout = null;
+  }
+
+  private applyZoomTransform(center: L.LatLng, zoom: number): void {
+    if (!this.canvas || !this._map) {
+      return;
+    }
+    if (this.canvasSize.x <= 0 || this.canvasSize.y <= 0) {
+      return;
+    }
+
+    const map = this._map as ZoomTransformAwareMap;
+    const scale = map.getZoomScale(zoom, this.lastDrawZoom);
+    const viewHalf = map.getSize().multiplyBy(0.5 + VIEWPORT_PADDING_RATIO);
+    const currentCenterPoint = map.project(this.lastDrawCenter, zoom);
+    const offset = viewHalf
+      .multiplyBy(-scale)
+      .add(currentCenterPoint)
+      .subtract(map._getNewPixelOrigin(center, zoom));
+
+    L.DomUtil.setTransform(this.canvas, offset, scale);
   }
 
   /**
    * Standard Leaflet zoom-animation handler. Computes the destination
    * `(offset, scale)` for the canvas so its already-drawn content lines up
    * with the in-flight zoom target, then lets Leaflet's CSS transition on
-   * `.leaflet-zoom-animated` interpolate the transform smoothly. This is the
-   * same pattern `L.Renderer`, `L.Canvas`, and `L.GridLayer` use.
+   * `.leaflet-zoom-animated` interpolate the transform smoothly. This mirrors
+   * `L.Renderer`'s `_updateTransform` implementation.
    */
   private handleZoomAnim(event: L.ZoomAnimEvent): void {
-    if (!this.canvas || !this._map) {
+    this.applyZoomTransform(event.center, event.zoom);
+  }
+
+  private handleZoom(): void {
+    if (!this._map) {
       return;
     }
 
-    const map = this._map as ZoomAnimAwareMap;
-    const scale = map.getZoomScale(event.zoom, this.lastDrawZoom);
-    const offset = map._latLngToNewLayerPoint(
-      this.lastDrawOriginLatLng,
-      event.zoom,
-      event.center,
-    );
-
-    L.DomUtil.setTransform(this.canvas, offset, scale);
+    this.applyZoomTransform(this._map.getCenter(), this._map.getZoom());
   }
 
   private handleZoomEnd(): void {
@@ -676,18 +717,31 @@ export class CanvasLabelLayer extends L.Layer {
   }
 
   private handleResize(): void {
-    this.cancelPendingRebuild();
-    this.runRebuildPipeline();
+    this.requestRebuild();
   }
 
   private handleViewReset(): void {
-    this.cancelPendingRebuild();
-    this.runRebuildPipeline();
+    this.requestRebuild();
   }
 
   // ---------------------------------------------------------------------------
   // Rebuild scheduling
   // ---------------------------------------------------------------------------
+
+  private requestRebuild(delayMs: number = 0): void {
+    if (this.isInteracting) {
+      this.scheduleRebuild();
+      return;
+    }
+
+    if (delayMs > 0) {
+      this.scheduleRebuild(delayMs);
+      return;
+    }
+
+    this.cancelPendingRebuild();
+    this.runRebuildPipeline();
+  }
 
   private scheduleRebuild(delayMs: number = LABEL_REBUILD_DEBOUNCE_MS): void {
     this.cancelPendingRebuild();
@@ -717,15 +771,26 @@ export class CanvasLabelLayer extends L.Layer {
   }
 
   /**
-   * The end-to-end rebuild path: resize/reposition the canvas to the current
-   * view, recompute (or reuse cached) labels, then schedule a single RAF
-   * draw. Collision selection inside `draw()` is itself abortable so nothing
-   * holds up the next frame.
+   * The end-to-end rebuild path: capture the target canvas geometry, recompute
+   * labels, then schedule a single RAF draw. The visible canvas is not resized
+   * or cleared here; a new bitmap is committed only after collision selection
+   * and offscreen painting finish, which avoids blank frames during gestures.
    */
   private runRebuildPipeline(): void {
-    this.reset();
+    if (this.isInteracting) {
+      this.scheduleRebuild();
+      return;
+    }
+
+    this.cancelInflightCollision();
+
+    const layout = this.createPaintLayout();
+    if (!layout) {
+      return;
+    }
+
     this.processLabels();
-    this.scheduleRedraw();
+    this.scheduleRedraw(layout);
   }
 
   // ---------------------------------------------------------------------------
@@ -735,28 +800,28 @@ export class CanvasLabelLayer extends L.Layer {
   /**
    * Coalesce multiple redraw triggers into a single RAF.
    */
-  private scheduleRedraw(): void {
+  private scheduleRedraw(layout: CanvasPaintLayout): void {
+    this.pendingPaintLayout = layout;
+
     if (this.animationFrameId !== null) {
       return;
     }
 
     this.animationFrameId = requestAnimationFrame(() => {
       this.animationFrameId = null;
-      this.draw();
+      const nextLayout = this.pendingPaintLayout;
+      this.pendingPaintLayout = null;
+      if (!nextLayout || this.isInteracting) {
+        return;
+      }
+      this.draw(nextLayout);
     });
   }
 
-  private clearCanvas(): void {
-    if (!this.canvas || !this.ctx) {
-      return;
-    }
-
-    // Canvas is sized to viewport + padding, not just viewport, so clear
-    // the full canvas extent.
-    this.ctx.clearRect(0, 0, this.canvasSize.x, this.canvasSize.y);
-  }
-
-  private buildDrawCandidates(viewportBounds: L.LatLngBounds): LabelDrawCandidate[] {
+  private buildDrawCandidates(
+    viewportBounds: L.LatLngBounds,
+    layout: CanvasPaintLayout,
+  ): LabelDrawCandidate[] {
     if (!this._map) {
       return [];
     }
@@ -773,15 +838,15 @@ export class CanvasLabelLayer extends L.Layer {
         continue;
       }
 
-      const labelLatLng = L.latLng(label.position[0], label.position[1]);
-      if (!paddedBounds.contains(labelLatLng)) {
+      const labelLatLng = resolveVisibleLabelLatLng(label, paddedBounds);
+      if (!labelLatLng) {
         continue;
       }
 
       const candidate = buildLabelDrawCandidate(
         label,
         this._map,
-        this.origin,
+        layout.origin,
         labelLatLng,
         isActiveSeries,
       );
@@ -794,14 +859,14 @@ export class CanvasLabelLayer extends L.Layer {
   /**
    * Main draw method - renders all labels to canvas.
    */
-  private draw(): void {
+  private draw(layout: CanvasPaintLayout): void {
     if (!this.canvas || !this.ctx || !this._map) {
       return;
     }
 
     const { showLabels } = this.layerOptions;
     if (!showLabels || this.labels.length === 0) {
-      this.clearCanvas();
+      this.paintSelectedCandidates([], layout);
       return;
     }
 
@@ -810,14 +875,14 @@ export class CanvasLabelLayer extends L.Layer {
     }
 
     const viewportBounds = this._map.getBounds();
-    const drawCandidates = this.buildDrawCandidates(viewportBounds);
+    const drawCandidates = this.buildDrawCandidates(viewportBounds, layout);
 
     if (drawCandidates.length === 0) {
-      this.clearCanvas();
+      this.paintSelectedCandidates([], layout);
       return;
     }
 
-    this.runCollisionAndPaint(drawCandidates);
+    this.runCollisionAndPaint(drawCandidates, layout);
   }
 
   /**
@@ -825,7 +890,10 @@ export class CanvasLabelLayer extends L.Layer {
    * paints the result. The pass is abortable: if a new gesture starts mid-run,
    * we drop the in-flight selection without painting stale results.
    */
-  private runCollisionAndPaint(drawCandidates: LabelDrawCandidate[]): void {
+  private runCollisionAndPaint(
+    drawCandidates: LabelDrawCandidate[],
+    layout: CanvasPaintLayout,
+  ): void {
     if (!this._map) {
       return;
     }
@@ -835,14 +903,13 @@ export class CanvasLabelLayer extends L.Layer {
     this.currentAbortController = abortController;
     const signal = abortController.signal;
 
-    const zoom = this._map.getZoom();
-    // Candidate coordinates are local to `this.origin` (the padded canvas
+    // Candidate coordinates are local to the target layout origin (the padded canvas
     // top-left), so the collision viewport has to span the full canvas
     // extent — not just the visible viewport — otherwise candidates in the
     // pan-anchor padding band would be wrongly culled.
     const viewport = {
-      width: this.canvasSize.x,
-      height: this.canvasSize.y,
+      width: layout.canvasSize.x,
+      height: layout.canvasSize.y,
       padding: COLLISION_VIEWPORT_PADDING_PX,
     };
 
@@ -853,11 +920,14 @@ export class CanvasLabelLayer extends L.Layer {
       if (this.currentAbortController === abortController) {
         this.currentAbortController = null;
       }
-      this.paintSelectedCandidates(selected);
+      if (this.isInteracting) {
+        return;
+      }
+      this.paintSelectedCandidates(selected, layout);
     };
 
     if (drawCandidates.length <= CHUNKED_COLLISION_THRESHOLD) {
-      const selected = selectNonOverlappingLabelCandidates(drawCandidates, zoom, {
+      const selected = selectNonOverlappingLabelCandidates(drawCandidates, layout.zoom, {
         signal,
         viewport,
       });
@@ -865,7 +935,7 @@ export class CanvasLabelLayer extends L.Layer {
       return;
     }
 
-    selectNonOverlappingLabelCandidatesChunked(drawCandidates, zoom, {
+    selectNonOverlappingLabelCandidatesChunked(drawCandidates, layout.zoom, {
       signal,
       viewport,
     })
@@ -878,18 +948,45 @@ export class CanvasLabelLayer extends L.Layer {
       });
   }
 
-  private paintSelectedCandidates(selectedCandidates: LabelDrawCandidate[]): void {
+  private paintSelectedCandidates(
+    selectedCandidates: LabelDrawCandidate[],
+    layout: CanvasPaintLayout,
+  ): void {
     if (!this.ctx || !this._map) {
       return;
     }
 
-    this.clearCanvas();
-    if (selectedCandidates.length === 0) {
+    const buffer = document.createElement('canvas');
+    const bufferContext = buffer.getContext('2d', {
+      alpha: true,
+      willReadFrequently: false,
+    });
+
+    if (!bufferContext) {
       return;
     }
 
-    this.ctx.textAlign = 'center';
-    this.ctx.textBaseline = 'middle';
+    const pixelWidth = Math.max(1, Math.round(layout.canvasSize.x * layout.devicePixelRatio));
+    const pixelHeight = Math.max(1, Math.round(layout.canvasSize.y * layout.devicePixelRatio));
+
+    buffer.width = pixelWidth;
+    buffer.height = pixelHeight;
+    bufferContext.setTransform(
+      layout.devicePixelRatio,
+      0,
+      0,
+      layout.devicePixelRatio,
+      0,
+      0,
+    );
+
+    if (selectedCandidates.length === 0) {
+      this.commitPaint(buffer, layout);
+      return;
+    }
+
+    bufferContext.textAlign = 'center';
+    bufferContext.textBaseline = 'middle';
 
     // Painting smallest-fontSize first so that, in the rare case two boxes
     // grazingly overlap below the collision tolerance, the larger label wins
@@ -900,13 +997,14 @@ export class CanvasLabelLayer extends L.Layer {
 
     // Amount stroke ramps up with zoom so the dark outline only kicks in once
     // labels are large enough that the outline meaningfully aids legibility.
-    const zoom = this._map.getZoom();
+    const zoom = layout.zoom;
     const amountStrokeWidth = Math.min(4, Math.max(0, zoom - 9));
 
     for (const candidate of sortedCandidates) {
       const label = candidate.label;
 
       this.drawText(
+        bufferContext,
         label.text,
         candidate.textX,
         candidate.textY,
@@ -918,6 +1016,7 @@ export class CanvasLabelLayer extends L.Layer {
 
       if (label.showAmount && label.amount) {
         this.drawText(
+          bufferContext,
           label.amount,
           candidate.textX,
           candidate.amountY,
@@ -928,6 +1027,40 @@ export class CanvasLabelLayer extends L.Layer {
         );
       }
     }
+
+    this.commitPaint(buffer, layout);
+  }
+
+  private commitPaint(buffer: HTMLCanvasElement, layout: CanvasPaintLayout): void {
+    if (!this.canvas || !this.ctx) {
+      return;
+    }
+
+    const pixelWidth = Math.max(1, Math.round(layout.canvasSize.x * layout.devicePixelRatio));
+    const pixelHeight = Math.max(1, Math.round(layout.canvasSize.y * layout.devicePixelRatio));
+
+    if (this.canvas.width !== pixelWidth) {
+      this.canvas.width = pixelWidth;
+    }
+    if (this.canvas.height !== pixelHeight) {
+      this.canvas.height = pixelHeight;
+    }
+
+    this.canvas.style.width = `${layout.canvasSize.x}px`;
+    this.canvas.style.height = `${layout.canvasSize.y}px`;
+    this.canvas.style.transformOrigin = '0 0';
+
+    // setPosition writes a translate-only transform, replacing any in-flight
+    // zoom-animation scale before the fresh bitmap is shown.
+    L.DomUtil.setPosition(this.canvas, layout.origin);
+
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    this.ctx.clearRect(0, 0, pixelWidth, pixelHeight);
+    this.ctx.drawImage(buffer, 0, 0);
+
+    this.canvasSize = layout.canvasSize.clone();
+    this.lastDrawZoom = layout.zoom;
+    this.lastDrawCenter = layout.center;
   }
 
   /**
@@ -935,6 +1068,7 @@ export class CanvasLabelLayer extends L.Layer {
    * against arbitrary heatmap colors.
    */
   private drawText(
+    ctx: CanvasRenderingContext2D,
     text: string,
     x: number,
     y: number,
@@ -943,17 +1077,13 @@ export class CanvasLabelLayer extends L.Layer {
     strokeColor: string,
     strokeWidth: number,
   ): void {
-    if (!this.ctx) {
-      return;
-    }
-
-    this.ctx.font = `${LABEL_FONT_WEIGHT} ${fontSize}px ${LABEL_FONT_FAMILY}`;
-    this.ctx.strokeStyle = strokeColor;
-    this.ctx.lineWidth = strokeWidth;
-    this.ctx.lineJoin = 'round';
-    this.ctx.strokeText(text, x, y);
-    this.ctx.fillStyle = fillColor;
-    this.ctx.fillText(text, x, y);
+    ctx.font = `${LABEL_FONT_WEIGHT} ${fontSize}px ${LABEL_FONT_FAMILY}`;
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = strokeWidth;
+    ctx.lineJoin = 'round';
+    ctx.strokeText(text, x, y);
+    ctx.fillStyle = fillColor;
+    ctx.fillText(text, x, y);
   }
 }
 
