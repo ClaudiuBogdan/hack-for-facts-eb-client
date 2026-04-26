@@ -26,7 +26,7 @@ function createAvailabilityState(
       status,
       publicationDate: null,
       requestDeadlineDate: null,
-      globalDeadlineDate: '2026-04-26',
+      globalDeadlineDate: '2099-12-31',
       publicDebate: null,
       ...overrides,
     },
@@ -537,7 +537,7 @@ describe('DebateRequestForm', () => {
     availabilityState = createAvailabilityState('open', {
       publicationDate: null,
       requestDeadlineDate: null,
-      globalDeadlineDate: '2026-04-26',
+      globalDeadlineDate: '2099-12-31',
     })
 
     render(

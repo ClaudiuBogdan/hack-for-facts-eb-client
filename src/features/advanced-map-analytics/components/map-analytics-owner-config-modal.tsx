@@ -59,6 +59,7 @@ interface MapAnalyticsOwnerConfigModalProps {
   currentVisibility: AdvancedMapAnalyticsVisibility;
   currentPublicId: string | null;
   publicVisibilityErrorMessage?: string | null;
+  openDescriptionEditor?: boolean;
   onOpenChange: (open: boolean) => void;
   onMapNameChange: (nextMapName: string) => void;
   onMapDescriptionChange?: (nextDescription: string) => void;
@@ -78,6 +79,7 @@ export function MapAnalyticsOwnerConfigModal({
   currentVisibility,
   currentPublicId,
   publicVisibilityErrorMessage = null,
+  openDescriptionEditor = false,
   onOpenChange,
   onMapNameChange,
   onMapDescriptionChange,
@@ -115,8 +117,8 @@ export function MapAnalyticsOwnerConfigModal({
     setPendingVisibilityTarget(null);
     setPendingLoadSnapshotId(null);
     setIsDeleteConfirmOpen(false);
-    setIsDescriptionEditorModalOpen(false);
-  }, [open, currentVisibility]);
+    setIsDescriptionEditorModalOpen(openDescriptionEditor);
+  }, [open, currentVisibility, openDescriptionEditor]);
 
   const snapshots = snapshotsQuery.data?.snapshots ?? [];
   const canGoPrevious = page > 1;

@@ -7,9 +7,7 @@ function renderConfigPanel(overrides: Partial<ComponentProps<typeof AdvancedMapA
   return render(
     <AdvancedMapAnalyticsConfigPanel
       collapsed={false}
-      mapName="Untitled map"
       showCountyBoundaries={true}
-      mapDescription=""
       warningCount={0}
       onToggleCollapsed={vi.fn()}
       onShowCountyBoundariesChange={vi.fn()}
@@ -35,16 +33,14 @@ describe('AdvancedMapAnalyticsConfigPanel', () => {
 
     const { rerender } = renderConfigPanel({ onToggleCollapsed });
 
-    expect(screen.getByText('Untitled map')).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Toggle county boundaries' })).toBeInTheDocument();
     fireEvent.click(screen.getByLabelText('Collapse config panel'));
     expect(onToggleCollapsed).toHaveBeenCalledWith(true);
 
     rerender(
       <AdvancedMapAnalyticsConfigPanel
         collapsed={true}
-        mapName="Untitled map"
         showCountyBoundaries={true}
-        mapDescription=""
         warningCount={0}
         onToggleCollapsed={onToggleCollapsed}
         onShowCountyBoundariesChange={vi.fn()}
@@ -53,8 +49,8 @@ describe('AdvancedMapAnalyticsConfigPanel', () => {
       />
     );
 
-    // Map name is inside collapsible, so it should be hidden when collapsed
-    expect(screen.queryByText('Untitled map')).not.toBeInTheDocument();
+    // County boundaries switch is inside collapsible, so it should be hidden when collapsed
+    expect(screen.queryByRole('switch', { name: 'Toggle county boundaries' })).not.toBeInTheDocument();
   });
 
   it('shows warning count button and opens warnings modal callback', () => {
@@ -82,40 +78,5 @@ describe('AdvancedMapAnalyticsConfigPanel', () => {
     renderConfigPanel();
 
     expect(screen.queryByRole('button', { name: /warning/i })).not.toBeInTheDocument();
-  });
-
-  it('does not render description textarea in quick settings', () => {
-    renderConfigPanel({ mapDescription: '# Title' });
-
-    expect(screen.queryByLabelText('Map description')).not.toBeInTheDocument();
-  });
-
-  it('renders Read more link when description exists', () => {
-    renderConfigPanel({ mapDescription: '# Budget map' });
-
-    const readMoreLink = screen.getByRole('button', { name: 'Read more' });
-    expect(readMoreLink).toBeInTheDocument();
-  });
-
-  it('does not render Read more link when description is empty', () => {
-    renderConfigPanel({
-      readOnly: true,
-      mapDescription: '   ',
-    });
-
-    expect(screen.queryByRole('button', { name: 'Read more' })).not.toBeInTheDocument();
-  });
-
-  it('opens preview markdown description modal from quick settings', () => {
-    renderConfigPanel({
-      mapDescription: '# Public map description',
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Read more' }));
-
-    expect(screen.getByText('Map description')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Public map description' })).toBeInTheDocument();
-    expect(screen.queryByLabelText('Map description markdown editor')).not.toBeInTheDocument();
-    expect(screen.queryByText('Rendered markdown description for this map.')).not.toBeInTheDocument();
   });
 });

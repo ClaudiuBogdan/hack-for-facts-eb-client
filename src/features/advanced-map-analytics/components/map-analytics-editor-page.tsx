@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { useBlocker, useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
+import { UnsavedChangesDialog } from '@/components/alerts/components/UnsavedChangesDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -37,6 +38,7 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
   const { isLoaded, isSignedIn } = useAuth();
   const navigate = useNavigate({ from: '/maps/editor/$mapId' });
   const [isOwnerConfigModalOpen, setIsOwnerConfigModalOpen] = useState(false);
+  const [ownerConfigDescriptionEditorOpen, setOwnerConfigDescriptionEditorOpen] = useState(false);
   const [isSaveSnapshotDialogOpen, setIsSaveSnapshotDialogOpen] = useState(false);
   const [isLocalSnapshotsModalOpen, setIsLocalSnapshotsModalOpen] = useState(false);
   const [isInitialStateResolved, setIsInitialStateResolved] = useState(false);
@@ -66,6 +68,12 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
     currentVisibility: mapQuery.data?.state ?? 'private',
     enabled: isLoaded && isSignedIn && Boolean(mapQuery.data),
     isBaselineReady: isInitialStateResolved,
+  });
+
+  const blocker = useBlocker({
+    shouldBlockFn: ({ current, next }) => isDirty && next.pathname !== current.pathname,
+    withResolver: true,
+    enableBeforeUnload: false,
   });
 
   useMapEditorInitialState({
@@ -252,6 +260,13 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
 
   return (
     <>
+      <UnsavedChangesDialog
+        open={blocker.status === 'blocked' && isDirty}
+        onStay={() => blocker.reset?.()}
+        onLeave={() => blocker.proceed?.()}
+        isSaving={saveSnapshotMutation.isPending}
+      />
+
       <MapAnalyticsWorkspace
         mode="owner"
         mapState={mapState}
@@ -259,6 +274,10 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
         mapDescription={mapDescriptionDraft}
         capabilities={{ readOnly: false }}
         onOpenOwnerConfig={() => setIsOwnerConfigModalOpen(true)}
+        onOpenOwnerDescriptionConfig={() => {
+          setIsOwnerConfigModalOpen(true);
+          setOwnerConfigDescriptionEditorOpen(true);
+        }}
         hasPendingChanges={isInitialStateResolved && isDirty}
         onRequestSaveSnapshot={() => setIsSaveSnapshotDialogOpen(true)}
         onOpenLocalSnapshots={() => setIsLocalSnapshotsModalOpen(true)}
@@ -278,9 +297,15 @@ export function MapAnalyticsEditorPage({ mapId, mapState, setMapState }: Readonl
         currentVisibility={mapQuery.data.state}
         currentPublicId={mapQuery.data.publicId}
         publicVisibilityErrorMessage={uploadedDatasetPublicBlockingMessage}
+        openDescriptionEditor={ownerConfigDescriptionEditorOpen}
         mapDescription={mapDescriptionDraft}
         onMapDescriptionChange={setMapDescriptionDraft}
-        onOpenChange={setIsOwnerConfigModalOpen}
+        onOpenChange={(nextOpen) => {
+          setIsOwnerConfigModalOpen(nextOpen);
+          if (!nextOpen) {
+            setOwnerConfigDescriptionEditorOpen(false);
+          }
+        }}
         onRequestSaveSnapshot={() => setIsSaveSnapshotDialogOpen(true)}
         onBeforeExportConfig={handleBeforeExportConfig}
         onMapNameChange={(nextMapName) => {

@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react
 import { useNavigate } from '@tanstack/react-router';
 import { produce } from 'immer';
 import { AnimatePresence, motion } from 'framer-motion';
-import { BarChart3, Loader2, MapIcon, Save, TableIcon } from 'lucide-react';
+import { BarChart3, Loader2, MapIcon, Pencil, Save, TableIcon } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
 
@@ -64,6 +64,7 @@ import {
   type MapAnalyticsEntitySeriesRow,
 } from './map-analytics-entity-details-panel';
 import { MapAnalyticsQuickActions } from './map-analytics-quick-actions';
+import { MapAnalyticsDescriptionInline } from './map-analytics-description-inline';
 import {
   applySetActiveSeries,
   applyToggleSeriesEnabled,
@@ -131,6 +132,7 @@ interface MapAnalyticsWorkspaceProps {
   mode: 'owner' | 'public';
   capabilities: MapAnalyticsWorkspaceCapabilities;
   onOpenOwnerConfig?: () => void;
+  onOpenOwnerDescriptionConfig?: () => void;
   hasPendingChanges?: boolean;
   onRequestSaveSnapshot?: () => void;
   onOpenLocalSnapshots?: () => void;
@@ -163,6 +165,7 @@ export function MapAnalyticsWorkspace({
   mode,
   capabilities,
   onOpenOwnerConfig,
+  onOpenOwnerDescriptionConfig,
   hasPendingChanges = false,
   onRequestSaveSnapshot,
   onOpenLocalSnapshots,
@@ -1836,9 +1839,7 @@ export function MapAnalyticsWorkspace({
     <>
       <AdvancedMapAnalyticsConfigPanel
         collapsed={Boolean(mapState.configPanelCollapsed)}
-        mapName={mapName}
         showCountyBoundaries={mapState.showCountyBoundaries}
-        mapDescription={mapDescription}
         warningCount={combinedWarnings.length}
         readOnly={isReadOnly}
         onToggleCollapsed={toggleConfigPanelCollapsed}
@@ -2075,6 +2076,28 @@ export function MapAnalyticsWorkspace({
             />
           </div>
 
+          {/* Map title and description */}
+          <div className="pb-4 space-y-1">
+            <h1 className="text-xl font-bold tracking-tight text-foreground">{mapName}</h1>
+            {mapDescription.trim().length > 0 ? (
+              <MapAnalyticsDescriptionInline
+                description={mapDescription}
+                collapsedMaxHeightClassName="max-h-24"
+                fadeFromClassName={shouldOverlayMobileControls ? 'from-card' : 'from-background'}
+              />
+            ) : null}
+            {!isReadOnly && onOpenOwnerDescriptionConfig ? (
+              <button
+                type="button"
+                onClick={onOpenOwnerDescriptionConfig}
+                className="inline-flex w-fit items-center gap-1 rounded text-xs font-medium text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <Pencil className="h-3 w-3" />
+                {mapDescription.trim().length > 0 ? t`Edit description` : t`Add description`}
+              </button>
+            ) : null}
+          </div>
+
           {isMobileControlsCollapseEnabled ? (
             <>
               <section className="rounded-2xl border bg-card p-3 shadow-sm">
@@ -2087,11 +2110,6 @@ export function MapAnalyticsWorkspace({
                 >
                   {isMobileControlsCollapsed ? t`Show Map Controls` : t`Hide Map Controls`}
                 </button>
-                {isMobileControlsCollapsed ? (
-                  <p className="mt-2 truncate text-sm text-muted-foreground" title={mapState.mapName}>
-                    {mapState.mapName}
-                  </p>
-                ) : null}
               </section>
 
               <Collapsible

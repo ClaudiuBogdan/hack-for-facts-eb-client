@@ -1,17 +1,13 @@
-import { useState } from 'react';
 import { AlertTriangle, ChevronDown, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { AdvancedMapAnalyticsDescriptionModal } from './advanced-map-analytics-description-modal';
 import { t } from '@lingui/core/macro';
 
 interface AdvancedMapAnalyticsConfigPanelProps {
   collapsed: boolean;
-  mapName: string;
   showCountyBoundaries: boolean;
-  mapDescription?: string;
   warningCount: number;
   readOnly?: boolean;
   onToggleCollapsed: (collapsed: boolean) => void;
@@ -22,9 +18,7 @@ interface AdvancedMapAnalyticsConfigPanelProps {
 
 export function AdvancedMapAnalyticsConfigPanel({
   collapsed,
-  mapName,
   showCountyBoundaries,
-  mapDescription = '',
   warningCount,
   readOnly = false,
   onToggleCollapsed,
@@ -33,9 +27,6 @@ export function AdvancedMapAnalyticsConfigPanel({
   onOpenWarnings,
 }: Readonly<AdvancedMapAnalyticsConfigPanelProps>) {
   const hasWarnings = warningCount > 0;
-  const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
-  const trimmedMapDescription = mapDescription.trim();
-  const hasMapDescription = trimmedMapDescription.length > 0;
 
   return (
     <section className="py-5 border-b border-border/40">
@@ -89,23 +80,6 @@ export function AdvancedMapAnalyticsConfigPanel({
 
       <Collapsible open={!collapsed} onOpenChange={(open) => onToggleCollapsed(!open)}>
         <CollapsibleContent className="space-y-5 data-[state=open]:animate-in data-[state=closed]:animate-out">
-          {/* Map title */}
-          <div className="space-y-1.5">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t`Map name`}</p>
-            <p className="truncate text-lg font-semibold tracking-tight" title={mapName}>
-              {mapName}
-            </p>
-            {hasMapDescription ? (
-              <button
-                type="button"
-                onClick={() => setIsDescriptionModalOpen(true)}
-                className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors"
-              >
-                {t`Read more`}
-              </button>
-            ) : null}
-          </div>
-
           {/* County boundaries */}
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm font-medium">{t`County boundaries`}</span>
@@ -118,13 +92,6 @@ export function AdvancedMapAnalyticsConfigPanel({
           </div>
         </CollapsibleContent>
       </Collapsible>
-
-      <AdvancedMapAnalyticsDescriptionModal
-        open={isDescriptionModalOpen}
-        onOpenChange={setIsDescriptionModalOpen}
-        description={mapDescription}
-        mode="preview"
-      />
     </section>
   );
 }
