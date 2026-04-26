@@ -28,6 +28,7 @@ interface UsePublicMapRuntimeStateResult {
   publicMapQuery: ReturnType<typeof useAdvancedMapAnalyticsPublicMapQuery>;
   mapState: AdvancedMapAnalyticsUrlState;
   setMapState: Dispatch<SetStateAction<AdvancedMapAnalyticsUrlState>>;
+  isRuntimeStateReady: boolean;
   mapDescription: string;
   bundledGroupedSeriesData?: GroupedSeriesDataResponse;
   bundledRemoteBaseSeriesHash?: string;
@@ -46,6 +47,7 @@ export function usePublicMapRuntimeState({
   const [mapState, setMapState] = useState<AdvancedMapAnalyticsUrlState>(() =>
     AdvancedMapAnalyticsUrlStateSchema.parse({})
   );
+  const [isRuntimeStateReady, setIsRuntimeStateReady] = useState(false);
 
   const runtimeSnapshotConfig = useMemo(() => {
     if (!publicMapQuery.data) {
@@ -61,10 +63,12 @@ export function usePublicMapRuntimeState({
 
   useEffect(() => {
     if (!runtimeSnapshotConfig) {
+      setIsRuntimeStateReady(false);
       return;
     }
 
     setMapState(runtimeSnapshotConfig);
+    setIsRuntimeStateReady(true);
   }, [runtimeSnapshotConfig]);
 
   usePublicMapViewportSync({
@@ -89,6 +93,7 @@ export function usePublicMapRuntimeState({
     publicMapQuery,
     mapState,
     setMapState,
+    isRuntimeStateReady,
     mapDescription: publicMapQuery.data?.description ?? '',
     bundledGroupedSeriesData: publicMapQuery.data?.groupedSeriesData,
     bundledRemoteBaseSeriesHash,

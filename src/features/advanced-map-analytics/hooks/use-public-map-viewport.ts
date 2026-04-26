@@ -14,6 +14,13 @@ const PublicMapViewportSearchSchema = AdvancedMapAnalyticsUrlStateSchema.pick({
   mapZoom: true,
 });
 
+function buildViewportOverrideKey(viewportOverride: PublicMapViewport): string {
+  return JSON.stringify({
+    mapZoom: viewportOverride.mapZoom ?? null,
+    mapCenter: viewportOverride.mapCenter ?? null,
+  });
+}
+
 function doesMapStateMatchViewportOverride(
   mapState: AdvancedMapAnalyticsUrlState,
   viewportOverride: PublicMapViewport
@@ -142,6 +149,11 @@ export function usePublicMapViewportSync({
   onMapViewportChange,
 }: Readonly<UsePublicMapViewportSyncInput>) {
   const lastViewportEmissionRef = useRef<string | null>(null);
+  // Tracks the most-recent URL viewport override that we've already
+  // propagated into local state. The emit-to-URL effect uses this to tell
+  // apart "URL just changed externally and state hasn't caught up" (don't
+  // emit) from "user-driven state change ahead of URL" (do emit).
+  const lastAppliedOverrideKeyRef = useRef<string | null>(null);
   const externalViewportOverride = useMemo<PublicMapViewport>(
     () => ({
       mapZoom: mapZoomOverride,
@@ -149,16 +161,14 @@ export function usePublicMapViewportSync({
     }),
     [mapCenterOverride, mapZoomOverride]
   );
-  const hasPendingExternalViewportOverride = useMemo(
-    () =>
-      enabled &&
-      (mapZoomOverride !== undefined || mapCenterOverride !== undefined) &&
-      !doesMapStateMatchViewportOverride(mapState, externalViewportOverride),
-    [enabled, externalViewportOverride, mapCenterOverride, mapState, mapZoomOverride]
+  const externalViewportOverrideKey = useMemo(
+    () => buildViewportOverrideKey(externalViewportOverride),
+    [externalViewportOverride]
   );
 
   useEffect(() => {
     lastViewportEmissionRef.current = null;
+    lastAppliedOverrideKeyRef.current = null;
   }, [mapKey]);
 
   useEffect(() => {
@@ -167,6 +177,7 @@ export function usePublicMapViewportSync({
     }
 
     if (mapZoomOverride === undefined && mapCenterOverride === undefined) {
+      lastAppliedOverrideKeyRef.current = externalViewportOverrideKey;
       return;
     }
 
@@ -186,16 +197,32 @@ export function usePublicMapViewportSync({
 
       return didChangeViewport ? nextState : previousState;
     });
-  }, [enabled, mapCenterOverride, mapZoomOverride, setMapState]);
+  }, [enabled, externalViewportOverrideKey, mapCenterOverride, mapZoomOverride, setMapState]);
+
+  useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
+    if (doesMapStateMatchViewportOverride(mapState, externalViewportOverride)) {
+      lastAppliedOverrideKeyRef.current = externalViewportOverrideKey;
+    }
+  }, [
+    enabled,
+    externalViewportOverride,
+    externalViewportOverrideKey,
+    mapState,
+  ]);
 
   useEffect(() => {
     if (!enabled || !onMapViewportChange) {
       return;
     }
 
-    // Do not emit a stale viewport upstream while the local map state is still
-    // converging to an externally controlled center/zoom.
-    if (hasPendingExternalViewportOverride) {
+    // If the URL override changed and we haven't yet propagated it into state
+    // (we'll do so in the next commit), skip this emission so the parent's
+    // override doesn't immediately get overwritten by stale state.
+    if (lastAppliedOverrideKeyRef.current !== externalViewportOverrideKey) {
       return;
     }
 
@@ -217,7 +244,7 @@ export function usePublicMapViewportSync({
     onMapViewportChange(nextViewport);
   }, [
     enabled,
-    hasPendingExternalViewportOverride,
+    externalViewportOverrideKey,
     mapState.mapCenter,
     mapState.mapZoom,
     onMapViewportChange,

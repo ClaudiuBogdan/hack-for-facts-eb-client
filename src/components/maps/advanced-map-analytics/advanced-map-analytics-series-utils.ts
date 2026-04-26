@@ -11,10 +11,75 @@ import {
   CopiedAdvancedMapSeriesSchema,
   createDefaultAdvancedMapAnalyticsSeries,
   createUniqueAdvancedMapAnalyticsId,
+  getGeoJsonDatasetLabel,
   getGeoJsonDatasetUnit,
   MapSupportedSeriesSchema,
 } from '@/schemas/advanced-map-analytics';
 import { t } from '@lingui/core/macro';
+
+/**
+ * Returns the user-visible label for a series. Falls back to dataset-key
+ * derived labels for geojson/uploaded series and to the series id when no
+ * label is configured.
+ */
+export function resolveSeriesDisplayLabel(series: MapSupportedSeries): string {
+  const trimmedLabel = series.label.trim();
+  if (trimmedLabel.length > 0) {
+    return trimmedLabel;
+  }
+
+  if (series.type === 'geojson-dataset-series') {
+    return getGeoJsonDatasetLabel(series.datasetKey);
+  }
+
+  if (series.type === 'uploaded-map-dataset') {
+    return t`Uploaded dataset`;
+  }
+
+  return series.id;
+}
+
+/**
+ * Resolves the unit string used when formatting a series value.
+ * Honors per-series display unit overrides, then derived units from the
+ * data response, then the series-configured unit, with type-specific
+ * fallbacks for geojson/INS series.
+ */
+export function resolveSeriesDisplayUnit(
+  series: MapSupportedSeries,
+  unitsBySeriesId: Map<string, string | undefined>,
+  displayUnitOverridesBySeriesId?: Map<string, string | null>
+): string | undefined {
+  if (displayUnitOverridesBySeriesId?.has(series.id)) {
+    const overriddenUnit = displayUnitOverridesBySeriesId.get(series.id);
+    const trimmedOverriddenUnit =
+      typeof overriddenUnit === 'string' ? overriddenUnit.trim() : '';
+    return trimmedOverriddenUnit.length > 0 ? trimmedOverriddenUnit : undefined;
+  }
+
+  const derivedUnit = unitsBySeriesId.get(series.id);
+  if (typeof derivedUnit === 'string') {
+    const trimmedDerivedUnit = derivedUnit.trim();
+    if (trimmedDerivedUnit.length > 0) {
+      return trimmedDerivedUnit;
+    }
+  }
+
+  const fallbackUnit = typeof series.unit === 'string' ? series.unit.trim() : '';
+  if (series.type === 'geojson-dataset-series' && fallbackUnit.length === 0) {
+    return getGeoJsonDatasetUnit(series.datasetKey);
+  }
+
+  if (fallbackUnit.length === 0) {
+    return undefined;
+  }
+
+  if (series.type === 'ins-series' && fallbackUnit.toUpperCase() === 'RON') {
+    return undefined;
+  }
+
+  return fallbackUnit;
+}
 
 export const SERIES_TYPE_LABELS: Record<MapSupportedSeries['type'], string> = {
   'line-items-aggregated-yearly': t`Execution analytics`,

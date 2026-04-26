@@ -4,17 +4,17 @@ import { AdvancedMapAnalyticsUrlStateSchema } from '@/schemas/advanced-map-analy
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 
 const useAdvancedMapAnalyticsPublicMapQueryMock = vi.fn();
-const mapAnalyticsWorkspaceMock = vi.fn();
+const mapAnalyticsPublicViewMock = vi.fn();
 
 vi.mock('@/features/advanced-map-analytics/hooks/use-advanced-map-analytics', () => ({
   useAdvancedMapAnalyticsPublicMapQuery: (...args: unknown[]) =>
     useAdvancedMapAnalyticsPublicMapQueryMock(...args),
 }));
 
-vi.mock('./map-analytics-workspace', () => ({
-  MapAnalyticsWorkspace: (props: unknown) => {
-    mapAnalyticsWorkspaceMock(props);
-    return <div data-testid="map-analytics-workspace" />;
+vi.mock('./map-analytics-public-view', () => ({
+  MapAnalyticsPublicView: (props: unknown) => {
+    mapAnalyticsPublicViewMock(props);
+    return <div data-testid="map-analytics-public-view" />;
   },
 }));
 
@@ -44,7 +44,7 @@ function createGroupedSeriesData(seriesId = 'series_1') {
 describe('MapAnalyticsPublicPage', () => {
   beforeEach(() => {
     useAdvancedMapAnalyticsPublicMapQueryMock.mockReset();
-    mapAnalyticsWorkspaceMock.mockReset();
+    mapAnalyticsPublicViewMock.mockReset();
   });
 
   it('shows loading state while fetching', async () => {
@@ -60,7 +60,7 @@ describe('MapAnalyticsPublicPage', () => {
     expect(screen.getByText('Loading public map...')).toBeInTheDocument();
   });
 
-  it('renders shared workspace in read-only mode with API-loaded state', async () => {
+  it('renders the public view with API-loaded state', async () => {
     const mapState = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Public map' });
     const groupedSeriesData = createGroupedSeriesData();
 
@@ -80,22 +80,21 @@ describe('MapAnalyticsPublicPage', () => {
     render(<MapAnalyticsPublicPage publicId="map1" />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('map-analytics-workspace')).toBeInTheDocument();
+      expect(screen.getByTestId('map-analytics-public-view')).toBeInTheDocument();
     });
 
-    expect(mapAnalyticsWorkspaceMock).toHaveBeenCalledWith(
+    expect(mapAnalyticsPublicViewMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        mode: 'public',
-        capabilities: { readOnly: true },
-        mobileControlsDefaultCollapsed: true,
         mapDescription: '# Public description',
         bundledGroupedSeriesData: groupedSeriesData,
         bundledRemoteBaseSeriesHash: expect.any(String),
+        mapState: expect.objectContaining({ mapName: 'Public map' }),
+        setMapState: expect.any(Function),
       })
     );
   });
 
-  it('applies map viewport overrides to workspace state', async () => {
+  it('applies map viewport overrides to the public view state', async () => {
     const mapState = AdvancedMapAnalyticsUrlStateSchema.parse({
       mapName: 'Public map',
       mapZoom: 7,
@@ -125,7 +124,7 @@ describe('MapAnalyticsPublicPage', () => {
     );
 
     await waitFor(() => {
-      expect(mapAnalyticsWorkspaceMock).toHaveBeenCalledWith(
+      expect(mapAnalyticsPublicViewMock).toHaveBeenCalledWith(
         expect.objectContaining({
           mapState: expect.objectContaining({
             mapZoom: 9.3,
@@ -136,7 +135,7 @@ describe('MapAnalyticsPublicPage', () => {
     });
   });
 
-  it('emits viewport changes from workspace state through callback', async () => {
+  it('emits viewport changes from public view state through callback', async () => {
     const mapState = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Public map' });
     const groupedSeriesData = createGroupedSeriesData();
     const onMapViewportChange = vi.fn();
@@ -157,12 +156,12 @@ describe('MapAnalyticsPublicPage', () => {
     render(<MapAnalyticsPublicPage publicId="map1" onMapViewportChange={onMapViewportChange} />);
 
     await waitFor(() => {
-      expect(screen.getByTestId('map-analytics-workspace')).toBeInTheDocument();
+      expect(screen.getByTestId('map-analytics-public-view')).toBeInTheDocument();
     });
 
-    const workspaceProps = getLatestWorkspaceProps();
+    const publicViewProps = getLatestPublicViewProps();
     await act(async () => {
-      workspaceProps.setMapState((previousState) => ({
+      publicViewProps.setMapState((previousState) => ({
         ...previousState,
         mapZoom: 10.1,
         mapCenter: [47.2, 26.3],
@@ -193,15 +192,15 @@ describe('MapAnalyticsPublicPage', () => {
   });
 });
 
-function getLatestWorkspaceProps(): {
+function getLatestPublicViewProps(): {
   setMapState: (
     updater:
       | AdvancedMapAnalyticsUrlState
       | ((previousState: AdvancedMapAnalyticsUrlState) => AdvancedMapAnalyticsUrlState)
   ) => void;
 } {
-  const latestCallIndex = mapAnalyticsWorkspaceMock.mock.calls.length - 1;
-  const latestCall = mapAnalyticsWorkspaceMock.mock.calls[latestCallIndex]?.[0] as
+  const latestCallIndex = mapAnalyticsPublicViewMock.mock.calls.length - 1;
+  const latestCall = mapAnalyticsPublicViewMock.mock.calls[latestCallIndex]?.[0] as
     | {
         setMapState: (
           updater:
@@ -212,7 +211,7 @@ function getLatestWorkspaceProps(): {
     | undefined;
 
   if (!latestCall) {
-    throw new Error('Missing MapAnalyticsWorkspace props.');
+    throw new Error('Missing MapAnalyticsPublicView props.');
   }
 
   return latestCall;

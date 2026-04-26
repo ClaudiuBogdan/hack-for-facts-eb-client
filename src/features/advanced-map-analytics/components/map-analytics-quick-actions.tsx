@@ -24,6 +24,14 @@ interface MapAnalyticsQuickActionsProps {
   className?: string;
   hidden?: boolean;
   hiddenOnMobile?: boolean;
+  /**
+   * Layout for the action cluster.
+   * - `floating` (default): fixed-positioned overlay used by the editor and
+   *   workspace map view.
+   * - `inline`: render the buttons in normal document flow so a parent header
+   *   can position the cluster (used by the public map view).
+   */
+  variant?: 'floating' | 'inline';
 }
 
 export function MapAnalyticsQuickActions({
@@ -34,6 +42,7 @@ export function MapAnalyticsQuickActions({
   className,
   hidden = false,
   hiddenOnMobile,
+  variant = 'floating',
 }: Readonly<MapAnalyticsQuickActionsProps>) {
   const { isSignedIn } = useAuth();
   const navigate = useNavigate();
@@ -161,13 +170,22 @@ export function MapAnalyticsQuickActions({
     { enableOnFormTags: ['INPUT', 'TEXTAREA', 'SELECT'] }
   );
 
+  const isFloating = variant === 'floating';
+  const buttonClassName = isFloating
+    ? 'h-10 w-10 rounded-full shadow-lg border border-border hover:bg-secondary/50 transition-colors'
+    : 'h-9 w-9 rounded-full border border-border hover:bg-secondary/50 transition-colors';
+  const iconClassName = isFloating ? 'h-5 w-5' : 'h-4 w-4';
+
   return (
     <>
       <div
         className={cn(
-          'fixed z-30 flex gap-2',
-          'md:top-10 md:right-4 md:flex-col',
-          'bottom-4 right-4 flex-row md:bottom-auto',
+          'flex gap-2',
+          isFloating && [
+            'fixed z-30',
+            'md:top-10 md:right-4 md:flex-col',
+            'bottom-4 right-4 flex-row md:bottom-auto',
+          ],
           hidden && 'hidden',
           hiddenOnMobile && 'hidden md:flex',
           className
@@ -180,10 +198,10 @@ export function MapAnalyticsQuickActions({
           title={t`Search entities`}
           variant="ghost"
           size="icon"
-          className="h-10 w-10 rounded-full shadow-lg border border-border hover:bg-secondary/50 transition-colors"
+          className={buttonClassName}
           onClick={handleOpenSearch}
         >
-          <Search className="h-5 w-5" />
+          <Search className={iconClassName} />
         </Button>
         {mode === 'public' ? (
           <Button
@@ -192,10 +210,10 @@ export function MapAnalyticsQuickActions({
             title={t`Create editable copy`}
             variant="ghost"
             size="icon"
-            className="h-10 w-10 rounded-full shadow-lg border border-border hover:bg-secondary/50 transition-colors"
+            className={buttonClassName}
             onClick={handleCreateEditableCopy}
           >
-            <Pencil className="h-5 w-5" />
+            <Pencil className={iconClassName} />
           </Button>
         ) : null}
         <Button
@@ -204,13 +222,13 @@ export function MapAnalyticsQuickActions({
           title={t`Copy share link`}
           variant="ghost"
           size="icon"
-          className="h-10 w-10 rounded-full shadow-lg border border-border hover:bg-secondary/50 transition-colors"
+          className={buttonClassName}
           onClick={() => void handleCopyShareLink()}
         >
           {isShareCopied ? (
-            <Check className="h-5 w-5 text-green-600" />
+            <Check className={cn(iconClassName, 'text-green-600')} />
           ) : (
-            <Link2 className="h-5 w-5" />
+            <Link2 className={iconClassName} />
           )}
         </Button>
       </div>

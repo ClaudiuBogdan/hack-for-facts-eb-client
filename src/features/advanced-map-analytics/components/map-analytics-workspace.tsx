@@ -40,7 +40,6 @@ import {
   createDefaultAdvancedMapAnalyticsValueFilterRule,
   createDefaultAdvancedMapAnalyticsSeries,
   createUniqueAdvancedMapAnalyticsId,
-  getGeoJsonDatasetLabel,
   getGeoJsonDatasetUnit,
 } from '@/schemas/advanced-map-analytics';
 import { useUserCurrency } from '@/lib/hooks/useUserCurrency';
@@ -52,6 +51,7 @@ import { AdvancedMapAnalyticsConfigPanel } from '@/components/maps/advanced-map-
 import { AdvancedMapAnalyticsBinsModal } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-bins-modal';
 import { AdvancedMapAnalyticsBinsPanel } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-bins-panel';
 import { AdvancedMapAnalyticsDiscreteLegend } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-discrete-legend';
+import { AdvancedMapAnalyticsLegendCard } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-legend-card';
 import { AdvancedMapAnalyticsSeriesPanel } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-series-panel';
 import { AdvancedMapAnalyticsValueFilterEditorModal } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-value-filter-editor-modal';
 import { AdvancedMapAnalyticsValueFiltersPanel } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-value-filters-panel';
@@ -73,7 +73,15 @@ import {
   ensureActiveSeriesSelection,
   normalizePastedMapSeries,
   reorderSeriesByIds,
+  resolveSeriesDisplayLabel,
+  resolveSeriesDisplayUnit,
 } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils';
+import {
+  escapeHtmlValue,
+  getEntityCuiFromUatProperties,
+  normalizeNatLevelPrefix,
+  resolveUatDisplayTitle,
+} from '@/components/maps/advanced-map-analytics/advanced-map-analytics-uat-properties';
 import {
   createMapConfigTransferEnvelope,
   parseMapConfigTransferInput,
@@ -1538,21 +1546,21 @@ export function MapAnalyticsWorkspace({
         : '';
       const entityCui = getEntityCuiFromUatProperties(properties);
       const tooltipTitle = natLevelName.length > 0 ? `${natLevelName} ${uatName}` : uatName;
-      const countyLabel = escapeHtml(t`County`);
+      const countyLabel = escapeHtmlValue(t`County`);
       const countyRowHtml = countyName.length > 0
-        ? `<div style="font-size:12px;color:#6b7280;margin-bottom:10px;">${countyLabel}: ${escapeHtml(countyName)}</div>`
+        ? `<div style="font-size:12px;color:#6b7280;margin-bottom:10px;">${countyLabel}: ${escapeHtmlValue(countyName)}</div>`
         : '';
 
       if (!activeSeries) {
         return `
           <div style="font-family:Inter,sans-serif;font-size:13px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:220px;max-width:320px;padding:8px;">
-            <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${escapeHtml(tooltipTitle)}</div>
-            <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '6px'};">${escapeHtml(t`CUI`)}: ${escapeHtml(entityCui ?? t`N/A`)}</div>
+            <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${escapeHtmlValue(tooltipTitle)}</div>
+            <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '6px'};">${escapeHtmlValue(t`CUI`)}: ${escapeHtmlValue(entityCui ?? t`N/A`)}</div>
             ${countyName.length > 0
-              ? `<div style="font-size:12px;color:#6b7280;margin-bottom:6px;">${countyLabel}: ${escapeHtml(countyName)}</div>`
+              ? `<div style="font-size:12px;color:#6b7280;margin-bottom:6px;">${countyLabel}: ${escapeHtmlValue(countyName)}</div>`
               : ''
             }
-            <div style="color:#6b7280;">${escapeHtml(t`No active series selected.`)}</div>
+            <div style="color:#6b7280;">${escapeHtmlValue(t`No active series selected.`)}</div>
           </div>
         `;
       }
@@ -1575,8 +1583,8 @@ export function MapAnalyticsWorkspace({
             <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:12px;align-items:flex-start;">
               <span style="min-width:0;font-weight:${seriesRow.isActive ? '700' : '500'};color:${
                 seriesRow.isActive ? '#111827' : '#374151'
-              };overflow-wrap:anywhere;word-break:break-word;">${escapeHtml(seriesRow.label)}</span>
-              <span style="font-weight:${seriesRow.isActive ? '700' : '500'};text-align:right;white-space:nowrap;">${escapeHtml(
+              };overflow-wrap:anywhere;word-break:break-word;">${escapeHtmlValue(seriesRow.label)}</span>
+              <span style="font-weight:${seriesRow.isActive ? '700' : '500'};text-align:right;white-space:nowrap;">${escapeHtmlValue(
                 seriesRow.value
               )}</span>
             </div>
@@ -1609,18 +1617,18 @@ export function MapAnalyticsWorkspace({
       if (shouldShowNoDataTooltipMarker && activeNoDataConfig) {
         noDataTooltipMarker = `
           <div style="margin-top:8px;padding-top:8px;border-top:1px solid #e5e7eb;color:#6b7280;">
-            ${escapeHtml(activeNoDataConfig.label)}
+            ${escapeHtmlValue(activeNoDataConfig.label)}
           </div>
         `;
       }
 
       return `
         <div style="font-family:Inter,sans-serif;font-size:13px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;word-break:break-word;min-width:260px;max-width:360px;padding:8px;">
-          <div style="font-weight:700;font-size:14px;margin-bottom:2px;">${escapeHtml(tooltipTitle)}</div>
-          <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '10px'};">${escapeHtml(t`CUI`)}: ${escapeHtml(entityCui ?? t`N/A`)}</div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:2px;">${escapeHtmlValue(tooltipTitle)}</div>
+          <div style="font-size:12px;color:#6b7280;margin-bottom:${countyName.length > 0 ? '2px' : '10px'};">${escapeHtmlValue(t`CUI`)}: ${escapeHtmlValue(entityCui ?? t`N/A`)}</div>
           ${countyRowHtml}
           <div style="display:flex;flex-direction:column;gap:6px;">
-            ${rowsHtml || `<span>${escapeHtml(t`No enabled series`)}</span>`}
+            ${rowsHtml || `<span>${escapeHtmlValue(t`No enabled series`)}</span>`}
           </div>
           ${noDataTooltipMarker}
         </div>
@@ -2002,7 +2010,7 @@ export function MapAnalyticsWorkspace({
                     entries={binsClassification.palette}
                   />
                 ) : (
-                  <LegendCard
+                  <AdvancedMapAnalyticsLegendCard
                     min={realDataMin}
                     max={realDataMax}
                     unit={activeUnit}
@@ -2195,7 +2203,7 @@ export function MapAnalyticsWorkspace({
                         entries={binsClassification.palette}
                       />
                     ) : (
-                      <LegendCard
+                      <AdvancedMapAnalyticsLegendCard
                         min={realDataMin}
                         max={realDataMax}
                         unit={activeUnit}
@@ -2358,143 +2366,6 @@ export function MapAnalyticsWorkspace({
   );
 }
 
-function LegendCard({
-  min,
-  max,
-  unit,
-  title,
-  startColor,
-  endColor,
-}: Readonly<{
-  min: number;
-  max: number;
-  unit?: string;
-  title: string;
-  startColor?: string;
-  endColor?: string;
-}>) {
-  if (!Number.isFinite(min) || !Number.isFinite(max)) {
-    return null;
-  }
-
-  const gradient =
-    startColor && endColor
-      ? `linear-gradient(to right, ${startColor}, ${endColor})`
-      : `linear-gradient(to right, ${Array.from({ length: 100 }, (_, index) => getHeatmapColor(index / 99)).join(', ')})`;
-
-  return (
-    <div className="bg-card/90 backdrop-blur-sm p-3 rounded-md border border-border shadow-sm w-[280px]">
-      <h4 className="mb-2 text-xs font-semibold leading-snug break-words">{title}</h4>
-      <div className="h-4 w-full border border-border rounded-sm" style={{ background: gradient }} />
-      <div className="mt-1 flex justify-between text-xs">
-        <span>{formatAdvancedMapAnalyticsSeriesValue(min, unit)}</span>
-        <span>{formatAdvancedMapAnalyticsSeriesValue(max, unit)}</span>
-      </div>
-    </div>
-  );
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function getEntityCuiFromUatProperties(properties: UatProperties | undefined): string | undefined {
-  if (!properties) {
-    return undefined;
-  }
-
-  const rawCandidates = [
-    properties.cui,
-    properties.uat_code,
-    properties.uatCode,
-    properties.entity_cui,
-    properties.entityCui,
-  ];
-
-  for (const candidate of rawCandidates) {
-    if (typeof candidate === 'string' && candidate.trim().length > 0) {
-      return candidate.trim();
-    }
-
-    if (typeof candidate === 'number' && Number.isFinite(candidate)) {
-      return String(candidate);
-    }
-  }
-
-  return undefined;
-}
-
-function resolveUatDisplayTitle(
-  properties: UatProperties | undefined,
-  fallbackName?: string
-): string {
-  const rawName =
-    typeof properties?.name === 'string' && properties.name.trim().length > 0
-      ? properties.name.trim()
-      : fallbackName?.trim() || t`Selected UAT`;
-  const natLevelPrefix = normalizeNatLevelPrefix(properties?.natLevName);
-
-  return natLevelPrefix.length > 0 ? `${natLevelPrefix} ${rawName}`.trim() : rawName;
-}
-
-function resolveSeriesDisplayLabel(series: MapSupportedSeries): string {
-  const trimmedLabel = series.label.trim();
-  if (trimmedLabel.length > 0) {
-    return trimmedLabel;
-  }
-
-  if (series.type === 'geojson-dataset-series') {
-    return getGeoJsonDatasetLabel(series.datasetKey);
-  }
-
-  if (series.type === 'uploaded-map-dataset') {
-    return t`Uploaded dataset`;
-  }
-
-  return series.id;
-}
-
-function resolveSeriesDisplayUnit(
-  series: MapSupportedSeries,
-  unitsBySeriesId: Map<string, string | undefined>,
-  displayUnitOverridesBySeriesId?: Map<string, string | null>
-): string | undefined {
-  if (displayUnitOverridesBySeriesId?.has(series.id)) {
-    const overriddenUnit = displayUnitOverridesBySeriesId.get(series.id);
-    const trimmedOverriddenUnit =
-      typeof overriddenUnit === 'string' ? overriddenUnit.trim() : '';
-    return trimmedOverriddenUnit.length > 0 ? trimmedOverriddenUnit : undefined;
-  }
-
-  const derivedUnit = unitsBySeriesId.get(series.id);
-  if (typeof derivedUnit === 'string') {
-    const trimmedDerivedUnit = derivedUnit.trim();
-    if (trimmedDerivedUnit.length > 0) {
-      return trimmedDerivedUnit;
-    }
-  }
-
-  const fallbackUnit = typeof series.unit === 'string' ? series.unit.trim() : '';
-  if (series.type === 'geojson-dataset-series' && fallbackUnit.length === 0) {
-    return getGeoJsonDatasetUnit(series.datasetKey);
-  }
-
-  if (fallbackUnit.length === 0) {
-    return undefined;
-  }
-
-  if (series.type === 'ins-series' && fallbackUnit.toUpperCase() === 'RON') {
-    return undefined;
-  }
-
-  return fallbackUnit;
-}
-
 function isEditableEventTarget(eventTarget: EventTarget | null): boolean {
   if (!(eventTarget instanceof HTMLElement)) {
     return false;
@@ -2565,18 +2436,3 @@ function buildGeoJsonIdNameOptions(
     });
 }
 
-function normalizeNatLevelPrefix(rawNatLevelName: unknown): string {
-  if (typeof rawNatLevelName !== 'string') {
-    return '';
-  }
-
-  const normalized = rawNatLevelName
-    .replace(/\s*,?\s*altul decat resedinta de judet/gi, '')
-    .replace(/\s*,?\s*resedinta de judet/gi, '')
-    .replace(/\s*,?\s*sectoarele municipiului Bucuresti/gi, '')
-
-    .trim()
-    .replace(/\s+/g, ' ');
-
-  return normalized;
-}

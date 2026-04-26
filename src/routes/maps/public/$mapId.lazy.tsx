@@ -2,6 +2,7 @@ import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
 import { useCallback } from 'react';
 import { MapAnalyticsPublicPage } from '@/features/advanced-map-analytics/components/map-analytics-public-page';
 import { usePublicMapViewportUrlSync } from '@/features/advanced-map-analytics/hooks/use-public-map-viewport';
+import { usePublicMapSelectionUrlSync } from '@/features/advanced-map-analytics/hooks/use-public-map-selection';
 
 export const Route = createLazyFileRoute('/maps/public/$mapId')({
   component: PublicMapRouteComponent,
@@ -28,12 +29,19 @@ export function PublicMapRouteComponent() {
     updatePublicMapSearch,
   });
 
+  const { selectedSirutaOverride, onSelectedSirutaChange } = usePublicMapSelectionUrlSync({
+    rawSearch,
+    updatePublicMapSearch,
+  });
+
   return (
     <MapAnalyticsPublicPage
       publicId={publicId}
       mapZoomOverride={mapZoomOverride}
       mapCenterOverride={mapCenterOverride}
       onMapViewportChange={onMapViewportChange}
+      selectedSirutaOverride={selectedSirutaOverride}
+      onSelectedSirutaChange={onSelectedSirutaChange}
     />
   );
 }
