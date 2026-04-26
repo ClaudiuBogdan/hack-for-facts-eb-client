@@ -242,9 +242,6 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
       />
     );
 
-    expect(screen.getByText('Open Table')).toBeInTheDocument();
-    expect(screen.getByText('Open Chart')).toBeInTheDocument();
-
     const allLinkProps = linkPropsSpy.mock.calls.map((call) => call[0] as Record<string, unknown>);
     const tableLinkProps = allLinkProps.find(
       (props) => props['data-testid'] === 'advanced-map-analytics-open-table-link'
@@ -255,6 +252,9 @@ describe('AdvancedMapAnalyticsSeriesEditorModal', () => {
 
     expect(tableLinkProps).toBeDefined();
     expect(chartLinkProps).toBeDefined();
+
+    expect(tableLinkProps?.['aria-label']).toBe('Open Table');
+    expect(chartLinkProps?.['aria-label']).toBe('Open Chart');
 
     expect(tableLinkProps?.target).toBe('_blank');
     expect(tableLinkProps?.rel).toBe('noopener noreferrer');
