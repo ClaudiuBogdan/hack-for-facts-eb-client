@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react
 import { useNavigate } from '@tanstack/react-router';
 import { produce } from 'immer';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Save } from 'lucide-react';
+import { Loader2, Save } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'sonner';
 
@@ -2186,10 +2186,16 @@ export function MapAnalyticsWorkspace({
                         type="button"
                         onClick={() => onRequestSaveSnapshot?.()}
                         disabled={isSavingSnapshot}
-                        className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-2 text-sm font-medium text-accent shadow-lg shadow-accent/10 backdrop-blur-md transition-colors hover:bg-accent/20 disabled:pointer-events-none disabled:opacity-50 dark:border-accent-foreground/20 dark:bg-accent dark:text-accent-foreground dark:shadow-accent/5 dark:hover:bg-accent/80"
+                        className="pointer-events-auto rounded-full bg-[linear-gradient(90deg,#ef4444,#f59e0b,#22c55e,#06b6d4,#6366f1,#ec4899,#ef4444)] p-px shadow-2xl shadow-black/25 transition-opacity hover:opacity-90 disabled:pointer-events-none disabled:opacity-50 dark:shadow-black/40"
                       >
-                        <Save className="h-3.5 w-3.5" />
-                        {isSavingSnapshot ? t`Saving…` : t`Save snapshot`}
+                        <span className="inline-flex items-center gap-2 rounded-full bg-background px-4 py-2 text-sm font-medium text-foreground backdrop-blur-md dark:bg-accent dark:text-accent-foreground">
+                          {isSavingSnapshot ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Save className="h-3.5 w-3.5" />
+                          )}
+                          {isSavingSnapshot ? t`Saving…` : t`Save snapshot`}
+                        </span>
                       </button>
                     </motion.div>
                   ) : null}
