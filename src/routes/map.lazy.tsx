@@ -7,6 +7,7 @@ import type { LeafletMouseEvent } from "leaflet";
 import { UatProperties } from "@/components/maps/interfaces";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { ClientOnly } from "@/components/ssr/ClientOnly";
+import { ErrorBoundary } from "@/components/errors/ErrorBoundary";
 
 // Lazy load InteractiveMap to prevent Leaflet from being evaluated on the server
 const InteractiveMap = lazy(() => import("@/components/maps/InteractiveMap").then(m => ({ default: m.InteractiveMap })));
@@ -301,19 +302,26 @@ function MapPage() {
                 {heatmapData ? (
                   <>
                     <ClientOnly fallback={<div className="flex items-center justify-center h-full w-full"><LoadingSpinner size="lg" text={t`Loading map...`} /></div>}>
-                      <Suspense fallback={<div className="flex items-center justify-center h-full w-full"><LoadingSpinner size="lg" text={t`Loading map...`} /></div>}>
-                        <InteractiveMap
-                          onFeatureClick={handleFeatureClick}
-                          getFeatureStyle={aDynamicGetFeatureStyle}
-                          heatmapData={heatmapData}
-                          geoJsonData={geoJsonData}
-                          zoom={mapZoom}
-                          center={mapState.mapCenter}
-                          mapViewType={mapState.mapViewType}
-                          filters={effectiveFilters}
-                          onViewChange={handleMapViewChange}
-                        />
-                      </Suspense>
+                      {/* ErrorBoundary catches rendering errors from the lazy-loaded InteractiveMap
+                          that bypass TanStack Router's errorComponent when thrown inside Suspense.
+                          Fixes Sentry 81e7b5c2: `Error: undefined` on Mobile Safari 16.1 (iOS 16.1.2)
+                          where the Leaflet chunk failed to evaluate, causing React.lazy to throw
+                          undefined during the initial render of the /map route. */}
+                      <ErrorBoundary>
+                        <Suspense fallback={<div className="flex items-center justify-center h-full w-full"><LoadingSpinner size="lg" text={t`Loading map...`} /></div>}>
+                          <InteractiveMap
+                            onFeatureClick={handleFeatureClick}
+                            getFeatureStyle={aDynamicGetFeatureStyle}
+                            heatmapData={heatmapData}
+                            geoJsonData={geoJsonData}
+                            zoom={mapZoom}
+                            center={mapState.mapCenter}
+                            mapViewType={mapState.mapViewType}
+                            filters={effectiveFilters}
+                            onViewChange={handleMapViewChange}
+                          />
+                        </Suspense>
+                      </ErrorBoundary>
                     </ClientOnly>
                   </>
                 ) : (

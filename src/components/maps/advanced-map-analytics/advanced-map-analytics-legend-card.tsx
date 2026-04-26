@@ -55,10 +55,10 @@ export function AdvancedMapAnalyticsLegendCard({
     >
       <h4
         className={cn(
-          'mb-2 font-medium leading-snug break-words',
+          'mb-2 break-words font-medium leading-snug [overflow-wrap:anywhere]',
           isFloating
             ? 'text-xs'
-            : 'truncate text-[10px] uppercase tracking-wide text-muted-foreground'
+            : 'text-[10px] uppercase tracking-wide text-muted-foreground'
         )}
       >
         {title}

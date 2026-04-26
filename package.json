@@ -3,6 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "browserslist": [
+    "> 0.5%",
+    "last 2 versions",
+    "not dead",
+    "iOS >= 16"
+  ],
   "scripts": {
     "postinstall": "HOME=$PWD yarn --cwd docs-site install --frozen-lockfile",
     "dev": "vite",

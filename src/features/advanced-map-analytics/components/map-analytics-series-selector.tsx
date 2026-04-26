@@ -80,9 +80,15 @@ export function MapAnalyticsSeriesSelector({
 
   const hasMultipleSeries = enabledSeries.length > 1;
   const isInteractive = hasMultipleSeries && !readOnly;
+  const initialVisibleSeries = enabledSeries.slice(0, INITIAL_VISIBLE_COUNT);
+  const initialVisibleSeriesIncludesActive = initialVisibleSeries.some(
+    (series) => series.id === activeSeries.id
+  );
   const visibleSeries = showAll
     ? enabledSeries
-    : enabledSeries.slice(0, INITIAL_VISIBLE_COUNT);
+    : initialVisibleSeriesIncludesActive
+      ? initialVisibleSeries
+      : [...initialVisibleSeries.slice(0, INITIAL_VISIBLE_COUNT - 1), activeSeries];
   const hasHidden = enabledSeries.length > INITIAL_VISIBLE_COUNT;
 
   return (
@@ -102,7 +108,7 @@ export function MapAnalyticsSeriesSelector({
               setMapState((previous) => applySetActiveSeries(previous, series.id));
             }}
             className={cn(
-              'group flex min-w-0 items-start gap-2.5 rounded-lg px-2.5 py-1.5 text-left transition-colors',
+              'group flex w-full min-w-0 max-w-full items-start gap-2.5 overflow-hidden rounded-lg px-2.5 py-1.5 text-left transition-colors',
               isActive
                 ? 'bg-primary/10'
                 : 'hover:bg-muted/50',
@@ -122,7 +128,7 @@ export function MapAnalyticsSeriesSelector({
             />
             <span
               className={cn(
-                'min-w-0 flex-1 break-words text-sm leading-snug',
+                'min-w-0 flex-1 break-words text-sm leading-snug [overflow-wrap:anywhere]',
                 isActive ? 'font-medium text-foreground' : 'text-muted-foreground'
               )}
             >
@@ -141,16 +147,17 @@ export function MapAnalyticsSeriesSelector({
         <button
           type="button"
           onClick={() => setShowAll((prev) => !prev)}
-          className="inline-flex w-fit items-center gap-1 self-start rounded-md px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+          className="inline-flex w-fit items-center gap-1 rounded text-xs font-medium text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          aria-expanded={showAll}
         >
           {showAll ? (
             <>
-              <ChevronUp className="h-3 w-3" />
+              <ChevronUp className="h-3.5 w-3.5" />
               {t`Show less`}
             </>
           ) : (
             <>
-              <ChevronDown className="h-3 w-3" />
+              <ChevronDown className="h-3.5 w-3.5" />
               {t`Show ${enabledSeries.length - INITIAL_VISIBLE_COUNT} more`}
             </>
           )}

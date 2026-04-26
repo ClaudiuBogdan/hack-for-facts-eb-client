@@ -57,22 +57,22 @@ export function AdvancedMapAnalyticsDiscreteLegend({
     <div
       className={cn(
         isFloating
-          ? 'w-fit min-w-[260px] max-w-[calc(100vw-2.5rem)] rounded-md border border-border bg-card/90 p-3 shadow-sm backdrop-blur-sm'
+          ? 'w-[280px] max-w-[calc(100vw-2.5rem)] overflow-hidden rounded-md border border-border bg-card/90 p-3 shadow-sm backdrop-blur-sm'
           : 'w-full overflow-hidden rounded-2xl bg-muted/30 p-3'
       )}
     >
       <h4
         className={cn(
-          'mb-2 font-medium',
+          'mb-2 break-words font-medium [overflow-wrap:anywhere]',
           isFloating
             ? 'text-xs'
-            : 'truncate text-[10px] uppercase tracking-wide text-muted-foreground'
+            : 'text-[10px] uppercase tracking-wide text-muted-foreground'
         )}
       >
         {title}
       </h4>
-      <div className="overflow-x-auto">
-        <div className="grid min-w-max grid-cols-[14px_auto_auto] items-center gap-x-2 gap-y-1.5">
+      <div className="overflow-hidden">
+        <div className="grid w-full min-w-0 grid-cols-[14px_minmax(0,1fr)_minmax(0,auto)] items-center gap-x-2 gap-y-1.5">
           {entries.map((entry) => {
             const { labelText, intervalText } = parseLegendLabel(entry.label);
             return (
@@ -82,8 +82,8 @@ export function AdvancedMapAnalyticsDiscreteLegend({
                   style={{ backgroundColor: entry.color }}
                   aria-hidden="true"
                 />
-                <span className="text-xs text-foreground break-words">{labelText}</span>
-                <span className="text-xs tabular-nums text-foreground whitespace-nowrap">{intervalText ?? ''}</span>
+                <span className="min-w-0 break-words text-xs text-foreground [overflow-wrap:anywhere]">{labelText}</span>
+                <span className="min-w-0 break-words text-right text-xs tabular-nums text-foreground [overflow-wrap:anywhere]">{intervalText ?? ''}</span>
               </Fragment>
             );
           })}

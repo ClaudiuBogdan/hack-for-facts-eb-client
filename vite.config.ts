@@ -17,6 +17,7 @@ import { lingui, linguiTransformerBabelPreset } from "@lingui/vite-plugin";
 import { nitro } from "nitro/vite";
 import fs from "fs";
 import { createChallengeStepSectionsPlugin } from "./config/challenge-step-sections-plugin";
+import { createSafariRegexFixPlugin } from "./config/safari-regex-fix-plugin";
 
 const getHttpsConfig = () => {
   if (String(process.env.HTTPS_ENABLED) !== "true") {
@@ -218,6 +219,7 @@ export default defineConfig(({ mode }) => {
         },
       },
       esmExtensionFixesPlugin(),
+      createSafariRegexFixPlugin(),
       createChallengeStepSectionsPlugin(),
       lingui(),
       tanstackStart(),
@@ -287,6 +289,11 @@ export default defineConfig(({ mode }) => {
       proxy,
     },
     build: {
+      // Limit output to ES2022 syntax for Safari 16+ / Chrome 100+ / Firefox 100+.
+      // Without this, esbuild defaults to `esnext` which may emit syntax or rely on
+      // APIs unavailable in older mobile Safari, causing lazy-loaded chunks to fail
+      // at evaluation time (Sentry 81e7b5c2: `Error: undefined` on iOS 16.1.2).
+      target: 'es2022',
       // Sentry injection needs sourceMappingURL references to pair JS assets with maps.
       // Docker copies maps into private upload artifacts and removes them from served output.
       sourcemap: shouldGenerateSentrySourcemaps,
