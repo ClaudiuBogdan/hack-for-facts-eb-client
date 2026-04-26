@@ -7,21 +7,31 @@
 
 ```
 .opencode/
-├── agent/                 # Standalone markdown agents (auto-loaded)
-│   └── devops.md         # CI/CD and deployment expert
-├── plugin/                # Plugins for extending OpenCode
-│   └── env-protection.js  # Blocks access to .env files
+├── agents/                # Standalone markdown agents (auto-loaded)
+│   └── devops.md          # CI/CD and deployment expert
+├── commands/              # Slash command prompts
+│   ├── build.md
+│   ├── i18n.md
+│   ├── lint.md
+│   ├── plan.md
+│   ├── review.md
+│   ├── test.md
+│   └── typecheck.md
+├── plugins/               # Plugins for extending OpenCode
+│   └── env-protection.js  # Blocks access to local secrets
 ├── prompts/               # Prompt files referenced by opencode.jsonc
 │   ├── build.md          # Build agent prompt
 │   ├── plan.md           # Planning agent prompt
 │   ├── architect.md      # Architecture agent prompt
 │   ├── reviewer.md       # Code review agent prompt
 │   ├── implement.md      # Implementation agent prompt
-│   └── ask-user.md       # Guidelines for asking user questions
+│   ├── qa.md             # Verification agent prompt
+│   └── i18n.md           # Lingui/i18n agent prompt
 ├── AGENTS.md              # Project context for all agents
-├── opencode.jsonc         # Main configuration
 └── README.md              # This file
 ```
+
+The active project config is `opencode.jsonc` in the repository root. Current OpenCode loads project config from the repo root and auto-loads `.opencode/agents`, `.opencode/commands`, and `.opencode/plugins`.
 
 ## Quick Start
 
@@ -30,51 +40,32 @@
 | Switch agents   | Press `Tab`                          |
 | Run command     | Type `/test`, `/build`, `/i18n`, etc.|
 | Invoke subagent | Type `@devops help with deployment`  |
-| Switch model    | Type `/models`                       |
-
-## Deep vs Fast Mode
 
 Press `Tab` to cycle through agents with different reasoning modes:
 
 ```
-build-max → build → build-fast → plan-max → architect-max → review-max → implement-max
-    │          │         │           │            │              │             │
-    └─ 128K    └─ 64K    └─ fast     └─ 128K      └─ 128K        └─ 128K       └─ 128K
+build → implement → plan → architect → review
 ```
-
-### Model Aliases
-
-| Alias         | Extended Thinking | Best For                               |
-| ------------- | ----------------- | -------------------------------------- |
-| `opus-max`    | 128K tokens       | Hardest problems, complex architecture |
-| `opus-deep`   | 64K tokens        | Complex tasks, debugging               |
-| `opus-fast`   | None              | Quick iterations, simple changes       |
-| `sonnet`      | 32K tokens        | Fast exploration                       |
-| `sonnet-fast` | None              | Ultra-fast iterations (cheapest)       |
-
-> Docs: https://opencode.ai/docs/models
 
 ## Agents
 
 ### Primary Agents (Tab to switch)
 
-| Agent           | Model       | Description                                |
-| --------------- | ----------- | ------------------------------------------ |
-| `build-max`     | opus-max    | Maximum reasoning (128K thinking tokens)   |
-| `build`         | opus-deep   | Standard development with extended thinking|
-| `build-fast`    | opus-fast   | Quick iterations without extended thinking |
-| `plan-max`      | opus-max    | Deep planning and analysis (read-only)     |
-| `architect-max` | opus-max    | System design and documentation            |
-| `review-max`    | opus-max    | Code review (security, performance, a11y)  |
-| `implement-max` | opus-max    | Targeted fixes after review/debug          |
+| Agent       | Description                         |
+| ----------- | ----------------------------------- |
+| `build`     | Default development agent           |
+| `implement` | Scoped fixes and features           |
+| `plan`      | Read-only planning                  |
+| `architect` | Architecture and design             |
+| `review`    | Review, security, a11y, regressions |
 
 ### Subagents (@mention to invoke)
 
 | Agent      | Description                          |
 | ---------- | ------------------------------------ |
-| `@explore` | Fast codebase exploration (Sonnet)   |
-| `@general` | General research and multi-step tasks|
-| `@devops`  | CI/CD, Docker, deployment            |
+| `@qa`     | Verification and regression triage |
+| `@i18n`   | Lingui and locale checks |
+| `@devops` | CI/CD, Docker, deployment |
 
 > Docs: https://opencode.ai/docs/agents
 
@@ -83,11 +74,12 @@ build-max → build → build-fast → plan-max → architect-max → review-max
 | Command      | Description                    |
 | ------------ | ------------------------------ |
 | `/test`      | Run all tests                  |
-| `/test-e2e`  | Run Playwright E2E tests       |
 | `/typecheck` | Run TypeScript type checking   |
-| `/build`     | Run production build           |
-| `/i18n`      | Extract and check translations |
+| `/lint`      | Run ESLint                     |
+| `/build`     | Run app production build       |
+| `/i18n`      | Check Lingui state             |
 | `/review`    | Review recent code changes     |
+| `/plan`      | Produce an implementation plan |
 
 > Docs: https://opencode.ai/docs/commands
 
@@ -117,17 +109,18 @@ Three permission levels: `"allow"` | `"ask"` | `"deny"`
 
 | File                       | Purpose                                             |
 | -------------------------- | --------------------------------------------------- |
-| `opencode.jsonc`           | Main config (models, agents, permissions, commands) |
+| `../opencode.jsonc`        | Main config (agents, permissions) |
 | `AGENTS.md`                | Project context loaded for all agents               |
 | `prompts/*.md`             | System prompts referenced by agents in config       |
-| `agent/*.md`               | Standalone agent definitions (auto-loaded)          |
-| `plugin/env-protection.js` | Security plugin to block .env file access           |
+| `agents/*.md`              | Standalone agent definitions (auto-loaded)          |
+| `commands/*.md`            | Slash command definitions (auto-loaded)             |
+| `plugins/env-protection.js`| Security plugin to block local secret reads         |
 
 ## Security
 
 ### .env File Protection
 
-The `plugin/env-protection.js` plugin prevents OpenCode from reading `.env` files:
+The `plugins/env-protection.js` plugin prevents OpenCode from reading `.env` files:
 
 - Blocks `read` tool from accessing any file with `.env` in the path
 - Blocks bash commands like `cat .env`, `head .env`, etc.

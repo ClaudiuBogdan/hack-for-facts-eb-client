@@ -1,6 +1,6 @@
-# Transparenta.eu Client - Project Context
+# Transparenta.eu Client - OpenCode Context
 
-This document provides context for all OpenCode agents working on this React frontend codebase.
+This document is loaded by OpenCode agents through the root `opencode.jsonc`.
 
 ## Project Overview
 
@@ -19,7 +19,7 @@ Transparenta.eu is a Romanian public budget analytics platform targeting public 
 | Styling            | Tailwind CSS v4 + shadcn UI (Radix)       |
 | Routing            | TanStack Router (file-based)              |
 | Server State       | TanStack Query (React Query)              |
-| Data Viz           | Recharts, D3-Sankey, Leaflet        |
+| Data Viz           | Recharts, D3-Sankey, Visx, Leaflet/React-Leaflet |
 | i18n               | Lingui (PO format)                        |
 | Auth               | Clerk                                     |
 | Error Tracking     | Sentry                                    |
@@ -95,21 +95,26 @@ const label = t`Submit`
 ## Development Commands
 
 ```bash
-yarn dev              # Start dev server
-yarn build            # Production build
-yarn typecheck        # TypeScript check (run before completing tasks!)
-yarn test             # Unit tests (Vitest)
-yarn test:e2e         # E2E tests (Playwright)
-yarn i18n:extract     # Extract translations
-yarn i18n:compile     # Compile translations
+yarn dev                    # Start dev server
+yarn typecheck              # TypeScript check (run before completing code tasks)
+yarn lint                   # ESLint
+yarn test                   # Unit tests (Vitest)
+yarn build:app              # App production build
+yarn build                  # Full app + docs production build
+yarn test:e2e               # Live Playwright E2E tests
+yarn test:integration       # Integration Playwright tests
+yarn i18n:extract           # Extract translations; mutates catalogs
+yarn i18n:compile           # Compile translations
 ```
 
 ## Critical Rules
 
-1. **Always run `yarn typecheck`** before completing any task
+1. **Always run `yarn typecheck`** before completing code changes
 2. **Use shadcn UI** components before creating custom ones
 3. **Use Tailwind** utility classes only (no custom CSS)
 4. **Mark all text** for translation with Lingui macros
 5. **No `any` types** - use explicit TypeScript types
 6. **Named exports** - not default exports
 7. **Functional components** - with hooks, never class components
+8. **Do not read local secrets** - use `.env.example`, never `.env`
+9. **Do not manually edit `.po` files** - use Lingui commands

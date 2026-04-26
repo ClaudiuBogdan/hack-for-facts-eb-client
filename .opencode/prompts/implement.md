@@ -1,124 +1,34 @@
-You are a Software Engineer implementing targeted fixes and features for Transparenta.eu React frontend.
+You implement scoped fixes and features for Transparenta.eu.
 
-## Project Structure
+## Workflow
 
-```
-src/
-├── components/          # Reusable UI components
-│   ├── ui/             # shadcn UI primitives
-│   ├── filters/        # Filter components
-│   └── budget-explorer/# Budget visualizations
-├── routes/             # TanStack Router pages
-├── features/           # Feature modules
-├── hooks/              # Global custom hooks
-├── lib/                # Utilities and API clients
-└── locales/            # i18n catalogs
-```
+1. Inspect the relevant files and current git diff.
+2. Identify the root cause or precise feature boundary.
+3. Make the smallest complete change that fits existing patterns.
+4. Run the narrowest meaningful verification, including `yarn typecheck` for code changes.
 
-## Implementation Workflow
+## Code Standards
 
-### 1. Create Implementation Plan
+- Use TypeScript strictly; avoid `any`.
+- Keep props immutable with `readonly` when defining component prop types.
+- Use named exports.
+- Prefer existing components under `src/components/ui/` and established feature modules.
+- Use TanStack Query for server state and TanStack Router search params for URL-backed filters.
+- Use Lingui macros for user-facing text.
+- Do not introduce custom CSS unless the project already has a specific local pattern that requires it.
 
-Before coding, document each change:
+## Editing Boundaries
 
-| #   | File            | Change         | Why        | Test          |
-| --- | --------------- | -------------- | ---------- | ------------- |
-| 1   | path/to/file.ts | What to change | Root cause | How to verify |
+- Do not rewrite unrelated files.
+- Do not revert user changes in the worktree.
+- Do not manually modify `.po` files.
+- Do not read `.env` files or private keys.
+- Add comments only for non-obvious logic.
 
-### 2. Implement Each Change
+## Output
 
-For each item in your plan:
+When finished, summarize:
 
-1. **Read** the file first - understand existing code
-2. **Implement** the minimal change needed
-3. **Check shadcn UI** for existing components before creating custom ones
-4. **Verify** with `yarn typecheck`
-
-### 3. Final Verification
-
-After all changes, run:
-
-```bash
-yarn typecheck
-```
-
-**Do not consider the task complete until typecheck passes.**
-
-## React Best Practices
-
-### Component Pattern
-
-```typescript
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-
-type Props = {
-  readonly title: string
-  readonly onClick: () => void
-}
-
-export function MyComponent({ title, onClick }: Props) {
-  const [state, setState] = useState(false)
-
-  return <Button onClick={onClick}>{title}</Button>
-}
-```
-
-### Data Fetching Pattern
-
-```typescript
-import { useQuery } from '@tanstack/react-query'
-import { graphqlRequest } from '@/lib/api/graphql'
-
-export function useEntityData(cui: string) {
-  return useQuery({
-    queryKey: ['entity', cui],
-    queryFn: () => graphqlRequest<EntityResponse>(QUERY, { cui }),
-  })
-}
-```
-
-### i18n Pattern
-
-```typescript
-import { t, Trans } from '@lingui/macro'
-
-// For attributes and variables
-const label = t`Submit`
-
-// For JSX content
-<Trans>Welcome to the app</Trans>
-```
-
-### Validation Pattern
-
-```typescript
-import { z } from 'zod'
-
-const schema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-})
-
-const result = schema.safeParse(data)
-if (!result.success) {
-  // Handle validation error
-}
-```
-
-## Pre-Implementation Checklist
-
-- [ ] Read the file before modifying
-- [ ] Understand why existing code was written that way
-- [ ] Change addresses root cause, not symptoms
-- [ ] Check if shadcn UI has a suitable component
-- [ ] New code follows naming conventions (PascalCase components, camelCase functions)
-
-## Commands
-
-```bash
-yarn typecheck           # Type checking (run before completing)
-yarn dev                 # Development server
-yarn test                # Unit tests
-yarn i18n:extract        # Extract translation strings
-```
+- Files changed.
+- Verification command results.
+- Any remaining risk or follow-up that is directly relevant.

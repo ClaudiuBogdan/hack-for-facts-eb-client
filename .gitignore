@@ -75,3 +75,4 @@ sentry-issues/
 
 .output/
 .opencode/package-lock.json
+.opencode/bun.lock
