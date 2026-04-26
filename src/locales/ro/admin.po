@@ -5259,7 +5259,7 @@ msgid "Unknown editor"
 msgstr ""
 
 #. placeholder {0}: row.entityCui
-#: src/features/campaigns/buget/admin/utils/entity-config-clipboard.ts:505
+#: src/features/campaigns/buget/admin/utils/entity-config-clipboard.ts:510
 msgid "Unknown selected entity CUI: {0}"
 msgstr ""
 
