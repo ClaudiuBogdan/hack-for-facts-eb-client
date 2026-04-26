@@ -7,24 +7,35 @@ import { produce } from 'immer';
 import { ClientOnly } from '@/components/ssr/ClientOnly';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { AdvancedMapAnalyticsAnalyticsView } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-analytics-view';
+import { AdvancedMapAnalyticsDataTable } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-data-table';
 import { AdvancedMapAnalyticsDiscreteLegend } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-discrete-legend';
 import { AdvancedMapAnalyticsLegendCard } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-legend-card';
+import type {
+  AdvancedMapAnalyticsTableRow,
+  AdvancedMapAnalyticsTableSeriesColumn,
+} from '@/components/maps/advanced-map-analytics/advanced-map-analytics-table-types';
 import {
   resolveSeriesDisplayLabel,
   resolveSeriesDisplayUnit,
 } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils';
+import { buildDiscretePaletteFromConfig } from '@/lib/map-bins/bins';
 import { getPercentileValues } from '@/components/maps/utils';
 import type { UatProperties } from '@/components/maps/interfaces';
 import { useGeoJsonData } from '@/hooks/useGeoJson';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAdvancedMapAnalyticsBins } from '@/hooks/useAdvancedMapAnalyticsBins';
 import { useAdvancedMapAnalyticsSeriesData } from '@/hooks/useAdvancedMapAnalyticsSeriesData';
+import { useAdvancedMapAnalyticsTableBinsFilter } from '@/hooks/useAdvancedMapAnalyticsTableBinsFilter';
 import { useUserCurrency } from '@/lib/hooks/useUserCurrency';
 import { useUserInflationAdjusted } from '@/lib/hooks/useUserInflationAdjusted';
 import { useEntityProfile } from '@/lib/hooks/useEntityDetails';
 import { defaultMapFilters } from '@/schemas/map-filters';
 import type {
+  AdvancedMapAnalyticsActiveView,
   AdvancedMapAnalyticsUrlState,
+  AdvancedMapAnalyticsWidget,
+  AdvancedMapAnalyticsWidgetKey,
   MapSupportedSeries,
 } from '@/schemas/advanced-map-analytics';
 import type { GroupedSeriesDataResponse } from '@/lib/map-series/interfaces';
@@ -239,6 +250,127 @@ export function MapAnalyticsPublicView({
     [geoJsonFeatures]
   );
 
+  const seriesColumns = useMemo<AdvancedMapAnalyticsTableSeriesColumn[]>(
+    () =>
+      enabledSeries.map((series) => ({
+        id: series.id,
+        label: resolveSeriesDisplayLabel(series),
+        unit: resolveSeriesDisplayUnit(series, unitsBySeriesId),
+      })),
+    [enabledSeries, unitsBySeriesId]
+  );
+
+  const tableRows = useMemo<AdvancedMapAnalyticsTableRow[]>(() => {
+    const activeSeriesColumn = resolvedActiveSeriesId
+      ? seriesColumns.find((seriesColumn) => seriesColumn.id === resolvedActiveSeriesId)
+      : undefined;
+    const rowScopeSeriesColumns = activeSeriesColumn ? [activeSeriesColumn] : seriesColumns;
+    const uniqueSirutaCodes = new Set<string>();
+
+    for (const seriesColumn of rowScopeSeriesColumns) {
+      const vector = valuesBySeriesId.get(seriesColumn.id);
+      if (!vector) {
+        continue;
+      }
+
+      for (const [sirutaCode, value] of vector.entries()) {
+        if (value === undefined) {
+          continue;
+        }
+        uniqueSirutaCodes.add(String(sirutaCode));
+      }
+    }
+
+    return [...uniqueSirutaCodes]
+      .map((sirutaCode) => {
+        const metadata = uatMetadataBySirutaCode.get(sirutaCode);
+        const rowValuesBySeriesId: Record<string, number | undefined> = {};
+
+        for (const seriesColumn of seriesColumns) {
+          rowValuesBySeriesId[seriesColumn.id] = valuesBySeriesId
+            .get(seriesColumn.id)
+            ?.get(sirutaCode);
+        }
+
+        return {
+          sirutaCode,
+          uatName: metadata?.uatName || `UAT ${sirutaCode}`,
+          countyName: metadata?.countyName || t`Unknown county`,
+          entityCui: metadata?.entityCui,
+          valuesBySeriesId: rowValuesBySeriesId,
+        };
+      })
+      .sort((left, right) => {
+        const nameCompare = left.uatName.localeCompare(right.uatName, undefined, {
+          sensitivity: 'base',
+        });
+        if (nameCompare !== 0) {
+          return nameCompare;
+        }
+        return left.sirutaCode.localeCompare(right.sirutaCode);
+      });
+  }, [resolvedActiveSeriesId, seriesColumns, uatMetadataBySirutaCode, valuesBySeriesId]);
+
+  const toggleBinFilterSelection = useCallback(
+    (presetId: string, groupId: string, checked: boolean) => {
+      updateMapStateDraft((draft) => {
+        const preset = draft.binsPresets.find((entry) => entry.id === presetId);
+        if (!preset) {
+          delete draft.tableBinFiltersByPresetId[presetId];
+          return;
+        }
+
+        const validGroupIds = new Set(
+          buildDiscretePaletteFromConfig(preset.config).map((entry) => entry.groupId)
+        );
+        if (!validGroupIds.has(groupId)) {
+          return;
+        }
+
+        const previousSelection = draft.tableBinFiltersByPresetId[presetId] ?? [];
+        const sanitizedSelection = [...new Set(previousSelection)].filter((id) =>
+          validGroupIds.has(id)
+        );
+        const nextSelection = checked
+          ? sanitizedSelection.includes(groupId)
+            ? sanitizedSelection
+            : [...sanitizedSelection, groupId]
+          : sanitizedSelection.filter((id) => id !== groupId);
+
+        if (nextSelection.length === 0) {
+          delete draft.tableBinFiltersByPresetId[presetId];
+          return;
+        }
+
+        draft.tableBinFiltersByPresetId[presetId] = nextSelection;
+      });
+    },
+    [updateMapStateDraft]
+  );
+
+  const clearPresetBinFilters = useCallback(
+    (presetId: string) => {
+      updateMapStateDraft((draft) => {
+        delete draft.tableBinFiltersByPresetId[presetId];
+      });
+    },
+    [updateMapStateDraft]
+  );
+
+  const clearAllBinFilters = useCallback(() => {
+    updateMapStateDraft((draft) => {
+      draft.tableBinFiltersByPresetId = {};
+    });
+  }, [updateMapStateDraft]);
+
+  const { filteredRows: filteredTableRows, binsFilterSections, hasActiveBinFilters } =
+    useAdvancedMapAnalyticsTableBinsFilter({
+      rows: tableRows,
+      binsPresets: mapState.binsPresets,
+      activeValues,
+      tableBinFiltersByPresetId: mapState.tableBinFiltersByPresetId,
+    });
+
   // Re-sync internal selection when the URL override changes (e.g. browser
   // back/forward navigation or shared link landing).
   useEffect(() => {
@@ -354,6 +486,33 @@ export function MapAnalyticsPublicView({
     updateSelectedSiruta(undefined);
   }, [updateSelectedSiruta]);
 
+  const handleActiveViewChange = useCallback(
+    (nextView: AdvancedMapAnalyticsActiveView) => {
+      updateMapStateDraft((draft) => {
+        draft.activeView = nextView;
+      });
+    },
+    [updateMapStateDraft]
+  );
+
+  const handleTableRowClick = useCallback(
+    (row: AdvancedMapAnalyticsTableRow) => {
+      updateSelectedSiruta(row.sirutaCode);
+      handleActiveViewChange('map');
+    },
+    [handleActiveViewChange, updateSelectedSiruta]
+  );
+
+  const handleToggleWidgetEnabled = useCallback(
+    (_widgetKey: AdvancedMapAnalyticsWidgetKey, _enabled: boolean) => {},
+    []
+  );
+  const handleReorderWidgets = useCallback(
+    (_activeWidgetKey: AdvancedMapAnalyticsWidgetKey, _overWidgetKey: AdvancedMapAnalyticsWidgetKey) => {},
+    []
+  );
+  const handleUpdateWidget = useCallback((_nextWidget: AdvancedMapAnalyticsWidget) => {}, []);
+
   const mapZoom = mapState.mapZoom ?? (isMobile ? 6 : 7.7);
   const mapCenter = mapState.mapCenter;
   const activeUnit = activeSeries
@@ -370,6 +529,17 @@ export function MapAnalyticsPublicView({
   const isMapLoading = isSeriesLoading || isGeoJsonLoading;
   const mapError = seriesError ?? geoJsonError;
   const canRenderInteractiveMap = Boolean(geoJsonData);
+  const activeView = mapState.activeView ?? 'map';
+  const isMapViewActive = activeView === 'map';
+  const isTableViewActive = activeView === 'table';
+  const isAnalyticsViewActive = activeView === 'analytics';
+  const hasEnabledGeoJsonDatasetSeries = enabledSeries.some(
+    (series) => series.type === 'geojson-dataset-series'
+  );
+  const isTableLoading = isSeriesLoading || (hasEnabledGeoJsonDatasetSeries && isGeoJsonLoading);
+  const tableError = seriesError ?? (hasEnabledGeoJsonDatasetSeries ? geoJsonError : null);
+  const isAnalyticsLoading = isSeriesLoading || (hasEnabledGeoJsonDatasetSeries && isGeoJsonLoading);
+  const analyticsError = seriesError ?? (hasEnabledGeoJsonDatasetSeries ? geoJsonError : null);
 
   const trimmedMapName = mapState.mapName?.trim();
   const displayTitle =
@@ -450,7 +620,15 @@ export function MapAnalyticsPublicView({
       >
         <ScrollArea className="h-full">
           <div className="flex min-w-0 flex-col gap-7 p-5">
-            <SidebarHeader title={displayTitle}>
+            <SidebarHeader
+              title={displayTitle}
+              tabs={
+                <MapAnalyticsPublicViewSelector
+                  activeView={activeView}
+                  onViewChange={handleActiveViewChange}
+                />
+              }
+            >
               {!isMobile ? (
                 <MapAnalyticsQuickActions
                   mode="public"
@@ -503,77 +681,140 @@ export function MapAnalyticsPublicView({
       ) : null}
 
       <main className={cn('relative min-h-0 flex-1 overflow-hidden', isMobile ? 'min-h-[35dvh]' : '')}>
-        {canRenderInteractiveMap ? (
-          <ClientOnly fallback={<PublicMapSurfaceLoading text={t`Loading map...`} />}>
-            <Suspense fallback={<PublicMapSurfaceLoading text={t`Loading map...`} />}>
-              <InteractiveMap
-                onFeatureClick={handleMapFeatureClick}
-                getFeatureStyle={getFeatureStyle}
-                heatmapData={activeHeatmapData}
-                geoJsonData={geoJsonData ?? null}
-                countyBoundaryGeoJsonData={
-                  mapState.showCountyBoundaries ? (countyGeoJsonData ?? null) : null
-                }
-                zoom={mapZoom}
-                center={mapCenter}
-                mapViewType="UAT"
-                filters={defaultMapFilters}
-                mapHeight="100%"
-                showLabels={Boolean(activeSeries)}
-                labelMode="active-series"
-                activeSeriesValuesBySirutaCode={activeValues}
-                activeSeriesUnit={activeUnit}
-                onViewChange={handleMapViewChange}
-                getTooltipContent={getTooltipContent}
-                mobilePanMode="pinch-zoom-until-unlocked"
-                preferCanvasRenderer={false}
+        {isMapViewActive ? (
+          <>
+            {canRenderInteractiveMap ? (
+              <ClientOnly fallback={<PublicMapSurfaceLoading text={t`Loading map...`} />}>
+                <Suspense fallback={<PublicMapSurfaceLoading text={t`Loading map...`} />}>
+                  <InteractiveMap
+                    onFeatureClick={handleMapFeatureClick}
+                    getFeatureStyle={getFeatureStyle}
+                    heatmapData={activeHeatmapData}
+                    geoJsonData={geoJsonData ?? null}
+                    countyBoundaryGeoJsonData={
+                      mapState.showCountyBoundaries ? (countyGeoJsonData ?? null) : null
+                    }
+                    zoom={mapZoom}
+                    center={mapCenter}
+                    mapViewType="UAT"
+                    filters={defaultMapFilters}
+                    mapHeight="100%"
+                    showLabels={Boolean(activeSeries)}
+                    labelMode="active-series"
+                    activeSeriesValuesBySirutaCode={activeValues}
+                    activeSeriesUnit={activeUnit}
+                    onViewChange={handleMapViewChange}
+                    getTooltipContent={getTooltipContent}
+                    mobilePanMode="pinch-zoom-until-unlocked"
+                    preferCanvasRenderer={false}
+                  />
+                </Suspense>
+              </ClientOnly>
+            ) : (
+              <PublicMapSurfaceLoading
+                text={isGeoJsonLoading ? t`Loading map data...` : t`Map geometry unavailable.`}
               />
-            </Suspense>
-          </ClientOnly>
-        ) : (
-          <PublicMapSurfaceLoading
-            text={isGeoJsonLoading ? t`Loading map data...` : t`Map geometry unavailable.`}
-          />
-        )}
+            )}
 
-        {isMapLoading && geoJsonData ? (
-          <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-background/20 backdrop-blur-[1px]">
-            <div className="rounded-md border border-border bg-card/95 shadow-sm">
-              <LoadingSpinner size="md" text={t`Loading map data...`} />
-            </div>
+            {isMapLoading && geoJsonData ? (
+              <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-background/20 backdrop-blur-[1px]">
+                <div className="rounded-md border border-border bg-card/95 shadow-sm">
+                  <LoadingSpinner size="md" text={t`Loading map data...`} />
+                </div>
+              </div>
+            ) : null}
+
+            {mapError ? (
+              <div className="pointer-events-none absolute inset-x-4 top-4 z-30">
+                <div className="pointer-events-auto rounded-md border border-destructive/40 bg-card/95 px-3 py-2 text-sm text-destructive shadow-sm">
+                  {mapError.message}
+                </div>
+              </div>
+            ) : null}
+
+            {!isMapLoading && !activeSeries ? (
+              <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center p-4">
+                <div className="rounded-md border bg-card/95 px-3 py-2 text-sm text-muted-foreground shadow-sm">
+                  {t`No active series selected.`}
+                </div>
+              </div>
+            ) : null}
+
+            <AnimatePresence>
+              {selectedMapEntity ? (
+                <MapAnalyticsEntityDetailsPanel
+                  selection={selectedMapEntity}
+                  seriesRows={selectedMapEntitySeriesRows}
+                  isMobile={isMobile}
+                  isProfileLoading={selectedEntityProfileQuery.isLoading}
+                  profile={selectedEntityProfileQuery.data}
+                  profileErrorMessage={selectedEntityProfileErrorMessage}
+                  onClose={handleCloseEntityPanel}
+                  primarieHref={selectedMapEntityPrimarieHref}
+                />
+              ) : null}
+            </AnimatePresence>
+          </>
+        ) : isTableViewActive ? (
+          <div className="h-full w-full overflow-auto p-4">
+            {isTableLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <LoadingSpinner size="lg" text={t`Loading table data...`} />
+              </div>
+            ) : tableError ? (
+              <div className="flex h-full items-center justify-center text-destructive">
+                {tableError.message}
+              </div>
+            ) : enabledSeries.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-muted-foreground">
+                {t`No enabled series.`}
+              </div>
+            ) : tableRows.length === 0 ? (
+              <div className="flex h-full items-center justify-center text-muted-foreground">
+                {t`No data available for table.`}
+              </div>
+            ) : (
+              <AdvancedMapAnalyticsDataTable
+                rows={filteredTableRows}
+                seriesColumns={seriesColumns}
+                mapTitle={displayTitle}
+                showExportCsv={false}
+                activeSeriesId={resolvedActiveSeriesId}
+                onRowClick={handleTableRowClick}
+                binsFilterSections={binsFilterSections}
+                onToggleBinFilter={toggleBinFilterSelection}
+                onClearPresetBinFilters={clearPresetBinFilters}
+                onClearAllBinFilters={clearAllBinFilters}
+                hasActiveBinFilters={hasActiveBinFilters}
+              />
+            )}
+          </div>
+        ) : isAnalyticsViewActive ? (
+          <div className="h-full w-full overflow-auto p-4">
+            {isAnalyticsLoading ? (
+              <div className="flex h-full items-center justify-center">
+                <LoadingSpinner size="lg" text={t`Loading analytics data...`} />
+              </div>
+            ) : analyticsError ? (
+              <div className="flex h-full items-center justify-center text-destructive">
+                {analyticsError.message}
+              </div>
+            ) : (
+              <AdvancedMapAnalyticsAnalyticsView
+                widgets={mapState.analyticsWidgets}
+                series={mapState.series}
+                activeSeriesId={resolvedActiveSeriesId}
+                valuesBySeriesId={valuesBySeriesId}
+                unitsBySeriesId={unitsBySeriesId}
+                uatMetadataBySirutaCode={uatMetadataBySirutaCode}
+                readOnly={true}
+                onToggleWidgetEnabled={handleToggleWidgetEnabled}
+                onReorderWidgets={handleReorderWidgets}
+                onUpdateWidget={handleUpdateWidget}
+              />
+            )}
           </div>
         ) : null}
-
-        {mapError ? (
-          <div className="pointer-events-none absolute inset-x-4 top-4 z-30">
-            <div className="pointer-events-auto rounded-md border border-destructive/40 bg-card/95 px-3 py-2 text-sm text-destructive shadow-sm">
-              {mapError.message}
-            </div>
-          </div>
-        ) : null}
-
-        {!isMapLoading && !activeSeries ? (
-          <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center p-4">
-            <div className="rounded-md border bg-card/95 px-3 py-2 text-sm text-muted-foreground shadow-sm">
-              {t`No active series selected.`}
-            </div>
-          </div>
-        ) : null}
-
-        <AnimatePresence>
-          {selectedMapEntity ? (
-            <MapAnalyticsEntityDetailsPanel
-              selection={selectedMapEntity}
-              seriesRows={selectedMapEntitySeriesRows}
-              isMobile={isMobile}
-              isProfileLoading={selectedEntityProfileQuery.isLoading}
-              profile={selectedEntityProfileQuery.data}
-              profileErrorMessage={selectedEntityProfileErrorMessage}
-              onClose={handleCloseEntityPanel}
-              primarieHref={selectedMapEntityPrimarieHref}
-            />
-          ) : null}
-        </AnimatePresence>
       </main>
 
       <div className="flex flex-col border-t border-border bg-card px-4 py-3 md:hidden">
@@ -594,6 +835,10 @@ export function MapAnalyticsPublicView({
         </button>
         {mobileFooterExpanded ? (
           <div className="mt-3 flex max-h-[45dvh] flex-col gap-3 overflow-y-auto">
+            <MapAnalyticsPublicViewSelector
+              activeView={activeView}
+              onViewChange={handleActiveViewChange}
+            />
             <MapAnalyticsSeriesSelector
               mapState={mapState}
               setMapState={setMapState}
@@ -612,18 +857,22 @@ export function MapAnalyticsPublicView({
 interface SidebarHeaderProps {
   title: string;
   children?: ReactNode;
+  tabs?: ReactNode;
 }
 
-function SidebarHeader({ title, children }: Readonly<SidebarHeaderProps>) {
+function SidebarHeader({ title, children, tabs }: Readonly<SidebarHeaderProps>) {
   return (
     <header className="flex min-w-0 flex-col gap-3 pb-1">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {t`Public map`}
-      </p>
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <p className="min-w-0 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {t`Public map`}
+        </p>
+        {children ? <div className="flex shrink-0 items-center gap-1">{children}</div> : null}
+      </div>
       <h1 className="break-words text-2xl font-semibold leading-tight tracking-tight" title={title}>
         {title}
       </h1>
-      {children ? <div className="-ml-1 flex flex-wrap items-center gap-1">{children}</div> : null}
+      {tabs ? <div className="-mx-1">{tabs}</div> : null}
     </header>
   );
 }
@@ -642,6 +891,54 @@ function SidebarSection({ title, children, testId }: Readonly<SidebarSectionProp
       </h2>
       <div className="flex min-w-0 flex-col gap-2">{children}</div>
     </section>
+  );
+}
+
+interface MapAnalyticsPublicViewSelectorProps {
+  activeView: AdvancedMapAnalyticsActiveView;
+  onViewChange: (nextView: AdvancedMapAnalyticsActiveView) => void;
+}
+
+function MapAnalyticsPublicViewSelector({
+  activeView,
+  onViewChange,
+}: Readonly<MapAnalyticsPublicViewSelectorProps>) {
+  const viewOptions: Array<{
+    value: AdvancedMapAnalyticsActiveView;
+    label: string;
+  }> = [
+    { value: 'map', label: t`Map` },
+    { value: 'table', label: t`Table` },
+    { value: 'analytics', label: t`Analytics` },
+  ];
+
+  return (
+    <div
+      className="flex min-w-0 border-b border-border"
+      role="tablist"
+      aria-label={t`Public map view`}
+    >
+      {viewOptions.map((option) => {
+        const isActive = activeView === option.value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            className={cn(
+              'relative -mb-px flex min-w-0 items-center justify-center px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              isActive
+                ? 'text-foreground after:absolute after:inset-x-1 after:bottom-0 after:h-0.5 after:bg-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+            onClick={() => onViewChange(option.value)}
+          >
+            <span className="truncate">{option.label}</span>
+          </button>
+        );
+      })}
+    </div>
   );
 }
 
