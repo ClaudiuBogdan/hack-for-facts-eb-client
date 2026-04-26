@@ -23,6 +23,12 @@ interface MapAnalyticsDescriptionInlineProps {
    * desktop sidebar and the mobile description block.
    */
   expandedMaxHeightClassName?: string;
+  /**
+   * Maximum height (Tailwind class) used when the description is collapsed.
+   * Defaults to `max-h-80` for desktop; on mobile you may want a smaller
+   * value such as `max-h-20` to preserve vertical space.
+   */
+  collapsedMaxHeightClassName?: string;
 }
 
 /**
@@ -38,6 +44,7 @@ export function MapAnalyticsDescriptionInline({
   className,
   fadeFromClassName = 'from-card',
   expandedMaxHeightClassName = 'max-h-[60vh]',
+  collapsedMaxHeightClassName = 'max-h-80',
 }: Readonly<MapAnalyticsDescriptionInlineProps>) {
   const trimmedDescription = description.trim();
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
@@ -51,13 +58,13 @@ export function MapAnalyticsDescriptionInline({
 
   return (
     <section
-      className={cn('flex flex-col gap-2', className)}
+      className={cn('flex min-w-0 flex-col gap-2', className)}
       data-testid="map-analytics-public-description"
     >
       <div
         className={cn(
-          'relative',
-          showCollapsed && 'max-h-44 overflow-hidden',
+          'relative min-w-0',
+          showCollapsed && [collapsedMaxHeightClassName, 'overflow-hidden'],
           !showCollapsed && isCollapsible && [expandedMaxHeightClassName, 'overflow-y-auto']
         )}
       >

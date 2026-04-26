@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { Dispatch, SetStateAction, ReactNode } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { produce } from 'immer';
@@ -92,6 +93,7 @@ export function MapAnalyticsPublicView({
   const [selectedSiruta, setSelectedSiruta] = useState<string | undefined>(
     selectedSirutaOverride
   );
+  const [mobileFooterExpanded, setMobileFooterExpanded] = useState(false);
 
   const updateMapStateDraft = useCallback(
     (updater: (draft: AdvancedMapAnalyticsUrlState) => void) => {
@@ -447,7 +449,7 @@ export function MapAnalyticsPublicView({
         data-testid="map-analytics-public-sidebar"
       >
         <ScrollArea className="h-full">
-          <div className="flex flex-col gap-5 p-5">
+          <div className="flex min-w-0 flex-col gap-7 p-5">
             <SidebarHeader title={displayTitle}>
               {!isMobile ? (
                 <MapAnalyticsQuickActions
@@ -470,7 +472,7 @@ export function MapAnalyticsPublicView({
               </SidebarSection>
             ) : null}
 
-            <SidebarSection title={t`Active series`}>
+            <SidebarSection title={t`Data series`}>
               <MapAnalyticsSeriesSelector
                 mapState={mapState}
                 setMapState={setMapState}
@@ -493,13 +495,14 @@ export function MapAnalyticsPublicView({
           <MapAnalyticsDescriptionInline
             description={mapDescription}
             defaultExpanded={false}
-            expandedMaxHeightClassName="max-h-[40vh]"
+            collapsedMaxHeightClassName="max-h-24"
+            expandedMaxHeightClassName="max-h-[60vh]"
             fadeFromClassName="from-background"
           />
         </div>
       ) : null}
 
-      <main className={cn('relative min-h-0 flex-1 overflow-hidden', isMobile ? 'min-h-[55dvh]' : '')}>
+      <main className={cn('relative min-h-0 flex-1 overflow-hidden', isMobile ? 'min-h-[35dvh]' : '')}>
         {canRenderInteractiveMap ? (
           <ClientOnly fallback={<PublicMapSurfaceLoading text={t`Loading map...`} />}>
             <Suspense fallback={<PublicMapSurfaceLoading text={t`Loading map...`} />}>
@@ -573,14 +576,33 @@ export function MapAnalyticsPublicView({
         </AnimatePresence>
       </main>
 
-      <div className="flex flex-col gap-3 border-t border-border bg-card px-4 py-3 md:hidden">
-        <MapAnalyticsSeriesSelector
-          mapState={mapState}
-          setMapState={setMapState}
-          secondaryLabel={seriesSecondaryLabel}
-        />
-        {mobileLegend ? (
-          <div data-testid="map-legend-container">{mobileLegend}</div>
+      <div className="flex flex-col border-t border-border bg-card px-4 py-3 md:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileFooterExpanded((prev) => !prev)}
+          className="flex w-full items-center justify-between gap-2 text-left"
+          aria-expanded={mobileFooterExpanded}
+        >
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {t`Map data`}
+          </span>
+          {mobileFooterExpanded ? (
+            <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+          )}
+        </button>
+        {mobileFooterExpanded ? (
+          <div className="mt-3 flex max-h-[45dvh] flex-col gap-3 overflow-y-auto">
+            <MapAnalyticsSeriesSelector
+              mapState={mapState}
+              setMapState={setMapState}
+              secondaryLabel={seriesSecondaryLabel}
+            />
+            {mobileLegend ? (
+              <div data-testid="map-legend-container">{mobileLegend}</div>
+            ) : null}
+          </div>
         ) : null}
       </div>
     </div>
@@ -594,11 +616,11 @@ interface SidebarHeaderProps {
 
 function SidebarHeader({ title, children }: Readonly<SidebarHeaderProps>) {
   return (
-    <header className="flex flex-col gap-3 pb-1">
+    <header className="flex min-w-0 flex-col gap-3 pb-1">
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {t`Public map`}
       </p>
-      <h1 className="text-2xl font-semibold leading-tight tracking-tight" title={title}>
+      <h1 className="break-words text-2xl font-semibold leading-tight tracking-tight" title={title}>
         {title}
       </h1>
       {children ? <div className="-ml-1 flex flex-wrap items-center gap-1">{children}</div> : null}
@@ -614,11 +636,11 @@ interface SidebarSectionProps {
 
 function SidebarSection({ title, children, testId }: Readonly<SidebarSectionProps>) {
   return (
-    <section className="flex flex-col gap-2" data-testid={testId}>
+    <section className="flex min-w-0 flex-col gap-3" data-testid={testId}>
       <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {title}
       </h2>
-      <div className="flex flex-col gap-2">{children}</div>
+      <div className="flex min-w-0 flex-col gap-2">{children}</div>
     </section>
   );
 }

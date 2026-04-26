@@ -58,15 +58,15 @@ export function AdvancedMapAnalyticsDiscreteLegend({
       className={cn(
         isFloating
           ? 'w-fit min-w-[260px] max-w-[calc(100vw-2.5rem)] rounded-md border border-border bg-card/90 p-3 shadow-sm backdrop-blur-sm'
-          : 'w-full rounded-2xl bg-muted/30 p-3.5'
+          : 'w-full overflow-hidden rounded-2xl bg-muted/30 p-3'
       )}
     >
       <h4
         className={cn(
-          'mb-2 font-semibold',
+          'mb-2 font-medium',
           isFloating
             ? 'text-xs'
-            : 'text-[11px] uppercase tracking-wide text-muted-foreground'
+            : 'truncate text-[10px] uppercase tracking-wide text-muted-foreground'
         )}
       >
         {title}
@@ -82,7 +82,7 @@ export function AdvancedMapAnalyticsDiscreteLegend({
                   style={{ backgroundColor: entry.color }}
                   aria-hidden="true"
                 />
-                <span className="text-xs text-foreground whitespace-nowrap">{labelText}</span>
+                <span className="text-xs text-foreground break-words">{labelText}</span>
                 <span className="text-xs tabular-nums text-foreground whitespace-nowrap">{intervalText ?? ''}</span>
               </Fragment>
             );

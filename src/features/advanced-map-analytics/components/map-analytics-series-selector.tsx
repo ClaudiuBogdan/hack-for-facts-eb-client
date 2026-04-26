@@ -1,23 +1,18 @@
-import { useMemo } from 'react';
-import { Check, ChevronDown, Layers } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Check, ChevronDown, ChevronUp, Layers } from 'lucide-react';
 import {
   applySetActiveSeries,
   resolveSeriesDisplayLabel,
+  SERIES_TYPE_ICONS,
 } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-series-utils';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import type {
   AdvancedMapAnalyticsUrlState,
   MapSupportedSeries,
 } from '@/schemas/advanced-map-analytics';
 import { t } from '@lingui/core/macro';
+
+const INITIAL_VISIBLE_COUNT = 5;
 
 interface MapAnalyticsSeriesSelectorProps {
   mapState: AdvancedMapAnalyticsUrlState;
@@ -37,10 +32,10 @@ interface MapAnalyticsSeriesSelectorProps {
 }
 
 /**
- * Public-grade selector that surfaces the currently active series and lets
- * the viewer switch the active series via a dropdown when more than one
- * series is enabled. Renders as a full-width card-button so it can sit
- * comfortably inside the sidebar's "Active series" section.
+ * Public-grade selector that shows all enabled series as a clean vertical list.
+ * Each row shows a type icon, the series label, and a checkmark when active.
+ * Clicking any row sets it as the active series.
+ * When there are more than 5 series a "Show more / Show less" toggle appears.
  */
 export function MapAnalyticsSeriesSelector({
   mapState,
@@ -49,6 +44,8 @@ export function MapAnalyticsSeriesSelector({
   readOnly = false,
   secondaryLabel,
 }: Readonly<MapAnalyticsSeriesSelectorProps>) {
+  const [showAll, setShowAll] = useState(false);
+
   const enabledSeries = useMemo<MapSupportedSeries[]>(
     () => mapState.series.filter((series) => series.enabled),
     [mapState.series]
@@ -70,7 +67,7 @@ export function MapAnalyticsSeriesSelector({
     return (
       <div
         className={cn(
-          'flex w-full items-center gap-2 rounded-2xl bg-muted/40 px-3.5 py-2.5 text-sm text-muted-foreground',
+          'flex w-full items-center gap-2 rounded-xl bg-muted/40 px-3 py-2.5 text-sm text-muted-foreground',
           className
         )}
         data-testid="map-analytics-series-selector-empty"
@@ -81,107 +78,90 @@ export function MapAnalyticsSeriesSelector({
     );
   }
 
-  const activeLabel = resolveSeriesDisplayLabel(activeSeries);
-  const activeColor = activeSeries.config.color;
   const hasMultipleSeries = enabledSeries.length > 1;
   const isInteractive = hasMultipleSeries && !readOnly;
-  const eyebrow = hasMultipleSeries
-    ? t`${enabledSeries.length} available · click to switch`
-    : t`Active series`;
-
-  const cardContent = (
-    <span
-      className={cn(
-        'flex w-full items-center gap-3 rounded-2xl bg-muted/40 px-3.5 py-2.5 text-left transition-colors',
-        isInteractive && 'cursor-pointer hover:bg-muted/70',
-        !isInteractive && 'cursor-default'
-      )}
-    >
-      <span
-        className="mt-0.5 h-3 w-3 shrink-0 rounded-full"
-        style={{ backgroundColor: activeColor }}
-        aria-hidden="true"
-      />
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-          {eyebrow}
-        </span>
-        <span
-          className="truncate text-sm font-semibold leading-tight text-foreground"
-          title={activeLabel}
-        >
-          {activeLabel}
-        </span>
-        {secondaryLabel ? (
-          <span className="truncate text-xs text-muted-foreground" title={secondaryLabel}>
-            {secondaryLabel}
-          </span>
-        ) : null}
-      </span>
-      {isInteractive ? (
-        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-      ) : null}
-    </span>
-  );
-
-  if (!isInteractive) {
-    return (
-      <div
-        className={cn('w-full', className)}
-        data-testid="map-analytics-series-selector"
-      >
-        {cardContent}
-      </div>
-    );
-  }
+  const visibleSeries = showAll
+    ? enabledSeries
+    : enabledSeries.slice(0, INITIAL_VISIBLE_COUNT);
+  const hasHidden = enabledSeries.length > INITIAL_VISIBLE_COUNT;
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+    <div className={cn('flex min-w-0 flex-col gap-2', className)} role="radiogroup" aria-label={t`Data series`}>
+      {visibleSeries.map((series) => {
+        const isActive = series.id === activeSeries.id;
+        const label = resolveSeriesDisplayLabel(series);
+        const TypeIcon = SERIES_TYPE_ICONS[series.type];
+
+        return (
+          <button
+            key={series.id}
+            type="button"
+            disabled={!isInteractive}
+            onClick={() => {
+              if (isActive) return;
+              setMapState((previous) => applySetActiveSeries(previous, series.id));
+            }}
+            className={cn(
+              'group flex min-w-0 items-start gap-2.5 rounded-lg px-2.5 py-1.5 text-left transition-colors',
+              isActive
+                ? 'bg-primary/10'
+                : 'hover:bg-muted/50',
+              !isInteractive && 'cursor-default'
+            )}
+            role="radio"
+            aria-checked={isActive}
+            title={label}
+            data-testid={isActive ? 'map-analytics-active-series' : undefined}
+          >
+            <TypeIcon
+              className={cn(
+                'h-4 w-4 shrink-0',
+                isActive ? 'text-primary' : 'text-muted-foreground'
+              )}
+              aria-hidden="true"
+            />
+            <span
+              className={cn(
+                'min-w-0 flex-1 break-words text-sm leading-snug',
+                isActive ? 'font-medium text-foreground' : 'text-muted-foreground'
+              )}
+            >
+              {label}
+            </span>
+            {isActive ? (
+              <Check className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+            ) : (
+              <span className="h-4 w-4 shrink-0" aria-hidden="true" />
+            )}
+          </button>
+        );
+      })}
+
+      {hasHidden ? (
         <button
           type="button"
-          className={cn(
-            'w-full rounded-2xl text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-            className
-          )}
-          aria-label={t`Switch active series`}
-          data-testid="map-analytics-series-selector"
+          onClick={() => setShowAll((prev) => !prev)}
+          className="inline-flex w-fit items-center gap-1 self-start rounded-md px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
         >
-          {cardContent}
+          {showAll ? (
+            <>
+              <ChevronUp className="h-3 w-3" />
+              {t`Show less`}
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-3 w-3" />
+              {t`Show ${enabledSeries.length - INITIAL_VISIBLE_COUNT} more`}
+            </>
+          )}
         </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="min-w-[280px] rounded-2xl">
-        <DropdownMenuLabel className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-          {t`Active series`}
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {enabledSeries.map((series) => {
-          const isActive = series.id === activeSeries.id;
-          const label = resolveSeriesDisplayLabel(series);
-          return (
-            <DropdownMenuItem
-              key={series.id}
-              onSelect={() => {
-                if (isActive) return;
-                setMapState((previous) => applySetActiveSeries(previous, series.id));
-              }}
-              className="flex items-center gap-2"
-            >
-              <span
-                className="h-2.5 w-2.5 shrink-0 rounded-full border border-black/10"
-                style={{ backgroundColor: series.config.color }}
-                aria-hidden="true"
-              />
-              <span className="flex-1 truncate" title={label}>
-                {label}
-              </span>
-              {isActive ? (
-                <Check className="h-4 w-4 text-foreground" aria-hidden="true" />
-              ) : null}
-            </DropdownMenuItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      ) : null}
+
+      {secondaryLabel && !hasMultipleSeries ? (
+        <span className="mt-1 truncate text-[10px] text-muted-foreground" title={secondaryLabel}>
+          {secondaryLabel}
+        </span>
+      ) : null}
+    </div>
   );
 }

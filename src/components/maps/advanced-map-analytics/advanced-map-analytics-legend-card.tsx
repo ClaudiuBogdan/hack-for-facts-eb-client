@@ -50,15 +50,15 @@ export function AdvancedMapAnalyticsLegendCard({
       className={cn(
         isFloating
           ? 'w-[280px] rounded-md border border-border bg-card/90 p-3 shadow-sm backdrop-blur-sm'
-          : 'w-full rounded-2xl bg-muted/30 p-3.5'
+          : 'w-full overflow-hidden rounded-2xl bg-muted/30 p-3'
       )}
     >
       <h4
         className={cn(
-          'mb-2 font-semibold leading-snug break-words',
+          'mb-2 font-medium leading-snug break-words',
           isFloating
             ? 'text-xs'
-            : 'text-[11px] uppercase tracking-wide text-muted-foreground'
+            : 'truncate text-[10px] uppercase tracking-wide text-muted-foreground'
         )}
       >
         {title}
