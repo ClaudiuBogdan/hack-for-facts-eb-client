@@ -34,14 +34,8 @@ export function MapEditorRouteComponent() {
     hasProcessedLegacySearchRef.current = false;
   }, [mapId]);
 
-  const hasLegacyEditorSearch = useMemo(() => {
-    if (typeof window === 'undefined') {
-      return false;
-    }
-
-    return hasMapEditorSearchParams(window.location.search);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rawSearch]);
+  const hasLegacyEditorSearch =
+    typeof window !== 'undefined' && hasMapEditorSearchParams(window.location.search);
 
   const parsedLegacyMapState = useMemo(() => {
     if (!hasLegacyEditorSearch) {

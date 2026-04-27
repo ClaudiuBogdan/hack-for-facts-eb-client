@@ -75,9 +75,10 @@ function ChallengeMdxAnchor({
   )
 }
 
-function createLazyComponent<Props = Record<string, unknown>>(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  loader: () => Promise<{ default: ComponentType<any> }>,
+type ReactLazyLoader = Parameters<typeof lazy>[0]
+
+function createLazyComponent<Props extends object = Record<string, unknown>>(
+  loader: ReactLazyLoader,
 ) {
   const LazyComponent = lazy(loader)
 
@@ -93,7 +94,7 @@ function createLazyComponent<Props = Record<string, unknown>>(
     return (
       <ClientOnly fallback={fallback}>
         <Suspense fallback={fallback}>
-          <LazyComponent {...(props as Record<string, unknown>)} />
+          <LazyComponent {...props} />
         </Suspense>
       </ClientOnly>
     )

@@ -43,11 +43,9 @@ export function useAdvancedMapDatasetDraftHistory({
   }, [draft]);
 
   useEffect(() => {
-    draftRef.current = draft;
     undoStackRef.current = [];
     redoStackRef.current = [];
     syncHistoryVersion();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- draft is intentionally kept via ref; this effect resets on resourceKey change
   }, [resourceKey, syncHistoryVersion]);
 
   const commitDraftChange = useCallback(

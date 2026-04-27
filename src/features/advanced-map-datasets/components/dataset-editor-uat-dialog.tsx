@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '@lingui/core/macro';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -60,28 +60,39 @@ export function DatasetEditorUatDialog({
   const pendingPayloadCommitTimeoutRef = useRef<number | null>(null);
   const hasPendingValueCommitRef = useRef(false);
   const hasPendingPayloadCommitRef = useRef(false);
+  const latestRowSirutaRef = useRef<string | null>(row?.sirutaCode ?? null);
+  const onValueChangeRef = useRef(onValueChange);
+  const onPayloadChangeRef = useRef(onPayloadChange);
   const [valueDraft, setValueDraft] = useState(row?.rawValue ?? row?.valueText ?? '');
   const [payloadDraft, setPayloadDraft] = useState<AdvancedMapDatasetPayloadDraft>(() =>
     row?.payloadDraft ?? createAdvancedMapDatasetPayloadDraft(row?.valueJson)
   );
   const payloadDraftRef = useRef(payloadDraft);
 
-  const clearPendingValueCommit = () => {
+  useEffect(() => {
+    onValueChangeRef.current = onValueChange;
+  }, [onValueChange]);
+
+  useEffect(() => {
+    onPayloadChangeRef.current = onPayloadChange;
+  }, [onPayloadChange]);
+
+  const clearPendingValueCommit = useCallback(() => {
     if (pendingValueCommitTimeoutRef.current !== null) {
       window.clearTimeout(pendingValueCommitTimeoutRef.current);
       pendingValueCommitTimeoutRef.current = null;
     }
-  };
+  }, []);
 
-  const clearPendingPayloadCommit = () => {
+  const clearPendingPayloadCommit = useCallback(() => {
     if (pendingPayloadCommitTimeoutRef.current !== null) {
       window.clearTimeout(pendingPayloadCommitTimeoutRef.current);
       pendingPayloadCommitTimeoutRef.current = null;
     }
-  };
+  }, []);
 
-  const flushPendingValueCommit = (
-    sirutaCode: string | null = row?.sirutaCode ?? null,
+  const flushPendingValueCommit = useCallback((
+    sirutaCode: string | null = latestRowSirutaRef.current,
     nextValue: string = latestValueRef.current
   ) => {
     clearPendingValueCommit();
@@ -91,11 +102,11 @@ export function DatasetEditorUatDialog({
     }
 
     hasPendingValueCommitRef.current = false;
-    onValueChange(sirutaCode, nextValue);
-  };
+    onValueChangeRef.current(sirutaCode, nextValue);
+  }, [clearPendingValueCommit]);
 
-  const flushPendingPayloadCommit = (
-    sirutaCode: string | null = row?.sirutaCode ?? null,
+  const flushPendingPayloadCommit = useCallback((
+    sirutaCode: string | null = latestRowSirutaRef.current,
     nextPayloadDraft: AdvancedMapDatasetPayloadDraft = payloadDraftRef.current
   ) => {
     clearPendingPayloadCommit();
@@ -105,8 +116,8 @@ export function DatasetEditorUatDialog({
     }
 
     hasPendingPayloadCommitRef.current = false;
-    onPayloadChange(sirutaCode, nextPayloadDraft);
-  };
+    onPayloadChangeRef.current(sirutaCode, nextPayloadDraft);
+  }, [clearPendingPayloadCommit]);
 
   useEffect(() => {
     const previousSirutaCode = previousRowSirutaRef.current;
@@ -125,15 +136,23 @@ export function DatasetEditorUatDialog({
     setPayloadDraft(nextPayloadDraft);
 
     previousRowSirutaRef.current = currentSirutaCode;
+    latestRowSirutaRef.current = currentSirutaCode;
     hasPendingValueCommitRef.current = false;
     hasPendingPayloadCommitRef.current = false;
-  }, [row?.payloadDraft, row?.rawValue, row?.sirutaCode, row?.valueJson, row?.valueText]); // eslint-disable-line react-hooks/exhaustive-deps -- flushPendingValueCommit and flushPendingPayloadCommit are stable component-scope functions
+  }, [
+    flushPendingPayloadCommit,
+    flushPendingValueCommit,
+    row?.payloadDraft,
+    row?.rawValue,
+    row?.sirutaCode,
+    row?.valueJson,
+    row?.valueText,
+  ]);
 
   useEffect(() => () => {
     flushPendingValueCommit();
     flushPendingPayloadCommit();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- cleanup-only effect; flushPendingValueCommit and flushPendingPayloadCommit are stable component-scope functions
-  }, []);
+  }, [flushPendingPayloadCommit, flushPendingValueCommit]);
 
   const typeLabel = row?.levelName?.trim() || t`Unknown type`;
   const countyLabel = row?.countyName?.trim() || t`Unknown county`;

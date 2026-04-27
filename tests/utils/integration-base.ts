@@ -91,7 +91,7 @@ const DEFAULT_COOKIE_CONSENT = {
 }
 
 export const test = base.extend<{ mockApi: MockApiFixture }>({
-  mockApi: async ({ page }, use, testInfo) => {
+  mockApi: async ({ page }, provide, testInfo) => {
     const mode = getMode()
 
     // Set cookie consent in localStorage before page loads to dismiss the banner
@@ -374,8 +374,7 @@ export const test = base.extend<{ mockApi: MockApiFixture }>({
     }
 
     // Provide the fixture to tests
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    await use({ mode, mockGraphQL, mockRoute })
+    await provide({ mode, mockGraphQL, mockRoute })
 
     // TEARDOWN: Save recorded fixtures
     if (mode === 'record' && recordedData.size > 0) {

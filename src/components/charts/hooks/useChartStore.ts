@@ -70,8 +70,7 @@ export function useChartStore() {
       replace: true,
       resetScroll: false,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate, history]);
+  }, [navigate]);
 
   const deleteChart = useCallback(async () => {
     await chartsStore.deleteChart(chart.id);
@@ -89,8 +88,7 @@ export function useChartStore() {
     toast.success("Chart Duplicated", {
       description: "The chart has been duplicated.",
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate]);
+  }, [chart.id, navigate]);
 
 
 
@@ -140,8 +138,7 @@ export function useChartStore() {
       annotations: prev?.annotations.map(a => a.id === annotationId ? { ...a, ...(typeof updates === 'function' ? produce(a, (draft) => updates(draft)) : updates) } : a),
     }));
     Analytics.capture(Analytics.EVENTS.ChartAnnotationUpdated, { chart_id: chart.id, annotation_id: annotationId });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updateChart]);
+  }, [chart.id, updateChart]);
 
   const deleteAnnotation = useCallback((annotationId: string) => {
     updateChart((prev) => ({
@@ -149,8 +146,7 @@ export function useChartStore() {
       annotations: prev?.annotations.filter(a => a.id !== annotationId),
     }));
     Analytics.capture(Analytics.EVENTS.ChartAnnotationDeleted, { chart_id: chart.id, annotation_id: annotationId });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updateChart]);
+  }, [chart.id, updateChart]);
 
   const duplicateAnnotation = useCallback((annotationId: string) => {
     const original = chart.annotations.find(a => a.id === annotationId);
@@ -167,8 +163,7 @@ export function useChartStore() {
       annotations: [...(prev?.annotations || []), duplicated],
     }));
     Analytics.capture(Analytics.EVENTS.ChartAnnotationDuplicated, { chart_id: chart.id, annotation_id: annotationId });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chart.annotations, updateChart]);
+  }, [chart.annotations, chart.id, updateChart]);
 
   const setAnnotations = useCallback((annotations: ReadonlyArray<TAnnotation>) => {
     updateChart({ annotations: [...annotations] });
@@ -197,8 +192,7 @@ export function useChartStore() {
       series: [...chart.series, duplicatedSeries],
     });
     Analytics.capture(Analytics.EVENTS.ChartSeriesDuplicated, { chart_id: chart.id, series_id: seriesId, new_series_id: duplicatedSeries.id });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chart.series, updateChart]);
+  }, [chart.id, chart.series, updateChart]);
 
   const moveSeriesUp = useCallback((seriesId: string) => {
     const currentIndex = chart.series.findIndex(s => s.id === seriesId);
@@ -211,8 +205,7 @@ export function useChartStore() {
       series: newSeries,
     });
     Analytics.capture(Analytics.EVENTS.ChartSeriesReordered, { chart_id: chart.id, series_id: seriesId, direction: 'up' });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chart.series, updateChart]);
+  }, [chart.id, chart.series, updateChart]);
 
   const moveSeriesDown = useCallback((seriesId: string) => {
     const currentIndex = chart.series.findIndex(s => s.id === seriesId);
@@ -225,8 +218,7 @@ export function useChartStore() {
       series: newSeries,
     });
     Analytics.capture(Analytics.EVENTS.ChartSeriesReordered, { chart_id: chart.id, series_id: seriesId, direction: 'down' });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chart.series, updateChart]);
+  }, [chart.id, chart.series, updateChart]);
 
   const deleteSeries = useCallback((seriesId: string) => {
     updateChart({

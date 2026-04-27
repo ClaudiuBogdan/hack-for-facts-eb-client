@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import type { QueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { entitySearchSchema } from '@/components/entities/validation'
 import { ViewLoading } from '@/components/ui/ViewLoading'
@@ -172,9 +173,7 @@ function warmTrendCharts({
 }: {
   readonly entity: EntityDetailsData
   readonly executionContext: EntityPageExecutionContext
-  readonly queryClient: {
-    prefetchQuery: (options: Record<string, unknown>) => Promise<unknown>
-  }
+  readonly queryClient: QueryClient
   readonly queryPlan: EntityPageBootstrapPayload['queryPlan']
 }): void {
   let accountCategory: 'vn' | 'ch' | undefined
@@ -272,9 +271,7 @@ function warmMapResources({
 }: {
   readonly entity: EntityDetailsData
   readonly executionContext: EntityPageExecutionContext
-  readonly queryClient: {
-    prefetchQuery: (options: Record<string, unknown>) => Promise<unknown>
-  }
+  readonly queryClient: QueryClient
   readonly queryPlan: EntityPageBootstrapPayload['queryPlan']
   readonly search: EntitySearchSchema
 }): void {
@@ -315,11 +312,12 @@ function warmMapResources({
       report_period: getInitialFilterState('YEAR', executionContext.year, '12', 'Q4'),
     })
 
-  void queryClient.prefetchQuery(
-    mapViewType === 'UAT'
-      ? heatmapUATQueryOptions(filters)
-      : heatmapJudetQueryOptions(filters),
-  )
+  if (mapViewType === 'UAT') {
+    void queryClient.prefetchQuery(heatmapUATQueryOptions(filters))
+    return
+  }
+
+  void queryClient.prefetchQuery(heatmapJudetQueryOptions(filters))
 }
 
 export const Route = createFileRoute('/entities/$cui')({
@@ -329,8 +327,7 @@ export const Route = createFileRoute('/entities/$cui')({
       staleWhileRevalidateSeconds: 86400,
     }),
   validateSearch: entitySearchSchema,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  head: ({ params, match }: any) => {
+  head: ({ params, match }) => {
     const loaderData = match.loaderData as EntityRouteLoaderData | undefined
     const loaderPayload = loaderData?.entityPageBootstrap?.loaderPayload
 
@@ -344,8 +341,7 @@ export const Route = createFileRoute('/entities/$cui')({
       },
     }))
   },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  loader: (async ({ context, params, location }: any) => {
+  loader: async ({ context, params, location }) => {
     const queryClient = context.queryClient
     const requestSiteUrl = await readEntityPageRequestOrigin()
     const search = entitySearchSchema.parse(location.search)
@@ -424,8 +420,7 @@ export const Route = createFileRoute('/entities/$cui')({
         forcedOverrides,
       } satisfies EntityRouteLoaderData
     }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  }) as any,
+  },
   pendingComponent: ViewLoading,
   component: () => null,
 })

@@ -205,8 +205,7 @@ function EntityDetailsPage() {
     if (!ssrEntityDetailsParams) return undefined
     const ssrQueryOptions = entityDetailsQueryOptions(ssrEntityDetailsParams)
     return queryClient.getQueryData<EntityDetailsData>(ssrQueryOptions.queryKey)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ssrEntityDetailsParams])
+  }, [queryClient, ssrEntityDetailsParams])
 
   const { data: entity, isLoading, isFetching, isError, error } = useEntityDetails({
     cui,
@@ -257,8 +256,7 @@ function EntityDetailsPage() {
     100
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const updateSearch = useCallback((patch: Record<string, any>) => {
+  const updateSearch = useCallback((patch: Record<string, unknown>) => {
     const normalizedPatch = normalizeSearchPatch(patch)
 
     // Skip navigation if nothing actually changes
@@ -383,9 +381,7 @@ function EntityDetailsPage() {
       currency: nextCurrencyParam,
       inflation_adjusted: nextInflationParam,
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- activeView and cui changes always coincide with other deps changes
   }, [
-    currency,
     displayCurrency,
     displayInflationAdjusted,
     forcedOverrides.currency,
@@ -397,8 +393,7 @@ function EntityDetailsPage() {
     updateSearch,
   ])
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const updateReportPeriodInSearch = useCallback((patch: Record<string, any>) => {
+  const updateReportPeriodInSearch = useCallback((patch: Record<string, unknown>) => {
     const normalizedPatch = normalizeSearchPatch(patch)
 
     startTransition(() => {

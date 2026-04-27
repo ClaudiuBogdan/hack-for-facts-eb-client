@@ -1,7 +1,7 @@
 import { LayoutDashboard, BarChart2, Map, ListOrdered, Boxes } from "lucide-react";
 import { Link, useMatches } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import {
   SidebarGroup,
   SidebarMenu,

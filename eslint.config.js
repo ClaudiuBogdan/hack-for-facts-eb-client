@@ -1,5 +1,7 @@
 import js from '@eslint/js'
 import globals from 'globals'
+import { createTypeScriptImportResolver } from 'eslint-import-resolver-typescript'
+import { createNodeResolver, importX } from 'eslint-plugin-import-x'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
@@ -26,10 +28,21 @@ export default tseslint.config(
       globals: globals.browser,
     },
     plugins: {
+      'import-x': importX,
       'react-hooks': reactHooks,
       'react-refresh': reactRefresh,
     },
+    settings: {
+      'import-x/resolver-next': [
+        createTypeScriptImportResolver({
+          alwaysTryTypes: true,
+          project: ['./tsconfig.app.json', './tsconfig.node.json'],
+        }),
+        createNodeResolver(),
+      ],
+    },
     rules: {
+      'import-x/no-cycle': ['error', { ignoreExternal: true }],
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
       'react-refresh/only-export-components': [

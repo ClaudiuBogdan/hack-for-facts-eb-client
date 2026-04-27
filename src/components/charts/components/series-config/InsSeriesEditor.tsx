@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 import { t } from '@lingui/core/macro';
@@ -383,9 +383,9 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
     [nonTemporalDimensions]
   );
 
-  const update = (patch: Partial<InsSeriesConfiguration>) => {
+  const update = useCallback((patch: Partial<InsSeriesConfiguration>) => {
     adapter.applyPatch(patch);
-  };
+  }, [adapter]);
 
   useEffect(() => {
     if (!dataset) return;
@@ -407,7 +407,7 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
 
     const defaultPeriod = buildDefaultInsPeriod(dataset, allowedPeriodTypes[0] as ReportPeriodType | undefined);
     update({ period: defaultPeriod });
-  }, [allowedPeriodTypes, dataset, datasetYearRange, series?.period]) // eslint-disable-line react-hooks/exhaustive-deps -- update is a stable callback from hook scope;
+  }, [allowedPeriodTypes, dataset, datasetYearRange, series?.period, update])
 
   const beginDimensionRequest = (
     datasetCode: string,

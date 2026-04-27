@@ -145,7 +145,10 @@ export async function graphqlRequest<T = unknown>(
     if (error instanceof Error) {
       throw error;
     }
-    // eslint-disable-next-line preserve-caught-error
-    throw new Error(`GraphQL request failed: ${summarizeValue(error)}`);
+    const wrappedError = new Error(
+      `GraphQL request failed: ${summarizeValue(error)}`,
+    ) as Error & { cause: unknown };
+    wrappedError.cause = error;
+    throw wrappedError;
   }
 }

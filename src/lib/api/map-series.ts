@@ -160,7 +160,10 @@ export async function fetchGroupedSeriesData(
       throw error;
     }
 
-    // eslint-disable-next-line preserve-caught-error
-    throw new Error('Failed to fetch grouped-series series data.');
+    const wrappedError = new Error(
+      'Failed to fetch grouped-series series data.',
+    ) as Error & { cause: unknown };
+    wrappedError.cause = error;
+    throw wrappedError;
   }
 }

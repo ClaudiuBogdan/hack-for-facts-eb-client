@@ -50,7 +50,7 @@ export const useDataLabelBuilder = (key: string, getLabels: GetLabels, initialId
      * updates localStorage, and triggers a UI update.
      * @param {string[]} ids - An array of ids to check and fetch.
      */
-    const fetchMissingLabels = async (ids: (string | number)[], getLabels: GetLabels) => {
+    const fetchMissingLabels = useCallback(async (ids: (string | number)[], getLabels: GetLabels) => {
         if (!ids || ids.length === 0) return;
 
         const dataMap = loadLocalData(key);
@@ -74,13 +74,13 @@ export const useDataLabelBuilder = (key: string, getLabels: GetLabels, initialId
         } catch (error) {
             console.error("Failed to fetch labels:", error);
         }
-    };
+    }, [key, queryClient]);
 
     /**
      * Manually adds or updates labels in the cache from a list of OptionItems.
      * @param {OptionItem[]} labels - An array of options with id and label.
      */
-    const addKnownLabels = (labels: OptionItem[]) => {
+    const addKnownLabels = useCallback((labels: OptionItem[]) => {
         const currentMap = loadLocalData(key);
         labels.forEach(({ id, label }) => {
             currentMap[String(id)] = String(label);
@@ -91,7 +91,7 @@ export const useDataLabelBuilder = (key: string, getLabels: GetLabels, initialId
         // Optimistically update the query cache for an instant UI change.
         // This is faster than invalidating and re-reading from localStorage.
         queryClient.setQueryData([key], currentMap);
-    };
+    }, [key, queryClient]);
 
     useEffect(() => {
         // Create a stable string representation of the IDs to compare
@@ -112,8 +112,7 @@ export const useDataLabelBuilder = (key: string, getLabels: GetLabels, initialId
             previousIdsRef.current = currentIdsString;
             void fetchMissingLabels(initialIds, getLabels);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [initialIds, getLabels]);
+    }, [fetchMissingLabels, getLabels, initialIds]);
 
     const mapIdToLabel = (id: string | number) => dataMap?.[String(id)] ?? `id::${id}`;
 

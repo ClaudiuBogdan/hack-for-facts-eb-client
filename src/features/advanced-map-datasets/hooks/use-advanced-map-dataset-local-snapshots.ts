@@ -47,12 +47,14 @@ export function useAdvancedMapDatasetLocalSnapshots({
   );
   const [baselineComparableHash, setBaselineComparableHash] = useState(comparableHash);
   const isDirty = isBaselineReady && baselineComparableHash !== comparableHash;
+  const comparableHashRef = useRef(comparableHash);
   const autosaveWriteInFlightRef = useRef(false);
+  comparableHashRef.current = comparableHash;
 
   useEffect(() => {
-    setBaselineComparableHash(comparableHash);
+    setBaselineComparableHash(comparableHashRef.current);
     setLastAutosavedAt(null);
-  }, [resourceKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [resourceKey]);
 
   const refreshSnapshots = useCallback(async () => {
     if (!enabled || resourceKey.trim() === '') {

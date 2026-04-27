@@ -3,7 +3,7 @@ import { Label } from '@/components/ui/label'
 import type { ReportPeriodInput, ReportPeriodType, PeriodDate } from '@/schemas/reporting'
 import { Trans } from '@lingui/react/macro'
 import { useLingui } from '@lingui/react'
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { defaultYearRange } from '@/schemas/charts'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { TMonth, TQuarter } from '@/schemas/reporting'
@@ -19,6 +19,12 @@ type Props = {
 }
 
 const ALL_PERIOD_TYPES: ReportPeriodType[] = ['YEAR', 'QUARTER', 'MONTH']
+const AVAILABLE_QUARTERS: { id: TQuarter; label: string }[] = [
+  { id: 'Q1', label: 'Q1' },
+  { id: 'Q2', label: 'Q2' },
+  { id: 'Q3', label: 'Q3' },
+  { id: 'Q4', label: 'Q4' },
+]
 
 function normalizeAllowedPeriodTypes(allowedPeriodTypes?: ReportPeriodType[]): ReportPeriodType[] {
   if (!allowedPeriodTypes || allowedPeriodTypes.length === 0) {
@@ -98,26 +104,19 @@ export function PeriodFilter({
     })
   }, [monthFormatter])
 
-  const availableQuarters: { id: TQuarter; label: string }[] = [
-    { id: 'Q1', label: 'Q1' },
-    { id: 'Q2', label: 'Q2' },
-    { id: 'Q3', label: 'Q3' },
-    { id: 'Q4', label: 'Q4' },
-  ]
-
-  const isYearSelectable = (year: string): boolean => {
+  const isYearSelectable = useCallback((year: string): boolean => {
     if (!hasCustomYearRange) return true
     const parsedYear = Number(year)
     return parsedYear >= normalizedYearRange.start && parsedYear <= normalizedYearRange.end
-  }
+  }, [hasCustomYearRange, normalizedYearRange.end, normalizedYearRange.start])
 
-  const getPeriodOptions = (type: ReportPeriodType): PeriodDate[] => {
+  const getPeriodOptions = useCallback((type: ReportPeriodType): PeriodDate[] => {
     switch (type) {
       case 'YEAR':
         return availableYears as PeriodDate[]
       case 'QUARTER':
         return availableYears.flatMap((year) =>
-          availableQuarters.map((quarter) => `${year}-${quarter.id}` as PeriodDate)
+          AVAILABLE_QUARTERS.map((quarter) => `${year}-${quarter.id}` as PeriodDate)
         )
       case 'MONTH':
         return availableYears.flatMap((year) =>
@@ -126,21 +125,19 @@ export function PeriodFilter({
       default:
         return []
     }
-  }
+  }, [availableMonths, availableYears])
 
   const periodOptions = useMemo(
     () => getPeriodOptions(periodType),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- getPeriodOptions is a stable component-scope function
-    [availableMonths, availableQuarters, availableYears, periodType]
+    [getPeriodOptions, periodType]
   )
   const sortedPeriodOptions = useMemo(() => [...periodOptions].sort(), [periodOptions])
   const selectablePeriodOptions = useMemo(() => {
     if (!hasCustomYearRange) return sortedPeriodOptions
     return sortedPeriodOptions.filter((option) => isYearSelectable(option.slice(0, 4)))
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- isYearSelectable is a stable component-scope function
-  }, [hasCustomYearRange, sortedPeriodOptions])
+  }, [hasCustomYearRange, isYearSelectable, sortedPeriodOptions])
 
-  const clampPeriodValue = (current: ReportPeriodInput | undefined): ReportPeriodInput | undefined => {
+  const clampPeriodValue = useCallback((current: ReportPeriodInput | undefined): ReportPeriodInput | undefined => {
     if (!current) return current
 
     const effectiveType = normalizedAllowedPeriodTypes.includes(current.type)
@@ -221,7 +218,12 @@ export function PeriodFilter({
       type: effectiveType,
       selection: { dates: [fallbackDate] },
     }
-  }
+  }, [
+    getPeriodOptions,
+    hasCustomYearRange,
+    isYearSelectable,
+    normalizedAllowedPeriodTypes,
+  ])
 
   useEffect(() => {
     if (!value) return
@@ -229,7 +231,7 @@ export function PeriodFilter({
     if (!arePeriodsEqual(value, clampedValue)) {
       onChange(clampedValue)
     }
-  }, [hasCustomYearRange, normalizedAllowedPeriodTypes, onChange, value]) // eslint-disable-line react-hooks/exhaustive-deps -- clampPeriodValue is a stable component-scope callback
+  }, [clampPeriodValue, onChange, value])
 
   const handlePeriodTypeChange = (type: ReportPeriodType) => {
     if (!type) return
@@ -292,7 +294,7 @@ export function PeriodFilter({
             <div key={year}>
               <Label className="text-sm font-medium">{year}</Label>
               <ToggleGroup type="multiple" value={value?.selection.dates ?? []} onValueChange={(dates) => onChange?.({ type: periodType, selection: { dates: dates as PeriodDate[] } })} className="grid grid-cols-4 gap-2 mt-1">
-                {availableQuarters.map((q) => {
+                {AVAILABLE_QUARTERS.map((q) => {
                   const date = `${year}-${q.id}` as PeriodDate
                   return (
                     <ToggleGroupItem

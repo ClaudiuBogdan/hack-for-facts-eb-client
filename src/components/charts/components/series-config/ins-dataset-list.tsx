@@ -89,8 +89,9 @@ export function InsDatasetList({
       const filteredNodes: InsDataset[] = [];
       let nextOffset = pageParam;
       let scannedPageCount = 0;
+      let shouldContinueScanning = true;
 
-      do {
+      while (shouldContinueScanning) {
         const response = await searchInsDatasets({
           filter: {
             search: searchFilter.trim() || undefined,
@@ -120,10 +121,9 @@ export function InsDatasetList({
           foundClientFilteredResults;
 
         if (shouldStopScanning) {
-          break;
+          shouldContinueScanning = false;
         }
-      // eslint-disable-next-line no-constant-condition
-      } while (true);
+      }
 
       return {
         nodes: filteredNodes,

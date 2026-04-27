@@ -445,8 +445,7 @@ export function HeatmapDataTable({
     useEffect(() => {
         // Keep county column visibility in sync with map view type by default
         setColumnVisibility((v: Record<string, boolean>) => ({ ...v, county_name: isUatView }))
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isUatView])
+    }, [isUatView, setColumnVisibility])
 
     if (isLoading) {
         return (

@@ -1,4 +1,5 @@
 import type { VisibilityState, ColumnPinningState, ColumnSizingState, Updater } from '@tanstack/react-table'
+import { useCallback } from 'react'
 import { usePersistedState } from '@/lib/hooks/usePersistedState'
 
 export type TablePreferences = {
@@ -29,24 +30,24 @@ export function useTablePreferences(
     currencyFormat: initial.currencyFormat ?? 'both',
   })
 
-  const setDensity = (next: Updater<Density>) => {
+  const setDensity = useCallback((next: Updater<Density>) => {
     setPrefs((prev) => ({ ...prev, density: typeof next === 'function' ? (next as (p: Density) => Density)(prev.density) : next }))
-  }
-  const setColumnVisibility = (updater: Updater<VisibilityState>) => {
+  }, [setPrefs])
+  const setColumnVisibility = useCallback((updater: Updater<VisibilityState>) => {
     setPrefs((prev) => ({ ...prev, columnVisibility: typeof updater === 'function' ? updater(prev.columnVisibility) : updater }))
-  }
-  const setColumnPinning = (updater: Updater<ColumnPinningState>) => {
+  }, [setPrefs])
+  const setColumnPinning = useCallback((updater: Updater<ColumnPinningState>) => {
     setPrefs((prev) => ({ ...prev, columnPinning: typeof updater === 'function' ? updater(prev.columnPinning ?? {}) : updater }))
-  }
-  const setColumnSizing = (updater: Updater<ColumnSizingState>) => {
+  }, [setPrefs])
+  const setColumnSizing = useCallback((updater: Updater<ColumnSizingState>) => {
     setPrefs((prev) => ({ ...prev, columnSizing: typeof updater === 'function' ? updater(prev.columnSizing ?? {}) : updater }))
-  }
-  const setColumnOrder = (updater: Updater<string[]>) => {
+  }, [setPrefs])
+  const setColumnOrder = useCallback((updater: Updater<string[]>) => {
     setPrefs((prev) => ({ ...prev, columnOrder: typeof updater === 'function' ? updater(prev.columnOrder ?? []) : updater }))
-  }
-  const setCurrencyFormat = (next: Updater<CurrencyFormat>) => {
+  }, [setPrefs])
+  const setCurrencyFormat = useCallback((next: Updater<CurrencyFormat>) => {
     setPrefs((prev) => ({ ...prev, currencyFormat: typeof next === 'function' ? (next as (p: CurrencyFormat) => CurrencyFormat)(prev.currencyFormat ?? 'both') : next }))
-  }
+  }, [setPrefs])
 
   return {
     density: prefs.density,
@@ -63,5 +64,4 @@ export function useTablePreferences(
     setCurrencyFormat,
   }
 }
-
 

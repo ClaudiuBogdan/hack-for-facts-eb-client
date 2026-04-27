@@ -125,14 +125,14 @@ function DatasetRowValueInput({
     onCommitRef.current = onCommit;
   }, [onCommit]);
 
-  const clearPendingCommit = () => {
+  const clearPendingCommit = useCallback(() => {
     if (pendingCommitTimeoutRef.current !== null) {
       window.clearTimeout(pendingCommitTimeoutRef.current);
       pendingCommitTimeoutRef.current = null;
     }
-  };
+  }, []);
 
-  const flushPendingCommit = (nextValue: string = latestValueRef.current) => {
+  const flushPendingCommit = useCallback((nextValue: string = latestValueRef.current) => {
     clearPendingCommit();
 
     if (!hasPendingCommitRef.current) {
@@ -141,12 +141,11 @@ function DatasetRowValueInput({
 
     hasPendingCommitRef.current = false;
     onCommitRef.current(nextValue);
-  };
+  }, [clearPendingCommit]);
 
   useEffect(() => () => {
     flushPendingCommit();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- flushPendingCommit is a stable component-scope function
-  }, []);
+  }, [flushPendingCommit]);
 
   return (
     <Input
@@ -482,6 +481,15 @@ export function AdvancedMapDatasetEditorPage({
   const [metadataDraft, setMetadataDraft] = useState<BufferedDatasetMetadata>(() =>
     createBufferedDatasetMetadata(draft)
   );
+  const draftMetadata = useMemo<BufferedDatasetMetadata>(
+    () => ({
+      title: draft.title,
+      unit: draft.unit,
+      description: draft.description,
+      markdown: draft.markdown,
+    }),
+    [draft.description, draft.markdown, draft.title, draft.unit]
+  );
   const metadataDraftRef = useRef(metadataDraft);
   const flushPendingMetadataCommitRef = useRef<() => AdvancedMapDatasetDraft>(() => draft);
   const pendingMetadataCommitTimeoutRef = useRef<number | null>(null);
@@ -547,12 +555,12 @@ export function AdvancedMapDatasetEditorPage({
   );
 
   useEffect(() => {
-    const nextMetadataDraft = createBufferedDatasetMetadata(draft);
+    const nextMetadataDraft = draftMetadata;
     metadataDraftRef.current = nextMetadataDraft;
     hasPendingMetadataCommitRef.current = false;
     clearPendingMetadataCommit();
     setMetadataDraft(nextMetadataDraft);
-  }, [clearPendingMetadataCommit, draft.description, draft.markdown, draft.title, draft.unit]) // eslint-disable-line react-hooks/exhaustive-deps -- draft fields listed individually; full draft object intentionally excluded
+  }, [clearPendingMetadataCommit, draftMetadata])
 
   useEffect(() => {
     flushPendingMetadataCommitRef.current = flushPendingMetadataCommit;

@@ -15,7 +15,7 @@ env:
 
 jobs:
   typecheck:
-    name: Type Check
+    name: Type Check and Lint
     if: github.event_name != 'push' || github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
@@ -37,6 +37,9 @@ jobs:
 
       - name: Run TypeScript check
         run: yarn typecheck
+
+      - name: Run Lint
+        run: yarn lint
 
   unit-tests:
     name: Unit Tests (${{ matrix.shard }}/${{ matrix.total_shards }})

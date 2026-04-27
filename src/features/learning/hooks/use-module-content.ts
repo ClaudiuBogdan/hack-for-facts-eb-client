@@ -21,8 +21,11 @@ export function useModuleContent(params: {
   readonly contentDir: string
   readonly locale: LearningLocale
 }): UseModuleContentResult {
+  const { contentDir, locale } = params
+
   return useMemo(() => {
-    const errorMessage = getModuleContentErrorMessage(params)
+    const contentParams = { contentDir, locale }
+    const errorMessage = getModuleContentErrorMessage(contentParams)
     if (errorMessage) {
       return {
         Component: null,
@@ -32,7 +35,7 @@ export function useModuleContent(params: {
     }
 
     try {
-      const moduleContent = readModuleContent(params)
+      const moduleContent = readModuleContent(contentParams)
       return {
         Component: moduleContent.default,
         isLoading: false,
@@ -49,9 +52,8 @@ export function useModuleContent(params: {
         error:
             error instanceof Error
               ? error.message
-              : 'Unable to load module content.',
+            : 'Unable to load module content.',
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.contentDir, params.locale])
+  }, [contentDir, locale])
 }

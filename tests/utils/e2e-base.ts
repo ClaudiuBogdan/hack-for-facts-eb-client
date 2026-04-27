@@ -62,7 +62,7 @@ export interface E2EFixture {
 }
 
 export const test = base.extend<{ e2e: E2EFixture }>({
-  e2e: async ({ page }, use, testInfo) => {
+  e2e: async ({ page }, provide, testInfo) => {
     const mode = getMode()
 
     // Derive test name for snapshot organization
@@ -141,8 +141,7 @@ export const test = base.extend<{ e2e: E2EFixture }>({
     }
 
     // Provide fixture to test
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    await use({ mode })
+    await provide({ mode })
 
     // Save recorded snapshots on teardown
     if (mode === 'record' && recorded.size > 0) {

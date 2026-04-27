@@ -1,5 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useCallback, useState } from "react";
+import React, { createContext, useCallback, useState } from "react";
 import * as Sentry from "@sentry/react";
 import { AppError, ErrorSource } from "@/lib/errors/types";
 import { logger } from "@/lib/logger";
@@ -78,14 +77,4 @@ export function ErrorProvider({ children, onError }: ErrorProviderProps) {
   return (
     <ErrorContext.Provider value={value}>{children}</ErrorContext.Provider>
   );
-}
-
-export function useErrorHandler() {
-  const context = useContext(ErrorContext);
-
-  if (!context) {
-    throw new Error("useErrorHandler must be used within an ErrorProvider");
-  }
-
-  return context;
 }

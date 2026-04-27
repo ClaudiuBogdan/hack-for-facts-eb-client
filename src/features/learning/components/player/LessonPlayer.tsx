@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, lazy, Suspense, type ComponentType } from 'react'
+import { useCallback, useEffect, useMemo, lazy, Suspense } from 'react'
 import type { MDXComponents } from 'mdx/types'
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
@@ -95,9 +95,10 @@ type LessonContentRendererProps = {
   readonly mdxComponents: MDXComponents
 }
 
-function createLazyComponent<Props = Record<string, unknown>>(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  loader: () => Promise<{ default: ComponentType<any> }>
+type ReactLazyLoader = Parameters<typeof lazy>[0]
+
+function createLazyComponent<Props extends object = Record<string, unknown>>(
+  loader: ReactLazyLoader
 ) {
   const LazyComponent = lazy(loader)
 
@@ -107,7 +108,7 @@ function createLazyComponent<Props = Record<string, unknown>>(
     return (
       <ClientOnly fallback={fallback}>
         <Suspense fallback={fallback}>
-          <LazyComponent {...(props as Record<string, unknown>)} />
+          <LazyComponent {...props} />
         </Suspense>
       </ClientOnly>
     )

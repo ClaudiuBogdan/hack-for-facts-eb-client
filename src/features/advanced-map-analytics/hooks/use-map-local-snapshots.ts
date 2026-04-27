@@ -63,12 +63,14 @@ export function useMapLocalSnapshots({
   );
   const [baselineComparableHash, setBaselineComparableHash] = useState(comparableHash);
   const isDirty = isBaselineReady && baselineComparableHash !== comparableHash;
+  const comparableHashRef = useRef(comparableHash);
   const autosaveWriteInFlightRef = useRef(false);
+  comparableHashRef.current = comparableHash;
 
   useEffect(() => {
-    setBaselineComparableHash(comparableHash);
+    setBaselineComparableHash(comparableHashRef.current);
     setLastAutosavedAt(null);
-  }, [mapId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mapId]);
 
   const refreshSnapshots = useCallback(async () => {
     if (!enabled || mapId.trim().length === 0) {

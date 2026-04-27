@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { Dataset, getDatasets } from "@/lib/api/datasets";
 import { getUserLocale } from "@/lib/utils";
 
@@ -47,7 +47,7 @@ export const useDatasetStore = (initialIds: (string | number)[]) => {
         initialData: loadLocalData(),
     });
 
-    const fetchMissingDatasets = async (ids: (string | number)[]) => {
+    const fetchMissingDatasets = useCallback(async (ids: (string | number)[]) => {
         if (!ids || ids.length === 0) return;
 
         const dataMap = loadLocalData();
@@ -71,9 +71,9 @@ export const useDatasetStore = (initialIds: (string | number)[]) => {
         } finally {
             missingIds.forEach(id => pendingDatasetRequests.delete(String(id)));
         }
-    };
+    }, [locale, queryClient]);
 
-    const addKnownDatasets = (datasets: Dataset[]) => {
+    const addKnownDatasets = useCallback((datasets: Dataset[]) => {
         const currentMap = loadLocalData();
         datasets.forEach((dataset) => {
             currentMap[String(dataset.id)] = dataset;
@@ -82,14 +82,13 @@ export const useDatasetStore = (initialIds: (string | number)[]) => {
         const updatedData = updateLocalData(currentMap);
 
         queryClient.setQueryData([getDatasetStorageKey()], updatedData);
-    };
+    }, [queryClient]);
 
     useEffect(() => {
         if (initialIds) {
             fetchMissingDatasets(initialIds);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- only run on mount
-    }, []);
+    }, [fetchMissingDatasets, initialIds]);
 
     const getDataset = (id: string | number) => dataMap?.[String(id)];
 
