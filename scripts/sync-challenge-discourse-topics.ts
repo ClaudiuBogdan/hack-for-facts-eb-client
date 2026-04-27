@@ -214,7 +214,7 @@ function resolveDiscourseLang(value: string | undefined): SupportedDiscourseLang
   throw new Error('DISCOURSE_LANG must be one of: en, ro')
 }
 
-function normalizeContentDir(value: string): string {
+function _normalizeContentDir(value: string): string {
   return value.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '')
 }
 
@@ -367,6 +367,7 @@ async function readChallengeDiscussionContent(params: {
       const message = error instanceof Error ? error.message : String(error)
       throw new Error(
         `Failed to read step content for "${params.step.id}" from ${path.relative(PROJECT_ROOT, mdxPath)}: ${message}`,
+        { cause: error },
       )
     }
   }

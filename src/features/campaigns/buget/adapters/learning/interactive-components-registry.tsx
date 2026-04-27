@@ -22,6 +22,7 @@ type QuickLinksProps = {
 }
 
 function createLazyInteractiveComponent<Props = LazyWrapperProps>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   loader: () => Promise<{ default: ComponentType<any> }>,
 ): ComponentType<Props> {
   const LazyComponent = lazy(loader)

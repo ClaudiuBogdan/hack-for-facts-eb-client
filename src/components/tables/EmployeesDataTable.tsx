@@ -89,7 +89,7 @@ export function EmployeesDataTable({ data, sorting, setSorting, pagination, setP
   ], []);
 
   const table = useReactTable<EmployeeRowData>({
-    data: data ?? [] as any,
+    data: [...(data ?? [])] as EmployeeRowData[],
     columns,
     state: { sorting, pagination },
     onSortingChange: setSorting,

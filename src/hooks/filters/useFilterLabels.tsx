@@ -112,6 +112,7 @@ export const useDataLabelBuilder = (key: string, getLabels: GetLabels, initialId
             previousIdsRef.current = currentIdsString;
             void fetchMissingLabels(initialIds, getLabels);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialIds, getLabels]);
 
     const mapIdToLabel = (id: string | number) => dataMap?.[String(id)] ?? `id::${id}`;

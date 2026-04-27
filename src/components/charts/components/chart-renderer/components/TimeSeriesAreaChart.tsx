@@ -48,7 +48,7 @@ export function TimeSeriesAreaChart({ chart, unitMap, timeSeriesData, onAnnotati
                 <Area
                   key={series.id}
                   yAxisId={getYAxisId(series.id)}
-                  dataKey={(row: any) => row?.[series.id]?.value}
+                  dataKey={(row: Record<string, DataPointPayload>) => row?.[series.id]?.value}
                   name={series.label || 'Untitled'}
                   stroke={series.config.color}
                   fill={series.config.color}
@@ -61,7 +61,7 @@ export function TimeSeriesAreaChart({ chart, unitMap, timeSeriesData, onAnnotati
                 >
                   {shouldRenderLabels && (
                     <LabelList
-                      dataKey={(row: any) => row?.[series.id]}
+                      dataKey={(row: Record<string, DataPointPayload>) => row?.[series.id]}
                       offset={30}
                       content={(props) => {
                         const isShowLabels = series.config.showDataLabels || chart.config.showDataLabels;

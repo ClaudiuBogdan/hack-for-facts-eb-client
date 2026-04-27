@@ -17,7 +17,7 @@ type ParsedLocation = {
 };
 
 export type ShareRouter = RouterState & {
-  parseLocation: (location: any) => ParsedLocation;
+  parseLocation(location: unknown): ParsedLocation;
 };
 
 export type ShareNavigate = (opts: { href: string; replace?: boolean }) => unknown;

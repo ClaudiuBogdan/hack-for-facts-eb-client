@@ -132,7 +132,7 @@ export function EntityAnalyticsFilter() {
 
   // Updaters following LineItemsFilter behavior
   const updatePeriod = (period?: ReportPeriodInput) => {
-    setFilter({ report_period: period as any })
+    setFilter({ report_period: period as ReportPeriodInput | undefined })
   }
 
   const handleRemovePeriodTag = (tagToRemove: OptionItem) => {
@@ -142,7 +142,7 @@ export function EntityAnalyticsFilter() {
     if (report_period.selection.dates) {
       const newDates = report_period.selection.dates.filter(d => d !== tagToRemove.id);
       if (newDates.length > 0) {
-        updatePeriod({ ...report_period, selection: { dates: newDates as any } });
+        updatePeriod({ ...report_period, selection: { dates: newDates } as ReportPeriodInput['selection'] });
       } else {
         updatePeriod(undefined);
       }
@@ -226,7 +226,7 @@ export function EntityAnalyticsFilter() {
   const setIsUat = (value: boolean | undefined) => setFilter({ is_uat: value })
 
   const amountUnit = useMemo(
-    () => getNormalizationUnit({ normalization: filter.normalization as any, currency: userCurrency as any }),
+    () => getNormalizationUnit({ normalization: filter.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro', currency: userCurrency as 'RON' | 'EUR' | 'USD' }),
     [filter.normalization, userCurrency],
   )
 
@@ -476,7 +476,7 @@ export function EntityAnalyticsFilter() {
           onClearOption={handleRemovePeriodTag}
           onClearAll={() => updatePeriod(undefined)}
         >
-          <PeriodFilter value={filter.report_period as any} onChange={updatePeriod} />
+          <PeriodFilter value={filter.report_period as ReportPeriodInput | undefined} onChange={updatePeriod} />
         </FilterContainer>
 
         <FilterListContainer

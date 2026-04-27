@@ -2,17 +2,21 @@ import { EntityDetailsData } from '../api/entities';
 import { useMemo } from 'react';
 
 /**
- * Returns a Google search URL 
+ * Returns a Google search URL
  */
 export function useExternalSearchLink(
     entity: Pick<EntityDetailsData, 'name' | 'uat'> | null | undefined,
 ) {
+    const searchQuery = useMemo(
+        () => entity ? formatSearchQuery(entity) : '',
+        [entity],
+    );
+
     if (!entity) {
         return {
             url: null
         } as const;
     }
-    const searchQuery = useMemo(() => formatSearchQuery(entity), [entity]);
 
     const searchUrl = entity.name
         ? `https://google.com/search?q=${encodeURIComponent(searchQuery)}`

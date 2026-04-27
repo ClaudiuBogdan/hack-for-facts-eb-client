@@ -127,7 +127,7 @@ export function useMapFilter() {
         };
 
     const createExcludeValueUpdater = <K extends keyof typeof exclude>(filterKey: K) =>
-        (value: any) => {
+        (value: (typeof exclude)[K]) => {
             const newExclude = { ...exclude, [filterKey]: value };
             setFilters({ exclude: newExclude } as Partial<AnalyticsFilterType>);
         };

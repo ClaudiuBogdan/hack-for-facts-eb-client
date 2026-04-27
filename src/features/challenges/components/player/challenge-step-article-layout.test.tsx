@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { ChallengeStepArticleLayout } from './challenge-step-article-layout'
 
 vi.mock('@tanstack/react-router', () => ({
+   
   Link: ({ children, to, resetScroll: _resetScroll, search: _search, ...props }: any) => (
     <a href={typeof to === 'string' ? to : '#'} {...props}>
       {children}

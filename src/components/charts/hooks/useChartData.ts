@@ -261,13 +261,13 @@ export function useChartData({ chart, enabled = true }: UseChartDataProps) {
     }, [chart, serverChartData, staticServerChartData, staticSeries, insSeriesResults, commitmentsSeriesData]);
 
     const dataSeriesMap = computedSeries?.map;
-    const calculationWarnings = computedSeries?.calcWarnings ?? [];
-    const insWarnings = computedSeries?.insWarnings ?? [];
 
     // Validate the data (base validation + calculation warnings)
     const validationResult = useMemo(() => {
         if (!dataSeriesMap) return null;
         const base = validateAnalyticsSeries(dataSeriesMap);
+        const calculationWarnings = computedSeries?.calcWarnings ?? [];
+        const insWarnings = computedSeries?.insWarnings ?? [];
         const calcWarningsResult =
             calculationWarnings.length > 0
                 ? ({
@@ -285,7 +285,7 @@ export function useChartData({ chart, enabled = true }: UseChartDataProps) {
                 } as ValidationResult)
                 : null;
         return combineValidationResults(base, calcWarningsResult, insWarningsResult);
-    }, [dataSeriesMap, calculationWarnings, insWarnings]);
+    }, [dataSeriesMap, computedSeries]);
 
     // Sanitize invalid points if needed
     const sanitizedDataSeriesMap = useMemo(() => {
@@ -425,8 +425,8 @@ export function convertToTimeSeriesData(
     const filteredBuckets = isYear
         ? sortedBuckets.filter((label) => {
             const n = Number(label);
-            const start = chart.config.yearRange?.start ?? Number(sortedBuckets[0]) ?? defaultYearRange.start;
-            const end = chart.config.yearRange?.end ?? Number(sortedBuckets[sortedBuckets.length - 1]) ?? defaultYearRange.end;
+            const start = chart.config.yearRange?.start ?? (Number(sortedBuckets[0]) || defaultYearRange.start);
+            const end = chart.config.yearRange?.end ?? (Number(sortedBuckets[sortedBuckets.length - 1]) || defaultYearRange.end);
             return Number.isFinite(n) && n >= start && n <= end;
         })
         : sortedBuckets;
@@ -492,7 +492,7 @@ export function convertToTimeSeriesData(
                         type: "auto_adjusted_value",
                         seriesId,
                         message: `Relative base is ${base}. Auto-set ${seriesId} to 0% for ${bucketLabel}.`,
-                        value: { base, year: (row[seriesId] as any).year, unit: payload.initialUnit },
+                        value: { base, year: row[seriesId].year, unit: payload.initialUnit },
                     });
                     payload.value = 0;
                     payload.unit = "%";
@@ -504,7 +504,7 @@ export function convertToTimeSeriesData(
                             type: "auto_adjusted_value",
                             seriesId,
                             message: `Computed relative value not finite (${bucketLabel}). Auto-set ${seriesId} to 0%.`,
-                            value: { base, value: payload.value, year: (row[seriesId] as any).year },
+                            value: { base, value: payload.value, year: row[seriesId].year },
                         });
                     }
                     payload.value = Number.isFinite(computed) ? computed : 0;
@@ -637,7 +637,7 @@ export function convertToAggregatedData(
         let periodString: string | undefined;
 
         // Use `any` for series to access the `period` property which may not be in the base Series type
-        const seriesConfig = series as any;
+        const seriesConfig = series as Series & { period?: { selection?: { interval?: { start: string; end: string }; dates?: string[] } } };
 
         if (seriesConfig.period?.selection?.interval) {
             const { start, end } = seriesConfig.period.selection.interval;
@@ -659,7 +659,7 @@ export function convertToAggregatedData(
                 });
             }
         } else if (seriesConfig.period?.selection?.dates) {
-            const dates = new Set(seriesConfig.period.selection.dates.map((d: any) => String(d).trim()));
+            const dates = new Set(seriesConfig.period.selection.dates.map((d: string) => String(d).trim()));
             periodString = seriesConfig.period.selection.dates.join(', ');
             filteredPoints = points.filter((trend) => dates.has(String(trend.x).trim()));
         }

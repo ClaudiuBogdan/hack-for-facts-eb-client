@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/table'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { GroupedItemsDisplay } from '@/components/entities/FinancialDataCard'
+import type { GroupedChapter } from '@/schemas/financial'
 import { buildTreemapDataV2, type AggregatedNode } from '@/components/budget-explorer/budget-transform'
 import functionalClassificationsEn from '@/assets/functional-classifications-general-en.json'
 import functionalClassificationsRo from '@/assets/functional-classifications-general-ro.json'
@@ -247,7 +248,7 @@ function GroupedItemsState({
   section: LocalBudgetCodeAnchorSection
   locale: 'ro' | 'en'
   isLoading: boolean
-  groups: any[]
+  groups: GroupedChapter[]
   baseTotal: number
   entityName: string | null
 }>) {

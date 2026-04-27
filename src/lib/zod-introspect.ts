@@ -11,6 +11,22 @@ export type IntrospectedParam = {
   description?: string
 }
 
+type ZodDefLike = {
+  typeName?: string
+  shape?: Record<string, z.ZodTypeAny> | (() => Record<string, z.ZodTypeAny>)
+  innerType?: z.ZodTypeAny
+  schema?: z.ZodTypeAny
+  defaultValue?: () => unknown
+  checks?: unknown[]
+  values?: unknown
+}
+
+export type ZodTypeInternal = { _def: ZodDefLike; description?: string }
+
+function getInternal(schema: z.ZodTypeAny): ZodTypeInternal {
+  return schema as unknown as ZodTypeInternal
+}
+
 export function describeZodSchema(schema: z.ZodTypeAny): Record<string, IntrospectedParam> {
   const shape = getShape(schema)
   const result: Record<string, IntrospectedParam> = {}
@@ -21,49 +37,47 @@ export function describeZodSchema(schema: z.ZodTypeAny): Record<string, Introspe
 }
 
 function getShape(schema: z.ZodTypeAny): Record<string, z.ZodTypeAny> {
-  const def: any = (schema as any)._def
+  const def = getInternal(schema)._def
   if (def?.typeName === 'ZodObject') {
-    return (def.shape() as Record<string, z.ZodTypeAny>)
+    const rawShape = def.shape
+    return typeof rawShape === 'function'
+      ? (rawShape as () => Record<string, z.ZodTypeAny>)()
+      : (rawShape as Record<string, z.ZodTypeAny>) ?? {}
   }
   return {}
 }
 
 function describeZod(schema: z.ZodTypeAny): IntrospectedParam {
-  // unwrap optional, default, effects
-  let s: any = schema
+  let s = getInternal(schema)
   const meta: IntrospectedParam = { type: 'unknown' }
-  // Default
   if (s._def?.typeName === 'ZodDefault') {
-    meta.default = s._def.defaultValue()
-    s = s._def.innerType
+    meta.default = s._def.defaultValue?.()
+    s = getInternal(s._def.innerType ?? schema)
   }
-  // Optional
   if (s._def?.typeName === 'ZodOptional') {
     meta.optional = true
-    s = s._def.innerType
+    s = getInternal(s._def.innerType ?? schema)
   }
-  // Effects (coerce, preprocess)
   if (s._def?.typeName === 'ZodEffects') {
-    s = s._def.schema
+    s = getInternal(s._def.schema ?? schema)
   }
 
   const typeName = s._def?.typeName
   if (!typeName) return meta
 
-  // Common description if available
   if (s.description) meta.description = s.description
 
   switch (typeName) {
     case 'ZodString': {
       meta.type = 'string'
-      const checks = s._def.checks as Array<any>
+      const checks = s._def.checks as unknown as Array<{ kind: string; regex?: { source: string } }>
       const pattern = checks?.find((c) => c.kind === 'regex')?.regex?.source
       if (pattern) meta.pattern = pattern
       return meta
     }
     case 'ZodNumber': {
       meta.type = 'number'
-      const checks = s._def.checks as Array<any>
+      const checks = s._def.checks as unknown as Array<{ kind: string; value?: number }>
       const min = checks?.find((c) => c.kind === 'min')?.value
       const max = checks?.find((c) => c.kind === 'max')?.value
       if (typeof min === 'number') meta.min = min
@@ -72,7 +86,7 @@ function describeZod(schema: z.ZodTypeAny): IntrospectedParam {
     }
     case 'ZodEnum': {
       meta.type = 'enum'
-      meta.enumValues = s._def.values as string[]
+      meta.enumValues = s._def.values as unknown as string[]
       return meta
     }
     case 'ZodBoolean': {
@@ -93,5 +107,3 @@ function describeZod(schema: z.ZodTypeAny): IntrospectedParam {
     }
   }
 }
-
-

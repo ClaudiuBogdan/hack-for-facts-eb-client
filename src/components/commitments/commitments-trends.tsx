@@ -226,7 +226,7 @@ const CommitmentsTrendsComponent: React.FC<CommitmentsTrendsProps> = ({
     return null
   }
 
-  const handleChartClick = (e: any) => {
+  const handleChartClick = (e: { activeLabel?: string | number }) => {
     if (!e || !e.activeLabel) return
     const raw = String(e.activeLabel)
     if (periodType === 'YEAR') {
@@ -248,7 +248,7 @@ const CommitmentsTrendsComponent: React.FC<CommitmentsTrendsProps> = ({
 
   const lastPrefetchLabelRef = useRef<string | null>(null)
   const lastPrefetchTsRef = useRef<number>(0)
-  const handleChartHover = (e: any) => {
+  const handleChartHover = (e: { activeLabel?: string | number }) => {
     if (!onPrefetchPeriod) return
     if (!e || !e.activeLabel) return
     const raw = String(e.activeLabel)
@@ -302,7 +302,7 @@ const CommitmentsTrendsComponent: React.FC<CommitmentsTrendsProps> = ({
                 <Link
                   to={chartShortcutLink.to}
                   params={chartShortcutLink.params}
-                  search={chartShortcutLink.search as any}
+                  search={chartShortcutLink.search as Record<string, unknown>}
                   preload="intent"
                 >
                   <ExternalLink className="h-4 w-4" />
@@ -328,7 +328,7 @@ const CommitmentsTrendsComponent: React.FC<CommitmentsTrendsProps> = ({
               <Trans>Show growth (%)</Trans>
             </Label>
             <NormalizationModeSelect
-              value={normalized.normalization as any}
+              value={normalized.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro'}
               allowPerCapita={allowPerCapita}
               onChange={(nextNormalization) => {
                 onNormalizationChange({

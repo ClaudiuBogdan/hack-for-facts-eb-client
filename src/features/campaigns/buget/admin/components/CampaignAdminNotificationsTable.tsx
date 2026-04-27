@@ -458,6 +458,24 @@ function ThreadEventCell({
           ) : null}
         </div>
       );
+    case "bucharest_budget_analysis":
+      return (
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-foreground">
+            {t`Bucharest budget analysis`}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {item.projection.analysisPublishedAt}
+          </p>
+          {item.projection.triggerSource ? (
+            <p className="text-xs text-muted-foreground">
+              {getCampaignAdminNotificationSourceLabel(
+                item.projection.triggerSource,
+              )}
+            </p>
+          ) : null}
+        </div>
+      );
     default:
       return <span className="text-sm text-muted-foreground">—</span>;
   }
@@ -552,6 +570,19 @@ function DetailsCell({
               ? t`1 next step link`
               : t`${item.projection.nextStepCount} next step links`}
           </p>
+        </div>
+      ) : null}
+      {item.projection.kind === "bucharest_budget_analysis" ? (
+        <div className="space-y-1 text-xs text-muted-foreground">
+          <p className="font-mono">{item.projection.analysisId}</p>
+          <a
+            href={item.projection.analysisUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="break-all text-primary underline-offset-2 hover:underline"
+          >
+            {item.projection.analysisUrl}
+          </a>
         </div>
       ) : null}
       {item.sentAt ? (

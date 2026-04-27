@@ -43,7 +43,7 @@ interface Props {
 }
 
 export function EntityAnalyticsTable({ data, isLoading, sortBy, sortOrder, onSortChange, density = 'comfortable', columnVisibility, onColumnVisibilityChange, columnPinning, onColumnPinningChange, columnSizing, onColumnSizingChange, columnOrder, onColumnOrderChange, currencyFormat = 'compact', rowNumberStart = 0, normalization = 'total', currency }: Props) {
-  const unit = getNormalizationUnit({ normalization: normalization as any, currency: currency as any })
+  const unit = getNormalizationUnit({ normalization: normalization ?? 'total', currency: currency ?? 'RON' })
   const currencyCode: Currency = currency ?? (unit.includes('EUR') ? 'EUR' : 'RON')
   const isPercentGdp = normalization === 'percent_gdp' || unit.startsWith('%')
   const columns: ColumnDef<EntityAnalyticsDataPoint>[] = [

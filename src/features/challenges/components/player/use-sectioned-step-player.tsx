@@ -404,21 +404,24 @@ export function useSectionedStepPlayer({
     (dynamicInteractiveState?.sectionId === currentSection?.id
       ? dynamicInteractiveState.interactive
       : null)
-  const effectiveQuizState =
-    currentInteractive?.kind === 'quiz'
-      ? {
-          isAnswered: quizState.isAnswered,
-          isCorrect: quizState.isCorrect,
-        }
-      : dynamicInteractiveState?.sectionId === currentSection?.id
+  const effectiveQuizState = useMemo(
+    () =>
+      currentInteractive?.kind === 'quiz'
         ? {
-            isAnswered: dynamicInteractiveState.isAnswered,
-            isCorrect: dynamicInteractiveState.isCorrect,
+            isAnswered: quizState.isAnswered,
+            isCorrect: quizState.isCorrect,
           }
-        : {
-            isAnswered: false,
-            isCorrect: false,
-          }
+        : dynamicInteractiveState?.sectionId === currentSection?.id
+          ? {
+              isAnswered: dynamicInteractiveState.isAnswered,
+              isCorrect: dynamicInteractiveState.isCorrect,
+            }
+          : {
+              isAnswered: false,
+              isCorrect: false,
+            },
+    [currentInteractive, currentSection?.id, dynamicInteractiveState, quizState.isAnswered, quizState.isCorrect],
+  )
   const effectiveIsQuizPending =
     currentInteractive?.kind === 'quiz'
       ? isSubmittingQuizAnswer

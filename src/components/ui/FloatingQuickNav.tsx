@@ -134,7 +134,9 @@ export function FloatingQuickNav({ className, mapViewType, mapActive, tableActiv
 }
 
 function coerceReportType(filter: AnalyticsFilterType): ReportType | undefined {
-    return (filter as any).report_types?.[0] ?? filter.report_type ?? undefined
+    const reportTypes = (filter as Record<string, unknown>).report_types
+    const fromReportTypes = (Array.isArray(reportTypes) ? reportTypes[0] : undefined) as ReportType | undefined
+    return fromReportTypes ?? filter.report_type ?? undefined
 }
 
 function convertFilterInputToChartState(
@@ -181,7 +183,7 @@ function convertFilterInputToChartState(
                 type: 'line-items-aggregated-yearly',
                 enabled: true,
                 label: labelMaps.uatLabelMap.map(uatId),
-                unit: getNormalizationUnit({ normalization: filterInput.normalization as any, currency: filterInput.currency as any, show_period_growth: filterInput.show_period_growth }),
+                unit: getNormalizationUnit({ normalization: filterInput.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro', currency: filterInput.currency as 'RON' | 'EUR' | 'USD', show_period_growth: filterInput.show_period_growth }),
                 filter: {
                     ...filterInput,
                     account_category: accountCategory,
@@ -203,7 +205,7 @@ function convertFilterInputToChartState(
                 type: 'line-items-aggregated-yearly',
                 enabled: true,
                 label: `County ${cc}`,
-                unit: getNormalizationUnit({ normalization: filterInput.normalization as any, currency: filterInput.currency as any, show_period_growth: filterInput.show_period_growth }),
+                unit: getNormalizationUnit({ normalization: filterInput.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro', currency: filterInput.currency as 'RON' | 'EUR' | 'USD', show_period_growth: filterInput.show_period_growth }),
                 filter: {
                     ...filterInput,
                     account_category: accountCategory,
@@ -227,7 +229,7 @@ function convertFilterInputToChartState(
             type: 'line-items-aggregated-yearly',
             enabled: true,
             label: "Series",
-            unit: getNormalizationUnit({ normalization: filterInput.normalization as any, currency: filterInput.currency as any, show_period_growth: filterInput.show_period_growth }),
+            unit: getNormalizationUnit({ normalization: filterInput.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro', currency: filterInput.currency as 'RON' | 'EUR' | 'USD', show_period_growth: filterInput.show_period_growth }),
             filter: {
                 ...filterInput,
                 account_category: accountCategory,

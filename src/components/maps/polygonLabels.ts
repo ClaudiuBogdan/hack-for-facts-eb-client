@@ -474,7 +474,7 @@ export function processFeatureForLabel(
       : undefined;
 
   let value: number | undefined;
-  let showAmount = false;
+  let showAmount: boolean;
   let amountText: string | undefined;
 
   if (labelMode === 'legacy-heatmap') {

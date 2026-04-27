@@ -764,6 +764,28 @@ const campaignAdminNotificationProjectionSchema = z.discriminatedUnion("kind", [
       triggerSource: z.enum(campaignAdminNotificationSourceValues).nullable(),
     })
     .strict(),
+  z
+    .object({
+      kind: z.literal("bucharest_budget_analysis"),
+      userId: z.string().min(1).nullable(),
+      entityCui: z.string().min(1),
+      entityName: z.string().min(1).nullable(),
+      analysisId: z.string().min(1),
+      analysisPublishedAt: z.string().min(1),
+      analysisUrl: z
+        .string()
+        .url()
+        .refine((value) => {
+          try {
+            const url = new URL(value);
+            return url.protocol === "http:" || url.protocol === "https:";
+          } catch {
+            return false;
+          }
+        }),
+      triggerSource: z.enum(campaignAdminNotificationSourceValues).nullable(),
+    })
+    .strict(),
 ]);
 
 const campaignAdminNotificationListItemSchema = z

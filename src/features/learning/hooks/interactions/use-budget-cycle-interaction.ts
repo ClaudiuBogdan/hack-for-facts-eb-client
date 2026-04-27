@@ -136,7 +136,10 @@ export function useBudgetCycleInteraction(
     [progress, params.contentId, interactionId]
   )
 
-  const exploredPhases = savedState?.exploredPhases ?? []
+  const exploredPhases = useMemo(
+    () => savedState?.exploredPhases ?? [],
+    [savedState]
+  )
   const explorationProgress = Math.round((exploredPhases.length / TOTAL_PHASES) * 100)
   const isComplete = exploredPhases.length === TOTAL_PHASES
 

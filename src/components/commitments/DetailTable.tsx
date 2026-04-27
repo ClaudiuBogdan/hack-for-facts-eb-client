@@ -22,9 +22,14 @@ import {
   getEconomicClassificationName,
 } from '@/lib/economic-classifications'
 import { Button } from '@/components/ui/button'
+import {
+  type Grouping,
+  type DetailLevel,
+  type DrillLevel,
+  initialDrillLevel,
+} from './detail-table-utils'
 
-export type Grouping = 'fn' | 'ec'
-export type DetailLevel = 'chapter' | 'detailed'
+export type { Grouping, DetailLevel }
 
 type Props = {
   readonly data: CategoryData[]
@@ -45,8 +50,6 @@ type SubRowData = {
   readonly paid: number
 }
 
-type DrillLevel = 'subchapter' | 'paragraph' | 'economic'
-
 const NEXT_LEVEL: Record<DrillLevel, DrillLevel | null> = {
   subchapter: 'paragraph',
   paragraph: 'economic',
@@ -61,30 +64,6 @@ const INDENT_CLASS: Record<number, string> = {
   2: 'pl-16',
   3: 'pl-20',
   4: 'pl-24',
-}
-
-/**
- * Determine the number of dot-separated segments in a normalised code.
- * "20" → 1, "20.01" → 2, "20.01.04" → 3
- */
-function codeSegmentCount(code: string): number {
-  const norm = code.replace(/[^0-9.]/g, '')
-  if (!norm) return 0
-  return norm.split('.').length
-}
-
-/**
- * Pick the first drill level that is deeper than `parentCode`.
- * This avoids a wasted API round-trip when `detailLevel='detailed'`
- * causes the parent to already sit at depth 4 (= subchapter level).
- */
-export function initialDrillLevel(parentCode: string): DrillLevel {
-  const segments = codeSegmentCount(parentCode)
-  // depth 6 codes have 3 segments — go straight to leaf
-  if (segments >= 3) return 'economic'
-  // depth 4 codes have 2 segments (e.g. "20.01") — skip subchapter (also depth 4)
-  if (segments >= 2) return 'paragraph'
-  return 'subchapter'
 }
 
 function ExpandedSubRows({

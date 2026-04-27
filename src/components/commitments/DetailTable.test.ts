@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { initialDrillLevel } from './DetailTable'
+import { initialDrillLevel } from './detail-table-utils'
 
 describe('DetailTable helpers', () => {
   describe('initialDrillLevel', () => {

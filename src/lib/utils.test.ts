@@ -40,6 +40,7 @@ describe('utils', () => {
     })
 
     it('should handle conditional classes', () => {
+      // eslint-disable-next-line no-constant-binary-expression -- intentionally testing falsy value handling
       expect(cn('foo', false && 'bar', 'baz')).toBe('foo baz')
     })
 

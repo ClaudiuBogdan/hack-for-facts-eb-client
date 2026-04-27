@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { BarChart3, Building2, FileText, HandCoins, LayoutDashboard } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import {

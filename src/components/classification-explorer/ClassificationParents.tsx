@@ -31,7 +31,7 @@ export function ClassificationParents({
           {parents.map((parent) => (
             <Link
               key={parent.code}
-              to={`${basePath}/${parent.code}` as any}
+              to={`${basePath}/${parent.code}` as string}
               className="group inline-flex items-center gap-2 rounded-lg border bg-card p-3 transition-colors hover:border-primary hover:bg-accent"
             >
               <Badge variant="secondary" className="font-mono text-xs">

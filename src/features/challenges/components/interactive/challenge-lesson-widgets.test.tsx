@@ -26,6 +26,7 @@ function buildCustomInteractionKey(params: {
 }
 
 vi.mock('@tanstack/react-router', () => ({
+   
   Link: ({ children, to: _to, params: _params, search: _search, ...props }: any) => (
     <a {...props}>{children}</a>
   ),
@@ -39,11 +40,11 @@ vi.mock('@/hooks/filters/useFilterLabels', () => ({
 }))
 
 vi.mock('@/features/learning/components/assessment/Quiz', () => ({
-  Quiz: ({ question, options }: any) => (
+  Quiz: ({ question, options }: { question: string; options: Array<{ id: string; text: string }> }) => (
     <div data-testid="lesson-quiz">
       <p>{question}</p>
       <ul>
-        {options.map((option: any) => (
+        {options.map((option) => (
           <li key={option.id}>{option.text}</li>
         ))}
       </ul>
@@ -52,7 +53,7 @@ vi.mock('@/features/learning/components/assessment/Quiz', () => ({
 }))
 
 vi.mock('@/components/entities/EntityFinancialSummary', () => ({
-  EntityFinancialSummary: ({ totalIncome, totalExpenses, budgetBalance }: any) => (
+  EntityFinancialSummary: ({ totalIncome, totalExpenses, budgetBalance }: { totalIncome?: number; totalExpenses?: number; budgetBalance?: number }) => (
     <div data-testid="entity-financial-summary">
       {`income:${totalIncome ?? 'n/a'} expenses:${totalExpenses ?? 'n/a'} balance:${budgetBalance ?? 'n/a'}`}
     </div>
@@ -107,14 +108,14 @@ vi.mock(
 )
 
 vi.mock('@/features/challenges/components/player/challenge-dynamic-quiz', () => ({
-  ChallengeDynamicQuiz: (props: any) => {
+  ChallengeDynamicQuiz: (props: { question: string; options: Array<{ id: string; text: string }> }) => {
     lastChallengeDynamicQuizProps = props
 
     return (
       <div data-testid="lesson-quiz">
         <p>{props.question}</p>
         <ul>
-          {props.options.map((option: any) => (
+          {props.options.map((option) => (
             <li key={option.id}>{option.text}</li>
           ))}
         </ul>

@@ -121,7 +121,7 @@ export const Route = createFileRoute('/primarie/$cui/')({
       replace: true,
     })
   },
-  head: ({ params, match }: any) => {
+  head: ({ params, match }: { params: { cui: string }; match: { loaderData?: Record<string, unknown>; search?: Record<string, unknown> } }) => {
     const loaderPayload = resolvePrimarieHeadLoaderPayload(
       match.loaderData as PrimarieLoaderData | undefined,
     )
@@ -136,7 +136,7 @@ export const Route = createFileRoute('/primarie/$cui/')({
       },
     }))
   },
-  loader: async ({ context, params, location }: any) => {
+  loader: async ({ context, params, location }: { context: { queryClient: import('@tanstack/react-query').QueryClient }; params: { cui: string }; location: { search: unknown } }) => {
     const queryClient = context.queryClient
     const requestSiteUrl = await readEntityPageRequestOrigin()
     const primarieRoute = resolvePrimarieEntityRouteAdapter({

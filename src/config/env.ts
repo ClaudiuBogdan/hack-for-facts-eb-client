@@ -165,6 +165,7 @@ function validateEnv(): Env {
       const issues = error.issues.map((issue) => {
         return `${issue.path.join(".")}: ${issue.message}`;
       });
+      // eslint-disable-next-line preserve-caught-error
       throw new Error(`Environment validation failed:\n${issues.join("\n")}`);
     }
     throw error;

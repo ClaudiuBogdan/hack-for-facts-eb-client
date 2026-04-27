@@ -39,7 +39,7 @@ export function buildAlertPreviewChartState(alert: Alert): ChartUrlState {
   });
 
   // Create a basic series configuration for preview
-  let primarySeries: any;
+  let primarySeries: Record<string, unknown>;
   if (alert.seriesType === 'static' && alert.datasetId) {
     primarySeries = {
       id: `${alert.id}-series`,

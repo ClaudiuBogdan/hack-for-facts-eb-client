@@ -16,6 +16,7 @@ export function useChallengeStepContent(params: {
 }): ChallengeStepContentResolveResult {
   return useMemo(
     () => resolveChallengeStepContent(params),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- params is a stable object from the calling component's props
     [params.contentDir, params.locale],
   )
 }

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useMemo } from 'react'
 import type { ChallengeStepSectionInteractive } from '../../utils/sectioned-step-markdown'
 

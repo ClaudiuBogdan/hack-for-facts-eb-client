@@ -197,8 +197,6 @@ export function ChartDataError({
     return { hasErrors, hasWarnings, total, headerTone, iconTone };
   }, [validationResult.errors.length, validationResult.warnings.length]);
 
-  if (validationResult.isValid && !hasWarnings) return null;
-
   const copyReport = useCallback(async () => {
     try {
       setCopyFeedback('idle');
@@ -210,6 +208,8 @@ export function ChartDataError({
       setTimeout(() => setCopyFeedback('idle'), COPY_FEEDBACK_DURATION);
     }
   }, [validationResult]);
+
+  if (validationResult.isValid && !hasWarnings) return null;
 
 
   return (

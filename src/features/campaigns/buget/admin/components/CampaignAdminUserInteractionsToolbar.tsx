@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import {
   RefreshCw,
   RotateCcw,
@@ -209,15 +209,18 @@ export function CampaignAdminUserInteractionsToolbar({
           })),
     [availableInteractionTypes],
   );
-  const getInteractionTypeOptionLabel = (interactionId: string): string => {
-    const matchedInteractionType = interactionTypeOptions.find(
-      (interactionType) => interactionType.interactionId === interactionId,
-    );
+  const getInteractionTypeOptionLabel = useCallback(
+    (interactionId: string): string => {
+      const matchedInteractionType = interactionTypeOptions.find(
+        (interactionType) => interactionType.interactionId === interactionId,
+      );
 
-    return matchedInteractionType?.label?.trim()
-      ? matchedInteractionType.label
-      : getCampaignAdminInteractionTypeLabel(interactionId);
-  };
+      return matchedInteractionType?.label?.trim()
+        ? matchedInteractionType.label
+        : getCampaignAdminInteractionTypeLabel(interactionId);
+    },
+    [interactionTypeOptions],
+  );
 
   const activeFilters = useMemo<Array<ActiveFilter>>(() => {
     const filters: ActiveFilter[] = [];

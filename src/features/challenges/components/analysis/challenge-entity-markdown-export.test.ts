@@ -101,7 +101,7 @@ function buildBaseContext(): ChallengeEntityMarkdownExportContext {
 }
 
 function buildBasePageContext() {
-  const { grouped, ...pageContext } = buildBaseContext()
+  const { grouped: _grouped, ...pageContext } = buildBaseContext()
   return pageContext
 }
 

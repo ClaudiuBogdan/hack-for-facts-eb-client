@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useMemo, useState } from "react";
+import { useCallback, useEffect, useEffectEvent, useMemo, useState } from "react";
 import {
   AlertTriangle,
   Ban,
@@ -909,7 +909,7 @@ export function CampaignAdminUserInteractionsPage({
     }
   };
 
-  const handleExportCsv = useEffectEvent(async () => {
+  const handleExportCsv = useCallback(async () => {
     try {
       const { blob, filename } = await downloadCampaignAdminUserInteractionsCsv({
         campaignKey,
@@ -928,7 +928,7 @@ export function CampaignAdminUserInteractionsPage({
         error instanceof Error ? error.message : t`Failed to export CSV.`,
       );
     }
-  });
+  }, [campaignKey, queueFilters]);
 
   const handleImportBulkReviewText = useEffectEvent((rawText: string) => {
     const result = parseCampaignAdminBulkReviewClipboardText({

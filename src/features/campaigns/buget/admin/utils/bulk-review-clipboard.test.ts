@@ -91,7 +91,7 @@ describe('campaign-admin bulk review clipboard', () => {
 
   it('neutralizes spreadsheet formulas in exported cells', () => {
     const item = createItem({
-      institutionEmail: '=HYPERLINK(\"https://bad.test\")',
+      institutionEmail: '=HYPERLINK("https://bad.test")',
       entityName: '+Oras Test',
     })
 

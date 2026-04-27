@@ -82,10 +82,8 @@ export function useScrollDirection(options: UseScrollDirectionOptions = {}): Use
       window.removeEventListener('scroll', onScroll)
     }
     // Intentionally omit deps that change on every scroll; we only care about threshold
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [threshold, initialDirection])
 
   return { direction, isPastThreshold, y }
 }
-
 

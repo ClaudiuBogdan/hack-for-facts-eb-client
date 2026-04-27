@@ -13,12 +13,12 @@ export function InflationToggle() {
     const navigate = useNavigate();
     const search = useSearch({ strict: false });
 
-    const normalizationRaw = (search as any).normalization as NormalizationInput | undefined;
+    const normalizationRaw = (search as Record<string, unknown>).normalization as NormalizationInput | undefined;
     const { forcedOverrides } = normalizationRaw
         ? resolveNormalizationSettings(normalizationRaw)
         : { forcedOverrides: {} as ReturnType<typeof resolveNormalizationSettings>["forcedOverrides"] };
 
-    const urlInflationAdjusted = parseBooleanParam((search as any).inflation_adjusted);
+    const urlInflationAdjusted = parseBooleanParam((search as Record<string, unknown>).inflation_adjusted as string | boolean | undefined);
     const selectedInflationAdjusted = forcedOverrides.inflationAdjusted ?? urlInflationAdjusted ?? userInflationAdjusted;
 
     const applyInflationAdjusted = (next: boolean) => {
@@ -35,8 +35,8 @@ export function InflationToggle() {
         const nextInflationParam = forcedOverrides.inflationAdjusted !== undefined ? undefined : next;
 
         navigate({
-            to: '.',
-            search: (prev: any) => {
+            to: '.' as const,
+            search: (prev: Record<string, unknown>) => {
                 if (nextInflationParam === undefined) {
                     const { inflation_adjusted: _inflation_adjusted, ...rest } = prev ?? {};
                     return rest;
@@ -45,7 +45,7 @@ export function InflationToggle() {
             },
             replace: true,
             resetScroll: false,
-        } as any);
+        } as Parameters<typeof navigate>[0]);
     }
 
     return (

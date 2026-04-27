@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { toCommitmentsReportPeriod } from './Commitments'
+import { toCommitmentsReportPeriod } from './commitments-utils'
 import type { ReportPeriodInput } from '@/schemas/reporting'
 
 describe('CommitmentsView period conversion', () => {

@@ -329,6 +329,7 @@ export const Route = createFileRoute('/entities/$cui')({
       staleWhileRevalidateSeconds: 86400,
     }),
   validateSearch: entitySearchSchema,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   head: ({ params, match }: any) => {
     const loaderData = match.loaderData as EntityRouteLoaderData | undefined
     const loaderPayload = loaderData?.entityPageBootstrap?.loaderPayload
@@ -343,6 +344,7 @@ export const Route = createFileRoute('/entities/$cui')({
       },
     }))
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   loader: (async ({ context, params, location }: any) => {
     const queryClient = context.queryClient
     const requestSiteUrl = await readEntityPageRequestOrigin()
@@ -422,6 +424,7 @@ export const Route = createFileRoute('/entities/$cui')({
         forcedOverrides,
       } satisfies EntityRouteLoaderData
     }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }) as any,
   pendingComponent: ViewLoading,
   component: () => null,

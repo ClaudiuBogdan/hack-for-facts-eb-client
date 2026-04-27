@@ -13,85 +13,16 @@ import GroupedChapterAccordion from "./GroupedChapterAccordion";
 import { GroupedChapter, GroupedFunctional, GroupedEconomic } from '@/schemas/financial';
 import { formatNormalizedValue, formatNumber } from '@/lib/utils';
 import { Trans } from '@lingui/react/macro';
-import { t } from '@lingui/core/macro';
 import { TMonth, TQuarter } from '@/schemas/reporting';
 import { getYearLabel } from './utils';
 import { ClassificationInfoLink } from '@/components/common/classification-info-link';
 import type { Currency, Normalization } from '@/schemas/charts';
 import {
-  buildBudgetItemAnalyticsPath,
-  type BudgetItemAnalyticsPathEntry,
-  type BudgetItemAnalyticsRequest,
-  type BudgetItemAnalyticsSelection,
-} from '@/features/challenges/components/analysis/budget-item-analytics-target';
-
-export type GroupedItemAnalyticsSelection = BudgetItemAnalyticsSelection
-
-export type GroupedItemAnalyticsRequest = BudgetItemAnalyticsRequest
-export type GroupedItemCopyPromptRequest = GroupedItemAnalyticsRequest & Readonly<{
-  displayedItem?: BudgetItemAnalyticsPathEntry
-}>
-
-export const FN_FIRST_ANALYTICS_PATH_ORDER = ['fn', 'ec'] as const
-export const EC_FIRST_ANALYTICS_PATH_ORDER = ['ec', 'fn'] as const
-
-export function buildGroupedItemAnalyticsRequest(params: {
-  readonly subjectLabel: string
-  readonly selection?: GroupedItemAnalyticsSelection
-  readonly pathOrder?: readonly ('fn' | 'ec')[]
-}): GroupedItemAnalyticsRequest {
-  return {
-    subjectLabel: params.subjectLabel,
-    path: buildBudgetItemAnalyticsPath(
-      params.selection ?? {},
-      params.pathOrder ?? FN_FIRST_ANALYTICS_PATH_ORDER,
-    ),
-  }
-}
-
-export function buildGroupedItemMenuActions(params: {
-  readonly subjectLabel: string
-  readonly selection?: GroupedItemAnalyticsSelection
-  readonly pathOrder?: readonly ('fn' | 'ec')[]
-  readonly displayedItem?: BudgetItemAnalyticsPathEntry
-  readonly onAnalyticsRequest?: (request: GroupedItemAnalyticsRequest) => void
-  readonly onCopyPromptRequest?: (request: GroupedItemCopyPromptRequest) => void
-}) {
-  const request = buildGroupedItemAnalyticsRequest({
-    subjectLabel: params.subjectLabel,
-    selection: params.selection,
-    pathOrder: params.pathOrder,
-  })
-  const copyPromptRequest: GroupedItemCopyPromptRequest = params.displayedItem
-    ? {
-        ...request,
-        displayedItem: params.displayedItem,
-      }
-    : request
-  const actions: Array<{
-    key: string
-    label: string
-    onSelect: () => void
-  }> = []
-
-  if (params.onAnalyticsRequest) {
-    actions.push({
-      key: 'analytics',
-      label: t`Analytics`,
-      onSelect: () => params.onAnalyticsRequest?.(request),
-    })
-  }
-
-  if (params.onCopyPromptRequest) {
-    actions.push({
-      key: 'copy-prompt',
-      label: t`Copy prompt`,
-      onSelect: () => params.onCopyPromptRequest?.(copyPromptRequest),
-    })
-  }
-
-  return actions.length > 0 ? actions : undefined
-}
+  FN_FIRST_ANALYTICS_PATH_ORDER,
+  EC_FIRST_ANALYTICS_PATH_ORDER,
+  type GroupedItemAnalyticsRequest,
+  type GroupedItemCopyPromptRequest,
+} from './grouped-item-analytics';
 
 interface GroupedItemsDisplayProps {
   groups: GroupedChapter[];

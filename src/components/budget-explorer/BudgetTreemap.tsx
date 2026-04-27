@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { type FC, useCallback, useEffect, useMemo, useRef, useState, useDeferredValue, startTransition } from 'react'
 import { Treemap, Tooltip } from 'recharts'
 import { Trans } from '@lingui/react/macro'
@@ -142,6 +143,20 @@ type TreemapNodePayload = {
   layoutValue: number
   code: string
   fill: string
+}
+
+interface TreemapContentRendererProps {
+  name: string;
+  value: number;
+  depth: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fill?: string;
+  code?: string;
+  payload?: TreemapNodePayload & Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 type TreemapInfoTriggerLayout = {
@@ -402,6 +417,58 @@ const CustomizedContent: FC<{
     hasAnimatedInRef.current = true
   }, [])
 
+  const analyticsRequest = useMemo(() => {
+    if (!code || !primary) {
+      return null
+    }
+
+    const request = resolveBudgetTreemapAnalyticsRequest({
+      path,
+      nodeCode: code,
+      nodeName: name,
+      primary,
+    })
+
+    return request.path.length > 0 ? request : null
+  }, [code, name, path, primary])
+  const shouldRenderInfoTrigger = Boolean(code && width > 40 && height > 40)
+
+  useEffect(() => {
+    if (!code) {
+      return
+    }
+
+    if (!shouldRenderInfoTrigger) {
+      onInfoTriggerLayoutChange?.(code, null)
+      return
+    }
+
+    onInfoTriggerLayoutChange?.(code, {
+      code,
+      x: x + 4,
+      y: y + 4,
+      classificationType: primary === 'fn' ? 'functional' : 'economic',
+      analyticsRequest,
+    })
+  }, [
+    analyticsRequest,
+    code,
+    onInfoTriggerLayoutChange,
+    primary,
+    shouldRenderInfoTrigger,
+    x,
+    y,
+  ])
+
+  useEffect(() => {
+    if (!allowScaleAnimation) return
+    void bounceControls.start({
+      opacity: 1,
+      scale: 1,
+      transition: { type: 'spring', damping: 30, stiffness: 220, mass: 0.9 },
+    })
+  }, [allowScaleAnimation, bounceControls])
+
   if (!Number.isFinite(value) || depth === 0) {
     return null
   }
@@ -474,57 +541,6 @@ const CustomizedContent: FC<{
   const defaultFill = typeof fill === 'string' && fill.length > 0
     ? fill
     : (typeof payloadFill === 'string' && payloadFill.length > 0 ? payloadFill : COLORS[0])
-  const analyticsRequest = useMemo(() => {
-    if (!code || !primary) {
-      return null
-    }
-
-    const request = resolveBudgetTreemapAnalyticsRequest({
-      path,
-      nodeCode: code,
-      nodeName: name,
-      primary,
-    })
-
-    return request.path.length > 0 ? request : null
-  }, [code, name, path, primary])
-  const shouldRenderInfoTrigger = Boolean(code && width > 40 && height > 40)
-
-  useEffect(() => {
-    if (!code) {
-      return
-    }
-
-    if (!shouldRenderInfoTrigger) {
-      onInfoTriggerLayoutChange?.(code, null)
-      return
-    }
-
-    onInfoTriggerLayoutChange?.(code, {
-      code,
-      x: x + 4,
-      y: y + 4,
-      classificationType: primary === 'fn' ? 'functional' : 'economic',
-      analyticsRequest,
-    })
-  }, [
-    analyticsRequest,
-    code,
-    onInfoTriggerLayoutChange,
-    primary,
-    shouldRenderInfoTrigger,
-    x,
-    y,
-  ])
-
-  useEffect(() => {
-    if (!allowScaleAnimation) return
-    void bounceControls.start({
-      opacity: 1,
-      scale: 1,
-      transition: { type: 'spring', damping: 30, stiffness: 220, mass: 0.9 },
-    })
-  }, [allowScaleAnimation, bounceControls])
 
   const triggerBounce = () => {
     void bounceControls.start({
@@ -890,7 +906,14 @@ function BudgetTreemapView({
     [payloadData],
   )
 
-  const currentAmountRange = amountFilter?.range ?? ([minValue, maxValue] as [number, number])
+  const defaultAmountRange = useMemo(
+    () => [minValue, maxValue] as [number, number],
+    [minValue, maxValue],
+  )
+  const currentAmountRange = useMemo(
+    () => amountFilter?.range ?? defaultAmountRange,
+    [amountFilter?.range, defaultAmountRange],
+  )
   const deferredAmountRange = useDeferredValue(currentAmountRange)
 
   const filteredData = useMemo(() => {
@@ -945,15 +968,15 @@ function BudgetTreemapView({
   }
 
   // Memoize content renderer to prevent unnecessary re-renders in Recharts
-  const renderContent = useCallback((props: any) => {
+  const renderContent = useCallback((props: TreemapContentRendererProps) => {
     const codeFromPayload = props?.code ?? props?.payload?.code
-    const signedValueFromPayload = Number.isFinite(props?.payload?.signedValue) ? props.payload.signedValue : undefined
+    const signedValueFromPayload = Number.isFinite(props?.payload?.signedValue) ? props?.payload?.signedValue : undefined
     const signedValueFromMap = codeFromPayload ? signedValueByCode.get(codeFromPayload) : undefined
     return (
       <CustomizedContent
         {...props}
         key={(codeFromPayload) + '-' + (props?.payload?.name ?? props?.name ?? 'node')}
-        fill={props?.payload?.fill ?? props.fill}
+        fill={props?.payload?.fill ?? props.fill ?? ''}
         root={rootValue}
         code={codeFromPayload}
         unit={unit}
@@ -1188,7 +1211,7 @@ function BudgetTreemapView({
 
 const CustomTooltip = ({ active, payload, total, primary, unit, signedValueByCode }: {
   active?: boolean,
-  payload?: any[],
+  payload?: Array<{ payload: TreemapNodePayload }>,
   total: number,
   primary: 'fn' | 'ec',
   unit: string,

@@ -136,6 +136,7 @@ export function useGlobalSettings(
         search: (prev: Record<string, unknown>) => ({ ...prev, ...searchUpdates }),
         replace: true,
         resetScroll: false,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Router generic navigate search mismatch
       } as any)
     }
   }, [isHydrated, hasSyncedPrefs, urlCurrency, urlInflation, forcedOverrides, router])
@@ -229,6 +230,7 @@ export function useGlobalSettings(
         search: (prev: Record<string, unknown>) => ({ ...prev, currency: value }),
         replace: true,
         resetScroll: false,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Router generic navigate search mismatch
       } as any)
     },
     [router, forcedOverrides?.currency, persistSettings]
@@ -246,6 +248,7 @@ export function useGlobalSettings(
         search: (prev: Record<string, unknown>) => ({ ...prev, inflation_adjusted: value }),
         replace: true,
         resetScroll: false,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Router generic navigate search mismatch
       } as any)
     },
     [router, forcedOverrides?.inflationAdjusted, persistSettings]
@@ -276,8 +279,9 @@ export function useGlobalSettings(
           to: '.',
           search: (prev: Record<string, unknown>) => ({ ...prev, ...searchUpdates }),
           replace: true,
-          resetScroll: false,
-        } as any)
+        resetScroll: false,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TanStack Router generic navigate search mismatch
+      } as any)
       }
     },
     [router, forcedOverrides, persistSettings]

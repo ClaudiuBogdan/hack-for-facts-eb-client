@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { EntityDetailsData, filterLineItems } from '@/lib/api/entities';
+import { EntityDetailsData, filterLineItems, type ExecutionLineItem } from '@/lib/api/entities';
 import { Chart, SeriesConfiguration } from '@/schemas/charts';
 import { useParams } from '@tanstack/react-router';
 import { getChapterMap, getTopFunctionalGroupCodes } from '@/lib/analytics-utils';
@@ -70,7 +70,8 @@ const TrendsViewComponent: React.FC<BaseTrendsViewProps> = ({ entity, type, curr
   const normalized = normalizeNormalizationOptions(normalizationOptions)
 
   // Compute selected month/quarter from the report period anchor
-  const anchor = (reportPeriod.selection as any)?.interval?.start as string | undefined;
+  const anchorInterval = (reportPeriod.selection as Record<string, unknown>)?.interval as { start?: string; end?: string } | undefined;
+  const anchor: string | undefined = anchorInterval?.start;
   const selectedMonth: TMonth | undefined = reportPeriod.type === 'MONTH' && anchor ? (anchor.split('-')[1] as TMonth) : undefined;
   const selectedQuarter: TQuarter | undefined = reportPeriod.type === 'QUARTER' && anchor ? (anchor.split('-')[1] as TQuarter) : undefined;
 
@@ -93,7 +94,7 @@ const TrendsViewComponent: React.FC<BaseTrendsViewProps> = ({ entity, type, curr
     return filterLineItems(basicFiltered, advancedFilter);
   }, [fullLineItems, type, advancedFilter]);
 
-  const fundingSources = (fullLineItems as any)?.fundingSources ?? [];
+  const fundingSources = (fullLineItems as { fundingSources?: import('@/lib/api/entities').FundingSourceOption[] } | null)?.fundingSources ?? [];
 
   const topFunctionalGroups = useMemo(() => {
     return getTopFunctionalGroupCodes(lineItems, TOP_CATEGORIES_COUNT);
@@ -148,7 +149,7 @@ const TrendsViewComponent: React.FC<BaseTrendsViewProps> = ({ entity, type, curr
       createdAt: timestamp,
       updatedAt: timestamp,
     } as Chart;
-  }, [topFunctionalGroups, cui, type, chapterMap, entity, entityNameRaw, normalized, trendPeriod, reportType]);
+  }, [topFunctionalGroups, cui, type, chapterMap, entity, entityNameRaw, normalized, trendPeriod, reportType, accountCategory, isMobile]);
 
   const handleXAxisClick = (value: number | string) => {
     const raw = String(value);
@@ -174,13 +175,13 @@ const TrendsViewComponent: React.FC<BaseTrendsViewProps> = ({ entity, type, curr
   const periodLabel = usePeriodLabel(reportPeriod)
 
   const aggregatedNodes = useMemo<AggregatedNode[]>(() => {
-    return (lineItems ?? []).map((n: any) => ({
-      fn_c: n?.functionalClassification?.functional_code ?? null,
-      fn_n: n?.functionalClassification?.functional_name ?? null,
-      ec_c: n?.economicClassification?.economic_code ?? null,
-      ec_n: n?.economicClassification?.economic_name ?? null,
+    return (lineItems ?? []).map((n: ExecutionLineItem & { count?: number }) => ({
+      fn_c: n?.functionalClassification?.functional_code ?? '',
+      fn_n: n?.functionalClassification?.functional_name ?? '',
+      ec_c: n?.economicClassification?.economic_code ?? '',
+      ec_n: n?.economicClassification?.economic_name ?? '',
       amount: Number(n?.amount ?? 0),
-      count: Number.isFinite(n?.count) ? n.count : 1,
+      count: n.count ?? 1,
     }))
   }, [lineItems])
 
@@ -262,7 +263,7 @@ const TrendsViewComponent: React.FC<BaseTrendsViewProps> = ({ entity, type, curr
 
       <ChartCard
         chart={trendChart}
-        xAxisMarker={xAxisMarker as any}
+        xAxisMarker={xAxisMarker as string | number | undefined}
         onXAxisItemClick={handleXAxisClick}
         onYearClick={onYearClick}
         currentYear={currentYear}

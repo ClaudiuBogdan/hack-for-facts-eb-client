@@ -26,9 +26,10 @@ import type { CommitmentsAnalyticsInput } from '@/lib/api/commitments'
 import type { CommitmentsFilterInput, CommitmentsAnalyticsSeries } from '@/schemas/commitments'
 import type { NormalizationOptions } from '@/lib/normalization'
 import { normalizeNormalizationOptions } from '@/lib/normalization'
-import type { ReportPeriodInput, ReportPeriodType, GqlReportType, PeriodDate } from '@/schemas/reporting'
-import { getQuarterForMonth, toCommitmentReportType } from '@/schemas/reporting'
+import type { ReportPeriodInput, GqlReportType } from '@/schemas/reporting'
+import { toCommitmentReportType, getQuarterForMonth } from '@/schemas/reporting'
 import { getCodeAtDepth } from '@/lib/utils'
+import { toCommitmentsReportPeriod } from './commitments-utils'
 import {
   StatCard,
   CommitmentsTrends,
@@ -71,49 +72,6 @@ type Props = {
   readonly allowPerCapita?: boolean
   readonly headerSlot?: ReactNode
   readonly reportsSlot?: ReactNode
-}
-
-/**
- * Convert MONTH selections to QUARTER selections, since commitments data is natively quarterly.
- */
-export function toCommitmentsReportPeriod(reportPeriod: ReportPeriodInput): ReportPeriodInput {
-  if (reportPeriod.type !== 'MONTH') return reportPeriod
-
-  // Convert month interval to quarter interval
-  const interval = reportPeriod.selection.interval
-  if (interval) {
-    const startMonth = parseInt(interval.start.split('-')[1] || '1', 10)
-    const endMonth = parseInt(interval.end.split('-')[1] || '12', 10)
-    const startYear = interval.start.split('-')[0]
-    const endYear = interval.end.split('-')[0]
-    const startQ = getQuarterForMonth(startMonth)
-    const endQ = getQuarterForMonth(endMonth)
-    return {
-      type: 'QUARTER' as ReportPeriodType,
-      selection: {
-        interval: {
-          start: `${startYear}-${startQ}` as PeriodDate,
-          end: `${endYear}-${endQ}` as PeriodDate,
-        },
-      },
-    }
-  }
-
-  // Convert month dates → quarter dates (dedupe within the same quarter)
-  const dates = reportPeriod.selection.dates ?? []
-  const quarterDates = Array.from(new Set(
-    dates.map((date) => {
-      const [year, monthStr] = date.split('-')
-      const month = parseInt(monthStr || '1', 10)
-      const quarter = getQuarterForMonth(month)
-      return `${year}-${quarter}` as PeriodDate
-    })
-  )).sort()
-
-  return {
-    type: 'QUARTER' as ReportPeriodType,
-    selection: { dates: quarterDates },
-  }
 }
 
 export function CommitmentsView({

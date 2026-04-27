@@ -1,4 +1,4 @@
-import { EntityDetailsData, filterLineItems } from "@/lib/api/entities";
+import { EntityDetailsData, filterLineItems, type ExecutionLineItem } from "@/lib/api/entities";
 import { EntityFinancialSummary } from "../EntityFinancialSummary"
 import { EntityFinancialTrends } from "../EntityFinancialTrends"
 import { EntityLineItemsTabs } from "../EntityLineItemsTabs"
@@ -51,7 +51,7 @@ interface OverviewProps {
         period?: ReportPeriodType;
         quarter?: string;
         month?: string;
-        [key: string]: any; // Allow additional URL state
+        [key: string]: unknown;
     };
     onChartNormalizationChange: (next: NormalizationOptions) => void;
     onYearChange: (year: number) => void;
@@ -137,7 +137,7 @@ const OverviewComponent = ({
     const normalized = normalizeNormalizationOptions(normalizationOptions)
     const { data: lineItems, isLoading: isLoadingLineItems } = useEntityExecutionLineItems({
         cui,
-        normalization: normalized.normalization as any,
+        normalization: normalized.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro',
         currency: normalized.currency,
         inflation_adjusted: normalized.inflation_adjusted,
         reportPeriod,
@@ -158,7 +158,7 @@ const OverviewComponent = ({
         (options: { reportPeriod: ReportPeriodInput, trendPeriod: ReportPeriodInput, reportType?: GqlReportType }) => {
             queryClient.prefetchQuery(entityDetailsQueryOptions({
                 cui,
-                normalization: normalized.normalization as any,
+                normalization: normalized.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro',
                 currency: normalized.currency,
                 inflation_adjusted: normalized.inflation_adjusted,
                 show_period_growth: normalized.show_period_growth,
@@ -212,7 +212,7 @@ const OverviewComponent = ({
 
     const filteredItems = useMemo(() => {
         const nodes = filteredLineItemsData?.nodes ?? []
-        return nodes.filter((n: any) => n?.account_category === accountCategory)
+        return nodes.filter((n: ExecutionLineItem) => n?.account_category === accountCategory)
     }, [filteredLineItemsData, accountCategory])
 
     // Sync local state with prop when it changes
@@ -223,14 +223,13 @@ const OverviewComponent = ({
     }, [accountCategoryProp])
 
     const aggregatedNodes = useMemo<AggregatedNode[]>(() => {
-        return filteredItems.map((n: any) => ({
-            fn_c: n?.functionalClassification?.functional_code ?? null,
-            fn_n: n?.functionalClassification?.functional_name ?? null,
-            ec_c: n?.economicClassification?.economic_code ?? null,
-            ec_n: n?.economicClassification?.economic_name ?? null,
+        return filteredItems.map((n: ExecutionLineItem & { count?: number }) => ({
+            fn_c: n?.functionalClassification?.functional_code ?? '',
+            fn_n: n?.functionalClassification?.functional_name ?? '',
+            ec_c: n?.economicClassification?.economic_code ?? '',
+            ec_n: n?.economicClassification?.economic_name ?? '',
             amount: Number(n?.amount ?? 0),
-            // count is used by some grouping; default to 1 if missing
-            count: Number.isFinite((n as any)?.count) ? (n as any).count : 1,
+            count: n.count ?? 1,
         }))
     }, [filteredItems])
 
@@ -254,8 +253,8 @@ const OverviewComponent = ({
     })
     const { amountFilter, unit: treemapUnit } = useTreemapAmountFilter({
         data: treemapData,
-        normalization: normalized.normalization as any,
-        currency: normalized.currency as any,
+        normalization: normalized.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro',
+        currency: normalized.currency,
     })
 
     const entityAnalyticsLink = useMemo<EntityAnalyticsUrlState>(() => ({
@@ -267,7 +266,7 @@ const OverviewComponent = ({
             entity_cuis: [cui],
             report_period: reportPeriod,
             account_category: accountCategory,
-            normalization: normalized.normalization as any,
+            normalization: normalized.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro',
             currency: normalized.currency,
             inflation_adjusted: normalized.inflation_adjusted,
             report_type: toReportTypeValue(toExecutionReportType(reportType) ?? 'PRINCIPAL_AGGREGATED'),
@@ -357,8 +356,8 @@ const OverviewComponent = ({
                             onNodeClick={onNodeClick}
                             onBreadcrumbClick={onBreadcrumbClick}
                             path={breadcrumbs}
-                            normalization={normalized.normalization as any}
-                            currency={normalized.currency as any}
+                            normalization={normalized.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro'}
+                            currency={normalized.currency as 'RON' | 'EUR' | 'USD'}
                             excludedItemsSummary={excludedItemsSummary}
                             amountFilter={amountFilter}
                         />
@@ -380,8 +379,8 @@ const OverviewComponent = ({
                     initialIncomeSearchTerm={search.incomeSearch ?? ''}
                     onSearchChange={(type: 'expense' | 'income', term: string) => handleSearchChange(type, term)}
                     isLoading={isLoading || isLoadingLineItems}
-                    normalization={normalized.normalization as any}
-                    currency={normalized.currency as any}
+                    normalization={normalized.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro'}
+                    currency={normalized.currency as 'RON' | 'EUR' | 'USD'}
                     lineItemsTab={search.lineItemsTab as 'functional' | 'funding' | 'expenseType' | undefined}
                     onLineItemsTabChange={onLineItemsTabChange}
                     selectedFundingKey={search.selectedFundingKey as string | undefined}
@@ -407,8 +406,8 @@ const OverviewComponent = ({
                     dataType={search.analyticsDataType ?? 'expense'}
                     onDataTypeChange={(type: 'income' | 'expense') => handleAnalyticsChange('analyticsDataType', type)}
                     isLoading={isLoading || isLoadingLineItems}
-                    normalization={normalized.normalization as any}
-                    currency={normalized.currency as any}
+                    normalization={normalized.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro'}
+                    currency={normalized.currency as 'RON' | 'EUR' | 'USD'}
                 />
             </div>
 
@@ -418,7 +417,7 @@ const OverviewComponent = ({
                         cui={cui}
                         reportPeriod={reportPeriod}
                         reportType={reportType ?? entity.default_report_type}
-                        mainCreditorCui={(search as any).main_creditor_cui}
+                        mainCreditorCui={(search as Record<string, unknown>).main_creditor_cui as string | undefined}
                         limit={12}
                     />
                 </div>

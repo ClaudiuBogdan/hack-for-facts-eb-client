@@ -9,9 +9,16 @@ import { Trans } from '@lingui/react/macro';
 // ---------------------------------------------------------------------------
 
 
+interface TooltipEntry {
+    dataKey?: unknown;
+    payload?: Record<SeriesId, DataPointPayload> | DataPointPayload;
+    name?: string;
+    color?: string;
+}
+
 interface CustomSeriesTooltipProps {
     active?: boolean;
-    payload?: Array<{ dataKey: any; payload: Record<SeriesId, DataPointPayload> | any; name?: string; color?: string } | DataPointPayload>;
+    payload?: Array<TooltipEntry | DataPointPayload>;
     label?: string | number;
     chartConfig: Chart['config'];
     chart?: Chart;
@@ -58,10 +65,10 @@ export function CustomSeriesTooltip({
             if (!row) return undefined;
 
             // When dataKey is a string like `${seriesId}.value`, preserve legacy behavior
-            if (typeof (entry as any).dataKey === 'string') {
-                const dk = String((entry as any).dataKey);
+            if (typeof (entry as TooltipEntry).dataKey === 'string') {
+                const dk = String((entry as TooltipEntry).dataKey);
                 const seriesId = dk.split('.')[0];
-                const customPayload = (row as any)[seriesId];
+                const customPayload = (row as Record<string, unknown>)[seriesId];
                 if (isDataPointPayload(customPayload) && !usedSeriesIds.has(customPayload.id)) {
                     usedSeriesIds.add(customPayload.id);
                     return customPayload;
@@ -69,8 +76,8 @@ export function CustomSeriesTooltip({
             }
 
             // For function dataKeys, prefer unique color+label matches, then color, then label.
-            const name = (entry as any).name as string | undefined;
-            const color = (entry as any).color as string | undefined;
+            const name = (entry as TooltipEntry).name as string | undefined;
+            const color = (entry as TooltipEntry).color as string | undefined;
             const candidates = Object.values(row).filter(isDataPointPayload);
 
             if (name && color) {
@@ -96,7 +103,7 @@ export function CustomSeriesTooltip({
 
             return claimFirstUnmapped(candidates);
         })
-            .filter((p): p is DataPointPayload => !!p && !!(p as any).id)
+            .filter((p): p is DataPointPayload => !!p && 'id' in p)
             .sort((a, b) => b.value - a.value);
 
         return resolved;

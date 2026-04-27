@@ -15,6 +15,7 @@ export default tseslint.config(
       'playwright-report',
       'test-results',
       'tmp',
+      'src/locales/**/*.js',
     ],
   },
   {
@@ -35,6 +36,40 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+    },
+  },
+  // TanStack Router lazy route files commonly export both components and
+  // non-component values (e.g., loaders, route definitions). Disable the
+  // react-refresh warning for those files.
+  {
+    files: ['**/*.lazy.tsx', '**/routes/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  // Relax `no-explicit-any` in test files – test utilities often need `any`
+  // for mock objects, cast-through values, etc.
+  {
+    files: ['**/*.test.{ts,tsx}', '**/*.test.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
+  // Relax `no-explicit-any` for E2E/integration test utilities
+  {
+    files: ['tests/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
 )

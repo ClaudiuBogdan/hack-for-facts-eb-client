@@ -250,7 +250,7 @@ export async function mapInsSeriesToAnalyticsSeries(series: InsSeriesConfigurati
   );
 
   const requestedPeriodicity = mapReportPeriodTypeToInsPeriodicity(series.period?.type);
-  let effectivePeriodicity = requestedPeriodicity ?? selectDefaultInsPeriodicity(classFiltered);
+  const effectivePeriodicity = requestedPeriodicity ?? selectDefaultInsPeriodicity(classFiltered);
   if (!effectivePeriodicity) {
     warnings.push({
       type: 'missing_data',

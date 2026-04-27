@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { type ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { AlertCircle, CheckCircle2, Clock3, ExternalLink } from 'lucide-react'

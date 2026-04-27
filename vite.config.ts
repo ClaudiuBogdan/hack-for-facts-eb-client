@@ -1,7 +1,7 @@
 import path from "path";
 import http from "http";
 import https from "https";
-import type { ClientRequest } from "http";
+
 import { defineConfig, loadEnv } from "vite";
 import babel from "@rolldown/plugin-babel";
 import react from "@vitejs/plugin-react";
@@ -29,7 +29,7 @@ const getHttpsConfig = () => {
       key: fs.readFileSync(path.resolve(__dirname, "localhost-key.pem")),
       cert: fs.readFileSync(path.resolve(__dirname, "localhost-cert.pem")),
     }
-  } catch (e) {
+  } catch (_e) {
     console.warn('Run ./ssl.sh to generate the local certs')
     return undefined
   }
@@ -143,8 +143,13 @@ export default defineConfig(({ mode }) => {
       : new http.Agent({ keepAlive: true, maxSockets: 50 })
     : undefined;
 
-  const configureProxy = (proxyInstance: any) => {
-    proxyInstance.on("error", (error: Error, _req: unknown, res: any) => {
+  interface ProxyInstance {
+    on(event: 'error', listener: (error: Error, req: http.IncomingMessage, res: http.ServerResponse) => void): void
+    on(event: 'proxyReq', listener: (proxyReq: unknown, req: http.IncomingMessage) => void): void
+  }
+
+  const configureProxy = (proxyInstance: ProxyInstance) => {
+    proxyInstance.on("error", (error: Error, _req: http.IncomingMessage, res: http.ServerResponse) => {
       console.error("[Proxy Error]", error.message);
       if (res && !res.headersSent) {
         res.writeHead(502, { "Content-Type": "application/json" });
@@ -156,7 +161,7 @@ export default defineConfig(({ mode }) => {
 
     // Debug logging (enable with DEBUG_PROXY=true)
     if (env.DEBUG_PROXY === "true") {
-      proxyInstance.on("proxyReq", (_proxyReq: ClientRequest, req: any) => {
+      proxyInstance.on("proxyReq", (_proxyReq: unknown, req: http.IncomingMessage) => {
         console.log("[Proxy]", req.method, req.url);
       });
     }

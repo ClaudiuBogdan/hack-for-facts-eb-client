@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';

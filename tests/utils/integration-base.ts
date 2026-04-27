@@ -374,6 +374,7 @@ export const test = base.extend<{ mockApi: MockApiFixture }>({
     }
 
     // Provide the fixture to tests
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     await use({ mode, mockGraphQL, mockRoute })
 
     // TEARDOWN: Save recorded fixtures

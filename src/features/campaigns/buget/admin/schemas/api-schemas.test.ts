@@ -678,6 +678,39 @@ describe("campaign admin api schemas", () => {
     ).toEqual(createNotificationsListResponsePayload().data);
   });
 
+  it("parses Bucharest budget analysis notification audit rows", () => {
+    const payload = createNotificationsListResponsePayload();
+    const bucharestPayload = {
+      ...payload,
+      data: {
+        ...payload.data,
+        items: [
+          {
+            ...payload.data.items[0],
+            notificationType: "funky:outbox:bucharest_budget_analysis",
+            templateId: "bucharest_budget_analysis_2026_04_23",
+            templateName: "bucharest_budget_analysis_2026_04_23",
+            projection: {
+              kind: "bucharest_budget_analysis",
+              userId: "user-1",
+              entityCui: "4267117",
+              entityName: "Primaria Municipiului Bucuresti",
+              analysisId: "pmb-budget-analysis-2026",
+              analysisPublishedAt: "2026-04-23",
+              analysisUrl:
+                "https://funky.ong/analiza-buget-local-primaria-municipiului-bucuresti-2026/",
+              triggerSource: "campaign_admin",
+            },
+          },
+        ],
+      },
+    };
+
+    expect(
+      parseCampaignAdminNotificationsListResponse(bucharestPayload),
+    ).toEqual(bucharestPayload.data);
+  });
+
   it("parses notification trigger and template catalogs", () => {
     expect(
       parseCampaignAdminNotificationTriggersResponse(

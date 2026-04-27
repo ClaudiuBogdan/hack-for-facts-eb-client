@@ -1,9 +1,9 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  GroupedItemsDisplay,
   type GroupedItemAnalyticsRequest,
   type GroupedItemCopyPromptRequest,
-} from '@/components/entities/FinancialDataCard'
+} from '@/components/entities/grouped-item-analytics'
+import { GroupedItemsDisplay } from '@/components/entities/FinancialDataCard'
 import GroupedFunctionalAccordion from '@/components/entities/GroupedFunctionalAccordion'
 import GroupedSubchapterAccordion from '@/components/entities/GroupedSubchapterAccordion'
 import { match } from '@/components/entities/highlight-utils'

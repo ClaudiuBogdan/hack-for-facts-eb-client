@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { Link } from '@tanstack/react-router'
 import { t } from '@lingui/core/macro'
 import { ArrowRight, Clock, Play, Sparkles, Trophy } from 'lucide-react'

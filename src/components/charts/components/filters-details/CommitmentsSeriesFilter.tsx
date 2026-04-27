@@ -1,6 +1,6 @@
 import { Trans } from "@lingui/react/macro";
 
-import type { CommitmentsSeriesConfiguration } from "@/schemas/charts";
+import type { AnalyticsFilterType, CommitmentsSeriesConfiguration } from "@/schemas/charts";
 import { getPeriodTags } from "@/lib/period-utils";
 import { ReportPeriodInput } from "@/schemas/reporting";
 import {
@@ -62,7 +62,7 @@ export function CommitmentsSeriesFilter({ series }: CommitmentsSeriesFilterProps
         ))}
         {Object.entries(series.filter)
           .sort(([keyA], [keyB]) =>
-            getSortOrder(keyA as any, keyB as any)
+            getSortOrder(keyA as keyof AnalyticsFilterType, keyB as keyof AnalyticsFilterType)
           )
           .filter(([key, value]) => {
             if (key === "report_period" || key === "exclude" || key === "exclude_transfers") return false;
@@ -113,7 +113,7 @@ export function CommitmentsSeriesFilter({ series }: CommitmentsSeriesFilterProps
           <div className="flex flex-wrap gap-2">
             {Object.entries(exclude)
               .sort(([keyA], [keyB]) =>
-                getSortOrder(keyA as any, keyB as any)
+                getSortOrder(keyA as keyof AnalyticsFilterType, keyB as keyof AnalyticsFilterType)
               )
               .filter(([, value]) => {
                 if (value === undefined || value === null) return false;

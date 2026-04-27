@@ -65,7 +65,7 @@ function arePropsEqual(
   );
 }
 
-export const MultiAxisChartContainer = memo(function MultiAxisChartContainer({ unitMap, chart, children, onAnnotationPositionChange, disableTooltip, diffStateKey: _diffStateKey }: MultiAxisChartContainerProps) {
+export const MultiAxisChartContainer = memo(function MultiAxisChartContainer({ unitMap, chart, children, onAnnotationPositionChange, disableTooltip }: MultiAxisChartContainerProps) {
   const isMobile = useIsMobile();
 
   // Group series by unit with stable, sorted order for consistent axis IDs/orientation
@@ -122,7 +122,7 @@ export const MultiAxisChartContainer = memo(function MultiAxisChartContainer({ u
   const legendWrapperStyle = useMemo(() => ({ zIndex: 1 }), []);
   const tooltipContent = useMemo(() => (
     <CustomSeriesTooltip chartConfig={chart.config} chart={chart} />
-  ), [chart.config, chart]);
+  ), [chart]);
 
   return (
     <>

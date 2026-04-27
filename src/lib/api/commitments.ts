@@ -255,7 +255,7 @@ export async function fetchCommitmentsAggregatedAll(params: {
   const maxItems = params.maxItems ?? 10_000
 
   let offset = params.input.offset ?? 0
-  let hasPreviousPage = offset > 0
+  const hasPreviousPage = offset > 0
   let hasNextPage = false
   let totalCount: number | undefined
   const nodes: CommitmentsAggregatedItem[] = []

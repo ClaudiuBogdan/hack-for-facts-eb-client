@@ -196,7 +196,7 @@ export function useTreemapChartLink({
     }
 
     // Generate chart title
-    let chartTitle = 'Budget Breakdown'
+    let chartTitle: string
     if (parentCode && path.length > 0) {
       const parentLabel = path[path.length - 1]?.label ?? parentCode
       chartTitle = `${parentLabel} - ${primary === 'fn' ? 'Functional' : 'Economic'} Breakdown`

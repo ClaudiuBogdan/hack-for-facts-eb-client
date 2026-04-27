@@ -15,7 +15,7 @@ const EMPLOYEES_DATA_DISCLAIMER_ID = 'employees-data-disclaimer'
 export function EmployeesView({ entity }: { entity: EntityDetailsData | null | undefined }) {
   const { data, isLoading, error } = useCsvData()
   const siruta = entity?.uat?.siruta_code
-  const row = data?.find(r => r.sirutaCode === (Number(siruta) ?? -1))
+  const row = data?.find(r => r.sirutaCode === (Number(siruta) || -1))
 
   if (error) return <div className="p-4 text-red-600 dark:text-red-500">{error.message}</div>
   if (isLoading) return <div className="p-4 text-muted-foreground">Se încarcă datele analitice...</div>

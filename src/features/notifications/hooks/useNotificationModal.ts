@@ -6,11 +6,10 @@ export function useNotificationModal() {
 
   const isOpen =
     (router.state.location.search as Record<string, unknown>).notificationModal === 'open'
-
   const setOpen = useCallback(
     (newOpen: boolean) => {
       void router.navigate({
-        search: (prev: any) => {
+        search: (prev: Record<string, unknown>) => {
           const nextSearch = {
             ...(prev as Record<string, unknown>),
           } as Record<string, unknown>
@@ -25,7 +24,7 @@ export function useNotificationModal() {
         },
         replace: true,
         resetScroll: false,
-      } as any)
+      } as Record<string, unknown>)
     },
     [router]
   )

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useCallback, useMemo, type ReactNode } from 'react'
 import { useQuizInteraction } from '@/features/learning/hooks/use-learning-interactions'
 import { Quiz } from '@/features/learning/components/assessment/Quiz'

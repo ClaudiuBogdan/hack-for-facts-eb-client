@@ -7,12 +7,12 @@ import { highlightText } from './highlight-utils';
 import { formatNormalizedValue, formatNumber } from '@/lib/utils';
 import { ClassificationInfoLink } from '@/components/common/classification-info-link';
 import type { Currency, Normalization } from '@/schemas/charts';
-import { buildGroupedItemMenuActions } from './FinancialDataCard';
+import { buildGroupedItemMenuActions } from './grouped-item-analytics';
 import type {
   GroupedItemAnalyticsSelection,
   GroupedItemAnalyticsRequest,
   GroupedItemCopyPromptRequest,
-} from './FinancialDataCard';
+} from './grouped-item-analytics';
 import {
   GROUPED_CHAPTER_LABEL_CLASS_NAME,
   GROUPED_CHAPTER_LABEL_ROW_CLASS_NAME,

@@ -605,9 +605,9 @@ export function CampaignAdminEntityDetailPage({
     entityCui,
   );
 
-  const users = usersQuery.data?.items ?? [];
-  const notifications = notificationsQuery.data?.items ?? [];
-  const interactions = interactionsQuery.data?.items ?? [];
+  const users = useMemo(() => usersQuery.data?.items ?? [], [usersQuery.data?.items]);
+  const notifications = useMemo(() => notificationsQuery.data?.items ?? [], [notificationsQuery.data?.items]);
+  const interactions = useMemo(() => interactionsQuery.data?.items ?? [], [interactionsQuery.data?.items]);
   const cachedEntitySummary = useMemo(() => {
     const cachedResponses = queryClient.getQueriesData<CampaignAdminEntitiesListResponse>(
       {
@@ -623,7 +623,7 @@ export function CampaignAdminEntityDetailPage({
     }
 
     return null;
-  }, [campaignKey, entityCui, queryClient, usersQuery.data, notificationsQuery.data, interactionsQuery.data]);
+  }, [campaignKey, entityCui, queryClient]);
   const entityName = useMemo(
     () =>
       resolveEntityName({

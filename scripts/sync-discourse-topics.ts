@@ -336,7 +336,8 @@ async function readLessonDiscussionContent(params: {
       }
       const message = error instanceof Error ? error.message : String(error)
       throw new Error(
-        `Failed to read lesson content for "${params.lesson.id}" from ${path.relative(PROJECT_ROOT, mdxPath)}: ${message}`
+        `Failed to read lesson content for "${params.lesson.id}" from ${path.relative(PROJECT_ROOT, mdxPath)}: ${message}`,
+        { cause: error },
       )
     }
   }

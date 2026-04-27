@@ -129,7 +129,7 @@ export function SeriesConfigView() {
     if (!series) return;
     if (nextType === 'line-items-aggregated-yearly') {
       updateSeries(series.id, (prev) => {
-        const prevFilter = (prev as any).filter ?? {};
+        const prevFilter = (prev as unknown as { filter?: Record<string, unknown> }).filter ?? {};
         return {
           ...prev,
           type: nextType,
@@ -148,13 +148,21 @@ export function SeriesConfigView() {
     }
 
     updateSeries(series.id, (prev) => {
-      const prevFilter = (prev as any).filter ?? {};
+      const previousSeries = prev as unknown as { filter?: Record<string, unknown>; metric?: string };
+      const prevFilter = previousSeries.filter ?? {};
+      const prevExclude = (prevFilter.exclude ?? {}) as Record<string, unknown>;
       const commitmentsReportType = coerceCommitmentsReportType(prevFilter.report_type);
+      const previousMetric =
+        typeof previousSeries.metric === 'string'
+          ? previousSeries.metric
+          : typeof prevFilter.metric === 'string'
+            ? prevFilter.metric
+            : 'CREDITE_ANGAJAMENT';
 
       return {
         ...prev,
         type: 'commitments-analytics',
-        metric: (prev as any).metric ?? 'CREDITE_ANGAJAMENT',
+        metric: previousMetric,
         unit: '',
         filter: {
           ...prevFilter,
@@ -164,10 +172,10 @@ export function SeriesConfigView() {
           currency: prevFilter.currency ?? 'RON',
           inflation_adjusted: prevFilter.inflation_adjusted ?? false,
           exclude: {
-            ...(prevFilter.exclude ?? {}),
+            ...prevExclude,
             economic_prefixes:
-              prevFilter.exclude?.economic_prefixes?.length
-                ? prevFilter.exclude.economic_prefixes
+              (prevExclude.economic_prefixes as string[] | undefined)?.length
+                ? prevExclude.economic_prefixes
                 : [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES],
           },
         },
@@ -214,7 +222,7 @@ export function SeriesConfigView() {
         title: series.label || undefined,
         description: undefined,
         seriesType: 'static',
-        datasetId: (series as any).seriesId,
+        datasetId: (series as unknown as { seriesId?: string }).seriesId,
       });
     } else {
       return;

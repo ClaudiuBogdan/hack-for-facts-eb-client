@@ -35,23 +35,35 @@ export const MapLabels: React.FC<MapLabelsProps> = ({
 }) => {
   const map = useMap();
   const layerRef = useRef<CanvasLabelLayer | null>(null);
+  const initialOptionsRef = useRef({
+    geoJsonData,
+    mapViewType,
+    heatmapDataMap,
+    normalization,
+    currency,
+    showLabels,
+    labelMode,
+    activeSeriesValuesBySirutaCode,
+    activeSeriesUnit,
+  });
+  initialOptionsRef.current = {
+    geoJsonData,
+    mapViewType,
+    heatmapDataMap,
+    normalization,
+    currency,
+    showLabels,
+    labelMode,
+    activeSeriesValuesBySirutaCode,
+    activeSeriesUnit,
+  };
 
   // Create and manage the canvas layer lifecycle
   useEffect(() => {
     if (!map) return;
 
     // Create the canvas label layer
-    const layer = new CanvasLabelLayer({
-      geoJsonData,
-      mapViewType,
-      heatmapDataMap,
-      normalization,
-      currency,
-      showLabels,
-      labelMode,
-      activeSeriesValuesBySirutaCode,
-      activeSeriesUnit,
-    });
+    const layer = new CanvasLabelLayer(initialOptionsRef.current);
 
     // Add layer to map
     layer.addTo(map);
@@ -64,7 +76,7 @@ export const MapLabels: React.FC<MapLabelsProps> = ({
         layerRef.current = null;
       }
     };
-  }, [map]); // Only recreate layer if map instance changes
+  }, [map]);
 
   // Update layer options when props change
   useEffect(() => {

@@ -2,7 +2,7 @@ import { render, screen } from '@/test/test-utils'
 import type { ComponentType } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const entitySearchInputMock = vi.fn((_: Record<string, unknown>) => <div>Search input</div>)
+const entitySearchInputMock = vi.fn((_props: unknown) => <div>Search input</div>)
 
 vi.mock('@tanstack/react-router', () => ({
   createFileRoute: () => (options: Record<string, unknown>) => ({

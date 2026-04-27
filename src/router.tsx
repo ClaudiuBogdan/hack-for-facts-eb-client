@@ -28,7 +28,7 @@ export function getRouter() {
 
   const parseSearch = parseSearchWith(searchParser);
   const baseStringifySearch = stringifySearchWith(JSON.stringify, searchParser);
-  const stringifySearch = (search: Record<string, any>) =>
+  const stringifySearch = (search: Record<string, unknown>) =>
     normalizeSearchEncoding(baseStringifySearch(search));
 
   const router = createRouter({

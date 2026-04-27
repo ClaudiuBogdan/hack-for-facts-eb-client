@@ -36,7 +36,7 @@ export function FilterBulkEdit({ withCard = true, onClose }: FilterBulkEditProps
         // Validate chart schema
         try {
             ChartSchema.parse(updated);
-        } catch (error) {
+        } catch (_error) {
             toast.error(t`Invalid chart schema`);
             return;
         }

@@ -124,6 +124,8 @@ function getNotificationTypeLabel(
   switch (runnable.runnableId) {
     case "admin_reviewed_user_interaction":
       return t`Reviewed interaction`;
+    case "bucharest_budget_analysis":
+      return t`Bucharest budget analysis`;
     default:
       return formatCampaignAdminNotificationFieldLabel(runnable.templateId);
   }
@@ -135,6 +137,8 @@ function getNotificationTypeDescription(
   switch (runnable.runnableId) {
     case "admin_reviewed_user_interaction":
       return t`Notify people after an admin reviews one of their interactions.`;
+    case "bucharest_budget_analysis":
+      return t`Notify Bucharest subscribers about the budget analysis.`;
     default:
       return runnable.description;
   }
@@ -341,11 +345,15 @@ export function parseCampaignAdminNotificationConditions(
         secondSeparatorIndex,
       ) as CampaignAdminNotificationConditionOperator;
       const rawValue = entry.slice(secondSeparatorIndex + 1);
-      let value = "";
+      const value = (() => {
+        try {
+          return decodeURIComponent(rawValue);
+        } catch {
+          return null;
+        }
+      })();
 
-      try {
-        value = decodeURIComponent(rawValue);
-      } catch {
+      if (value === null) {
         return [];
       }
 

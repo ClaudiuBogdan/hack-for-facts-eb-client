@@ -53,9 +53,9 @@ export function ClassificationExplorer({
   const updateSearchParam = useCallback((q: string) => {
     navigate({
       to: getClassificationRoute(type),
-      search: (prev: any) => ({ ...prev, q: q || undefined, view: viewMode }),
+      search: (prev: Record<string, unknown>) => ({ ...prev, q: q || undefined, view: viewMode }),
       replace: true,
-    } as any)
+    })
   }, [navigate, type, viewMode])
 
   // Sync URL with debounced search term
@@ -69,31 +69,31 @@ export function ClassificationExplorer({
   const handleViewModeChange = useCallback((newView: 'grid' | 'tree') => {
     navigate({
       to: getClassificationRoute(type),
-      search: (prev: any) => ({ ...prev, view: newView }),
+      search: (prev: Record<string, unknown>) => ({ ...prev, view: newView }),
       replace: true,
-    } as any)
+    })
   }, [navigate, type])
 
   // Handle type toggle
   const handleTypeChange = (newType: ClassificationType) => {
     if (newType === type) return
     navigate({
-      to: getClassificationRoute(newType) as any,
-    })
+      to: getClassificationRoute(newType),
+    } as Record<string, unknown>)
   }
 
   // Handle classification selection
   const handleSelect = (code: string) => {
     navigate({
-      to: getClassificationDetailRoute(type, code) as any,
+      to: getClassificationDetailRoute(type, code),
       params: { code },
-    } as any)
+    })
   }
 
   // Handle back to list
   const handleBack = () => {
     navigate({
-      to: getClassificationRoute(type) as any,
+      to: getClassificationRoute(type),
     })
   }
 

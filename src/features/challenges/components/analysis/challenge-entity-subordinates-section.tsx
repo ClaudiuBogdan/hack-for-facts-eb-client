@@ -94,7 +94,7 @@ function ChallengeEntitySubordinateRow({
     <Link
       to="/entities/$cui"
       params={{ cui: item.entityCui }}
-      search={item.entitySearch as any}
+      search={item.entitySearch as Record<string, unknown>}
       className="group flex flex-col gap-1.5 py-3.5 text-foreground touch-manipulation transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:rounded-md"
     >
       <div className="flex items-start gap-3">
@@ -217,7 +217,7 @@ export function ChallengeEntitySubordinatesSection({
 
             {showAllSearch ? (
               <Button asChild variant="outline" className="rounded-full">
-                <Link to="/entity-analytics" search={showAllSearch as any}>
+                <Link to="/entity-analytics" search={showAllSearch as Record<string, unknown>}>
                   {copy.showAll}
                 </Link>
               </Button>

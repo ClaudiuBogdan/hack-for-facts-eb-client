@@ -190,7 +190,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
     return null;
   };
 
-  const handleChartClick = (e: any) => {
+  const handleChartClick = (e: { activeLabel?: string | number }) => {
     if (!e || !e.activeLabel) return;
     const raw = String(e.activeLabel);
     if (periodType === 'YEAR') {
@@ -213,7 +213,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
 
   const lastPrefetchLabelRef = React.useRef<string | null>(null);
   const lastPrefetchTsRef = React.useRef<number>(0);
-  const handleChartHover = (e: any) => {
+  const handleChartHover = (e: { activeLabel?: string | number }) => {
     if (!onPrefetchPeriod) return;
     if (!e || !e.activeLabel) return;
     const raw = String(e.activeLabel);
@@ -265,8 +265,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
       baseOffset: number,
       showUnit: boolean,
     ) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return function SelectiveLabel(props: any) {
+      return function SelectiveLabel(props: { x?: number | string; y?: number | string; index?: number; value?: number | string; [key: string]: unknown }) {
         const x = Number(props.x ?? 0)
         const y = Number(props.y ?? 0)
         const index = Number(props.index ?? 0)
@@ -311,7 +310,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
             <span><Trans>Financial Trends</Trans></span>
             {showChartEditorLink && incomeExpenseChartLink ? (
               <Button asChild variant="ghost" size="icon" className="h-7 w-7 ml-1" aria-label={t`Open in chart editor`}>
-                <Link to={incomeExpenseChartLink.to} params={incomeExpenseChartLink.params as any} search={incomeExpenseChartLink.search as any} preload="intent">
+                <Link to={incomeExpenseChartLink.to} params={incomeExpenseChartLink.params as unknown as { chartId: string }} search={incomeExpenseChartLink.search as unknown as Record<string, string>} preload="intent">
                   <ExternalLink className="h-4 w-4" />
                 </Link>
               </Button>
@@ -334,7 +333,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
               </Label>
 
               <NormalizationModeSelect
-                value={normalized.normalization as any}
+                value={normalized.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro'}
                 allowPerCapita={allowPerCapita}
                 onChange={(nextNormalization) => {
                   onNormalizationChange?.({
@@ -405,7 +404,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
                 animationEasing='ease-in-out'
                 animationBegin={shouldAnimate ? 300 : 0}
               >
-                {!isMobile && <LabelList dataKey="income" content={makeSelectiveLabelContent(periodType === 'QUARTER' ? 0 : -45, 24, false)} />}
+                {!isMobile && <LabelList dataKey="income" content={makeSelectiveLabelContent(periodType === 'QUARTER' ? 0 : -45, 24, false) as unknown as React.ReactElement} />}
               </Bar>
               <Bar
                 dataKey="expense"
@@ -419,7 +418,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
                 animationEasing='ease-in-out'
                 animationBegin={shouldAnimate ? 300 : 0}
               >
-                {!isMobile && <LabelList dataKey="expense" content={makeSelectiveLabelContent(periodType === 'QUARTER' ? 0 : -45, 24, true)} />}
+                {!isMobile && <LabelList dataKey="expense" content={makeSelectiveLabelContent(periodType === 'QUARTER' ? 0 : -45, 24, true) as unknown as React.ReactElement} />}
               </Bar>
 
               <Line
@@ -433,7 +432,7 @@ const EntityFinancialTrendsComponent: React.FC<EntityFinancialTrendsProps> = ({
                 dot={{ r: 4, fill: '#6366f1', strokeWidth: 2, stroke: '#f8fafc' }}
                 activeDot={{ r: 6 }}
               >
-                {!isMobile && <LabelList dataKey="balance" content={makeSelectiveLabelContent(0, 12, false)} />}
+                {!isMobile && <LabelList dataKey="balance" content={makeSelectiveLabelContent(0, 12, false) as unknown as React.ReactElement} />}
               </Line>
             </ComposedChart>
           </SafeResponsiveContainer>
@@ -450,8 +449,8 @@ function areSeriesEqual(a?: AnalyticsSeries | null, b?: AnalyticsSeries | null):
   const bd = b.data || []
   if (ad.length !== bd.length) return false
   for (let i = 0; i < ad.length; i++) {
-    const ap = ad[i] as any
-    const bp = bd[i] as any
+      const ap = ad[i] as { x: string | number; y: number | null }
+      const bp = bd[i] as { x: string | number; y: number | null }
     if (String(ap.x) !== String(bp.x) || Number(ap.y) !== Number(bp.y)) return false
   }
   return true

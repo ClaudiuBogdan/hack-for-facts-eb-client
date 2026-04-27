@@ -321,9 +321,6 @@ function InsSeriesEditorWithChartStore({ series }: { series: InsSeriesConfigurat
 
 function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter }) {
   const series = adapter.series;
-  if (!series) {
-    return null;
-  }
 
   const locale: InsLocale = getUserLocale() === 'en' ? 'en' : 'ro';
   const latestDatasetRequestIdRef = useRef(0);
@@ -349,16 +346,16 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
     setTerritoryLabelsByCode({});
     setSirutaLabelsByCode({});
     latestDimensionRequestByKeyRef.current.clear();
-  }, [series.datasetCode]);
+  }, [series?.datasetCode]);
 
   useEffect(() => {
     latestSeriesRef.current = series;
   }, [series]);
 
   const datasetDetailQuery = useQuery({
-    queryKey: ['ins-series-dataset', series.datasetCode],
-    queryFn: () => getInsDatasetDetails(series.datasetCode ?? ''),
-    enabled: !!series.datasetCode,
+    queryKey: ['ins-series-dataset', series?.datasetCode],
+    queryFn: () => getInsDatasetDetails(series?.datasetCode ?? ''),
+    enabled: !!series?.datasetCode,
     staleTime: 1000 * 60 * 5,
   });
 
@@ -394,12 +391,12 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
     if (!dataset) return;
 
     const clampedPeriod = clampPeriodToDatasetConstraints(
-      series.period as ReportPeriodInput | undefined,
+      series?.period as ReportPeriodInput | undefined,
       allowedPeriodTypes,
       datasetYearRange
     );
 
-    if (areReportPeriodsEqual(series.period as ReportPeriodInput | undefined, clampedPeriod)) {
+    if (areReportPeriodsEqual(series?.period as ReportPeriodInput | undefined, clampedPeriod)) {
       return;
     }
 
@@ -410,7 +407,7 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
 
     const defaultPeriod = buildDefaultInsPeriod(dataset, allowedPeriodTypes[0] as ReportPeriodType | undefined);
     update({ period: defaultPeriod });
-  }, [allowedPeriodTypes, dataset, datasetYearRange, series.period]);
+  }, [allowedPeriodTypes, dataset, datasetYearRange, series?.period]) // eslint-disable-line react-hooks/exhaustive-deps -- update is a stable callback from hook scope;
 
   const beginDimensionRequest = (
     datasetCode: string,
@@ -505,24 +502,28 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
   };
 
   const selectedDatasetOptions: OptionItem[] = useMemo(() => {
-    if (!series.datasetCode) return [];
+    if (!series?.datasetCode) return [];
 
     const datasetLabel = dataset
       ? `${dataset.code} - ${getDatasetDisplayName(dataset, locale)}`
       : `${series.datasetCode} - ${series.label || series.datasetCode}`;
 
     return [{ id: series.datasetCode, label: datasetLabel }];
-  }, [dataset, locale, series.datasetCode, series.label]);
+  }, [dataset, locale, series?.datasetCode, series?.label]);
   const selectedDatasetSourceUrl = useMemo(() => {
-    if (!series.datasetCode) return null;
+    if (!series?.datasetCode) return null;
     return buildInsTempoDatasetUrl(series.datasetCode, locale);
-  }, [locale, series.datasetCode]);
+  }, [locale, series?.datasetCode]);
   const selectedPeriodOptions: OptionItem[] = useMemo(() => {
-    return getPeriodTags(series.period as ReportPeriodInput | undefined).map((tag) => ({
+    return getPeriodTags(series?.period as ReportPeriodInput | undefined).map((tag) => ({
       id: String(tag.value),
       label: String(tag.value),
     }));
-  }, [series.period]);
+  }, [series?.period]);
+
+  if (!series) {
+    return null;
+  }
 
   const clearPeriodSelection = () => {
     update({ period: undefined });
@@ -656,6 +657,7 @@ function InsSeriesEditorInternal({ adapter }: { adapter: InsSeriesEditorAdapter 
                           [typeCode]: mergeLabels(current[typeCode] ?? {}, [defaultOption]),
                         }));
 
+                        if (!latestSeriesRef.current) return;
                         const latestClassificationSelections =
                           latestSeriesRef.current.classificationSelections;
                         update({

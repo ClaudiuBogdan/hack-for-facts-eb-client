@@ -60,7 +60,7 @@ export const useEntityHeaderExpanded = ({
         return () => {
             window.removeEventListener('scroll', handleScroll);
         };
-    }, []); // Only re-run the effect if the threshold prop changes
+    }, [hideThreshold]);
 
     return { isHeaderExpanded, hiddenContentRef };
 };

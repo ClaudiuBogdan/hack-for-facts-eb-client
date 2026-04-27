@@ -75,9 +75,7 @@ function formatCityHallLabel(label: string, locale: CampaignLocale): string {
 
 export function BugetEntitySelectorGate({
   locale,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   languageQuery: _languageQuery,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   redirectUri: _redirectUri,
   onEntitySelected,
 }: BugetEntitySelectorGateProps) {

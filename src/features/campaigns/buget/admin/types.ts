@@ -138,6 +138,7 @@ export const campaignAdminEntityNotificationTypeValues = [
   "funky:outbox:entity_update",
   "funky:outbox:public_debate_announcement",
   "funky:outbox:admin_reviewed_interaction",
+  "funky:outbox:bucharest_budget_analysis",
 ] as const;
 
 export const campaignAdminNotificationStatusValues = [
@@ -191,6 +192,7 @@ export const campaignAdminNotificationProjectionKindValues = [
   "public_debate_admin_failure",
   "public_debate_announcement",
   "admin_reviewed_interaction",
+  "bucharest_budget_analysis",
 ] as const;
 
 export const campaignAdminNotificationSortKeyValues = [
@@ -777,6 +779,16 @@ export type CampaignAdminNotificationProjection =
       readonly reviewedAt: string;
       readonly hasFeedbackText: boolean;
       readonly nextStepCount: number;
+      readonly triggerSource: CampaignAdminNotificationSource | null;
+    }
+  | {
+      readonly kind: "bucharest_budget_analysis";
+      readonly userId: string | null;
+      readonly entityCui: string;
+      readonly entityName: string | null;
+      readonly analysisId: string;
+      readonly analysisPublishedAt: string;
+      readonly analysisUrl: string;
       readonly triggerSource: CampaignAdminNotificationSource | null;
     };
 

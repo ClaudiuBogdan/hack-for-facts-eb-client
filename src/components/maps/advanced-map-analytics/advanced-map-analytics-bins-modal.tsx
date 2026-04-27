@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -69,9 +69,13 @@ export function AdvancedMapAnalyticsBinsModal({
   const [maxPercentileInput, setMaxPercentileInput] = useState(
     formatPercentileInput(preset?.config.continuousPercentiles.max ?? 95)
   );
+  const presetRef = useRef(preset);
+  presetRef.current = preset;
+  const presetResetKey = preset ? `${preset.id}:${preset.updatedAt}` : null;
 
   useEffect(() => {
-    if (!preset) {
+    const currentPreset = presetRef.current;
+    if (!currentPreset) {
       setDraftPreset(null);
       setDefaultBinCountInput('5');
       setMinPercentileInput('5');
@@ -83,15 +87,15 @@ export function AdvancedMapAnalyticsBinsModal({
       return;
     }
 
-    setDraftPreset(cloneBinsPreset(preset));
-    setDefaultBinCountInput(String(preset.config.defaultBinCount));
-    setMinPercentileInput(formatPercentileInput(preset.config.continuousPercentiles.min));
-    setMaxPercentileInput(formatPercentileInput(preset.config.continuousPercentiles.max));
+    setDraftPreset(cloneBinsPreset(currentPreset));
+    setDefaultBinCountInput(String(currentPreset.config.defaultBinCount));
+    setMinPercentileInput(formatPercentileInput(currentPreset.config.continuousPercentiles.min));
+    setMaxPercentileInput(formatPercentileInput(currentPreset.config.continuousPercentiles.max));
     setInlineError(null);
     setHasInvalidBinDrafts(false);
     setIsDiscardDialogOpen(false);
     setIsGradientOverwriteDialogOpen(false);
-  }, [preset?.id, open]);
+  }, [open, presetResetKey]);
 
   const presetConfig = draftPreset?.config;
 
@@ -661,4 +665,3 @@ function formatPercentileInput(value: number): string {
   const rounded = Math.round(value * 1_000_000) / 1_000_000;
   return String(rounded);
 }
-

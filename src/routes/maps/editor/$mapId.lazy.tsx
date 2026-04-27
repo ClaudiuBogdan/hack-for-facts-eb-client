@@ -40,6 +40,7 @@ export function MapEditorRouteComponent() {
     }
 
     return hasMapEditorSearchParams(window.location.search);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rawSearch]);
 
   const parsedLegacyMapState = useMemo(() => {

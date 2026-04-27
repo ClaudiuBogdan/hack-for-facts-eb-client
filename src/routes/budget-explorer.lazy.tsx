@@ -378,7 +378,7 @@ function BudgetExplorerPage() {
   ])
 
   const filterHash = generateHash(JSON.stringify(effectiveFilter))
-  const periodLabel = usePeriodLabel(filter.report_period)
+  const periodLabel = usePeriodLabel(filter.report_period as ReportPeriodInput | undefined)
 
   const {
     data: availableBudgetSectors,

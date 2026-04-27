@@ -79,7 +79,7 @@ export function EmployeesMap({ data, metric = 'employeesPer1000Capita' }: Employ
 
   const onEachFeature = useCallback((feature: Feature<Geometry, unknown>, layer: Layer) => {
     if (!feature.properties) return
-    const natcode = (feature.properties as any)?.natcode
+    const natcode = (feature.properties as Record<string, unknown>)?.natcode as string | number | undefined
     const row = uatDataBySiruta.get(String(natcode))
     layer.on({
       mouseover: (e) => {

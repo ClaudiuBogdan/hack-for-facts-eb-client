@@ -10,6 +10,7 @@
     "iOS >= 16"
   ],
   "scripts": {
+    "prepare": "husky",
     "postinstall": "HOME=$PWD yarn --cwd docs-site install --frozen-lockfile",
     "dev": "vite",
     "dev:lint": "concurrently \"vite\" \"tsgo -w\" \"eslint ./src\"",
@@ -21,6 +22,7 @@
     "start": "node .output/server/index.mjs",
     "stt": "node dist/server/server.js",
     "lint": "eslint .",
+    "check": "yarn typecheck && yarn lint",
     "preview": "vite preview",
     "typecheck": "tsgo -b --noEmit",
     "learning:generate": "tsx scripts/generate-learning-paths.ts",
@@ -175,6 +177,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "fake-indexeddb": "^6.2.5",
     "globals": "^17.5.0",
+    "husky": "^9.1.7",
     "jsdom": "^29.0.2",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",

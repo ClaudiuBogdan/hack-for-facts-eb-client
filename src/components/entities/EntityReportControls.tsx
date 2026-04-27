@@ -5,9 +5,9 @@ import { defaultYearRange, type Normalization } from '@/schemas/charts'
 import type { GqlReportType, ReportPeriodInput, ReportPeriodType, TMonth, TQuarter, DateInput } from '@/schemas/reporting'
 import { makeSingleTimePeriod, getQuarterEndMonth, getQuarterForMonth } from '@/schemas/reporting'
 import { FilterIcon } from 'lucide-react'
-import { i18n } from '@lingui/core'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
 type Props = {
@@ -35,6 +35,7 @@ export function EntityReportControls({
   onChange,
   onPrefetch,
 }: Props) {
+  const { i18n } = useLingui()
   const monthFormatter = useMemo(() => new Intl.DateTimeFormat(i18n.locale || 'en', { month: 'short' }), [i18n.locale])
   const MONTHS: { id: TMonth; label: string }[] = useMemo(() => {
     return Array.from({ length: 12 }, (_, idx) => {
@@ -103,7 +104,7 @@ export function EntityReportControls({
     const nextType = String(value) as ReportPeriodType
 
     // Prepare derived values based on transitions
-    let nextYear = year
+    const nextYear = year
     let nextQuarter = quarter
     let nextMonth = month
 
@@ -179,7 +180,7 @@ export function EntityReportControls({
                   value={o.id}
                   onMouseEnter={() => {
                     const nextType = o.id as ReportPeriodType
-                    let nextYear = year
+                    const nextYear = year
                     let nextQuarter = quarter
                     let nextMonth = month
                     if (nextType === 'YEAR') {

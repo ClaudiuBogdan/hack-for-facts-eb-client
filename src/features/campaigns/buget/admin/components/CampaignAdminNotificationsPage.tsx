@@ -359,7 +359,7 @@ export function CampaignAdminNotificationsPage({
     enabled: isLoaded && isSignedIn && normalizedSearch.tab === "templates",
   });
 
-  const auditItems = auditQuery.data?.items ?? [];
+  const auditItems = useMemo(() => auditQuery.data?.items ?? [], [auditQuery.data?.items]);
   const currentPageIndex = normalizedSearch.pageIndex ?? 1;
   const canPreviousPage =
     previousCursors.length > 0 ||
@@ -589,7 +589,6 @@ export function CampaignAdminNotificationsPage({
     normalizedSearch.cursor,
     normalizedSearch.pageIndex,
     normalizedSearch.tab,
-    recoverStaleAuditCursor,
   ]);
 
   if (!isLoaded) {

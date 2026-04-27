@@ -94,7 +94,7 @@ export const createTooltipContent = (
   const featureIdentifier = isUAT ? properties.natcode : properties.mnemonic;
   const filterSummaryHtml = createFilterSummary(filters);
 
-  const unit = getNormalizationUnit({ normalization: filters.normalization as any, currency: (filters as any).currency });
+  const unit = getNormalizationUnit({ normalization: filters.normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro' | undefined, currency: (filters as Record<string, unknown>).currency as 'RON' | 'EUR' | 'USD' | undefined });
   const currencyCode: 'RON' | 'EUR' = unit.includes('EUR') ? 'EUR' : 'RON';
   const isPerCapitaNorm = (filters.normalization === 'per_capita' || filters.normalization === 'per_capita_euro');
   const isPercentGdpNorm = filters.normalization === 'percent_gdp';

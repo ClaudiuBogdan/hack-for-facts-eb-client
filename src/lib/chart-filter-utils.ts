@@ -96,11 +96,12 @@ export const useMapFilterValue = (filter: FiltersWithLabels) => {
           return uatLabelsStore.map(value as string);
         case "entity_types":
           return entityTypesStore.map(value as string);
-        case "report_period":
+        case "report_period": {
             const period = value as ReportPeriodInput;
             if (period.selection.dates) return `${period.selection.dates.length} dates`;
             if (period.selection.interval) return `${period.selection.interval.start} - ${period.selection.interval.end}`;
             return ''
+            }
         default:
           return String(value);
       }

@@ -108,10 +108,10 @@ export function deriveAdvancedMapAnalyticsTableBinsFilter({
 }
 
 export function useAdvancedMapAnalyticsTableBinsFilter(
-  args: Readonly<UseAdvancedMapAnalyticsTableBinsFilterArgs>
+  { rows, binsPresets, activeValues, tableBinFiltersByPresetId }: Readonly<UseAdvancedMapAnalyticsTableBinsFilterArgs>
 ): UseAdvancedMapAnalyticsTableBinsFilterResult {
   return useMemo(
-    () => deriveAdvancedMapAnalyticsTableBinsFilter(args),
-    [args.activeValues, args.binsPresets, args.rows, args.tableBinFiltersByPresetId]
+    () => deriveAdvancedMapAnalyticsTableBinsFilter({ rows, binsPresets, activeValues, tableBinFiltersByPresetId }),
+    [rows, binsPresets, activeValues, tableBinFiltersByPresetId]
   );
 }

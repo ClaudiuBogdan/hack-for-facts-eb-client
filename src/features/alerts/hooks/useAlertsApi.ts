@@ -41,7 +41,7 @@ export function mapNotificationToAlert(entry: Notification): Alert {
     id: idCandidate,
     notificationType: (entry.notificationType === 'alert_series_static' ? 'alert_series_static' : 'alert_series_analytics'),
     // If config contains datasetId, consider it a static alert; otherwise analytics
-    seriesType: typeof (rest as any).datasetId === 'string' && (rest as any).datasetId.trim().length > 0 ? 'static' : 'analytics',
+    seriesType: typeof (rest as Record<string, unknown>).datasetId === 'string' && ((rest as Record<string, unknown>).datasetId as string).trim().length > 0 ? 'static' : 'analytics',
   };
 
   return alert;

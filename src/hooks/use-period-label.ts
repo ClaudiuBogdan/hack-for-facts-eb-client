@@ -1,26 +1,32 @@
 import { useMemo } from 'react'
 import { getYearLabel } from '@/components/entities/utils'
-import type { TMonth, TQuarter } from '@/schemas/reporting'
+import type { TMonth, TQuarter, PeriodDate } from '@/schemas/reporting'
+
+type PartialPeriodSelection = {
+  readonly interval?: {
+    readonly start?: PeriodDate
+    readonly end?: PeriodDate
+  } | null
+  readonly dates?: readonly PeriodDate[] | null
+}
 
 type GenericReportPeriod = {
   type: 'YEAR' | 'MONTH' | 'QUARTER'
-  selection: any
+  selection?: PartialPeriodSelection | null
 }
 
-/**
- * Returns a human-friendly period label based on a report period selection.
- * Optimized via memoization. Returns an empty string for invalid or missing data.
- */
 export function usePeriodLabel(reportPeriod: GenericReportPeriod | undefined): string {
   return useMemo(() => {
     if (!reportPeriod) {
       return ''
     }
 
-    const selection: any = reportPeriod.selection ?? {}
+    const selection = reportPeriod.selection ?? {}
 
-    // Helper to format a single anchored value based on the period type
-    const formatSingle = (value: string): string => {
+    const formatSingle = (value: PeriodDate | undefined): string => {
+      if (typeof value !== 'string') {
+        return ''
+      }
       if (reportPeriod.type === 'MONTH') {
         const m = value.match(/^(\d{4})-(0[1-9]|1[0-2])$/)
         if (m) return getYearLabel(Number(m[1]), m[2] as TMonth)
@@ -34,22 +40,21 @@ export function usePeriodLabel(reportPeriod: GenericReportPeriod | undefined): s
       return ''
     }
 
-    // Interval selection: show start - end
-    if (selection?.interval?.start && selection?.interval?.end) {
-      const startLabel = formatSingle(String(selection.interval.start))
-      const endLabel = formatSingle(String(selection.interval.end))
+    if (selection.interval?.start && selection.interval.end) {
+      const startLabel = formatSingle(selection.interval.start)
+      const endLabel = formatSingle(selection.interval.end)
       if (startLabel && endLabel) {
         return startLabel === endLabel ? startLabel : `${startLabel} - ${endLabel}`
       }
     }
 
-    // Dates selection (fallback to the first selected value)
-    if (selection?.dates?.length > 1) {
-      return selection?.dates?.map((date: string) => formatSingle(String(date))).join(', ')
+    if (selection.dates && selection.dates.length > 1) {
+      return selection.dates.map((date) => formatSingle(date)).join(', ')
     }
-    const raw: string = String(selection?.dates?.[0] ?? '')
-    const single = formatSingle(raw)
-    if (single) return single
+    if (selection.dates && selection.dates.length > 0) {
+      const single = formatSingle(selection.dates[0])
+      if (single) return single
+    }
 
     return ''
   }, [reportPeriod])

@@ -31,11 +31,11 @@ function PathOverviewPage() {
   const locale = lang as 'ro' | 'en'
   const { isReady, progress } = useLearningProgress()
 
+  const path = useMemo(() => getLearningPathById(pathId), [pathId])
+
   if (!isReady) {
     return <LearningHubLoading />
   }
-
-  const path = useMemo(() => getLearningPathById(pathId), [pathId])
 
   if (!path) {
     return (

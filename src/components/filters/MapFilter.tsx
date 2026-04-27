@@ -96,7 +96,7 @@ export function MapFilter() {
         if (report_period.selection.dates) {
             const newDates = report_period.selection.dates.filter(d => d !== tagToRemove.id);
             if (newDates.length > 0) {
-                setReportPeriod({ ...report_period, selection: { dates: newDates } } as any);
+                setReportPeriod({ ...report_period, selection: { dates: newDates } } as ReportPeriodInput);
             } else {
                 setReportPeriod(undefined);
             }
@@ -272,7 +272,7 @@ export function MapFilter() {
                     onClearOption={handleRemovePeriodTag}
                     onClearAll={() => setReportPeriod(undefined)}
                 >
-                    <PeriodFilter value={mapState.filters.report_period as any} onChange={(p) => setReportPeriod(p as any)} />
+                    <PeriodFilter value={mapState.filters.report_period as ReportPeriodInput | undefined} onChange={(p) => setReportPeriod(p as ReportPeriodInput | undefined)} />
                 </FilterContainer>
                 <FilterListContainer
                     title={t`Entities`}

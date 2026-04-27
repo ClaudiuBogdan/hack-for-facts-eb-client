@@ -141,6 +141,7 @@ export const test = base.extend<{ e2e: E2EFixture }>({
     }
 
     // Provide fixture to test
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     await use({ mode })
 
     // Save recorded snapshots on teardown

@@ -107,6 +107,23 @@ describe("campaign-admin-notification-run-utils", () => {
     ).toEqual({});
   });
 
+  it("labels Bucharest budget analysis runnable templates", () => {
+    const notificationType = createCampaignAdminNotificationTypeOptions([
+      createRunnableTemplate({
+        runnableId: "bucharest_budget_analysis",
+        templateId: "bucharest_budget_analysis_2026_04_23",
+        description: "Fallback description",
+        selectors: [],
+        filters: [],
+      }),
+    ])[0]!;
+
+    expect(notificationType.label).toBe("Bucharest budget analysis");
+    expect(notificationType.description).toBe(
+      "Notify Bucharest subscribers about the budget analysis.",
+    );
+  });
+
   it("ignores malformed condition query values instead of throwing", () => {
     expect(() =>
       parseCampaignAdminNotificationConditions("userId:is:%E0%A4%A"),

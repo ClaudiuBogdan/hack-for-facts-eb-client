@@ -96,6 +96,7 @@ type LessonContentRendererProps = {
 }
 
 function createLazyComponent<Props = Record<string, unknown>>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   loader: () => Promise<{ default: ComponentType<any> }>
 ) {
   const LazyComponent = lazy(loader)

@@ -1456,6 +1456,18 @@ export function ChallengeEntityAnalysisPage({
     },
     [month, onStateChange, periodType, quarter],
   )
+
+  const handleYearChange = useCallback(
+    (nextYear: number) => {
+      if (!Number.isFinite(nextYear) || nextYear === selectedYear) {
+        return
+      }
+
+      onStateChange({ selectedYear: nextYear })
+    },
+    [onStateChange, selectedYear],
+  )
+
   const analyticsView = analyticsTarget?.view ?? getDefaultBudgetItemAnalyticsViewState()
   const selectedBudgetItemAnalyticsProps =
     useMemo<BudgetItemAnalyticsProps | null>(() => {
@@ -1676,14 +1688,6 @@ export function ChallengeEntityAnalysisPage({
     },
     [],
   )
-
-  function handleYearChange(nextYear: number) {
-    if (!Number.isFinite(nextYear) || nextYear === selectedYear) {
-      return
-    }
-
-    onStateChange({ selectedYear: nextYear })
-  }
 
   const handleReportControlsChange = useCallback(
     (patch: {

@@ -145,6 +145,7 @@ function DatasetRowValueInput({
 
   useEffect(() => () => {
     flushPendingCommit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- flushPendingCommit is a stable component-scope function
   }, []);
 
   return (
@@ -551,7 +552,7 @@ export function AdvancedMapDatasetEditorPage({
     hasPendingMetadataCommitRef.current = false;
     clearPendingMetadataCommit();
     setMetadataDraft(nextMetadataDraft);
-  }, [clearPendingMetadataCommit, draft.description, draft.markdown, draft.title, draft.unit]);
+  }, [clearPendingMetadataCommit, draft.description, draft.markdown, draft.title, draft.unit]) // eslint-disable-line react-hooks/exhaustive-deps -- draft fields listed individually; full draft object intentionally excluded
 
   useEffect(() => {
     flushPendingMetadataCommitRef.current = flushPendingMetadataCommit;

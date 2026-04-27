@@ -37,7 +37,7 @@ export function ClassificationSiblings({
             {displayedSiblings.map((sibling) => (
               <Link
                 key={sibling.code}
-                to={`${basePath}/${sibling.code}` as any}
+                to={`${basePath}/${sibling.code}` as string}
                 className="group block"
               >
                 <div className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/40">

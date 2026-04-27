@@ -128,7 +128,7 @@ export const LineItemsAnalytics: React.FC<AnalyticsProps> = ({
         return <LineItemsAnalyticsSkeleton />;
     }
 
-    const unit = getNormalizationUnit({ normalization: (normalization ?? 'total') as any, currency: currency as any });
+    const unit = getNormalizationUnit({ normalization: (normalization ?? 'total') as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro', currency: currency as 'RON' | 'EUR' | 'USD' });
 
     const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; color: string; stroke?: string; dataKey: string; }[]; label?: string }) => {
         if (!active || !payload || !payload.length) return null;

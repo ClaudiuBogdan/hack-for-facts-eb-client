@@ -64,7 +64,7 @@ export const UatPopulationSpendingScatterPlot: React.FC<UatPopulationSpendingSca
   normalization,
   currency,
 }) => {
-  const unit = getNormalizationUnit({ normalization: normalization as any, currency: currency as any });
+  const unit = getNormalizationUnit({ normalization: normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro' | undefined, currency: currency as 'RON' | 'EUR' | 'USD' | undefined });
   const currencyCode: Currency = currency ?? (unit.includes('EUR') ? 'EUR' : unit.includes('USD') ? 'USD' : 'RON');
   const isPerCapita = unit.includes('capita');
 

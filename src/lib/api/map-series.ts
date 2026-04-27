@@ -160,6 +160,7 @@ export async function fetchGroupedSeriesData(
       throw error;
     }
 
+    // eslint-disable-next-line preserve-caught-error
     throw new Error('Failed to fetch grouped-series series data.');
   }
 }

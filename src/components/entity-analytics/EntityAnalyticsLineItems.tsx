@@ -148,7 +148,7 @@ export const EntityAnalyticsLineItems: React.FC<
       </CardHeader>
       {filter.account_category === 'ch' && onTransferFilterChange && (
         <div className="px-6 pb-4 flex items-center gap-2 w-full sm:w-auto">
-          <Tabs value={transferFilter} onValueChange={(v) => onTransferFilterChange(v as any)} className="w-full sm:w-auto">
+          <Tabs value={transferFilter} onValueChange={(v) => onTransferFilterChange(v as 'all' | 'no-transfers' | 'transfers-only')} className="w-full sm:w-auto">
             <TabsList className="flex w-full justify-start overflow-x-auto sm:w-auto sm:overflow-visible no-scrollbar">
               <TabsTrigger value="no-transfers" className="flex-shrink-0"><Trans>Without Transfers</Trans></TabsTrigger>
               <TabsTrigger value="all" className="flex-shrink-0"><Trans>All</Trans></TabsTrigger>

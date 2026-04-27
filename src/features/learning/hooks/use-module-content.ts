@@ -47,10 +47,11 @@ export function useModuleContent(params: {
         Component: null,
         isLoading: false,
         error:
-          error instanceof Error
-            ? error.message
-            : 'Unable to load module content.',
+            error instanceof Error
+              ? error.message
+              : 'Unable to load module content.',
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.contentDir, params.locale])
 }

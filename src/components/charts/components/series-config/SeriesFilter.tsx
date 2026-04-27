@@ -50,6 +50,7 @@ import {
 } from "@/hooks/filters/useFilterLabels";
 import { LabelStore } from "@/hooks/filters/interfaces";
 import type {
+  AnalyticsFilterType,
   CommitmentsMetric,
   CommitmentsReportType,
   CommitmentsSeriesConfiguration,
@@ -158,6 +159,9 @@ function buildSeriesFilterInitializationPatch(
 
 export function SeriesFilter({ seriesId, className, adapter }: Readonly<SeriesFilterProps>) {
   if (adapter) {
+    if (!adapter.series) {
+      return null;
+    }
     return <SeriesFilterInternal adapter={adapter} className={className} />;
   }
 
@@ -218,7 +222,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
   const entityTypeLabelsStore = useEntityTypeLabel();
   const accountCategoryLabelsStore = useAccountCategoryLabel();
 
-  const exclude = (series?.filter as any)?.exclude ?? {};
+  const exclude = (series?.filter?.exclude ?? {}) as NonNullable<AnalyticsFilterType["exclude"]>;
   const excludeEntityLabelsStore = useEntityLabel(exclude.entity_cuis ?? []);
   const excludeUatLabelsStore = useUatLabel(exclude.uat_ids ?? []);
   const excludeEconomicClassificationLabelsStore = useEconomicClassificationLabel(exclude.economic_codes ?? []);
@@ -250,18 +254,14 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
     initializedRef.current = series.id;
   }, [applyChanges, series, userCurrency, userInflationAdjusted]);
 
-  if (!series) {
-    return null;
-  }
-
-  const isCommitmentsSeries = series.type === "commitments-analytics";
-  const filter = series.filter as any;
+  const isCommitmentsSeries = series?.type === "commitments-analytics";
+  const filter = series?.filter as AnalyticsFilterType;
 
   const createListUpdater =
     (filterKey: string, labelStore?: LabelStore) =>
       (action: React.SetStateAction<OptionItem<string | number>[]>) => {
         const currentOptions =
-          (filter[filterKey] as (string | number)[] | undefined)?.map((id) => ({
+          (filter[filterKey as keyof AnalyticsFilterType] as (string | number)[] | undefined)?.map((id) => ({
             id,
             label: labelStore?.map(id) ?? String(id),
           })) || [];
@@ -272,7 +272,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
         }
 
         applyChanges((draft) => {
-          (draft.filter as any)[filterKey] = newState.map((option) => option.id);
+          (draft.filter as Record<string, unknown>)[filterKey] = newState.map((option) => option.id);
         });
 
         return newState;
@@ -283,7 +283,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
       (value: FilterValue) => {
         const newValue = typeof transform === "function" ? transform(value) : value;
         applyChanges((draft) => {
-          (draft.filter as any)[filterKey] = newValue;
+          (draft.filter as Record<string, unknown>)[filterKey] = newValue;
         });
       };
 
@@ -352,7 +352,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
 
   const setPeriod = (period: ReportPeriodInput | undefined) => {
     applyChanges((draft) => {
-      draft.filter.report_period = period as any;
+      draft.filter.report_period = period as AnalyticsFilterType["report_period"];
     });
   };
 
@@ -436,7 +436,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
     ? {
       id: reportType,
       label: isCommitmentsSeries
-        ? COMMITMENTS_REPORT_TYPE_OPTIONS.find((option) => option.value === reportType)?.label ?? reportType
+        ? COMMITMENTS_REPORT_TYPE_OPTIONS.find((option) => option.value === (reportType as CommitmentsReportType))?.label ?? reportType
         : reportType,
     }
     : null;
@@ -466,7 +466,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
     (filterKey: string, labelStore?: LabelStore) =>
       (action: React.SetStateAction<OptionItem<string | number>[]>) => {
         const currentOptions =
-          (exclude[filterKey] as (string | number)[] | undefined)?.map((id) => ({
+          (exclude[filterKey as keyof NonNullable<AnalyticsFilterType["exclude"]>] as (string | number)[] | undefined)?.map((id) => ({
             id,
             label: labelStore?.map(id) ?? String(id),
           })) || [];
@@ -480,7 +480,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
           if (!draft.filter.exclude) {
             draft.filter.exclude = {};
           }
-          (draft.filter.exclude as any)[filterKey] = newState.map((option) => option.id);
+          (draft.filter.exclude as Record<string, unknown>)[filterKey] = newState.map((option) => option.id);
         });
 
         return newState;
@@ -493,7 +493,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
           if (!draft.filter.exclude) {
             draft.filter.exclude = {};
           }
-          (draft.filter.exclude as any)[filterKey] = value;
+          (draft.filter.exclude as Record<string, unknown>)[filterKey] = value;
         });
       };
 
@@ -664,11 +664,15 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
   };
 
   const normalizationUnit = getNormalizationUnit({
-    normalization: filter.normalization as any,
-    currency: (filter.currency ?? userCurrency) as any,
+    normalization: filter.normalization,
+    currency: (filter.currency ?? userCurrency) as 'RON' | 'EUR' | 'USD',
     show_period_growth: filter.show_period_growth,
   });
   const isPercentGdp = filter.normalization === "percent_gdp";
+
+  if (!series) {
+    return null;
+  }
 
   return (
     <Card className={cn("flex flex-col", className)} role="region" aria-labelledby="series-filters-title">
@@ -710,7 +714,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
               value={commitmentsMetric}
               onChange={(value) => {
                 if (value === undefined) return;
-                setCommitmentsMetric(value as any);
+                setCommitmentsMetric(value);
               }}
               options={commitmentsMetricOptions.map((option) => ({
                 value: option.value,
@@ -738,7 +742,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
               value={effectiveCurrency}
               onChange={(value) => {
                 if (value === undefined) return;
-                setCurrency(value as any);
+                setCurrency(value);
               }}
               options={[
                 { value: "RON", label: t`RON` },
@@ -764,7 +768,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
               value={typeof filter.inflation_adjusted === "boolean" ? filter.inflation_adjusted : userInflationAdjusted}
               onChange={(value) => {
                 if (value === undefined) return;
-                setInflationAdjusted(value as any);
+                setInflationAdjusted(value);
               }}
               options={[
                 { value: false, label: t`Nominal` },
@@ -804,7 +808,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
           onClearAll={() => setPeriod(undefined)}
         >
           <PeriodFilter
-            value={filter.report_period as any}
+            value={filter.report_period as ReportPeriodInput | undefined}
             onChange={setPeriod}
             allowedPeriodTypes={allowedPeriodTypes}
           />
@@ -905,7 +909,7 @@ function SeriesFilterInternal({ adapter, className }: Readonly<SeriesFilterInter
               value={reportType}
               onChange={(value) => {
                 if (value === undefined) return;
-                setReportType(value as any);
+                setReportType(value as CommitmentsReportType);
               }}
               options={COMMITMENTS_REPORT_TYPE_OPTIONS.map((option) => ({
                 value: option.value,

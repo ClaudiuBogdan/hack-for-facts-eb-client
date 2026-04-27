@@ -2,11 +2,11 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Label } from '@/components/ui/label'
 import type { ReportPeriodInput, ReportPeriodType, PeriodDate } from '@/schemas/reporting'
 import { Trans } from '@lingui/react/macro'
+import { useLingui } from '@lingui/react'
 import { useEffect, useMemo } from 'react'
 import { defaultYearRange } from '@/schemas/charts'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { TMonth, TQuarter } from '@/schemas/reporting'
-import { i18n } from '@lingui/core'
 
 type PeriodSelectionMode = 'dates' | 'interval'
 
@@ -49,6 +49,7 @@ export function PeriodFilter({
   allowedPeriodTypes,
   yearRange,
 }: Props) {
+  const { i18n } = useLingui()
   const normalizedAllowedPeriodTypes = useMemo(
     () => normalizeAllowedPeriodTypes(allowedPeriodTypes),
     [allowedPeriodTypes]
@@ -129,12 +130,14 @@ export function PeriodFilter({
 
   const periodOptions = useMemo(
     () => getPeriodOptions(periodType),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- getPeriodOptions is a stable component-scope function
     [availableMonths, availableQuarters, availableYears, periodType]
   )
   const sortedPeriodOptions = useMemo(() => [...periodOptions].sort(), [periodOptions])
   const selectablePeriodOptions = useMemo(() => {
     if (!hasCustomYearRange) return sortedPeriodOptions
     return sortedPeriodOptions.filter((option) => isYearSelectable(option.slice(0, 4)))
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- isYearSelectable is a stable component-scope function
   }, [hasCustomYearRange, sortedPeriodOptions])
 
   const clampPeriodValue = (current: ReportPeriodInput | undefined): ReportPeriodInput | undefined => {
@@ -226,7 +229,7 @@ export function PeriodFilter({
     if (!arePeriodsEqual(value, clampedValue)) {
       onChange(clampedValue)
     }
-  }, [hasCustomYearRange, normalizedAllowedPeriodTypes, onChange, value])
+  }, [hasCustomYearRange, normalizedAllowedPeriodTypes, onChange, value]) // eslint-disable-line react-hooks/exhaustive-deps -- clampPeriodValue is a stable component-scope callback
 
   const handlePeriodTypeChange = (type: ReportPeriodType) => {
     if (!type) return

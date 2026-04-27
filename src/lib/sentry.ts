@@ -220,7 +220,10 @@ export function initSentry(router: unknown): void {
     const anySentry = Sentry as unknown as Record<string, unknown>;
     const tanstack = anySentry["tanstackRouterBrowserTracingIntegration"];
     if (typeof tanstack === "function") {
-      integrations.push((tanstack as (r: unknown) => unknown)(router) as unknown as any);
+      type SentryIntegrationArray = Extract<NonNullable<(typeof integrations)>, unknown[]>
+      ;(integrations as SentryIntegrationArray).push(
+        (tanstack as (r: unknown) => unknown)(router) as SentryIntegrationArray[number]
+      );
     } else if (typeof Sentry.browserTracingIntegration === "function") {
       integrations.push(Sentry.browserTracingIntegration());
     }

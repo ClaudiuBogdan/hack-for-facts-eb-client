@@ -359,7 +359,7 @@ export function InsStatsView({
     return () => window.clearTimeout(timerId);
   }, [searchTerm]);
 
-  const contextNodes = contextsQuery.data?.nodes ?? [];
+  const contextNodes = useMemo(() => contextsQuery.data?.nodes ?? [], [contextsQuery.data?.nodes]);
   const contextByCode = useMemo(() => {
     return new Map(contextNodes.map((context) => [context.code, context]));
   }, [contextNodes]);
@@ -384,7 +384,7 @@ export function InsStatsView({
     });
   }, [contextNodes, locale]);
 
-  const catalogDatasets = datasetCatalogQuery.data?.nodes ?? [];
+  const catalogDatasets = useMemo(() => datasetCatalogQuery.data?.nodes ?? [], [datasetCatalogQuery.data?.nodes]);
   const prioritizedIndex = useMemo(() => {
     return new Map(prioritizedCodes.map((code, index) => [code, index]));
   }, [prioritizedCodes]);
@@ -887,7 +887,7 @@ export function InsStatsView({
       source: normalizeMarkdownText(source),
       notes: normalizeMarkdownText(notes),
     };
-  }, [contextByCode, locale, rootContexts, selectedDataset, selectedDatasetCode]);
+  }, [contextByCode, locale, rootContexts, selectedDataset]);
 
   const selectedDatasetBreadcrumbItems = useMemo(() => {
     if (!selectedDatasetDetails) return [];
@@ -902,8 +902,8 @@ export function InsStatsView({
     selectedTemporalPeriodicity != null &&
     !selectedDataset.periodicity.includes(selectedTemporalPeriodicity);
 
-  const historyObservations = datasetHistoryQuery.data?.observations ?? [];
-  const datasetDimensionMetadata = datasetDimensionsQuery.data?.dimensions ?? [];
+  const historyObservations = useMemo(() => datasetHistoryQuery.data?.observations ?? [], [datasetHistoryQuery.data?.observations]);
+  const datasetDimensionMetadata = useMemo(() => datasetDimensionsQuery.data?.dimensions ?? [], [datasetDimensionsQuery.data?.dimensions]);
 
   const seriesGroups = useMemo<InsSeriesGroup[]>(() => {
     return buildSeriesGroups(historyObservations, datasetDimensionMetadata);

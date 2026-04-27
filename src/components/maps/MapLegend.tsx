@@ -38,8 +38,8 @@ export const MapLegend: React.FC<MapLegendProps> = ({
     return null;
   }
 
-  const unit = getNormalizationUnit({ normalization: normalization as any, currency: currency as any });
-  const currencyCode: 'RON' | 'EUR' | 'USD' = (currency ?? (unit.includes('EUR') ? 'EUR' : 'RON')) as any;
+  const unit = getNormalizationUnit({ normalization: normalization as 'total' | 'per_capita' | 'percent_gdp' | 'total_euro' | 'per_capita_euro' | undefined, currency: currency as 'RON' | 'EUR' | 'USD' | undefined });
+  const currencyCode: 'RON' | 'EUR' | 'USD' = (currency ?? (unit.includes('EUR') ? 'EUR' : 'RON')) as 'RON' | 'EUR' | 'USD';
   const isPerCapita = unit.includes('capita');
   const resolvedTitle = title ?? (unit.startsWith('%') ? t`Aggregated Value (% of GDP)` : isPerCapita ? t`Aggregated Value (${currencyCode}/capita)` : t`Aggregated Value (${currencyCode})`);
 

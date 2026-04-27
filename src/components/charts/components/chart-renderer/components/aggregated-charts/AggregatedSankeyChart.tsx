@@ -4,7 +4,7 @@ import { AlertTriangle } from 'lucide-react';
 import { yValueFormatter } from '../../utils';
 import { DataPointPayload } from '@/components/charts/hooks/useChartData';
 import { ChartMargins } from '../interfaces';
-import { sankey, sankeyLinkHorizontal, SankeyNode } from 'd3-sankey';
+import { sankey, sankeyLinkHorizontal, SankeyNode, SankeyLink } from 'd3-sankey';
 import { Annotation, CircleSubject, Connector, EditableAnnotation, Label } from '@visx/annotation';
 import { applyAlpha } from '../../utils';
 
@@ -313,7 +313,7 @@ export function AggregatedSankeyChart({ chart, aggregatedData, unitMap, height, 
                 >
                     <g transform={`translate(${CHART_MARGINS.left},${CHART_MARGINS.top})`}>
                         {/* Render links */}
-                        {links.map((link: any, i: number) => {
+                        {links.map((link: SankeyLink<SankeyNodeData, SankeyLinkData>, i: number) => {
                             const path = sankeyLinkHorizontal()(link);
                             return path ? (
                                 <path
@@ -328,7 +328,7 @@ export function AggregatedSankeyChart({ chart, aggregatedData, unitMap, height, 
                         })}
 
                         {/* Render nodes */}
-                        {nodes.map((node: any) => {
+                        {nodes.map((node: SankeyNode<SankeyNodeData, SankeyLinkData>) => {
                             const nodeData = node as unknown as SankeyNode<SankeyNodeData, SankeyLinkData>;
                             if (nodeData.x0 === undefined || nodeData.y0 === undefined) return null;
 

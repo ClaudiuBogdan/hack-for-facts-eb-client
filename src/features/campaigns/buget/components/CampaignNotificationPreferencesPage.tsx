@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useSearch } from '@tanstack/react-router'
 import { Trans } from '@lingui/react/macro'
@@ -157,7 +158,7 @@ function NotificationPreferencesContent({
   } = useCampaignNotifications()
   const toggleMutation = useToggleNotification({ silent: true })
   const [isBatchUpdating, setIsBatchUpdating] = useState(false)
-  const entityNotifications = notifications ?? []
+  const entityNotifications = useMemo(() => notifications ?? [], [notifications])
   const isGlobalEnabled = globalPreference?.isActive ?? activeCount > 0
 
   const ensureGlobalPreference = useCallback(

@@ -38,7 +38,7 @@ export function DebouncedStatusInput({
     if (typeof value === 'string' && value !== innerValue) {
       setInnerValue(value);
     }
-  }, [value]);
+  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps -- innerValue excluded intentionally: debounce sync only on external value changes
 
   const debouncedCommit = useDebouncedCallback((v: string) => {
     if (onDebouncedChange) onDebouncedChange(v);

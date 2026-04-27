@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { usePeriodLabel } from '@/hooks/use-period-label'
+import type { ReportPeriodInput } from '@/schemas/reporting'
 import type { AnalyticsFilterType } from '@/schemas/charts'
 import { FilteredSpendingInfo } from '@/components/budget-explorer/FilteredSpendingInfo'
 import { useTreemapDrilldown } from '@/components/budget-explorer/useTreemapDrilldown'
@@ -92,7 +93,7 @@ export function EntityAnalyticsTreemap({
   })
 
   const isRevenueView = filter.account_category === 'vn'
-  const periodLabel = usePeriodLabel(filter.report_period)
+  const periodLabel = usePeriodLabel(filter.report_period as ReportPeriodInput | undefined)
 
   useEffect(() => {
     onActivePrimaryChange?.(activePrimary)

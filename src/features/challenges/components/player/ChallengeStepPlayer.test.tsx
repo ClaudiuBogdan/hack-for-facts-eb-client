@@ -20,7 +20,7 @@ let lessonCompletionState = {
 }
 
 vi.mock('@tanstack/react-router', () => ({
-  Link: ({ children, to, resetScroll: _resetScroll, search: _search, ...props }: any) => (
+  Link: ({ children, to, resetScroll: _resetScroll, search: _search, ...props }: { children?: React.ReactNode; to?: string; [key: string]: unknown }) => (
     <a href={typeof to === 'string' ? to : '#'} {...props}>
       {children}
     </a>
@@ -51,6 +51,7 @@ vi.mock('../../hooks/use-challenge-step-content', () => ({
   useChallengeStepContent: () => mockUseChallengeStepContent(),
 }))
 
+ 
 const moduleDefinition: any = {
   id: 'module-1',
   slug: 'test-module',
@@ -249,6 +250,7 @@ describe('ChallengeStepPlayer', () => {
     mockUseChallengeStepContent.mockReturnValue({
       content: {
         kind: 'article',
+         
         Component: ({ components }: any) => {
           const QuizComponent = components.Quiz
           const MarkCompleteComponent = components.MarkComplete
@@ -786,6 +788,7 @@ describe('ChallengeStepPlayer', () => {
     mockUseChallengeStepContent.mockReturnValue({
       content: {
         kind: 'sectioned',
+         
         Component: ({ components }: any) => {
           const QuizComponent = components.Quiz
           const MarkCompleteComponent = components.MarkComplete
@@ -886,7 +889,8 @@ describe('ChallengeStepPlayer', () => {
               ],
               explanation: 'Use the definition from above.',
             },
-            Component: ({ components }: any) => {
+             
+        Component: ({ components }: any) => {
               const QuizComponent = components.Quiz
 
               return (
@@ -1000,7 +1004,8 @@ describe('ChallengeStepPlayer', () => {
               ],
               explanation: 'Correct answer.',
             },
-            Component: ({ components }: any) => {
+             
+        Component: ({ components }: any) => {
               const QuizComponent = components.Quiz
 
               return (
@@ -1148,7 +1153,8 @@ describe('ChallengeStepPlayer', () => {
               ],
               explanation: 'Correct answer.',
             },
-            Component: ({ components }: any) => {
+             
+        Component: ({ components }: any) => {
               const QuizComponent = components.Quiz
 
               return (
@@ -1278,7 +1284,8 @@ describe('ChallengeStepPlayer', () => {
               ],
               explanation: 'Correct answer.',
             },
-            Component: ({ components }: any) => {
+             
+        Component: ({ components }: any) => {
               const QuizComponent = components.Quiz
 
               return (
@@ -1604,7 +1611,8 @@ describe('ChallengeStepPlayer', () => {
               ],
               explanation: 'Use the definition from above.',
             },
-            Component: ({ components }: any) => {
+             
+        Component: ({ components }: any) => {
               const QuizComponent = components.Quiz
 
               return (
@@ -1736,7 +1744,8 @@ describe('ChallengeStepPlayer', () => {
               ],
               explanation: 'Use the definition from above.',
             },
-            Component: ({ components }: any) => {
+             
+        Component: ({ components }: any) => {
               const QuizComponent = components.Quiz
 
               return (

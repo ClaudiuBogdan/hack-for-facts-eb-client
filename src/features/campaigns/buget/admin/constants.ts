@@ -363,6 +363,9 @@ export function getCampaignAdminEntityNotificationTypeLabel(
     case "funky:outbox:public_debate_announcement":
     case "public_debate_announcement":
       return t`Public debate announcement`;
+    case "funky:outbox:bucharest_budget_analysis":
+    case "bucharest_budget_analysis":
+      return t`Bucharest budget analysis`;
     case null:
       return t`Unavailable`;
     default:
@@ -472,6 +475,8 @@ export function getCampaignAdminNotificationProjectionLabel(
       return t`Public debate announcement`;
     case "admin_reviewed_interaction":
       return t`Reviewed interaction`;
+    case "bucharest_budget_analysis":
+      return t`Bucharest budget analysis`;
     default:
       return projectionKind;
   }

@@ -223,7 +223,7 @@ HTTPS_ENABLED=true
 
 ## Important Notes
 
-1. **Type Safety**: Always run `yarn typecheck` before completing tasks
+1. Always run `yarn check` when you are done with all the changes
 2. **i18n**: Mark all user-facing text for translation with Lingui macros
 3. **Accessibility**: Use semantic HTML and Radix UI primitives for keyboard navigation and ARIA
 4. **Error Boundaries**: All major routes should handle errors gracefully

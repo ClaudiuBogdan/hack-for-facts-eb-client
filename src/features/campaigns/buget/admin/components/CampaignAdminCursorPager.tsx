@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { t } from "@lingui/core/macro";
 import { Button } from "@/components/ui/button";

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { lazy, Suspense } from 'react'
 import { useSearch } from '@tanstack/react-router'
 import { Skeleton } from '@/components/ui/skeleton'

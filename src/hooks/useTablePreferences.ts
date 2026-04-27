@@ -1,4 +1,4 @@
-import type { VisibilityState, ColumnPinningState, ColumnSizingState } from '@tanstack/react-table'
+import type { VisibilityState, ColumnPinningState, ColumnSizingState, Updater } from '@tanstack/react-table'
 import { usePersistedState } from '@/lib/hooks/usePersistedState'
 
 export type TablePreferences = {
@@ -11,6 +11,9 @@ export type TablePreferences = {
 }
 
 const STORAGE_KEY_PREFIX = 'table-preferences:'
+
+type Density = TablePreferences['density']
+type CurrencyFormat = NonNullable<TablePreferences['currencyFormat']>
 
 export function useTablePreferences(
   key: string,
@@ -26,23 +29,23 @@ export function useTablePreferences(
     currencyFormat: initial.currencyFormat ?? 'both',
   })
 
-  const setDensity = (next: ((prev: 'comfortable' | 'compact') => 'comfortable' | 'compact') | 'comfortable' | 'compact') => {
-    setPrefs((prev) => ({ ...prev, density: typeof next === 'function' ? (next as any)(prev.density) : next }))
+  const setDensity = (next: Updater<Density>) => {
+    setPrefs((prev) => ({ ...prev, density: typeof next === 'function' ? (next as (p: Density) => Density)(prev.density) : next }))
   }
-  const setColumnVisibility = (updater: any) => {
+  const setColumnVisibility = (updater: Updater<VisibilityState>) => {
     setPrefs((prev) => ({ ...prev, columnVisibility: typeof updater === 'function' ? updater(prev.columnVisibility) : updater }))
   }
-  const setColumnPinning = (updater: any) => {
-    setPrefs((prev) => ({ ...prev, columnPinning: typeof updater === 'function' ? updater(prev.columnPinning) : updater }))
+  const setColumnPinning = (updater: Updater<ColumnPinningState>) => {
+    setPrefs((prev) => ({ ...prev, columnPinning: typeof updater === 'function' ? updater(prev.columnPinning ?? {}) : updater }))
   }
-  const setColumnSizing = (updater: any) => {
-    setPrefs((prev) => ({ ...prev, columnSizing: typeof updater === 'function' ? updater(prev.columnSizing) : updater }))
+  const setColumnSizing = (updater: Updater<ColumnSizingState>) => {
+    setPrefs((prev) => ({ ...prev, columnSizing: typeof updater === 'function' ? updater(prev.columnSizing ?? {}) : updater }))
   }
-  const setColumnOrder = (updater: any) => {
-    setPrefs((prev) => ({ ...prev, columnOrder: typeof updater === 'function' ? updater(prev.columnOrder) : updater }))
+  const setColumnOrder = (updater: Updater<string[]>) => {
+    setPrefs((prev) => ({ ...prev, columnOrder: typeof updater === 'function' ? updater(prev.columnOrder ?? []) : updater }))
   }
-  const setCurrencyFormat = (next: ((prev: 'standard' | 'compact' | 'both' | 'euro') => 'standard' | 'compact' | 'both' | 'euro') | 'standard' | 'compact' | 'both' | 'euro') => {
-    setPrefs((prev) => ({ ...prev, currencyFormat: typeof next === 'function' ? (next as any)(prev.currencyFormat ?? 'both') : next }))
+  const setCurrencyFormat = (next: Updater<CurrencyFormat>) => {
+    setPrefs((prev) => ({ ...prev, currencyFormat: typeof next === 'function' ? (next as (p: CurrencyFormat) => CurrencyFormat)(prev.currencyFormat ?? 'both') : next }))
   }
 
   return {

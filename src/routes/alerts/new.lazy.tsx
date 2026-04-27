@@ -109,7 +109,7 @@ function RouteComponent() {
       const shareUrl = `${window.location.origin}/alerts/new?${params.toString()}`;
       await navigator.clipboard.writeText(shareUrl);
       toast.success(t`Share link copied`);
-    } catch (err) {
+    } catch {
       toast.error(t`Failed to copy share link`);
     }
   };

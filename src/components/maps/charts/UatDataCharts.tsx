@@ -25,11 +25,12 @@ type TopEntity = {
 };
 
 const TOP_ENTITIES_COUNT = 15;
+const EMPTY_CHART_DATA: (HeatmapUATDataPoint | HeatmapCountyDataPoint)[] = [];
 
 export const UatDataCharts: React.FC<UatDataChartsProps> = ({ data, mapViewType, effectiveFilter }) => {
     const { mapState } = useMapFilter();
     const [userCurrency] = useUserCurrency();
-    const chartData = data ?? [];
+    const chartData = data ?? EMPTY_CHART_DATA;
     const hasChartData = chartData.length > 0;
 
     const isUatView = mapViewType === 'UAT';

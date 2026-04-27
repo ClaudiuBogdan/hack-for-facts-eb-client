@@ -93,7 +93,7 @@ const createMockChart = (
     label: `Series ${i + 1}`,
     filter: {},
     config: {},
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   })) as any,
   annotations: [],
   createdAt: '',
@@ -103,7 +103,7 @@ const createMockChart = (
 // Shared mock data for all tests
 const mockDataMap: DataSeriesMap = new Map()
 const mockUnitMap: Map<string, Unit> = new Map()
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 const mockTimeSeriesData: any[] = []
 const mockAggregatedData: DataPointPayload[] = []
 
@@ -152,7 +152,7 @@ describe('ChartRenderer', () => {
 
   describe('unsupported chart types', () => {
     it('renders "Unsupported chart type" message for invalid type', () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const chart = createMockChart('invalid' as any)
 
       renderChartRenderer(chart)

@@ -41,14 +41,14 @@ export function NavUser(_props: NavUserProps) {
     const last = user.lastName ?? "";
     const full = `${first} ${last}`.trim();
     return full || (locale === "ro" ? "Utilizator" : "User");
-  }, [user]);
+  }, [locale, user]);
 
   const initials = React.useMemo(() => {
     if (!user) return locale === "ro" ? "IN" : "GU";
     const first = (user.firstName?.[0] ?? "U").toUpperCase();
     const last = (user.lastName?.[0] ?? "").toUpperCase();
     return `${first}${last}`.slice(0, 2);
-  }, [user]);
+  }, [locale, user]);
 
   const email = user?.email ?? "";
   const accountLabel = locale === "ro" ? "Cont" : "Account";

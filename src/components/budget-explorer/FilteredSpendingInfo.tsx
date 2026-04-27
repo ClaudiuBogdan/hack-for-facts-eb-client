@@ -36,7 +36,7 @@ export function FilteredSpendingInfo({
   useEffect(() => {
     if (!amountFilter) return
     setUiRange([amountFilter.range[0], amountFilter.range[1]])
-  }, [amountFilter?.range?.[0], amountFilter?.range?.[1]])
+  }, [amountFilter])
 
   const debouncedOnChange = useDebouncedCallback<[[number, number]]>((val) => {
     amountFilter?.onChange(val)

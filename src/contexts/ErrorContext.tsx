@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useCallback, useState } from "react";
 import * as Sentry from "@sentry/react";
 import { AppError, ErrorSource } from "@/lib/errors/types";

@@ -21,23 +21,23 @@ export function chartRelatesToEntity(chart: StoredChart, entity: EntityDetailsDa
 
   return chart.series.some((s) => {
     if (isLineItemsSeries(s)) {
-      const filter = s.filter ?? {} as Record<string, unknown>;
+      const filter = (s.filter ?? {}) as Record<string, unknown>;
 
-      const entityCuis = Array.isArray((filter as any).entity_cuis)
-        ? ((filter as any).entity_cuis as unknown[]).map(String)
+      const entityCuis = Array.isArray(filter.entity_cuis)
+        ? (filter.entity_cuis as unknown[]).map(String)
         : [];
       if (entityCuis.includes(String(cui))) return true;
 
       if (isUatEntity && uatId) {
-        const uatIds = Array.isArray((filter as any).uat_ids)
-          ? ((filter as any).uat_ids as unknown[]).map(String)
+        const uatIds = Array.isArray(filter.uat_ids)
+          ? (filter.uat_ids as unknown[]).map(String)
           : [];
         if (uatIds.includes(uatId)) return true;
       }
 
       if (isCountyEntity && countyCode) {
-        const countyCodes = Array.isArray((filter as any).county_codes)
-          ? ((filter as any).county_codes as unknown[]).map(String)
+        const countyCodes = Array.isArray(filter.county_codes)
+          ? (filter.county_codes as unknown[]).map(String)
           : [];
         if (countyCodes.includes(String(countyCode))) return true;
       }

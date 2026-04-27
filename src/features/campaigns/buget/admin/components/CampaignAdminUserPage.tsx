@@ -205,7 +205,7 @@ export function CampaignAdminUserPage({
   const submitReviewsMutation =
     useSubmitCampaignAdminReviewsMutation(campaignKey);
 
-  const allItems = interactionsQuery.data ?? [];
+  const allItems = useMemo(() => interactionsQuery.data ?? [], [interactionsQuery.data]);
   const allUserNotificationItems = useMemo(
     () =>
       (notificationsQuery.data?.items ?? []).filter(
@@ -863,7 +863,7 @@ export function CampaignAdminUserPage({
     return () => {
       window.removeEventListener("paste", handleWindowPaste);
     };
-  }, [bulkReviewItems, handleImportBulkReviewText]);
+  }, [bulkReviewItems]);
 
   const handleClearSelectedStagedDrafts = () => {
     if (selectedItems.length === 0) {

@@ -9,8 +9,8 @@ import type {
   GroupedItemAnalyticsSelection,
   GroupedItemAnalyticsRequest,
   GroupedItemCopyPromptRequest,
-} from './FinancialDataCard';
-import { buildGroupedItemMenuActions } from './FinancialDataCard';
+} from './grouped-item-analytics';
+import { buildGroupedItemMenuActions } from './grouped-item-analytics';
 import {
   GROUPED_CODE_CLASS_NAME,
   GROUPED_INFO_LINK_CLASS_NAME,

@@ -13,12 +13,12 @@ export function CurrencyToggle() {
     const [userCurrency, setUserCurrency] = useUserCurrency();
     const search = useSearch({ strict: false });
 
-    const normalizationRaw = (search as any).normalization as NormalizationInput | undefined;
+    const normalizationRaw = (search as Record<string, unknown>).normalization as NormalizationInput | undefined;
     const { forcedOverrides } = normalizationRaw
         ? resolveNormalizationSettings(normalizationRaw)
         : { forcedOverrides: {} as ReturnType<typeof resolveNormalizationSettings>["forcedOverrides"] };
 
-    const urlCurrency = parseCurrencyParam((search as any).currency);
+    const urlCurrency = parseCurrencyParam((search as Record<string, unknown>).currency as string | undefined);
     const selectedCurrency = forcedOverrides.currency ?? urlCurrency ?? userCurrency;
 
     const applyCurrency = (next: Currency) => {

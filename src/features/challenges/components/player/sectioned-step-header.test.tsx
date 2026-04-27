@@ -5,6 +5,7 @@ import type { SectionNavigationTarget } from './challenge-step-player.shared'
 import type { ChallengeStepSection } from '../../utils/sectioned-step-markdown'
 
 vi.mock('@tanstack/react-router', () => ({
+   
   Link: ({ children, to, resetScroll: _resetScroll, search: _search, ...props }: any) => (
     <a href={typeof to === 'string' ? to : '#'} {...props}>
       {children}

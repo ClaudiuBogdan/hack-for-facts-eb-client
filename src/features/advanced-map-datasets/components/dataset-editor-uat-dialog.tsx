@@ -127,11 +127,12 @@ export function DatasetEditorUatDialog({
     previousRowSirutaRef.current = currentSirutaCode;
     hasPendingValueCommitRef.current = false;
     hasPendingPayloadCommitRef.current = false;
-  }, [row?.payloadDraft, row?.rawValue, row?.sirutaCode, row?.valueJson, row?.valueText]);
+  }, [row?.payloadDraft, row?.rawValue, row?.sirutaCode, row?.valueJson, row?.valueText]); // eslint-disable-line react-hooks/exhaustive-deps -- flushPendingValueCommit and flushPendingPayloadCommit are stable component-scope functions
 
   useEffect(() => () => {
     flushPendingValueCommit();
     flushPendingPayloadCommit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- cleanup-only effect; flushPendingValueCommit and flushPendingPayloadCommit are stable component-scope functions
   }, []);
 
   const typeLabel = row?.levelName?.trim() || t`Unknown type`;

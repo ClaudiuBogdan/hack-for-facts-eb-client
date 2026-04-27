@@ -81,10 +81,10 @@ export function InsDatasetList({
     ],
     queryFn: async ({ pageParam = 0 }): Promise<PageData<InsDataset>> => {
       const shouldScanForSirutaMatches = datasetFilter?.hasSiruta === true;
-      let lastPageInfo = {
-        totalCount: 0,
-        hasNextPage: false,
-        hasPreviousPage: false,
+      let lastPageInfo!: {
+        totalCount: number;
+        hasNextPage: boolean;
+        hasPreviousPage: boolean;
       };
       const filteredNodes: InsDataset[] = [];
       let nextOffset = pageParam;
@@ -122,6 +122,7 @@ export function InsDatasetList({
         if (shouldStopScanning) {
           break;
         }
+      // eslint-disable-next-line no-constant-condition
       } while (true);
 
       return {

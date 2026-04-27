@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { PropsWithChildren, createContext, useContext, useMemo, type ComponentProps } from 'react'
 import {
   ClerkProvider,

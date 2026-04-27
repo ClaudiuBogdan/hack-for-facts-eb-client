@@ -6,13 +6,20 @@ import type { Alert, AlertEditorMode, AlertView, AlertCondition } from '@/schema
 
 type AlertUpdater = Partial<Alert> | ((draft: Alert) => void);
 
+type AlertSearchParams = {
+  alert?: Alert;
+  view?: AlertView;
+  mode?: AlertEditorMode;
+  [key: string]: unknown;
+};
+
 export function useAlertDraftStore() {
   const navigate = useNavigate({ from: '/alerts/new' });
   const { alert, view, mode } = useSearch({ from: '/alerts/new' }) as unknown as { alert: Alert; view: AlertView; mode: AlertEditorMode };
 
   const updateAlert = useCallback((updater: AlertUpdater) => {
     navigate({
-      search: (prev: any) => {
+      search: (prev: AlertSearchParams) => {
         const nextAlert = typeof updater === 'function'
           ? produce(prev.alert, (draft: Alert) => {
               updater(draft);
@@ -71,7 +78,7 @@ export function useAlertDraftStore() {
   const setView = useCallback(
     (nextView: AlertView) => {
       navigate({
-        search: (prev: any) => ({
+        search: (prev: AlertSearchParams) => ({
           ...prev,
           view: nextView,
         }),
@@ -85,7 +92,7 @@ export function useAlertDraftStore() {
   const setMode = useCallback(
     (nextMode: AlertEditorMode) => {
       navigate({
-        search: (prev: any) => ({
+        search: (prev: AlertSearchParams) => ({
           ...prev,
           mode: nextMode,
         }),
@@ -106,7 +113,7 @@ export function useAlertDraftStore() {
   const setAlert = useCallback((next: Alert, options?: { mode?: AlertEditorMode }) => {
     const parsed = AlertSchema.parse(next);
     navigate({
-      search: (prev: any) => ({
+      search: (prev: AlertSearchParams) => ({
         ...prev,
         alert: parsed,
         mode: options?.mode ?? prev.mode,

@@ -4,7 +4,7 @@ import { Trans } from "@lingui/react/macro";
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "../ui/sidebar";
 import { Analytics } from "@/lib/analytics";
 import { getUserLocale, setUserLocale } from "@/lib/utils";
-import { NavigateOptions, useNavigate, useLocation } from "@tanstack/react-router";
+import { useNavigate, useLocation } from "@tanstack/react-router";
 
 export function LanguageToggle() {
   const { state } = useSidebar();
@@ -26,11 +26,11 @@ export function LanguageToggle() {
       : currentPath;
     // Hard reload required, as some components don't update the translation immediately
     navigate({
-      to: nextPath as any,
-      search: (prev: any) => ({ ...prev, lang: locale }),
+      to: nextPath,
+      search: (prev: Record<string, unknown>) => ({ ...prev, lang: locale }),
       replace: true,
       reloadDocument: true,
-    } as NavigateOptions<any>);
+    } as Parameters<typeof navigate>[0]);
   }
 
   return (

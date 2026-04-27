@@ -89,18 +89,20 @@ function stripBoundaryQuotes(value: string): string {
   return value.replace(/^"+|"+$/g, '')
 }
 
-function normalizeSearchPatch(patch: Record<string, any>): Record<string, any> {
-  const normalizedPatch = { ...patch }
+function normalizeSearchPatch(patch: Record<string, unknown>): Record<string, unknown> {
+  const normalizedPatch: Record<string, unknown> = { ...patch }
 
-  if (typeof normalizedPatch.month === 'string') {
-    const normalizedMonth = stripBoundaryQuotes(normalizedPatch.month)
+  const month = normalizedPatch.month
+  if (typeof month === 'string') {
+    const normalizedMonth = stripBoundaryQuotes(month)
     normalizedPatch.month = /^\d{1,2}$/.test(normalizedMonth)
       ? normalizedMonth.padStart(2, '0')
       : normalizedMonth
   }
 
-  if (typeof normalizedPatch.quarter === 'string') {
-    normalizedPatch.quarter = stripBoundaryQuotes(normalizedPatch.quarter)
+  const quarter = normalizedPatch.quarter
+  if (typeof quarter === 'string') {
+    normalizedPatch.quarter = stripBoundaryQuotes(quarter)
   }
 
   return normalizedPatch
@@ -255,13 +257,14 @@ function EntityDetailsPage() {
     100
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateSearch = useCallback((patch: Record<string, any>) => {
     const normalizedPatch = normalizeSearchPatch(patch)
 
     // Skip navigation if nothing actually changes
     const isNoOp = Object.keys(normalizedPatch).every((key) => {
-      const nextVal = (normalizedPatch as any)[key]
-      const prevVal = (search as any)[key]
+      const nextVal = normalizedPatch[key]
+      const prevVal = (search as Record<string, unknown>)[key]
       return nextVal === undefined ? prevVal === undefined : prevVal === nextVal
     })
     if (isNoOp) return
@@ -274,10 +277,10 @@ function EntityDetailsPage() {
             if (value === undefined) {
               // TanStack Router drops undefined values in serialization, but we delete
               // for correctness and to avoid `key=undefined` in edge cases.
-              delete (nextSearch as any)[key]
+              delete (nextSearch as Record<string, unknown>)[key]
               continue
             }
-            ;(nextSearch as any)[key] = value
+            ;(nextSearch as Record<string, unknown>)[key] = value
           }
           return nextSearch
         },
@@ -380,14 +383,13 @@ function EntityDetailsPage() {
       currency: nextCurrencyParam,
       inflation_adjusted: nextInflationParam,
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- activeView and cui changes always coincide with other deps changes
   }, [
-    activeView,
     currency,
     displayCurrency,
     displayInflationAdjusted,
     forcedOverrides.currency,
     forcedOverrides.inflationAdjusted,
-    cui,
     normalizationRaw,
     persistSettings,
     persistedCurrency,
@@ -395,6 +397,7 @@ function EntityDetailsPage() {
     updateSearch,
   ])
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateReportPeriodInSearch = useCallback((patch: Record<string, any>) => {
     const normalizedPatch = normalizeSearchPatch(patch)
 
@@ -410,7 +413,7 @@ function EntityDetailsPage() {
             quarter: nextPeriod === 'QUARTER' ? nextState.quarter : undefined,
             report_type: ('report_type' in normalizedPatch && normalizedPatch.report_type) ? normalizedPatch.report_type : prev.report_type,
             main_creditor_cui: ('main_creditor_cui' in normalizedPatch && normalizedPatch.main_creditor_cui) ? normalizedPatch.main_creditor_cui : prev.main_creditor_cui,
-          }
+          } as typeof prev
         },
         replace: true,
         resetScroll: false,
@@ -418,9 +421,9 @@ function EntityDetailsPage() {
     })
   }, [navigate])
 
-  const handleReportControlsChange = useCallback((payload: { report_period: ReportPeriodInput;[key: string]: any }) => {
+  const handleReportControlsChange = useCallback((payload: { report_period: ReportPeriodInput; [key: string]: unknown }) => {
     const { report_period, ...restPayload } = payload
-    const patch: Record<string, any> = { period: report_period.type, ...restPayload }
+    const patch: Record<string, unknown> = { period: report_period.type, ...restPayload }
     const intervalDate = report_period.selection.interval?.start
 
     if (intervalDate) {
@@ -575,7 +578,7 @@ function EntityDetailsPage() {
           accountCategory={accountCategory}
           handleTreemapPrimaryChange={handleTreemapPrimaryChange}
           handleAccountCategoryChange={handleAccountCategoryChange}
-          treemapPath={(search as any).treemapPath}
+          treemapPath={(search as Record<string, unknown>).treemapPath as string | undefined}
           handleTreemapPathChange={handleTreemapPathChange}
           transferFilter={transferFilter}
           handleTransferFilterChange={handleTransferFilterChange}
@@ -607,7 +610,7 @@ interface ViewsContentProps {
   reportTypeState?: GqlReportType;
   reportsTypeState?: GqlReportType;
   mainCreditorCui?: string;
-  search: { expenseSearch?: string, incomeSearch?: string, [key: string]: any };
+  search: { expenseSearch?: string, incomeSearch?: string, [key: string]: unknown };
   mapFilters: AnalyticsFilterType;
   updateMapFilters: (update: Partial<AnalyticsFilterType>) => void;
   handleYearChange: (year: number) => void;

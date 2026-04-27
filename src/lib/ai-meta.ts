@@ -1,6 +1,17 @@
 import { z } from 'zod'
-import { describeZodSchema } from '@/lib/zod-introspect'
+import { describeZodSchema, type IntrospectedParam } from '@/lib/zod-introspect'
 import { getSiteUrl } from '@/config/env'
+
+type ZodTypeInternal = {
+  _def: {
+    typeName: string
+    schema?: ZodTypeInternal
+    innerType?: ZodTypeInternal
+    shape?: (() => Record<string, z.ZodTypeAny>) | Record<string, z.ZodTypeAny>
+    defaultValue?: unknown
+    values?: unknown[]
+  }
+}
 
 type HeadEntry = { name?: string; content?: string; title?: string }
 type ScriptEntry = { type: string; children: string }
@@ -73,12 +84,12 @@ function interpolate(template: string, params: Record<string, string>): string {
 
 function urlTemplateWithPlaceholders(schema: z.ZodTypeAny, base: string): string {
   const params: string[] = []
-  const s = unwrapSchema(schema as any)
+  const s = unwrapSchema(schema)
   const typeName = s?._def?.typeName
   if (typeName !== 'ZodObject') return base
   const defShape = s._def?.shape
-  const shape: Record<string, any> = typeof defShape === 'function' ? defShape() : defShape || {}
-  for (const [key, field] of Object.entries<any>(shape)) {
+  const shape: Record<string, z.ZodTypeAny> = typeof defShape === 'function' ? defShape() : defShape || {}
+  for (const [key, field] of Object.entries(shape)) {
     const inner = unwrapSchema(field)
     const t = inner?._def?.typeName
     if (t === 'ZodString' || t === 'ZodNumber' || t === 'ZodEnum') {
@@ -88,18 +99,24 @@ function urlTemplateWithPlaceholders(schema: z.ZodTypeAny, base: string): string
   return params.length ? `${base}?${params.join('&')}` : base
 }
 
-function unwrapSchema(s: any): any {
-  let cur = s
-  while (cur?._def?.typeName === 'ZodEffects' || cur?._def?.typeName === 'ZodOptional' || cur?._def?.typeName === 'ZodDefault') {
-    if (cur._def?.typeName === 'ZodEffects') cur = cur._def.schema
-    else cur = cur._def.innerType
+function unwrapSchema(s: z.ZodTypeAny): ZodTypeInternal {
+  let cur = s as unknown as ZodTypeInternal
+  while (cur._def?.typeName === 'ZodEffects' || cur._def?.typeName === 'ZodOptional' || cur._def?.typeName === 'ZodDefault') {
+    if (cur._def.typeName === 'ZodEffects') cur = cur._def.schema as unknown as ZodTypeInternal
+    else cur = cur._def.innerType as unknown as ZodTypeInternal
   }
   return cur
 }
 
-function buildFaqFromParamDoc(paramDoc: Record<string, any>) {
-  const mainEntity: any[] = []
-  for (const [key, spec] of Object.entries<any>(paramDoc)) {
+type FaqEntry = {
+  '@type': string
+  name: string
+  acceptedAnswer: { '@type': string; text: string }
+}
+
+function buildFaqFromParamDoc(paramDoc: Record<string, IntrospectedParam>) {
+  const mainEntity: FaqEntry[] = []
+  for (const [key, spec] of Object.entries(paramDoc)) {
     const name = `How do I use the '${key}' parameter?`
     const answer = spec.description
       ? spec.description
