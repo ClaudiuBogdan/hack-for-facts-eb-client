@@ -153,6 +153,19 @@ export function CampaignAdminUserPage({
   const [isSendConfirmOpen, setIsSendConfirmOpen] = useState(false);
   const [isClearStagedConfirmOpen, setIsClearStagedConfirmOpen] =
     useState(false);
+  const [userIdCopied, setUserIdCopied] = useState(false);
+  const userIdCopyResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+
+  useEffect(() => {
+    return () => {
+      if (userIdCopyResetTimeoutRef.current !== null) {
+        clearTimeout(userIdCopyResetTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const {
     selectedKeys,
     clearSelection,
@@ -968,19 +981,6 @@ export function CampaignAdminUserPage({
       </AdminCampaignLayout>
     );
   }
-
-  const [userIdCopied, setUserIdCopied] = useState(false);
-  const userIdCopyResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
-
-  useEffect(() => {
-    return () => {
-      if (userIdCopyResetTimeoutRef.current !== null) {
-        clearTimeout(userIdCopyResetTimeoutRef.current);
-      }
-    };
-  }, []);
 
   const handleCopyUserId = async () => {
     if (typeof navigator === "undefined" || navigator.clipboard?.writeText === undefined) {
