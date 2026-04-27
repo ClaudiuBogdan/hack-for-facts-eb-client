@@ -59,6 +59,10 @@ export const entitySearchSchema = z.object({
     mapFilters: AnalyticsFilterSchema
         .optional()
         .describe('Advanced heatmap filters for the Map view (see AnalyticsFilterSchema).'),
+    analytics: z
+        .unknown()
+        .optional()
+        .describe('Challenge-style budget item analytics modal state.'),
     normalization: Normalization
         .optional()
         .describe('Value normalization. total, per_capita, percent_gdp. total_euro and per_capita_euro are legacy (prefer currency=EUR).'),
@@ -93,10 +97,46 @@ export const entitySearchSchema = z.object({
         .enum(['fn', 'ec'])
         .optional()
         .describe('Treemap primary classification: fn (functional) or ec (economic).'),
+    treemapPath: z
+        .string()
+        .optional()
+        .describe('Legacy treemap drilldown path.'),
     accountCategory: z
         .enum(['ch', 'vn'])
         .optional()
         .describe("Account category: 'ch' (cheltuieli/spending) or 'vn' (venituri/revenue)."),
+    treemap_account: z
+        .enum(['ch', 'vn'])
+        .optional()
+        .describe('Challenge-style treemap account category.'),
+    expense_type: z
+        .string()
+        .optional()
+        .describe('Challenge-style expense type filter.'),
+    treemap_primary: z
+        .enum(['fn', 'ec'])
+        .optional()
+        .describe('Challenge-style treemap primary classification.'),
+    treemap_depth: z
+        .string()
+        .optional()
+        .describe('Challenge-style treemap detail depth.'),
+    treemap_path: z
+        .string()
+        .optional()
+        .describe('Challenge-style treemap drilldown path.'),
+    evolution_account: z
+        .enum(['ch', 'vn'])
+        .optional()
+        .describe('Challenge-style category evolution account category.'),
+    evolution_primary: z
+        .enum(['fn', 'ec'])
+        .optional()
+        .describe('Challenge-style category evolution primary classification.'),
+    public_map: z
+        .string()
+        .optional()
+        .describe('Challenge-style public map preview key.'),
     // Notification modal state
     notificationModal: z
         .enum(['open'])
@@ -119,6 +159,21 @@ export const entitySearchSchema = z.object({
         .enum(['chapter', 'detailed'])
         .optional()
         .describe('Commitments table detail level: chapter (depth 2) or detailed (depth 4).'),
+    commitments_grouping: z
+        .string()
+        .optional()
+        .describe('Challenge-style commitments table grouping dimension.'),
+    commitments_detail_level: z
+        .string()
+        .optional()
+        .describe('Challenge-style commitments table detail level.'),
+    insDataset: z.string().optional(),
+    insSearch: z.string().optional(),
+    insRoot: z.coerce.string().optional(),
+    insTemporal: z.string().optional(),
+    insExplorer: z.string().optional(),
+    insSeries: z.string().optional(),
+    insUnit: z.string().optional(),
 });
 
 export type EntitySearchSchema = z.infer<typeof entitySearchSchema>;

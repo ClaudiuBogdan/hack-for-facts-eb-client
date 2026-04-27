@@ -102,6 +102,29 @@ describe('ChallengeEntityReportControls', () => {
     expect(screen.queryByText('Ordonator principal')).not.toBeInTheDocument()
   })
 
+  it('uses generic report type labels for the entities route', () => {
+    renderControls({
+      reportCopyVariant: 'entity',
+    })
+
+    expect(screen.getByText('Entitate + instituții')).toBeInTheDocument()
+    expect(screen.getByText('Doar entitatea')).toBeInTheDocument()
+    expect(screen.queryByText('Primărie + instituții')).not.toBeInTheDocument()
+    expect(screen.queryByText('Doar primărie')).not.toBeInTheDocument()
+  })
+
+  it('shows secondary aggregated and detailed report options when requested', () => {
+    renderControls({
+      reportCopyVariant: 'entity',
+      reportType: 'SECONDARY_AGGREGATED',
+      reportTypeOptions: ['SECONDARY_AGGREGATED', 'DETAILED'],
+    })
+
+    expect(screen.getByText('Ordonator secundar')).toBeInTheDocument()
+    expect(screen.getByText('Doar entitatea')).toBeInTheDocument()
+    expect(screen.queryByText('Entitate + instituții')).not.toBeInTheDocument()
+  })
+
   it('clears the main creditor filter when All is selected', () => {
     const { onChange } = renderControls({
       mainCreditorCui: '4305857',

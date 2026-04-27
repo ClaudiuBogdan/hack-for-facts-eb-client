@@ -12,7 +12,12 @@ import type { ChallengeLocale } from '../../types'
 
 export type ChallengeEntityReportType =
   | 'PRINCIPAL_AGGREGATED'
+  | 'SECONDARY_AGGREGATED'
   | 'DETAILED'
+
+export type ChallengeEntityReportCopyVariant =
+  | 'city-hall'
+  | 'entity'
 
 export type ChallengeEntityMainCreditorOption = {
   readonly id: string
@@ -36,6 +41,8 @@ type ChallengeEntityReportControlsProps = {
   readonly month: TMonth
   readonly availableYears: readonly number[]
   readonly reportType: ChallengeEntityReportType
+  readonly reportTypeOptions?: readonly ChallengeEntityReportType[]
+  readonly reportCopyVariant?: ChallengeEntityReportCopyVariant
   readonly showReportTypeControl?: boolean
   readonly mainCreditorOptions?: readonly ChallengeEntityMainCreditorOption[]
   readonly mainCreditorCui?: string
@@ -57,8 +64,11 @@ const CONTROL_COPY = {
     yearly: 'Anual',
     quarterly: 'Trimestrial',
     monthly: 'Lunar',
-    aggregated: 'Primărie + instituții',
-    detailed: 'Doar primărie',
+    cityHallAggregated: 'Primărie + instituții',
+    cityHallDetailed: 'Doar primărie',
+    entityAggregated: 'Entitate + instituții',
+    secondaryAggregated: 'Ordonator secundar',
+    entityDetailed: 'Doar entitatea',
     all: 'Toate',
   },
   en: {
@@ -71,8 +81,11 @@ const CONTROL_COPY = {
     yearly: 'Yearly',
     quarterly: 'Quarterly',
     monthly: 'Monthly',
-    aggregated: 'City hall + institutions',
-    detailed: 'City hall only',
+    cityHallAggregated: 'City hall + institutions',
+    cityHallDetailed: 'City hall only',
+    entityAggregated: 'Entity + institutions',
+    secondaryAggregated: 'Secondary creditor',
+    entityDetailed: 'Entity only',
     all: 'All',
   },
 } as const
@@ -92,6 +105,8 @@ export function ChallengeEntityReportControls({
   month,
   availableYears,
   reportType,
+  reportTypeOptions = ['PRINCIPAL_AGGREGATED', 'DETAILED'],
+  reportCopyVariant = 'city-hall',
   showReportTypeControl = true,
   mainCreditorOptions = [],
   mainCreditorCui,
@@ -99,6 +114,16 @@ export function ChallengeEntityReportControls({
 }: ChallengeEntityReportControlsProps) {
   const resolvedLocale = locale === 'en' ? 'en' : 'ro'
   const copy = CONTROL_COPY[resolvedLocale]
+  const reportTypeCopy =
+    reportCopyVariant === 'entity'
+      ? {
+          aggregated: copy.entityAggregated,
+          detailed: copy.entityDetailed,
+        }
+      : {
+          aggregated: copy.cityHallAggregated,
+          detailed: copy.cityHallDetailed,
+        }
   const monthFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat(resolvedLocale === 'en' ? 'en-US' : 'ro-RO', {
@@ -119,18 +144,23 @@ export function ChallengeEntityReportControls({
       }),
     [monthFormatter],
   )
-  const reportTypeOptions = useMemo(
-    () => [
-      {
-        id: 'PRINCIPAL_AGGREGATED' as const,
-        label: copy.aggregated,
-      },
-      {
-        id: 'DETAILED' as const,
-        label: copy.detailed,
-      },
+  const reportTypeToggleOptions = useMemo(
+    () =>
+      reportTypeOptions.map((reportTypeOption) => ({
+        id: reportTypeOption,
+        label:
+          reportTypeOption === 'PRINCIPAL_AGGREGATED'
+            ? reportTypeCopy.aggregated
+            : reportTypeOption === 'SECONDARY_AGGREGATED'
+              ? copy.secondaryAggregated
+              : reportTypeCopy.detailed,
+      })),
+    [
+      copy.secondaryAggregated,
+      reportTypeCopy.aggregated,
+      reportTypeCopy.detailed,
+      reportTypeOptions,
     ],
-    [copy.aggregated, copy.detailed],
   )
   const hasMainCreditorOptions = mainCreditorOptions.length > 0
   const mainCreditorToggleOptions = useMemo(() => {
@@ -346,7 +376,7 @@ export function ChallengeEntityReportControls({
             size="sm"
             className="grid grid-cols-1 gap-2"
           >
-            {reportTypeOptions.map((reportTypeOption) => (
+            {reportTypeToggleOptions.map((reportTypeOption) => (
               <ToggleGroupItem
                 key={reportTypeOption.id}
                 value={reportTypeOption.id}

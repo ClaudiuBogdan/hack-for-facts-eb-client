@@ -7,6 +7,7 @@ import {
   getEconomicSubchapterName,
 } from '@/lib/economic-classifications'
 import type { Currency } from '@/schemas/charts'
+import type { ExecutionGqlReportType } from '@/schemas/reporting'
 import type {
   GroupedChapter,
   GroupedEconomic,
@@ -26,7 +27,7 @@ import {
 
 export type ChallengeEntityMarkdownExportLocale = 'ro' | 'en'
 
-type ChallengeEntityMarkdownReportType = 'PRINCIPAL_AGGREGATED' | 'DETAILED'
+type ChallengeEntityMarkdownReportType = ExecutionGqlReportType
 type ChallengeEntityMarkdownNormalization = 'total' | 'per_capita'
 type ChallengeEntityMarkdownAccountCategory = 'ch' | 'vn'
 type ChallengeEntityMarkdownPrimary = 'fn' | 'ec'
@@ -156,6 +157,7 @@ type ExportCopy = {
   totalLabel: string
   perCapitaLabel: string
   reportAggregatedLabel: string
+  reportSecondaryAggregatedLabel: string
   reportDetailedLabel: string
   functionalGroupingLabel: string
   economicGroupingLabel: string
@@ -231,6 +233,8 @@ const EXPORT_COPY = {
     totalLabel: 'Total',
     perCapitaLabel: 'Per capita',
     reportAggregatedLabel: 'Execuție bugetară agregată la nivel de ordonator principal',
+    reportSecondaryAggregatedLabel:
+      'Execuție bugetară agregată la nivel de ordonator secundar',
     reportDetailedLabel: 'Execuție bugetară detaliată',
     functionalGroupingLabel: 'Funcțională',
     economicGroupingLabel: 'Economică',
@@ -311,6 +315,8 @@ const EXPORT_COPY = {
     totalLabel: 'Total',
     perCapitaLabel: 'Per capita',
     reportAggregatedLabel: 'Aggregated budget execution at main-creditor level',
+    reportSecondaryAggregatedLabel:
+      'Aggregated budget execution at secondary-creditor level',
     reportDetailedLabel: 'Detailed budget execution',
     functionalGroupingLabel: 'Functional',
     economicGroupingLabel: 'Economic',
@@ -445,7 +451,9 @@ function formatReportType(
 ) {
   return reportType === 'DETAILED'
     ? copy.reportDetailedLabel
-    : copy.reportAggregatedLabel
+    : reportType === 'SECONDARY_AGGREGATED'
+      ? copy.reportSecondaryAggregatedLabel
+      : copy.reportAggregatedLabel
 }
 
 function formatNormalization(

@@ -7,7 +7,10 @@ import type { ChallengeLocale } from '../../types'
 
 type ChallengeCommitmentsExplainerProps = {
   readonly locale: ChallengeLocale
-  readonly reportType: Extract<GqlReportType, 'PRINCIPAL_AGGREGATED' | 'DETAILED'>
+  readonly reportType: Extract<
+    GqlReportType,
+    'PRINCIPAL_AGGREGATED' | 'SECONDARY_AGGREGATED' | 'DETAILED'
+  >
   readonly inflationAdjusted: boolean
   readonly isPerCapita: boolean
 }
@@ -60,7 +63,7 @@ export function ChallengeCommitmentsExplainer({
   const [isExpanded, setIsExpanded] = useState(false)
   const copy = EXPLAINER_COPY[locale]
   const primaryParagraph =
-    reportType === 'PRINCIPAL_AGGREGATED'
+    reportType !== 'DETAILED'
       ? copy.aggregatedPrimary
       : copy.detailedPrimary
 

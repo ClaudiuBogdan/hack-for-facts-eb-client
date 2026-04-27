@@ -112,10 +112,12 @@ async function importRoute() {
         executionContext: Record<string, unknown>
         exactQueryInputs: {
           entityDetails: Record<string, unknown>
+          entityExecutionLineItems: Record<string, unknown>
         }
         loaderPayload: {
           entitySeoSnapshot: Record<string, unknown>
           ssrEntityDetailsParams: Record<string, unknown>
+          ssrEntityExecutionLineItemsParams?: Record<string, unknown>
           requestSiteUrl?: string
         }
         queryPlan: {
@@ -295,6 +297,13 @@ describe('entities route', () => {
           currency: 'RON',
           inflation_adjusted: false,
         }),
+        entityExecutionLineItems: expect.objectContaining({
+          cui: '4267117',
+          reportType: 'DETAILED',
+          normalization: 'per_capita',
+          currency: 'RON',
+          inflation_adjusted: false,
+        }),
       },
       queryPlan: {
         blocking: [
@@ -328,6 +337,12 @@ describe('entities route', () => {
     expect(loaderResult.entityPageBootstrap.loaderPayload.ssrEntityDetailsParams).toEqual(
       loaderResult.entityPageBootstrap.exactQueryInputs.entityDetails,
     )
+    expect(
+      loaderResult.entityPageBootstrap.loaderPayload
+        .ssrEntityExecutionLineItemsParams,
+    ).toEqual(
+      loaderResult.entityPageBootstrap.exactQueryInputs.entityExecutionLineItems,
+    )
     expect(loaderResult.entityPageBootstrap.loaderPayload.entitySeoSnapshot).toMatchObject({
       cui: '4267117',
       name: 'TEST ENTITY',
@@ -345,10 +360,78 @@ describe('entities route', () => {
     expect(loaderResult.entityPageBootstrap.loaderPayload.requestSiteUrl).toBe(
       'https://transparenta.eu',
     )
-    expect(ensureQueryData).toHaveBeenCalledTimes(1)
+    expect(ensureQueryData).toHaveBeenCalledTimes(2)
     expect(prefetchQuery).not.toHaveBeenCalled()
     expect(geoJsonQueryOptionsMock).not.toHaveBeenCalled()
     expect(heatmapJudetQueryOptionsMock).not.toHaveBeenCalled()
+  })
+
+  it('resolves omitted report_type from the entity default before exposing SSR params', async () => {
+    const ensureQueryData = vi.fn().mockResolvedValue(undefined)
+    const prefetchQuery = vi.fn().mockResolvedValue(undefined)
+    const getQueryData = vi.fn().mockReturnValue(
+      createEntityDetailsData({
+        cui: '4266324',
+        default_report_type: 'DETAILED',
+      }),
+    )
+    const route = await importRoute()
+
+    const loaderResult = await route.loader({
+      context: {
+        queryClient: {
+          ensureQueryData,
+          prefetchQuery,
+          getQueryData,
+        },
+      },
+      params: { cui: '4266324' },
+      location: {
+        search: {
+          year: 2025,
+        },
+      },
+    })
+
+    expect(loaderResult.entityPageBootstrap.executionContext).toMatchObject({
+      cui: '4266324',
+      reportType: undefined,
+      effectiveReportType: 'DETAILED',
+    })
+    expect(loaderResult.entityPageBootstrap.exactQueryInputs).toMatchObject({
+      entityDetails: {
+        cui: '4266324',
+        reportType: 'DETAILED',
+        mainCreditorCui: undefined,
+      },
+      entityExecutionLineItems: {
+        cui: '4266324',
+        reportType: 'DETAILED',
+        mainCreditorCui: undefined,
+      },
+    })
+    expect(
+      loaderResult.entityPageBootstrap.loaderPayload.ssrEntityDetailsParams,
+    ).toEqual(loaderResult.entityPageBootstrap.exactQueryInputs.entityDetails)
+    expect(
+      loaderResult.entityPageBootstrap.loaderPayload
+        .ssrEntityExecutionLineItemsParams,
+    ).toEqual(
+      loaderResult.entityPageBootstrap.exactQueryInputs.entityExecutionLineItems,
+    )
+    expect(ensureQueryData).toHaveBeenCalledTimes(3)
+    expect(entityDetailsQueryOptionsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cui: '4266324',
+        reportType: undefined,
+      }),
+    )
+    expect(entityDetailsQueryOptionsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cui: '4266324',
+        reportType: 'DETAILED',
+      }),
+    )
   })
 
   it('runs planner client-only map warmups during client-side execution', async () => {
@@ -390,6 +473,46 @@ describe('entities route', () => {
     expect(geoJsonQueryOptionsMock).toHaveBeenCalledWith('UAT')
     expect(heatmapUATQueryOptionsMock).toHaveBeenCalledTimes(1)
     expect(prefetchQuery).toHaveBeenCalledTimes(2)
+  })
+
+  it('warms county map resources for county councils on the client', async () => {
+    ;(globalThis as { window?: { location: { origin: string } } }).window = {
+      location: {
+        origin: 'https://client.transparenta.eu',
+      },
+    }
+
+    const ensureQueryData = vi.fn().mockResolvedValue(undefined)
+    const prefetchQuery = vi.fn().mockResolvedValue(undefined)
+    const getQueryData = vi.fn().mockReturnValue(
+      createEntityDetailsData({
+        cui: '4267117',
+        entity_type: 'admin_county_council',
+        is_uat: false,
+      }),
+    )
+    const route = await importRoute()
+
+    await route.loader({
+      context: {
+        queryClient: {
+          ensureQueryData,
+          prefetchQuery,
+          getQueryData,
+        },
+      },
+      params: { cui: '4267117' },
+      location: {
+        search: {
+          view: 'map',
+          year: 2024,
+        },
+      },
+    })
+
+    expect(geoJsonQueryOptionsMock).toHaveBeenCalledWith('County')
+    expect(heatmapJudetQueryOptionsMock).toHaveBeenCalledTimes(1)
+    expect(heatmapUATQueryOptionsMock).not.toHaveBeenCalled()
   })
 
   it('runs planner trend warmups in the background without waiting for them', async () => {

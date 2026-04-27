@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { resolveEntitiesEntityRouteAdapter } from './entities-entity-route-adapter'
 
 describe('resolveEntitiesEntityRouteAdapter', () => {
-  it('keeps report_type optional for the entities route contract', () => {
+  it('lets entity default report type apply when the URL omits report_type', () => {
     const result = resolveEntitiesEntityRouteAdapter({
       cui: '4305857',
       search: {
@@ -136,7 +136,13 @@ describe('resolveEntitiesEntityRouteAdapter', () => {
     })
   })
 
-  it('builds exact query inputs from the normalized entities execution context', () => {
+  it('preserves secondary aggregation level in query inputs', () => {
+    const directSecondary = resolveEntitiesEntityRouteAdapter({
+      cui: '4267117',
+      search: {
+        report_type: 'SECONDARY_AGGREGATED',
+      },
+    })
     const result = resolveEntitiesEntityRouteAdapter({
       cui: '4267117',
       search: {
@@ -153,6 +159,13 @@ describe('resolveEntitiesEntityRouteAdapter', () => {
       },
     })
 
+    expect(directSecondary.normalizedSearch.report_type).toBe(
+      'SECONDARY_AGGREGATED',
+    )
+    expect(directSecondary.exactQueryInputs.entityDetails.reportType).toBe(
+      'SECONDARY_AGGREGATED',
+    )
+    expect(result.normalizedSearch.report_type).toBe('SECONDARY_AGGREGATED')
     expect(result.executionContext).toStrictEqual({
       routeId: 'entities',
       cui: '4267117',
@@ -161,7 +174,7 @@ describe('resolveEntitiesEntityRouteAdapter', () => {
       year: 2024,
       month: undefined,
       quarter: 'Q3',
-      reportType: 'COMMITMENT_SECONDARY_AGGREGATED',
+      reportType: 'SECONDARY_AGGREGATED',
       effectiveReportType: 'SECONDARY_AGGREGATED',
       mainCreditorCui: '1234567',
       activeView: 'ranking',

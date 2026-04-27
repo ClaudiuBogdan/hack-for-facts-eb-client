@@ -7,7 +7,9 @@ import {
   buildEntityPageLoaderPayload,
   getEntityPageQueryPlan,
   readEntityPageRequestOrigin,
+  resolveEntityPageQueryInputs,
   runEntityPageBlockingBootstrap,
+  type EntityPageBlockingQueryId,
   type EntityPageExecutionContext,
   type EntityPageLoaderPayload,
 } from '@/features/entities/page-core'
@@ -54,12 +56,18 @@ type EntityPageBootstrapPayload = {
 
 type EntityRouteLoaderData = {
   readonly entityPageBootstrap: EntityPageBootstrapPayload
+  readonly initialSettings: {
+    readonly currency: 'RON' | 'EUR' | 'USD'
+    readonly inflationAdjusted: boolean
+  }
   readonly ssrSettings: {
     readonly currency: 'RON' | 'EUR' | 'USD'
     readonly inflationAdjusted: boolean
   }
   readonly forcedOverrides: ReturnType<typeof resolveNormalizationSettings>['forcedOverrides']
 }
+
+type EntitiesEntityRouteAdapter = ReturnType<typeof resolveEntitiesEntityRouteAdapter>
 
 const ENTITY_DETAILS_STEP_ID = 'entity-details' as const
 const MAP_GEOJSON_WARMUP_STEP_ID = 'map-geojson-warmup' as const
@@ -159,10 +167,37 @@ function createEntityPageBootstrapPayload(
   }
 }
 
+function resolveAdapterWithEffectiveReportType(
+  adapter: EntitiesEntityRouteAdapter,
+  effectiveReportType: EntityPageExecutionContext['effectiveReportType'],
+): EntitiesEntityRouteAdapter {
+  const executionContext: EntityPageExecutionContext = {
+    ...adapter.executionContext,
+    effectiveReportType,
+  }
+
+  return {
+    ...adapter,
+    executionContext,
+    exactQueryInputs: resolveEntityPageQueryInputs({
+      context: executionContext,
+    }),
+  }
+}
+
 function resolveMapViewType(entity: EntityDetailsData): 'County' | 'UAT' {
   return entity.entity_type === 'admin_county_council' || entity.cui === '4267117'
     ? 'County'
     : 'UAT'
+}
+
+function supportsMapWarmup(entity: EntityDetailsData): boolean {
+  return Boolean(
+    entity.is_uat ||
+    entity.uat?.siruta_code != null ||
+    entity.entity_type === 'admin_county_council' ||
+    entity.cui === '4267117',
+  )
 }
 
 function warmTrendCharts({
@@ -275,7 +310,7 @@ function warmMapResources({
   readonly queryPlan: EntityPageBootstrapPayload['queryPlan']
   readonly search: EntitySearchSchema
 }): void {
-  if (typeof window === 'undefined' || !entity.is_uat) {
+  if (typeof window === 'undefined' || !supportsMapWarmup(entity)) {
     return
   }
 
@@ -350,9 +385,17 @@ export const Route = createFileRoute('/entities/$cui')({
     const queryPlan = getEntityPageQueryPlan({
       context: executionContext,
     })
-    const blockingQueryIds = hasPlannedStep(queryPlan.blocking, ENTITY_DETAILS_STEP_ID)
-      ? ['entityDetails' as const]
-      : []
+    const shouldResolveDefaultReportType =
+      executionContext.reportType === undefined &&
+      executionContext.effectiveReportType === undefined
+    const blockingQueryIds: EntityPageBlockingQueryId[] =
+      shouldResolveDefaultReportType
+        ? ['entityDetails']
+        : (
+            hasPlannedStep(queryPlan.blocking, ENTITY_DETAILS_STEP_ID)
+              ? ['entityDetails', 'entityExecutionLineItems']
+              : ['entityExecutionLineItems']
+          )
     const baseLoaderPayload = buildEntityPageLoaderPayload({
       executionContext,
       exactQueryInputs: adapter.exactQueryInputs,
@@ -365,21 +408,52 @@ export const Route = createFileRoute('/entities/$cui')({
     )
 
     try {
-      const bootstrapResult = await runEntityPageBlockingBootstrap({
+      let activeAdapter = adapter
+      let bootstrapResult = await runEntityPageBlockingBootstrap({
         queryClient,
         executionContext,
         exactQueryInputs: adapter.exactQueryInputs,
         requestSiteUrl,
         blockingQueryIds,
       })
+      const defaultExecutionReportType = toExecutionReportType(
+        bootstrapResult.entityDetails?.default_report_type,
+      )
+
+      if (
+        shouldResolveDefaultReportType &&
+        defaultExecutionReportType !== undefined
+      ) {
+        activeAdapter = resolveAdapterWithEffectiveReportType(
+          adapter,
+          defaultExecutionReportType,
+        )
+        const effectiveQueryPlan = getEntityPageQueryPlan({
+          context: activeAdapter.executionContext,
+        })
+        const effectiveBlockingQueryIds: EntityPageBlockingQueryId[] =
+          hasPlannedStep(effectiveQueryPlan.blocking, ENTITY_DETAILS_STEP_ID)
+            ? ['entityDetails', 'entityExecutionLineItems']
+            : ['entityExecutionLineItems']
+
+        bootstrapResult = await runEntityPageBlockingBootstrap({
+          queryClient,
+          executionContext: activeAdapter.executionContext,
+          exactQueryInputs: activeAdapter.exactQueryInputs,
+          requestSiteUrl,
+          blockingQueryIds: effectiveBlockingQueryIds,
+        })
+      }
+
       entityPageBootstrap = createEntityPageBootstrapPayload(
-        adapter,
+        activeAdapter,
         bootstrapResult.payload,
       )
 
       if (!bootstrapResult.entityDetails) {
         return {
           entityPageBootstrap,
+          initialSettings: ssrSettings,
           ssrSettings,
           forcedOverrides,
         } satisfies EntityRouteLoaderData
@@ -387,13 +461,13 @@ export const Route = createFileRoute('/entities/$cui')({
 
       warmTrendCharts({
         entity: bootstrapResult.entityDetails,
-        executionContext,
+        executionContext: activeAdapter.executionContext,
         queryClient,
         queryPlan: entityPageBootstrap.queryPlan,
       })
       warmMapResources({
         entity: bootstrapResult.entityDetails,
-        executionContext,
+        executionContext: activeAdapter.executionContext,
         queryClient,
         queryPlan: entityPageBootstrap.queryPlan,
         search,
@@ -401,6 +475,7 @@ export const Route = createFileRoute('/entities/$cui')({
 
       return {
         entityPageBootstrap,
+        initialSettings: ssrSettings,
         ssrSettings,
         forcedOverrides,
       } satisfies EntityRouteLoaderData
@@ -416,6 +491,7 @@ export const Route = createFileRoute('/entities/$cui')({
 
       return {
         entityPageBootstrap,
+        initialSettings: ssrSettings,
         ssrSettings,
         forcedOverrides,
       } satisfies EntityRouteLoaderData

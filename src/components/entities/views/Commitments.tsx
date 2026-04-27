@@ -391,7 +391,7 @@ export function CommitmentsView({
           currentYear={currentYear}
           normalizationOptions={normalizationOptions}
           onNormalizationChange={onNormalizationChange}
-          allowPerCapita={Boolean(entity?.is_uat || entity?.entity_type === 'admin_county_council')}
+          allowPerCapita={Boolean(entity?.is_uat)}
           periodType={commitmentsTrendPeriod.type}
           onYearChange={onYearChange}
           onSelectPeriod={onSelectPeriod}

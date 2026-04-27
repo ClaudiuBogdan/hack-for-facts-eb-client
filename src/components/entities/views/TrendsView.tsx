@@ -269,7 +269,7 @@ const TrendsViewComponent: React.FC<BaseTrendsViewProps> = ({ entity, type, curr
         currentYear={currentYear}
         normalizationOptions={normalizationOptions}
         onNormalizationChange={onNormalizationChange}
-        allowPerCapita={Boolean(entity?.is_uat || entity?.entity_type === 'admin_county_council')}
+        allowPerCapita={Boolean(entity?.is_uat)}
       />
       <EntityLineItemsTabs
         lineItems={lineItems}

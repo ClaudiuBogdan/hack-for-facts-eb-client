@@ -83,6 +83,7 @@ export const CHALLENGE_ENTITY_ANALYSIS_MONTH_VALUES = [
 
 export const ChallengeEntityAnalysisReportTypeSchema = z.enum([
   'PRINCIPAL_AGGREGATED',
+  'SECONDARY_AGGREGATED',
   'DETAILED',
 ])
 
@@ -190,7 +191,10 @@ export type ChallengeEntityAnalysisUrlState = {
   readonly year: number
   readonly month: TMonth
   readonly quarter: TQuarter
-  readonly report_type: 'PRINCIPAL_AGGREGATED' | 'DETAILED'
+  readonly report_type:
+    | 'PRINCIPAL_AGGREGATED'
+    | 'SECONDARY_AGGREGATED'
+    | 'DETAILED'
   readonly main_creditor_cui?: string
   readonly normalization: 'total' | 'per_capita'
   readonly analytics?: ChallengeEntityAnalyticsSearchState

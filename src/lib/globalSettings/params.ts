@@ -10,6 +10,15 @@ export type ForcedOverrides = {
   inflationAdjusted?: boolean
 }
 
+export function hasForcedOverrides(
+  forcedOverrides: ForcedOverrides | undefined,
+): forcedOverrides is ForcedOverrides {
+  return (
+    forcedOverrides?.currency !== undefined ||
+    forcedOverrides?.inflationAdjusted !== undefined
+  )
+}
+
 export type ResolvedSettings = {
   normalization: Normalization
   forcedOverrides: ForcedOverrides

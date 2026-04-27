@@ -34,6 +34,42 @@ describe('ChallengeEntityAnalysisExplainer', () => {
     ).toBeInTheDocument()
   })
 
+  it('renders generic entity copy in Romanian', () => {
+    render(
+      <ChallengeEntityAnalysisExplainer
+        locale="ro"
+        reportType="PRINCIPAL_AGGREGATED"
+        inflationAdjusted={false}
+        copyVariant="entity"
+      />,
+    )
+
+    expect(
+      screen.getByText(/execuțiile raportate direct de entitate/),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByText(/finanțele primăriei/),
+    ).not.toBeInTheDocument()
+  })
+
+  it('renders generic detailed entity copy in English', () => {
+    render(
+      <ChallengeEntityAnalysisExplainer
+        locale="en"
+        reportType="DETAILED"
+        inflationAdjusted={false}
+        copyVariant="entity"
+      />,
+    )
+
+    expect(
+      screen.getByText(/reported directly by this entity/),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByText(/directly by the city hall/),
+    ).not.toBeInTheDocument()
+  })
+
   it('renders the aggregated primary copy in English', () => {
     render(
       <ChallengeEntityAnalysisExplainer

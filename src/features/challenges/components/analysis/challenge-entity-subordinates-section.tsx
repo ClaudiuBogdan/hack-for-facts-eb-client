@@ -13,9 +13,13 @@ export type ChallengeEntitySubordinateCardItem = {
   readonly entityCui: string
   readonly entityName: string
   readonly entityTypeLabel: string | null
-  readonly totalSpending: number
+  readonly totalSpending?: number
   readonly entitySearch: Record<string, unknown>
 }
+
+type ChallengeEntitySubordinatesSectionVariant =
+  | 'subordinates'
+  | 'parent-main-creditors'
 
 type ChallengeEntitySubordinatesSectionProps = {
   readonly locale: ChallengeLocale
@@ -28,6 +32,7 @@ type ChallengeEntitySubordinatesSectionProps = {
   readonly showAllSearch?: Record<string, unknown>
   readonly description?: string
   readonly emptyStateKind?: 'children' | 'spending'
+  readonly variant?: ChallengeEntitySubordinatesSectionVariant
 }
 
 const SUBORDINATES_COPY = {
@@ -43,6 +48,16 @@ const SUBORDINATES_COPY = {
     emptySpending:
       'Nu am găsit cheltuieli raportate pentru instituțiile subordonate în perioada selectată.',
     showAll: 'Vezi toate instituțiile',
+    parentTitle: 'Ordonator principal',
+    parentDescription:
+      'Această instituție nu are instituții subordonate în datele disponibile. Este conectată la ordonatorul principal de mai jos.',
+    parentError:
+      'Nu am putut încărca ordonatorul principal pentru această instituție.',
+    parentEmpty:
+      'Nu am găsit un ordonator principal conectat acestei instituții în datele disponibile.',
+    parentShowAll: 'Vezi instituțiile aceluiași ordonator',
+    parentCount: (totalCount: number) =>
+      `${totalCount} ${totalCount === 1 ? 'ordonator' : 'ordonatori'}`,
     formatSummaryCount: (visibleCount: number, totalCount: number) =>
       visibleCount < totalCount
         ? `Top ${visibleCount} din ${totalCount}`
@@ -59,6 +74,16 @@ const SUBORDINATES_COPY = {
     emptySpending:
       'We did not find reported spending for subordinate institutions in the selected period.',
     showAll: 'View all institutions',
+    parentTitle: 'Parent main creditor',
+    parentDescription:
+      'This institution does not have subordinate institutions in the available data. It is connected to the parent main creditor below.',
+    parentError:
+      'We could not load the main creditor for this institution.',
+    parentEmpty:
+      'No main creditor is connected to this institution in the available data.',
+    parentShowAll: 'View institutions under this creditor',
+    parentCount: (totalCount: number) =>
+      `${totalCount} ${totalCount === 1 ? 'creditor' : 'creditors'}`,
     formatSummaryCount: (visibleCount: number, totalCount: number) =>
       visibleCount < totalCount
         ? `Top ${visibleCount} of ${totalCount}`
@@ -84,11 +109,15 @@ function ChallengeEntitySubordinateRow({
   item,
   normalizationOptions,
   totalSpendingLabel,
+  showTotalSpending,
+  showRank,
 }: {
   readonly index: number
   readonly item: ChallengeEntitySubordinateCardItem
   readonly normalizationOptions: NormalizationOptions
   readonly totalSpendingLabel: string
+  readonly showTotalSpending: boolean
+  readonly showRank: boolean
 }) {
   return (
     <Link
@@ -98,9 +127,11 @@ function ChallengeEntitySubordinateRow({
       className="group flex flex-col gap-1.5 py-3.5 text-foreground touch-manipulation transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:rounded-md"
     >
       <div className="flex items-start gap-3">
-        <span className="shrink-0 pt-0.5 text-xs font-medium tabular-nums text-muted-foreground/60">
-          #{index + 1}
-        </span>
+        {showRank ? (
+          <span className="shrink-0 pt-0.5 text-xs font-medium tabular-nums text-muted-foreground/60">
+            #{index + 1}
+          </span>
+        ) : null}
 
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold leading-snug text-foreground decoration-2 underline-offset-4 group-hover:text-primary group-hover:underline group-focus-visible:underline">
@@ -119,18 +150,20 @@ function ChallengeEntitySubordinateRow({
         />
       </div>
 
-      <div className="flex flex-col items-end">
-        <span className="text-[11px] text-muted-foreground">
-          {totalSpendingLabel}
-        </span>
-        <span className="text-sm font-bold tabular-nums text-foreground">
-          {formatNormalizedValue(
-            item.totalSpending,
-            normalizationOptions,
-            'compact',
-          )}
-        </span>
-      </div>
+      {showTotalSpending && item.totalSpending !== undefined ? (
+        <div className="flex flex-col items-end">
+          <span className="text-[11px] text-muted-foreground">
+            {totalSpendingLabel}
+          </span>
+          <span className="text-sm font-bold tabular-nums text-foreground">
+            {formatNormalizedValue(
+              item.totalSpending,
+              normalizationOptions,
+              'compact',
+            )}
+          </span>
+        </div>
+      ) : null}
     </Link>
   )
 }
@@ -146,23 +179,40 @@ export function ChallengeEntitySubordinatesSection({
   showAllSearch,
   description,
   emptyStateKind = 'spending',
+  variant = 'subordinates',
 }: ChallengeEntitySubordinatesSectionProps) {
   const copy = SUBORDINATES_COPY[locale]
+  const isParentMainCreditorVariant = variant === 'parent-main-creditors'
   const summaryCountLabel =
     totalResultsCount > 0 && items.length > 0
-      ? copy.formatSummaryCount(items.length, totalResultsCount)
+      ? isParentMainCreditorVariant
+        ? copy.parentCount(totalResultsCount)
+        : copy.formatSummaryCount(items.length, totalResultsCount)
       : null
   const emptyStateMessage =
-    emptyStateKind === 'children'
+    isParentMainCreditorVariant
+      ? copy.parentEmpty
+      : emptyStateKind === 'children'
       ? copy.emptyChildren
       : copy.emptySpending
+  const sectionTitle = isParentMainCreditorVariant
+    ? copy.parentTitle
+    : copy.title
+  const sectionDescription = description ??
+    (isParentMainCreditorVariant ? copy.parentDescription : copy.description)
+  const errorMessage = isParentMainCreditorVariant
+    ? copy.parentError
+    : copy.error
+  const showAllLabel = isParentMainCreditorVariant
+    ? copy.parentShowAll
+    : copy.showAll
 
   return (
     <Card className="rounded-[28px] border-border/50">
       <CardHeader className="gap-3">
         <div className="flex flex-wrap items-center gap-3">
           <CardTitle className="text-xl font-black tracking-tight">
-            {copy.title}
+            {sectionTitle}
           </CardTitle>
           {summaryCountLabel ? (
             <Badge variant="outline" className="px-3 py-1 font-medium">
@@ -171,7 +221,7 @@ export function ChallengeEntitySubordinatesSection({
           ) : null}
         </div>
         <CardDescription className="max-w-3xl text-sm leading-6">
-          {description ?? copy.description}
+          {sectionDescription}
         </CardDescription>
       </CardHeader>
 
@@ -185,7 +235,7 @@ export function ChallengeEntitySubordinatesSection({
         ) : isError ? (
           <div className="rounded-[24px] border border-dashed border-border/60 bg-muted/20 px-5 py-6">
             <p className="text-sm text-muted-foreground">
-              {copy.error}
+              {errorMessage}
             </p>
             <Button
               type="button"
@@ -211,6 +261,8 @@ export function ChallengeEntitySubordinatesSection({
                   item={item}
                   normalizationOptions={normalizationOptions}
                   totalSpendingLabel={copy.totalSpending}
+                  showTotalSpending={!isParentMainCreditorVariant}
+                  showRank={!isParentMainCreditorVariant}
                 />
               ))}
             </div>
@@ -218,7 +270,7 @@ export function ChallengeEntitySubordinatesSection({
             {showAllSearch ? (
               <Button asChild variant="outline" className="rounded-full">
                 <Link to="/entity-analytics" search={showAllSearch as Record<string, unknown>}>
-                  {copy.showAll}
+                  {showAllLabel}
                 </Link>
               </Button>
             ) : null}

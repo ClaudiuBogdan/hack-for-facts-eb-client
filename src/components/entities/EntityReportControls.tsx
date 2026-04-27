@@ -157,7 +157,7 @@ export function EntityReportControls({
     const creditor = value as string
     emitChange(periodType, year, quarter, month, reportType, creditor, normalizationValue)
   }
-  const allowPerCapita = Boolean(entity?.is_uat || entity?.entity_type === 'admin_county_council')
+  const allowPerCapita = Boolean(entity?.is_uat)
 
   return (
     <div className="flex flex-col gap-4 w-full">

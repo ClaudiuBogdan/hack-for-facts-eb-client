@@ -6,8 +6,8 @@ import {
 } from '@/lib/globalSettings/params'
 import { DEFAULT_SELECTED_YEAR } from '@/schemas/charts'
 import {
+  type ExecutionGqlReportType,
   toExecutionReportType,
-  type GqlReportType,
   type ReportPeriodType,
   type TMonth,
   type TQuarter,
@@ -26,6 +26,7 @@ const DEFAULT_PERIOD: ReportPeriodType = 'YEAR'
 const DEFAULT_MONTH: TMonth = '01'
 const DEFAULT_QUARTER: TQuarter = 'Q1'
 const DEFAULT_NORMALIZATION: NormalizationInput = 'total'
+type EntitiesEntityRouteReportType = ExecutionGqlReportType
 
 export type EntitiesEntityRouteNormalizedSearch = Omit<
   EntitySearchSchema,
@@ -44,7 +45,7 @@ export type EntitiesEntityRouteNormalizedSearch = Omit<
   readonly year: number
   readonly month?: TMonth
   readonly quarter?: TQuarter
-  readonly report_type?: GqlReportType
+  readonly report_type?: EntitiesEntityRouteReportType
   readonly normalization: NormalizationInput
 }
 
@@ -87,7 +88,7 @@ export function normalizeEntitiesEntityRouteSearch(
       period === 'QUARTER'
         ? ((search?.quarter ?? DEFAULT_QUARTER) as TQuarter)
         : undefined,
-    report_type: search?.report_type,
+    report_type: toExecutionReportType(search?.report_type),
     normalization: search?.normalization ?? DEFAULT_NORMALIZATION,
   }
 }
@@ -114,7 +115,7 @@ export function resolveEntitiesEntityRouteAdapter(
     month: normalizedSearch.month,
     quarter: normalizedSearch.quarter,
     reportType: normalizedSearch.report_type,
-    effectiveReportType: toExecutionReportType(normalizedSearch.report_type),
+    effectiveReportType: normalizedSearch.report_type,
     mainCreditorCui: normalizedSearch.main_creditor_cui,
     activeView: normalizedSearch.view,
     publicSettings: input.publicSettingsOverride ?? urlPublicSettings,

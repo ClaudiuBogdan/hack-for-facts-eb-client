@@ -30,8 +30,12 @@ import type {
 
 type BudgetItemAnalyticsReportType = Extract<
   GqlReportType,
-  'PRINCIPAL_AGGREGATED' | 'DETAILED'
+  'PRINCIPAL_AGGREGATED' | 'SECONDARY_AGGREGATED' | 'DETAILED'
 >
+
+export type BudgetItemAnalyticsReportCopyVariant =
+  | 'city-hall'
+  | 'entity'
 
 export type BudgetItemAnalyticsPageContext = {
   readonly entityCui: string
@@ -39,6 +43,9 @@ export type BudgetItemAnalyticsPageContext = {
   readonly accountCategory: 'ch' | 'vn'
   readonly expenseType?: 'functionare' | 'dezvoltare'
   readonly reportType: BudgetItemAnalyticsReportType
+  readonly reportCopyVariant?: BudgetItemAnalyticsReportCopyVariant
+  readonly canChangeReportType?: boolean
+  readonly canChangeNormalization?: boolean
   readonly currentReportPeriod: ReportPeriodInput
   readonly historyReportPeriod?: ReportPeriodInput
   readonly normalization: 'total' | 'per_capita'

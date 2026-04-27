@@ -22,8 +22,8 @@ import { Link } from '@tanstack/react-router'
 import { ExternalLink } from 'lucide-react'
 import { useMemo } from 'react'
 import type { Chart } from '@/schemas/charts'
-import type { ReportPeriodInput, ReportPeriodType, TMonth, TQuarter } from '@/schemas/reporting'
-import { toReportTypeValue, type GqlReportType } from '@/schemas/reporting'
+import type { ExecutionGqlReportType, ReportPeriodInput, ReportPeriodType, TMonth, TQuarter } from '@/schemas/reporting'
+import { toReportTypeValue } from '@/schemas/reporting'
 import type { ChallengeLocale } from '../../types'
 import type {
   ChallengeEntityAnalysisPageState,
@@ -35,7 +35,7 @@ type ChallengeCategoryEvolutionProps = {
   readonly entityCui: string
   readonly lineItems: ExecutionLineItem[]
   readonly currentYear: number
-  readonly reportType: Extract<GqlReportType, 'PRINCIPAL_AGGREGATED' | 'DETAILED'>
+  readonly reportType: ExecutionGqlReportType
   readonly periodType: ReportPeriodType
   readonly trendPeriod: ReportPeriodInput
   readonly queryNormalizationOptions: NormalizationOptions

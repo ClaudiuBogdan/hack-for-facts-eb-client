@@ -518,6 +518,59 @@ describe('BudgetItemAnalytics', () => {
     )
   })
 
+  it('uses generic report type labels for entity analysis controls', () => {
+    render(
+      <BudgetItemAnalytics
+        {...defaultAnalyticsProps}
+        context={{
+          ...defaultAnalyticsProps.context,
+          reportCopyVariant: 'entity',
+        }}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show extra options' }))
+    fireEvent.click(screen.getByRole('combobox', { name: 'Report type' }))
+
+    expect(screen.getAllByText('Entity only').length).toBeGreaterThan(0)
+    expect(screen.getByText('Entity + institutions')).toBeInTheDocument()
+    expect(screen.queryByText('Only city hall')).not.toBeInTheDocument()
+  })
+
+  it('hides report type controls when the entity has only detailed reports', () => {
+    render(
+      <BudgetItemAnalytics
+        {...defaultAnalyticsProps}
+        context={{
+          ...defaultAnalyticsProps.context,
+          canChangeReportType: false,
+        }}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show extra options' }))
+
+    expect(screen.queryByText('Report type')).not.toBeInTheDocument()
+    expect(screen.queryByText('Only city hall')).not.toBeInTheDocument()
+  })
+
+  it('hides normalization controls when per-capita is not available', () => {
+    render(
+      <BudgetItemAnalytics
+        {...defaultAnalyticsProps}
+        context={{
+          ...defaultAnalyticsProps.context,
+          canChangeNormalization: false,
+        }}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show extra options' }))
+
+    expect(screen.queryByText('Normalization')).not.toBeInTheDocument()
+    expect(screen.queryByText('Per capita')).not.toBeInTheDocument()
+  })
+
   it('shows the commitments metric dropdown only on the commitments tab', () => {
     render(
       <BudgetItemAnalytics

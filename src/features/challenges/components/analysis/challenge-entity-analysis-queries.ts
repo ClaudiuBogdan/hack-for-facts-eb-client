@@ -4,6 +4,7 @@ import { fetchEntityAnalytics } from '@/lib/api/entity-analytics'
 import type { EntityAnalyticsConnection } from '@/schemas/entity-analytics'
 import type { Currency } from '@/schemas/charts'
 import { defaultYearRange } from '@/schemas/charts'
+import type { ForcedOverrides } from '@/lib/globalSettings/params'
 import type { NormalizationOptions } from '@/lib/normalization'
 import {
   getInitialFilterState,
@@ -19,6 +20,8 @@ export type ChallengeEntityInitialSettings = {
   currency: Currency
   inflationAdjusted: boolean
 }
+
+export type ChallengeEntityForcedSettings = ForcedOverrides
 
 export type ChallengeEntityAnalysisPeriodSelection = {
   readonly periodType: ReportPeriodType
@@ -60,8 +63,9 @@ export function challengeEntitySubordinateRankingQueryOptions(params: {
     NormalizationOptions,
     'currency' | 'inflation_adjusted'
   >
+  enabled?: boolean
 }) {
-  const { entityCui, reportPeriod, normalizationOptions } = params
+  const { entityCui, reportPeriod, normalizationOptions, enabled = true } = params
 
   return queryOptions<EntityAnalyticsConnection>({
     queryKey: [
@@ -93,7 +97,7 @@ export function challengeEntitySubordinateRankingQueryOptions(params: {
         limit: MAX_VISIBLE_SUBORDINATE_CARDS,
         offset: 0,
       }),
-    enabled: entityCui.length > 0,
+    enabled: enabled && entityCui.length > 0,
     staleTime: 1000 * 60 * 5,
   })
 }

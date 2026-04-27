@@ -213,6 +213,39 @@ describe('ChallengeEntitySubordinatesSection', () => {
     ).toBeInTheDocument()
   })
 
+  it('renders the parent main creditor variant without spending totals', () => {
+    render(
+      <ChallengeEntitySubordinatesSection
+        locale="en"
+        items={[
+          {
+            entityCui: '999',
+            entityName: 'City Hall Sibiu',
+            entityTypeLabel: 'Main budget creditor',
+            entitySearch: { year: 2025 },
+          },
+        ]}
+        totalResultsCount={1}
+        isLoading={false}
+        isError={false}
+        onRetry={vi.fn()}
+        normalizationOptions={normalizationOptions}
+        variant="parent-main-creditors"
+      />,
+    )
+
+    expect(screen.getByText('Parent main creditor')).toBeInTheDocument()
+    expect(screen.getByText('1 creditor')).toBeInTheDocument()
+    expect(screen.getByText('City Hall Sibiu')).toBeInTheDocument()
+    expect(screen.getByText('Main budget creditor')).toBeInTheDocument()
+    expect(screen.queryByText('Total spending')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', {
+        name: 'View institutions under this creditor',
+      }),
+    ).not.toBeInTheDocument()
+  })
+
   it('uses a custom description when provided', () => {
     render(
       <ChallengeEntitySubordinatesSection
@@ -228,5 +261,46 @@ describe('ChallengeEntitySubordinatesSection', () => {
     )
 
     expect(screen.getByText('Custom description text')).toBeInTheDocument()
+  })
+
+  it('renders parent main creditor variant without spending or sibling links', () => {
+    render(
+      <ChallengeEntitySubordinatesSection
+        locale="en"
+        items={[
+          {
+            entityCui: '4305857',
+            entityName: 'Municipiul Cluj-Napoca',
+            entityTypeLabel: 'Main budget creditor',
+            entitySearch: {
+              year: 2025,
+              report_type: 'PRINCIPAL_AGGREGATED',
+            },
+          },
+        ]}
+        totalResultsCount={1}
+        isLoading={false}
+        isError={false}
+        onRetry={vi.fn()}
+        normalizationOptions={normalizationOptions}
+        variant="parent-main-creditors"
+      />,
+    )
+
+    const parentLink = screen.getByRole('link', {
+      name: /Municipiul Cluj-Napoca/,
+    })
+
+    expect(screen.getByText('Parent main creditor')).toBeInTheDocument()
+    expect(screen.getByText('Main budget creditor')).toBeInTheDocument()
+    expect(parentLink).toHaveAttribute('href', '/entities/4305857')
+    expect(parentLink).toHaveAttribute(
+      'data-search',
+      expect.stringContaining('"report_type":"PRINCIPAL_AGGREGATED"'),
+    )
+    expect(screen.queryByText('Total spending')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'View institutions under this creditor' }),
+    ).not.toBeInTheDocument()
   })
 })

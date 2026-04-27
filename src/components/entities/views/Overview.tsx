@@ -297,7 +297,7 @@ const OverviewComponent = ({
                 entityName={entity?.name ?? ''}
                 normalizationOptions={normalizationOptions}
                 onNormalizationChange={onChartNormalizationChange}
-                allowPerCapita={Boolean(entity?.is_uat || entity?.entity_type === 'admin_county_council')}
+                allowPerCapita={Boolean(entity?.is_uat)}
                 onYearChange={onYearChange}
                 periodType={periodType ?? 'YEAR'}
                 onSelectPeriod={onPeriodItemSelect}

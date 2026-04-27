@@ -43,7 +43,9 @@ type PrimarieEntityRouteLoaderData = {
   readonly entityPageBootstrap?: {
     readonly loaderPayload?: Pick<
       EntityPageLoaderPayload,
-      'ssrEntityDetailsParams' | 'ssrEntityExecutionLineItemsParams'
+      | 'entitySeoSnapshot'
+      | 'ssrEntityDetailsParams'
+      | 'ssrEntityExecutionLineItemsParams'
     >
   }
 }

@@ -272,12 +272,12 @@ describe('EntityReportControls', () => {
       expect(perCapitaButton).not.toBeDisabled()
     })
 
-    it('enables per capita when entity is admin_county_council', () => {
+    it('disables per capita when entity is county council but not UAT', () => {
       const entity = createMockEntity({ is_uat: false, entity_type: 'admin_county_council' })
       render(<EntityReportControls {...defaultProps} entity={entity} />)
 
       const perCapitaButton = screen.getByText('Per capita')
-      expect(perCapitaButton).not.toBeDisabled()
+      expect(perCapitaButton).toBeDisabled()
     })
 
     it('disables per capita when entity is not UAT', () => {

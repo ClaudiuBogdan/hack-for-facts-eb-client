@@ -66,7 +66,13 @@ const BUDGET_ITEM_ANALYTICS_EXPENSE_TYPE_ORDER = [
   ...CHALLENGE_ENTITY_ANALYSIS_EXPENSE_TYPE_VALUES,
 ] as const satisfies readonly BudgetItemAnalyticsExpenseType[]
 
-function buildAnalyticsCopy(language: BudgetItemAnalyticsResolvedViewState['language']) {
+function buildAnalyticsCopy(
+  language: BudgetItemAnalyticsResolvedViewState['language'],
+  reportCopyVariant: BudgetItemAnalyticsProps['context']['reportCopyVariant'] =
+    'city-hall',
+) {
+  const isEntityVariant = reportCopyVariant === 'entity'
+
   return language === 'en'
     ? {
         openChartPage: 'Open on the charts page',
@@ -81,8 +87,12 @@ function buildAnalyticsCopy(language: BudgetItemAnalyticsResolvedViewState['lang
         economicPlaceholder: '10 or 10.01',
         prefixHint: 'Press Enter or leave the field to apply.',
         reportTypeLabel: 'Report type',
-        reportTypeDetailedLabel: 'Only city hall',
-        reportTypeAggregatedLabel: 'City hall + subordinates',
+        reportTypeDetailedLabel: isEntityVariant
+          ? 'Entity only'
+          : 'Only city hall',
+        reportTypeAggregatedLabel: isEntityVariant
+          ? 'Entity + institutions'
+          : 'City hall + subordinates',
         normalizationLabel: 'Normalization',
         inflationLabel: 'Inflation adjusted',
         timeframeLabel: 'Timeframe',
@@ -108,8 +118,12 @@ function buildAnalyticsCopy(language: BudgetItemAnalyticsResolvedViewState['lang
         economicPlaceholder: '10 sau 10.01',
         prefixHint: 'Apasă Enter sau ieși din câmp pentru aplicare.',
         reportTypeLabel: 'Tip raport',
-        reportTypeDetailedLabel: 'Doar primăria',
-        reportTypeAggregatedLabel: 'Primăria și subordonatele',
+        reportTypeDetailedLabel: isEntityVariant
+          ? 'Doar entitatea'
+          : 'Doar primăria',
+        reportTypeAggregatedLabel: isEntityVariant
+          ? 'Entitatea și instituțiile'
+          : 'Primăria și subordonatele',
         normalizationLabel: 'Normalizare',
         inflationLabel: 'Ajustat cu inflația',
         timeframeLabel: 'Interval',
@@ -384,9 +398,16 @@ function EditableAnalyticsCodeChip({
 }
 
 function AnalyticsControls({ context }: BudgetItemAnalyticsSectionProps) {
-  const copy = buildAnalyticsCopy(context.language)
+  const copy = buildAnalyticsCopy(
+    context.language,
+    context.analyticsProps.context.reportCopyVariant,
+  )
   const supportsCommitments =
     context.analyticsProps.context.accountCategory === 'ch'
+  const canChangeReportType =
+    context.analyticsProps.context.canChangeReportType !== false
+  const canChangeNormalization =
+    context.analyticsProps.context.canChangeNormalization !== false
   const showsExpenseType =
     context.activeTab === 'execution' &&
     context.analyticsProps.context.accountCategory === 'ch'
@@ -497,59 +518,63 @@ function AnalyticsControls({ context }: BudgetItemAnalyticsSectionProps) {
       <Collapsible open={showExtraControls} onOpenChange={setShowExtraControls}>
         <CollapsibleContent id={extraControlsId} className="space-y-3">
           <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
-            <div className="flex min-w-[260px] items-center justify-between gap-3 rounded-full border border-border/60 px-4 py-2">
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                {copy.reportTypeLabel}
-              </span>
-              <Select
-                value={context.analyticsProps.context.reportType}
-                onValueChange={(value) =>
-                  context.analyticsProps.onReportTypeChange?.(
-                    value as typeof context.analyticsProps.context.reportType,
-                  )
-                }
-              >
-                <SelectTrigger
-                  aria-label={copy.reportTypeLabel}
-                  className="h-8 w-[210px] border-0 bg-transparent px-0 text-sm font-semibold shadow-none focus:ring-0"
+            {canChangeReportType ? (
+              <div className="flex min-w-[260px] items-center justify-between gap-3 rounded-full border border-border/60 px-4 py-2">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  {copy.reportTypeLabel}
+                </span>
+                <Select
+                  value={context.analyticsProps.context.reportType}
+                  onValueChange={(value) =>
+                    context.analyticsProps.onReportTypeChange?.(
+                      value as typeof context.analyticsProps.context.reportType,
+                    )
+                  }
                 >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="DETAILED">
-                    {copy.reportTypeDetailedLabel}
-                  </SelectItem>
-                  <SelectItem value="PRINCIPAL_AGGREGATED">
-                    {copy.reportTypeAggregatedLabel}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                  <SelectTrigger
+                    aria-label={copy.reportTypeLabel}
+                    className="h-8 w-[210px] border-0 bg-transparent px-0 text-sm font-semibold shadow-none focus:ring-0"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="DETAILED">
+                      {copy.reportTypeDetailedLabel}
+                    </SelectItem>
+                    <SelectItem value="PRINCIPAL_AGGREGATED">
+                      {copy.reportTypeAggregatedLabel}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
 
-            <div className="flex min-w-[180px] items-center justify-between gap-3 rounded-full border border-border/60 px-4 py-2">
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                {copy.normalizationLabel}
-              </span>
-              <Select
-                value={context.analyticsProps.context.normalization}
-                onValueChange={(value) =>
-                  context.analyticsProps.onNormalizationChange?.(
-                    value as 'total' | 'per_capita',
-                  )
-                }
-              >
-                <SelectTrigger
-                  aria-label={copy.normalizationLabel}
-                  className="h-8 w-[140px] border-0 bg-transparent px-0 text-sm font-semibold shadow-none focus:ring-0"
+            {canChangeNormalization ? (
+              <div className="flex min-w-[180px] items-center justify-between gap-3 rounded-full border border-border/60 px-4 py-2">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  {copy.normalizationLabel}
+                </span>
+                <Select
+                  value={context.analyticsProps.context.normalization}
+                  onValueChange={(value) =>
+                    context.analyticsProps.onNormalizationChange?.(
+                      value as 'total' | 'per_capita',
+                    )
+                  }
                 >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="total">Total</SelectItem>
-                  <SelectItem value="per_capita">Per capita</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                  <SelectTrigger
+                    aria-label={copy.normalizationLabel}
+                    className="h-8 w-[140px] border-0 bg-transparent px-0 text-sm font-semibold shadow-none focus:ring-0"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="total">Total</SelectItem>
+                    <SelectItem value="per_capita">Per capita</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
 
             <label className="flex min-w-[220px] items-center justify-between gap-3 rounded-full border border-border/60 px-4 py-2">
               <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">

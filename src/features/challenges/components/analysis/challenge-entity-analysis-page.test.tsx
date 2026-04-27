@@ -35,6 +35,7 @@ const challengeGroupedLineItemsMock = vi.fn()
 const budgetItemAnalyticsModalMock = vi.fn()
 const getEntityFeatureInfoMock = vi.fn()
 const mapAnalyticsPublicPreviewCardMock = vi.fn()
+const useGeoJsonDataMock = vi.fn()
 const setPrimaryMock = vi.fn()
 const setPathMock = vi.fn()
 const resetTreemapMock = vi.fn()
@@ -139,7 +140,7 @@ vi.mock('@/lib/api/entity-analytics', () => ({
 }))
 
 vi.mock('@/hooks/useGeoJson', () => ({
-  useGeoJsonData: () => mockGeoJsonData,
+  useGeoJsonData: (...args: unknown[]) => useGeoJsonDataMock(...args),
 }))
 
 vi.mock('@/components/entities/utils', () => ({
@@ -381,8 +382,11 @@ const entityDetails: EntityDetailsData = {
   name: 'Primăria Sibiu',
   default_report_type: 'PRINCIPAL_AGGREGATED',
   entity_type: 'admin_municipality',
+  is_uat: true,
   uat: {
     county_name: 'Județul Sibiu',
+    county_code: 'SB',
+    siruta_code: 143469,
     population: 134309,
   },
   totalIncome: 150000000,
@@ -661,11 +665,21 @@ function renderAnalysisPage(
   props: {
     readonly entityCui?: string
     readonly languageQuery?: 'ro' | 'en'
+    readonly pageVariant?: 'primarie' | 'entities'
+    readonly hasExplicitReportType?: boolean
     readonly state?: Partial<ChallengeEntityAnalysisPageState>
     readonly commitmentsGrouping?: 'fn' | 'ec'
     readonly commitmentsDetailLevel?: 'chapter' | 'detailed'
     readonly analyticsTarget?: BudgetItemAnalyticsSearchState
     readonly onEntityCuiChange?: (selection: MapEntitySelection) => void
+    readonly ssrLoaderPayload?: {
+      readonly entitySeoSnapshot?: {
+        readonly defaultReportType?: string | null
+        readonly entityType?: string | null
+      }
+      readonly ssrEntityDetailsParams?: Record<string, unknown>
+      readonly ssrEntityExecutionLineItemsParams?: Record<string, unknown>
+    }
   } = {},
 ) {
   function TestHarness() {
@@ -685,10 +699,13 @@ function renderAnalysisPage(
       <ChallengeEntityAnalysisPage
         entityCui={props.entityCui ?? '12345678'}
         languageQuery={props.languageQuery}
+        pageVariant={props.pageVariant}
+        hasExplicitReportType={props.hasExplicitReportType}
         state={state}
         commitmentsGrouping={commitmentsState.grouping}
         commitmentsDetailLevel={commitmentsState.detailLevel}
         analyticsTarget={analyticsTarget}
+        ssrLoaderPayload={props.ssrLoaderPayload as never}
         onStateChange={(patch) =>
           setState((previousState) => ({
             ...previousState,
@@ -755,11 +772,33 @@ describe('ChallengeEntityAnalysisPage', () => {
         refetch: vi.fn(),
       }),
     )
-    entityDetailsQueryOptionsMock.mockImplementation((params: unknown) => ({
-      queryKey: ['entityDetails', params],
+    entityDetailsQueryOptionsMock.mockImplementation((params: any) => ({
+      queryKey: [
+        'entityDetails',
+        JSON.stringify({
+          cui: params.cui,
+          normalization: params.normalization,
+          currency: params.currency,
+          inflation_adjusted: params.inflation_adjusted,
+          show_period_growth: params.show_period_growth,
+          reportPeriod: params.reportPeriod,
+          reportType: params.reportType,
+          trendPeriod: params.trendPeriod ?? params.reportPeriod,
+          mainCreditorCui: params.mainCreditorCui,
+        }),
+      ],
     }))
-    entityExecutionLineItemsQueryOptionsMock.mockImplementation((params: unknown) => ({
-      queryKey: ['entityLineItems', params],
+    entityExecutionLineItemsQueryOptionsMock.mockImplementation((params: any) => ({
+      queryKey: [
+        'entityLineItems',
+        params.cui,
+        params.normalization,
+        params.currency,
+        params.inflation_adjusted,
+        params.reportPeriod,
+        params.reportType,
+        params.mainCreditorCui,
+      ],
     }))
     useEntityRelationshipsMock.mockReturnValue({
       data: {
@@ -862,6 +901,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     challengeGroupedLineItemsMock.mockReset()
     budgetItemAnalyticsModalMock.mockReset()
     mapAnalyticsPublicPreviewCardMock.mockReset()
+    useGeoJsonDataMock.mockReset()
     prefetchQueryMock.mockReset()
     fetchEntityAnalyticsMock.mockClear()
     getEntityFeatureInfoMock.mockReset()
@@ -876,6 +916,7 @@ describe('ChallengeEntityAnalysisPage', () => {
       isLoading: false,
       error: null,
     }
+    useGeoJsonDataMock.mockImplementation(() => mockGeoJsonData)
     getEntityFeatureInfoMock.mockReturnValue({
       center: [46.77, 23.59],
       zoom: 8.1,
@@ -1009,6 +1050,19 @@ describe('ChallengeEntityAnalysisPage', () => {
   })
 
   it('renders the INS view and keeps unsupported entities selectable', async () => {
+    useEntityDetailsMock.mockImplementation(() => ({
+      data: {
+        ...entityDetails,
+        entity_type: 'school',
+        is_uat: false,
+        uat: null,
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    }))
+
     renderAnalysisPage({
       state: {
         activeView: 'ins',
@@ -1292,6 +1346,161 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(
       screen.getByRole('button', { name: 'Arată opțiunile hărții' }),
     ).toBeInTheDocument()
+  })
+
+  it('suppresses map UI and the INS menu for non-UAT non-county entities', async () => {
+    useEntityDetailsMock.mockImplementation(() => ({
+      data: {
+        ...entityDetails,
+        entity_type: 'school',
+        is_uat: false,
+        uat: null,
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    }))
+
+    renderAnalysisPage()
+
+    expect(screen.queryByTestId('public-map-preview')).not.toBeInTheDocument()
+    expect(
+      within(screen.getByTestId('analysis-header')).queryByRole('button', {
+        name: 'INS',
+      }),
+    ).not.toBeInTheDocument()
+    expect(useGeoJsonDataMock).toHaveBeenCalledWith('UAT', {
+      enabled: false,
+    })
+  })
+
+  it('suppresses map UI for non-UAT county council entities', async () => {
+    useEntityDetailsMock.mockImplementation(() => ({
+      data: {
+        ...entityDetails,
+        cui: '4267117',
+        entity_type: 'admin_county_council',
+        is_uat: false,
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    }))
+
+    renderAnalysisPage({
+      entityCui: '4267117',
+    })
+
+    expect(screen.queryByTestId('public-map-preview')).not.toBeInTheDocument()
+    expect(useGeoJsonDataMock).toHaveBeenCalledWith('County', {
+      enabled: false,
+    })
+    expect(
+      screen.queryByRole('button', { name: 'Arată per capita' }),
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Arată opțiunile suplimentare' }),
+    )
+
+    expect(
+      screen.queryByRole('button', {
+        name: 'Arată cheltuieli administrative primărie',
+      }),
+    ).not.toBeInTheDocument()
+    expect(
+      within(screen.getByTestId('analysis-header')).queryByRole('button', {
+        name: 'INS',
+      }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('hides UAT-only controls for non-UAT entities with UAT metadata', async () => {
+    useEntityDetailsMock.mockImplementation(() => ({
+      data: {
+        ...entityDetails,
+        entity_type: 'school',
+        is_uat: false,
+        uat: {
+          county_name: 'Județul Sibiu',
+          county_code: 'SB',
+          name: 'Sibiu',
+          siruta_code: 143469,
+          population: 134309,
+        },
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    }))
+
+    renderAnalysisPage({
+      languageQuery: 'en',
+      pageVariant: 'entities',
+      state: {
+        normalization: 'per_capita',
+      },
+    })
+
+    await waitFor(() => {
+      expect(useEntityExecutionLineItemsMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          normalization: 'total',
+        }),
+        {
+          ssrPlaceholder: undefined,
+        },
+      )
+    })
+
+    expect(
+      screen.queryByRole('button', { name: 'Show per capita' }),
+    ).not.toBeInTheDocument()
+    expect(
+      within(screen.getByTestId('analysis-header')).queryByRole('button', {
+        name: 'INS',
+      }),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByTestId('public-map-preview')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show extra options' }))
+
+    expect(
+      screen.queryByRole('button', { name: 'Show administrative spending' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', {
+        name: 'Show city hall administrative spending',
+      }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('suppresses map UI for non-UAT Bucharest municipality CUI', async () => {
+    useEntityDetailsMock.mockImplementation(() => ({
+      data: {
+        ...entityDetails,
+        cui: '4267117',
+        entity_type: 'admin_municipality',
+        is_uat: false,
+        uat: null,
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    }))
+
+    renderAnalysisPage({
+      entityCui: '4267117',
+    })
+
+    expect(screen.queryByTestId('public-map-preview')).not.toBeInTheDocument()
+    expect(useGeoJsonDataMock).toHaveBeenCalledWith('County', {
+      enabled: false,
+    })
   })
 
   it('does not render anomaly details in the current analysis layout', async () => {
@@ -2626,6 +2835,521 @@ describe('ChallengeEntityAnalysisPage', () => {
     )
   })
 
+  it('shows parent main creditor navigation for non-main-creditor entities without sibling guesses', () => {
+    const parentMainCreditor = {
+      cui: '12345678',
+      name: 'Primăria Sibiu',
+    }
+
+    useEntityDetailsMock.mockReturnValue({
+      data: {
+        ...entityDetails,
+        cui: '99887766',
+        name: 'Școala Gimnazială Centrală',
+        entity_type: 'school',
+        is_uat: false,
+        uat: {
+          county_name: 'Județul Sibiu',
+          county_code: 'SB',
+          name: 'Sibiu',
+          siruta_code: 143469,
+          population: 134309,
+        },
+        parents: [parentMainCreditor],
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+    useEntityRelationshipsMock.mockReturnValue({
+      data: {
+        children: [],
+        parents: [parentMainCreditor],
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+
+    renderAnalysisPage({
+      entityCui: '99887766',
+      languageQuery: 'en',
+    })
+
+    expect(screen.getByText('Parent main creditor')).toBeInTheDocument()
+    expect(
+      screen.getByText(/does not have subordinate institutions/i),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('Subordinate institutions')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText('Liceul Teoretic Avram Iancu'),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'View institutions under this creditor' }),
+    ).not.toBeInTheDocument()
+
+    const parentLink = screen.getByRole('link', {
+      name: /Primăria Sibiu/,
+    })
+    expect(parentLink).toHaveAttribute('href', '/entities/12345678')
+    expect(parentLink).toHaveAttribute(
+      'data-search',
+      expect.stringContaining('"report_type":"PRINCIPAL_AGGREGATED"'),
+    )
+    expect(parentLink.getAttribute('data-search') ?? '').not.toContain(
+      'main_creditor_cui',
+    )
+
+    expect(useEntityDetailsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cui: '99887766',
+        mainCreditorCui: '12345678',
+      }),
+      {
+        ssrPlaceholder: undefined,
+      },
+    )
+    expect(useEntityExecutionLineItemsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cui: '99887766',
+        mainCreditorCui: '12345678',
+      }),
+      {
+        ssrPlaceholder: undefined,
+      },
+    )
+    expect(useQueryMock.mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({
+        enabled: false,
+      }),
+    )
+    expect(fetchEntityAnalyticsMock).not.toHaveBeenCalled()
+  })
+
+  it('keeps subordinate institutions visible for intermediate creditors with parents and children', () => {
+    const parentMainCreditor = {
+      cui: '12345678',
+      name: 'Primăria Sibiu',
+    }
+
+    useEntityDetailsMock.mockReturnValue({
+      data: {
+        ...entityDetails,
+        cui: '99887766',
+        name: 'Direcția Socială Sibiu',
+        entity_type: 'social_services',
+        is_uat: false,
+        parents: [parentMainCreditor],
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+    useEntityRelationshipsMock.mockReturnValue({
+      data: {
+        children: [
+          {
+            cui: '11223344',
+            name: 'Centrul Social Sibiu',
+          },
+        ],
+        parents: [parentMainCreditor],
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+
+    renderAnalysisPage({
+      entityCui: '99887766',
+      languageQuery: 'en',
+    })
+
+    expect(screen.queryByText('Parent main creditor')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText(/does not have subordinate institutions/i),
+    ).not.toBeInTheDocument()
+    expect(screen.getByText('Subordinate institutions')).toBeInTheDocument()
+    expect(screen.getByText('Liceul Teoretic Avram Iancu')).toBeInTheDocument()
+    expect(useQueryMock.mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({
+        enabled: true,
+      }),
+    )
+    expect(fetchEntityAnalyticsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filter: expect.objectContaining({
+          main_creditor_cui: '99887766',
+        }),
+      }),
+    )
+  })
+
+  it('uses SSR default detailed placeholders without inferring a parent creditor', () => {
+    const parentMainCreditor = {
+      cui: '4265841',
+      name: 'Ministerul Justiției',
+    }
+    const ssrEntityDetails = {
+      ...detailedEntityDetails,
+      cui: '4266324',
+      default_report_type: 'DETAILED' as const,
+      parents: [parentMainCreditor],
+    }
+    const reportPeriod = {
+      type: 'YEAR',
+      selection: {
+        interval: {
+          start: '2025',
+          end: '2025',
+        },
+      },
+    }
+    const trendPeriod = {
+      type: 'YEAR',
+      selection: {
+        interval: {
+          start: '2016',
+          end: '2026',
+        },
+      },
+    }
+    const ssrEntityDetailsParams = {
+      cui: '4266324',
+      normalization: 'total',
+      currency: 'RON',
+      inflation_adjusted: false,
+      show_period_growth: false,
+      reportPeriod,
+      reportType: 'DETAILED',
+      trendPeriod,
+      mainCreditorCui: undefined,
+    }
+    const ssrEntityExecutionLineItemsParams = {
+      cui: '4266324',
+      reportPeriod,
+      reportType: 'DETAILED',
+      mainCreditorCui: undefined,
+      normalization: 'total',
+      currency: 'RON',
+      inflation_adjusted: false,
+    }
+
+    useQueryClientMock.mockReturnValue({
+      prefetchQuery: prefetchQueryMock,
+      getQueryData: vi.fn((queryKey: readonly unknown[]) => {
+        if (queryKey[0] === 'entityDetails') {
+          return ssrEntityDetails
+        }
+
+        if (queryKey[0] === 'entityLineItems') {
+          return {
+            nodes: lineItems,
+            fundingSources: [],
+          }
+        }
+
+        return undefined
+      }),
+    })
+    useEntityDetailsMock.mockReturnValue({
+      data: ssrEntityDetails,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+
+    renderAnalysisPage({
+      entityCui: '4266324',
+      pageVariant: 'entities',
+      hasExplicitReportType: false,
+      ssrLoaderPayload: {
+        ssrEntityDetailsParams,
+        ssrEntityExecutionLineItemsParams,
+      },
+    })
+
+    expect(useEntityDetailsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cui: '4266324',
+        reportType: 'DETAILED',
+        mainCreditorCui: undefined,
+      }),
+      {
+        ssrPlaceholder: expect.objectContaining({
+          cui: '4266324',
+          default_report_type: 'DETAILED',
+        }),
+      },
+    )
+    expect(useEntityExecutionLineItemsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cui: '4266324',
+        reportType: 'DETAILED',
+        mainCreditorCui: undefined,
+      }),
+      {
+        ssrPlaceholder: {
+          nodes: lineItems,
+          fundingSources: [],
+        },
+      },
+    )
+  })
+
+  it('uses the entity default report type when the entities URL omits report_type', () => {
+    useEntityDetailsMock.mockReturnValue({
+      data: {
+        ...detailedEntityDetails,
+        default_report_type: 'DETAILED',
+        name: 'Biblioteca Județeană Sibiu',
+        entity_type: 'culture_institution',
+        is_uat: false,
+        parents: [],
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+
+    renderAnalysisPage({
+      entityCui: '44556677',
+      languageQuery: 'en',
+      pageVariant: 'entities',
+      hasExplicitReportType: false,
+    })
+
+    expect(useEntityDetailsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cui: '44556677',
+        reportType: undefined,
+      }),
+      {
+        ssrPlaceholder: undefined,
+      },
+    )
+    expect(useEntityExecutionLineItemsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cui: '44556677',
+        reportType: 'DETAILED',
+      }),
+      {
+        ssrPlaceholder: undefined,
+      },
+    )
+    expect(
+      screen.getByRole('button', { name: 'Show entity and institutions' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/reported directly by this entity/),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Show city hall and subordinate spending' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('uses secondary aggregated defaults with detailed as the alternate option', () => {
+    useEntityDetailsMock.mockReturnValue({
+      data: {
+        ...entityDetails,
+        default_report_type: 'SECONDARY_AGGREGATED',
+        name: 'Direcția Județeană de Test',
+        entity_type: 'secondary_creditor',
+        is_uat: false,
+        parents: [],
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+
+    renderAnalysisPage({
+      entityCui: '55667788',
+      languageQuery: 'en',
+      pageVariant: 'entities',
+      hasExplicitReportType: false,
+    })
+
+    expect(useEntityDetailsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cui: '55667788',
+        reportType: undefined,
+        mainCreditorCui: undefined,
+      }),
+      {
+        ssrPlaceholder: undefined,
+      },
+    )
+    expect(useEntityExecutionLineItemsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        cui: '55667788',
+        reportType: 'SECONDARY_AGGREGATED',
+        mainCreditorCui: undefined,
+      }),
+      {
+        ssrPlaceholder: undefined,
+      },
+    )
+    expect(
+      screen.getByRole('button', { name: 'Show only this entity' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Show entity and institutions' }),
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show only this entity' }))
+
+    expect(useEntityExecutionLineItemsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        cui: '55667788',
+        reportType: 'DETAILED',
+        mainCreditorCui: undefined,
+      }),
+      {
+        ssrPlaceholder: undefined,
+      },
+    )
+  })
+
+  it('preserves explicit secondary aggregated report type and toggles to detailed', () => {
+    renderAnalysisPage({
+      languageQuery: 'en',
+      state: {
+        reportType: 'SECONDARY_AGGREGATED',
+      },
+    })
+
+    expect(useEntityDetailsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reportType: 'SECONDARY_AGGREGATED',
+      }),
+      {
+        ssrPlaceholder: undefined,
+      },
+    )
+    expect(useEntityExecutionLineItemsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reportType: 'SECONDARY_AGGREGATED',
+      }),
+      {
+        ssrPlaceholder: undefined,
+      },
+    )
+    expect(
+      screen.getByRole('button', { name: 'Show only this entity' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show only this entity' }))
+
+    expect(useEntityExecutionLineItemsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        reportType: 'DETAILED',
+      }),
+      {
+        ssrPlaceholder: undefined,
+      },
+    )
+    expect(
+      screen.getByRole('button', { name: 'Show secondary-creditor report' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Show secondary-creditor report' }),
+    )
+
+    expect(useEntityExecutionLineItemsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        reportType: 'SECONDARY_AGGREGATED',
+      }),
+      {
+        ssrPlaceholder: undefined,
+      },
+    )
+  })
+
+  it('uses the secondary aggregate option after loading an explicit detailed URL', async () => {
+    const parentMainCreditor = {
+      cui: '4265841',
+      name: 'Ministerul Justiției',
+    }
+
+    useEntityDetailsMock.mockImplementation(
+      ({ reportType }: { reportType?: string }) => ({
+        data: {
+          ...(reportType === 'DETAILED' ? detailedEntityDetails : entityDetails),
+          default_report_type:
+            reportType === 'DETAILED'
+              ? 'DETAILED'
+              : 'SECONDARY_AGGREGATED',
+          entity_type: 'secondary_creditor',
+          is_uat: false,
+          parents: [parentMainCreditor],
+        },
+        isLoading: false,
+        isError: false,
+        error: null,
+        refetch: vi.fn(),
+      }),
+    )
+
+    renderAnalysisPage({
+      entityCui: '55667788',
+      languageQuery: 'en',
+      pageVariant: 'entities',
+      hasExplicitReportType: true,
+      state: {
+        reportType: 'DETAILED',
+      },
+      ssrLoaderPayload: {
+        entitySeoSnapshot: {
+          defaultReportType: 'SECONDARY_AGGREGATED',
+          entityType: 'secondary_creditor',
+        },
+      },
+    })
+
+    expect(useEntityExecutionLineItemsMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        cui: '55667788',
+        reportType: 'DETAILED',
+        mainCreditorCui: undefined,
+      }),
+      {
+        ssrPlaceholder: undefined,
+      },
+    )
+    expect(
+      screen.getByRole('button', { name: 'Show secondary-creditor report' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Show secondary-creditor report' }),
+    )
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: 'Show only this entity' }),
+      ).toBeInTheDocument()
+      expect(useEntityExecutionLineItemsMock).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          cui: '55667788',
+          reportType: 'SECONDARY_AGGREGATED',
+          mainCreditorCui: undefined,
+        }),
+        {
+          ssrPlaceholder: undefined,
+        },
+      )
+    })
+  })
+
   it('localizes the main page buttons and map preview labels for english', async () => {
     renderAnalysisPage({
       languageQuery: 'en',
@@ -3080,6 +3804,7 @@ describe('ChallengeEntityAnalysisPage', () => {
               },
             },
           },
+          reportType: 'PRINCIPAL_AGGREGATED',
           normalization: 'total',
           currency: 'RON',
           inflation_adjusted: false,
@@ -3096,6 +3821,7 @@ describe('ChallengeEntityAnalysisPage', () => {
               },
             },
           },
+          reportType: 'PRINCIPAL_AGGREGATED',
           normalization: 'total',
           currency: 'RON',
           inflation_adjusted: false,
@@ -3129,7 +3855,7 @@ describe('ChallengeEntityAnalysisPage', () => {
 
   it('prefers SSR placeholder params from the shared loader payload', () => {
     const sharedEntityDetailsParams = {
-      cui: 'shared-details',
+      cui: '12345678',
       reportPeriod: {
         type: 'YEAR',
         selection: {
@@ -3148,13 +3874,14 @@ describe('ChallengeEntityAnalysisPage', () => {
           },
         },
       },
+      reportType: 'PRINCIPAL_AGGREGATED',
       normalization: 'total',
       currency: 'RON',
       inflation_adjusted: false,
       show_period_growth: false,
     } as const
     const sharedEntityExecutionLineItemsParams = {
-      cui: 'shared-line-items',
+      cui: '12345678',
       reportPeriod: {
         type: 'YEAR',
         selection: {
@@ -3164,6 +3891,7 @@ describe('ChallengeEntityAnalysisPage', () => {
           },
         },
       },
+      reportType: 'PRINCIPAL_AGGREGATED',
       normalization: 'total',
       currency: 'RON',
       inflation_adjusted: false,
