@@ -36,6 +36,7 @@ export default tseslint.config(
       'import-x/resolver-next': [
         createTypeScriptImportResolver({
           alwaysTryTypes: true,
+          noWarnOnMultipleProjects: true,
           project: ['./tsconfig.app.json', './tsconfig.node.json'],
         }),
         createNodeResolver(),
