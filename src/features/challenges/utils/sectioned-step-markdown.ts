@@ -5,6 +5,7 @@ import type {
   ChallengeStepLessonChallengeDescriptor,
   ChallengeStepSectionMeta,
 } from '../types'
+import { buildChallengeInteractionId } from './interaction-ids'
 
 type MdxContentProps = {
   readonly components?: MDXComponents
@@ -56,7 +57,7 @@ export function resolveChallengeStepTrackedInteractions(params: {
     const interactionId =
       descriptor.kind === 'fixed'
         ? descriptor.interactionId
-        : `${params.stepId}:${descriptor.prefix}`
+        : buildChallengeInteractionId(params.stepId, descriptor.prefix)
 
     return {
       interactionId,

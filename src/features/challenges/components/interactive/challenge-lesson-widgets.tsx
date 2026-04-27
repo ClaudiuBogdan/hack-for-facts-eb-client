@@ -1376,10 +1376,13 @@ export function LessonExecutionTableExcerpt({
   }, [debouncedPersistExecution])
 
   const selectedRow = rows.find((row) => row.id === selectedRowId) ?? null
-  const isCompleted = Boolean(selectedRow) && rowExplanation.trim().length >= 30
+  const isSubmittedCurrentValue =
+    executionTableInteraction.isCompleted &&
+    executionTableInteraction.savedValue?.selectedRowId === selectedRowId &&
+    executionTableInteraction.savedValue?.rowExplanation === rowExplanation
   useRegisterLessonChallenge({
     id: interactionId,
-    isCompleted: executionTableInteraction.isCompleted || isCompleted,
+    isCompleted: isSubmittedCurrentValue,
   })
 
   if (aggregatedLineItemsQuery.isLoading || aggregatedTotalSummaryQuery.isLoading) {
@@ -1523,7 +1526,7 @@ export function LessonExecutionTableExcerpt({
           ) : null}
         </div>
 
-        {executionTableInteraction.isCompleted || isCompleted ? (
+        {isSubmittedCurrentValue ? (
           <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400" role="status">
             <svg className="h-4 w-4 shrink-0" aria-hidden="true" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
             {copy.documentReady}

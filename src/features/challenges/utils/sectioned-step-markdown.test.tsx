@@ -10,6 +10,7 @@ import {
   parseSectionedChallengeStep,
   transformSectionedChallengeStepSource,
 } from './sectioned-step-markdown.build'
+import { resolveChallengeStepTrackedInteractions } from './sectioned-step-markdown'
 
 function renderSectionMarkup(bodySource: string) {
   const renderedModule = evaluateSync(bodySource, {
@@ -331,6 +332,31 @@ stepType: sectioned
         kind: 'step',
         prefix: 'lesson-aggregate-detailed-interpretation',
         interactionKind: 'quiz',
+        scopePolicy: 'entity',
+      },
+    ])
+  })
+
+  it('resolves step widget descriptors with runtime interaction IDs', () => {
+    expect(
+      resolveChallengeStepTrackedInteractions({
+        stepId: '05-read-the-real-execution-table',
+        descriptors: [
+          {
+            kind: 'step',
+            prefix: 'lesson-execution-table-excerpt',
+            interactionKind: 'custom',
+            scopePolicy: 'entity',
+          },
+        ],
+      }),
+    ).toEqual([
+      {
+        interactionId:
+          'funky:lesson:05_read_the_real_execution_table_lesson_execution_table_excerpt',
+        lessonChallengeId:
+          'funky:lesson:05_read_the_real_execution_table_lesson_execution_table_excerpt',
+        interactionKind: 'custom',
         scopePolicy: 'entity',
       },
     ])

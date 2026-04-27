@@ -474,7 +474,7 @@ describe('LessonAggregateDetailedCompare', () => {
     ).toBeInTheDocument()
   })
 
-  it('cancels stale debounced execution writes when row selection changes and flushes on blur', async () => {
+  it('auto-completes execution answer after debounce and blur', async () => {
     vi.useFakeTimers()
 
     render(
@@ -489,6 +489,7 @@ describe('LessonAggregateDetailedCompare', () => {
     fireEvent.click(bodyRows[0]!)
 
     const textarea = screen.getByLabelText(/Explică pe scurt ce arată acest rând/i)
+
     fireEvent.change(textarea, { target: { value: 'Explicație scurtă' } })
 
     fireEvent.click(bodyRows[1]!)

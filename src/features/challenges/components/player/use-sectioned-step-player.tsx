@@ -171,6 +171,10 @@ export function useSectionedStepPlayer({
     : EMPTY_LESSON_CHALLENGE_IDS
   const currentSectionHasLessonChallenges =
     currentSectionLessonChallengeIds.length > 0
+  const currentSectionHasRegisteredLessonChallenges =
+    currentSectionLessonChallengeIds.some((challengeId) =>
+      Object.prototype.hasOwnProperty.call(currentLessonChallenges, challengeId),
+    )
   const currentSectionAllLessonChallengesCompleted =
     currentSectionLessonChallengeIds.every(
       (challengeId) => currentLessonChallenges[challengeId] === true,
@@ -432,6 +436,8 @@ export function useSectionedStepPlayer({
           isLastSection,
           isAccessGranted,
           hasLessonChallenges: currentSectionHasLessonChallenges,
+          hasRegisteredLessonChallenges:
+            currentSectionHasRegisteredLessonChallenges,
           allLessonChallengesCompleted:
             currentSectionAllLessonChallengesCompleted,
           isQuizPending: effectiveIsQuizPending,
@@ -446,6 +452,7 @@ export function useSectionedStepPlayer({
       }),
     [
       currentSectionAllLessonChallengesCompleted,
+      currentSectionHasRegisteredLessonChallenges,
       currentSectionCustomInteractionLifecycles,
       currentSectionHasLessonChallenges,
       effectiveStepProgress.sectionChallengeProgressById,

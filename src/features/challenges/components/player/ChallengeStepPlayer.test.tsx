@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { fireEvent, render, screen, waitFor } from '@/test/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createInteractiveStateRecord } from '@/features/learning/utils/interactive-state'
+import { buildChallengeInteractionId } from '@/features/challenges/utils/interaction-ids'
 import { ChallengeStepPlayer } from './ChallengeStepPlayer'
 
 const mockUseChallengeAccess = vi.fn()
@@ -927,8 +928,8 @@ describe('ChallengeStepPlayer', () => {
   })
 
   it('keeps the quiz success footer when earlier tracked activities are incomplete', async () => {
-    const compareChallengeId = 'step-1:lesson-aggregate-detailed-compare'
-    const finalChallengeId = 'quiz:step-1:lesson-aggregate-detailed-interpretation'
+    const compareChallengeId = buildChallengeInteractionId('step-1', 'lesson-aggregate-detailed-compare')
+    const finalChallengeId = `quiz:${buildChallengeInteractionId('step-1', 'lesson-aggregate-detailed-interpretation')}`
 
     mockUseChallengeAccess.mockReturnValue({
       accessCardVariant: null,
@@ -1074,8 +1075,8 @@ describe('ChallengeStepPlayer', () => {
   })
 
   it('navigates without persisting lesson progress when tracked activities are done', async () => {
-    const compareChallengeId = 'step-1:lesson-aggregate-detailed-compare'
-    const finalChallengeId = 'quiz:step-1:lesson-aggregate-detailed-interpretation'
+    const compareChallengeId = buildChallengeInteractionId('step-1', 'lesson-aggregate-detailed-compare')
+    const finalChallengeId = `quiz:${buildChallengeInteractionId('step-1', 'lesson-aggregate-detailed-interpretation')}`
 
     mockUseChallengeAccess.mockReturnValue({
       accessCardVariant: null,
@@ -1204,8 +1205,8 @@ describe('ChallengeStepPlayer', () => {
   })
 
   it('does not auto-complete a sectioned step from tracked quizzes alone', async () => {
-    const compareChallengeId = 'step-1:lesson-aggregate-detailed-compare'
-    const finalChallengeId = 'quiz:step-1:lesson-aggregate-detailed-interpretation'
+    const compareChallengeId = buildChallengeInteractionId('step-1', 'lesson-aggregate-detailed-compare')
+    const finalChallengeId = `quiz:${buildChallengeInteractionId('step-1', 'lesson-aggregate-detailed-interpretation')}`
 
     mockUseChallengeAccess.mockReturnValue({
       accessCardVariant: null,
@@ -1480,7 +1481,7 @@ describe('ChallengeStepPlayer', () => {
   })
 
   it('keeps skip visible on the final section after the progress gate warning', async () => {
-    const compareChallengeId = 'step-1:lesson-aggregate-detailed-compare'
+    const compareChallengeId = buildChallengeInteractionId('step-1', 'lesson-aggregate-detailed-compare')
 
     mockUseChallengeAccess.mockReturnValue({
       accessCardVariant: null,

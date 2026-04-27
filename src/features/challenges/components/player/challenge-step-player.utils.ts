@@ -142,6 +142,7 @@ export function resolveSectionFooterState(params: {
   readonly isLastSection: boolean
   readonly isAccessGranted: boolean
   readonly hasLessonChallenges?: boolean
+  readonly hasRegisteredLessonChallenges?: boolean
   readonly allLessonChallengesCompleted?: boolean
   readonly isQuizPending: boolean
   readonly quizState: SectionQuizStateSnapshot
@@ -171,6 +172,11 @@ export function resolveSectionFooterState(params: {
     if (
       params.customInteractionLifecycles?.some(
         (lifecycle) => !lifecycle.isSubmitted,
+      )
+      ||
+      (
+        params.hasRegisteredLessonChallenges === true &&
+        params.allLessonChallengesCompleted === false
       )
     ) {
       return {

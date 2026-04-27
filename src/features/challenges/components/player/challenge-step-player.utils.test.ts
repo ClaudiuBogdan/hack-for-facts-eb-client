@@ -230,6 +230,45 @@ describe('challenge-step-player.utils', () => {
     })
   })
 
+  it('waits for registered local custom widgets to finish saving', () => {
+    expect(
+      resolveSectionFooterState({
+        interactive: null,
+        customInteractionLifecycles: [
+          {
+            mode: 'immediate',
+            status: 'passed',
+            reviewStatus: null,
+            feedbackText: null,
+            outcome: null,
+            isSubmitted: true,
+            isSuccessful: true,
+            isFailure: false,
+            isPending: false,
+            canRetry: false,
+          },
+        ],
+        isLastSection: true,
+        isAccessGranted: true,
+        hasLessonChallenges: true,
+        hasRegisteredLessonChallenges: true,
+        allLessonChallengesCompleted: false,
+        isQuizPending: false,
+        quizState: {
+          isAnswered: false,
+          isCorrect: false,
+        },
+      }),
+    ).toEqual({
+      tone: 'neutral',
+      message: 'Complete this section before continuing.',
+      primaryLabel: 'Finish',
+      primaryAction: 'advance',
+      primaryDisabled: true,
+      showSkip: true,
+    })
+  })
+
   it('preserves the current-section success state when earlier tracked sections are incomplete', () => {
     expect(
       applySectionedStepProgressGate({

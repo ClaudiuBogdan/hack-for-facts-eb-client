@@ -5,6 +5,7 @@ import {
 } from '@/features/learning/utils/interactive-state'
 import type { ChallengeStepDefinition } from '../types'
 import { deriveChallengeStepStatus } from './challenge-progress'
+import { buildChallengeInteractionId } from './interaction-ids'
 import type { ChallengeStepSectionMetadata } from './sectioned-step-markdown'
 
 const stepSectionsByContentDir: Record<string, readonly ChallengeStepSectionMetadata[]> = {}
@@ -135,7 +136,7 @@ describe('challenge-progress', () => {
     interactiveState = withRecord(
       interactiveState,
       createQuizRecord({
-        interactionId: `${step.id}:lesson-budget-context-expenses`,
+        interactionId: buildChallengeInteractionId(step.id, 'lesson-budget-context-expenses'),
         lessonId: step.id,
         scopePolicy: 'entity',
         entityCui: '4305857',
@@ -147,7 +148,7 @@ describe('challenge-progress', () => {
     interactiveState = withRecord(
       interactiveState,
       createQuizRecord({
-        interactionId: `${step.id}:lesson-budget-context-income`,
+        interactionId: buildChallengeInteractionId(step.id, 'lesson-budget-context-income'),
         lessonId: step.id,
         scopePolicy: 'entity',
         entityCui: '4305857',
@@ -159,7 +160,7 @@ describe('challenge-progress', () => {
     interactiveState = withRecord(
       interactiveState,
       createQuizRecord({
-        interactionId: `${step.id}:lesson-budget-context-county-top`,
+        interactionId: buildChallengeInteractionId(step.id, 'lesson-budget-context-county-top'),
         lessonId: step.id,
         scopePolicy: 'entity',
         entityCui: '4305857',
@@ -290,7 +291,7 @@ describe('challenge-progress', () => {
     interactiveState = withRecord(
       interactiveState,
       createQuizRecord({
-        interactionId: `${step.id}:lesson-budget-context-expenses`,
+        interactionId: buildChallengeInteractionId(step.id, 'lesson-budget-context-expenses'),
         lessonId: step.id,
         scopePolicy: 'entity',
         entityCui: '4305857',
