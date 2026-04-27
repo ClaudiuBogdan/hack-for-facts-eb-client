@@ -56,7 +56,6 @@ import { AuthSignInButton, useAuth } from "@/lib/auth";
 import { toast } from "sonner";
 import { AdminCampaignLayout } from "@/features/campaigns/buget/admin/components/AdminCampaignLayout";
 import { CampaignAdminCursorPager } from "@/features/campaigns/buget/admin/components/CampaignAdminCursorPager";
-import { CampaignAdminEntityConfigPasteDialog } from "@/features/campaigns/buget/admin/components/CampaignAdminEntityConfigPasteDialog";
 import {
   CampaignAdminEntityConfigSheet,
 } from "@/features/campaigns/buget/admin/components/CampaignAdminEntityConfigSheet";
@@ -109,11 +108,13 @@ import {
 import type {
   CampaignAdminCampaignKey,
   CampaignAdminEntityConfigListItem,
+  CampaignAdminEntityListItem,
   CampaignAdminEntitiesSearch,
   CampaignAdminStagedEntityConfigDraft,
   CampaignAdminUpdateEntityConfigBody,
 } from "@/features/campaigns/buget/admin/types";
 import {
+  type CampaignAdminEntityConfigClipboardIssue,
   looksLikeCampaignAdminEntityConfigClipboardText,
   parseCampaignAdminEntityConfigClipboardText,
   serializeCampaignAdminEntityConfigRowsToClipboardTsv,
@@ -131,6 +132,9 @@ type CampaignAdminEntitiesPageProps = {
     options?: { readonly replace?: boolean },
   ) => void;
 };
+
+const EMPTY_ENTITY_ITEMS: readonly CampaignAdminEntityListItem[] = [];
+const EMPTY_ENTITY_CONFIG_ITEMS: readonly CampaignAdminEntityConfigListItem[] = [];
 
 function SummaryCard({
   label,
@@ -265,12 +269,14 @@ export function CampaignAdminEntitiesPage({
   const [configPaginationStateSignature, setConfigPaginationStateSignature] =
     useState(configPaginationStateSignatureFromSearch);
   const [isEntitySummaryExpanded, setIsEntitySummaryExpanded] = useState(false);
-  const [isPasteDialogOpen, setIsPasteDialogOpen] = useState(false);
   const [selectedConfigEntityCuis, setSelectedConfigEntityCuis] = useState<
     ReadonlySet<string>
   >(new Set());
   const [stagedEntityConfigDraftsByEntityCui, setStagedEntityConfigDraftsByEntityCui] =
     useState<Readonly<Record<string, CampaignAdminStagedEntityConfigDraft>>>({});
+  const [entityConfigPasteIssues, setEntityConfigPasteIssues] = useState<
+    readonly CampaignAdminEntityConfigClipboardIssue[]
+  >([]);
   const [isConfigSendValidationOpen, setIsConfigSendValidationOpen] =
     useState(false);
   const [isConfigSendConfirmOpen, setIsConfigSendConfirmOpen] = useState(false);
@@ -314,15 +320,21 @@ export function CampaignAdminEntitiesPage({
     selectedEntityCui ?? "",
   );
 
-  const items = entitiesQuery.data?.items ?? [];
-  const configItems = entityConfigQuery.data?.items ?? [];
+  const items = entitiesQuery.data?.items ?? EMPTY_ENTITY_ITEMS;
+  const configItems = entityConfigQuery.data?.items ?? EMPTY_ENTITY_CONFIG_ITEMS;
   const selectedConfigItems = useMemo(
     () =>
       configItems.filter((item) => selectedConfigEntityCuis.has(item.entityCui)),
     [configItems, selectedConfigEntityCuis],
   );
-  const bulkConfigItems =
-    selectedConfigItems.length > 0 ? selectedConfigItems : configItems;
+  const visibleEntityConfigClipboardText = useMemo(
+    () =>
+      serializeCampaignAdminEntityConfigRowsToClipboardTsv(
+        configItems,
+        stagedEntityConfigDraftsByEntityCui,
+      ),
+    [configItems, stagedEntityConfigDraftsByEntityCui],
+  );
   const selectedStagedConfigDraftCount = useMemo(
     () =>
       selectedConfigItems.filter(
@@ -479,6 +491,7 @@ export function CampaignAdminEntitiesPage({
       },
     );
     resetConfigPagingState(normalizedNextSearch);
+    setEntityConfigPasteIssues([]);
     handleSearchStateChange(normalizedNextSearch, options);
   };
 
@@ -577,6 +590,7 @@ export function CampaignAdminEntitiesPage({
         getCampaignAdminEntityConfigSearchFromEntitiesSearch(nextSearch),
       ),
     );
+    setEntityConfigPasteIssues([]);
     handleSearchStateChange(nextSearch);
   };
 
@@ -632,6 +646,7 @@ export function CampaignAdminEntitiesPage({
           getCampaignAdminEntityConfigSearchFromEntitiesSearch(nextSearch),
         ),
       );
+      setEntityConfigPasteIssues([]);
       handleSearchStateChange(nextSearch);
       return;
     }
@@ -653,6 +668,7 @@ export function CampaignAdminEntitiesPage({
         getCampaignAdminEntityConfigSearchFromEntitiesSearch(nextSearch),
       ),
     );
+    setEntityConfigPasteIssues([]);
     handleSearchStateChange(nextSearch);
   };
 
@@ -818,7 +834,7 @@ export function CampaignAdminEntitiesPage({
   }, []);
 
   const handleCopyEntityConfigRows = useCallback(async () => {
-    if (bulkConfigItems.length === 0) {
+    if (configItems.length === 0) {
       toast.error(t`No entity config rows are available to copy.`);
       return;
     }
@@ -832,27 +848,24 @@ export function CampaignAdminEntitiesPage({
     }
 
     try {
-      const serializedRows = serializeCampaignAdminEntityConfigRowsToClipboardTsv(
-        bulkConfigItems,
-        stagedEntityConfigDraftsByEntityCui,
-      );
-      await navigator.clipboard.writeText(serializedRows);
+      await navigator.clipboard.writeText(visibleEntityConfigClipboardText);
       toast.success(
-        bulkConfigItems.length === 1
+        configItems.length === 1
           ? t`Copied 1 entity config row to the clipboard.`
-          : t`Copied ${bulkConfigItems.length} entity config rows to the clipboard.`,
+          : t`Copied ${configItems.length} entity config rows to the clipboard.`,
       );
     } catch {
       toast.error(t`Failed to copy the entity config rows.`);
     }
-  }, [bulkConfigItems, stagedEntityConfigDraftsByEntityCui]);
+  }, [configItems.length, visibleEntityConfigClipboardText]);
 
   const handleImportEntityConfigText = useCallback(
     (rawText: string) => {
       const result = parseCampaignAdminEntityConfigClipboardText({
         rawText,
-        items: bulkConfigItems,
+        items: configItems,
       });
+      setEntityConfigPasteIssues(result.issues);
 
       if (result.drafts.length > 0) {
         setStagedEntityConfigDraftsByEntityCui((currentDrafts) => ({
@@ -861,19 +874,51 @@ export function CampaignAdminEntitiesPage({
             result.drafts.map((draft) => [draft.entityCui, draft] as const),
           ),
         }));
+        setSelectedConfigEntityCuis((currentSelection) => {
+          const nextSelection = new Set(currentSelection);
+          result.drafts.forEach((draft) => {
+            nextSelection.add(draft.entityCui);
+          });
+          return nextSelection;
+        });
         toast.success(
           result.drafts.length === 1
             ? t`Imported staged entity config values for 1 row.`
             : t`Imported staged entity config values for ${result.drafts.length} rows.`,
         );
-      } else if (result.issues.length > 0) {
+        if (result.issues.length > 0) {
+          toast.warning(t`Some pasted rows need attention in the table.`);
+        }
+      } else {
         toast.error(t`No staged entity config values were imported.`);
       }
 
       return result;
     },
-    [bulkConfigItems],
+    [configItems],
   );
+
+  const handlePasteEntityConfigRowsFromClipboard = useCallback(async () => {
+    if (
+      typeof navigator === "undefined" ||
+      navigator.clipboard?.readText === undefined
+    ) {
+      toast.error(t`Clipboard paste is not available in this browser.`);
+      return;
+    }
+
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      if (!looksLikeCampaignAdminEntityConfigClipboardText(clipboardText)) {
+        toast.error(t`Clipboard does not contain entity config spreadsheet rows.`);
+        return;
+      }
+
+      handleImportEntityConfigText(clipboardText);
+    } catch {
+      toast.error(t`Failed to read entity config rows from the clipboard.`);
+    }
+  }, [handleImportEntityConfigText]);
 
   const handleApplySelectedEntityConfigs = useCallback(async () => {
     if (!canApplySelectedEntityConfigs) {
@@ -1091,7 +1136,7 @@ export function CampaignAdminEntitiesPage({
   ]);
 
   useEffect(() => {
-    if (activeTab !== "config" || bulkConfigItems.length === 0) {
+    if (activeTab !== "config") {
       return;
     }
 
@@ -1114,7 +1159,7 @@ export function CampaignAdminEntitiesPage({
     return () => {
       window.removeEventListener("paste", handleWindowPaste);
     };
-  }, [activeTab, bulkConfigItems, handleImportEntityConfigText]);
+  }, [activeTab, handleImportEntityConfigText]);
 
   const bulkEntityConfigFooter =
     selectedConfigItems.length > 0 ? (
@@ -1613,7 +1658,7 @@ export function CampaignAdminEntitiesPage({
               {t`Campaign entity config`}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {t`The table includes subscribed entities and any saved config rows. Unconfigured rows can be filled here, CSV export uses the same scope, and spreadsheet paste updates only the pasted rows.`}
+              {t`The table includes subscribed entities and any saved config rows. Paste spreadsheet rows directly on this tab to stage visible rows before applying them.`}
             </p>
           </section>
 
@@ -1672,7 +1717,7 @@ export function CampaignAdminEntitiesPage({
                 items={configItems}
                 selectedEntityCuis={selectedConfigEntityCuis}
                 header={
-                  ({ actions, trailingActions: _trailingActions }) => (
+                  ({ actions }) => (
                     <CampaignAdminEntityConfigToolbar
                       embedded
                       actions={actions}
@@ -1708,13 +1753,17 @@ export function CampaignAdminEntitiesPage({
                           { replace: true },
                         );
                       }}
-                      onOpenPasteDialog={() => setIsPasteDialogOpen(true)}
+                      onPasteRows={handlePasteEntityConfigRowsFromClipboard}
+                      onCopyRows={handleCopyEntityConfigRows}
                       onExportCsv={handleExportEntityConfigCsv}
                     />
                   )
                 }
                 sortBy={configSearch.sortBy}
                 sortOrder={configSearch.sortOrder}
+                stagedDraftsByEntityCui={stagedEntityConfigDraftsByEntityCui}
+                pasteIssues={entityConfigPasteIssues}
+                copyText={visibleEntityConfigClipboardText}
                 onCopyRows={handleCopyEntityConfigRows}
                 onSortChange={(sortBy, sortOrder) => {
                   handleConfigSearchChange(
@@ -1808,13 +1857,6 @@ export function CampaignAdminEntitiesPage({
           );
         }}
         onSubmit={handleSubmitEntityConfig}
-      />
-
-      <CampaignAdminEntityConfigPasteDialog
-        open={isPasteDialogOpen}
-        campaignKey={campaignKey}
-        onOpenChange={setIsPasteDialogOpen}
-        onApplied={handleRefresh}
       />
 
       <CampaignAdminEntityConfigSendValidationDialog

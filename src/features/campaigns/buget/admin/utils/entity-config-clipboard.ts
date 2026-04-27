@@ -23,6 +23,8 @@ export const CAMPAIGN_ADMIN_ENTITY_CONFIG_CLIPBOARD_HEADERS = [
 
 export type CampaignAdminEntityConfigClipboardIssue = {
   readonly rowNumber: number;
+  readonly entityCui?: string;
+  readonly entityName?: string;
   readonly message: string;
 };
 
@@ -52,6 +54,7 @@ export type CampaignAdminEntityConfigBulkClipboardParseResult = {
 const HEADER_ALIASES = {
   entityCui: ["entity cui", "cui", "entity_cui", "entitycui"],
   entityName: ["entity name", "name", "entity_name", "entityname"],
+  configured: ["configured", "is configured", "is_configured", "isconfigured"],
   budgetPublicationDate: [
     "budget publication date",
     "publication date",
@@ -95,6 +98,16 @@ function normalizeHeaderCell(value: unknown): string {
     .replace(/\s+/g, " ");
 }
 
+function expandCompoundHeaderCells(headers: readonly string[]): readonly string[] {
+  return headers.flatMap((header) => {
+    if (header === "users configured" || header === "users count configured") {
+      return ["users count", "configured"];
+    }
+
+    return [header];
+  });
+}
+
 function normalizeCell(value: unknown): string {
   if (value === undefined || value === null) {
     return "";
@@ -127,6 +140,24 @@ function findHeaderIndex(
 
 function isValidDateInput(value: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+function isValidDateTimeInput(value: string): boolean {
+  return value !== "" && !Number.isNaN(new Date(value).getTime());
+}
+
+function normalizeTimeInput(value: string): string | null {
+  const match = /^(\d{1,2}):([0-5]\d)$/.exec(value);
+  if (match === null) {
+    return null;
+  }
+
+  const hours = Number(match[1]);
+  if (hours < 0 || hours > 23) {
+    return null;
+  }
+
+  return `${String(hours).padStart(2, "0")}:${match[2]}`;
 }
 
 function isBooleanCell(value: string): boolean {
@@ -215,9 +246,12 @@ export function parseCampaignAdminEntityConfigClipboard(
     };
   }
 
-  const headerCells = (rows[0] ?? []).map((cell) => normalizeHeaderCell(cell));
+  const headerCells = expandCompoundHeaderCells(
+    (rows[0] ?? []).map((cell) => normalizeHeaderCell(cell)),
+  );
   const entityCuiIndex = findHeaderIndex(headerCells, HEADER_ALIASES.entityCui);
   const entityNameIndex = findHeaderIndex(headerCells, HEADER_ALIASES.entityName);
+  const configuredIndex = findHeaderIndex(headerCells, HEADER_ALIASES.configured);
   const budgetPublicationDateIndex = findHeaderIndex(
     headerCells,
     HEADER_ALIASES.budgetPublicationDate,
@@ -285,7 +319,10 @@ export function parseCampaignAdminEntityConfigClipboard(
       budgetPublicationDateIndex === -1
         ? ""
         : normalizeCell(row[budgetPublicationDateIndex]);
+    const configuredCell =
+      configuredIndex === -1 ? "" : normalizeCell(row[configuredIndex]);
     const hasImplicitConfiguredColumn =
+      configuredIndex === -1 &&
       budgetPublicationDateIndex !== -1 &&
       officialBudgetUrlIndex === budgetPublicationDateIndex + 1 &&
       isBooleanCell(budgetPublicationDateCell);
@@ -298,15 +335,42 @@ export function parseCampaignAdminEntityConfigClipboard(
       entityNameIndex === -1 ? "" : normalizeCell(row[entityNameIndex]);
     const budgetPublicationDate = getConfigCell(budgetPublicationDateIndex);
     const officialBudgetUrl = getConfigCell(officialBudgetUrlIndex);
-    const publicDebateDate = getConfigCell(publicDebateDateIndex);
-    const publicDebateTime = getConfigCell(publicDebateTimeIndex);
-    const publicDebateLocation = getConfigCell(publicDebateLocationIndex);
-    const publicDebateOnlineParticipationLink =
+    let publicDebateDate = getConfigCell(publicDebateDateIndex);
+    let publicDebateTime = getConfigCell(publicDebateTimeIndex);
+    let publicDebateLocation = getConfigCell(publicDebateLocationIndex);
+    let publicDebateOnlineParticipationLink =
       getConfigCell(publicDebateOnlineParticipationLinkIndex);
-    const publicDebateAnnouncementLink =
+    let publicDebateAnnouncementLink =
       getConfigCell(publicDebateAnnouncementLinkIndex);
-    const publicDebateDescription = getConfigCell(publicDebateDescriptionIndex);
-    const updatedAt = getConfigCell(updatedAtIndex);
+    let publicDebateDescription = getConfigCell(publicDebateDescriptionIndex);
+    let updatedAt = getConfigCell(updatedAtIndex);
+    const publicDebateCells = [
+      publicDebateDate,
+      publicDebateTime,
+      publicDebateLocation,
+      publicDebateOnlineParticipationLink,
+      publicDebateAnnouncementLink,
+      publicDebateDescription,
+    ] as const;
+    const trailingUpdatedAtCellIndex = publicDebateCells.findIndex((cell, index) => {
+      if (!isValidDateTimeInput(cell)) {
+        return false;
+      }
+
+      return publicDebateCells.slice(0, index).every((previousCell) => previousCell === "");
+    });
+    if (
+      (updatedAt === "" || !isValidDateTimeInput(updatedAt)) &&
+      trailingUpdatedAtCellIndex !== -1
+    ) {
+      updatedAt = publicDebateCells[trailingUpdatedAtCellIndex] ?? "";
+      publicDebateDate = "";
+      publicDebateTime = "";
+      publicDebateLocation = "";
+      publicDebateOnlineParticipationLink = "";
+      publicDebateAnnouncementLink = "";
+      publicDebateDescription = "";
+    }
     const hasAnyPublicDebateValue =
       publicDebateDate !== "" ||
       publicDebateTime !== "" ||
@@ -333,13 +397,17 @@ export function parseCampaignAdminEntityConfigClipboard(
     }
 
     if (seenEntityCuis.has(entityCui)) {
-      issues.push({ rowNumber, message: "Duplicate entity CUI row." });
+      issues.push({ rowNumber, entityCui, message: "Duplicate entity CUI row." });
       skippedCount += 1;
       return;
     }
 
     if (budgetPublicationDate !== "" && !isValidDateInput(budgetPublicationDate)) {
-      issues.push({ rowNumber, message: "Invalid budget publication date." });
+      issues.push({
+        rowNumber,
+        entityCui,
+        message: "Invalid budget publication date.",
+      });
       skippedCount += 1;
       return;
     }
@@ -347,6 +415,7 @@ export function parseCampaignAdminEntityConfigClipboard(
     if (officialBudgetUrl !== "" && !isValidHttpUrl(officialBudgetUrl)) {
       issues.push({
         rowNumber,
+        entityCui,
         message: "Invalid official budget URL. Use an absolute http(s) URL.",
       });
       skippedCount += 1;
@@ -354,22 +423,24 @@ export function parseCampaignAdminEntityConfigClipboard(
     }
 
     if (hasAnyPublicDebateValue && !isValidDateInput(publicDebateDate)) {
-      issues.push({ rowNumber, message: "Invalid public debate date." });
+      issues.push({ rowNumber, entityCui, message: "Invalid public debate date." });
       skippedCount += 1;
       return;
     }
 
-    if (
-      hasAnyPublicDebateValue &&
-      !/^([01]\d|2[0-3]):([0-5]\d)$/.test(publicDebateTime)
-    ) {
-      issues.push({ rowNumber, message: "Invalid public debate time." });
+    const normalizedPublicDebateTime = normalizeTimeInput(publicDebateTime);
+    if (hasAnyPublicDebateValue && normalizedPublicDebateTime === null) {
+      issues.push({ rowNumber, entityCui, message: "Invalid public debate time." });
       skippedCount += 1;
       return;
     }
 
     if (hasAnyPublicDebateValue && publicDebateLocation === "") {
-      issues.push({ rowNumber, message: "Missing public debate location." });
+      issues.push({
+        rowNumber,
+        entityCui,
+        message: "Missing public debate location.",
+      });
       skippedCount += 1;
       return;
     }
@@ -380,6 +451,7 @@ export function parseCampaignAdminEntityConfigClipboard(
     ) {
       issues.push({
         rowNumber,
+        entityCui,
         message:
           "Invalid public debate announcement link. Use an absolute http(s) URL.",
       });
@@ -393,6 +465,7 @@ export function parseCampaignAdminEntityConfigClipboard(
     ) {
       issues.push({
         rowNumber,
+        entityCui,
         message:
           "Invalid public debate online participation link. Use an absolute http(s) URL.",
       });
@@ -406,8 +479,9 @@ export function parseCampaignAdminEntityConfigClipboard(
       !hasAnyPublicDebateValue
     ) {
       if (
-        hasImplicitConfiguredColumn &&
-        budgetPublicationDateCell.toLowerCase() === "false"
+        configuredCell.toLowerCase() === "false" ||
+        (hasImplicitConfiguredColumn &&
+          budgetPublicationDateCell.toLowerCase() === "false")
       ) {
         skippedCount += 1;
         return;
@@ -415,14 +489,15 @@ export function parseCampaignAdminEntityConfigClipboard(
 
       issues.push({
         rowNumber,
+        entityCui,
         message: "At least one config value is required.",
       });
       skippedCount += 1;
       return;
     }
 
-    if (updatedAt !== "" && Number.isNaN(new Date(updatedAt).getTime())) {
-      issues.push({ rowNumber, message: "Invalid updated-at value." });
+    if (updatedAt !== "" && !isValidDateTimeInput(updatedAt)) {
+      issues.push({ rowNumber, entityCui, message: "Invalid updated-at value." });
       skippedCount += 1;
       return;
     }
@@ -438,7 +513,7 @@ export function parseCampaignAdminEntityConfigClipboard(
         public_debate: hasAnyPublicDebateValue
           ? {
               date: publicDebateDate,
-              time: publicDebateTime,
+              time: normalizedPublicDebateTime ?? publicDebateTime,
               location: publicDebateLocation,
               announcement_link: publicDebateAnnouncementLink,
               ...(publicDebateOnlineParticipationLink !== ""
@@ -479,7 +554,9 @@ export function looksLikeCampaignAdminEntityConfigClipboardText(
     return false;
   }
 
-  const headers = headerRow.map((cell) => normalizeHeaderCell(cell));
+  const headers = expandCompoundHeaderCells(
+    headerRow.map((cell) => normalizeHeaderCell(cell)),
+  );
   const hasEntityCuiColumn = findHeaderIndex(headers, HEADER_ALIASES.entityCui) >= 0;
   const hasConfigValueColumn =
     findHeaderIndex(headers, HEADER_ALIASES.budgetPublicationDate) >= 0 ||
@@ -498,7 +575,18 @@ export function parseCampaignAdminEntityConfigClipboardText(input: {
   const itemsByEntityCui = new Map(
     input.items.map((item) => [item.entityCui, item] as const),
   );
-  const issues = [...parsed.issues];
+  const issues = parsed.issues.map((issue) => {
+    if (issue.entityCui === undefined) {
+      return issue;
+    }
+
+    const entityName = itemsByEntityCui.get(issue.entityCui)?.entityName?.trim();
+    if (!entityName) {
+      return issue;
+    }
+
+    return { ...issue, entityName };
+  });
   const drafts: CampaignAdminStagedEntityConfigDraft[] = [];
   let skippedCount = parsed.skippedCount;
 
@@ -507,7 +595,8 @@ export function parseCampaignAdminEntityConfigClipboardText(input: {
     if (item === undefined) {
       issues.push({
         rowNumber: row.rowNumber ?? 1,
-        message: t`Unknown selected entity CUI: ${row.entityCui}`,
+        entityCui: row.entityCui,
+        message: t`Entity CUI is not visible in the current table: ${row.entityCui}`,
       });
       skippedCount += 1;
       continue;

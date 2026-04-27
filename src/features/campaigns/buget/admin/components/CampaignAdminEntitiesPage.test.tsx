@@ -25,6 +25,7 @@ const downloadCampaignAdminEntityConfigCsvMock = vi.fn();
 const updateCampaignAdminEntityConfigApiMock = vi.fn();
 const toastSuccessMock = vi.fn();
 const toastErrorMock = vi.fn();
+const toastWarningMock = vi.fn();
 const institutionThreadsSectionMock = vi.fn(
   ({
     search,
@@ -105,6 +106,7 @@ vi.mock("sonner", () => ({
   toast: {
     success: (...args: unknown[]) => toastSuccessMock(...args),
     error: (...args: unknown[]) => toastErrorMock(...args),
+    warning: (...args: unknown[]) => toastWarningMock(...args),
   },
 }));
 
@@ -121,6 +123,13 @@ vi.mock(
 vi.mock(
   "@/features/campaigns/buget/admin/hooks/use-campaign-admin-entity-config",
   () => ({
+    campaignAdminEntityConfigKeys: {
+      allForCampaign: (campaignKey: string) => [
+        "campaign-admin",
+        campaignKey,
+        "entity-config",
+      ],
+    },
     useCampaignAdminEntityConfigListQuery: (...args: unknown[]) =>
       useCampaignAdminEntityConfigListQueryMock(...args),
     useCampaignAdminEntityConfigDetailQuery: (...args: unknown[]) =>
@@ -266,6 +275,7 @@ describe("CampaignAdminEntitiesPage", () => {
     updateCampaignAdminEntityConfigApiMock.mockReset();
     toastSuccessMock.mockReset();
     toastErrorMock.mockReset();
+    toastWarningMock.mockReset();
     institutionThreadsSectionMock.mockClear();
     invalidateQueriesMock.mockClear();
     useQueryClientMock.mockClear();
@@ -688,7 +698,7 @@ describe("CampaignAdminEntitiesPage", () => {
       expect(screen.getByText("Campaign entity config")).toBeInTheDocument();
       expect(
         screen.getByText(
-          "The table includes subscribed entities and any saved config rows. Unconfigured rows can be filled here, CSV export uses the same scope, and spreadsheet paste updates only the pasted rows.",
+          "The table includes subscribed entities and any saved config rows. Paste spreadsheet rows directly on this tab to stage visible rows before applying them.",
         ),
       ).toBeInTheDocument();
       expect(screen.getByText("Oras Test")).toBeInTheDocument();
@@ -726,6 +736,513 @@ describe("CampaignAdminEntitiesPage", () => {
         value: originalRevokeObjectURL,
       });
     }
+  });
+
+  it("applies the missing core config quick filter", () => {
+    const onSearchChange = vi.fn();
+
+    render(
+      <CampaignAdminEntitiesPage
+        campaignKey="funky"
+        search={{
+          tab: "config",
+          configSortBy: "usersCount",
+          configSortOrder: "desc",
+          configCursor: "cursor-1",
+          configPageIndex: 2,
+          configLimit: 250,
+          limit: 50,
+        }}
+        onSearchChange={onSearchChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Missing date + URL" }));
+
+    expect(onSearchChange).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<CampaignAdminEntitiesSearch>>({
+        tab: "config",
+        configHasBudgetPublicationDate: false,
+        configHasOfficialBudgetUrl: false,
+        configSortBy: "usersCount",
+        configSortOrder: "desc",
+        configLimit: 250,
+      }),
+      undefined,
+    );
+    expect(onSearchChange.mock.calls[0]?.[0]).not.toHaveProperty("configCursor");
+    expect(onSearchChange.mock.calls[0]?.[0]).not.toHaveProperty(
+      "configPageIndex",
+    );
+  });
+
+  it("copies the current visible config rows from the toolbar menu", async () => {
+    const originalClipboard = navigator.clipboard;
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        writeText: writeTextMock,
+      },
+    });
+    useCampaignAdminEntityConfigListQueryMock.mockReturnValue({
+      data: {
+        items: [
+          createEntityConfigListItem(),
+          createEntityConfigListItem({
+            entityCui: "87654321",
+            entityName: "Comuna Test",
+            usersCount: 1,
+            configured: false,
+            isConfigured: false,
+            values: {
+              budgetPublicationDate: null,
+              officialBudgetUrl: null,
+              public_debate: null,
+            },
+            updatedAt: null,
+            updatedByUserId: null,
+          }),
+        ],
+        page: {
+          limit: 50,
+          totalCount: 2,
+          hasMore: false,
+          nextCursor: null,
+          sortBy: "updatedAt",
+          sortOrder: "desc",
+        },
+      },
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+
+    try {
+      render(
+        <CampaignAdminEntitiesPage
+          campaignKey="funky"
+          search={{
+            tab: "config",
+            limit: 50,
+          }}
+          onSearchChange={vi.fn()}
+        />,
+      );
+
+      fireEvent.pointerDown(screen.getByRole("button", { name: "Table actions" }));
+      fireEvent.click(
+        await screen.findByRole("menuitem", { name: "Copy current rows" }),
+      );
+
+      await waitFor(() => {
+        expect(writeTextMock).toHaveBeenCalledWith(
+          expect.stringContaining(
+            "entityCui\tentityName\tusersCount\tbudgetPublicationDate\tofficialBudgetUrl",
+          ),
+        );
+      });
+      expect(writeTextMock.mock.calls[0]?.[0]).toContain("12345678\tOras Test");
+      expect(writeTextMock.mock.calls[0]?.[0]).toContain("87654321\tComuna Test");
+      expect(toastSuccessMock).toHaveBeenCalledWith(
+        "Copied 2 entity config rows to the clipboard.",
+      );
+    } finally {
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: originalClipboard,
+      });
+    }
+  });
+
+  it("copies current visible config rows when the table receives a copy event", () => {
+    const setDataMock = vi.fn();
+    useCampaignAdminEntityConfigListQueryMock.mockReturnValue({
+      data: {
+        items: [
+          createEntityConfigListItem(),
+          createEntityConfigListItem({
+            entityCui: "87654321",
+            entityName: "Comuna Test",
+            usersCount: 1,
+            configured: false,
+            isConfigured: false,
+            values: {
+              budgetPublicationDate: null,
+              officialBudgetUrl: null,
+              public_debate: null,
+            },
+            updatedAt: null,
+            updatedByUserId: null,
+          }),
+        ],
+        page: {
+          limit: 50,
+          totalCount: 2,
+          hasMore: false,
+          nextCursor: null,
+          sortBy: "updatedAt",
+          sortOrder: "desc",
+        },
+      },
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+
+    render(
+      <CampaignAdminEntitiesPage
+        campaignKey="funky"
+        search={{
+          tab: "config",
+          limit: 50,
+        }}
+        onSearchChange={vi.fn()}
+      />,
+    );
+
+    const tableRegion = screen.getByRole("region", {
+      name: "Entity config table",
+    });
+    tableRegion.focus();
+    fireEvent.copy(tableRegion, {
+      clipboardData: {
+        setData: setDataMock,
+      },
+    });
+
+    expect(setDataMock).toHaveBeenCalledWith(
+      "text/plain",
+      expect.stringContaining(
+        "entityCui\tentityName\tusersCount\tbudgetPublicationDate\tofficialBudgetUrl",
+      ),
+    );
+    expect(setDataMock.mock.calls[0]?.[1]).toContain("12345678\tOras Test");
+    expect(setDataMock.mock.calls[0]?.[1]).toContain("87654321\tComuna Test");
+  });
+
+  it("does not replace selected table text during copy events", () => {
+    const setDataMock = vi.fn();
+
+    render(
+      <CampaignAdminEntitiesPage
+        campaignKey="funky"
+        search={{
+          tab: "config",
+          limit: 50,
+        }}
+        onSearchChange={vi.fn()}
+      />,
+    );
+
+    const tableRegion = screen.getByRole("region", {
+      name: "Entity config table",
+    });
+    const selectedCell = screen.getByText("Oras Test");
+    const selection = document.getSelection();
+    const range = document.createRange();
+    tableRegion.focus();
+    range.selectNodeContents(selectedCell);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
+
+    fireEvent.copy(tableRegion, {
+      clipboardData: {
+        setData: setDataMock,
+      },
+    });
+
+    expect(setDataMock).not.toHaveBeenCalled();
+    selection?.removeAllRanges();
+  });
+
+  it("stages and auto-selects valid pasted config rows in the table", async () => {
+    updateCampaignAdminEntityConfigApiMock.mockResolvedValue(
+      createEntityConfigDetail({
+        values: {
+          budgetPublicationDate: "2026-04-20",
+          officialBudgetUrl: "https://oras.test/final.pdf",
+          public_debate: null,
+        },
+      }),
+    );
+
+    render(
+      <CampaignAdminEntitiesPage
+        campaignKey="funky"
+        search={{
+          tab: "config",
+          limit: 50,
+        }}
+        onSearchChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.paste(window, {
+      clipboardData: {
+        getData: () =>
+          "Entity CUI\tBudget Publication Date\tOfficial Budget URL\tUpdated At\n"
+          + "12345678\t2026-04-20\thttps://oras.test/final.pdf\t2026-04-12T10:00:00.000Z\n",
+      },
+    });
+
+    expect(await screen.findByText("Ready")).toBeInTheDocument();
+    const stagedBudgetLink = screen.getByRole("link", {
+      name: "https://oras.test/final.pdf",
+    });
+    expect(stagedBudgetLink).toHaveAttribute(
+      "href",
+      "https://oras.test/final.pdf",
+    );
+    expect(stagedBudgetLink).toHaveAttribute("target", "_blank");
+    expect(stagedBudgetLink).toHaveAttribute("rel", "noreferrer");
+    expect(screen.getByText("1 row selected")).toBeInTheDocument();
+    expect(
+      screen.getByText("Ready to apply selected config rows."),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Apply selected" }));
+    expect(await screen.findByText("Apply 1 config update?")).toBeInTheDocument();
+    const applySelectedButtons = screen.getAllByRole("button", {
+      name: "Apply selected",
+    });
+    fireEvent.click(applySelectedButtons[applySelectedButtons.length - 1]!);
+
+    await waitFor(() => {
+      expect(updateCampaignAdminEntityConfigApiMock).toHaveBeenCalledWith({
+        campaignKey: "funky",
+        entityCui: "12345678",
+        body: {
+          expectedUpdatedAt: "2026-04-12T10:00:00.000Z",
+          values: {
+            budgetPublicationDate: "2026-04-20",
+            officialBudgetUrl: "https://oras.test/final.pdf",
+            public_debate: null,
+          },
+        },
+      });
+    });
+  });
+
+  it("stages pasted config rows from the toolbar clipboard button", async () => {
+    const originalClipboard = navigator.clipboard;
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        readText: vi.fn().mockResolvedValue(
+          "Entity CUI\tBudget Publication Date\tOfficial Budget URL\tUpdated At\n"
+          + "12345678\t2026-04-20\thttps://oras.test/final.pdf\t2026-04-12T10:00:00.000Z\n",
+        ),
+      },
+    });
+
+    try {
+      render(
+        <CampaignAdminEntitiesPage
+          campaignKey="funky"
+          search={{
+            tab: "config",
+            limit: 50,
+          }}
+          onSearchChange={vi.fn()}
+        />,
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: "Paste rows" }));
+
+      expect(await screen.findByText("Ready")).toBeInTheDocument();
+      expect(screen.getByText("https://oras.test/final.pdf")).toBeInTheDocument();
+      expect(screen.getByText("1 row selected")).toBeInTheDocument();
+    } finally {
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: originalClipboard,
+      });
+    }
+  });
+
+  it("shows feedback when pasted config text has no importable rows", async () => {
+    render(
+      <CampaignAdminEntitiesPage
+        campaignKey="funky"
+        search={{
+          tab: "config",
+          limit: 50,
+        }}
+        onSearchChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.paste(window, {
+      clipboardData: {
+        getData: () =>
+          "Entity CUI\tBudget Publication Date\tOfficial Budget URL\tUpdated At\n",
+      },
+    });
+
+    await waitFor(() => {
+      expect(toastErrorMock).toHaveBeenCalledWith(
+        "No staged entity config values were imported.",
+      );
+    });
+    expect(screen.queryByText("1 row selected")).not.toBeInTheDocument();
+  });
+
+  it("shows pasted off-page config rows as inline warnings", async () => {
+    render(
+      <CampaignAdminEntitiesPage
+        campaignKey="funky"
+        search={{
+          tab: "config",
+          limit: 50,
+        }}
+        onSearchChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.paste(window, {
+      clipboardData: {
+        getData: () =>
+          "Entity CUI\tBudget Publication Date\tOfficial Budget URL\tUpdated At\n"
+          + "99999999\t2026-04-20\thttps://oras.test/final.pdf\t2026-04-12T10:00:00.000Z\n",
+      },
+    });
+
+    expect(await screen.findByText("Pasted row 2 · 99999999")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Entity CUI is not visible in the current table: 99999999",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("1 row selected")).not.toBeInTheDocument();
+    expect(updateCampaignAdminEntityConfigApiMock).not.toHaveBeenCalled();
+  });
+
+  it("shows visible entity names on pasted config validation warnings", async () => {
+    render(
+      <CampaignAdminEntitiesPage
+        campaignKey="funky"
+        search={{
+          tab: "config",
+          limit: 50,
+        }}
+        onSearchChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.paste(window, {
+      clipboardData: {
+        getData: () =>
+          "Entity CUI\tBudget Publication Date\tOfficial Budget URL\n"
+          + "12345678\t\t\n",
+      },
+    });
+
+    expect(
+      await screen.findByText("Pasted row 2 · 12345678 · Oras Test"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("At least one config value is required."),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("1 row selected")).not.toBeInTheDocument();
+  });
+
+  it("shows pasted config warnings when no rows match the current table", async () => {
+    useCampaignAdminEntityConfigListQueryMock.mockReturnValue({
+      data: {
+        items: [],
+        page: {
+          limit: 50,
+          totalCount: 0,
+          hasMore: false,
+          nextCursor: null,
+          sortBy: "updatedAt",
+          sortOrder: "desc",
+        },
+      },
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+
+    render(
+      <CampaignAdminEntitiesPage
+        campaignKey="funky"
+        search={{
+          tab: "config",
+          limit: 50,
+        }}
+        onSearchChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.paste(window, {
+      clipboardData: {
+        getData: () =>
+          "Entity CUI\tBudget Publication Date\tOfficial Budget URL\tUpdated At\n"
+          + "99999999\t2026-04-20\thttps://oras.test/final.pdf\t2026-04-12T10:00:00.000Z\n",
+      },
+    });
+
+    expect(await screen.findByText("Pasted row 2 · 99999999")).toBeInTheDocument();
+    expect(
+      screen.getByText("No entity config rows matched the current filters"),
+    ).toBeInTheDocument();
+  });
+
+  it("clears pasted config warnings when changing config pages", async () => {
+    const onSearchChange = vi.fn();
+    useCampaignAdminEntityConfigListQueryMock.mockReturnValue({
+      data: {
+        items: [createEntityConfigListItem()],
+        page: {
+          limit: 50,
+          totalCount: 2,
+          hasMore: true,
+          nextCursor: "next-config-cursor",
+          sortBy: "updatedAt",
+          sortOrder: "desc",
+        },
+      },
+      error: null,
+      isLoading: false,
+      isFetching: false,
+      refetch: vi.fn(),
+    });
+
+    render(
+      <CampaignAdminEntitiesPage
+        campaignKey="funky"
+        search={{
+          tab: "config",
+          limit: 50,
+        }}
+        onSearchChange={onSearchChange}
+      />,
+    );
+
+    fireEvent.paste(window, {
+      clipboardData: {
+        getData: () =>
+          "Entity CUI\tBudget Publication Date\tOfficial Budget URL\tUpdated At\n"
+          + "99999999\t2026-04-20\thttps://oras.test/final.pdf\t2026-04-12T10:00:00.000Z\n",
+      },
+    });
+
+    expect(await screen.findByText("Pasted row 2 · 99999999")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+
+    expect(screen.queryByText("Pasted row 2 · 99999999")).not.toBeInTheDocument();
+    expect(onSearchChange).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<CampaignAdminEntitiesSearch>>({
+        configCursor: "next-config-cursor",
+        configPageIndex: 2,
+      }),
+      undefined,
+    );
   });
 
   it("preserves the typed entity CUI when opening create mode from the config toolbar", async () => {
@@ -781,7 +1298,7 @@ describe("CampaignAdminEntitiesPage", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Missing staged config values. Paste spreadsheet rows with matching entity CUIs first.",
+        "Missing staged config values. Paste spreadsheet rows with matching visible entity CUIs first.",
       ),
     ).toBeInTheDocument();
   });

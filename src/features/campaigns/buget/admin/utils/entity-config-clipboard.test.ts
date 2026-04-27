@@ -54,6 +54,7 @@ describe("entity-config-clipboard", () => {
     expect(parsed.issues).toEqual([
       {
         rowNumber: 2,
+        entityCui: "12345678",
         message: "Invalid updated-at value.",
       },
     ]);
@@ -71,6 +72,28 @@ describe("entity-config-clipboard", () => {
         rowNumber: 2,
         entityCui: "12345678",
         entityName: null,
+        values: {
+          budgetPublicationDate: "2026-04-20",
+          officialBudgetUrl: "https://oras.test/final.pdf",
+          public_debate: null,
+        },
+        expectedUpdatedAt: "2026-04-18T09:00:00.000Z",
+      },
+    ]);
+  });
+
+  it("uses headers when config columns are reordered", () => {
+    const parsed = parseCampaignAdminEntityConfigClipboard(
+      "Official Budget URL\tUpdated At\tEntity Name\tEntity CUI\tBudget Publication Date\n"
+        + "https://oras.test/final.pdf\t2026-04-18T09:00:00.000Z\tOras Test\t12345678\t2026-04-20\n",
+    );
+
+    expect(parsed.issues).toEqual([]);
+    expect(parsed.rows).toEqual([
+      {
+        rowNumber: 2,
+        entityCui: "12345678",
+        entityName: "Oras Test",
         values: {
           budgetPublicationDate: "2026-04-20",
           officialBudgetUrl: "https://oras.test/final.pdf",
@@ -108,7 +131,7 @@ describe("entity-config-clipboard", () => {
       "Campaign Key\tEntity CUI\tEntity Name\tUsers Configured\tbudgetPublicationDate\tofficialBudgetUrl\tpublic_debate.date\tpublic_debate.time\tpublic_debate.location\tpublic_debate.online_participation_link\tpublic_debate.announcement_link\tpublic_debate.description\tUpdated At\tUpdated By\tUser ID\n"
         + "funky\t14756536\tMUNICIPIUL TIMISOARA\t10\tFALSE\n"
         + "funky\t15226406\tCOMUNA BARAGANU\t2\tFALSE\n"
-        + "funky\t2540813\tMUNICIPIUL RAMNICU VALCEA\t4\tTRUE\t2026-04-14\thttps://primariavl.ro/buget.pdf\t\t\t\t\t\t\t2026-04-23T13:24:50.979Z\tuser_1\n",
+        + "funky\t2540813\tMUNICIPIUL RAMNICU VALCEA\t4\tTRUE\t2026-04-14\thttps://primariavl.ro/consiliul-local/dezbateri-vl/10856-proiect-de-buget-al-municipiului-ramnicului-valcea-pe-anul-2026\t\t\t\t\t2026-04-23T13:24:50.979Z\tuser_34QaVGwRWxrn8ScB9adgz3FOSTa\n",
     );
 
     expect(parsed.issues).toEqual([]);
@@ -120,10 +143,41 @@ describe("entity-config-clipboard", () => {
         entityName: "MUNICIPIUL RAMNICU VALCEA",
         values: {
           budgetPublicationDate: "2026-04-14",
-          officialBudgetUrl: "https://primariavl.ro/buget.pdf",
+          officialBudgetUrl:
+            "https://primariavl.ro/consiliul-local/dezbateri-vl/10856-proiect-de-buget-al-municipiului-ramnicului-valcea-pe-anul-2026",
           public_debate: null,
         },
         expectedUpdatedAt: "2026-04-23T13:24:50.979Z",
+      },
+    ]);
+  });
+
+  it("normalizes single-digit public debate hours from exported rows", () => {
+    const parsed = parseCampaignAdminEntityConfigClipboard(
+      "Campaign Key\tEntity CUI\tEntity Name\tUsers Configured\tbudgetPublicationDate\tofficialBudgetUrl\tpublic_debate.date\tpublic_debate.time\tpublic_debate.location\tpublic_debate.online_participation_link\tpublic_debate.announcement_link\tpublic_debate.description\tUpdated At\tUpdated By\tUser ID\n"
+        + "funky\t2612790\tMUNICIPIUL PIATRA-NEAMT\t2\tTRUE\t\t\t2026-04-24\t8:30\tSala de sedinte a Primariei Piatra-Neamt - str. Stefan cel Mare nr. 6-8\thttps://meet.google.com/ctb-xbcx-fcn\thttps://www.primariapn.ro/dezbateri/-/asset_publisher/d8F7ynMHzZPK/event/id/5926595\t\t2026-04-22T18:48:05.493Z\tuser_34QaVGwRWxrn8ScB9adgz3FOSTa\n",
+    );
+
+    expect(parsed.issues).toEqual([]);
+    expect(parsed.rows).toEqual([
+      {
+        rowNumber: 2,
+        entityCui: "2612790",
+        entityName: "MUNICIPIUL PIATRA-NEAMT",
+        values: {
+          budgetPublicationDate: null,
+          officialBudgetUrl: null,
+          public_debate: {
+            date: "2026-04-24",
+            time: "08:30",
+            location:
+              "Sala de sedinte a Primariei Piatra-Neamt - str. Stefan cel Mare nr. 6-8",
+            announcement_link:
+              "https://www.primariapn.ro/dezbateri/-/asset_publisher/d8F7ynMHzZPK/event/id/5926595",
+            online_participation_link: "https://meet.google.com/ctb-xbcx-fcn",
+          },
+        },
+        expectedUpdatedAt: "2026-04-22T18:48:05.493Z",
       },
     ]);
   });
@@ -152,10 +206,50 @@ describe("entity-config-clipboard", () => {
     ]);
     expect(parsed.issues).toEqual([
       { rowNumber: 2, message: "Missing entity CUI." },
-      { rowNumber: 3, message: "Invalid budget publication date." },
+      {
+        rowNumber: 3,
+        entityCui: "12345678",
+        message: "Invalid budget publication date.",
+      },
       {
         rowNumber: 4,
+        entityCui: "12345678",
         message: "Invalid official budget URL. Use an absolute http(s) URL.",
+      },
+    ]);
+  });
+
+  it("includes the entity CUI on empty config value issues", () => {
+    const parsed = parseCampaignAdminEntityConfigClipboard(
+      "Entity CUI\tBudget Publication Date\tOfficial Budget URL\n"
+        + "12345678\t\t\n",
+    );
+
+    expect(parsed.rows).toEqual([]);
+    expect(parsed.issues).toEqual([
+      {
+        rowNumber: 2,
+        entityCui: "12345678",
+        message: "At least one config value is required.",
+      },
+    ]);
+  });
+
+  it("adds the visible entity name to staged paste issues", () => {
+    const parsed = parseCampaignAdminEntityConfigClipboardText({
+      rawText:
+        "Entity CUI\tBudget Publication Date\tOfficial Budget URL\n"
+        + "12345678\t\t\n",
+      items: [createItem()],
+    });
+
+    expect(parsed.drafts).toEqual([]);
+    expect(parsed.issues).toEqual([
+      {
+        rowNumber: 2,
+        entityCui: "12345678",
+        entityName: "Oras Test",
+        message: "At least one config value is required.",
       },
     ]);
   });
@@ -179,6 +273,24 @@ describe("entity-config-clipboard", () => {
           public_debate: null,
         },
         expectedUpdatedAt: "2026-04-18T09:00:00.000Z",
+      },
+    ]);
+  });
+
+  it("reports pasted rows that are not visible in the current config table", () => {
+    const parsed = parseCampaignAdminEntityConfigClipboardText({
+      rawText:
+        "Entity CUI\tBudget Publication Date\tOfficial Budget URL\tUpdated At\n"
+        + "99999999\t2026-04-20\thttps://oras.test/final.pdf\t2026-04-18T09:00:00.000Z\n",
+      items: [createItem()],
+    });
+
+    expect(parsed.drafts).toEqual([]);
+    expect(parsed.issues).toEqual([
+      {
+        rowNumber: 2,
+        entityCui: "99999999",
+        message: "Entity CUI is not visible in the current table: 99999999",
       },
     ]);
   });

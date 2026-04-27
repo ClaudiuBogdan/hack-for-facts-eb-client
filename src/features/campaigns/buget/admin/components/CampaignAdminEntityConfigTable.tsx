@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
+import type { ClipboardEvent, ReactNode } from "react";
 import {
+  AlertTriangle,
   ArrowUpDown,
   ChevronDown,
   ChevronUp,
@@ -33,9 +34,11 @@ import type {
   CampaignAdminEntityConfigListItem,
   CampaignAdminEntityConfigSortKey,
   CampaignAdminSortOrder,
+  CampaignAdminStagedEntityConfigDraft,
 } from "@/features/campaigns/buget/admin/types";
+import type { CampaignAdminEntityConfigClipboardIssue } from "@/features/campaigns/buget/admin/utils/entity-config-clipboard";
 import { buildCampaignPrimariePath } from "@/features/challenges/constants";
-import { getUserLocale } from "@/lib/utils";
+import { cn, getUserLocale } from "@/lib/utils";
 
 type CampaignAdminEntityConfigTableProps = {
   readonly items: readonly CampaignAdminEntityConfigListItem[];
@@ -50,6 +53,10 @@ type CampaignAdminEntityConfigTableProps = {
     sortOrder: CampaignAdminSortOrder,
   ) => void;
   readonly selectedEntityCuis?: ReadonlySet<string>;
+  readonly stagedDraftsByEntityCui?: Readonly<
+    Record<string, CampaignAdminStagedEntityConfigDraft>
+  >;
+  readonly pasteIssues?: readonly CampaignAdminEntityConfigClipboardIssue[];
   readonly onToggleSelectAll?: (checked: boolean) => void;
   readonly onToggleSelection?: (
     item: CampaignAdminEntityConfigListItem,
@@ -58,8 +65,8 @@ type CampaignAdminEntityConfigTableProps = {
   readonly onOpenItem: (item: CampaignAdminEntityConfigListItem) => void;
   readonly onClearFilters: () => void;
   readonly footer?: ReactNode;
+  readonly copyText?: string;
   readonly onCopyRows?: () => Promise<void> | void;
-  readonly onOpenPasteDialog?: () => Promise<void> | void;
   readonly onExportCsv?: () => Promise<void> | void;
 };
 
@@ -189,6 +196,143 @@ function ConfiguredBadge({
   );
 }
 
+function formatNullableValue(value: string | null | undefined): string {
+  return value?.trim() || t`Unavailable`;
+}
+
+function BudgetUrlLink({ url }: { readonly url: string }) {
+  return (
+    <a
+      href={url}
+      className="block max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-primary underline underline-offset-4"
+      target="_blank"
+      rel="noreferrer"
+      title={url}
+    >
+      {url}
+    </a>
+  );
+}
+
+function StagedValuesCell({
+  item,
+  stagedDraft,
+  selected,
+}: {
+  readonly item: CampaignAdminEntityConfigListItem;
+  readonly stagedDraft: CampaignAdminStagedEntityConfigDraft | undefined;
+  readonly selected: boolean;
+}) {
+  if (stagedDraft === undefined) {
+    return <span className="text-muted-foreground">{t`No staged changes`}</span>;
+  }
+
+  const isStale = stagedDraft.expectedUpdatedAt !== item.updatedAt;
+  const publicDebate = stagedDraft.values.public_debate;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-1.5">
+        <Badge
+          variant="outline"
+          className="border-sky-300 bg-sky-100 text-sky-950"
+        >
+          {selected && !isStale ? t`Ready` : t`Staged`}
+        </Badge>
+        {isStale ? (
+          <Badge variant="destructive">{t`Conflict`}</Badge>
+        ) : null}
+      </div>
+      <dl className="space-y-1 text-xs">
+        <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2">
+          <dt className="text-muted-foreground">{t`Date`}</dt>
+          <dd className="text-foreground">
+            {formatNullableValue(stagedDraft.values.budgetPublicationDate)}
+          </dd>
+        </div>
+        <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2">
+          <dt className="text-muted-foreground">{t`URL`}</dt>
+          <dd className="min-w-0 text-foreground">
+            {stagedDraft.values.officialBudgetUrl ? (
+              <BudgetUrlLink url={stagedDraft.values.officialBudgetUrl} />
+            ) : (
+              formatNullableValue(stagedDraft.values.officialBudgetUrl)
+            )}
+          </dd>
+        </div>
+        <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2">
+          <dt className="text-muted-foreground">{t`Debate`}</dt>
+          <dd className="text-foreground">
+            {publicDebate
+              ? `${publicDebate.date} ${publicDebate.time}`
+              : t`Unavailable`}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  );
+}
+
+function PasteIssuesList({
+  issues,
+}: {
+  readonly issues: readonly CampaignAdminEntityConfigClipboardIssue[];
+}) {
+  if (issues.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="space-y-2 rounded-xl border border-destructive/30 bg-destructive/5 p-3">
+      {issues.map((issue) => (
+        <div
+          key={`${issue.rowNumber}-${issue.entityCui ?? issue.message}`}
+          className="flex items-start gap-3 text-sm text-destructive"
+        >
+          <AlertTriangle
+            className="mt-0.5 h-4 w-4 shrink-0"
+            aria-hidden="true"
+          />
+          <div className="min-w-0 space-y-1">
+            <p className="font-medium">
+              {t`Pasted row`} {issue.rowNumber}
+              {issue.entityCui ? ` · ${issue.entityCui}` : ""}
+              {issue.entityName ? ` · ${issue.entityName}` : ""}
+            </p>
+            <p>{issue.message}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function hasSelectedTextInsideElement(element: HTMLElement): boolean {
+  const selection = element.ownerDocument.getSelection();
+  if (selection === null || selection.isCollapsed || selection.toString().trim() === "") {
+    return false;
+  }
+
+  for (let rangeIndex = 0; rangeIndex < selection.rangeCount; rangeIndex += 1) {
+    const range = selection.getRangeAt(rangeIndex);
+    const commonAncestor = range.commonAncestorContainer;
+    const commonAncestorElement =
+      commonAncestor.nodeType === commonAncestor.ELEMENT_NODE
+        ? (commonAncestor as Element)
+        : commonAncestor.parentElement;
+
+    if (
+      commonAncestorElement !== null &&
+      (element.contains(commonAncestorElement) ||
+        commonAncestorElement.contains(element))
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export function CampaignAdminEntityConfigTable({
   items,
   header,
@@ -196,24 +340,42 @@ export function CampaignAdminEntityConfigTable({
   sortOrder,
   onSortChange,
   selectedEntityCuis = new Set(),
+  stagedDraftsByEntityCui = {},
+  pasteIssues = [],
   onToggleSelectAll,
   onToggleSelection,
   onOpenItem,
   onClearFilters,
   footer,
+  copyText,
   onCopyRows,
-  onOpenPasteDialog,
   onExportCsv,
 }: CampaignAdminEntityConfigTableProps) {
   const tableMenuLabel = t`Table actions`;
   const allVisibleSelected =
     items.length > 0 &&
     items.every((item) => selectedEntityCuis.has(item.entityCui));
-  const copyRowsLabel =
-    selectedEntityCuis.size > 0 ? t`Copy selected rows` : t`Copy all rows`;
+  const copyRowsLabel = t`Copy current rows`;
+
+  const handleFocusedTableCopy = (event: ClipboardEvent<HTMLDivElement>) => {
+    if (event.currentTarget.ownerDocument.activeElement !== event.currentTarget) {
+      return;
+    }
+
+    if (hasSelectedTextInsideElement(event.currentTarget)) {
+      return;
+    }
+
+    if (copyText === undefined || copyText.length === 0) {
+      return;
+    }
+
+    event.preventDefault();
+    event.clipboardData.setData("text/plain", copyText);
+  };
 
   const trailingActions =
-    onCopyRows || onOpenPasteDialog || onExportCsv ? (
+    onCopyRows || onExportCsv ? (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -230,11 +392,6 @@ export function CampaignAdminEntityConfigTable({
           {onCopyRows ? (
             <DropdownMenuItem onSelect={() => { void onCopyRows(); }}>
               {copyRowsLabel}
-            </DropdownMenuItem>
-          ) : null}
-          {onOpenPasteDialog ? (
-            <DropdownMenuItem onSelect={() => { void onOpenPasteDialog(); }}>
-              {t`Paste spreadsheet`}
             </DropdownMenuItem>
           ) : null}
           {onExportCsv ? (
@@ -258,6 +415,7 @@ export function CampaignAdminEntityConfigTable({
           </div>
         ) : null}
         <div className="space-y-4 p-6">
+          <PasteIssuesList issues={pasteIssues} />
           <EmptyState
             icon={<SearchX className="h-6 w-6" />}
             title={t`No entity config rows matched the current filters`}
@@ -284,10 +442,16 @@ export function CampaignAdminEntityConfigTable({
           })}
         </div>
       ) : null}
-      <div className="overflow-x-auto">
+      <div
+        className="overflow-x-auto focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
+        tabIndex={0}
+        role="region"
+        aria-label={t`Entity config table`}
+        onCopy={handleFocusedTableCopy}
+      >
         <Table
           containerClassName="max-h-[min(70vh,42rem)]"
-          className="min-w-[1040px] [&_td]:px-3 [&_td]:py-3"
+          className="min-w-[1280px] [&_td]:px-3 [&_td]:py-3"
         >
           <TableHeader>
             <TableRow className="hover:bg-transparent">
@@ -334,6 +498,7 @@ export function CampaignAdminEntityConfigTable({
                 {t`Official budget URL`}
               </SortableTableHead>
               <TableHead>{t`Public debate`}</TableHead>
+              <TableHead>{t`Staged values`}</TableHead>
               <SortableTableHead
                 sortKey="updatedAt"
                 sortBy={sortBy}
@@ -346,11 +511,21 @@ export function CampaignAdminEntityConfigTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {items.map((item) => (
-              <TableRow key={item.entityCui}>
+            {items.map((item) => {
+              const stagedDraft = stagedDraftsByEntityCui[item.entityCui];
+              const isSelected = selectedEntityCuis.has(item.entityCui);
+
+              return (
+              <TableRow
+                key={item.entityCui}
+                className={cn(
+                  stagedDraft !== undefined &&
+                    "bg-sky-50/70 hover:bg-sky-50 dark:bg-sky-950/20 dark:hover:bg-sky-950/25",
+                )}
+              >
                 <TableCell className="align-top">
                   <Checkbox
-                    checked={selectedEntityCuis.has(item.entityCui)}
+                    checked={isSelected}
                     aria-label={t`Select row`}
                     onCheckedChange={(checked) => {
                       onToggleSelection?.(item, Boolean(checked));
@@ -374,14 +549,7 @@ export function CampaignAdminEntityConfigTable({
                 </TableCell>
                 <TableCell className="max-w-xs text-sm">
                   {item.values.officialBudgetUrl ? (
-                    <a
-                      href={item.values.officialBudgetUrl}
-                      className="text-primary underline underline-offset-4"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {item.values.officialBudgetUrl}
-                    </a>
+                    <BudgetUrlLink url={item.values.officialBudgetUrl} />
                   ) : (
                     <span className="text-muted-foreground">{t`Unavailable`}</span>
                   )}
@@ -399,6 +567,13 @@ export function CampaignAdminEntityConfigTable({
                   ) : (
                     <span className="text-muted-foreground">{t`Unavailable`}</span>
                   )}
+                </TableCell>
+                <TableCell className="max-w-sm align-top text-sm">
+                  <StagedValuesCell
+                    item={item}
+                    stagedDraft={stagedDraft}
+                    selected={isSelected}
+                  />
                 </TableCell>
                 <TableCell className="space-y-1 text-sm">
                   <p className="text-foreground">
@@ -424,6 +599,17 @@ export function CampaignAdminEntityConfigTable({
                       </a>
                     </Button>
                   </div>
+                </TableCell>
+              </TableRow>
+              );
+            })}
+            {pasteIssues.map((issue) => (
+              <TableRow
+                key={`${issue.rowNumber}-${issue.entityCui ?? issue.message}`}
+                className="bg-destructive/5 hover:bg-destructive/5"
+              >
+                <TableCell colSpan={9}>
+                  <PasteIssuesList issues={[issue]} />
                 </TableCell>
               </TableRow>
             ))}

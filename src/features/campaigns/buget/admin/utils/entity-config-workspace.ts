@@ -41,7 +41,7 @@ export function getCampaignAdminEntityConfigSendValidationMessage(input: {
   const { item, stagedDraft } = input;
 
   if (stagedDraft === undefined || stagedDraft === null) {
-    return t`Missing staged config values. Paste spreadsheet rows with matching entity CUIs first.`;
+    return t`Missing staged config values. Paste spreadsheet rows with matching visible entity CUIs first.`;
   }
 
   if (

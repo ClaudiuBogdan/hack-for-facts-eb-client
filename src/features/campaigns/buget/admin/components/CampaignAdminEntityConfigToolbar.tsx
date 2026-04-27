@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
+  ClipboardPaste,
+  Copy,
+  FilterX,
   MoreHorizontal,
   RefreshCw,
   RotateCcw,
@@ -71,7 +74,8 @@ type CampaignAdminEntityConfigToolbarProps = {
     entityCui: string,
     search: CampaignAdminEntityConfigSearch,
   ) => void;
-  readonly onOpenPasteDialog?: () => Promise<void> | void;
+  readonly onPasteRows?: () => Promise<void> | void;
+  readonly onCopyRows?: () => Promise<void> | void;
   readonly onExportCsv?: () => Promise<void> | void;
 };
 
@@ -218,7 +222,8 @@ export function CampaignAdminEntityConfigToolbar({
   onRefresh,
   onOpenEntity,
   onCreateEntity,
-  onOpenPasteDialog,
+  onPasteRows,
+  onCopyRows,
   onExportCsv,
 }: CampaignAdminEntityConfigToolbarProps) {
   const tableActionsMenuLabel = t`Table actions`;
@@ -250,6 +255,9 @@ export function CampaignAdminEntityConfigToolbar({
     Number(search.officialBudgetUrl !== undefined) +
     Number(search.hasOfficialBudgetUrl !== undefined) +
     Number(search.hasPublicDebate !== undefined);
+  const isMissingCoreActive =
+    search.hasBudgetPublicationDate === false &&
+    search.hasOfficialBudgetUrl === false;
 
   const handleReset = () => {
     const resetSearch = createEmptyCampaignAdminEntityConfigSearch({
@@ -263,6 +271,25 @@ export function CampaignAdminEntityConfigToolbar({
 
   const handleApply = () => {
     onApply(nextSearch);
+    setAdvancedOpen(false);
+  };
+
+  const handleMissingCoreFilter = () => {
+    const missingCoreSearch = normalizeCampaignAdminEntityConfigSearch({
+      ...search,
+      budgetPublicationDate: undefined,
+      hasBudgetPublicationDate: false,
+      officialBudgetUrl: undefined,
+      hasOfficialBudgetUrl: false,
+      cursor: undefined,
+      pageIndex: undefined,
+      limit: search.limit,
+      sortBy: search.sortBy,
+      sortOrder: search.sortOrder,
+    });
+
+    setDraft(createDraftFromSearch(missingCoreSearch));
+    onApply(missingCoreSearch);
     setAdvancedOpen(false);
   };
 
@@ -348,7 +375,33 @@ export function CampaignAdminEntityConfigToolbar({
             <Search className="h-4 w-4" aria-hidden="true" />
             {t`Open entity`}
           </Button>
-          {onCreateEntity || onOpenPasteDialog || onExportCsv ? (
+          {onPasteRows ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2 rounded-full"
+              onClick={() => {
+                void onPasteRows();
+              }}
+              disabled={isLoading}
+            >
+              <ClipboardPaste className="h-4 w-4" aria-hidden="true" />
+              {t`Paste rows`}
+            </Button>
+          ) : null}
+          <Button
+            type="button"
+            variant={isMissingCoreActive ? "secondary" : "outline"}
+            size="sm"
+            className="gap-2 rounded-full"
+            onClick={handleMissingCoreFilter}
+            disabled={isLoading}
+          >
+            <FilterX className="h-4 w-4" aria-hidden="true" />
+            {t`Missing date + URL`}
+          </Button>
+          {onCreateEntity || onCopyRows || onExportCsv ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -368,9 +421,10 @@ export function CampaignAdminEntityConfigToolbar({
                     {t`Create config`}
                   </DropdownMenuItem>
                 ) : null}
-                {onOpenPasteDialog ? (
-                  <DropdownMenuItem onSelect={() => { void onOpenPasteDialog(); }}>
-                    {t`Paste spreadsheet`}
+                {onCopyRows ? (
+                  <DropdownMenuItem onSelect={() => { void onCopyRows(); }}>
+                    <Copy className="h-4 w-4" aria-hidden="true" />
+                    {t`Copy current rows`}
                   </DropdownMenuItem>
                 ) : null}
                 {onExportCsv ? (
