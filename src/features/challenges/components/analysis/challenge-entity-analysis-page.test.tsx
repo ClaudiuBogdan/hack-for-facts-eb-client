@@ -1375,7 +1375,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
   })
 
-  it('suppresses map UI for non-UAT county council entities', async () => {
+  it('shows county map UI for county council entities', async () => {
     useEntityDetailsMock.mockImplementation(() => ({
       data: {
         ...entityDetails,
@@ -1393,9 +1393,16 @@ describe('ChallengeEntityAnalysisPage', () => {
       entityCui: '4267117',
     })
 
-    expect(screen.queryByTestId('public-map-preview')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByTestId('public-map-preview')).toBeInTheDocument()
+    })
+    expect(mapAnalyticsPublicPreviewCardMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        mapViewType: 'County',
+      }),
+    )
     expect(useGeoJsonDataMock).toHaveBeenCalledWith('County', {
-      enabled: false,
+      enabled: true,
     })
     expect(
       screen.queryByRole('button', { name: 'Arată per capita' }),
@@ -1478,7 +1485,7 @@ describe('ChallengeEntityAnalysisPage', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('suppresses map UI for non-UAT Bucharest municipality CUI', async () => {
+  it('shows county map UI for Bucharest municipality CUI', async () => {
     useEntityDetailsMock.mockImplementation(() => ({
       data: {
         ...entityDetails,
@@ -1497,9 +1504,16 @@ describe('ChallengeEntityAnalysisPage', () => {
       entityCui: '4267117',
     })
 
-    expect(screen.queryByTestId('public-map-preview')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByTestId('public-map-preview')).toBeInTheDocument()
+    })
+    expect(mapAnalyticsPublicPreviewCardMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        mapViewType: 'County',
+      }),
+    )
     expect(useGeoJsonDataMock).toHaveBeenCalledWith('County', {
-      enabled: false,
+      enabled: true,
     })
   })
 
@@ -1554,6 +1568,23 @@ describe('ChallengeEntityAnalysisPage', () => {
         mapNameOverride: 'Cheltuieli UAT (2025)',
       })
     })
+  })
+
+  it('uses explicit period growth state for entity details fetches', async () => {
+    renderAnalysisPage({
+      state: {
+        showPeriodGrowth: true,
+      },
+    })
+
+    expect(useEntityDetailsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        show_period_growth: true,
+      }),
+      {
+        ssrPlaceholder: undefined,
+      },
+    )
   })
 
   it('passes the selected report type through to the map preview runtime config', async () => {

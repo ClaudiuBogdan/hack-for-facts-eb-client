@@ -537,6 +537,27 @@ describe('BudgetItemAnalytics', () => {
     expect(screen.queryByText('Only city hall')).not.toBeInTheDocument()
   })
 
+  it('renders and selects secondary aggregation report types', () => {
+    render(
+      <BudgetItemAnalytics
+        {...defaultAnalyticsProps}
+        context={{
+          ...defaultAnalyticsProps.context,
+          reportType: 'DETAILED',
+          reportTypeOptions: ['DETAILED', 'SECONDARY_AGGREGATED'],
+        }}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Show extra options' }))
+    fireEvent.click(screen.getByRole('combobox', { name: 'Report type' }))
+    fireEvent.click(screen.getByText('Secondary institutions'))
+
+    expect(defaultAnalyticsProps.onReportTypeChange).toHaveBeenCalledWith(
+      'SECONDARY_AGGREGATED',
+    )
+  })
+
   it('hides report type controls when the entity has only detailed reports', () => {
     render(
       <BudgetItemAnalytics

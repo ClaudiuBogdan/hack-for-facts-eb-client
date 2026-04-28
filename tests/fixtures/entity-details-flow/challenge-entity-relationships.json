@@ -1,0 +1,17 @@
+{
+  "data": {
+    "entity": {
+      "children": [
+        {
+          "cui": "12345678",
+          "name": "DIRECȚIA DE ASISTENȚĂ SOCIALĂ CLUJ-NAPOCA"
+        },
+        {
+          "cui": "87654321",
+          "name": "LICEUL TEORETIC NICOLAE BĂLCESCU"
+        }
+      ],
+      "parents": []
+    }
+  }
+}

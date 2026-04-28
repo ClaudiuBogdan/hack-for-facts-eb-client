@@ -31,9 +31,9 @@ import {
   normalizeChallengeEntityAnalysisSearch,
   type ChallengeEntityAnalysisRouteSearch,
   type ChallengeEntityAnalysisUrlState,
-  type ChallengeEntityAnalysisView,
 } from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
 import type { EntityPageLoaderPayload } from '@/features/entities/page-core'
+import { normalizeEntitiesEntityRouteView } from '@/features/entities/page-core/route-adapters/entities-entity-route-adapter'
 import {
   hasForcedOverrides,
   type ForcedOverrides,
@@ -56,34 +56,6 @@ type EntitiesEntityRouteLoaderData = {
       | 'ssrEntityExecutionLineItemsParams'
     >
   }
-}
-
-const CHALLENGE_VIEW_BY_LEGACY_ENTITY_VIEW: Record<string, ChallengeEntityAnalysisView> = {
-  'main-info': 'main-info',
-  overview: 'main-info',
-  map: 'main-info',
-  'expense-trends': 'main-info',
-  'income-trends': 'main-info',
-  ranking: 'main-info',
-  'related-charts': 'main-info',
-  relationships: 'main-info',
-  reports: 'main-info',
-  employees: 'main-info',
-  contracts: 'contracts',
-  commitments: 'commitments',
-  ins: 'ins',
-  'ins-stats': 'ins',
-  profile: 'profile',
-}
-
-function mapEntitiesViewToChallengeView(
-  view: string | undefined,
-): ChallengeEntityAnalysisView {
-  if (!view) {
-    return 'main-info'
-  }
-
-  return CHALLENGE_VIEW_BY_LEGACY_ENTITY_VIEW[view] ?? 'main-info'
 }
 
 function mapEntitiesReportTypeToChallengeReportType(
@@ -138,7 +110,7 @@ function toChallengeRouteSearch(
     normalization: mapEntitiesNormalizationToChallengeNormalization(
       search?.normalization,
     ),
-    view: mapEntitiesViewToChallengeView(search?.view),
+    view: normalizeEntitiesEntityRouteView(search?.view),
     treemap_account: search?.treemap_account ?? search?.accountCategory,
     expense_type: search?.expense_type,
     treemap_primary: search?.treemap_primary ?? search?.treemapPrimary,
@@ -155,6 +127,7 @@ function toChallengeRouteSearch(
       search?.commitments_detail_level ?? search?.commitmentsDetailLevel,
     currency: mapEntitiesCurrencyToChallengeCurrency(search),
     inflation_adjusted: search?.inflation_adjusted,
+    show_period_growth: search?.show_period_growth,
     insDataset: search?.insDataset,
     insSearch: search?.insSearch,
     insRoot: search?.insRoot,
@@ -236,6 +209,7 @@ function toPageState(
     evolutionAccountCategory: searchState.evolution_account,
     evolutionPrimary: searchState.evolution_primary,
     mapPreviewKey: searchState.public_map,
+    showPeriodGrowth: searchState.show_period_growth,
   }
 }
 

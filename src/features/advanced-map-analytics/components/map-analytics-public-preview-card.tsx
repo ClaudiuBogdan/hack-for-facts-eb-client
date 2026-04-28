@@ -9,6 +9,7 @@ import {
 } from '@/features/advanced-map-analytics/hooks/use-map-preview-runtime-state';
 import type { PublicMapViewport } from '@/features/advanced-map-analytics/hooks/use-public-map-viewport';
 import type { MapEntitySelection } from '@/features/advanced-map-analytics/types/map-entity-selection';
+import type { MapViewType } from '@/hooks/useGeoJson';
 import type { AdvancedMapAnalyticsUrlState } from '@/schemas/advanced-map-analytics';
 import type {
   Currency,
@@ -30,6 +31,7 @@ interface MapAnalyticsPublicPreviewCardProps {
   mapNameOverride?: string;
   mapZoomOverride?: number;
   mapCenterOverride?: [number, number];
+  mapViewType?: MapViewType;
   onMapViewportChange?: (nextViewport: PublicMapViewport) => void;
   onEntityCuiSelect?: (selection: MapEntitySelection) => void;
 }
@@ -47,6 +49,7 @@ export function MapAnalyticsPublicPreviewCard({
   mapNameOverride,
   mapZoomOverride,
   mapCenterOverride,
+  mapViewType = 'UAT',
   onMapViewportChange,
   onEntityCuiSelect,
 }: Readonly<MapAnalyticsPublicPreviewCardProps>) {
@@ -102,6 +105,7 @@ export function MapAnalyticsPublicPreviewCard({
             mapDescription={mapDescription}
             capabilities={{ readOnly: true }}
             mobileControlsDefaultCollapsed={true}
+            mapViewType={mapViewType}
             onEntityCuiSelect={onEntityCuiSelect}
           />
         </CardContent>

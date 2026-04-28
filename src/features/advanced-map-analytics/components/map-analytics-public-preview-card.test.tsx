@@ -50,9 +50,32 @@ describe('MapAnalyticsPublicPreviewCard', () => {
       mode: 'public',
       capabilities: { readOnly: true },
       mapDescription: '# Public description',
+      mapViewType: 'UAT',
     });
     expect('bundledGroupedSeriesData' in latestWorkspaceProps).toBe(false);
     expect('bundledRemoteBaseSeriesHash' in latestWorkspaceProps).toBe(false);
+  });
+
+  it('passes county map view type to the embedded workspace', async () => {
+    const mapStateDefinition = AdvancedMapAnalyticsUrlStateSchema.parse({ mapName: 'Public map' });
+
+    const { MapAnalyticsPublicPreviewCard } = await import('./map-analytics-public-preview-card');
+    render(
+      <MapAnalyticsPublicPreviewCard
+        mapKey="expenses"
+        mapDescription=""
+        mapStateDefinition={mapStateDefinition}
+        mapViewType="County"
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('map-analytics-workspace')).toBeInTheDocument();
+    });
+
+    expect(getLatestWorkspaceProps()).toMatchObject({
+      mapViewType: 'County',
+    });
   });
 
   it('opens the description modal from the info button', async () => {

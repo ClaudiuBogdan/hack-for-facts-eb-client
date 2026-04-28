@@ -177,7 +177,7 @@ describe('resolveEntitiesEntityRouteAdapter', () => {
       reportType: 'SECONDARY_AGGREGATED',
       effectiveReportType: 'SECONDARY_AGGREGATED',
       mainCreditorCui: '1234567',
-      activeView: 'ranking',
+      activeView: 'main-info',
       publicSettings: {
         normalization: 'per_capita',
         currency: 'EUR',

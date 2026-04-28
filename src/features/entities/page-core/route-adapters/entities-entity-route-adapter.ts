@@ -1,4 +1,5 @@
 import type { EntitySearchSchema } from '@/components/entities/validation'
+import type { ChallengeEntityAnalysisView } from '@/features/challenges/schemas/challenge-entity-analysis-route-search-schema'
 import {
   resolveNormalizationSettings,
   type ForcedOverrides,
@@ -21,12 +22,30 @@ import type {
   EntityPagePublicSettings,
 } from '../types'
 
-const DEFAULT_VIEW = 'overview'
+const DEFAULT_VIEW: ChallengeEntityAnalysisView = 'main-info'
 const DEFAULT_PERIOD: ReportPeriodType = 'YEAR'
 const DEFAULT_MONTH: TMonth = '01'
 const DEFAULT_QUARTER: TQuarter = 'Q1'
 const DEFAULT_NORMALIZATION: NormalizationInput = 'total'
 type EntitiesEntityRouteReportType = ExecutionGqlReportType
+
+const CHALLENGE_VIEW_BY_LEGACY_ENTITY_VIEW: Record<string, ChallengeEntityAnalysisView> = {
+  'main-info': 'main-info',
+  overview: 'main-info',
+  map: 'main-info',
+  'expense-trends': 'main-info',
+  'income-trends': 'main-info',
+  ranking: 'main-info',
+  'related-charts': 'main-info',
+  relationships: 'main-info',
+  reports: 'main-info',
+  employees: 'main-info',
+  contracts: 'contracts',
+  commitments: 'commitments',
+  ins: 'ins',
+  'ins-stats': 'ins',
+  profile: 'profile',
+}
 
 export type EntitiesEntityRouteNormalizedSearch = Omit<
   EntitySearchSchema,
@@ -40,7 +59,7 @@ export type EntitiesEntityRouteNormalizedSearch = Omit<
   | 'normalization'
 > & {
   readonly lang?: EntityPageLocale
-  readonly view: string
+  readonly view: ChallengeEntityAnalysisView
   readonly period: ReportPeriodType
   readonly year: number
   readonly month?: TMonth
@@ -69,6 +88,16 @@ export type EntitiesEntityRouteAdapterResult = {
   readonly exactQueryInputs: EntityPageExactQueryInputs
 }
 
+export function normalizeEntitiesEntityRouteView(
+  view: string | undefined,
+): ChallengeEntityAnalysisView {
+  if (!view) {
+    return DEFAULT_VIEW
+  }
+
+  return CHALLENGE_VIEW_BY_LEGACY_ENTITY_VIEW[view] ?? DEFAULT_VIEW
+}
+
 export function normalizeEntitiesEntityRouteSearch(
   search: EntitySearchSchema | undefined,
 ): EntitiesEntityRouteNormalizedSearch {
@@ -77,7 +106,7 @@ export function normalizeEntitiesEntityRouteSearch(
   return {
     ...search,
     lang: search?.lang,
-    view: search?.view ?? DEFAULT_VIEW,
+    view: normalizeEntitiesEntityRouteView(search?.view),
     period,
     year: search?.year ?? DEFAULT_SELECTED_YEAR,
     month:

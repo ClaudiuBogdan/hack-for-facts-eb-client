@@ -11,7 +11,7 @@ export const entitySearchSchema = z.object({
     view: z
         .string()
         .optional()
-        .describe('Which view to render for the entity page. Examples: overview, map, income-trends, expense-trends.'),
+        .describe('Which view to render for the entity page. Current values: main-info, contracts, commitments, ins, profile. Legacy values like overview, map, income-trends, and expense-trends are normalized to main-info.'),
     period: z
         .enum(['YEAR', 'MONTH', 'QUARTER'])
         .optional()
@@ -92,7 +92,7 @@ export const entitySearchSchema = z.object({
         .string()
         .optional()
         .describe('Selected expense type key for line items.'),
-    // Treemap state (Overview and TrendsView)
+    // Legacy treemap state kept for saved entity links
     treemapPrimary: z
         .enum(['fn', 'ec'])
         .optional()

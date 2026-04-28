@@ -85,6 +85,7 @@ export function resolvePrimarieEntityRouteAdapter(
     normalizationRaw: normalizedSearch.normalization,
     currencyParam: input.search?.currency,
     inflationAdjustedParam: input.search?.inflation_adjusted,
+    showPeriodGrowthParam: input.search?.show_period_growth,
   })
   const initialSettings: ChallengeEntityInitialSettings = {
     currency: publicSettings.currency,

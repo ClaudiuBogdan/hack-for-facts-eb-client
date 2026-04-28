@@ -214,6 +214,25 @@ describe('challenge entity analytics search normalization', () => {
     })
   })
 
+  it('preserves explicit period growth search state', () => {
+    expect(
+      ChallengeEntityAnalysisRouteSearchSchema.parse({
+        show_period_growth: 'true',
+      }),
+    ).toMatchObject({
+      show_period_growth: true,
+    })
+
+    expect(
+      normalizeChallengeEntityAnalysisSearch({
+        show_period_growth: true,
+      }).show_period_growth,
+    ).toBe(true)
+    expect(
+      normalizeChallengeEntityAnalysisSearch(undefined).show_period_growth,
+    ).toBe(false)
+  })
+
   it('accepts 2026 while keeping 2025 as the default selected year', () => {
     expect(
       ChallengeEntityAnalysisRouteSearchSchema.parse({

@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import type { QueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
 import { entitySearchSchema } from '@/components/entities/validation'
 import { ViewLoading } from '@/components/ui/ViewLoading'
@@ -16,13 +15,6 @@ import {
 import { resolveEntityPageRouteHeadContract } from '@/features/entities/page-core/seo/entity-page-route-policy'
 import { resolveEntitiesEntityRouteAdapter } from '@/features/entities/page-core/route-adapters/entities-entity-route-adapter'
 import { buildEntityRouteHead } from '@/features/entities/seo/entity-share-seo'
-import { geoJsonQueryOptions } from '@/hooks/useGeoJson'
-import { heatmapJudetQueryOptions, heatmapUATQueryOptions } from '@/hooks/useHeatmapData'
-import { DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES, DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES } from '@/lib/analytics-defaults'
-import { getTopFunctionalGroupCodes } from '@/lib/analytics-utils'
-import { getChartAnalytics } from '@/lib/api/charts'
-import type { EntityDetailsData, ExecutionLineItem } from '@/lib/api/entities'
-import { prepareFilterForServer, withDefaultExcludes } from '@/lib/filterUtils'
 import {
   parseBooleanParam,
   parseCurrencyParam,
@@ -30,18 +22,7 @@ import {
 } from '@/lib/globalSettings/params'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { readClientCurrencyPreference, readClientInflationAdjustedPreference } from '@/lib/user-preferences'
-import { generateHash } from '@/lib/utils'
-import {
-  AnalyticsFilterType,
-  AnalyticsInput,
-  defaultYearRange,
-} from '@/schemas/charts'
-import {
-  getInitialFilterState,
-  makeTrendPeriod,
-  toExecutionReportType,
-  toReportTypeValue,
-} from '@/schemas/reporting'
+import { toExecutionReportType } from '@/schemas/reporting'
 
 export type EntitySearchSchema = z.infer<typeof entitySearchSchema>
 
@@ -70,10 +51,6 @@ type EntityRouteLoaderData = {
 type EntitiesEntityRouteAdapter = ReturnType<typeof resolveEntitiesEntityRouteAdapter>
 
 const ENTITY_DETAILS_STEP_ID = 'entity-details' as const
-const MAP_GEOJSON_WARMUP_STEP_ID = 'map-geojson-warmup' as const
-const MAP_HEATMAP_WARMUP_STEP_ID = 'map-heatmap-warmup' as const
-const INCOME_TRENDS_CHART_WARMUP_STEP_ID = 'income-trends-chart-warmup' as const
-const EXPENSE_TRENDS_CHART_WARMUP_STEP_ID = 'expense-trends-chart-warmup' as const
 
 function hasPlannedStep(
   steps: readonly { id: string }[],
@@ -185,176 +162,6 @@ function resolveAdapterWithEffectiveReportType(
   }
 }
 
-function resolveMapViewType(entity: EntityDetailsData): 'County' | 'UAT' {
-  return entity.entity_type === 'admin_county_council' || entity.cui === '4267117'
-    ? 'County'
-    : 'UAT'
-}
-
-function supportsMapWarmup(entity: EntityDetailsData): boolean {
-  return Boolean(
-    entity.is_uat ||
-    entity.uat?.siruta_code != null ||
-    entity.entity_type === 'admin_county_council' ||
-    entity.cui === '4267117',
-  )
-}
-
-function warmTrendCharts({
-  entity,
-  executionContext,
-  queryClient,
-  queryPlan,
-}: {
-  readonly entity: EntityDetailsData
-  readonly executionContext: EntityPageExecutionContext
-  readonly queryClient: QueryClient
-  readonly queryPlan: EntityPageBootstrapPayload['queryPlan']
-}): void {
-  let accountCategory: 'vn' | 'ch' | undefined
-
-  if (
-    hasPlannedStep(
-      queryPlan.backgroundPrefetch,
-      INCOME_TRENDS_CHART_WARMUP_STEP_ID,
-    )
-  ) {
-    accountCategory = 'vn'
-  } else if (
-    hasPlannedStep(
-      queryPlan.backgroundPrefetch,
-      EXPENSE_TRENDS_CHART_WARMUP_STEP_ID,
-    )
-  ) {
-    accountCategory = 'ch'
-  }
-
-  if (!accountCategory) {
-    return
-  }
-
-  const topGroups = getTopFunctionalGroupCodes(
-    (entity.executionLineItems?.nodes ?? []).filter(
-      (lineItem) => lineItem.account_category === accountCategory,
-    ) as ExecutionLineItem[],
-    10,
-  )
-
-  if (topGroups.length === 0) {
-    return
-  }
-
-  const defaultExclude =
-    accountCategory === 'ch'
-      ? { economic_prefixes: [...DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES] }
-      : { functional_prefixes: [...DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES] }
-  const inputs = topGroups.map((prefix) => ({
-    seriesId: `${prefix}${executionContext.cui}-${accountCategory === 'vn' ? 'income' : 'expense'}`,
-    filter: {
-      entity_cuis: [executionContext.cui],
-      functional_prefixes: [prefix],
-      account_category: accountCategory,
-      report_type: toReportTypeValue(
-        toExecutionReportType(entity.default_report_type)
-        ?? 'PRINCIPAL_AGGREGATED',
-      ),
-      normalization: executionContext.publicSettings.normalization,
-      currency: executionContext.publicSettings.currency,
-      inflation_adjusted: executionContext.publicSettings.inflationAdjusted,
-      show_period_growth: executionContext.publicSettings.showPeriodGrowth,
-      exclude: defaultExclude,
-    },
-  })) satisfies AnalyticsInput[]
-  const trendPeriod = makeTrendPeriod(
-    'YEAR',
-    executionContext.year,
-    defaultYearRange.start,
-    defaultYearRange.end,
-  )
-  const preparedInputs = inputs.map((input) => ({
-    ...input,
-    filter: prepareFilterForServer(
-      input.filter as unknown as AnalyticsFilterType,
-      {
-        period: trendPeriod,
-      },
-    ),
-  }))
-  const payloadHash = preparedInputs
-    .slice()
-    .sort((left, right) => left.seriesId.localeCompare(right.seriesId))
-    .reduce(
-      (hashSeed, input) =>
-        hashSeed + input.seriesId + '::' + JSON.stringify(input.filter),
-      '',
-    )
-
-  void queryClient.prefetchQuery({
-    queryKey: ['chart-data', generateHash(payloadHash)],
-    queryFn: () => getChartAnalytics(preparedInputs),
-    staleTime: 1000 * 60 * 60 * 24,
-    gcTime: 1000 * 60 * 60 * 24 * 3,
-  })
-}
-
-function warmMapResources({
-  entity,
-  executionContext,
-  queryClient,
-  queryPlan,
-  search,
-}: {
-  readonly entity: EntityDetailsData
-  readonly executionContext: EntityPageExecutionContext
-  readonly queryClient: QueryClient
-  readonly queryPlan: EntityPageBootstrapPayload['queryPlan']
-  readonly search: EntitySearchSchema
-}): void {
-  if (typeof window === 'undefined' || !supportsMapWarmup(entity)) {
-    return
-  }
-
-  const shouldWarmGeoJson = hasPlannedStep(
-    queryPlan.clientOnly,
-    MAP_GEOJSON_WARMUP_STEP_ID,
-  )
-  const shouldWarmHeatmap = hasPlannedStep(
-    queryPlan.clientOnly,
-    MAP_HEATMAP_WARMUP_STEP_ID,
-  )
-
-  if (!shouldWarmGeoJson && !shouldWarmHeatmap) {
-    return
-  }
-
-  const mapViewType = resolveMapViewType(entity)
-
-  if (shouldWarmGeoJson) {
-    void queryClient.prefetchQuery(geoJsonQueryOptions(mapViewType))
-  }
-
-  if (!shouldWarmHeatmap) {
-    return
-  }
-
-  const filters =
-    (search.mapFilters as AnalyticsFilterType | undefined)
-    ?? withDefaultExcludes({
-      account_category: 'ch',
-      normalization: 'per_capita',
-      currency: executionContext.publicSettings.currency,
-      inflation_adjusted: executionContext.publicSettings.inflationAdjusted,
-      report_period: getInitialFilterState('YEAR', executionContext.year, '12', 'Q4'),
-    })
-
-  if (mapViewType === 'UAT') {
-    void queryClient.prefetchQuery(heatmapUATQueryOptions(filters))
-    return
-  }
-
-  void queryClient.prefetchQuery(heatmapJudetQueryOptions(filters))
-}
-
 export const Route = createFileRoute('/entities/$cui')({
   headers: () =>
     createPublicPageCacheHeaders({
@@ -458,20 +265,6 @@ export const Route = createFileRoute('/entities/$cui')({
           forcedOverrides,
         } satisfies EntityRouteLoaderData
       }
-
-      warmTrendCharts({
-        entity: bootstrapResult.entityDetails,
-        executionContext: activeAdapter.executionContext,
-        queryClient,
-        queryPlan: entityPageBootstrap.queryPlan,
-      })
-      warmMapResources({
-        entity: bootstrapResult.entityDetails,
-        executionContext: activeAdapter.executionContext,
-        queryClient,
-        queryPlan: entityPageBootstrap.queryPlan,
-        search,
-      })
 
       return {
         entityPageBootstrap,

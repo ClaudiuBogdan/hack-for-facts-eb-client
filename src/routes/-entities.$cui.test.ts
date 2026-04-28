@@ -245,7 +245,7 @@ describe('entities route', () => {
     })
   })
 
-  it('returns the shared bootstrap payload and keeps planner client-only map warmups off the server', async () => {
+  it('returns the shared bootstrap payload without old map warmups', async () => {
     const ensureQueryData = vi.fn().mockResolvedValue(undefined)
     const prefetchQuery = vi.fn().mockResolvedValue(undefined)
     const getQueryData = vi.fn().mockReturnValue(
@@ -278,7 +278,7 @@ describe('entities route', () => {
       executionContext: {
         routeId: 'entities',
         cui: '4267117',
-        activeView: 'map',
+        activeView: 'main-info',
         year: 2024,
         reportType: 'DETAILED',
         effectiveReportType: 'DETAILED',
@@ -313,16 +313,7 @@ describe('entities route', () => {
           }),
         ],
         backgroundPrefetch: [],
-        clientOnly: [
-          expect.objectContaining({
-            id: 'map-geojson-warmup',
-            executionClass: 'clientOnly',
-          }),
-          expect.objectContaining({
-            id: 'map-heatmap-warmup',
-            executionClass: 'clientOnly',
-          }),
-        ],
+        clientOnly: [],
       },
       loaderPayload: {
         entitySeoSnapshot: expect.objectContaining({
@@ -434,7 +425,7 @@ describe('entities route', () => {
     )
   })
 
-  it('runs planner client-only map warmups during client-side execution', async () => {
+  it('does not run old map warmups during client-side execution', async () => {
     ;(globalThis as { window?: { location: { origin: string } } }).window = {
       location: {
         origin: 'https://client.transparenta.eu',
@@ -469,13 +460,13 @@ describe('entities route', () => {
     expect(loaderResult.entityPageBootstrap.loaderPayload.requestSiteUrl).toBe(
       'https://client.transparenta.eu',
     )
-    expect(loaderResult.entityPageBootstrap.queryPlan.clientOnly).toHaveLength(2)
-    expect(geoJsonQueryOptionsMock).toHaveBeenCalledWith('UAT')
-    expect(heatmapUATQueryOptionsMock).toHaveBeenCalledTimes(1)
-    expect(prefetchQuery).toHaveBeenCalledTimes(2)
+    expect(loaderResult.entityPageBootstrap.queryPlan.clientOnly).toEqual([])
+    expect(geoJsonQueryOptionsMock).not.toHaveBeenCalled()
+    expect(heatmapUATQueryOptionsMock).not.toHaveBeenCalled()
+    expect(prefetchQuery).not.toHaveBeenCalled()
   })
 
-  it('warms county map resources for county councils on the client', async () => {
+  it('does not run old county map warmups for county councils on the client', async () => {
     ;(globalThis as { window?: { location: { origin: string } } }).window = {
       location: {
         origin: 'https://client.transparenta.eu',
@@ -493,7 +484,7 @@ describe('entities route', () => {
     )
     const route = await importRoute()
 
-    await route.loader({
+    const loaderResult = await route.loader({
       context: {
         queryClient: {
           ensureQueryData,
@@ -510,23 +501,23 @@ describe('entities route', () => {
       },
     })
 
-    expect(geoJsonQueryOptionsMock).toHaveBeenCalledWith('County')
-    expect(heatmapJudetQueryOptionsMock).toHaveBeenCalledTimes(1)
+    expect(loaderResult.entityPageBootstrap.queryPlan.clientOnly).toEqual([])
+    expect(geoJsonQueryOptionsMock).not.toHaveBeenCalled()
+    expect(heatmapJudetQueryOptionsMock).not.toHaveBeenCalled()
     expect(heatmapUATQueryOptionsMock).not.toHaveBeenCalled()
+    expect(prefetchQuery).not.toHaveBeenCalled()
   })
 
-  it('runs planner trend warmups in the background without waiting for them', async () => {
+  it('does not run old trend warmups for legacy trend URLs', async () => {
     const ensureQueryData = vi.fn().mockResolvedValue(undefined)
-    const prefetchQuery = vi.fn().mockImplementation(
-      () => new Promise(() => {}),
-    )
+    const prefetchQuery = vi.fn().mockResolvedValue(undefined)
     const getQueryData = vi.fn().mockReturnValue(
       createEntityDetailsData({
         cui: '87654321',
       }),
     )
     const route = await importRoute()
-    const loaderPromise = route.loader({
+    const loaderResult = await route.loader({
       context: {
         queryClient: {
           ensureQueryData,
@@ -544,27 +535,9 @@ describe('entities route', () => {
       },
     })
 
-    await expect(
-      Promise.race([
-        loaderPromise,
-        new Promise((resolve) => setTimeout(() => resolve('timeout'), 25)),
-      ]),
-    ).resolves.not.toBe('timeout')
-
-    const loaderResult = await loaderPromise
-
-    expect(loaderResult.entityPageBootstrap.queryPlan.backgroundPrefetch).toMatchObject([
-      {
-        id: 'income-trends-chart-warmup',
-        executionClass: 'backgroundPrefetch',
-      },
-    ])
-    expect(generateHashMock).toHaveBeenCalledWith(expect.any(String))
-    expect(prefetchQuery).toHaveBeenCalledWith(
-      expect.objectContaining({
-        queryKey: ['chart-data', 'hash-123'],
-      }),
-    )
+    expect(loaderResult.entityPageBootstrap.queryPlan.backgroundPrefetch).toEqual([])
+    expect(generateHashMock).not.toHaveBeenCalled()
+    expect(prefetchQuery).not.toHaveBeenCalled()
     expect(geoJsonQueryOptionsMock).not.toHaveBeenCalled()
   })
 })

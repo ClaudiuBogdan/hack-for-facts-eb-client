@@ -219,15 +219,15 @@ src/
 │   │   └── notifications.tsx             # Settings page
 │   └── unsubscribe.$token.tsx            # Unsubscribe page
 └── components/
-    └── entities/
-        └── EntityHeader.tsx              # Modified (bell added)
+    └── challenges/analysis/
+        └── challenge-entity-analysis-header.tsx  # Bell rendered in page header
 ```
 
 ### Component Architecture
 
 **EntityNotificationBell** - Bell icon button on entity pages
 
-- Location: [EntityHeader.tsx:92](src/components/entities/EntityHeader.tsx#L92)
+- Location: [challenge-entity-analysis-header.tsx](src/features/challenges/components/analysis/challenge-entity-analysis-header.tsx)
 - States: Anonymous (outline), Subscribed (filled + badge), Unsubscribed (outline)
 - Behavior: Opens popover (auth) or sign-in dialog (anonymous)
 
@@ -542,7 +542,7 @@ function handleNotificationError(error: Error, action: string) {
 
 ### Issue: Bell icon doesn't show
 
-**Solution:** Check that `EntityHeader.tsx` has been modified:
+**Solution:** Check that `challenge-entity-analysis-header.tsx` renders the bell:
 
 ```typescript
 import { EntityNotificationBell } from '@/features/notifications/components/EntityNotificationBell';

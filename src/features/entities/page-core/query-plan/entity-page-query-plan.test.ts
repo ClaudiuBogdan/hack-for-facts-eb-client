@@ -71,59 +71,16 @@ describe('entity-page-query-plan', () => {
     expect(plan.clientOnly).toEqual([])
   })
 
-  it('emits map warmups only as client-only steps', () => {
-    const plan = getEntityPageQueryPlan({
-      context: createContext({ activeView: 'map' }),
-    })
+  it.each(['map', 'income-trends', 'expense-trends', 'contracts'])(
+    'does not emit old-view warmups for %s',
+    (activeView) => {
+      const plan = getEntityPageQueryPlan({
+        context: createContext({ activeView }),
+      })
 
-    expect(plan.blocking).toHaveLength(1)
-    expect(plan.backgroundPrefetch).toEqual([])
-    expect(plan.clientOnly).toHaveLength(2)
-    expect(plan.clientOnly).toMatchObject([
-      {
-        id: 'map-geojson-warmup',
-        executionClass: 'clientOnly',
-        requiresEntityDetails: true,
-      },
-      {
-        id: 'map-heatmap-warmup',
-        executionClass: 'clientOnly',
-        requiresEntityDetails: true,
-      },
-    ])
-  })
-
-  it('emits the income trends warmup only as background prefetch', () => {
-    const plan = getEntityPageQueryPlan({
-      context: createContext({ activeView: 'income-trends' }),
-    })
-
-    expect(plan.blocking).toHaveLength(1)
-    expect(plan.clientOnly).toEqual([])
-    expect(plan.backgroundPrefetch).toHaveLength(1)
-    expect(plan.backgroundPrefetch).toMatchObject([
-      {
-        id: 'income-trends-chart-warmup',
-        executionClass: 'backgroundPrefetch',
-        requiresEntityDetails: true,
-      },
-    ])
-  })
-
-  it('emits the expense trends warmup only as background prefetch', () => {
-    const plan = getEntityPageQueryPlan({
-      context: createContext({ activeView: 'expense-trends' }),
-    })
-
-    expect(plan.blocking).toHaveLength(1)
-    expect(plan.clientOnly).toEqual([])
-    expect(plan.backgroundPrefetch).toHaveLength(1)
-    expect(plan.backgroundPrefetch).toMatchObject([
-      {
-        id: 'expense-trends-chart-warmup',
-        executionClass: 'backgroundPrefetch',
-        requiresEntityDetails: true,
-      },
-    ])
-  })
+      expect(plan.blocking).toHaveLength(1)
+      expect(plan.backgroundPrefetch).toEqual([])
+      expect(plan.clientOnly).toEqual([])
+    },
+  )
 })

@@ -84,15 +84,11 @@ The main elements that I need to review and test is:
     - Aggregated charts: bar/pie/sankey/treemap behaviors, units handling, in-chart year range subtitle.
 
 - Entity Details (/entities/$cui)
-  - URL state: `view`, `year`, `trend`, `expenseSearch`, `incomeSearch`, analytics toggles.
-  - Header: entity identity, sticky year selector, views switcher with availability rules.
-  - Overview view
-    - Financial summary (income, expense, balance) cards.
-    - Line items: dual-column accordion (expense/income), chapter/function/economic hierarchy, search, highlight, skeletons.
-    - Line items analytics: data type toggle, chart type toggle, independent year selector, top categories logic.
-  - Reports view: list, metadata, download links.
-  - Trends views (expense, income): prefetch of top functional groups, chart rendering, URL search sync.
-  - Map view (for UAT/county): map filters bridge, prefetch geojson/heatmap; click to navigate rules.
+  - Challenge analysis shell reused from `/primarie/$cui`, with entities-specific URL adapter and canonical `/entities/$cui` metadata.
+  - URL state: `view`, `year`, report period/type, main creditor, treemap, public map, analytics modal, commitments, and INS params.
+  - Legacy entity view params (`overview`, `map`, trend views, reports, relationships, employees) normalize into the new compact views.
+  - Main info: financial summary, compact trends, grouped line items, public map preview where entity type allows it, and reports teaser.
+  - Secondary views: contracts, commitments, INS for supported UAT/county entities, and profile.
 
 - Entity Analytics (/entity-analytics)
   - Unified filter panel with view toggle (table vs line-items).

@@ -121,6 +121,7 @@ function toPageState(
     evolutionAccountCategory: searchState.evolution_account,
     evolutionPrimary: searchState.evolution_primary,
     mapPreviewKey: searchState.public_map,
+    showPeriodGrowth: searchState.show_period_growth,
   }
 }
 

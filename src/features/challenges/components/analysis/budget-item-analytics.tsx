@@ -57,6 +57,8 @@ const NOOP_ANNOTATION_HANDLER = () => {}
 type BudgetItemAnalyticsCodeType = 'fn' | 'ec'
 type BudgetItemAnalyticsExpenseType =
   BudgetItemAnalyticsProps['context']['expenseType']
+type BudgetItemAnalyticsReportType =
+  BudgetItemAnalyticsProps['context']['reportType']
 type BudgetItemAnalyticsResolvedContext = BudgetItemAnalyticsResolvedViewState &
   BudgetItemAnalyticsFilters & {
     readonly analyticsProps: BudgetItemAnalyticsProps
@@ -93,6 +95,9 @@ function buildAnalyticsCopy(
         reportTypeAggregatedLabel: isEntityVariant
           ? 'Entity + institutions'
           : 'City hall + subordinates',
+        reportTypeSecondaryAggregatedLabel: isEntityVariant
+          ? 'Entity + secondary institutions'
+          : 'Secondary institutions',
         normalizationLabel: 'Normalization',
         inflationLabel: 'Inflation adjusted',
         timeframeLabel: 'Timeframe',
@@ -124,6 +129,9 @@ function buildAnalyticsCopy(
         reportTypeAggregatedLabel: isEntityVariant
           ? 'Entitatea și instituțiile'
           : 'Primăria și subordonatele',
+        reportTypeSecondaryAggregatedLabel: isEntityVariant
+          ? 'Entitatea și instituțiile secundare'
+          : 'Instituții secundare',
         normalizationLabel: 'Normalizare',
         inflationLabel: 'Ajustat cu inflația',
         timeframeLabel: 'Interval',
@@ -163,6 +171,37 @@ function getNextBudgetItemAnalyticsExpenseType(
       : (currentIndex + 1) % BUDGET_ITEM_ANALYTICS_EXPENSE_TYPE_ORDER.length
 
   return BUDGET_ITEM_ANALYTICS_EXPENSE_TYPE_ORDER[nextIndex]
+}
+
+function getBudgetItemAnalyticsReportTypeOptions(
+  context: BudgetItemAnalyticsResolvedContext['analyticsProps']['context'],
+): BudgetItemAnalyticsReportType[] {
+  const options: readonly BudgetItemAnalyticsReportType[] =
+    context.reportTypeOptions ??
+    (
+      context.reportType === 'SECONDARY_AGGREGATED'
+        ? ['DETAILED', 'SECONDARY_AGGREGATED']
+        : ['DETAILED', 'PRINCIPAL_AGGREGATED']
+    )
+
+  return Array.from(
+    new Set<BudgetItemAnalyticsReportType>([...options, context.reportType]),
+  )
+}
+
+function getBudgetItemAnalyticsReportTypeLabel(
+  copy: ReturnType<typeof buildAnalyticsCopy>,
+  reportType: BudgetItemAnalyticsReportType,
+) {
+  if (reportType === 'DETAILED') {
+    return copy.reportTypeDetailedLabel
+  }
+
+  if (reportType === 'SECONDARY_AGGREGATED') {
+    return copy.reportTypeSecondaryAggregatedLabel
+  }
+
+  return copy.reportTypeAggregatedLabel
 }
 
 type BudgetItemAnalyticsSectionProps = {
@@ -426,6 +465,9 @@ function AnalyticsControls({ context }: BudgetItemAnalyticsSectionProps) {
     () => getCommitmentsMetricOptions('YEAR'),
     [],
   )
+  const reportTypeOptions = getBudgetItemAnalyticsReportTypeOptions(
+    context.analyticsProps.context,
+  )
   const expenseTypeButtonLabel = `${copy.expenseTypeLabel}: ${getBudgetItemAnalyticsExpenseTypeLabel(
     copy,
     context.analyticsProps.context.expenseType,
@@ -538,12 +580,14 @@ function AnalyticsControls({ context }: BudgetItemAnalyticsSectionProps) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="DETAILED">
-                      {copy.reportTypeDetailedLabel}
-                    </SelectItem>
-                    <SelectItem value="PRINCIPAL_AGGREGATED">
-                      {copy.reportTypeAggregatedLabel}
-                    </SelectItem>
+                    {reportTypeOptions.map((reportTypeOption) => (
+                      <SelectItem key={reportTypeOption} value={reportTypeOption}>
+                        {getBudgetItemAnalyticsReportTypeLabel(
+                          copy,
+                          reportTypeOption,
+                        )}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -895,6 +939,7 @@ function MapSection({ context }: BudgetItemAnalyticsSectionProps) {
             mapDescription={context.mapDescription}
             capabilities={{ readOnly: true }}
             mobileControlsDefaultCollapsed={true}
+            mapViewType={entityMapViewType}
             onEntityCuiSelect={context.analyticsProps.onEntityCuiChange}
           />
         </div>

@@ -43,7 +43,7 @@ export function buildAiHeadFromSchema({
     {
       name: 'ai:instructions',
       content:
-        'Put entity CUI in path. Add ?year=YYYY. Optional: period=YEAR|QUARTER|MONTH, view=overview|map|income-trends|expense-trends, normalization=total|total_euro|per_capita|per_capita_euro.',
+        'Put entity CUI in path. Add ?year=YYYY. Optional: period=YEAR|QUARTER|MONTH, view=main-info|contracts|commitments|ins|profile, normalization=total|total_euro|per_capita|per_capita_euro.',
     },
     {
       name: 'ai:parameters:url',
@@ -131,5 +131,4 @@ function buildFaqFromParamDoc(paramDoc: Record<string, IntrospectedParam>) {
 export function buildAiStaticParamDoc(schema: z.ZodTypeAny): Record<string, unknown> {
   return describeZodSchema(schema)
 }
-
 

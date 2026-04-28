@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 
 import { ClientOnly } from '@/components/ssr/ClientOnly';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { useGeoJsonData } from '@/hooks/useGeoJson';
+import { useGeoJsonData, type MapViewType } from '@/hooks/useGeoJson';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAdvancedMapAnalyticsSeriesData } from '@/hooks/useAdvancedMapAnalyticsSeriesData';
 import { useAdvancedMapAnalyticsBins } from '@/hooks/useAdvancedMapAnalyticsBins';
@@ -151,6 +151,7 @@ interface MapAnalyticsWorkspaceProps {
   displayUnitOverridesBySeriesId?: Map<string, string | null>;
   mapZoomOverride?: number;
   mapCenterOverride?: [number, number];
+  mapViewType?: MapViewType;
   onMapViewportChange?: (nextViewport: PublicMapViewport) => void;
   onMapFeatureSelect?: (properties: UatProperties) => void;
 }
@@ -184,6 +185,7 @@ export function MapAnalyticsWorkspace({
   displayUnitOverridesBySeriesId,
   mapZoomOverride,
   mapCenterOverride,
+  mapViewType = 'UAT',
   onMapViewportChange,
   onMapFeatureSelect,
 }: Readonly<MapAnalyticsWorkspaceProps>) {
@@ -903,10 +905,10 @@ export function MapAnalyticsWorkspace({
     data: geoJsonData,
     isLoading: isGeoJsonLoading,
     error: geoJsonError,
-  } = useGeoJsonData('UAT');
+  } = useGeoJsonData(mapViewType);
 
   const { data: countyGeoJsonData } = useGeoJsonData('County', {
-    enabled: mapState.showCountyBoundaries,
+    enabled: mapViewType === 'UAT' && mapState.showCountyBoundaries,
   });
 
   const geoJsonFeatures = useMemo<UatFeature[]>(() => {
@@ -1729,7 +1731,10 @@ export function MapAnalyticsWorkspace({
     isMapViewActive &&
     hasPendingChanges &&
     typeof onRequestSaveSnapshot === 'function';
-  const countyBoundaryGeoJsonData = mapState.showCountyBoundaries ? countyGeoJsonData : null;
+  const countyBoundaryGeoJsonData =
+    mapViewType === 'UAT' && mapState.showCountyBoundaries
+      ? countyGeoJsonData
+      : null;
 
 
   const handleTableRowClick = useCallback(
@@ -1977,7 +1982,7 @@ export function MapAnalyticsWorkspace({
                   countyBoundaryGeoJsonData={countyBoundaryGeoJsonData}
                   zoom={mapZoom}
                   center={mapCenter}
-                  mapViewType="UAT"
+                  mapViewType={mapViewType}
                   filters={defaultMapFilters}
                   mapHeight="100%"
                   showLabels={Boolean(activeSeries)}
@@ -2182,7 +2187,7 @@ export function MapAnalyticsWorkspace({
                       countyBoundaryGeoJsonData={countyBoundaryGeoJsonData}
                       zoom={mapZoom}
                       center={mapCenter}
-                      mapViewType="UAT"
+                      mapViewType={mapViewType}
                       filters={defaultMapFilters}
                       showLabels={Boolean(activeSeries)}
                       labelMode="active-series"

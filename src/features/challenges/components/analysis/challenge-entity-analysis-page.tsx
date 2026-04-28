@@ -184,6 +184,7 @@ export type ChallengeEntityAnalysisPageState = {
   readonly evolutionAccountCategory: ChallengeTreemapAccountCategory
   readonly evolutionPrimary: 'fn' | 'ec'
   readonly mapPreviewKey: ChallengeEntityMapPreviewKey
+  readonly showPeriodGrowth?: boolean
 }
 
 const CHALLENGE_ADMINISTRATIVE_EXPENSE_PATH = ['51', '51.01', '51.01.03'] as const
@@ -1163,23 +1164,30 @@ export function ChallengeEntityAnalysisPage({
     [periodType, selectedYear],
   )
   const periodLabel = usePeriodLabel(reportPeriod) || String(selectedYear)
+  const showPeriodGrowth =
+    state.showPeriodGrowth ?? CHALLENGE_SHOW_PERIOD_GROWTH
   const queryNormalizationOptions = useMemo<NormalizationOptions>(
     () => ({
       normalization: normalizationMode,
-      show_period_growth: CHALLENGE_SHOW_PERIOD_GROWTH,
+      show_period_growth: showPeriodGrowth,
       currency,
       inflation_adjusted: inflationAdjusted,
     }),
-    [currency, inflationAdjusted, normalizationMode],
+    [currency, inflationAdjusted, normalizationMode, showPeriodGrowth],
   )
   const displayNormalizationOptions = useMemo<NormalizationOptions>(
     () => ({
       normalization: normalizationMode,
-      show_period_growth: CHALLENGE_SHOW_PERIOD_GROWTH,
+      show_period_growth: showPeriodGrowth,
       currency: displayCurrency,
       inflation_adjusted: displayInflationAdjusted,
     }),
-    [displayCurrency, displayInflationAdjusted, normalizationMode],
+    [
+      displayCurrency,
+      displayInflationAdjusted,
+      normalizationMode,
+      showPeriodGrowth,
+    ],
   )
   const localizedSelectedMapPreviewName = useMemo(
     () =>
@@ -1321,7 +1329,7 @@ export function ChallengeEntityAnalysisPage({
   const hasResolvedEntityDetails = Boolean(entityDetailsQuery.data)
   const canUsePerCapitaNormalization = isUatEntity
   const supportsEntityMapPreview = Boolean(
-    entityDetailsQuery.data && isUatEntity,
+    entityDetailsQuery.data && (isUatEntity || isCountyLevelMapEntity),
   )
   const entityMapViewType = useMemo<'UAT' | 'County'>(() => {
     if (isCountyLevelMapEntity) {
@@ -1857,7 +1865,7 @@ export function ChallengeEntityAnalysisPage({
         normalization: normalizationMode,
         currency: displayCurrency,
         inflation_adjusted: displayInflationAdjusted,
-        show_period_growth: CHALLENGE_SHOW_PERIOD_GROWTH,
+        show_period_growth: showPeriodGrowth,
         exclude: {
           entity_cuis: [entityCui],
         },
@@ -1870,6 +1878,7 @@ export function ChallengeEntityAnalysisPage({
       languageQuery,
       normalizationMode,
       reportPeriod,
+      showPeriodGrowth,
     ],
   )
   const handleSelectedPeriodChange = useCallback(
@@ -1921,6 +1930,7 @@ export function ChallengeEntityAnalysisPage({
           accountCategory: treemapAccountCategory,
           expenseType,
           reportType: selectedReportType,
+          reportTypeOptions,
           reportCopyVariant:
             pageVariant === 'entities' ? 'entity' : 'city-hall',
           canChangeReportType,
@@ -2021,6 +2031,7 @@ export function ChallengeEntityAnalysisPage({
       onStateChange,
       pageVariant,
       reportPeriod,
+      reportTypeOptions,
       selectedReportType,
       selectedYear,
       setSettings,
@@ -2789,6 +2800,7 @@ export function ChallengeEntityAnalysisPage({
                       mapNameOverride={localizedSelectedMapPreviewName}
                       mapZoomOverride={publicMapViewport.mapZoom}
                       mapCenterOverride={publicMapViewport.mapCenter}
+                      mapViewType={entityMapViewType}
                       onMapViewportChange={handlePublicMapViewportChange}
                       onEntityCuiSelect={onEntityCuiChange}
                     />

@@ -1012,6 +1012,45 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(latestInteractiveMapProps?.countyBoundaryGeoJsonData).toEqual(mockCountyGeoJsonData.data);
   });
 
+  it('uses county geometry as the primary map when requested', async () => {
+    mockIsMobile.mockReturnValue(false);
+    mockGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [],
+      },
+      isLoading: false,
+      error: null,
+    };
+    mockCountyGeoJsonData = {
+      data: {
+        type: 'FeatureCollection',
+        features: [{ type: 'Feature', properties: { mnemonic: 'CJ' }, geometry: null }],
+      },
+      isLoading: false,
+      error: null,
+    };
+
+    const setMapState = vi.fn();
+    const { MapAnalyticsWorkspace } = await import('./map-analytics-workspace');
+
+    render(
+      <MapAnalyticsWorkspace
+        mode="public"
+        mapState={createMapState({ activeView: 'map', showCountyBoundaries: true })}
+        setMapState={setMapState}
+        capabilities={{ readOnly: true }}
+        mobileControlsDefaultCollapsed={true}
+        mapViewType="County"
+      />
+    );
+
+    await screen.findByTestId('interactive-map');
+    expect(latestInteractiveMapProps?.mapViewType).toBe('County');
+    expect(latestInteractiveMapProps?.geoJsonData).toEqual(mockCountyGeoJsonData.data);
+    expect(latestInteractiveMapProps?.countyBoundaryGeoJsonData).toBeNull();
+  });
+
   it('passes null county boundary geojson data when boundaries are disabled', async () => {
     mockIsMobile.mockReturnValue(false);
     mockGeoJsonData = {

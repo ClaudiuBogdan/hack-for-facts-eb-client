@@ -239,6 +239,7 @@ describe('EntityDetailsRoutePage', () => {
       report_type: 'COMMITMENT_SECONDARY_AGGREGATED',
       main_creditor_cui: '4567890',
       normalization: 'per_capita_euro',
+      show_period_growth: true,
       accountCategory: 'vn',
       treemapPrimary: 'ec',
       treemapPath: '51,51.01',
@@ -269,6 +270,9 @@ describe('EntityDetailsRoutePage', () => {
         belowHeader: undefined,
         pageVariant: 'entities',
         hasExplicitReportType: true,
+        state: expect.objectContaining({
+          showPeriodGrowth: true,
+        }),
       }),
     )
     expect(navigateMock).not.toHaveBeenCalled()

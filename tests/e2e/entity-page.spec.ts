@@ -46,9 +46,6 @@ test.describe('Entity Page', () => {
       page.getByRole('heading', { name: /MUNICIPIUL CLUJ-NAPOCA|Cluj-Napoca/i }).first()
     ).toBeVisible({ timeout: 15000 })
 
-    // Verify CUI is displayed
-    await expect(page.locator(`text=${TEST_ENTITY_CUI}`)).toBeVisible()
-
     // Verify financial data loads (not loading skeleton)
     await expect(
       page.locator('text=/total.*venituri|total.*income/i').first()
@@ -79,7 +76,7 @@ test.describe('Entity Page', () => {
     ).toBeVisible({ timeout: 10000 })
   })
 
-  test('can navigate between views', async ({ page }) => {
+  test('can navigate between current analysis views', async ({ page }) => {
     await page.goto(`/entities/${TEST_ENTITY_CUI}?year=${TEST_YEAR}`)
 
     // Wait for page load
@@ -87,19 +84,12 @@ test.describe('Entity Page', () => {
       page.getByRole('heading', { name: /MUNICIPIUL CLUJ-NAPOCA|Cluj-Napoca/i }).first()
     ).toBeVisible({ timeout: 15000 })
 
-    // Navigate to reports view
-    const reportsTab = page.getByRole('link', { name: /reports|rapoarte/i }).first()
-    if (await reportsTab.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await reportsTab.click()
-      await expect(page).toHaveURL(/view=reports/, { timeout: 5000 })
-    }
-
-    // Navigate back to overview
-    const overviewTab = page.getByRole('link', { name: /overview|prezentare/i }).first()
-    if (await overviewTab.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await overviewTab.click()
-      await expect(page).toHaveURL(/view=overview|entities\/\d+/, { timeout: 5000 })
-    }
+    const viewNavigator = page.getByTestId('challenge-entity-view-navigator')
+    await expect(viewNavigator).toBeVisible({ timeout: 15000 })
+    await viewNavigator
+      .getByRole('button', { name: /angajamente|commitments/i })
+      .click()
+    await expect(page).toHaveURL(/view=commitments/, { timeout: 10000 })
   })
 })
 

@@ -43,6 +43,7 @@ export type BudgetItemAnalyticsPageContext = {
   readonly accountCategory: 'ch' | 'vn'
   readonly expenseType?: 'functionare' | 'dezvoltare'
   readonly reportType: BudgetItemAnalyticsReportType
+  readonly reportTypeOptions?: readonly BudgetItemAnalyticsReportType[]
   readonly reportCopyVariant?: BudgetItemAnalyticsReportCopyVariant
   readonly canChangeReportType?: boolean
   readonly canChangeNormalization?: boolean

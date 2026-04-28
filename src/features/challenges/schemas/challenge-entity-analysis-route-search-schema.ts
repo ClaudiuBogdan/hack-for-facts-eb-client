@@ -172,6 +172,7 @@ export const ChallengeEntityAnalysisRouteSearchSchema = z.object({
   commitments_detail_level: z.string().optional(),
   currency: CurrencySchema.optional(),
   inflation_adjusted: BooleanSearchParamSchema.optional(),
+  show_period_growth: BooleanSearchParamSchema.optional(),
   insDataset: z.string().optional(),
   insSearch: z.string().optional(),
   insRoot: z.coerce.string().optional(),
@@ -209,6 +210,7 @@ export type ChallengeEntityAnalysisUrlState = {
   readonly public_map: ChallengeEntityMapPreviewKey
   readonly commitments_grouping?: ChallengeEntityAnalysisCommitmentsGrouping
   readonly commitments_detail_level?: ChallengeEntityAnalysisCommitmentsDetailLevel
+  readonly show_period_growth: boolean
 }
 
 const TREEMAP_PATH_CODE_PATTERN = /^\d+(?:\.\d+)*$/
@@ -479,6 +481,7 @@ export function normalizeChallengeEntityAnalysisSearch(
     commitments_detail_level: normalizeCommitmentsDetailLevel(
       search?.commitments_detail_level,
     ),
+    show_period_growth: search?.show_period_growth ?? false,
   }
 }
 

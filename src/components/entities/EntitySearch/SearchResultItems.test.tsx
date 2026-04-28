@@ -74,7 +74,7 @@ describe('SearchResultItem', () => {
 
   it('preserves the current search state in the generated href', () => {
     currentSearchState = {
-      view: 'overview',
+      view: 'main-info',
       lang: 'en',
       currency: 'EUR',
     }
@@ -98,7 +98,7 @@ describe('SearchResultItem', () => {
 
     expect(screen.getByRole('link')).toHaveAttribute(
       'href',
-      '/entities/4305857?view=overview&lang=en&currency=EUR',
+      '/entities/4305857?view=main-info&lang=en&currency=EUR',
     )
   })
 })
