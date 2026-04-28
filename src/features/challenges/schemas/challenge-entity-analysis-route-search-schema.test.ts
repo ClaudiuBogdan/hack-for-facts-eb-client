@@ -167,6 +167,26 @@ describe('challenge entity analytics search normalization', () => {
     })
   })
 
+  it('accepts invalid primary grouping URL params and canonicalizes them to functional grouping', () => {
+    const rawSearch = ChallengeEntityAnalysisRouteSearchSchema.parse({
+      treemap_primary: 'fec',
+      evolution_primary: 'fec',
+    })
+
+    const normalizedSearch = normalizeChallengeEntityAnalysisSearch(rawSearch)
+
+    expect(normalizedSearch).toMatchObject({
+      treemap_primary: 'fn',
+      evolution_primary: 'fn',
+    })
+    expect(
+      buildChallengeEntityAnalysisCanonicalSearchPatch(rawSearch, normalizedSearch),
+    ).toMatchObject({
+      treemap_primary: 'fn',
+      evolution_primary: 'fn',
+    })
+  })
+
   it('normalizes valid expense types and drops invalid ones', () => {
     expect(
       normalizeChallengeEntityAnalysisSearch({

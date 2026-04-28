@@ -157,11 +157,11 @@ export const ChallengeEntityAnalysisRouteSearchSchema = z.object({
   normalization: ChallengeEntityAnalysisNormalizationSchema.optional(),
   treemap_account: ChallengeEntityAnalysisAccountCategorySchema.optional(),
   expense_type: z.string().optional(),
-  treemap_primary: ChallengeEntityAnalysisPrimarySchema.optional(),
+  treemap_primary: z.string().optional(),
   treemap_depth: z.string().optional(),
   treemap_path: z.string().optional(),
   evolution_account: ChallengeEntityAnalysisAccountCategorySchema.optional(),
-  evolution_primary: ChallengeEntityAnalysisPrimarySchema.optional(),
+  evolution_primary: z.string().optional(),
   public_map: z.string().optional(),
   notificationModal: z.enum(['open']).optional(),
   analytics: z
@@ -227,6 +227,7 @@ const CHALLENGE_ENTITY_PERIOD_SET = new Set(
 const CHALLENGE_ENTITY_TREEMAP_DEPTH_SET = new Set(
   CHALLENGE_ENTITY_ANALYSIS_TREEMAP_DEPTH_VALUES,
 )
+const CHALLENGE_ENTITY_PRIMARY_SET = new Set(['fn', 'ec'] as const)
 const CHALLENGE_ENTITY_EXPENSE_TYPE_SET = new Set(
   CHALLENGE_ENTITY_ANALYSIS_EXPENSE_TYPE_VALUES,
 )
@@ -358,6 +359,14 @@ function normalizeTreemapDepth(
   return 'chapter'
 }
 
+function normalizePrimary(primary: string | undefined): 'fn' | 'ec' {
+  if (primary && CHALLENGE_ENTITY_PRIMARY_SET.has(primary as 'fn' | 'ec')) {
+    return primary as 'fn' | 'ec'
+  }
+
+  return 'fn'
+}
+
 function normalizeExpenseType(
   expenseType: string | undefined,
 ): ChallengeEntityAnalysisExpenseType | undefined {
@@ -464,7 +473,7 @@ export function normalizeChallengeEntityAnalysisSearch(
     treemap_primary:
       treemapAccountCategory === 'vn'
         ? 'fn'
-        : (search?.treemap_primary ?? 'fn'),
+        : normalizePrimary(search?.treemap_primary),
     treemap_depth: normalizeTreemapDepth(search?.treemap_depth),
     treemap_path: encodeChallengeTreemapPath(
       decodeChallengeTreemapPath(search?.treemap_path),
@@ -473,7 +482,7 @@ export function normalizeChallengeEntityAnalysisSearch(
     evolution_primary:
       evolutionAccountCategory === 'vn'
         ? 'fn'
-        : (search?.evolution_primary ?? 'fn'),
+        : normalizePrimary(search?.evolution_primary),
     public_map: mapPreviewKey,
     commitments_grouping: normalizeCommitmentsGrouping(
       search?.commitments_grouping,
