@@ -15,6 +15,7 @@ type EntityPageSeoEntity = Pick<
   EntityDetailsData,
   | 'name'
   | 'entity_type'
+  | 'is_uat'
   | 'default_report_type'
   | 'uat'
   | 'totalIncome'
@@ -108,7 +109,9 @@ export function buildEntityPageSeoSnapshot(params: {
     entityType: params.entity.entity_type,
     defaultReportType: params.entity.default_report_type,
     countyName: params.entity.uat?.county_name,
-    population: params.entity.uat?.population,
+    population: params.entity.is_uat === true
+      ? params.entity.uat?.population
+      : undefined,
     totalIncome: params.entity.totalIncome,
     totalExpenses: params.entity.totalExpenses,
     budgetBalance: params.entity.budgetBalance,

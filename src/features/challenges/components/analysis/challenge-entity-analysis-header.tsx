@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils'
 import type { ChallengeLocale } from '../../types'
 
 type ChallengeEntityAnalysisHeaderProps = {
-  readonly entity: Pick<EntityDetailsData, 'name' | 'cui' | 'uat'>
+  readonly entity: Pick<EntityDetailsData, 'name' | 'cui' | 'is_uat' | 'uat'>
   readonly reportControlsLabel: string
   readonly renderReportControls: () => ReactNode
   readonly activeView: ChallengeEntityAnalysisView
@@ -80,7 +80,7 @@ export function ChallengeEntityAnalysisHeader({
     : null
   const displayName = normalizeDisplayText(entity.name, languageQuery)
   const population =
-    typeof entity.uat?.population === 'number'
+    entity.is_uat === true && typeof entity.uat?.population === 'number'
       ? new Intl.NumberFormat(
         languageQuery === 'en' ? 'en-US' : 'ro-RO',
       ).format(entity.uat.population)
@@ -279,6 +279,7 @@ export function ChallengeEntityAnalysisHeader({
         <div
           data-testid="challenge-entity-compact-header"
           aria-hidden={!isCompactHeaderVisible}
+          inert={!isCompactHeaderVisible ? true : undefined}
           onClick={stopCompactHeaderClickPropagation}
           className={cn(
             'fixed top-0 z-40 overflow-hidden rounded-b-[28px] shadow-[0_16px_34px_-22px_rgba(15,23,42,0.32)] backdrop-blur-xl will-change-[translate,opacity]',
@@ -359,6 +360,8 @@ export function ChallengeEntityAnalysisHeader({
 
       <section
         ref={heroHeaderRef}
+        aria-hidden={isCompactHeaderVisible}
+        inert={isCompactHeaderVisible ? true : undefined}
         className="rounded-[32px] border border-border/50 bg-linear-to-br from-background via-background to-primary/[0.04] px-5 py-5 shadow-sm sm:px-6 sm:py-7 md:px-8"
       >
         <div className="space-y-4 sm:space-y-5">

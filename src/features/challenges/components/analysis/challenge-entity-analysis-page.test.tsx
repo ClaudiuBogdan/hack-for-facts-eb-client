@@ -36,6 +36,7 @@ const budgetItemAnalyticsModalMock = vi.fn()
 const getEntityFeatureInfoMock = vi.fn()
 const mapAnalyticsPublicPreviewCardMock = vi.fn()
 const useGeoJsonDataMock = vi.fn()
+const useRecentEntitiesMock = vi.fn()
 const setPrimaryMock = vi.fn()
 const setPathMock = vi.fn()
 const resetTreemapMock = vi.fn()
@@ -141,6 +142,10 @@ vi.mock('@/lib/api/entity-analytics', () => ({
 
 vi.mock('@/hooks/useGeoJson', () => ({
   useGeoJsonData: (...args: unknown[]) => useGeoJsonDataMock(...args),
+}))
+
+vi.mock('@/hooks/useRecentEntities', () => ({
+  useRecentEntities: (...args: unknown[]) => useRecentEntitiesMock(...args),
 }))
 
 vi.mock('@/components/entities/utils', () => ({
@@ -761,6 +766,10 @@ describe('ChallengeEntityAnalysisPage', () => {
         refetch: vi.fn(),
       }),
     )
+    useRecentEntitiesMock.mockReturnValue({
+      recentEntities: [],
+      addRecentEntity: vi.fn(),
+    })
     useEntityExecutionLineItemsMock.mockImplementation(
       ({ reportType }: { reportType?: string }) => ({
         data: {
@@ -924,6 +933,19 @@ describe('ChallengeEntityAnalysisPage', () => {
     })
   })
 
+  it('records loaded entities as recent entries on the entities page', () => {
+    renderAnalysisPage({ pageVariant: 'entities' })
+
+    expect(useRecentEntitiesMock).toHaveBeenCalledWith(entityDetails)
+  })
+
+  it('does not record recent entries from the primarie page variant', () => {
+    renderAnalysisPage({ pageVariant: 'primarie' })
+
+    expect(useRecentEntitiesMock).not.toHaveBeenCalledWith(entityDetails)
+    expect(useRecentEntitiesMock).toHaveBeenCalledWith(null)
+  })
+
   it('renders the analysis sections for the selected entity', async () => {
     renderAnalysisPage({
       entityCui: '12345678',
@@ -1007,6 +1029,28 @@ describe('ChallengeEntityAnalysisPage', () => {
     expect(
       screen.queryByText('Învățământ / Bunuri și servicii'),
     ).not.toBeInTheDocument()
+  })
+
+  it('shows an entity-specific not found state when details resolve to null', () => {
+    useEntityDetailsMock.mockReturnValue({
+      data: null,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    })
+
+    renderAnalysisPage({
+      entityCui: 'does-not-exist',
+    })
+
+    expect(screen.getByText('Entity not found')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'We could not find an entity for this CUI. Check the identifier or search for another entity.',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('We could not load the analysis.')).not.toBeInTheDocument()
   })
 
   it('renders the contracts view when it is the active campaign view', async () => {

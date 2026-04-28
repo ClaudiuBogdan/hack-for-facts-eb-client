@@ -222,8 +222,25 @@ export function getSiteUrl(): string {
  * proxying and avoid browser CORS issues when the configured API host differs.
  */
 export function getApiBaseUrl(): string {
-  if (import.meta.env.DEV && typeof window !== "undefined" && env.VITE_API_USE_PROXY) {
+  const devProxyTarget = toOptionalString(
+    (import.meta.env as unknown as Record<string, unknown>)
+      .VITE_API_PROXY_TARGET,
+  );
+  const hasDevProxyTarget = Boolean(devProxyTarget);
+  const shouldUseDevProxy =
+    import.meta.env.DEV &&
+    (
+      env.VITE_API_USE_PROXY ||
+      hasDevProxyTarget
+    );
+
+  if (typeof window !== "undefined" && shouldUseDevProxy) {
     return window.location.origin;
   }
+
+  if (typeof window === "undefined" && shouldUseDevProxy && devProxyTarget) {
+    return devProxyTarget;
+  }
+
   return env.VITE_API_URL;
 }

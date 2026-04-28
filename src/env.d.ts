@@ -7,6 +7,7 @@ interface ImportMetaEnv {
   readonly VITE_APP_ENVIRONMENT?: string;
   readonly VITE_API_URL?: string;
   readonly VITE_API_USE_PROXY?: string;
+  readonly VITE_API_PROXY_TARGET?: string;
   readonly VITE_SITE_URL?: string;
   readonly VITE_POSTHOG_ENABLED?: string;
   readonly VITE_POSTHOG_API_KEY?: string;
@@ -40,6 +41,7 @@ declare namespace NodeJS {
     readonly VITE_APP_ENVIRONMENT?: string;
     readonly VITE_API_URL?: string;
     readonly VITE_API_USE_PROXY?: string;
+    readonly VITE_API_PROXY_TARGET?: string;
     readonly VITE_SITE_URL?: string;
     readonly VITE_POSTHOG_ENABLED?: string;
     readonly VITE_POSTHOG_API_KEY?: string;

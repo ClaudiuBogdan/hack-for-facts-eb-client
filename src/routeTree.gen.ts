@@ -23,8 +23,10 @@ import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
 import { Route as BugeteLocale2026RouteImport } from './routes/bugete-locale-2026'
 import { Route as BugetNational2026RouteImport } from './routes/buget-national-2026'
 import { Route as BudgetExplorerRouteImport } from './routes/budget-explorer'
+import { Route as EntitiesRouteRouteImport } from './routes/entities/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PrimarieIndexRouteImport } from './routes/primarie/index'
+import { Route as EntitiesIndexRouteImport } from './routes/entities/index'
 import { Route as UnsubscribeTokenRouteImport } from './routes/unsubscribe.$token'
 import { Route as SignUpSplatRouteImport } from './routes/sign-up.$'
 import { Route as SignInSplatRouteImport } from './routes/sign-in.$'
@@ -160,6 +162,11 @@ const BudgetExplorerRoute = BudgetExplorerRouteImport.update({
 } as any).lazy(() =>
   import('./routes/budget-explorer.lazy').then((d) => d.Route),
 )
+const EntitiesRouteRoute = EntitiesRouteRouteImport.update({
+  id: '/entities',
+  path: '/entities',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -177,6 +184,11 @@ const PrimarieIndexRoute = PrimarieIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/primarie/index.lazy').then((d) => d.Route),
 )
+const EntitiesIndexRoute = EntitiesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => EntitiesRouteRoute,
+} as any)
 const ResearchEmployeesDataLazyRoute =
   ResearchEmployeesDataLazyRouteImport.update({
     id: '/research/employees-data',
@@ -231,9 +243,9 @@ const ProvocareNotificariRoute = ProvocareNotificariRouteImport.update({
   import('./routes/provocare_.notificari.lazy').then((d) => d.Route),
 )
 const EntitiesCuiRoute = EntitiesCuiRouteImport.update({
-  id: '/entities/$cui',
-  path: '/entities/$cui',
-  getParentRoute: () => rootRouteImport,
+  id: '/$cui',
+  path: '/$cui',
+  getParentRoute: () => EntitiesRouteRoute,
 } as any).lazy(() => import('./routes/entities.$cui.lazy').then((d) => d.Route))
 const ChartsNewRoute = ChartsNewRouteImport.update({
   id: '/charts/new',
@@ -606,6 +618,7 @@ const PrimarieCuiBugetProvocariModuleSlugChallengeSlugStepSlugRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/entities': typeof EntitiesRouteRouteWithChildren
   '/budget-explorer': typeof BudgetExplorerRoute
   '/buget-national-2026': typeof BugetNational2026Route
   '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
@@ -637,6 +650,7 @@ export interface FileRoutesByFullPath {
   '/sign-up/$': typeof SignUpSplatRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
+  '/entities/': typeof EntitiesIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
@@ -709,6 +723,7 @@ export interface FileRoutesByTo {
   '/sign-up/$': typeof SignUpSplatRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
+  '/entities': typeof EntitiesIndexRoute
   '/primarie': typeof PrimarieIndexRoute
   '/charts': typeof ChartsIndexLazyRoute
   '/$lang/learning/onboarding': typeof LangLearningOnboardingRoute
@@ -752,6 +767,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/entities': typeof EntitiesRouteRouteWithChildren
   '/budget-explorer': typeof BudgetExplorerRoute
   '/buget-national-2026': typeof BugetNational2026Route
   '/bugete-locale-2026': typeof BugeteLocale2026RouteWithChildren
@@ -783,6 +799,7 @@ export interface FileRoutesById {
   '/sign-up/$': typeof SignUpSplatRoute
   '/unsubscribe/$token': typeof UnsubscribeTokenRoute
   '/research/employees-data': typeof ResearchEmployeesDataLazyRoute
+  '/entities/': typeof EntitiesIndexRoute
   '/primarie/': typeof PrimarieIndexRoute
   '/charts/': typeof ChartsIndexLazyRoute
   '/admin/campaigns/$campaignKey': typeof AdminCampaignsCampaignKeyRouteRouteWithChildren
@@ -830,6 +847,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/entities'
     | '/budget-explorer'
     | '/buget-national-2026'
     | '/bugete-locale-2026'
@@ -861,6 +879,7 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/unsubscribe/$token'
     | '/research/employees-data'
+    | '/entities/'
     | '/primarie/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
@@ -933,6 +952,7 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/unsubscribe/$token'
     | '/research/employees-data'
+    | '/entities'
     | '/primarie'
     | '/charts'
     | '/$lang/learning/onboarding'
@@ -975,6 +995,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/entities'
     | '/budget-explorer'
     | '/buget-national-2026'
     | '/bugete-locale-2026'
@@ -1006,6 +1027,7 @@ export interface FileRouteTypes {
     | '/sign-up/$'
     | '/unsubscribe/$token'
     | '/research/employees-data'
+    | '/entities/'
     | '/primarie/'
     | '/charts/'
     | '/admin/campaigns/$campaignKey'
@@ -1052,6 +1074,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  EntitiesRouteRoute: typeof EntitiesRouteRouteWithChildren
   BudgetExplorerRoute: typeof BudgetExplorerRoute
   BugetNational2026Route: typeof BugetNational2026Route
   BugeteLocale2026Route: typeof BugeteLocale2026RouteWithChildren
@@ -1072,7 +1095,6 @@ export interface RootRouteChildren {
   AlertsNewRoute: typeof AlertsNewRoute
   CertificatesIdRoute: typeof CertificatesIdRoute
   ChartsNewRoute: typeof ChartsNewRoute
-  EntitiesCuiRoute: typeof EntitiesCuiRouteWithChildren
   ProvocareNotificariRoute: typeof ProvocareNotificariRoute
   ProvocareTermeniSiConditiiRoute: typeof ProvocareTermeniSiConditiiRoute
   SettingsNotificationsRoute: typeof SettingsNotificationsRoute
@@ -1191,6 +1213,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BudgetExplorerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/entities': {
+      id: '/entities'
+      path: '/entities'
+      fullPath: '/entities'
+      preLoaderRoute: typeof EntitiesRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -1211,6 +1240,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/primarie/'
       preLoaderRoute: typeof PrimarieIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/entities/': {
+      id: '/entities/'
+      path: '/'
+      fullPath: '/entities/'
+      preLoaderRoute: typeof EntitiesIndexRouteImport
+      parentRoute: typeof EntitiesRouteRoute
     }
     '/research/employees-data': {
       id: '/research/employees-data'
@@ -1277,10 +1313,10 @@ declare module '@tanstack/react-router' {
     }
     '/entities/$cui': {
       id: '/entities/$cui'
-      path: '/entities/$cui'
+      path: '/$cui'
       fullPath: '/entities/$cui'
       preLoaderRoute: typeof EntitiesCuiRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof EntitiesRouteRoute
     }
     '/charts/new': {
       id: '/charts/new'
@@ -1621,6 +1657,32 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface EntitiesCuiRouteChildren {
+  EntitiesCuiShareImageDotpngRoute: typeof EntitiesCuiShareImageDotpngRoute
+}
+
+const EntitiesCuiRouteChildren: EntitiesCuiRouteChildren = {
+  EntitiesCuiShareImageDotpngRoute: EntitiesCuiShareImageDotpngRoute,
+}
+
+const EntitiesCuiRouteWithChildren = EntitiesCuiRoute._addFileChildren(
+  EntitiesCuiRouteChildren,
+)
+
+interface EntitiesRouteRouteChildren {
+  EntitiesCuiRoute: typeof EntitiesCuiRouteWithChildren
+  EntitiesIndexRoute: typeof EntitiesIndexRoute
+}
+
+const EntitiesRouteRouteChildren: EntitiesRouteRouteChildren = {
+  EntitiesCuiRoute: EntitiesCuiRouteWithChildren,
+  EntitiesIndexRoute: EntitiesIndexRoute,
+}
+
+const EntitiesRouteRouteWithChildren = EntitiesRouteRoute._addFileChildren(
+  EntitiesRouteRouteChildren,
+)
+
 interface BugeteLocale2026RouteChildren {
   BugeteLocale2026TermeniSiConditiiRoute: typeof BugeteLocale2026TermeniSiConditiiRoute
 }
@@ -1752,18 +1814,6 @@ const PrimarieCuiRouteRouteChildren: PrimarieCuiRouteRouteChildren = {
 const PrimarieCuiRouteRouteWithChildren =
   PrimarieCuiRouteRoute._addFileChildren(PrimarieCuiRouteRouteChildren)
 
-interface EntitiesCuiRouteChildren {
-  EntitiesCuiShareImageDotpngRoute: typeof EntitiesCuiShareImageDotpngRoute
-}
-
-const EntitiesCuiRouteChildren: EntitiesCuiRouteChildren = {
-  EntitiesCuiShareImageDotpngRoute: EntitiesCuiShareImageDotpngRoute,
-}
-
-const EntitiesCuiRouteWithChildren = EntitiesCuiRoute._addFileChildren(
-  EntitiesCuiRouteChildren,
-)
-
 interface AdminCampaignsCampaignKeyEntitiesRouteChildren {
   AdminCampaignsCampaignKeyEntitiesEntityCuiRoute: typeof AdminCampaignsCampaignKeyEntitiesEntityCuiRoute
 }
@@ -1825,6 +1875,7 @@ const AdminCampaignsCampaignKeyRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  EntitiesRouteRoute: EntitiesRouteRouteWithChildren,
   BudgetExplorerRoute: BudgetExplorerRoute,
   BugetNational2026Route: BugetNational2026Route,
   BugeteLocale2026Route: BugeteLocale2026RouteWithChildren,
@@ -1845,7 +1896,6 @@ const rootRouteChildren: RootRouteChildren = {
   AlertsNewRoute: AlertsNewRoute,
   CertificatesIdRoute: CertificatesIdRoute,
   ChartsNewRoute: ChartsNewRoute,
-  EntitiesCuiRoute: EntitiesCuiRouteWithChildren,
   ProvocareNotificariRoute: ProvocareNotificariRoute,
   ProvocareTermeniSiConditiiRoute: ProvocareTermeniSiConditiiRoute,
   SettingsNotificationsRoute: SettingsNotificationsRoute,

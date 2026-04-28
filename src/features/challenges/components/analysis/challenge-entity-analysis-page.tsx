@@ -25,6 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useEntityTypeLabel } from '@/hooks/filters/useFilterLabels'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
 import { usePeriodLabel } from '@/hooks/use-period-label'
+import { useRecentEntities } from '@/hooks/useRecentEntities'
 import {
   DEFAULT_EXPENSE_EXCLUDE_ECONOMIC_PREFIXES,
   DEFAULT_INCOME_EXCLUDE_FUNCTIONAL_PREFIXES,
@@ -1318,6 +1319,11 @@ export function ChallengeEntityAnalysisPage({
   const entityDetailsQuery = useEntityDetails(entityDetailsQueryParams, {
     ssrPlaceholder: ssrEntityDetailsPlaceholder,
   })
+  useRecentEntities(
+    pageVariant === 'entities' && entityDetailsQuery.data
+      ? entityDetailsQuery.data
+      : null,
+  )
   const isCountyLevelMapEntity = Boolean(
     entityDetailsQuery.data &&
     (
@@ -2463,6 +2469,20 @@ export function ChallengeEntityAnalysisPage({
     return <ChallengeEntityAnalysisLoadingShell />
   }
 
+  if (entityDetailsQuery.data === null) {
+    return (
+      <Alert className="rounded-[28px] border-border/60 bg-muted/30">
+        <AlertTriangle className="h-5 w-5" />
+        <AlertTitle>{t`Entity not found`}</AlertTitle>
+        <AlertDescription className="space-y-4">
+          <p>
+            {t`We could not find an entity for this CUI. Check the identifier or search for another entity.`}
+          </p>
+        </AlertDescription>
+      </Alert>
+    )
+  }
+
   if (
     entityDetailsQuery.isError ||
     entityLineItemsQuery.isError ||
@@ -2560,7 +2580,7 @@ export function ChallengeEntityAnalysisPage({
       name: entity.name,
       cui: entity.cui,
       countyName: entity.uat?.county_name,
-      population: entity.uat?.population,
+      population: entity.is_uat === true ? entity.uat?.population : undefined,
     },
     filters: {
       year: selectedYear,

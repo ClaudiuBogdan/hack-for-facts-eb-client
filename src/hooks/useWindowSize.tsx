@@ -5,6 +5,7 @@ type WindowSize = {
   height: number;
 };
 
+const SERVER_WINDOW_SIZE: WindowSize = { width: 0, height: 0 };
 let cachedSnapshot: WindowSize | null = null;
 
 /**
@@ -38,7 +39,7 @@ function getSnapshot(): WindowSize {
  * Gets the window size for SSR (returns 0 for both dimensions).
  */
 function getServerSnapshot(): WindowSize {
-  return { width: 0, height: 0 };
+  return SERVER_WINDOW_SIZE;
 }
 
 /**

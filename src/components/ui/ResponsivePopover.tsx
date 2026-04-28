@@ -25,10 +25,6 @@ export function ResponsivePopover({ trigger, content, className, align = 'end', 
                 <SheetTrigger asChild>
                     {trigger}
                 </SheetTrigger>
-                <SheetTitle className="sr-only">Responsive Popover</SheetTitle>
-                <SheetDescription className="sr-only">
-                    Additional options and content.
-                </SheetDescription>
                 <SheetContent
                     side={mobileSide}
                     onOverlayClick={() => onOpenChange?.(false)}
@@ -44,6 +40,10 @@ export function ResponsivePopover({ trigger, content, className, align = 'end', 
                         className,
                     )}
                 >
+                    <SheetTitle className="sr-only">Responsive Popover</SheetTitle>
+                    <SheetDescription className="sr-only">
+                        Additional options and content.
+                    </SheetDescription>
                     {content}
                 </SheetContent>
             </Sheet>
@@ -61,4 +61,3 @@ export function ResponsivePopover({ trigger, content, className, align = 'end', 
         </Popover>
     )
 }
-

@@ -91,8 +91,12 @@ export function EntitySearchInput({
                     ref={inputRef}
                     type="text"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        openDropdown();
+                    }}
                     onKeyDown={handleKeyDown}
+                    onFocus={openDropdown}
                     placeholder={placeholder}
                     autoFocus={autoFocus}
                     // ARIA attributes for accessibility

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useEffect, useId, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useDebouncedValue } from '@/lib/hooks/useDebouncedValue'
 import { usePersistedState } from '@/lib/hooks/usePersistedState'
@@ -86,10 +86,11 @@ export function useUATFinder({
   // Debounce search term
   const debouncedSearchTerm = useDebouncedValue(searchTerm, debounceMs)
 
-  // Generate unique ID for accessibility
+  // Generate SSR-stable ID for accessibility
+  const reactId = useId()
   const searchId = useMemo(
-    () => `uat-finder-${Math.random().toString(36).slice(2, 9)}`,
-    []
+    () => `uat-finder-${reactId.replace(/:/g, '')}`,
+    [reactId]
   )
 
   // ─────────────────────────────────────────────────────────────────────────

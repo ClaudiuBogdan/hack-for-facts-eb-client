@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useId } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
@@ -149,8 +149,12 @@ export function useEntitySearch({
         }
     }, [isDropdownOpen, results, activeIndex, handleSelection, handleClearSearch]);
 
-    // Generate unique IDs for ARIA attributes
-    const entitySearchId = useMemo(() => `entity-search-${Math.random().toString(36).slice(2, 9)}`, []);
+    // Generate SSR-stable IDs for ARIA attributes.
+    const reactId = useId();
+    const entitySearchId = useMemo(
+        () => `entity-search-${reactId.replace(/:/g, "")}`,
+        [reactId],
+    );
 
     return {
         searchTerm,

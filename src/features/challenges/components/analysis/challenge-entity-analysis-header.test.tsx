@@ -30,6 +30,7 @@ vi.mock('@/features/notifications/components/EntityNotificationBell', () => ({
 const entity = {
   cui: '4305857',
   name: 'Primăria Sibiu',
+  is_uat: true,
   uat: {
     name: 'Sibiu',
     county_name: 'Județul Sibiu',
@@ -317,6 +318,55 @@ describe('ChallengeEntityAnalysisHeader', () => {
     expect(screen.queryByText('My City Hall')).not.toBeInTheDocument()
     expect(screen.queryByText('Municipality')).not.toBeInTheDocument()
     expect(screen.queryByText('Change City Hall')).not.toBeInTheDocument()
+  })
+
+  it('does not show UAT population for non-UAT entities', () => {
+    render(
+      <ChallengeEntityAnalysisHeader
+        entity={{
+          cui: '4266669',
+          name: 'Ministerul Muncii',
+          is_uat: false,
+          uat: {
+            name: 'Municipiul București',
+            county_name: 'Municipiul București',
+            population: 224764,
+          },
+        }}
+        reportControlsLabel="2025"
+        renderReportControls={() => (
+          <div data-testid="challenge-entity-report-controls">Filtre raportare</div>
+        )}
+        activeView="main-info"
+        availableViews={[
+          { id: 'main-info', label: 'Execuții Bugetare' },
+        ]}
+        onViewChange={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByText('Municipiul București')).toBeInTheDocument()
+    expect(screen.queryByText('224.764 locuitori')).not.toBeInTheDocument()
+  })
+
+  it('removes hidden compact header controls from the interaction tree', async () => {
+    renderHeader()
+
+    setScrollPosition(360)
+
+    const compactHeader = await screen.findByTestId(
+      'challenge-entity-compact-header',
+    )
+    await waitFor(() => {
+      expect(compactHeader).toHaveAttribute('aria-hidden', 'false')
+    })
+
+    setScrollPosition(330)
+
+    await waitFor(() => {
+      expect(compactHeader).toHaveAttribute('aria-hidden', 'true')
+    })
+    expect(compactHeader).toHaveAttribute('inert')
   })
 
   it('opens the entity menu and highlights the active view', () => {

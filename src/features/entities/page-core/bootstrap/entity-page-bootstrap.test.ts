@@ -37,6 +37,7 @@ function createEntityDetails(): EntityDetailsData {
     name: 'Consiliul Judetean Test',
     default_report_type: 'PRINCIPAL_AGGREGATED',
     entity_type: 'admin_county_council',
+    is_uat: true,
     uat: {
       county_name: 'Cluj',
       population: 700000,
