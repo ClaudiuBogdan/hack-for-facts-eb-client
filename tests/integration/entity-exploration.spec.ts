@@ -66,19 +66,24 @@ test.describe('Entity Exploration Flow', () => {
       page.getByText(/Cluj-Napoca/i).first()
     ).toBeVisible({ timeout: 5000 })
 
-    // Click on the first result
-    await page.getByText(/Cluj-Napoca/i).first().click()
+    // Click on the first result and wait for the route transition it owns.
+    const firstResult = page.getByRole('link', {
+      name: /MUNICIPIUL CLUJ-NAPOCA|Cluj-Napoca/i,
+    }).first()
+    await expect(firstResult).toBeVisible({ timeout: 5000 })
 
-    // Preferred navigation for UATs now lands on the campaign analysis route.
-    await page.waitForURL(/\/primarie\/\d+/)
+    await Promise.all([
+      page.waitForURL(/\/entities\/\d+/),
+      firstResult.click(),
+    ])
 
     // Verify the budget analysis page loaded.
     await expect(
-      page.getByText(/distribuția cheltuielilor/i).first()
+      page.getByText(/distribuția cheltuielilor|spending breakdown/i).first()
     ).toBeVisible({ timeout: 10000 })
   })
 
-  test('entity details page loads with budget distribution', async ({ page, mockApi }) => {
+  test('entity details page loads with spending breakdown', async ({ page, mockApi }) => {
     if (mockApi.mode === 'live') {
       test.skip()
       return
@@ -87,9 +92,9 @@ test.describe('Entity Exploration Flow', () => {
     // Navigate directly to entity page
     await page.goto('/entities/4305857')
 
-    // Wait for budget distribution heading to appear (indicates page loaded)
+    // Wait for the refactored budget analysis section to appear.
     await expect(
-      page.getByRole('heading', { name: /distribuția.*bugetului/i })
+      page.getByText(/distribuția cheltuielilor|spending breakdown/i).first()
     ).toBeVisible({ timeout: 10000 })
 
     // Verify main content area is present
@@ -114,9 +119,9 @@ test.describe('Entity Exploration Flow', () => {
 
     await page.goto('/entities/4305857')
 
-    // Eventually, content should load (budget distribution heading)
+    // Eventually, the refactored budget analysis section should load.
     await expect(
-      page.getByRole('heading', { name: /distribuția.*bugetului/i })
+      page.getByText(/distribuția cheltuielilor|spending breakdown/i).first()
     ).toBeVisible({ timeout: 10000 })
   })
 })

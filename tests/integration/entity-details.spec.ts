@@ -71,11 +71,11 @@ test.describe('Entity Details Page', () => {
     await expect(page.getByText(/RON/).first()).toBeVisible()
 
     await expect(
-      page.getByText(/Evoluție Financiară|Financial Evolution/i).first(),
+      page.getByText(/Evoluție Financiară|Financial Trends/i).first(),
     ).toBeVisible({ timeout: 10000 })
 
     await expect(
-      page.getByText(/Distribuția Cheltuielilor|Spending Distribution|Expense Distribution/i).first(),
+      page.getByText(/Distribuția Cheltuielilor|Spending breakdown/i).first(),
     ).toBeVisible({ timeout: 10000 })
 
     await expect(
@@ -103,11 +103,18 @@ test.describe('Entity Details Page', () => {
   })
 
   test('navigates from main info to another current analysis view', async ({ page }) => {
-    await page.getByTestId('challenge-entity-view-navigator')
-      .getByRole('button', { name: /Angajamente|Commitments/i })
-      .click()
+    await waitForHydration(page)
 
-    await expect(page).toHaveURL(/view=commitments/, { timeout: 10000 })
+    const commitmentsViewButton = page
+      .getByTestId('challenge-entity-view-navigator')
+      .getByRole('button', { name: /^Angajamente$|^Commitments$/i })
+
+    await expect(commitmentsViewButton).toBeEnabled({ timeout: 10000 })
+
+    await Promise.all([
+      page.waitForURL(/view=commitments/, { timeout: 10000 }),
+      commitmentsViewButton.click(),
+    ])
   })
 
   test('normalizes legacy entity views into main info content', async ({ page }) => {
@@ -122,7 +129,7 @@ test.describe('Entity Details Page', () => {
     }).first()
     await expect(viewMenuButton).toContainText(/Execuții Bugetare|Budget Execution/i)
     await expect(
-      page.getByText(/Distribuția Cheltuielilor|Spending Distribution|Expense Distribution/i).first(),
+      page.getByText(/Distribuția Cheltuielilor|Spending breakdown/i).first(),
     ).toBeVisible({ timeout: 10000 })
   })
 })

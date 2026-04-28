@@ -11,6 +11,7 @@
 
 import type { Page } from '@playwright/test'
 import { test, expect } from '../utils/e2e-base'
+import { waitForHydration } from '../utils/test-helpers'
 
 // Using historical year for stable data
 const TEST_YEAR = '2023'
@@ -48,7 +49,7 @@ test.describe('Entity Page', () => {
 
     // Verify financial data loads (not loading skeleton)
     await expect(
-      page.locator('text=/total.*venituri|total.*income/i').first()
+      page.getByText(/^Venituri$|^Income$/i).first()
     ).toBeVisible({ timeout: 15000 })
 
     // Verify amounts are displayed
@@ -65,14 +66,14 @@ test.describe('Entity Page', () => {
       page.getByRole('heading', { name: /MUNICIPIUL CLUJ-NAPOCA|Cluj-Napoca/i }).first()
     ).toBeVisible({ timeout: 15000 })
 
-    // Verify expense section
+    // Verify the refactored expense breakdown section
     await expect(
-      page.locator('text=/cheltuieli|expenses/i').first()
+      page.getByText(/Distribuția Cheltuielilor|Spending breakdown/i).first()
     ).toBeVisible({ timeout: 10000 })
 
-    // Verify percentages are shown in breakdown
+    // Verify the section exposes the revenue/expense drill-down controls.
     await expect(
-      page.locator('text=/%/').first()
+      page.getByRole('button', { name: /Arată venituri|Show revenue/i }).first()
     ).toBeVisible({ timeout: 10000 })
   })
 
@@ -83,6 +84,7 @@ test.describe('Entity Page', () => {
     await expect(
       page.getByRole('heading', { name: /MUNICIPIUL CLUJ-NAPOCA|Cluj-Napoca/i }).first()
     ).toBeVisible({ timeout: 15000 })
+    await waitForHydration(page)
 
     const viewNavigator = page.getByTestId('challenge-entity-view-navigator')
     await expect(viewNavigator).toBeVisible({ timeout: 15000 })
