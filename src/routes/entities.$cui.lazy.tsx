@@ -7,6 +7,7 @@ import {
 } from 'react'
 import { createLazyFileRoute, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
+import { CampaignAccessShareCard } from '@/features/campaigns/buget/components/CampaignAccessShareCard'
 import {
   Dialog,
   DialogContent,
@@ -549,6 +550,11 @@ export function EntityDetailsRoutePage() {
           onCommitmentsViewStateChange={handleCommitmentsViewStateChange}
           onAnalyticsTargetChange={handleAnalyticsTargetChange}
           onEntityCuiChange={handleMapEntitySelection}
+          belowHeader={({ isUatEntity }) =>
+            isUatEntity ? (
+              <CampaignAccessShareCard entityCui={cui} locale={dialogLanguage} />
+            ) : null
+          }
         />
       </div>
 

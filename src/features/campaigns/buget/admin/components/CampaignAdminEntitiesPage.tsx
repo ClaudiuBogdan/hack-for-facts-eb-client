@@ -728,7 +728,7 @@ export function CampaignAdminEntitiesPage({
           item.latestNotificationAt ?? "",
           item.latestNotificationType ?? "",
           item.latestNotificationStatus ?? "",
-          `${window.location.origin}/primarie/${encodeURIComponent(item.entityCui)}`,
+          `${window.location.origin}/entities/${encodeURIComponent(item.entityCui)}`,
         ]
           .map((value) =>
             /^[=+\-@]/.test(value) ? `'${value}` : value.replace(/\r?\n/g, " "),

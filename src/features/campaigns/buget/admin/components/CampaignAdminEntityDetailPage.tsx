@@ -711,7 +711,7 @@ export function CampaignAdminEntityDetailPage({
       actions={(
         <>
           <Button asChild type="button" variant="outline" size="sm" className="gap-2">
-            <Link to="/primarie/$cui" params={{ cui: entityCui }}>
+            <Link to="/entities/$cui" params={{ cui: entityCui }}>
               <ExternalLink className="h-4 w-4" aria-hidden="true" />
               {t`Open entity page`}
             </Link>

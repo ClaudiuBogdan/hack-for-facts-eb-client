@@ -1,5 +1,3 @@
-import { buildCampaignPrimariePath } from '@/features/challenges/constants'
-
 const COUNTY_ENTITY_TYPE = 'admin_county_council'
 
 export type EntitySelectionBehavior =
@@ -26,10 +24,6 @@ export function isNonCountyUatEntity(
 export function buildPreferredEntityPath(
   input: EntityNavigationTargetInput,
 ): string {
-  if (isNonCountyUatEntity(input)) {
-    return buildCampaignPrimariePath(input.cui)
-  }
-
   return buildEntityDetailsPath(input.cui)
 }
 

@@ -27,7 +27,6 @@ import {
   getCampaignAdminThreadPhaseLabel,
   requiresApprovalConfirmation,
 } from '@/features/campaigns/buget/admin/constants'
-import { buildCampaignPrimariePath } from '@/features/challenges/constants'
 import { getCampaignAdminPrimaryValue } from '@/features/campaigns/buget/admin/utils/payload-summary'
 import { resolveSafeCampaignAdminHref } from '@/features/campaigns/buget/admin/utils/resolve-safe-campaign-admin-href'
 import type {
@@ -35,6 +34,7 @@ import type {
   CampaignAdminStagedReviewDraft,
   CampaignAdminUserInteractionListItem,
 } from '@/features/campaigns/buget/admin/types'
+import { buildEntityDetailsPath } from '@/lib/entity-navigation'
 import { cn, getUserLocale } from '@/lib/utils'
 
 type CampaignAdminReviewSheetProps = {
@@ -143,7 +143,7 @@ function renderEntityLink(item: CampaignAdminUserInteractionListItem): ReactNode
 
   return (
     <Link
-      to={buildCampaignPrimariePath(item.entityCui) as '/'}
+      to={buildEntityDetailsPath(item.entityCui) as '/'}
       className="underline-offset-4 hover:underline"
     >
       {entityLabel}

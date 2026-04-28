@@ -98,6 +98,9 @@ describe('LessonEntityDataQuiz', () => {
     expect(
       screen.getByText(/"Cultură" este domeniul cu cea mai mica valoare executata/i),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: /Deschide pagina de analiza/i }),
+    ).toHaveAttribute('href', '/primarie/4305857')
     expect(lastQuizProps).toMatchObject({
       quizId: buildChallengeInteractionId(
         'step-read-local-execution',

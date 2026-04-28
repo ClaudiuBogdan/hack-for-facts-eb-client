@@ -134,7 +134,7 @@ describe('Map route', () => {
     ]
   })
 
-  it('routes non-county UAT feature clicks to the primarie page', async () => {
+  it('routes UAT feature clicks to the entity page and preserves map filter search', async () => {
     const { Route } = await import('./map.lazy')
     const RouteComponent = Route.options.component as ComponentType
 
@@ -144,14 +144,24 @@ describe('Map route', () => {
 
     await waitFor(() => {
       expect(navigateMock).toHaveBeenCalledWith({
-        to: '/primarie/4305857',
+        to: '/entities/4305857',
+        search: {
+          mapFilters: {
+            account_category: 'ch',
+            normalization: 'total',
+            period: {
+              type: 'YEAR',
+              selection: { interval: { start: '2024', end: '2024' } },
+            },
+          },
+        },
       })
     })
 
     expect(entityRoutingSummaryQueryFnMock).not.toHaveBeenCalled()
   })
 
-  it('falls back to the entity page and preserves map filter search when county routing metadata fails', async () => {
+  it('routes county feature clicks to the entity page and preserves map filter search', async () => {
     mockedMapViewType = 'County'
     mockedHeatmapData = [
       {
@@ -161,8 +171,6 @@ describe('Map route', () => {
         },
       },
     ]
-    entityRoutingSummaryQueryFnMock.mockRejectedValue(new Error('lookup failed'))
-
     const { Route } = await import('./map.lazy')
     const RouteComponent = Route.options.component as ComponentType
 

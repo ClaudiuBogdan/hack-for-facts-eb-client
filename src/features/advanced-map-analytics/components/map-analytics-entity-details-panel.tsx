@@ -46,7 +46,7 @@ interface MapAnalyticsEntityDetailsPanelProps {
   readonly isMobile: boolean;
   readonly isProfileLoading: boolean;
   readonly onClose: () => void;
-  readonly primarieHref?: string;
+  readonly entityHref?: string;
   readonly profile: EntityProfileData | null | undefined;
   readonly profileErrorMessage?: string;
   readonly selection: MapAnalyticsEntityDetailsSelection;
@@ -57,13 +57,13 @@ export function MapAnalyticsEntityDetailsPanel({
   isMobile,
   isProfileLoading,
   onClose,
-  primarieHref,
+  entityHref,
   profile,
   profileErrorMessage,
   selection,
   seriesRows,
 }: Readonly<MapAnalyticsEntityDetailsPanelProps>) {
-  const canOpenPrimariePage = typeof primarieHref === 'string' && primarieHref.length > 0;
+  const canOpenEntityPage = typeof entityHref === 'string' && entityHref.length > 0;
   const desktopPanelRef = useRef<HTMLDivElement | null>(null);
   const hasProfileDetails = Boolean(
     profile?.leader_name ||
@@ -134,9 +134,7 @@ export function MapAnalyticsEntityDetailsPanel({
               {selection.title}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {selection.entityCui
-                ? t`Inspect the live values for this UAT and jump into its primarie page.`
-                : t`Inspect the live values for this UAT. Primarie navigation is unavailable for this selection.`}
+              {t`Inspect the live values for this UAT.`}
             </p>
           </div>
 
@@ -298,16 +296,16 @@ export function MapAnalyticsEntityDetailsPanel({
       </ScrollArea>
 
       <footer className="border-t border-border/70 bg-background/90 px-4 py-4 sm:px-5">
-        {canOpenPrimariePage ? (
+        {canOpenEntityPage ? (
           <Button asChild className="w-full rounded-full">
-            <a href={primarieHref} target="_blank" rel="noopener noreferrer">
-              {t`Open primarie page`}
+            <a href={entityHref} target="_blank" rel="noopener noreferrer">
+              {t`Open entity page`}
               <ArrowUpRight className="ml-2 h-4 w-4" />
             </a>
           </Button>
         ) : (
           <Button type="button" className="w-full rounded-full" disabled>
-            {t`Open primarie page`}
+            {t`Open entity page`}
             <ArrowUpRight className="ml-2 h-4 w-4" />
           </Button>
         )}

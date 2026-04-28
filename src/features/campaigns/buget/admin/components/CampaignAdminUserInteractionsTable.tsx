@@ -48,7 +48,6 @@ import { formatCampaignAdminUserIdPreview } from "@/features/campaigns/buget/adm
 import { getCampaignAdminPrimaryValue } from "@/features/campaigns/buget/admin/utils/payload-summary";
 import { resolveSafeCampaignAdminHref } from "@/features/campaigns/buget/admin/utils/resolve-safe-campaign-admin-href";
 import { sortCampaignAdminUserInteractionItems } from "@/features/campaigns/buget/admin/utils/sort-campaign-admin-user-interactions";
-import { buildCampaignPrimariePath } from "@/features/challenges/constants";
 import type {
   CampaignAdminCampaignKey,
   CampaignAdminSortOrder,
@@ -57,6 +56,7 @@ import type {
   CampaignAdminUserInteractionsSortKey,
 } from "@/features/campaigns/buget/admin/types";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
+import { buildEntityDetailsPath } from "@/lib/entity-navigation";
 import { cn, getUserLocale } from "@/lib/utils";
 
 const campaignAdminUserWorkspaceDefaultLinkSearch =
@@ -399,7 +399,7 @@ function EntityLink({
         {entityCui}
       </p>
       <Link
-        to={buildCampaignPrimariePath(entityCui) as "/"}
+        to={buildEntityDetailsPath(entityCui) as "/"}
         className="mt-1 inline-block text-xs text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
         aria-label={t`Open public municipality page for ${entityCui}`}
       >

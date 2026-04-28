@@ -11,7 +11,7 @@ import type {
 } from '@/features/campaigns/buget/admin/types'
 import { getCampaignAdminPrimaryValue } from './payload-summary'
 import { resolveSafeCampaignAdminHref } from './resolve-safe-campaign-admin-href'
-import { buildCampaignPrimariePath } from '@/features/challenges/constants'
+import { buildEntityDetailsPath } from '@/lib/entity-navigation'
 
 export const CAMPAIGN_ADMIN_BULK_REVIEW_CLIPBOARD_HEADERS = [
   'User Interaction ID',
@@ -184,7 +184,7 @@ function getEntityLink(item: CampaignAdminUserInteractionListItem, baseUrl?: str
 
   return (
     resolveSafeCampaignAdminHref({
-      value: buildCampaignPrimariePath(item.entityCui),
+      value: buildEntityDetailsPath(item.entityCui),
       baseUrl,
     })
     ?? ''

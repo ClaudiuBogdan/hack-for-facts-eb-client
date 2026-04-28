@@ -539,12 +539,12 @@ describeIfEntityDetailPageExists("CampaignAdminEntityDetailPage", () => {
     expect(screen.getAllByRole("button", { name: "Retry" }).length).toBeGreaterThan(0);
   });
 
-  it("links to the public primarie page for this entity", async () => {
+  it("links to the public entity page for this entity", async () => {
     await renderEntityDetailPage();
 
     expect(
       screen.getByRole("link", { name: "Open entity page" }),
-    ).toHaveAttribute("href", "/primarie/12345678");
+    ).toHaveAttribute("href", "/entities/12345678");
   });
 
   it("renders the three preview sections and filtered full-page links", async () => {

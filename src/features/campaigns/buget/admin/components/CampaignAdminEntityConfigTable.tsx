@@ -37,7 +37,7 @@ import type {
   CampaignAdminStagedEntityConfigDraft,
 } from "@/features/campaigns/buget/admin/types";
 import type { CampaignAdminEntityConfigClipboardIssue } from "@/features/campaigns/buget/admin/utils/entity-config-clipboard";
-import { buildCampaignPrimariePath } from "@/features/challenges/constants";
+import { buildEntityDetailsPath } from "@/lib/entity-navigation";
 import { cn, getUserLocale } from "@/lib/utils";
 
 type CampaignAdminEntityConfigTableProps = {
@@ -594,7 +594,7 @@ export function CampaignAdminEntityConfigTable({
                       {t`Open`}
                     </Button>
                     <Button asChild type="button" variant="outline" size="sm">
-                      <a href={buildCampaignPrimariePath(item.entityCui)}>
+                      <a href={buildEntityDetailsPath(item.entityCui)}>
                         {t`Public page`}
                       </a>
                     </Button>

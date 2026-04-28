@@ -147,7 +147,13 @@ type ChallengeEntityAnalysisPageProps = {
   ) => void
   readonly onEntityCuiChange?: (selection: MapEntitySelection) => void
   readonly onEntityResolved?: () => void
-  readonly belowHeader?: ReactNode
+  readonly belowHeader?:
+    | ReactNode
+    | ((context: {
+        readonly entity: EntityDetailsData
+        readonly isUatEntity: boolean
+        readonly locale: 'ro' | 'en'
+      }) => ReactNode)
 }
 
 type EntityExecutionLineItemsData = {
@@ -2512,6 +2518,14 @@ export function ChallengeEntityAnalysisPage({
   const allowPerCapita = canUsePerCapitaNormalization
   const allowAdministrativeExpenseShortcut = isUatEntity
   const pageLocale = resolveChallengePageLocale(languageQuery)
+  const resolvedBelowHeader =
+    typeof belowHeader === 'function'
+      ? belowHeader({
+          entity,
+          isUatEntity,
+          locale: pageLocale,
+        })
+      : belowHeader
 
   const pageCopy = MAP_PREVIEW_MISC_COPY[pageLocale]
   const treemapTitle =
@@ -3180,7 +3194,7 @@ export function ChallengeEntityAnalysisPage({
         languageQuery={languageQuery}
       />
 
-      {belowHeader}
+      {resolvedBelowHeader}
 
       {renderActiveView()}
 

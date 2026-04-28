@@ -84,7 +84,7 @@ describe('campaign-admin bulk review clipboard', () => {
 
     expect(tsv).toBe(
       `${CAMPAIGN_ADMIN_BULK_REVIEW_CLIPBOARD_HEADERS.join('\t')}\n`
-      + 'user-1::funky:interaction:public_debate_request::entity:12345678\tuser-1\tfunky:interaction:public_debate_request::entity:12345678\tOras Test\t12345678\tPublic debate request\tfunky:interaction:public_debate_request\thttps://example.test/primarie/12345678\t'
+      + 'user-1::funky:interaction:public_debate_request::entity:12345678\tuser-1\tfunky:interaction:public_debate_request::entity:12345678\tOras Test\t12345678\tPublic debate request\tfunky:interaction:public_debate_request\thttps://example.test/entities/12345678\t'
       + 'https://example.test/primarie/12345678/buget/provocari/civic-campaign/civic-monitor-and-request/04-debate-request\tcontact@primarie.ro\tapproved\tno\tLooks good\n'
     )
   })

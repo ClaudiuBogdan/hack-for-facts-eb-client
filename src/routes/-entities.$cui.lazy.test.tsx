@@ -6,6 +6,7 @@ const navigateMock = vi.fn()
 const challengeEntityAnalysisPagePropsMock = vi.fn()
 let mockedParams = { cui: '12345678' }
 let mockedSearch: Record<string, unknown> = {}
+let mockedBelowHeaderIsUat = true
 let mockedLoaderData:
   | {
     initialSettings?: {
@@ -57,6 +58,22 @@ vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigateMock,
 }))
 
+vi.mock('@/features/campaigns/buget/components/CampaignAccessShareCard', () => ({
+  CampaignAccessShareCard: ({
+    entityCui,
+    locale,
+  }: {
+    readonly entityCui: string
+    readonly locale: 'ro' | 'en'
+  }) => (
+    <a
+      href={`/primarie/${entityCui}/buget/provocari${locale === 'en' ? '?lang=en' : ''}`}
+    >
+      Open campaign
+    </a>
+  ),
+}))
+
 vi.mock(
   '@/features/challenges/components/analysis/challenge-entity-analysis-page',
   () => ({
@@ -78,6 +95,15 @@ vi.mock(
       onAnalyticsTargetChange,
       onEntityCuiChange,
     }: any) => {
+      const resolvedBelowHeader =
+        typeof belowHeader === 'function'
+          ? belowHeader({
+              entity: { cui: entityCui },
+              isUatEntity: mockedBelowHeaderIsUat,
+              locale: languageQuery === 'en' ? 'en' : 'ro',
+            })
+          : belowHeader
+
       challengeEntityAnalysisPagePropsMock({
         entityCui,
         languageQuery,
@@ -95,7 +121,7 @@ vi.mock(
 
       return (
         <>
-          {belowHeader}
+          {resolvedBelowHeader}
           <div data-testid="analysis-page">
             {entityCui}:{languageQuery ?? 'ro'}:{state.selectedYear}:
             {state.reportType}:{state.activeView}:{state.treemapAccountCategory}:{state.expenseType ?? 'all'}:
@@ -210,6 +236,7 @@ describe('EntityDetailsRoutePage', () => {
   beforeEach(() => {
     mockedParams = { cui: '12345678' }
     mockedSearch = {}
+    mockedBelowHeaderIsUat = true
     mockedLoaderData = {
       initialSettings: {
         currency: 'RON',
@@ -267,7 +294,7 @@ describe('EntityDetailsRoutePage', () => {
     )
     expect(challengeEntityAnalysisPagePropsMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        belowHeader: undefined,
+        belowHeader: expect.any(Function),
         pageVariant: 'entities',
         hasExplicitReportType: true,
         state: expect.objectContaining({
@@ -276,6 +303,33 @@ describe('EntityDetailsRoutePage', () => {
       }),
     )
     expect(navigateMock).not.toHaveBeenCalled()
+  })
+
+  it('shows the campaign banner for UAT entities', async () => {
+    mockedParams = { cui: '4305857' }
+    mockedSearch = { lang: 'en' }
+    mockedBelowHeaderIsUat = true
+
+    const { EntityDetailsRoutePage } = await import('./entities.$cui.lazy')
+
+    render(<EntityDetailsRoutePage />)
+
+    expect(
+      screen.getByRole('link', { name: 'Open campaign' }),
+    ).toHaveAttribute('href', '/primarie/4305857/buget/provocari?lang=en')
+  })
+
+  it('does not show the campaign banner for non-UAT entities', async () => {
+    mockedParams = { cui: '99999999' }
+    mockedBelowHeaderIsUat = false
+
+    const { EntityDetailsRoutePage } = await import('./entities.$cui.lazy')
+
+    render(<EntityDetailsRoutePage />)
+
+    expect(
+      screen.queryByRole('link', { name: 'Open campaign' }),
+    ).not.toBeInTheDocument()
   })
 
   it('passes shared SSR loader payload and initial settings to the challenge page', async () => {

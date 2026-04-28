@@ -7,7 +7,7 @@ import {
 } from './entity-navigation'
 
 describe('entity-navigation', () => {
-  it('detects primarie UAT entities and excludes county councils', () => {
+  it('detects non-county UAT entities and excludes county councils', () => {
     expect(
       isNonCountyUatEntity({
         cui: '4305857',
@@ -33,14 +33,14 @@ describe('entity-navigation', () => {
     ).toBe(false)
   })
 
-  it('builds the preferred primarie path for non-county UATs', () => {
+  it('builds the entity path for all preferred entity navigation', () => {
     expect(
       buildPreferredEntityPath({
         cui: '4305857',
         entityType: 'admin_municipality',
         isUat: true,
       }),
-    ).toBe('/primarie/4305857')
+    ).toBe('/entities/4305857')
 
     expect(
       buildPreferredEntityPath({

@@ -1,7 +1,6 @@
 import { HeatmapUATDataPoint, HeatmapCountyDataPoint } from "@/schemas/heatmap";
 import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
 import React, { useState, lazy, Suspense } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { getPercentileValues, createHeatmapStyleFunction } from "@/components/maps/utils";
 import type { LeafletMouseEvent } from "leaflet";
 import { UatProperties } from "@/components/maps/interfaces";
@@ -42,15 +41,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useUserCurrency } from "@/lib/hooks/useUserCurrency";
 import { useUserInflationAdjusted } from "@/lib/hooks/useUserInflationAdjusted";
 import type { AnalyticsFilterType, Currency, Normalization } from "@/schemas/charts";
-import { buildEntityDetailsPath, buildPreferredEntityPath } from "@/lib/entity-navigation";
-import { entityRoutingSummaryQueryOptions } from "@/lib/hooks/useEntityDetails";
+import { buildEntityDetailsPath } from "@/lib/entity-navigation";
 
 export const Route = createLazyFileRoute("/map")({
   component: MapPage,
 });
 
 function MapPage() {
-  const queryClient = useQueryClient();
   const navigate = useNavigate({ from: '/map' });
   const { mapState, setFilters } = useMapFilter();
   const [userCurrency, setUserCurrency] = useUserCurrency();
@@ -164,10 +161,8 @@ function MapPage() {
       }
 
       await navigate({
-        to: buildPreferredEntityPath({
-          cui: selectedEntityCui,
-          isUat: true,
-        }) as '/',
+        to: buildEntityDetailsPath(selectedEntityCui) as '/',
+        search: { ...entityPageSearchParams },
       });
       return;
     }
@@ -180,30 +175,10 @@ function MapPage() {
       return;
     }
 
-    try {
-      const entitySummary = await queryClient.fetchQuery(
-        entityRoutingSummaryQueryOptions({ cui: selectedEntityCui }),
-      );
-      const preferredPath = buildPreferredEntityPath({
-        cui: selectedEntityCui,
-        entityType: entitySummary?.entity_type,
-        isUat: entitySummary?.is_uat,
-      });
-      const shouldNavigateToEntityPage =
-        preferredPath === buildEntityDetailsPath(selectedEntityCui);
-
-      await navigate({
-        to: preferredPath as '/',
-        ...(shouldNavigateToEntityPage
-          ? { search: { ...entityPageSearchParams } }
-          : {}),
-      });
-    } catch {
-      await navigate({
-        to: buildEntityDetailsPath(selectedEntityCui) as '/',
-        search: { ...entityPageSearchParams },
-      });
-    }
+    await navigate({
+      to: buildEntityDetailsPath(selectedEntityCui) as '/',
+      search: { ...entityPageSearchParams },
+    });
   };
 
   const handleMapViewChange = (center: [number, number], zoom: number) => {

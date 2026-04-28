@@ -44,6 +44,7 @@ import {
 import { useUserCurrency } from '@/lib/hooks/useUserCurrency';
 import { useUserInflationAdjusted } from '@/lib/hooks/useUserInflationAdjusted';
 import { useEntityProfile } from '@/lib/hooks/useEntityDetails';
+import { buildEntityDetailsPath } from '@/lib/entity-navigation';
 import { DEFAULT_FEATURE_STYLE } from '@/components/maps/constants';
 import type { GroupedSeriesDataResponse, MapSeriesVectorCache } from '@/lib/map-series/interfaces';
 import { AdvancedMapAnalyticsConfigPanel } from '@/components/maps/advanced-map-analytics/advanced-map-analytics-config-panel';
@@ -1809,8 +1810,8 @@ export function MapAnalyticsWorkspace({
     [mode, navigate, onEntityCuiSelect, onMapFeatureSelect, shouldUseEntityDetailsPanel, uatMetadataBySirutaCode]
   );
 
-  const selectedMapEntityPrimarieHref = selectedMapEntity?.entityCui
-    ? `/primarie/${encodeURIComponent(selectedMapEntity.entityCui)}`
+  const selectedMapEntityHref = selectedMapEntity?.entityCui
+    ? buildEntityDetailsPath(selectedMapEntity.entityCui)
     : undefined;
 
   useEffect(() => {
@@ -2279,7 +2280,7 @@ export function MapAnalyticsWorkspace({
                       profile={selectedEntityProfileQuery.data}
                       profileErrorMessage={selectedEntityProfileErrorMessage}
                       onClose={closeSelectedMapEntityPanel}
-                      primarieHref={selectedMapEntityPrimarieHref}
+                      entityHref={selectedMapEntityHref}
                     />
                   ) : null}
                 </AnimatePresence>

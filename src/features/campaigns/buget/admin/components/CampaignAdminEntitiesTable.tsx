@@ -35,8 +35,8 @@ import type {
   CampaignAdminSortOrder,
 } from "@/features/campaigns/buget/admin/types";
 import { createCampaignAdminEntityDetailRouteSearch } from "@/features/campaigns/buget/admin/utils/create-campaign-admin-entity-detail-route-search";
-import { buildCampaignPrimariePath } from "@/features/challenges/constants";
 import { useTablePreferences } from "@/hooks/useTablePreferences";
+import { buildEntityDetailsPath } from "@/lib/entity-navigation";
 import { getUserLocale } from "@/lib/utils";
 
 type CampaignAdminEntitiesTableProps = {
@@ -662,7 +662,7 @@ export function CampaignAdminEntitiesTable({
                     <TableCell className="text-sm">
                       <Button asChild type="button" variant="outline" size="sm">
                         <a
-                          href={buildCampaignPrimariePath(item.entityCui)}
+                          href={buildEntityDetailsPath(item.entityCui)}
                           aria-label={t`Open entity page for ${item.entityCui}`}
                         >
                           {t`Open`}

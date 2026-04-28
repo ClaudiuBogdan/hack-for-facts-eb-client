@@ -154,7 +154,7 @@ describe('useEntitySearch', () => {
     })
 
     expect(navigateMock).toHaveBeenCalledWith({
-      to: '/primarie/4305857',
+      to: '/entities/4305857',
       search: {},
     })
   })

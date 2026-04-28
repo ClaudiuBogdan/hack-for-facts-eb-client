@@ -48,7 +48,7 @@ describe('SearchResultItem', () => {
       </ul>,
     )
 
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/primarie/4305857')
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/entities/4305857')
   })
 
   it('keeps the entity page route for direct entity navigation', () => {

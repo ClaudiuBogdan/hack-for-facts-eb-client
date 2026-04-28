@@ -33,12 +33,12 @@ vi.mock('@/lib/constants/predefined-entities', () => ({
 }))
 
 describe('QuickEntityAccess', () => {
-  it('routes recent badges to primarie only for non-county UATs', () => {
+  it('routes recent badges to entities for UATs and regular entities', () => {
     render(<QuickEntityAccess />)
 
     const links = screen.getAllByRole('link')
 
-    expect(links[0]).toHaveAttribute('href', '/primarie/4305857')
+    expect(links[0]).toHaveAttribute('href', '/entities/4305857')
     expect(links[1]).toHaveAttribute('href', '/entities/4266456')
   })
 })

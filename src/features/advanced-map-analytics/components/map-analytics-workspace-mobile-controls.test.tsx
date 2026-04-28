@@ -596,9 +596,9 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(detailsPanel).toBeInTheDocument();
     expect(within(detailsPanel).getByRole('heading', { name: 'Mapped UAT' })).toBeInTheDocument();
     expect(within(detailsPanel).getByText(/Jane Mayor/)).toBeInTheDocument();
-    expect(within(detailsPanel).getByRole('link', { name: 'Open primarie page' })).toHaveAttribute(
+    expect(within(detailsPanel).getByRole('link', { name: 'Open entity page' })).toHaveAttribute(
       'href',
-      '/primarie/12345678'
+      '/entities/12345678'
     );
   });
 
@@ -841,10 +841,10 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
     expect(navigateMock).not.toHaveBeenCalled();
     const detailsPanel = screen.getByTestId('map-entity-details-panel');
     expect(detailsPanel).toBeInTheDocument();
-    expect(within(detailsPanel).getByRole('button', { name: 'Open primarie page' })).toBeDisabled();
+    expect(within(detailsPanel).getByRole('button', { name: 'Open entity page' })).toBeDisabled();
   });
 
-  it('renders the primarie CTA as a new-tab link', async () => {
+  it('renders the entity CTA as a new-tab link', async () => {
     mockIsMobile.mockReturnValue(false);
     mockGeoJsonData = {
       data: {
@@ -870,10 +870,10 @@ describe('MapAnalyticsWorkspace mobile controls', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'Map click with CUI' }));
 
-    const primarieLink = screen.getByRole('link', { name: 'Open primarie page' });
-    expect(primarieLink).toHaveAttribute('href', '/primarie/12345678');
-    expect(primarieLink).toHaveAttribute('target', '_blank');
-    expect(primarieLink).toHaveAttribute('rel', expect.stringContaining('noopener'));
+    const entityLink = screen.getByRole('link', { name: 'Open entity page' });
+    expect(entityLink).toHaveAttribute('href', '/entities/12345678');
+    expect(entityLink).toHaveAttribute('target', '_blank');
+    expect(entityLink).toHaveAttribute('rel', expect.stringContaining('noopener'));
     expect(navigateMock).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Close details' }));

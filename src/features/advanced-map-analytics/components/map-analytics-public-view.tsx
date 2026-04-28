@@ -58,6 +58,7 @@ import {
   selectUatFeatures,
 } from '@/features/advanced-map-analytics/components/map-analytics-public-view-helpers';
 import { cn } from '@/lib/utils';
+import { buildEntityDetailsPath } from '@/lib/entity-navigation';
 import { t } from '@lingui/core/macro';
 
 const InteractiveMap = lazy(() =>
@@ -429,8 +430,8 @@ export function MapAnalyticsPublicView({
       : selectedEntityProfileQuery.error
         ? String(selectedEntityProfileQuery.error)
         : undefined;
-  const selectedMapEntityPrimarieHref = selectedMapEntity?.entityCui
-    ? `/primarie/${encodeURIComponent(selectedMapEntity.entityCui)}`
+  const selectedMapEntityHref = selectedMapEntity?.entityCui
+    ? buildEntityDetailsPath(selectedMapEntity.entityCui)
     : undefined;
 
   // Track the latest URL writer in a ref so the click/close callbacks stay
@@ -750,7 +751,7 @@ export function MapAnalyticsPublicView({
                   profile={selectedEntityProfileQuery.data}
                   profileErrorMessage={selectedEntityProfileErrorMessage}
                   onClose={handleCloseEntityPanel}
-                  primarieHref={selectedMapEntityPrimarieHref}
+                  entityHref={selectedMapEntityHref}
                 />
               ) : null}
             </AnimatePresence>
