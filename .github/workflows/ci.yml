@@ -71,7 +71,7 @@ jobs:
       - name: Run Vitest
         run: yarn test --shard=${{ matrix.shard }}/${{ matrix.total_shards }} --maxWorkers=75%
 
-  # Integration should not block deployment; rely on GitHub failure emails.
+  # Integration gates dev deployment; keep this sharded to stay under job timeouts.
   integration-tests:
     name: Integration Tests (${{ matrix.shard }}/${{ matrix.total_shards }})
     if: github.event_name != 'push' || github.ref != 'refs/heads/main'
@@ -212,7 +212,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: development
     if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
-    needs: [typecheck, unit-tests, build, validate-learning-content, validate-challenge-content]
+    needs: [typecheck, unit-tests, integration-tests, build, validate-learning-content, validate-challenge-content]
     permissions:
       contents: write
     steps:
