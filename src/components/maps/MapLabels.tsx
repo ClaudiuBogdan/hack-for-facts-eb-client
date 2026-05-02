@@ -8,6 +8,7 @@ import type { LabelMode } from './polygonLabels';
 
 interface MapLabelsProps {
   geoJsonData: GeoJsonObject | null;
+  countyGeoJsonData?: GeoJsonObject | null;
   showLabels?: boolean;
   mapViewType: 'UAT' | 'County';
   heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>;
@@ -24,6 +25,7 @@ interface MapLabelsProps {
  */
 export const MapLabels: React.FC<MapLabelsProps> = ({
   geoJsonData,
+  countyGeoJsonData,
   showLabels = true,
   mapViewType,
   heatmapDataMap,
@@ -37,6 +39,7 @@ export const MapLabels: React.FC<MapLabelsProps> = ({
   const layerRef = useRef<CanvasLabelLayer | null>(null);
   const initialOptionsRef = useRef({
     geoJsonData,
+    countyGeoJsonData,
     mapViewType,
     heatmapDataMap,
     normalization,
@@ -48,6 +51,7 @@ export const MapLabels: React.FC<MapLabelsProps> = ({
   });
   initialOptionsRef.current = {
     geoJsonData,
+    countyGeoJsonData,
     mapViewType,
     heatmapDataMap,
     normalization,
@@ -83,6 +87,7 @@ export const MapLabels: React.FC<MapLabelsProps> = ({
     if (layerRef.current) {
       layerRef.current.updateOptions({
         geoJsonData,
+        countyGeoJsonData,
         mapViewType,
         heatmapDataMap,
         normalization,
@@ -95,6 +100,7 @@ export const MapLabels: React.FC<MapLabelsProps> = ({
     }
   }, [
     geoJsonData,
+    countyGeoJsonData,
     mapViewType,
     heatmapDataMap,
     normalization,

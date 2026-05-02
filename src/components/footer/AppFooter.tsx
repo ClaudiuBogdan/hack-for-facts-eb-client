@@ -135,14 +135,14 @@ export function AppFooter(): ReactElement {
 
                 {/* Data source and copyright */}
                 <div className="flex flex-col items-start justify-between gap-4 text-xs text-muted-foreground md:flex-row">
-                    <p>
+                    <p className="break-words">
                         <Trans>Data source: &quot;Budget Transparency&quot; portal administered by ANAF/Ministry of Finance. See official resources:</Trans>
                         {" "}
                         <a
                             href="https://mfinante.gov.ro/transparenta-bugetara"
                             target="_blank"
                             rel="noreferrer noopener"
-                            className="underline offset-2 hover:text-foreground"
+                            className="break-all underline underline-offset-2 hover:text-foreground"
                         >
                             mfinante.gov.ro/transparenta-bugetara
                         </a>
@@ -151,13 +151,13 @@ export function AppFooter(): ReactElement {
                             href="https://extranet.anaf.mfinante.gov.ro/anaf/extranet/EXECUTIEBUGETARA"
                             target="_blank"
                             rel="noreferrer noopener"
-                            className="underline offset-2 hover:text-foreground"
+                            className="break-all underline underline-offset-2 hover:text-foreground"
                         >
                             extranet.anaf.mfinante.gov.ro
                         </a>
                         .
                     </p>
-                    <p className="whitespace-nowrap"><Trans>&copy; {defaultYear} Transparenta.eu. All rights reserved.</Trans></p>
+                    <p className="shrink-0 sm:whitespace-nowrap"><Trans>&copy; {defaultYear} Transparenta.eu. All rights reserved.</Trans></p>
                 </div>
 
                 {/* Bottom utilities: Feedback / Status / Back to top */}
@@ -182,12 +182,13 @@ export function AppFooter(): ReactElement {
                             </button>
                         )}
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-4">
                         <a
                             href="https://status.transparenta.eu"
                             target="_blank"
                             rel="noreferrer noopener"
                             aria-label={t`System status`}
+                            className="max-w-full"
                         >
                             <iframe
                                 src={`https://status.transparenta.eu/badge?theme=${resolvedTheme}`}
@@ -196,7 +197,7 @@ export function AppFooter(): ReactElement {
                                 frameBorder="0"
                                 scrolling="no"
                                 title={t`System status badge`}
-                                className="pointer-events-none"
+                                className="max-w-full pointer-events-none"
                             />
                         </a>
                         <button

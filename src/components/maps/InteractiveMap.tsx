@@ -19,11 +19,16 @@ import { AnalyticsFilterType } from '@/schemas/charts';
 import { Analytics } from '@/lib/analytics';
 import { MapLabels } from './MapLabels';
 import { shouldUseCanvasRenderer } from './leaflet-renderer';
-import type { LabelMode } from './polygonLabels';
+import {
+  ADVANCED_ZOOM_THRESHOLDS,
+  ZOOM_THRESHOLDS,
+  type LabelMode,
+} from './polygonLabels';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSharedFeatureTooltip } from './hooks/use-shared-feature-tooltip';
 import { useFeatureHighlight } from './hooks/use-feature-highlight';
 import { t } from '@lingui/core/macro';
+import { useGeoJsonData } from '@/hooks/useGeoJson';
 
 const MAP_VIEW_EPSILON = 1e-6;
 
@@ -111,6 +116,64 @@ const COUNTY_BOUNDARY_STYLE: PathOptions = {
   interactive: false,
 };
 
+const UAT_LOW_ZOOM_STROKE_FLOOR = 6;
+const MIN_UAT_LOW_ZOOM_STROKE_OPACITY_MULTIPLIER = 0.2;
+const MIN_UAT_LOW_ZOOM_STROKE_WEIGHT_MULTIPLIER = 0.25;
+
+function getUatLabelMinimumZoom(labelMode: LabelMode): number {
+  return labelMode === 'active-series'
+    ? ADVANCED_ZOOM_THRESHOLDS.UAT_NAME_MIN
+    : ZOOM_THRESHOLDS.UAT_NAME_MIN;
+}
+
+function getLowZoomUatStrokeProgress(zoom: number, labelMode: LabelMode): number {
+  const fullStrokeZoom = getUatLabelMinimumZoom(labelMode);
+  if (!Number.isFinite(zoom) || zoom >= fullStrokeZoom) {
+    return 1;
+  }
+
+  if (zoom <= UAT_LOW_ZOOM_STROKE_FLOOR) {
+    return 0;
+  }
+
+  return (zoom - UAT_LOW_ZOOM_STROKE_FLOOR) / (fullStrokeZoom - UAT_LOW_ZOOM_STROKE_FLOOR);
+}
+
+function attenuateLowZoomUatStroke(
+  style: PathOptions,
+  mapViewType: 'UAT' | 'County',
+  zoom: number,
+  labelMode: LabelMode,
+): PathOptions {
+  if (mapViewType !== 'UAT') {
+    return style;
+  }
+
+  const progress = getLowZoomUatStrokeProgress(zoom, labelMode);
+  if (progress >= 1) {
+    return style;
+  }
+
+  const opacityMultiplier =
+    MIN_UAT_LOW_ZOOM_STROKE_OPACITY_MULTIPLIER +
+    progress * (1 - MIN_UAT_LOW_ZOOM_STROKE_OPACITY_MULTIPLIER);
+  const weightMultiplier =
+    MIN_UAT_LOW_ZOOM_STROKE_WEIGHT_MULTIPLIER +
+    progress * (1 - MIN_UAT_LOW_ZOOM_STROKE_WEIGHT_MULTIPLIER);
+
+  return {
+    ...style,
+    opacity:
+      typeof style.opacity === 'number'
+        ? style.opacity * opacityMultiplier
+        : opacityMultiplier,
+    weight:
+      typeof style.weight === 'number'
+        ? Math.max(0.25, style.weight * weightMultiplier)
+        : style.weight,
+  };
+}
+
 interface InteractiveMapProps {
   onFeatureClick: (properties: UatProperties, event: LeafletMouseEvent) => void;
   getFeatureStyle: (feature: UatFeature, heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>) => PathOptions;
@@ -164,12 +227,20 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
 }) => {
   const geoJsonLayerRef = useRef<L.GeoJSON | null>(null);
   const shouldSuppressTooltipRef = useRef(false);
+  const currentZoomRef = useRef(zoom);
   const latestFeatureStyleRef = useRef<FeatureStyleResolver>(() => DEFAULT_FEATURE_STYLE);
   const useCanvasRenderer = useMemo(
     () => preferCanvasRenderer ?? shouldUseCanvasRenderer(),
     [preferCanvasRenderer],
   );
   const isMobile = useIsMobile();
+  const { data: fallbackCountyGeoJsonData } = useGeoJsonData('County', {
+    enabled: mapViewType === 'UAT',
+  });
+  const countyLabelGeoJsonData =
+    mapViewType === 'UAT'
+      ? countyBoundaryGeoJsonData ?? fallbackCountyGeoJsonData ?? null
+      : null;
   const latestTooltipContentBuilderRef = useRef<TooltipContentBuilder | undefined>(getTooltipContent);
   const latestInteractionContextRef = useRef<FeatureInteractionContext>({
     heatmapData,
@@ -184,8 +255,13 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
 
   const resolveFeatureStyle = useCallback(
     (feature?: Feature<Geometry, unknown>): PathOptions =>
-      getStyleForFeature(feature, { heatmapDataMap, getFeatureStyle, highlightedFeatureId }),
-    [heatmapDataMap, getFeatureStyle, highlightedFeatureId]
+      attenuateLowZoomUatStroke(
+        getStyleForFeature(feature, { heatmapDataMap, getFeatureStyle, highlightedFeatureId }),
+        mapViewType,
+        currentZoomRef.current,
+        labelMode,
+      ),
+    [heatmapDataMap, getFeatureStyle, highlightedFeatureId, labelMode, mapViewType]
   );
 
   const featureHighlight = useFeatureHighlight(resolveFeatureStyle);
@@ -321,6 +397,12 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
         />
       )}
       <MapUpdater center={center} zoom={zoom} />
+      <MapFeatureStyleZoomListener
+        currentZoomRef={currentZoomRef}
+        geoJsonLayerRef={geoJsonLayerRef}
+        latestFeatureStyleRef={latestFeatureStyleRef}
+        mapViewType={mapViewType}
+      />
       <MapTooltipDismiss
         onInteractionStart={handleMapInteractionStart}
         onInteractionEnd={handleMapInteractionEnd}
@@ -345,6 +427,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = React.memo(({
           ) : null}
           <MapLabels
             geoJsonData={geoJsonData}
+            countyGeoJsonData={countyLabelGeoJsonData}
             showLabels={showLabels}
             mapViewType={mapViewType}
             heatmapDataMap={heatmapDataMap}
@@ -545,6 +628,47 @@ const MapUpdater: React.FC<{ center: LatLngExpression, zoom: number }> = ({ cent
       // Map is being destroyed or in invalid state, ignore.
     }
   }, [updateViewIfNeeded]);
+
+  return null;
+};
+
+const MapFeatureStyleZoomListener: React.FC<{
+  currentZoomRef: React.MutableRefObject<number>;
+  geoJsonLayerRef: React.MutableRefObject<L.GeoJSON | null>;
+  latestFeatureStyleRef: React.MutableRefObject<FeatureStyleResolver>;
+  mapViewType: 'UAT' | 'County';
+}> = ({
+  currentZoomRef,
+  geoJsonLayerRef,
+  latestFeatureStyleRef,
+  mapViewType,
+}) => {
+  const map = useMap();
+
+  const updateZoomAwareStyles = useCallback(() => {
+    if (isMapDestroying(map)) {
+      return;
+    }
+
+    currentZoomRef.current = map.getZoom();
+
+    if (mapViewType !== 'UAT') {
+      return;
+    }
+
+    restyleAllFeatures(geoJsonLayerRef.current, latestFeatureStyleRef.current, {
+      force: true,
+    });
+  }, [currentZoomRef, geoJsonLayerRef, latestFeatureStyleRef, map, mapViewType]);
+
+  useEffect(() => {
+    updateZoomAwareStyles();
+  }, [updateZoomAwareStyles]);
+
+  useMapEvents({
+    zoomend: updateZoomAwareStyles,
+    viewreset: updateZoomAwareStyles,
+  });
 
   return null;
 };

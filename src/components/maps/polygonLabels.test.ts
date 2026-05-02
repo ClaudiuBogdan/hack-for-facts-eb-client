@@ -5,6 +5,7 @@ import type { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heat
 import {
   getZoomBucket,
   normalizeUatLabelName,
+  processCountyFallbackLabel,
   processFeatureForLabel,
   type ProcessFeatureForLabelOptions,
 } from './polygonLabels';
@@ -58,6 +59,28 @@ function createFeature(name: string) {
           [24.2, 45.2],
           [24.0, 45.2],
           [24.0, 45.0],
+        ],
+      ],
+    },
+  };
+}
+
+function createCountyFeature(name: string, mnemonic: string = 'AB') {
+  return {
+    type: 'Feature' as const,
+    properties: {
+      name,
+      mnemonic,
+    },
+    geometry: {
+      type: 'Polygon' as const,
+      coordinates: [
+        [
+          [23.0, 45.0],
+          [24.0, 45.0],
+          [24.0, 46.0],
+          [23.0, 46.0],
+          [23.0, 45.0],
         ],
       ],
     },
@@ -134,5 +157,49 @@ describe('processFeatureForLabel (legacy-heatmap)', () => {
     );
 
     expect(label).toBeNull();
+  });
+});
+
+describe('processCountyFallbackLabel', () => {
+  it('renders county names without requiring heatmap or active-series data', () => {
+    const label = processCountyFallbackLabel(
+      createCountyFeature('  Alba  '),
+      createMockMap(),
+      6
+    );
+
+    expect(label).not.toBeNull();
+    expect(label?.text).toBe('Alba');
+    expect(label?.showAmount).toBe(false);
+    expect(label?.amount).toBeUndefined();
+    expect(label?.skipCollision).toBe(true);
+    expect(label?.featureId).toBe('county-fallback:AB');
+  });
+
+  it('keeps long county names untruncated', () => {
+    const label = processCountyFallbackLabel(
+      createCountyFeature('Bistrița-Năsăud', 'BN'),
+      createMockMap(100),
+      6
+    );
+
+    expect(label?.text).toBe('Bistrița-Năsăud');
+  });
+
+  it('keeps București standard and moves Ilfov up', () => {
+    const bucharestLabel = processCountyFallbackLabel(
+      createCountyFeature('București', 'B'),
+      createMockMap(),
+      6
+    );
+    const ilfovLabel = processCountyFallbackLabel(
+      createCountyFeature('Ilfov', 'IF'),
+      createMockMap(),
+      6
+    );
+
+    expect(bucharestLabel?.fontSize).toBe(ilfovLabel?.fontSize);
+    expect(bucharestLabel?.positionOffsetPx).toBeUndefined();
+    expect(ilfovLabel?.positionOffsetPx?.y).toBeLessThan(0);
   });
 });

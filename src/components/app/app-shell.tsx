@@ -99,13 +99,13 @@ export function AppShell({ queryClient, ssrTheme }: AppShellProps) {
                         <main
                           role="main"
                           className={cn(
-                            "flex min-h-0 flex-1 flex-col md:pb-0",
+                            "flex min-h-0 min-w-0 flex-1 flex-col md:pb-0",
                             hideMobileBottomDock
                               ? "pb-0"
                               : "pb-[calc(env(safe-area-inset-bottom)+4.5rem)]"
                           )}
                         >
-                          <div className="flex min-h-full flex-1 flex-col">
+                          <div className="flex min-h-full min-w-0 flex-1 flex-col">
                             <AnalyticsPageviewBridge />
                             <Outlet />
                             <Toaster />

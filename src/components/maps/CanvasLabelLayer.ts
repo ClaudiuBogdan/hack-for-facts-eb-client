@@ -3,12 +3,15 @@ import { Feature, GeoJsonObject, Geometry } from 'geojson';
 import { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap';
 import {
   buildFeatureLabelGeometry,
+  ADVANCED_ZOOM_THRESHOLDS,
   estimateTextWidth,
   getZoomBucket,
+  processCountyFallbackLabel,
   processFeatureForLabel,
   type FeatureLabelGeometry,
   type LabelMode,
   type PolygonLabelData,
+  ZOOM_THRESHOLDS,
 } from './polygonLabels';
 import {
   selectNonOverlappingLabelCandidates,
@@ -19,6 +22,7 @@ import type { Currency, Normalization } from '@/schemas/charts';
 
 interface CanvasLabelLayerOptions extends L.LayerOptions {
   geoJsonData: GeoJsonObject | null;
+  countyGeoJsonData?: GeoJsonObject | null;
   mapViewType: 'UAT' | 'County';
   heatmapDataMap: Map<string | number, HeatmapUATDataPoint | HeatmapCountyDataPoint>;
   normalization: Normalization;
@@ -86,9 +90,13 @@ function buildLabelDrawCandidate(
   isActiveSeries: boolean,
 ): LabelDrawCandidate {
   const localPoint = map.latLngToLayerPoint(labelLatLng).subtract(origin);
-  const textX = localPoint.x;
-  const textY = label.showAmount ? localPoint.y - LABEL_NAME_VERTICAL_OFFSET_PX : localPoint.y;
-  const amountY = localPoint.y + label.fontSize * LABEL_AMOUNT_VERTICAL_OFFSET_RATIO;
+  const offsetX = label.positionOffsetPx?.x ?? 0;
+  const offsetY = label.positionOffsetPx?.y ?? 0;
+  const labelX = localPoint.x + offsetX;
+  const labelY = localPoint.y + offsetY;
+  const textX = labelX;
+  const textY = label.showAmount ? labelY - LABEL_NAME_VERTICAL_OFFSET_PX : labelY;
+  const amountY = labelY + label.fontSize * LABEL_AMOUNT_VERTICAL_OFFSET_RATIO;
 
   const nameWidth = estimateTextWidth(label.text, label.fontSize) + LABEL_NAME_HORIZONTAL_PADDING_PX;
   const amountWidth =
@@ -111,7 +119,7 @@ function buildLabelDrawCandidate(
   return {
     featureId: label.featureId,
     x: textX,
-    y: localPoint.y,
+    y: labelY,
     width,
     height,
     hasValue: label.hasValue,
@@ -301,6 +309,8 @@ export class CanvasLabelLayer extends L.Layer {
   private pendingPaintLayout: CanvasPaintLayout | null = null;
   private geometryCache: CachedFeatureGeometryEntry[] = [];
   private geometryCacheGeoJsonReference: GeoJsonObject | null = null;
+  private countyGeometryCache: CachedFeatureGeometryEntry[] = [];
+  private countyGeometryCacheGeoJsonReference: GeoJsonObject | null = null;
 
   private rebuildTimerId: number | null = null;
   private currentAbortController: AbortController | null = null;
@@ -418,6 +428,8 @@ export class CanvasLabelLayer extends L.Layer {
     this.ctx = null;
     this.geometryCache = [];
     this.geometryCacheGeoJsonReference = null;
+    this.countyGeometryCache = [];
+    this.countyGeometryCacheGeoJsonReference = null;
     this.labelCache.clear();
     this.labelCacheSignature = '';
 
@@ -429,12 +441,20 @@ export class CanvasLabelLayer extends L.Layer {
    */
   updateOptions(options: Partial<CanvasLabelLayerOptions>): void {
     const previousGeoJsonData = this.layerOptions.geoJsonData;
+    const previousCountyGeoJsonData = this.layerOptions.countyGeoJsonData;
     const previousSignature = this.computeCacheSignature();
     this.layerOptions = { ...this.layerOptions, ...options };
     const nextSignature = this.computeCacheSignature();
 
     if (options.geoJsonData !== undefined && options.geoJsonData !== previousGeoJsonData) {
       this.rebuildGeometryCache(true);
+    }
+
+    if (
+      options.countyGeoJsonData !== undefined &&
+      options.countyGeoJsonData !== previousCountyGeoJsonData
+    ) {
+      this.rebuildCountyGeometryCache(true);
     }
 
     if (nextSignature === previousSignature) {
@@ -483,6 +503,43 @@ export class CanvasLabelLayer extends L.Layer {
     }
   }
 
+  /**
+   * Precompute county geometry metadata for low-zoom UAT fallback labels.
+   */
+  private rebuildCountyGeometryCache(force: boolean = false): void {
+    const { countyGeoJsonData } = this.layerOptions;
+    if (!force && this.countyGeometryCacheGeoJsonReference === countyGeoJsonData) {
+      return;
+    }
+
+    this.countyGeometryCache = [];
+    this.countyGeometryCacheGeoJsonReference = countyGeoJsonData ?? null;
+    this.labelCache.clear();
+
+    if (
+      !countyGeoJsonData ||
+      countyGeoJsonData.type !== 'FeatureCollection' ||
+      !('features' in countyGeoJsonData)
+    ) {
+      return;
+    }
+
+    const features = countyGeoJsonData.features as Feature<Geometry, Record<string, unknown>>[];
+    for (let index = 0; index < features.length; index += 1) {
+      const rawFeature = features[index];
+      const geometry = buildFeatureLabelGeometry(rawFeature);
+      if (!geometry) {
+        continue;
+      }
+
+      this.countyGeometryCache.push({
+        feature: rawFeature,
+        geometry,
+        cacheKey: `county_${geometry.featureId || `__idx_${index}`}`,
+      });
+    }
+  }
+
   // ---------------------------------------------------------------------------
   // Per-zoom label cache
   // ---------------------------------------------------------------------------
@@ -490,6 +547,7 @@ export class CanvasLabelLayer extends L.Layer {
   private computeCacheSignature(): string {
     const {
       geoJsonData,
+      countyGeoJsonData,
       mapViewType,
       heatmapDataMap,
       normalization,
@@ -502,6 +560,7 @@ export class CanvasLabelLayer extends L.Layer {
 
     return [
       getReferenceSignature(geoJsonData),
+      getReferenceSignature(countyGeoJsonData),
       mapViewType,
       // Map identity matters here: callers memoize the data maps upstream, so
       // a same-size replacement still has to invalidate cached label values.
@@ -513,6 +572,23 @@ export class CanvasLabelLayer extends L.Layer {
       activeSeriesUnit ?? '',
       showLabels ? '1' : '0',
     ].join('|');
+  }
+
+  private shouldUseCountyFallbackLabels(currentZoom: number, labelMode: LabelMode): boolean {
+    if (this.layerOptions.mapViewType !== 'UAT') {
+      return false;
+    }
+
+    if (!this.layerOptions.countyGeoJsonData) {
+      return false;
+    }
+
+    const minimumUatNameZoom =
+      labelMode === 'active-series'
+        ? ADVANCED_ZOOM_THRESHOLDS.UAT_NAME_MIN
+        : ZOOM_THRESHOLDS.UAT_NAME_MIN;
+
+    return currentZoom < minimumUatNameZoom;
   }
 
   private invalidateLabelCacheIfSignatureChanged(): void {
@@ -564,6 +640,7 @@ export class CanvasLabelLayer extends L.Layer {
     }
 
     this.rebuildGeometryCache();
+    this.rebuildCountyGeometryCache();
     this.invalidateLabelCacheIfSignatureChanged();
 
     const currentZoom = this._map.getZoom();
@@ -613,6 +690,35 @@ export class CanvasLabelLayer extends L.Layer {
 
       if (label) {
         visibleLabels.push(label);
+      }
+    }
+
+    if (
+      visibleLabels.length === 0 &&
+      this.shouldUseCountyFallbackLabels(currentZoom, labelMode)
+    ) {
+      for (const cachedFeature of this.countyGeometryCache) {
+        if (!cachedFeature.geometry.bounds.intersects(viewportBounds)) {
+          continue;
+        }
+
+        const cacheKey = cachedFeature.cacheKey;
+        let label = bucketCache.get(cacheKey);
+
+        if (label === undefined) {
+          label =
+            processCountyFallbackLabel(
+              cachedFeature.feature,
+              this._map,
+              currentZoom,
+              { precomputedGeometry: cachedFeature.geometry },
+            ) ?? null;
+          bucketCache.set(cacheKey, label);
+        }
+
+        if (label) {
+          visibleLabels.push(label);
+        }
       }
     }
 
@@ -879,6 +985,11 @@ export class CanvasLabelLayer extends L.Layer {
 
     if (drawCandidates.length === 0) {
       this.paintSelectedCandidates([], layout);
+      return;
+    }
+
+    if (drawCandidates.every((candidate) => candidate.label.skipCollision === true)) {
+      this.paintSelectedCandidates(drawCandidates, layout);
       return;
     }
 

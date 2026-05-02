@@ -157,17 +157,26 @@ function getGlobalHead() {
       { name: "description", content: description },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: title },
-      { property: "og:title", content: `${title} - Romania Public Finance Data` },
+      {
+        property: "og:title",
+        content: `${title} - Romania Public Finance Data`,
+      },
       { property: "og:description", content: description },
       { property: "og:image", content: shareImage },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
       { property: "og:image:alt", content: "Transparenta.eu platform preview" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: `${title} - Romania Public Finance Data` },
+      {
+        name: "twitter:title",
+        content: `${title} - Romania Public Finance Data`,
+      },
       { name: "twitter:description", content: description },
       { name: "twitter:image", content: shareImage },
-      { name: "twitter:image:alt", content: "Transparenta.eu platform preview" },
+      {
+        name: "twitter:image:alt",
+        content: "Transparenta.eu platform preview",
+      },
       {
         name: "keywords",
         content:
@@ -185,10 +194,14 @@ function getGlobalHead() {
             "Entity details and analytics (views, period, normalization).",
           "/entity-analytics":
             "Cross-entity analytics (filter by years, categories, geography).",
-          "/budget-explorer": "Explore and slice budget across years and categories.",
+          "/budget-explorer":
+            "Explore and slice budget across years and categories.",
         }),
       },
-      { name: "ai:parameters:index", content: "https://transparenta.eu/ai/index.json" },
+      {
+        name: "ai:parameters:index",
+        content: "https://transparenta.eu/ai/index.json",
+      },
     ],
     links: [
       { rel: "icon", type: "image/png", href: "/logo.png" },

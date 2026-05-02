@@ -68,12 +68,12 @@ export function MultiSelect({
                 <Badge
                   key={option.value}
                   variant="secondary"
-                  className="flex items-center gap-1 rounded-md px-2 py-1"
+                  className="flex max-w-[280px] items-center gap-1 rounded-md px-2 py-1"
                 >
                   {option.icon && (
                     <option.icon className="h-4 w-4 shrink-0" />
                   )}
-                  <span className="truncate font-normal">{option.label}</span>
+                  <span className="truncate font-normal" title={option.label}>{option.label}</span>
                 </Badge>
               ))
             ) : (
@@ -84,7 +84,7 @@ export function MultiSelect({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-[var(--radix-dropdown-menu-trigger-width)] p-0"
+        className="w-[var(--radix-dropdown-menu-trigger-width)] max-w-[400px] p-0"
         align="start"
       >
         <div className="max-h-64 overflow-auto">
@@ -98,7 +98,7 @@ export function MultiSelect({
                 className="flex cursor-pointer items-center gap-2"
               >
                 {option.icon && <option.icon className="h-4 w-4 shrink-0" />}
-                <span>{option.label}</span>
+                <span className="truncate" title={option.label}>{option.label}</span>
               </DropdownMenuCheckboxItem>
             ))
           ) : (

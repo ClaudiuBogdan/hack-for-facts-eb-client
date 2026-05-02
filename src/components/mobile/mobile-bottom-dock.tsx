@@ -157,7 +157,7 @@ function MobileBottomDockContent() {
         data-testid="mobile-bottom-dock"
         aria-hidden={!isDockVisible}
         className={cn(
-          "pointer-events-none fixed inset-x-0 bottom-0 z-40 md:hidden",
+          "pointer-events-none fixed left-0 bottom-0 z-40 w-full md:hidden",
           "transition-[transform_450ms_cubic-bezier(0.34,1.56,0.64,1),opacity_350ms_ease-out] will-change-[transform,opacity]",
           "motion-reduce:transform-none motion-reduce:transition-opacity",
           isDockVisible

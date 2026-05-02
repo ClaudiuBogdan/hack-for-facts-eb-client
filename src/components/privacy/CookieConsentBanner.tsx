@@ -76,7 +76,7 @@ export function CookieConsentBanner(): ReactElement | null {
   return (
     <ToastProvider duration={20000}>
       {/* Bottom-center, above everything, allow clicks only on the toast */}
-      <ToastPrimitives.Viewport className="fixed inset-x-0 bottom-0 z-50 flex justify-center p-3 md:p-6 pointer-events-none" />
+      <ToastPrimitives.Viewport className="fixed left-0 bottom-0 z-50 flex w-full justify-center p-3 md:p-6 pointer-events-none" />
 
       <ToastPrimitives.Root
         open={isBannerVisible}

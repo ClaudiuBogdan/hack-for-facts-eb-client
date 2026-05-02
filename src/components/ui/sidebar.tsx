@@ -46,6 +46,10 @@ function useSidebar() {
   return context;
 }
 
+function useOptionalSidebar() {
+  return React.useContext(SidebarContext);
+}
+
 const SidebarProvider = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
@@ -331,7 +335,7 @@ const SidebarInset = React.forwardRef<
     <main
       ref={ref}
       className={cn(
-        "relative flex min-h-svh flex-1 flex-col bg-background",
+        "relative flex min-h-svh min-w-0 flex-1 flex-col bg-background",
         "peer-data-[variant=inset]:min-h-[calc(100svh-(--spacing(4)))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-xs",
         className
       )}
@@ -768,6 +772,8 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
+  // eslint-disable-next-line react-refresh/only-export-components
+  useOptionalSidebar,
   // eslint-disable-next-line react-refresh/only-export-components
   useSidebar,
 };

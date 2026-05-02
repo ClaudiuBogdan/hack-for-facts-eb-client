@@ -316,7 +316,8 @@ export const createHeatmapStyleFunction = (
   min: number,
   max: number,
   mapViewType: 'UAT' | 'County',
-  valueKey: 'amount' | 'total_amount' | 'per_capita_amount'
+  valueKey: 'amount' | 'total_amount' | 'per_capita_amount',
+  getColor: (value: number) => string = getHeatmapColor
 ): ((feature: UatFeature) => PathOptions) => {
   // Build the lookup once per style-function instance. The previous
   // implementation ran an O(n) `.find()` on every feature; since this style
@@ -360,14 +361,14 @@ export const createHeatmapStyleFunction = (
     if (min === max) {
       const style = {
         ...DEFAULT_FEATURE_STYLE,
-        fillColor: value !== 0 ? getHeatmapColor(0.5) : DEFAULT_FEATURE_STYLE.fillColor,
+        fillColor: value !== 0 ? getColor(0.5) : DEFAULT_FEATURE_STYLE.fillColor,
         fillOpacity: 0.7,
       };
       return style;
     }
 
     const normalized = normalizeValue(value, min, max);
-    const color = getHeatmapColor(normalized);
+    const color = getColor(normalized);
     const finalStyle = {
       ...DEFAULT_FEATURE_STYLE,
       fillColor: color,
@@ -448,7 +449,8 @@ type StyleFunctionTracker = LeafletGeoJSON & {
  */
 export function restyleAllFeatures(
   layerGroup: LeafletGeoJSON | null,
-  styleFn: (feature?: Feature<Geometry, unknown>) => PathOptions
+  styleFn: (feature?: Feature<Geometry, unknown>) => PathOptions,
+  options?: { force?: boolean },
 ) {
   if (!layerGroup) return;
   const map = (layerGroup as LeafletGeoJsonWithMapRef)._map;
@@ -460,7 +462,7 @@ export function restyleAllFeatures(
   // Fast bail: skip redundant restyles when the style function reference is
   // unchanged since the last successful pass on this layer group.
   const tracker = layerGroup as StyleFunctionTracker;
-  if (tracker.__lastAppliedStyleFn === styleFn) {
+  if (!options?.force && tracker.__lastAppliedStyleFn === styleFn) {
     return;
   }
 

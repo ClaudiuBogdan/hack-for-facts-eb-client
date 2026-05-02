@@ -16,6 +16,7 @@ import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as ProvocareRouteImport } from './routes/provocare'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PnrrRouteImport } from './routes/pnrr'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as EntityAnalyticsRouteImport } from './routes/entity-analytics'
 import { Route as CookiesRouteImport } from './routes/cookies'
@@ -39,6 +40,7 @@ import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
 import { Route as ChartsNewRouteImport } from './routes/charts/new'
 import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
 import { Route as BugeteLocale2026TermeniSiConditiiRouteImport } from './routes/bugete-locale-2026.termeni-si-conditii'
+import { Route as ApiPnrrProjectsRouteImport } from './routes/api.pnrr-projects'
 import { Route as AlertsNewRouteImport } from './routes/alerts/new'
 import { Route as PrimarieCuiRouteRouteImport } from './routes/primarie/$cui/route'
 import { Route as ChartsChartIdRouteRouteImport } from './routes/charts/$chartId/route'
@@ -121,6 +123,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/privacy.lazy').then((d) => d.Route))
+const PnrrRoute = PnrrRouteImport.update({
+  id: '/pnrr',
+  path: '/pnrr',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/pnrr.lazy').then((d) => d.Route))
 const MapRoute = MapRouteImport.update({
   id: '/map',
   path: '/map',
@@ -263,6 +270,11 @@ const BugeteLocale2026TermeniSiConditiiRoute =
     path: '/termeni-si-conditii',
     getParentRoute: () => BugeteLocale2026Route,
   } as any)
+const ApiPnrrProjectsRoute = ApiPnrrProjectsRouteImport.update({
+  id: '/api/pnrr-projects',
+  path: '/api/pnrr-projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AlertsNewRoute = AlertsNewRouteImport.update({
   id: '/alerts/new',
   path: '/alerts/new',
@@ -626,6 +638,7 @@ export interface FileRoutesByFullPath {
   '/cookies': typeof CookiesRoute
   '/entity-analytics': typeof EntityAnalyticsRoute
   '/map': typeof MapRoute
+  '/pnrr': typeof PnrrRoute
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
   '/sign-in': typeof SignInRouteWithChildren
@@ -637,6 +650,7 @@ export interface FileRoutesByFullPath {
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/primarie/$cui': typeof PrimarieCuiRouteRouteWithChildren
   '/alerts/new': typeof AlertsNewRoute
+  '/api/pnrr-projects': typeof ApiPnrrProjectsRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
@@ -703,6 +717,7 @@ export interface FileRoutesByTo {
   '/cookies': typeof CookiesRoute
   '/entity-analytics': typeof EntityAnalyticsRoute
   '/map': typeof MapRoute
+  '/pnrr': typeof PnrrRoute
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
   '/sign-in': typeof SignInRouteWithChildren
@@ -710,6 +725,7 @@ export interface FileRoutesByTo {
   '/test-error': typeof TestErrorRoute
   '/terms': typeof TermsLazyRoute
   '/alerts/new': typeof AlertsNewRoute
+  '/api/pnrr-projects': typeof ApiPnrrProjectsRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
@@ -775,6 +791,7 @@ export interface FileRoutesById {
   '/cookies': typeof CookiesRoute
   '/entity-analytics': typeof EntityAnalyticsRoute
   '/map': typeof MapRoute
+  '/pnrr': typeof PnrrRoute
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
   '/sign-in': typeof SignInRouteWithChildren
@@ -786,6 +803,7 @@ export interface FileRoutesById {
   '/charts/$chartId': typeof ChartsChartIdRouteRouteWithChildren
   '/primarie/$cui': typeof PrimarieCuiRouteRouteWithChildren
   '/alerts/new': typeof AlertsNewRoute
+  '/api/pnrr-projects': typeof ApiPnrrProjectsRoute
   '/bugete-locale-2026/termeni-si-conditii': typeof BugeteLocale2026TermeniSiConditiiRoute
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
@@ -855,6 +873,7 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/entity-analytics'
     | '/map'
+    | '/pnrr'
     | '/privacy'
     | '/provocare'
     | '/sign-in'
@@ -866,6 +885,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId'
     | '/primarie/$cui'
     | '/alerts/new'
+    | '/api/pnrr-projects'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
     | '/charts/new'
@@ -932,6 +952,7 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/entity-analytics'
     | '/map'
+    | '/pnrr'
     | '/privacy'
     | '/provocare'
     | '/sign-in'
@@ -939,6 +960,7 @@ export interface FileRouteTypes {
     | '/test-error'
     | '/terms'
     | '/alerts/new'
+    | '/api/pnrr-projects'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
     | '/charts/new'
@@ -1003,6 +1025,7 @@ export interface FileRouteTypes {
     | '/cookies'
     | '/entity-analytics'
     | '/map'
+    | '/pnrr'
     | '/privacy'
     | '/provocare'
     | '/sign-in'
@@ -1014,6 +1037,7 @@ export interface FileRouteTypes {
     | '/charts/$chartId'
     | '/primarie/$cui'
     | '/alerts/new'
+    | '/api/pnrr-projects'
     | '/bugete-locale-2026/termeni-si-conditii'
     | '/certificates/$id'
     | '/charts/new'
@@ -1082,6 +1106,7 @@ export interface RootRouteChildren {
   CookiesRoute: typeof CookiesRoute
   EntityAnalyticsRoute: typeof EntityAnalyticsRoute
   MapRoute: typeof MapRoute
+  PnrrRoute: typeof PnrrRoute
   PrivacyRoute: typeof PrivacyRoute
   ProvocareRoute: typeof ProvocareRoute
   SignInRoute: typeof SignInRouteWithChildren
@@ -1093,6 +1118,7 @@ export interface RootRouteChildren {
   ChartsChartIdRouteRoute: typeof ChartsChartIdRouteRouteWithChildren
   PrimarieCuiRouteRoute: typeof PrimarieCuiRouteRouteWithChildren
   AlertsNewRoute: typeof AlertsNewRoute
+  ApiPnrrProjectsRoute: typeof ApiPnrrProjectsRoute
   CertificatesIdRoute: typeof CertificatesIdRoute
   ChartsNewRoute: typeof ChartsNewRoute
   ProvocareNotificariRoute: typeof ProvocareNotificariRoute
@@ -1162,6 +1188,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pnrr': {
+      id: '/pnrr'
+      path: '/pnrr'
+      fullPath: '/pnrr'
+      preLoaderRoute: typeof PnrrRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/map': {
@@ -1338,6 +1371,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/bugete-locale-2026/termeni-si-conditii'
       preLoaderRoute: typeof BugeteLocale2026TermeniSiConditiiRouteImport
       parentRoute: typeof BugeteLocale2026Route
+    }
+    '/api/pnrr-projects': {
+      id: '/api/pnrr-projects'
+      path: '/api/pnrr-projects'
+      fullPath: '/api/pnrr-projects'
+      preLoaderRoute: typeof ApiPnrrProjectsRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/alerts/new': {
       id: '/alerts/new'
@@ -1883,6 +1923,7 @@ const rootRouteChildren: RootRouteChildren = {
   CookiesRoute: CookiesRoute,
   EntityAnalyticsRoute: EntityAnalyticsRoute,
   MapRoute: MapRoute,
+  PnrrRoute: PnrrRoute,
   PrivacyRoute: PrivacyRoute,
   ProvocareRoute: ProvocareRoute,
   SignInRoute: SignInRouteWithChildren,
@@ -1894,6 +1935,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChartsChartIdRouteRoute: ChartsChartIdRouteRouteWithChildren,
   PrimarieCuiRouteRoute: PrimarieCuiRouteRouteWithChildren,
   AlertsNewRoute: AlertsNewRoute,
+  ApiPnrrProjectsRoute: ApiPnrrProjectsRoute,
   CertificatesIdRoute: CertificatesIdRoute,
   ChartsNewRoute: ChartsNewRoute,
   ProvocareNotificariRoute: ProvocareNotificariRoute,

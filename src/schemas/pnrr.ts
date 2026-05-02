@@ -1,0 +1,310 @@
+import { z } from 'zod'
+
+export const RawPnrrProjectSchema = z.object({
+  'Titlu Proiect': z.string(),
+  'Nume Beneficiar': z.string(),
+  'CUI': z.string().nullable(),
+  'Județ': z.string(),
+  'Sursă Finanțare': z.enum(['grant', 'loan', 'grant/loan']),
+  'Valoare (EUR)': z.number(),
+  'Progres Tehnic': z.string(),
+  'Progres Financiar': z.string().optional(),
+  'Cod Componentă': z.string(),
+  'Cod Măsură': z.string(),
+  'Localitate': z.string(),
+  'CRI': z.string(),
+})
+
+export type RawPnrrProject = z.infer<typeof RawPnrrProjectSchema>
+
+export type PnrrProjectStatus =
+  | 'completed'
+  | 'not-started'
+  | 'under-30'
+  | 'mid-progress'
+  | 'advanced'
+  | 'unknown'
+
+export type AnomalyType =
+  | 'financial-overrun'
+  | 'stalled-completion'
+  | 'payment-ahead-delivery'
+  | 'large-low-progress'
+
+export type DataQualitySignalType =
+  | 'duplicate-conflict'
+  | 'large-missing-financial-progress'
+  | 'completed-missing-financial-progress'
+
+export type PnrrEntityType = 'public' | 'private' | 'national'
+
+export const PNRR_BENEFICIARY_TYPE_VALUES = [
+  'public',
+  'private',
+  'national',
+  'uat',
+  'county-council',
+  'ministry',
+  'central-agency',
+  'education',
+  'health',
+  'military',
+  'company',
+  'ngo',
+  'religious',
+  'culture',
+  'social',
+  'other-public',
+] as const
+
+export type PnrrBeneficiaryType = typeof PNRR_BENEFICIARY_TYPE_VALUES[number]
+
+export type PnrrGranularity = 'national' | 'county' | 'uat'
+
+export type PnrrProject = {
+  readonly id: string
+  readonly title: string
+  readonly beneficiary: string
+  readonly cui: string | null
+  readonly county: string
+  readonly locality: string
+  readonly fundingSource: 'grant' | 'loan' | 'grant/loan'
+  readonly valueEur: number
+  readonly techProgress: number | null | 'in-implementation'
+  readonly finProgress: number | null | 'in-implementation'
+  readonly status: PnrrProjectStatus
+  readonly componentCode: string
+  readonly measureCode: string
+  readonly measureFullCode: string
+  readonly cri: string
+  readonly anomalies: readonly AnomalyType[]
+  readonly dataQualitySignals: readonly DataQualitySignalType[]
+  readonly isReform: boolean
+  readonly entityType: PnrrEntityType
+  readonly beneficiaryType: PnrrBeneficiaryType
+  readonly sirutaCode: string | null
+}
+
+export type PnrrAggregates = {
+  readonly rawTotalValue: number
+  readonly deduplicatedTotalValue: number
+  readonly rawProjectCount: number
+  readonly deduplicatedProjectCount: number
+  readonly completedCount: number
+  readonly completedValue: number
+  readonly inProgressCount: number
+  readonly notStartedCount: number
+  readonly missingFinProgressCount: number
+  readonly missingFinProgressPercent: number
+  readonly grantTotal: number
+  readonly loanTotal: number
+  readonly mixedTotal: number
+  readonly loanPercent: number
+  readonly componentStats: Record<
+    string,
+    {
+      readonly count: number
+      readonly value: number
+      readonly missingFinProgress: number
+    }
+  >
+  readonly countyStats: Record<
+    string,
+    {
+      readonly count: number
+      readonly value: number
+    }
+  >
+  readonly anomalyCounts: Record<AnomalyType, { readonly count: number; readonly value: number }>
+  readonly dataQualitySignalCounts: Record<
+    DataQualitySignalType,
+    { readonly count: number; readonly value: number }
+  >
+  readonly topBeneficiaries: Array<{
+    readonly beneficiary: string
+    readonly cui: string | null
+    readonly count: number
+    readonly value: number
+  }>
+}
+
+export const PnrrViewSchema = z.enum(['overview', 'projects', 'anomalies', 'map', 'beneficiaries'])
+export type PnrrView = z.infer<typeof PnrrViewSchema>
+
+export const PNRR_SEARCH_DEFAULTS = {
+  view: 'overview',
+  onlyAnomalies: false,
+  excludeMicro: false,
+  granularity: 'county',
+  includeNational: true,
+  sortBy: 'value',
+  sortOrder: 'desc',
+  page: 1,
+  pageSize: 25,
+} as const
+
+export const PnrrSearchSchema = z.object({
+  view: PnrrViewSchema.default(PNRR_SEARCH_DEFAULTS.view),
+  search: z.string().optional(),
+  beneficiarySearch: z.string().optional(),
+  beneficiaryCui: z.coerce.string().optional(),
+  uatSiruta: z.coerce.string().optional(),
+  uatName: z.string().optional(),
+  uatSirutas: z.array(z.string()).optional(),
+  components: z.array(z.string()).optional(),
+  counties: z.array(z.string()).optional(),
+  fundingSources: z.array(z.enum(['grant', 'loan', 'grant/loan'])).optional(),
+  measures: z.array(z.string()).optional(),
+  cris: z.array(z.string()).optional(),
+  progressCategories: z
+    .array(z.enum(['completed', 'advanced', 'mid', 'under30', 'not-started', 'unknown']))
+    .optional(),
+  onlyAnomalies: z.boolean().optional().default(PNRR_SEARCH_DEFAULTS.onlyAnomalies),
+  excludeMicro: z.boolean().optional().default(PNRR_SEARCH_DEFAULTS.excludeMicro),
+  anomalyTypes: z.array(z.string()).optional(),
+  dataQualitySignalTypes: z.array(z.string()).optional(),
+  granularity: z
+    .enum(['national', 'county', 'uat'])
+    .optional()
+    .default(PNRR_SEARCH_DEFAULTS.granularity),
+  entityTypes: z.array(z.enum(['public', 'private', 'national'])).optional(),
+  beneficiaryTypes: z.array(z.enum(PNRR_BENEFICIARY_TYPE_VALUES)).optional(),
+  includeNational: z.boolean().optional().default(PNRR_SEARCH_DEFAULTS.includeNational),
+  sortBy: z
+    .enum(['value', 'title', 'techProgress', 'finProgress', 'county', 'beneficiary'])
+    .default(PNRR_SEARCH_DEFAULTS.sortBy),
+  sortOrder: z.enum(['asc', 'desc']).default(PNRR_SEARCH_DEFAULTS.sortOrder),
+  page: z.preprocess(
+    (val) => {
+      if (val === undefined) return PNRR_SEARCH_DEFAULTS.page
+      const n = Number(val)
+      return Number.isFinite(n) && n >= 1 ? Math.floor(n) : PNRR_SEARCH_DEFAULTS.page
+    },
+    z.number()
+  ),
+  pageSize: z.preprocess(
+    (val) => {
+      if (val === undefined) return PNRR_SEARCH_DEFAULTS.pageSize
+      const n = Number(val)
+      return Number.isFinite(n) && n >= 1 ? Math.floor(n) : PNRR_SEARCH_DEFAULTS.pageSize
+    },
+    z.number()
+  ),
+  mapLat: z.coerce.number().optional(),
+  mapLng: z.coerce.number().optional(),
+  mapZoom: z.coerce.number().optional(),
+})
+
+export type PnrrSearchState = z.infer<typeof PnrrSearchSchema>
+
+const arraySearchKeys = [
+  'components',
+  'counties',
+  'fundingSources',
+  'measures',
+  'cris',
+  'progressCategories',
+  'anomalyTypes',
+  'dataQualitySignalTypes',
+  'entityTypes',
+  'beneficiaryTypes',
+  'uatSirutas',
+] as const satisfies readonly (keyof PnrrSearchState)[]
+
+export function cleanPnrrSearch(search: Partial<PnrrSearchState>): Partial<PnrrSearchState> {
+  const cleaned: Partial<PnrrSearchState> = { ...search }
+
+  const searchText = cleaned.search?.trim()
+  if (searchText) {
+    cleaned.search = searchText
+  } else {
+    delete cleaned.search
+  }
+
+  const beneficiarySearchText = cleaned.beneficiarySearch?.trim()
+  if (beneficiarySearchText) {
+    cleaned.beneficiarySearch = beneficiarySearchText
+  } else {
+    delete cleaned.beneficiarySearch
+  }
+
+  const beneficiaryCuiText = cleaned.beneficiaryCui?.trim()
+  if (beneficiaryCuiText) {
+    cleaned.beneficiaryCui = beneficiaryCuiText
+  } else {
+    delete cleaned.beneficiaryCui
+  }
+
+  const uatSirutaText = cleaned.uatSiruta?.trim()
+  if (uatSirutaText) {
+    cleaned.uatSiruta = uatSirutaText
+  } else {
+    delete cleaned.uatSiruta
+  }
+
+  const uatNameText = cleaned.uatName?.trim()
+  if (uatNameText && uatSirutaText) {
+    cleaned.uatName = uatNameText
+  } else {
+    delete cleaned.uatName
+  }
+
+  for (const key of arraySearchKeys) {
+    if (!cleaned[key]?.length) {
+      delete cleaned[key]
+    }
+  }
+
+  if (cleaned.view === PNRR_SEARCH_DEFAULTS.view) delete cleaned.view
+  if (cleaned.onlyAnomalies === PNRR_SEARCH_DEFAULTS.onlyAnomalies) delete cleaned.onlyAnomalies
+  if (cleaned.excludeMicro === PNRR_SEARCH_DEFAULTS.excludeMicro) delete cleaned.excludeMicro
+  if (cleaned.granularity === PNRR_SEARCH_DEFAULTS.granularity) delete cleaned.granularity
+  if (cleaned.includeNational === PNRR_SEARCH_DEFAULTS.includeNational) delete cleaned.includeNational
+  if (cleaned.sortBy === PNRR_SEARCH_DEFAULTS.sortBy) delete cleaned.sortBy
+  if (cleaned.sortOrder === PNRR_SEARCH_DEFAULTS.sortOrder) delete cleaned.sortOrder
+  if (cleaned.page === PNRR_SEARCH_DEFAULTS.page) delete cleaned.page
+  if (cleaned.pageSize === PNRR_SEARCH_DEFAULTS.pageSize) delete cleaned.pageSize
+
+  if (cleaned.mapLat == null || cleaned.mapLng == null || cleaned.mapZoom == null) {
+    delete cleaned.mapLat
+    delete cleaned.mapLng
+    delete cleaned.mapZoom
+  }
+
+  for (const key of Object.keys(cleaned) as (keyof PnrrSearchState)[]) {
+    if (cleaned[key] === undefined) {
+      delete cleaned[key]
+    }
+  }
+
+  return cleaned
+}
+
+export function parsePnrrSearch(search: unknown): Partial<PnrrSearchState> {
+  return cleanPnrrSearch(PnrrSearchSchema.parse(search))
+}
+
+function parseSearchValue(value: string): unknown {
+  try {
+    return JSON.parse(value)
+  } catch {
+    // Continue to the router-compatible URI-decoding fallback.
+  }
+
+  try {
+    return JSON.parse(decodeURIComponent(value.replace(/\+/g, '%20')))
+  } catch {
+    return value
+  }
+}
+
+export function parsePnrrSearchString(searchStr: string): Partial<PnrrSearchState> {
+  const rawSearch: Record<string, unknown> = {}
+  const params = new URLSearchParams(searchStr)
+
+  params.forEach((value, key) => {
+    rawSearch[key] = parseSearchValue(value)
+  })
+
+  return parsePnrrSearch(rawSearch)
+}

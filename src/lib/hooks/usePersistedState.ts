@@ -8,13 +8,13 @@ const isQuotaExceededError = (error: unknown): boolean => {
 };
 
 export const usePersistedState = <T>(key: string, initialValue: T) => {
+    // Initialize from localStorage synchronously so the stored value is
+    // available on the very first render (no flash of the default).
     const [value, setValue] = useState<T>(() => {
-        if (typeof window === "undefined") {
-            return initialValue;
-        }
+        if (typeof window === 'undefined') return initialValue;
         try {
             const storedValue = localStorage.getItem(key);
-            return storedValue ? JSON.parse(storedValue) : initialValue;
+            return storedValue !== null ? JSON.parse(storedValue) : initialValue;
         } catch (error) {
             console.error(`Error parsing stored value for key ${key}:`, error);
             return initialValue;

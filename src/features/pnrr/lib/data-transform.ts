@@ -1,0 +1,1153 @@
+import { generateHash } from '@/lib/utils'
+import type {
+  RawPnrrProject,
+  PnrrProject,
+  PnrrProjectStatus,
+  AnomalyType,
+  DataQualitySignalType,
+  PnrrAggregates,
+  PnrrEntityType,
+  PnrrBeneficiaryType,
+} from '@/schemas/pnrr'
+import { PNRR_COMPONENTS } from '../data/component-definitions'
+import {
+  getPnrrBeneficiaryDirectoryType,
+  resolvePnrrProjectLocation,
+} from './pnrr-uat-assignment'
+
+/** Date when the PNRR dataset was last updated (shown in UI and used in export filenames). */
+export const PNRR_LAST_UPDATED = '2026-04-30'
+
+// ---------------------------------------------------------------------------
+// Progress parsing
+// ---------------------------------------------------------------------------
+
+export function parseProgress(
+  val: string | undefined
+): number | null | 'in-implementation' {
+  if (!val || val.trim() === '') return null
+  const trimmed = val.trim()
+
+  if (trimmed === 'ÎN IMPLEMENTARE (sub 30%)') return 'in-implementation'
+  if (trimmed === 'ÎN IMPLEMENTARE') return 'in-implementation'
+  if (trimmed === 'FINALIZAT') return 100
+
+  if (trimmed.endsWith('%')) {
+    const num = Number.parseFloat(trimmed.slice(0, -1))
+    if (!Number.isNaN(num)) return num
+  }
+
+  const num = Number.parseFloat(trimmed)
+  if (!Number.isNaN(num)) return num
+
+  return null
+}
+
+// ---------------------------------------------------------------------------
+// Status classification
+// ---------------------------------------------------------------------------
+
+export function classifyStatus(
+  tech: number | null | 'in-implementation'
+): PnrrProjectStatus {
+  if (typeof tech === 'number' && tech >= 100) return 'completed'
+  if (tech === 0) return 'not-started'
+  if (tech === 'in-implementation') return 'under-30'
+  if (typeof tech === 'number') {
+    if (tech < 30) return 'under-30'
+    if (tech < 70) return 'mid-progress'
+    return 'advanced'
+  }
+  return 'unknown'
+}
+
+// ---------------------------------------------------------------------------
+// Anomaly detection
+// ---------------------------------------------------------------------------
+
+type AnomalyInput = {
+  readonly techProgress: number | null | 'in-implementation'
+  readonly finProgress: number | null | 'in-implementation'
+  readonly valueEur: number
+}
+
+function getRiskTechProgress(
+  progress: number | null | 'in-implementation'
+): number | null {
+  return progress === 'in-implementation' ? 15 : progress
+}
+
+export function detectAnomalies(project: AnomalyInput): readonly AnomalyType[] {
+  const anomalies: AnomalyType[] = []
+
+  const tech = getRiskTechProgress(project.techProgress)
+  const fin =
+    project.finProgress === 'in-implementation' ? null : project.finProgress
+
+  if (fin !== null && fin > 100) {
+    anomalies.push('financial-overrun')
+  }
+
+  if (tech === 100 && fin !== null && fin < 80) {
+    anomalies.push('stalled-completion')
+  }
+
+  if (
+    tech !== null &&
+    fin !== null &&
+    fin <= 100 &&
+    tech < 90 &&
+    ((tech === 0 && fin > 0) || fin - tech > 50)
+  ) {
+    anomalies.push('payment-ahead-delivery')
+  }
+
+  if (project.valueEur >= 10_000_000 && tech !== null && tech < 30) {
+    anomalies.push('large-low-progress')
+  }
+
+  return anomalies
+}
+
+export function detectDataQualitySignals(
+  project: Pick<PnrrProject, 'techProgress' | 'finProgress' | 'valueEur'>
+): readonly DataQualitySignalType[] {
+  const signals: DataQualitySignalType[] = []
+
+  if (project.finProgress === null && project.valueEur >= 10_000_000) {
+    signals.push('large-missing-financial-progress')
+  }
+
+  if (
+    project.techProgress === 100 &&
+    project.finProgress === null &&
+    project.valueEur >= 1_000_000
+  ) {
+    signals.push('completed-missing-financial-progress')
+  }
+
+  return signals
+}
+
+// ---------------------------------------------------------------------------
+// Entity type classification
+// ---------------------------------------------------------------------------
+
+const PUBLIC_KEYWORDS: readonly string[] = [
+  // Ministries & central government
+  'MINISTERUL',
+  // National companies (with and without diacritics, compound forms)
+  'COMPANIA NAȚIONALĂ',
+  'COMPANIA NATIONALA',
+  'SOCIETATEA NAȚIONALĂ',
+  'SOCIETATEA NATIONALA',
+  // Authorities & agencies (with and without diacritics)
+  'AUTORITATEA',
+  'ADMINISTRAȚIA',
+  'ADMINISTRATIA',
+  'AGENȚIA',
+  'AGENTIA',
+  'DIRECȚIA',
+  'DIRECTIA',
+  // Military
+  'UNITATEA MILITARĂ',
+  'UNITATEA MILITARA',
+  'U.M.',
+  // Public institutions
+  'REGIA AUTONOMĂ',
+  'REGIA AUTONOMA',
+  'REGIE AUTONOMĂ',
+  'REGIE AUTONOMA',
+  'CASCI',
+  'CASA JUDEȚEANĂ',
+  'CASA JUDETEANA',
+  'CASA DE ASIGURĂRI',
+  'CASA DE ASIGURARI',
+  'CENTRUL NAȚIONAL',
+  'CENTRUL NATIONAL',
+  'INSTITUTUL NAȚIONAL',
+  'INSTITUTUL NATIONAL',
+  'BANCA NAȚIONALĂ',
+  'BANCA NATIONALA',
+  'ACADEMIA',
+  // Healthcare
+  'SPITALUL',
+  // Local government (with and without diacritics, with and without suffix)
+  'PRIMĂRIA',
+  'PRIMARIA',
+  'CONSILIUL',
+  'INSPECTORATUL',
+  'JUDEȚUL',
+  'JUDETUL',
+  'MUNICIPIUL',
+  'MUNICIPIU',
+  'ORAȘUL',
+  'ORASUL',
+  'ORAȘ',
+  'ORAS',
+  'COMUNA',
+  // Education (with and without diacritics)
+  'UNIVERSITATEA',
+  'INSTITUTUL',
+  'LICEUL',
+  'COLEGIUL',
+  // Religious entities
+  'PAROHIA',
+  'MANASTIREA',
+  'MĂNĂSTIREA',
+  // Police & security
+  'POLIȚIA',
+  'POLITIA',
+  'JANDARMERIA',
+  'SERVICIUL ROMÂN',
+  'SERVICIUL ROMAN',
+  // Other public entities
+  'MUZEUL',
+  'MUZEU',
+  'SECTORUL',
+  'REGIA NAȚIONALĂ',
+  'REGIA NATIONALA',
+  'DIRECTORATUL',
+  'INSPECȚIA',
+  'INSPECTIA',
+  'CASA NAȚIONALĂ',
+  'CASA NATIONALA',
+  'ASOCIAȚIA',
+  'ASOCIATIA',
+  'FUNDATIA',
+  'BISERICA',
+  'ARHIEPISCOPIA',
+]
+
+/**
+ * Check if a beneficiary name contains an explicit private-company marker:
+ * SRL (with/without dots/spaces), SA (word-boundary, with/without dots),
+ * PERSOANĂ FIZICĂ AUTORIZATĂ (diacritic-insensitive), or PFA.
+ */
+function hasPrivateMarker(beneficiary: string): boolean {
+  const normalized = beneficiary
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/\./g, '')
+
+  const hasSrl = normalized.includes('SRL')
+  const hasSa = /\bSA\b/.test(normalized)
+  const hasPfa =
+    normalized.includes('PERSOANA FIZICA AUTORIZATA') || normalized.includes('PFA')
+
+  return hasSrl || hasSa || hasPfa
+}
+
+export function classifyEntityType(beneficiary: string, county: string): PnrrEntityType {
+  const upper = beneficiary.toUpperCase()
+  const hasPublicKeyword = PUBLIC_KEYWORDS.some((kw) => upper.includes(kw))
+  const hasExplicitPrivateMarker = hasPrivateMarker(beneficiary)
+
+  if (county === 'Național') {
+    return hasPublicKeyword || !hasExplicitPrivateMarker ? 'national' : 'private'
+  }
+
+  if (hasPublicKeyword) {
+    return 'public'
+  }
+  if (hasExplicitPrivateMarker) {
+    return 'private'
+  }
+  // Fallback: entities without explicit private markers that are not public
+  // are treated as public to avoid leaking non-company beneficiaries into
+  // the private filter (e.g. individuals, cabinets without SRL).
+  return 'public'
+}
+
+const UAT_DIRECTORY_TYPES = new Set([
+  'admin_commune_hall',
+  'admin_municipality',
+  'admin_sector_hall',
+  'admin_town_hall',
+])
+
+const CENTRAL_AGENCY_DIRECTORY_TYPES = new Set([
+  'admin_central_agency',
+  'environment_agency',
+  'finance_health_fund',
+  'finance_social_security',
+  'finance_tax_authority',
+  'justice_court',
+  'public_order_intelligence',
+  'public_order_police',
+  'social_benefits_agency',
+  'social_employment_agency',
+])
+
+const SOCIAL_DIRECTORY_TYPES = new Set([
+  'social_assistance_dir',
+  'social_child_protection',
+  'social_disability_care',
+])
+
+function normalizeBeneficiaryName(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/\./g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function hasAnyBeneficiaryKeyword(value: string, keywords: readonly string[]): boolean {
+  return keywords.some((keyword) => value.includes(keyword))
+}
+
+export function classifyBeneficiaryType(
+  beneficiary: string,
+  cui: string | null,
+  entityType: PnrrEntityType,
+  directoryType = getPnrrBeneficiaryDirectoryType(cui)
+): PnrrBeneficiaryType {
+  const normalized = normalizeBeneficiaryName(beneficiary)
+
+  if (directoryType) {
+    if (UAT_DIRECTORY_TYPES.has(directoryType)) return 'uat'
+    if (directoryType === 'admin_county_council') return 'county-council'
+    if (directoryType === 'admin_ministry') return 'ministry'
+    if (directoryType.startsWith('edu_')) return 'education'
+    if (directoryType.startsWith('health_')) return 'health'
+    if (directoryType.startsWith('defence_')) return 'military'
+    if (directoryType.startsWith('culture_')) return 'culture'
+    if (SOCIAL_DIRECTORY_TYPES.has(directoryType)) return 'social'
+    if (CENTRAL_AGENCY_DIRECTORY_TYPES.has(directoryType)) return 'central-agency'
+  }
+
+  if (hasPrivateMarker(beneficiary)) return 'company'
+  if (hasAnyBeneficiaryKeyword(normalized, ['ASOCIATIA', 'FUNDATIA', 'FEDERATIA'])) return 'ngo'
+  if (
+    hasAnyBeneficiaryKeyword(normalized, [
+      'PAROHIA',
+      'BISERICA',
+      'MANASTIREA',
+      'ARHIEPISCOPIA',
+      'EPISCOPIA',
+    ])
+  ) {
+    return 'religious'
+  }
+  if (
+    hasAnyBeneficiaryKeyword(normalized, [
+      'MUNICIPIUL',
+      'ORASUL',
+      'COMUNA',
+      'PRIMARIA',
+      'SECTORUL',
+    ])
+  ) {
+    return 'uat'
+  }
+  if (hasAnyBeneficiaryKeyword(normalized, ['JUDETUL', 'CONSILIUL JUDETEAN'])) {
+    return 'county-council'
+  }
+  if (normalized.includes('MINISTERUL')) return 'ministry'
+  if (
+    hasAnyBeneficiaryKeyword(normalized, [
+      'UNIVERSITATEA',
+      'LICEUL',
+      'COLEGIUL',
+      'SCOALA',
+      'GRADINITA',
+      'INSTITUTUL DE CERCETARE',
+    ])
+  ) {
+    return 'education'
+  }
+  if (
+    hasAnyBeneficiaryKeyword(normalized, [
+      'SPITALUL',
+      'AMBULANTA',
+      'DIRECTIA DE SANATATE',
+      'CLINIC',
+    ])
+  ) {
+    return 'health'
+  }
+  if (
+    normalized.startsWith('U M ') ||
+    normalized.startsWith('UM ') ||
+    hasAnyBeneficiaryKeyword(normalized, ['UNITATEA MILITARA', ' U M ', ' UM '])
+  ) {
+    return 'military'
+  }
+  if (hasAnyBeneficiaryKeyword(normalized, ['MUZEUL', 'BIBLIOTECA', 'CASA DE CULTURA'])) {
+    return 'culture'
+  }
+  if (entityType === 'private') return 'company'
+  if (entityType === 'national') return 'national'
+  return 'other-public'
+}
+
+// ---------------------------------------------------------------------------
+// Title normalization (for deduplication)
+// ---------------------------------------------------------------------------
+
+export function normalizeTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+// ---------------------------------------------------------------------------
+// Raw → Normalized transformation
+// ---------------------------------------------------------------------------
+
+export function transformProject(raw: RawPnrrProject): PnrrProject {
+  const techRaw = parseProgress(raw['Progres Tehnic'])
+  const finRaw = parseProgress(raw['Progres Financiar'])
+
+  const componentCode = raw['Cod Componentă']
+  const measureCode = raw['Cod Măsură']
+  const measureFullCode = `${componentCode}-${measureCode}`
+  const cui = raw['CUI']
+  const resolvedLocation = resolvePnrrProjectLocation({
+    beneficiary: raw['Nume Beneficiar'],
+    cui,
+    locality: raw['Localitate'],
+    county: raw['Județ'],
+  })
+  const county = resolvedLocation.county
+  const locality = resolvedLocation.locality
+  const entityType = classifyEntityType(raw['Nume Beneficiar'], county)
+
+  const projectBase = {
+    id: generateHash(
+      `${raw['Titlu Proiect']}|${cui ?? ''}|${componentCode}|${measureCode}|${raw['Valoare (EUR)']}|${raw['Progres Tehnic']}|${raw['Progres Financiar'] ?? ''}|${raw['Județ']}|${raw['Localitate']}|${raw['Sursă Finanțare']}|${raw['CRI']}|${raw['Nume Beneficiar']}`
+    ),
+    title: raw['Titlu Proiect'],
+    beneficiary: raw['Nume Beneficiar'],
+    cui,
+    county,
+    locality,
+    fundingSource: raw['Sursă Finanțare'],
+    valueEur: raw['Valoare (EUR)'],
+    techProgress: techRaw,
+    finProgress: finRaw,
+    status: classifyStatus(techRaw),
+    componentCode,
+    measureCode,
+    measureFullCode,
+    cri: raw['CRI'],
+    anomalies: [] as readonly AnomalyType[],
+    dataQualitySignals: [] as readonly DataQualitySignalType[],
+    isReform: measureCode.startsWith('R'),
+    entityType,
+    beneficiaryType: classifyBeneficiaryType(raw['Nume Beneficiar'], cui, entityType),
+    sirutaCode: resolvedLocation.sirutaCode,
+  }
+
+  // Attach anomalies
+  return {
+    ...projectBase,
+    anomalies: detectAnomalies(projectBase),
+    dataQualitySignals: detectDataQualitySignals(projectBase),
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Deduplication
+// ---------------------------------------------------------------------------
+
+export function deduplicateProjects(
+  projects: readonly PnrrProject[]
+): readonly PnrrProject[] {
+  const seen = new Map<string, PnrrProject>()
+
+  for (const p of projects) {
+    const key = `${normalizeTitle(p.title)}|${p.cui ?? ''}|${p.componentCode}|${p.measureCode}`
+    if (!seen.has(key)) {
+      seen.set(key, p)
+    }
+  }
+
+  return Array.from(seen.values())
+}
+
+// ---------------------------------------------------------------------------
+// Aggregates
+// ---------------------------------------------------------------------------
+
+export function computeAggregates(
+  projects: readonly PnrrProject[]
+): PnrrAggregates {
+  const deduplicated = deduplicateProjects(projects)
+
+  let rawTotalValue = 0
+  let deduplicatedTotalValue = 0
+  let completedCount = 0
+  let completedValue = 0
+  let inProgressCount = 0
+  let notStartedCount = 0
+  let missingFinProgressCount = 0
+  let grantTotal = 0
+  let loanTotal = 0
+  let mixedTotal = 0
+
+  const componentStats: Record<string, { count: number; value: number; missingFinProgress: number }> =
+    {}
+  const countyStats: Record<string, { count: number; value: number }> = {}
+  const anomalyCounts: Record<AnomalyType, { count: number; value: number }> = {
+    'financial-overrun': { count: 0, value: 0 },
+    'stalled-completion': { count: 0, value: 0 },
+    'payment-ahead-delivery': { count: 0, value: 0 },
+    'large-low-progress': { count: 0, value: 0 },
+  }
+  const dataQualitySignalCounts: Record<
+    DataQualitySignalType,
+    { count: number; value: number }
+  > = {
+    'duplicate-conflict': { count: 0, value: 0 },
+    'large-missing-financial-progress': { count: 0, value: 0 },
+    'completed-missing-financial-progress': { count: 0, value: 0 },
+  }
+  const beneficiaryMap = new Map<
+    string,
+    { beneficiary: string; cui: string | null; count: number; value: number }
+  >()
+
+  for (const p of projects) {
+    rawTotalValue += p.valueEur
+
+    if (p.status === 'completed') {
+      completedCount++
+      completedValue += p.valueEur
+    } else if (p.status === 'not-started') {
+      notStartedCount++
+    } else {
+      inProgressCount++
+    }
+
+    if (p.finProgress === null || p.finProgress === 'in-implementation') {
+      missingFinProgressCount++
+    }
+
+    if (p.fundingSource === 'grant') grantTotal += p.valueEur
+    else if (p.fundingSource === 'loan') loanTotal += p.valueEur
+    else mixedTotal += p.valueEur
+
+    // Component stats
+    if (!componentStats[p.componentCode]) {
+      componentStats[p.componentCode] = { count: 0, value: 0, missingFinProgress: 0 }
+    }
+    componentStats[p.componentCode].count++
+    componentStats[p.componentCode].value += p.valueEur
+    if (p.finProgress === null || p.finProgress === 'in-implementation') {
+      componentStats[p.componentCode].missingFinProgress++
+    }
+
+    // County stats
+    if (!countyStats[p.county]) {
+      countyStats[p.county] = { count: 0, value: 0 }
+    }
+    countyStats[p.county].count++
+    countyStats[p.county].value += p.valueEur
+
+    // Anomalies
+    for (const a of p.anomalies) {
+      anomalyCounts[a].count++
+      anomalyCounts[a].value += p.valueEur
+    }
+
+    for (const signal of p.dataQualitySignals) {
+      dataQualitySignalCounts[signal].count++
+      dataQualitySignalCounts[signal].value += p.valueEur
+    }
+
+    // Beneficiaries (raw, not deduplicated, for top beneficiaries)
+    const benKey = `${p.beneficiary}|${p.cui ?? ''}`
+    const existing = beneficiaryMap.get(benKey)
+    if (existing) {
+      existing.count++
+      existing.value += p.valueEur
+    } else {
+      beneficiaryMap.set(benKey, {
+        beneficiary: p.beneficiary,
+        cui: p.cui,
+        count: 1,
+        value: p.valueEur,
+      })
+    }
+  }
+
+  for (const p of deduplicated) {
+    deduplicatedTotalValue += p.valueEur
+  }
+
+  const topBeneficiaries = Array.from(beneficiaryMap.values())
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 20)
+
+  const totalValueForPercent = rawTotalValue || 1
+
+  return {
+    rawTotalValue,
+    deduplicatedTotalValue,
+    rawProjectCount: projects.length,
+    deduplicatedProjectCount: deduplicated.length,
+    completedCount,
+    completedValue,
+    inProgressCount,
+    notStartedCount,
+    missingFinProgressCount,
+    missingFinProgressPercent: projects.length > 0
+      ? (missingFinProgressCount / projects.length) * 100
+      : 0,
+    grantTotal,
+    loanTotal,
+    mixedTotal,
+    loanPercent: (loanTotal / totalValueForPercent) * 100,
+    componentStats,
+    countyStats,
+    anomalyCounts,
+    dataQualitySignalCounts,
+    topBeneficiaries,
+  }
+}
+
+function duplicateConflictSignature(project: PnrrProject): string {
+  return JSON.stringify({
+    beneficiary: project.beneficiary,
+    county: project.county,
+    locality: project.locality,
+    fundingSource: project.fundingSource,
+    valueEur: project.valueEur,
+    techProgress: project.techProgress,
+    finProgress: project.finProgress,
+    cri: project.cri,
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Full pipeline
+// ---------------------------------------------------------------------------
+
+export function processPnrrData(rawProjects: unknown[]): {
+  readonly projects: readonly PnrrProject[]
+} {
+  const projects = rawProjects.map((r) => {
+    const raw = r as Record<string, unknown>
+    return transformProject({
+      'Titlu Proiect': String(raw['Titlu Proiect'] ?? ''),
+      'Nume Beneficiar': String(raw['Nume Beneficiar'] ?? ''),
+      'CUI': raw['CUI'] != null ? String(raw['CUI']) : null,
+      'Județ': String(raw['Județ'] ?? ''),
+      'Sursă Finanțare': (raw['Sursă Finanțare'] ?? 'grant') as RawPnrrProject['Sursă Finanțare'],
+      'Valoare (EUR)': Number(raw['Valoare (EUR)']) || 0,
+      'Progres Tehnic': String(raw['Progres Tehnic'] ?? ''),
+      'Progres Financiar': raw['Progres Financiar'] != null ? String(raw['Progres Financiar']) : undefined,
+      'Cod Componentă': String(raw['Cod Componentă'] ?? ''),
+      'Cod Măsură': String(raw['Cod Măsură'] ?? ''),
+      'Localitate': String(raw['Localitate'] ?? ''),
+      'CRI': String(raw['CRI'] ?? ''),
+    })
+  })
+
+  // Validate component codes
+  for (const p of projects) {
+    if (!PNRR_COMPONENTS[p.componentCode]) {
+      console.warn(`Unknown component code: ${p.componentCode}`)
+    }
+  }
+
+  // Detect duplicate-conflict data-quality signals (same title + CUI + component + measure)
+  const keyMap = new Map<string, PnrrProject[]>()
+  for (const p of projects) {
+    const key = `${normalizeTitle(p.title)}|${p.cui ?? ''}|${p.componentCode}|${p.measureCode}`
+    const existing = keyMap.get(key)
+    if (existing) {
+      existing.push(p)
+    } else {
+      keyMap.set(key, [p])
+    }
+  }
+
+  const projectsWithDuplicates = projects.map((p) => {
+    const key = `${normalizeTitle(p.title)}|${p.cui ?? ''}|${p.componentCode}|${p.measureCode}`
+    const group = keyMap.get(key)!
+    const hasConflict =
+      group.length > 1 &&
+      new Set(group.map((item) => duplicateConflictSignature(item))).size > 1
+
+    if (hasConflict && !p.dataQualitySignals.includes('duplicate-conflict')) {
+      return {
+        ...p,
+        dataQualitySignals: [
+          ...p.dataQualitySignals,
+          'duplicate-conflict' as DataQualitySignalType,
+        ],
+      }
+    }
+    return p
+  })
+
+  return { projects: projectsWithDuplicates }
+}
+
+// ---------------------------------------------------------------------------
+// Search query parser
+//
+// Supports: AND / OR (uppercase), "exact quotes", -exclusion, (grouping)
+// Precedence (low→high): OR → AND (implicit) → NOT (-) → atom
+//
+// Implementation: tokenize → resolve (...) groups → flat OR/AND/NOT parse.
+// One level of grouping only (no nested parens).
+// ---------------------------------------------------------------------------
+
+type SearchExpr =
+  | { type: 'term'; value: string; exact: boolean }
+  | { type: 'not'; clause: SearchExpr }
+  | { type: 'and'; clauses: SearchExpr[] }
+  | { type: 'or'; clauses: SearchExpr[] }
+
+// A flat item is either a raw string token or an already-resolved SearchExpr
+// (from a parenthesized group).
+type FlatItem = string | SearchExpr
+
+// ---------------------------------------------------------------------------
+// Tokenizer
+// ---------------------------------------------------------------------------
+
+/**
+ * Tokenize a search query into a flat array of string tokens.
+ * Special tokens: `(`, `)`, `AND`, `OR`, `-(`, `-term`, `-"exact"`, `"exact"`.
+ */
+function tokenizeSearch(query: string): string[] {
+  const tokens: string[] = []
+  let current = ''
+  let inQuote = false
+  let excludeQuote = false // true when '-' precedes an opening quote
+
+  function flush() {
+    const trimmed = current.trim()
+    if (trimmed) {
+      tokens.push(trimmed)
+      current = ''
+    }
+  }
+
+  for (const char of query) {
+    // Inside a quoted phrase — accumulate verbatim
+    if (inQuote) {
+      if (char === '"') {
+        tokens.push((excludeQuote ? '-"' : '"') + current + '"')
+        current = ''
+        inQuote = false
+        excludeQuote = false
+      } else {
+        current += char
+      }
+      continue
+    }
+
+    // Outside quotes
+    if (char === '"') {
+      // If current is just '-', this is a negated quote: -"..."
+      if (current.trim() === '-') {
+        current = ''
+        excludeQuote = true
+      } else {
+        flush()
+      }
+      inQuote = true
+      continue
+    }
+
+    if (char === '(' || char === ')') {
+      flush()
+      // Merge a preceding standalone '-' with '(' → '-('
+      if (char === '(' && tokens.length > 0 && tokens[tokens.length - 1] === '-') {
+        tokens[tokens.length - 1] = '-('
+      } else {
+        tokens.push(char)
+      }
+      continue
+    }
+
+    if (/\s/.test(char)) {
+      flush()
+      continue
+    }
+
+    current += char
+  }
+
+  // Remaining token (unclosed quotes treated as plain text)
+  flush()
+  return tokens
+}
+
+// ---------------------------------------------------------------------------
+// Group resolution — handle (…) and -(…) at one level
+// ---------------------------------------------------------------------------
+
+/**
+ * Walk the token list once, resolving `(…)` and `-(…)` groups into SearchExpr
+ * objects.  Returns a flat list of `FlatItem` (strings or SearchExprs) with
+ * no `(`, `)`, or `-(` tokens remaining.
+ *
+ * Inner group content is parsed with `parseFlat` (no parentheses), so nesting
+// is not supported — inner `(` / `)` are treated as literal text.
+ */
+function resolveGroups(tokens: readonly string[]): FlatItem[] {
+  const out: FlatItem[] = []
+  let i = 0
+
+  while (i < tokens.length) {
+    const tok = tokens[i]
+
+    if (tok === '(' || tok === '-(') {
+      // Scan forward for the matching ')'
+      let depth = 1
+      let j = i + 1
+      while (j < tokens.length && depth > 0) {
+        if (tokens[j] === '(' || tokens[j] === '-(') depth++
+        else if (tokens[j] === ')') depth--
+        j++
+      }
+      // Inner tokens: tokens[i+1 … j-2]  (j-1 is the ')' that closed it, or past end if unmatched)
+      const inner = tokens.slice(i + 1, depth === 0 ? j - 1 : j)
+      const innerExpr = parseFlat(inner)
+      out.push(tok === '-(' ? { type: 'not', clause: innerExpr } : innerExpr)
+      i = j
+      continue
+    }
+
+    if (tok === ')') {
+      // Unmatched ')' — skip it
+      i++
+      continue
+    }
+
+    out.push(tok)
+    i++
+  }
+
+  return out
+}
+
+// ---------------------------------------------------------------------------
+// Flat parser — OR → AND → NOT on a FlatItem list
+// ---------------------------------------------------------------------------
+
+/**
+ * Parse a flat token list with OR having lowest precedence and AND (implicit)
+// higher.  `-term` tokens become NOT nodes.  No parentheses are handled here.
+ */
+function parseFlat(items: readonly FlatItem[]): SearchExpr {
+  if (items.length === 0) return { type: 'and', clauses: [] }
+
+  // --- Split by OR ---
+  const orGroups: FlatItem[][] = []
+  let current: FlatItem[] = []
+
+  for (const item of items) {
+    if (item === 'OR') {
+      if (current.length > 0) {
+        orGroups.push(current)
+        current = []
+      }
+    } else {
+      current.push(item)
+    }
+  }
+  if (current.length > 0) orGroups.push(current)
+
+  if (orGroups.length === 0) return { type: 'and', clauses: [] }
+
+  const orClauses = orGroups.map((g) => parseAndGroup(g))
+  return orClauses.length === 1 ? orClauses[0] : { type: 'or', clauses: orClauses }
+}
+
+/**
+ * Parse a group of FlatItems as an AND clause.
+ * Explicit `AND` tokens split sub-groups; adjacent items are implicit AND.
+ */
+function parseAndGroup(items: readonly FlatItem[]): SearchExpr {
+  const clauses: SearchExpr[] = []
+  let buffer: FlatItem[] = []
+
+  function flushBuffer() {
+    if (buffer.length > 0) {
+      for (const b of buffer) clauses.push(toExpr(b))
+      buffer = []
+    }
+  }
+
+  for (const item of items) {
+    if (item === 'AND') {
+      flushBuffer()
+    } else {
+      buffer.push(item)
+    }
+  }
+  flushBuffer()
+
+  if (clauses.length === 0) return { type: 'and', clauses: [] }
+  return clauses.length === 1 ? clauses[0] : { type: 'and', clauses }
+}
+
+/**
+ * Convert a single FlatItem to a SearchExpr leaf.
+ */
+function toExpr(item: FlatItem): SearchExpr {
+  if (typeof item !== 'string') return item // already a SearchExpr (from a group)
+
+  // -term / -"exact"
+  if (item.startsWith('-') && item.length > 1) {
+    return { type: 'not', clause: makeTerm(item.slice(1)) }
+  }
+  return makeTerm(item)
+}
+
+function makeTerm(token: string): SearchExpr {
+  const isExact = token.startsWith('"') && token.endsWith('"') && token.length >= 2
+  const raw = isExact ? token.slice(1, -1) : token
+  // Strip trailing * — prefix matching is the default, so * is redundant
+  const value = raw.endsWith('*') ? raw.slice(0, -1) : raw
+  return {
+    type: 'term',
+    value,
+    exact: isExact,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Public entry point
+// ---------------------------------------------------------------------------
+
+function buildSearchExpr(query: string): SearchExpr {
+  const tokens = tokenizeSearch(query)
+  const items = resolveGroups(tokens)
+  return parseFlat(items)
+}
+
+/**
+ * Evaluate a SearchExpr against a normalized haystack string.
+ */
+function evaluateSearchExpr(expr: SearchExpr, haystack: string): boolean {
+  switch (expr.type) {
+    case 'term': {
+      const term = normalizeTitle(expr.value)
+      if (!term) return true // empty term matches everything
+      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      if (expr.exact) {
+        // Exact phrase: must appear contiguously with word boundaries on both sides
+        return new RegExp(`\\b${escaped}\\b`).test(haystack)
+      }
+      // Prefix match: the term must appear at the start of a word
+      return new RegExp(`\\b${escaped}`).test(haystack)
+    }
+    case 'not':
+      return !evaluateSearchExpr(expr.clause, haystack)
+    case 'and':
+      return expr.clauses.every((c) => evaluateSearchExpr(c, haystack))
+    case 'or':
+      return expr.clauses.some((c) => evaluateSearchExpr(c, haystack))
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Filtering
+// ---------------------------------------------------------------------------
+
+export type PnrrFilters = {
+  readonly search?: string
+  readonly beneficiarySearch?: string
+  readonly beneficiaryCui?: string
+  readonly uatSiruta?: string
+  readonly uatSirutas?: readonly string[]
+  readonly components?: readonly string[]
+  readonly counties?: readonly string[]
+  readonly fundingSources?: readonly ('grant' | 'loan' | 'grant/loan')[]
+  readonly measures?: readonly string[]
+  readonly cris?: readonly string[]
+  readonly progressCategories?: readonly PnrrProjectStatus[]
+  readonly onlyAnomalies?: boolean
+  readonly excludeMicro?: boolean
+  readonly anomalyTypes?: readonly string[]
+  readonly dataQualitySignalTypes?: readonly string[]
+  readonly entityTypes?: readonly PnrrEntityType[]
+  readonly beneficiaryTypes?: readonly PnrrBeneficiaryType[]
+  readonly includeNational?: boolean
+}
+
+// ---------------------------------------------------------------------------
+// Active filter counting (shared between header and filter sheet)
+// ---------------------------------------------------------------------------
+
+type FilterCountInput = {
+  readonly search?: string
+  readonly beneficiarySearch?: string
+  readonly beneficiaryCui?: string
+  readonly uatSiruta?: string
+  readonly uatName?: string
+  readonly uatSirutas?: readonly string[]
+  readonly components?: readonly string[]
+  readonly counties?: readonly string[]
+  readonly fundingSources?: readonly unknown[]
+  readonly measures?: readonly string[]
+  readonly cris?: readonly string[]
+  readonly progressCategories?: readonly unknown[]
+  readonly anomalyTypes?: readonly string[]
+  readonly dataQualitySignalTypes?: readonly string[]
+  readonly entityTypes?: readonly unknown[]
+  readonly beneficiaryTypes?: readonly unknown[]
+  readonly onlyAnomalies?: boolean
+  readonly excludeMicro?: boolean
+  readonly includeNational?: boolean
+}
+
+export function getActiveFilterCount(filters: FilterCountInput): number {
+  let count = 0
+  if (filters.search) count++
+  if (filters.beneficiarySearch) count++
+  if (filters.beneficiaryCui) count++
+  if (filters.uatSiruta) count++
+  count += filters.uatSirutas?.length ?? 0
+  count += filters.components?.length ?? 0
+  count += filters.counties?.length ?? 0
+  count += filters.fundingSources?.length ?? 0
+  count += filters.measures?.length ?? 0
+  count += filters.cris?.length ?? 0
+  count += filters.progressCategories?.length ?? 0
+  count += filters.anomalyTypes?.length ?? 0
+  count += filters.dataQualitySignalTypes?.length ?? 0
+  count += filters.entityTypes?.length ?? 0
+  count += filters.beneficiaryTypes?.length ?? 0
+  if (filters.onlyAnomalies) count++
+  if (filters.excludeMicro) count++
+  if (filters.includeNational === false) count++
+  return count
+}
+
+function normalizeCui(value: string): string {
+  return value.trim().replace(/^RO/i, '').replace(/\s+/g, '')
+}
+
+function matchesBeneficiaryType(
+  project: PnrrProject,
+  beneficiaryTypes: readonly PnrrBeneficiaryType[]
+): boolean {
+  return beneficiaryTypes.some((type) => type === project.beneficiaryType || type === project.entityType)
+}
+
+export function filterProjects(
+  projects: readonly PnrrProject[],
+  filters: PnrrFilters
+): readonly PnrrProject[] {
+  const searchExpr = filters.search ? buildSearchExpr(filters.search) : null
+  const beneficiarySearchExpr = filters.beneficiarySearch
+    ? buildSearchExpr(filters.beneficiarySearch)
+    : null
+  const beneficiaryCui = filters.beneficiaryCui ? normalizeCui(filters.beneficiaryCui) : null
+  const uatSiruta = filters.uatSiruta?.trim()
+  const uatSirutas = filters.uatSirutas?.filter(Boolean)
+
+  return projects.filter((p) => {
+    if (searchExpr) {
+      const haystack = normalizeTitle(
+        `${p.title} ${p.beneficiary} ${p.cui ?? ''} ${p.locality}`
+      )
+      if (!evaluateSearchExpr(searchExpr, haystack)) return false
+    }
+
+    if (beneficiarySearchExpr) {
+      const nameHaystack = normalizeTitle(p.beneficiary)
+      const nameMatch = evaluateSearchExpr(beneficiarySearchExpr, nameHaystack)
+      const cuiMatch = p.cui
+        ? evaluateSearchExpr(
+            beneficiarySearchExpr,
+            p.cui
+          )
+        : false
+      if (!nameMatch && !cuiMatch) return false
+    }
+
+    if (beneficiaryCui && (!p.cui || normalizeCui(p.cui) !== beneficiaryCui)) {
+      return false
+    }
+
+    if (uatSiruta && p.sirutaCode !== uatSiruta) {
+      return false
+    }
+
+    if (uatSirutas?.length && (!p.sirutaCode || !uatSirutas.includes(p.sirutaCode))) {
+      return false
+    }
+
+    if (filters.components?.length && !filters.components.includes(p.componentCode)) {
+      return false
+    }
+
+    if (filters.counties?.length && !filters.counties.includes(p.county)) {
+      return false
+    }
+
+    if (filters.fundingSources?.length && !filters.fundingSources.includes(p.fundingSource)) {
+      return false
+    }
+
+    if (filters.measures?.length) {
+      const measureMatch = filters.measures.some((key) => {
+        const [component, measure, financing] = key.split('.')
+        if (component !== p.componentCode) return false
+        if (measure !== p.measureCode) return false
+        if (p.fundingSource === 'grant/loan') return true
+        return financing === p.fundingSource
+      })
+      if (!measureMatch) return false
+    }
+
+    if (filters.cris?.length && !filters.cris.includes(p.cri)) {
+      return false
+    }
+
+    if (filters.progressCategories?.length && !filters.progressCategories.includes(p.status)) {
+      return false
+    }
+
+    if (filters.excludeMicro && p.valueEur < 5000) {
+      return false
+    }
+
+    if (filters.onlyAnomalies && p.anomalies.length === 0) {
+      return false
+    }
+
+    if (filters.anomalyTypes?.length) {
+      const hasMatch = p.anomalies.some((a) => filters.anomalyTypes!.includes(a))
+      if (!hasMatch) return false
+    }
+
+    if (filters.dataQualitySignalTypes?.length) {
+      const hasMatch = p.dataQualitySignals.some((signal) =>
+        filters.dataQualitySignalTypes!.includes(signal)
+      )
+      if (!hasMatch) return false
+    }
+
+    if (filters.entityTypes?.length && !filters.entityTypes.includes(p.entityType)) {
+      return false
+    }
+
+    if (filters.beneficiaryTypes?.length && !matchesBeneficiaryType(p, filters.beneficiaryTypes)) {
+      return false
+    }
+
+    if (filters.includeNational === false && p.county === 'Național') {
+      return false
+    }
+
+    return true
+  })
+}

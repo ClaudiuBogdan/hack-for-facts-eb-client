@@ -1,0 +1,263 @@
+{
+  "components": [
+    {
+      "componenta": "C1",
+      "masuri": [
+        { "masura": "I1", "finantare": "loan", "titlul_masurii": "I1. Construirea de rețele de apă și sisteme de canalizare în aglomerări mai mari de 2 000 de locuitori echivalenți" },
+        { "masura": "I2", "finantare": "loan", "titlul_masurii": "I2. Colectarea apelor uzate în aglomerări mai mici de 2000 de locuitori echivalenți" },
+        { "masura": "I4", "finantare": "loan", "titlul_masurii": "I4. Reabilitarea acumulărilor existente care necesită intervenții de urgență pentru exploatarea în condiții de siguranță" },
+        { "masura": "I5", "finantare": "loan", "titlul_masurii": "I5. Dotarea adecvată a administrațiilor bazinale pentru monitorizarea infrastructurii, prevenirea și gestionarea situațiilor de urgență" },
+        { "masura": "I6", "finantare": "grant", "titlul_masurii": "I6. Livrarea cadastrului apelor" },
+        { "masura": "R1", "finantare": "loan", "titlul_masurii": "R1. Consolidarea cadrului de reglementare pentru managementul sustenabil al sectorului de apă și apă uzată" },
+        { "masura": "R2", "finantare": "loan", "titlul_masurii": "R2. Reconfigurarea mecanismului economic al ANAR pentru modernizarea sistemului național de gospodărire a apelor" }
+      ]
+    },
+    {
+      "componenta": "C2",
+      "masuri": [
+        { "masura": "I1", "finantare": "grant", "titlul_masurii": "I1. Campania națională de împădurire și reîmpădurire, inclusiv păduri urbane" },
+        { "masura": "I2", "finantare": "grant", "titlul_masurii": "I2. Capacități moderne de producere a materialului forestier de reproducere" },
+        { "masura": "I3", "finantare": "grant", "titlul_masurii": "I3. Identificarea zonelor potențiale de protecție strictă în habitate naturale terestre și marine" },
+        { "masura": "I4", "finantare": "grant", "titlul_masurii": "I4. Sistem de monitorizare a sturionilor sălbatici de-a lungul Dunării de Jos" },
+        { "masura": "I5", "finantare": "grant", "titlul_masurii": "I5. Sisteme integrate de reducere a riscurilor generate de viituri torențiale în bazinete forestiere" },
+        { "masura": "R1", "finantare": "grant", "titlul_masurii": "R1. Reforma sistemului de management și guvernanța în domeniul forestier" },
+        { "masura": "R2", "finantare": "grant", "titlul_masurii": "R2. Reforma sistemului de management al ariilor naturale protejate" }
+      ]
+    },
+    {
+      "componenta": "C3",
+      "masuri": [
+        { "masura": "I1", "finantare": "loan", "titlul_masurii": "I1. Instituirea sistemelor de management integrat al deșeurilor municipale" },
+        { "masura": "I1", "finantare": "grant", "titlul_masurii": "I1.a Construcția de centre de colectare a deșeurilor cu aport voluntar" },
+        { "masura": "I2", "finantare": "loan", "titlul_masurii": "I2. Construirea infrastructurii pentru managementul gunoiului de grajd și al altor deșeuri agricole compostabile" },
+        { "masura": "I3", "finantare": "grant", "titlul_masurii": "I3. Capacități instituționale de monitorizare publică și control pentru gestionarea deșeurilor" },
+        { "masura": "R1", "finantare": "grant", "titlul_masurii": "R1. Sprijinirea guvernanței în domeniul gestionării deșeurilor pentru tranziția către economia circulară" }
+      ]
+    },
+    {
+      "componenta": "C4",
+      "masuri": [
+        { "masura": "I1", "finantare": "loan", "titlul_masurii": "I1. Modernizarea infrastructurii feroviare" },
+        { "masura": "I2", "finantare": "loan", "titlul_masurii": "I2. Material rulant feroviar" },
+        { "masura": "I3", "finantare": "loan", "titlul_masurii": "I3. Creșterea durabilității infrastructurii rutiere aferente rețelei TEN-T, taxarea drumurilor, managementul traficului și siguranța rutieră." },
+        { "masura": "I3", "finantare": "grant", "titlul_masurii": "I3.a Creșterea durabilității infrastructurii rutiere aferente rețelei TEN-T, taxarea drumurilor, managementul traficului și siguranța rutieră." },
+        { "masura": "R1", "finantare": "grant", "titlul_masurii": "R1.Transport sustenabil, decarbonizare și siguranță rutieră" },
+        { "masura": "R2", "finantare": "loan", "titlul_masurii": "R2. Management performant pentru transport de calitate - Îmbunătățirea capacității instituționale de management și guvernanță corporativă" }
+      ]
+    },
+    {
+      "componenta": "C5",
+      "masuri": [
+        { "masura": "I1", "finantare": "loan", "titlul_masurii": "I1. Instituirea unui fond pentru Valul renovării care să finanțeze lucrări de creștere a eficienței energetice a fondului construit existent" },
+        { "masura": "I1", "finantare": "grant", "titlul_masurii": "I1.a. Instituirea unui fond pentru Valul renovării care să finanțeze lucrări de creștere a eficienței energetice a fondului construit existent" },
+        { "masura": "I2", "finantare": "loan", "titlul_masurii": "I2. Publicarea Registrului național digital al clădirilor" },
+        { "masura": "I4", "finantare": "loan", "titlul_masurii": "I4. Economie circulară și creșterea eficienței energetice a clădirilor istorice" },
+        { "masura": "R1", "finantare": "loan", "titlul_masurii": "R1. Un cadru juridic și de reglementare simplificat și actualizat pentru a sprijini renovarea clădirilor" },
+        { "masura": "R2", "finantare": "grant", "titlul_masurii": "R2. Cadru strategic, normativ și procedural care să sprijine reziliența seismică a fondului construit" }
+      ]
+    },
+    {
+      "componenta": "C6",
+      "masuri": [
+        { "masura": "I2", "finantare": "loan", "titlul_masurii": "I2. Capacitățile de producție a hidrogenului verde" },
+        { "masura": "I3", "finantare": "loan", "titlul_masurii": "I3. Construirea unei producții combinate de energie termică și energie electrică (CHP) pe gaz flexibilă și de înaltă eficiență" },
+        { "masura": "I4", "finantare": "loan", "titlul_masurii": "I4. Punerea în funcțiune a instalațiilor de producție fotovoltaică" },
+        { "masura": "I4", "finantare": "grant", "titlul_masurii": "I4.a Noi capacități de stocare a energiei electrice" },
+        { "masura": "I5", "finantare": "grant", "titlul_masurii": "I5.a Asigurarea eficienţei energetice în sectorul industrial" },
+        { "masura": "I5", "finantare": "loan", "titlul_masurii": "I5. Asigurarea eficienţei energetice în sectorul industrial" },
+        { "masura": "R1", "finantare": "grant", "titlul_masurii": "R1. Reforma pieței de energie electrică, prin înlocuirea cărbunelui din mixul energetic" },
+        { "masura": "R2", "finantare": "grant", "titlul_masurii": "R2. Reformarea guvernanței corporative a întreprinderilor de stat din sectorul energetic" },
+        { "masura": "R3", "finantare": "grant", "titlul_masurii": "R3. Bugetarea verde" },
+        { "masura": "R4", "finantare": "loan", "titlul_masurii": "R4. Instituirea unui cadru legislativ și de reglementare favorabil pentru hidrogenul din surse regenerabile" },
+        { "masura": "R5", "finantare": "grant", "titlul_masurii": "R5. Reducerea intensității energetice a economiei prin instituirea unui mecanism sustenabil de stimulare a eficienței energetice în industrie" },
+        { "masura": "R6", "finantare": "grant", "titlul_masurii": "R6. Decarbonizarea sectorului încălzirii și răcirii" }
+      ]
+    },
+    {
+      "componenta": "C7",
+      "masuri": [
+        { "masura": "I1", "finantare": "grant", "titlul_masurii": "I1. Implementarea infrastructurii de cloud guvernamental" },
+        { "masura": "I2", "finantare": "grant", "titlul_masurii": "I2. Dezvoltarea cloudului și migrarea în cloud" },
+        { "masura": "I3", "finantare": "grant", "titlul_masurii": "I3. Instituirea sistemului de eHealth și telemedicină" },
+        { "masura": "I4", "finantare": "grant", "titlul_masurii": "I4. Digitalizarea sistemului judiciar" },
+        { "masura": "I5", "finantare": "grant", "titlul_masurii": "I5. Digitalizare in domeniul mediulu" },
+        { "masura": "I6", "finantare": "grant", "titlul_masurii": "I6. Digitalizare în domeniul muncii și protecției sociale" },
+        { "masura": "I7", "finantare": "grant", "titlul_masurii": "I7. Introducerea formularelor electronice (eForms) în domeniul achizițiilor publice" },
+        { "masura": "I8", "finantare": "grant", "titlul_masurii": "I8. Carte de identitate electronică și semnătură digitală" },
+        { "masura": "I9", "finantare": "grant", "titlul_masurii": "I9. Digitalizarea sectorului organizațiilor neguvernamentale" },
+        { "masura": "I10", "finantare": "grant", "titlul_masurii": "I10. Transformarea digitală în managementul funcției publice" },
+        { "masura": "I11", "finantare": "grant", "titlul_masurii": "I11. Introducere unei scheme de sprijinire a utilizării serviciilor de comunicații în zonele albe" },
+        { "masura": "I12", "finantare": "grant", "titlul_masurii": "I12. Asigurarea protecției securității cibernetice pentru infrastructuri TIC publice și private critice" },
+        { "masura": "I13", "finantare": "grant", "titlul_masurii": "I13. Dezvoltarea sistemelor de securitate pentru protecția spectrului guvernamental" },
+        { "masura": "I14", "finantare": "grant", "titlul_masurii": "I14. Sporirea rezilienței și a securității cibernetice a serviciilor de infrastructură ale furnizorilor de servicii de internet pentru autoritățile publice din România" },
+        { "masura": "I15", "finantare": "grant", "titlul_masurii": "I15. Crearea de noi competențe de securitate cibernetică pentru actorii-cheie" },
+        { "masura": "I16", "finantare": "grant", "titlul_masurii": "I16. Program de formare pentru funcționarii publici în domeniul competențelor digitale" },
+        { "masura": "I17", "finantare": "grant", "titlul_masurii": "I17. Scheme de finanțare pentru biblioteci pentru a deveni hub-uri de dezvoltare a competențelor digitale" },
+        { "masura": "I18", "finantare": "loan", "titlul_masurii": "I18.Transformarea digitală și adoptarea tehnologiei de automatizare a proceselor de lucru în administrația publică" },
+        { "masura": "I19", "finantare": "loan", "titlul_masurii": "I19. Scheme dedicate perfecționării/recalificării angajaților din firme" },
+        { "masura": "I19", "finantare": "grant", "titlul_masurii": "I19.a. Scheme dedicate perfecționării/recalificării angajaților din firme" },
+        { "masura": "R1", "finantare": "grant", "titlul_masurii": "R1. Dezvoltarea unui cadru unitar pentru definirea arhitecturii unui sistem de tip cloud guvernamental" },
+        { "masura": "R2", "finantare": "grant", "titlul_masurii": "R2.Tranziția către atingerea obiectivelor de conectivitate UE 2025" },
+        { "masura": "R3", "finantare": "grant", "titlul_masurii": "R3. Asigurarea securității cibernetice a entităților publice și private care dețin infrastructuri cu valențe critice" },
+        { "masura": "R4", "finantare": "grant", "titlul_masurii": "R4. Creșterea competențelor digitale pentru exercitarea funcției publice și educație digitală pe parcursul vieții pentru cetățeni" }
+      ]
+    },
+    {
+      "componenta": "C8",
+      "masuri": [
+        { "masura": "I1", "finantare": "grant", "titlul_masurii": "I1. Facilitarea respectării normelor de către contribuabili prin accesul la servicii digitale" },
+        { "masura": "I2", "finantare": "grant", "titlul_masurii": "I2. Îmbunătățirea proceselor de administrare a impozitelor și taxelor, inclusiv prin implementarea managementului integrat al riscurilor" },
+        { "masura": "I3", "finantare": "grant", "titlul_masurii": "I3. Asigurarea capacității de răspuns la provocările informaționale actuale și viitoare, prin transformarea digitală a Ministerului de Finanțe / ANAF" },
+        { "masura": "I4", "finantare": "grant", "titlul_masurii": "I4. Instituirea vămii electronice" },
+        { "masura": "I5", "finantare": "grant", "titlul_masurii": "I5. Îmbunătățirea mecanismului de programare bugetară" },
+        { "masura": "I6", "finantare": "grant", "titlul_masurii": "I6. Instrument de modelare economică (set de instrumente de simulare privind opțiunile de reformă a pensiilor)" },
+        { "masura": "I7", "finantare": "grant", "titlul_masurii": "I7. Asistență tehnică pentru revizuirea cadrului fiscal" },
+        { "masura": "I8", "finantare": "grant", "titlul_masurii": "I8. Înființarea Băncii Naționale de Dezvoltare" },
+        { "masura": "I9", "finantare": "grant", "titlul_masurii": "I9. Susținerea procesului de evaluare a dosarelor de pensii aflate în plată" },
+        { "masura": "I10", "finantare": "grant", "titlul_masurii": "I10. Servicii electronice avansate pentru sistemul național de pensii prin digitalizare" },
+        { "masura": "I11", "finantare": "loan", "titlul_masurii": "I11. Injecție de capital în Banca Națională de Dezvoltare" },
+        { "masura": "R1", "finantare": "grant", "titlul_masurii": "R1. Reforma Agenției Naționale de Administrare Fiscală (ANAF) prin digitalizare" },
+        { "masura": "R2", "finantare": "grant", "titlul_masurii": "R2. Modernizarea sistemului vamal și instituirea vămii electronice" },
+        { "masura": "R3", "finantare": "grant", "titlul_masurii": "R3. Îmbunătățirea mecanismului de programare bugetară" },
+        { "masura": "R4", "finantare": "grant", "titlul_masurii": "R4. Revizuirea cadrului fiscal" },
+        { "masura": "R5", "finantare": "grant", "titlul_masurii": "R5. Înființarea Băncii Naționale de Dezvoltare" },
+        { "masura": "R6", "finantare": "grant", "titlul_masurii": "R6.Reforma sistemului public de pensii" }
+      ]
+    },
+    {
+      "componenta": "C9",
+      "masuri": [
+        { "masura": "I1", "finantare": "loan", "titlul_masurii": "I1. Platforme digitale privind transparentizarea legislativă, debirocratizarea și simplificarea procedurală destinate mediului de afaceri" },
+        { "masura": "I2", "finantare": "grant", "titlul_masurii": "I2.a. Instrumente financiare pentru sectorul privat" },
+        { "masura": "I2", "finantare": "loan", "titlul_masurii": "I2. Instrumente financiare pentru sectorul privat" },
+        { "masura": "I3", "finantare": "grant", "titlul_masurii": "I3.a. Scheme de ajutor pentru sectorul privat" },
+        { "masura": "I3", "finantare": "loan", "titlul_masurii": "I3. Scheme de ajutor pentru sectorul privat" },
+        { "masura": "I4", "finantare": "loan", "titlul_masurii": "I4. Proiecte transfrontaliere și multinaționale – Procesoare cu consum redus de energie și cipuri semiconductoare" },
+        { "masura": "I5", "finantare": "grant", "titlul_masurii": "I5.a. Instituirea de centre de competență" },
+        { "masura": "I5", "finantare": "loan", "titlul_masurii": "I5. Instituirea de centre de competență" },
+        { "masura": "I8", "finantare": "grant", "titlul_masurii": "I8. Dezvoltarea unui program pentru atragerea resurselor umane înalt specializate din străinătate în activități de cercetare, dezvoltare și inovare" },
+        { "masura": "I9", "finantare": "grant", "titlul_masurii": "I9. Program de sprijin pentru posesorii de certificate de excelență primite în cadrul concursului pentru burse individuale Marie Sklodowska Curie" },
+        { "masura": "I10", "finantare": "grant", "titlul_masurii": "I10. Înființarea și susținerea financiară a unei rețele naționale de opt centre regionale de orientare în carieră" },
+        { "masura": "R1", "finantare": "loan", "titlul_masurii": "R1. Transparență legislativă, debirocratizare și simplificare procedurală destinate mediului de afaceri" },
+        { "masura": "R2", "finantare": "grant", "titlul_masurii": "R2.a. Raționalizarea guvernanței în domeniul cercetării, dezvoltării și inovării" },
+        { "masura": "R2", "finantare": "loan", "titlul_masurii": "R2. Raționalizarea guvernanței în domeniul cercetării, dezvoltării și inovării" },
+        { "masura": "R3", "finantare": "grant", "titlul_masurii": "R3. Reforma carierei de cercetător" },
+        { "masura": "R4", "finantare": "loan", "titlul_masurii": "R4. Consolidarea cooperării dintre mediul de afaceri și cel de cercetare" },
+        { "masura": "R5", "finantare": "loan", "titlul_masurii": "R5. Sprijin pentru integrarea organizațiilor de cercetare, dezvoltare și inovare din România în Spațiul european de cercetare" }
+      ]
+    },
+    {
+      "componenta": "C10",
+      "masuri": [
+        { "masura": "I1", "finantare": "grant", "titlul_masurii": "I1. Mobilitatea urbană durabilă" },
+        { "masura": "I2", "finantare": "loan", "titlul_masurii": "I2. Construirea de locuințe pentru tineri și pentru specialiști din sănătate și învățământ" },
+        { "masura": "I3", "finantare": "loan", "titlul_masurii": "I3. Renovarea clădirilor publice pentru a sprijini furnizarea de servicii publice mai bune de către unitățile administrativ teritoriale" },
+        { "masura": "I3", "finantare": "grant", "titlul_masurii": "I3a. Renovarea clădirilor publice pentru a sprijini furnizarea de servicii publice mai bune de către unitățile administrativ teritoriale" },
+        { "masura": "I4", "finantare": "loan", "titlul_masurii": "I4. Elaborarea / actualizarea în format GIS a documentelor de amenajare a teritoriului și de urbanism" },
+        { "masura": "R1", "finantare": "grant", "titlul_masurii": "R1. Crearea cadrului pentru mobilitate urbană durabilă" },
+        { "masura": "R2", "finantare": "grant", "titlul_masurii": "R2. Crearea cadrului de politică pentru o transformare urbană durabilă" },
+        { "masura": "R3", "finantare": "grant", "titlul_masurii": "R3. Crearea unui cadru de politică pentru o transformare rurală durabilă" },
+        { "masura": "R4", "finantare": "grant", "titlul_masurii": "R4. Creșterea calității locuințelor" },
+        { "masura": "R5", "finantare": "grant", "titlul_masurii": "R5. Dezvoltarea sistemului de planificare - Codul amenajării teritoriului, urbanismului și construcțiilor" }
+      ]
+    },
+    {
+      "componenta": "C11",
+      "masuri": [
+        { "masura": "I1", "finantare": "loan", "titlul_masurii": "I1. Promovarea celor 12 rute turistice/culturale" },
+        { "masura": "I2", "finantare": "loan", "titlul_masurii": "I2. Modernizarea/crearea de muzee și memoriale" },
+        { "masura": "I3", "finantare": "loan", "titlul_masurii": "I3. Înstituirea și operaționalizarea Centrului Național de Coordonare Velo" },
+        { "masura": "I4", "finantare": "loan", "titlul_masurii": "I4. Construirea a 236,05 km de piste pentru biciclete" },
+        { "masura": "I5", "finantare": "grant", "titlul_masurii": "I5. Sporirea accesului la cultură în zonele defavorizate din punct de vedere cultural" },
+        { "masura": "I6", "finantare": "grant", "titlul_masurii": "I6. Dezvoltarea unui sistem digital pentru procesele de finanțare a culturii" },
+        { "masura": "I7", "finantare": "grant", "titlul_masurii": "I7. Accelerarea digitalizării producției și distribuției de filme" },
+        { "masura": "R1", "finantare": "loan", "titlul_masurii": "R1.Operaționalizarea organizațiilor de management al destinației (OMD-uri)" },
+        { "masura": "R2", "finantare": "loan", "titlul_masurii": "R2. Cadrul pentru operaționalizarea traseelor cicloturistice la nivel național" },
+        { "masura": "R3", "finantare": "grant", "titlul_masurii": "R3.a. Reformarea sistemului de finanțare a sectorului cultural" },
+        { "masura": "R3", "finantare": "loan", "titlul_masurii": "R3. Reformarea sistemului de finanțare a sectorului cultural" }
+      ]
+    },
+    {
+      "componenta": "C12",
+      "masuri": [
+        { "masura": "I1", "finantare": "grant", "titlul_masurii": "I1. Infrastructura medicală prespitalicească" },
+        { "masura": "I2", "finantare": "grant", "titlul_masurii": "I2. Infrastructura spitalelor publice" },
+        { "masura": "I3", "finantare": "loan", "titlul_masurii": "I3. Spitale publice" },
+        { "masura": "I4", "finantare": "loan", "titlul_masurii": "I4. Modernizarea asistenței medicale de urgență" },
+        { "masura": "R1", "finantare": "grant", "titlul_masurii": "R1. Dezvoltarea capacității pentru gestionarea fondurilor publice din sănătate" },
+        { "masura": "R2", "finantare": "grant", "titlul_masurii": "R2. Dezvoltarea capacității de investiții în infrastructura sanitară" },
+        { "masura": "R3", "finantare": "grant", "titlul_masurii": "R3. Dezvoltarea capacității pentru managementul serviciilor de sănătate și managementul resurselor umane din sănătate" }
+      ]
+    },
+    {
+      "componenta": "C13",
+      "masuri": [
+        { "masura": "I1", "finantare": "grant", "titlul_masurii": "I1. Crearea unei rețele de centre de zi pentru copiii expuși riscului de a fi separați de familie" },
+        { "masura": "I2", "finantare": "grant", "titlul_masurii": "I2. Reabilitarea, renovarea și extinderea infrastructurii sociale pentru persoanele cu dizabilități" },
+        { "masura": "I3", "finantare": "grant", "titlul_masurii": "I3. Instituirea sistemului de tichete de muncă pentru prestatorii casnici și beneficiarii serviciilor" },
+        { "masura": "I4", "finantare": "grant", "titlul_masurii": "I4. Crearea unei rețele de centre de îngrijire de zi și de reabilitare pentru persoanele în vârstă" },
+        { "masura": "R1", "finantare": "grant", "titlul_masurii": "R1. Crearea unui nou cadru juridic pentru a preveni separarea copiilor de familie" },
+        { "masura": "R2", "finantare": "grant", "titlul_masurii": "R2. Reforma sistemului de protecție a persoanelor adulte cu dizabilități" },
+        { "masura": "R3", "finantare": "grant", "titlul_masurii": "R3. Furnizarea venitului minim de incluziune (VMI)" },
+        { "masura": "R4", "finantare": "grant", "titlul_masurii": "R4. Introducerea tichetelor de muncă și formalizarea muncii în domeniul lucrătorilor casnici" },
+        { "masura": "R5", "finantare": "grant", "titlul_masurii": "R5. Asigurarea stabilirii unui salariu minim" },
+        { "masura": "R6", "finantare": "loan", "titlul_masurii": "R6. Îmbunătățirea legislației privind economia socială" },
+        { "masura": "R7", "finantare": "loan", "titlul_masurii": "R7. Reforma serviciilor de îngrijire pe termen lung pentru persoanele în vârstă" }
+      ]
+    },
+    {
+      "componenta": "C14",
+      "masuri": [
+        { "masura": "I4", "finantare": "grant", "titlul_masurii": "I4. Creșterea capacității organizațiilor societății civile de stimulare a cetățeniei active" },
+        { "masura": "I5", "finantare": "grant", "titlul_masurii": "I5. Monitorizarea și implementarea planului" },
+        { "masura": "R1", "finantare": "grant", "titlul_masurii": "R1. Îmbunătățirea calității procesului decizional al administrației publice" },
+        { "masura": "R2", "finantare": "grant", "titlul_masurii": "R2. Îmbunătățirea guvernanței strategice pentru politicile în domeniul climei, al dezvoltării durabile și al mediului" },
+        { "masura": "R3", "finantare": "grant", "titlul_masurii": "R3. Modernizarea managementului resurselor umane în sectorul public" },
+        { "masura": "R4", "finantare": "grant", "titlul_masurii": "R4. Dezvoltarea unui sistem de salarizare echitabil și unitar în sectorul public" },
+        { "masura": "R5", "finantare": "grant", "titlul_masurii": "R5. Garantarea independenței justiției, creșterea calității și eficienței acesteia" },
+        { "masura": "R6", "finantare": "grant", "titlul_masurii": "R6. Intensificarea luptei împotriva corupției" },
+        { "masura": "R7", "finantare": "grant", "titlul_masurii": "R7. Actualizarea cadrului juridic de integritate pentru funcția publică" },
+        { "masura": "R8", "finantare": "grant", "titlul_masurii": "R8. Modernizarea și raționalizarea sistemului național de achiziții publice" },
+        { "masura": "R9", "finantare": "grant", "titlul_masurii": "R9. Îmbunătățirea cadrului procedural de implementare a principiilor guvernanței corporative în cadrul întreprinderilor de stat" }
+      ]
+    },
+    {
+      "componenta": "C15",
+      "masuri": [
+        { "masura": "I1", "finantare": "loan", "titlul_masurii": "I1.a. Construirea și dotarea creșelor" },
+        { "masura": "I1", "finantare": "grant", "titlul_masurii": "I1. Construirea și dotarea creșelor" },
+        { "masura": "I2", "finantare": "grant", "titlul_masurii": "I2. Înființarea, echiparea și aprobarea serviciilor complementare pentru grupurile defavorizate" },
+        { "masura": "I3", "finantare": "grant", "titlul_masurii": "I3. Program-cadru pentru formarea continuă a profesioniștilor care lucrează în servicii de educație timpurie" },
+        { "masura": "I4", "finantare": "grant", "titlul_masurii": "I4. Sprijinirea unităților de învățământ cu risc crescut de abandon școlar" },
+        { "masura": "I5", "finantare": "grant", "titlul_masurii": "I5. Instruiri pentru utilizatorii SIIIR și MATE și intervenții sistemice pentru reducerea abandonului școlar" },
+        { "masura": "I6", "finantare": "grant", "titlul_masurii": "I6. Dezvoltarea consorțiilor regionale și a campusurilor profesionale integrate" },
+        { "masura": "I7", "finantare": "grant", "titlul_masurii": "I7. Transformarea liceelor agricole în centre de profesionalizare" },
+        { "masura": "I8", "finantare": "grant", "titlul_masurii": "I8. Program de formare la locul de muncă pentru personalul didactic" },
+        { "masura": "I9", "finantare": "grant", "titlul_masurii": "I9. Asigurarea echipamentelor și a resurselor tehnologice digitale pentru unitățile de învățământ" },
+        { "masura": "I10", "finantare": "grant", "titlul_masurii": "I10. Dezvoltarea rețelei de școli verzi și achiziționarea de microbuze verzi" },
+        { "masura": "I11", "finantare": "grant", "titlul_masurii": "I11. Asigurarea dotărilor pentru sălile de clasă preuniversitare și laboratoarele / atelierele școlare" },
+        { "masura": "I13", "finantare": "grant", "titlul_masurii": "I13. Echiparea laboratoarelor de informatică din unitățile de învățământ profesional și tehnic" },
+        { "masura": "I14", "finantare": "grant", "titlul_masurii": "I14. Echiparea atelierelor de practică din unitățile de învățământ profesional și tehnic" },
+        { "masura": "I15", "finantare": "grant", "titlul_masurii": "I15. Școala online: dezvoltarea platformei de evaluare și realizarea de conținut" },
+        { "masura": "I16", "finantare": "grant", "titlul_masurii": "I16. Digitalizarea universităților și pregătirea acestora pentru profesiile digitale ale viitorului" },
+        { "masura": "I17", "finantare": "grant", "titlul_masurii": "I17. Asigurarea infrastructurii universitare: cămine, cantine, spații de recreere" },
+        { "masura": "R1", "finantare": "grant", "titlul_masurii": "R1. Reforma curriculei și a programelor de evaluare la nivel național" },
+        { "masura": "R2", "finantare": "grant", "titlul_masurii": "R2. Dezvoltarea unui sistem de învățământ incluziv" },
+        { "masura": "R3", "finantare": "grant", "titlul_masurii": "R3. Dezvoltarea unui sistem de formare continuă pentru personalul didactic" }
+      ]
+    },
+    {
+      "componenta": "C16",
+      "masuri": [
+        { "masura": "I1", "finantare": "grant", "titlul_masurii": "I1. Formarea profesională a resursei umane pentru dobândirea de competențe în domeniul energiei verzi" },
+        { "masura": "I2", "finantare": "grant", "titlul_masurii": "I2. Noi capacități pentru producerea de energie electrică din surse regenerabile" },
+        { "masura": "I3", "finantare": "grant", "titlul_masurii": "I3. Creșterea eficienței energetice a clădirilor publice" },
+        { "masura": "I4", "finantare": "grant", "titlul_masurii": "I4. Schema de granturi sub formă de bonuri valorice pentru accelerarea utilizării energiei din surse regenerabile de către gospodării" },
+        { "masura": "I5", "finantare": "grant", "titlul_masurii": "I5. Eficientizarea, modernizarea și digitalizarea rețelei naționale de transport a energiei electrice" },
+        { "masura": "I6", "finantare": "grant", "titlul_masurii": "I6. Proiect pilot pentru capacitate fotovoltaică flotantă pe infrastructura sistemelor hidroameliorative" },
+        { "masura": "I7", "finantare": "grant", "titlul_masurii": "I7. Schema de granturi sub formă de bonuri valorice pentru îmbunătățirea eficienței energetice în gospodării" },
+        { "masura": "I8", "finantare": "grant", "titlul_masurii": "I8. Contracte pentru diferență pentru producerea de energie electrică din surse regenerabile eoliene și solare fotovoltaice" }
+      ]
+    }
+  ]
+}

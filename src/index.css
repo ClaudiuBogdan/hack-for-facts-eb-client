@@ -105,6 +105,17 @@
     --sidebar-accent-foreground: 0 0% 10%;
     --sidebar-border: 0 0% 88%;
     --sidebar-ring: 0 0% 40%;
+
+    /* PNRR Brutalist Design Tokens */
+    --pnrr-bg: #f7f7f4;
+    --pnrr-fg: #1f1f1f;
+    --pnrr-muted: #6f6f6f;
+    --pnrr-border: #1f1f1f;
+    --pnrr-green: #b6ff00;
+    --pnrr-card: #fbfbf8;
+    --pnrr-red: #ef4444;
+    --pnrr-orange: #f59e0b;
+    --pnrr-blue: #3b82f6;
   }
 
   .dark {
@@ -316,6 +327,84 @@
     font-size: 16px;
     max-width: 260px;
     padding: 0.75rem 0.95rem;
+  }
+}
+
+.pnrr-map-surface .leaflet-tooltip {
+  background: var(--pnrr-card);
+  border: 2px solid var(--pnrr-border);
+  border-radius: 0;
+  box-shadow: 6px 6px 0 rgba(31, 31, 31, 0.16);
+  color: var(--pnrr-fg);
+  font-family: var(--font-family);
+  opacity: 1;
+  padding: 0;
+  white-space: normal;
+}
+
+.pnrr-map-surface .leaflet-tooltip-top::before {
+  border-top-color: var(--pnrr-border);
+}
+
+.pnrr-map-surface .leaflet-tooltip-top::after {
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--pnrr-card);
+  bottom: -5px;
+  content: "";
+  left: 50%;
+  margin-left: -6px;
+  position: absolute;
+}
+
+.pnrr-map-tooltip-card {
+  min-width: 150px;
+  max-width: 240px;
+  padding: 0.8rem 0.9rem 0.75rem;
+}
+
+.pnrr-map-tooltip-meta {
+  color: var(--pnrr-muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1.1;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+.pnrr-map-tooltip-title {
+  color: var(--pnrr-fg);
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1.12;
+}
+
+.pnrr-map-tooltip-value {
+  border-top: 2px solid var(--pnrr-border);
+  color: var(--pnrr-fg);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.2;
+  margin-top: 0.55rem;
+  padding-top: 0.45rem;
+}
+
+@media (max-width: 768px) {
+  .pnrr-map-tooltip-card {
+    max-width: 200px;
+    min-width: 132px;
+    padding: 0.7rem 0.8rem;
+  }
+
+  .pnrr-map-tooltip-title {
+    font-size: 0.92rem;
+  }
+
+  .pnrr-map-tooltip-value {
+    font-size: 0.86rem;
   }
 }
 

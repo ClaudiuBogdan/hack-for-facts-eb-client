@@ -26,11 +26,16 @@ export interface PolygonLabelData {
   text: string;
   amount?: string;
   position: [number, number];
+  positionOffsetPx?: {
+    x: number;
+    y: number;
+  };
   bounds: L.LatLngBounds;
   area: number;
   fontSize: number;
   visible: boolean;
   showAmount: boolean;
+  skipCollision?: boolean;
   featureId: string;
   hasValue: boolean;
   value?: number;
@@ -45,6 +50,10 @@ export interface ProcessFeatureForLabelOptions {
   labelMode?: LabelMode;
   activeSeriesValuesBySirutaCode?: Map<string, number | undefined>;
   activeSeriesUnit?: string;
+  precomputedGeometry?: FeatureLabelGeometry;
+}
+
+export interface ProcessCountyFallbackLabelOptions {
   precomputedGeometry?: FeatureLabelGeometry;
 }
 
@@ -64,6 +73,9 @@ export const ADVANCED_ZOOM_THRESHOLDS = {
 const MIN_FALLBACK_LABEL_FONT_SIZE = 8;
 const MIN_COUNTY_LABEL_FONT_SIZE = 9;
 const MIN_ADVANCED_LABEL_FONT_SIZE = 9;
+const COUNTY_FALLBACK_LABEL_MIN_FONT_SIZE = 10;
+const COUNTY_FALLBACK_LABEL_MAX_FONT_SIZE = 13;
+const ILFOV_FALLBACK_LABEL_OFFSET_Y = -14;
 
 /**
  * Tenth-step zoom bucket. Leaflet is configured with `zoomSnap={0.1}`, and
@@ -142,6 +154,32 @@ export function getLabelCacheKey(
   labelMode: LabelMode,
 ): string {
   return `${labelMode}|${getZoomBucket(zoom)}|${featureId}`;
+}
+
+function getFallbackCountyLabelCacheKey(featureId: string, zoom: number): string {
+  return `county-fallback|${getZoomBucket(zoom)}|${featureId}`;
+}
+
+function resolveCountyFallbackMnemonic(properties: Record<string, unknown>): string {
+  const rawMnemonic = properties.mnemonic;
+  return typeof rawMnemonic === 'string' ? rawMnemonic.trim().toUpperCase() : '';
+}
+
+function getCountyFallbackLabelFontSize(
+  screenArea: number,
+  zoom: number,
+): number {
+  const baseFontSize = calculateFontSize(screenArea, zoom, 13);
+  const cappedFontSize = Math.min(COUNTY_FALLBACK_LABEL_MAX_FONT_SIZE, baseFontSize * 0.95);
+  return Math.max(COUNTY_FALLBACK_LABEL_MIN_FONT_SIZE, cappedFontSize);
+}
+
+function getCountyFallbackLabelOffset(mnemonic: string): { x: number; y: number } | undefined {
+  if (mnemonic === 'IF') {
+    return { x: 0, y: ILFOV_FALLBACK_LABEL_OFFSET_Y };
+  }
+
+  return undefined;
 }
 
 /**
@@ -569,5 +607,54 @@ export function processFeatureForLabel(
     hasValue: value !== undefined && Number.isFinite(value),
     value,
     cacheKey: getLabelCacheKey(featureId, zoom, labelMode),
+  };
+}
+
+/**
+ * Build a name-only county label for low-zoom UAT maps. These labels do not
+ * require heatmap/series data; they exist only to orient users when individual
+ * UAT labels are intentionally hidden at zoomed-out levels.
+ */
+export function processCountyFallbackLabel(
+  feature: Feature<Geometry, Record<string, unknown>>,
+  map: L.Map,
+  zoom: number,
+  options?: ProcessCountyFallbackLabelOptions,
+): PolygonLabelData | null {
+  const properties = feature.properties;
+  if (!properties) {
+    return null;
+  }
+
+  const geometry = options?.precomputedGeometry ?? buildFeatureLabelGeometry(feature);
+  if (!geometry) {
+    return null;
+  }
+
+  const name = geometry.nameNormalized || normalizeUatLabelName(properties.name ?? properties.mnemonic ?? '');
+  if (!name) {
+    return null;
+  }
+
+  const dimensions = getBoundsDimensions(geometry.bounds, map);
+  const screenArea = dimensions.width * dimensions.height;
+  const mnemonic = resolveCountyFallbackMnemonic(properties);
+  const fontSize = getCountyFallbackLabelFontSize(screenArea, zoom);
+  const featureId = geometry.featureId || resolveFeatureIdentifier(properties) || name;
+  const positionOffsetPx = getCountyFallbackLabelOffset(mnemonic);
+
+  return {
+    text: name,
+    position: geometry.centroid,
+    positionOffsetPx,
+    bounds: geometry.bounds,
+    area: screenArea,
+    fontSize,
+    visible: true,
+    showAmount: false,
+    skipCollision: true,
+    featureId: `county-fallback:${featureId}`,
+    hasValue: false,
+    cacheKey: getFallbackCountyLabelCacheKey(featureId, zoom),
   };
 }
