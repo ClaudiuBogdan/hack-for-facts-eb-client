@@ -188,7 +188,7 @@ export function PnrrStyledMultiSelect({
             className
           )}
         >
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 overflow-hidden">
             {selectedOptions.length > 0 ? (
               selectedOptions.map((option) => (
                 <SelectedOptionChip
@@ -308,11 +308,11 @@ function SelectedOptionChip({
 }) {
   return (
     <span
-      className="inline-flex max-w-full items-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 py-2 text-sm font-black leading-none text-[var(--pnrr-fg)]"
+      className="inline-flex min-w-0 max-w-full items-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 py-2 text-sm font-black leading-none text-[var(--pnrr-fg)]"
       title={option.description ? `${option.label} · ${option.description}` : option.label}
     >
-      <span className="min-w-0 truncate">
-        {option.label}
+      <span className="min-w-0 max-w-full truncate">
+        <span className="truncate">{option.label}</span>
         {option.description && (
           <span className="font-semibold text-[var(--pnrr-muted)]"> · {option.description}</span>
         )}

@@ -46,7 +46,7 @@ const DATA_QUALITY_SIGNAL_OPTIONS: Option[] = DATA_QUALITY_SIGNAL_CONFIG.map((cf
 
 const FILTER_LABEL_CLASS = 'text-xs font-black uppercase tracking-wide text-[var(--pnrr-muted)]'
 const FILTER_INPUT_CLASS = 'h-11 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] pl-10 pr-9 text-sm font-semibold text-[var(--pnrr-fg)] placeholder:text-[var(--pnrr-muted)] focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
-const FILTER_TOGGLE_ITEM_CLASS = 'h-10 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-4 text-sm font-black text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-bg)] data-[state=on]:bg-[var(--pnrr-fg)] data-[state=on]:text-[var(--pnrr-bg)]'
+const FILTER_TOGGLE_ITEM_CLASS = 'h-10 min-w-0 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-2 text-sm font-black text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-bg)] data-[state=on]:bg-[var(--pnrr-fg)] data-[state=on]:text-[var(--pnrr-bg)] sm:px-4'
 
 interface PnrrFilterSheetProps {
   readonly open: boolean
@@ -185,7 +185,7 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent
           onOpenAutoFocus={(event) => event.preventDefault()}
-          className="flex w-full flex-col overflow-hidden border-l-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-0 sm:max-w-xl [&>button.absolute]:right-5 [&>button.absolute]:top-5 [&>button.absolute]:h-8 [&>button.absolute]:w-8 [&>button.absolute]:rounded-none [&>button.absolute]:bg-transparent [&>button.absolute]:opacity-100 [&>button.absolute]:ring-offset-0 [&>button.absolute]:hover:bg-[var(--pnrr-card)] [&>button.absolute]:focus:ring-[var(--pnrr-blue)]"
+          className="flex w-full max-w-full flex-col overflow-hidden border-l-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-0 sm:max-w-xl [&>button.absolute]:right-5 [&>button.absolute]:top-5 [&>button.absolute]:h-8 [&>button.absolute]:w-8 [&>button.absolute]:rounded-none [&>button.absolute]:bg-transparent [&>button.absolute]:opacity-100 [&>button.absolute]:ring-offset-0 [&>button.absolute]:hover:bg-[var(--pnrr-card)] [&>button.absolute]:focus:ring-[var(--pnrr-blue)]"
         >
           <SheetHeader className="border-b-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-6 pr-14 text-left">
             <SheetTitle className="text-left text-4xl font-black leading-none tracking-tight text-[var(--pnrr-fg)]">
@@ -197,7 +197,7 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
           </SheetHeader>
 
           <ScrollArea className="flex-1">
-            <div className="space-y-6 p-6">
+            <div className="min-w-0 space-y-6 p-4 sm:p-6">
               <section className="space-y-5">
                 <div className="space-y-2">
                   <Label className={FILTER_LABEL_CLASS}><Trans>UAT</Trans></Label>
@@ -362,7 +362,7 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
                   onValueChange={(v) =>
                     filterState.setFundingSources(v as ('grant' | 'loan' | 'grant/loan')[])
                   }
-                  className="flex flex-wrap justify-start gap-2"
+                  className="grid w-full grid-cols-2 justify-start gap-2 sm:flex sm:flex-wrap"
                 >
                   <ToggleGroupItem value="grant" className={FILTER_TOGGLE_ITEM_CLASS}>
                     <Trans>Grant</Trans>
@@ -370,7 +370,7 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
                   <ToggleGroupItem value="loan" className={FILTER_TOGGLE_ITEM_CLASS}>
                     <Trans>Împrumut</Trans>
                   </ToggleGroupItem>
-                  <ToggleGroupItem value="grant/loan" className={FILTER_TOGGLE_ITEM_CLASS}>
+                  <ToggleGroupItem value="grant/loan" className={`${FILTER_TOGGLE_ITEM_CLASS} col-span-2`}>
                     <Trans>Grant + Împrumut</Trans>
                   </ToggleGroupItem>
                 </ToggleGroup>
@@ -453,16 +453,16 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
 
           {/* Sticky footer with actions */}
           <div className="border-t-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-4">
-            <div className="flex gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="outline"
-                className="h-11 flex-1 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] text-sm font-black uppercase tracking-wide text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-bg)]"
+                className="h-11 min-w-0 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-2 text-xs font-black uppercase tracking-wide text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-bg)] sm:text-sm"
                 onClick={filterState.clearFilters}
               >
                 <Trans>Șterge toate</Trans>
               </Button>
               <Button
-                className="h-11 flex-1 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-fg)] text-sm font-black uppercase tracking-wide text-[var(--pnrr-bg)] hover:bg-[var(--pnrr-card)] hover:text-[var(--pnrr-fg)]"
+                className="h-11 min-w-0 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-fg)] px-2 text-xs font-black uppercase tracking-wide text-[var(--pnrr-bg)] hover:bg-[var(--pnrr-card)] hover:text-[var(--pnrr-fg)] sm:text-sm"
                 onClick={() => onOpenChange(false)}
               >
                 <Trans>Închide</Trans>

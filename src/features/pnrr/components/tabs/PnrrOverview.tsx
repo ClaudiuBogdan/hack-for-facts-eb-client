@@ -126,6 +126,16 @@ export function PnrrOverview({
     [filterState]
   )
 
+  const handleCtaNavigation = useCallback(
+    (nextView: 'projects' | 'anomalies') => {
+      filterState.setView(nextView)
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+      })
+    },
+    [filterState]
+  )
+
   return (
     <div className="space-y-10">
       {/* Key Metrics */}
@@ -223,11 +233,11 @@ export function PnrrOverview({
         <div className="flex flex-wrap gap-8">
           <CtaLink
             label={t`Toate proiectele`}
-            onClick={() => filterState.setView('projects')}
+            onClick={() => handleCtaNavigation('projects')}
           />
           <CtaLink
             label={t`Riscuri și investigații`}
-            onClick={() => filterState.setView('anomalies')}
+            onClick={() => handleCtaNavigation('anomalies')}
           />
         </div>
       </section>
@@ -317,7 +327,7 @@ function RankedListCard({
       <div
         className={cn(
           'divide-y divide-[var(--pnrr-border)]/20',
-          expandable && isExpanded && 'max-h-[372px] overflow-y-auto scrollbar-thin'
+          expandable && isExpanded && 'sm:max-h-[372px] sm:overflow-y-auto sm:scrollbar-thin'
         )}
       >
         {displayItems.map((item, i) => (

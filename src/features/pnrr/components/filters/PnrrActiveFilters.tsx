@@ -239,11 +239,11 @@ export function PnrrActiveFilters({
 
   if (compact) {
     return (
-      <div className="flex flex-wrap items-center gap-2.5 pb-2 pt-1">
+      <div className="flex min-w-0 flex-wrap items-center gap-2.5 pb-2 pt-1">
         <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center bg-[var(--pnrr-fg)] px-1.5 text-[11px] font-semibold" style={{ color: 'var(--pnrr-bg)' }}>
           {chips.length}
         </span>
-        <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
           {chips.map((chip) => (
             <span
               key={chip.key}
@@ -274,25 +274,23 @@ export function PnrrActiveFilters({
         <button
           type="button"
           onClick={filterState.clearFilters}
-          className="shrink-0 text-sm text-[var(--pnrr-fg)] underline underline-offset-4 transition-colors hover:text-[var(--pnrr-muted)]"
+          className="hidden shrink-0 text-sm text-[var(--pnrr-fg)] underline underline-offset-4 transition-colors hover:text-[var(--pnrr-muted)] sm:inline-flex"
         >
-          <span className="hidden sm:inline">
-            <Trans>Clear all</Trans>
-          </span>
+          <Trans>Clear all</Trans>
         </button>
       </div>
     )
   }
 
   return (
-    <div className="flex items-start justify-between gap-4 pb-4 pt-2">
-      <div className="flex flex-1 flex-wrap items-center gap-2">
+    <div className="flex min-w-0 flex-col items-start gap-3 pb-4 pt-2 sm:flex-row sm:justify-between sm:gap-4">
+      <div className="flex min-w-0 w-full flex-1 flex-wrap items-center gap-2 sm:w-auto">
         {chips.map((chip) => (
           <span
             key={chip.key}
-            className="group inline-flex items-center gap-1.5 bg-[var(--pnrr-green)] px-3 py-2 text-sm text-[var(--pnrr-fg)]"
+            className="group inline-flex max-w-full items-center gap-1.5 bg-[var(--pnrr-green)] px-3 py-2 text-sm text-[var(--pnrr-fg)]"
           >
-            <span className="max-w-[240px] truncate sm:max-w-[360px]">
+            <span className="min-w-0 max-w-[min(100%,18rem)] truncate sm:max-w-[360px]">
               {chip.prefix ? (
                 <>
                   <span className="text-[var(--pnrr-fg)]/80">{chip.prefix}:</span>{' '}
@@ -317,7 +315,7 @@ export function PnrrActiveFilters({
       <button
         type="button"
         onClick={filterState.clearFilters}
-        className="mt-1 shrink-0 text-sm text-[var(--pnrr-fg)] underline underline-offset-4 transition-colors hover:text-[var(--pnrr-muted)]"
+        className="shrink-0 text-sm text-[var(--pnrr-fg)] underline underline-offset-4 transition-colors hover:text-[var(--pnrr-muted)] sm:mt-1"
       >
         <Trans>Clear all</Trans>
       </button>

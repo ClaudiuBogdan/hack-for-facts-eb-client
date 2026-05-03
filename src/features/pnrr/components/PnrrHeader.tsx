@@ -46,6 +46,12 @@ export function PnrrHeader({
   })
 
   useEffect(() => {
+    if (isMobile) {
+      shouldShowRef.current = false
+      setIsCompactVisible(false)
+      return
+    }
+
     const updateCompactVisibility = () => {
       if (rafRef.current !== null) return
       rafRef.current = window.requestAnimationFrame(() => {
@@ -70,13 +76,14 @@ export function PnrrHeader({
         window.cancelAnimationFrame(rafRef.current)
       }
     }
-  }, [])
+  }, [isMobile])
 
   const hasActiveFilters = getActiveFilterCount(filterState.search) > 0
 
   return (
     <>
       {/* Compact sticky header */}
+      {!isMobile && (
       <div
         aria-hidden={!isCompactVisible}
         inert={!isCompactVisible ? true : undefined}
@@ -119,6 +126,7 @@ export function PnrrHeader({
           <PnrrActiveFilters filterState={filterState} compact />
         </div>
       </div>
+      )}
 
       {/* Full header */}
       <header ref={fullHeaderRef} className="relative border-b-2 border-[var(--pnrr-border)]" style={{ backgroundColor: 'var(--pnrr-bg)' }}>

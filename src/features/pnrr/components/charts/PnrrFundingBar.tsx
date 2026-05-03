@@ -11,19 +11,16 @@ import type { PnrrAggregates } from '@/schemas/pnrr'
 const CATEGORY_CONFIG = [
   {
     key: 'grant' as const,
-    label: t`Grant`,
     color: '#16a34a',
     topColor: 'bg-[#16a34a]',
   },
   {
     key: 'loan' as const,
-    label: t`Împrumut`,
     color: '#ef4444',
     topColor: 'bg-[#ef4444]',
   },
   {
     key: 'mixed' as const,
-    label: t`Mixt`,
     color: '#f59e0b',
     topColor: 'bg-[#f59e0b]',
   },
@@ -43,9 +40,9 @@ export function PnrrFundingBar({
   const mixedPct = (aggregates.mixedTotal / total) * 100
 
   const categories = [
-    { ...CATEGORY_CONFIG[0], value: aggregates.grantTotal, pct: grantPct },
-    { ...CATEGORY_CONFIG[1], value: aggregates.loanTotal, pct: loanPct },
-    { ...CATEGORY_CONFIG[2], value: aggregates.mixedTotal, pct: mixedPct },
+    { ...CATEGORY_CONFIG[0], label: t`Grant`, value: aggregates.grantTotal, pct: grantPct },
+    { ...CATEGORY_CONFIG[1], label: t`Împrumut`, value: aggregates.loanTotal, pct: loanPct },
+    { ...CATEGORY_CONFIG[2], label: t`Mixt`, value: aggregates.mixedTotal, pct: mixedPct },
   ]
 
   return (
