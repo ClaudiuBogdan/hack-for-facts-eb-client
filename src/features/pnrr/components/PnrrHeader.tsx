@@ -264,7 +264,7 @@ export function PnrrHeader({
             )}
           </div>
 
-          <div className="mt-4 max-w-[720px]">
+          <div className="mt-4 max-w-[520px]">
             {isLoading ? (
               <Skeleton className="h-12 w-full rounded-none" />
             ) : (
