@@ -389,7 +389,7 @@ export function ChallengeEntityAnalysisHeader({
             ) : null}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex">
             <ResponsivePopover
               open={isViewMenuOpen}
               onOpenChange={setIsViewMenuOpen}
@@ -400,10 +400,10 @@ export function ChallengeEntityAnalysisHeader({
                 <button
                   type="button"
                   aria-label={copy.openViewMenu}
-                  className="inline-flex items-center justify-start gap-2 rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                  className="col-span-2 inline-flex min-w-0 items-center justify-start gap-2 rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 sm:col-span-1"
                 >
                   <ActiveViewIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span className="whitespace-nowrap">{activeViewLabel}</span>
+                  <span className="min-w-0 truncate">{activeViewLabel}</span>
                   <ChevronDown className="h-4 w-4 shrink-0" aria-hidden="true" />
                 </button>
               }
@@ -426,7 +426,7 @@ export function ChallengeEntityAnalysisHeader({
                 <button
                   type="button"
                   aria-label={copy.openReportControls}
-                  className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-foreground tabular-nums transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                  className="inline-flex min-w-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-border/60 bg-muted/40 px-4 py-2 text-sm font-semibold text-foreground tabular-nums transition-colors hover:bg-muted/70 hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 sm:justify-start"
                 >
                   <Calendar className="h-4 w-4 shrink-0" aria-hidden="true" />
                   <span>{reportControlsLabel}</span>
@@ -435,12 +435,14 @@ export function ChallengeEntityAnalysisHeader({
               }
               content={isYearMenuOpen ? renderReportControls() : null}
             />
-            <EntityNotificationBell
-              cui={entity.cui}
-              entityName={entity.name}
-              triggerClassName={HERO_NOTIFICATION_TRIGGER}
-              notificationTypes={[FUNKY_NOTIFICATION_ENTITY_UPDATES]}
-            />
+            <div className="justify-self-end">
+              <EntityNotificationBell
+                cui={entity.cui}
+                entityName={entity.name}
+                triggerClassName={HERO_NOTIFICATION_TRIGGER}
+                notificationTypes={[FUNKY_NOTIFICATION_ENTITY_UPDATES]}
+              />
+            </div>
           </div>
         </div>
       </section>
