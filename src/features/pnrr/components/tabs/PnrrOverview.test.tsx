@@ -108,4 +108,55 @@ describe('PnrrOverview', () => {
     expect(screen.queryByTestId('pnrr-metric-skeleton-row')).not.toBeInTheDocument()
     expect(screen.queryByTestId('pnrr-map-preview')).not.toBeInTheDocument()
   })
+
+  it('renders duplicate beneficiary names without React key warnings', () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const aggregates = {
+      ...computeAggregates([]),
+      rawTotalValue: 300,
+      deduplicatedTotalValue: 300,
+      rawProjectCount: 2,
+      topBeneficiaries: [
+        {
+          beneficiary:
+            'DIRECTIA GENERALA DE ASISTENTA SOCIALA SI PROTECTIA COPILULUI',
+          cui: '123',
+          count: 1,
+          value: 200,
+        },
+        {
+          beneficiary:
+            'DIRECTIA GENERALA DE ASISTENTA SOCIALA SI PROTECTIA COPILULUI',
+          cui: '456',
+          count: 1,
+          value: 100,
+        },
+      ],
+    }
+
+    try {
+      render(
+        <PnrrOverview
+          projects={[]}
+          aggregates={aggregates}
+          filterState={makeFilterState()}
+        />,
+      )
+
+      expect(
+        screen.getAllByText(
+          'DIRECTIA GENERALA DE ASISTENTA SOCIALA SI PROTECTIA COPILULUI',
+        ),
+      ).toHaveLength(2)
+      expect(
+        consoleError.mock.calls.some((call) =>
+          call.some((argument) =>
+            String(argument).includes('Encountered two children with the same key'),
+          ),
+        ),
+      ).toBe(false)
+    } finally {
+      consoleError.mockRestore()
+    }
+  })
 })

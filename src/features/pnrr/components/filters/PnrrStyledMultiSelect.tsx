@@ -183,7 +183,7 @@ export function PnrrStyledMultiSelect({
           aria-expanded={open}
           tabIndex={0}
           className={cn(
-            'flex h-auto min-h-11 w-full cursor-pointer items-center justify-between rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 py-2 text-left text-sm font-semibold text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] data-[state=open]:bg-[var(--pnrr-bg)]',
+            'flex h-auto min-h-11 w-full min-w-0 max-w-full cursor-pointer items-center justify-between overflow-hidden rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 py-2 text-left text-sm font-semibold text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] data-[state=open]:bg-[var(--pnrr-bg)]',
             className,
           )}
         >
@@ -210,7 +210,7 @@ export function PnrrStyledMultiSelect({
         sideOffset={6}
         onCloseAutoFocus={(event) => event.preventDefault()}
         className={cn(
-          'z-[70] w-[var(--radix-dropdown-menu-trigger-width)] overflow-hidden rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-0 text-[var(--pnrr-fg)] shadow-[0_12px_28px_rgba(0,0,0,0.08)]',
+          'z-[70] w-[var(--radix-dropdown-menu-trigger-width)] min-w-0 max-w-[var(--radix-dropdown-menu-trigger-width)] overflow-hidden rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-0 text-[var(--pnrr-fg)] shadow-[0_12px_28px_rgba(0,0,0,0.08)]',
           contentClassName,
         )}
       >
@@ -266,7 +266,7 @@ export function PnrrStyledMultiSelect({
                     type="button"
                     onClick={() => handleSelect(option.value)}
                     className={cn(
-                      'absolute left-0 top-0 grid w-full grid-cols-[2.25rem_1fr] items-center border-b border-[var(--pnrr-border)] px-3 py-2 text-left text-sm font-medium text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]',
+                      'absolute left-0 top-0 grid w-full min-w-0 grid-cols-[2.25rem_minmax(0,1fr)] items-center overflow-hidden border-b border-[var(--pnrr-border)] px-3 py-2 text-left text-sm font-medium text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]',
                       isSelected && 'bg-[var(--pnrr-bg)] font-bold',
                     )}
                     style={{
@@ -280,7 +280,7 @@ export function PnrrStyledMultiSelect({
                         <Check className="h-4 w-4 text-[var(--pnrr-fg)]" />
                       )}
                     </span>
-                    <span className="flex min-w-0 flex-col">
+                    <span className="flex min-w-0 flex-col overflow-hidden">
                       <span
                         className="truncate font-black"
                         title={option.label}
@@ -320,15 +320,15 @@ function SelectedOptionChip({
 }) {
   return (
     <span
-      className="inline-flex min-w-0 max-w-full items-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 py-2 text-sm font-black leading-none text-[var(--pnrr-fg)]"
+      className="inline-flex min-w-0 max-w-full shrink items-center gap-2 overflow-hidden border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 py-2 text-sm font-black leading-none text-[var(--pnrr-fg)]"
       title={
         option.description
           ? `${option.label} · ${option.description}`
           : option.label
       }
     >
-      <span className="min-w-0 max-w-full truncate">
-        <span className="truncate">{option.label}</span>
+      <span className="min-w-0 flex-1 truncate">
+        {option.label}
         {option.description && (
           <span className="font-semibold text-[var(--pnrr-muted)]">
             {' '}

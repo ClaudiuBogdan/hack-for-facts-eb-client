@@ -1,7 +1,11 @@
-import { useMemo, useState, useEffect } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
-import type { PnrrBeneficiaryType, PnrrProject } from '@/schemas/pnrr'
+import type {
+  PnrrBeneficiaryType,
+  PnrrProject,
+  PnrrSearchState,
+} from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import { getActiveFilterCount } from '../../lib/data-transform'
 import { Input } from '@/components/ui/input'
@@ -44,6 +48,9 @@ import {
 } from '@/lib/user-preferences'
 
 const SEARCH_DEBOUNCE_MS = 300
+const SELECTION_DEBOUNCE_MS = 300
+const LOCAL_SELECTION_COMMIT_DELAY_MS = 0
+const SELECTION_SEPARATOR = '\u001F'
 
 const PROGRESS_OPTIONS: Option[] = Object.entries(PROGRESS_CATEGORY_LABELS).map(
   ([value, label]) => ({ value, label }),
@@ -83,6 +90,72 @@ function applyGlobalCurrency(currency: Currency): void {
   setPreferenceCookie(USER_CURRENCY_STORAGE_KEY, currency)
 }
 
+function getSelectionKey(values: readonly string[]): string {
+  return values.join(SELECTION_SEPARATOR)
+}
+
+function useDebouncedSelectionState<T extends string>(
+  globalValues: readonly T[],
+  onCommit: (values: T[]) => void,
+): readonly [T[], (values: T[]) => void] {
+  const globalKey = getSelectionKey(globalValues)
+  const [localValues, setLocalValuesState] = useState<T[]>(() => [
+    ...globalValues,
+  ])
+  const localKey = getSelectionKey(localValues)
+  const globalValuesRef = useRef(globalValues)
+  const onCommitRef = useRef(onCommit)
+  const latestLocalValuesRef = useRef(localValues)
+  const latestLocalKeyRef = useRef(localKey)
+  const latestGlobalKeyRef = useRef(globalKey)
+
+  useEffect(() => {
+    globalValuesRef.current = globalValues
+  }, [globalValues])
+
+  useEffect(() => {
+    onCommitRef.current = onCommit
+  }, [onCommit])
+
+  useEffect(() => {
+    latestLocalValuesRef.current = localValues
+    latestLocalKeyRef.current = localKey
+    latestGlobalKeyRef.current = globalKey
+  }, [globalKey, localKey, localValues])
+
+  useEffect(() => {
+    setLocalValuesState((current) =>
+      getSelectionKey(current) === globalKey
+        ? current
+        : [...globalValuesRef.current],
+    )
+  }, [globalKey])
+
+  useEffect(() => {
+    if (localKey === globalKey) return
+
+    const timeout = window.setTimeout(() => {
+      onCommitRef.current([...latestLocalValuesRef.current])
+    }, SELECTION_DEBOUNCE_MS)
+
+    return () => window.clearTimeout(timeout)
+  }, [globalKey, localKey])
+
+  useEffect(() => {
+    return () => {
+      if (latestLocalKeyRef.current !== latestGlobalKeyRef.current) {
+        onCommitRef.current([...latestLocalValuesRef.current])
+      }
+    }
+  }, [])
+
+  const setLocalValues = useCallback((values: T[]) => {
+    setLocalValuesState([...values])
+  }, [])
+
+  return [localValues, setLocalValues]
+}
+
 interface PnrrFilterSheetProps {
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
@@ -115,6 +188,83 @@ export function PnrrFilterSheet({
   )
   const [beneficiaryCuiInput, setBeneficiaryCuiInput] =
     useState(globalBeneficiaryCui)
+  const [selectedUatFilters, setSelectedUatFilters] =
+    useDebouncedSelectionState<string>(
+      search.uatSirutas ?? (search.uatSiruta ? [search.uatSiruta] : []),
+      filterState.setUatFilters,
+    )
+  const [selectedCounties, setSelectedCounties] =
+    useDebouncedSelectionState<string>(
+      search.counties ?? [],
+      filterState.setCounties,
+    )
+  const [selectedBeneficiaryTypes, setSelectedBeneficiaryTypes] =
+    useDebouncedSelectionState<PnrrBeneficiaryType>(
+      search.beneficiaryTypes ?? [],
+      filterState.setBeneficiaryTypes,
+    )
+  const [selectedComponents, setSelectedComponents] =
+    useDebouncedSelectionState<string>(
+      search.components ?? [],
+      filterState.setComponents,
+    )
+  const [selectedMeasures, setSelectedMeasures] =
+    useDebouncedSelectionState<string>(
+      search.measures ?? [],
+      filterState.setMeasures,
+    )
+  const [selectedCris, setSelectedCris] = useDebouncedSelectionState<string>(
+    search.cris ?? [],
+    filterState.setCris,
+  )
+  const [selectedFundingSources, setSelectedFundingSources] =
+    useDebouncedSelectionState<
+      NonNullable<PnrrSearchState['fundingSources']>[number]
+    >(search.fundingSources ?? [], filterState.setFundingSources)
+  const [selectedProgressCategories, setSelectedProgressCategories] =
+    useDebouncedSelectionState<ProgressCategoryKey>(
+      search.progressCategories ?? [],
+      filterState.setProgressCategories,
+    )
+  const [selectedAnomalyTypes, setSelectedAnomalyTypes] =
+    useDebouncedSelectionState<string>(
+      search.anomalyTypes ?? [],
+      filterState.setAnomalyTypes,
+    )
+  const [selectedDataQualitySignalTypes, setSelectedDataQualitySignalTypes] =
+    useDebouncedSelectionState<string>(
+      search.dataQualitySignalTypes ?? [],
+      filterState.setDataQualitySignalTypes,
+    )
+
+  const handleClearFilters = useCallback(() => {
+    setProjectInput('')
+    setBeneficiaryInput('')
+    setBeneficiaryCuiInput('')
+    setSelectedUatFilters([])
+    setSelectedCounties([])
+    setSelectedBeneficiaryTypes([])
+    setSelectedComponents([])
+    setSelectedMeasures([])
+    setSelectedCris([])
+    setSelectedFundingSources([])
+    setSelectedProgressCategories([])
+    setSelectedAnomalyTypes([])
+    setSelectedDataQualitySignalTypes([])
+    filterState.clearFilters()
+  }, [
+    filterState,
+    setSelectedAnomalyTypes,
+    setSelectedBeneficiaryTypes,
+    setSelectedComponents,
+    setSelectedCounties,
+    setSelectedCris,
+    setSelectedDataQualitySignalTypes,
+    setSelectedFundingSources,
+    setSelectedMeasures,
+    setSelectedProgressCategories,
+    setSelectedUatFilters,
+  ])
 
   // Sync inputs with global state when changed externally (e.g. clear filters)
   useEffect(() => {
@@ -262,8 +412,8 @@ export function PnrrFilterSheet({
             </SheetDescription>
           </SheetHeader>
 
-          <ScrollArea className="flex-1">
-            <div className="min-w-0 space-y-6 p-4 sm:p-6">
+          <ScrollArea className="flex-1 [&_[data-radix-scroll-area-viewport]>div]:!block [&_[data-radix-scroll-area-viewport]>div]:!max-w-full [&_[data-radix-scroll-area-viewport]>div]:!w-full">
+            <div className="w-full min-w-0 max-w-full space-y-6 overflow-x-hidden p-4 sm:p-6">
               <section className="space-y-2">
                 <Label className={FILTER_LABEL_CLASS}>
                   <Trans>Currency</Trans>
@@ -314,12 +464,10 @@ export function PnrrFilterSheet({
                   </Label>
                   <PnrrStyledMultiSelect
                     options={uatOptions}
-                    selected={
-                      search.uatSirutas ??
-                      (search.uatSiruta ? [search.uatSiruta] : [])
-                    }
-                    onChange={filterState.setUatFilters}
+                    selected={selectedUatFilters}
+                    onChange={setSelectedUatFilters}
                     placeholder={t`Choose UAT...`}
+                    commitDelayMs={LOCAL_SELECTION_COMMIT_DELAY_MS}
                   />
                 </div>
 
@@ -329,9 +477,10 @@ export function PnrrFilterSheet({
                   </Label>
                   <PnrrStyledMultiSelect
                     options={countyOptions}
-                    selected={search.counties ?? []}
-                    onChange={filterState.setCounties}
+                    selected={selectedCounties}
+                    onChange={setSelectedCounties}
                     placeholder={t`Choose counties...`}
+                    commitDelayMs={LOCAL_SELECTION_COMMIT_DELAY_MS}
                   />
                 </div>
               </section>
@@ -435,13 +584,12 @@ export function PnrrFilterSheet({
                 </Label>
                 <PnrrStyledMultiSelect
                   options={BENEFICIARY_TYPE_OPTIONS}
-                  selected={search.beneficiaryTypes ?? []}
+                  selected={selectedBeneficiaryTypes}
                   onChange={(values) =>
-                    filterState.setBeneficiaryTypes(
-                      values as PnrrBeneficiaryType[],
-                    )
+                    setSelectedBeneficiaryTypes(values as PnrrBeneficiaryType[])
                   }
                   placeholder={t`Choose beneficiary type...`}
+                  commitDelayMs={LOCAL_SELECTION_COMMIT_DELAY_MS}
                 />
               </section>
 
@@ -455,9 +603,10 @@ export function PnrrFilterSheet({
                   </Label>
                   <PnrrStyledMultiSelect
                     options={componentOptions}
-                    selected={search.components ?? []}
-                    onChange={filterState.setComponents}
+                    selected={selectedComponents}
+                    onChange={setSelectedComponents}
                     placeholder={t`Choose components...`}
+                    commitDelayMs={LOCAL_SELECTION_COMMIT_DELAY_MS}
                   />
                 </div>
 
@@ -468,9 +617,10 @@ export function PnrrFilterSheet({
                   </Label>
                   <PnrrStyledMultiSelect
                     options={measureOptions}
-                    selected={search.measures ?? []}
-                    onChange={filterState.setMeasures}
+                    selected={selectedMeasures}
+                    onChange={setSelectedMeasures}
                     placeholder={t`Choose measures...`}
+                    commitDelayMs={LOCAL_SELECTION_COMMIT_DELAY_MS}
                   />
                 </div>
 
@@ -481,9 +631,10 @@ export function PnrrFilterSheet({
                   </Label>
                   <PnrrStyledMultiSelect
                     options={criOptions}
-                    selected={search.cris ?? []}
-                    onChange={filterState.setCris}
+                    selected={selectedCris}
+                    onChange={setSelectedCris}
                     placeholder={t`Choose institutions...`}
+                    commitDelayMs={LOCAL_SELECTION_COMMIT_DELAY_MS}
                   />
                 </div>
               </section>
@@ -497,9 +648,9 @@ export function PnrrFilterSheet({
                 </Label>
                 <ToggleGroup
                   type="multiple"
-                  value={search.fundingSources ?? []}
+                  value={selectedFundingSources}
                   onValueChange={(v) =>
-                    filterState.setFundingSources(
+                    setSelectedFundingSources(
                       v as ('grant' | 'loan' | 'grant/loan')[],
                     )
                   }
@@ -533,13 +684,12 @@ export function PnrrFilterSheet({
                 </Label>
                 <PnrrStyledMultiSelect
                   options={PROGRESS_OPTIONS}
-                  selected={search.progressCategories ?? []}
+                  selected={selectedProgressCategories}
                   onChange={(v) =>
-                    filterState.setProgressCategories(
-                      v as ProgressCategoryKey[],
-                    )
+                    setSelectedProgressCategories(v as ProgressCategoryKey[])
                   }
                   placeholder={t`Choose status...`}
+                  commitDelayMs={LOCAL_SELECTION_COMMIT_DELAY_MS}
                 />
               </section>
 
@@ -552,9 +702,10 @@ export function PnrrFilterSheet({
                 </Label>
                 <PnrrStyledMultiSelect
                   options={ANOMALY_TYPE_OPTIONS}
-                  selected={search.anomalyTypes ?? []}
-                  onChange={filterState.setAnomalyTypes}
+                  selected={selectedAnomalyTypes}
+                  onChange={setSelectedAnomalyTypes}
                   placeholder={t`Choose risk type...`}
+                  commitDelayMs={LOCAL_SELECTION_COMMIT_DELAY_MS}
                 />
               </section>
 
@@ -565,9 +716,10 @@ export function PnrrFilterSheet({
                 </Label>
                 <PnrrStyledMultiSelect
                   options={DATA_QUALITY_SIGNAL_OPTIONS}
-                  selected={search.dataQualitySignalTypes ?? []}
-                  onChange={filterState.setDataQualitySignalTypes}
+                  selected={selectedDataQualitySignalTypes}
+                  onChange={setSelectedDataQualitySignalTypes}
                   placeholder={t`Choose data signal...`}
+                  commitDelayMs={LOCAL_SELECTION_COMMIT_DELAY_MS}
                 />
               </section>
 
@@ -626,7 +778,7 @@ export function PnrrFilterSheet({
               <Button
                 variant="outline"
                 className="h-11 min-w-0 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-2 text-xs font-black uppercase tracking-wide text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-bg)] sm:text-sm"
-                onClick={filterState.clearFilters}
+                onClick={handleClearFilters}
               >
                 <Trans>Clear all</Trans>
               </Button>

@@ -118,6 +118,7 @@ export function PnrrOverview({
     () =>
       aggregates.topBeneficiaries.slice(0, 10).map((b) => ({
         id: b.beneficiary,
+        itemKey: `${b.beneficiary}\u0000${b.cui ?? ''}`,
         label: b.beneficiary,
         value: formatPnrrCurrency(b.value, currency),
         pct: (b.value / aggregates.rawTotalValue) * 100,
@@ -329,6 +330,7 @@ function RankedListCard({
   readonly title: string
   readonly items: readonly {
     readonly id: string
+    readonly itemKey?: string
     readonly label: string
     readonly prefix?: string
     readonly value: string
@@ -399,7 +401,7 @@ function RankedListCard({
       >
         {displayItems.map((item, i) => (
           <button
-            key={item.id}
+            key={item.itemKey ?? item.id}
             onClick={() => onClick(item.id)}
             className={cn(
               'group relative grid w-full gap-x-3 gap-y-1.5 px-5 py-3 text-left transition-colors hover:bg-[#f0f0ec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)]/60 focus-visible:ring-inset sm:items-center',
