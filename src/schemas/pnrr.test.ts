@@ -64,4 +64,11 @@ describe('pnrr search schema', () => {
       components: ['C1'],
     })
   })
+
+  it('keeps primitive-looking text search values as strings', () => {
+    expect(parsePnrrSearchString('?search=2024&onlyAnomalies=true')).toEqual({
+      search: '2024',
+      onlyAnomalies: true,
+    })
+  })
 })

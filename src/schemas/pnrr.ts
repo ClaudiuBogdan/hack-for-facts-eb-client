@@ -143,13 +143,25 @@ export const PNRR_SEARCH_DEFAULTS = {
   pageSize: 25,
 } as const
 
+const optionalTextSearchParam = z.preprocess(
+  (value) => {
+    if (value === undefined || value === null) return undefined
+    if (typeof value === 'string') return value
+    if (typeof value === 'number' || typeof value === 'boolean') {
+      return String(value)
+    }
+    return value
+  },
+  z.string().optional(),
+)
+
 export const PnrrSearchSchema = z.object({
   view: PnrrViewSchema.default(PNRR_SEARCH_DEFAULTS.view),
-  search: z.string().optional(),
-  beneficiarySearch: z.string().optional(),
+  search: optionalTextSearchParam,
+  beneficiarySearch: optionalTextSearchParam,
   beneficiaryCui: z.coerce.string().optional(),
   uatSiruta: z.coerce.string().optional(),
-  uatName: z.string().optional(),
+  uatName: optionalTextSearchParam,
   uatSirutas: z.array(z.string()).optional(),
   components: z.array(z.string()).optional(),
   counties: z.array(z.string()).optional(),
@@ -197,7 +209,7 @@ export const PnrrSearchSchema = z.object({
 
 export type PnrrSearchState = z.infer<typeof PnrrSearchSchema>
 
-const arraySearchKeys = [
+export const arraySearchKeys = [
   'components',
   'counties',
   'fundingSources',
@@ -284,7 +296,32 @@ export function parsePnrrSearch(search: unknown): Partial<PnrrSearchState> {
   return cleanPnrrSearch(PnrrSearchSchema.parse(search))
 }
 
-function parseSearchValue(value: string): unknown {
+const arraySearchKeySet = new Set<string>(arraySearchKeys)
+const textSearchKeySet = new Set<string>([
+  'view',
+  'search',
+  'beneficiarySearch',
+  'beneficiaryCui',
+  'uatSiruta',
+  'uatName',
+  'granularity',
+  'sortBy',
+  'sortOrder',
+])
+const booleanSearchKeySet = new Set<string>([
+  'onlyAnomalies',
+  'excludeMicro',
+  'includeNational',
+])
+const numberSearchKeySet = new Set<string>([
+  'page',
+  'pageSize',
+  'mapLat',
+  'mapLng',
+  'mapZoom',
+])
+
+function parseJsonSearchValue(value: string): unknown {
   try {
     return JSON.parse(value)
   } catch {
@@ -298,12 +335,36 @@ function parseSearchValue(value: string): unknown {
   }
 }
 
+function parseArraySearchValue(value: string): unknown {
+  const parsed = parseJsonSearchValue(value)
+  return Array.isArray(parsed) ? parsed : [value]
+}
+
+function parseBooleanSearchValue(value: string): unknown {
+  if (value === 'true') return true
+  if (value === 'false') return false
+  return value
+}
+
+function parseNumberSearchValue(value: string): unknown {
+  const numericValue = Number(value)
+  return Number.isFinite(numericValue) ? numericValue : value
+}
+
+function parseSearchValue(key: string, value: string): unknown {
+  if (arraySearchKeySet.has(key)) return parseArraySearchValue(value)
+  if (textSearchKeySet.has(key)) return value
+  if (booleanSearchKeySet.has(key)) return parseBooleanSearchValue(value)
+  if (numberSearchKeySet.has(key)) return parseNumberSearchValue(value)
+  return value
+}
+
 export function parsePnrrSearchString(searchStr: string): Partial<PnrrSearchState> {
   const rawSearch: Record<string, unknown> = {}
   const params = new URLSearchParams(searchStr)
 
   params.forEach((value, key) => {
-    rawSearch[key] = parseSearchValue(value)
+    rawSearch[key] = parseSearchValue(key, value)
   })
 
   return parsePnrrSearch(rawSearch)

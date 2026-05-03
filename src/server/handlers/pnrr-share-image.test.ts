@@ -43,6 +43,20 @@ function makeSnapshot(): PnrrSeoSnapshot {
   }
 }
 
+function makeSnapshotWithNationalTopCounty(): PnrrSeoSnapshot {
+  return {
+    ...makeSnapshot(),
+    topCounties: [
+      {
+        id: 'Național',
+        label: 'National',
+        count: 5000,
+        valueEur: 10_000_000_000,
+      },
+    ],
+  }
+}
+
 describe('pnrr-share-image', () => {
   afterEach(() => {
     i18n.activate('ro')
@@ -64,6 +78,15 @@ describe('pnrr-share-image', () => {
     const viewModel = buildPnrrShareImageViewModel(makeSnapshot())
 
     expect(viewModel.totalValue).toBe('21,4\u00A0mld.\u00A0EUR')
+  })
+
+  it('uses Total instead of National for the unfiltered share image scope', () => {
+    const viewModel = buildPnrrShareImageViewModel(
+      makeSnapshotWithNationalTopCounty(),
+      { showTotalScope: true },
+    )
+
+    expect(viewModel.topCounty).toBe('Total')
   })
 
   it('builds cacheable and fallback response headers', () => {

@@ -7,6 +7,7 @@ import satori from 'satori'
 import { parsePnrrSearchString } from '@/schemas/pnrr'
 import {
   buildFallbackPnrrSeoSnapshot,
+  buildPnrrSeoSnapshotSearchKey,
   buildPnrrSeoSnapshotFromRawProjects,
   type PnrrSeoSnapshot,
 } from '@/features/pnrr/seo/pnrr-seo'
@@ -44,6 +45,15 @@ export type PnrrShareImageViewModel = {
   readonly topComponent: string
   readonly topCounty: string
   readonly updatedLabel: string
+}
+
+type PnrrShareImageViewModelOptions = {
+  readonly showTotalScope?: boolean
+}
+
+type ResolvedPnrrShareSnapshot = {
+  readonly snapshot: PnrrSeoSnapshot
+  readonly hasSnapshotFilters: boolean
 }
 
 type ShareImageCacheEntry = {
@@ -157,6 +167,7 @@ function formatDate(value: string): string {
 
 export function buildPnrrShareImageViewModel(
   snapshot: PnrrSeoSnapshot,
+  options: PnrrShareImageViewModelOptions = {},
 ): PnrrShareImageViewModel {
   return {
     title: 'PNRR Romania',
@@ -167,7 +178,9 @@ export function buildPnrrShareImageViewModel(
     completedCount: formatCount(snapshot.completedCount),
     anomalyCount: formatCount(snapshot.anomalyCount),
     topComponent: snapshot.topComponents[0]?.label ?? 'Toate componentele',
-    topCounty: snapshot.topCounties[0]?.label ?? 'Toata Romania',
+    topCounty: options.showTotalScope
+      ? 'Total'
+      : (snapshot.topCounties[0]?.label ?? 'Toata Romania'),
     updatedLabel: `Actualizat ${formatDate(snapshot.lastUpdated)}`,
   }
 }
@@ -485,13 +498,20 @@ export function buildPnrrShareImageResponseHeaders(params: {
   }
 }
 
-async function resolvePnrrShareSnapshot(requestUrl: URL): Promise<PnrrSeoSnapshot> {
+async function resolvePnrrShareSnapshot(
+  requestUrl: URL,
+): Promise<ResolvedPnrrShareSnapshot> {
   const search = parsePnrrSearchString(requestUrl.search)
   const { data } = await fetchPnrrRawProjects()
-  return buildPnrrSeoSnapshotFromRawProjects({
-    rawProjects: data,
-    search,
-  })
+  const snapshotSearchKey = buildPnrrSeoSnapshotSearchKey(search)
+
+  return {
+    snapshot: buildPnrrSeoSnapshotFromRawProjects({
+      rawProjects: data,
+      search,
+    }),
+    hasSnapshotFilters: snapshotSearchKey !== '{}',
+  }
 }
 
 export async function handlePnrrShareImageRequest(
@@ -520,9 +540,12 @@ export async function handlePnrrShareImageRequest(
   }
 
   try {
-    const snapshot = await resolvePnrrShareSnapshot(requestUrl)
+    const { snapshot, hasSnapshotFilters } =
+      await resolvePnrrShareSnapshot(requestUrl)
     const png = await renderPnrrShareCardPng(
-      buildPnrrShareImageViewModel(snapshot),
+      buildPnrrShareImageViewModel(snapshot, {
+        showTotalScope: !hasSnapshotFilters,
+      }),
     )
     storeCachedShareImage(cacheKey, png)
 
