@@ -37,7 +37,9 @@ export type DataQualitySignalType =
   | 'large-missing-financial-progress'
   | 'completed-missing-financial-progress'
 
-export type PnrrEntityType = 'public' | 'private'
+export const PNRR_ENTITY_TYPE_VALUES = ['public', 'private'] as const
+
+export type PnrrEntityType = typeof PNRR_ENTITY_TYPE_VALUES[number]
 
 export const PNRR_BENEFICIARY_TYPE_VALUES = [
   'public',
@@ -158,6 +160,22 @@ const optionalTextSearchParam = z.preprocess(
   z.string().optional(),
 )
 
+function isPnrrEntityType(value: unknown): value is PnrrEntityType {
+  return (
+    typeof value === 'string' &&
+    PNRR_ENTITY_TYPE_VALUES.includes(value as PnrrEntityType)
+  )
+}
+
+const optionalEntityTypesSearchParam = z.preprocess(
+  (value) => {
+    if (value === undefined || value === null) return undefined
+    const values = Array.isArray(value) ? value : [value]
+    return values.filter(isPnrrEntityType)
+  },
+  z.array(z.enum(PNRR_ENTITY_TYPE_VALUES)).optional(),
+)
+
 export const PnrrSearchSchema = z.object({
   view: PnrrViewSchema.default(PNRR_SEARCH_DEFAULTS.view),
   search: optionalTextSearchParam,
@@ -182,7 +200,7 @@ export const PnrrSearchSchema = z.object({
     .enum(['national', 'county', 'uat'])
     .optional()
     .default(PNRR_SEARCH_DEFAULTS.granularity),
-  entityTypes: z.array(z.enum(['public', 'private'])).optional(),
+  entityTypes: optionalEntityTypesSearchParam,
   beneficiaryTypes: z.array(z.enum(PNRR_BENEFICIARY_TYPE_VALUES)).optional(),
   currency: Currency.optional(),
   includeNational: z.boolean().optional().default(PNRR_SEARCH_DEFAULTS.includeNational),

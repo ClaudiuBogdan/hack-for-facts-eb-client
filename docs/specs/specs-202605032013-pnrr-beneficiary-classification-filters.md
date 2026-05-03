@@ -97,9 +97,11 @@ public companies lookup before private legal markers such as `SA`, `SRL`, or
 `PFA` are applied.
 
 Legacy `entityTypes=["national"]` compatibility is intentionally not preserved.
-The search schema accepts only `public` and `private` for `entityTypes`.
-National records are available through `beneficiaryTypes=["national"]`, where
-`national` remains a detailed beneficiary/location filter.
+The canonical search schema keeps only `public` and `private` for
+`entityTypes`; unsupported values are dropped instead of being rewritten to a
+different filter. National records are available through
+`beneficiaryTypes=["national"]`, where `national` remains a detailed
+beneficiary/location filter.
 
 The UI now:
 
@@ -162,9 +164,9 @@ The UI now:
 - Some public-company beneficiaries may also fit other categories such as
   central agencies or national records; `public-company` intentionally takes
   precedence for CUIs found in the official public-company list.
-- Old shared URLs that use `entityTypes=["national"]` are no longer valid and
-  should be replaced with `beneficiaryTypes=["national"]` when that detailed
-  national filter is intended.
+- Old shared URLs that use `entityTypes=["national"]` no longer apply a filter
+  and should be replaced with `beneficiaryTypes=["national"]` when that
+  detailed national filter is intended.
 - Lingui catalogs were refreshed for the new labels and explanatory copy.
 
 ## Verification Notes
@@ -181,7 +183,7 @@ Focused tests were added or updated for:
 - Unknown non-public-looking beneficiaries falling back to `other-private`.
 - Public/private aggregate totals adding up to the all-project total.
 - `beneficiaryTypes=["national"]` detailed filtering.
-- `entityTypes=["national"]` being rejected as an unsupported entity filter.
+- `entityTypes=["national"]` being dropped as an unsupported entity filter.
 - `beneficiaryTypes=["public-company"]` filtering official public companies.
 
 Current dataset checks against `public/data/pnrr-projects.json`:

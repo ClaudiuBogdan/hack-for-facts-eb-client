@@ -84,9 +84,12 @@ describe('pnrr search schema', () => {
     })
   })
 
-  it('rejects national as an unsupported entity type', () => {
-    expect(() =>
-      parsePnrrSearchString('?entityTypes=%5B%22national%22%5D'),
-    ).toThrow()
+  it('drops unsupported entity types from canonical URL state', () => {
+    expect(parsePnrrSearchString('?entityTypes=%5B%22national%22%5D')).toEqual({})
+    expect(
+      parsePnrrSearchString('?entityTypes=%5B%22private%22%2C%22national%22%5D'),
+    ).toEqual({
+      entityTypes: ['private'],
+    })
   })
 })
