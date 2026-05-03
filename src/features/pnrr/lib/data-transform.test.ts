@@ -373,6 +373,42 @@ describe('entity type classification', () => {
     expect(p.beneficiaryType).toBe('other-private')
   })
 
+  it('does not classify county name context as county council', () => {
+    const chamber = transformProject(makeRaw({
+      'Nume Beneficiar': 'CAMERA DE COMERT SI INDUSTRIE A JUDETULUI HUNEDOARA',
+      CUI: '4371311',
+      'Județ': 'Hunedoara',
+      Localitate: 'Hunedoara',
+    }))
+    const school = transformProject(makeRaw({
+      'Nume Beneficiar': 'SCOALA GIMNAZIALA , Comuna TRIFESTI, Judetul NEAMT',
+      CUI: '17641395',
+      'Județ': 'Neamț',
+      Localitate: 'TRIFEȘTI',
+    }))
+    const health = transformProject(makeRaw({
+      'Nume Beneficiar': 'DIRECTIA DE SANATATE PUBLICA A JUDETULUI BIHOR',
+      CUI: '4230398',
+      'Județ': 'Bihor',
+      Localitate: 'Oradea',
+    }))
+    const countyCouncil = transformProject(makeRaw({
+      'Nume Beneficiar': 'JUDEȚUL HUNEDOARA',
+      CUI: '4374474',
+      'Județ': 'Hunedoara',
+      Localitate: 'JUDEȚUL HUNEDOARA',
+    }))
+
+    expect(chamber.entityType).toBe('private')
+    expect(chamber.beneficiaryType).toBe('other-private')
+    expect(school.beneficiaryType).toBe('education')
+    expect(health.beneficiaryType).toBe('health')
+    expect(countyCouncil.beneficiaryType).toBe('county-council')
+    expect(filterProjects([chamber, school, health, countyCouncil], {
+      beneficiaryTypes: ['county-council'],
+    })).toEqual([countyCouncil])
+  })
+
   it('does not assign public detailed groups to private / non-public beneficiaries', () => {
     const p = transformProject(makeRaw({ 'Nume Beneficiar': 'CLINICA PRIVATA EXEMPLU' }))
     expect(p.entityType).toBe('private')

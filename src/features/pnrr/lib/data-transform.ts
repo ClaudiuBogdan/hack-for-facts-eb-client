@@ -188,8 +188,6 @@ const PUBLIC_KEYWORDS: readonly string[] = [
   'PRIMARIA',
   'CONSILIUL',
   'INSPECTORATUL',
-  'JUDEȚUL',
-  'JUDETUL',
   'MUNICIPIUL',
   'MUNICIPIU',
   'ORAȘUL',
@@ -284,6 +282,7 @@ export function classifyEntityType(
     upper.includes(kw),
   )
   const hasPublicKeyword = PUBLIC_KEYWORDS.some((kw) => upper.includes(kw))
+  const hasCountyCouncilName = isCountyCouncilBeneficiaryName(normalized)
   const hasExplicitPrivateMarker = hasPrivateMarker(beneficiary)
   const hasNonPublicKeyword = hasAnyBeneficiaryKeyword(normalized, NON_PUBLIC_KEYWORDS)
 
@@ -295,7 +294,7 @@ export function classifyEntityType(
     return 'private'
   }
 
-  if (isPublicDirectoryType(directoryType) || hasPublicKeyword) {
+  if (isPublicDirectoryType(directoryType) || hasPublicKeyword || hasCountyCouncilName) {
     return 'public'
   }
 
@@ -340,6 +339,10 @@ function normalizeBeneficiaryName(value: string): string {
 
 function hasAnyBeneficiaryKeyword(value: string, keywords: readonly string[]): boolean {
   return keywords.some((keyword) => value.includes(keyword))
+}
+
+function isCountyCouncilBeneficiaryName(value: string): boolean {
+  return /^(JUDETUL|CONSILIUL JUDETEAN)(\s|$)/.test(value)
 }
 
 export function classifyBeneficiaryType(
@@ -406,7 +409,7 @@ export function classifyBeneficiaryType(
   ) {
     return 'uat'
   }
-  if (hasAnyBeneficiaryKeyword(normalized, ['JUDETUL', 'CONSILIUL JUDETEAN'])) {
+  if (isCountyCouncilBeneficiaryName(normalized)) {
     return 'county-council'
   }
   if (normalized.includes('MINISTERUL')) return 'ministry'
