@@ -6,10 +6,15 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { setPreferenceCookie, USER_INFLATION_ADJUSTED_STORAGE_KEY } from "@/lib/user-preferences";
 import { parseBooleanParam, resolveNormalizationSettings, type NormalizationInput } from "@/lib/globalSettings/params";
 
-export function InflationToggle() {
+export function InflationToggle({
+    initialInflationAdjusted,
+}: {
+    readonly initialInflationAdjusted?: boolean;
+}) {
     const { state } = useSidebar();
     const collapsed = state === "collapsed";
-    const [userInflationAdjusted, setUserInflationAdjusted] = useUserInflationAdjusted();
+    const [userInflationAdjusted, setUserInflationAdjusted] =
+        useUserInflationAdjusted(initialInflationAdjusted);
     const navigate = useNavigate();
     const search = useSearch({ strict: false });
 

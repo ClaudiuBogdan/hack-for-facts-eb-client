@@ -18,9 +18,9 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
   Cell,
 } from 'recharts'
+import { SafeResponsiveContainer } from '@/components/charts/safe-responsive-container'
 import { Info } from 'lucide-react'
 
 type Metric = 'tech' | 'fin' | 'gap'
@@ -239,7 +239,7 @@ export function PnrrProgressHistogram({
       {/* Chart */}
       <div className="px-4 py-5 sm:px-5">
         <div className="h-[280px]">
-          <ResponsiveContainer width="100%" height="100%">
+          <SafeResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ bottom: 30, left: 10, right: 10 }}>
               <CartesianGrid
                 strokeDasharray="4 4"
@@ -305,7 +305,7 @@ export function PnrrProgressHistogram({
                 ))}
               </Bar>
             </BarChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
       </div>
     </div>

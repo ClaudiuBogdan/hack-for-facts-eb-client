@@ -7,10 +7,14 @@ import { setPreferenceCookie, USER_CURRENCY_STORAGE_KEY } from "@/lib/user-prefe
 import type { Currency } from "@/schemas/charts";
 import { parseCurrencyParam, resolveNormalizationSettings, type NormalizationInput } from "@/lib/globalSettings/params";
 
-export function CurrencyToggle() {
+export function CurrencyToggle({
+    initialCurrency,
+}: {
+    readonly initialCurrency?: Currency;
+}) {
     const { state } = useSidebar();
     const collapsed = state === "collapsed";
-    const [userCurrency, setUserCurrency] = useUserCurrency();
+    const [userCurrency, setUserCurrency] = useUserCurrency(initialCurrency);
     const search = useSearch({ strict: false });
 
     const normalizationRaw = (search as Record<string, unknown>).normalization as NormalizationInput | undefined;

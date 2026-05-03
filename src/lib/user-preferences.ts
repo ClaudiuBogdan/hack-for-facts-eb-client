@@ -47,19 +47,27 @@ const readRequestCookie = createIsomorphicFn()
 
 export function readClientCurrencyPreference(): Currency | null {
   if (typeof window === 'undefined') return null;
-  const localValue = normalizeCurrency(
-    parseStoredValue(window.localStorage.getItem(USER_CURRENCY_STORAGE_KEY))
-  );
-  if (localValue) return localValue;
+  try {
+    const localValue = normalizeCurrency(
+      parseStoredValue(window.localStorage.getItem(USER_CURRENCY_STORAGE_KEY))
+    );
+    if (localValue) return localValue;
+  } catch {
+    // Fall back to the cookie when localStorage is unavailable.
+  }
   return normalizeCurrency(readCookieValue(USER_CURRENCY_STORAGE_KEY));
 }
 
 export function readClientInflationAdjustedPreference(): boolean | null {
   if (typeof window === 'undefined') return null;
-  const localValue = normalizeBoolean(
-    parseStoredValue(window.localStorage.getItem(USER_INFLATION_ADJUSTED_STORAGE_KEY))
-  );
-  if (localValue !== null) return localValue;
+  try {
+    const localValue = normalizeBoolean(
+      parseStoredValue(window.localStorage.getItem(USER_INFLATION_ADJUSTED_STORAGE_KEY))
+    );
+    if (localValue !== null) return localValue;
+  } catch {
+    // Fall back to the cookie when localStorage is unavailable.
+  }
   return normalizeBoolean(readCookieValue(USER_INFLATION_ADJUSTED_STORAGE_KEY));
 }
 

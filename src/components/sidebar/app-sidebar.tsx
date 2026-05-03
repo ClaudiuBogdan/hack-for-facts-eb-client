@@ -6,8 +6,18 @@ import { LanguageToggle } from "@/components/theme/language-toggle";
 import { CurrencyToggle } from "@/components/theme/currency-toggle";
 import { InflationToggle } from "@/components/theme/inflation-toggle";
 import { NavUser } from "./nav-user";
+import type { Currency } from "@/schemas/charts";
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
+  readonly initialCurrency?: Currency;
+  readonly initialInflationAdjusted?: boolean;
+};
+
+export function AppSidebar({
+  initialCurrency,
+  initialInflationAdjusted,
+  ...props
+}: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -19,8 +29,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </div>
       </SidebarContent>
       <SidebarFooter>
-        <CurrencyToggle />
-        <InflationToggle />
+        <CurrencyToggle initialCurrency={initialCurrency} />
+        <InflationToggle initialInflationAdjusted={initialInflationAdjusted} />
         <LanguageToggle />
         <NavUser />
       </SidebarFooter>

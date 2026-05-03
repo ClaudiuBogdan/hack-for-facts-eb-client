@@ -26,6 +26,10 @@ import {
   type ResolvedTheme,
 } from "@/components/theme/theme-provider";
 import { createNoStoreHeaders } from "@/lib/http-cache";
+import {
+  readUserCurrencyPreference,
+  readUserInflationAdjustedPreference,
+} from "@/lib/user-preferences";
 
 const ANONYMOUS_CROSS_ORIGIN = "anonymous" as const;
 const DEFAULT_THEME: ResolvedTheme = "light";
@@ -68,8 +72,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     // Read theme from cookie for SSR (prevents FOUC)
     const themeCookie = await readThemeCookie();
     const ssrTheme = resolveThemeFromCookie(themeCookie);
+    const ssrCurrency = await readUserCurrencyPreference();
+    const ssrInflationAdjusted = await readUserInflationAdjustedPreference();
 
-    return { ssrTheme };
+    return { ssrTheme, ssrCurrency, ssrInflationAdjusted };
   },
   errorComponent: ({ error }) => <GlobalErrorPage error={error} />,
   notFoundComponent: NotFoundPage,
@@ -77,7 +83,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 });
 
 function RootComponent() {
-  const { queryClient, ssrTheme } = Route.useRouteContext();
+  const { queryClient, ssrTheme, ssrCurrency, ssrInflationAdjusted } =
+    Route.useRouteContext();
   const themeClass = ssrTheme || DEFAULT_THEME;
 
   return (
@@ -86,7 +93,12 @@ function RootComponent() {
         <HeadContent />
       </head>
       <body>
-        <AppShell queryClient={queryClient} ssrTheme={ssrTheme} />
+        <AppShell
+          queryClient={queryClient}
+          ssrTheme={ssrTheme}
+          ssrCurrency={ssrCurrency}
+          ssrInflationAdjusted={ssrInflationAdjusted}
+        />
         <Scripts />
       </body>
     </html>

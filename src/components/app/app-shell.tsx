@@ -24,6 +24,7 @@ import { MobileBottomDock } from "@/components/mobile/mobile-bottom-dock";
 import { shouldHideMobileBottomDock } from "@/components/mobile/mobile-bottom-dock-visibility";
 import { Analytics } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
+import type { Currency } from "@/schemas/charts";
 
 const isBrowser = typeof window !== 'undefined';
 
@@ -31,9 +32,18 @@ type AppShellProps = {
   queryClient: QueryClient;
   /** Theme resolved during SSR from cookie, used to prevent FOUC */
   ssrTheme?: ResolvedTheme;
+  /** Currency resolved during SSR from cookie, used for hydration-safe global controls */
+  ssrCurrency?: Currency;
+  /** Inflation preference resolved during SSR from cookie, used for hydration-safe global controls */
+  ssrInflationAdjusted?: boolean;
 };
 
-export function AppShell({ queryClient, ssrTheme }: AppShellProps) {
+export function AppShell({
+  queryClient,
+  ssrTheme,
+  ssrCurrency,
+  ssrInflationAdjusted,
+}: AppShellProps) {
   const router = useRouter();
   const location = useLocation();
   const hasSentryConsent = useSentryConsent();
@@ -94,7 +104,10 @@ export function AppShell({ queryClient, ssrTheme }: AppShellProps) {
                 <HotkeysProvider>
                   <SidebarProvider>
                     <div className="flex min-h-screen min-w-full">
-                      <AppSidebar />
+                      <AppSidebar
+                        initialCurrency={ssrCurrency}
+                        initialInflationAdjusted={ssrInflationAdjusted}
+                      />
                       <SidebarInset>
                         <main
                           role="main"

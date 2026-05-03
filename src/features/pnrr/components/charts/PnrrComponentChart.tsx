@@ -17,9 +17,9 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
   Cell,
 } from 'recharts'
+import { SafeResponsiveContainer } from '@/components/charts/safe-responsive-container'
 
 type ViewMode = 'value' | 'count'
 
@@ -87,7 +87,7 @@ export function PnrrComponentChart({
       </CardHeader>
       <CardContent className="p-4">
         <div className="h-[320px]">
-          <ResponsiveContainer width="100%" height="100%">
+          <SafeResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
               layout="vertical"
@@ -151,7 +151,7 @@ export function PnrrComponentChart({
                 ))}
               </Bar>
             </BarChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
       </CardContent>
     </Card>
