@@ -30,9 +30,10 @@ export function PnrrHeader({
   readonly filterState: ReturnType<typeof usePnrrFilterState>
   readonly isLoading?: boolean
 }) {
+  const [hasMounted, setHasMounted] = useState(false)
   const [isCompactVisible, setIsCompactVisible] = useState(false)
-  const rafRef = useRef<number | null>(null)
-  const shouldShowRef = useRef(false)
+  const lastScrollYRef = useRef(0)
+  const mobileCompactVisibleRef = useRef(false)
   const fullHeaderRef = useRef<HTMLElement | null>(null)
   const sidebar = useOptionalSidebar()
   const isViewportMobile = useIsMobile()
@@ -46,35 +47,37 @@ export function PnrrHeader({
   })
 
   useEffect(() => {
-    if (isMobile) {
-      shouldShowRef.current = false
-      setIsCompactVisible(false)
-      return
-    }
+    setHasMounted(true)
+    lastScrollYRef.current = window.scrollY
 
     const updateCompactVisibility = () => {
-      if (rafRef.current !== null) return
-      rafRef.current = window.requestAnimationFrame(() => {
-        rafRef.current = null
-        const headerBottom = fullHeaderRef.current?.getBoundingClientRect().bottom ?? Number.POSITIVE_INFINITY
-        const nextShouldShow = headerBottom <= 0
+      const fullHeader =
+        fullHeaderRef.current ?? document.querySelector<HTMLElement>('header')
+      const headerBottom = fullHeader?.getBoundingClientRect().bottom ?? Number.POSITIVE_INFINITY
+      const currentScrollY = window.scrollY
+      const isScrollingDownPage = currentScrollY > lastScrollYRef.current + 4
+      const isScrollingUpPage = currentScrollY < lastScrollYRef.current - 4
 
-        if (nextShouldShow !== shouldShowRef.current) {
-          shouldShowRef.current = nextShouldShow
-          setIsCompactVisible(nextShouldShow)
-        }
-      })
+      if (isMobile) {
+        if (isScrollingDownPage) mobileCompactVisibleRef.current = true
+        if (isScrollingUpPage) mobileCompactVisibleRef.current = false
+      }
+
+      lastScrollYRef.current = currentScrollY
+      const nextShouldShow = headerBottom <= 0 && (!isMobile || mobileCompactVisibleRef.current)
+      setIsCompactVisible(nextShouldShow)
     }
 
     updateCompactVisibility()
+    const visibilityInterval = window.setInterval(updateCompactVisibility, 120)
     window.addEventListener('scroll', updateCompactVisibility, { passive: true })
+    document.addEventListener('scroll', updateCompactVisibility, { passive: true, capture: true })
     window.addEventListener('resize', updateCompactVisibility)
     return () => {
+      window.clearInterval(visibilityInterval)
       window.removeEventListener('scroll', updateCompactVisibility)
+      document.removeEventListener('scroll', updateCompactVisibility, { capture: true })
       window.removeEventListener('resize', updateCompactVisibility)
-      if (rafRef.current !== null) {
-        window.cancelAnimationFrame(rafRef.current)
-      }
     }
   }, [isMobile])
 
@@ -83,7 +86,7 @@ export function PnrrHeader({
   return (
     <>
       {/* Compact sticky header */}
-      {!isMobile && (
+      {hasMounted && (
       <div
         aria-hidden={!isCompactVisible}
         inert={!isCompactVisible ? true : undefined}
