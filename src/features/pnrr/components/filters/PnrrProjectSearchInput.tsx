@@ -41,7 +41,7 @@ export function PnrrProjectSearchInput({
           htmlFor={inputId}
           className="mb-1.5 block text-xs font-black uppercase tracking-wide text-[var(--pnrr-muted)]"
         >
-          {t`Căutare proiect`}
+          {t`Project search`}
         </label>
       )}
       <div className="relative">
@@ -54,8 +54,8 @@ export function PnrrProjectSearchInput({
           name="projectSearch"
           type="text"
           autoComplete="off"
-          aria-label={!showLabel ? t`Căutare proiect` : undefined}
-          placeholder={t`Titlu, beneficiar, CUI sau localitate...`}
+          aria-label={!showLabel ? t`Project search` : undefined}
+          placeholder={t`Title, beneficiary, CUI, or locality...`}
           value={inputValue}
           onChange={(event) => setInputValue(event.target.value)}
           className="h-12 w-full border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-11 py-2 text-base font-bold text-[var(--pnrr-fg)] placeholder:text-[var(--pnrr-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
@@ -68,7 +68,7 @@ export function PnrrProjectSearchInput({
               filterState.setSearch(undefined)
             }}
             className="absolute right-3 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center text-[var(--pnrr-muted)] transition-colors hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-            aria-label={t`Șterge căutarea`}
+            aria-label={t`Clear search`}
           >
             <X aria-hidden="true" className="h-4 w-4" />
           </button>

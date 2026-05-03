@@ -78,7 +78,7 @@ describe('PnrrProjectSearchInput', () => {
     render(<PnrrProjectSearchInput filterState={filterState} />)
 
     fireEvent.change(
-      screen.getByRole('textbox', { name: 'Căutare proiect' }),
+      screen.getByRole('textbox', { name: 'Project search' }),
       {
         target: { value: longSearch },
       },
@@ -101,7 +101,7 @@ describe('PnrrProjectSearchInput', () => {
 
     render(<PnrrProjectSearchInput filterState={filterState} />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Șterge căutarea' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Clear search' }))
 
     expect(setSearch).toHaveBeenCalledWith(undefined)
   })
