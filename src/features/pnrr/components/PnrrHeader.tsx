@@ -20,6 +20,7 @@ export function PnrrHeader({
   onViewChange,
   actions,
   filterState,
+  uatLabelsBySiruta,
   isLoading = false,
 }: {
   readonly projectsCount: number
@@ -28,6 +29,7 @@ export function PnrrHeader({
   readonly onViewChange: (view: PnrrView) => void
   readonly actions?: React.ReactNode
   readonly filterState: ReturnType<typeof usePnrrFilterState>
+  readonly uatLabelsBySiruta?: ReadonlyMap<string, string>
   readonly isLoading?: boolean
 }) {
   const [hasMounted, setHasMounted] = useState(false)
@@ -145,7 +147,11 @@ export function PnrrHeader({
               hasActiveFilters && 'border-t-2 border-[var(--pnrr-border)]',
             )}
           >
-            <PnrrActiveFilters filterState={filterState} compact />
+            <PnrrActiveFilters
+              filterState={filterState}
+              uatLabelsBySiruta={uatLabelsBySiruta}
+              compact
+            />
           </div>
         </div>
       )}
@@ -257,7 +263,10 @@ export function PnrrHeader({
 
         {/* Active filters */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <PnrrActiveFilters filterState={filterState} />
+          <PnrrActiveFilters
+            filterState={filterState}
+            uatLabelsBySiruta={uatLabelsBySiruta}
+          />
         </div>
 
         {/* Tab bar */}

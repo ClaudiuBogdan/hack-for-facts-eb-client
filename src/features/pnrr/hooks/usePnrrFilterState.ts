@@ -2,6 +2,7 @@ import { useLocation, useNavigate, useSearch } from '@tanstack/react-router'
 import { useCallback, useEffect } from 'react'
 import { cleanPnrrSearch, parsePnrrSearchString } from '@/schemas/pnrr'
 import type { PnrrSearchState, PnrrView } from '@/schemas/pnrr'
+import type { Currency } from '@/schemas/charts'
 
 const clearMapViewport = (search: Partial<PnrrSearchState>): Partial<PnrrSearchState> => {
   const next = { ...search }
@@ -203,6 +204,21 @@ export function usePnrrFilterState() {
     [updateSearch]
   )
 
+  const setCurrency = useCallback(
+    (currency: Currency) => {
+      navigate({
+        search: (prev) =>
+          cleanPnrrSearch({
+            ...(prev as Partial<PnrrSearchState>),
+            currency,
+          }),
+        replace: true,
+        resetScroll: false,
+      })
+    },
+    [navigate]
+  )
+
   const setSorting = useCallback(
     (sortBy: PnrrSearchState['sortBy'], sortOrder: PnrrSearchState['sortOrder']) =>
       updateSearch({ sortBy, sortOrder }),
@@ -250,13 +266,14 @@ export function usePnrrFilterState() {
       search: (prev) =>
         cleanPnrrSearch({
           view: search.view,
+          currency: search.currency,
           page: 1,
           pageSize: (prev as Partial<PnrrSearchState>).pageSize,
         }),
       replace: true,
       resetScroll: false,
     })
-  }, [navigate, search.view])
+  }, [navigate, search.currency, search.view])
 
   return {
     search,
@@ -282,6 +299,7 @@ export function usePnrrFilterState() {
     setEntityTypes,
     setBeneficiaryTypes,
     setIncludeNational,
+    setCurrency,
     setSorting,
     setPagination,
     setMapView,

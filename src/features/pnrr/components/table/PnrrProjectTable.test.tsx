@@ -73,6 +73,7 @@ function makeFilterState(
     setBeneficiaryTypes: vi.fn(),
     setIncludeNational: vi.fn(),
     setSorting: vi.fn(),
+    setCurrency: vi.fn(),
     setPagination: vi.fn(),
     setMapView: vi.fn(),
     clearFilters: vi.fn(),

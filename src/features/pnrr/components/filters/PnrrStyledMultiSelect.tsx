@@ -10,9 +10,14 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { Check, ChevronsUpDown, Search, X } from 'lucide-react'
+import {
+  filterPnrrOptions,
+  normalizePnrrFilterSearchText,
+} from './pnrr-filter-search'
 
 export type PnrrFilterOption = Option & {
   readonly description?: string
+  readonly searchText?: string
 }
 
 const SELECTION_SEPARATOR = '\u001F'
@@ -27,20 +32,6 @@ function getSelectionKey(values: readonly string[]): string {
 
 function parseSelectionKey(key: string): string[] {
   return key ? key.split(SELECTION_SEPARATOR) : []
-}
-
-function normalizeSearchText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-}
-
-function optionSearchText(option: PnrrFilterOption): string {
-  return normalizeSearchText(
-    `${option.label} ${option.description ?? ''} ${option.value}`,
-  )
 }
 
 function buildOptionMap(
@@ -81,7 +72,7 @@ export function PnrrStyledMultiSelect({
   const searchInputRef = useRef<HTMLInputElement | null>(null)
 
   const searchable = options.length > SEARCH_OPTION_THRESHOLD
-  const normalizedSearch = normalizeSearchText(search)
+  const normalizedSearch = normalizePnrrFilterSearchText(search)
   const selectedSet = useMemo(() => new Set(localSelected), [localSelected])
   const optionMap = useMemo(() => buildOptionMap(options), [options])
   const selectedOptions = useMemo(
@@ -93,9 +84,7 @@ export function PnrrStyledMultiSelect({
   )
   const filteredOptions = useMemo(() => {
     if (!searchable || !normalizedSearch) return options
-    return options.filter((option) =>
-      optionSearchText(option).includes(normalizedSearch),
-    )
+    return filterPnrrOptions(options, normalizedSearch)
   }, [normalizedSearch, options, searchable])
   const listHeight = Math.min(
     filteredOptions.length * OPTION_ROW_HEIGHT,

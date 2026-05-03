@@ -71,4 +71,10 @@ describe('pnrr search schema', () => {
       onlyAnomalies: true,
     })
   })
+
+  it('keeps currency in canonical URL search state', () => {
+    expect(parsePnrrSearchString('?currency=EUR')).toEqual({
+      currency: 'EUR',
+    })
+  })
 })

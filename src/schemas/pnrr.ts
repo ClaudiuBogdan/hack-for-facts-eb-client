@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { Currency } from './charts'
 
 export const RawPnrrProjectSchema = z.object({
   'Titlu Proiect': z.string(),
@@ -181,6 +182,7 @@ export const PnrrSearchSchema = z.object({
     .default(PNRR_SEARCH_DEFAULTS.granularity),
   entityTypes: z.array(z.enum(['public', 'private', 'national'])).optional(),
   beneficiaryTypes: z.array(z.enum(PNRR_BENEFICIARY_TYPE_VALUES)).optional(),
+  currency: Currency.optional(),
   includeNational: z.boolean().optional().default(PNRR_SEARCH_DEFAULTS.includeNational),
   sortBy: z
     .enum(['value', 'title', 'techProgress', 'finProgress', 'county', 'beneficiary'])
@@ -305,6 +307,7 @@ const textSearchKeySet = new Set<string>([
   'uatSiruta',
   'uatName',
   'granularity',
+  'currency',
   'sortBy',
   'sortOrder',
 ])

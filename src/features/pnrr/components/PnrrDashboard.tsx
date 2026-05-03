@@ -50,6 +50,23 @@ export function PnrrDashboard({
 
   const projects = useMemo(() => data?.projects ?? [], [data?.projects])
   const view = filterState.search.view ?? 'overview'
+  const effectiveCurrency = filterState.search.currency ?? initialCurrency
+  const uatLabelsBySiruta = useMemo(() => {
+    const labels = new Map<string, string>()
+
+    for (const project of projects) {
+      if (!project.sirutaCode || !project.locality || project.county === 'Național') {
+        continue
+      }
+
+      const existing = labels.get(project.sirutaCode)
+      if (!existing || project.locality.localeCompare(existing, 'ro') < 0) {
+        labels.set(project.sirutaCode, project.locality)
+      }
+    }
+
+    return labels
+  }, [projects])
 
   const filteredProjects = useMemo(
     () => filterProjectsBySearch(projects, filterState.search),
@@ -84,7 +101,10 @@ export function PnrrDashboard({
     loading && !data && view === 'overview' && cachedOverviewStats != null
 
   return (
-    <PnrrCurrencyProvider initialCurrency={initialCurrency}>
+    <PnrrCurrencyProvider
+      currency={filterState.search.currency}
+      initialCurrency={effectiveCurrency}
+    >
       <div
         className="min-h-screen min-w-0 max-w-full"
         style={{ backgroundColor: 'var(--pnrr-bg)' }}
@@ -95,6 +115,7 @@ export function PnrrDashboard({
           view={view}
           onViewChange={filterState.setView}
           filterState={filterState}
+          uatLabelsBySiruta={uatLabelsBySiruta}
           isLoading={loading && !hasCachedHeaderStats}
           actions={
             <div className="flex items-center gap-2">

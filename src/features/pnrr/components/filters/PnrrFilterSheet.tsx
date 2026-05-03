@@ -36,6 +36,12 @@ import {
   BENEFICIARY_TYPE_OPTIONS,
   type ProgressCategoryKey,
 } from '../../lib/filter-constants'
+import type { Currency } from '@/schemas/charts'
+import { useUserCurrency } from '@/lib/hooks/useUserCurrency'
+import {
+  setPreferenceCookie,
+  USER_CURRENCY_STORAGE_KEY,
+} from '@/lib/user-preferences'
 
 const SEARCH_DEBOUNCE_MS = 300
 
@@ -62,6 +68,21 @@ const FILTER_INPUT_CLASS =
 const FILTER_TOGGLE_ITEM_CLASS =
   'h-10 min-w-0 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-2 text-sm font-black text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-bg)] data-[state=on]:bg-[var(--pnrr-fg)] data-[state=on]:text-[var(--pnrr-bg)] sm:px-4'
 
+function applyGlobalCurrency(currency: Currency): void {
+  if (typeof window !== 'undefined') {
+    try {
+      window.localStorage.setItem(
+        USER_CURRENCY_STORAGE_KEY,
+        JSON.stringify(currency),
+      )
+    } catch (error) {
+      console.warn('Failed to write currency to localStorage', error)
+    }
+  }
+
+  setPreferenceCookie(USER_CURRENCY_STORAGE_KEY, currency)
+}
+
 interface PnrrFilterSheetProps {
   readonly open: boolean
   readonly onOpenChange: (open: boolean) => void
@@ -81,6 +102,8 @@ export function PnrrFilterSheet({
   const setSearch = filterState.setSearch
   const setBeneficiarySearch = filterState.setBeneficiarySearch
   const setBeneficiaryCui = filterState.setBeneficiaryCui
+  const [userCurrency, setUserCurrency] = useUserCurrency()
+  const selectedCurrency = search.currency ?? userCurrency
 
   // Local debounced state for search inputs
   const globalSearch = search.search ?? ''
@@ -180,6 +203,7 @@ export function PnrrFilterSheet({
         value: siruta,
         label: uat.name,
         description: uat.county,
+        searchText: `${uat.name} ${siruta}`,
       }))
       .sort((a, b) => {
         const countyCompare = (a.description ?? '').localeCompare(
@@ -240,6 +264,49 @@ export function PnrrFilterSheet({
 
           <ScrollArea className="flex-1">
             <div className="min-w-0 space-y-6 p-4 sm:p-6">
+              <section className="space-y-2">
+                <Label className={FILTER_LABEL_CLASS}>
+                  <Trans>Currency</Trans>
+                </Label>
+                <ToggleGroup
+                  type="single"
+                  value={selectedCurrency}
+                  onValueChange={(value) => {
+                    if (value === 'RON' || value === 'EUR' || value === 'USD') {
+                      const nextCurrency = value as Currency
+                      applyGlobalCurrency(nextCurrency)
+                      setUserCurrency(nextCurrency)
+                      filterState.setCurrency(nextCurrency)
+                    }
+                  }}
+                  className="grid w-full grid-cols-3 gap-2"
+                >
+                  <ToggleGroupItem
+                    value="RON"
+                    className={FILTER_TOGGLE_ITEM_CLASS}
+                    aria-label={t`Display values in RON`}
+                  >
+                    RON
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="EUR"
+                    className={FILTER_TOGGLE_ITEM_CLASS}
+                    aria-label={t`Display values in EUR`}
+                  >
+                    EURO
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="USD"
+                    className={FILTER_TOGGLE_ITEM_CLASS}
+                    aria-label={t`Display values in USD`}
+                  >
+                    USD
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </section>
+
+              <div className="border-t-2 border-[var(--pnrr-border)]" />
+
               <section className="space-y-5">
                 <div className="space-y-2">
                   <Label className={FILTER_LABEL_CLASS}>

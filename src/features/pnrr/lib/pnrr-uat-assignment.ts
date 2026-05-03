@@ -149,6 +149,9 @@ const BUCHAREST_SECTOR_TO_NATCODE: Record<string, string> = {
   '6': '179196',
 }
 
+const BUCHAREST_MUNICIPALITY_CUI = '4267117'
+const BUCHAREST_MUNICIPALITY_NATCODE = '179132'
+
 const ALWAYS_NATIONAL_ENTITY_TYPES = new Set([
   'admin_ministry',
   'finance_tax_authority',
@@ -258,12 +261,17 @@ function formatCountyCouncilLocality(county: string | null): string | null {
   return county ? `Județul ${county}` : null
 }
 
+function getUatNatcodeByCui(cui: string): string | undefined {
+  if (cui === BUCHAREST_MUNICIPALITY_CUI) return BUCHAREST_MUNICIPALITY_NATCODE
+  return UAT_CUI_TO_NATCODE[cui]
+}
+
 function getLocalParentSiruta(entity: EntityDirectoryRecord): string | null {
   for (const creditorCui of [entity.m1, entity.m2]) {
     const normalizedCreditorCui = normalizeCui(creditorCui)
     if (!normalizedCreditorCui) continue
 
-    const directSiruta = UAT_CUI_TO_NATCODE[normalizedCreditorCui]
+    const directSiruta = getUatNatcodeByCui(normalizedCreditorCui)
     if (directSiruta && !isCountyMnemonic(directSiruta)) return directSiruta
   }
 
@@ -273,7 +281,7 @@ function getLocalParentSiruta(entity: EntityDirectoryRecord): string | null {
 function hasLocalUatParent(entity: EntityDirectoryRecord): boolean {
   return [entity.m1, entity.m2].some((creditorCui) => {
     const normalizedCreditorCui = normalizeCui(creditorCui)
-    const directAssignment = normalizedCreditorCui ? UAT_CUI_TO_NATCODE[normalizedCreditorCui] : undefined
+    const directAssignment = normalizedCreditorCui ? getUatNatcodeByCui(normalizedCreditorCui) : undefined
     const parent = normalizedCreditorCui ? entityDirectory[normalizedCreditorCui] : undefined
     return Boolean(parent?.u && parent.t !== 'admin_county_council' && !isCountyMnemonic(directAssignment))
   })
@@ -303,7 +311,7 @@ function hasPrivateMarker(beneficiary: string): boolean {
 
 export function resolvePnrrProjectLocation(input: ProjectSirutaInput): ProjectLocationAssignment {
   const normalizedCui = normalizeCui(input.cui)
-  const directAssignment = UAT_CUI_TO_NATCODE[normalizedCui]
+  const directAssignment = getUatNatcodeByCui(normalizedCui)
   const entity = entityDirectory[normalizedCui]
   const rawAssignment = {
     sirutaCode: null,
@@ -321,6 +329,14 @@ export function resolvePnrrProjectLocation(input: ProjectSirutaInput): ProjectLo
   }
 
   if (directAssignment) {
+    if (normalizedCui === BUCHAREST_MUNICIPALITY_CUI) {
+      return {
+        sirutaCode: directAssignment,
+        locality: 'Municipiul București',
+        county: 'București',
+      }
+    }
+
     return {
       sirutaCode: directAssignment,
       locality: formatLocalityDisplay(entity?.l) ?? input.locality,
@@ -329,15 +345,6 @@ export function resolvePnrrProjectLocation(input: ProjectSirutaInput): ProjectLo
   }
 
   if (entity) {
-    const localParentSiruta = getLocalParentSiruta(entity)
-    if (localParentSiruta) {
-      return {
-        sirutaCode: localParentSiruta,
-        locality: formatLocalityDisplay(entity.l) ?? input.locality,
-        county: formatCountyDisplay(entity.c) ?? input.county,
-      }
-    }
-
     const hasLocalParent = hasLocalUatParent(entity)
 
     if (isNationalEntity(entity, hasLocalParent)) {
@@ -352,6 +359,15 @@ export function resolvePnrrProjectLocation(input: ProjectSirutaInput): ProjectLo
     if (resolvedSiruta) {
       return {
         sirutaCode: resolvedSiruta,
+        locality: formatLocalityDisplay(entity.l) ?? input.locality,
+        county: formatCountyDisplay(entity.c) ?? input.county,
+      }
+    }
+
+    const localParentSiruta = getLocalParentSiruta(entity)
+    if (localParentSiruta) {
+      return {
+        sirutaCode: localParentSiruta,
         locality: formatLocalityDisplay(entity.l) ?? input.locality,
         county: formatCountyDisplay(entity.c) ?? input.county,
       }

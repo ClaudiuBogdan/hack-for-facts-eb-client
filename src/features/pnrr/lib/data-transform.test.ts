@@ -499,6 +499,21 @@ describe('transformProject', () => {
 
     expect(p.sirutaCode).toBe('179178')
   })
+
+  it('assigns Municipiul București as a UAT instead of a sector', () => {
+    const p = transformProject(
+      makeRaw({
+        'Nume Beneficiar': 'MUNICIPIUL BUCURESTI',
+        CUI: '4267117',
+        'Județ': 'București',
+        Localitate: 'București',
+      })
+    )
+
+    expect(p.sirutaCode).toBe('179132')
+    expect(p.county).toBe('București')
+    expect(p.locality).toBe('Municipiul București')
+  })
 })
 
 // ---------------------------------------------------------------------------

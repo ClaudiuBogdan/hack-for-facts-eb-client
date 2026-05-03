@@ -17,12 +17,23 @@ import {
   BENEFICIARY_TYPE_LABELS,
   type ProgressCategoryKey,
 } from '../../lib/filter-constants'
+import { getPnrrUatLabel } from '../../lib/pnrr-uat-labels'
+
+function formatUatFilterLabel(
+  siruta: string,
+  labelsBySiruta: ReadonlyMap<string, string> | undefined,
+  explicitName?: string,
+): string {
+  return explicitName || labelsBySiruta?.get(siruta) || getPnrrUatLabel(siruta) || siruta
+}
 
 export function PnrrActiveFilters({
   filterState,
+  uatLabelsBySiruta,
   compact = false,
 }: {
   readonly filterState: ReturnType<typeof usePnrrFilterState>
+  readonly uatLabelsBySiruta?: ReadonlyMap<string, string>
   readonly compact?: boolean
 }) {
   const { search } = filterState
@@ -66,9 +77,11 @@ export function PnrrActiveFilters({
       result.push({
         key: 'uat-siruta',
         prefix: t`UAT`,
-        value: search.uatName
-          ? `${search.uatName} (${search.uatSiruta})`
-          : search.uatSiruta,
+        value: formatUatFilterLabel(
+          search.uatSiruta,
+          uatLabelsBySiruta,
+          search.uatName,
+        ),
         onRemove: () => filterState.setUatFilter(undefined),
       })
     }
@@ -77,7 +90,7 @@ export function PnrrActiveFilters({
       result.push({
         key: `uat-${siruta}`,
         prefix: t`UAT`,
-        value: siruta,
+        value: formatUatFilterLabel(siruta, uatLabelsBySiruta),
         onRemove: () =>
           filterState.setUatFilters(
             search.uatSirutas?.filter((value) => value !== siruta) ?? [],
@@ -240,6 +253,7 @@ export function PnrrActiveFilters({
     search.uatSiruta,
     search.uatName,
     search.uatSirutas,
+    uatLabelsBySiruta,
     search.components,
     search.counties,
     search.fundingSources,
