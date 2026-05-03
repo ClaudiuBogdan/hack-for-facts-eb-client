@@ -142,14 +142,14 @@ export function PnrrFilterBar({
             size="sm"
             className="rounded-lg border text-xs data-[state=on]:bg-red-500 data-[state=on]:text-white"
           >
-            <Trans>Loan</Trans>
+            <Trans>Împrumut</Trans>
           </ToggleGroupItem>
           <ToggleGroupItem
             value="grant/loan"
             size="sm"
             className="rounded-lg border text-xs data-[state=on]:bg-amber-500 data-[state=on]:text-white"
           >
-            <Trans>Mixed</Trans>
+            <Trans>Mixt</Trans>
           </ToggleGroupItem>
         </ToggleGroup>
       </div>

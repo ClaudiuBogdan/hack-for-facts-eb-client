@@ -17,13 +17,13 @@ const CATEGORY_CONFIG = [
   },
   {
     key: 'loan' as const,
-    label: t`Loan`,
+    label: t`Împrumut`,
     color: '#ef4444',
     topColor: 'bg-[#ef4444]',
   },
   {
     key: 'mixed' as const,
-    label: t`Mixed`,
+    label: t`Mixt`,
     color: '#f59e0b',
     topColor: 'bg-[#f59e0b]',
   },
@@ -56,7 +56,7 @@ export function PnrrFundingBar({
           <Trans>Sursă Finanțare</Trans>
         </h3>
         <span className="border-2 border-[var(--pnrr-border)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[var(--pnrr-muted)]">
-          Grant / Loan / Mixed
+          <Trans>Grant / Împrumut / Mixt</Trans>
         </span>
       </div>
 

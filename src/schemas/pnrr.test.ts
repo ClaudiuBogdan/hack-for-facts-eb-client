@@ -9,7 +9,7 @@ describe('pnrr search schema', () => {
         onlyAnomalies: false,
         excludeMicro: false,
         granularity: 'county',
-        includeNational: false,
+        includeNational: true,
         sortBy: 'value',
         sortOrder: 'desc',
         page: '1',
