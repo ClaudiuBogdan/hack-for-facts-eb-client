@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import type { PnrrView } from '@/schemas/pnrr'
 import { PnrrTabNav } from './PnrrTabNav'
 import { PnrrActiveFilters } from './filters/PnrrActiveFilters'
+import { PnrrProjectSearchInput } from './filters/PnrrProjectSearchInput'
 import type { usePnrrFilterState } from '../hooks/usePnrrFilterState'
 import { getActiveFilterCount, PNRR_LAST_UPDATED } from '../lib/data-transform'
 import { useOptionalSidebar } from '@/components/ui/sidebar'
@@ -206,8 +207,8 @@ export function PnrrHeader({
           </p>
 
           {/* Stats + Actions row */}
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="mt-6 flex flex-col items-stretch justify-between gap-4 sm:flex-row sm:items-end">
+            <div className="flex min-w-0 w-full flex-1 flex-wrap items-end gap-3">
               {isLoading ? (
                 <>
                   <div
@@ -228,6 +229,10 @@ export function PnrrHeader({
                     <span className="text-sm font-bold text-current">
                       <Trans>total</Trans>
                     </span>
+                  </div>
+                  <div className="min-w-0 basis-full sm:min-w-[22rem] sm:flex-1 sm:basis-[22rem] lg:max-w-[36rem]">
+                    <Skeleton className="mb-1.5 h-3 w-28 rounded-none" />
+                    <Skeleton className="h-12 w-full rounded-none" />
                   </div>
                 </>
               ) : (
@@ -255,6 +260,12 @@ export function PnrrHeader({
                       <Trans>total</Trans>
                     </span>
                   </div>
+                  <PnrrProjectSearchInput
+                    filterState={filterState}
+                    inputId="pnrr-header-project-search"
+                    showLabel
+                    className="min-w-0 basis-full sm:min-w-[22rem] sm:flex-1 sm:basis-[22rem] lg:max-w-[36rem]"
+                  />
                 </>
               )}
             </div>
