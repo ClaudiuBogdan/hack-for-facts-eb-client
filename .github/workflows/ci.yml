@@ -254,11 +254,18 @@ jobs:
         run: docker push ${{ env.DOCKER_REGISTRY }}/hack-for-facts-eb-client:${{ github.sha }}
 
       - name: Setup Kustomize
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           KUSTOMIZE_VERSION="5.8.1"
           INSTALL_DIR="${RUNNER_TEMP}/bin"
           mkdir -p "${INSTALL_DIR}"
-          curl -fsSL https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh | bash -s -- "${KUSTOMIZE_VERSION}" "${INSTALL_DIR}"
+          gh release download "kustomize/v${KUSTOMIZE_VERSION}" \
+            --repo kubernetes-sigs/kustomize \
+            --pattern "kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" \
+            --dir "${INSTALL_DIR}"
+          tar -xzf "${INSTALL_DIR}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" -C "${INSTALL_DIR}" kustomize
+          chmod +x "${INSTALL_DIR}/kustomize"
           echo "${INSTALL_DIR}" >> "$GITHUB_PATH"
           "${INSTALL_DIR}/kustomize" version
 
