@@ -1,7 +1,32 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import type { PnrrProject } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import { PnrrActiveFilters } from './PnrrActiveFilters'
+
+const PROJECT: PnrrProject = {
+  id: 'project-1',
+  title: 'Test Project',
+  beneficiary: 'COMUNA CHIAJNA',
+  cui: '4611538',
+  county: 'Ilfov',
+  locality: 'Chiajna',
+  fundingSource: 'grant',
+  valueEur: 100_000,
+  techProgress: 50,
+  finProgress: 40,
+  status: 'mid-progress',
+  componentCode: 'C10',
+  measureCode: 'I1',
+  measureFullCode: 'C10-I1',
+  cri: 'MDLPA',
+  anomalies: [],
+  dataQualitySignals: [],
+  isReform: false,
+  entityType: 'public',
+  beneficiaryType: 'uat',
+  sirutaCode: '179132',
+}
 
 function makeFilterState(
   search: Partial<ReturnType<typeof usePnrrFilterState>['search']>,
@@ -87,5 +112,26 @@ describe('PnrrActiveFilters', () => {
 
     expect(screen.getByText('Orașul Broșteni')).toBeInTheDocument()
     expect(screen.queryByText('Orasul Brosteni234')).not.toBeInTheDocument()
+  })
+
+  it('renders beneficiary CUI chips with loaded beneficiary names', () => {
+    render(
+      <PnrrActiveFilters
+        filterState={makeFilterState({ beneficiaryCui: '4611538' })}
+        beneficiaryNamesByCui={new Map([[PROJECT.cui ?? '', PROJECT.beneficiary]])}
+      />,
+    )
+
+    expect(screen.getByText('4611538 - COMUNA CHIAJNA')).toBeInTheDocument()
+  })
+
+  it('falls back to the raw beneficiary CUI before project data is loaded', () => {
+    render(
+      <PnrrActiveFilters
+        filterState={makeFilterState({ beneficiaryCui: '4611538' })}
+      />,
+    )
+
+    expect(screen.getByText('4611538')).toBeInTheDocument()
   })
 })

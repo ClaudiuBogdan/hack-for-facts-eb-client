@@ -26,12 +26,18 @@ function formatUatFilterLabel(
   return labelsBySiruta?.get(siruta) || getPnrrUatLabel(siruta) || siruta
 }
 
+function normalizeCui(value: string): string {
+  return value.replace(/\D/g, '')
+}
+
 export function PnrrActiveFilters({
   filterState,
+  beneficiaryNamesByCui,
   uatLabelsBySiruta,
   compact = false,
 }: {
   readonly filterState: ReturnType<typeof usePnrrFilterState>
+  readonly beneficiaryNamesByCui?: ReadonlyMap<string, string>
   readonly uatLabelsBySiruta?: ReadonlyMap<string, string>
   readonly compact?: boolean
 }) {
@@ -64,10 +70,15 @@ export function PnrrActiveFilters({
     }
 
     if (search.beneficiaryCui) {
+      const beneficiaryName = beneficiaryNamesByCui?.get(
+        normalizeCui(search.beneficiaryCui),
+      )
       result.push({
         key: 'beneficiary-cui',
         prefix: t`Beneficiary CUI`,
-        value: search.beneficiaryCui,
+        value: beneficiaryName
+          ? `${search.beneficiaryCui} - ${beneficiaryName}`
+          : search.beneficiaryCui,
         onRemove: () => filterState.setBeneficiaryCui(undefined),
       })
     }
@@ -245,6 +256,7 @@ export function PnrrActiveFilters({
     search.search,
     search.beneficiarySearch,
     search.beneficiaryCui,
+    beneficiaryNamesByCui,
     search.uatSiruta,
     search.uatSirutas,
     uatLabelsBySiruta,

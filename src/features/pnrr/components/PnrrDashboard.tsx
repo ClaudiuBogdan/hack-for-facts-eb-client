@@ -67,6 +67,23 @@ export function PnrrDashboard({
 
     return labels
   }, [projects])
+  const beneficiaryNamesByCui = useMemo(() => {
+    const labels = new Map<string, string>()
+
+    for (const project of projects) {
+      if (!project.cui || !project.beneficiary) continue
+
+      const cui = project.cui.replace(/\D/g, '')
+      if (!cui) continue
+
+      const existing = labels.get(cui)
+      if (!existing || project.beneficiary.localeCompare(existing, 'ro') < 0) {
+        labels.set(cui, project.beneficiary)
+      }
+    }
+
+    return labels
+  }, [projects])
 
   const filteredProjects = useMemo(
     () => filterProjectsBySearch(projects, filterState.search),
@@ -115,6 +132,7 @@ export function PnrrDashboard({
           view={view}
           onViewChange={filterState.setView}
           filterState={filterState}
+          beneficiaryNamesByCui={beneficiaryNamesByCui}
           uatLabelsBySiruta={uatLabelsBySiruta}
           isLoading={loading && !hasCachedHeaderStats}
           actions={

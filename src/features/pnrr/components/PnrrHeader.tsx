@@ -20,6 +20,7 @@ export function PnrrHeader({
   onViewChange,
   actions,
   filterState,
+  beneficiaryNamesByCui,
   uatLabelsBySiruta,
   isLoading = false,
 }: {
@@ -29,6 +30,7 @@ export function PnrrHeader({
   readonly onViewChange: (view: PnrrView) => void
   readonly actions?: React.ReactNode
   readonly filterState: ReturnType<typeof usePnrrFilterState>
+  readonly beneficiaryNamesByCui?: ReadonlyMap<string, string>
   readonly uatLabelsBySiruta?: ReadonlyMap<string, string>
   readonly isLoading?: boolean
 }) {
@@ -149,6 +151,7 @@ export function PnrrHeader({
           >
             <PnrrActiveFilters
               filterState={filterState}
+              beneficiaryNamesByCui={beneficiaryNamesByCui}
               uatLabelsBySiruta={uatLabelsBySiruta}
               compact
             />
@@ -265,6 +268,7 @@ export function PnrrHeader({
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <PnrrActiveFilters
             filterState={filterState}
+            beneficiaryNamesByCui={beneficiaryNamesByCui}
             uatLabelsBySiruta={uatLabelsBySiruta}
           />
         </div>
