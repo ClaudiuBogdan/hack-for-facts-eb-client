@@ -138,21 +138,25 @@ function getResvgConstructor(): ResvgConstructor {
   return cachedResvgConstructor
 }
 
+function normalizeRomanianCompactUnit(value: string): string {
+  return value.replace(/[\s\u00A0\u202F]K$/, ' mii')
+}
+
 function formatCount(value: number): string {
-  return new Intl.NumberFormat('ro-RO', {
+  return normalizeRomanianCompactUnit(new Intl.NumberFormat('ro-RO', {
     notation: 'compact',
     maximumFractionDigits: 1,
-  }).format(value)
+  }).format(value))
 }
 
 function formatCurrencyEur(value: number): string {
-  return new Intl.NumberFormat('ro-RO', {
-    style: 'currency',
-    currency: 'EUR',
+  const formattedValue = normalizeRomanianCompactUnit(new Intl.NumberFormat('ro-RO', {
     notation: 'compact',
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(value).replace(/\sK$/, ' mii')
+  }).format(value))
+
+  return `${formattedValue} €`
 }
 
 function formatDate(value: string): string {
@@ -185,14 +189,22 @@ export function buildPnrrShareImageViewModel(
   }
 }
 
-function renderMetric(label: string, value: string, color: string) {
+function renderMetric(
+  label: string,
+  value: string,
+  color: string,
+  options: {
+    readonly flex?: number
+    readonly valueFontSize?: number
+  } = {},
+) {
   return createElement(
     'div',
     {
       style: {
         display: 'flex',
         flexDirection: 'column',
-        flex: 1,
+        flex: options.flex ?? 1,
         minWidth: 0,
         border: '3px solid #111827',
         backgroundColor: '#f8fafc',
@@ -216,7 +228,7 @@ function renderMetric(label: string, value: string, color: string) {
       {
         style: {
           color,
-          fontSize: 42,
+          fontSize: options.valueFontSize ?? 42,
           fontWeight: 800,
           lineHeight: 1.1,
           marginTop: 8,
@@ -342,7 +354,10 @@ async function renderPnrrShareCardPng(
             marginBottom: 24,
           },
         },
-        renderMetric('Valoare', viewModel.totalValue, '#2563eb'),
+        renderMetric('Valoare', viewModel.totalValue, '#2563eb', {
+          flex: 1.35,
+          valueFontSize: 38,
+        }),
         renderMetric('Proiecte', viewModel.projectCount, '#047857'),
         renderMetric('Finalizate', viewModel.completedCount, '#7c3aed'),
         renderMetric('Riscuri', viewModel.anomalyCount, '#dc2626'),

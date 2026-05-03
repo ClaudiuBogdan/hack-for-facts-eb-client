@@ -66,8 +66,9 @@ describe('pnrr-share-image', () => {
     const viewModel = buildPnrrShareImageViewModel(makeSnapshot())
 
     expect(viewModel.title).toBe('PNRR Romania')
-    expect(viewModel.totalValue).toContain('EUR')
-    expect(viewModel.projectCount).toBeTruthy()
+    expect(viewModel.totalValue).toContain('€')
+    expect(viewModel.projectCount).toBe('24,9 mii')
+    expect(viewModel.completedCount).toBe('9 mii')
     expect(viewModel.topComponent).toBe('Transformare digitala')
     expect(viewModel.topCounty).toBe('Cluj')
     expect(viewModel.updatedLabel).toContain('2026')
@@ -77,7 +78,7 @@ describe('pnrr-share-image', () => {
     i18n.activate('en')
     const viewModel = buildPnrrShareImageViewModel(makeSnapshot())
 
-    expect(viewModel.totalValue).toBe('21,4\u00A0mld.\u00A0EUR')
+    expect(viewModel.totalValue).toBe('21,4\u00A0mld. €')
   })
 
   it('uses Total instead of National for the unfiltered share image scope', () => {
