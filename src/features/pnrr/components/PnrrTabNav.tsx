@@ -9,12 +9,16 @@ import {
   Building2,
 } from 'lucide-react'
 
-const TABS: { readonly id: PnrrView; readonly label: string; readonly icon: React.ElementType }[] = [
-  { id: 'overview', label: t`Prezentare generală`, icon: LayoutDashboard },
-  { id: 'projects', label: t`Proiecte`, icon: List },
-  { id: 'beneficiaries', label: t`Beneficiari`, icon: Building2 },
-  { id: 'map', label: t`Hartă`, icon: Map },
-  { id: 'anomalies', label: t`Riscuri`, icon: ShieldAlert },
+const TABS: {
+  readonly id: PnrrView
+  readonly label: string
+  readonly icon: React.ElementType
+}[] = [
+  { id: 'overview', label: t`Overview`, icon: LayoutDashboard },
+  { id: 'projects', label: t`Projects`, icon: List },
+  { id: 'beneficiaries', label: t`Beneficiaries`, icon: Building2 },
+  { id: 'map', label: t`Map`, icon: Map },
+  { id: 'anomalies', label: t`Risks`, icon: ShieldAlert },
 ]
 
 export function PnrrTabNav({
@@ -32,7 +36,7 @@ export function PnrrTabNav({
     <nav
       className={cn(
         'flex min-w-0 items-end gap-1 overflow-x-auto overflow-y-hidden hide-scrollbar border-b-2 border-[var(--pnrr-border)]',
-        className
+        className,
       )}
       role="tablist"
     >
@@ -51,7 +55,7 @@ export function PnrrTabNav({
               'select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)]/60',
               compact
                 ? 'px-2.5 py-2 text-[13px]'
-                : 'px-4 py-3.5 text-base sm:px-5'
+                : 'px-4 py-3.5 text-base sm:px-5',
             )}
           >
             <Icon
@@ -60,18 +64,19 @@ export function PnrrTabNav({
                 compact ? 'h-4 w-4' : 'h-5 w-5',
                 isActive
                   ? 'text-[var(--pnrr-fg)]'
-                  : 'text-[var(--pnrr-muted)] group-hover:text-[var(--pnrr-fg)]'
+                  : 'text-[var(--pnrr-muted)] group-hover:text-[var(--pnrr-fg)]',
               )}
               strokeWidth={isActive ? 2.5 : 2}
               aria-hidden="true"
             />
+
             <span
               className={cn(
                 'transition-colors',
                 isActive
                   ? 'font-extrabold text-[var(--pnrr-fg)]'
                   : 'font-semibold text-[var(--pnrr-muted)] group-hover:text-[var(--pnrr-fg)]',
-                'hidden sm:inline'
+                'hidden sm:inline',
               )}
             >
               {tab.label}
@@ -81,7 +86,7 @@ export function PnrrTabNav({
             <span
               className={cn(
                 'absolute bottom-[-2px] left-0 right-0 h-[5px] bg-[var(--pnrr-green)] transition-all duration-200',
-                isActive ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'
+                isActive ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0',
               )}
               aria-hidden="true"
             />

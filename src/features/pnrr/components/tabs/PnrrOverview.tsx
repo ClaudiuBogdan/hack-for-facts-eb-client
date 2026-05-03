@@ -51,18 +51,24 @@ export function PnrrOverview({
           count: stats.count,
         }))
         .sort((a, b) => b.value - a.value),
-    [aggregates.componentStats]
+    [aggregates.componentStats],
   )
 
   const topCounties = useMemo(
     () =>
       Object.entries(aggregates.countyStats)
-        .map(([county, stats]) => ({ county, value: stats.value, count: stats.count }))
+        .map(([county, stats]) => ({
+          county,
+          value: stats.value,
+          count: stats.count,
+        }))
         .sort((a, b) => b.value - a.value),
-    [aggregates.countyStats]
+    [aggregates.countyStats],
   )
 
-  const [selectedProject, setSelectedProject] = useState<PnrrProject | null>(null)
+  const [selectedProject, setSelectedProject] = useState<PnrrProject | null>(
+    null,
+  )
 
   const componentItems = useMemo(
     () =>
@@ -75,7 +81,7 @@ export function PnrrOverview({
         count: c.count,
         color: c.color,
       })),
-    [topComponents, aggregates.rawTotalValue, currency]
+    [topComponents, aggregates.rawTotalValue, currency],
   )
 
   const countyItems = useMemo(
@@ -87,7 +93,7 @@ export function PnrrOverview({
         pct: (c.value / aggregates.rawTotalValue) * 100,
         count: c.count,
       })),
-    [topCounties, aggregates.rawTotalValue, currency]
+    [topCounties, aggregates.rawTotalValue, currency],
   )
 
   const beneficiaryItems = useMemo(
@@ -99,7 +105,7 @@ export function PnrrOverview({
         pct: (b.value / aggregates.rawTotalValue) * 100,
         count: b.count,
       })),
-    [aggregates.topBeneficiaries, aggregates.rawTotalValue, currency]
+    [aggregates.topBeneficiaries, aggregates.rawTotalValue, currency],
   )
 
   const handleComponentClick = useCallback(
@@ -107,7 +113,7 @@ export function PnrrOverview({
       filterState.setComponents([id])
       filterState.setView('projects')
     },
-    [filterState]
+    [filterState],
   )
 
   const handleCountyClick = useCallback(
@@ -115,7 +121,7 @@ export function PnrrOverview({
       filterState.setCounties([id])
       filterState.setView('projects')
     },
-    [filterState]
+    [filterState],
   )
 
   const handleBeneficiaryClick = useCallback(
@@ -123,7 +129,7 @@ export function PnrrOverview({
       filterState.setSearch(id)
       filterState.setView('projects')
     },
-    [filterState]
+    [filterState],
   )
 
   const handleCtaNavigation = useCallback(
@@ -133,7 +139,7 @@ export function PnrrOverview({
         window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
       })
     },
-    [filterState]
+    [filterState],
   )
 
   return (
@@ -142,25 +148,28 @@ export function PnrrOverview({
       <section>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <InsightCard
-            label={t`Valoare totală`}
+            label={t`Total value`}
             value={formatPnrrCurrency(aggregates.rawTotalValue, currency)}
-            sublabel={t`${formatPnrrCurrency(aggregates.deduplicatedTotalValue, currency, 'standard')} după deduplicare`}
+            sublabel={t`${formatPnrrCurrency(aggregates.deduplicatedTotalValue, currency, 'standard')} after deduplication`}
           />
+
           <InsightCard
-            label={t`Rata de absorbție`}
+            label={t`Absorption rate`}
             value={`${formatNumber(absorptionRate)}%`}
-            sublabel={t`${formatNumber(aggregates.completedCount)} proiecte finalizate din ${formatNumber(aggregates.rawProjectCount)}`}
+            sublabel={t`${formatNumber(aggregates.completedCount)} completed projects out of ${formatNumber(aggregates.rawProjectCount)}`}
             progress={absorptionRate}
           />
+
           <InsightCard
-            label={t`Datorie viitoare (loan)`}
+            label={t`Future debt (loan)`}
             value={formatPnrrCurrency(aggregates.loanTotal, currency)}
-            sublabel={t`${formatNumber(aggregates.loanPercent)}% din total sunt împrumuturi`}
+            sublabel={t`${formatNumber(aggregates.loanPercent)}% of the total is loans`}
           />
+
           <InsightCard
-            label={t`Date financiare lipsă`}
+            label={t`Missing financial data`}
             value={`${formatNumber(aggregates.missingFinProgressPercent)}%`}
-            sublabel={t`${formatNumber(aggregates.missingFinProgressCount)} proiecte fără progres financiar`}
+            sublabel={t`${formatNumber(aggregates.missingFinProgressCount)} projects without financial progress`}
           />
         </div>
       </section>
@@ -168,25 +177,26 @@ export function PnrrOverview({
       {/* Two Column Layout: Components + Counties */}
       <section className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-2">
         <RankedListCard
-          title={t`Top Componente`}
+          title={t`Top Components`}
           items={componentItems}
           onClick={handleComponentClick}
           expandable
           limit={5}
-          expandLabel={t`Afișează toate componentele`}
-          collapseLabel={t`Afișează mai puțin`}
-          infoTooltip={t`Procentul reprezintă ponderea valorii proiectelor din componentă în valoarea totală PNRR. Bara de fundal vizualizează această pondere. Click pe un rând pentru a filtra proiectele.`}
+          expandLabel={t`Show all components`}
+          collapseLabel={t`Show less`}
+          infoTooltip={t`The percentage represents the share of project value in the component out of the total PNRR value. The background bar visualizes this share. Click a row to filter projects.`}
         />
+
         <RankedListCard
-          title={t`Top Județe`}
+          title={t`Top Counties`}
           items={countyItems}
           onClick={handleCountyClick}
           neutral
           expandable
           limit={5}
-          expandLabel={t`Afișează toate județele`}
-          collapseLabel={t`Afișează mai puțin`}
-          infoTooltip={t`Procentul reprezintă ponderea valorii proiectelor din județ în valoarea totală PNRR. Bara de fundal vizualizează această pondere. Click pe un rând pentru a filtra proiectele.`}
+          expandLabel={t`Show all counties`}
+          collapseLabel={t`Show less`}
+          infoTooltip={t`The percentage represents the share of project value in the county out of the total PNRR value. The background bar visualizes this share. Click a row to filter projects.`}
         />
       </section>
 
@@ -203,7 +213,7 @@ export function PnrrOverview({
       {/* Top 10 Beneficiaries */}
       <section>
         <RankedListCard
-          title={t`Top 10 Beneficiari`}
+          title={t`Top 10 Beneficiaries`}
           items={beneficiaryItems}
           onClick={handleBeneficiaryClick}
           neutral
@@ -221,7 +231,7 @@ export function PnrrOverview({
         <div className="flex items-center gap-4">
           <span className="h-12 w-1.5 bg-[var(--pnrr-blue)]" />
           <h2 className="text-2xl font-black uppercase tracking-tight text-[var(--pnrr-fg)] md:text-3xl">
-            <Trans>Proiecte Emblematice</Trans>
+            <Trans>Emblematic Projects</Trans>
           </h2>
         </div>
 
@@ -232,11 +242,12 @@ export function PnrrOverview({
 
         <div className="flex flex-wrap gap-8">
           <CtaLink
-            label={t`Toate proiectele`}
+            label={t`All projects`}
             onClick={() => handleCtaNavigation('projects')}
           />
+
           <CtaLink
-            label={t`Riscuri și investigații`}
+            label={t`Risks and investigations`}
             onClick={() => handleCtaNavigation('anomalies')}
           />
         </div>
@@ -290,10 +301,15 @@ function RankedListCard({
   const hasMore = expandable && items.length > limit
 
   return (
-    <div className="flex h-full max-w-full flex-col overflow-hidden border-2 border-[var(--pnrr-border)]" style={{ backgroundColor: 'var(--pnrr-card)' }}>
+    <div
+      className="flex h-full max-w-full flex-col overflow-hidden border-2 border-[var(--pnrr-border)]"
+      style={{ backgroundColor: 'var(--pnrr-card)' }}
+    >
       {/* Header */}
       <div className="flex min-h-14 flex-col gap-3 border-b-2 border-[var(--pnrr-border)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-base font-semibold leading-none text-[var(--pnrr-fg)]">{title}</h3>
+        <h3 className="text-base font-semibold leading-none text-[var(--pnrr-fg)]">
+          {title}
+        </h3>
         {(headerAction || infoTooltip) && (
           <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
             {headerAction}
@@ -304,7 +320,7 @@ function RankedListCard({
                     <button
                       type="button"
                       className="inline-flex h-7 w-7 shrink-0 items-center justify-center text-[var(--pnrr-muted)] transition-colors hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)]/60"
-                      aria-label={t`Informații`}
+                      aria-label={t`Information`}
                     >
                       <Info className="h-4 w-4" />
                     </button>
@@ -327,7 +343,9 @@ function RankedListCard({
       <div
         className={cn(
           'divide-y divide-[var(--pnrr-border)]/20',
-          expandable && isExpanded && 'sm:max-h-[372px] sm:overflow-y-auto sm:scrollbar-thin'
+          expandable &&
+            isExpanded &&
+            'sm:max-h-[372px] sm:overflow-y-auto sm:scrollbar-thin',
         )}
       >
         {displayItems.map((item, i) => (
@@ -338,7 +356,7 @@ function RankedListCard({
               'group relative grid w-full gap-x-3 gap-y-1.5 px-5 py-3 text-left transition-colors hover:bg-[#f0f0ec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)]/60 focus-visible:ring-inset sm:items-center',
               neutral
                 ? 'grid-cols-[40px_minmax(0,1fr)] sm:grid-cols-[40px_minmax(0,1fr)_minmax(110px,auto)_minmax(140px,auto)]'
-                : 'grid-cols-[72px_minmax(0,1fr)] sm:grid-cols-[88px_minmax(0,1fr)_minmax(110px,auto)_minmax(140px,auto)]'
+                : 'grid-cols-[72px_minmax(0,1fr)] sm:grid-cols-[88px_minmax(0,1fr)_minmax(110px,auto)_minmax(140px,auto)]',
             )}
           >
             {/* Background proportion fill */}
@@ -354,10 +372,12 @@ function RankedListCard({
             />
 
             {/* Rank + prefix */}
-            <div className={cn(
-              'relative z-10 flex shrink-0 items-center gap-1.5',
-              neutral ? 'w-10' : 'w-[72px] sm:w-[88px]'
-            )}>
+            <div
+              className={cn(
+                'relative z-10 flex shrink-0 items-center gap-1.5',
+                neutral ? 'w-10' : 'w-[72px] sm:w-[88px]',
+              )}
+            >
               <span className="flex h-7 w-7 items-center justify-center bg-[#e7e7e3] text-xs font-semibold tabular-nums text-[var(--pnrr-muted)]">
                 {i + 1}
               </span>
@@ -392,7 +412,9 @@ function RankedListCard({
                     align="start"
                     className="max-w-[280px] border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] text-[var(--pnrr-fg)]"
                   >
-                    <p className="text-xs font-semibold leading-relaxed">{item.label}</p>
+                    <p className="text-xs font-semibold leading-relaxed">
+                      {item.label}
+                    </p>
                   </TooltipContent>
                 </ShadcnTooltip>
               </TooltipProvider>
@@ -401,12 +423,14 @@ function RankedListCard({
             {/* Count + Pct — right-aligned, before value */}
             <div className="relative z-10 col-start-2 flex min-w-0 items-baseline gap-2 text-left sm:col-start-auto sm:flex-col sm:items-end sm:gap-0 sm:text-right">
               <span className="whitespace-nowrap text-sm font-medium text-[var(--pnrr-muted)]">
-                {formatNumber(item.count)} <Trans>proiecte</Trans>
+                {formatNumber(item.count)} <Trans>projects</Trans>
               </span>
               <span
                 className={cn(
                   'text-xs font-semibold tabular-nums',
-                  neutral ? 'text-[var(--pnrr-muted)]' : 'text-[var(--pnrr-fg)]/90'
+                  neutral
+                    ? 'text-[var(--pnrr-muted)]'
+                    : 'text-[var(--pnrr-fg)]/90',
                 )}
               >
                 {formatNumber(item.pct)}%
@@ -423,7 +447,10 @@ function RankedListCard({
 
       {/* Expand / Collapse footer */}
       {hasMore && (
-        <div className="mt-auto border-t-2 border-[var(--pnrr-border)]" style={{ backgroundColor: 'var(--pnrr-card)' }}>
+        <div
+          className="mt-auto border-t-2 border-[var(--pnrr-border)]"
+          style={{ backgroundColor: 'var(--pnrr-card)' }}
+        >
           <button
             type="button"
             onClick={() => setIsExpanded((v) => !v)}
@@ -431,12 +458,12 @@ function RankedListCard({
           >
             {isExpanded ? (
               <>
-                {collapseLabel ?? t`Afișează mai puțin`}
+                {collapseLabel ?? t`Show less`}
                 <ChevronUp className="h-3.5 w-3.5" />
               </>
             ) : (
               <>
-                {expandLabel ?? t`Afișează toate`}
+                {expandLabel ?? t`Show all`}
                 <ChevronDown className="h-3.5 w-3.5" />
               </>
             )}
@@ -465,7 +492,10 @@ function InsightCard({
   const formattedValue = getPnrrCurrencyDisplayParts(value)
 
   return (
-    <div className="min-w-0 overflow-hidden border-2 border-[var(--pnrr-border)] p-5" style={{ backgroundColor: 'var(--pnrr-card)' }}>
+    <div
+      className="min-w-0 overflow-hidden border-2 border-[var(--pnrr-border)] p-5"
+      style={{ backgroundColor: 'var(--pnrr-card)' }}
+    >
       <div className="min-w-0 space-y-4">
         <p className="text-xs font-bold uppercase tracking-widest text-[var(--pnrr-muted)]">
           {label}

@@ -65,10 +65,10 @@ export function PnrrComponentChart({
       <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/30 pb-3 pt-4">
         <div className="flex items-center gap-2">
           <CardTitle className="text-sm font-bold">
-            <Trans>Distribuție pe Componente</Trans>
+            <Trans>Distribution by Components</Trans>
           </CardTitle>
           <Badge variant="secondary" className="text-[10px]">
-            {data.length} <Trans>componente</Trans>
+            {data.length} <Trans>components</Trans>
           </Badge>
         </div>
         <ToggleGroup
@@ -78,18 +78,26 @@ export function PnrrComponentChart({
           size="sm"
         >
           <ToggleGroupItem value="value" className="h-7 text-xs">
-            <Trans>Valoare</Trans>
+            <Trans>Value</Trans>
           </ToggleGroupItem>
           <ToggleGroupItem value="count" className="h-7 text-xs">
-            <Trans>Număr</Trans>
+            <Trans>Count</Trans>
           </ToggleGroupItem>
         </ToggleGroup>
       </CardHeader>
       <CardContent className="p-4">
         <div className="h-[320px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="vertical" margin={{ left: 20, right: 20, top: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+            <BarChart
+              data={data}
+              layout="vertical"
+              margin={{ left: 20, right: 20, top: 10 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                horizontal={false}
+                stroke="#e2e8f0"
+              />
               <XAxis
                 type="number"
                 tick={{ fontSize: 11, fill: '#64748b' }}
@@ -101,6 +109,7 @@ export function PnrrComponentChart({
                 axisLine={false}
                 tickLine={false}
               />
+
               <YAxis
                 type="category"
                 dataKey="shortName"
@@ -109,6 +118,7 @@ export function PnrrComponentChart({
                 axisLine={false}
                 tickLine={false}
               />
+
               <Tooltip
                 cursor={{ fill: 'rgba(0,0,0,0.04)' }}
                 contentStyle={{
@@ -121,13 +131,14 @@ export function PnrrComponentChart({
                   view === 'value'
                     ? formatPnrrCurrency(Number(val), currency, 'standard')
                     : formatNumber(Number(val)),
-                  view === 'value' ? t`Valoare` : t`Proiecte`,
+                  view === 'value' ? t`Value` : t`Projects`,
                 ]}
                 labelFormatter={(label) => {
                   const item = data.find((d) => d.shortName === label)
                   return item?.name ?? label
                 }}
               />
+
               <Bar
                 dataKey={view}
                 radius={[0, 6, 6, 0]}

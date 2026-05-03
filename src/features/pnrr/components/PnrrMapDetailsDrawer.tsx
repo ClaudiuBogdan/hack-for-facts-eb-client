@@ -14,11 +14,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import {
-  AlertTriangle,
-  MapPinned,
-  ShieldAlert,
-} from 'lucide-react'
+import { AlertTriangle, MapPinned, ShieldAlert } from 'lucide-react'
 import { PnrrProjectDrawer } from './table/PnrrProjectDrawer'
 import { getAnomalyLabel } from '../lib/anomaly-definitions'
 import { PnrrEntityShortcutLinks } from './PnrrEntityShortcutLinks'
@@ -56,7 +52,10 @@ export function PnrrMapDetailsDrawer({
   readonly description?: string
   readonly projects: readonly PnrrProject[]
   readonly onClose: () => void
-  readonly onBeneficiaryClick?: (beneficiary: { readonly name: string; readonly cui: string | null }) => void
+  readonly onBeneficiaryClick?: (beneficiary: {
+    readonly name: string
+    readonly cui: string | null
+  }) => void
   readonly onViewProjects?: () => void
   readonly onViewBeneficiaries?: () => void
   readonly footerEntityShortcut?: {
@@ -64,7 +63,9 @@ export function PnrrMapDetailsDrawer({
     readonly label: string
   }
 }) {
-  const [selectedProject, setSelectedProject] = useState<PnrrProject | null>(null)
+  const [selectedProject, setSelectedProject] = useState<PnrrProject | null>(
+    null,
+  )
   const currency = usePnrrCurrency()
 
   const stats = useMemo(() => buildMapStats(projects), [projects])
@@ -83,7 +84,7 @@ export function PnrrMapDetailsDrawer({
               {stats.anomalyCount > 0 && (
                 <span className="inline-flex h-9 items-center gap-2 rounded-sm border-2 border-[var(--pnrr-red)] bg-[var(--pnrr-red)]/10 px-3 text-sm font-black uppercase text-[var(--pnrr-red)]">
                   <ShieldAlert className="h-4 w-4" />
-                  {formatNumber(stats.anomalyCount)} <Trans>riscuri</Trans>
+                  {formatNumber(stats.anomalyCount)} <Trans>risks</Trans>
                 </span>
               )}
             </div>
@@ -92,16 +93,28 @@ export function PnrrMapDetailsDrawer({
             </SheetTitle>
             <SheetDescription className="text-left text-base font-medium text-[var(--pnrr-muted)]">
               {description ? `${description} · ` : ''}
-              {formatNumber(stats.projectCount)} {stats.projectCount === 1 ? t`proiect` : t`proiecte`} ·{' '}
+              {formatNumber(stats.projectCount)}{' '}
+              {stats.projectCount === 1 ? t`project` : t`projects`} ·{' '}
               {formatPnrrCurrency(totalValue, currency, 'standard')}
             </SheetDescription>
           </SheetHeader>
 
           <div className="space-y-4 p-5">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <MapMetric label={t`Proiecte`} value={formatNumber(stats.projectCount)} />
-              <MapMetric label={t`Riscuri`} value={formatNumber(stats.anomalyCount)} tone={stats.anomalyCount > 0 ? 'red' : 'default'} />
-              <MapMetric label={t`Date lipsă`} value={formatNumber(stats.dataQualityCount)} tone={stats.dataQualityCount > 0 ? 'blue' : 'default'} />
+              <MapMetric
+                label={t`Projects`}
+                value={formatNumber(stats.projectCount)}
+              />
+              <MapMetric
+                label={t`Risks`}
+                value={formatNumber(stats.anomalyCount)}
+                tone={stats.anomalyCount > 0 ? 'red' : 'default'}
+              />
+              <MapMetric
+                label={t`Missing data`}
+                value={formatNumber(stats.dataQualityCount)}
+                tone={stats.dataQualityCount > 0 ? 'blue' : 'default'}
+              />
             </div>
 
             {(onViewProjects || onViewBeneficiaries) && (
@@ -112,7 +125,7 @@ export function PnrrMapDetailsDrawer({
                     onClick={onViewProjects}
                     className="flex h-11 items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-fg)] px-4 text-sm font-black uppercase tracking-wide text-[var(--pnrr-bg)] transition-colors hover:bg-[var(--pnrr-card)] hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
                   >
-                    <Trans>Vezi proiectele din UAT</Trans>
+                    <Trans>View projects in UAT</Trans>
                   </button>
                 )}
                 {onViewBeneficiaries && (
@@ -121,7 +134,7 @@ export function PnrrMapDetailsDrawer({
                     onClick={onViewBeneficiaries}
                     className="flex h-11 items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-4 text-sm font-black uppercase tracking-wide text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
                   >
-                    <Trans>Vezi beneficiarii din UAT</Trans>
+                    <Trans>View beneficiaries in UAT</Trans>
                   </button>
                 )}
               </div>
@@ -129,9 +142,10 @@ export function PnrrMapDetailsDrawer({
 
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
               <SectionHeader
-                title={t`Top proiecte`}
-                subtitle={t`Sunt afișate doar cele mai mari proiecte.`}
+                title={t`Top projects`}
+                subtitle={t`Only the largest projects are shown.`}
               />
+
               <div className="divide-y divide-[var(--pnrr-border)]">
                 {stats.topProjects.map((project, index) => (
                   <TopProjectRow
@@ -148,9 +162,10 @@ export function PnrrMapDetailsDrawer({
             {stats.topBeneficiaries.length > 0 && (
               <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
                 <SectionHeader
-                  title={t`Top beneficiari`}
-                  subtitle={t`Apasă pe un beneficiar pentru filtrare exactă după CUI.`}
+                  title={t`Top beneficiaries`}
+                  subtitle={t`Click a beneficiary to filter exactly by CUI.`}
                 />
+
                 <div className="divide-y divide-[var(--pnrr-border)]">
                   {stats.topBeneficiaries.map((beneficiary) => (
                     <div
@@ -159,7 +174,12 @@ export function PnrrMapDetailsDrawer({
                     >
                       <button
                         type="button"
-                        onClick={() => onBeneficiaryClick?.({ name: beneficiary.name, cui: beneficiary.cui })}
+                        onClick={() =>
+                          onBeneficiaryClick?.({
+                            name: beneficiary.name,
+                            cui: beneficiary.cui,
+                          })
+                        }
                         className="grid w-full grid-cols-[1fr_auto] gap-3 text-left transition-colors hover:bg-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
                       >
                         <div className="min-w-0">
@@ -167,7 +187,8 @@ export function PnrrMapDetailsDrawer({
                             {beneficiary.name}
                           </p>
                           <p className="mt-1 text-sm text-[var(--pnrr-muted)]">
-                            {formatNumber(beneficiary.count)} {beneficiary.count === 1 ? t`proiect` : t`proiecte`}
+                            {formatNumber(beneficiary.count)}{' '}
+                            {beneficiary.count === 1 ? t`project` : t`projects`}
                             {beneficiary.cui ? ` · CUI ${beneficiary.cui}` : ''}
                           </p>
                         </div>
@@ -184,11 +205,12 @@ export function PnrrMapDetailsDrawer({
             {stats.components.length > 0 && (
               <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4">
                 <h3 className="mb-4 text-sm font-black uppercase tracking-wide text-[var(--pnrr-fg)]">
-                  <Trans>Componente</Trans>
+                  <Trans>Components</Trans>
                 </h3>
                 <div className="space-y-4">
                   {stats.components.map((component) => {
-                    const pct = totalValue > 0 ? (component.value / totalValue) * 100 : 0
+                    const pct =
+                      totalValue > 0 ? (component.value / totalValue) * 100 : 0
                     return (
                       <div key={component.code}>
                         <div className="mb-2 flex items-center justify-between gap-3">
@@ -205,7 +227,10 @@ export function PnrrMapDetailsDrawer({
                         >
                           <div
                             className="h-full"
-                            style={{ width: `${pct}%`, backgroundColor: component.color }}
+                            style={{
+                              width: `${pct}%`,
+                              backgroundColor: component.color,
+                            }}
                           />
                         </div>
                       </div>
@@ -219,7 +244,7 @@ export function PnrrMapDetailsDrawer({
               <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4">
                 <h3 className="mb-3 flex items-center gap-2 text-sm font-black uppercase tracking-wide text-[var(--pnrr-red)]">
                   <AlertTriangle className="h-4 w-4" />
-                  <Trans>Riscuri detectate</Trans>
+                  <Trans>Detected risks</Trans>
                 </h3>
                 <div className="space-y-2">
                   {stats.anomalyTypes.map(([type, count]) => (
@@ -227,7 +252,11 @@ export function PnrrMapDetailsDrawer({
                       key={type}
                       className="flex items-center justify-between gap-3 border-2 border-[var(--pnrr-red)] bg-[var(--pnrr-red)]/10 px-3 py-2 text-sm font-black uppercase text-[var(--pnrr-red)]"
                     >
-                      <span>{getAnomalyLabel(type as Parameters<typeof getAnomalyLabel>[0])}</span>
+                      <span>
+                        {getAnomalyLabel(
+                          type as Parameters<typeof getAnomalyLabel>[0],
+                        )}
+                      </span>
                       <span>{formatNumber(count)}</span>
                     </div>
                   ))}
@@ -262,17 +291,24 @@ function MapDrawerFooterClose({ onClose }: { readonly onClose: () => void }) {
         onClick={onClose}
         className="flex h-11 w-full items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-fg)] px-4 text-sm font-black uppercase tracking-wide text-[var(--pnrr-bg)] transition-colors hover:bg-[var(--pnrr-card)] hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
       >
-        <Trans>Închide</Trans>
+        <Trans>Close</Trans>
       </button>
     </div>
   )
 }
 
 function buildMapStats(projects: readonly PnrrProject[]) {
-  const totalValue = projects.reduce((sum, project) => sum + project.valueEur, 0)
+  const totalValue = projects.reduce(
+    (sum, project) => sum + project.valueEur,
+    0,
+  )
   const projectCount = projects.length
-  const anomalyCount = projects.filter((project) => project.anomalies.length > 0).length
-  const dataQualityCount = projects.filter((project) => project.dataQualitySignals.length > 0).length
+  const anomalyCount = projects.filter(
+    (project) => project.anomalies.length > 0,
+  ).length
+  const dataQualityCount = projects.filter(
+    (project) => project.dataQualitySignals.length > 0,
+  ).length
 
   const beneficiaryMap = new Map<string, MapBeneficiary>()
   const componentMap = new Map<string, ComponentStat>()
@@ -324,12 +360,18 @@ function buildMapStats(projects: readonly PnrrProject[]) {
     projectCount,
     anomalyCount,
     dataQualityCount,
-    topProjects: [...projects].sort((a, b) => b.valueEur - a.valueEur).slice(0, 5),
+    topProjects: [...projects]
+      .sort((a, b) => b.valueEur - a.valueEur)
+      .slice(0, 5),
     topBeneficiaries: Array.from(beneficiaryMap.values())
       .sort((a, b) => b.value - a.value)
       .slice(0, 5),
-    components: Array.from(componentMap.values()).sort((a, b) => b.value - a.value),
-    anomalyTypes: Array.from(anomalyTypes.entries()).sort((a, b) => b[1] - a[1]),
+    components: Array.from(componentMap.values()).sort(
+      (a, b) => b.value - a.value,
+    ),
+    anomalyTypes: Array.from(anomalyTypes.entries()).sort(
+      (a, b) => b[1] - a[1],
+    ),
   }
 }
 
@@ -351,8 +393,12 @@ function MapMetric({
 
   return (
     <div className={`border-2 bg-[var(--pnrr-card)] p-4 ${toneClass}`}>
-      <p className="text-xs font-black uppercase tracking-wide opacity-70">{label}</p>
-      <p className="mt-2 text-3xl font-black leading-none tabular-nums">{value}</p>
+      <p className="text-xs font-black uppercase tracking-wide opacity-70">
+        {label}
+      </p>
+      <p className="mt-2 text-3xl font-black leading-none tabular-nums">
+        {value}
+      </p>
     </div>
   )
 }
@@ -388,7 +434,9 @@ function TopProjectRow({
   const component = PNRR_COMPONENTS[project.componentCode]
   const color = component?.color ?? 'var(--pnrr-blue)'
   const techValue =
-    project.techProgress === 'in-implementation' ? 15 : project.techProgress ?? 0
+    project.techProgress === 'in-implementation'
+      ? 15
+      : (project.techProgress ?? 0)
 
   return (
     <button
@@ -425,11 +473,16 @@ function TopProjectRow({
             >
               <div
                 className="h-full rounded-full"
-                style={{ width: `${Math.min(techValue, 100)}%`, backgroundColor: color }}
+                style={{
+                  width: `${Math.min(techValue, 100)}%`,
+                  backgroundColor: color,
+                }}
               />
             </div>
             <span className="w-10 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
-              {project.techProgress === 'in-implementation' ? '<30%' : `${techValue}%`}
+              {project.techProgress === 'in-implementation'
+                ? '<30%'
+                : `${techValue}%`}
             </span>
           </div>
         </div>

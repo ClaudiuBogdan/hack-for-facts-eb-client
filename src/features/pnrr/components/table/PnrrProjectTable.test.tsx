@@ -36,7 +36,7 @@ function makeProject(overrides: Partial<PnrrProject> = {}): PnrrProject {
 }
 
 function makeFilterState(
-  overrides: Partial<ReturnType<typeof usePnrrFilterState>> = {}
+  overrides: Partial<ReturnType<typeof usePnrrFilterState>> = {},
 ): ReturnType<typeof usePnrrFilterState> {
   return {
     search: {
@@ -88,7 +88,7 @@ describe('PnrrProjectTable', () => {
     render(<PnrrProjectTable projects={[PROJECT]} filterState={filterState} />)
 
     expect(screen.getAllByText('Test Project')).toHaveLength(2)
-    expect(screen.getByText('pagina 1 din 1')).toBeInTheDocument()
+    expect(screen.getByText('page 1 of 1')).toBeInTheDocument()
     await waitFor(() => expect(setPagination).toHaveBeenCalledWith(1, 25))
   })
 
@@ -101,25 +101,40 @@ describe('PnrrProjectTable', () => {
         sortOrder: 'asc',
       },
     })
-    const zero = makeProject({ id: 'zero', title: 'Zero Progress', techProgress: 0 })
+    const zero = makeProject({
+      id: 'zero',
+      title: 'Zero Progress',
+      techProgress: 0,
+    })
     const under30 = makeProject({
       id: 'under-30',
       title: 'Under 30 Progress',
       techProgress: 'in-implementation',
     })
-    const mid = makeProject({ id: 'mid', title: 'Mid Progress', techProgress: 50 })
+    const mid = makeProject({
+      id: 'mid',
+      title: 'Mid Progress',
+      techProgress: 50,
+    })
 
-    render(<PnrrProjectTable projects={[under30, mid, zero]} filterState={filterState} />)
+    render(
+      <PnrrProjectTable
+        projects={[under30, mid, zero]}
+        filterState={filterState}
+      />,
+    )
 
     const zeroTitle = screen.getAllByText('Zero Progress')[0]
     const under30Title = screen.getAllByText('Under 30 Progress')[0]
     const midTitle = screen.getAllByText('Mid Progress')[0]
 
     expect(
-      zeroTitle.compareDocumentPosition(under30Title) & Node.DOCUMENT_POSITION_FOLLOWING
+      zeroTitle.compareDocumentPosition(under30Title) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
     expect(
-      under30Title.compareDocumentPosition(midTitle) & Node.DOCUMENT_POSITION_FOLLOWING
+      under30Title.compareDocumentPosition(midTitle) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
   })
 })

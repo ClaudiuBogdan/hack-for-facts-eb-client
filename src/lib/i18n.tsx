@@ -4,7 +4,7 @@ export const DEFAULT_LOCALE = "ro" as const;
 export const LOCALE_COOKIE_NAME = "user-locale";
 export type SupportedLocale = "ro" | "en";
 
-type CatalogName = "messages" | "admin";
+type CatalogName = "messages" | "admin" | "pnrr";
 type CatalogLoader = () => Promise<unknown>;
 type CatalogEntry = unknown | CatalogLoader;
 type ActivationOptions = {
@@ -13,6 +13,7 @@ type ActivationOptions = {
 
 const DEFAULT_CATALOG: CatalogName = "messages";
 const ADMIN_CATALOG: CatalogName = "admin";
+const PNRR_CATALOG: CatalogName = "pnrr";
 const loadedCatalogs = new Map<string, Messages>();
 const loadingCatalogs = new Map<string, Promise<Messages>>();
 
@@ -32,15 +33,25 @@ const adminCatalogsLazy = import.meta.glob("../locales/*/admin.po", {
   eager: false,
 }) as Record<string, CatalogLoader>;
 
+const pnrrCatalogsEager = import.meta.glob("../locales/*/pnrr.po", {
+  eager: true,
+}) as Record<string, unknown>;
+
+const pnrrCatalogsLazy = import.meta.glob("../locales/*/pnrr.po", {
+  eager: false,
+}) as Record<string, CatalogLoader>;
+
 const localeCatalogs: Record<CatalogName, Record<string, CatalogEntry>> =
   import.meta.env.SSR
     ? {
         messages: defaultCatalogsEager,
         admin: adminCatalogsEager,
+        pnrr: pnrrCatalogsEager,
       }
     : {
         messages: defaultCatalogsLazy,
         admin: adminCatalogsLazy,
+        pnrr: pnrrCatalogsLazy,
       };
 
 const DEFAULT_SCOPE = [DEFAULT_CATALOG] as const;
@@ -119,11 +130,18 @@ function getCatalogNamesForPathname(pathname?: string): readonly CatalogName[] {
   if (isAdminPathname(pathname)) {
     return [DEFAULT_CATALOG, ADMIN_CATALOG] as const;
   }
+  if (isPnrrPathname(pathname)) {
+    return [DEFAULT_CATALOG, PNRR_CATALOG] as const;
+  }
   return DEFAULT_SCOPE;
 }
 
 function isAdminPathname(pathname?: string): boolean {
   return typeof pathname === "string" && pathname.startsWith("/admin");
+}
+
+function isPnrrPathname(pathname?: string): boolean {
+  return pathname === "/pnrr" || pathname?.startsWith("/pnrr/") === true;
 }
 
 async function ensureCatalogLoaded(
@@ -141,7 +159,7 @@ async function ensureCatalogLoaded(
 
   const loader = getCatalogLoader(locale, catalogName);
   if (!loader) {
-    if (catalogName === ADMIN_CATALOG) {
+    if (catalogName === ADMIN_CATALOG || catalogName === PNRR_CATALOG) {
       loadedCatalogs.set(cacheKey, {});
       return;
     }

@@ -15,7 +15,7 @@ import {
 } from '../../lib/filter-constants'
 
 const PROGRESS_OPTIONS: Option[] = Object.entries(PROGRESS_CATEGORY_LABELS).map(
-  ([value, label]) => ({ value, label })
+  ([value, label]) => ({ value, label }),
 )
 
 export function PnrrFilterBar({
@@ -28,7 +28,9 @@ export function PnrrFilterBar({
   const search = filterState.search
 
   const componentOptions = useMemo(() => {
-    const codes = Array.from(new Set(projects.map((p) => p.componentCode))).sort()
+    const codes = Array.from(
+      new Set(projects.map((p) => p.componentCode)),
+    ).sort()
     return codes.map<Option>((code) => ({
       value: code,
       label: code,
@@ -58,7 +60,7 @@ export function PnrrFilterBar({
         <div className="relative flex-1 min-w-[240px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder={t`Caută proiecte, beneficiari sau CUI...`}
+            placeholder={t`Search projects, beneficiaries, or CUI...`}
             value={search.search ?? ''}
             onChange={(e) => filterState.setSearch(e.target.value)}
             className="h-10 rounded-xl border-border/60 bg-background pl-10 text-sm shadow-sm transition-colors focus:border-primary/50"
@@ -73,8 +75,12 @@ export function PnrrFilterBar({
               onCheckedChange={filterState.setOnlyAnomalies}
               className="scale-90"
             />
-            <Label htmlFor="only-anomalies" className="cursor-pointer text-xs font-medium">
-              <Trans>Doar riscuri</Trans>
+
+            <Label
+              htmlFor="only-anomalies"
+              className="cursor-pointer text-xs font-medium"
+            >
+              <Trans>Risks only</Trans>
             </Label>
           </div>
 
@@ -85,8 +91,12 @@ export function PnrrFilterBar({
               onCheckedChange={filterState.setExcludeMicro}
               className="scale-90"
             />
-            <Label htmlFor="exclude-micro" className="cursor-pointer text-xs font-medium">
-              <Trans>Fără micro</Trans>
+
+            <Label
+              htmlFor="exclude-micro"
+              className="cursor-pointer text-xs font-medium"
+            >
+              <Trans>No micro</Trans>
             </Label>
           </div>
         </div>
@@ -98,35 +108,39 @@ export function PnrrFilterBar({
           options={componentOptions}
           selected={search.components ?? []}
           onChange={filterState.setComponents}
-          placeholder={t`Componente PNRR`}
+          placeholder={t`PNRR components`}
         />
 
         <MultiSelect
           options={countyOptions}
           selected={search.counties ?? []}
           onChange={filterState.setCounties}
-          placeholder={t`Județe`}
+          placeholder={t`Counties`}
         />
 
         <MultiSelect
           options={criOptions}
           selected={search.cris ?? []}
           onChange={filterState.setCris}
-          placeholder={t`Instituții responsabile`}
+          placeholder={t`Responsible institutions`}
         />
 
         <MultiSelect
           options={PROGRESS_OPTIONS}
           selected={search.progressCategories ?? []}
-          onChange={(v) => filterState.setProgressCategories(v as ProgressCategoryKey[])}
-          placeholder={t`Stadiu implementare`}
+          onChange={(v) =>
+            filterState.setProgressCategories(v as ProgressCategoryKey[])
+          }
+          placeholder={t`Implementation status`}
         />
 
         <ToggleGroup
           type="multiple"
           value={search.fundingSources ?? []}
           onValueChange={(v) =>
-            filterState.setFundingSources(v as ('grant' | 'loan' | 'grant/loan')[])
+            filterState.setFundingSources(
+              v as ('grant' | 'loan' | 'grant/loan')[],
+            )
           }
           className="gap-1"
         >
@@ -142,14 +156,14 @@ export function PnrrFilterBar({
             size="sm"
             className="rounded-lg border text-xs data-[state=on]:bg-red-500 data-[state=on]:text-white"
           >
-            <Trans>Împrumut</Trans>
+            <Trans>Loan</Trans>
           </ToggleGroupItem>
           <ToggleGroupItem
             value="grant/loan"
             size="sm"
             className="rounded-lg border text-xs data-[state=on]:bg-amber-500 data-[state=on]:text-white"
           >
-            <Trans>Mixt</Trans>
+            <Trans>Mixed</Trans>
           </ToggleGroupItem>
         </ToggleGroup>
       </div>

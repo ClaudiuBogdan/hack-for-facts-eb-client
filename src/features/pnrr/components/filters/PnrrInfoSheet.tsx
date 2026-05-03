@@ -1,5 +1,10 @@
 import { Trans } from '@lingui/react/macro'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Accordion,
@@ -25,7 +30,7 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
             <Trans>Info</Trans>
           </div>
           <SheetTitle className="text-left text-4xl font-black leading-none tracking-tight text-[var(--pnrr-fg)]">
-            <Trans>Despre datele PNRR</Trans>
+            <Trans>About the PNRR data</Trans>
           </SheetTitle>
         </SheetHeader>
 
@@ -33,21 +38,21 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
           <div className="space-y-6 p-6">
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-5">
               <SectionTitle icon={LibraryBig}>
-                <Trans>Prezentare generală</Trans>
+                <Trans>Overview</Trans>
               </SectionTitle>
               <div className="mt-4 space-y-4 text-base font-medium leading-relaxed text-[var(--pnrr-fg)]">
                 <p>
                   <Trans>
-                    Acest dashboard prezintă toate proiectele din Planul Național de
-                    Redresare și Reziliență (PNRR) al României. Datele sunt preluate
-                    de la Ministerul Investițiilor și Proiectelor Europene.
+                    This dashboard shows all projects in Romania's National
+                    Recovery and Resilience Plan (PNRR). The data is sourced
+                    from the Ministry of Investments and European Projects.
                   </Trans>
                 </p>
                 <p className="text-[var(--pnrr-muted)]">
                   <Trans>
-                    Fiecare proiect are asociate mai multe dimensiuni: componenta
-                    PNRR, măsura specifică, județul, instituția responsabilă (CRI),
-                    sursa de finanțare și stadiul de implementare.
+                    Each project is associated with several dimensions: PNRR
+                    component, specific measure, county, responsible institution
+                    (CRI), funding source, and implementation status.
                   </Trans>
                 </p>
               </div>
@@ -55,62 +60,77 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
 
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
               <SectionHeader>
-                <Trans>Dimensiuni ale datelor</Trans>
+                <Trans>Data dimensions</Trans>
               </SectionHeader>
               <Accordion type="single" collapsible className="w-full">
-                <InfoAccordionItem value="component" title={<Trans>Componentă PNRR</Trans>}>
+                <InfoAccordionItem
+                  value="component"
+                  title={<Trans>PNRR component</Trans>}
+                >
                   <Trans>
-                    Cele 16 componente ale PNRR (C1-C16) reprezintă domeniile
-                    strategice de investiții și reforme. Fiecare componentă conține
-                    una sau mai multe măsuri.
+                    The 16 PNRR components (C1-C16) represent strategic
+                    investment and reform areas. Each component contains one or
+                    more measures.
                   </Trans>
                 </InfoAccordionItem>
 
-                <InfoAccordionItem value="measure" title={<Trans>Măsură PNRR</Trans>}>
+                <InfoAccordionItem
+                  value="measure"
+                  title={<Trans>PNRR measure</Trans>}
+                >
                   <div className="space-y-3">
                     <p>
                       <Trans>
-                        Codul măsurii combină codul componentei și codul măsurii
-                        (ex: C4.I1, C15.I9). Acesta este unic în contextul
-                        componentei.
+                        The measure code combines the component code and measure
+                        code (for example: C4.I1, C15.I9). It is unique within
+                        the component.
                       </Trans>
                     </p>
                     <p>
                       <Trans>
-                        Măsurile pot fi investiții (I) sau reforme (R), fiecare cu
-                        denumirea oficială aprobată în plan.
+                        Measures may be investments (I) or reforms (R), each
+                        with the official name approved in the plan.
                       </Trans>
                     </p>
                   </div>
                 </InfoAccordionItem>
 
-                <InfoAccordionItem value="county" title={<Trans>Județ</Trans>}>
+                <InfoAccordionItem value="county" title={<Trans>County</Trans>}>
                   <Trans>
-                    Localizarea geografică a proiectului. Proiectele naționale,
-                    fără localizare specifică, sunt marcate separat și pot fi incluse
-                    sau excluse din filtre.
+                    The geographic location of the project. National projects
+                    without a specific location are marked separately and can be
+                    included or excluded from filters.
                   </Trans>
                 </InfoAccordionItem>
 
-                <InfoAccordionItem value="cri" title={<Trans>Instituție responsabilă (CRI)</Trans>}>
+                <InfoAccordionItem
+                  value="cri"
+                  title={<Trans>Responsible institution (CRI)</Trans>}
+                >
                   <Trans>
-                    Coordonatorul responsabil de implementare, de obicei un minister
-                    sau o agenție națională.
+                    The coordinator responsible for implementation, usually a
+                    ministry or national agency.
                   </Trans>
                 </InfoAccordionItem>
 
-                <InfoAccordionItem value="funding" title={<Trans>Sursă de finanțare</Trans>}>
+                <InfoAccordionItem
+                  value="funding"
+                  title={<Trans>Funding source</Trans>}
+                >
                   <Trans>
-                    Grant, împrumut sau finanțare mixtă. Valorile originale sunt în
-                    EUR și sunt convertite automat în moneda selectată.
+                    Grant, loan, or mixed funding. Original values are in EUR
+                    and are automatically converted to the selected currency.
                   </Trans>
                 </InfoAccordionItem>
 
-                <InfoAccordionItem value="progress" title={<Trans>Stadiu implementare</Trans>}>
+                <InfoAccordionItem
+                  value="progress"
+                  title={<Trans>Implementation status</Trans>}
+                >
                   <Trans>
-                    Progresul tehnic și financiar raportat de beneficiari. Procentele
-                    pot depăși 100% în cazul schimbărilor de scop sau al erorilor de
-                    raportare.
+                    Technical and financial progress reported by beneficiaries.
+                    Percentages may exceed 100% in cases of scope changes or
+                    reporting errors.
                   </Trans>
                 </InfoAccordionItem>
               </Accordion>
@@ -118,51 +138,83 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
 
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
               <SectionHeader>
-                <Trans>Riscuri și calitatea datelor</Trans>
+                <Trans>Risks and data quality</Trans>
               </SectionHeader>
               <div className="border-b border-[var(--pnrr-border)] p-5 text-sm font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <Trans>
-                  Riscurile sunt separate de problemele de raportare ca utilizatorii
-                  să poată prioritiza proiectele care cer verificare directă.
+                  Risks are separated from reporting issues so users can
+                  prioritize projects that require direct verification.
                 </Trans>
               </div>
               <div className="divide-y divide-[var(--pnrr-border)]">
                 <DefinitionRow
-                  title={<Trans>Depășire financiară</Trans>}
-                  description={<Trans>Progres financiar raportat peste 100% din valoarea contractată.</Trans>}
+                  title={<Trans>Financial overrun</Trans>}
+                  description={
+                    <Trans>
+                      Reported financial progress over 100% of the contracted
+                      value.
+                    </Trans>
+                  }
                 />
+
                 <DefinitionRow
-                  title={<Trans>Plăți înaintea livrării</Trans>}
-                  description={<Trans>Progres financiar mult înaintea progresului tehnic.</Trans>}
+                  title={<Trans>Payments ahead of delivery</Trans>}
+                  description={
+                    <Trans>
+                      Financial progress far ahead of technical progress.
+                    </Trans>
+                  }
                 />
+
                 <DefinitionRow
-                  title={<Trans>Proiecte mari cu progres redus</Trans>}
-                  description={<Trans>Valoare peste 10 mil. EUR și progres tehnic sub 30%.</Trans>}
+                  title={<Trans>Large projects with low progress</Trans>}
+                  description={
+                    <Trans>
+                      Value over EUR 10M and technical progress under 30%.
+                    </Trans>
+                  }
                 />
+
                 <DefinitionRow
-                  title={<Trans>Lucrări finalizate, decontare blocată</Trans>}
-                  description={<Trans>Finalizat tehnic, dar decontarea este sub 80%.</Trans>}
+                  title={<Trans>Completed works, blocked reimbursement</Trans>}
+                  description={
+                    <Trans>
+                      Technically completed, but reimbursement is under 80%.
+                    </Trans>
+                  }
                 />
+
                 <DefinitionRow
-                  title={<Trans>Duplicate cu date diferite</Trans>}
-                  description={<Trans>Același proiect este raportat cu valori, progres sau localizare diferite.</Trans>}
+                  title={<Trans>Duplicates with different data</Trans>}
+                  description={
+                    <Trans>
+                      The same project is reported with different values,
+                      progress, or location.
+                    </Trans>
+                  }
                 />
+
                 <DefinitionRow
-                  title={<Trans>Progres financiar lipsă</Trans>}
-                  description={<Trans>Proiecte mari sau finalizate tehnic fără date financiare publicate.</Trans>}
+                  title={<Trans>Missing financial progress</Trans>}
+                  description={
+                    <Trans>
+                      Large or technically completed projects without published
+                      financial data.
+                    </Trans>
+                  }
                 />
               </div>
             </section>
 
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-5">
               <SectionTitle>
-                <Trans>Conversie valutară</Trans>
+                <Trans>Currency conversion</Trans>
               </SectionTitle>
               <p className="mt-3 text-sm font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <Trans>
-                  Datele originale sunt exprimate în EUR. Valorile afișate sunt
-                  convertite automat în moneda selectată din setările contului,
-                  folosind cursuri de referință fixe.
+                  The original data is expressed in EUR. Displayed values are
+                  automatically converted to the currency selected in account
+                  settings using fixed reference rates.
                 </Trans>
               </p>
               <div className="mt-4 grid grid-cols-2 gap-3">
@@ -171,21 +223,21 @@ export function PnrrInfoSheet({ open, onOpenChange }: PnrrInfoSheetProps) {
               </div>
               <p className="mt-3 text-xs font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <Trans>
-                  Cursurile sunt stabilite la data ultimei actualizări a datelor și
-                  pot diferi de cursurile zilnice BNR.
+                  Rates are set on the date of the latest data update and may
+                  differ from daily NBR rates.
                 </Trans>
               </p>
             </section>
 
             <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-5">
               <SectionTitle>
-                <Trans>Sursa datelor</Trans>
+                <Trans>Data source</Trans>
               </SectionTitle>
               <p className="mt-3 text-sm font-medium leading-relaxed text-[var(--pnrr-muted)]">
                 <Trans>
-                  Datele provin de la Ministerul Investițiilor și Proiectelor
-                  Europene (MIPE), prin portalul oficial PNRR. Ultima actualizare:
-                  30 aprilie 2026.
+                  The data comes from the Ministry of Investments and European
+                  Projects (MIPE), through the official PNRR portal. Last
+                  update: April 30, 2026.
                 </Trans>
               </p>
             </section>
@@ -233,7 +285,10 @@ function InfoAccordionItem({
   readonly children: ReactNode
 }) {
   return (
-    <AccordionItem value={value} className="border-b border-[var(--pnrr-border)] last:border-b-0">
+    <AccordionItem
+      value={value}
+      className="border-b border-[var(--pnrr-border)] last:border-b-0"
+    >
       <AccordionTrigger className="px-5 py-4 text-left text-base font-black text-[var(--pnrr-fg)] hover:no-underline [&>svg]:h-5 [&>svg]:w-5 [&>svg]:text-[var(--pnrr-muted)]">
         {title}
       </AccordionTrigger>
@@ -275,9 +330,7 @@ function CurrencyBox({
       <p className="text-xs font-black uppercase tracking-wide text-[var(--pnrr-muted)]">
         {label}
       </p>
-      <p className="mt-1 text-sm font-black text-[var(--pnrr-fg)]">
-        {value}
-      </p>
+      <p className="mt-1 text-sm font-black text-[var(--pnrr-fg)]">{value}</p>
     </div>
   )
 }
@@ -290,7 +343,7 @@ function DrawerFooterClose({ onClose }: { readonly onClose: () => void }) {
         onClick={onClose}
         className="flex h-11 w-full items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-fg)] px-4 text-sm font-black uppercase tracking-wide text-[var(--pnrr-bg)] transition-colors hover:bg-[var(--pnrr-card)] hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
       >
-        <Trans>Închide</Trans>
+        <Trans>Close</Trans>
       </button>
     </div>
   )

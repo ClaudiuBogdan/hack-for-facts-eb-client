@@ -66,7 +66,7 @@ export function PnrrCountyChart({
       <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/30 pb-3 pt-4">
         <div className="flex items-center gap-2">
           <CardTitle className="text-sm font-bold">
-            <Trans>Top Județe</Trans>
+            <Trans>Top Counties</Trans>
           </CardTitle>
           <Badge variant="secondary" className="text-[10px]">
             Top 20
@@ -79,10 +79,10 @@ export function PnrrCountyChart({
           size="sm"
         >
           <ToggleGroupItem value="value" className="h-7 text-xs">
-            <Trans>Valoare</Trans>
+            <Trans>Value</Trans>
           </ToggleGroupItem>
           <ToggleGroupItem value="count" className="h-7 text-xs">
-            <Trans>Număr</Trans>
+            <Trans>Count</Trans>
           </ToggleGroupItem>
           <ToggleGroupItem value="perCapita" className="h-7 text-xs">
             <Trans>/capita</Trans>
@@ -92,8 +92,16 @@ export function PnrrCountyChart({
       <CardContent className="p-4">
         <div className="h-[320px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="vertical" margin={{ left: 20, right: 20, top: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+            <BarChart
+              data={data}
+              layout="vertical"
+              margin={{ left: 20, right: 20, top: 10 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                horizontal={false}
+                stroke="#e2e8f0"
+              />
               <XAxis
                 type="number"
                 tick={{ fontSize: 11, fill: '#64748b' }}
@@ -107,6 +115,7 @@ export function PnrrCountyChart({
                 axisLine={false}
                 tickLine={false}
               />
+
               <YAxis
                 type="category"
                 dataKey="county"
@@ -115,6 +124,7 @@ export function PnrrCountyChart({
                 axisLine={false}
                 tickLine={false}
               />
+
               <Tooltip
                 cursor={{ fill: 'rgba(0,0,0,0.04)' }}
                 contentStyle={{
@@ -129,9 +139,10 @@ export function PnrrCountyChart({
                     : view === 'perCapita'
                       ? formatPnrrCurrency(Number(val), currency, 'standard')
                       : formatNumber(Number(val)),
-                  view === 'perCapita' ? t`Valoare per capita` : '',
+                  view === 'perCapita' ? t`Value per capita` : '',
                 ]}
               />
+
               <Bar
                 dataKey={view}
                 radius={[0, 6, 6, 0]}

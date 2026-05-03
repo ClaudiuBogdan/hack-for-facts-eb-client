@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { t } from '@lingui/core/macro'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
 import { getSiteUrl } from '@/config/env'
 import { parsePnrrSearch } from '@/schemas/pnrr'
@@ -15,9 +16,8 @@ export const Route = createFileRoute('/pnrr')({
   head: () => {
     const siteUrl = getSiteUrl()
     const canonicalUrl = `${siteUrl}/pnrr`
-    const title = 'PNRR - Planul Național de Redresare și Reziliență | Transparenta.eu'
-    const description =
-      'Dashboard interactiv cu toate proiectele din Planul Național de Redresare și Reziliență (PNRR): progres, finanțare, anomalii și distribuție geografică.'
+    const title = t`PNRR - National Recovery and Resilience Plan | Transparenta.eu`
+    const description = t`Interactive dashboard with all projects from the National Recovery and Resilience Plan (PNRR): progress, funding, anomalies, and geographic distribution.`
 
     return {
       meta: [

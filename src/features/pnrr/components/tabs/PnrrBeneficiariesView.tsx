@@ -56,8 +56,17 @@ type BeneficiarySummary = {
   readonly projects: PnrrProject[]
 }
 
-function SortIcon({ active, order }: { readonly active: boolean; readonly order: 'asc' | 'desc' }) {
-  if (!active) return <ArrowUpDown className="ml-1.5 h-3.5 w-3.5 text-[var(--pnrr-muted)]" />
+function SortIcon({
+  active,
+  order,
+}: {
+  readonly active: boolean
+  readonly order: 'asc' | 'desc'
+}) {
+  if (!active)
+    return (
+      <ArrowUpDown className="ml-1.5 h-3.5 w-3.5 text-[var(--pnrr-muted)]" />
+    )
   return order === 'asc' ? (
     <ArrowUp className="ml-1.5 h-3.5 w-3.5 text-[var(--pnrr-fg)]" />
   ) : (
@@ -65,7 +74,9 @@ function SortIcon({ active, order }: { readonly active: boolean; readonly order:
   )
 }
 
-function getProgressValue(progress: PnrrProject['techProgress'] | PnrrProject['finProgress']): number | null {
+function getProgressValue(
+  progress: PnrrProject['techProgress'] | PnrrProject['finProgress'],
+): number | null {
   if (typeof progress === 'number') return progress
   if (progress === 'in-implementation') return 15
   return null
@@ -81,9 +92,15 @@ type BeneficiaryRowProps = {
   readonly onSelect: (beneficiary: BeneficiarySummary) => void
 }
 
-const BeneficiaryRow = memo(function BeneficiaryRow({ b, currency, onSelect }: BeneficiaryRowProps) {
-  const techAvg = b.techProgressCount > 0 ? b.techProgressSum / b.techProgressCount : null
-  const finAvg = b.finProgressCount > 0 ? b.finProgressSum / b.finProgressCount : null
+const BeneficiaryRow = memo(function BeneficiaryRow({
+  b,
+  currency,
+  onSelect,
+}: BeneficiaryRowProps) {
+  const techAvg =
+    b.techProgressCount > 0 ? b.techProgressSum / b.techProgressCount : null
+  const finAvg =
+    b.finProgressCount > 0 ? b.finProgressSum / b.finProgressCount : null
 
   return (
     <TableRow
@@ -92,7 +109,9 @@ const BeneficiaryRow = memo(function BeneficiaryRow({ b, currency, onSelect }: B
     >
       <TableCell className="max-w-[300px]">
         <div className="flex flex-col">
-          <span className="truncate text-sm font-bold text-[var(--pnrr-fg)]">{b.name}</span>
+          <span className="truncate text-sm font-bold text-[var(--pnrr-fg)]">
+            {b.name}
+          </span>
           {b.cui && (
             <span className="text-xs text-[var(--pnrr-muted)]">{b.cui}</span>
           )}
@@ -112,7 +131,7 @@ const BeneficiaryRow = memo(function BeneficiaryRow({ b, currency, onSelect }: B
       </TableCell>
     </TableRow>
   )
-}) 
+})
 
 export function PnrrBeneficiariesView({
   projects,
@@ -121,7 +140,8 @@ export function PnrrBeneficiariesView({
   readonly projects: readonly PnrrProject[]
   readonly filterState: ReturnType<typeof usePnrrFilterState>
 }) {
-  const [selectedBeneficiary, setSelectedBeneficiary] = useState<BeneficiarySummary | null>(null)
+  const [selectedBeneficiary, setSelectedBeneficiary] =
+    useState<BeneficiarySummary | null>(null)
   const [sortKey, setSortKey] = useState<SortKey>('value')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [page, setPage] = useState(1)
@@ -198,14 +218,22 @@ export function PnrrBeneficiariesView({
           cmp = a.value - b.value
           break
         case 'techProgress': {
-          const av = a.techProgressCount > 0 ? a.techProgressSum / a.techProgressCount : -1
-          const bv = b.techProgressCount > 0 ? b.techProgressSum / b.techProgressCount : -1
+          const av =
+            a.techProgressCount > 0
+              ? a.techProgressSum / a.techProgressCount
+              : -1
+          const bv =
+            b.techProgressCount > 0
+              ? b.techProgressSum / b.techProgressCount
+              : -1
           cmp = av - bv
           break
         }
         case 'finProgress': {
-          const av = a.finProgressCount > 0 ? a.finProgressSum / a.finProgressCount : -1
-          const bv = b.finProgressCount > 0 ? b.finProgressSum / b.finProgressCount : -1
+          const av =
+            a.finProgressCount > 0 ? a.finProgressSum / a.finProgressCount : -1
+          const bv =
+            b.finProgressCount > 0 ? b.finProgressSum / b.finProgressCount : -1
           cmp = av - bv
           break
         }
@@ -218,15 +246,18 @@ export function PnrrBeneficiariesView({
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
   const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
-  const toggleSort = useCallback((key: SortKey) => {
-    if (sortKey === key) {
-      setSortOrder((o) => (o === 'asc' ? 'desc' : 'asc'))
-    } else {
-      setSortKey(key)
-      setSortOrder('desc')
-    }
-    setPage(1)
-  }, [sortKey])
+  const toggleSort = useCallback(
+    (key: SortKey) => {
+      if (sortKey === key) {
+        setSortOrder((o) => (o === 'asc' ? 'desc' : 'asc'))
+      } else {
+        setSortKey(key)
+        setSortOrder('desc')
+      }
+      setPage(1)
+    },
+    [sortKey],
+  )
 
   const goToPage = useCallback((p: number) => setPage(p), [])
 
@@ -237,10 +268,11 @@ export function PnrrBeneficiariesView({
         <div className="flex items-center gap-4">
           <span className="h-10 w-1.5 bg-[var(--pnrr-blue)]" />
           <h2 className="text-2xl font-black tracking-tight text-[var(--pnrr-fg)]">
-            <Trans>Beneficiari</Trans>
+            <Trans>Beneficiaries</Trans>
           </h2>
           <span className="hidden text-sm text-[var(--pnrr-muted)] sm:inline">
-            {beneficiaries.length.toLocaleString('ro-RO')} <Trans>beneficiari</Trans>
+            {beneficiaries.length.toLocaleString('ro-RO')}{' '}
+            <Trans>beneficiaries</Trans>
           </span>
         </div>
       </div>
@@ -250,7 +282,7 @@ export function PnrrBeneficiariesView({
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--pnrr-muted)]" />
         <input
           type="text"
-          placeholder={t`Caută beneficiar...`}
+          placeholder={t`Search beneficiary...`}
           value={inputValue}
           onChange={(e) => {
             setInputValue(e.target.value)
@@ -258,6 +290,7 @@ export function PnrrBeneficiariesView({
           }}
           className="h-10 w-full border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-9 py-2 text-sm text-[var(--pnrr-fg)] placeholder:text-[var(--pnrr-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
         />
+
         {inputValue && (
           <button
             type="button"
@@ -273,38 +306,62 @@ export function PnrrBeneficiariesView({
         )}
       </div>
 
-      <div className="overflow-x-auto border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]" style={{ borderRadius: '6px' }}>
+      <div
+        className="overflow-x-auto border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]"
+        style={{ borderRadius: '6px' }}
+      >
         <Table>
           <TableHeader>
             <TableRow className="border-b-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] hover:bg-[var(--pnrr-bg)]">
-              <TableHead className="cursor-pointer text-sm font-black text-[var(--pnrr-fg)]" onClick={() => toggleSort('name')}>
+              <TableHead
+                className="cursor-pointer text-sm font-black text-[var(--pnrr-fg)]"
+                onClick={() => toggleSort('name')}
+              >
                 <span className="inline-flex items-center">
-                  <Trans>Beneficiar</Trans>
+                  <Trans>Beneficiary</Trans>
                   <SortIcon active={sortKey === 'name'} order={sortOrder} />
                 </span>
               </TableHead>
-              <TableHead className="w-[100px] cursor-pointer text-right text-sm font-black text-[var(--pnrr-fg)]" onClick={() => toggleSort('count')}>
+              <TableHead
+                className="w-[100px] cursor-pointer text-right text-sm font-black text-[var(--pnrr-fg)]"
+                onClick={() => toggleSort('count')}
+              >
                 <span className="inline-flex items-center justify-end">
-                  <Trans>Proiecte</Trans>
+                  <Trans>Projects</Trans>
                   <SortIcon active={sortKey === 'count'} order={sortOrder} />
                 </span>
               </TableHead>
-              <TableHead className="w-[140px] cursor-pointer text-right text-sm font-black text-[var(--pnrr-fg)]" onClick={() => toggleSort('value')}>
+              <TableHead
+                className="w-[140px] cursor-pointer text-right text-sm font-black text-[var(--pnrr-fg)]"
+                onClick={() => toggleSort('value')}
+              >
                 <span className="inline-flex items-center justify-end">
-                  <Trans>Valoare</Trans>
+                  <Trans>Value</Trans>
                   <SortIcon active={sortKey === 'value'} order={sortOrder} />
                 </span>
               </TableHead>
-              <TableHead className="w-[120px] cursor-pointer text-right text-sm font-black text-[var(--pnrr-fg)]" onClick={() => toggleSort('techProgress')}>
+              <TableHead
+                className="w-[120px] cursor-pointer text-right text-sm font-black text-[var(--pnrr-fg)]"
+                onClick={() => toggleSort('techProgress')}
+              >
                 <span className="inline-flex items-center justify-end">
-                  <Trans>Progr. Tehnic</Trans>
-                  <SortIcon active={sortKey === 'techProgress'} order={sortOrder} />
+                  <Trans>Tech. progress</Trans>
+                  <SortIcon
+                    active={sortKey === 'techProgress'}
+                    order={sortOrder}
+                  />
                 </span>
               </TableHead>
-              <TableHead className="w-[120px] cursor-pointer text-right text-sm font-black text-[var(--pnrr-fg)]" onClick={() => toggleSort('finProgress')}>
+              <TableHead
+                className="w-[120px] cursor-pointer text-right text-sm font-black text-[var(--pnrr-fg)]"
+                onClick={() => toggleSort('finProgress')}
+              >
                 <span className="inline-flex items-center justify-end">
-                  <Trans>Progr. Financiar</Trans>
-                  <SortIcon active={sortKey === 'finProgress'} order={sortOrder} />
+                  <Trans>Fin. progress</Trans>
+                  <SortIcon
+                    active={sortKey === 'finProgress'}
+                    order={sortOrder}
+                  />
                 </span>
               </TableHead>
             </TableRow>
@@ -325,7 +382,9 @@ export function PnrrBeneficiariesView({
       {/* Pagination */}
       <div className="flex items-center justify-between gap-3">
         <div className="text-sm text-[var(--pnrr-muted)]">
-          <Trans>pagina {page} din {totalPages}</Trans>
+          <Trans>
+            page {page} of {totalPages}
+          </Trans>
         </div>
         {/* Mobile compact pagination */}
         <div className="flex items-center gap-1 sm:hidden">
@@ -355,15 +414,20 @@ export function PnrrBeneficiariesView({
             className="inline-flex h-8 items-center gap-1 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
           >
             <ChevronLeft className="h-4 w-4" />
-            <Trans>Anterior</Trans>
+            <Trans>Previous</Trans>
           </button>
           <div className="flex items-center gap-1">
             {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2)
+              .filter(
+                (p) => p === 1 || p === totalPages || Math.abs(p - page) <= 2,
+              )
               .map((p, idx, arr) => {
                 if (idx > 0 && arr[idx - 1] !== p - 1) {
                   return (
-                    <span key={`ellipsis-${p}`} className="shrink-0 px-1.5 text-xs text-[var(--pnrr-muted)]">
+                    <span
+                      key={`ellipsis-${p}`}
+                      className="shrink-0 px-1.5 text-xs text-[var(--pnrr-muted)]"
+                    >
                       …
                     </span>
                   )
@@ -389,7 +453,7 @@ export function PnrrBeneficiariesView({
             onClick={() => setPage(page + 1)}
             className="inline-flex h-8 items-center gap-1 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
           >
-            <Trans>Următor</Trans>
+            <Trans>Next</Trans>
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
@@ -401,7 +465,10 @@ export function PnrrBeneficiariesView({
         onClose={() => setSelectedBeneficiary(null)}
         onViewProjects={(beneficiary) => {
           setSelectedBeneficiary(null)
-          filterState.showBeneficiaryProjects({ name: beneficiary.name, cui: beneficiary.cui })
+          filterState.showBeneficiaryProjects({
+            name: beneficiary.name,
+            cui: beneficiary.cui,
+          })
         }}
       />
     </div>
@@ -432,9 +499,11 @@ function BeneficiaryDrawer({
     beneficiary.finProgressCount > 0
       ? beneficiary.finProgressSum / beneficiary.finProgressCount
       : null
-  const riskCount = beneficiary.projects.filter((project) => project.anomalies.length > 0).length
+  const riskCount = beneficiary.projects.filter(
+    (project) => project.anomalies.length > 0,
+  ).length
   const dataQualityCount = beneficiary.projects.filter(
-    (project) => project.dataQualitySignals.length > 0
+    (project) => project.dataQualitySignals.length > 0,
   ).length
 
   return (
@@ -444,7 +513,7 @@ function BeneficiaryDrawer({
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <span className="inline-flex h-9 items-center gap-2 rounded-sm border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-fg)] px-3 text-sm font-black text-[var(--pnrr-bg)]">
               <Building2 className="h-4 w-4" />
-              <Trans>Beneficiar</Trans>
+              <Trans>Beneficiary</Trans>
             </span>
             {beneficiary.cui && (
               <span className="inline-flex h-9 items-center gap-2 rounded-sm border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] px-3 text-sm font-black text-[var(--pnrr-fg)]">
@@ -452,8 +521,10 @@ function BeneficiaryDrawer({
                 <button
                   type="button"
                   className="inline-flex h-5 w-5 items-center justify-center rounded-sm border border-[var(--pnrr-border)] transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)]"
-                  onClick={() => navigator.clipboard.writeText(beneficiary.cui!)}
-                  aria-label={t`Copiază CUI`}
+                  onClick={() =>
+                    navigator.clipboard.writeText(beneficiary.cui!)
+                  }
+                  aria-label={t`Copy CUI`}
                 >
                   <Copy className="h-3 w-3" />
                 </button>
@@ -464,16 +535,33 @@ function BeneficiaryDrawer({
             {beneficiary.name}
           </SheetTitle>
           <SheetDescription className="text-left text-sm font-medium text-[var(--pnrr-muted)]">
-            {beneficiary.count.toLocaleString('ro-RO')} <Trans>proiecte PNRR</Trans>
+            {beneficiary.count.toLocaleString('ro-RO')}{' '}
+            <Trans>PNRR projects</Trans>
           </SheetDescription>
         </SheetHeader>
 
         <div className="space-y-4 p-5">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <BeneficiaryMetric label={t`Valoare totală`} value={formatPnrrCurrency(beneficiary.value, currency, 'standard')} />
-            <BeneficiaryMetric label={t`Proiecte`} value={beneficiary.count.toLocaleString('ro-RO')} />
-            <BeneficiaryMetric label={t`Progres tehnic mediu`} value={techAvg == null ? '—' : `${formatNumber(techAvg)}%`} />
-            <BeneficiaryMetric label={t`Progres financiar mediu`} value={finAvg == null ? '—' : `${formatNumber(finAvg)}%`} />
+            <BeneficiaryMetric
+              label={t`Total value`}
+              value={formatPnrrCurrency(
+                beneficiary.value,
+                currency,
+                'standard',
+              )}
+            />
+            <BeneficiaryMetric
+              label={t`Projects`}
+              value={beneficiary.count.toLocaleString('ro-RO')}
+            />
+            <BeneficiaryMetric
+              label={t`Average technical progress`}
+              value={techAvg == null ? '—' : `${formatNumber(techAvg)}%`}
+            />
+            <BeneficiaryMetric
+              label={t`Average financial progress`}
+              value={finAvg == null ? '—' : `${formatNumber(finAvg)}%`}
+            />
           </div>
 
           {(riskCount > 0 || dataQualityCount > 0) && (
@@ -482,7 +570,8 @@ function BeneficiaryDrawer({
                 <div className="flex items-center gap-3 border-2 border-[var(--pnrr-red)] bg-[var(--pnrr-red)]/10 p-3 text-[var(--pnrr-red)]">
                   <ShieldAlert className="h-5 w-5 shrink-0" />
                   <span className="text-sm font-black uppercase tracking-wide">
-                    {riskCount.toLocaleString('ro-RO')} <Trans>cu riscuri</Trans>
+                    {riskCount.toLocaleString('ro-RO')}{' '}
+                    <Trans>with risks</Trans>
                   </span>
                 </div>
               )}
@@ -490,7 +579,8 @@ function BeneficiaryDrawer({
                 <div className="flex items-center gap-3 border-2 border-[var(--pnrr-blue)] bg-[var(--pnrr-blue)]/10 p-3 text-[var(--pnrr-blue)]">
                   <FileWarning className="h-5 w-5 shrink-0" />
                   <span className="text-sm font-black uppercase tracking-wide">
-                    {dataQualityCount.toLocaleString('ro-RO')} <Trans>cu probleme de date</Trans>
+                    {dataQualityCount.toLocaleString('ro-RO')}{' '}
+                    <Trans>with data issues</Trans>
                   </span>
                 </div>
               )}
@@ -503,7 +593,7 @@ function BeneficiaryDrawer({
             onClick={() => onViewProjects(beneficiary)}
           >
             <ExternalLink className="h-4 w-4" />
-            <Trans>Vezi toate proiectele filtrate</Trans>
+            <Trans>View all filtered projects</Trans>
           </button>
 
           <PnrrEntityShortcutLinks cui={beneficiary.cui} />
@@ -511,10 +601,10 @@ function BeneficiaryDrawer({
           <section className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
             <div className="border-b-2 border-[var(--pnrr-border)] p-4">
               <h3 className="text-sm font-black uppercase tracking-wide text-[var(--pnrr-fg)]">
-                <Trans>Top proiecte după valoare</Trans>
+                <Trans>Top projects by value</Trans>
               </h3>
               <p className="mt-1 text-sm text-[var(--pnrr-muted)]">
-                <Trans>Sunt afișate doar cele mai mari proiecte.</Trans>
+                <Trans>Only the largest projects are shown.</Trans>
               </p>
             </div>
             <div className="divide-y divide-[var(--pnrr-border)]">
@@ -535,7 +625,11 @@ function BeneficiaryDrawer({
   )
 }
 
-function BeneficiaryDrawerFooterClose({ onClose }: { readonly onClose: () => void }) {
+function BeneficiaryDrawerFooterClose({
+  onClose,
+}: {
+  readonly onClose: () => void
+}) {
   return (
     <div className="sticky bottom-0 border-t-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-4">
       <button
@@ -543,7 +637,7 @@ function BeneficiaryDrawerFooterClose({ onClose }: { readonly onClose: () => voi
         onClick={onClose}
         className="flex h-11 w-full items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-fg)] px-4 text-sm font-black uppercase tracking-wide text-[var(--pnrr-bg)] transition-colors hover:bg-[var(--pnrr-card)] hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
       >
-        <Trans>Închide</Trans>
+        <Trans>Close</Trans>
       </button>
     </div>
   )
@@ -580,7 +674,9 @@ function TopProjectItem({
   const component = PNRR_COMPONENTS[project.componentCode]
   const color = component?.color ?? 'var(--pnrr-blue)'
   const techValue =
-    project.techProgress === 'in-implementation' ? 15 : project.techProgress ?? 0
+    project.techProgress === 'in-implementation'
+      ? 15
+      : (project.techProgress ?? 0)
 
   return (
     <div className="grid grid-cols-[auto_1fr] gap-3 p-4">
@@ -621,7 +717,9 @@ function TopProjectItem({
               />
             </div>
             <span className="w-10 text-right text-xs tabular-nums text-[var(--pnrr-fg)]">
-              {project.techProgress === 'in-implementation' ? '<30%' : `${techValue}%`}
+              {project.techProgress === 'in-implementation'
+                ? '<30%'
+                : `${techValue}%`}
             </span>
           </div>
         </div>

@@ -10,11 +10,20 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { PnrrStyledMultiSelect, type PnrrFilterOption } from './PnrrStyledMultiSelect'
+import {
+  PnrrStyledMultiSelect,
+  type PnrrFilterOption,
+} from './PnrrStyledMultiSelect'
 import { PNRR_COMPONENTS } from '../../data/component-definitions'
 import { PNRR_CRIS } from '../../data/cri-definitions'
 import { getAllMeasureOptions } from '../../lib/allocations'
@@ -31,7 +40,7 @@ import {
 const SEARCH_DEBOUNCE_MS = 300
 
 const PROGRESS_OPTIONS: Option[] = Object.entries(PROGRESS_CATEGORY_LABELS).map(
-  ([value, label]) => ({ value, label })
+  ([value, label]) => ({ value, label }),
 )
 
 const ANOMALY_TYPE_OPTIONS: Option[] = ANOMALY_CONFIG.map((cfg) => ({
@@ -39,14 +48,19 @@ const ANOMALY_TYPE_OPTIONS: Option[] = ANOMALY_CONFIG.map((cfg) => ({
   label: cfg.shortDescription,
 }))
 
-const DATA_QUALITY_SIGNAL_OPTIONS: Option[] = DATA_QUALITY_SIGNAL_CONFIG.map((cfg) => ({
-  value: cfg.type,
-  label: cfg.shortDescription,
-}))
+const DATA_QUALITY_SIGNAL_OPTIONS: Option[] = DATA_QUALITY_SIGNAL_CONFIG.map(
+  (cfg) => ({
+    value: cfg.type,
+    label: cfg.shortDescription,
+  }),
+)
 
-const FILTER_LABEL_CLASS = 'text-xs font-black uppercase tracking-wide text-[var(--pnrr-muted)]'
-const FILTER_INPUT_CLASS = 'h-11 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] pl-10 pr-9 text-sm font-semibold text-[var(--pnrr-fg)] placeholder:text-[var(--pnrr-muted)] focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
-const FILTER_TOGGLE_ITEM_CLASS = 'h-10 min-w-0 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-2 text-sm font-black text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-bg)] data-[state=on]:bg-[var(--pnrr-fg)] data-[state=on]:text-[var(--pnrr-bg)] sm:px-4'
+const FILTER_LABEL_CLASS =
+  'text-xs font-black uppercase tracking-wide text-[var(--pnrr-muted)]'
+const FILTER_INPUT_CLASS =
+  'h-11 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] pl-10 pr-9 text-sm font-semibold text-[var(--pnrr-fg)] placeholder:text-[var(--pnrr-muted)] focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]'
+const FILTER_TOGGLE_ITEM_CLASS =
+  'h-10 min-w-0 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-2 text-sm font-black text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-bg)] data-[state=on]:bg-[var(--pnrr-fg)] data-[state=on]:text-[var(--pnrr-bg)] sm:px-4'
 
 interface PnrrFilterSheetProps {
   readonly open: boolean
@@ -56,7 +70,13 @@ interface PnrrFilterSheetProps {
   readonly showTrigger?: boolean
 }
 
-export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, showTrigger = true }: PnrrFilterSheetProps) {
+export function PnrrFilterSheet({
+  open,
+  onOpenChange,
+  projects,
+  filterState,
+  showTrigger = true,
+}: PnrrFilterSheetProps) {
   const search = filterState.search
   const setSearch = filterState.setSearch
   const setBeneficiarySearch = filterState.setBeneficiarySearch
@@ -67,8 +87,11 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
   const globalBeneficiarySearch = search.beneficiarySearch ?? ''
   const globalBeneficiaryCui = search.beneficiaryCui ?? ''
   const [projectInput, setProjectInput] = useState(globalSearch)
-  const [beneficiaryInput, setBeneficiaryInput] = useState(globalBeneficiarySearch)
-  const [beneficiaryCuiInput, setBeneficiaryCuiInput] = useState(globalBeneficiaryCui)
+  const [beneficiaryInput, setBeneficiaryInput] = useState(
+    globalBeneficiarySearch,
+  )
+  const [beneficiaryCuiInput, setBeneficiaryCuiInput] =
+    useState(globalBeneficiaryCui)
 
   // Sync inputs with global state when changed externally (e.g. clear filters)
   useEffect(() => {
@@ -112,7 +135,9 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
   }, [beneficiaryCuiInput, globalBeneficiaryCui, setBeneficiaryCui])
 
   const componentOptions = useMemo(() => {
-    const codes = Array.from(new Set(projects.map((p) => p.componentCode))).sort()
+    const codes = Array.from(
+      new Set(projects.map((p) => p.componentCode)),
+    ).sort()
     return codes.map<Option>((code) => ({
       value: code,
       label: `${code} — ${PNRR_COMPONENTS[code]?.nameRo ?? code}`,
@@ -125,13 +150,24 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
   }, [projects])
 
   const uatOptions = useMemo(() => {
-    const uats = new Map<string, { readonly name: string; readonly county: string }>()
+    const uats = new Map<
+      string,
+      { readonly name: string; readonly county: string }
+    >()
 
     for (const project of projects) {
-      if (!project.sirutaCode || !project.locality || project.county === 'Național') continue
+      if (
+        !project.sirutaCode ||
+        !project.locality ||
+        project.county === 'Național'
+      )
+        continue
 
       const existing = uats.get(project.sirutaCode)
-      if (!existing || project.locality.localeCompare(existing.name, 'ro') < 0) {
+      if (
+        !existing ||
+        project.locality.localeCompare(existing.name, 'ro') < 0
+      ) {
         uats.set(project.sirutaCode, {
           name: project.locality,
           county: project.county,
@@ -146,7 +182,10 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
         description: uat.county,
       }))
       .sort((a, b) => {
-        const countyCompare = (a.description ?? '').localeCompare(b.description ?? '', 'ro')
+        const countyCompare = (a.description ?? '').localeCompare(
+          b.description ?? '',
+          'ro',
+        )
         return countyCompare || a.label.localeCompare(b.label, 'ro')
       })
   }, [projects])
@@ -155,7 +194,10 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
     const allOptions = getAllMeasureOptions()
     // Only include measures that actually exist in the project data
     const projectMeasureKeys = new Set(
-      projects.map((p) => `${p.componentCode}.${p.measureCode}.${p.fundingSource === 'grant/loan' ? 'grant' : p.fundingSource}`)
+      projects.map(
+        (p) =>
+          `${p.componentCode}.${p.measureCode}.${p.fundingSource === 'grant/loan' ? 'grant' : p.fundingSource}`,
+      ),
     )
     return allOptions
       .filter((opt) => projectMeasureKeys.has(opt.value))
@@ -189,10 +231,10 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
         >
           <SheetHeader className="border-b-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] p-6 pr-14 text-left">
             <SheetTitle className="text-left text-4xl font-black leading-none tracking-tight text-[var(--pnrr-fg)]">
-              <Trans>Filtre avansate</Trans>
+              <Trans>Advanced filters</Trans>
             </SheetTitle>
             <SheetDescription className="pt-1 text-left text-base font-bold text-[var(--pnrr-muted)]">
-              <Trans>{activeCount} filtre active</Trans>
+              <Trans>{activeCount} active filters</Trans>
             </SheetDescription>
           </SheetHeader>
 
@@ -200,22 +242,29 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
             <div className="min-w-0 space-y-6 p-4 sm:p-6">
               <section className="space-y-5">
                 <div className="space-y-2">
-                  <Label className={FILTER_LABEL_CLASS}><Trans>UAT</Trans></Label>
+                  <Label className={FILTER_LABEL_CLASS}>
+                    <Trans>UAT</Trans>
+                  </Label>
                   <PnrrStyledMultiSelect
                     options={uatOptions}
-                    selected={search.uatSirutas ?? (search.uatSiruta ? [search.uatSiruta] : [])}
+                    selected={
+                      search.uatSirutas ??
+                      (search.uatSiruta ? [search.uatSiruta] : [])
+                    }
                     onChange={filterState.setUatFilters}
-                    placeholder={t`Alege UAT...`}
+                    placeholder={t`Choose UAT...`}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className={FILTER_LABEL_CLASS}><Trans>Județe</Trans></Label>
+                  <Label className={FILTER_LABEL_CLASS}>
+                    <Trans>Counties</Trans>
+                  </Label>
                   <PnrrStyledMultiSelect
                     options={countyOptions}
                     selected={search.counties ?? []}
                     onChange={filterState.setCounties}
-                    placeholder={t`Alege județe...`}
+                    placeholder={t`Choose counties...`}
                   />
                 </div>
               </section>
@@ -224,15 +273,18 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
 
               {/* Project Search */}
               <section className="space-y-2">
-                <Label className={FILTER_LABEL_CLASS}><Trans>Căutare proiect</Trans></Label>
+                <Label className={FILTER_LABEL_CLASS}>
+                  <Trans>Project search</Trans>
+                </Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--pnrr-muted)]" />
                   <Input
-                    placeholder={t`Titlu, beneficiar, CUI sau localitate...`}
+                    placeholder={t`Title, beneficiary, CUI, or locality...`}
                     value={projectInput}
                     onChange={(e) => setProjectInput(e.target.value)}
                     className={FILTER_INPUT_CLASS}
                   />
+
                   {projectInput && (
                     <button
                       type="button"
@@ -251,16 +303,19 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
 
               {/* Beneficiary CUI */}
               <section className="space-y-2">
-                <Label className={FILTER_LABEL_CLASS}><Trans>CUI beneficiar</Trans></Label>
+                <Label className={FILTER_LABEL_CLASS}>
+                  <Trans>Beneficiary CUI</Trans>
+                </Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--pnrr-muted)]" />
                   <Input
                     inputMode="numeric"
-                    placeholder={t`CUI exact...`}
+                    placeholder={t`Exact CUI...`}
                     value={beneficiaryCuiInput}
                     onChange={(e) => setBeneficiaryCuiInput(e.target.value)}
                     className={FILTER_INPUT_CLASS}
                   />
+
                   {beneficiaryCuiInput && (
                     <button
                       type="button"
@@ -279,15 +334,18 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
 
               {/* Beneficiary Search */}
               <section className="space-y-2">
-                <Label className={FILTER_LABEL_CLASS}><Trans>Căutare beneficiar</Trans></Label>
+                <Label className={FILTER_LABEL_CLASS}>
+                  <Trans>Beneficiary search</Trans>
+                </Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--pnrr-muted)]" />
                   <Input
-                    placeholder={t`Nume beneficiar...`}
+                    placeholder={t`Beneficiary name...`}
                     value={beneficiaryInput}
                     onChange={(e) => setBeneficiaryInput(e.target.value)}
                     className={FILTER_INPUT_CLASS}
                   />
+
                   {beneficiaryInput && (
                     <button
                       type="button"
@@ -305,12 +363,18 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
               </section>
 
               <section className="space-y-2">
-                <Label className={FILTER_LABEL_CLASS}><Trans>Tip beneficiar</Trans></Label>
+                <Label className={FILTER_LABEL_CLASS}>
+                  <Trans>Beneficiary type</Trans>
+                </Label>
                 <PnrrStyledMultiSelect
                   options={BENEFICIARY_TYPE_OPTIONS}
                   selected={search.beneficiaryTypes ?? []}
-                  onChange={(values) => filterState.setBeneficiaryTypes(values as PnrrBeneficiaryType[])}
-                  placeholder={t`Alege tip beneficiar...`}
+                  onChange={(values) =>
+                    filterState.setBeneficiaryTypes(
+                      values as PnrrBeneficiaryType[],
+                    )
+                  }
+                  placeholder={t`Choose beneficiary type...`}
                 />
               </section>
 
@@ -319,34 +383,40 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
               <section className="space-y-5">
                 {/* Components */}
                 <div className="space-y-2">
-                  <Label className={FILTER_LABEL_CLASS}><Trans>Componente PNRR</Trans></Label>
+                  <Label className={FILTER_LABEL_CLASS}>
+                    <Trans>PNRR components</Trans>
+                  </Label>
                   <PnrrStyledMultiSelect
                     options={componentOptions}
                     selected={search.components ?? []}
                     onChange={filterState.setComponents}
-                    placeholder={t`Alege componente...`}
+                    placeholder={t`Choose components...`}
                   />
                 </div>
 
                 {/* Measures */}
                 <div className="space-y-2">
-                  <Label className={FILTER_LABEL_CLASS}><Trans>Cod măsură</Trans></Label>
+                  <Label className={FILTER_LABEL_CLASS}>
+                    <Trans>Measure code</Trans>
+                  </Label>
                   <PnrrStyledMultiSelect
                     options={measureOptions}
                     selected={search.measures ?? []}
                     onChange={filterState.setMeasures}
-                    placeholder={t`Alege măsuri...`}
+                    placeholder={t`Choose measures...`}
                   />
                 </div>
 
                 {/* CRIs */}
                 <div className="space-y-2">
-                  <Label className={FILTER_LABEL_CLASS}><Trans>Instituții responsabile (CRI)</Trans></Label>
+                  <Label className={FILTER_LABEL_CLASS}>
+                    <Trans>Responsible institutions (CRI)</Trans>
+                  </Label>
                   <PnrrStyledMultiSelect
                     options={criOptions}
                     selected={search.cris ?? []}
                     onChange={filterState.setCris}
-                    placeholder={t`Alege instituții...`}
+                    placeholder={t`Choose institutions...`}
                   />
                 </div>
               </section>
@@ -355,35 +425,54 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
 
               {/* Funding sources */}
               <section className="space-y-3">
-                <Label className={FILTER_LABEL_CLASS}><Trans>Sursă finanțare</Trans></Label>
+                <Label className={FILTER_LABEL_CLASS}>
+                  <Trans>Funding source</Trans>
+                </Label>
                 <ToggleGroup
                   type="multiple"
                   value={search.fundingSources ?? []}
                   onValueChange={(v) =>
-                    filterState.setFundingSources(v as ('grant' | 'loan' | 'grant/loan')[])
+                    filterState.setFundingSources(
+                      v as ('grant' | 'loan' | 'grant/loan')[],
+                    )
                   }
                   className="grid w-full grid-cols-2 justify-start gap-2 sm:flex sm:flex-wrap"
                 >
-                  <ToggleGroupItem value="grant" className={FILTER_TOGGLE_ITEM_CLASS}>
+                  <ToggleGroupItem
+                    value="grant"
+                    className={FILTER_TOGGLE_ITEM_CLASS}
+                  >
                     <Trans>Grant</Trans>
                   </ToggleGroupItem>
-                  <ToggleGroupItem value="loan" className={FILTER_TOGGLE_ITEM_CLASS}>
-                    <Trans>Împrumut</Trans>
+                  <ToggleGroupItem
+                    value="loan"
+                    className={FILTER_TOGGLE_ITEM_CLASS}
+                  >
+                    <Trans>Loan</Trans>
                   </ToggleGroupItem>
-                  <ToggleGroupItem value="grant/loan" className={`${FILTER_TOGGLE_ITEM_CLASS} col-span-2`}>
-                    <Trans>Grant + Împrumut</Trans>
+                  <ToggleGroupItem
+                    value="grant/loan"
+                    className={`${FILTER_TOGGLE_ITEM_CLASS} col-span-2`}
+                  >
+                    <Trans>Grant + loan</Trans>
                   </ToggleGroupItem>
                 </ToggleGroup>
               </section>
 
               {/* Progress */}
               <section className="space-y-2">
-                <Label className={FILTER_LABEL_CLASS}><Trans>Stadiu implementare</Trans></Label>
+                <Label className={FILTER_LABEL_CLASS}>
+                  <Trans>Implementation status</Trans>
+                </Label>
                 <PnrrStyledMultiSelect
                   options={PROGRESS_OPTIONS}
                   selected={search.progressCategories ?? []}
-                  onChange={(v) => filterState.setProgressCategories(v as ProgressCategoryKey[])}
-                  placeholder={t`Alege stadiu...`}
+                  onChange={(v) =>
+                    filterState.setProgressCategories(
+                      v as ProgressCategoryKey[],
+                    )
+                  }
+                  placeholder={t`Choose status...`}
                 />
               </section>
 
@@ -391,23 +480,27 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
 
               {/* Anomaly types */}
               <section className="space-y-2">
-                <Label className={FILTER_LABEL_CLASS}><Trans>Tip risc</Trans></Label>
+                <Label className={FILTER_LABEL_CLASS}>
+                  <Trans>Risk type</Trans>
+                </Label>
                 <PnrrStyledMultiSelect
                   options={ANOMALY_TYPE_OPTIONS}
                   selected={search.anomalyTypes ?? []}
                   onChange={filterState.setAnomalyTypes}
-                  placeholder={t`Alege tip risc...`}
+                  placeholder={t`Choose risk type...`}
                 />
               </section>
 
               {/* Data quality signal types */}
               <section className="space-y-2">
-                <Label className={FILTER_LABEL_CLASS}><Trans>Calitatea datelor</Trans></Label>
+                <Label className={FILTER_LABEL_CLASS}>
+                  <Trans>Data quality</Trans>
+                </Label>
                 <PnrrStyledMultiSelect
                   options={DATA_QUALITY_SIGNAL_OPTIONS}
                   selected={search.dataQualitySignalTypes ?? []}
                   onChange={filterState.setDataQualitySignalTypes}
-                  placeholder={t`Alege semnal de date...`}
+                  placeholder={t`Choose data signal...`}
                 />
               </section>
 
@@ -416,8 +509,11 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
               {/* Toggles */}
               <section className="space-y-0">
                 <div className="flex items-center justify-between gap-4 border-b border-[var(--pnrr-border)] py-3">
-                  <Label htmlFor="sheet-only-anomalies" className="cursor-pointer text-sm font-bold text-[var(--pnrr-fg)]">
-                    <Trans>Doar proiecte cu riscuri</Trans>
+                  <Label
+                    htmlFor="sheet-only-anomalies"
+                    className="cursor-pointer text-sm font-bold text-[var(--pnrr-fg)]"
+                  >
+                    <Trans>Only projects with risks</Trans>
                   </Label>
                   <Switch
                     id="sheet-only-anomalies"
@@ -427,8 +523,11 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
                 </div>
 
                 <div className="flex items-center justify-between gap-4 border-b border-[var(--pnrr-border)] py-3">
-                  <Label htmlFor="sheet-exclude-micro" className="cursor-pointer text-sm font-bold text-[var(--pnrr-fg)]">
-                    <Trans>Fără micro-proiecte (&lt;€5k)</Trans>
+                  <Label
+                    htmlFor="sheet-exclude-micro"
+                    className="cursor-pointer text-sm font-bold text-[var(--pnrr-fg)]"
+                  >
+                    <Trans>Without micro-projects (&lt;€5k)</Trans>
                   </Label>
                   <Switch
                     id="sheet-exclude-micro"
@@ -438,8 +537,11 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
                 </div>
 
                 <div className="flex items-center justify-between gap-4 py-3">
-                  <Label htmlFor="sheet-include-national" className="cursor-pointer text-sm font-bold text-[var(--pnrr-fg)]">
-                    <Trans>Include proiecte naționale</Trans>
+                  <Label
+                    htmlFor="sheet-include-national"
+                    className="cursor-pointer text-sm font-bold text-[var(--pnrr-fg)]"
+                  >
+                    <Trans>Include national projects</Trans>
                   </Label>
                   <Switch
                     id="sheet-include-national"
@@ -459,13 +561,13 @@ export function PnrrFilterSheet({ open, onOpenChange, projects, filterState, sho
                 className="h-11 min-w-0 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-2 text-xs font-black uppercase tracking-wide text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-bg)] sm:text-sm"
                 onClick={filterState.clearFilters}
               >
-                <Trans>Șterge toate</Trans>
+                <Trans>Clear all</Trans>
               </Button>
               <Button
                 className="h-11 min-w-0 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-fg)] px-2 text-xs font-black uppercase tracking-wide text-[var(--pnrr-bg)] hover:bg-[var(--pnrr-card)] hover:text-[var(--pnrr-fg)] sm:text-sm"
                 onClick={() => onOpenChange(false)}
               >
-                <Trans>Închide</Trans>
+                <Trans>Close</Trans>
               </Button>
             </div>
           </div>
@@ -489,9 +591,14 @@ export function PnrrFilterTriggerButton({
       onClick={onClick}
     >
       <SlidersHorizontal className="h-4 w-4" />
-      <span><Trans>Filter data</Trans></span>
+      <span>
+        <Trans>Filter data</Trans>
+      </span>
       {activeCount > 0 && (
-        <Badge variant="default" className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[11px] bg-[var(--pnrr-fg)] text-[var(--pnrr-bg)]">
+        <Badge
+          variant="default"
+          className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[11px] bg-[var(--pnrr-fg)] text-[var(--pnrr-bg)]"
+        >
           {activeCount}
         </Badge>
       )}

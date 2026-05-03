@@ -134,7 +134,7 @@ export function PnrrHeader({
           {/* Badge */}
           <div className="inline-flex items-center gap-2 border-2 border-[var(--pnrr-border)] px-2.5 py-1.5 text-[11px] font-black uppercase tracking-widest text-[var(--pnrr-fg)]">
             <span className="h-2.5 w-2.5 bg-[var(--pnrr-green)]" />
-            <Trans>Ultima actualizare {formattedLastUpdated}</Trans>
+            <Trans>Last update {formattedLastUpdated}</Trans>
           </div>
 
           {/* Title */}
@@ -142,20 +142,20 @@ export function PnrrHeader({
             className="mt-6 text-balance font-black leading-[0.85] tracking-tight text-[var(--pnrr-fg)]"
             style={{ fontSize: 'clamp(2.5rem, 7vw, 5.5rem)' }}
           >
-            <span className="block"><Trans>Planul</Trans></span>
-            <span className="block"><Trans>Național de</Trans></span>
+            <span className="block"><Trans>Plan</Trans></span>
+            <span className="block"><Trans>National</Trans></span>
             <span className="block w-fit sm:max-w-[900px] lg:max-w-[1100px] bg-[var(--pnrr-fg)] px-3 py-2 sm:px-5 sm:py-3" style={{ color: 'var(--pnrr-bg)' }}>
-              <span className="block"><Trans>Redresare</Trans></span>
-              <span className="block"><Trans>și Reziliență</Trans></span>
+              <span className="block"><Trans>Recovery</Trans></span>
+              <span className="block"><Trans>and Resilience</Trans></span>
             </span>
           </h1>
 
           {/* Paragraph */}
           <p className="mt-4 max-w-[720px] text-base leading-relaxed text-[var(--pnrr-muted)]">
             <Trans>
-              Dashboard interactiv cu toate proiectele PNRR. Descoperă unde
-              merg banii, ce proiecte sunt în pericol și cum evoluează
-              implementarea.
+              Interactive dashboard with all PNRR projects. See where the money
+              goes, which projects are at risk, and how implementation is
+              progressing.
             </Trans>
           </p>
 

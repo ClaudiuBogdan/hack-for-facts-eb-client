@@ -8,7 +8,10 @@ import {
 } from '../data/emblematic-projects'
 import { PNRR_COMPONENTS } from '../data/component-definitions'
 import { usePnrrCurrency } from '../lib/usePnrrCurrency'
-import { formatPnrrCurrency, getPnrrCurrencyDisplayParts } from '../lib/formatting'
+import {
+  formatPnrrCurrency,
+  getPnrrCurrencyDisplayParts,
+} from '../lib/formatting'
 
 function getAccentColor(componentCode: string): string {
   return PNRR_COMPONENTS[componentCode]?.color ?? 'var(--pnrr-fg)'
@@ -61,9 +64,9 @@ export function PnrrEmblematicProjects({
         const comp = PNRR_COMPONENTS[p.componentCode]
 
         const techVal =
-          p.techProgress === 'in-implementation' ? 15 : p.techProgress ?? 0
+          p.techProgress === 'in-implementation' ? 15 : (p.techProgress ?? 0)
         const finVal =
-          p.finProgress === 'in-implementation' ? 15 : p.finProgress ?? 0
+          p.finProgress === 'in-implementation' ? 15 : (p.finProgress ?? 0)
 
         const techDisplay =
           p.techProgress === 'in-implementation' ? '<30%' : `${techVal}%`
@@ -123,13 +126,14 @@ export function PnrrEmblematicProjects({
             {/* Progress rows */}
             <div className="mt-auto space-y-3">
               <ProgressRow
-                label={<Trans>Tehnic</Trans>}
+                label={<Trans>Technical</Trans>}
                 value={techVal}
                 display={techDisplay}
                 accentColor={accentColor}
               />
+
               <ProgressRow
-                label={<Trans>Financiar</Trans>}
+                label={<Trans>Financial</Trans>}
                 value={finVal}
                 display={finDisplay}
                 accentColor={accentColor}

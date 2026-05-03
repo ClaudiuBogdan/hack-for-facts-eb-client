@@ -1,7 +1,10 @@
 import { useMemo } from 'react'
 import { t } from '@lingui/core/macro'
 import type { PnrrProject } from '@/schemas/pnrr'
-import type { HeatmapCountyDataPoint, HeatmapUATDataPoint } from '@/schemas/heatmap'
+import type {
+  HeatmapCountyDataPoint,
+  HeatmapUATDataPoint,
+} from '@/schemas/heatmap'
 import { COUNTY_NAME_TO_MNEMONIC } from '../lib/county-mnemonics'
 import countyPopulations from '../data/ins-county-population.json'
 import { UAT_POPULATIONS } from '../lib/uat-populations'
@@ -21,15 +24,20 @@ export interface PnrrMapSeries {
   readonly unit: string
   readonly currency?: 'EUR'
   readonly isPercent?: boolean
-  readonly data: readonly HeatmapCountyDataPoint[] | readonly HeatmapUATDataPoint[]
+  readonly data:
+    | readonly HeatmapCountyDataPoint[]
+    | readonly HeatmapUATDataPoint[]
   readonly min: number
   readonly max: number
 }
 
-const POPULATION_MAP: Record<string, number> = countyPopulations as Record<string, number>
+const POPULATION_MAP: Record<string, number> = countyPopulations as Record<
+  string,
+  number
+>
 
 function getTechnicalProgressValue(
-  progress: PnrrProject['techProgress']
+  progress: PnrrProject['techProgress'],
 ): number | null {
   if (typeof progress === 'number') return progress
   if (progress === 'in-implementation') return 15
@@ -38,20 +46,23 @@ function getTechnicalProgressValue(
 
 function computeCountySeries(
   projects: readonly PnrrProject[],
-  seriesId: PnrrMapSeriesId
+  seriesId: PnrrMapSeriesId,
 ): PnrrMapSeries {
   const countyProjects = projects.filter((p) => p.county !== 'Național')
 
-  const agg = new Map<string, {
-    countyName: string
-    mnemonic: string
-    totalValue: number
-    projectCount: number
-    grantValue: number
-    totalValueForShare: number
-    techProgressSum: number
-    techProgressCount: number
-  }>()
+  const agg = new Map<
+    string,
+    {
+      countyName: string
+      mnemonic: string
+      totalValue: number
+      projectCount: number
+      grantValue: number
+      totalValueForShare: number
+      techProgressSum: number
+      techProgressCount: number
+    }
+  >()
 
   for (const p of countyProjects) {
     const mnemonic = COUNTY_NAME_TO_MNEMONIC[p.county]
@@ -98,14 +109,16 @@ function computeCountySeries(
         amount = population > 0 ? entry.totalValue / population : 0
         break
       case 'grant-share':
-        amount = entry.totalValueForShare > 0
-          ? (entry.grantValue / entry.totalValueForShare) * 100
-          : 0
+        amount =
+          entry.totalValueForShare > 0
+            ? (entry.grantValue / entry.totalValueForShare) * 100
+            : 0
         break
       case 'implementation-rate':
-        amount = entry.techProgressCount > 0
-          ? entry.techProgressSum / entry.techProgressCount
-          : 0
+        amount =
+          entry.techProgressCount > 0
+            ? entry.techProgressSum / entry.techProgressCount
+            : 0
         break
     }
 
@@ -131,20 +144,23 @@ function computeCountySeries(
 
 function computeUatSeries(
   projects: readonly PnrrProject[],
-  seriesId: PnrrMapSeriesId
+  seriesId: PnrrMapSeriesId,
 ): PnrrMapSeries {
   // Only projects with a resolved SIRUTA code
   const uatProjects = projects.filter((p) => p.sirutaCode !== null)
 
-  const agg = new Map<string, {
-    sirutaCode: string
-    totalValue: number
-    projectCount: number
-    grantValue: number
-    totalValueForShare: number
-    techProgressSum: number
-    techProgressCount: number
-  }>()
+  const agg = new Map<
+    string,
+    {
+      sirutaCode: string
+      totalValue: number
+      projectCount: number
+      grantValue: number
+      totalValueForShare: number
+      techProgressSum: number
+      techProgressCount: number
+    }
+  >()
 
   for (const p of uatProjects) {
     const siruta = p.sirutaCode!
@@ -188,14 +204,16 @@ function computeUatSeries(
         amount = population > 0 ? entry.totalValue / population : 0
         break
       case 'grant-share':
-        amount = entry.totalValueForShare > 0
-          ? (entry.grantValue / entry.totalValueForShare) * 100
-          : 0
+        amount =
+          entry.totalValueForShare > 0
+            ? (entry.grantValue / entry.totalValueForShare) * 100
+            : 0
         break
       case 'implementation-rate':
-        amount = entry.techProgressCount > 0
-          ? entry.techProgressSum / entry.techProgressCount
-          : 0
+        amount =
+          entry.techProgressCount > 0
+            ? entry.techProgressSum / entry.techProgressCount
+            : 0
         break
     }
 
@@ -226,14 +244,14 @@ function makeSeriesMeta(
   seriesId: PnrrMapSeriesId,
   data: HeatmapCountyDataPoint[] | HeatmapUATDataPoint[],
   min: number,
-  max: number
+  max: number,
 ): PnrrMapSeries {
   const labels: Record<PnrrMapSeriesId, string> = {
-    'total-value': t`Valoare totală`,
-    'project-count': t`Număr proiecte`,
+    'total-value': t`Total value`,
+    'project-count': t`Project count`,
     'per-capita': t`Per capita`,
     'grant-share': t`Grant %`,
-    'implementation-rate': t`Implementat %`,
+    'implementation-rate': t`Implemented %`,
   }
 
   const units: Record<PnrrMapSeriesId, string> = {
@@ -248,7 +266,10 @@ function makeSeriesMeta(
     id: seriesId,
     label: labels[seriesId],
     unit: units[seriesId],
-    currency: seriesId === 'total-value' || seriesId === 'per-capita' ? 'EUR' : undefined,
+    currency:
+      seriesId === 'total-value' || seriesId === 'per-capita'
+        ? 'EUR'
+        : undefined,
     isPercent: seriesId === 'grant-share' || seriesId === 'implementation-rate',
     data,
     min,
@@ -259,7 +280,7 @@ function makeSeriesMeta(
 export function usePnrrMapSeries(
   projects: readonly PnrrProject[],
   activeSeriesId: PnrrMapSeriesId,
-  granularity: PnrrMapGranularity
+  granularity: PnrrMapGranularity,
 ): PnrrMapSeries {
   return useMemo(() => {
     if (granularity === 'uat') {

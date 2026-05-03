@@ -1,10 +1,20 @@
-import { useMemo, useCallback, useEffect, useState, lazy, Suspense } from 'react'
+import {
+  useMemo,
+  useCallback,
+  useEffect,
+  useState,
+  lazy,
+  Suspense,
+} from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import type { PnrrProject } from '@/schemas/pnrr'
 import { usePnrrMapSeries } from '../hooks/usePnrrMapSeries'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
-import { createHeatmapStyleFunction, getPercentileValues } from '@/components/maps/utils'
+import {
+  createHeatmapStyleFunction,
+  getPercentileValues,
+} from '@/components/maps/utils'
 import { UatProperties, UatFeature } from '@/components/maps/interfaces'
 import { DEFAULT_FEATURE_STYLE } from '@/components/maps/constants'
 import type { LeafletMouseEvent } from 'leaflet'
@@ -23,7 +33,9 @@ import center from '@turf/center'
 import type { FeatureCollection, Feature, Geometry } from 'geojson'
 
 const InteractiveMap = lazy(() =>
-  import('@/components/maps/InteractiveMap').then((m) => ({ default: m.InteractiveMap }))
+  import('@/components/maps/InteractiveMap').then((m) => ({
+    default: m.InteractiveMap,
+  })),
 )
 
 const MIN_FEATURE_BBOX_DELTA = 1e-6
@@ -45,7 +57,7 @@ interface PnrrMapPreviewProps {
 }
 
 function computeViewportFromFeatures(
-  features: Feature<Geometry, UatProperties>[]
+  features: Feature<Geometry, UatProperties>[],
 ): { center: [number, number]; zoom: number } | null {
   if (features.length === 0) return null
 
@@ -66,8 +78,14 @@ function computeViewportFromFeatures(
   const paddedMinLng = minLongitude - lngPad
   const paddedMaxLng = maxLongitude + lngPad
 
-  const longitudeDelta = Math.max(paddedMaxLng - paddedMinLng, MIN_FEATURE_BBOX_DELTA)
-  const latitudeDelta = Math.max(paddedMaxLat - paddedMinLat, MIN_FEATURE_BBOX_DELTA)
+  const longitudeDelta = Math.max(
+    paddedMaxLng - paddedMinLng,
+    MIN_FEATURE_BBOX_DELTA,
+  )
+  const latitudeDelta = Math.max(
+    paddedMaxLat - paddedMinLat,
+    MIN_FEATURE_BBOX_DELTA,
+  )
 
   // Base zoom for a 256px tile; add ~1 level to account for the larger
   // preview container (≈800px) so the fitted area fills the map.
@@ -78,37 +96,60 @@ function computeViewportFromFeatures(
 
   return {
     center: [centerLatitude, centerLongitude],
-    zoom: Number.isFinite(fittedZoom) ? Math.max(7, fittedZoom + 1.0) : DEFAULT_PREVIEW_ZOOM,
+    zoom: Number.isFinite(fittedZoom)
+      ? Math.max(7, fittedZoom + 1.0)
+      : DEFAULT_PREVIEW_ZOOM,
   }
 }
 
-function PreviewLegend({ min, max }: { readonly min: number; readonly max: number }) {
+function PreviewLegend({
+  min,
+  max,
+}: {
+  readonly min: number
+  readonly max: number
+}) {
   const currency = usePnrrCurrency()
-  if (typeof min !== 'number' || typeof max !== 'number' || min > max) return null
+  if (typeof min !== 'number' || typeof max !== 'number' || min > max)
+    return null
 
   if (min === max) {
     const color = getPnrrBlueHeatmapColor(0.5)
     return (
       <div className="absolute bottom-3 right-3 z-20 rounded-md border border-border bg-white/90 p-2.5 shadow-lg backdrop-blur-sm dark:bg-card/90">
         <div className="flex items-center gap-2">
-          <div className="h-4 w-4 shrink-0 border border-border" style={{ backgroundColor: color }} />
-          <span className="text-xs font-medium">{formatPnrrCurrency(min, currency)}</span>
+          <div
+            className="h-4 w-4 shrink-0 border border-border"
+            style={{ backgroundColor: color }}
+          />
+          <span className="text-xs font-medium">
+            {formatPnrrCurrency(min, currency)}
+          </span>
         </div>
       </div>
     )
   }
 
-  const gradientStops = Array.from({ length: 100 }, (_, i) => getPnrrBlueHeatmapColor(i / 99))
+  const gradientStops = Array.from({ length: 100 }, (_, i) =>
+    getPnrrBlueHeatmapColor(i / 99),
+  )
   const gradient = `linear-gradient(to right, ${gradientStops.join(', ')})`
 
   return (
     <div className="absolute bottom-3 right-3 z-20 min-w-[160px] rounded-md border border-border bg-white/90 p-2.5 shadow-lg backdrop-blur-sm dark:bg-card/90">
       <div className="flex flex-col gap-1.5">
-        <div className="h-3 w-full overflow-hidden rounded-sm border border-border" style={{ background: gradient }} />
+        <div
+          className="h-3 w-full overflow-hidden rounded-sm border border-border"
+          style={{ background: gradient }}
+        />
         <div className="flex items-center justify-between gap-2 text-[11px]">
-          <span className="font-medium whitespace-nowrap">{formatPnrrCurrency(min, currency)}</span>
+          <span className="font-medium whitespace-nowrap">
+            {formatPnrrCurrency(min, currency)}
+          </span>
           <span className="text-muted-foreground">—</span>
-          <span className="font-medium whitespace-nowrap">{formatPnrrCurrency(max, currency)}</span>
+          <span className="font-medium whitespace-nowrap">
+            {formatPnrrCurrency(max, currency)}
+          </span>
         </div>
       </div>
     </div>
@@ -116,18 +157,26 @@ function PreviewLegend({ min, max }: { readonly min: number; readonly max: numbe
 }
 
 export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
-  const [selectedUat, setSelectedUat] = useState<{ name: string; county: string; natcode: string } | null>(null)
+  const [selectedUat, setSelectedUat] = useState<{
+    name: string
+    county: string
+    natcode: string
+  } | null>(null)
   const [userViewport, setUserViewport] = useState<MapViewport | null>(null)
   const currency = usePnrrCurrency()
   const isMobile = useIsMobile()
 
   const activeSeries = usePnrrMapSeries(projects, 'total-value', 'uat')
-  const { data: geoJsonData, isPending: isGeoJsonLoading } = useGeoJsonData('UAT')
+  const { data: geoJsonData, isPending: isGeoJsonLoading } =
+    useGeoJsonData('UAT')
   const { data: countyGeoJsonData } = useGeoJsonData('County')
 
   const heatmapData = useMemo(
-    () => [...activeSeries.data] as import('@/schemas/heatmap').HeatmapUATDataPoint[],
-    [activeSeries.data]
+    () =>
+      [
+        ...activeSeries.data,
+      ] as import('@/schemas/heatmap').HeatmapUATDataPoint[],
+    [activeSeries.data],
   )
 
   const colorDomain = useMemo(
@@ -136,18 +185,18 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
         heatmapData,
         PNRR_MAP_COLOR_MIN_PERCENTILE,
         PNRR_MAP_COLOR_MAX_PERCENTILE,
-        'amount'
+        'amount',
       ),
-    [heatmapData]
+    [heatmapData],
   )
 
   const activeSirutaCodes = useMemo(
     () => new Set(heatmapData.map((d) => String(d.siruta_code))),
-    [heatmapData]
+    [heatmapData],
   )
   const activeSirutaSignature = useMemo(
     () => Array.from(activeSirutaCodes).sort().join('|'),
-    [activeSirutaCodes]
+    [activeSirutaCodes],
   )
 
   useEffect(() => {
@@ -156,14 +205,22 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
 
   // Compute center/zoom from UAT features that have project data
   const mapViewport = useMemo(() => {
-    if (!geoJsonData || geoJsonData.type !== 'FeatureCollection' || activeSirutaCodes.size === 0) {
+    if (
+      !geoJsonData ||
+      geoJsonData.type !== 'FeatureCollection' ||
+      activeSirutaCodes.size === 0
+    ) {
       return null
     }
 
-    const matchedFeatures = (geoJsonData as FeatureCollection).features.filter((f) => {
-      const props = f.properties as UatProperties | undefined
-      return props?.natcode != null && activeSirutaCodes.has(String(props.natcode))
-    }) as Feature<Geometry, UatProperties>[]
+    const matchedFeatures = (geoJsonData as FeatureCollection).features.filter(
+      (f) => {
+        const props = f.properties as UatProperties | undefined
+        return (
+          props?.natcode != null && activeSirutaCodes.has(String(props.natcode))
+        )
+      },
+    ) as Feature<Geometry, UatProperties>[]
 
     return computeViewportFromFeatures(matchedFeatures)
   }, [geoJsonData, activeSirutaCodes])
@@ -174,14 +231,17 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
         center: ROMANIA_MAP_CENTER,
         zoom: isMobile ? DEFAULT_PREVIEW_ZOOM : DESKTOP_PREVIEW_ZOOM,
       },
-    [isMobile, mapViewport]
+    [isMobile, mapViewport],
   )
 
   const activeMapViewport = userViewport ?? defaultMapViewport
 
-  const handleMapViewChange = useCallback((center: [number, number], zoom: number) => {
-    setUserViewport({ center, zoom })
-  }, [])
+  const handleMapViewChange = useCallback(
+    (center: [number, number], zoom: number) => {
+      setUserViewport({ center, zoom })
+    },
+    [],
+  )
 
   const getFeatureStyle = useMemo(() => {
     if (!heatmapData.length) return () => DEFAULT_FEATURE_STYLE
@@ -191,13 +251,20 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
       colorDomain.max,
       'UAT',
       'amount',
-      getPnrrBlueHeatmapColor
+      getPnrrBlueHeatmapColor,
     )
     return (feature?: UatFeature) => {
       if (!feature) return DEFAULT_FEATURE_STYLE
       const style = baseFn(feature)
       if (style.fillColor === DEFAULT_FEATURE_STYLE.fillColor) {
-        return { ...style, fillColor: '#f5f5f5', fillOpacity: 0.35, weight: 1, color: '#bbb', opacity: 0.6 }
+        return {
+          ...style,
+          fillColor: '#f5f5f5',
+          fillOpacity: 0.35,
+          weight: 1,
+          color: '#bbb',
+          opacity: 0.6,
+        }
       }
       return { ...style, weight: 1.2, color: '#888', opacity: 0.7 }
     }
@@ -206,25 +273,31 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
   const getTooltipContent = useCallback(
     (context: {
       properties: UatProperties
-      heatmapData: import('@/schemas/heatmap').HeatmapUATDataPoint[] | import('@/schemas/heatmap').HeatmapCountyDataPoint[]
+      heatmapData:
+        | import('@/schemas/heatmap').HeatmapUATDataPoint[]
+        | import('@/schemas/heatmap').HeatmapCountyDataPoint[]
     }) => {
-      const data = (context.heatmapData as import('@/schemas/heatmap').HeatmapUATDataPoint[]).find(
-        (d) => d.siruta_code === context.properties.natcode
-      )
+      const data = (
+        context.heatmapData as import('@/schemas/heatmap').HeatmapUATDataPoint[]
+      ).find((d) => d.siruta_code === context.properties.natcode)
       return buildPnrrMapTooltipHtml({
         title: context.properties.name,
         meta: context.properties.county,
-        value: data ? formatPnrrCurrency(data.amount, currency) : t`Fără date`,
+        value: data ? formatPnrrCurrency(data.amount, currency) : t`No data`,
       })
     },
-    [currency]
+    [currency],
   )
 
   const handleFeatureClick = useCallback(
     (properties: UatProperties, _event: LeafletMouseEvent) => {
-      setSelectedUat({ name: properties.name, county: properties.county, natcode: properties.natcode })
+      setSelectedUat({
+        name: properties.name,
+        county: properties.county,
+        natcode: properties.natcode,
+      })
     },
-    []
+    [],
   )
 
   const handleBeneficiaryClick = useCallback(
@@ -236,7 +309,7 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
         filterState.setView('projects')
       }
     },
-    [filterState]
+    [filterState],
   )
 
   const filters = useMemo(
@@ -245,7 +318,7 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
       currency: currency as 'RON' | 'EUR' | 'USD',
       account_category: 'ch' as const,
     }),
-    [currency]
+    [currency],
   )
 
   const activeSeriesValuesBySirutaCode = useMemo(() => {
@@ -258,7 +331,7 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
 
   const uatProjectCount = useMemo(
     () => projects.filter((p) => p.sirutaCode !== null).length,
-    [projects]
+    [projects],
   )
 
   if (uatProjectCount === 0) return null
@@ -271,10 +344,10 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
         <div className="flex min-w-0 items-center gap-3">
           <div className="h-6 w-1 shrink-0 rounded-full bg-gradient-to-b from-emerald-500 to-blue-500" />
           <h2 className="text-lg font-bold tracking-tight">
-            <Trans>Hartă UAT</Trans>
+            <Trans>UAT map</Trans>
           </h2>
           <span className="hidden text-xs text-muted-foreground sm:inline">
-            {uatProjectCount} <Trans>proiecte cu localizare</Trans>
+            {uatProjectCount} <Trans>projects with location</Trans>
           </span>
         </div>
         <button
@@ -284,7 +357,7 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
           }}
           className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline"
         >
-          <Trans>Vezi harta completă</Trans>
+          <Trans>View full map</Trans>
           <ArrowRight className="h-3.5 w-3.5 shrink-0" />
         </button>
       </div>
@@ -297,12 +370,20 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
         )}
 
         {!isGeoJsonLoading && geoJsonData && (
-          <ClientOnly fallback={
-            <div className="flex h-full w-full items-center justify-center"><LoadingSpinner size="md" text={t`Loading map...`} /></div>
-          }>
-            <Suspense fallback={
-              <div className="flex h-full w-full items-center justify-center"><LoadingSpinner size="md" text={t`Loading map...`} /></div>
-            }>
+          <ClientOnly
+            fallback={
+              <div className="flex h-full w-full items-center justify-center">
+                <LoadingSpinner size="md" text={t`Loading map...`} />
+              </div>
+            }
+          >
+            <Suspense
+              fallback={
+                <div className="flex h-full w-full items-center justify-center">
+                  <LoadingSpinner size="md" text={t`Loading map...`} />
+                </div>
+              }
+            >
               <InteractiveMap
                 geoJsonData={geoJsonData}
                 countyBoundaryGeoJsonData={countyGeoJsonData}
@@ -328,10 +409,14 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
         )}
 
         {!isGeoJsonLoading && !geoJsonData && (
-          <div className="flex h-full w-full items-center justify-center text-muted-foreground"><Trans>Map geometry not available.</Trans></div>
+          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+            <Trans>Map geometry not available.</Trans>
+          </div>
         )}
 
-        {hasData && <PreviewLegend min={colorDomain.min} max={colorDomain.max} />}
+        {hasData && (
+          <PreviewLegend min={colorDomain.min} max={colorDomain.max} />
+        )}
       </div>
 
       <PnrrUatDetailsPanel
@@ -342,7 +427,9 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
         onClose={() => setSelectedUat(null)}
         onBeneficiaryClick={handleBeneficiaryClick}
         onViewProjects={(uat) => filterState.showUatView('projects', uat)}
-        onViewBeneficiaries={(uat) => filterState.showUatView('beneficiaries', uat)}
+        onViewBeneficiaries={(uat) =>
+          filterState.showUatView('beneficiaries', uat)
+        }
       />
     </section>
   )

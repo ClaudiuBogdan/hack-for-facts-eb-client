@@ -2,7 +2,11 @@ import { Trans } from '@lingui/react/macro'
 import { t } from '@lingui/core/macro'
 import { usePnrrCurrency } from '../lib/usePnrrCurrency'
 import { formatPnrrCurrency } from '../lib/formatting'
-import type { PnrrAggregates, AnomalyType, DataQualitySignalType } from '@/schemas/pnrr'
+import type {
+  PnrrAggregates,
+  AnomalyType,
+  DataQualitySignalType,
+} from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../hooks/usePnrrFilterState'
 import { cn } from '@/lib/utils'
 import {
@@ -24,7 +28,8 @@ export function PnrrAnomalyRibbon({
 }) {
   const currency = usePnrrCurrency()
   const activeAnomalies = filterState.search.anomalyTypes ?? []
-  const activeDataQualitySignals = filterState.search.dataQualitySignalTypes ?? []
+  const activeDataQualitySignals =
+    filterState.search.dataQualitySignalTypes ?? []
 
   const toggleAnomaly = (type: AnomalyType) => {
     const current = new Set(activeAnomalies)
@@ -47,18 +52,18 @@ export function PnrrAnomalyRibbon({
   }
 
   const visibleAnomalies = ANOMALY_CONFIG.filter(
-    (cfg) => aggregates.anomalyCounts[cfg.type]?.count > 0
+    (cfg) => aggregates.anomalyCounts[cfg.type]?.count > 0,
   )
 
   const visibleDataQualitySignals = DATA_QUALITY_SIGNAL_CONFIG.filter(
-    (cfg) => aggregates.dataQualitySignalCounts[cfg.type]?.count > 0
+    (cfg) => aggregates.dataQualitySignalCounts[cfg.type]?.count > 0,
   )
 
   if (visibleAnomalies.length === 0 && visibleDataQualitySignals.length === 0) {
     return (
       <div className="border-2 border-dashed border-foreground/10 p-6 text-center">
         <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
-          <Trans>Niciun semnal detectat în datele curente.</Trans>
+          <Trans>No signal detected in the current data.</Trans>
         </p>
       </div>
     )
@@ -71,7 +76,7 @@ export function PnrrAnomalyRibbon({
         <div>
           <div className="mb-3 flex items-center gap-3">
             <h4 className="shrink-0 text-lg font-black uppercase tracking-wide text-[var(--pnrr-fg)]">
-              <Trans>Riscuri majore</Trans>
+              <Trans>Major risks</Trans>
             </h4>
             <span className="h-0.5 flex-1 bg-[var(--pnrr-border)]" />
           </div>
@@ -106,7 +111,7 @@ export function PnrrAnomalyRibbon({
         <div>
           <div className="mb-3 flex items-center gap-3">
             <h4 className="shrink-0 text-lg font-black uppercase tracking-wide text-[var(--pnrr-fg)]">
-              <Trans>Calitatea datelor</Trans>
+              <Trans>Data quality</Trans>
             </h4>
             <span className="h-0.5 flex-1 bg-[var(--pnrr-border)]" />
           </div>
@@ -184,7 +189,7 @@ function AnomalyTile({
         toneClasses.border,
         isActive
           ? 'bg-[var(--pnrr-fg)] text-[var(--pnrr-bg)]'
-          : 'hover:bg-[var(--pnrr-bg)]'
+          : 'hover:bg-[var(--pnrr-bg)]',
       )}
       onClick={onClick}
       role="button"
@@ -199,14 +204,19 @@ function AnomalyTile({
       {/* Top row: label + info button */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-start gap-4">
-          <span className={cn('flex h-12 w-12 shrink-0 items-center justify-center rounded-sm', toneClasses.icon)}>
+          <span
+            className={cn(
+              'flex h-12 w-12 shrink-0 items-center justify-center rounded-sm',
+              toneClasses.icon,
+            )}
+          >
             <Icon className="h-7 w-7" />
           </span>
           <div className="min-w-0">
             <p
               className={cn(
                 'text-base font-black uppercase leading-tight tracking-wide',
-                isActive ? 'text-[var(--pnrr-bg)]' : 'text-[var(--pnrr-fg)]'
+                isActive ? 'text-[var(--pnrr-bg)]' : 'text-[var(--pnrr-fg)]',
               )}
             >
               {label}
@@ -214,7 +224,7 @@ function AnomalyTile({
             <p
               className={cn(
                 'mt-1 text-sm leading-snug',
-                isActive ? 'text-[var(--pnrr-bg)]/80' : 'text-[var(--pnrr-fg)]'
+                isActive ? 'text-[var(--pnrr-bg)]/80' : 'text-[var(--pnrr-fg)]',
               )}
             >
               {shortDescription}
@@ -232,9 +242,9 @@ function AnomalyTile({
               'inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-none border border-current opacity-0 transition-opacity group-hover:opacity-100',
               isActive
                 ? 'text-[var(--pnrr-bg)] hover:bg-[var(--pnrr-bg)] hover:text-[var(--pnrr-fg)]'
-                : 'text-[var(--pnrr-muted)] hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)]'
+                : 'text-[var(--pnrr-muted)] hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)]',
             )}
-            aria-label={t`Detalii despre ${label}`}
+            aria-label={t`Details about ${label}`}
           >
             <Info className="h-4 w-4" />
           </button>
@@ -246,7 +256,7 @@ function AnomalyTile({
         <p
           className={cn(
             'text-5xl font-black leading-none tabular-nums',
-            isActive ? 'text-[var(--pnrr-bg)]' : 'text-black'
+            isActive ? 'text-[var(--pnrr-bg)]' : 'text-black',
           )}
         >
           {count.toLocaleString('ro-RO')}
@@ -254,13 +264,14 @@ function AnomalyTile({
         <div
           className={cn(
             'mt-3 h-0.5 w-44 max-w-full',
-            isActive ? 'bg-[var(--pnrr-bg)]' : 'bg-[var(--pnrr-border)]'
+            isActive ? 'bg-[var(--pnrr-bg)]' : 'bg-[var(--pnrr-border)]',
           )}
         />
+
         <p
           className={cn(
             'mt-2 text-base tabular-nums',
-            isActive ? 'text-[var(--pnrr-bg)]/90' : 'text-[var(--pnrr-fg)]'
+            isActive ? 'text-[var(--pnrr-bg)]/90' : 'text-[var(--pnrr-fg)]',
           )}
         >
           {formatPnrrCurrency(value, currency, 'compact')}

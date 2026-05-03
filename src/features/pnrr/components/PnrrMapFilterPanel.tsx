@@ -11,24 +11,33 @@ import { Separator } from '@/components/ui/separator'
 import { Filter } from 'lucide-react'
 import { useState } from 'react'
 
-const GRANULARITY_OPTIONS: { readonly id: PnrrGranularity; readonly label: string }[] = [
-  { id: 'national', label: t`Național` },
-  { id: 'county', label: t`Județ` },
+const GRANULARITY_OPTIONS: {
+  readonly id: PnrrGranularity
+  readonly label: string
+}[] = [
+  { id: 'national', label: t`National` },
+  { id: 'county', label: t`County` },
   { id: 'uat', label: t`UAT` },
 ]
 
-const ENTITY_TYPE_OPTIONS: { readonly id: PnrrEntityType; readonly label: string }[] = [
-  { id: 'public', label: t`Instituții publice` },
-  { id: 'private', label: t`Companii private` },
-  { id: 'national', label: t`Entități naționale` },
+const ENTITY_TYPE_OPTIONS: {
+  readonly id: PnrrEntityType
+  readonly label: string
+}[] = [
+  { id: 'public', label: t`Public institutions` },
+  { id: 'private', label: t`Private companies` },
+  { id: 'national', label: t`National entities` },
 ]
 
-const SERIES_OPTIONS: { readonly id: PnrrMapSeriesId; readonly label: string }[] = [
-  { id: 'total-value', label: t`Valoare totală` },
-  { id: 'project-count', label: t`Număr proiecte` },
+const SERIES_OPTIONS: {
+  readonly id: PnrrMapSeriesId
+  readonly label: string
+}[] = [
+  { id: 'total-value', label: t`Total value` },
+  { id: 'project-count', label: t`Project count` },
   { id: 'per-capita', label: t`Per capita` },
   { id: 'grant-share', label: t`Grant %` },
-  { id: 'implementation-rate', label: t`Implementat %` },
+  { id: 'implementation-rate', label: t`Implemented %` },
 ]
 
 interface PnrrMapFilterPanelProps {
@@ -74,7 +83,7 @@ export function PnrrMapFilterPanel({
           className={cn('gap-1.5', isOpen && 'bg-accent')}
         >
           <Filter className="h-3.5 w-3.5" />
-          {isOpen ? t`Ascunde filtre` : t`Filtre avansate`}
+          {isOpen ? t`Hide filters` : t`Advanced filters`}
         </Button>
       </div>
 
@@ -82,7 +91,7 @@ export function PnrrMapFilterPanel({
         {/* Granularity */}
         <section>
           <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            <Trans>Granularitate</Trans>
+            <Trans>Granularity</Trans>
           </h4>
           <div className="flex flex-wrap gap-1.5">
             {GRANULARITY_OPTIONS.map((opt) => {
@@ -95,7 +104,7 @@ export function PnrrMapFilterPanel({
                     'rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
                     isActive
                       ? 'bg-primary text-primary-foreground'
-                      : 'border border-border bg-background text-foreground hover:bg-accent'
+                      : 'border border-border bg-background text-foreground hover:bg-accent',
                   )}
                 >
                   {opt.label}
@@ -110,7 +119,7 @@ export function PnrrMapFilterPanel({
         {/* Aggregation metric */}
         <section>
           <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            <Trans>Agregare</Trans>
+            <Trans>Aggregation</Trans>
           </h4>
           <div className="flex flex-wrap gap-1.5">
             {SERIES_OPTIONS.map((opt) => {
@@ -123,7 +132,7 @@ export function PnrrMapFilterPanel({
                     'rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
                     isActive
                       ? 'bg-primary text-primary-foreground'
-                      : 'border border-border bg-background text-foreground hover:bg-accent'
+                      : 'border border-border bg-background text-foreground hover:bg-accent',
                   )}
                 >
                   {opt.label}
@@ -138,7 +147,7 @@ export function PnrrMapFilterPanel({
         {/* Entity type */}
         <section>
           <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            <Trans>Tip entitate</Trans>
+            <Trans>Entity type</Trans>
           </h4>
           <div className="space-y-2">
             {ENTITY_TYPE_OPTIONS.map((opt) => (
@@ -148,7 +157,11 @@ export function PnrrMapFilterPanel({
                   checked={(entityTypes ?? []).includes(opt.id)}
                   onCheckedChange={() => toggleEntityType(opt.id)}
                 />
-                <Label htmlFor={`entity-${opt.id}`} className="text-xs font-normal cursor-pointer">
+
+                <Label
+                  htmlFor={`entity-${opt.id}`}
+                  className="text-xs font-normal cursor-pointer"
+                >
                   {opt.label}
                 </Label>
               </div>
@@ -160,8 +173,11 @@ export function PnrrMapFilterPanel({
 
         {/* Include national */}
         <section className="flex items-center justify-between">
-          <Label htmlFor="include-national" className="text-xs font-normal cursor-pointer">
-            <Trans>Include proiecte naționale</Trans>
+          <Label
+            htmlFor="include-national"
+            className="text-xs font-normal cursor-pointer"
+          >
+            <Trans>Include national projects</Trans>
           </Label>
           <Switch
             id="include-national"

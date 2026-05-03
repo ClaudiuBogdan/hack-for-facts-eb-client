@@ -14,7 +14,9 @@ vi.mock('../hooks/usePnrrFilterState', () => ({
 }))
 
 vi.mock('../lib/PnrrCurrencyProvider', () => ({
-  PnrrCurrencyProvider: ({ children }: { readonly children: ReactNode }) => <>{children}</>,
+  PnrrCurrencyProvider: ({ children }: { readonly children: ReactNode }) => (
+    <>{children}</>
+  ),
 }))
 
 vi.mock('./PnrrHeader', () => ({
@@ -61,7 +63,7 @@ vi.mock('./table/PnrrExportButton', () => ({
 }))
 
 function makeFilterState(
-  overrides: Partial<ReturnType<typeof usePnrrFilterState>> = {}
+  overrides: Partial<ReturnType<typeof usePnrrFilterState>> = {},
 ): ReturnType<typeof usePnrrFilterState> {
   return {
     search: {
@@ -120,9 +122,11 @@ describe('PnrrDashboard', () => {
 
     render(<PnrrDashboard />)
 
-    expect(screen.queryByTestId('pnrr-content-skeleton')).not.toBeInTheDocument()
-    expect(screen.getByText('Nu am putut încărca datele PNRR')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: /Reîncearcă/i }))
+    expect(
+      screen.queryByTestId('pnrr-content-skeleton'),
+    ).not.toBeInTheDocument()
+    expect(screen.getByText('Could not load PNRR data')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Retry/i }))
 
     expect(refetch).toHaveBeenCalledTimes(1)
   })

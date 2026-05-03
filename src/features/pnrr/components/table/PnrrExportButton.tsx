@@ -21,20 +21,20 @@ export function PnrrExportButton({
 }) {
   const downloadCsv = () => {
     const headers = [
-      t`Titlu`,
-      t`Beneficiar`,
+      t`Title`,
+      t`Beneficiary`,
       'CUI',
-      t`Județ`,
-      t`Localitate`,
-      t`Componentă`,
-      t`Măsură`,
+      t`County`,
+      t`Locality`,
+      t`Component`,
+      t`Measure`,
       'CRI',
-      t`Sursă Finanțare`,
-      t`Valoare (EUR)`,
-      t`Progres Tehnic`,
-      t`Progres Financiar`,
-      t`Riscuri`,
-      t`Probleme date`,
+      t`Funding Source`,
+      t`Value (EUR)`,
+      t`Technical Progress`,
+      t`Financial Progress`,
+      t`Risks`,
+      t`Data issues`,
     ]
 
     const rows = projects.map((p) => [
@@ -48,16 +48,25 @@ export function PnrrExportButton({
       p.cri,
       p.fundingSource,
       p.valueEur,
-      p.techProgress === 'in-implementation' ? t`ÎN IMPLEMENTARE` : p.techProgress ?? '',
-      p.finProgress === 'in-implementation' ? t`ÎN IMPLEMENTARE` : p.finProgress ?? '',
+      p.techProgress === 'in-implementation'
+        ? t`IN IMPLEMENTATION`
+        : (p.techProgress ?? ''),
+      p.finProgress === 'in-implementation'
+        ? t`IN IMPLEMENTATION`
+        : (p.finProgress ?? ''),
       p.anomalies.join(', '),
       p.dataQualitySignals.join(', '),
     ])
 
-    const csv = [headers.join(','), ...rows.map((r) => r.map((v) => escapeCsv(String(v))).join(','))].join('\n')
+    const csv = [
+      headers.join(','),
+      ...rows.map((r) => r.map((v) => escapeCsv(String(v))).join(',')),
+    ].join('\n')
 
     // BOM marker ensures Excel on Windows correctly reads UTF-8 diacritics
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
+    const blob = new Blob(['\uFEFF' + csv], {
+      type: 'text/csv;charset=utf-8;',
+    })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -69,7 +78,11 @@ export function PnrrExportButton({
   }
 
   return (
-    <Button variant="outline" className="gap-1.5 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-4 py-2 text-sm font-bold text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)]" onClick={downloadCsv}>
+    <Button
+      variant="outline"
+      className="gap-1.5 rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-4 py-2 text-sm font-bold text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)]"
+      onClick={downloadCsv}
+    >
       <Download className="h-4 w-4" />
       <Trans>Export CSV</Trans>
     </Button>

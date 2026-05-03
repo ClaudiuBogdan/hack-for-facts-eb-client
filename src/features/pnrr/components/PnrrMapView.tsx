@@ -1,10 +1,24 @@
-import { useState, useCallback, useMemo, lazy, Suspense, useRef, useEffect } from 'react'
+import {
+  useState,
+  useCallback,
+  useMemo,
+  lazy,
+  Suspense,
+  useRef,
+  useEffect,
+} from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
 import type { PnrrProject } from '@/schemas/pnrr'
-import { usePnrrMapSeries, type PnrrMapSeriesId } from '../hooks/usePnrrMapSeries'
+import {
+  usePnrrMapSeries,
+  type PnrrMapSeriesId,
+} from '../hooks/usePnrrMapSeries'
 import { useGeoJsonData } from '@/hooks/useGeoJson'
-import { createHeatmapStyleFunction, getPercentileValues } from '@/components/maps/utils'
+import {
+  createHeatmapStyleFunction,
+  getPercentileValues,
+} from '@/components/maps/utils'
 import { UatProperties, UatFeature } from '@/components/maps/interfaces'
 import { DEFAULT_FEATURE_STYLE } from '@/components/maps/constants'
 import type { LeafletMouseEvent } from 'leaflet'
@@ -24,15 +38,17 @@ import center from '@turf/center'
 import type { FeatureCollection, Feature, Geometry } from 'geojson'
 
 const InteractiveMap = lazy(() =>
-  import('@/components/maps/InteractiveMap').then((m) => ({ default: m.InteractiveMap }))
+  import('@/components/maps/InteractiveMap').then((m) => ({
+    default: m.InteractiveMap,
+  })),
 )
 
 const SERIES_OPTIONS = [
-  { id: 'total-value' as PnrrMapSeriesId, label: t`Valoare totală` },
-  { id: 'project-count' as PnrrMapSeriesId, label: t`Număr proiecte` },
-  { id: 'per-capita' as PnrrMapSeriesId, label: t`Pe cap de locuitor` },
+  { id: 'total-value' as PnrrMapSeriesId, label: t`Total value` },
+  { id: 'project-count' as PnrrMapSeriesId, label: t`Project count` },
+  { id: 'per-capita' as PnrrMapSeriesId, label: t`Per capita` },
   { id: 'grant-share' as PnrrMapSeriesId, label: t`Grant %` },
-  { id: 'implementation-rate' as PnrrMapSeriesId, label: t`Implementat %` },
+  { id: 'implementation-rate' as PnrrMapSeriesId, label: t`Implemented %` },
 ]
 
 const MIN_FEATURE_BBOX_DELTA = 1e-6
@@ -48,7 +64,7 @@ interface PnrrMapViewProps {
 }
 
 function computeViewportFromFeatures(
-  features: Feature<Geometry, Record<string, unknown>>[]
+  features: Feature<Geometry, Record<string, unknown>>[],
 ): { center: [number, number]; zoom: number } | null {
   if (features.length === 0) return null
 
@@ -74,45 +90,65 @@ function computeViewportFromFeatures(
 
   return {
     center: [centerLat, centerLng],
-    zoom: Number.isFinite(fittedZoom) ? Math.max(DEFAULT_MAP_ZOOM, fittedZoom + 1.0) : DEFAULT_MAP_ZOOM,
+    zoom: Number.isFinite(fittedZoom)
+      ? Math.max(DEFAULT_MAP_ZOOM, fittedZoom + 1.0)
+      : DEFAULT_MAP_ZOOM,
   }
 }
 
-function formatLegendValue(value: number, seriesId: PnrrMapSeriesId, currency: 'RON' | 'EUR' | 'USD'): string {
-  if (seriesId === 'grant-share' || seriesId === 'implementation-rate') return `${formatNumber(value, 'compact')}%`
+function formatLegendValue(
+  value: number,
+  seriesId: PnrrMapSeriesId,
+  currency: 'RON' | 'EUR' | 'USD',
+): string {
+  if (seriesId === 'grant-share' || seriesId === 'implementation-rate')
+    return `${formatNumber(value, 'compact')}%`
   if (seriesId === 'project-count') return formatNumber(value, 'compact')
   return formatPnrrCurrency(value, currency)
 }
 
 function MapLegend({
-  min, max, seriesId,
+  min,
+  max,
+  seriesId,
 }: {
   readonly min: number
   readonly max: number
   readonly seriesId: PnrrMapSeriesId
 }) {
   const currency = usePnrrCurrency()
-  if (typeof min !== 'number' || typeof max !== 'number' || min > max) return null
+  if (typeof min !== 'number' || typeof max !== 'number' || min > max)
+    return null
 
   if (min === max) {
     const color = getPnrrBlueHeatmapColor(0.5)
     return (
       <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-3">
         <div className="flex items-center gap-2">
-          <div className="h-3 w-10 border border-[var(--pnrr-border)]" style={{ backgroundColor: color }} />
-          <span className="text-xs font-black tabular-nums text-[var(--pnrr-fg)]">{formatLegendValue(min, seriesId, currency)}</span>
+          <div
+            className="h-3 w-10 border border-[var(--pnrr-border)]"
+            style={{ backgroundColor: color }}
+          />
+          <span className="text-xs font-black tabular-nums text-[var(--pnrr-fg)]">
+            {formatLegendValue(min, seriesId, currency)}
+          </span>
         </div>
       </div>
     )
   }
 
-  const gradientStops = Array.from({ length: 60 }, (_, i) => getPnrrBlueHeatmapColor(i / 59))
+  const gradientStops = Array.from({ length: 60 }, (_, i) =>
+    getPnrrBlueHeatmapColor(i / 59),
+  )
   const gradient = `linear-gradient(to right, ${gradientStops.join(', ')})`
 
   return (
     <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-3">
       <div className="flex flex-col gap-2">
-        <div className="h-3 w-40 border border-[var(--pnrr-border)]" style={{ background: gradient }} />
+        <div
+          className="h-3 w-40 border border-[var(--pnrr-border)]"
+          style={{ background: gradient }}
+        />
         <div className="flex items-center justify-between gap-3 text-xs font-black tabular-nums text-[var(--pnrr-fg)]">
           <span>{formatLegendValue(min, seriesId, currency)}</span>
           <span>{formatLegendValue(max, seriesId, currency)}</span>
@@ -123,28 +159,50 @@ function MapLegend({
 }
 
 export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
-  const [activeSeriesId, setActiveSeriesId] = useState<PnrrMapSeriesId>('total-value')
+  const [activeSeriesId, setActiveSeriesId] =
+    useState<PnrrMapSeriesId>('total-value')
   const [selectedCounty, setSelectedCounty] = useState<string | null>(null)
-  const [selectedUat, setSelectedUat] = useState<{ name: string; county: string; natcode: string } | null>(null)
+  const [selectedUat, setSelectedUat] = useState<{
+    name: string
+    county: string
+    natcode: string
+  } | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const currency = usePnrrCurrency()
 
   const { search, setView, setSearch, setMapView } = filterState
   const granularity = search.granularity ?? 'county'
 
-  const activeSeries = usePnrrMapSeries(projects, activeSeriesId, granularity === 'uat' ? 'uat' : 'county')
-  const { data: geoJsonData, isPending: isGeoJsonLoading } = useGeoJsonData(granularity === 'uat' ? 'UAT' : 'County')
+  const activeSeries = usePnrrMapSeries(
+    projects,
+    activeSeriesId,
+    granularity === 'uat' ? 'uat' : 'county',
+  )
+  const { data: geoJsonData, isPending: isGeoJsonLoading } = useGeoJsonData(
+    granularity === 'uat' ? 'UAT' : 'County',
+  )
   const { data: countyGeoJsonData } = useGeoJsonData('County')
 
-  const nationalCount = useMemo(() => projects.filter((p) => p.county === 'Național').length, [projects])
+  const nationalCount = useMemo(
+    () => projects.filter((p) => p.county === 'Național').length,
+    [projects],
+  )
   const unmappedCount = useMemo(
-    () => (granularity === 'uat' ? projects.filter((p) => p.sirutaCode === null && p.county !== 'Național').length : 0),
-    [projects, granularity]
+    () =>
+      granularity === 'uat'
+        ? projects.filter(
+            (p) => p.sirutaCode === null && p.county !== 'Național',
+          ).length
+        : 0,
+    [projects, granularity],
   )
 
   const heatmapData = useMemo(
-    () => [...activeSeries.data] as import('@/schemas/heatmap').HeatmapCountyDataPoint[] | import('@/schemas/heatmap').HeatmapUATDataPoint[],
-    [activeSeries.data]
+    () =>
+      [...activeSeries.data] as
+        | import('@/schemas/heatmap').HeatmapCountyDataPoint[]
+        | import('@/schemas/heatmap').HeatmapUATDataPoint[],
+    [activeSeries.data],
   )
 
   const colorDomain = useMemo(
@@ -153,29 +211,39 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
         heatmapData,
         PNRR_MAP_COLOR_MIN_PERCENTILE,
         PNRR_MAP_COLOR_MAX_PERCENTILE,
-        'amount'
+        'amount',
       ),
-    [heatmapData]
+    [heatmapData],
   )
 
   // Compute dynamic viewport from features with active data
   const autoViewport = useMemo(() => {
-    if (!geoJsonData || geoJsonData.type !== 'FeatureCollection' || heatmapData.length === 0) {
+    if (
+      !geoJsonData ||
+      geoJsonData.type !== 'FeatureCollection' ||
+      heatmapData.length === 0
+    ) {
       return null
     }
 
     const dataIds = new Set(
       granularity === 'uat'
-        ? (heatmapData as import('@/schemas/heatmap').HeatmapUATDataPoint[]).map((d) => String(d.siruta_code))
-        : (heatmapData as import('@/schemas/heatmap').HeatmapCountyDataPoint[]).map((d) => String(d.county_code))
+        ? (
+            heatmapData as import('@/schemas/heatmap').HeatmapUATDataPoint[]
+          ).map((d) => String(d.siruta_code))
+        : (
+            heatmapData as import('@/schemas/heatmap').HeatmapCountyDataPoint[]
+          ).map((d) => String(d.county_code)),
     )
 
-    const matchedFeatures = (geoJsonData as FeatureCollection).features.filter((f) => {
-      const props = f.properties as Record<string, unknown> | undefined
-      if (!props) return false
-      const id = granularity === 'uat' ? props['natcode'] : props['mnemonic']
-      return id != null && dataIds.has(String(id))
-    }) as Feature<Geometry, Record<string, unknown>>[]
+    const matchedFeatures = (geoJsonData as FeatureCollection).features.filter(
+      (f) => {
+        const props = f.properties as Record<string, unknown> | undefined
+        if (!props) return false
+        const id = granularity === 'uat' ? props['natcode'] : props['mnemonic']
+        return id != null && dataIds.has(String(id))
+      },
+    ) as Feature<Geometry, Record<string, unknown>>[]
 
     return computeViewportFromFeatures(matchedFeatures)
   }, [geoJsonData, heatmapData, granularity])
@@ -184,17 +252,19 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
   const mapCenter: [number, number] =
     search.mapLat != null && search.mapLng != null
       ? [search.mapLat, search.mapLng]
-      : autoViewport?.center ?? DEFAULT_MAP_CENTER
+      : (autoViewport?.center ?? DEFAULT_MAP_CENTER)
 
   const mapZoom = search.mapZoom ?? autoViewport?.zoom ?? DEFAULT_MAP_ZOOM
 
   const filters = useMemo(
     () => ({
-      normalization: (activeSeriesId === 'per-capita' ? 'per_capita' : 'total') as 'per_capita' | 'total',
+      normalization: (activeSeriesId === 'per-capita'
+        ? 'per_capita'
+        : 'total') as 'per_capita' | 'total',
       currency: currency as 'RON' | 'EUR' | 'USD',
       account_category: 'ch' as const,
     }),
-    [activeSeriesId, currency]
+    [activeSeriesId, currency],
   )
 
   const getFeatureStyle = useMemo(() => {
@@ -205,13 +275,20 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
       colorDomain.max,
       granularity === 'uat' ? 'UAT' : 'County',
       'amount',
-      getPnrrBlueHeatmapColor
+      getPnrrBlueHeatmapColor,
     )
     return (feature?: UatFeature) => {
       if (!feature) return DEFAULT_FEATURE_STYLE
       const style = baseFn(feature)
       if (style.fillColor === DEFAULT_FEATURE_STYLE.fillColor) {
-        return { ...style, fillColor: '#f5f5f5', fillOpacity: 0.35, weight: 1, color: '#bbb', opacity: 0.6 }
+        return {
+          ...style,
+          fillColor: '#f5f5f5',
+          fillOpacity: 0.35,
+          weight: 1,
+          color: '#bbb',
+          opacity: 0.6,
+        }
       }
       return { ...style, weight: 1.2, color: '#888', opacity: 0.7 }
     }
@@ -220,28 +297,41 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
   const getTooltipContent = useCallback(
     ({ properties }: { properties: UatProperties }) => {
       if (granularity === 'uat') {
-        const data = (activeSeries.data as import('@/schemas/heatmap').HeatmapUATDataPoint[]).find((d) => d.siruta_code === properties.natcode)
+        const data = (
+          activeSeries.data as import('@/schemas/heatmap').HeatmapUATDataPoint[]
+        ).find((d) => d.siruta_code === properties.natcode)
         return buildPnrrMapTooltipHtml({
           title: properties.name,
           meta: properties.county,
-          value: data ? formatTooltipValue(data.amount, activeSeriesId, currency) : t`Fără date`,
+          value: data
+            ? formatTooltipValue(data.amount, activeSeriesId, currency)
+            : t`No data`,
         })
       }
-      const data = (activeSeries.data as import('@/schemas/heatmap').HeatmapCountyDataPoint[]).find((d) => d.county_code === properties.mnemonic)
+      const data = (
+        activeSeries.data as import('@/schemas/heatmap').HeatmapCountyDataPoint[]
+      ).find((d) => d.county_code === properties.mnemonic)
       return buildPnrrMapTooltipHtml({
         title: data?.county_name ?? properties.name,
-        value: data ? formatTooltipValue(data.amount, activeSeriesId, currency) : t`Fără date`,
+        value: data
+          ? formatTooltipValue(data.amount, activeSeriesId, currency)
+          : t`No data`,
       })
     },
-    [activeSeries.data, activeSeriesId, granularity, currency]
+    [activeSeries.data, activeSeriesId, granularity, currency],
   )
 
   const handleFeatureClick = useCallback(
     (properties: UatProperties, _event: LeafletMouseEvent) => {
       if (granularity === 'county') setSelectedCounty(properties.name)
-      else if (granularity === 'uat') setSelectedUat({ name: properties.name, county: properties.county, natcode: properties.natcode })
+      else if (granularity === 'uat')
+        setSelectedUat({
+          name: properties.name,
+          county: properties.county,
+          natcode: properties.natcode,
+        })
     },
-    [granularity]
+    [granularity],
   )
 
   const handleBeneficiaryClick = useCallback(
@@ -253,7 +343,7 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
         setView('projects')
       }
     },
-    [filterState, setSearch, setView]
+    [filterState, setSearch, setView],
   )
 
   useEffect(() => {
@@ -271,7 +361,7 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
         setMapView(center[0], center[1], zoom)
       }, 300)
     },
-    [setMapView]
+    [setMapView],
   )
 
   return (
@@ -310,7 +400,9 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
               >
                 <InteractiveMap
                   geoJsonData={geoJsonData}
-                  countyBoundaryGeoJsonData={granularity === 'uat' ? countyGeoJsonData : null}
+                  countyBoundaryGeoJsonData={
+                    granularity === 'uat' ? countyGeoJsonData : null
+                  }
                   mapViewType={granularity === 'uat' ? 'UAT' : 'County'}
                   heatmapData={heatmapData}
                   filters={filters}
@@ -336,7 +428,11 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
           {/* Floating legend */}
           {activeSeries.data.length > 0 && (
             <div className="absolute bottom-4 right-4 z-20 max-w-[calc(100%-2rem)]">
-              <MapLegend min={colorDomain.min} max={colorDomain.max} seriesId={activeSeriesId} />
+              <MapLegend
+                min={colorDomain.min}
+                max={colorDomain.max}
+                seriesId={activeSeriesId}
+              />
             </div>
           )}
         </div>
@@ -347,20 +443,27 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
         {nationalCount > 0 && (
           <span className="inline-flex min-h-9 items-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
             <Info className="h-4 w-4 text-[var(--pnrr-fg)]" />
-            {nationalCount.toLocaleString('ro-RO')} <Trans>proiecte naționale în afara hărții</Trans>
+            {nationalCount.toLocaleString('ro-RO')}{' '}
+            <Trans>national projects outside the map</Trans>
           </span>
         )}
         {unmappedCount > 0 && granularity === 'uat' && (
           <span className="inline-flex min-h-9 items-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold uppercase tracking-wide text-[var(--pnrr-muted)]">
             <Info className="h-4 w-4 text-[var(--pnrr-fg)]" />
-            {unmappedCount.toLocaleString('ro-RO')} <Trans>proiecte fără mapare UAT</Trans>
+            {unmappedCount.toLocaleString('ro-RO')}{' '}
+            <Trans>projects without UAT mapping</Trans>
           </span>
         )}
       </div>
 
       {/* Detail panels */}
       {granularity === 'county' && (
-        <PnrrCountyDetailsPanel county={selectedCounty} projects={projects} onClose={() => setSelectedCounty(null)} onBeneficiaryClick={handleBeneficiaryClick} />
+        <PnrrCountyDetailsPanel
+          county={selectedCounty}
+          projects={projects}
+          onClose={() => setSelectedCounty(null)}
+          onBeneficiaryClick={handleBeneficiaryClick}
+        />
       )}
       {granularity === 'uat' && (
         <PnrrUatDetailsPanel
@@ -371,7 +474,9 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
           onClose={() => setSelectedUat(null)}
           onBeneficiaryClick={handleBeneficiaryClick}
           onViewProjects={(uat) => filterState.showUatView('projects', uat)}
-          onViewBeneficiaries={(uat) => filterState.showUatView('beneficiaries', uat)}
+          onViewBeneficiaries={(uat) =>
+            filterState.showUatView('beneficiaries', uat)
+          }
         />
       )}
     </div>
@@ -398,20 +503,26 @@ function MapToolbar({
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       {/* Granularity toggle */}
-      <div className="inline-flex w-fit border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-1" role="group" aria-label={t`Nivel hartă`}>
+      <div
+        className="inline-flex w-fit border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-1"
+        role="group"
+        aria-label={t`Map level`}
+      >
         {[
-          { id: 'county', label: <Trans>Județ</Trans> },
+          { id: 'county', label: <Trans>County</Trans> },
           { id: 'uat', label: <Trans>UAT</Trans> },
         ].map((option) => (
           <button
             key={option.id}
             type="button"
-            onClick={() => filterState.setGranularity(option.id as 'county' | 'uat')}
+            onClick={() =>
+              filterState.setGranularity(option.id as 'county' | 'uat')
+            }
             className={cn(
               'h-10 px-5 text-sm font-black uppercase tracking-wide transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]',
               activeGranularity === option.id
                 ? 'bg-[var(--pnrr-fg)] text-[var(--pnrr-bg)]'
-                : 'bg-transparent text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-bg)]'
+                : 'bg-transparent text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-bg)]',
             )}
             aria-pressed={activeGranularity === option.id}
           >
@@ -421,7 +532,11 @@ function MapToolbar({
       </div>
 
       {/* Series */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" role="group" aria-label={t`Indicator hartă`}>
+      <div
+        className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none"
+        role="group"
+        aria-label={t`Map indicator`}
+      >
         {SERIES_OPTIONS.map((opt) => (
           <button
             key={opt.id}
@@ -431,7 +546,7 @@ function MapToolbar({
               'h-11 shrink-0 border-2 px-4 text-sm font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]',
               activeSeriesId === opt.id
                 ? 'border-[var(--pnrr-border)] bg-[var(--pnrr-fg)] text-[var(--pnrr-bg)]'
-                : 'border-[var(--pnrr-border)] bg-[var(--pnrr-card)] text-[var(--pnrr-muted)] hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)]'
+                : 'border-[var(--pnrr-border)] bg-[var(--pnrr-card)] text-[var(--pnrr-muted)] hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)]',
             )}
             aria-pressed={activeSeriesId === opt.id}
           >
@@ -443,12 +558,21 @@ function MapToolbar({
   )
 }
 
-function formatTooltipValue(amount: number, seriesId: PnrrMapSeriesId, currency: 'RON' | 'EUR' | 'USD'): string {
+function formatTooltipValue(
+  amount: number,
+  seriesId: PnrrMapSeriesId,
+  currency: 'RON' | 'EUR' | 'USD',
+): string {
   switch (seriesId) {
-    case 'total-value': return formatPnrrCurrency(amount, currency)
-    case 'project-count': return t`${formatNumber(amount, 'compact')} proiecte`
-    case 'per-capita': return t`${formatPnrrCurrency(amount, currency)} / locuitor`
-    case 'grant-share': return t`${formatNumber(amount, 'compact')}% grant`
-    case 'implementation-rate': return t`${formatNumber(amount, 'compact')}% implementat tehnic`
+    case 'total-value':
+      return formatPnrrCurrency(amount, currency)
+    case 'project-count':
+      return t`${formatNumber(amount, 'compact')} projects`
+    case 'per-capita':
+      return t`${formatPnrrCurrency(amount, currency)} / inhabitant`
+    case 'grant-share':
+      return t`${formatNumber(amount, 'compact')}% grant`
+    case 'implementation-rate':
+      return t`${formatNumber(amount, 'compact')}% technically implemented`
   }
 }

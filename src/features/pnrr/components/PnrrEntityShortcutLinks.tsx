@@ -16,7 +16,8 @@ const ENTITY_SHORTCUTS = [
   },
   {
     label: 'Sicap.ai',
-    href: (cui: string) => `https://sicap.ai/autoritate/${cui}?utm_source=transparenta.eu`,
+    href: (cui: string) =>
+      `https://sicap.ai/autoritate/${cui}?utm_source=transparenta.eu`,
   },
   {
     label: 'DemoAnaf',
@@ -43,11 +44,11 @@ export function PnrrEntityShortcutLinks({
       className={cn(
         'border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]',
         compact ? 'p-3' : 'p-4',
-        className
+        className,
       )}
     >
       <p className="mb-2 text-xs font-black uppercase tracking-wide text-[var(--pnrr-muted)]">
-        <Trans>Verifică entitatea</Trans>
+        <Trans>Check entity</Trans>
       </p>
       {entityLabel && (
         <p className="mb-3 text-sm font-black uppercase leading-snug text-[var(--pnrr-fg)]">
@@ -64,7 +65,7 @@ export function PnrrEntityShortcutLinks({
             onClick={(event) => event.stopPropagation()}
             className={cn(
               'inline-flex items-center justify-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] font-black text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]',
-              compact ? 'h-8 px-2 text-xs' : 'h-9 px-3 text-sm'
+              compact ? 'h-8 px-2 text-xs' : 'h-9 px-3 text-sm',
             )}
           >
             {shortcut.label}

@@ -28,12 +28,17 @@ export function PnrrActiveFilters({
   const { search } = filterState
 
   const chips = useMemo(() => {
-    const result: { key: string; prefix?: string; value: string; onRemove: () => void }[] = []
+    const result: {
+      key: string
+      prefix?: string
+      value: string
+      onRemove: () => void
+    }[] = []
 
     if (search.search) {
       result.push({
         key: 'search',
-        prefix: t`Proiect`,
+        prefix: t`Project`,
         value: search.search,
         onRemove: () => filterState.setSearch(undefined),
       })
@@ -42,7 +47,7 @@ export function PnrrActiveFilters({
     if (search.beneficiarySearch) {
       result.push({
         key: 'beneficiary-search',
-        prefix: t`Beneficiar`,
+        prefix: t`Beneficiary`,
         value: search.beneficiarySearch,
         onRemove: () => filterState.setBeneficiarySearch(undefined),
       })
@@ -51,7 +56,7 @@ export function PnrrActiveFilters({
     if (search.beneficiaryCui) {
       result.push({
         key: 'beneficiary-cui',
-        prefix: t`CUI beneficiar`,
+        prefix: t`Beneficiary CUI`,
         value: search.beneficiaryCui,
         onRemove: () => filterState.setBeneficiaryCui(undefined),
       })
@@ -61,7 +66,9 @@ export function PnrrActiveFilters({
       result.push({
         key: 'uat-siruta',
         prefix: t`UAT`,
-        value: search.uatName ? `${search.uatName} (${search.uatSiruta})` : search.uatSiruta,
+        value: search.uatName
+          ? `${search.uatName} (${search.uatSiruta})`
+          : search.uatSiruta,
         onRemove: () => filterState.setUatFilter(undefined),
       })
     }
@@ -72,7 +79,9 @@ export function PnrrActiveFilters({
         prefix: t`UAT`,
         value: siruta,
         onRemove: () =>
-          filterState.setUatFilters(search.uatSirutas?.filter((value) => value !== siruta) ?? []),
+          filterState.setUatFilters(
+            search.uatSirutas?.filter((value) => value !== siruta) ?? [],
+          ),
       })
     })
 
@@ -83,7 +92,9 @@ export function PnrrActiveFilters({
         prefix: t`Component`,
         value: comp ? `${c} — ${comp.nameRo}` : c,
         onRemove: () =>
-          filterState.setComponents(search.components?.filter((x) => x !== c) ?? []),
+          filterState.setComponents(
+            search.components?.filter((x) => x !== c) ?? [],
+          ),
       })
     })
 
@@ -93,7 +104,9 @@ export function PnrrActiveFilters({
         prefix: t`County`,
         value: c,
         onRemove: () =>
-          filterState.setCounties(search.counties?.filter((x) => x !== c) ?? []),
+          filterState.setCounties(
+            search.counties?.filter((x) => x !== c) ?? [],
+          ),
       })
     })
 
@@ -104,7 +117,7 @@ export function PnrrActiveFilters({
         value: FUNDING_SOURCE_LABELS[c] ?? c,
         onRemove: () =>
           filterState.setFundingSources(
-            search.fundingSources?.filter((x) => x !== c) ?? []
+            search.fundingSources?.filter((x) => x !== c) ?? [],
           ),
       })
     })
@@ -115,7 +128,9 @@ export function PnrrActiveFilters({
         prefix: t`Measure`,
         value: getMeasureDisplayLabel(c),
         onRemove: () =>
-          filterState.setMeasures(search.measures?.filter((x) => x !== c) ?? []),
+          filterState.setMeasures(
+            search.measures?.filter((x) => x !== c) ?? [],
+          ),
       })
     })
 
@@ -126,7 +141,7 @@ export function PnrrActiveFilters({
         value: PROGRESS_CATEGORY_LABELS[c as ProgressCategoryKey] ?? c,
         onRemove: () =>
           filterState.setProgressCategories(
-            search.progressCategories?.filter((x) => x !== c) ?? []
+            search.progressCategories?.filter((x) => x !== c) ?? [],
           ),
       })
     })
@@ -137,7 +152,8 @@ export function PnrrActiveFilters({
         key: `cri-${c}`,
         prefix: t`CRI`,
         value: fullName ? `${c} — ${fullName}` : c,
-        onRemove: () => filterState.setCris(search.cris?.filter((x) => x !== c) ?? []),
+        onRemove: () =>
+          filterState.setCris(search.cris?.filter((x) => x !== c) ?? []),
       })
     })
 
@@ -147,7 +163,9 @@ export function PnrrActiveFilters({
         prefix: t`Risk`,
         value: getAnomalyLabel(c as Parameters<typeof getAnomalyLabel>[0]) ?? c,
         onRemove: () =>
-          filterState.setAnomalyTypes(search.anomalyTypes?.filter((x) => x !== c) ?? []),
+          filterState.setAnomalyTypes(
+            search.anomalyTypes?.filter((x) => x !== c) ?? [],
+          ),
       })
     })
 
@@ -156,11 +174,12 @@ export function PnrrActiveFilters({
         key: `quality-${c}`,
         prefix: t`Data`,
         value:
-          getDataQualitySignalLabel(c as Parameters<typeof getDataQualitySignalLabel>[0]) ??
-          c,
+          getDataQualitySignalLabel(
+            c as Parameters<typeof getDataQualitySignalLabel>[0],
+          ) ?? c,
         onRemove: () =>
           filterState.setDataQualitySignalTypes(
-            search.dataQualitySignalTypes?.filter((x) => x !== c) ?? []
+            search.dataQualitySignalTypes?.filter((x) => x !== c) ?? [],
           ),
       })
     })
@@ -171,18 +190,20 @@ export function PnrrActiveFilters({
         prefix: t`Entity`,
         value: ENTITY_TYPE_LABELS[c] ?? c,
         onRemove: () =>
-          filterState.setEntityTypes(search.entityTypes?.filter((x) => x !== c) ?? []),
+          filterState.setEntityTypes(
+            search.entityTypes?.filter((x) => x !== c) ?? [],
+          ),
       })
     })
 
     search.beneficiaryTypes?.forEach((c) => {
       result.push({
         key: `beneficiary-type-${c}`,
-        prefix: t`Tip beneficiar`,
+        prefix: t`Beneficiary type`,
         value: BENEFICIARY_TYPE_LABELS[c] ?? c,
         onRemove: () =>
           filterState.setBeneficiaryTypes(
-            search.beneficiaryTypes?.filter((x) => x !== c) ?? []
+            search.beneficiaryTypes?.filter((x) => x !== c) ?? [],
           ),
       })
     })
@@ -206,7 +227,7 @@ export function PnrrActiveFilters({
     if (search.includeNational === false) {
       result.push({
         key: 'exclude-national',
-        value: t`Fără proiecte naționale`,
+        value: t`No national projects`,
         onRemove: () => filterState.setIncludeNational(true),
       })
     }
@@ -240,7 +261,10 @@ export function PnrrActiveFilters({
   if (compact) {
     return (
       <div className="flex min-w-0 flex-wrap items-center gap-2.5 pb-2 pt-1">
-        <span className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center bg-[var(--pnrr-fg)] px-1.5 text-[11px] font-semibold" style={{ color: 'var(--pnrr-bg)' }}>
+        <span
+          className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center bg-[var(--pnrr-fg)] px-1.5 text-[11px] font-semibold"
+          style={{ color: 'var(--pnrr-bg)' }}
+        >
           {chips.length}
         </span>
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
@@ -253,7 +277,9 @@ export function PnrrActiveFilters({
               <span className="min-w-0 truncate">
                 {chip.prefix ? (
                   <>
-                    <span className="text-[var(--pnrr-fg)]/80">{chip.prefix}:</span>{' '}
+                    <span className="text-[var(--pnrr-fg)]/80">
+                      {chip.prefix}:
+                    </span>{' '}
                     <span className="font-bold">{chip.value}</span>
                   </>
                 ) : (
@@ -293,7 +319,9 @@ export function PnrrActiveFilters({
             <span className="min-w-0 max-w-[min(100%,18rem)] truncate sm:max-w-[360px]">
               {chip.prefix ? (
                 <>
-                  <span className="text-[var(--pnrr-fg)]/80">{chip.prefix}:</span>{' '}
+                  <span className="text-[var(--pnrr-fg)]/80">
+                    {chip.prefix}:
+                  </span>{' '}
                   <span className="font-bold">{chip.value}</span>
                 </>
               ) : (

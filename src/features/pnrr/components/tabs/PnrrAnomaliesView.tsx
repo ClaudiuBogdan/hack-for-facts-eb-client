@@ -14,7 +14,14 @@ import { PnrrAnomalyRibbon } from '../PnrrAnomalyRibbon'
 import { PnrrAnomalyInfoPanel } from '../PnrrAnomalyInfoPanel'
 import { PnrrQuickInvestigation } from '../PnrrQuickInvestigation'
 import { PnrrProjectTable } from '../table/PnrrProjectTable'
-import { BookOpen, AlertTriangle, Search, X, Database, ShieldAlert } from 'lucide-react'
+import {
+  BookOpen,
+  AlertTriangle,
+  Search,
+  X,
+  Database,
+  ShieldAlert,
+} from 'lucide-react'
 
 const SEARCH_DEBOUNCE_MS = 300
 
@@ -33,7 +40,9 @@ export function PnrrAnomaliesView({
 }) {
   const currency = usePnrrCurrency()
   const [infoPanelOpen, setInfoPanelOpen] = useState(false)
-  const [selectedSignal, setSelectedSignal] = useState<SelectedSignal | undefined>()
+  const [selectedSignal, setSelectedSignal] = useState<
+    SelectedSignal | undefined
+  >()
 
   const globalSearch = filterState.search.search ?? ''
   const [inputValue, setInputValue] = useState(globalSearch)
@@ -55,8 +64,13 @@ export function PnrrAnomaliesView({
 
   const riskProjects = projects.filter((p) => p.anomalies.length > 0)
   const riskValue = riskProjects.reduce((sum, p) => sum + p.valueEur, 0)
-  const dataQualityProjects = projects.filter((p) => p.dataQualitySignals.length > 0)
-  const dataQualityValue = dataQualityProjects.reduce((sum, p) => sum + p.valueEur, 0)
+  const dataQualityProjects = projects.filter(
+    (p) => p.dataQualitySignals.length > 0,
+  )
+  const dataQualityValue = dataQualityProjects.reduce(
+    (sum, p) => sum + p.valueEur,
+    0,
+  )
 
   const activeAnomalyTypes = filterState.search.anomalyTypes
   const activeDataQualitySignalTypes = filterState.search.dataQualitySignalTypes
@@ -74,7 +88,7 @@ export function PnrrAnomaliesView({
     const matchesDataQuality =
       hasDataQualityFilter &&
       activeDataQualitySignalTypes!.some((type) =>
-        p.dataQualitySignals.includes(type as DataQualitySignalType)
+        p.dataQualitySignals.includes(type as DataQualitySignalType),
       )
 
     return matchesRisk || matchesDataQuality
@@ -96,7 +110,9 @@ export function PnrrAnomaliesView({
         <div className="grid gap-6 lg:grid-cols-[minmax(360px,0.48fr)_2px_1fr] lg:items-center">
           <div>
             <h1 className="max-w-[520px] text-4xl font-black uppercase leading-[0.96] tracking-wide text-black sm:text-5xl">
-              <span className="block max-w-[500px]"><Trans>Centrul de Investigație</Trans></span>
+              <span className="block max-w-[500px]">
+                <Trans>Investigation Center</Trans>
+              </span>
             </h1>
             <div className="mt-5 grid max-w-[460px] gap-2 text-base text-[var(--pnrr-fg)]">
               <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
@@ -104,18 +120,24 @@ export function PnrrAnomaliesView({
                   <ShieldAlert className="h-4 w-4" />
                 </span>
                 <span>
-                  {riskProjects.length.toLocaleString('ro-RO')} <Trans>proiecte cu riscuri</Trans>
+                  {riskProjects.length.toLocaleString('ro-RO')}{' '}
+                  <Trans>projects with risks</Trans>
                 </span>
-                <span className="tabular-nums">{formatPnrrCurrency(riskValue, currency, 'compact')}</span>
+                <span className="tabular-nums">
+                  {formatPnrrCurrency(riskValue, currency, 'compact')}
+                </span>
               </div>
               <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
                 <span className="flex h-7 w-7 items-center justify-center rounded-sm bg-black text-white">
                   <Database className="h-4 w-4" />
                 </span>
                 <span>
-                  {dataQualityProjects.length.toLocaleString('ro-RO')} <Trans>probleme de date</Trans>
+                  {dataQualityProjects.length.toLocaleString('ro-RO')}{' '}
+                  <Trans>data issues</Trans>
                 </span>
-                <span className="tabular-nums">{formatPnrrCurrency(dataQualityValue, currency, 'compact')}</span>
+                <span className="tabular-nums">
+                  {formatPnrrCurrency(dataQualityValue, currency, 'compact')}
+                </span>
               </div>
             </div>
           </div>
@@ -133,7 +155,7 @@ export function PnrrAnomaliesView({
                 }}
               >
                 <BookOpen className="h-5 w-5" />
-                <Trans>Ghid</Trans>
+                <Trans>Guide</Trans>
               </button>
             </div>
           </div>
@@ -152,8 +174,9 @@ export function PnrrAnomaliesView({
           <AlertTriangle className="h-5 w-5 shrink-0 text-[#a43b13]" />
           <p className="text-sm font-black uppercase tracking-wide text-[#a43b13]">
             <Trans>
-              {aggregates.missingFinProgressPercent.toFixed(0)}% din proiecte nu au date
-              financiare. Semnalele de risc bazate pe progres financiar pot fi subestimate.
+              {aggregates.missingFinProgressPercent.toFixed(0)}% of projects
+              have no financial data. Risk signals based on financial progress
+              may be underestimated.
             </Trans>
           </p>
         </div>
@@ -167,11 +190,12 @@ export function PnrrAnomaliesView({
             <Search className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-black" />
             <input
               type="text"
-              placeholder={t`Caută proiect...`}
+              placeholder={t`Search project...`}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               className="h-10 w-full border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-12 py-2 text-sm text-[var(--pnrr-fg)] placeholder:text-[var(--pnrr-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
             />
+
             {inputValue && (
               <button
                 type="button"
@@ -186,10 +210,13 @@ export function PnrrAnomaliesView({
 
           <span className="flex h-9 items-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-6 text-sm text-[var(--pnrr-fg)]">
             {displayedSignalProjects.length.toLocaleString('ro-RO')}{' '}
-            <Trans>rezultate</Trans>
+            <Trans>results</Trans>
           </span>
         </div>
-        <PnrrProjectTable projects={displayedSignalProjects} filterState={filterState} />
+        <PnrrProjectTable
+          projects={displayedSignalProjects}
+          filterState={filterState}
+        />
       </section>
 
       {/* Info side panel */}

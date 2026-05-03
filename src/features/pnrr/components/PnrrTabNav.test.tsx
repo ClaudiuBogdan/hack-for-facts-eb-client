@@ -6,17 +6,17 @@ describe('PnrrTabNav', () => {
   it('exposes accessible tab names when labels are visually hidden on mobile', () => {
     render(<PnrrTabNav view="overview" onChange={vi.fn()} />)
 
-    expect(screen.getByRole('tab', { name: 'Prezentare generală' })).toHaveAttribute(
+    expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute(
       'aria-label',
-      'Prezentare generală'
+      'Overview',
     )
-    expect(screen.getByRole('tab', { name: 'Proiecte' })).toHaveAttribute(
+    expect(screen.getByRole('tab', { name: 'Projects' })).toHaveAttribute(
       'aria-label',
-      'Proiecte'
+      'Projects',
     )
-    expect(screen.getByRole('tab', { name: 'Hartă' })).toHaveAttribute(
+    expect(screen.getByRole('tab', { name: 'Map' })).toHaveAttribute(
       'aria-label',
-      'Hartă'
+      'Map',
     )
   })
 })

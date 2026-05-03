@@ -47,20 +47,20 @@ const PROGRESS_BUCKETS = [
 ]
 
 const METRIC_LABELS: Record<Metric, string> = {
-  tech: t`Progres Tehnic`,
-  fin: t`Progres Financiar`,
-  gap: t`Diferență Progres`,
+  tech: t`Technical Progress`,
+  fin: t`Financial Progress`,
+  gap: t`Progress difference`,
 }
 
 const METRIC_OPTIONS: { value: Metric; label: string }[] = [
-  { value: 'tech', label: t`Tehnic` },
-  { value: 'fin', label: t`Financiar` },
-  { value: 'gap', label: t`Diferență` },
+  { value: 'tech', label: t`Technical` },
+  { value: 'fin', label: t`Financial` },
+  { value: 'gap', label: t`Difference` },
 ]
 
 const MODE_OPTIONS: { value: DistributionMode; label: string }[] = [
-  { value: 'count', label: t`Proiecte` },
-  { value: 'value', label: t`Valoare` },
+  { value: 'count', label: t`Projects` },
+  { value: 'value', label: t`Value` },
 ]
 
 export function PnrrProgressHistogram({
@@ -77,7 +77,7 @@ export function PnrrProgressHistogram({
       const valid = projects.filter(
         (p) =>
           typeof p.techProgress === 'number' &&
-          typeof p.finProgress === 'number'
+          typeof p.finProgress === 'number',
       )
 
       const counts = GAP_BUCKETS.map((bucket) => {
@@ -132,20 +132,25 @@ export function PnrrProgressHistogram({
   }, [projects, metric])
 
   return (
-    <div className="min-w-0 overflow-hidden border-2 border-[var(--pnrr-border)]" style={{ backgroundColor: 'var(--pnrr-card)' }}>
+    <div
+      className="min-w-0 overflow-hidden border-2 border-[var(--pnrr-border)]"
+      style={{ backgroundColor: 'var(--pnrr-card)' }}
+    >
       {/* Header */}
       <div className="flex flex-col gap-4 border-b-2 border-[var(--pnrr-border)] px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
         {/* Left: title + badge + info */}
         <div className="min-w-0 flex-1">
           <div className="flex items-start gap-1.5">
-            <h3 className="text-lg font-black leading-tight text-[var(--pnrr-fg)]">{METRIC_LABELS[metric]}</h3>
+            <h3 className="text-lg font-black leading-tight text-[var(--pnrr-fg)]">
+              {METRIC_LABELS[metric]}
+            </h3>
             <TooltipProvider delayDuration={200}>
               <ShadcnTooltip>
                 <TooltipTrigger asChild>
                   <button
                     type="button"
                     className="inline-flex h-5 w-5 shrink-0 items-center justify-center text-[var(--pnrr-muted)] transition-colors hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-green)]/60"
-                    aria-label={t`Informații despre procentele peste 100%`}
+                    aria-label={t`Information about percentages over 100%`}
                   >
                     <Info className="h-3.5 w-3.5" />
                   </button>
@@ -157,11 +162,10 @@ export function PnrrProgressHistogram({
                 >
                   <p className="text-xs leading-relaxed">
                     <Trans>
-                      Procentele peste 100% provin direct din datele raportate de
-                      beneficiari. Acestea apar frecvent din cauza schimbărilor de
-                      scop după semnarea contractului, întârzierilor în
-                      actualizarea valorii de referință sau erorilor de introducere
-                      a datelor.
+                      Percentages over 100% come directly from the data reported
+                      by beneficiaries. They often appear because of scope
+                      changes after contract signing, delays in updating the
+                      reference value, or data entry errors.
                     </Trans>
                   </p>
                 </TooltipContent>
@@ -170,7 +174,7 @@ export function PnrrProgressHistogram({
           </div>
           {metric === 'gap' && (
             <span className="mt-1 inline-block border border-[var(--pnrr-border)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--pnrr-muted)]">
-              <Trans>Tehnic − Financiar</Trans>
+              <Trans>Technical - Financial</Trans>
             </span>
           )}
         </div>
@@ -182,6 +186,7 @@ export function PnrrProgressHistogram({
             value={mode}
             onChange={(v) => setMode(v)}
           />
+
           <SegmentedControl
             options={METRIC_OPTIONS}
             value={metric}
@@ -196,19 +201,27 @@ export function PnrrProgressHistogram({
           {mode === 'value' ? (
             <span className="break-words">
               {formatPnrrCurrency(totalValue, currency)}{' '}
-              <span className="text-[var(--pnrr-muted)]"><Trans>din</Trans></span>{' '}
+              <span className="text-[var(--pnrr-muted)]">
+                <Trans>of</Trans>
+              </span>{' '}
               {formatPnrrCurrency(
                 projects.reduce((s, p) => s + p.valueEur, 0),
-                currency
+                currency,
               )}{' '}
-              <span className="text-[var(--pnrr-muted)]"><Trans>valoare cu date complete</Trans></span>
+              <span className="text-[var(--pnrr-muted)]">
+                <Trans>value with complete data</Trans>
+              </span>
             </span>
           ) : (
             <span className="break-words">
               <span className="font-bold">{formatNumber(validCount)}</span>{' '}
-              <span className="text-[var(--pnrr-muted)]"><Trans>din</Trans></span>{' '}
+              <span className="text-[var(--pnrr-muted)]">
+                <Trans>of</Trans>
+              </span>{' '}
               <span className="font-bold">{formatNumber(projects.length)}</span>{' '}
-              <span className="text-[var(--pnrr-muted)]"><Trans>proiecte cu date complete</Trans></span>
+              <span className="text-[var(--pnrr-muted)]">
+                <Trans>projects with complete data</Trans>
+              </span>
             </span>
           )}
           <span className="shrink-0 text-xl font-black tabular-nums text-[var(--pnrr-fg)]">
@@ -233,6 +246,7 @@ export function PnrrProgressHistogram({
                 vertical={false}
                 stroke="#d1d1cc"
               />
+
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 10, fill: 'var(--pnrr-muted)' }}
@@ -241,6 +255,7 @@ export function PnrrProgressHistogram({
                 axisLine={{ stroke: 'var(--pnrr-border)' }}
                 tickLine={false}
               />
+
               <YAxis
                 tick={{ fontSize: 11, fill: 'var(--pnrr-muted)' }}
                 axisLine={{ stroke: 'var(--pnrr-border)' }}
@@ -251,6 +266,7 @@ export function PnrrProgressHistogram({
                     : formatNumber(v, 'compact')
                 }
               />
+
               <Tooltip
                 cursor={{ fill: 'rgba(0,0,0,0.03)' }}
                 contentStyle={{
@@ -267,19 +283,25 @@ export function PnrrProgressHistogram({
                   if (mode === 'value') {
                     return [
                       formatPnrrCurrency(Number(val), currency, 'compact'),
-                      t`Valoare`,
+                      t`Value`,
                     ]
                   }
-                  return [formatNumber(Number(val)), t`Proiecte`]
+                  return [formatNumber(Number(val)), t`Projects`]
                 }}
               />
+
               <Bar
                 dataKey={mode === 'value' ? 'value' : 'count'}
                 radius={[0, 0, 0, 0]}
                 animationDuration={500}
               >
                 {data.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} stroke="var(--pnrr-border)" strokeWidth={2} />
+                  <Cell
+                    key={i}
+                    fill={entry.color}
+                    stroke="var(--pnrr-border)"
+                    strokeWidth={2}
+                  />
                 ))}
               </Bar>
             </BarChart>
@@ -318,7 +340,7 @@ function SegmentedControl<T extends string>({
               isActive
                 ? 'bg-[var(--pnrr-fg)] text-[var(--pnrr-bg)]'
                 : 'bg-[var(--pnrr-card)] text-[var(--pnrr-muted)] hover:text-[var(--pnrr-fg)]',
-              !isFirst && 'border-l-2 border-[var(--pnrr-border)]'
+              !isFirst && 'border-l-2 border-[var(--pnrr-border)]',
             )}
           >
             {opt.label}

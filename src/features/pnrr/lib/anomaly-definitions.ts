@@ -37,7 +37,8 @@ export const SEVERITY_BG: Record<AnomalySeverity, string> = {
 
 export const SEVERITY_ICON_BG: Record<AnomalySeverity, string> = {
   critical: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
-  warning: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
+  warning:
+    'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
   attention: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
   info: 'bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400',
 }
@@ -65,41 +66,41 @@ export type DataQualitySignalConfig = SignalConfig<DataQualitySignalType>
 export const ANOMALY_CONFIG: readonly AnomalyConfig[] = [
   {
     type: 'financial-overrun',
-    label: t`Depășiri financiare`,
-    shortDescription: t`Progres financiar peste 100%`,
-    explanation: t`Filtrul arată proiectele unde progresul financiar raportat trece de 100%. Într-un set de date curat, un proiect nu ar trebui să depășească integral valoarea raportată fără o explicație: modificare de buget, corecție întârziată sau eroare de raportare.`,
-    investigationTip: t`Verificați valoarea actualizată a contractului, existența actelor adiționale și dacă procentul financiar a fost corectat în raportările recente.`,
-    detectionRule: t`Progres financiar > 100%`,
+    label: t`Financial overruns`,
+    shortDescription: t`Financial progress over 100%`,
+    explanation: t`This filter shows projects where reported financial progress exceeds 100%. In a clean dataset, a project should not exceed its reported value without an explanation: budget change, delayed correction, or reporting error.`,
+    investigationTip: t`Check the updated contract value, the existence of addenda, and whether the financial percentage was corrected in recent reports.`,
+    detectionRule: t`Financial progress > 100%`,
     icon: TrendingUp,
     severity: 'critical',
   },
   {
     type: 'payment-ahead-delivery',
-    label: t`Plăți înaintea livrării`,
-    shortDescription: t`Banii sunt mult înaintea progresului tehnic`,
-    explanation: t`Filtrul arată proiectele unde progresul financiar este mult peste progresul tehnic. Poate fi un avans legitim sau o întârziere de raportare tehnică, dar este relevant pentru utilizator deoarece banii par să fi avansat mai repede decât livrarea.`,
-    investigationTip: t`Verificați dacă plata este un avans prevăzut contractual, dacă livrabilele au fost recepționate și dacă progresul tehnic este subraportat sau neactualizat.`,
-    detectionRule: t`Progres tehnic = 0% și progres financiar > 0% SAU progres financiar − progres tehnic > 50 pp, cu progres tehnic sub 90%`,
+    label: t`Payments ahead of delivery`,
+    shortDescription: t`Money is far ahead of technical progress`,
+    explanation: t`This filter shows projects where financial progress is far above technical progress. It may be a legitimate advance payment or a delay in technical reporting, but it matters because the money appears to have moved faster than delivery.`,
+    investigationTip: t`Check whether the payment is a contractually agreed advance, whether deliverables were accepted, and whether technical progress is underreported or outdated.`,
+    detectionRule: t`Technical progress = 0% and financial progress > 0% OR financial progress - technical progress > 50 pp, with technical progress under 90%`,
     icon: Banknote,
     severity: 'critical',
   },
   {
     type: 'large-low-progress',
-    label: t`Proiecte mari cu progres redus`,
-    shortDescription: t`Valoare peste €10M și progres sub 30%`,
-    explanation: t`Filtrul scoate în față proiectele mari care sunt încă la progres tehnic redus. Pragul de 10 milioane EUR păstrează lista concentrată pe proiecte cu impact bugetar mare. Statusul „în implementare” este interpretat ca sub 30% doar pentru acest filtru.`,
-    investigationTip: t`Verificați cauza progresului redus: achiziții întârziate, autorizații, litigii, capacitatea beneficiarului sau blocaje de execuție.`,
-    detectionRule: t`Valoare ≥ 10.000.000 EUR ȘI progres tehnic sub 30% sau „în implementare”`,
+    label: t`Large projects with low progress`,
+    shortDescription: t`Value over €10M and progress under 30%`,
+    explanation: t`This filter surfaces large projects that still have low technical progress. The EUR 10 million threshold keeps the list focused on projects with high budget impact. The “in implementation” status is interpreted as under 30% only for this filter.`,
+    investigationTip: t`Check the cause of low progress: delayed procurement, permits, disputes, beneficiary capacity, or execution bottlenecks.`,
+    detectionRule: t`Value >= 10,000,000 EUR AND technical progress under 30% or “in implementation”`,
     icon: AlertTriangle,
     severity: 'critical',
   },
   {
     type: 'stalled-completion',
-    label: t`Lucrări finalizate, decontare blocată`,
-    shortDescription: t`100% tehnic dar sub 80% financiar`,
-    explanation: t`Filtrul arată proiectele raportate ca finalizate tehnic, dar cu progres financiar sub 80%. Nu este automat o neregulă: plățile pot urma recepției. Totuși, un decalaj mare poate indica recepție blocată, documente incomplete sau litigii.`,
-    investigationTip: t`Verificați stadiul recepției finale, cererile de plată, documentele de închidere și eventualele litigii care pot bloca decontarea.`,
-    detectionRule: t`Progres tehnic = 100% ȘI progres financiar < 80%`,
+    label: t`Completed works, blocked reimbursement`,
+    shortDescription: t`100% technical but under 80% financial`,
+    explanation: t`This filter shows projects reported as technically completed but with financial progress below 80%. This is not automatically an irregularity: payments may follow acceptance. Still, a large gap can indicate blocked acceptance, incomplete documents, or disputes.`,
+    investigationTip: t`Check final acceptance status, payment requests, closing documents, and any disputes that may block reimbursement.`,
+    detectionRule: t`Technical progress = 100% AND financial progress < 80%`,
     icon: ClipboardX,
     severity: 'warning',
   },
@@ -108,31 +109,31 @@ export const ANOMALY_CONFIG: readonly AnomalyConfig[] = [
 export const DATA_QUALITY_SIGNAL_CONFIG: readonly DataQualitySignalConfig[] = [
   {
     type: 'duplicate-conflict',
-    label: t`Duplicate cu date diferite`,
-    shortDescription: t`Același proiect are valori sau progres diferite`,
-    explanation: t`Filtrul marchează proiectele care apar de mai multe ori cu aceeași identitate de bază, dar cu informații diferite. Este o problemă de interpretare a datelor: poate fi o actualizare incompletă, o raportare pe subcomponente sau o eroare de import.`,
-    investigationTip: t`Comparați variantele și identificați rândul actual înainte de a calcula totaluri, progres sau concluzii despre beneficiar.`,
-    detectionRule: t`Titlu, CUI, Componentă și Măsură identice, dar diferă valoarea, progresul, localitatea, finanțarea, beneficiarul sau CRI`,
+    label: t`Duplicates with different data`,
+    shortDescription: t`The same project has different values or progress`,
+    explanation: t`This filter marks projects that appear multiple times with the same core identity but different information. This is a data interpretation issue: it may be an incomplete update, subcomponent reporting, or an import error.`,
+    investigationTip: t`Compare the variants and identify the current row before calculating totals, progress, or conclusions about the beneficiary.`,
+    detectionRule: t`Identical title, CUI, Component, and Measure, but different value, progress, locality, funding, beneficiary, or CRI`,
     icon: Copy,
     severity: 'attention',
   },
   {
     type: 'large-missing-financial-progress',
-    label: t`Proiecte mari fără progres financiar`,
-    shortDescription: t`Valoare peste €10M fără decontare raportată`,
-    explanation: t`Filtrul arată proiectele mari pentru care lipsește progresul financiar. Lipsa nu înseamnă automat că nu s-au făcut plăți; poate însemna că datele financiare nu sunt publicate sau nu au fost actualizate în acest snapshot.`,
-    investigationTip: t`Verificați sursa oficială a proiectului, cererile de plată și dacă există raportări financiare în alte documente publice.`,
-    detectionRule: t`Valoare ≥ 10.000.000 EUR ȘI progres financiar lipsă`,
+    label: t`Large projects without financial progress`,
+    shortDescription: t`Value over €10M with no reported reimbursement`,
+    explanation: t`This filter shows large projects with missing financial progress. Missing data does not automatically mean no payments were made; it may mean financial data was not published or was not updated in this snapshot.`,
+    investigationTip: t`Check the official project source, payment requests, and whether financial reporting exists in other public documents.`,
+    detectionRule: t`Value >= 10,000,000 EUR AND missing financial progress`,
     icon: FileQuestion,
     severity: 'attention',
   },
   {
     type: 'completed-missing-financial-progress',
-    label: t`Finalizat fără progres financiar`,
-    shortDescription: t`100% tehnic, peste €1M, fără date financiare`,
-    explanation: t`Filtrul arată proiectele finalizate tehnic, cu valoare de peste un milion de euro, dar fără progres financiar publicat. Este relevant pentru calitatea analizei deoarece nu puteți compara livrarea cu decontarea.`,
-    investigationTip: t`Verificați dacă decontarea lipsește din dataset, dacă proiectul a fost închis tehnic înainte de raportarea financiară sau dacă există documente de plată separate.`,
-    detectionRule: t`Progres tehnic = 100%, valoare ≥ 1.000.000 EUR ȘI progres financiar lipsă`,
+    label: t`Completed without financial progress`,
+    shortDescription: t`100% technical, over €1M, no financial data`,
+    explanation: t`This filter shows technically completed projects worth more than one million euros but with no published financial progress. It matters for analysis quality because delivery cannot be compared with reimbursement.`,
+    investigationTip: t`Check whether reimbursement is missing from the dataset, whether the project was technically closed before financial reporting, or whether separate payment documents exist.`,
+    detectionRule: t`Technical progress = 100%, value >= 1,000,000 EUR AND missing financial progress`,
     icon: FileWarning,
     severity: 'attention',
   },
@@ -144,7 +145,7 @@ export const DATA_QUALITY_SIGNAL_CONFIG: readonly DataQualitySignalConfig[] = [
 
 const CONFIG_MAP = new Map(ANOMALY_CONFIG.map((c) => [c.type, c]))
 const DATA_QUALITY_CONFIG_MAP = new Map(
-  DATA_QUALITY_SIGNAL_CONFIG.map((c) => [c.type, c])
+  DATA_QUALITY_SIGNAL_CONFIG.map((c) => [c.type, c]),
 )
 
 export function getAnomalyConfig(type: AnomalyType): AnomalyConfig | undefined {
@@ -152,7 +153,7 @@ export function getAnomalyConfig(type: AnomalyType): AnomalyConfig | undefined {
 }
 
 export function getDataQualitySignalConfig(
-  type: DataQualitySignalType
+  type: DataQualitySignalType,
 ): DataQualitySignalConfig | undefined {
   return DATA_QUALITY_CONFIG_MAP.get(type)
 }

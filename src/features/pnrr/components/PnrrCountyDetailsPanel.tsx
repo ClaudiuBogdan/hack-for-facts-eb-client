@@ -6,7 +6,10 @@ interface PnrrCountyDetailsPanelProps {
   readonly county: string | null
   readonly projects: readonly PnrrProject[]
   readonly onClose: () => void
-  readonly onBeneficiaryClick?: (beneficiary: { readonly name: string; readonly cui: string | null }) => void
+  readonly onBeneficiaryClick?: (beneficiary: {
+    readonly name: string
+    readonly cui: string | null
+  }) => void
 }
 
 export function PnrrCountyDetailsPanel({
@@ -26,7 +29,7 @@ export function PnrrCountyDetailsPanel({
     <PnrrMapDetailsDrawer
       open={county !== null}
       title={county}
-      eyebrow={<Trans>Județ</Trans>}
+      eyebrow={<Trans>County</Trans>}
       projects={countyProjects}
       onClose={onClose}
       onBeneficiaryClick={onBeneficiaryClick}
@@ -54,18 +57,18 @@ function normalizeCountyText(value: string): string {
 
 function getCountyCouncilProject(
   projects: readonly PnrrProject[],
-  county: string | null
+  county: string | null,
 ): PnrrProject | undefined {
   const normalizedCounty = county ? normalizeCountyText(county) : null
   const countyCouncilProjects = projects.filter(
-    (project) => project.cui && project.beneficiaryType === 'county-council'
+    (project) => project.cui && project.beneficiaryType === 'county-council',
   )
 
   return (
     countyCouncilProjects.find((project) =>
       normalizedCounty
         ? normalizeCountyText(project.beneficiary).includes(normalizedCounty)
-        : false
+        : false,
     ) ?? countyCouncilProjects[0]
   )
 }

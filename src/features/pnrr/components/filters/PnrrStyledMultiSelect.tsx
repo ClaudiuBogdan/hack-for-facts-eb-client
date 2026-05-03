@@ -39,11 +39,13 @@ function normalizeSearchText(value: string): string {
 
 function optionSearchText(option: PnrrFilterOption): string {
   return normalizeSearchText(
-    `${option.label} ${option.description ?? ''} ${option.value}`
+    `${option.label} ${option.description ?? ''} ${option.value}`,
   )
 }
 
-function buildOptionMap(options: readonly PnrrFilterOption[]): Map<string, PnrrFilterOption> {
+function buildOptionMap(
+  options: readonly PnrrFilterOption[],
+): Map<string, PnrrFilterOption> {
   return new Map(options.map((option) => [option.value, option]))
 }
 
@@ -67,7 +69,9 @@ export function PnrrStyledMultiSelect({
   const selectedKey = getSelectionKey(selected)
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
-  const [localSelected, setLocalSelected] = useState<string[]>(() => [...selected])
+  const [localSelected, setLocalSelected] = useState<string[]>(() => [
+    ...selected,
+  ])
   const localKey = getSelectionKey(localSelected)
   const onChangeRef = useRef(onChange)
   const latestLocalSelectedRef = useRef(localSelected)
@@ -82,16 +86,20 @@ export function PnrrStyledMultiSelect({
   const optionMap = useMemo(() => buildOptionMap(options), [options])
   const selectedOptions = useMemo(
     () =>
-      localSelected.map((value) => optionMap.get(value) ?? { value, label: value }),
-    [localSelected, optionMap]
+      localSelected.map(
+        (value) => optionMap.get(value) ?? { value, label: value },
+      ),
+    [localSelected, optionMap],
   )
   const filteredOptions = useMemo(() => {
     if (!searchable || !normalizedSearch) return options
-    return options.filter((option) => optionSearchText(option).includes(normalizedSearch))
+    return options.filter((option) =>
+      optionSearchText(option).includes(normalizedSearch),
+    )
   }, [normalizedSearch, options, searchable])
   const listHeight = Math.min(
     filteredOptions.length * OPTION_ROW_HEIGHT,
-    LIST_MAX_HEIGHT
+    LIST_MAX_HEIGHT,
   )
 
   const virtualizer = useVirtualizer({
@@ -123,7 +131,9 @@ export function PnrrStyledMultiSelect({
 
   useEffect(() => {
     setLocalSelected((current) =>
-      getSelectionKey(current) === selectedKey ? current : parseSelectionKey(selectedKey)
+      getSelectionKey(current) === selectedKey
+        ? current
+        : parseSelectionKey(selectedKey),
     )
   }, [selectedKey])
 
@@ -168,7 +178,7 @@ export function PnrrStyledMultiSelect({
     setLocalSelected((current) =>
       current.includes(value)
         ? current.filter((item) => item !== value)
-        : [...current, value]
+        : [...current, value],
     )
   }
 
@@ -185,7 +195,7 @@ export function PnrrStyledMultiSelect({
           tabIndex={0}
           className={cn(
             'flex h-auto min-h-11 w-full cursor-pointer items-center justify-between rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 py-2 text-left text-sm font-semibold text-[var(--pnrr-fg)] hover:bg-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)] data-[state=open]:bg-[var(--pnrr-bg)]',
-            className
+            className,
           )}
         >
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 overflow-hidden">
@@ -198,7 +208,9 @@ export function PnrrStyledMultiSelect({
                 />
               ))
             ) : (
-              <span className="truncate font-medium text-[var(--pnrr-muted)]">{placeholder}</span>
+              <span className="truncate font-medium text-[var(--pnrr-muted)]">
+                {placeholder}
+              </span>
             )}
           </div>
           <ChevronsUpDown className="ml-3 h-4 w-4 shrink-0 text-[var(--pnrr-muted)]" />
@@ -210,7 +222,7 @@ export function PnrrStyledMultiSelect({
         onCloseAutoFocus={(event) => event.preventDefault()}
         className={cn(
           'z-[70] w-[var(--radix-dropdown-menu-trigger-width)] overflow-hidden rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-0 text-[var(--pnrr-fg)] shadow-[0_12px_28px_rgba(0,0,0,0.08)]',
-          contentClassName
+          contentClassName,
         )}
       >
         {searchable && (
@@ -226,9 +238,10 @@ export function PnrrStyledMultiSelect({
                     event.stopPropagation()
                   }
                 }}
-                placeholder={t`Caută opțiuni...`}
+                placeholder={t`Search options...`}
                 className="h-10 w-full rounded-none border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] pl-9 pr-9 text-sm font-bold text-[var(--pnrr-fg)] placeholder:text-[var(--pnrr-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
               />
+
               {search && (
                 <button
                   type="button"
@@ -265,7 +278,7 @@ export function PnrrStyledMultiSelect({
                     onClick={() => handleSelect(option.value)}
                     className={cn(
                       'absolute left-0 top-0 grid w-full grid-cols-[2.25rem_1fr] items-center border-b border-[var(--pnrr-border)] px-3 py-2 text-left text-sm font-medium text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]',
-                      isSelected && 'bg-[var(--pnrr-bg)] font-bold'
+                      isSelected && 'bg-[var(--pnrr-bg)] font-bold',
                     )}
                     style={{
                       height: `${virtualItem.size}px`,
@@ -274,12 +287,22 @@ export function PnrrStyledMultiSelect({
                     aria-pressed={isSelected}
                   >
                     <span className="flex h-6 w-6 items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
-                      {isSelected && <Check className="h-4 w-4 text-[var(--pnrr-fg)]" />}
+                      {isSelected && (
+                        <Check className="h-4 w-4 text-[var(--pnrr-fg)]" />
+                      )}
                     </span>
                     <span className="flex min-w-0 flex-col">
-                      <span className="truncate font-black" title={option.label}>{option.label}</span>
+                      <span
+                        className="truncate font-black"
+                        title={option.label}
+                      >
+                        {option.label}
+                      </span>
                       {option.description && (
-                        <span className="truncate text-xs font-semibold text-[var(--pnrr-muted)]" title={option.description}>
+                        <span
+                          className="truncate text-xs font-semibold text-[var(--pnrr-muted)]"
+                          title={option.description}
+                        >
                           {option.description}
                         </span>
                       )}
@@ -309,12 +332,19 @@ function SelectedOptionChip({
   return (
     <span
       className="inline-flex min-w-0 max-w-full items-center gap-2 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 py-2 text-sm font-black leading-none text-[var(--pnrr-fg)]"
-      title={option.description ? `${option.label} · ${option.description}` : option.label}
+      title={
+        option.description
+          ? `${option.label} · ${option.description}`
+          : option.label
+      }
     >
       <span className="min-w-0 max-w-full truncate">
         <span className="truncate">{option.label}</span>
         {option.description && (
-          <span className="font-semibold text-[var(--pnrr-muted)]"> · {option.description}</span>
+          <span className="font-semibold text-[var(--pnrr-muted)]">
+            {' '}
+            · {option.description}
+          </span>
         )}
       </span>
       <button
@@ -329,7 +359,7 @@ function SelectedOptionChip({
           onRemove()
         }}
         className="flex h-5 w-5 shrink-0 items-center justify-center text-[var(--pnrr-muted)] transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-        aria-label={t`Elimină opțiunea`}
+        aria-label={t`Remove option`}
       >
         <X className="h-4 w-4" />
       </button>

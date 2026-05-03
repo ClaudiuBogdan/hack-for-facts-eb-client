@@ -40,27 +40,45 @@ export function PnrrFundingBar({
   const mixedPct = (aggregates.mixedTotal / total) * 100
 
   const categories = [
-    { ...CATEGORY_CONFIG[0], label: t`Grant`, value: aggregates.grantTotal, pct: grantPct },
-    { ...CATEGORY_CONFIG[1], label: t`Împrumut`, value: aggregates.loanTotal, pct: loanPct },
-    { ...CATEGORY_CONFIG[2], label: t`Mixt`, value: aggregates.mixedTotal, pct: mixedPct },
+    {
+      ...CATEGORY_CONFIG[0],
+      label: t`Grant`,
+      value: aggregates.grantTotal,
+      pct: grantPct,
+    },
+    {
+      ...CATEGORY_CONFIG[1],
+      label: t`Loan`,
+      value: aggregates.loanTotal,
+      pct: loanPct,
+    },
+    {
+      ...CATEGORY_CONFIG[2],
+      label: t`Mixed`,
+      value: aggregates.mixedTotal,
+      pct: mixedPct,
+    },
   ]
 
   return (
-    <div className="min-w-0 overflow-hidden border-2 border-[var(--pnrr-border)]" style={{ backgroundColor: 'var(--pnrr-card)' }}>
+    <div
+      className="min-w-0 overflow-hidden border-2 border-[var(--pnrr-border)]"
+      style={{ backgroundColor: 'var(--pnrr-card)' }}
+    >
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3 border-b-2 border-[var(--pnrr-border)] px-5 py-4">
         <h3 className="text-lg font-black text-[var(--pnrr-fg)]">
-          <Trans>Sursă Finanțare</Trans>
+          <Trans>Funding Source</Trans>
         </h3>
         <span className="border-2 border-[var(--pnrr-border)] px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-[var(--pnrr-muted)]">
-          <Trans>Grant / Împrumut / Mixt</Trans>
+          <Trans>Grant / Loan / Mixed</Trans>
         </span>
       </div>
 
       <div className="space-y-6 p-5">
         {/* Section label */}
         <p className="text-xs font-bold uppercase tracking-widest text-[var(--pnrr-muted)]">
-          <Trans>Distribuție</Trans>
+          <Trans>Distribution</Trans>
         </p>
 
         {/* Stacked bar */}
@@ -71,10 +89,12 @@ export function PnrrFundingBar({
                 className="h-full border-r-2 border-[var(--pnrr-border)] transition-all duration-700"
                 style={{ width: `${grantPct}%`, backgroundColor: '#16a34a' }}
               />
+
               <div
                 className="h-full border-r-2 border-[var(--pnrr-border)] transition-all duration-700"
                 style={{ width: `${loanPct}%`, backgroundColor: '#ef4444' }}
               />
+
               <div
                 className="h-full transition-all duration-700"
                 style={{ width: `${mixedPct}%`, backgroundColor: '#f59e0b' }}
@@ -88,8 +108,11 @@ export function PnrrFundingBar({
                   className="h-3 w-3 shrink-0 border border-[var(--pnrr-border)]"
                   style={{ backgroundColor: cat.color }}
                 />
+
                 <span className="font-medium">{cat.label}</span>
-                <span className="font-extrabold tabular-nums">{formatNumber(cat.pct)}%</span>
+                <span className="font-extrabold tabular-nums">
+                  {formatNumber(cat.pct)}%
+                </span>
               </span>
             ))}
           </div>

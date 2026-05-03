@@ -27,13 +27,21 @@ export function PnrrNationalSummary({ projects }: PnrrNationalSummaryProps) {
       .filter((p) => p.fundingSource === 'grant/loan')
       .reduce((s, p) => s + p.valueEur, 0)
 
-    const completedCount = projects.filter((p) => p.status === 'completed').length
-    const notStartedCount = projects.filter((p) => p.status === 'not-started').length
+    const completedCount = projects.filter(
+      (p) => p.status === 'completed',
+    ).length
+    const notStartedCount = projects.filter(
+      (p) => p.status === 'not-started',
+    ).length
     const inProgressCount = projectCount - completedCount - notStartedCount
 
     const publicCount = projects.filter((p) => p.entityType === 'public').length
-    const privateCount = projects.filter((p) => p.entityType === 'private').length
-    const nationalCount = projects.filter((p) => p.entityType === 'national').length
+    const privateCount = projects.filter(
+      (p) => p.entityType === 'private',
+    ).length
+    const nationalCount = projects.filter(
+      (p) => p.entityType === 'national',
+    ).length
 
     return {
       totalValue,
@@ -72,82 +80,131 @@ export function PnrrNationalSummary({ projects }: PnrrNationalSummaryProps) {
       {/* Key metrics */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         <MetricCard
-          label={t`Valoare totală`}
+          label={t`Total value`}
           value={formatPnrrCurrency(stats.totalValue, currency)}
         />
+
         <MetricCard
-          label={t`Proiecte`}
+          label={t`Projects`}
           value={formatNumber(stats.projectCount, 'compact')}
         />
+
         <MetricCard
-          label={t`Riscuri`}
+          label={t`Risks`}
           value={formatNumber(stats.riskCount, 'compact')}
-          sub={stats.projectCount > 0
-            ? `${((stats.riskCount / stats.projectCount) * 100).toFixed(1)}%`
-            : undefined}
+          sub={
+            stats.projectCount > 0
+              ? `${((stats.riskCount / stats.projectCount) * 100).toFixed(1)}%`
+              : undefined
+          }
         />
+
         <MetricCard
-          label={t`Finalizate`}
+          label={t`Completed`}
           value={formatNumber(stats.completedCount, 'compact')}
-          sub={stats.projectCount > 0
-            ? `${((stats.completedCount / stats.projectCount) * 100).toFixed(1)}%`
-            : undefined}
+          sub={
+            stats.projectCount > 0
+              ? `${((stats.completedCount / stats.projectCount) * 100).toFixed(1)}%`
+              : undefined
+          }
         />
       </div>
 
       {/* Funding breakdown */}
       <div className="rounded-lg border border-border p-4">
-        <h4 className="mb-3 text-sm font-semibold"><Trans>Surse de finanțare</Trans></h4>
+        <h4 className="mb-3 text-sm font-semibold">
+          <Trans>Funding sources</Trans>
+        </h4>
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <p className="text-xs text-muted-foreground"><Trans>Grant</Trans></p>
-            <p className="text-lg font-bold">{formatPnrrCurrency(stats.grantValue, currency)}</p>
+            <p className="text-xs text-muted-foreground">
+              <Trans>Grant</Trans>
+            </p>
+            <p className="text-lg font-bold">
+              {formatPnrrCurrency(stats.grantValue, currency)}
+            </p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground"><Trans>Împrumut</Trans></p>
-            <p className="text-lg font-bold">{formatPnrrCurrency(stats.loanValue, currency)}</p>
+            <p className="text-xs text-muted-foreground">
+              <Trans>Loan</Trans>
+            </p>
+            <p className="text-lg font-bold">
+              {formatPnrrCurrency(stats.loanValue, currency)}
+            </p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground"><Trans>Grant + Împrumut</Trans></p>
-            <p className="text-lg font-bold">{formatPnrrCurrency(stats.mixedValue, currency)}</p>
+            <p className="text-xs text-muted-foreground">
+              <Trans>Grant + loan</Trans>
+            </p>
+            <p className="text-lg font-bold">
+              {formatPnrrCurrency(stats.mixedValue, currency)}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Entity breakdown */}
       <div className="rounded-lg border border-border p-4">
-        <h4 className="mb-3 text-sm font-semibold"><Trans>Tip entitate beneficiar</Trans></h4>
+        <h4 className="mb-3 text-sm font-semibold">
+          <Trans>Beneficiary entity type</Trans>
+        </h4>
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <p className="text-xs text-muted-foreground"><Trans>Publice</Trans></p>
-            <p className="text-lg font-bold">{formatNumber(stats.publicCount, 'compact')}</p>
+            <p className="text-xs text-muted-foreground">
+              <Trans>Public</Trans>
+            </p>
+            <p className="text-lg font-bold">
+              {formatNumber(stats.publicCount, 'compact')}
+            </p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground"><Trans>Private</Trans></p>
-            <p className="text-lg font-bold">{formatNumber(stats.privateCount, 'compact')}</p>
+            <p className="text-xs text-muted-foreground">
+              <Trans>Private</Trans>
+            </p>
+            <p className="text-lg font-bold">
+              {formatNumber(stats.privateCount, 'compact')}
+            </p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground"><Trans>Naționale</Trans></p>
-            <p className="text-lg font-bold">{formatNumber(stats.nationalCount, 'compact')}</p>
+            <p className="text-xs text-muted-foreground">
+              <Trans>National</Trans>
+            </p>
+            <p className="text-lg font-bold">
+              {formatNumber(stats.nationalCount, 'compact')}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Progress breakdown */}
       <div className="rounded-lg border border-border p-4">
-        <h4 className="mb-3 text-sm font-semibold"><Trans>Stadiu implementare</Trans></h4>
+        <h4 className="mb-3 text-sm font-semibold">
+          <Trans>Implementation status</Trans>
+        </h4>
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <p className="text-xs text-muted-foreground"><Trans>Finalizate</Trans></p>
-            <p className="text-lg font-bold">{formatNumber(stats.completedCount, 'compact')}</p>
+            <p className="text-xs text-muted-foreground">
+              <Trans>Completed</Trans>
+            </p>
+            <p className="text-lg font-bold">
+              {formatNumber(stats.completedCount, 'compact')}
+            </p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground"><Trans>În progres</Trans></p>
-            <p className="text-lg font-bold">{formatNumber(stats.inProgressCount, 'compact')}</p>
+            <p className="text-xs text-muted-foreground">
+              <Trans>In progress</Trans>
+            </p>
+            <p className="text-lg font-bold">
+              {formatNumber(stats.inProgressCount, 'compact')}
+            </p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground"><Trans>Neîncepute</Trans></p>
-            <p className="text-lg font-bold">{formatNumber(stats.notStartedCount, 'compact')}</p>
+            <p className="text-xs text-muted-foreground">
+              <Trans>Not started</Trans>
+            </p>
+            <p className="text-lg font-bold">
+              {formatNumber(stats.notStartedCount, 'compact')}
+            </p>
           </div>
         </div>
       </div>

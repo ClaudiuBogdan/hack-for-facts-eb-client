@@ -4,7 +4,11 @@ import { formatNumber } from '@/lib/utils'
 import type { PnrrAggregates } from '@/schemas/pnrr'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import { AlertCircle, ChevronDown } from 'lucide-react'
 
 export function PnrrDataQualityBanner({
@@ -26,14 +30,16 @@ export function PnrrDataQualityBanner({
               <AlertCircle className="h-4 w-4 shrink-0" />
               <span>
                 <Trans>
-                  Datele conțin {formatNumber(aggregates.missingFinProgressPercent)}% proiecte fără
-                  progres financiar și {formatNumber(duplicateCount)} duplicate.
+                  The data contains{' '}
+                  {formatNumber(aggregates.missingFinProgressPercent)}% projects
+                  without financial progress and {formatNumber(duplicateCount)}{' '}
+                  duplicates.
                 </Trans>
               </span>
             </div>
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
-                <Trans>Detalii</Trans>
+                <Trans>Details</Trans>
                 <ChevronDown
                   className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`}
                 />
@@ -44,15 +50,17 @@ export function PnrrDataQualityBanner({
             <div className="mt-3 space-y-2 text-xs text-amber-700 dark:text-amber-300">
               <p>
                 <Trans>
-                  Progresul financiar lipsește pentru majoritatea proiectelor din anumite componente
-                  (ex: C9 — instrumente financiare). Deduplicarea se face pe baza titlului
-                  normalizat + CUI + componentă + măsură.
+                  Financial progress is missing for most projects in certain
+                  components (for example: C9 - financial instruments).
+                  Deduplication is based on normalized title + CUI + component +
+                  measure.
                 </Trans>
               </p>
               <p>
                 <Trans>
-                  Valoarea brută: {formatNumber(aggregates.rawTotalValue)} €. Valoarea după
-                  deduplicare: {formatNumber(aggregates.deduplicatedTotalValue)} €.
+                  Raw value: {formatNumber(aggregates.rawTotalValue)} €. Value
+                  after deduplication:{' '}
+                  {formatNumber(aggregates.deduplicatedTotalValue)} €.
                 </Trans>
               </p>
             </div>

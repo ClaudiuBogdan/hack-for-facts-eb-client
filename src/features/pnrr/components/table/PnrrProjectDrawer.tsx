@@ -45,11 +45,16 @@ export function PnrrProjectDrawer({
   const comp = PNRR_COMPONENTS[project.componentCode]
   const measure = PNRR_MEASURES[project.measureFullCode]
   const techVal =
-    project.techProgress === 'in-implementation' ? 15 : project.techProgress ?? 0
+    project.techProgress === 'in-implementation'
+      ? 15
+      : (project.techProgress ?? 0)
   const finVal =
-    project.finProgress === 'in-implementation' ? 15 : project.finProgress ?? 0
+    project.finProgress === 'in-implementation'
+      ? 15
+      : (project.finProgress ?? 0)
   const componentColor = comp?.color ?? 'var(--pnrr-blue)'
-  const hasSignals = project.anomalies.length > 0 || project.dataQualitySignals.length > 0
+  const hasSignals =
+    project.anomalies.length > 0 || project.dataQualitySignals.length > 0
 
   return (
     <Sheet open={!!project} onOpenChange={(open) => !open && onClose()}>
@@ -75,7 +80,11 @@ export function PnrrProjectDrawer({
                 ) : (
                   <Wrench className="h-4 w-4" />
                 )}
-                {measure.type === 'reform' ? <Trans>Reformă</Trans> : <Trans>Investiție</Trans>}
+                {measure.type === 'reform' ? (
+                  <Trans>Reform</Trans>
+                ) : (
+                  <Trans>Investment</Trans>
+                )}
               </span>
             )}
           </div>
@@ -92,13 +101,14 @@ export function PnrrProjectDrawer({
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <MetricBox
               icon={Wallet}
-              label={t`Valoare`}
+              label={t`Value`}
               value={formatPnrrCurrency(project.valueEur, currency, 'standard')}
               color={componentColor}
             />
+
             <MetricBox
               icon={Gauge}
-              label={t`Finanțare`}
+              label={t`Funding`}
               value={getFundingLabel(project.fundingSource)}
               color={componentColor}
             />
@@ -106,24 +116,25 @@ export function PnrrProjectDrawer({
 
           <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4">
             <ProgressMeter
-              label={t`Progres tehnic`}
+              label={t`Technical progress`}
               value={techVal}
               displayValue={
                 project.techProgress === 'in-implementation'
-                  ? t`În implementare (<30%)`
+                  ? t`In implementation (<30%)`
                   : `${techVal}%`
               }
               color={componentColor}
             />
+
             <div className="my-4 h-px bg-[var(--pnrr-border)]" />
             <ProgressMeter
-              label={t`Progres financiar`}
+              label={t`Financial progress`}
               value={project.finProgress == null ? null : finVal}
               displayValue={
                 project.finProgress == null
-                  ? t`Fără date`
+                  ? t`No data`
                   : project.finProgress === 'in-implementation'
-                    ? t`În implementare (<30%)`
+                    ? t`In implementation (<30%)`
                     : `${finVal}%`
               }
               color={componentColor}
@@ -131,7 +142,7 @@ export function PnrrProjectDrawer({
           </div>
 
           <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)]">
-            <DetailRow icon={Building2} label={t`Beneficiar`}>
+            <DetailRow icon={Building2} label={t`Beneficiary`}>
               <span>{project.beneficiary}</span>
             </DetailRow>
             <DetailRow label={t`CUI`}>
@@ -142,19 +153,19 @@ export function PnrrProjectDrawer({
                     type="button"
                     className="inline-flex h-6 w-6 items-center justify-center rounded-sm border border-[var(--pnrr-border)] text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)]"
                     onClick={() => navigator.clipboard.writeText(project.cui!)}
-                    aria-label={t`Copiază CUI`}
+                    aria-label={t`Copy CUI`}
                   >
                     <Copy className="h-3.5 w-3.5" />
                   </button>
                 )}
               </span>
             </DetailRow>
-            <DetailRow icon={MapPin} label={t`Localizare`}>
+            <DetailRow icon={MapPin} label={t`Location`}>
               <span>
                 {project.locality}, {project.county}
               </span>
             </DetailRow>
-            <DetailRow label={t`Tip beneficiar`}>
+            <DetailRow label={t`Beneficiary type`}>
               <span>{getEntityTypeLabel(project.entityType)}</span>
             </DetailRow>
             <DetailRow label={t`CRI`}>
@@ -167,7 +178,7 @@ export function PnrrProjectDrawer({
           {hasSignals && (
             <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4">
               <h3 className="mb-3 text-sm font-black uppercase tracking-wide text-[var(--pnrr-fg)]">
-                <Trans>Semnale</Trans>
+                <Trans>Signals</Trans>
               </h3>
               <div className="space-y-2">
                 {project.anomalies.length > 0 &&
@@ -193,10 +204,11 @@ export function PnrrProjectDrawer({
 
           <div className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4">
             <h3 className="mb-2 text-sm font-black uppercase tracking-wide text-[var(--pnrr-fg)]">
-              <Trans>Componentă</Trans>
+              <Trans>Component</Trans>
             </h3>
             <p className="text-sm leading-relaxed text-[var(--pnrr-fg)]">
-              {comp?.descriptionRo ?? t`Nu există descriere pentru această componentă.`}
+              {comp?.descriptionRo ??
+                t`No description exists for this component.`}
             </p>
           </div>
         </div>
@@ -214,7 +226,7 @@ function DrawerFooterClose({ onClose }: { readonly onClose: () => void }) {
         onClick={onClose}
         className="flex h-11 w-full items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-fg)] px-4 text-sm font-black uppercase tracking-wide text-[var(--pnrr-bg)] transition-colors hover:bg-[var(--pnrr-card)] hover:text-[var(--pnrr-fg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
       >
-        <Trans>Închide</Trans>
+        <Trans>Close</Trans>
       </button>
     </div>
   )
@@ -268,7 +280,7 @@ function ProgressMeter({
       {value == null ? (
         <div className="flex h-9 items-center border-2 border-dashed border-[var(--pnrr-border)] px-3 text-xs font-black uppercase tracking-wide text-[var(--pnrr-muted)]">
           <Database className="mr-2 h-4 w-4" />
-          <Trans>Lipsă în dataset</Trans>
+          <Trans>Missing from dataset</Trans>
         </div>
       ) : (
         <div
@@ -325,7 +337,7 @@ function SignalChip({
         'flex items-center gap-2 border-2 px-3 py-2 text-sm font-black uppercase tracking-wide',
         tone === 'red'
           ? 'border-[var(--pnrr-red)] bg-[var(--pnrr-red)]/10 text-[var(--pnrr-red)]'
-          : 'border-[var(--pnrr-blue)] bg-[var(--pnrr-blue)]/10 text-[var(--pnrr-blue)]'
+          : 'border-[var(--pnrr-blue)] bg-[var(--pnrr-blue)]/10 text-[var(--pnrr-blue)]',
       )}
     >
       <Icon className="h-4 w-4 shrink-0" />
@@ -336,12 +348,12 @@ function SignalChip({
 
 function getFundingLabel(source: PnrrProject['fundingSource']): string {
   if (source === 'grant') return t`Grant`
-  if (source === 'loan') return t`Împrumut`
-  return t`Grant + împrumut`
+  if (source === 'loan') return t`Loan`
+  return t`Grant + loan`
 }
 
 function getEntityTypeLabel(type: PnrrEntityType): string {
-  if (type === 'private') return t`Privat`
-  if (type === 'national') return t`Național`
+  if (type === 'private') return t`Private`
+  if (type === 'national') return t`National`
   return t`Public`
 }

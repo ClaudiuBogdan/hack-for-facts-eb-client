@@ -13,13 +13,15 @@ export type ProgressCategoryKey =
   | 'not-started'
   | 'unknown'
 
-export const PROGRESS_CATEGORY_LABELS: Readonly<Record<ProgressCategoryKey, string>> = {
-  completed: t`Finalizat`,
-  advanced: t`Avansat (70-99%)`,
-  mid: t`În progres (30-70%)`,
-  under30: t`Sub 30%`,
-  'not-started': t`Neînceput`,
-  unknown: t`Necunoscut`,
+export const PROGRESS_CATEGORY_LABELS: Readonly<
+  Record<ProgressCategoryKey, string>
+> = {
+  completed: t`Completed`,
+  advanced: t`Advanced (70-99%)`,
+  mid: t`In progress (30-70%)`,
+  under30: t`Under 30%`,
+  'not-started': t`Not started`,
+  unknown: t`Unknown`,
 }
 
 /**
@@ -44,8 +46,8 @@ export const PROGRESS_CATEGORY_TO_STATUS: Readonly<
 
 export const FUNDING_SOURCE_LABELS: Readonly<Record<string, string>> = {
   grant: t`Grant`,
-  loan: t`Împrumut`,
-  'grant/loan': t`Grant + Împrumut`,
+  loan: t`Loan`,
+  'grant/loan': t`Grant + loan`,
 }
 
 // ---------------------------------------------------------------------------
@@ -53,32 +55,34 @@ export const FUNDING_SOURCE_LABELS: Readonly<Record<string, string>> = {
 // ---------------------------------------------------------------------------
 
 export const ENTITY_TYPE_LABELS: Readonly<Record<string, string>> = {
-  public: t`Instituții publice`,
-  private: t`Companii private`,
-  national: t`Entități naționale`,
+  public: t`Public institutions`,
+  private: t`Private companies`,
+  national: t`National entities`,
 }
 
 // ---------------------------------------------------------------------------
 // Beneficiary type labels
 // ---------------------------------------------------------------------------
 
-export const BENEFICIARY_TYPE_LABELS: Readonly<Record<PnrrBeneficiaryType, string>> = {
-  public: t`Publice`,
+export const BENEFICIARY_TYPE_LABELS: Readonly<
+  Record<PnrrBeneficiaryType, string>
+> = {
+  public: t`Public`,
   private: t`Private`,
-  national: t`Naționale`,
+  national: t`National`,
   uat: t`UAT`,
-  'county-council': t`Consilii județene`,
-  ministry: t`Ministere`,
-  'central-agency': t`Agenții centrale`,
-  education: t`Educație`,
-  health: t`Sănătate`,
-  military: t`Militare`,
-  company: t`Companii`,
-  ngo: t`ONG / asociații`,
-  religious: t`Culte`,
-  culture: t`Cultură`,
+  'county-council': t`County councils`,
+  ministry: t`Ministries`,
+  'central-agency': t`Central agencies`,
+  education: t`Education`,
+  health: t`Health`,
+  military: t`Military`,
+  company: t`Companies`,
+  ngo: t`NGOs / associations`,
+  religious: t`Religious organizations`,
+  culture: t`Culture`,
   social: t`Social`,
-  'other-public': t`Alte instituții publice`,
+  'other-public': t`Other public institutions`,
 }
 
 export const BENEFICIARY_TYPE_OPTIONS: readonly {
@@ -89,19 +93,23 @@ export const BENEFICIARY_TYPE_OPTIONS: readonly {
   {
     value: 'public',
     label: BENEFICIARY_TYPE_LABELS.public,
-    description: t`Toate instituțiile publice locale și centrale`,
+    description: t`All local and central public institutions`,
   },
   {
     value: 'private',
     label: BENEFICIARY_TYPE_LABELS.private,
-    description: t`Companii și beneficiari privați`,
+    description: t`Companies and private beneficiaries`,
   },
   {
     value: 'national',
     label: BENEFICIARY_TYPE_LABELS.national,
-    description: t`Ministere și instituții centrale fără UAT local`,
+    description: t`Ministries and central institutions without local UAT`,
   },
-  { value: 'uat', label: BENEFICIARY_TYPE_LABELS.uat, description: t`Primării, municipii, orașe și comune` },
+  {
+    value: 'uat',
+    label: BENEFICIARY_TYPE_LABELS.uat,
+    description: t`City halls, municipalities, towns, and communes`,
+  },
   { value: 'county-council', label: BENEFICIARY_TYPE_LABELS['county-council'] },
   { value: 'ministry', label: BENEFICIARY_TYPE_LABELS.ministry },
   { value: 'central-agency', label: BENEFICIARY_TYPE_LABELS['central-agency'] },

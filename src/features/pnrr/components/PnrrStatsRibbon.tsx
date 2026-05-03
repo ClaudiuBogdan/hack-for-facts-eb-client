@@ -5,14 +5,13 @@ import type { PnrrAggregates } from '@/schemas/pnrr'
 import { t } from '@lingui/core/macro'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import {
-  Wallet,
-  TrendingUp,
-  AlertTriangle,
-  Landmark,
-} from 'lucide-react'
+import { Wallet, TrendingUp, AlertTriangle, Landmark } from 'lucide-react'
 
-export function PnrrStatsRibbon({ aggregates }: { readonly aggregates: PnrrAggregates }) {
+export function PnrrStatsRibbon({
+  aggregates,
+}: {
+  readonly aggregates: PnrrAggregates
+}) {
   const currency = usePnrrCurrency()
   const absorptionRate =
     aggregates.rawTotalValue > 0
@@ -21,9 +20,9 @@ export function PnrrStatsRibbon({ aggregates }: { readonly aggregates: PnrrAggre
 
   const stats = [
     {
-      label: t`Valoare totală`,
+      label: t`Total value`,
       value: formatPnrrCurrency(aggregates.rawTotalValue, currency),
-      sublabel: t`${formatPnrrCurrency(aggregates.deduplicatedTotalValue, currency, 'standard')} deduplicat`,
+      sublabel: t`${formatPnrrCurrency(aggregates.deduplicatedTotalValue, currency, 'standard')} deduplicated`,
       icon: Wallet,
       iconBg: 'bg-blue-500/10',
       iconColor: 'text-blue-500',
@@ -31,9 +30,9 @@ export function PnrrStatsRibbon({ aggregates }: { readonly aggregates: PnrrAggre
       variant: 'default' as const,
     },
     {
-      label: t`Rata de absorbție`,
+      label: t`Absorption rate`,
       value: `${formatNumber(absorptionRate)}%`,
-      sublabel: t`${formatNumber(aggregates.completedCount)} finalizate din ${formatNumber(aggregates.rawProjectCount)}`,
+      sublabel: t`${formatNumber(aggregates.completedCount)} completed out of ${formatNumber(aggregates.rawProjectCount)}`,
       icon: TrendingUp,
       iconBg: 'bg-emerald-500/10',
       iconColor: 'text-emerald-500',
@@ -41,9 +40,9 @@ export function PnrrStatsRibbon({ aggregates }: { readonly aggregates: PnrrAggre
       variant: 'default' as const,
     },
     {
-      label: t`Datorie viitoare`,
+      label: t`Future debt`,
       value: formatPnrrCurrency(aggregates.loanTotal, currency),
-      sublabel: t`${formatNumber(aggregates.loanPercent)}% din total sunt împrumuturi`,
+      sublabel: t`${formatNumber(aggregates.loanPercent)}% of the total is loans`,
       icon: Landmark,
       iconBg: 'bg-red-500/10',
       iconColor: 'text-red-500',
@@ -51,9 +50,9 @@ export function PnrrStatsRibbon({ aggregates }: { readonly aggregates: PnrrAggre
       variant: 'danger' as const,
     },
     {
-      label: t`Date lipsă`,
+      label: t`Missing data`,
       value: `${formatNumber(aggregates.missingFinProgressPercent)}%`,
-      sublabel: t`${formatNumber(aggregates.missingFinProgressCount)} proiecte fără progres financiar`,
+      sublabel: t`${formatNumber(aggregates.missingFinProgressCount)} projects without financial progress`,
       icon: AlertTriangle,
       iconBg: 'bg-amber-500/10',
       iconColor: 'text-amber-500',
@@ -77,7 +76,9 @@ export function PnrrStatsRibbon({ aggregates }: { readonly aggregates: PnrrAggre
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {stat.label}
                   </p>
-                  <p className="text-2xl font-black tracking-tight">{stat.value}</p>
+                  <p className="text-2xl font-black tracking-tight">
+                    {stat.value}
+                  </p>
                   {stat.progressValue !== undefined && (
                     <div className="w-32">
                       <Progress value={stat.progressValue} className="h-1.5" />

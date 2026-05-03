@@ -40,10 +40,10 @@ export function PnrrProjectsView({
         <div className="flex items-center gap-4">
           <span className="h-10 w-1.5 bg-[var(--pnrr-blue)]" />
           <h2 className="text-2xl font-black tracking-tight text-[var(--pnrr-fg)]">
-            <Trans>Proiecte</Trans>
+            <Trans>Projects</Trans>
           </h2>
           <span className="hidden text-sm text-[var(--pnrr-muted)] sm:inline">
-            {projects.length.toLocaleString('ro-RO')} <Trans>proiecte</Trans>
+            {projects.length.toLocaleString('ro-RO')} <Trans>projects</Trans>
           </span>
         </div>
       </div>
@@ -53,11 +53,12 @@ export function PnrrProjectsView({
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--pnrr-muted)]" />
         <input
           type="text"
-          placeholder={t`Caută proiect...`}
+          placeholder={t`Search project...`}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           className="h-10 w-full border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-9 py-2 text-sm text-[var(--pnrr-fg)] placeholder:text-[var(--pnrr-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
         />
+
         {inputValue && (
           <button
             type="button"

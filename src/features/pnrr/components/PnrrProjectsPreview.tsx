@@ -11,14 +11,17 @@ interface PnrrProjectsPreviewProps {
   readonly filterState: ReturnType<typeof usePnrrFilterState>
 }
 
-export function PnrrProjectsPreview({ projects, filterState }: PnrrProjectsPreviewProps) {
-  const [selectedProject, setSelectedProject] = useState<PnrrProject | null>(null)
+export function PnrrProjectsPreview({
+  projects,
+  filterState,
+}: PnrrProjectsPreviewProps) {
+  const [selectedProject, setSelectedProject] = useState<PnrrProject | null>(
+    null,
+  )
   const currency = usePnrrCurrency()
 
   const topProjects = useMemo(() => {
-    return [...projects]
-      .sort((a, b) => b.valueEur - a.valueEur)
-      .slice(0, 8)
+    return [...projects].sort((a, b) => b.valueEur - a.valueEur).slice(0, 8)
   }, [projects])
 
   if (topProjects.length === 0) return null
@@ -30,18 +33,20 @@ export function PnrrProjectsPreview({ projects, filterState }: PnrrProjectsPrevi
         <div className="flex min-w-0 items-center gap-4">
           <span className="h-8 w-1.5 bg-[var(--pnrr-blue)]" />
           <h2 className="text-2xl font-black tracking-tight text-[var(--pnrr-fg)]">
-            <Trans>Proiecte</Trans>
+            <Trans>Projects</Trans>
           </h2>
           <span className="hidden text-sm text-[var(--pnrr-muted)] sm:inline">
-            {projects.length} <Trans>în total</Trans>
+            {projects.length} <Trans>in total</Trans>
           </span>
         </div>
         <button
           onClick={() => filterState.setView('projects')}
           className="group inline-flex shrink-0 items-center gap-2 text-sm font-black uppercase tracking-wide text-[var(--pnrr-fg)] transition-colors hover:text-[var(--pnrr-blue)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
         >
-          <Trans>Vezi toate proiectele</Trans>
-          <span className="transition-transform group-hover:translate-x-1">→</span>
+          <Trans>View all projects</Trans>
+          <span className="transition-transform group-hover:translate-x-1">
+            →
+          </span>
         </button>
       </div>
 
