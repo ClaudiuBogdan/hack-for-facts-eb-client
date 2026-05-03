@@ -22,9 +22,8 @@ import { getPnrrUatLabel } from '../../lib/pnrr-uat-labels'
 function formatUatFilterLabel(
   siruta: string,
   labelsBySiruta: ReadonlyMap<string, string> | undefined,
-  explicitName?: string,
 ): string {
-  return explicitName || labelsBySiruta?.get(siruta) || getPnrrUatLabel(siruta) || siruta
+  return labelsBySiruta?.get(siruta) || getPnrrUatLabel(siruta) || siruta
 }
 
 export function PnrrActiveFilters({
@@ -77,11 +76,7 @@ export function PnrrActiveFilters({
       result.push({
         key: 'uat-siruta',
         prefix: t`UAT`,
-        value: formatUatFilterLabel(
-          search.uatSiruta,
-          uatLabelsBySiruta,
-          search.uatName,
-        ),
+        value: formatUatFilterLabel(search.uatSiruta, uatLabelsBySiruta),
         onRemove: () => filterState.setUatFilter(undefined),
       })
     }
@@ -251,7 +246,6 @@ export function PnrrActiveFilters({
     search.beneficiarySearch,
     search.beneficiaryCui,
     search.uatSiruta,
-    search.uatName,
     search.uatSirutas,
     uatLabelsBySiruta,
     search.components,

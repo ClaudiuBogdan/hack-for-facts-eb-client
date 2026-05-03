@@ -4,12 +4,94 @@ import { cleanPnrrSearch, parsePnrrSearchString } from '@/schemas/pnrr'
 import type { PnrrSearchState, PnrrView } from '@/schemas/pnrr'
 import type { Currency } from '@/schemas/charts'
 
+type AnomalyPanelSignal =
+  | { readonly kind: 'risk'; readonly type: string }
+  | { readonly kind: 'data-quality'; readonly type: string }
+
 const clearMapViewport = (search: Partial<PnrrSearchState>): Partial<PnrrSearchState> => {
   const next = { ...search }
   delete next.mapLat
   delete next.mapLng
   delete next.mapZoom
   return next
+}
+
+const clearPanelSearch = (search: Partial<PnrrSearchState>): Partial<PnrrSearchState> => {
+  const next = { ...search }
+  delete next.panel
+  delete next.panelProjectId
+  delete next.panelBeneficiaryCui
+  delete next.panelCountyCode
+  delete next.panelUatSiruta
+  delete next.panelSignalKind
+  delete next.panelSignalType
+  return next
+}
+
+const getPanelSearch = (search: Partial<PnrrSearchState>): Partial<PnrrSearchState> => ({
+  panel: search.panel,
+  panelProjectId: search.panelProjectId,
+  panelBeneficiaryCui: search.panelBeneficiaryCui,
+  panelCountyCode: search.panelCountyCode,
+  panelUatSiruta: search.panelUatSiruta,
+  panelSignalKind: search.panelSignalKind,
+  panelSignalType: search.panelSignalType,
+})
+
+function normalizeSearchParamScalar(value: string): string {
+  const trimmed = value.trim()
+  try {
+    const parsed = JSON.parse(trimmed)
+    if (
+      typeof parsed === 'string' ||
+      typeof parsed === 'number' ||
+      typeof parsed === 'boolean'
+    ) {
+      return String(parsed)
+    }
+  } catch {
+    // The router can emit plain values; keep comparing against the raw text.
+  }
+
+  return trimmed
+}
+
+function searchParamValueMatches(value: string, canonicalValue: unknown): boolean {
+  if (Array.isArray(canonicalValue)) {
+    try {
+      const parsed = JSON.parse(value)
+      if (Array.isArray(parsed)) {
+        return (
+          parsed.length === canonicalValue.length &&
+          parsed.every((item, index) => String(item) === String(canonicalValue[index]))
+        )
+      }
+    } catch {
+      // Fall through to a scalar comparison for non-JSON array params.
+    }
+
+    return canonicalValue.length === 1 && normalizeSearchParamScalar(value) === canonicalValue[0]
+  }
+
+  return normalizeSearchParamScalar(value) === String(canonicalValue)
+}
+
+function hasCanonicalSearchParams(
+  searchStr: string,
+  canonicalSearch: Partial<PnrrSearchState>,
+): boolean {
+  const params = new URLSearchParams(searchStr)
+  const canonicalKeys = new Set(Object.keys(canonicalSearch))
+
+  const hasOnlyCanonicalKeys = Array.from(params.keys()).every((key) =>
+    canonicalKeys.has(key),
+  )
+  if (!hasOnlyCanonicalKeys) return false
+
+  return Object.entries(canonicalSearch).every(([key, value]) => {
+    const rawValue = params.get(key)
+    return rawValue !== null && searchParamValueMatches(rawValue, value)
+  })
 }
 
 export function usePnrrFilterState() {
@@ -21,12 +103,7 @@ export function usePnrrFilterState() {
     if (!location.searchStr) return
 
     const canonicalSearch = parsePnrrSearchString(location.searchStr)
-    const canonicalKeys = new Set(Object.keys(canonicalSearch))
-    const hasOnlyCanonicalKeys = Array.from(new URLSearchParams(location.searchStr).keys()).every(
-      (key) => canonicalKeys.has(key)
-    )
-
-    if (hasOnlyCanonicalKeys) return
+    if (hasCanonicalSearchParams(location.searchStr, canonicalSearch)) return
 
     navigate({
       search: canonicalSearch,
@@ -49,6 +126,21 @@ export function usePnrrFilterState() {
     [navigate]
   )
 
+  const updatePanelSearch = useCallback(
+    (partial: Partial<PnrrSearchState>) => {
+      navigate({
+        search: (prev) =>
+          cleanPnrrSearch({
+            ...clearPanelSearch(prev as Partial<PnrrSearchState>),
+            ...partial,
+          }),
+        replace: true,
+        resetScroll: false,
+      })
+    },
+    [navigate],
+  )
+
   const setView = useCallback(
     (view: PnrrView) => {
       navigate({
@@ -66,7 +158,7 @@ export function usePnrrFilterState() {
       navigate({
         search: (prev) =>
           cleanPnrrSearch({
-            ...(prev as Partial<PnrrSearchState>),
+            ...clearPanelSearch(prev as Partial<PnrrSearchState>),
             view: 'projects',
             beneficiarySearch: beneficiary.cui ? undefined : beneficiary.name,
             beneficiaryCui: beneficiary.cui ?? undefined,
@@ -84,10 +176,9 @@ export function usePnrrFilterState() {
       navigate({
         search: (prev) =>
           cleanPnrrSearch({
-            ...(prev as Partial<PnrrSearchState>),
+            ...clearPanelSearch(prev as Partial<PnrrSearchState>),
             view,
             uatSiruta: uat.siruta,
-            uatName: uat.name,
             uatSirutas: undefined,
             page: 1,
           }),
@@ -115,7 +206,7 @@ export function usePnrrFilterState() {
 
   const setUatFilter = useCallback(
     (value: { readonly siruta: string; readonly name: string } | undefined) =>
-      updateSearch({ uatSiruta: value?.siruta, uatName: value?.name, uatSirutas: undefined }),
+      updateSearch({ uatSiruta: value?.siruta, uatSirutas: undefined }),
     [updateSearch]
   )
 
@@ -261,15 +352,118 @@ export function usePnrrFilterState() {
     [navigate]
   )
 
-  const clearFilters = useCallback(() => {
+  const openProjectPanel = useCallback(
+    (projectId: string) => {
+      navigate({
+        search: (prev) => {
+          const previous = prev as Partial<PnrrSearchState>
+          const isNestedMapPanel =
+            (previous.panel === 'map-county' && previous.panelCountyCode) ||
+            (previous.panel === 'map-uat' && previous.panelUatSiruta)
+
+          if (isNestedMapPanel) {
+            return cleanPnrrSearch({
+              ...previous,
+              panelProjectId: projectId,
+            })
+          }
+
+          return cleanPnrrSearch({
+            ...clearPanelSearch(previous),
+            panel: 'project',
+            panelProjectId: projectId,
+          })
+        },
+        replace: true,
+        resetScroll: false,
+      })
+    },
+    [navigate],
+  )
+
+  const openBeneficiaryPanel = useCallback(
+    (beneficiary: { readonly name: string; readonly cui: string | null }) => {
+      if (!beneficiary.cui) return
+
+      updatePanelSearch({
+        panel: 'beneficiary',
+        panelBeneficiaryCui: beneficiary.cui,
+      })
+    },
+    [updatePanelSearch],
+  )
+
+  const openMapCountyPanel = useCallback(
+    (countyCode: string) => {
+      updatePanelSearch({
+        panel: 'map-county',
+        panelCountyCode: countyCode,
+      })
+    },
+    [updatePanelSearch],
+  )
+
+  const openMapUatPanel = useCallback(
+    (uat: { readonly siruta: string }) => {
+      updatePanelSearch({
+        panel: 'map-uat',
+        panelUatSiruta: uat.siruta,
+      })
+    },
+    [updatePanelSearch],
+  )
+
+  const openAnomalyInfoPanel = useCallback(
+    (signal?: AnomalyPanelSignal) => {
+      updatePanelSearch({
+        panel: 'anomaly-info',
+        panelSignalKind: signal?.kind,
+        panelSignalType: signal?.type,
+      })
+    },
+    [updatePanelSearch],
+  )
+
+  const closePanel = useCallback(() => {
     navigate({
       search: (prev) =>
-        cleanPnrrSearch({
+        cleanPnrrSearch(clearPanelSearch(prev as Partial<PnrrSearchState>)),
+      replace: true,
+      resetScroll: false,
+    })
+  }, [navigate])
+
+  const closeProjectPanel = useCallback(() => {
+    navigate({
+      search: (prev) => {
+        const previous = prev as Partial<PnrrSearchState>
+
+        if (previous.panel === 'project') {
+          return cleanPnrrSearch(clearPanelSearch(previous))
+        }
+
+        const next = { ...previous }
+        delete next.panelProjectId
+        return cleanPnrrSearch(next)
+      },
+      replace: true,
+      resetScroll: false,
+    })
+  }, [navigate])
+
+  const clearFilters = useCallback(() => {
+    navigate({
+      search: (prev) => {
+        const previous = prev as Partial<PnrrSearchState>
+
+        return cleanPnrrSearch({
+          ...getPanelSearch(previous),
           view: search.view,
           currency: search.currency,
           page: 1,
-          pageSize: (prev as Partial<PnrrSearchState>).pageSize,
-        }),
+          pageSize: previous.pageSize,
+        })
+      },
       replace: true,
       resetScroll: false,
     })
@@ -303,6 +497,13 @@ export function usePnrrFilterState() {
     setSorting,
     setPagination,
     setMapView,
+    openProjectPanel,
+    openBeneficiaryPanel,
+    openMapCountyPanel,
+    openMapUatPanel,
+    openAnomalyInfoPanel,
+    closePanel,
+    closeProjectPanel,
     clearFilters,
   }
 }

@@ -39,10 +39,16 @@ export function PnrrAnomaliesView({
   readonly filterState: ReturnType<typeof usePnrrFilterState>
 }) {
   const currency = usePnrrCurrency()
-  const [infoPanelOpen, setInfoPanelOpen] = useState(false)
-  const [selectedSignal, setSelectedSignal] = useState<
-    SelectedSignal | undefined
-  >()
+  const infoPanelOpen = filterState.search.panel === 'anomaly-info'
+  const selectedSignal: SelectedSignal | undefined =
+    filterState.search.panelSignalKind && filterState.search.panelSignalType
+      ? {
+          kind: filterState.search.panelSignalKind,
+          type: filterState.search.panelSignalType as
+            | AnomalyType
+            | DataQualitySignalType,
+        } as SelectedSignal
+      : undefined
 
   const globalSearch = filterState.search.search ?? ''
   const [inputValue, setInputValue] = useState(globalSearch)
@@ -95,13 +101,11 @@ export function PnrrAnomaliesView({
   })
 
   const openInfoForType = (type: AnomalyType) => {
-    setSelectedSignal({ kind: 'risk', type })
-    setInfoPanelOpen(true)
+    filterState.openAnomalyInfoPanel({ kind: 'risk', type })
   }
 
   const openInfoForDataQualityType = (type: DataQualitySignalType) => {
-    setSelectedSignal({ kind: 'data-quality', type })
-    setInfoPanelOpen(true)
+    filterState.openAnomalyInfoPanel({ kind: 'data-quality', type })
   }
 
   return (
@@ -149,10 +153,7 @@ export function PnrrAnomaliesView({
             <div className="flex justify-end">
               <button
                 className="inline-flex h-10 items-center gap-3 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-4 text-sm font-black uppercase tracking-wide text-[var(--pnrr-fg)] transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
-                onClick={() => {
-                  setSelectedSignal(undefined)
-                  setInfoPanelOpen(true)
-                }}
+                onClick={() => filterState.openAnomalyInfoPanel()}
               >
                 <BookOpen className="h-5 w-5" />
                 <Trans>Guide</Trans>
@@ -222,7 +223,13 @@ export function PnrrAnomaliesView({
       {/* Info side panel */}
       <PnrrAnomalyInfoPanel
         open={infoPanelOpen}
-        onOpenChange={setInfoPanelOpen}
+        onOpenChange={(open) => {
+          if (open) {
+            filterState.openAnomalyInfoPanel()
+          } else {
+            filterState.closePanel()
+          }
+        }}
         aggregates={aggregates}
         selectedSignal={selectedSignal}
       />

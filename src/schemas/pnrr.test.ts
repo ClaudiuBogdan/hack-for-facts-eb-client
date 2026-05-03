@@ -78,6 +78,87 @@ describe('pnrr search schema', () => {
     })
   })
 
+  it('normalizes UAT filter identifiers and drops untrusted names', () => {
+    expect(
+      parsePnrrSearchString(
+        '?view=projects&uatSiruta=%22147358%22&uatName=Orasul+Brosteni234',
+      ),
+    ).toEqual({
+      view: 'projects',
+      uatSiruta: '147358',
+    })
+  })
+
+  it('keeps project panel state in canonical URL search state', () => {
+    expect(
+      parsePnrrSearchString(
+        '?view=projects&panel=project&panelProjectId=project-1&page=2',
+      ),
+    ).toEqual({
+      view: 'projects',
+      panel: 'project',
+      panelProjectId: 'project-1',
+      page: 2,
+    })
+  })
+
+  it('keeps map UAT panel state with map viewport coordinates', () => {
+    expect(
+      parsePnrrSearchString(
+        '?view=map&granularity=uat&panel=map-uat&panelUatSiruta=123&panelUatName=Fake&panelProjectId=project-1&mapLat=44.9&mapLng=26.8&mapZoom=10',
+      ),
+    ).toEqual({
+      view: 'map',
+      granularity: 'uat',
+      panel: 'map-uat',
+      panelUatSiruta: '123',
+      panelProjectId: 'project-1',
+      mapLat: 44.9,
+      mapLng: 26.8,
+      mapZoom: 10,
+    })
+  })
+
+  it('normalizes JSON-encoded panel identifiers', () => {
+    expect(
+      parsePnrrSearchString(
+        '?panel=map-uat&panelUatSiruta=%22147358%22&panelUatName=Fake',
+      ),
+    ).toEqual({
+      panel: 'map-uat',
+      panelUatSiruta: '147358',
+    })
+  })
+
+  it('keeps map county panel state by county code only', () => {
+    expect(
+      parsePnrrSearchString(
+        '?panel=map-county&panelCountyCode=il&panelCounty=Fake&panelProjectId=project-1',
+      ),
+    ).toEqual({
+      panel: 'map-county',
+      panelCountyCode: 'IL',
+      panelProjectId: 'project-1',
+    })
+  })
+
+  it('keeps anomaly info panel signal state', () => {
+    expect(
+      parsePnrrSearchString(
+        '?view=anomalies&panel=anomaly-info&panelSignalKind=risk&panelSignalType=large-low-progress',
+      ),
+    ).toEqual({
+      view: 'anomalies',
+      panel: 'anomaly-info',
+      panelSignalKind: 'risk',
+      panelSignalType: 'large-low-progress',
+    })
+  })
+
+  it('removes invalid panel state without the required identifier', () => {
+    expect(parsePnrrSearchString('?panel=beneficiary&panelBeneficiaryName=Name')).toEqual({})
+  })
+
   it('keeps national as a detailed beneficiary type filter', () => {
     expect(parsePnrrSearchString('?beneficiaryTypes=%5B%22national%22%5D')).toEqual({
       beneficiaryTypes: ['national'],

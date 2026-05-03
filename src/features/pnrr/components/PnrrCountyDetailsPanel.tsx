@@ -6,6 +6,9 @@ interface PnrrCountyDetailsPanelProps {
   readonly county: string | null
   readonly projects: readonly PnrrProject[]
   readonly onClose: () => void
+  readonly selectedProjectId?: string
+  readonly onProjectClick?: (projectId: string) => void
+  readonly onProjectClose?: () => void
   readonly onBeneficiaryClick?: (beneficiary: {
     readonly name: string
     readonly cui: string | null
@@ -16,6 +19,9 @@ export function PnrrCountyDetailsPanel({
   county,
   projects,
   onClose,
+  selectedProjectId,
+  onProjectClick,
+  onProjectClose,
   onBeneficiaryClick,
 }: PnrrCountyDetailsPanelProps) {
   const countyProjects = county
@@ -32,6 +38,9 @@ export function PnrrCountyDetailsPanel({
       eyebrow={<Trans>County</Trans>}
       projects={countyProjects}
       onClose={onClose}
+      selectedProjectId={selectedProjectId}
+      onProjectClick={onProjectClick}
+      onProjectClose={onProjectClose}
       onBeneficiaryClick={onBeneficiaryClick}
       footerEntityShortcut={
         countyCouncilProject

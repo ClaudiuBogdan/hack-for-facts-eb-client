@@ -84,9 +84,20 @@ export function PnrrOverview({
     [aggregates.countyStats],
   )
 
-  const [selectedProject, setSelectedProject] = useState<PnrrProject | null>(
-    null,
-  )
+  const selectedProject = useMemo(() => {
+    if (
+      filterState.search.panel !== 'project' ||
+      !filterState.search.panelProjectId
+    ) {
+      return null
+    }
+
+    return (
+      projects.find(
+        (project) => project.id === filterState.search.panelProjectId,
+      ) ?? null
+    )
+  }, [filterState.search.panel, filterState.search.panelProjectId, projects])
 
   const componentItems = useMemo(
     () =>
@@ -266,7 +277,7 @@ export function PnrrOverview({
 
         <PnrrEmblematicProjects
           projects={projects}
-          onProjectClick={setSelectedProject}
+          onProjectClick={(project) => filterState.openProjectPanel(project.id)}
         />
 
         <div className="flex flex-wrap gap-8">
@@ -284,7 +295,7 @@ export function PnrrOverview({
 
       <PnrrProjectDrawer
         project={selectedProject}
-        onClose={() => setSelectedProject(null)}
+        onClose={filterState.closePanel}
       />
         </>
       )}

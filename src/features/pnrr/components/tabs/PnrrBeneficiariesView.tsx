@@ -140,7 +140,7 @@ export function PnrrBeneficiariesView({
   readonly projects: readonly PnrrProject[]
   readonly filterState: ReturnType<typeof usePnrrFilterState>
 }) {
-  const [selectedBeneficiary, setSelectedBeneficiary] =
+  const [localSelectedBeneficiary, setLocalSelectedBeneficiary] =
     useState<BeneficiarySummary | null>(null)
   const [sortKey, setSortKey] = useState<SortKey>('value')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
@@ -203,6 +203,27 @@ export function PnrrBeneficiariesView({
     return Array.from(map.values())
   }, [projects])
 
+  const urlSelectedBeneficiary = useMemo(() => {
+    if (filterState.search.panel !== 'beneficiary') return null
+
+    const selectedCui = filterState.search.panelBeneficiaryCui
+    if (!selectedCui) return null
+
+    return (
+      beneficiaries.find(
+        (beneficiary) => beneficiary.cui === selectedCui,
+      ) ?? null
+    )
+  }, [
+    beneficiaries,
+    filterState.search.panel,
+    filterState.search.panelBeneficiaryCui,
+  ])
+  const selectedBeneficiary =
+    filterState.search.panel === 'beneficiary'
+      ? urlSelectedBeneficiary
+      : localSelectedBeneficiary
+
   const sorted = useMemo(() => {
     const arr = [...beneficiaries]
     arr.sort((a, b) => {
@@ -260,6 +281,24 @@ export function PnrrBeneficiariesView({
   )
 
   const goToPage = useCallback((p: number) => setPage(p), [])
+  const handleBeneficiarySelect = useCallback(
+    (beneficiary: BeneficiarySummary) => {
+      if (beneficiary.cui) {
+        setLocalSelectedBeneficiary(null)
+        filterState.openBeneficiaryPanel(beneficiary)
+        return
+      }
+
+      filterState.closePanel()
+      setLocalSelectedBeneficiary(beneficiary)
+    },
+    [filterState],
+  )
+
+  const handleDrawerClose = useCallback(() => {
+    setLocalSelectedBeneficiary(null)
+    filterState.closePanel()
+  }, [filterState])
 
   return (
     <div className="space-y-6">
@@ -372,7 +411,7 @@ export function PnrrBeneficiariesView({
                 key={`${b.name}\u0000${b.cui ?? ''}`}
                 b={b}
                 currency={currency}
-                onSelect={setSelectedBeneficiary}
+                onSelect={handleBeneficiarySelect}
               />
             ))}
           </TableBody>
@@ -462,9 +501,8 @@ export function PnrrBeneficiariesView({
       <BeneficiaryDrawer
         beneficiary={selectedBeneficiary}
         currency={currency}
-        onClose={() => setSelectedBeneficiary(null)}
+        onClose={handleDrawerClose}
         onViewProjects={(beneficiary) => {
-          setSelectedBeneficiary(null)
           filterState.showBeneficiaryProjects({
             name: beneficiary.name,
             cui: beneficiary.cui,

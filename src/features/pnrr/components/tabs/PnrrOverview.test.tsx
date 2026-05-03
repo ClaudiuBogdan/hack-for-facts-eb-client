@@ -67,6 +67,13 @@ function makeFilterState(): ReturnType<typeof usePnrrFilterState> {
     setCurrency: vi.fn(),
     setPagination: vi.fn(),
     setMapView: vi.fn(),
+    openProjectPanel: vi.fn(),
+    openBeneficiaryPanel: vi.fn(),
+    openMapCountyPanel: vi.fn(),
+    openMapUatPanel: vi.fn(),
+    openAnomalyInfoPanel: vi.fn(),
+    closePanel: vi.fn(),
+    closeProjectPanel: vi.fn(),
     clearFilters: vi.fn(),
   }
 }

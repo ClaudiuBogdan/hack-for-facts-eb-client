@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import type { PnrrProject } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
@@ -76,6 +76,13 @@ function makeFilterState(
     setCurrency: vi.fn(),
     setPagination: vi.fn(),
     setMapView: vi.fn(),
+    openProjectPanel: vi.fn(),
+    openBeneficiaryPanel: vi.fn(),
+    openMapCountyPanel: vi.fn(),
+    openMapUatPanel: vi.fn(),
+    openAnomalyInfoPanel: vi.fn(),
+    closePanel: vi.fn(),
+    closeProjectPanel: vi.fn(),
     clearFilters: vi.fn(),
     ...overrides,
   }
@@ -112,5 +119,42 @@ describe('PnrrBeneficiariesView', () => {
     )
 
     expect(screen.getByText('15%')).toBeInTheDocument()
+  })
+
+  it('opens the beneficiary drawer from URL panel state', () => {
+    render(
+      <PnrrBeneficiariesView
+        projects={[PROJECT]}
+        filterState={makeFilterState({
+          search: {
+            ...makeFilterState().search,
+            panel: 'beneficiary',
+            panelBeneficiaryCui: PROJECT.cui ?? undefined,
+          },
+        })}
+      />,
+    )
+
+    expect(screen.getAllByText('Test Beneficiar').length).toBeGreaterThan(1)
+    expect(
+      screen.getByRole('button', { name: /View all filtered projects/ }),
+    ).toBeInTheDocument()
+  })
+
+  it('keeps a local drawer fallback for beneficiaries without CUI', () => {
+    const openBeneficiaryPanel = vi.fn()
+    render(
+      <PnrrBeneficiariesView
+        projects={[makeProject({ cui: null, beneficiary: 'No CUI Beneficiary' })]}
+        filterState={makeFilterState({ openBeneficiaryPanel })}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('row', { name: /No CUI Beneficiary/ }))
+
+    expect(openBeneficiaryPanel).not.toHaveBeenCalled()
+    expect(
+      screen.getByRole('button', { name: /View all filtered projects/ }),
+    ).toBeInTheDocument()
   })
 })

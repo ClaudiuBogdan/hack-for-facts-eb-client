@@ -26,6 +26,7 @@ import { usePnrrCurrency } from '../lib/usePnrrCurrency'
 import { formatPnrrCurrency } from '../lib/formatting'
 import { getPnrrBlueHeatmapColor } from '../lib/map-colors'
 import { buildPnrrMapTooltipHtml } from '../lib/map-tooltip'
+import { getPnrrUatLabelsBySiruta } from '../lib/pnrr-uat-labels'
 import { ArrowRight } from 'lucide-react'
 import { useIsMobile } from '@/hooks/use-mobile'
 import bbox from '@turf/bbox'
@@ -157,14 +158,27 @@ function PreviewLegend({
 }
 
 export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
-  const [selectedUat, setSelectedUat] = useState<{
-    name: string
-    county: string
-    natcode: string
-  } | null>(null)
   const [userViewport, setUserViewport] = useState<MapViewport | null>(null)
   const currency = usePnrrCurrency()
   const isMobile = useIsMobile()
+  const selectedUat = useMemo(() => {
+    const search = filterState.search
+    if (search.panel !== 'map-uat' || !search.panelUatSiruta) return null
+
+    const matchingProject = projects.find(
+      (project) => project.sirutaCode === search.panelUatSiruta,
+    )
+    const sourceLabel = getPnrrUatLabelsBySiruta().get(search.panelUatSiruta)
+
+    return {
+      name:
+        sourceLabel?.name ??
+        matchingProject?.locality ??
+        search.panelUatSiruta,
+      county: sourceLabel?.county ?? matchingProject?.county ?? '',
+      natcode: search.panelUatSiruta,
+    }
+  }, [filterState.search, projects])
 
   const activeSeries = usePnrrMapSeries(projects, 'total-value', 'uat')
   const { data: geoJsonData, isPending: isGeoJsonLoading } =
@@ -291,13 +305,11 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
 
   const handleFeatureClick = useCallback(
     (properties: UatProperties, _event: LeafletMouseEvent) => {
-      setSelectedUat({
-        name: properties.name,
-        county: properties.county,
-        natcode: properties.natcode,
+      filterState.openMapUatPanel({
+        siruta: properties.natcode,
       })
     },
-    [],
+    [filterState],
   )
 
   const handleBeneficiaryClick = useCallback(
@@ -424,7 +436,10 @@ export function PnrrMapPreview({ projects, filterState }: PnrrMapPreviewProps) {
         countyName={selectedUat?.county ?? null}
         natcode={selectedUat?.natcode ?? null}
         projects={projects}
-        onClose={() => setSelectedUat(null)}
+        onClose={filterState.closePanel}
+        selectedProjectId={filterState.search.panelProjectId}
+        onProjectClick={filterState.openProjectPanel}
+        onProjectClose={filterState.closeProjectPanel}
         onBeneficiaryClick={handleBeneficiaryClick}
         onViewProjects={(uat) => filterState.showUatView('projects', uat)}
         onViewBeneficiaries={(uat) =>

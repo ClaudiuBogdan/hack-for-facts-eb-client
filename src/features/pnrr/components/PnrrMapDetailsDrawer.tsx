@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { t } from '@lingui/core/macro'
 import { Trans } from '@lingui/react/macro'
@@ -44,6 +44,9 @@ export function PnrrMapDetailsDrawer({
   onBeneficiaryClick,
   onViewProjects,
   onViewBeneficiaries,
+  selectedProjectId,
+  onProjectClick,
+  onProjectClose,
   footerEntityShortcut,
 }: {
   readonly open: boolean
@@ -58,18 +61,24 @@ export function PnrrMapDetailsDrawer({
   }) => void
   readonly onViewProjects?: () => void
   readonly onViewBeneficiaries?: () => void
+  readonly selectedProjectId?: string
+  readonly onProjectClick?: (projectId: string) => void
+  readonly onProjectClose?: () => void
   readonly footerEntityShortcut?: {
     readonly cui: string | null
     readonly label: string
   }
 }) {
-  const [selectedProject, setSelectedProject] = useState<PnrrProject | null>(
-    null,
-  )
   const currency = usePnrrCurrency()
 
   const stats = useMemo(() => buildMapStats(projects), [projects])
   const totalValue = stats.totalValue
+  const selectedProject = useMemo(() => {
+    if (!selectedProjectId) return null
+    return (
+      projects.find((project) => project.id === selectedProjectId) ?? null
+    )
+  }, [projects, selectedProjectId])
 
   return (
     <>
@@ -153,7 +162,7 @@ export function PnrrMapDetailsDrawer({
                     index={index + 1}
                     project={project}
                     currency={currency}
-                    onClick={() => setSelectedProject(project)}
+                    onClick={() => onProjectClick?.(project.id)}
                   />
                 ))}
               </div>
@@ -277,7 +286,7 @@ export function PnrrMapDetailsDrawer({
 
       <PnrrProjectDrawer
         project={selectedProject}
-        onClose={() => setSelectedProject(null)}
+        onClose={() => onProjectClose?.()}
       />
     </>
   )

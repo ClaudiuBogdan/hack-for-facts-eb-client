@@ -312,7 +312,6 @@ export function buildPnrrShareImageUrl(params: {
   appendSearchValue(query, 'beneficiarySearch', search.beneficiarySearch)
   appendSearchValue(query, 'beneficiaryCui', search.beneficiaryCui)
   appendSearchValue(query, 'uatSiruta', search.uatSiruta)
-  appendSearchValue(query, 'uatName', search.uatName)
   appendSearchValue(query, 'uatSirutas', search.uatSirutas)
   appendSearchValue(query, 'components', search.components)
   appendSearchValue(query, 'counties', search.counties)

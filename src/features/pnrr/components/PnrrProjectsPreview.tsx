@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { usePnrrCurrency } from '../lib/usePnrrCurrency'
 import { formatPnrrCurrency } from '../lib/formatting'
@@ -15,14 +15,25 @@ export function PnrrProjectsPreview({
   projects,
   filterState,
 }: PnrrProjectsPreviewProps) {
-  const [selectedProject, setSelectedProject] = useState<PnrrProject | null>(
-    null,
-  )
   const currency = usePnrrCurrency()
 
   const topProjects = useMemo(() => {
     return [...projects].sort((a, b) => b.valueEur - a.valueEur).slice(0, 8)
   }, [projects])
+  const selectedProject = useMemo(() => {
+    if (
+      filterState.search.panel !== 'project' ||
+      !filterState.search.panelProjectId
+    ) {
+      return null
+    }
+
+    return (
+      projects.find(
+        (project) => project.id === filterState.search.panelProjectId,
+      ) ?? null
+    )
+  }, [filterState.search.panel, filterState.search.panelProjectId, projects])
 
   if (topProjects.length === 0) return null
 
@@ -59,7 +70,7 @@ export function PnrrProjectsPreview({
           {topProjects.map((project) => (
             <button
               key={project.id}
-              onClick={() => setSelectedProject(project)}
+              onClick={() => filterState.openProjectPanel(project.id)}
               className="group flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
             >
               {/* Left: Title + meta */}
@@ -86,7 +97,7 @@ export function PnrrProjectsPreview({
 
       <PnrrProjectDrawer
         project={selectedProject}
-        onClose={() => setSelectedProject(null)}
+        onClose={filterState.closePanel}
       />
     </section>
   )

@@ -8,6 +8,9 @@ interface PnrrUatDetailsPanelProps {
   readonly natcode: string | null
   readonly projects: readonly PnrrProject[]
   readonly onClose: () => void
+  readonly selectedProjectId?: string
+  readonly onProjectClick?: (projectId: string) => void
+  readonly onProjectClose?: () => void
   readonly onBeneficiaryClick?: (beneficiary: { readonly name: string; readonly cui: string | null }) => void
   readonly onViewProjects?: (uat: { readonly siruta: string; readonly name: string }) => void
   readonly onViewBeneficiaries?: (uat: { readonly siruta: string; readonly name: string }) => void
@@ -19,6 +22,9 @@ export function PnrrUatDetailsPanel({
   natcode,
   projects,
   onClose,
+  selectedProjectId,
+  onProjectClick,
+  onProjectClose,
   onBeneficiaryClick,
   onViewProjects,
   onViewBeneficiaries,
@@ -38,6 +44,9 @@ export function PnrrUatDetailsPanel({
       description={countyName ?? undefined}
       projects={matchedProjects}
       onClose={onClose}
+      selectedProjectId={selectedProjectId}
+      onProjectClick={onProjectClick}
+      onProjectClose={onProjectClose}
       onBeneficiaryClick={onBeneficiaryClick}
       onViewProjects={() => onViewProjects?.({ siruta: natcode, name: uatName })}
       onViewBeneficiaries={() => onViewBeneficiaries?.({ siruta: natcode, name: uatName })}

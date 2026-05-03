@@ -4,6 +4,24 @@ import type { PnrrProject } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import { PnrrProjectTable } from './PnrrProjectTable'
 
+vi.mock('./PnrrProjectDrawer', () => ({
+  PnrrProjectDrawer: ({
+    project,
+    onClose,
+  }: {
+    readonly project: PnrrProject | null
+    readonly onClose: () => void
+  }) =>
+    project ? (
+      <div data-testid="pnrr-project-drawer">
+        <span>{project.title}</span>
+        <button type="button" onClick={onClose}>
+          Close project
+        </button>
+      </div>
+    ) : null,
+}))
+
 const PROJECT: PnrrProject = {
   id: 'project-1',
   title: 'Test Project',
@@ -76,6 +94,13 @@ function makeFilterState(
     setCurrency: vi.fn(),
     setPagination: vi.fn(),
     setMapView: vi.fn(),
+    openProjectPanel: vi.fn(),
+    openBeneficiaryPanel: vi.fn(),
+    openMapCountyPanel: vi.fn(),
+    openMapUatPanel: vi.fn(),
+    openAnomalyInfoPanel: vi.fn(),
+    closePanel: vi.fn(),
+    closeProjectPanel: vi.fn(),
     clearFilters: vi.fn(),
     ...overrides,
   }
@@ -137,5 +162,28 @@ describe('PnrrProjectTable', () => {
       under30Title.compareDocumentPosition(midTitle) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
+  })
+
+  it('opens the project drawer from URL panel state and closes through URL state', () => {
+    const closePanel = vi.fn()
+    const filterState = makeFilterState({
+      closePanel,
+      search: {
+        ...makeFilterState().search,
+        page: 1,
+        panel: 'project',
+        panelProjectId: PROJECT.id,
+      },
+    })
+
+    render(<PnrrProjectTable projects={[PROJECT]} filterState={filterState} />)
+
+    expect(screen.getByTestId('pnrr-project-drawer')).toHaveTextContent(
+      'Test Project',
+    )
+
+    screen.getByRole('button', { name: 'Close project' }).click()
+
+    expect(closePanel).toHaveBeenCalledTimes(1)
   })
 })

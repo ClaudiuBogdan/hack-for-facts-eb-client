@@ -45,6 +45,13 @@ function makeFilterState(
     setCurrency: vi.fn(),
     setPagination: vi.fn(),
     setMapView: vi.fn(),
+    openProjectPanel: vi.fn(),
+    openBeneficiaryPanel: vi.fn(),
+    openMapCountyPanel: vi.fn(),
+    openMapUatPanel: vi.fn(),
+    openAnomalyInfoPanel: vi.fn(),
+    closePanel: vi.fn(),
+    closeProjectPanel: vi.fn(),
     clearFilters: vi.fn(),
   }
 }
@@ -60,5 +67,20 @@ describe('PnrrActiveFilters', () => {
 
     expect(screen.getByText('Municipiul Sibiu')).toBeInTheDocument()
     expect(screen.queryByText('143450')).not.toBeInTheDocument()
+  })
+
+  it('ignores manipulated UAT names and resolves the chip label by SIRUTA', () => {
+    render(
+      <PnrrActiveFilters
+        filterState={makeFilterState({
+          uatSiruta: '147358',
+          uatName: 'Orasul Brosteni234',
+        })}
+        uatLabelsBySiruta={new Map([['147358', 'Orașul Broșteni']])}
+      />,
+    )
+
+    expect(screen.getByText('Orașul Broșteni')).toBeInTheDocument()
+    expect(screen.queryByText('Orasul Brosteni234')).not.toBeInTheDocument()
   })
 })

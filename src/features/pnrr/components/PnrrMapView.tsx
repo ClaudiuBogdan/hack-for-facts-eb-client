@@ -26,11 +26,14 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ClientOnly } from '@/components/ssr/ClientOnly'
 import { PnrrCountyDetailsPanel } from './PnrrCountyDetailsPanel'
 import { PnrrUatDetailsPanel } from './PnrrUatDetailsPanel'
+import { PnrrProjectDrawer } from './table/PnrrProjectDrawer'
 import type { usePnrrFilterState } from '../hooks/usePnrrFilterState'
 import { usePnrrCurrency } from '../lib/usePnrrCurrency'
 import { formatPnrrCurrency } from '../lib/formatting'
 import { getPnrrBlueHeatmapColor } from '../lib/map-colors'
 import { buildPnrrMapTooltipHtml } from '../lib/map-tooltip'
+import { MNEMONIC_TO_COUNTY_NAME } from '../lib/county-mnemonics'
+import { getPnrrUatLabelsBySiruta } from '../lib/pnrr-uat-labels'
 import { formatNumber, cn } from '@/lib/utils'
 import { Info } from 'lucide-react'
 import bbox from '@turf/bbox'
@@ -161,17 +164,38 @@ function MapLegend({
 export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
   const [activeSeriesId, setActiveSeriesId] =
     useState<PnrrMapSeriesId>('total-value')
-  const [selectedCounty, setSelectedCounty] = useState<string | null>(null)
-  const [selectedUat, setSelectedUat] = useState<{
-    name: string
-    county: string
-    natcode: string
-  } | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const currency = usePnrrCurrency()
 
   const { search, setView, setSearch, setMapView } = filterState
   const granularity = search.granularity ?? 'county'
+  const selectedCounty =
+    search.panel === 'map-county' && search.panelCountyCode
+      ? (MNEMONIC_TO_COUNTY_NAME[search.panelCountyCode] ?? null)
+      : null
+  const selectedUat = useMemo(() => {
+    if (search.panel !== 'map-uat' || !search.panelUatSiruta) return null
+
+    const matchingProject = projects.find(
+      (project) => project.sirutaCode === search.panelUatSiruta,
+    )
+    const sourceLabel = getPnrrUatLabelsBySiruta().get(search.panelUatSiruta)
+
+    return {
+      name:
+        sourceLabel?.name ??
+        matchingProject?.locality ??
+        search.panelUatSiruta,
+      county: sourceLabel?.county ?? matchingProject?.county ?? '',
+      natcode: search.panelUatSiruta,
+    }
+  }, [projects, search.panel, search.panelUatSiruta])
+  const selectedProject = useMemo(() => {
+    if (search.panel !== 'project' || !search.panelProjectId) return null
+    return (
+      projects.find((project) => project.id === search.panelProjectId) ?? null
+    )
+  }, [projects, search.panel, search.panelProjectId])
 
   const activeSeries = usePnrrMapSeries(
     projects,
@@ -323,15 +347,18 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
 
   const handleFeatureClick = useCallback(
     (properties: UatProperties, _event: LeafletMouseEvent) => {
-      if (granularity === 'county') setSelectedCounty(properties.name)
-      else if (granularity === 'uat')
-        setSelectedUat({
-          name: properties.name,
-          county: properties.county,
-          natcode: properties.natcode,
+      if (granularity === 'county') {
+        const countyCode = properties.mnemonic
+        if (typeof countyCode === 'string' || typeof countyCode === 'number') {
+          filterState.openMapCountyPanel(String(countyCode))
+        }
+      } else if (granularity === 'uat') {
+        filterState.openMapUatPanel({
+          siruta: properties.natcode,
         })
+      }
     },
-    [granularity],
+    [filterState, granularity],
   )
 
   const handleBeneficiaryClick = useCallback(
@@ -461,7 +488,10 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
         <PnrrCountyDetailsPanel
           county={selectedCounty}
           projects={projects}
-          onClose={() => setSelectedCounty(null)}
+          onClose={filterState.closePanel}
+          selectedProjectId={search.panelProjectId}
+          onProjectClick={filterState.openProjectPanel}
+          onProjectClose={filterState.closeProjectPanel}
           onBeneficiaryClick={handleBeneficiaryClick}
         />
       )}
@@ -471,7 +501,10 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
           countyName={selectedUat?.county ?? null}
           natcode={selectedUat?.natcode ?? null}
           projects={projects}
-          onClose={() => setSelectedUat(null)}
+          onClose={filterState.closePanel}
+          selectedProjectId={search.panelProjectId}
+          onProjectClick={filterState.openProjectPanel}
+          onProjectClose={filterState.closeProjectPanel}
           onBeneficiaryClick={handleBeneficiaryClick}
           onViewProjects={(uat) => filterState.showUatView('projects', uat)}
           onViewBeneficiaries={(uat) =>
@@ -479,6 +512,10 @@ export function PnrrMapView({ projects, filterState }: PnrrMapViewProps) {
           }
         />
       )}
+      <PnrrProjectDrawer
+        project={selectedProject}
+        onClose={filterState.closePanel}
+      />
     </div>
   )
 }

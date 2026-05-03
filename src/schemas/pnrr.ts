@@ -136,6 +136,18 @@ export type PnrrAggregates = {
 export const PnrrViewSchema = z.enum(['overview', 'projects', 'anomalies', 'map', 'beneficiaries'])
 export type PnrrView = z.infer<typeof PnrrViewSchema>
 
+export const PnrrPanelSchema = z.enum([
+  'project',
+  'beneficiary',
+  'map-county',
+  'map-uat',
+  'anomaly-info',
+])
+export type PnrrPanel = z.infer<typeof PnrrPanelSchema>
+
+export const PnrrPanelSignalKindSchema = z.enum(['risk', 'data-quality'])
+export type PnrrPanelSignalKind = z.infer<typeof PnrrPanelSignalKindSchema>
+
 export const PNRR_SEARCH_DEFAULTS = {
   view: 'overview',
   onlyAnomalies: false,
@@ -160,6 +172,35 @@ const optionalTextSearchParam = z.preprocess(
   z.string().optional(),
 )
 
+const optionalIdentifierSearchParam = z.preprocess(
+  (value) => {
+    if (value === undefined || value === null) return undefined
+    if (typeof value === 'number' || typeof value === 'boolean') {
+      return String(value)
+    }
+    if (typeof value !== 'string') return value
+
+    const trimmed = value.trim()
+    if (!trimmed) return undefined
+
+    try {
+      const parsed = JSON.parse(trimmed)
+      if (
+        typeof parsed === 'string' ||
+        typeof parsed === 'number' ||
+        typeof parsed === 'boolean'
+      ) {
+        return String(parsed)
+      }
+    } catch {
+      // Keep the trimmed raw value when it is not a JSON-encoded primitive.
+    }
+
+    return trimmed
+  },
+  z.string().optional(),
+)
+
 function isPnrrEntityType(value: unknown): value is PnrrEntityType {
   return (
     typeof value === 'string' &&
@@ -180,8 +221,8 @@ export const PnrrSearchSchema = z.object({
   view: PnrrViewSchema.default(PNRR_SEARCH_DEFAULTS.view),
   search: optionalTextSearchParam,
   beneficiarySearch: optionalTextSearchParam,
-  beneficiaryCui: z.coerce.string().optional(),
-  uatSiruta: z.coerce.string().optional(),
+  beneficiaryCui: optionalIdentifierSearchParam,
+  uatSiruta: optionalIdentifierSearchParam,
   uatName: optionalTextSearchParam,
   uatSirutas: z.array(z.string()).optional(),
   components: z.array(z.string()).optional(),
@@ -227,6 +268,13 @@ export const PnrrSearchSchema = z.object({
   mapLat: z.coerce.number().optional(),
   mapLng: z.coerce.number().optional(),
   mapZoom: z.coerce.number().optional(),
+  panel: PnrrPanelSchema.optional(),
+  panelProjectId: optionalIdentifierSearchParam,
+  panelBeneficiaryCui: optionalIdentifierSearchParam,
+  panelCountyCode: optionalIdentifierSearchParam,
+  panelUatSiruta: optionalIdentifierSearchParam,
+  panelSignalKind: PnrrPanelSignalKindSchema.optional(),
+  panelSignalType: optionalIdentifierSearchParam,
 })
 
 export type PnrrSearchState = z.infer<typeof PnrrSearchSchema>
@@ -276,11 +324,42 @@ export function cleanPnrrSearch(search: Partial<PnrrSearchState>): Partial<PnrrS
     delete cleaned.uatSiruta
   }
 
-  const uatNameText = cleaned.uatName?.trim()
-  if (uatNameText && uatSirutaText) {
-    cleaned.uatName = uatNameText
+  delete cleaned.uatName
+
+  const panelProjectIdText = cleaned.panelProjectId?.trim()
+  const panelBeneficiaryCuiText = cleaned.panelBeneficiaryCui?.trim()
+  const panelCountyCodeText = cleaned.panelCountyCode?.trim()
+  const panelUatSirutaText = cleaned.panelUatSiruta?.trim()
+  const panelSignalTypeText = cleaned.panelSignalType?.trim()
+
+  delete cleaned.panelProjectId
+  delete cleaned.panelBeneficiaryCui
+  delete cleaned.panelCountyCode
+  delete cleaned.panelUatSiruta
+  delete cleaned.panelSignalKind
+  delete cleaned.panelSignalType
+
+  if (cleaned.panel === 'project' && panelProjectIdText) {
+    cleaned.panelProjectId = panelProjectIdText
+  } else if (cleaned.panel === 'beneficiary' && panelBeneficiaryCuiText) {
+    cleaned.panelBeneficiaryCui = panelBeneficiaryCuiText
+  } else if (cleaned.panel === 'map-county' && panelCountyCodeText) {
+    cleaned.panelCountyCode = panelCountyCodeText.toUpperCase()
+    if (panelProjectIdText) {
+      cleaned.panelProjectId = panelProjectIdText
+    }
+  } else if (cleaned.panel === 'map-uat' && panelUatSirutaText) {
+    cleaned.panelUatSiruta = panelUatSirutaText
+    if (panelProjectIdText) {
+      cleaned.panelProjectId = panelProjectIdText
+    }
+  } else if (cleaned.panel === 'anomaly-info') {
+    if (search.panelSignalKind && panelSignalTypeText) {
+      cleaned.panelSignalKind = search.panelSignalKind
+      cleaned.panelSignalType = panelSignalTypeText
+    }
   } else {
-    delete cleaned.uatName
+    delete cleaned.panel
   }
 
   for (const key of arraySearchKeys) {
@@ -330,6 +409,13 @@ const textSearchKeySet = new Set<string>([
   'currency',
   'sortBy',
   'sortOrder',
+  'panel',
+  'panelProjectId',
+  'panelBeneficiaryCui',
+  'panelCountyCode',
+  'panelUatSiruta',
+  'panelSignalKind',
+  'panelSignalType',
 ])
 const booleanSearchKeySet = new Set<string>([
   'onlyAnomalies',

@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useEffect, memo } from 'react'
+import { useMemo, useCallback, useEffect, memo } from 'react'
 import { Trans } from '@lingui/react/macro'
 import { usePnrrCurrency } from '../../lib/usePnrrCurrency'
 import { formatPnrrCurrency } from '../../lib/formatting'
@@ -199,10 +199,21 @@ export function PnrrProjectTable({
   readonly projects: readonly PnrrProject[]
   readonly filterState: ReturnType<typeof usePnrrFilterState>
 }) {
-  const [selectedProject, setSelectedProject] = useState<PnrrProject | null>(
-    null,
-  )
   const currency = usePnrrCurrency()
+  const selectedProject = useMemo(() => {
+    if (
+      filterState.search.panel !== 'project' ||
+      !filterState.search.panelProjectId
+    ) {
+      return null
+    }
+
+    return (
+      projects.find(
+        (project) => project.id === filterState.search.panelProjectId,
+      ) ?? null
+    )
+  }, [filterState.search.panel, filterState.search.panelProjectId, projects])
 
   const sorted = useMemo(() => {
     const arr = [...projects]
@@ -393,7 +404,7 @@ export function PnrrProjectTable({
                 key={project.id}
                 project={project}
                 currency={currency}
-                onSelect={setSelectedProject}
+                onSelect={(selected) => filterState.openProjectPanel(selected.id)}
               />
             ))}
           </TableBody>
@@ -406,7 +417,7 @@ export function PnrrProjectTable({
           <PnrrProjectCard
             key={project.id}
             project={project}
-            onClick={() => setSelectedProject(project)}
+            onClick={() => filterState.openProjectPanel(project.id)}
             currency={currency}
           />
         ))}
@@ -498,7 +509,7 @@ export function PnrrProjectTable({
 
       <PnrrProjectDrawer
         project={selectedProject}
-        onClose={() => setSelectedProject(null)}
+        onClose={filterState.closePanel}
       />
     </div>
   )
