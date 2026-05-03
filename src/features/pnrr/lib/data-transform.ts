@@ -8,6 +8,7 @@ import type {
   PnrrAggregates,
   PnrrEntityType,
   PnrrBeneficiaryType,
+  PnrrSearchState,
 } from '@/schemas/pnrr'
 import { PNRR_COMPONENTS } from '../data/component-definitions'
 import {
@@ -17,6 +18,20 @@ import {
 
 /** Date when the PNRR dataset was last updated (shown in UI and used in export filenames). */
 export const PNRR_LAST_UPDATED = '2026-04-30'
+
+const PROGRESS_CATEGORY_TO_STATUS = {
+  completed: 'completed',
+  advanced: 'advanced',
+  mid: 'mid-progress',
+  under30: 'under-30',
+  'not-started': 'not-started',
+  unknown: 'unknown',
+} as const satisfies Readonly<
+  Record<
+    NonNullable<PnrrSearchState['progressCategories']>[number],
+    PnrrProjectStatus
+  >
+>
 
 // ---------------------------------------------------------------------------
 // Progress parsing
@@ -979,6 +994,41 @@ export type PnrrFilters = {
   readonly entityTypes?: readonly PnrrEntityType[]
   readonly beneficiaryTypes?: readonly PnrrBeneficiaryType[]
   readonly includeNational?: boolean
+}
+
+export function buildPnrrFiltersFromSearch(
+  search: Partial<PnrrSearchState>,
+): PnrrFilters {
+  return {
+    search: search.search,
+    beneficiarySearch: search.beneficiarySearch,
+    beneficiaryCui: search.beneficiaryCui,
+    uatSiruta: search.uatSiruta,
+    uatSirutas: search.uatSirutas,
+    components: search.components,
+    counties: search.counties,
+    fundingSources: search.fundingSources,
+    measures: search.measures,
+    cris: search.cris,
+    progressCategories: search.progressCategories?.map(
+      (category) =>
+        PROGRESS_CATEGORY_TO_STATUS[category] ?? 'unknown',
+    ),
+    onlyAnomalies: search.onlyAnomalies,
+    excludeMicro: search.excludeMicro,
+    anomalyTypes: search.anomalyTypes,
+    dataQualitySignalTypes: search.dataQualitySignalTypes,
+    entityTypes: search.entityTypes,
+    beneficiaryTypes: search.beneficiaryTypes,
+    includeNational: search.includeNational,
+  }
+}
+
+export function filterProjectsBySearch(
+  projects: readonly PnrrProject[],
+  search: Partial<PnrrSearchState>,
+): readonly PnrrProject[] {
+  return filterProjects(projects, buildPnrrFiltersFromSearch(search))
 }
 
 // ---------------------------------------------------------------------------

@@ -36,6 +36,7 @@ import { Route as SettingsProfileRouteImport } from './routes/settings/profile'
 import { Route as SettingsNotificationsRouteImport } from './routes/settings/notifications'
 import { Route as ProvocareTermeniSiConditiiRouteImport } from './routes/provocare_.termeni-si-conditii'
 import { Route as ProvocareNotificariRouteImport } from './routes/provocare_.notificari'
+import { Route as PnrrShareImageDotpngRouteImport } from './routes/pnrr.share-image[.]png'
 import { Route as EntitiesCuiRouteImport } from './routes/entities.$cui'
 import { Route as ChartsNewRouteImport } from './routes/charts/new'
 import { Route as CertificatesIdRouteImport } from './routes/certificates.$id'
@@ -249,6 +250,11 @@ const ProvocareNotificariRoute = ProvocareNotificariRouteImport.update({
 } as any).lazy(() =>
   import('./routes/provocare_.notificari.lazy').then((d) => d.Route),
 )
+const PnrrShareImageDotpngRoute = PnrrShareImageDotpngRouteImport.update({
+  id: '/share-image.png',
+  path: '/share-image.png',
+  getParentRoute: () => PnrrRoute,
+} as any)
 const EntitiesCuiRoute = EntitiesCuiRouteImport.update({
   id: '/$cui',
   path: '/$cui',
@@ -638,7 +644,7 @@ export interface FileRoutesByFullPath {
   '/cookies': typeof CookiesRoute
   '/entity-analytics': typeof EntityAnalyticsRoute
   '/map': typeof MapRoute
-  '/pnrr': typeof PnrrRoute
+  '/pnrr': typeof PnrrRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
   '/sign-in': typeof SignInRouteWithChildren
@@ -655,6 +661,7 @@ export interface FileRoutesByFullPath {
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
@@ -717,7 +724,7 @@ export interface FileRoutesByTo {
   '/cookies': typeof CookiesRoute
   '/entity-analytics': typeof EntityAnalyticsRoute
   '/map': typeof MapRoute
-  '/pnrr': typeof PnrrRoute
+  '/pnrr': typeof PnrrRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
   '/sign-in': typeof SignInRouteWithChildren
@@ -730,6 +737,7 @@ export interface FileRoutesByTo {
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare/notificari': typeof ProvocareNotificariRoute
   '/provocare/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
@@ -791,7 +799,7 @@ export interface FileRoutesById {
   '/cookies': typeof CookiesRoute
   '/entity-analytics': typeof EntityAnalyticsRoute
   '/map': typeof MapRoute
-  '/pnrr': typeof PnrrRoute
+  '/pnrr': typeof PnrrRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/provocare': typeof ProvocareRoute
   '/sign-in': typeof SignInRouteWithChildren
@@ -808,6 +816,7 @@ export interface FileRoutesById {
   '/certificates/$id': typeof CertificatesIdRoute
   '/charts/new': typeof ChartsNewRoute
   '/entities/$cui': typeof EntitiesCuiRouteWithChildren
+  '/pnrr/share-image.png': typeof PnrrShareImageDotpngRoute
   '/provocare_/notificari': typeof ProvocareNotificariRoute
   '/provocare_/termeni-si-conditii': typeof ProvocareTermeniSiConditiiRoute
   '/settings/notifications': typeof SettingsNotificationsRoute
@@ -890,6 +899,7 @@ export interface FileRouteTypes {
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
+    | '/pnrr/share-image.png'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
     | '/settings/notifications'
@@ -965,6 +975,7 @@ export interface FileRouteTypes {
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
+    | '/pnrr/share-image.png'
     | '/provocare/notificari'
     | '/provocare/termeni-si-conditii'
     | '/settings/notifications'
@@ -1042,6 +1053,7 @@ export interface FileRouteTypes {
     | '/certificates/$id'
     | '/charts/new'
     | '/entities/$cui'
+    | '/pnrr/share-image.png'
     | '/provocare_/notificari'
     | '/provocare_/termeni-si-conditii'
     | '/settings/notifications'
@@ -1106,7 +1118,7 @@ export interface RootRouteChildren {
   CookiesRoute: typeof CookiesRoute
   EntityAnalyticsRoute: typeof EntityAnalyticsRoute
   MapRoute: typeof MapRoute
-  PnrrRoute: typeof PnrrRoute
+  PnrrRoute: typeof PnrrRouteWithChildren
   PrivacyRoute: typeof PrivacyRoute
   ProvocareRoute: typeof ProvocareRoute
   SignInRoute: typeof SignInRouteWithChildren
@@ -1343,6 +1355,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/provocare/notificari'
       preLoaderRoute: typeof ProvocareNotificariRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/pnrr/share-image.png': {
+      id: '/pnrr/share-image.png'
+      path: '/share-image.png'
+      fullPath: '/pnrr/share-image.png'
+      preLoaderRoute: typeof PnrrShareImageDotpngRouteImport
+      parentRoute: typeof PnrrRoute
     }
     '/entities/$cui': {
       id: '/entities/$cui'
@@ -1735,6 +1754,16 @@ const BugeteLocale2026RouteChildren: BugeteLocale2026RouteChildren = {
 const BugeteLocale2026RouteWithChildren =
   BugeteLocale2026Route._addFileChildren(BugeteLocale2026RouteChildren)
 
+interface PnrrRouteChildren {
+  PnrrShareImageDotpngRoute: typeof PnrrShareImageDotpngRoute
+}
+
+const PnrrRouteChildren: PnrrRouteChildren = {
+  PnrrShareImageDotpngRoute: PnrrShareImageDotpngRoute,
+}
+
+const PnrrRouteWithChildren = PnrrRoute._addFileChildren(PnrrRouteChildren)
+
 interface SignInRouteChildren {
   SignInSplatRoute: typeof SignInSplatRoute
 }
@@ -1923,7 +1952,7 @@ const rootRouteChildren: RootRouteChildren = {
   CookiesRoute: CookiesRoute,
   EntityAnalyticsRoute: EntityAnalyticsRoute,
   MapRoute: MapRoute,
-  PnrrRoute: PnrrRoute,
+  PnrrRoute: PnrrRouteWithChildren,
   PrivacyRoute: PrivacyRoute,
   ProvocareRoute: ProvocareRoute,
   SignInRoute: SignInRouteWithChildren,

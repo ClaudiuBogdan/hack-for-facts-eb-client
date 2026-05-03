@@ -1,8 +1,19 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { t } from '@lingui/core/macro'
+import { i18n } from '@lingui/core'
 import { createPublicPageCacheHeaders } from '@/lib/http-cache'
-import { getSiteUrl } from '@/config/env'
-import { parsePnrrSearch } from '@/schemas/pnrr'
+import { parsePnrrSearch, type PnrrSearchState } from '@/schemas/pnrr'
+import {
+  buildPnrrRouteHead,
+  buildPnrrSeoSnapshotSearchKey,
+  normalizePnrrSeoSnapshotSearch,
+} from '@/features/pnrr/seo/pnrr-seo'
+import {
+  loadPnrrSeoData,
+  type PnrrSeoLoaderData,
+} from '@/features/pnrr/seo/pnrr-seo-loader'
+import { DEFAULT_LOCALE, normalizeLocale } from '@/lib/i18n'
+
+export type PnrrRouteLoaderData = PnrrSeoLoaderData
 
 export const Route = createFileRoute('/pnrr')({
   ssr: true,
@@ -12,26 +23,32 @@ export const Route = createFileRoute('/pnrr')({
       browserMaxAgeSeconds: 0,
       sharedMaxAgeSeconds: 300,
       staleWhileRevalidateSeconds: 3600,
+      vary: ['Accept-Encoding', 'Cookie'],
     }),
-  head: () => {
-    const siteUrl = getSiteUrl()
-    const canonicalUrl = `${siteUrl}/pnrr`
-    const title = t`PNRR - National Recovery and Resilience Plan | Transparenta.eu`
-    const description = t`Interactive dashboard with all projects from the National Recovery and Resilience Plan (PNRR): progress, funding, anomalies, and geographic distribution.`
+  loaderDeps: ({ search }) => {
+    const seoSnapshotSearch = normalizePnrrSeoSnapshotSearch(
+      search as Partial<PnrrSearchState>,
+    )
 
     return {
-      meta: [
-        { title },
-        { name: 'description', content: description },
-        { name: 'robots', content: 'index,follow' },
-        { property: 'og:type', content: 'website' },
-        { property: 'og:site_name', content: 'Transparenta.eu' },
-        { property: 'og:title', content: title },
-        { property: 'og:description', content: description },
-        { property: 'og:url', content: canonicalUrl },
-        { property: 'og:locale', content: 'ro_RO' },
-      ],
-      links: [{ rel: 'canonical', href: canonicalUrl }],
+      seoSnapshotSearch,
+      seoSnapshotSearchKey: buildPnrrSeoSnapshotSearchKey(seoSnapshotSearch),
     }
+  },
+  head: ({ match }) => {
+    const loaderData = match.loaderData as PnrrRouteLoaderData | undefined
+
+    return buildPnrrRouteHead({
+      snapshot: loaderData?.seoSnapshot,
+      search: match.search as Partial<PnrrSearchState> | undefined,
+      siteUrl: loaderData?.requestSiteUrl,
+      locale: normalizeLocale(i18n.locale) ?? DEFAULT_LOCALE,
+    })
+  },
+  loader: async ({ deps }) => {
+    return loadPnrrSeoData({
+      search: deps.seoSnapshotSearch,
+      searchKey: deps.seoSnapshotSearchKey,
+    })
   },
 })

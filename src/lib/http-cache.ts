@@ -2,10 +2,11 @@ type PublicPageCachePolicy = {
   browserMaxAgeSeconds?: number;
   sharedMaxAgeSeconds: number;
   staleWhileRevalidateSeconds: number;
+  vary?: readonly string[];
 };
 
 const DEFAULT_BROWSER_MAX_AGE_SECONDS = 0;
-const CACHE_VARY_HEADER = "Accept-Encoding";
+const DEFAULT_CACHE_VARY_HEADER = "Accept-Encoding";
 
 function buildSharedCacheControl(policy: PublicPageCachePolicy): string {
   return [
@@ -32,7 +33,7 @@ export function createPublicPageCacheHeaders(
   return {
     "Cache-Control": `public, max-age=${browserMaxAgeSeconds}, ${sharedCacheControl}`,
     "CDN-Cache-Control": sharedCacheControl,
-    Vary: CACHE_VARY_HEADER,
+    Vary: (policy.vary ?? [DEFAULT_CACHE_VARY_HEADER]).join(", "),
   };
 }
 

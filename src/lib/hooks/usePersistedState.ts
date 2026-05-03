@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const isQuotaExceededError = (error: unknown): boolean => {
   if (error instanceof DOMException) {
@@ -7,10 +7,20 @@ const isQuotaExceededError = (error: unknown): boolean => {
   return false;
 };
 
-export const usePersistedState = <T>(key: string, initialValue: T) => {
+export const usePersistedState = <T>(
+    key: string,
+    initialValue: T,
+    options: {
+        readonly readStoredValueOnInit?: boolean;
+        readonly skipInitialPersist?: boolean;
+    } = {},
+) => {
+    const hasPersistedRef = useRef(false);
+
     // Initialize from localStorage synchronously so the stored value is
     // available on the very first render (no flash of the default).
     const [value, setValue] = useState<T>(() => {
+        if (options.readStoredValueOnInit === false) return initialValue;
         if (typeof window === 'undefined') return initialValue;
         try {
             const storedValue = localStorage.getItem(key);
@@ -22,6 +32,12 @@ export const usePersistedState = <T>(key: string, initialValue: T) => {
     });
 
     useEffect(() => {
+        if (options.skipInitialPersist && !hasPersistedRef.current) {
+            hasPersistedRef.current = true;
+            return;
+        }
+        hasPersistedRef.current = true;
+
         if (typeof window === 'undefined') return;
         try {
             localStorage.setItem(key, JSON.stringify(value));
@@ -32,7 +48,7 @@ export const usePersistedState = <T>(key: string, initialValue: T) => {
                 console.error(`Failed to persist state for key ${key}:`, error);
             }
         }
-    }, [key, value]);
+    }, [key, options.skipInitialPersist, value]);
 
     return [value, setValue] as const;
 };

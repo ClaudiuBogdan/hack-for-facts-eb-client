@@ -18,8 +18,8 @@ msgstr ""
 msgid "{0} / inhabitant"
 msgstr "{0} / inhabitant"
 
-#. placeholder {0}: formatPnrrCurrency(aggregates.deduplicatedTotalValue, currency, 'standard')
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:153
+#. placeholder {0}: formatPnrrCurrency(metricStats.deduplicatedTotalValue, currency, 'standard')
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:173
 msgid "{0} after deduplication"
 msgstr "{0} after deduplication"
 
@@ -29,9 +29,9 @@ msgstr "{0} after deduplication"
 msgid "{0} completed out of {1}"
 msgstr "{0} completed out of {1}"
 
-#. placeholder {0}: formatNumber(aggregates.completedCount)
-#. placeholder {1}: formatNumber(aggregates.rawProjectCount)
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:159
+#. placeholder {0}: formatNumber(metricStats.completedCount)
+#. placeholder {1}: formatNumber(metricStats.rawProjectCount)
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:179
 msgid "{0} completed projects out of {1}"
 msgstr "{0} completed projects out of {1}"
 
@@ -48,8 +48,9 @@ msgid "{0} projects"
 msgstr "{0} projects"
 
 #. placeholder {0}: formatNumber(aggregates.missingFinProgressCount)
+#. placeholder {0}: formatNumber(metricStats.missingFinProgressCount)
 #: src/features/pnrr/components/PnrrStatsRibbon.tsx:55
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:172
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:192
 msgid "{0} projects without financial progress"
 msgstr "{0} projects without financial progress"
 
@@ -69,8 +70,9 @@ msgid "{0}% of projects have no financial progress data, which may hide risks th
 msgstr "{0}% of projects have no financial progress data, which may hide risks that depend on comparing technical and financial progress."
 
 #. placeholder {0}: formatNumber(aggregates.loanPercent)
+#. placeholder {0}: formatNumber(metricStats.loanPercent)
 #: src/features/pnrr/components/PnrrStatsRibbon.tsx:45
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:166
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:186
 msgid "{0}% of the total is loans"
 msgstr "{0}% of the total is loans"
 
@@ -100,7 +102,7 @@ msgid "About the PNRR data"
 msgstr "About the PNRR data"
 
 #: src/features/pnrr/components/PnrrStatsRibbon.tsx:33
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:157
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:177
 msgid "Absorption rate"
 msgstr "Absorption rate"
 
@@ -121,7 +123,7 @@ msgstr "Aggregation"
 msgid "All local and central public institutions"
 msgstr "All local and central public institutions"
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:245
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:273
 msgid "All projects"
 msgstr "All projects"
 
@@ -198,7 +200,7 @@ msgstr "Check final acceptance status, payment requests, closing documents, and 
 msgid "Check the cause of low progress: delayed procurement, permits, disputes, beneficiary capacity, or execution bottlenecks."
 msgstr "Check the cause of low progress: delayed procurement, permits, disputes, beneficiary capacity, or execution bottlenecks."
 
-#: src/features/pnrr/components/PnrrDashboard.tsx:247
+#: src/features/pnrr/components/PnrrDashboard.tsx:246
 msgid "Check the connection and try again."
 msgstr "Check the connection and try again."
 
@@ -341,7 +343,7 @@ msgstr "Components"
 msgid "Copy CUI"
 msgstr "Copy CUI"
 
-#: src/features/pnrr/components/PnrrDashboard.tsx:244
+#: src/features/pnrr/components/PnrrDashboard.tsx:243
 msgid "Could not load PNRR data"
 msgstr "Could not load PNRR data"
 
@@ -394,7 +396,7 @@ msgstr "Data"
 msgid "Data dimensions"
 msgstr "Data dimensions"
 
-#: src/features/pnrr/components/PnrrDashboard.tsx:120
+#: src/features/pnrr/components/PnrrDashboard.tsx:95
 msgid "Data information"
 msgstr "Data information"
 
@@ -421,7 +423,7 @@ msgid "Data quality flags rows that can distort the analysis: duplicates with di
 msgstr "Data quality flags rows that can distort the analysis: duplicates with different information or projects with no published financial progress."
 
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:234
-#: src/features/pnrr/components/PnrrDashboard.tsx:196
+#: src/features/pnrr/components/PnrrDashboard.tsx:179
 msgid "Data source"
 msgstr "Data source"
 
@@ -470,7 +472,7 @@ msgstr "Each project is associated with several dimensions: PNRR component, spec
 msgid "Education"
 msgstr "Education"
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:234
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:262
 msgid "Emblematic Projects"
 msgstr "Emblematic Projects"
 
@@ -482,7 +484,7 @@ msgstr "Entity"
 msgid "Entity type"
 msgstr "Entity type"
 
-#: src/features/pnrr/components/PnrrDashboard.tsx:232
+#: src/features/pnrr/components/PnrrDashboard.tsx:231
 msgid "Error loading data"
 msgstr "Error loading data"
 
@@ -566,7 +568,7 @@ msgstr "Funding sources"
 msgid "Future debt"
 msgstr "Future debt"
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:164
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:184
 msgid "Future debt (loan)"
 msgstr "Future debt (loan)"
 
@@ -673,7 +675,7 @@ msgstr "Include national projects"
 msgid "Info"
 msgstr "Info"
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:323
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:372
 msgid "Information"
 msgstr "Information"
 
@@ -686,8 +688,8 @@ msgid "Interactive dashboard with all PNRR projects. See where the money goes, w
 msgstr "Interactive dashboard with all PNRR projects. See where the money goes, which projects are at risk, and how implementation is progressing."
 
 #: src/routes/pnrr.tsx:20
-msgid "Interactive dashboard with all projects from the National Recovery and Resilience Plan (PNRR): progress, funding, anomalies, and geographic distribution."
-msgstr "Interactive dashboard with all projects from the National Recovery and Resilience Plan (PNRR): progress, funding, anomalies, and geographic distribution."
+#~ msgid "Interactive dashboard with all projects from the National Recovery and Resilience Plan (PNRR): progress, funding, anomalies, and geographic distribution."
+#~ msgstr "Interactive dashboard with all projects from the National Recovery and Resilience Plan (PNRR): progress, funding, anomalies, and geographic distribution."
 
 #: src/features/pnrr/components/tabs/PnrrAnomaliesView.tsx:114
 msgid "Investigation Center"
@@ -723,6 +725,10 @@ msgstr "Last update {formattedLastUpdated}"
 #: src/features/pnrr/components/PnrrMapView.tsx:397
 msgid "Loading map..."
 msgstr "Loading map..."
+
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:302
+msgid "Loading the full PNRR dataset for maps, charts, and project lists."
+msgstr "Loading the full PNRR dataset for maps, charts, and project lists."
 
 #: src/features/pnrr/components/charts/PnrrFundingBar.tsx:51
 #: src/features/pnrr/components/filters/PnrrFilterBar.tsx:159
@@ -796,7 +802,7 @@ msgstr "Ministries"
 msgid "Ministries and central institutions without local UAT"
 msgstr "Ministries and central institutions without local UAT"
 
-#: src/features/pnrr/components/PnrrDashboard.tsx:203
+#: src/features/pnrr/components/PnrrDashboard.tsx:186
 msgid "Ministry of Investments and European Projects"
 msgstr "Ministry of Investments and European Projects"
 
@@ -805,7 +811,7 @@ msgstr "Ministry of Investments and European Projects"
 msgid "Missing data"
 msgstr "Missing data"
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:170
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:190
 msgid "Missing financial data"
 msgstr "Missing financial data"
 
@@ -954,8 +960,8 @@ msgid "PNRR"
 msgstr "PNRR"
 
 #: src/routes/pnrr.tsx:19
-msgid "PNRR - National Recovery and Resilience Plan | Transparenta.eu"
-msgstr "PNRR - National Recovery and Resilience Plan | Transparenta.eu"
+#~ msgid "PNRR - National Recovery and Resilience Plan | Transparenta.eu"
+#~ msgstr "PNRR - National Recovery and Resilience Plan | Transparenta.eu"
 
 #: src/features/pnrr/components/filters/PnrrInfoSheet.tsx:68
 msgid "PNRR component"
@@ -1025,7 +1031,7 @@ msgstr "Project Title"
 #: src/features/pnrr/components/PnrrHeader.tsx:235
 #: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:97
 #: src/features/pnrr/components/PnrrMapDetailsDrawer.tsx:191
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:426
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:475
 #: src/features/pnrr/components/tabs/PnrrProjectsView.tsx:46
 msgid "projects"
 msgstr "projects"
@@ -1122,7 +1128,7 @@ msgstr "Responsible institutions (CRI)"
 msgid "results"
 msgstr "results"
 
-#: src/features/pnrr/components/PnrrDashboard.tsx:261
+#: src/features/pnrr/components/PnrrDashboard.tsx:260
 msgid "Retry"
 msgstr "Retry"
 
@@ -1149,7 +1155,7 @@ msgstr "Risks"
 msgid "Risks and data quality"
 msgstr "Risks and data quality"
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:250
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:278
 msgid "Risks and investigations"
 msgstr "Risks and investigations"
 
@@ -1186,21 +1192,21 @@ msgstr "Search project..."
 msgid "Search projects, beneficiaries, or CUI..."
 msgstr "Search projects, beneficiaries, or CUI..."
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:466
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:515
 msgid "Show all"
 msgstr "Show all"
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:185
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:213
 msgid "Show all components"
 msgstr "Show all components"
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:197
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:225
 msgid "Show all counties"
 msgstr "Show all counties"
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:186
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:198
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:461
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:214
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:226
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:510
 msgid "Show less"
 msgstr "Show less"
 
@@ -1298,11 +1304,11 @@ msgstr "The measure code combines the component code and measure code (for examp
 msgid "The original data is expressed in EUR. Displayed values are automatically converted to the currency selected in account settings using fixed reference rates."
 msgstr "The original data is expressed in EUR. Displayed values are automatically converted to the currency selected in account settings using fixed reference rates."
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:187
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:215
 msgid "The percentage represents the share of project value in the component out of the total PNRR value. The background bar visualizes this share. Click a row to filter projects."
 msgstr "The percentage represents the share of project value in the component out of the total PNRR value. The background bar visualizes this share. Click a row to filter projects."
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:199
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:227
 msgid "The percentage represents the share of project value in the county out of the total PNRR value. The background bar visualizes this share. Click a row to filter projects."
 msgstr "The percentage represents the share of project value in the county out of the total PNRR value. The background bar visualizes this share. Click a row to filter projects."
 
@@ -1354,7 +1360,7 @@ msgstr "Title"
 msgid "Title, beneficiary, CUI, or locality..."
 msgstr "Title, beneficiary, CUI, or locality..."
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:216
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:244
 msgid "Top 10 Beneficiaries"
 msgstr "Top 10 Beneficiaries"
 
@@ -1362,12 +1368,12 @@ msgstr "Top 10 Beneficiaries"
 msgid "Top beneficiaries"
 msgstr "Top beneficiaries"
 
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:180
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:208
 msgid "Top Components"
 msgstr "Top Components"
 
 #: src/features/pnrr/components/charts/PnrrCountyChart.tsx:69
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:191
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:219
 msgid "Top Counties"
 msgstr "Top Counties"
 
@@ -1390,7 +1396,7 @@ msgstr "total"
 #: src/features/pnrr/components/PnrrNationalSummary.tsx:83
 #: src/features/pnrr/components/PnrrStatsRibbon.tsx:23
 #: src/features/pnrr/components/tabs/PnrrBeneficiariesView.tsx:546
-#: src/features/pnrr/components/tabs/PnrrOverview.tsx:151
+#: src/features/pnrr/components/tabs/PnrrOverview.tsx:171
 #: src/features/pnrr/hooks/usePnrrMapSeries.ts:250
 msgid "Total value"
 msgstr "Total value"

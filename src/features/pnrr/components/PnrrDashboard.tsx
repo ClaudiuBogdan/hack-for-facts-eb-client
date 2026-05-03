@@ -4,16 +4,12 @@ import { t } from '@lingui/core/macro'
 import { usePnrrData } from '../hooks/usePnrrData'
 import { usePnrrFilterState } from '../hooks/usePnrrFilterState'
 import {
-  filterProjects,
+  filterProjectsBySearch,
   computeAggregates,
   getActiveFilterCount,
   PNRR_LAST_UPDATED,
 } from '../lib/data-transform'
 import { PnrrCurrencyProvider } from '../lib/PnrrCurrencyProvider'
-import {
-  PROGRESS_CATEGORY_TO_STATUS,
-  type ProgressCategoryKey,
-} from '../lib/filter-constants'
 import { PnrrContentSkeleton } from './PnrrSkeleton'
 import { PnrrHeader } from './PnrrHeader'
 import { PnrrOverview } from './tabs/PnrrOverview'
@@ -29,63 +25,35 @@ import { PnrrInfoSheet } from './filters/PnrrInfoSheet'
 import { PnrrExportButton } from './table/PnrrExportButton'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle, Info, RefreshCw } from 'lucide-react'
+import {
+  buildPnrrSeoSnapshotSearchKey,
+  type PnrrSeoSnapshot,
+} from '../seo/pnrr-seo'
+import type { PnrrOverviewMetricStats } from './tabs/PnrrOverview'
+import type { Currency } from '@/schemas/charts'
 
-export function PnrrDashboard() {
+export function PnrrDashboard({
+  initialCurrency,
+  ssrSnapshot,
+  ssrSnapshotSearchKey,
+}: {
+  readonly initialCurrency?: Currency
+  readonly ssrSnapshot?: PnrrSeoSnapshot | null
+  readonly ssrSnapshotSearchKey?: string
+}) {
   const { data, error, isError, isLoading, isRefetching, refetch } =
     usePnrrData()
   const filterState = usePnrrFilterState()
   const [filterSheetOpen, setFilterSheetOpen] = useState(false)
   const [infoSheetOpen, setInfoSheetOpen] = useState(false)
+  const emptyAggregates = useMemo(() => computeAggregates([]), [])
 
   const projects = useMemo(() => data?.projects ?? [], [data?.projects])
   const view = filterState.search.view ?? 'overview'
 
   const filteredProjects = useMemo(
-    () =>
-      filterProjects(projects, {
-        search: filterState.search.search,
-        beneficiarySearch: filterState.search.beneficiarySearch,
-        beneficiaryCui: filterState.search.beneficiaryCui,
-        uatSiruta: filterState.search.uatSiruta,
-        uatSirutas: filterState.search.uatSirutas,
-        components: filterState.search.components,
-        counties: filterState.search.counties,
-        fundingSources: filterState.search.fundingSources,
-        measures: filterState.search.measures,
-        cris: filterState.search.cris,
-        progressCategories: filterState.search.progressCategories?.map(
-          (c) =>
-            PROGRESS_CATEGORY_TO_STATUS[c as ProgressCategoryKey] ?? 'unknown',
-        ),
-        onlyAnomalies: filterState.search.onlyAnomalies,
-        excludeMicro: filterState.search.excludeMicro,
-        anomalyTypes: filterState.search.anomalyTypes,
-        dataQualitySignalTypes: filterState.search.dataQualitySignalTypes,
-        entityTypes: filterState.search.entityTypes,
-        beneficiaryTypes: filterState.search.beneficiaryTypes,
-        includeNational: filterState.search.includeNational,
-      }),
-    [
-      projects,
-      filterState.search.search,
-      filterState.search.beneficiarySearch,
-      filterState.search.beneficiaryCui,
-      filterState.search.uatSiruta,
-      filterState.search.uatSirutas,
-      filterState.search.components,
-      filterState.search.counties,
-      filterState.search.fundingSources,
-      filterState.search.measures,
-      filterState.search.cris,
-      filterState.search.progressCategories,
-      filterState.search.onlyAnomalies,
-      filterState.search.excludeMicro,
-      filterState.search.anomalyTypes,
-      filterState.search.dataQualitySignalTypes,
-      filterState.search.entityTypes,
-      filterState.search.beneficiaryTypes,
-      filterState.search.includeNational,
-    ],
+    () => filterProjectsBySearch(projects, filterState.search),
+    [projects, filterState.search],
   )
 
   // Compute aggregates from filtered projects so all tabs show consistent data
@@ -96,20 +64,38 @@ export function PnrrDashboard() {
 
   const loading = isLoading
   const loadError = isError && !data ? error : null
+  const currentSnapshotSearchKey = useMemo(
+    () => buildPnrrSeoSnapshotSearchKey(filterState.search),
+    [filterState.search],
+  )
+  const activeSsrSnapshot =
+    ssrSnapshotSearchKey === currentSnapshotSearchKey ? ssrSnapshot : null
+  const headerProjectCount = data
+    ? filteredProjects.length
+    : (activeSsrSnapshot?.projectCount ?? 0)
+  const headerTotalValue = data
+    ? filteredAggregates.rawTotalValue
+    : (activeSsrSnapshot?.totalValueEur ?? 0)
+  const hasCachedHeaderStats = loading && !data && activeSsrSnapshot != null
+  const cachedOverviewStats = activeSsrSnapshot
+    ? buildCachedOverviewStats(activeSsrSnapshot)
+    : null
+  const shouldRenderCachedOverview =
+    loading && !data && view === 'overview' && cachedOverviewStats != null
 
   return (
-    <PnrrCurrencyProvider>
+    <PnrrCurrencyProvider initialCurrency={initialCurrency}>
       <div
         className="min-h-screen min-w-0 max-w-full"
         style={{ backgroundColor: 'var(--pnrr-bg)' }}
       >
         <PnrrHeader
-          projectsCount={filteredProjects.length}
-          totalValue={filteredAggregates.rawTotalValue}
+          projectsCount={headerProjectCount}
+          totalValue={headerTotalValue}
           view={view}
           onViewChange={filterState.setView}
           filterState={filterState}
-          isLoading={loading}
+          isLoading={loading && !hasCachedHeaderStats}
           actions={
             <div className="flex items-center gap-2">
               <Button
@@ -138,7 +124,15 @@ export function PnrrDashboard() {
 
         {/* Tab Content */}
         <main className="mx-auto min-w-0 max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          {loading ? (
+          {shouldRenderCachedOverview ? (
+            <PnrrOverview
+              projects={[]}
+              aggregates={emptyAggregates}
+              filterState={filterState}
+              cachedStats={cachedOverviewStats}
+              isLoadingFullData
+            />
+          ) : loading ? (
             <PnrrContentSkeleton />
           ) : loadError ? (
             <PnrrDataErrorState
@@ -217,6 +211,22 @@ export function PnrrDashboard() {
       </div>
     </PnrrCurrencyProvider>
   )
+}
+
+function buildCachedOverviewStats(
+  snapshot: PnrrSeoSnapshot,
+): PnrrOverviewMetricStats {
+  return {
+    rawTotalValue: snapshot.totalValueEur,
+    deduplicatedTotalValue: snapshot.deduplicatedTotalValueEur,
+    rawProjectCount: snapshot.projectCount,
+    completedCount: snapshot.completedCount,
+    completedValue: snapshot.completedValueEur,
+    loanTotal: snapshot.loanTotalEur,
+    loanPercent: snapshot.loanPercent,
+    missingFinProgressCount: snapshot.missingFinancialProgressCount,
+    missingFinProgressPercent: snapshot.missingFinancialProgressPercent,
+  }
 }
 
 function PnrrDataErrorState({

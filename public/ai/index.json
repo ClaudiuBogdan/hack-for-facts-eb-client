@@ -14,6 +14,11 @@
       "path": "/budget-explorer",
       "purpose": "Explore and slice budget across years and categories.",
       "parameters": "https://transparenta.eu/ai/budget-explorer-parameters.json"
+    },
+    {
+      "path": "/pnrr",
+      "purpose": "Explore PNRR projects by funding source, component, geography, progress, beneficiary, and risk signals.",
+      "parameters": "https://transparenta.eu/ai/pnrr-parameters.json"
     }
   ]
 }

@@ -12,6 +12,7 @@ Base URL:
 - /entities/{cui}: Single entity details and analytics
 - /entity-analytics: Cross-entity analytics (table, treemap, line-items)
 - /budget-explorer: Budget exploration by categories (functional/economic)
+- /pnrr: PNRR project dashboard by component, geography, beneficiary, progress, and risk signals
 
 ## Entities Page (/entities/{cui})
 How to query:
@@ -58,6 +59,23 @@ Parameters JSON:
 Examples:
 - https://transparenta.eu/budget-explorer?view=treemap&primary=fn
 - https://transparenta.eu/budget-explorer?view=list&filter.account_category=vn
+
+## PNRR (/pnrr)
+Purpose: Explore National Recovery and Resilience Plan projects, funding, progress, beneficiaries, geography, and risk signals.
+Common params:
+- view=overview|projects|beneficiaries|map|anomalies
+- components, counties, fundingSources, measures, cris
+- progressCategories=completed|advanced|mid|under30|not-started|unknown
+- onlyAnomalies=true, excludeMicro=true, includeNational=false
+- search, beneficiarySearch, beneficiaryCui, uatSiruta, uatSirutas
+
+Parameters JSON:
+- https://transparenta.eu/ai/pnrr-parameters.json
+
+Examples:
+- https://transparenta.eu/pnrr
+- https://transparenta.eu/pnrr?onlyAnomalies=true&view=anomalies
+- https://transparenta.eu/pnrr?view=map&granularity=county
 
 Notes:
 - Year range supported: dynamic; see parameter JSON files for min/max.

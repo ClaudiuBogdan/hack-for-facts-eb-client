@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PNRR Dashboard Parameters",
+  "description": "Machine-readable description of supported query parameters for /pnrr",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "view": {
+      "type": "string",
+      "enum": ["overview", "projects", "beneficiaries", "map", "anomalies"],
+      "description": "Dashboard tab to render."
+    },
+    "search": {
+      "type": "string",
+      "description": "Full-text search across project title, beneficiary, CUI, and locality."
+    },
+    "beneficiarySearch": {
+      "type": "string",
+      "description": "Full-text search limited to beneficiary name or CUI."
+    },
+    "beneficiaryCui": {
+      "type": "string",
+      "description": "Exact beneficiary CUI, optionally without RO prefix."
+    },
+    "uatSiruta": {
+      "type": "string",
+      "description": "Exact SIRUTA code for one UAT."
+    },
+    "uatName": {
+      "type": "string",
+      "description": "Display name for the selected UAT. Used with uatSiruta."
+    },
+    "uatSirutas": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Multiple SIRUTA codes."
+    },
+    "components": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "PNRR component codes such as C1, C7, C10, C15."
+    },
+    "counties": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Romanian county names as used in the PNRR dataset."
+    },
+    "fundingSources": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["grant", "loan", "grant/loan"] },
+      "description": "Funding source filter."
+    },
+    "measures": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "PNRR measure keys."
+    },
+    "cris": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Responsible implementation coordinator codes."
+    },
+    "progressCategories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["completed", "advanced", "mid", "under30", "not-started", "unknown"]
+      },
+      "description": "Technical progress category filters."
+    },
+    "onlyAnomalies": {
+      "type": "boolean",
+      "description": "When true, only projects with risk signals are included."
+    },
+    "excludeMicro": {
+      "type": "boolean",
+      "description": "When true, projects under EUR 5,000 are excluded."
+    },
+    "anomalyTypes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "financial-overrun",
+          "stalled-completion",
+          "payment-ahead-delivery",
+          "large-low-progress"
+        ]
+      },
+      "description": "Risk signal type filters."
+    },
+    "dataQualitySignalTypes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "duplicate-conflict",
+          "large-missing-financial-progress",
+          "completed-missing-financial-progress"
+        ]
+      },
+      "description": "Data quality signal filters."
+    },
+    "granularity": {
+      "type": "string",
+      "enum": ["national", "county", "uat"],
+      "description": "Map granularity."
+    },
+    "entityTypes": {
+      "type": "array",
+      "items": { "type": "string", "enum": ["public", "private", "national"] },
+      "description": "High-level beneficiary entity type filters."
+    },
+    "beneficiaryTypes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "public",
+          "private",
+          "national",
+          "uat",
+          "county-council",
+          "ministry",
+          "central-agency",
+          "education",
+          "health",
+          "military",
+          "company",
+          "ngo",
+          "religious",
+          "culture",
+          "social",
+          "other-public"
+        ]
+      },
+      "description": "Detailed beneficiary type filters."
+    },
+    "includeNational": {
+      "type": "boolean",
+      "description": "When false, national projects outside local geography are excluded."
+    },
+    "sortBy": {
+      "type": "string",
+      "enum": ["value", "title", "techProgress", "finProgress", "county", "beneficiary"],
+      "description": "Projects table sort key."
+    },
+    "sortOrder": {
+      "type": "string",
+      "enum": ["asc", "desc"],
+      "description": "Projects table sort order."
+    },
+    "page": {
+      "type": "number",
+      "minimum": 1,
+      "description": "Projects table page number."
+    },
+    "pageSize": {
+      "type": "number",
+      "minimum": 1,
+      "description": "Projects table rows per page."
+    }
+  }
+}

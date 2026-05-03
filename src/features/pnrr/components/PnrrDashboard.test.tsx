@@ -3,6 +3,10 @@ import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { usePnrrData } from '../hooks/usePnrrData'
 import { usePnrrFilterState } from '../hooks/usePnrrFilterState'
+import {
+  buildPnrrSeoSnapshotSearchKey,
+  type PnrrSeoSnapshot,
+} from '../seo/pnrr-seo'
 import { PnrrDashboard } from './PnrrDashboard'
 
 vi.mock('../hooks/usePnrrData', () => ({
@@ -20,17 +24,53 @@ vi.mock('../lib/PnrrCurrencyProvider', () => ({
 }))
 
 vi.mock('./PnrrHeader', () => ({
-  PnrrHeader: ({ actions }: { readonly actions: ReactNode }) => (
-    <header data-testid="pnrr-header">{actions}</header>
+  PnrrHeader: ({
+    actions,
+    isLoading,
+    projectsCount,
+    totalValue,
+  }: {
+    readonly actions: ReactNode
+    readonly isLoading: boolean
+    readonly projectsCount: number
+    readonly totalValue: number
+  }) => (
+    <header data-testid="pnrr-header" data-loading={String(isLoading)}>
+      <span data-testid="pnrr-header-projects">{projectsCount}</span>
+      <span data-testid="pnrr-header-total">{totalValue}</span>
+      {actions}
+    </header>
   ),
 }))
 
 vi.mock('./PnrrSkeleton', () => ({
-  PnrrContentSkeleton: () => <div data-testid="pnrr-content-skeleton" />,
+  PnrrContentSkeleton: ({
+    hideMetricCards = false,
+  }: {
+    readonly hideMetricCards?: boolean
+  }) => (
+    <div
+      data-testid="pnrr-content-skeleton"
+      data-hide-metric-cards={String(hideMetricCards)}
+    />
+  ),
 }))
 
 vi.mock('./tabs/PnrrOverview', () => ({
-  PnrrOverview: () => <div data-testid="pnrr-overview" />,
+  PnrrOverview: ({
+    cachedStats,
+    isLoadingFullData,
+  }: {
+    readonly cachedStats?: { readonly rawTotalValue: number } | null
+    readonly isLoadingFullData?: boolean
+  }) => (
+    <div
+      data-testid="pnrr-overview"
+      data-loading-full-data={String(isLoadingFullData)}
+    >
+      {cachedStats?.rawTotalValue}
+    </div>
+  ),
 }))
 
 vi.mock('./tabs/PnrrProjectsView', () => ({
@@ -107,7 +147,136 @@ function makeFilterState(
   }
 }
 
+function makeSnapshot(): PnrrSeoSnapshot {
+  return {
+    lastUpdated: '2026-04-30',
+    projectCount: 42,
+    deduplicatedProjectCount: 40,
+    totalValueEur: 1_200_000,
+    deduplicatedTotalValueEur: 1_100_000,
+    completedCount: 12,
+    completedValueEur: 300_000,
+    inProgressCount: 25,
+    notStartedCount: 5,
+    loanTotalEur: 250_000,
+    loanPercent: 20.83,
+    missingFinancialProgressCount: 8,
+    missingFinancialProgressPercent: 19.05,
+    anomalyCount: 3,
+    dataQualitySignalCount: 2,
+    topComponents: [],
+    topCounties: [],
+    topBeneficiaries: [],
+  }
+}
+
+function makeSnapshotSearchKey(
+  search = makeFilterState().search,
+): string {
+  return buildPnrrSeoSnapshotSearchKey(search)
+}
+
 describe('PnrrDashboard', () => {
+  it('uses cached SSR stats for the overview cards and header while full data loads', () => {
+    vi.mocked(usePnrrData).mockReturnValue({
+      data: undefined,
+      error: null,
+      isError: false,
+      isLoading: true,
+      isRefetching: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof usePnrrData>)
+    vi.mocked(usePnrrFilterState).mockReturnValue(makeFilterState())
+
+    render(
+      <PnrrDashboard
+        ssrSnapshot={makeSnapshot()}
+        ssrSnapshotSearchKey={makeSnapshotSearchKey()}
+      />,
+    )
+
+    expect(screen.getByTestId('pnrr-header')).toHaveAttribute(
+      'data-loading',
+      'false',
+    )
+    expect(screen.getByTestId('pnrr-header-projects')).toHaveTextContent('42')
+    expect(screen.getByTestId('pnrr-header-total')).toHaveTextContent('1200000')
+    expect(screen.getByTestId('pnrr-overview')).toHaveAttribute(
+      'data-loading-full-data',
+      'true',
+    )
+    expect(screen.getByTestId('pnrr-overview')).toHaveTextContent('1200000')
+  })
+
+  it('keeps non-overview tabs on the standard skeleton while using cached header stats', () => {
+    vi.mocked(usePnrrData).mockReturnValue({
+      data: undefined,
+      error: null,
+      isError: false,
+      isLoading: true,
+      isRefetching: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof usePnrrData>)
+    const filterState = makeFilterState({
+      search: {
+        ...makeFilterState().search,
+        view: 'projects',
+      },
+    })
+    vi.mocked(usePnrrFilterState).mockReturnValue(filterState)
+
+    render(
+      <PnrrDashboard
+        ssrSnapshot={makeSnapshot()}
+        ssrSnapshotSearchKey={makeSnapshotSearchKey(filterState.search)}
+      />,
+    )
+
+    expect(screen.getByTestId('pnrr-header')).toHaveAttribute(
+      'data-loading',
+      'false',
+    )
+    expect(screen.queryByTestId('pnrr-overview')).not.toBeInTheDocument()
+    expect(screen.getByTestId('pnrr-content-skeleton')).toHaveAttribute(
+      'data-hide-metric-cards',
+      'false',
+    )
+  })
+
+  it('ignores cached SSR stats when they were built for different filters', () => {
+    vi.mocked(usePnrrData).mockReturnValue({
+      data: undefined,
+      error: null,
+      isError: false,
+      isLoading: true,
+      isRefetching: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof usePnrrData>)
+    vi.mocked(usePnrrFilterState).mockReturnValue(
+      makeFilterState({
+        search: {
+          ...makeFilterState().search,
+          search: 'spital',
+        },
+      }),
+    )
+
+    render(
+      <PnrrDashboard
+        ssrSnapshot={makeSnapshot()}
+        ssrSnapshotSearchKey={makeSnapshotSearchKey()}
+      />,
+    )
+
+    expect(screen.getByTestId('pnrr-header')).toHaveAttribute(
+      'data-loading',
+      'true',
+    )
+    expect(screen.getByTestId('pnrr-header-projects')).toHaveTextContent('0')
+    expect(screen.queryByTestId('pnrr-overview')).not.toBeInTheDocument()
+    expect(screen.getByTestId('pnrr-content-skeleton')).toBeInTheDocument()
+  })
+
   it('shows a retryable error state when the dataset fails to load', () => {
     const refetch = vi.fn()
     vi.mocked(usePnrrData).mockReturnValue({

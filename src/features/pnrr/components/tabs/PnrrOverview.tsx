@@ -14,6 +14,7 @@ import { PnrrEmblematicProjects } from '../PnrrEmblematicProjects'
 import { PnrrProjectDrawer } from '../table/PnrrProjectDrawer'
 import { PnrrMapPreview } from '../PnrrMapPreview'
 import { PnrrProjectsPreview } from '../PnrrProjectsPreview'
+import { PnrrContentSkeleton } from '../PnrrSkeleton'
 import { PnrrProgressHistogram } from '../charts/PnrrProgressHistogram'
 import { PnrrFundingBar } from '../charts/PnrrFundingBar'
 import { ChevronDown, ChevronUp, Info } from 'lucide-react'
@@ -24,19 +25,38 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 
+export type PnrrOverviewMetricStats = Pick<
+  PnrrAggregates,
+  | 'rawTotalValue'
+  | 'deduplicatedTotalValue'
+  | 'rawProjectCount'
+  | 'completedCount'
+  | 'completedValue'
+  | 'loanTotal'
+  | 'loanPercent'
+  | 'missingFinProgressCount'
+  | 'missingFinProgressPercent'
+>
+
 export function PnrrOverview({
   projects,
   aggregates,
   filterState,
+  cachedStats,
+  isLoadingFullData = false,
 }: {
   readonly projects: readonly PnrrProject[]
   readonly aggregates: PnrrAggregates
   readonly filterState: ReturnType<typeof usePnrrFilterState>
+  readonly cachedStats?: PnrrOverviewMetricStats | null
+  readonly isLoadingFullData?: boolean
 }) {
   const currency = usePnrrCurrency()
+  const isShowingCachedStats = isLoadingFullData && cachedStats != null
+  const metricStats = isShowingCachedStats ? cachedStats : aggregates
   const absorptionRate =
-    aggregates.rawTotalValue > 0
-      ? (aggregates.completedValue / aggregates.rawTotalValue) * 100
+    metricStats.rawTotalValue > 0
+      ? (metricStats.completedValue / metricStats.rawTotalValue) * 100
       : 0
 
   const topComponents = useMemo(
@@ -149,30 +169,38 @@ export function PnrrOverview({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <InsightCard
             label={t`Total value`}
-            value={formatPnrrCurrency(aggregates.rawTotalValue, currency)}
-            sublabel={t`${formatPnrrCurrency(aggregates.deduplicatedTotalValue, currency, 'standard')} after deduplication`}
+            value={formatPnrrCurrency(metricStats.rawTotalValue, currency)}
+            sublabel={t`${formatPnrrCurrency(metricStats.deduplicatedTotalValue, currency, 'standard')} after deduplication`}
           />
 
           <InsightCard
             label={t`Absorption rate`}
             value={`${formatNumber(absorptionRate)}%`}
-            sublabel={t`${formatNumber(aggregates.completedCount)} completed projects out of ${formatNumber(aggregates.rawProjectCount)}`}
+            sublabel={t`${formatNumber(metricStats.completedCount)} completed projects out of ${formatNumber(metricStats.rawProjectCount)}`}
             progress={absorptionRate}
           />
 
           <InsightCard
             label={t`Future debt (loan)`}
-            value={formatPnrrCurrency(aggregates.loanTotal, currency)}
-            sublabel={t`${formatNumber(aggregates.loanPercent)}% of the total is loans`}
+            value={formatPnrrCurrency(metricStats.loanTotal, currency)}
+            sublabel={t`${formatNumber(metricStats.loanPercent)}% of the total is loans`}
           />
 
           <InsightCard
             label={t`Missing financial data`}
-            value={`${formatNumber(aggregates.missingFinProgressPercent)}%`}
-            sublabel={t`${formatNumber(aggregates.missingFinProgressCount)} projects without financial progress`}
+            value={`${formatNumber(metricStats.missingFinProgressPercent)}%`}
+            sublabel={t`${formatNumber(metricStats.missingFinProgressCount)} projects without financial progress`}
           />
         </div>
       </section>
+
+      {isShowingCachedStats ? (
+        <>
+          <PnrrFullDataLoadingStatus />
+          <PnrrContentSkeleton hideMetricCards />
+        </>
+      ) : (
+        <>
 
       {/* Two Column Layout: Components + Counties */}
       <section className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-2">
@@ -257,7 +285,28 @@ export function PnrrOverview({
         project={selectedProject}
         onClose={() => setSelectedProject(null)}
       />
+        </>
+      )}
     </div>
+  )
+}
+
+function PnrrFullDataLoadingStatus() {
+  return (
+    <section
+      role="status"
+      aria-live="polite"
+      className="border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] p-4 sm:p-5"
+    >
+      <p className="text-xs font-black uppercase tracking-widest text-[var(--pnrr-muted)]">
+        <Trans>
+          Loading the full PNRR dataset for maps, charts, and project lists.
+        </Trans>
+      </p>
+      <div className="mt-3 h-2 overflow-hidden border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)]">
+        <div className="h-full w-2/3 animate-pulse bg-[var(--pnrr-fg)]" />
+      </div>
+    </section>
   )
 }
 
