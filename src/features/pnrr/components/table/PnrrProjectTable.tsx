@@ -247,6 +247,11 @@ export function PnrrProjectTable({
         case 'beneficiary':
           cmp = a.beneficiary.localeCompare(b.beneficiary)
           break
+        case 'component':
+          cmp = a.componentCode.localeCompare(b.componentCode, 'ro', {
+            numeric: true,
+          })
+          break
       }
       return sortOrder === 'asc' ? cmp : -cmp
     })
@@ -268,8 +273,8 @@ export function PnrrProjectTable({
     }
   }, [page, pageSize, requestedPage, setPagination])
 
-  const currentSortBy = filterState.search.sortBy
-  const currentSortOrder = filterState.search.sortOrder
+  const currentSortBy = filterState.search.sortBy ?? 'value'
+  const currentSortOrder = filterState.search.sortOrder ?? 'desc'
 
   const toggleSort = useCallback(
     (column: PnrrSearchState['sortBy']) => {
@@ -327,8 +332,8 @@ export function PnrrProjectTable({
                 <span className="flex items-center">
                   <Trans>Project Title</Trans>
                   <SortIcon
-                    active={filterState.search.sortBy === 'title'}
-                    order={filterState.search.sortOrder ?? 'desc'}
+                    active={currentSortBy === 'title'}
+                    order={currentSortOrder}
                   />
                 </span>
               </TableHead>
@@ -339,13 +344,22 @@ export function PnrrProjectTable({
                 <span className="flex items-center">
                   <Trans>Beneficiary</Trans>
                   <SortIcon
-                    active={filterState.search.sortBy === 'beneficiary'}
-                    order={filterState.search.sortOrder ?? 'desc'}
+                    active={currentSortBy === 'beneficiary'}
+                    order={currentSortOrder}
                   />
                 </span>
               </TableHead>
-              <TableHead className="text-sm font-black uppercase text-[var(--pnrr-fg)]">
-                <Trans>Comp.</Trans>
+              <TableHead
+                className="cursor-pointer text-sm font-black uppercase text-[var(--pnrr-fg)]"
+                onClick={() => toggleSort('component')}
+              >
+                <span className="flex items-center">
+                  <Trans>Comp.</Trans>
+                  <SortIcon
+                    active={currentSortBy === 'component'}
+                    order={currentSortOrder}
+                  />
+                </span>
               </TableHead>
               <TableHead
                 className="cursor-pointer text-sm font-black uppercase text-[var(--pnrr-fg)]"
@@ -354,8 +368,8 @@ export function PnrrProjectTable({
                 <span className="flex items-center">
                   <Trans>County</Trans>
                   <SortIcon
-                    active={filterState.search.sortBy === 'county'}
-                    order={filterState.search.sortOrder ?? 'desc'}
+                    active={currentSortBy === 'county'}
+                    order={currentSortOrder}
                   />
                 </span>
               </TableHead>
@@ -366,8 +380,8 @@ export function PnrrProjectTable({
                 <span className="flex items-center justify-end">
                   <Trans>Value</Trans>
                   <SortIcon
-                    active={filterState.search.sortBy === 'value'}
-                    order={filterState.search.sortOrder ?? 'desc'}
+                    active={currentSortBy === 'value'}
+                    order={currentSortOrder}
                   />
                 </span>
               </TableHead>
@@ -378,8 +392,8 @@ export function PnrrProjectTable({
                 <span className="flex items-center">
                   <Trans>Technical</Trans>
                   <SortIcon
-                    active={filterState.search.sortBy === 'techProgress'}
-                    order={filterState.search.sortOrder ?? 'desc'}
+                    active={currentSortBy === 'techProgress'}
+                    order={currentSortOrder}
                   />
                 </span>
               </TableHead>
@@ -390,8 +404,8 @@ export function PnrrProjectTable({
                 <span className="flex items-center">
                   <Trans>Financial</Trans>
                   <SortIcon
-                    active={filterState.search.sortBy === 'finProgress'}
-                    order={filterState.search.sortOrder ?? 'desc'}
+                    active={currentSortBy === 'finProgress'}
+                    order={currentSortOrder}
                   />
                 </span>
               </TableHead>

@@ -117,7 +117,12 @@ export function usePnrrFilterState() {
       navigate({
         search: (prev) =>
           cleanPnrrSearch(
-            clearMapViewport({ ...(prev as Partial<PnrrSearchState>), ...partial, page: 1 })
+            clearMapViewport({
+              ...(prev as Partial<PnrrSearchState>),
+              ...partial,
+              page: 1,
+              beneficiaryPage: 1,
+            }),
           ),
         replace: true,
         resetScroll: false,
@@ -181,6 +186,7 @@ export function usePnrrFilterState() {
             uatSiruta: uat.siruta,
             uatSirutas: undefined,
             page: 1,
+            beneficiaryPage: 1,
           }),
         replace: true,
         resetScroll: false,
@@ -311,9 +317,40 @@ export function usePnrrFilterState() {
   )
 
   const setSorting = useCallback(
-    (sortBy: PnrrSearchState['sortBy'], sortOrder: PnrrSearchState['sortOrder']) =>
-      updateSearch({ sortBy, sortOrder }),
-    [updateSearch]
+    (sortBy: PnrrSearchState['sortBy'], sortOrder: PnrrSearchState['sortOrder']) => {
+      navigate({
+        search: (prev) =>
+          cleanPnrrSearch({
+            ...(prev as Partial<PnrrSearchState>),
+            sortBy,
+            sortOrder,
+            page: 1,
+          }),
+        replace: true,
+        resetScroll: false,
+      })
+    },
+    [navigate],
+  )
+
+  const setBeneficiarySorting = useCallback(
+    (
+      beneficiarySortBy: PnrrSearchState['beneficiarySortBy'],
+      beneficiarySortOrder: PnrrSearchState['beneficiarySortOrder'],
+    ) => {
+      navigate({
+        search: (prev) =>
+          cleanPnrrSearch({
+            ...(prev as Partial<PnrrSearchState>),
+            beneficiarySortBy,
+            beneficiarySortOrder,
+            beneficiaryPage: 1,
+          }),
+        replace: true,
+        resetScroll: false,
+      })
+    },
+    [navigate],
   )
 
   const setPagination = useCallback(
@@ -333,6 +370,21 @@ export function usePnrrFilterState() {
       })
     },
     [navigate]
+  )
+
+  const setBeneficiaryPagination = useCallback(
+    (beneficiaryPage: number) => {
+      navigate({
+        search: (prev) =>
+          cleanPnrrSearch({
+            ...(prev as Partial<PnrrSearchState>),
+            beneficiaryPage,
+          }),
+        replace: true,
+        resetScroll: false,
+      })
+    },
+    [navigate],
   )
 
   const setMapView = useCallback(
@@ -495,7 +547,9 @@ export function usePnrrFilterState() {
     setIncludeNational,
     setCurrency,
     setSorting,
+    setBeneficiarySorting,
     setPagination,
+    setBeneficiaryPagination,
     setMapView,
     openProjectPanel,
     openBeneficiaryPanel,

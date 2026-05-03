@@ -24,8 +24,11 @@ describe('pnrr search schema', () => {
         view: 'map',
         search: '  autostrada  ',
         granularity: 'uat',
-        sortBy: 'title',
+        sortBy: 'component',
         sortOrder: 'asc',
+        beneficiarySortBy: 'component',
+        beneficiarySortOrder: 'asc',
+        beneficiaryPage: 3,
         page: 2,
         pageSize: 50,
         components: [],
@@ -36,8 +39,11 @@ describe('pnrr search schema', () => {
       view: 'map',
       search: 'autostrada',
       granularity: 'uat',
-      sortBy: 'title',
+      sortBy: 'component',
       sortOrder: 'asc',
+      beneficiarySortBy: 'component',
+      beneficiarySortOrder: 'asc',
+      beneficiaryPage: 3,
       page: 2,
       pageSize: 50,
       counties: ['Cluj'],
@@ -75,6 +81,19 @@ describe('pnrr search schema', () => {
   it('keeps currency in canonical URL search state', () => {
     expect(parsePnrrSearchString('?currency=EUR')).toEqual({
       currency: 'EUR',
+    })
+  })
+
+  it('keeps beneficiary table sort state in the canonical URL search state', () => {
+    expect(
+      parsePnrrSearchString(
+        '?view=beneficiaries&beneficiarySortBy=component&beneficiarySortOrder=asc&beneficiaryPage=4',
+      ),
+    ).toEqual({
+      view: 'beneficiaries',
+      beneficiarySortBy: 'component',
+      beneficiarySortOrder: 'asc',
+      beneficiaryPage: 4,
     })
   })
 

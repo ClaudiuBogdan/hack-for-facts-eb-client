@@ -148,6 +148,27 @@ export type PnrrPanel = z.infer<typeof PnrrPanelSchema>
 export const PnrrPanelSignalKindSchema = z.enum(['risk', 'data-quality'])
 export type PnrrPanelSignalKind = z.infer<typeof PnrrPanelSignalKindSchema>
 
+export const PnrrProjectSortBySchema = z.enum([
+  'value',
+  'title',
+  'techProgress',
+  'finProgress',
+  'county',
+  'beneficiary',
+  'component',
+])
+export type PnrrProjectSortBy = z.infer<typeof PnrrProjectSortBySchema>
+
+export const PnrrBeneficiarySortBySchema = z.enum([
+  'value',
+  'beneficiary',
+  'count',
+  'component',
+  'techProgress',
+  'finProgress',
+])
+export type PnrrBeneficiarySortBy = z.infer<typeof PnrrBeneficiarySortBySchema>
+
 export const PNRR_SEARCH_DEFAULTS = {
   view: 'overview',
   onlyAnomalies: false,
@@ -158,6 +179,9 @@ export const PNRR_SEARCH_DEFAULTS = {
   sortOrder: 'desc',
   page: 1,
   pageSize: 25,
+  beneficiarySortBy: 'value',
+  beneficiarySortOrder: 'desc',
+  beneficiaryPage: 1,
 } as const
 
 const optionalTextSearchParam = z.preprocess(
@@ -245,9 +269,7 @@ export const PnrrSearchSchema = z.object({
   beneficiaryTypes: z.array(z.enum(PNRR_BENEFICIARY_TYPE_VALUES)).optional(),
   currency: Currency.optional(),
   includeNational: z.boolean().optional().default(PNRR_SEARCH_DEFAULTS.includeNational),
-  sortBy: z
-    .enum(['value', 'title', 'techProgress', 'finProgress', 'county', 'beneficiary'])
-    .default(PNRR_SEARCH_DEFAULTS.sortBy),
+  sortBy: PnrrProjectSortBySchema.default(PNRR_SEARCH_DEFAULTS.sortBy),
   sortOrder: z.enum(['asc', 'desc']).default(PNRR_SEARCH_DEFAULTS.sortOrder),
   page: z.preprocess(
     (val) => {
@@ -264,6 +286,22 @@ export const PnrrSearchSchema = z.object({
       return Number.isFinite(n) && n >= 1 ? Math.floor(n) : PNRR_SEARCH_DEFAULTS.pageSize
     },
     z.number()
+  ),
+  beneficiarySortBy: PnrrBeneficiarySortBySchema.default(
+    PNRR_SEARCH_DEFAULTS.beneficiarySortBy,
+  ),
+  beneficiarySortOrder: z
+    .enum(['asc', 'desc'])
+    .default(PNRR_SEARCH_DEFAULTS.beneficiarySortOrder),
+  beneficiaryPage: z.preprocess(
+    (val) => {
+      if (val === undefined) return PNRR_SEARCH_DEFAULTS.beneficiaryPage
+      const n = Number(val)
+      return Number.isFinite(n) && n >= 1
+        ? Math.floor(n)
+        : PNRR_SEARCH_DEFAULTS.beneficiaryPage
+    },
+    z.number(),
   ),
   mapLat: z.coerce.number().optional(),
   mapLng: z.coerce.number().optional(),
@@ -377,6 +415,17 @@ export function cleanPnrrSearch(search: Partial<PnrrSearchState>): Partial<PnrrS
   if (cleaned.sortOrder === PNRR_SEARCH_DEFAULTS.sortOrder) delete cleaned.sortOrder
   if (cleaned.page === PNRR_SEARCH_DEFAULTS.page) delete cleaned.page
   if (cleaned.pageSize === PNRR_SEARCH_DEFAULTS.pageSize) delete cleaned.pageSize
+  if (cleaned.beneficiarySortBy === PNRR_SEARCH_DEFAULTS.beneficiarySortBy) {
+    delete cleaned.beneficiarySortBy
+  }
+  if (
+    cleaned.beneficiarySortOrder === PNRR_SEARCH_DEFAULTS.beneficiarySortOrder
+  ) {
+    delete cleaned.beneficiarySortOrder
+  }
+  if (cleaned.beneficiaryPage === PNRR_SEARCH_DEFAULTS.beneficiaryPage) {
+    delete cleaned.beneficiaryPage
+  }
 
   if (cleaned.mapLat == null || cleaned.mapLng == null || cleaned.mapZoom == null) {
     delete cleaned.mapLat
@@ -409,6 +458,8 @@ const textSearchKeySet = new Set<string>([
   'currency',
   'sortBy',
   'sortOrder',
+  'beneficiarySortBy',
+  'beneficiarySortOrder',
   'panel',
   'panelProjectId',
   'panelBeneficiaryCui',
@@ -425,6 +476,7 @@ const booleanSearchKeySet = new Set<string>([
 const numberSearchKeySet = new Set<string>([
   'page',
   'pageSize',
+  'beneficiaryPage',
   'mapLat',
   'mapLng',
   'mapZoom',

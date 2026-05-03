@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
-import type { PnrrProject } from '@/schemas/pnrr'
+import type { PnrrProject, PnrrSearchState } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import { PnrrProjectTable } from './PnrrProjectTable'
 
@@ -63,6 +64,9 @@ function makeFilterState(
       pageSize: 25,
       sortBy: 'value',
       sortOrder: 'desc',
+      beneficiarySortBy: 'value',
+      beneficiarySortOrder: 'desc',
+      beneficiaryPage: 1,
       onlyAnomalies: false,
       excludeMicro: false,
       granularity: 'county',
@@ -91,8 +95,10 @@ function makeFilterState(
     setBeneficiaryTypes: vi.fn(),
     setIncludeNational: vi.fn(),
     setSorting: vi.fn(),
+    setBeneficiarySorting: vi.fn(),
     setCurrency: vi.fn(),
     setPagination: vi.fn(),
+    setBeneficiaryPagination: vi.fn(),
     setMapView: vi.fn(),
     openProjectPanel: vi.fn(),
     openBeneficiaryPanel: vi.fn(),
@@ -162,6 +168,69 @@ describe('PnrrProjectTable', () => {
       under30Title.compareDocumentPosition(midTitle) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
+  })
+
+  it('toggles value sorting when value is the implicit default sort', async () => {
+    const user = userEvent.setup()
+    const setSorting = vi.fn()
+    const search = {
+      ...makeFilterState().search,
+      page: 1,
+    } as Partial<PnrrSearchState>
+    delete search.sortBy
+    delete search.sortOrder
+    const filterState = makeFilterState({
+      setSorting,
+      search: search as PnrrSearchState,
+    })
+
+    render(<PnrrProjectTable projects={[PROJECT]} filterState={filterState} />)
+
+    await user.click(screen.getByText('Value'))
+
+    expect(setSorting).toHaveBeenCalledWith('value', 'asc')
+  })
+
+  it('sorts projects by component and stores component sort in URL state', async () => {
+    const user = userEvent.setup()
+    const setSorting = vi.fn()
+    const filterState = makeFilterState({
+      setSorting,
+      search: {
+        ...makeFilterState().search,
+        page: 1,
+        sortBy: 'component',
+        sortOrder: 'asc',
+      },
+    })
+    const componentTen = makeProject({
+      id: 'component-10',
+      title: 'Component Ten',
+      componentCode: 'C10',
+    })
+    const componentTwo = makeProject({
+      id: 'component-2',
+      title: 'Component Two',
+      componentCode: 'C2',
+    })
+
+    render(
+      <PnrrProjectTable
+        projects={[componentTen, componentTwo]}
+        filterState={filterState}
+      />,
+    )
+
+    const componentTwoTitle = screen.getAllByText('Component Two')[0]
+    const componentTenTitle = screen.getAllByText('Component Ten')[0]
+    expect(
+      componentTwoTitle.compareDocumentPosition(componentTenTitle) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+
+    await user.click(screen.getByText('Comp.'))
+
+    expect(setSorting).toHaveBeenCalledWith('component', 'desc')
   })
 
   it('opens the project drawer from URL panel state and closes through URL state', () => {

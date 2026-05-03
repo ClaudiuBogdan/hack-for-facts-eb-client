@@ -4,7 +4,7 @@ import { t } from '@lingui/core/macro'
 import { formatNumber } from '@/lib/utils'
 import { usePnrrCurrency } from '../../lib/usePnrrCurrency'
 import { formatPnrrCurrency } from '../../lib/formatting'
-import type { PnrrProject } from '@/schemas/pnrr'
+import type { PnrrBeneficiarySortBy, PnrrProject } from '@/schemas/pnrr'
 import type { usePnrrFilterState } from '../../hooks/usePnrrFilterState'
 import { PNRR_COMPONENTS } from '../../data/component-definitions'
 import {
@@ -38,8 +38,6 @@ import {
 } from '@/components/ui/sheet'
 import { PnrrEntityShortcutLinks } from '../PnrrEntityShortcutLinks'
 
-type SortKey = 'name' | 'count' | 'value' | 'techProgress' | 'finProgress'
-
 const PAGE_SIZE = 25
 const SEARCH_DEBOUNCE_MS = 300
 const TOP_PROJECT_LIMIT = 5
@@ -53,6 +51,7 @@ type BeneficiarySummary = {
   techProgressCount: number
   finProgressSum: number
   finProgressCount: number
+  readonly componentValues: Map<string, number>
   readonly projects: PnrrProject[]
 }
 
@@ -86,6 +85,24 @@ function getBeneficiaryKey(project: PnrrProject): string {
   return `${project.beneficiary}\u0000${project.cui ?? ''}`
 }
 
+function getPrimaryComponentCode(beneficiary: BeneficiarySummary): string {
+  let primaryCode = ''
+  let primaryValue = -1
+
+  for (const [code, value] of beneficiary.componentValues) {
+    if (
+      value > primaryValue ||
+      (value === primaryValue &&
+        code.localeCompare(primaryCode, 'ro', { numeric: true }) < 0)
+    ) {
+      primaryCode = code
+      primaryValue = value
+    }
+  }
+
+  return primaryCode
+}
+
 type BeneficiaryRowProps = {
   readonly b: BeneficiarySummary
   readonly currency: 'RON' | 'EUR' | 'USD'
@@ -101,6 +118,9 @@ const BeneficiaryRow = memo(function BeneficiaryRow({
     b.techProgressCount > 0 ? b.techProgressSum / b.techProgressCount : null
   const finAvg =
     b.finProgressCount > 0 ? b.finProgressSum / b.finProgressCount : null
+  const primaryComponentCode = getPrimaryComponentCode(b)
+  const primaryComponent = PNRR_COMPONENTS[primaryComponentCode]
+  const extraComponentCount = Math.max(0, b.componentValues.size - 1)
 
   return (
     <TableRow
@@ -119,6 +139,25 @@ const BeneficiaryRow = memo(function BeneficiaryRow({
       </TableCell>
       <TableCell className="text-right text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
         {b.count.toLocaleString('ro-RO')}
+      </TableCell>
+      <TableCell className="text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
+        <span
+          className="inline-flex h-7 min-w-[2.5rem] items-center justify-center rounded border px-1.5 text-xs font-bold"
+          style={{
+            borderColor: primaryComponent?.color ?? 'var(--pnrr-border)',
+            color: primaryComponent?.color ?? 'var(--pnrr-fg)',
+            backgroundColor: primaryComponent
+              ? `${primaryComponent.color}14`
+              : 'transparent',
+          }}
+        >
+          {primaryComponentCode}
+        </span>
+        {extraComponentCount > 0 && (
+          <span className="ml-2 text-xs text-[var(--pnrr-muted)]">
+            +{extraComponentCount}
+          </span>
+        )}
       </TableCell>
       <TableCell className="text-right text-sm font-black tabular-nums text-[var(--pnrr-fg)]">
         {formatPnrrCurrency(b.value, currency)}
@@ -142,10 +181,11 @@ export function PnrrBeneficiariesView({
 }) {
   const [localSelectedBeneficiary, setLocalSelectedBeneficiary] =
     useState<BeneficiarySummary | null>(null)
-  const [sortKey, setSortKey] = useState<SortKey>('value')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-  const [page, setPage] = useState(1)
   const currency = usePnrrCurrency()
+  const sortKey = filterState.search.beneficiarySortBy ?? 'value'
+  const sortOrder = filterState.search.beneficiarySortOrder ?? 'desc'
+  const requestedPage = filterState.search.beneficiaryPage ?? 1
+  const { setBeneficiaryPagination, setBeneficiarySorting } = filterState
 
   const globalSearch = filterState.search.beneficiarySearch ?? ''
   const [inputValue, setInputValue] = useState(globalSearch)
@@ -184,6 +224,10 @@ export function PnrrBeneficiariesView({
           existing.finProgressSum += finProgress
           existing.finProgressCount++
         }
+        existing.componentValues.set(
+          p.componentCode,
+          (existing.componentValues.get(p.componentCode) ?? 0) + p.valueEur,
+        )
         existing.projects.push(p)
       } else {
         map.set(beneficiaryKey, {
@@ -195,6 +239,7 @@ export function PnrrBeneficiariesView({
           techProgressCount: techProgress === null ? 0 : 1,
           finProgressSum: finProgress ?? 0,
           finProgressCount: finProgress === null ? 0 : 1,
+          componentValues: new Map([[p.componentCode, p.valueEur]]),
           projects: [p],
         })
       }
@@ -229,7 +274,7 @@ export function PnrrBeneficiariesView({
     arr.sort((a, b) => {
       let cmp = 0
       switch (sortKey) {
-        case 'name':
+        case 'beneficiary':
           cmp = a.name.localeCompare(b.name)
           break
         case 'count':
@@ -237,6 +282,13 @@ export function PnrrBeneficiariesView({
           break
         case 'value':
           cmp = a.value - b.value
+          break
+        case 'component':
+          cmp = getPrimaryComponentCode(a).localeCompare(
+            getPrimaryComponentCode(b),
+            'ro',
+            { numeric: true },
+          )
           break
         case 'techProgress': {
           const av =
@@ -265,22 +317,33 @@ export function PnrrBeneficiariesView({
   }, [beneficiaries, sortKey, sortOrder])
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
+  const page = Math.min(Math.max(1, requestedPage), totalPages)
   const paginated = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
+  useEffect(() => {
+    if (requestedPage !== page) {
+      setBeneficiaryPagination(page)
+    }
+  }, [page, requestedPage, setBeneficiaryPagination])
+
   const toggleSort = useCallback(
-    (key: SortKey) => {
+    (key: PnrrBeneficiarySortBy) => {
       if (sortKey === key) {
-        setSortOrder((o) => (o === 'asc' ? 'desc' : 'asc'))
+        setBeneficiarySorting(
+          key,
+          sortOrder === 'asc' ? 'desc' : 'asc',
+        )
       } else {
-        setSortKey(key)
-        setSortOrder('desc')
+        setBeneficiarySorting(key, 'desc')
       }
-      setPage(1)
     },
-    [sortKey],
+    [setBeneficiarySorting, sortKey, sortOrder],
   )
 
-  const goToPage = useCallback((p: number) => setPage(p), [])
+  const goToPage = useCallback(
+    (p: number) => setBeneficiaryPagination(p),
+    [setBeneficiaryPagination],
+  )
   const handleBeneficiarySelect = useCallback(
     (beneficiary: BeneficiarySummary) => {
       if (beneficiary.cui) {
@@ -325,7 +388,6 @@ export function PnrrBeneficiariesView({
           value={inputValue}
           onChange={(e) => {
             setInputValue(e.target.value)
-            setPage(1)
           }}
           className="h-10 w-full border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-9 py-2 text-sm text-[var(--pnrr-fg)] placeholder:text-[var(--pnrr-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
         />
@@ -335,7 +397,6 @@ export function PnrrBeneficiariesView({
             type="button"
             onClick={() => {
               filterState.setBeneficiarySearch(undefined)
-              setPage(1)
             }}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--pnrr-muted)] transition-colors hover:text-[var(--pnrr-fg)]"
             aria-label={t`Clear search`}
@@ -354,11 +415,14 @@ export function PnrrBeneficiariesView({
             <TableRow className="border-b-2 border-[var(--pnrr-border)] bg-[var(--pnrr-bg)] hover:bg-[var(--pnrr-bg)]">
               <TableHead
                 className="cursor-pointer text-sm font-black text-[var(--pnrr-fg)]"
-                onClick={() => toggleSort('name')}
+                onClick={() => toggleSort('beneficiary')}
               >
                 <span className="inline-flex items-center">
                   <Trans>Beneficiary</Trans>
-                  <SortIcon active={sortKey === 'name'} order={sortOrder} />
+                  <SortIcon
+                    active={sortKey === 'beneficiary'}
+                    order={sortOrder}
+                  />
                 </span>
               </TableHead>
               <TableHead
@@ -368,6 +432,18 @@ export function PnrrBeneficiariesView({
                 <span className="inline-flex items-center justify-end">
                   <Trans>Projects</Trans>
                   <SortIcon active={sortKey === 'count'} order={sortOrder} />
+                </span>
+              </TableHead>
+              <TableHead
+                className="w-[100px] cursor-pointer text-sm font-black text-[var(--pnrr-fg)]"
+                onClick={() => toggleSort('component')}
+              >
+                <span className="inline-flex items-center">
+                  <Trans>Comp.</Trans>
+                  <SortIcon
+                    active={sortKey === 'component'}
+                    order={sortOrder}
+                  />
                 </span>
               </TableHead>
               <TableHead
@@ -429,7 +505,7 @@ export function PnrrBeneficiariesView({
         <div className="flex items-center gap-1 sm:hidden">
           <button
             disabled={page <= 1}
-            onClick={() => setPage(page - 1)}
+            onClick={() => goToPage(page - 1)}
             className="inline-flex h-8 w-8 items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -439,7 +515,7 @@ export function PnrrBeneficiariesView({
           </span>
           <button
             disabled={page >= totalPages}
-            onClick={() => setPage(page + 1)}
+            onClick={() => goToPage(page + 1)}
             className="inline-flex h-8 w-8 items-center justify-center border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
           >
             <ChevronRight className="h-4 w-4" />
@@ -449,7 +525,7 @@ export function PnrrBeneficiariesView({
         <div className="hidden items-center gap-1 sm:flex">
           <button
             disabled={page <= 1}
-            onClick={() => setPage(page - 1)}
+            onClick={() => goToPage(page - 1)}
             className="inline-flex h-8 items-center gap-1 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -489,7 +565,7 @@ export function PnrrBeneficiariesView({
           </div>
           <button
             disabled={page >= totalPages}
-            onClick={() => setPage(page + 1)}
+            onClick={() => goToPage(page + 1)}
             className="inline-flex h-8 items-center gap-1 border-2 border-[var(--pnrr-border)] bg-[var(--pnrr-card)] px-3 text-xs font-bold text-[var(--pnrr-fg)] disabled:opacity-40 transition-colors hover:bg-[var(--pnrr-fg)] hover:text-[var(--pnrr-bg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pnrr-blue)]"
           >
             <Trans>Next</Trans>

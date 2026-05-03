@@ -45,6 +45,9 @@ function makeFilterState(
       pageSize: 25,
       sortBy: 'value',
       sortOrder: 'desc',
+      beneficiarySortBy: 'value',
+      beneficiarySortOrder: 'desc',
+      beneficiaryPage: 1,
       onlyAnomalies: false,
       excludeMicro: false,
       granularity: 'county',
@@ -73,8 +76,10 @@ function makeFilterState(
     setBeneficiaryTypes: vi.fn(),
     setIncludeNational: vi.fn(),
     setSorting: vi.fn(),
+    setBeneficiarySorting: vi.fn(),
     setCurrency: vi.fn(),
     setPagination: vi.fn(),
+    setBeneficiaryPagination: vi.fn(),
     setMapView: vi.fn(),
     openProjectPanel: vi.fn(),
     openBeneficiaryPanel: vi.fn(),
@@ -139,6 +144,54 @@ describe('PnrrBeneficiariesView', () => {
     expect(
       screen.getByRole('button', { name: /View all filtered projects/ }),
     ).toBeInTheDocument()
+  })
+
+  it('sorts beneficiaries by primary component from URL state', () => {
+    render(
+      <PnrrBeneficiariesView
+        projects={[
+          makeProject({
+            id: 'c10-project',
+            beneficiary: 'C10 Beneficiary',
+            cui: '10',
+            componentCode: 'C10',
+          }),
+          makeProject({
+            id: 'c2-project',
+            beneficiary: 'C2 Beneficiary',
+            cui: '2',
+            componentCode: 'C2',
+          }),
+        ]}
+        filterState={makeFilterState({
+          search: {
+            ...makeFilterState().search,
+            beneficiarySortBy: 'component',
+            beneficiarySortOrder: 'asc',
+          },
+        })}
+      />,
+    )
+
+    const c2 = screen.getByText('C2 Beneficiary')
+    const c10 = screen.getByText('C10 Beneficiary')
+    expect(
+      c2.compareDocumentPosition(c10) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('stores beneficiary component sorting in URL state', () => {
+    const setBeneficiarySorting = vi.fn()
+    render(
+      <PnrrBeneficiariesView
+        projects={[PROJECT]}
+        filterState={makeFilterState({ setBeneficiarySorting })}
+      />,
+    )
+
+    fireEvent.click(screen.getByText('Comp.'))
+
+    expect(setBeneficiarySorting).toHaveBeenCalledWith('component', 'desc')
   })
 
   it('keeps a local drawer fallback for beneficiaries without CUI', () => {
